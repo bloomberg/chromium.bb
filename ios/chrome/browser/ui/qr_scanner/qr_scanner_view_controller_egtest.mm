@@ -80,9 +80,9 @@ id<GREYMatcher> QrScannerCloseButton() {
 // which turns on the torch.
 id<GREYMatcher> QrScannerTorchOffButton() {
   return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
-                        IDS_IOS_QR_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)),
+                        IDS_IOS_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)),
                     grey_accessibilityValue(l10n_util::GetNSString(
-                        IDS_IOS_QR_SCANNER_TORCH_OFF_ACCESSIBILITY_VALUE)),
+                        IDS_IOS_SCANNER_TORCH_OFF_ACCESSIBILITY_VALUE)),
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
 }
 
@@ -90,9 +90,9 @@ id<GREYMatcher> QrScannerTorchOffButton() {
 // which turns off the torch.
 id<GREYMatcher> QrScannerTorchOnButton() {
   return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
-                        IDS_IOS_QR_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)),
+                        IDS_IOS_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)),
                     grey_accessibilityValue(l10n_util::GetNSString(
-                        IDS_IOS_QR_SCANNER_TORCH_ON_ACCESSIBILITY_VALUE)),
+                        IDS_IOS_SCANNER_TORCH_ON_ACCESSIBILITY_VALUE)),
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
 }
 

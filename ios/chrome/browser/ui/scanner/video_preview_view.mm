@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/qr_scanner/video_preview_view.h"
+#import "ios/chrome/browser/ui/scanner/video_preview_view.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"

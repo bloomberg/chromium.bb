@@ -13,10 +13,9 @@
 @protocol LoadQueryCommands;
 @protocol QRScannerPresenting;
 
-// View controller for the QR scanner. Subclass can inherit
-// QRScannerViewDelegate.
+// View controller for the QR scanner.
 @interface QRScannerViewController
-    : UIViewController <CameraControllerDelegate, QRScannerViewDelegate>
+    : UIViewController <CameraControllerDelegate, ScannerViewDelegate>
 
 - (instancetype)initWithPresentationProvider:
                     (id<QRScannerPresenting>)presentationProvider

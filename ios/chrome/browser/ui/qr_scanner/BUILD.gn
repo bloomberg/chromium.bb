@@ -7,8 +7,6 @@ source_set("qr_scanner") {
   sources = [
     "camera_controller.h",
     "camera_controller.mm",
-    "preview_overlay_view.h",
-    "preview_overlay_view.mm",
     "qr_scanner_alerts.h",
     "qr_scanner_alerts.mm",
     "qr_scanner_presenting.h",
@@ -18,17 +16,14 @@ source_set("qr_scanner") {
     "qr_scanner_view.mm",
     "qr_scanner_view_controller.h",
     "qr_scanner_view_controller.mm",
-    "video_preview_view.h",
-    "video_preview_view.mm",
   ]
   deps = [
-    "resources:qr_scanner_torch_off",
-    "resources:qr_scanner_torch_on",
     "//base",
     "//components/version_info",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/icons",
+    "//ios/chrome/browser/ui/scanner",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common:ios_app_bundle_id_prefix_buildflags",
     "//ios/chrome/common/ui_util",

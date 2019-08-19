@@ -81,7 +81,7 @@ enum DismissalReason {
 @synthesize queryLoader = _queryLoader;
 @synthesize presentationProvider = _presentationProvider;
 
-#pragma mark lifecycle
+#pragma mark - Lifecycle
 
 - (instancetype)
 initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
@@ -105,14 +105,14 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
   return nil;
 }
 
-#pragma mark UIAccessibilityAction
+#pragma mark - UIAccessibilityAction
 
 - (BOOL)accessibilityPerformEscape {
   [self dismissForReason:CLOSE_BUTTON withCompletion:nil];
   return YES;
 }
 
-#pragma mark UIViewController
+#pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -210,7 +210,7 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
   return YES;
 }
 
-#pragma mark public methods
+#pragma mark - Public methods
 
 - (UIViewController*)getViewControllerToPresent {
   DCHECK(_cameraController);
@@ -231,7 +231,7 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
   return [[QRScannerView alloc] initWithFrame:self.view.frame delegate:self];
 }
 
-#pragma mark private methods
+#pragma mark - Private methods
 
 - (void)dismissForReason:(DismissalReason)reason
           withCompletion:(void (^)(void))completion {
@@ -276,7 +276,7 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
   [_cameraController setTorchMode:mode];
 }
 
-#pragma mark notification handlers
+#pragma mark - Notification handlers
 
 - (void)handleUIApplicationWillResignActiveNotification {
   [self setTorchMode:AVCaptureTorchModeOff];
@@ -299,7 +299,7 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
   }
 }
 
-#pragma mark CameraControllerDelegate
+#pragma mark - CameraControllerDelegate
 
 - (void)captureSessionIsConnected {
   [_cameraController setViewport:[_qrScannerView viewportRectOfInterest]];
@@ -367,9 +367,9 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
   }
 }
 
-#pragma mark QRScannerViewDelegate
+#pragma mark - ScannerViewDelegate
 
-- (void)dismissQRScannerView:(id)sender {
+- (void)dismissScannerView:(id)sender {
   [self dismissForReason:CLOSE_BUTTON withCompletion:nil];
 }
 

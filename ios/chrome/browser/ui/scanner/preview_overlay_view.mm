@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/qr_scanner/preview_overlay_view.h"
+#import "ios/chrome/browser/ui/scanner/preview_overlay_view.h"
 
 #import <AVFoundation/AVFoundation.h>
 
