@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>Test that WebVTT objects are being styled correctly based on user settings that should override author settings.</title>
+<title>Test that WebVTT objects are being styled correctly based on author settings that should override user settings.</title>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -11,8 +11,6 @@ video::cue(c) {
     text-shadow: 3px 3px #00ff00;
     font-size: 20px;
     font-family: arial;
-    font-style: normal;
-    font-variant: normal;
 }
 </style>
 <video>
@@ -31,10 +29,8 @@ async_test(function(t) {
         assert_equals(cueStyle.textShadow, "rgb(0, 255, 0) 3px 3px 0px");
         assert_equals(cueStyle.fontSize, "20px");
         assert_equals(cueStyle.fontFamily, "arial");
-        assert_equals(cueStyle.fontStyle, "normal");
-        assert_equals(cueStyle.fontVariant, "normal");
 
-        // Apply user settings and verify they override author-specified settings
+        // Apply user settings and verify they are overriden by author-specified settings, when the author settings exist.
         internals.settings.setTextTrackTextColor("cyan");
         internals.settings.setTextTrackBackgroundColor("green");
         internals.settings.setTextTrackTextShadow("2px 2px #ff0000")
@@ -47,11 +43,11 @@ async_test(function(t) {
 
         cue = textTrackCueElementByIndex(video, 0).firstChild.firstElementChild;
         cueStyle = getComputedStyle(cue);
-        assert_equals(cueStyle.color, "rgb(0, 255, 255)");
+        assert_equals(cueStyle.color, "rgb(255, 0, 0)");
         assert_equals(cueStyle.backgroundColor, "rgb(0, 128, 0)");
-        assert_equals(cueStyle.textShadow, "rgb(255, 0, 0) 2px 2px 0px");
-        assert_equals(cueStyle.fontSize, "14px");
-        assert_equals(cueStyle.fontFamily, "fantasy");
+        assert_equals(cueStyle.textShadow, "rgb(0, 255, 0) 3px 3px 0px");
+        assert_equals(cueStyle.fontSize, "20px");
+        assert_equals(cueStyle.fontFamily, "arial");
         assert_equals(cueStyle.fontStyle, "italic");
         assert_equals(cueStyle.fontVariant, "small-caps");
     });
