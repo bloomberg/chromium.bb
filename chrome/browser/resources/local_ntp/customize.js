@@ -971,8 +971,6 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     return;
   }
 
-  $(customize.IDS.REFRESH_TOGGLE).checked = false;
-
   if (customize.selectedOptions.background &&
       customize.selectedOptions.background.id == tile.id) {
     // If the clicked tile is already selected do nothing.
@@ -982,6 +980,8 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     customize.richerPicker_removeSelectedState(
         customize.selectedOptions.background);
   }
+
+  $(customize.IDS.REFRESH_TOGGLE).checked = false;
 
   // Remove any existing preview.
   customize.richerPicker_unpreviewImage();
@@ -1056,6 +1056,7 @@ customize.richerPicker_toggleRefreshDaily = function(toggledOn) {
         customize.selectedOptions.background);
   }
 
+  customize.selectedOptions.background = null;
   customize.selectedOptions.backgroundData = {
     id: '',
     url: '',
