@@ -120,10 +120,6 @@ bool HTMLAnchorElement::SupportsFocus() const {
   return IsLink() || HTMLElement::SupportsFocus();
 }
 
-bool HTMLAnchorElement::MatchesEnabledPseudoClass() const {
-  return IsLink();
-}
-
 bool HTMLAnchorElement::ShouldHaveFocusAppearance() const {
   return (GetDocument().LastFocusType() != kWebFocusTypeMouse) ||
          HTMLElement::SupportsFocus();
