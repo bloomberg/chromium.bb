@@ -219,6 +219,8 @@ class TabListMediator {
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
         @Override
         public void run(int tabId) {
+            if (mModel.indexFromId(tabId) == TabModel.INVALID_TAB_INDEX) return;
+
             mNextTabId = tabId;
 
             if (!mActionsOnAllRelatedTabs) {
@@ -560,6 +562,9 @@ class TabListMediator {
         mTabClosedListener = new TabActionListener() {
             @Override
             public void run(int tabId) {
+                // TODO(crbug.com/990698): Consider disabling all touch events during animation.
+                if (mModel.indexFromId(tabId) == TabModel.INVALID_TAB_INDEX) return;
+
                 RecordUserAction.record("MobileTabClosed." + mComponentName);
 
                 if (mActionsOnAllRelatedTabs) {
@@ -913,6 +918,14 @@ class TabListMediator {
                     mCreateGroupButtonProvider.getCreateGroupButtonOnClickListener(tab);
         }
         return createGroupButtonOnClickListener;
+    }
+
+    int selectedTabId() {
+        if (mNextTabId != Tab.INVALID_TAB_ID) {
+            return mNextTabId;
+        }
+
+        return mTabModelSelector.getCurrentTabId();
     }
 
     int indexOfSelected() {
