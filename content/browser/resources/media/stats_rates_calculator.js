@@ -281,36 +281,6 @@ class AudioLevelRmsCalculator {
   }
 }
 
-// Calculates the average encoded frame target, based on the average encoded
-// bytes target per frame and the average encode frame rate.
-// TODO(https://crbug.com/994574): Replace this class with
-// RateCalculator('totalEncodedBytesTarget', 'timestamp'), assuming it yields
-// the same result.
-class TargetEncodedByteRateCalculator {
-  getCalculatedMetricName() {
-    return '[targetEncodedBytes/s]';
-  }
-
-  calculate(id, previousReport, currentReport) {
-    if (!previousReport) {
-      return 0;
-    }
-    const previousStats = previousReport.get(id);
-    const currentStats = currentReport.get(id);
-    if (!previousStats || !currentStats) {
-      return 0;
-    }
-    const averageEncodedFrameTarget = RateCalculator.calculateRate(
-        id, previousReport, currentReport, 'totalEncodedBytesTarget',
-        'framesEncoded');
-    const deltaTime = currentStats.timestamp - previousStats.timestamp;
-    const deltaFrames =
-        currentStats.framesEncoded - previousStats.framesEncoded;
-    const encodedFrameRate = deltaFrames / deltaTime;
-    return averageEncodedFrameTarget * encodedFrameRate;
-  }
-}
-
 // Calculates "metricA - metricB", only looking at the current report.
 class DifferenceCalculator {
   constructor(metricA, metricB) {
@@ -382,7 +352,8 @@ class StatsRatesCalculator {
               'totalPacketSendDelay', 'packetsSent',
               CalculatorModifier.kMillisecondsFromSeconds),
           framesEncoded: new RateCalculator('framesEncoded', 'timestamp'),
-          totalEncodedBytesTarget: new TargetEncodedByteRateCalculator(),
+          totalEncodedBytesTarget:
+              new RateCalculator('totalEncodedBytesTarget', 'timestamp'),
           totalEncodeTime: new RateCalculator(
               'totalEncodeTime', 'framesEncoded',
               CalculatorModifier.kMillisecondsFromSeconds),
