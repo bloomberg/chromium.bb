@@ -110,7 +110,7 @@ bool IsTabletModeEnabled() {
 bool IsHomeScreenAvailable() {
   // Shell could be destroying. Shell destroys HomeScreenController before
   // closing all windows.
-  if (!Shell::Get()->home_screen_controller())
+  if (!Shell::Get() || !Shell::Get()->home_screen_controller())
     return false;
 
   return Shell::Get()->home_screen_controller()->IsHomeScreenAvailable();
@@ -528,15 +528,13 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_LOGIN;
   }
 
-  if (is_app_list_visible_) {
-    if (!IsHomeScreenAvailable())
-      return SHELF_BACKGROUND_APP_LIST;
-
-    // When the home screen is available, it is always visible. If the home
-    // screen is either fullscreen or being animated or dragged, show the
-    // transparent background.
+  if (IsHomeScreenAvailable()) {
+    // If the home launcher is shown, being animated, or dragged, show the
+    // default background.
     if (is_home_launcher_shown_ || is_home_launcher_target_position_shown_)
       return SHELF_BACKGROUND_DEFAULT;
+  } else if (is_app_list_visible_) {
+    return SHELF_BACKGROUND_APP_LIST;
   }
 
   const bool in_split_view_mode =
