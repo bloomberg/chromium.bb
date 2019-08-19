@@ -335,8 +335,16 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableWebNfc(true);
 #endif
 
+#if defined(OS_ANDROID)
+  // APIs for Web Authentication are not available prior to N.
+  WebRuntimeFeatures::EnableWebAuth(
+      base::FeatureList::IsEnabled(features::kWebAuth) &&
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
+          base::android::SDK_VERSION_NOUGAT);
+#else
   WebRuntimeFeatures::EnableWebAuth(
       base::FeatureList::IsEnabled(features::kWebAuth));
+#endif
 
   WebRuntimeFeatures::EnableClientPlaceholdersForServerLoFi(
       base::GetFieldTrialParamValue("PreviewsClientLoFi",

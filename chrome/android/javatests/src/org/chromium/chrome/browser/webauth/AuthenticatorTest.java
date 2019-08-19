@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink.mojom.AuthenticatorStatus;
 import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
@@ -120,6 +121,7 @@ public class AuthenticatorTest {
      * setting up or mocking a real APK.
      */
     @Test
+    @DisableIf.Build(sdk_is_less_than = 24)
     @MediumTest
     @Feature({"WebAuth"})
     public void testCreatePublicKeyCredential() throws Exception {
@@ -136,6 +138,7 @@ public class AuthenticatorTest {
      * setting up or mocking a real APK.
      */
     @Test
+    @DisableIf.Build(sdk_is_less_than = 24)
     @MediumTest
     @Feature({"WebAuth"})
     public void testGetPublicKeyCredential() throws Exception {
@@ -151,6 +154,7 @@ public class AuthenticatorTest {
      * This test currently expects a "false" response.
      */
     @Test
+    @DisableIf.Build(sdk_is_less_than = 24)
     @MediumTest
     @Feature({"WebAuth"})
     public void testIsUserVerifyingPlatformAuthenticatorAvailable() throws Exception {
