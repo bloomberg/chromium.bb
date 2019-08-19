@@ -71,7 +71,7 @@ void ArcSharedSampler::Refresh() {
 
 void ArcSharedSampler::OnReceiveMemoryDump(
     int type,
-    std::vector<arc::mojom::ArcMemoryDumpPtr> process_dump) {
+    std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   pending_memory_dump_types_ &= ~type;
 
@@ -80,11 +80,14 @@ void ArcSharedSampler::OnReceiveMemoryDump(
   else
     last_system_refresh = base::Time::Now();
 
-  for (const auto& proc : process_dump) {
-    auto it = callbacks_.find(proc->pid);
+  if (!dump)
+    return;
+  for (const auto& pmd : dump->process_dumps()) {
+    auto it = callbacks_.find(pmd.pid());
     if (it == callbacks_.end())
       continue;
-    const MemoryFootprintBytes result = proc->private_footprint_kb * 1024;
+    const MemoryFootprintBytes result =
+        pmd.os_dump().private_footprint_kb * 1024;
     it->second.Run(base::make_optional<MemoryFootprintBytes>(result));
   }
 }
