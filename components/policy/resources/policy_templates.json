@@ -11472,7 +11472,7 @@
     {
       'name': 'UsbDetachableWhitelist',
       'owners': ['vpalatin@chromium.org', 'poromov@chromium.org'],
-      'type': 'list',
+      'type': 'dict',
       'schema': {
         'type': 'array',
         'items': {
@@ -17011,6 +17011,10 @@
     'doc_win_reg_loc': {
       'desc': '''Caption text of the field 'windows registry location' in the summary chart of a policy in the generated documentation''',
       'text': '''Windows registry location for Windows clients:'''
+    },
+    'doc_oma_uri': {
+      'desc': '''Caption text of the field 'oma-uri' in the summary chart of a policy in the generated documentation''',
+      'text': '''<ph name="OMA_URI">OMA-URI</ph>:'''
     },
     'doc_chrome_os_reg_loc': {
       'desc': '''Caption text of the field '<ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> registry location' in the summary chart of a policy in the generated documentation''',
