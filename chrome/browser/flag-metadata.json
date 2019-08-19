@@ -1021,7 +1021,7 @@
   {
     "name": "enable-chromeos-account-manager",
     "owners": [ "sinhak@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-cloud-print-xps",
