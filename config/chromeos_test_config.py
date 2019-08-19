@@ -624,7 +624,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'amd64-generic-full': site_config.templates.tast_vm_canary_tests,
       'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
       'betty-arcnext-release': site_config.templates.tast_vm_canary_tests,
-      'betty-pi-arc-release': site_config.templates.tast_vm_canary_tests,
+      # TODO(crbug.com/988493): Re-enable once TastVMTest starts passing on
+      # betty-arcnext-release.
+      #'betty-pi-arc-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
 
       'kumo-pre-cq': {
