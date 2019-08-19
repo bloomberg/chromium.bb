@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerExternalUma;
@@ -437,6 +438,9 @@ public class ChromeBrowserInitializer {
 
         // TODO(crbug.com/960767): Remove this in M77.
         ServiceManagerStartupUtils.cleanupSharedPreferences();
+
+        // Needed for field trial metrics to be properly collected in ServiceManager only mode.
+        FeatureUtilities.cacheNativeFlagsForServiceManagerOnlyMode();
 
         PostTask.postTask(
                 TaskTraits.BEST_EFFORT_MAY_BLOCK, LibraryPrefetcher::maybePinOrderedCodeInMemory);
