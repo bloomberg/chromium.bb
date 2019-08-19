@@ -287,7 +287,7 @@ public class NoTouchActivity extends SingleTabActivity {
     }
 
     @Override
-    protected TabCreator createTabCreator(boolean incognito) {
-        return new TouchlessTabCreator(this, getWindowAndroid(), incognito);
+    protected TabCreator createNormalTabCreator() {
+        return new TouchlessTabCreator(this, getWindowAndroid(), false /* incognito */);
     }
 }

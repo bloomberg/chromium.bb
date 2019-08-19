@@ -43,12 +43,12 @@ public abstract class SingleTabActivity extends ChromeActivity {
 
     @Override
     protected Pair<? extends TabCreator, ? extends TabCreator> createTabCreators() {
-        return Pair.create(createTabCreator(false), createTabCreator(true));
+        return Pair.create(createNormalTabCreator(), null);
     }
 
     /** Creates TabDelegates for opening new Tabs. */
-    protected TabCreator createTabCreator(boolean incognito) {
-        return new TabDelegate(incognito);
+    protected TabCreator createNormalTabCreator() {
+        return new TabDelegate(false /* incognito */);
     }
 
     @Override
