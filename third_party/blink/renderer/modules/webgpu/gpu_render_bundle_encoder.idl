@@ -6,7 +6,7 @@
 
 [
     RuntimeEnabled=WebGPU
-] interface GPURenderPassEncoder {
+] interface GPURenderBundleEncoder {
     // GPUProgrammablePassEncoder methods
     void setBindGroup(unsigned long index,
                       GPUBindGroup bindGroup,
@@ -15,15 +15,8 @@
     void popDebugGroup();
     void insertDebugMarker(DOMString markerLabel);
 
+    // GPURenderEncoderBase methods
     void setPipeline(GPURenderPipeline pipeline);
-
-    void setBlendColor(GPUColor color);
-    void setStencilReference(unsigned long reference);
-    void setViewport(float x, float y,
-                     float width, float height,
-                     float minDepth, float maxDepth);
-    void setScissorRect(unsigned long x, unsigned long y,
-                        unsigned long width, unsigned long height);
     void setIndexBuffer(GPUBuffer buffer, unsigned long long offset);
     [RaisesException] void setVertexBuffers(unsigned long startSlot,
                                             sequence<GPUBuffer> buffers,
@@ -40,6 +33,6 @@
     void drawIndexedIndirect(GPUBuffer indirectBuffer,
                              unsigned long long indirectOffset);
 
-    void executeBundles(sequence<GPURenderBundle> bundles);
-    void endPass();
+    // GPURenderBundleEncoder methods
+    GPURenderBundle finish(optional GPURenderBundleDescriptor descriptor);
 };

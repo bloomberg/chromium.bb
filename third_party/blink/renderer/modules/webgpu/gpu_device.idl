@@ -24,7 +24,7 @@
     GPUComputePipeline createComputePipeline(GPUComputePipelineDescriptor descriptor);
 
     GPUCommandEncoder createCommandEncoder(optional GPUCommandEncoderDescriptor descriptor);
-
+    GPURenderBundleEncoder createRenderBundleEncoder(GPURenderBundleEncoderDescriptor descriptor);
     GPUQueue getQueue();
 };
 

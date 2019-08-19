@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RENDER_PASS_ENCODER_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RENDER_PASS_ENCODER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RENDER_BUNDLE_ENCODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RENDER_BUNDLE_ENCODER_H_
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -12,22 +12,24 @@ namespace blink {
 
 class GPUBindGroup;
 class GPUBuffer;
-class GPUColor;
 class GPURenderBundle;
+class GPURenderBundleDescriptor;
+class GPURenderBundleEncoderDescriptor;
 class GPURenderPipeline;
 
-class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
+class GPURenderBundleEncoder : public DawnObject<DawnRenderBundleEncoder> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPURenderPassEncoder* Create(
+  static GPURenderBundleEncoder* Create(
       GPUDevice* device,
-      DawnRenderPassEncoder render_pass_encoder);
-  explicit GPURenderPassEncoder(GPUDevice* device,
-                                DawnRenderPassEncoder render_pass_encoder);
-  ~GPURenderPassEncoder() override;
+      const GPURenderBundleEncoderDescriptor* webgpu_desc);
+  explicit GPURenderBundleEncoder(
+      GPUDevice* device,
+      DawnRenderBundleEncoder render_bundle_encoder);
+  ~GPURenderBundleEncoder() override;
 
-  // gpu_render_pass_encoder.idl
+  // gpu_render_bundle_encoder.idl
   void setBindGroup(uint32_t index,
                     GPUBindGroup* bindGroup,
                     const Vector<uint64_t>& dynamicOffsets);
@@ -36,15 +38,6 @@ class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
   void insertDebugMarker(String markerLabel);
   void setPipeline(GPURenderPipeline* pipeline);
 
-  void setBlendColor(GPUColor* color);
-  void setStencilReference(uint32_t reference);
-  void setViewport(float x,
-                   float y,
-                   float width,
-                   float height,
-                   float minDepth,
-                   float maxDepth);
-  void setScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
   void setIndexBuffer(GPUBuffer* buffer, uint64_t offset);
   void setVertexBuffers(uint32_t startSlot,
                         const HeapVector<Member<GPUBuffer>>& buffers,
@@ -61,13 +54,13 @@ class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
                    uint32_t firstInstance);
   void drawIndirect(GPUBuffer* indirectBuffer, uint64_t indirectOffset);
   void drawIndexedIndirect(GPUBuffer* indirectBuffer, uint64_t indirectOffset);
-  void executeBundles(const HeapVector<Member<GPURenderBundle>>& bundles);
-  void endPass();
+
+  GPURenderBundle* finish(const GPURenderBundleDescriptor* webgpu_desc);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GPURenderPassEncoder);
+  DISALLOW_COPY_AND_ASSIGN(GPURenderBundleEncoder);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RENDER_PASS_ENCODER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RENDER_BUNDLE_ENCODER_H_
