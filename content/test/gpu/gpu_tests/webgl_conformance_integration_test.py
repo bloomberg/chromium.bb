@@ -468,27 +468,25 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       system_info = browser.GetSystemInfo()
       if system_info:
         gpu_info = system_info.gpu
-        # Get tags for all GPUs
-        for gpu_device in gpu_info.devices:
-          driver_vendor = gpu_helper.GetGpuDriverVendor(gpu_device)
-          driver_version = gpu_helper.GetGpuDriverVersion(gpu_device)
-          if driver_vendor and driver_version:
-            driver_vendor = driver_vendor.lower()
-            driver_version = driver_version.lower()
+        driver_vendor = gpu_helper.GetGpuDriverVendor(gpu_info)
+        driver_version = gpu_helper.GetGpuDriverVersion(gpu_info)
+        if driver_vendor and driver_version:
+          driver_vendor = driver_vendor.lower()
+          driver_version = driver_version.lower()
 
-            # Extract the substring before first space/dash/underscore
-            matcher = re.compile(r'^([a-z\d]+)([\s\-_]+[a-z\d]+)+$')
-            match = matcher.match(driver_vendor)
-            if match:
-              driver_vendor = match.group(1)
+          # Extract the substring before first space/dash/underscore
+          matcher = re.compile(r'^([a-z\d]+)([\s\-_]+[a-z\d]+)+$')
+          match = matcher.match(driver_vendor)
+          if match:
+            driver_vendor = match.group(1)
 
-            for tag in gpu_helper.EXPECTATIONS_DRIVER_TAGS:
-              match = gpu_helper.MatchDriverTag(tag)
-              assert match
-              if (driver_vendor == match.group(1) and
-                  gpu_helper.EvaluateVersionComparison(
-                      driver_version, match.group(2), match.group(3))):
-                tags.append(tag)
+          for tag in gpu_helper.EXPECTATIONS_DRIVER_TAGS:
+            match = gpu_helper.MatchDriverTag(tag)
+            assert match
+            if (driver_vendor == match.group(1) and
+                gpu_helper.EvaluateVersionComparison(
+                    driver_version, match.group(2), match.group(3))):
+              tags.append(tag)
     return tags
 
   @classmethod

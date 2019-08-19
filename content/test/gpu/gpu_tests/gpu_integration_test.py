@@ -298,27 +298,23 @@ class GpuIntegrationTest(
     system_info = browser.GetSystemInfo()
     if system_info:
       gpu_info = system_info.gpu
-      # Add tags for each GPU device
-      for gpu_device in gpu_info.devices:
-        gpu_vendor = gpu_helper.GetGpuVendorString(gpu_device)
-        gpu_device_id = gpu_helper.GetGpuDeviceId(gpu_device)
-        # The gpu device id tag will contain both the vendor and device id
-        # separated by a '-'.
-        try:
-          # If the device id is an integer then it will be added as
-          # a hexadecimal to the tag
-          gpu_device_tag = '%s-0x%x' % (gpu_vendor, gpu_device_id)
-        except TypeError:
-          # if the device id is not an integer it will be added as
-          # a string to the tag.
-          gpu_device_tag = '%s-%s' % (gpu_vendor, gpu_device_id)
-        tags.extend([re.sub('[ _]', '-', tag) for tag in [gpu_vendor,
-                                                          gpu_device_tag]])
+      gpu_vendor = gpu_helper.GetGpuVendorString(gpu_info)
+      gpu_device_id = gpu_helper.GetGpuDeviceId(gpu_info)
+      # The gpu device id tag will contain both the vendor and device id
+      # separated by a '-'.
+      try:
+        # If the device id is an integer then it will be added as
+        # a hexadecimal to the tag
+        gpu_device_tag = '%s-0x%x' % (gpu_vendor, gpu_device_id)
+      except TypeError:
+        # if the device id is not an integer it will be added as
+        # a string to the tag.
+        gpu_device_tag = '%s-%s' % (gpu_vendor, gpu_device_id)
       angle_renderer = gpu_helper.GetANGLERenderer(gpu_info)
       cmd_decoder = gpu_helper.GetCommandDecoder(gpu_info)
       # all spaces and underscores in the tag will be replaced by dashes
-      tags.extend([re.sub('[ _]', '-', tag) for tag in [angle_renderer,
-                                                        cmd_decoder]])
+      tags.extend([re.sub('[ _]', '-', tag) for tag in [
+          gpu_vendor, gpu_device_tag, angle_renderer, cmd_decoder]])
     # If additional options have been set via '--extra-browser-args' check for
     # those which map to expectation tags. The '_browser_backend' attribute may
     # not exist in unit tests.

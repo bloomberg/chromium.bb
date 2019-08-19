@@ -47,44 +47,52 @@ def _GetANGLEGpuDeviceId(device_string):
     return None
 
 
-def GetGpuVendorString(gpu_device):
-  if gpu_device:
-    vendor_string = gpu_device.vendor_string
-    angle_vendor_string = _ParseANGLEGpuVendorString(
-      gpu_device.device_string)
-    vendor_id = gpu_device.vendor_id
-    if vendor_id == 0x10DE:
-      return 'nvidia'
-    elif vendor_id == 0x1002:
-      return 'amd'
-    elif vendor_id == 0x8086:
-      return 'intel'
-    elif angle_vendor_string:
-      return angle_vendor_string.lower()
-    elif vendor_string:
-      return vendor_string.split(' ')[0].lower()
+def GetGpuVendorString(gpu_info):
+  if gpu_info:
+    primary_gpu = gpu_info.devices[0]
+    if primary_gpu:
+      vendor_string = primary_gpu.vendor_string
+      angle_vendor_string = _ParseANGLEGpuVendorString(
+        primary_gpu.device_string)
+      vendor_id = primary_gpu.vendor_id
+      if vendor_id == 0x10DE:
+        return 'nvidia'
+      elif vendor_id == 0x1002:
+        return 'amd'
+      elif vendor_id == 0x8086:
+        return 'intel'
+      elif angle_vendor_string:
+        return angle_vendor_string.lower()
+      elif vendor_string:
+        return vendor_string.split(' ')[0].lower()
   return 'unknown_gpu'
 
 
-def GetGpuDeviceId(gpu_device):
-  if gpu_device:
-    return (
-        gpu_device.device_id
-        or _GetANGLEGpuDeviceId(
-            gpu_device.device_string)
-        or gpu_device.device_string)
+def GetGpuDeviceId(gpu_info):
+  if gpu_info:
+    primary_gpu = gpu_info.devices[0]
+    if primary_gpu:
+      return (
+          primary_gpu.device_id
+          or _GetANGLEGpuDeviceId(
+              primary_gpu.device_string)
+          or primary_gpu.device_string)
   return 0
 
 
-def GetGpuDriverVendor(gpu_device):
-  if gpu_device:
-    return gpu_device.driver_vendor
+def GetGpuDriverVendor(gpu_info):
+  if gpu_info:
+    primary_gpu = gpu_info.devices[0]
+    if primary_gpu:
+      return primary_gpu.driver_vendor
   return None
 
 
-def GetGpuDriverVersion(gpu_device):
-  if gpu_device:
-    return gpu_device.driver_version
+def GetGpuDriverVersion(gpu_info):
+  if gpu_info:
+    primary_gpu = gpu_info.devices[0]
+    if primary_gpu:
+      return primary_gpu.driver_version
   return None
 
 
