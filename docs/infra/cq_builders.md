@@ -219,7 +219,7 @@ builder.
     * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint)
     * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/)
 
-* [linux_layout_tests_layout_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_layout_tests_layout_ng) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_layout_tests_layout_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_layout_tests_layout_ng))
+* [linux_layout_tests_layout_ng_disabled](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_layout_tests_layout_ng_disabled) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_layout_tests_layout_ng_disabled)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_layout_tests_layout_ng_disabled))
 
   Path regular expressions:
     * [`//third_party/blink/renderer/core/editing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/editing/)
