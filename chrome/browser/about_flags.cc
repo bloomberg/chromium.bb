@@ -4333,6 +4333,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBundledHTTPExchangesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBundledHTTPExchanges)},
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+    {"profile-menu-revamp", flag_descriptions::kProfileMenuRevampName,
+     flag_descriptions::kProfileMenuRevampDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kProfileMenuRevamp)},
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

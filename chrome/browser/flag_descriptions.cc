@@ -3587,6 +3587,10 @@ const char kClickToCallUIDescription[] =
     "Enables click to call feature signals to be handled on desktop by showing "
     "a list of user's available devices with telephony functionality.";
 
+const char kProfileMenuRevampName[] = "Profile menu revamp";
+const char kProfileMenuRevampDescription[] =
+    "Enables the new version of the profile menu (aka user menu).";
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)

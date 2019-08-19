@@ -2768,6 +2768,11 @@
     "expiry_milestone": 75
   },
   {
+    "name": "profile-menu-revamp",
+    "owners": [ "tangltom" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "progress-bar-throttle",
     "owners": [ "mdjones" ],
     "expiry_milestone": 76

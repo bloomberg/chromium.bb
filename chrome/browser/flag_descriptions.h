@@ -2161,6 +2161,9 @@ extern const char kClickToCallContextMenuForSelectedTextDescription[];
 extern const char kClickToCallUIName[];
 extern const char kClickToCallUIDescription[];
 
+extern const char kProfileMenuRevampName[];
+extern const char kProfileMenuRevampDescription[];
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
