@@ -70,9 +70,10 @@ void SetUpOnUI(
           },
           process_manager);
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), std::move(headers),
-                                browser_context_getter));
+  RunOrPostTaskOnThread(FROM_HERE,
+                        ServiceWorkerContextWrapper::GetCoreThreadId(),
+                        base::BindOnce(std::move(callback), std::move(headers),
+                                       browser_context_getter));
 }
 
 }  // namespace
@@ -107,8 +108,8 @@ void ServiceWorkerUpdateChecker::Start(UpdateStatusCallback callback) {
   DCHECK(!scripts_to_compare_.empty());
   callback_ = std::move(callback);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
       base::BindOnce(&SetUpOnUI, context_->process_manager()->AsWeakPtr(),
                      base::Unretained(this),
                      base::BindOnce(&ServiceWorkerUpdateChecker::DidSetUpOnUI,

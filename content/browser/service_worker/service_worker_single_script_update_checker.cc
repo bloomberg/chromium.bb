@@ -217,7 +217,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   const int request_id =
       NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
   network_loader_ = ServiceWorkerUpdatedScriptLoader::
-      ThrottlingURLLoaderIOWrapper::CreateLoaderAndStart(
+      ThrottlingURLLoaderCoreWrapper::CreateLoaderAndStart(
           loader_factory->Clone(), browser_context_getter, MSG_ROUTING_NONE,
           request_id, network::mojom::kURLLoadOptionNone, resource_request,
           std::move(network_client), kUpdateCheckTrafficAnnotation);
@@ -684,7 +684,7 @@ void ServiceWorkerSingleScriptUpdateChecker::Finish(
 ServiceWorkerSingleScriptUpdateChecker::PausedState::PausedState(
     std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
     std::unique_ptr<
-        ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderIOWrapper>
+        ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
         network_loader,
     network::mojom::URLLoaderClientRequest network_client_request,
     mojo::ScopedDataPipeConsumerHandle network_consumer,
