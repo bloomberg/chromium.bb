@@ -612,6 +612,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 #if !(defined(ADDRESS_SANITIZER) || defined(DEBUG))
         // Zip tests times out too often on ASAN and DEBUG.
         ZipCase("dirContextMenuZip"),
+        ZipCase("dirEjectContextMenuZip"),
 #endif
         TestCase("dirContextMenuRecent"),
         TestCase("dirContextMenuMyFiles").EnableMyFilesVolume(),
