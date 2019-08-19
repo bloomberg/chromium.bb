@@ -544,7 +544,11 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       Shell::Get()->split_view_controller()->InSplitViewMode();
   if (in_split_view_mode ||
       (state_.visibility_state != SHELF_AUTO_HIDE &&
-       state_.window_state == WorkspaceWindowState::kMaximized)) {
+       state_.window_state == WorkspaceWindowState::kMaximized &&
+       !Shell::Get()
+            ->home_screen_controller()
+            ->home_launcher_gesture_handler()
+            ->GetActiveWindow())) {
     return SHELF_BACKGROUND_MAXIMIZED;
   }
 
@@ -670,6 +674,10 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
   if (display_.id() != display_id)
     return;
 
+  if (IsTabletModeEnabled()) {
+    is_home_launcher_shown_ = shown;
+    is_home_launcher_target_position_shown_ = false;
+  }
   is_app_list_visible_ = shown;
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
 }
