@@ -16,6 +16,19 @@ public class SingleTabModelSelector extends TabModelSelectorBase {
             boolean incognito, boolean blockNewWindows) {
         super(tabCreatorManager);
         initialize(incognito, new SingleTabModel(activity, incognito, blockNewWindows));
+
+        TabModelObserver tabModelObserver = new EmptyTabModelObserver() {
+            @Override
+            public void didCloseTab(int tabId, boolean incognito) {
+                // TabModelSelectorImpl handles the equivalent case of closing the last tab in
+                // TabModelSelectorImpl#requestToShowTab, which we don't have for this
+                // TabModelSelector, so we do it here instead.
+                if (getCurrentModel().getTabAt(0) == null) notifyChanged();
+            }
+        };
+        for (TabModel model : getModels()) {
+            model.addObserver(tabModelObserver);
+        }
     }
 
     public void setTab(Tab tab) {

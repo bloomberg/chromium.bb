@@ -39,20 +39,25 @@ public class SingleTabModel implements TabModel {
     void setTab(Tab tab) {
         Tab oldTab = mTab;
         mTab = tab;
-        assert mTab.isIncognito() == mIsIncognito;
-        if (mBlockNewWindows) nativePermanentlyBlockAllNewWindows(mTab);
+        if (tab != null) {
+            assert mTab.isIncognito() == mIsIncognito;
+            if (mBlockNewWindows) nativePermanentlyBlockAllNewWindows(mTab);
 
-        for (TabModelObserver observer : mObservers) {
-            observer.didAddTab(tab, TabLaunchType.FROM_LINK);
-            observer.didSelectTab(tab, TabSelectionType.FROM_USER, Tab.INVALID_TAB_ID);
-        }
+            for (TabModelObserver observer : mObservers) {
+                observer.didAddTab(tab, TabLaunchType.FROM_LINK);
+                observer.didSelectTab(tab, TabSelectionType.FROM_USER, Tab.INVALID_TAB_ID);
+            }
 
-        int state = ApplicationStatus.getStateForActivity(mActivity);
-        if (state == ActivityState.CREATED || state == ActivityState.STARTED
-                || state == ActivityState.RESUMED) {
-            mTab.show(TabSelectionType.FROM_USER);
+            int state = ApplicationStatus.getStateForActivity(mActivity);
+            if (state == ActivityState.CREATED || state == ActivityState.STARTED
+                    || state == ActivityState.RESUMED) {
+                mTab.show(TabSelectionType.FROM_USER);
+            }
         }
         if (oldTab != null && oldTab.isInitialized()) {
+            for (TabModelObserver observer : mObservers) {
+                observer.willCloseTab(oldTab, false);
+            }
             for (TabModelObserver observer : mObservers) {
                 observer.didCloseTab(oldTab.getId(), oldTab.isIncognito());
             }
@@ -93,11 +98,9 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public boolean closeTab(Tab tab, boolean animate, boolean uponExit, boolean canUndo) {
-        if (mTab != null && mTab.getId() == tab.getId()) {
-            completeActivity();
-            return true;
-        }
-        return false;
+        if (mTab == null || mTab.getId() != tab.getId()) return false;
+        closeTabAndFinish();
+        return true;
     }
 
     @Override
@@ -111,7 +114,8 @@ public class SingleTabModel implements TabModel {
      * finishes and removes from recents. We use mBlockNewWindows flag to distinguish the user
      * of this model.
      */
-    private void completeActivity() {
+    private void closeTabAndFinish() {
+        setTab(null);
         if (mBlockNewWindows) {
             mActivity.finish();
         } else {
@@ -121,7 +125,13 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public void closeMultipleTabs(List<Tab> tabs, boolean canUndo) {
-        completeActivity();
+        if (mTab == null) return;
+        for (Tab tab : tabs) {
+            if (tab.getId() == mTab.getId()) {
+                closeTabAndFinish();
+                return;
+            }
+        }
     }
 
     @Override
@@ -131,7 +141,7 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public void closeAllTabs(boolean allowDelegation, boolean uponExit) {
-        completeActivity();
+        closeTabAndFinish();
     }
 
     // Tab retrieval functions.
