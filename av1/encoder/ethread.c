@@ -27,6 +27,14 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   td->rd_counts.compound_ref_used_flag |=
       td_t->rd_counts.compound_ref_used_flag;
   td->rd_counts.skip_mode_used_flag |= td_t->rd_counts.skip_mode_used_flag;
+
+  for (int i = 0; i < FRAME_UPDATE_TYPES; i++) {
+    for (int j = 0; j < TX_SIZES_ALL; j++) {
+      for (int k = 0; k < TX_TYPES; k++)
+        td->rd_counts.tx_type_used[i][j][k] +=
+            td_t->rd_counts.tx_type_used[i][j][k];
+    }
+  }
 }
 
 static void update_delta_lf_for_row_mt(AV1_COMP *cpi) {

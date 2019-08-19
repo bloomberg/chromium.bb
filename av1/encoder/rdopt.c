@@ -1626,7 +1626,8 @@ static INLINE void sort_probability(float prob[], int txk[], int len) {
 
 static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
                             int blk_row, int blk_col, TxSetType tx_set_type,
-                            TX_TYPE_PRUNE_MODE prune_mode, int *txk_map) {
+                            TX_TYPE_PRUNE_MODE prune_mode, int *txk_map,
+                            uint16_t allowed_tx_mask) {
   int tx_type_table_2D[16] = {
     DCT_DCT,      DCT_ADST,      DCT_FLIPADST,      V_DCT,
     ADST_DCT,     ADST_ADST,     ADST_FLIPADST,     V_ADST,
@@ -1701,7 +1702,7 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   float max_score = 0.0f;
   for (int i = 0; i < 16; i++) {
     if (scores_2D[i] > max_score &&
-        av1_ext_tx_used[tx_set_type][tx_type_table_2D[i]]) {
+        (allowed_tx_mask & (1 << tx_type_table_2D[i]))) {
       max_score = scores_2D[i];
       max_score_i = i;
     }
@@ -3080,11 +3081,41 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   } else {
     assert(plane == 0);
     allowed_tx_mask = ext_tx_used_flag;
+    int num_allowed = 0;
+    const FRAME_UPDATE_TYPE update_type = get_frame_update_type(cpi);
+    const int *tx_type_probs = cpi->tx_type_probs[update_type][tx_size];
+    int i;
+
+    if (cpi->sf.tx_type_search.prune_tx_type_using_stats) {
+      const int thresh = cpi->tx_type_probs_thresh[update_type];
+      uint16_t prune = 0;
+      int max_prob = -1;
+      int max_idx = 0;
+      for (i = 0; i < TX_TYPES; i++) {
+        if (tx_type_probs[i] > max_prob && (allowed_tx_mask & (1 << i))) {
+          max_prob = tx_type_probs[i];
+          max_idx = i;
+        }
+      }
+
+      for (i = 0; i < TX_TYPES; i++) {
+        if (tx_type_probs[i] < thresh && i != max_idx) prune |= (1 << i);
+      }
+      allowed_tx_mask &= (~prune);
+    }
+
+    for (i = 0; i < TX_TYPES; i++) {
+      if (allowed_tx_mask & (1 << i)) num_allowed++;
+    }
+    assert(num_allowed > 0);
+
+    // Go through ML model only if num_allowed > 5.
     // !fast_tx_search && txk_end != txk_start && plane == 0
-    if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE && is_inter) {
-      const uint16_t prune =
-          prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col, tx_set_type,
-                      cpi->sf.tx_type_search.prune_mode, txk_map);
+    if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE && is_inter &&
+        num_allowed > 5) {
+      const uint16_t prune = prune_tx_2D(
+          x, plane_bsize, tx_size, blk_row, blk_col, tx_set_type,
+          cpi->sf.tx_type_search.prune_mode, txk_map, allowed_tx_mask);
       allowed_tx_mask &= (~prune);
     }
   }

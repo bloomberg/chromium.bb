@@ -182,23 +182,6 @@ static void update_rc_counts(AV1_COMP *cpi) {
   update_gf_group_index(cpi);
 }
 
-// Get update type of the current frame.
-static INLINE FRAME_UPDATE_TYPE get_frame_update_type(const AV1_COMP *cpi) {
-  const GF_GROUP *const gf_group = &cpi->gf_group;
-  if (gf_group->size == 0) {
-    // Special case 1: happens at the first frame of a video.
-    return KF_UPDATE;
-  }
-  if (gf_group->index == gf_group->size) {
-    // Special case 2: happens at the start of next GF group, or at the end of
-    // the key-frame group. So, not marked in gf_group->update_type array, but
-    // can be inferred implicitly.
-    return cpi->rc.source_alt_ref_active ? OVERLAY_UPDATE : GF_UPDATE;
-  }
-  // General case.
-  return gf_group->update_type[gf_group->index];
-}
-
 static void set_ext_overrides(AV1_COMP *const cpi,
                               EncodeFrameParams *const frame_params) {
   // Overrides the defaults with the externally supplied values with

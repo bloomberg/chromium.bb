@@ -4613,6 +4613,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
   av1_zero(*td->counts);
   av1_zero(rdc->comp_pred_diff);
+  av1_zero(rdc->tx_type_used);
 
   // Reset the flag.
   cpi->intrabc_used = 0;
@@ -4986,6 +4987,29 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
   if (cm->delta_q_info.delta_q_present_flag && cpi->deltaq_used == 0) {
     cm->delta_q_info.delta_q_present_flag = 0;
+  }
+
+  if (cpi->sf.tx_type_search.prune_tx_type_using_stats) {
+    const FRAME_UPDATE_TYPE update_type = get_frame_update_type(cpi);
+
+    for (i = 0; i < TX_SIZES_ALL; i++) {
+      int sum = 0;
+      int j;
+      int left = 1024;
+
+      for (j = 0; j < TX_TYPES; j++)
+        sum += cpi->td.rd_counts.tx_type_used[update_type][i][j];
+
+      for (j = TX_TYPES - 1; j >= 0; j--) {
+        int new_prob =
+            sum ? 1024 * cpi->td.rd_counts.tx_type_used[update_type][i][j] / sum
+                : (j ? 0 : 1024);
+        int prob = (cpi->tx_type_probs[update_type][i][j] + new_prob) >> 1;
+        left -= prob;
+        if (j == 0) prob += left;
+        cpi->tx_type_probs[update_type][i][j] = prob;
+      }
+    }
   }
 }
 

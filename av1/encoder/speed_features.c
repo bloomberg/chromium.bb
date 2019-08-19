@@ -387,6 +387,7 @@ static void set_good_speed_features_framesize_independent(
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->adaptive_txb_search_level = boosted ? 2 : 3;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
+    sf->tx_type_search.prune_tx_type_using_stats = 1;
   }
 
   if (speed >= 5) {
@@ -757,6 +758,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->tx_type_search.fast_intra_tx_type_search = 0;
   sf->tx_type_search.fast_inter_tx_type_search = 0;
   sf->tx_type_search.skip_tx_search = 0;
+  sf->tx_type_search.prune_tx_type_using_stats = 0;
   sf->selective_ref_frame = 0;
   sf->less_rectangular_check_level = 0;
   sf->use_square_partition_only_threshold = BLOCK_128X128;

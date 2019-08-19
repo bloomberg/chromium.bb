@@ -183,6 +183,9 @@ typedef struct {
   // skip remaining transform type search when we found the rdcost of skip is
   // better than applying transform
   int skip_tx_search;
+
+  // Prune tx type search using previous frame stats.
+  int prune_tx_type_using_stats;
 } TX_TYPE_SEARCH;
 
 enum {

@@ -603,6 +603,7 @@ typedef struct RD_COUNTS {
   int global_motion_used[REF_FRAMES];
   int compound_ref_used_flag;
   int skip_mode_used_flag;
+  int tx_type_used[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES];
 } RD_COUNTS;
 
 typedef struct ThreadData {
@@ -977,6 +978,9 @@ typedef struct AV1_COMP {
   int64_t vbp_threshold_sad;
   int64_t vbp_threshold_copy;
   BLOCK_SIZE vbp_bsize_min;
+
+  int tx_type_probs[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES];
+  int tx_type_probs_thresh[FRAME_UPDATE_TYPES];
 
   // Multi-threading
   int num_workers;
@@ -1442,6 +1446,23 @@ static INLINE int is_frame_tpl_eligible(AV1_COMP *const cpi) {
 #else
   return is_frame_arf_and_tpl_eligible(cpi);
 #endif  // ENABLE_KF_TPL
+}
+
+// Get update type of the current frame.
+static INLINE FRAME_UPDATE_TYPE get_frame_update_type(const AV1_COMP *cpi) {
+  const GF_GROUP *const gf_group = &cpi->gf_group;
+  if (gf_group->size == 0) {
+    // Special case 1: happens at the first frame of a video.
+    return KF_UPDATE;
+  }
+  if (gf_group->index == gf_group->size) {
+    // Special case 2: happens at the start of next GF group, or at the end of
+    // the key-frame group. So, not marked in gf_group->update_type array, but
+    // can be inferred implicitly.
+    return cpi->rc.source_alt_ref_active ? OVERLAY_UPDATE : GF_UPDATE;
+  }
+  // General case.
+  return gf_group->update_type[gf_group->index];
 }
 
 #if CONFIG_COLLECT_PARTITION_STATS == 2
