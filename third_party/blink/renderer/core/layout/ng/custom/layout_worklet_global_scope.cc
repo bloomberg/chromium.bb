@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet_global_scope.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_layout_callback.h"
@@ -15,9 +15,9 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
-#include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
-#include "third_party/blink/renderer/core/layout/custom/document_layout_definition.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/css_layout_definition.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/document_layout_definition.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"

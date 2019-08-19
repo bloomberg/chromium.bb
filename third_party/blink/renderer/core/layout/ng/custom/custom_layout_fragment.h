@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_CUSTOM_LAYOUT_FRAGMENT_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_CUSTOM_LAYOUT_FRAGMENT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_CUSTOM_CUSTOM_LAYOUT_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_CUSTOM_CUSTOM_LAYOUT_FRAGMENT_H_
 
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_scope.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class NGLayoutInputNode;
 class CustomLayoutChild;
 class LayoutBox;
 struct LogicalSize;
@@ -53,7 +54,7 @@ class CustomLayoutFragment : public ScriptWrappable {
   ScriptValue data(ScriptState*) const;
 
   const NGLayoutResult& GetLayoutResult() const;
-  LayoutBox* GetLayoutBox() const;
+  const NGLayoutInputNode& GetLayoutNode() const;
 
   bool IsValid() const { return token_->IsValid(); }
 
@@ -94,4 +95,4 @@ class CustomLayoutFragment : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_CUSTOM_LAYOUT_FRAGMENT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_CUSTOM_CUSTOM_LAYOUT_FRAGMENT_H_

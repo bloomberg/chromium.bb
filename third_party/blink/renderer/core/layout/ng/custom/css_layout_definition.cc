@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/css_layout_definition.h"
 
 #include <memory>
 
@@ -18,10 +18,11 @@
 #include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_constraints.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_scope.h"
-#include "third_party/blink/renderer/core/layout/custom/fragment_result_options.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_constraints.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_scope.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/fragment_result_options.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"

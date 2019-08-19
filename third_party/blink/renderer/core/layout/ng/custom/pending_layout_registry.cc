@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/custom/pending_layout_registry.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/pending_layout_registry.h"
 
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/node.h"

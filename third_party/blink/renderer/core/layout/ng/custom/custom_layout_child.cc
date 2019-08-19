@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_scope.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_work_task.h"
-#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/css_layout_definition.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_scope.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_work_task.h"
 
 namespace blink {
 
 CustomLayoutChild::CustomLayoutChild(const CSSLayoutDefinition& definition,
-                                     LayoutBox* box)
-    : box_(box),
+                                     NGLayoutInputNode node)
+    : node_(node),
       style_map_(MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
-          box->GetDocument(),
-          box->StyleRef(),
+          node.GetDocument(),
+          node.Style(),
           definition.ChildNativeInvalidationProperties(),
           definition.ChildCustomInvalidationProperties())) {}
 
@@ -31,7 +30,7 @@ ScriptPromise CustomLayoutChild::layoutNextFragment(
   // A layout child may be invalid if it has been removed from the tree (it is
   // possible for a web developer to hold onto a LayoutChild object after its
   // underlying LayoutObject has been destroyed).
-  if (!box_ || !token_->IsValid()) {
+  if (!node_ || !token_->IsValid()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,

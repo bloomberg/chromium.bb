@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_work_task.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_work_task.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_constraints_options.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
-#include "third_party/blink/renderer/core/layout/layout_block.h"
-#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_constraints_options.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -34,7 +32,7 @@ CustomLayoutWorkTask::~CustomLayoutWorkTask() = default;
 void CustomLayoutWorkTask::Run(const NGConstraintSpace& parent_space,
                                const ComputedStyle& parent_style) {
   DCHECK(token_->IsValid());
-  NGBlockNode node(child_->GetLayoutBox());
+  NGLayoutInputNode node = child_->GetLayoutNode();
   NGConstraintSpaceBuilder builder(parent_space, node.Style().GetWritingMode(),
                                    /* is_new_fc */ true);
   SetOrthogonalFallbackInlineSizeIfNeeded(parent_style, node, &builder);

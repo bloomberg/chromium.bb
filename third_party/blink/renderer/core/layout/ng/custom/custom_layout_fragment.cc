@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 
 namespace blink {
@@ -32,8 +32,8 @@ const NGLayoutResult& CustomLayoutFragment::GetLayoutResult() const {
   return *layout_result_;
 }
 
-LayoutBox* CustomLayoutFragment::GetLayoutBox() const {
-  return child_->GetLayoutBox();
+const NGLayoutInputNode& CustomLayoutFragment::GetLayoutNode() const {
+  return child_->GetLayoutNode();
 }
 
 ScriptValue CustomLayoutFragment::data(ScriptState* script_state) const {

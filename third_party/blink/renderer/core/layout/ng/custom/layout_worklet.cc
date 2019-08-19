@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/layout/custom/document_layout_definition.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope_proxy.h"
-#include "third_party/blink/renderer/core/layout/custom/pending_layout_registry.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/document_layout_definition.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet_global_scope_proxy.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/pending_layout_registry.h"
 
 namespace blink {
 
