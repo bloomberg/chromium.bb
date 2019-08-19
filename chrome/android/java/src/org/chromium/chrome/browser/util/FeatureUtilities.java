@@ -284,7 +284,7 @@ public class FeatureUtilities {
         return sServiceManagerForDownloadResumption && isNetworkServiceEnabled();
     }
 
-    private static void cacheServiceManagerForBackgroundPrefetch() {
+    public static void cacheServiceManagerForBackgroundPrefetch() {
         boolean backgroundPrefetchInReducedMode = ChromeFeatureList.isEnabled(
                 ChromeFeatureList.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH);
 
