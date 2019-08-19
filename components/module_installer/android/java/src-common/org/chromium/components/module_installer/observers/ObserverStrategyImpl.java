@@ -12,7 +12,7 @@ import org.chromium.components.module_installer.ModuleInstaller;
 import java.util.List;
 
 /** Strategy utilizing ModuleInstaller and ApplicationStatus. */
-class ObserverStrategyImpl implements ObserverStrategy {
+/* package */ class ObserverStrategyImpl implements ObserverStrategy {
     @Override
     public ModuleInstaller getModuleInstaller() {
         return ModuleInstaller.getInstance();

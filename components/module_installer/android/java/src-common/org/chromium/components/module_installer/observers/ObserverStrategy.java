@@ -11,8 +11,8 @@ import org.chromium.components.module_installer.ModuleInstaller;
 import java.util.List;
 
 /** Interface outlining the necessary strategy to load activities and install modules. */
-interface ObserverStrategy {
-    public ModuleInstaller getModuleInstaller();
-    public List<Activity> getRunningActivities();
-    public int getStateForActivity(Activity activity);
+/* package */ interface ObserverStrategy {
+    ModuleInstaller getModuleInstaller();
+    List<Activity> getRunningActivities();
+    int getStateForActivity(Activity activity);
 }
