@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 
 #include <stddef.h>
 #include <algorithm>
@@ -49,15 +49,14 @@ void UpdateAPICount(blink::WebUserMediaRequest::MediaType media_type) {
 
 }  // namespace
 
-UserMediaClientImpl::Request::Request(
-    std::unique_ptr<UserMediaRequestInfo> request)
+UserMediaClient::Request::Request(std::unique_ptr<UserMediaRequestInfo> request)
     : user_media_request_(std::move(request)) {
   DCHECK(user_media_request_);
   DCHECK(apply_constraints_request_.IsNull());
   DCHECK(web_track_to_stop_.IsNull());
 }
 
-UserMediaClientImpl::Request::Request(
+UserMediaClient::Request::Request(
     const blink::WebApplyConstraintsRequest& request)
     : apply_constraints_request_(request) {
   DCHECK(!apply_constraints_request_.IsNull());
@@ -65,7 +64,7 @@ UserMediaClientImpl::Request::Request(
   DCHECK(web_track_to_stop_.IsNull());
 }
 
-UserMediaClientImpl::Request::Request(
+UserMediaClient::Request::Request(
     const blink::WebMediaStreamTrack& web_track_to_stop)
     : web_track_to_stop_(web_track_to_stop) {
   DCHECK(!web_track_to_stop_.IsNull());
@@ -73,7 +72,7 @@ UserMediaClientImpl::Request::Request(
   DCHECK(apply_constraints_request_.IsNull());
 }
 
-UserMediaClientImpl::Request::Request(Request&& other)
+UserMediaClient::Request::Request(Request&& other)
     : user_media_request_(std::move(other.user_media_request_)),
       apply_constraints_request_(other.apply_constraints_request_),
       web_track_to_stop_(other.web_track_to_stop_) {
@@ -90,48 +89,47 @@ UserMediaClientImpl::Request::Request(Request&& other)
 #endif
 }
 
-UserMediaClientImpl::Request& UserMediaClientImpl::Request::operator=(
-    Request&& other) = default;
-UserMediaClientImpl::Request::~Request() = default;
+UserMediaClient::Request& UserMediaClient::Request::operator=(Request&& other) =
+    default;
+UserMediaClient::Request::~Request() = default;
 
 std::unique_ptr<UserMediaRequestInfo>
-UserMediaClientImpl::Request::MoveUserMediaRequest() {
+UserMediaClient::Request::MoveUserMediaRequest() {
   return std::move(user_media_request_);
 }
 
-UserMediaClientImpl::UserMediaClientImpl(
+UserMediaClient::UserMediaClient(
     LocalFrame* frame,
     std::unique_ptr<UserMediaProcessor> user_media_processor,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : frame_(frame),
       user_media_processor_(std::move(user_media_processor)),
       apply_constraints_processor_(new ApplyConstraintsProcessor(
-          WTF::BindRepeating(&UserMediaClientImpl::GetMediaDevicesDispatcher,
+          WTF::BindRepeating(&UserMediaClient::GetMediaDevicesDispatcher,
                              WTF::Unretained(this)),
           std::move(task_runner))) {
   if (frame_) {
     // WTF::Unretained is safe because the |frame_| owns UMCI.
     frame_->SetIsCapturingMediaCallback(WTF::BindRepeating(
-        &UserMediaClientImpl::IsCapturing, WTF::Unretained(this)));
+        &UserMediaClient::IsCapturing, WTF::Unretained(this)));
   }
 }
 
 // WTF::Unretained(this) is safe here because |this| owns
 // |user_media_processor_|.
-UserMediaClientImpl::UserMediaClientImpl(
+UserMediaClient::UserMediaClient(
     LocalFrame* frame,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : UserMediaClientImpl(
+    : UserMediaClient(
           frame,
           std::make_unique<UserMediaProcessor>(
               frame,
-              WTF::BindRepeating(
-                  &UserMediaClientImpl::GetMediaDevicesDispatcher,
-                  WTF::Unretained(this)),
+              WTF::BindRepeating(&UserMediaClient::GetMediaDevicesDispatcher,
+                                 WTF::Unretained(this)),
               frame->GetTaskRunner(blink::TaskType::kInternalMedia)),
           std::move(task_runner)) {}
 
-UserMediaClientImpl::~UserMediaClientImpl() {
+UserMediaClient::~UserMediaClient() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Force-close all outstanding user media requests and local sources here,
   // before the outstanding WeakPtrs are invalidated, to ensure a clean
@@ -139,7 +137,7 @@ UserMediaClientImpl::~UserMediaClientImpl() {
   DeleteAllUserMediaRequests();
 }
 
-void UserMediaClientImpl::RequestUserMedia(
+void UserMediaClient::RequestUserMedia(
     const blink::WebUserMediaRequest& web_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!web_request.IsNull());
@@ -181,7 +179,7 @@ void UserMediaClientImpl::RequestUserMedia(
     MaybeProcessNextRequestInfo();
 }
 
-void UserMediaClientImpl::ApplyConstraints(
+void UserMediaClient::ApplyConstraints(
     const blink::WebApplyConstraintsRequest& web_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -190,18 +188,17 @@ void UserMediaClientImpl::ApplyConstraints(
     MaybeProcessNextRequestInfo();
 }
 
-void UserMediaClientImpl::StopTrack(
-    const blink::WebMediaStreamTrack& web_track) {
+void UserMediaClient::StopTrack(const blink::WebMediaStreamTrack& web_track) {
   pending_request_infos_.push_back(Request(web_track));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }
 
-bool UserMediaClientImpl::IsCapturing() {
+bool UserMediaClient::IsCapturing() {
   return user_media_processor_->HasActiveSources();
 }
 
-void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
+void UserMediaClient::MaybeProcessNextRequestInfo() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_processing_request_ || pending_request_infos_.empty())
     return;
@@ -215,12 +212,12 @@ void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
   if (current_request.IsUserMedia()) {
     user_media_processor_->ProcessRequest(
         current_request.MoveUserMediaRequest(),
-        WTF::Bind(&UserMediaClientImpl::CurrentRequestCompleted,
+        WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
                   WTF::Unretained(this)));
   } else if (current_request.IsApplyConstraints()) {
     apply_constraints_processor_->ProcessRequest(
         current_request.apply_constraints_request(),
-        WTF::Bind(&UserMediaClientImpl::CurrentRequestCompleted,
+        WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
                   WTF::Unretained(this)));
   } else {
     DCHECK(current_request.IsStopTrack());
@@ -228,27 +225,26 @@ void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
         blink::WebPlatformMediaStreamTrack::GetTrack(
             current_request.web_track_to_stop());
     if (track) {
-      track->StopAndNotify(
-          WTF::Bind(&UserMediaClientImpl::CurrentRequestCompleted,
-                    weak_factory_.GetWeakPtr()));
+      track->StopAndNotify(WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
+                                     weak_factory_.GetWeakPtr()));
     } else {
       CurrentRequestCompleted();
     }
   }
 }
 
-void UserMediaClientImpl::CurrentRequestCompleted() {
+void UserMediaClient::CurrentRequestCompleted() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   is_processing_request_ = false;
   if (!pending_request_infos_.empty()) {
     frame_->GetTaskRunner(blink::TaskType::kInternalMedia)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
+                   WTF::Bind(&UserMediaClient::MaybeProcessNextRequestInfo,
                              weak_factory_.GetWeakPtr()));
   }
 }
 
-void UserMediaClientImpl::CancelUserMediaRequest(
+void UserMediaClient::CancelUserMediaRequest(
     const blink::WebUserMediaRequest& web_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   {
@@ -284,27 +280,27 @@ void UserMediaClientImpl::CancelUserMediaRequest(
   }
 }
 
-void UserMediaClientImpl::DeleteAllUserMediaRequests() {
+void UserMediaClient::DeleteAllUserMediaRequests() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   user_media_processor_->StopAllProcessing();
   is_processing_request_ = false;
   pending_request_infos_.clear();
 }
 
-void UserMediaClientImpl::ContextDestroyed() {
+void UserMediaClient::ContextDestroyed() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Cancel all outstanding UserMediaRequests.
   DeleteAllUserMediaRequests();
 }
 
-void UserMediaClientImpl::SetMediaDevicesDispatcherForTesting(
+void UserMediaClient::SetMediaDevicesDispatcherForTesting(
     blink::mojom::blink::MediaDevicesDispatcherHostPtr
         media_devices_dispatcher) {
   media_devices_dispatcher_ = std::move(media_devices_dispatcher);
 }
 
 const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
-UserMediaClientImpl::GetMediaDevicesDispatcher() {
+UserMediaClient::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
     frame_->GetInterfaceProvider().GetInterface(
         mojo::MakeRequest(&media_devices_dispatcher_));

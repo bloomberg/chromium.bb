@@ -29,7 +29,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 
 namespace blink {
 
@@ -46,10 +46,10 @@ class UserMediaController final
  public:
   static const char kSupplementName[];
 
-  UserMediaController(LocalFrame&, std::unique_ptr<UserMediaClientImpl>);
+  UserMediaController(LocalFrame&, std::unique_ptr<UserMediaClient>);
   void Trace(blink::Visitor*) override;
 
-  UserMediaClientImpl* Client() const { return client_.get(); }
+  UserMediaClient* Client() const { return client_.get(); }
 
   void RequestUserMedia(UserMediaRequest*);
   void CancelUserMediaRequest(UserMediaRequest*);
@@ -65,7 +65,7 @@ class UserMediaController final
   }
 
  private:
-  std::unique_ptr<UserMediaClientImpl> client_;
+  std::unique_ptr<UserMediaClient> client_;
   bool has_requested_user_media_ = false;
 };
 
@@ -93,7 +93,7 @@ inline bool UserMediaController::HasRequestedUserMedia() {
 }
 
 MODULES_EXPORT void ProvideUserMediaTo(LocalFrame&,
-                                       std::unique_ptr<UserMediaClientImpl>);
+                                       std::unique_ptr<UserMediaClient>);
 
 }  // namespace blink
 

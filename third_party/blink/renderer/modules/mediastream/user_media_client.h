@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_H_
 
 #include <memory>
 
@@ -29,21 +29,21 @@ namespace blink {
 class ApplyConstraintsProcessor;
 class LocalFrame;
 
-// UserMediaClientImpl handles requests coming from the Blink MediaDevices
+// UserMediaClient handles requests coming from the Blink MediaDevices
 // object. This includes getUserMedia and enumerateDevices. It must be created,
 // called and destroyed on the render thread.
-class MODULES_EXPORT UserMediaClientImpl {
+class MODULES_EXPORT UserMediaClient {
  public:
   // TODO(guidou): Make all constructors private and replace with Create methods
   // that return a std::unique_ptr. This class is intended for instantiation on
   // the free store. https://crbug.com/764293
   // |frame| and its respective RenderFrame must outlive this instance.
-  UserMediaClientImpl(LocalFrame* frame,
-                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  UserMediaClientImpl(LocalFrame* frame,
-                      std::unique_ptr<UserMediaProcessor> user_media_processor,
-                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  virtual ~UserMediaClientImpl();
+  UserMediaClient(LocalFrame* frame,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  UserMediaClient(LocalFrame* frame,
+                  std::unique_ptr<UserMediaProcessor> user_media_processor,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  virtual ~UserMediaClient();
 
   void RequestUserMedia(const blink::WebUserMediaRequest& web_request);
   void CancelUserMediaRequest(const blink::WebUserMediaRequest& web_request);
@@ -100,9 +100,9 @@ class MODULES_EXPORT UserMediaClientImpl {
   GetMediaDevicesDispatcher();
 
   // LocalFrame instance associated with the RenderFrameImpl that
-  // own this UserMediaClientImpl.
+  // own this UserMediaClient.
   //
-  // TODO(crbug.com/704136): Consider moving UserMediaClientImpl to
+  // TODO(crbug.com/704136): Consider moving UserMediaClient to
   // Oilpan and use a Member.
   WeakPersistent<LocalFrame> frame_;
 
@@ -125,11 +125,11 @@ class MODULES_EXPORT UserMediaClientImpl {
 
   // Note: This member must be the last to ensure all outstanding weak pointers
   // are invalidated first.
-  base::WeakPtrFactory<UserMediaClientImpl> weak_factory_{this};
+  base::WeakPtrFactory<UserMediaClient> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(UserMediaClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(UserMediaClient);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_H_

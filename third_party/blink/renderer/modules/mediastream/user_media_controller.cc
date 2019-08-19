@@ -31,7 +31,7 @@ const char UserMediaController::kSupplementName[] = "UserMediaController";
 
 UserMediaController::UserMediaController(
     LocalFrame& frame,
-    std::unique_ptr<UserMediaClientImpl> client)
+    std::unique_ptr<UserMediaClient> client)
     : Supplement<LocalFrame>(frame),
       ContextLifecycleObserver(frame.GetDocument()),
       client_(std::move(client)) {}
@@ -46,7 +46,7 @@ void UserMediaController::ContextDestroyed(ExecutionContext*) {
 }
 
 void ProvideUserMediaTo(LocalFrame& frame,
-                        std::unique_ptr<UserMediaClientImpl> client) {
+                        std::unique_ptr<UserMediaClient> client) {
   UserMediaController::ProvideTo(
       frame,
       MakeGarbageCollected<UserMediaController>(frame, std::move(client)));

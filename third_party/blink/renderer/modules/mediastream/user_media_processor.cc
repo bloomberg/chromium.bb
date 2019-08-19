@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
-#include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/video_capture/local_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -986,7 +986,7 @@ void UserMediaProcessor::OnStreamGenerationFailed(
 
 void UserMediaProcessor::OnDeviceStopped(const MediaStreamDevice& device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DVLOG(1) << "UserMediaClientImpl::OnDeviceStopped("
+  DVLOG(1) << "UserMediaProcessor::OnDeviceStopped("
            << "{device_id = " << device.id << "})";
 
   const blink::WebMediaStreamSource* source_ptr = FindLocalSource(device);
@@ -1006,7 +1006,7 @@ void UserMediaProcessor::OnDeviceStopped(const MediaStreamDevice& device) {
 void UserMediaProcessor::OnDeviceChanged(const MediaStreamDevice& old_device,
                                          const MediaStreamDevice& new_device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DVLOG(1) << "UserMediaClientImpl::OnDeviceChange("
+  DVLOG(1) << "UserMediaProcessor::OnDeviceChange("
            << "{old_device_id = " << old_device.id
            << ", session id = " << old_device.session_id()
            << ", type = " << old_device.type << "}"
@@ -1329,7 +1329,7 @@ void UserMediaProcessor::GetUserMediaRequestSucceeded(
                          current_request_info_->request_id()));
 
   // Completing the getUserMedia request can lead to that the RenderFrame and
-  // the UserMediaClientImpl/UserMediaProcessor are destroyed if the JavaScript
+  // the UserMediaClient/UserMediaProcessor are destroyed if the JavaScript
   // code request the frame to be destroyed within the scope of the callback.
   // Therefore, post a task to complete the request with a clean stack.
   task_runner_->PostTask(
@@ -1358,7 +1358,7 @@ void UserMediaProcessor::GetUserMediaRequestFailed(
                          current_request_info_->request_id()));
 
   // Completing the getUserMedia request can lead to that the RenderFrame and
-  // the UserMediaClientImpl/UserMediaProcessor are destroyed if the JavaScript
+  // the UserMediaClient/UserMediaProcessor are destroyed if the JavaScript
   // code request the frame to be destroyed within the scope of the callback.
   // Therefore, post a task to complete the request with a clean stack.
   task_runner_->PostTask(

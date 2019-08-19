@@ -292,7 +292,7 @@ class MODULES_EXPORT UserMediaProcessor {
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   base::OnceClosure request_completed_cb_;
 
-  // TODO(crbug.com/704136): Consider moving UserMediaClientImpl to
+  // TODO(crbug.com/704136): Consider moving UserMediaClient to
   // Oilpan and use a Member.
   WeakPersistent<LocalFrame> frame_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
