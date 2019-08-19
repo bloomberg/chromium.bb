@@ -6189,7 +6189,6 @@ crbug.com/963141 [ Mac ] media/video-aspect-ratio.html [ Pass Failure ]
 
 # Sheriff 2019-05-16
 crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
-crbug.com/963740 compositing/video-frame-size-change.html [ Pass Failure ]
 
 # Sheriff 2019-05-17
 crbug.com/964239 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
@@ -6359,3 +6358,6 @@ crbug.com/987108 [ Mac ] fast/forms/select/disabled-select-change-index.html [ F
 crbug.com/987132 [ Mac ] fast/forms/select/option-strip-whitespace.html [ Failure ]
 crbug.com/986282 external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
 crbug.com/987138 [ Linux Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
+
+# Sheriff 2019-08-14
+crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
