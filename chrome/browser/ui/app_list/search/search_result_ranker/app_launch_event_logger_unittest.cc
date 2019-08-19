@@ -47,6 +47,18 @@ bool TestIsWebstoreExtension(base::StringPiece id) {
 }  // namespace
 
 class AppLaunchEventLoggerForTest : public AppLaunchEventLogger {
+ public:
+  AppLaunchEventLoggerForTest(extensions::ExtensionRegistry* registry,
+                              base::DictionaryValue* arc_apps,
+                              base::DictionaryValue* arc_packages) {
+    arc_apps_ = arc_apps;
+    arc_packages_ = arc_packages;
+    registry_ = registry;
+    // EnforceLoggingPolicy runs in the base constructor without the test data,
+    // so run it again here after the test data is set.
+    EnforceLoggingPolicy();
+  }
+
  protected:
   const GURL& GetLaunchWebURL(const extensions::Extension* extension) override {
     return kPhotosPWAUrl;
@@ -74,8 +86,8 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodePWA) {
 
   registry.AddEnabled(extension);
 
-  AppLaunchEventLoggerForTest app_launch_event_logger_;
-  app_launch_event_logger_.SetAppDataForTesting(&registry, nullptr, nullptr);
+  AppLaunchEventLoggerForTest app_launch_event_logger_(&registry, nullptr,
+                                                       nullptr);
   app_launch_event_logger_.OnGridClicked(kPhotosPWAApp);
 
   scoped_task_environment_.RunUntilIdle();
@@ -115,8 +127,8 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeChrome) {
   test_ukm_recorder_.SetIsWebstoreExtensionCallback(
       base::BindRepeating(&TestIsWebstoreExtension));
 
-  AppLaunchEventLoggerForTest app_launch_event_logger_;
-  app_launch_event_logger_.SetAppDataForTesting(&registry, nullptr, nullptr);
+  AppLaunchEventLoggerForTest app_launch_event_logger_(&registry, nullptr,
+                                                       nullptr);
   app_launch_event_logger_.OnGridClicked(kGmailChromeApp);
 
   scoped_task_environment_.RunUntilIdle();
@@ -142,9 +154,8 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeArc) {
   auto arc_apps = std::make_unique<base::DictionaryValue>();
   arc_apps->SetKey(kMapsArcApp, app.Clone());
 
-  AppLaunchEventLoggerForTest app_launch_event_logger_;
-  app_launch_event_logger_.SetAppDataForTesting(nullptr, arc_apps.get(),
-                                                packages.get());
+  AppLaunchEventLoggerForTest app_launch_event_logger_(nullptr, arc_apps.get(),
+                                                       packages.get());
   app_launch_event_logger_.OnGridClicked(kMapsArcApp);
 
   scoped_task_environment_.RunUntilIdle();
@@ -187,9 +198,8 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
   arc_apps->SetKey(kMapsArcApp, maps_app.Clone());
   arc_apps->SetKey(kCalculatorArcApp, calculator_app.Clone());
 
-  AppLaunchEventLoggerForTest app_launch_event_logger_;
-  app_launch_event_logger_.SetAppDataForTesting(&registry, arc_apps.get(),
-                                                packages.get());
+  AppLaunchEventLoggerForTest app_launch_event_logger_(
+      &registry, arc_apps.get(), packages.get());
   // 3 clicks on photos, 2 clicks on calculator, 1 click on maps.
   app_launch_event_logger_.OnGridClicked(kPhotosPWAApp);
   app_launch_event_logger_.OnGridClicked(kMapsArcApp);
@@ -296,8 +306,8 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {
           .Build();
   registry.AddEnabled(extension);
 
-  AppLaunchEventLoggerForTest app_launch_event_logger_;
-  app_launch_event_logger_.SetAppDataForTesting(&registry, nullptr, nullptr);
+  AppLaunchEventLoggerForTest app_launch_event_logger_(&registry, nullptr,
+                                                       nullptr);
   app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(kPhotosPWAApp, 3,
                                                               2);
 
@@ -320,8 +330,8 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSearchBox) {
           .Build();
   registry.AddEnabled(extension);
 
-  AppLaunchEventLoggerForTest app_launch_event_logger_;
-  app_launch_event_logger_.SetAppDataForTesting(&registry, nullptr, nullptr);
+  AppLaunchEventLoggerForTest app_launch_event_logger_(&registry, nullptr,
+                                                       nullptr);
   app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(kPhotosPWAApp, 3,
                                                               4);
 
