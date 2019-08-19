@@ -3,6 +3,10 @@
 Welcome to the Build API.
 
 ### chromite/infra/proto/
+
+**Make sure you've consulted the Build and CI teams when considering making
+breaking changes that affect the Build API.**
+
 This directory is a separate repo that contains all of the raw .proto files. You
 will find message, service, and method definitions, and their configurations.
 You will need to commit and upload the proto changes separately from the
@@ -10,14 +14,34 @@ chromite changes.
 
 * chromite/api/ contains the Build API services.
   * Except chromite/api/build_api.proto, which contains service and method
-  * option definitions.
+    option definitions.
 * chromiumos/ generally contains more sharable proto.
   * chromiumos/common.proto contains well shared messages.
   * chromiumos/metrics.proto contains message declarations related to build api
     event monitoring.
 * test_platform/ contains the APIs of components of the Test Platform recipe.
   * test_platform/request.proto and test_platform/response.proto contain the API
-  * of the overall recipe.
+    of the overall recipe.
+
+When making changes to the proto, you must:
+
+* Change the proto.
+  1. Make your changes.
+  1. Run `chromite/infra/proto/generate.sh`.
+  1. Commit those changes as a single CL.
+* Update the chromite proto.
+  * Run `chromite/api/compile_build_api_proto`.
+  * When no breaking changes are made (should be most of them)
+    * Create a CL with just the generated proto to submit with the raw proto CL.
+    * Submit the proto CLs together.
+    * The implementation may be submitted after the proto CLs.
+  * When breaking changes are made (should be very rare)
+    * **Make sure you've consulted the Build and CI teams first.**
+    * Submit the proto changes along with the implementation.
+    * May be done as a single CL or as a stack of CLs with `Cq-Depend`.
+
+At time of writing, the PCQ does not support `Cq-Depend:` between the infra/proto
+and chromite repos, so it must be handled manually.
 
 This repo was and will be pinned to a specific revision in the manifest files
 when we get closer to completing work on the Build API. For the speed we're
@@ -39,8 +63,8 @@ The generated protobuf messages.
 **Do not edit files in this package directly!**
 
 The proto can be compiled using the `compile_build_api_proto` script in the api
-directory. The protoc call is executed inside the chroot to ensure a standard
-protoc version is used.
+directory. The protoc version is locked and fetched from CIPD to ensure
+compatibility with the client library in `third_party/`.
 
 ### controller/
 
