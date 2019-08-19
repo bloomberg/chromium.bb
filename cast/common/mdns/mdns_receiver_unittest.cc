@@ -63,7 +63,7 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
   receiver.Start();
 
   MdnsQuestion question(DomainName{"testing", "local"}, DnsType::kA,
-                        DnsClass::kIN, false);
+                        DnsClass::kIN, ResponseType::kMulticast);
   MdnsMessage message(1, MessageType::Query);
   message.AddQuestion(question);
 
@@ -121,7 +121,8 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
   receiver.Start();
 
   MdnsRecord record(DomainName{"testing", "local"}, DnsType::kA, DnsClass::kIN,
-                    false, 120, ARecordRdata(IPAddress{172, 0, 0, 1}));
+                    RecordType::kShared, 120,
+                    ARecordRdata(IPAddress{172, 0, 0, 1}));
   MdnsMessage message(1, MessageType::Response);
   message.AddAnswer(record);
 

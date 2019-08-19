@@ -159,34 +159,34 @@ size_t TxtRecordRdata::MaxWireSize() const {
 }
 
 MdnsRecord::MdnsRecord(DomainName name,
-                       DnsType type,
+                       DnsType dns_type,
                        DnsClass record_class,
-                       bool cache_flush,
+                       RecordType record_type,
                        uint32_t ttl,
                        Rdata rdata)
     : name_(std::move(name)),
-      type_(type),
+      dns_type_(dns_type),
       record_class_(record_class),
-      cache_flush_(cache_flush),
+      record_type_(record_type),
       ttl_(ttl),
       rdata_(std::move(rdata)) {
   OSP_DCHECK(!name_.empty());
-  OSP_DCHECK(
-      (type == DnsType::kSRV &&
-       absl::holds_alternative<SrvRecordRdata>(rdata_)) ||
-      (type == DnsType::kA && absl::holds_alternative<ARecordRdata>(rdata_)) ||
-      (type == DnsType::kAAAA &&
-       absl::holds_alternative<AAAARecordRdata>(rdata_)) ||
-      (type == DnsType::kPTR &&
-       absl::holds_alternative<PtrRecordRdata>(rdata_)) ||
-      (type == DnsType::kTXT &&
-       absl::holds_alternative<TxtRecordRdata>(rdata_)) ||
-      absl::holds_alternative<RawRecordRdata>(rdata_));
+  OSP_DCHECK((dns_type == DnsType::kSRV &&
+              absl::holds_alternative<SrvRecordRdata>(rdata_)) ||
+             (dns_type == DnsType::kA &&
+              absl::holds_alternative<ARecordRdata>(rdata_)) ||
+             (dns_type == DnsType::kAAAA &&
+              absl::holds_alternative<AAAARecordRdata>(rdata_)) ||
+             (dns_type == DnsType::kPTR &&
+              absl::holds_alternative<PtrRecordRdata>(rdata_)) ||
+             (dns_type == DnsType::kTXT &&
+              absl::holds_alternative<TxtRecordRdata>(rdata_)) ||
+             absl::holds_alternative<RawRecordRdata>(rdata_));
 }
 
 bool MdnsRecord::operator==(const MdnsRecord& rhs) const {
-  return type_ == rhs.type_ && record_class_ == rhs.record_class_ &&
-         cache_flush_ == rhs.cache_flush_ && ttl_ == rhs.ttl_ &&
+  return dns_type_ == rhs.dns_type_ && record_class_ == rhs.record_class_ &&
+         record_type_ == rhs.record_type_ && ttl_ == rhs.ttl_ &&
          name_ == rhs.name_ && rdata_ == rhs.rdata_;
 }
 
@@ -196,24 +196,24 @@ bool MdnsRecord::operator!=(const MdnsRecord& rhs) const {
 
 size_t MdnsRecord::MaxWireSize() const {
   auto wire_size_visitor = [](auto&& arg) { return arg.MaxWireSize(); };
-  return name_.MaxWireSize() + sizeof(type_) + sizeof(record_class_) +
+  return name_.MaxWireSize() + sizeof(dns_type_) + sizeof(record_class_) +
          sizeof(ttl_) + absl::visit(wire_size_visitor, rdata_);
 }
 
 MdnsQuestion::MdnsQuestion(DomainName name,
-                           DnsType type,
+                           DnsType dns_type,
                            DnsClass record_class,
-                           bool unicast_response)
+                           ResponseType response_type)
     : name_(std::move(name)),
-      type_(type),
+      dns_type_(dns_type),
       record_class_(record_class),
-      unicast_response_(unicast_response) {
+      response_type_(response_type) {
   OSP_CHECK(!name_.empty());
 }
 
 bool MdnsQuestion::operator==(const MdnsQuestion& rhs) const {
-  return type_ == rhs.type_ && record_class_ == rhs.record_class_ &&
-         unicast_response_ == rhs.unicast_response_ && name_ == rhs.name_;
+  return dns_type_ == rhs.dns_type_ && record_class_ == rhs.record_class_ &&
+         response_type_ == rhs.response_type_ && name_ == rhs.name_;
 }
 
 bool MdnsQuestion::operator!=(const MdnsQuestion& rhs) const {
@@ -221,7 +221,7 @@ bool MdnsQuestion::operator!=(const MdnsQuestion& rhs) const {
 }
 
 size_t MdnsQuestion::MaxWireSize() const {
-  return name_.MaxWireSize() + sizeof(type_) + sizeof(record_class_);
+  return name_.MaxWireSize() + sizeof(dns_type_) + sizeof(record_class_);
 }
 
 MdnsMessage::MdnsMessage(uint16_t id, MessageType type)

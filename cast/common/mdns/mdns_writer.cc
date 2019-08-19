@@ -204,8 +204,8 @@ bool MdnsWriter::Write(const TxtRecordRdata& rdata) {
 
 bool MdnsWriter::Write(const MdnsRecord& record) {
   Cursor cursor(this);
-  if (Write(record.name()) && Write(static_cast<uint16_t>(record.type())) &&
-      Write(MakeRecordClass(record.record_class(), record.cache_flush())) &&
+  if (Write(record.name()) && Write(static_cast<uint16_t>(record.dns_type())) &&
+      Write(MakeRecordClass(record.record_class(), record.record_type())) &&
       Write(record.ttl()) && Write(record.rdata())) {
     cursor.Commit();
     return true;
@@ -215,9 +215,10 @@ bool MdnsWriter::Write(const MdnsRecord& record) {
 
 bool MdnsWriter::Write(const MdnsQuestion& question) {
   Cursor cursor(this);
-  if (Write(question.name()) && Write(static_cast<uint16_t>(question.type())) &&
+  if (Write(question.name()) &&
+      Write(static_cast<uint16_t>(question.dns_type())) &&
       Write(MakeQuestionClass(question.record_class(),
-                              question.unicast_response()))) {
+                              question.response_type()))) {
     cursor.Commit();
     return true;
   }

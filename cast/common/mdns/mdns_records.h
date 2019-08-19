@@ -299,9 +299,9 @@ class MdnsRecord {
  public:
   MdnsRecord() = default;
   MdnsRecord(DomainName name,
-             DnsType type,
+             DnsType dns_type,
              DnsClass record_class,
-             bool cache_flush,
+             RecordType record_type,
              uint32_t ttl,
              Rdata rdata);
   MdnsRecord(const MdnsRecord& other) = default;
@@ -316,24 +316,24 @@ class MdnsRecord {
 
   size_t MaxWireSize() const;
   const DomainName& name() const { return name_; }
-  DnsType type() const { return type_; }
+  DnsType dns_type() const { return dns_type_; }
   DnsClass record_class() const { return record_class_; }
-  bool cache_flush() const { return cache_flush_; }
+  RecordType record_type() const { return record_type_; }
   uint32_t ttl() const { return ttl_; }
   const Rdata& rdata() const { return rdata_; }
 
   template <typename H>
   friend H AbslHashValue(H h, const MdnsRecord& record) {
-    return H::combine(std::move(h), record.name_, record.type_,
-                      record.record_class_, record.cache_flush_, record.ttl_,
+    return H::combine(std::move(h), record.name_, record.dns_type_,
+                      record.record_class_, record.record_type_, record.ttl_,
                       record.rdata_);
   }
 
  private:
   DomainName name_;
-  DnsType type_ = static_cast<DnsType>(0);
+  DnsType dns_type_ = static_cast<DnsType>(0);
   DnsClass record_class_ = static_cast<DnsClass>(0);
-  bool cache_flush_ = false;
+  RecordType record_type_ = RecordType::kShared;
   uint32_t ttl_ = kDefaultRecordTTL;
   // Default-constructed Rdata contains default-constructed RawRecordRdata
   // as it is the first alternative type and it is default-constructible.
@@ -348,9 +348,9 @@ class MdnsQuestion {
  public:
   MdnsQuestion() = default;
   MdnsQuestion(DomainName name,
-               DnsType type,
+               DnsType dns_type,
                DnsClass record_class,
-               bool unicast_response);
+               ResponseType response_type);
   MdnsQuestion(const MdnsQuestion& other) = default;
   MdnsQuestion(MdnsQuestion&& other) noexcept = default;
   ~MdnsQuestion() = default;
@@ -363,23 +363,23 @@ class MdnsQuestion {
 
   size_t MaxWireSize() const;
   const DomainName& name() const { return name_; }
-  DnsType type() const { return type_; }
+  DnsType dns_type() const { return dns_type_; }
   DnsClass record_class() const { return record_class_; }
-  bool unicast_response() const { return unicast_response_; }
+  ResponseType response_type() const { return response_type_; }
 
   template <typename H>
   friend H AbslHashValue(H h, const MdnsQuestion& record) {
-    return H::combine(std::move(h), record.name_, record.type_,
-                      record.record_class_, record.unicast_response_);
+    return H::combine(std::move(h), record.name_, record.dns_type_,
+                      record.record_class_, record.response_type_);
   }
 
  private:
   void CopyFrom(const MdnsQuestion& other);
 
   DomainName name_;
-  DnsType type_ = static_cast<DnsType>(0);
+  DnsType dns_type_ = static_cast<DnsType>(0);
   DnsClass record_class_ = static_cast<DnsClass>(0);
-  bool unicast_response_ = false;
+  ResponseType response_type_ = ResponseType::kMulticast;
 };
 
 // Message top level format (http://www.ietf.org/rfc/rfc1035.txt):

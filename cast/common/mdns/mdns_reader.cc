@@ -202,7 +202,7 @@ bool MdnsReader::Read(MdnsRecord* out) {
   if (Read(&name) && Read(&type) && Read(&rrclass) && Read(&ttl) &&
       Read(static_cast<DnsType>(type), &rdata)) {
     *out = MdnsRecord(std::move(name), static_cast<DnsType>(type),
-                      GetDnsClass(rrclass), GetCacheFlush(rrclass), ttl,
+                      GetDnsClass(rrclass), GetRecordType(rrclass), ttl,
                       std::move(rdata));
     cursor.Commit();
     return true;
@@ -218,7 +218,7 @@ bool MdnsReader::Read(MdnsQuestion* out) {
   uint16_t rrclass;
   if (Read(&name) && Read(&type) && Read(&rrclass)) {
     *out = MdnsQuestion(std::move(name), static_cast<DnsType>(type),
-                        GetDnsClass(rrclass), GetUnicastResponse(rrclass));
+                        GetDnsClass(rrclass), GetResponseType(rrclass));
     cursor.Commit();
     return true;
   }
