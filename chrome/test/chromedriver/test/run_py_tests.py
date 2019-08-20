@@ -227,6 +227,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverSecureContextTest.testRemoveVirtualAuthenticator',
         'ChromeDriverSecureContextTest.testAddCredential',
         'ChromeDriverSecureContextTest.testGetCredentials',
+        # Covered by Desktop tests; can't create 2 browsers in Android
+        'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
