@@ -228,6 +228,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverSecureContextTest.testAddCredential',
         'ChromeDriverSecureContextTest.testGetCredentials',
         'ChromeDriverSecureContextTest.testRemoveAllCredentials',
+        'ChromeDriverSecureContextTest.testSetUserVerified',
         # Covered by Desktop tests; can't create 2 browsers in Android
         'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
     ]
@@ -2241,6 +2242,37 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
     self._driver.RemoveAllCredentials(authenticatorId)
     result = self._driver.ExecuteAsyncScript(exclude_credentials_script)
     self.assertEquals('OK', result['status'])
+
+  def testSetUserVerified(self):
+    register_uv_script = """
+      let done = arguments[0];
+      registerCredential({
+        authenticatorSelection: {
+          userVerification: "required",
+        },
+      }).then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+    authenticatorId = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = True,
+        hasUserVerification = True,
+    )['authenticatorId']
+
+    # Configure the virtual authenticator to fail user verification.
+    self._driver.SetUserVerified(authenticatorId, False)
+
+    # Attempting to register a credential with UV required should fail.
+    result = self._driver.ExecuteAsyncScript(register_uv_script)
+    self.assertTrue(result['status'].startswith("NotAllowedError"),
+                    "Expected %s to be a NotAllowedError" % (result['status']))
+
+    # Trying again after setting userVerified to True should succeed.
+    self._driver.SetUserVerified(authenticatorId, True)
+    result = self._driver.ExecuteAsyncScript(register_uv_script)
+    self.assertEquals("OK", result['status'])
 
 # Tests in the following class are expected to be moved to ChromeDriverTest
 # class when we no longer support the legacy mode.

@@ -182,6 +182,9 @@ class Command(object):
   REMOVE_ALL_CREDENTIALS = (
       _Method.DELETE,
       '/session/:sessionId/webauthn/authenticator/:authenticatorId/credentials')
+  SET_USER_VERIFIED = (
+      _Method.POST,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId/uv')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')

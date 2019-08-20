@@ -54,4 +54,10 @@ Status ExecuteRemoveAllCredentials(WebView* web_view,
                                    const base::Value& params,
                                    std::unique_ptr<base::Value>* value);
 
+// Set whether user verification will succeed or fail on authentication requests
+// for the authenticator.
+Status ExecuteSetUserVerified(WebView* web_view,
+                              const base::Value& params,
+                              std::unique_ptr<base::Value>* value);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_WEBAUTHN_COMMANDS_H_

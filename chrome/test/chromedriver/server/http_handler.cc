@@ -786,6 +786,13 @@ HttpHandler::HttpHandler(
               base::BindRepeating(
                   &ExecuteWebAuthnCommand,
                   base::BindRepeating(&ExecuteRemoveAllCredentials)))),
+      CommandMapping(
+          kPost,
+          "session/:sessionId/webauthn/authenticator/:authenticatorId/uv",
+          WrapToCommand("SetUserVerified",
+                        base::BindRepeating(
+                            &ExecuteWebAuthnCommand,
+                            base::BindRepeating(&ExecuteSetUserVerified)))),
 
       //
       // Non-standard extension commands

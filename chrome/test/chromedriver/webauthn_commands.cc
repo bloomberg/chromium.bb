@@ -172,3 +172,17 @@ Status ExecuteRemoveAllCredentials(WebView* web_view,
       "WebAuthn.clearCredentials",
       MapParams({{"authenticatorId", "authenticatorId"}}, params), value);
 }
+
+Status ExecuteSetUserVerified(WebView* web_view,
+                              const base::Value& params,
+                              std::unique_ptr<base::Value>* value) {
+  return web_view->SendCommandAndGetResult(
+      "WebAuthn.setUserVerified",
+      MapParams(
+          {
+              {"authenticatorId", "authenticatorId"},
+              {"isUserVerified", "isUserVerified"},
+          },
+          params),
+      value);
+}
