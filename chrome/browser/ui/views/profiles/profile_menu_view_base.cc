@@ -471,15 +471,3 @@ gfx::ImageSkia ProfileMenuViewBase::CreateVectorIcon(
 int ProfileMenuViewBase::GetDefaultIconSize() {
   return kIconSize;
 }
-
-bool ProfileMenuViewBase::ShouldProvideInitiallyFocusedView() const {
-#if defined(OS_MACOSX)
-  // On Mac, buttons are not focusable when full keyboard access is turned off,
-  // causing views::Widget to fall back to focusing the first focusable View.
-  // This behavior is not desired in profile menus because of the menu-like
-  // design using |HoverButtons|.
-  if (!GetFocusManager() || !GetFocusManager()->keyboard_accessible())
-    return false;
-#endif
-  return true;
-}

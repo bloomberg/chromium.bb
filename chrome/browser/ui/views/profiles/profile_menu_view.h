@@ -45,7 +45,6 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   // views::BubbleDialogDelegateView:
   void Init() override;
   void OnWidgetClosing(views::Widget* widget) override;
-  views::View* GetInitiallyFocusedView() override;
   base::string16 GetAccessibleWindowTitle() const override;
 
   // Button/link actions.
@@ -138,7 +137,6 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   // Button pointers used in tests.
   views::Button* first_profile_button_ = nullptr;
   views::Button* lock_button_ = nullptr;
-  views::Button* signin_current_profile_button_ = nullptr;
 
   // The GAIA service type provided in the response header.
   signin::GAIAServiceType gaia_service_type_;

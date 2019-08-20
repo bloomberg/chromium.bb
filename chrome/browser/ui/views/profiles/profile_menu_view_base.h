@@ -138,8 +138,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   views::Button* anchor_button() const { return anchor_button_; }
 
-  bool ShouldProvideInitiallyFocusedView() const;
-
   gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon);
 
   int GetDefaultIconSize();
