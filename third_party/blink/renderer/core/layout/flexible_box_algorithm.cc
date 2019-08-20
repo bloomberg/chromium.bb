@@ -522,7 +522,7 @@ bool FlexLayoutAlgorithm::IsLeftToRightFlow() const {
            IsFlippedLinesWritingMode(style_->GetWritingMode());
   }
   return style_->IsLeftToRightDirection() ^
-         (style_->FlexDirection() == EFlexDirection::kRowReverse);
+         style_->ResolvedIsRowReverseFlexDirection();
 }
 
 const StyleContentAlignmentData&
