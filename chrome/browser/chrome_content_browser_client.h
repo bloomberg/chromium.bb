@@ -540,7 +540,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                             content::BrowserContext* context) override;
   void RegisterRendererPreferenceWatcher(
       content::BrowserContext* browser_context,
-      blink::mojom::RendererPreferenceWatcherPtr watcher) override;
+      mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher)
+      override;
   base::Optional<std::string> GetOriginPolicyErrorPage(
       network::OriginPolicyState error_reason,
       content::NavigationHandle* handle) override;

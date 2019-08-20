@@ -1496,7 +1496,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Registers the watcher to observe updates in RendererPreferences.
   virtual void RegisterRendererPreferenceWatcher(
       BrowserContext* browser_context,
-      blink::mojom::RendererPreferenceWatcherPtr watcher);
+      mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher);
 
   // Returns the HTML content of the error page for Origin Policy related
   // errors.

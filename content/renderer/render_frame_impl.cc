@@ -4184,15 +4184,15 @@ RenderFrameImpl::CreateWorkerFetchContext() {
           frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
   DCHECK(provider);
 
-  blink::mojom::RendererPreferenceWatcherPtr watcher;
-  blink::mojom::RendererPreferenceWatcherRequest watcher_request =
-      mojo::MakeRequest(&watcher);
+  mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher;
+  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+      watcher_receiver = watcher.InitWithNewPipeAndPassReceiver();
   render_view()->RegisterRendererPreferenceWatcher(std::move(watcher));
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
           provider->context(), render_view_->renderer_preferences(),
-          std::move(watcher_request), GetLoaderFactoryBundle()->Clone(),
+          std::move(watcher_receiver), GetLoaderFactoryBundle()->Clone(),
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
@@ -4215,15 +4215,15 @@ RenderFrameImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
   DCHECK(factory_client);
 
-  blink::mojom::RendererPreferenceWatcherPtr watcher;
-  blink::mojom::RendererPreferenceWatcherRequest watcher_request =
-      mojo::MakeRequest(&watcher);
+  mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher;
+  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+      watcher_receiver = watcher.InitWithNewPipeAndPassReceiver();
   render_view()->RegisterRendererPreferenceWatcher(std::move(watcher));
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       static_cast<DedicatedWorkerHostFactoryClient*>(factory_client)
           ->CreateWorkerFetchContext(render_view_->renderer_preferences(),
-                                     std::move(watcher_request));
+                                     std::move(watcher_receiver));
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
   worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);
