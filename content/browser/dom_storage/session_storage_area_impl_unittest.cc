@@ -79,7 +79,7 @@ class SessionStorageAreaImplTest : public testing::Test {
 
     leveldb_service_->OpenInMemory(
         base::nullopt, "SessionStorageAreaImplTestDatabase",
-        mojo::MakeRequest(&leveldb_database_), base::DoNothing());
+        leveldb_database_.BindNewEndpointAndPassReceiver(), base::DoNothing());
 
     leveldb_database_->Put(StdStringToUint8Vector("map-0-key1"),
                            StdStringToUint8Vector("data1"), base::DoNothing());
@@ -116,7 +116,7 @@ class SessionStorageAreaImplTest : public testing::Test {
   const url::Origin test_origin1_;
   const url::Origin test_origin2_;
   mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
-  leveldb::mojom::LevelDBDatabaseAssociatedPtr leveldb_database_;
+  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> leveldb_database_;
   SessionStorageMetadata metadata_;
 
   testing::StrictMock<MockListener> listener_;
