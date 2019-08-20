@@ -7,12 +7,11 @@
 
 from __future__ import print_function
 
-import json
 import multiprocessing
 import os
 import time
 
-from chromite.api.gen.chromite.api import artifacts_pb2
+from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import commands
 from chromite.lib import constants
@@ -20,7 +19,6 @@ from chromite.lib import alerts
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import gs
-from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.cbuildbot.stages import generic_stages
@@ -255,63 +253,6 @@ class AFDOReleaseProfileMergerStage(generic_stages.BuilderStage):
     afdo.UploadReleaseProfiles(gs_context, run_id, merge_plan, merge_results)
 
 
-class OrderfileUpdateChromeEbuildStage(
-    generic_stages.BoardSpecificBuilderStage):
-  """Updates the Chrome ebuild with the most recent unvetted orderfile."""
-
-  def PerformStage(self):
-    cmd = ['build_api',
-           'chromite.api.ToolchainService/UpdateChromeEbuildWithOrderfile']
-    chroot_tmp = os.path.join(self._build_root, 'chroot', 'tmp')
-    with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
-      input_proto_file = os.path.join(tmpdir, 'input.json')
-      output_proto_file = os.path.join(tmpdir, 'output.json')
-      with open(input_proto_file, 'w') as f:
-        input_proto = {
-            'build_target': {
-                'name': self._current_board,
-            }
-        }
-        json.dump(input_proto, f)
-
-      cmd += ['--input-json', input_proto_file]
-      cmd += ['--output-json', output_proto_file]
-      commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True,
-                              redirect_stdout=True)
-
-class UploadVettedOrderfileStage(generic_stages.BoardSpecificBuilderStage):
-  """Upload a vetted orderfile to GS bucket.
-
-  Note that this stage does not generate any new artifacts.It's just copying
-  an orderfile from the unvetted GS bucket location to the vetted location.
-  """
-
-  def __init__(self, *args, **kwargs):
-    super(UploadVettedOrderfileStage, self).__init__(*args, **kwargs)
-
-  def PerformStage(self):
-    cmd = ['build_api',
-           'chromite.api.ToolchainService/UploadVettedOrderfile']
-    chroot_tmp = os.path.join(self._build_root, 'chroot', 'tmp')
-    with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
-      input_proto_file = os.path.join(tmpdir, 'input.json')
-      output_proto_file = os.path.join(tmpdir, 'output.json')
-      # Create an empty dict in input JSON
-      with open(input_proto_file, 'w') as f:
-        input_proto = {}
-        json.dump(input_proto, f)
-      cmd += ['--input-json', input_proto_file]
-      cmd += ['--output-json', output_proto_file]
-
-      commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True,
-                              redirect_stdout=True)
-
-      output = json.loads(osutils.ReadFile(output_proto_file))
-      if not output['status']:
-        raise failures_lib.StepFailure(
-            'Failed to upload vetted orderfile')
-
-
 class GenerateAFDOArtifactStage(generic_stages.BoardSpecificBuilderStage,
                                 generic_stages.ArchivingStageMixin):
   """Base class to generate artifacts (benchmark AFDO or orderfile)."""
@@ -332,11 +273,11 @@ class GenerateAFDOArtifactStage(generic_stages.BoardSpecificBuilderStage,
       if self.is_orderfile:
         artifacts = commands.GenerateAFDOArtifacts(
             self._build_root, self._current_board,
-            output_path, artifacts_pb2.ORDERFILE)
+            output_path, toolchain_pb2.ORDERFILE)
       else:
         artifacts = commands.GenerateAFDOArtifacts(
             self._build_root, self._current_board,
-            output_path, artifacts_pb2.BENCHMARK_AFDO)
+            output_path, toolchain_pb2.BENCHMARK_AFDO)
       # The artifacts are uploaded to centralized GS bucket in the
       # APIs. Only need to upload to builder's bucket now.
       for x in artifacts:
@@ -353,3 +294,62 @@ class GenerateChromeOrderfileStage(GenerateAFDOArtifactStage):
   def __init__(self, *args, **kwargs):
     super(GenerateChromeOrderfileStage, self).__init__(
         *args, is_orderfile=True, **kwargs)
+
+
+class VerifyAFDOArtifactStage(generic_stages.BoardSpecificBuilderStage):
+  """Base class used to verify AFDO artifacts."""
+  def __init__(self, *args, **kwargs):
+    if 'afdo_type' not in kwargs:
+      raise ValueError('Need to specify an AFDO type to update ebuild with.')
+    if 'build_api' not in kwargs:
+      raise ValueError('Need to specify a build API to execute the stage with.')
+    self.afdo_type = kwargs.pop('afdo_type')
+    self.build_api = kwargs.pop('build_api')
+    super(VerifyAFDOArtifactStage, self).__init__(*args, **kwargs)
+
+  def PerformStage(self):
+    status = commands.VerifyAFDOArtifacts(
+        self._build_root,
+        self._current_board,
+        self.afdo_type,
+        self.build_api)
+
+    if not status:
+      raise failures_lib.StepFailure(
+          'Failed when running the build API.')
+
+class OrderfileUpdateChromeEbuildStage(VerifyAFDOArtifactStage):
+  """Updates the Chrome ebuild with the most recent unvetted orderfile."""
+
+  def __init__(self, *args, **kwargs):
+    super(OrderfileUpdateChromeEbuildStage, self).__init__(
+        *args, afdo_type=toolchain_pb2.ORDERFILE,
+        build_api='chromite.api.ToolchainService/UpdateEbuildWithAFDOArtifacts',
+        **kwargs)
+
+
+class KernelAFDOUpdateEbuildStage(VerifyAFDOArtifactStage):
+  """Updates kernel ebuilds with latest unvetted AFDO profiles."""
+  def __init__(self, *args, **kwargs):
+    super(KernelAFDOUpdateEbuildStage, self).__init__(
+        *args, afdo_type=toolchain_pb2.KERNEL_AFDO,
+        build_api='chromite.api.ToolchainService/UpdateEbuildWithAFDOArtifacts',
+        **kwargs)
+
+
+class UploadVettedOrderfileStage(VerifyAFDOArtifactStage):
+  """Upload a vetted orderfile to GS bucket."""
+  def __init__(self, *args, **kwargs):
+    super(UploadVettedOrderfileStage, self).__init__(
+        *args, afdo_type=toolchain_pb2.ORDERFILE,
+        build_api='chromite.api.ToolchainService/UploadVettedAFDOArtifacts',
+        **kwargs)
+
+
+class UploadVettedKernelAFDOStage(VerifyAFDOArtifactStage):
+  """Upload latest kernel AFDO profiles."""
+  def __init__(self, *args, **kwargs):
+    super(UploadVettedKernelAFDOStage, self).__init__(
+        *args, afdo_type=toolchain_pb2.KERNEL_AFDO,
+        build_api='chromite.api.ToolchainService/UploadVettedAFDOArtifacts',
+        **kwargs)

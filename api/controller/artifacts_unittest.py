@@ -14,6 +14,7 @@ import mock
 from chromite.api import api_config
 from chromite.api.controller import artifacts
 from chromite.api.gen.chromite.api import artifacts_pb2
+from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.cbuildbot import commands
 from chromite.lib import chroot_lib
 from chromite.lib import constants
@@ -735,8 +736,8 @@ class BundleAFDOGenerationArtifactsTestCase(
     self.output_dir = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_dir)
     self.build_target = 'board'
-    self.valid_artifact_type = artifacts_pb2.ORDERFILE
-    self.invalid_artifact_type = artifacts_pb2.NONE_TYPE
+    self.valid_artifact_type = toolchain_pb2.ORDERFILE
+    self.invalid_artifact_type = toolchain_pb2.NONE_TYPE
     self.does_not_exist = os.path.join(self.tempdir, 'does_not_exist')
     self.PatchObject(cros_build_lib, 'Die', new=self.mock_die)
 
@@ -827,14 +828,11 @@ class BundleAFDOGenerationArtifactsTestCase(
     with self.assertRaises(cros_build_lib.DieSystemExit) as context:
       artifacts.BundleAFDOGenerationArtifacts(request, self.response,
                                               self.api_config)
-    # FIXME(tcwang): The error message here should print the error message
-    # of the artifact_type not in valid list. But instead, it reports
-    # no artifact_type specified.
-    self.assertIn('artifact_type (0) must be in',
+    self.assertIn('artifact_type (%d) must be in' % self.invalid_artifact_type,
                   str(context.exception))
 
   def testOutputHandlingOnOrderfile(self,
-                                    artifact_type=artifacts_pb2.ORDERFILE):
+                                    artifact_type=toolchain_pb2.ORDERFILE):
     """Test response output for orderfile."""
     files = ['artifact1', 'artifact2', 'artifact3']
     expected_files = [os.path.join(self.output_dir, f) for f in files]
@@ -856,7 +854,7 @@ class BundleAFDOGenerationArtifactsTestCase(
   def testOutputHandlingOnAFDO(self):
     """Test response output for AFDO."""
     self.testOutputHandlingOnOrderfile(
-        artifact_type=artifacts_pb2.BENCHMARK_AFDO)
+        artifact_type=toolchain_pb2.BENCHMARK_AFDO)
 
 
 class ExportCpeReportTest(cros_test_lib.MockTempDirTestCase,

@@ -1355,7 +1355,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
     site_config.Add(
         name + '-release-afdo-verify',
         site_config.templates.release_afdo_verify,
-        boards=[board]
+        boards=[board],
+        kernel_afdo_verify=True,
         # TODO: Add a schedule
     )
 

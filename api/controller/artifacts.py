@@ -12,7 +12,7 @@ import os
 from chromite.api import controller
 from chromite.api import validate
 from chromite.api.controller import controller_util
-from chromite.api.gen.chromite.api import artifacts_pb2
+from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.cbuildbot import commands
 from chromite.lib import build_target_util
 from chromite.lib import chroot_lib
@@ -391,8 +391,8 @@ def BundleVmFiles(input_proto, output_proto, _config):
     output_proto.artifacts.add().path = archive
 
 
-_VALID_ARTIFACT_TYPES = [artifacts_pb2.BENCHMARK_AFDO,
-                         artifacts_pb2.ORDERFILE]
+_VALID_ARTIFACT_TYPES = [toolchain_pb2.BENCHMARK_AFDO,
+                         toolchain_pb2.ORDERFILE]
 @validate.require('build_target.name', 'output_dir')
 @validate.is_in('artifact_type', _VALID_ARTIFACT_TYPES)
 @validate.exists('output_dir')
@@ -414,7 +414,7 @@ def BundleAFDOGenerationArtifacts(input_proto, output_proto, _config):
   chroot = controller_util.ParseChroot(input_proto.chroot)
 
   try:
-    is_orderfile = bool(artifact_type is artifacts_pb2.ORDERFILE)
+    is_orderfile = bool(artifact_type is toolchain_pb2.ORDERFILE)
     results = artifacts.BundleAFDOGenerationArtifacts(
         is_orderfile, chroot,
         build_target, output_dir)

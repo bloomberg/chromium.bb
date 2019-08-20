@@ -1841,17 +1841,14 @@ class GenerateAFDOArtifactsTests(
     chroot_tmp = os.path.join(self.buildroot, 'chroot', 'tmp')
     osutils.SafeMakedirs(chroot_tmp)
     self.board = 'board'
+    self.target = 'any_target'
     self.output_path = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_path)
     self.mock_command = self.PatchObject(commands,
                                          'RunBuildScript')
 
-  def testGenerateOrderfile(self, target='orderfile'):
-    """Test generate orderfile call correctly.
-
-    Parameterize the target so we can test both orderfile
-    and afdo.
-    """
+  def testGeneratePass(self):
+    """Test generate call correctly."""
     # Redirect the current tempdir to read/write contents inside it.
     self.PatchObject(osutils.TempDir, '__enter__',
                      return_value=self.tempdir)
@@ -1868,10 +1865,7 @@ class GenerateAFDOArtifactsTests(
       json.dump(output_proto, f)
 
     ret = commands.GenerateAFDOArtifacts(
-        self.buildroot,
-        self.board,
-        self.output_path,
-        target)
+        self.buildroot, self.board, self.output_path, self.target)
 
     cmd = [
         'build_api',
@@ -1892,13 +1886,63 @@ class GenerateAFDOArtifactsTests(
                      self.board)
     self.assertEqual(input_proto['output_dir'],
                      self.output_path)
-    self.assertEqual(input_proto['artifact_type'], target)
+    self.assertEqual(input_proto['artifact_type'], self.target)
 
     # Verify the output matches the proto
     self.assertEqual(ret, ['artifact1', 'artifact2'])
 
-  def testGenerateAFDO(self):
-    self.testGenerateOrderfile(target='benchmark-afdo')
+
+class VerifyAFDOArtifactsTests(
+    cros_test_lib.RunCommandTempDirTestCase):
+  """Test VerifyChromeOrderfileArtifacts command."""
+
+  def setUp(self):
+    self.buildroot = os.path.join(self.tempdir, 'buildroot')
+    osutils.SafeMakedirs(self.buildroot)
+    chroot_tmp = os.path.join(self.buildroot, 'chroot', 'tmp')
+    osutils.SafeMakedirs(chroot_tmp)
+    self.board = 'board'
+    self.target = 'any_target'
+    self.build_api = 'path.to.anyBuildAPI'
+    self.mock_command = self.PatchObject(commands,
+                                         'RunBuildScript')
+
+  def testVerifyPass(self):
+    """Test verify call correctly."""
+    # Redirect the current tempdir to read/write contents inside it.
+    self.PatchObject(osutils.TempDir, '__enter__',
+                     return_value=self.tempdir)
+    input_proto_file = os.path.join(self.tempdir, 'input.json')
+    output_proto_file = os.path.join(self.tempdir, 'output.json')
+    # Write dummy outputs to output JSON file
+    with open(output_proto_file, 'w') as f:
+      output_proto = {
+          'status': True
+      }
+      json.dump(output_proto, f)
+
+    ret = commands.VerifyAFDOArtifacts(
+        self.buildroot, self.board, self.target, self.build_api)
+
+    cmd = [
+        'build_api',
+        self.build_api,
+        '--input-json', input_proto_file,
+        '--output-json', output_proto_file,
+    ]
+
+    self.mock_command.assert_called_once_with(
+        self.buildroot, cmd,
+        chromite_cmd=True, redirect_stdout=True)
+
+    # Verify the input proto has all the information
+    input_proto = json.loads(osutils.ReadFile(input_proto_file))
+    self.assertEqual(input_proto['build_target']['name'],
+                     self.board)
+    self.assertEqual(input_proto['artifact_type'], self.target)
+
+    # Verify the output matches the proto
+    self.assertTrue(ret)
 
 
 class MarkAndroidAsStableTest(cros_test_lib.RunCommandTempDirTestCase):

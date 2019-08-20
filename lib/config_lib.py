@@ -859,6 +859,9 @@ def DefaultSettings():
       # using a hwtest to run a predetermined set of benchmarks.
       afdo_generate_async=False,
 
+      # Verify and publish kernel profiles.
+      kernel_afdo_verify=False,
+
       # Generate Chrome orderfile. Will build Chrome with C3 ordering and
       # generate an orderfile for uploading as a result.
       orderfile_generate=False,

@@ -3837,11 +3837,13 @@ class ChromeSDK(object):
 def GenerateAFDOArtifacts(buildroot, board, output_path, target):
   """Command to generate AFDO artifacts.
 
+  This is only a wrapper of the build API. It doesn't validate the inputs.
+
   Args:
     buildroot: The path to build root.
     board: Name of the board.
     output_path: The path to save output.
-    target: benchmark-afdo or orderfile.
+    target: A valid toolchain_pb2.AFDOArtifactType.
 
   Returns:
     List of artifact names.
@@ -3864,3 +3866,30 @@ def GenerateAFDOArtifacts(buildroot, board, output_path, target):
   )
 
   return [artifact['path'] for artifact in output['artifacts']]
+
+
+def VerifyAFDOArtifacts(buildroot, board, target, build_api):
+  """Command to verify AFDO artifacts.
+
+  This is only a wrapper of the build API. It doesn't validate the inputs.
+
+  Args:
+    buildroot: The path to build root.
+    board: Name of the board.
+    target: A valid toolchain_pb2.AFDOArtifactType.
+    build_api: Full path of the build API. Only applies to APIs that returns
+    a single field containing the status.
+
+  Returns:
+    True of False: The status of the build API.
+  """
+  input_proto = {
+      'build_target': {
+          'name': board,
+      },
+      'artifact_type': target
+  }
+
+  output = CallBuildApiWithInputProto(buildroot, build_api, input_proto)
+
+  return output['status']

@@ -232,6 +232,10 @@ class SimpleBuilder(generic_builders.Builder):
     if config.orderfile_verify:
       stage_list += [[afdo_stages.UploadVettedOrderfileStage, board]]
 
+    if config.kernel_afdo_verify:
+      stage_list += [[afdo_stages.UploadVettedKernelAFDOStage, board]]
+
+
     stage_list += [
         [release_stages.SignerTestStage, board, archive_stage],
         [release_stages.SigningStage, board],
@@ -359,6 +363,16 @@ class SimpleBuilder(generic_builders.Builder):
               target='orderfile_verify'):
             continue
           self._RunStage(afdo_stages.OrderfileUpdateChromeEbuildStage,
+                         board, builder_run=builder_run)
+
+        if builder_run.config.kernel_afdo_verify:
+          # Skip verifying kernel AFDO if it's already verified.
+          if toolchain_util.CheckAFDOArtifactExists(
+              buildroot=builder_run.buildroot,
+              board=board,
+              target='kernel_afdo'):
+            continue
+          self._RunStage(afdo_stages.KernelAFDOUpdateEbuildStage,
                          board, builder_run=builder_run)
 
         # Run BuildPackages in the foreground, generating or using AFDO data
