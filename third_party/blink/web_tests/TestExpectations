@@ -4612,6 +4612,7 @@ crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html 
 crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/coop-sandbox.https.html [ Failure ]
 crbug.com/626703 [ Linux Mac10.10 ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
+crbug.com/626703 [ Linux Mac10.10 ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 
 # Failure due to on-going off-thread paint worklet project.
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
