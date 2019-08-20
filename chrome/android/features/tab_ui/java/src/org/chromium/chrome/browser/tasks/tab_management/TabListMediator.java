@@ -714,6 +714,7 @@ class TabListMediator {
      * The selected border should re-appear in the final fading-in stage.
      */
     void prepareOverview() {
+        if (!FeatureUtilities.isTabToGtsAnimationEnabled()) return;
         assert mVisible;
         int count = 0;
         for (int i = 0; i < mModel.size(); i++) {
