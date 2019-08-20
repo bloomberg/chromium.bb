@@ -175,7 +175,6 @@ jumbo_source_set("browser") {
     "//services/service_manager/public/mojom",
     "//services/service_manager/zygote:zygote_buildflags",
     "//services/shape_detection:lib",
-    "//services/shape_detection/public/cpp:manifest",
     "//services/shape_detection/public/mojom",
     "//services/tracing:lib",
     "//services/tracing:manifest",
