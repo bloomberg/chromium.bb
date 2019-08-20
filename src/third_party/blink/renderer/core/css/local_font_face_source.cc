@@ -47,8 +47,8 @@ LocalFontFaceSource::LocalFontFaceSource(CSSFontFace* css_font_face,
     : face_(css_font_face),
       font_selector_(font_selector),
       font_name_(font_name),
-      need_to_adjust_for_bold_italic_(fontName.EndsWith(" Bold") ||
-                                      fontName.EndsWith(" Italic"),
+      need_to_adjust_for_bold_italic_(font_name.EndsWith(" Bold") ||
+                                      font_name.EndsWith(" Italic")),
       weak_factory_(this) {
   was_resolved_ = IsLocalNonBlocking();
 }
