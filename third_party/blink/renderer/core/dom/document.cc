@@ -7548,8 +7548,7 @@ void Document::UpdateHoverState(Element* inner_element_in_document) {
   // The old hover path only needs to be cleared up to (and not including) the
   // common ancestor;
   //
-  // FIXME(ecobos@igalia.com): oldHoverElement may be disconnected from the
-  // tree already.
+  // TODO(emilio): old_hover_element may be disconnected from the tree already.
   if (old_hover_element && old_hover_element->isConnected()) {
     for (Element* curr = old_hover_element; curr && curr != ancestor_element;
          curr = FlatTreeTraversal::ParentElement(*curr)) {
