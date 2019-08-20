@@ -117,8 +117,18 @@ KURL NormalizeValue(const String& key,
     case ParsedSpecifier::Type::kURL:
       // <spec step="3.3.4">If specifierKey ends with U+002F (/), and the
       // serialization of addressURL does not end with U+002F (/), then:</spec>
-      //
-      // TODO(hiroshige): Implement this.
+      if (key.EndsWith("/") && !value.GetUrl().GetString().EndsWith("/")) {
+        // <spec step="3.3.4.1">Report a warning to the console that an invalid
+        // address was given for the specifier key specifierKey; since
+        // specifierKey ended in a slash, so must the address.</spec>
+        AddIgnoredValueMessage(
+            logger, key,
+            "Since specifierKey ended in a slash, so must the address: " +
+                value_string);
+
+        // <spec step="3.3.4.2">Continue.</spec>
+        return NullURL();
+      }
 
       // <spec step="3.3.5">Append addressURL to
       // validNormalizedAddresses.</spec>
@@ -241,7 +251,7 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
 
       case JSONValue::ValueType::kTypeString: {
         // <spec step="2.3">If value is a string, then set
-        // normalized[normalizedSpecifierKey] to ≪value≫.</spec>
+        // normalized[normalizedSpecifierKey] to «value».</spec>
         String value_string;
         if (!imports->GetString(entry.first, &value_string)) {
           AddIgnoredValueMessage(logger, entry.first,
