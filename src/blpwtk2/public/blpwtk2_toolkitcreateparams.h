@@ -116,6 +116,13 @@ class ToolkitCreateParams
         // chromium, so it may not support *all* the switches mentioned on
         // that page.
 
+    BLPWTK2_EXPORT void appendSideLoadedFontInProcess(const StringRef& fontFile);
+        // Register the specified 'fontFile' to be side-loaded so that it is usable
+        // by the in-process renderer.  The DirectWrite font implementation only
+        // has access to %WINDIR%\Fonts by default.  This function allows
+        // applications to load additional fonts.
+        // Note that right now, this only works for in-process renderers.
+
     BLPWTK2_EXPORT void setInProcessResourceLoader(ResourceLoader*);
         // Install a custom ResourceLoader.  Note that this is only valid when
         // using the 'RENDERER_MAIN' thread-mode, and will only be used for
@@ -225,6 +232,8 @@ class ToolkitCreateParams
     int maxSocketsPerProxy() const;
     size_t numCommandLineSwitches() const;
     StringRef commandLineSwitchAt(size_t index) const;
+    size_t numSideLoadedFonts() const;
+    StringRef sideLoadedFontAt(size_t index) const;
     ResourceLoader* inProcessResourceLoader() const;
     StringRef dictionaryPath() const;
     _invalid_parameter_handler invalidParameterHandler() const;
