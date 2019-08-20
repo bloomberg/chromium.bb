@@ -842,7 +842,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
       session_->http_server_properties();
   if (http_server_properties) {
     http_server_properties->MaybeForceHTTP11(destination_, &server_ssl_config_);
-    if (proxy_info_.is_http() || proxy_info_.is_https()) {
+    if (proxy_info_.is_https()) {
       http_server_properties->MaybeForceHTTP11(
           proxy_info_.proxy_server().host_port_pair(), &proxy_ssl_config_);
     }
