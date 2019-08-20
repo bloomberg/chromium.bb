@@ -74,11 +74,11 @@ void FakeLevelDBService::Destroy(filesystem::mojom::DirectoryPtr,
 void FakeLevelDBService::Bind(
     const service_manager::Identity& remote_identity,
     mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver) {
-  bindings_.AddBinding(this, std::move(receiver));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void FakeLevelDBService::FlushBindingsForTesting() {
-  bindings_.FlushForTesting();
+  receivers_.FlushForTesting();
 }
 
 }  // namespace test

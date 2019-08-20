@@ -21,6 +21,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
@@ -186,7 +187,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  leveldb::mojom::LevelDBServicePtr leveldb_service_;
+  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
   leveldb::mojom::LevelDBDatabaseAssociatedPtr database_;
   bool tried_to_recreate_during_open_ = false;
 

@@ -717,7 +717,9 @@ void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
     // We were not given a subdirectory. Use a memory backed database.
-    connector_->BindInterface(file::mojom::kServiceName, &leveldb_service_);
+    leveldb_service_.reset();
+    connector_->Connect(file::mojom::kServiceName,
+                        leveldb_service_.BindNewPipeAndPassReceiver());
     leveldb_service_->OpenInMemory(
         memory_dump_id_, "SessionStorageDatabase", MakeRequest(&database_),
         base::BindOnce(&SessionStorageContextMojo::OnDatabaseOpened,
@@ -738,7 +740,9 @@ void SessionStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
 
   // Now that we have a directory, connect to the LevelDB service and get our
   // database.
-  connector_->BindInterface(file::mojom::kServiceName, &leveldb_service_);
+  leveldb_service_.reset();
+  connector_->Connect(file::mojom::kServiceName,
+                      leveldb_service_.BindNewPipeAndPassReceiver());
 
   // We might still need to use the directory, so create a clone.
   filesystem::mojom::DirectoryPtr partition_directory_clone;

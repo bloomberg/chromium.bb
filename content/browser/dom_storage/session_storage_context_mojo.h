@@ -26,6 +26,7 @@
 #include "content/public/browser/session_storage_usage_info.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
@@ -255,7 +256,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  leveldb::mojom::LevelDBServicePtr leveldb_service_;
+  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
   leveldb::mojom::LevelDBDatabaseAssociatedPtr database_;
   bool tried_to_recreate_during_open_ = false;
 
