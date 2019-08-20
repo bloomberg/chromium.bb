@@ -66,11 +66,6 @@ class SystemMemoryPressureEvaluator
   // Returns the current system memory pressure evaluator.
   static SystemMemoryPressureEvaluator* Get();
 
-  base::MemoryPressureListener::MemoryPressureLevel current_vote_for_testing()
-      const {
-    return current_vote_;
-  }
-
  protected:
   // This constructor is only used for testing.
   SystemMemoryPressureEvaluator(
@@ -99,9 +94,6 @@ class SystemMemoryPressureEvaluator
   // Memory.PressureLevel metric.
   base::TimeTicks last_pressure_level_report_;
 
-  base::MemoryPressureListener::MemoryPressureLevel current_vote_ =
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
-
   // File descriptor used to read and poll(2) available memory from sysfs,
   // In /sys/kernel/mm/chromeos-low_mem/available.
   base::ScopedFD available_mem_file_;
@@ -115,10 +107,6 @@ class SystemMemoryPressureEvaluator
   // available file until it receives a kernel notification, this is
   // configurable to make testing easier.
   base::RepeatingCallback<bool()> kernel_waiting_callback_;
-
-  // In charge of forwarding votes from here to the
-  // MemoryPressureVoteAggregator.
-  std::unique_ptr<MemoryPressureVoter> voter_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

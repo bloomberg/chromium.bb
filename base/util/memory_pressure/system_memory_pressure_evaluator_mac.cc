@@ -40,14 +40,13 @@ SystemMemoryPressureEvaluator::MemoryPressureLevelForMacMemoryPressureLevel(
 
 SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
     std::unique_ptr<MemoryPressureVoter> voter)
-    : memory_level_event_source_(dispatch_source_create(
+    : util::SystemMemoryPressureEvaluator(std::move(voter)),
+      memory_level_event_source_(dispatch_source_create(
           DISPATCH_SOURCE_TYPE_MEMORYPRESSURE,
           0,
           DISPATCH_MEMORYPRESSURE_WARN | DISPATCH_MEMORYPRESSURE_CRITICAL |
               DISPATCH_MEMORYPRESSURE_NORMAL,
-          dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))),
-      current_vote_(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
-      voter_(std::move(voter)) {
+          dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))) {
   // Attach an event handler to the memory pressure event source.
   if (memory_level_event_source_.get()) {
     dispatch_source_set_event_handler(memory_level_event_source_, ^{
@@ -81,8 +80,8 @@ void SystemMemoryPressureEvaluator::UpdatePressureLevel() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Get the current macOS pressure level and convert to the corresponding
   // Chrome pressure level.
-  current_vote_ =
-      MemoryPressureLevelForMacMemoryPressureLevel(GetMacMemoryPressureLevel());
+  SetCurrentVote(MemoryPressureLevelForMacMemoryPressureLevel(
+      GetMacMemoryPressureLevel()));
 }
 
 void SystemMemoryPressureEvaluator::OnMemoryPressureChanged(
@@ -96,9 +95,9 @@ void SystemMemoryPressureEvaluator::OnMemoryPressureChanged(
   // Run the callback that's waiting on memory pressure change notifications.
   // The convention is to not send notifiations on memory pressure returning to
   // normal.
-  bool notify =
-      current_vote_ != base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
-  voter_->SetVote(current_vote_, notify);
+  bool notify = current_vote() !=
+                base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  SendCurrentVote(notify);
 }
 
 }  // namespace mac

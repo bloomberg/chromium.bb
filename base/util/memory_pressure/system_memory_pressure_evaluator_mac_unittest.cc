@@ -76,7 +76,7 @@ TEST(MacSystemMemoryPressureEvaluatorTest, CurrentMemoryPressure) {
   TestSystemMemoryPressureEvaluator evaluator(nullptr);
 
   base::MemoryPressureListener::MemoryPressureLevel memory_pressure =
-      evaluator.current_vote_for_testing();
+      evaluator.current_vote();
   EXPECT_TRUE(
       memory_pressure ==
           base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE ||
@@ -92,18 +92,18 @@ TEST(MacSystemMemoryPressureEvaluatorTest, MemoryPressureConversion) {
   evaluator.macos_pressure_level_for_testing_ = DISPATCH_MEMORYPRESSURE_NORMAL;
   evaluator.UpdatePressureLevel();
   EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            evaluator.current_vote_for_testing());
+            evaluator.current_vote());
 
   evaluator.macos_pressure_level_for_testing_ = DISPATCH_MEMORYPRESSURE_WARN;
   evaluator.UpdatePressureLevel();
   EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-            evaluator.current_vote_for_testing());
+            evaluator.current_vote());
 
   evaluator.macos_pressure_level_for_testing_ =
       DISPATCH_MEMORYPRESSURE_CRITICAL;
   evaluator.UpdatePressureLevel();
   EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
-            evaluator.current_vote_for_testing());
+            evaluator.current_vote());
 }
 
 }  // namespace mac

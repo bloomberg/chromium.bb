@@ -38,6 +38,22 @@ SystemMemoryPressureEvaluator::CreateDefaultSystemEvaluator(
   return nullptr;
 }
 
-SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator() = default;
+SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
+    std::unique_ptr<MemoryPressureVoter> voter)
+    : current_vote_(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
+      voter_(std::move(voter)) {}
+
+SystemMemoryPressureEvaluator::~SystemMemoryPressureEvaluator() = default;
+
+void SystemMemoryPressureEvaluator::SetCurrentVote(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  current_vote_ = level;
+}
+
+void SystemMemoryPressureEvaluator::SendCurrentVote(bool notify) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  voter_->SetVote(current_vote_, notify);
+}
 
 }  // namespace util

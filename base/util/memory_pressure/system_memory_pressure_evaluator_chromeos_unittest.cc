@@ -191,7 +191,7 @@ TEST(ChromeOSSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
 
   // At this point we have no memory pressure.
   ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            evaluator->current_vote_for_testing());
+            evaluator->current_vote());
 
   // Moderate Pressure.
   ASSERT_TRUE(SetFileContents(available_file, "900"));
@@ -200,35 +200,35 @@ TEST(ChromeOSSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
   // 1 second".
   RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-            evaluator->current_vote_for_testing());
+            evaluator->current_vote());
 
   // Critical Pressure.
   ASSERT_TRUE(SetFileContents(available_file, "450"));
   TriggerKernelNotification(write_end.get());
   RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
-            evaluator->current_vote_for_testing());
+            evaluator->current_vote());
 
   // Moderate Pressure.
   ASSERT_TRUE(SetFileContents(available_file, "550"));
   TriggerKernelNotification(write_end.get());
   RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-            evaluator->current_vote_for_testing());
+            evaluator->current_vote());
 
   // No pressure, note: this will not cause any event.
   ASSERT_TRUE(SetFileContents(available_file, "1150"));
   TriggerKernelNotification(write_end.get());
   RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            evaluator->current_vote_for_testing());
+            evaluator->current_vote());
 
   // Back into moderate.
   ASSERT_TRUE(SetFileContents(available_file, "950"));
   TriggerKernelNotification(write_end.get());
   RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-            evaluator->current_vote_for_testing());
+            evaluator->current_vote());
 
   // Now our events should be MODERATE, CRITICAL, MODERATE.
   ASSERT_EQ(4u, pressure_events.size());

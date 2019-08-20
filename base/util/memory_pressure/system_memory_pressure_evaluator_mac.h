@@ -31,11 +31,6 @@ class SystemMemoryPressureEvaluator
       std::unique_ptr<MemoryPressureVoter> voter);
   ~SystemMemoryPressureEvaluator() override;
 
-  base::MemoryPressureListener::MemoryPressureLevel current_vote_for_testing()
-      const {
-    return current_vote_;
-  }
-
  private:
   friend TestSystemMemoryPressureEvaluator;
 
@@ -54,12 +49,6 @@ class SystemMemoryPressureEvaluator
 
   // The dispatch source that generates memory pressure change notifications.
   base::ScopedDispatchObject<dispatch_source_t> memory_level_event_source_;
-
-  base::MemoryPressureListener::MemoryPressureLevel current_vote_;
-
-  // In charge of forwarding votes from here to the
-  // MemoryPressureVoteAggregator.
-  std::unique_ptr<MemoryPressureVoter> voter_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

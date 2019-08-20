@@ -126,11 +126,11 @@ SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
     base::RepeatingCallback<bool(int)> kernel_waiting_callback,
     bool enable_metrics,
     std::unique_ptr<MemoryPressureVoter> voter)
-    : available_mem_file_(HANDLE_EINTR(open(available_file.c_str(), O_RDONLY))),
+    : util::SystemMemoryPressureEvaluator(std::move(voter)),
+      available_mem_file_(HANDLE_EINTR(open(available_file.c_str(), O_RDONLY))),
       kernel_waiting_callback_(
           base::BindRepeating(std::move(kernel_waiting_callback),
                               available_mem_file_.get())),
-      voter_(std::move(voter)),
       weak_ptr_factory_(this) {
   DCHECK(g_system_evaluator == nullptr);
   g_system_evaluator = this;
@@ -211,14 +211,14 @@ bool SystemMemoryPressureEvaluator::SupportsKernelNotifications() {
 void SystemMemoryPressureEvaluator::CheckMemoryPressure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto old_vote = current_vote_;
+  auto old_vote = current_vote();
   int64_t mem_avail = ReadAvailableMemoryMB(available_mem_file_.get());
-  current_vote_ = GetMemoryPressureLevelFromAvailable(
+  SetCurrentVote(GetMemoryPressureLevelFromAvailable(
       mem_avail, moderate_pressure_threshold_mb_,
-      critical_pressure_threshold_mb_);
+      critical_pressure_threshold_mb_));
   bool notify = true;
 
-  if (current_vote_ ==
+  if (current_vote() ==
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
     last_moderate_notification_ = base::TimeTicks();
     notify = false;
@@ -226,9 +226,9 @@ void SystemMemoryPressureEvaluator::CheckMemoryPressure() {
 
   // In the case of MODERATE memory pressure we may be in this state for quite
   // some time so we limit the rate at which we dispatch notifications.
-  else if (current_vote_ ==
+  else if (current_vote() ==
            base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE) {
-    if (old_vote == current_vote_) {
+    if (old_vote == current_vote()) {
       if (base::TimeTicks::Now() - last_moderate_notification_ <
           kModerateMemoryPressureCooldownTime) {
         notify = false;
@@ -246,8 +246,8 @@ void SystemMemoryPressureEvaluator::CheckMemoryPressure() {
 
   VLOG(1) << "SystemMemoryPressureEvaluator::CheckMemoryPressure dispatching "
              "at level: "
-          << current_vote_;
-  voter_->SetVote(current_vote_, notify);
+          << current_vote();
+  SendCurrentVote(notify);
 }
 
 void SystemMemoryPressureEvaluator::HandleKernelNotification(bool result) {
@@ -277,7 +277,7 @@ void SystemMemoryPressureEvaluator::CheckMemoryPressureAndRecordStatistics() {
   // Record UMA histogram statistics for the current memory pressure level, it
   // would seem that only Memory.PressureLevel would be necessary.
   constexpr int kNumberPressureLevels = 3;
-  UMA_HISTOGRAM_ENUMERATION("ChromeOS.MemoryPressureLevel", current_vote_,
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.MemoryPressureLevel", current_vote(),
                             kNumberPressureLevels);
 }
 
