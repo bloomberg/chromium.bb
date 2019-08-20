@@ -2386,7 +2386,7 @@
   {
     "name": "new-usb-backend",
     "owners": [ "reillyg@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 83
   },
   {
     "name": "newblue",
