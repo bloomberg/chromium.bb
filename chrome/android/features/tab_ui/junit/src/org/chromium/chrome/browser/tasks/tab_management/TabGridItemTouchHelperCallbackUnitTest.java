@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.graphics.Canvas;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
@@ -102,6 +103,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     Profile mProfile;
     @Mock
     Tracker mTracker;
+    @Mock
+    GridLayoutManager mGridLayoutManager;
 
     private Tab mTab1;
     private Tab mTab2;
@@ -169,6 +172,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
 
     private void setupRecyclerView() {
         doReturn(mAdapter).when(mRecyclerView).getAdapter();
+        doReturn(mGridLayoutManager).when(mRecyclerView).getLayoutManager();
         doReturn(12).when(mRecyclerView).getBottom();
         doReturn(4).when(mRecyclerView).getChildCount();
         doReturn(4).when(mAdapter).getItemCount();
@@ -271,7 +275,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
                 mMockViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter).mergeTabsToGroup(TAB1_ID, TAB2_ID);
-        verify(mRecyclerView).removeView(mItemView1);
+        verify(mGridLayoutManager).removeView(mItemView1);
         verify(mTracker).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
         assertThat(mModel.get(0).get(TabProperties.CARD_ANIMATION_STATUS),
                 equalTo(ClosableTabGridViewHolder.AnimationStatus.HOVERED_CARD_ZOOM_OUT));
@@ -294,7 +298,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         mItemTouchHelperCallback.onSelectedChanged(
                 mMockViewHolder2, ItemTouchHelper.ACTION_STATE_IDLE);
 
-        verify(mRecyclerView).removeView(mItemView2);
+        verify(mGridLayoutManager).removeView(mItemView2);
         verify(mTabGroupModelFilter).mergeTabsToGroup(TAB2_ID, TAB1_ID);
         verify(mTracker).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
         assertThat(mModel.get(1).get(TabProperties.CARD_ANIMATION_STATUS),
@@ -326,7 +330,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         assertThat(mModel.get(0).get(TabProperties.ALPHA), equalTo(1f));
         // Merge signal should never be sent.
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
-        verify(mRecyclerView, never()).removeView(any(View.class));
+        verify(mGridLayoutManager, never()).removeView(any(View.class));
     }
 
     @Test
@@ -353,7 +357,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         assertThat(mModel.get(1).get(TabProperties.ALPHA), equalTo(1f));
         // Merge signal should never be sent.
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
-        verify(mRecyclerView, never()).removeView(any(View.class));
+        verify(mGridLayoutManager, never()).removeView(any(View.class));
     }
 
     @Test
@@ -381,7 +385,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         verify(mTabGroupModelFilter).moveTabOutOfGroup(TAB1_ID);
         verify(mTabGridDialogHandler)
                 .updateUngroupBarStatus(TabGridDialogParent.UngroupBarStatus.HIDE);
-        verify(mRecyclerView).removeView(mItemView1);
+        verify(mGridLayoutManager).removeView(mItemView1);
     }
 
     @Test
