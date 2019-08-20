@@ -1587,6 +1587,7 @@ jumbo_split_static_library("browser") {
     "sharing/sharing_message_handler.h",
     "sharing/sharing_metrics.cc",
     "sharing/sharing_metrics.h",
+    "sharing/sharing_send_message_result.h",
     "sharing/sharing_service.cc",
     "sharing/sharing_service.h",
     "sharing/sharing_service_factory.cc",
