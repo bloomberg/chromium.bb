@@ -38,7 +38,8 @@ STUBS = {
 # Accumulated template parameters for generated stubs.
 class Template(collections.namedtuple('Template', (
     'PYTHON_RELDIR', 'PYTHON_BIN_RELDIR', 'PYTHON_BIN_RELDIR_UNIX',
-    'GIT_BIN_RELDIR', 'GIT_BIN_RELDIR_UNIX', 'GIT_PROGRAM',
+    'PYTHON3_BIN_RELDIR', 'PYTHON3_BIN_RELDIR_UNIX', 'GIT_BIN_RELDIR',
+    'GIT_BIN_RELDIR_UNIX', 'GIT_PROGRAM',
     ))):
 
   @classmethod
@@ -164,12 +165,20 @@ def _toolchain_in_use(toolchain_path):
       os.path.join(toolchain_path, 'python', 'bin'), # CIPD
       toolchain_path, # Legacy ZIP distributions.
       ):
-      for component in (
-          os.path.join(python_dir, 'python.exe'),
-          os.path.join(python_dir, 'DLLs', 'unicodedata.pyd'),
-          ):
-        if os.path.isfile(component) and _in_use(component):
-          return True
+    for component in (
+        os.path.join(python_dir, 'python.exe'),
+        os.path.join(python_dir, 'DLLs', 'unicodedata.pyd'),
+        ):
+      if os.path.isfile(component) and _in_use(component):
+        return True
+  # Look for Pytho:n 3 files that may be in use.
+  python_dir = os.path.join(toolchain_path, 'python3', 'bin')
+  for component in (
+      os.path.join(python_dir, 'python3.exe'),
+      os.path.join(python_dir, 'DLLs', 'unicodedata.pyd'),
+      ):
+    if os.path.isfile(component) and _in_use(component):
+      return True
   return False
 
 
@@ -297,6 +306,9 @@ def main(argv):
       PYTHON_BIN_RELDIR=os.path.join(args.win_tools_name, 'python', 'bin'),
       PYTHON_BIN_RELDIR_UNIX=posixpath.join(
           args.win_tools_name, 'python', 'bin'),
+      PYTHON3_BIN_RELDIR=os.path.join(args.win_tools_name, 'python3', 'bin'),
+      PYTHON3_BIN_RELDIR_UNIX=posixpath.join(
+          args.win_tools_name, 'python3', 'bin'),
       GIT_BIN_RELDIR=os.path.join(args.win_tools_name, 'git'),
       GIT_BIN_RELDIR_UNIX=posixpath.join(args.win_tools_name, 'git'))
 
@@ -320,15 +332,21 @@ def main(argv):
   maybe_update(
       template.PYTHON_BIN_RELDIR,
       os.path.join(ROOT_DIR, 'python_bin_reldir.txt'))
+  maybe_update(
+      template.PYTHON3_BIN_RELDIR,
+      os.path.join(ROOT_DIR, 'python3_bin_reldir.txt'))
 
   python_bat_template = ('python27.new.bat' if not args.bleeding_edge
                          else 'python27.bleeding_edge.bat')
+  python3_bat_template = ('python3.new.bat' if not args.bleeding_edge
+                          else 'python3.bleeding_edge.bat')
 
   # Re-evaluate and regenerate our root templated files.
   for src_name, dst_name in (
       ('git-bash.template.sh', 'git-bash'),
       ('pylint.new.bat', 'pylint.bat'),
       (python_bat_template, 'python.bat'),
+      (python3_bat_template, 'python3.bat'),
       ):
     template.maybe_install(src_name, os.path.join(ROOT_DIR, dst_name))
 
