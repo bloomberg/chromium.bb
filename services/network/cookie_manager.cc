@@ -120,9 +120,9 @@ void CookieManager::DeleteCookies(mojom::CookieDeletionFilterPtr filter,
 void CookieManager::AddCookieChangeListener(
     const GURL& url,
     const base::Optional<std::string>& name,
-    mojom::CookieChangeListenerPtr listener) {
+    mojo::PendingRemote<mojom::CookieChangeListener> listener) {
   auto listener_registration = std::make_unique<ListenerRegistration>();
-  listener_registration->listener = std::move(listener);
+  listener_registration->listener.Bind(std::move(listener));
 
   auto cookie_change_callback = base::BindRepeating(
       &CookieManager::ListenerRegistration::DispatchCookieStoreChange,
@@ -141,7 +141,7 @@ void CookieManager::AddCookieChangeListener(
             url, std::move(cookie_change_callback));
   }
 
-  listener_registration->listener.set_connection_error_handler(
+  listener_registration->listener.set_disconnect_handler(
       base::BindOnce(&CookieManager::RemoveChangeListener,
                      // base::Unretained is safe as destruction of the
                      // CookieManager will also destroy the
@@ -158,9 +158,9 @@ void CookieManager::AddCookieChangeListener(
 }
 
 void CookieManager::AddGlobalChangeListener(
-    mojom::CookieChangeListenerPtr listener) {
+    mojo::PendingRemote<mojom::CookieChangeListener> listener) {
   auto listener_registration = std::make_unique<ListenerRegistration>();
-  listener_registration->listener = std::move(listener);
+  listener_registration->listener.Bind(std::move(listener));
 
   listener_registration->subscription =
       cookie_store_->GetChangeDispatcher().AddCallbackForAllChanges(
@@ -171,7 +171,7 @@ void CookieManager::AddGlobalChangeListener(
               // CookieChangedSubscription, unregistering the callback.
               base::Unretained(listener_registration.get())));
 
-  listener_registration->listener.set_connection_error_handler(
+  listener_registration->listener.set_disconnect_handler(
       base::BindOnce(&CookieManager::RemoveChangeListener,
                      // base::Unretained is safe as destruction of the
                      // CookieManager will also destroy the

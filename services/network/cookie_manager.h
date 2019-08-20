@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_deletion_info.h"
 #include "services/network/cookie_settings.h"
@@ -70,9 +71,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   void AddCookieChangeListener(
       const GURL& url,
       const base::Optional<std::string>& name,
-      mojom::CookieChangeListenerPtr listener) override;
+      mojo::PendingRemote<mojom::CookieChangeListener> listener) override;
   void AddGlobalChangeListener(
-      mojom::CookieChangeListenerPtr listener) override;
+      mojo::PendingRemote<mojom::CookieChangeListener> listener) override;
   void CloneInterface(mojom::CookieManagerRequest new_interface) override;
 
   size_t GetClientsBoundForTesting() const { return bindings_.size(); }
@@ -112,7 +113,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
     std::unique_ptr<net::CookieChangeSubscription> subscription;
 
     // The observer receiving change notifications.
-    mojom::CookieChangeListenerPtr listener;
+    mojo::Remote<mojom::CookieChangeListener> listener;
 
     DISALLOW_COPY_AND_ASSIGN(ListenerRegistration);
   };
