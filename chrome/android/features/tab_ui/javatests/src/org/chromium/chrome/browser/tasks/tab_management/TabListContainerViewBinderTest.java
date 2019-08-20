@@ -41,10 +41,10 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
- * Tests for {@link TabListRecyclerView} and {@link TabGridContainerViewBinder}
+ * Tests for {@link TabListRecyclerView} and {@link TabListContainerViewBinder}
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
+public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     /**
      * DummyUiActivityTestCase also needs {@link ChromeFeatureList}'s
      * internal test-only feature map, not the {@link CommandLine} provided by
@@ -54,7 +54,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     public TestRule mProcessor = new Features.JUnitProcessor();
 
     private static final int CONTAINER_HEIGHT = 56;
-    private TabGridContainerViewBinder mTabGridContainerViewHolder;
+    private TabListContainerViewBinder mTabListContainerViewHolder;
     private PropertyModel mContainerModel;
     private PropertyModelChangeProcessor mMCP;
     private TabListRecyclerView mRecyclerView;
@@ -110,7 +110,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
         mContainerModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mMCP = PropertyModelChangeProcessor.create(
-                mContainerModel, mRecyclerView, TabGridContainerViewBinder::bind);
+                mContainerModel, mRecyclerView, TabListContainerViewBinder::bind);
     }
 
     @Test

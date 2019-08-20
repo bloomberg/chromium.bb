@@ -52,13 +52,12 @@ import org.chromium.ui.modelutil.PropertyModel;
 import java.util.List;
 
 /**
- * The Mediator that is responsible for resetting the tab grid based on visibility and model
- * changes.
+ * The Mediator that is responsible for resetting the tab grid or carousel based on visibility and
+ * model changes.
  */
-class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
-                                         TabListRecyclerView.VisibilityListener,
-                                         TabListMediator.GridCardOnClickListenerProvider {
-    private static final String TAG = "GTSMediator";
+class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView.VisibilityListener,
+                                     TabListMediator.GridCardOnClickListenerProvider {
+    private static final String TAG = "TabSwitcherMediator";
 
     // This should be the same as TabListCoordinator.GRID_LAYOUT_SPAN_COUNT for the selected tab
     // to be on the 2nd row.
@@ -86,8 +85,7 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
     private final TabModelSelector mTabModelSelector;
     private final TabModelObserver mTabModelObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
-    private final ObserverList<GridTabSwitcher.GridOverviewModeObserver> mObservers =
-            new ObserverList<>();
+    private final ObserverList<TabSwitcher.OverviewModeObserver> mObservers = new ObserverList<>();
     private final ChromeFullscreenManager mFullscreenManager;
     private TabGridDialogMediator.ResetHandler mTabGridDialogResetHandler;
     private final ChromeFullscreenManager.FullscreenListener mFullscreenListener =
@@ -109,9 +107,9 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
             };
 
     private final CompositorViewHolder mCompositorViewHolder;
-    private GridTabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
     private final TabSelectionEditorCoordinator
             .TabSelectionEditorController mTabSelectionEditorController;
+    private TabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
 
     /**
      * In cases where a didSelectTab was due to switching models with a toggle,
@@ -145,14 +143,14 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
      * Basic constructor for the Mediator.
      * @param resetHandler The {@link ResetHandler} that handles reset for this Mediator.
      * @param containerViewModel The {@link PropertyModel} to keep state on the View containing the
-     *         grid.
+     *         grid or carousel.
      * @param tabModelSelector {@link TabModelSelector} to observer for model and selection changes.
      * @param fullscreenManager {@link FullscreenManager} to use.
      * @param compositorViewHolder {@link CompositorViewHolder} to use.
      * @param tabSelectionEditorController The controller that can control the visibility of the
      *                                     TabSelectionEditor.
      */
-    GridTabSwitcherMediator(ResetHandler resetHandler, PropertyModel containerViewModel,
+    TabSwitcherMediator(ResetHandler resetHandler, PropertyModel containerViewModel,
             TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
             CompositorViewHolder compositorViewHolder,
             TabSelectionEditorCoordinator
@@ -319,7 +317,7 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
             if (tab.getId() == mTabIdwhenShown) {
                 RecordUserAction.record("MobileTabReturnedToCurrentTab");
                 RecordHistogram.recordSparseHistogram(
-                        "Tabs.TabOffsetOfSwitch." + GridTabSwitcherCoordinator.COMPONENT_NAME, 0);
+                        "Tabs.TabOffsetOfSwitch." + TabSwitcherCoordinator.COMPONENT_NAME, 0);
             } else {
                 int fromIndex = mTabModelSelector.getTabModelFilterProvider()
                                         .getCurrentTabModelFilter()
@@ -330,9 +328,9 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
 
                 if (fromIndex != toIndex || fromTab.getId() == tab.getId()) {
                     RecordUserAction.record(
-                            "MobileTabSwitched." + GridTabSwitcherCoordinator.COMPONENT_NAME);
+                            "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
                     RecordHistogram.recordSparseHistogram(
-                            "Tabs.TabOffsetOfSwitch." + GridTabSwitcherCoordinator.COMPONENT_NAME,
+                            "Tabs.TabOffsetOfSwitch." + TabSwitcherCoordinator.COMPONENT_NAME,
                             fromIndex - toIndex);
                 }
             }
@@ -347,8 +345,7 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
                 // here.
                 RecordUserAction.record("MobileTabSwitched");
             }
-            RecordUserAction.record(
-                    "MobileTabSwitched." + GridTabSwitcherCoordinator.COMPONENT_NAME);
+            RecordUserAction.record("MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
         }
     }
 
@@ -358,12 +355,12 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
     }
 
     @Override
-    public void addOverviewModeObserver(GridTabSwitcher.GridOverviewModeObserver observer) {
+    public void addOverviewModeObserver(TabSwitcher.OverviewModeObserver observer) {
         mObservers.addObserver(observer);
     }
 
     @Override
-    public void removeOverviewModeObserver(GridTabSwitcher.GridOverviewModeObserver observer) {
+    public void removeOverviewModeObserver(TabSwitcher.OverviewModeObserver observer) {
         mObservers.removeObserver(observer);
     }
 
@@ -413,14 +410,14 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
 
     @Override
     public void startedShowing(boolean isAnimating) {
-        for (GridTabSwitcher.GridOverviewModeObserver observer : mObservers) {
+        for (TabSwitcher.OverviewModeObserver observer : mObservers) {
             observer.startedShowing();
         }
     }
 
     @Override
     public void finishedShowing() {
-        for (GridTabSwitcher.GridOverviewModeObserver observer : mObservers) {
+        for (TabSwitcher.OverviewModeObserver observer : mObservers) {
             observer.finishedShowing();
         }
         setContentOverlayVisibility(false);
@@ -429,14 +426,14 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
     @Override
     public void startedHiding(boolean isAnimating) {
         setContentOverlayVisibility(true);
-        for (GridTabSwitcher.GridOverviewModeObserver observer : mObservers) {
+        for (TabSwitcher.OverviewModeObserver observer : mObservers) {
             observer.startedHiding();
         }
     }
 
     @Override
     public void finishedHiding() {
-        for (GridTabSwitcher.GridOverviewModeObserver observer : mObservers) {
+        for (TabSwitcher.OverviewModeObserver observer : mObservers) {
             observer.finishedHiding();
         }
     }
@@ -456,7 +453,7 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
 
     /**
      * Do clean-up work after the overview hiding animation is finished.
-     * @see GridTabSwitcher#postHiding
+     * @see TabSwitcher#postHiding
      */
     void postHiding() {
         Log.d(TAG, "SoftCleanupDelay = " + getSoftCleanupDelay());
@@ -489,7 +486,7 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
                 mTabModelObserver);
     }
 
-    void setOnTabSelectingListener(GridTabSwitcher.OnTabSelectingListener listener) {
+    void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener) {
         mOnTabSelectingListener = listener;
     }
 

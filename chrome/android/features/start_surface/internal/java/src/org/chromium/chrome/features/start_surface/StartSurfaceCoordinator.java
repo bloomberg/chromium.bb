@@ -8,8 +8,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.TasksSurface;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.start_surface.R;
 
@@ -30,8 +30,8 @@ public class StartSurfaceCoordinator implements StartSurface {
         // overlap the start surface's bottom bar.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.TWO_PANES_START_SURFACE_ANDROID)
                 && !FeatureUtilities.isBottomToolbarEnabled()) {
-            // Margin the bottom of the Tab grid to save space for the bottom bar.
-            mTasksSurface.getTabGridDelegate().setBottomControlsHeight(
+            // Margin the bottom of the Tab list to save space for the bottom bar.
+            mTasksSurface.getTabListDelegate().setBottomControlsHeight(
                 ContextUtils.getApplicationContext().getResources()
                     .getDimensionPixelSize(R.dimen.ss_bottom_bar_height));
 
@@ -43,7 +43,7 @@ public class StartSurfaceCoordinator implements StartSurface {
             mExploreSurfaceCoordinator = new ExploreSurfaceCoordinator();
         }
 
-        mStartSurfaceMediator = new StartSurfaceMediator(mTasksSurface.getGridController(),
+        mStartSurfaceMediator = new StartSurfaceMediator(mTasksSurface.getController(),
                 mBottomBarCoordinator, mExploreSurfaceCoordinator);
     }
 
@@ -59,7 +59,7 @@ public class StartSurfaceCoordinator implements StartSurface {
     }
 
     @Override
-    public GridTabSwitcher.TabGridDelegate getTabGridDelegate() {
-        return mTasksSurface.getTabGridDelegate();
+    public TabSwitcher.TabListDelegate getTabListDelegate() {
+        return mTasksSurface.getTabListDelegate();
     }
 }

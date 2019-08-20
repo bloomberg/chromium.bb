@@ -7,22 +7,21 @@ package org.chromium.chrome.features.start_surface;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 
 /** The mediator implements the logic to interact with the surfaces and caller. */
-class StartSurfaceMediator
-        implements StartSurface.Controller, GridTabSwitcher.GridOverviewModeObserver {
+class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.OverviewModeObserver {
     private final ObserverList<StartSurface.OverviewModeObserver> mObservers = new ObserverList<>();
-    private final GridTabSwitcher.GridController mGridController;
+    private final TabSwitcher.Controller mController;
     @Nullable
     private final BottomBarCoordinator mBottomBarCoordinator;
     @Nullable
     private final ExploreSurfaceCoordinator mExploreSurfaceCoordinator;
 
-    StartSurfaceMediator(GridTabSwitcher.GridController gridController,
+    StartSurfaceMediator(TabSwitcher.Controller controller,
             @Nullable BottomBarCoordinator bottomBarCoordinator,
             @Nullable ExploreSurfaceCoordinator exploreSurfaceCoordinator) {
-        mGridController = gridController;
+        mController = controller;
         mBottomBarCoordinator = bottomBarCoordinator;
         mExploreSurfaceCoordinator = exploreSurfaceCoordinator;
 
@@ -39,13 +38,13 @@ class StartSurfaceMediator
                 }
             });
         }
-        mGridController.addOverviewModeObserver(this);
+        mController.addOverviewModeObserver(this);
     }
 
     // Implements StartSurface.Controller
     @Override
     public boolean overviewVisible() {
-        return mGridController.overviewVisible();
+        return mController.overviewVisible();
     }
 
     @Override
@@ -60,14 +59,14 @@ class StartSurfaceMediator
 
     @Override
     public void hideOverview(boolean animate) {
-        mGridController.hideOverview(animate);
+        mController.hideOverview(animate);
     }
 
     @Override
     public void showOverview(boolean animate) {
-        mGridController.showOverview(animate);
+        mController.showOverview(animate);
 
-        // TODO(crbug.com/982018): Animate the bottom bar together with the Tab Grid view.
+        // TODO(crbug.com/982018): Animate the bottom bar together with the Tab List view.
         if (mBottomBarCoordinator != null) mBottomBarCoordinator.setVisibility(true);
     }
 
@@ -75,10 +74,10 @@ class StartSurfaceMediator
     public boolean onBackPressed() {
         // TODO(crbug.com/982018): Check whether explore surface is shown, if yes, switch back to
         // home surface.
-        return mGridController.onBackPressed();
+        return mController.onBackPressed();
     }
 
-    // Implements GridTabSwitcher.GridOverviewModeObserver.
+    // Implements TabSwitcher.OverviewModeObserver.
     @Override
     public void startedShowing() {
         for (StartSurface.OverviewModeObserver observer : mObservers) {

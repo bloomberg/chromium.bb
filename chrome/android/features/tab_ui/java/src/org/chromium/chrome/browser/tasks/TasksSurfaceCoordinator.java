@@ -8,15 +8,15 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 
 /**
- * Coordinator for displaying task-related surfaces (Grid Tab Switcher, MV Tiles, Omnibox, etc.).
+ * Coordinator for displaying task-related surfaces (Tab Switcher, MV Tiles, Omnibox, etc.).
  *  Concrete implementation of {@link TasksSurface}.
  */
 public class TasksSurfaceCoordinator implements TasksSurface {
-    private final GridTabSwitcher mGridTabSwitcher;
+    private final TabSwitcher mGridTabSwitcher;
     private final LinearLayout mLayout;
     private final FrameLayout mGridContainerLayout;
 
@@ -39,17 +39,17 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     }
 
     @Override
-    public void setOnTabSelectingListener(GridTabSwitcher.OnTabSelectingListener listener) {
+    public void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener) {
         mGridTabSwitcher.setOnTabSelectingListener(listener);
     }
 
     @Override
-    public GridTabSwitcher.GridController getGridController() {
-        return mGridTabSwitcher.getGridController();
+    public TabSwitcher.Controller getController() {
+        return mGridTabSwitcher.getController();
     }
 
     @Override
-    public GridTabSwitcher.TabGridDelegate getTabGridDelegate() {
-        return mGridTabSwitcher.getTabGridDelegate();
+    public TabSwitcher.TabListDelegate getTabListDelegate() {
+        return mGridTabSwitcher.getTabListDelegate();
     }
 }

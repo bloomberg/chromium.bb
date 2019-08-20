@@ -33,12 +33,20 @@ public interface TabManagementDelegate {
     TasksSurface createTasksSurface(ChromeActivity activity);
 
     /**
-     * Create the {@link GridTabSwitcher}.
+     * Create the {@link TabSwitcher} to display Tabs in grid.
      * @param context The {@link Context} of this switcher.
      * @param containerView The {@link ViewGroup} to add the switcher to.
-     * @return The {@link GridTabSwitcher}.
+     * @return The {@link TabSwitcher}.
      */
-    GridTabSwitcher createGridTabSwitcher(ChromeActivity context, ViewGroup containerView);
+    TabSwitcher createGridTabSwitcher(ChromeActivity context, ViewGroup containerView);
+
+    /**
+     * Create the {@link TabSwitcher} to display Tabs in carousel.
+     * @param context The {@link Context} of this switcher.
+     * @param containerView The {@link ViewGroup} to add the switcher to.
+     * @return The {@link TabSwitcher}.
+     */
+    TabSwitcher createCarouselTabSwitcher(ChromeActivity context, ViewGroup containerView);
 
     /**
      * Create the {@link TabGroupUi}.
