@@ -91,6 +91,8 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     // account_id.
     const CoreAccountId GetAccountID();
     gaia::GaiaSource source() const { return source_; }
+    // Sets GaiaSource suffix.
+    void SetSourceSuffix(std::string suffix);
 
     void RunSetAccountsInCookieCompletedCallback(
         signin::SetAccountsInCookieResult result);
@@ -364,6 +366,10 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   net::BackoffEntry fetcher_backoff_;
   base::OneShotTimer fetcher_timer_;
   int fetcher_retries_;
+
+  // If list accounts retried after a failure because of getting an unexpected
+  // service response.
+  bool listAccountsUnexpectedServerResponseRetried_;
 
   // The last fetched ubertoken, for use in MergeSession retries.
   std::string uber_token_;
