@@ -5370,6 +5370,7 @@ crbug.com/831720 [ Win ] media/controls/tap-to-hide-controls.html [ Pass Failure
 crbug.com/831720 [ Linux ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win ] virtual/audio-service/media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
+crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]
 crbug.com/831720 [ Mac ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
