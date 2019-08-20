@@ -6061,10 +6061,10 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
         base::debug::CrashKeyString* origin =
             base::debug::AllocateCrashKeyString(
                 "mismatched_origin", base::debug::CrashKeySize::Size256);
-        base::debug::ScopedCrashKeyString(url,
-                                          params->url.possibly_invalid_spec());
-        base::debug::ScopedCrashKeyString(origin,
-                                          params->origin.GetDebugString());
+        base::debug::ScopedCrashKeyString scoped_url(
+            url, params->url.possibly_invalid_spec());
+        base::debug::ScopedCrashKeyString scoped_origin(
+            origin, params->origin.GetDebugString());
         CHECK(false) << " url:" << params->url << " origin:" << params->origin;
       }
     }
