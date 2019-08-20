@@ -112,13 +112,6 @@ class UdpSocket {
   virtual Error JoinMulticastGroup(const IPAddress& address,
                                    NetworkInterfaceIndex ifindex) = 0;
 
-  // Performs a non-blocking read on the socket, returning the number of bytes
-  // received. Note that a non-Error return value of 0 is a valid result,
-  // indicating an empty message has been received. Also note that
-  // Error::Code::kAgain might be returned if there is no message currently
-  // ready for receive, which can be expected during normal operation.
-  virtual ErrorOr<UdpPacket> ReceiveMessage() = 0;
-
   // Sends a message and returns the number of bytes sent, on success.
   // Error::Code::kAgain might be returned to indicate the operation would
   // block, which can be expected during normal operation.

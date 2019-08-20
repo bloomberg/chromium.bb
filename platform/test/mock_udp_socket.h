@@ -47,7 +47,6 @@ class MockUdpSocket : public UdpSocket {
   MOCK_METHOD1(SetMulticastOutboundInterface, Error(NetworkInterfaceIndex));
   MOCK_METHOD2(JoinMulticastGroup,
                Error(const IPAddress&, NetworkInterfaceIndex));
-  MOCK_METHOD0(ReceiveMessage, ErrorOr<UdpPacket>());
   MOCK_METHOD3(SendMessage, Error(const void*, size_t, const IPEndpoint&));
   MOCK_METHOD1(SetDscp, Error(DscpMode));
 

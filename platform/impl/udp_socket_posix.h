@@ -18,21 +18,28 @@ struct UdpSocketPosix : public UdpSocket {
                  Client* client,
                  int fd,
                  const IPEndpoint& local_endpoint);
-  ~UdpSocketPosix() final;
+
+  ~UdpSocketPosix() override;
+
+  // Performs a non-blocking read on the socket, returning the number of bytes
+  // received. Note that a non-Error return value of 0 is a valid result,
+  // indicating an empty message has been received. Also note that
+  // Error::Code::kAgain might be returned if there is no message currently
+  // ready for receive, which can be expected during normal operation.
+  virtual ErrorOr<UdpPacket> ReceiveMessage();
 
   // Implementations of UdpSocket methods.
-  bool IsIPv4() const final;
-  bool IsIPv6() const final;
-  IPEndpoint GetLocalEndpoint() const final;
-  Error Bind() final;
-  Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) final;
+  bool IsIPv4() const override;
+  bool IsIPv6() const override;
+  IPEndpoint GetLocalEndpoint() const override;
+  Error Bind() override;
+  Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) override;
   Error JoinMulticastGroup(const IPAddress& address,
-                           NetworkInterfaceIndex ifindex) final;
-  ErrorOr<UdpPacket> ReceiveMessage() final;
+                           NetworkInterfaceIndex ifindex) override;
   Error SendMessage(const void* data,
                     size_t length,
-                    const IPEndpoint& dest) final;
-  Error SetDscp(DscpMode state) final;
+                    const IPEndpoint& dest) override;
+  Error SetDscp(DscpMode state) override;
 
   int GetFd() const { return fd_; }
 
