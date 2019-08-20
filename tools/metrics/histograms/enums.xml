@@ -24332,6 +24332,7 @@ Called by update_net_error_codes.py.-->
   <int value="3001" label="XMLHttpRequestSynchronousInCrossOriginSubframe"/>
   <int value="3002" label="XMLHttpRequestSynchronousInSameOriginSubframe"/>
   <int value="3003" label="XMLHttpRequestSynchronousInWorker"/>
+  <int value="3004" label="PerformanceObserverBufferedFlag"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
