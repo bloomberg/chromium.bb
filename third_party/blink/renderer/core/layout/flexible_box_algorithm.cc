@@ -52,6 +52,24 @@ ItemPosition BoxAlignmentToItemPosition(EBoxAlignment alignment) {
   }
 }
 
+ContentPosition BoxPackToContentPosition(EBoxPack box_pack) {
+  switch (box_pack) {
+    case EBoxPack::kCenter:
+      return ContentPosition::kCenter;
+    case EBoxPack::kJustify:
+      return ContentPosition::kFlexStart;
+    case EBoxPack::kStart:
+      return ContentPosition::kFlexStart;
+    case EBoxPack::kEnd:
+      return ContentPosition::kFlexEnd;
+  }
+}
+
+ContentDistributionType BoxPackToContentDistribution(EBoxPack box_pack) {
+  return box_pack == EBoxPack::kJustify ? ContentDistributionType::kSpaceBetween
+                                        : ContentDistributionType::kDefault;
+}
+
 }  // namespace
 
 FlexItem::FlexItem(LayoutBox* box,
@@ -671,15 +689,20 @@ TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode(
 // static
 StyleContentAlignmentData FlexLayoutAlgorithm::ResolvedJustifyContent(
     const ComputedStyle& style) {
-  ContentPosition position =
-      style.ResolvedJustifyContentPosition(ContentAlignmentNormalBehavior());
+  const bool is_webkit_box = (style.Display() == EDisplay::kWebkitBox ||
+                              style.Display() == EDisplay::kWebkitInlineBox);
+  ContentPosition position = is_webkit_box
+                                 ? BoxPackToContentPosition(style.BoxPack())
+                                 : style.ResolvedJustifyContentPosition(
+                                       ContentAlignmentNormalBehavior());
   ContentDistributionType distribution =
-      style.ResolvedJustifyContentDistribution(
-          ContentAlignmentNormalBehavior());
+      is_webkit_box ? BoxPackToContentDistribution(style.BoxPack())
+                    : style.ResolvedJustifyContentDistribution(
+                          ContentAlignmentNormalBehavior());
   OverflowAlignment overflow = style.JustifyContentOverflowAlignment();
   // For flex, justify-content: stretch behaves as flex-start:
   // https://drafts.csswg.org/css-align/#distribution-flex
-  if (distribution == ContentDistributionType::kStretch) {
+  if (!is_webkit_box && distribution == ContentDistributionType::kStretch) {
     position = ContentPosition::kFlexStart;
     distribution = ContentDistributionType::kDefault;
   }
