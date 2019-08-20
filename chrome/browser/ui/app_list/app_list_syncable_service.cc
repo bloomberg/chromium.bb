@@ -1184,10 +1184,7 @@ void AppListSyncableService::SendSyncChange(
 
 AppListSyncableService::SyncItem* AppListSyncableService::FindSyncItem(
     const std::string& item_id) {
-  auto iter = sync_items_.find(item_id);
-  if (iter == sync_items_.end())
-    return NULL;
-  return iter->second.get();
+  return const_cast<SyncItem*>(GetSyncItem(item_id));
 }
 
 AppListSyncableService::SyncItem* AppListSyncableService::CreateSyncItem(
