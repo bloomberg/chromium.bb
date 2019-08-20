@@ -186,10 +186,10 @@ bool ProcessedTrace::SummaryTable(Table* table,
       case PACKET_SENT:
         count_sent++;
         bytes_sent += it->packet_size();
-        if (getPacketsAcked(key_event.encryption_level())->count(it->packet_number()) > 0) {
+        if (getPacketsAcked(it->encryption_level())->count(it->packet_number()) > 0) {
           bytes_sent_acked += it->packet_size();
         }
-        if (getPacketsLost(key_event.encryption_level())->count(it->packet_number()) > 0) {
+        if (getPacketsLost(it->encryption_level())->count(it->packet_number()) > 0) {
           bytes_sent_lost += it->packet_size();
         }
         break;
