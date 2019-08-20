@@ -905,6 +905,10 @@ NavigationRequest::~NavigationRequest() {
 
   if (navigation_handle())
     GetDelegate()->DidFinishNavigation(navigation_handle());
+
+  // This is done manually here because the NavigationHandleImpl uses
+  // NavigationRequest in its destructor.
+  navigation_handle_.reset();
 }
 
 void NavigationRequest::BeginNavigation() {
