@@ -450,11 +450,11 @@ void EditableCombobox::OnViewBlurred(View* observed_view) {
 // EditableCombobox, ButtonListener overrides:
 
 void EditableCombobox::ButtonPressed(Button* sender, const ui::Event& event) {
+  textfield_->RequestFocus();
   if (menu_runner_ && menu_runner_->IsRunning()) {
     CloseMenu();
     return;
   }
-  textfield_->RequestFocus();
   ui::MenuSourceType source_type = ui::MENU_SOURCE_MOUSE;
   if (event.IsKeyEvent())
     source_type = ui::MENU_SOURCE_KEYBOARD;
