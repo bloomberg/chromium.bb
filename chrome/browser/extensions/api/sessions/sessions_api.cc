@@ -281,6 +281,12 @@ SessionsGetDevicesFunction::CreateWindowModel(
     case sessions::SessionWindow::TYPE_POPUP:
       type = api::windows::WINDOW_TYPE_POPUP;
       break;
+    case sessions::SessionWindow::TYPE_APP:
+      type = api::windows::WINDOW_TYPE_APP;
+      break;
+    case sessions::SessionWindow::TYPE_DEVTOOLS:
+      type = api::windows::WINDOW_TYPE_DEVTOOLS;
+      break;
   }
 
   api::windows::WindowState state = api::windows::WINDOW_STATE_NONE;
