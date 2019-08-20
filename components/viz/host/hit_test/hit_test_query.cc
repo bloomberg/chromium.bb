@@ -231,8 +231,6 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   DCHECK_EQ(!!(flags & HitTestRegionFlags::kHitTestAsk),
             !!hit_test_data_[region_index].async_hit_test_reasons);
 
-  // TODO(sunxd): v2 doesn't work with drag-n-drop when it still relies on
-  // synchronous targeting result for nested OOPIF cases. crbug.com/896786
   if (features::IsVizHitTestingSurfaceLayerEnabled() &&
       ((flags & HitTestRegionFlags::kHitTestAsk) &&
        !(flags & HitTestRegionFlags::kHitTestIgnore))) {
