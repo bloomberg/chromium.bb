@@ -639,6 +639,43 @@ inline EVerticalAlign CSSIdentifierValue::ConvertTo() const {
   return EVerticalAlign::kTop;
 }
 
+template<>
+inline CSSIdentifierValue::CSSIdentifierValue(ERubberbandable e)
+    : CSSValue(kIdentifierClass) {
+    switch (e) {
+        case ERubberbandable::kNone:
+            value_id_ = CSSValueNone;
+            break;
+        case ERubberbandable::kText:
+            value_id_ = CSSValueText;
+            break;
+        case ERubberbandable::kTextWithTab:
+            value_id_ = CSSValueTextWithTab;
+            break;
+        default:
+            break;
+    }
+}
+
+template<>
+inline ERubberbandable CSSIdentifierValue::ConvertTo() const {
+    switch (value_id_) {
+        case CSSValueAuto:
+            return ERubberbandable::kText;
+        case CSSValueNone:
+            return ERubberbandable::kNone;
+        case CSSValueText:
+            return ERubberbandable::kText;
+        case CSSValueTextWithTab:
+            return ERubberbandable::kTextWithTab;
+        default:
+            break;
+    }
+
+    NOTREACHED();
+    return ERubberbandable::kText;
+}
+
 template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextEmphasisFill fill)
     : CSSValue(kIdentifierClass) {
