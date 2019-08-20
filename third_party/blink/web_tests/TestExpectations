@@ -6496,3 +6496,18 @@ crbug.com/979298 [ Mac ] virtual/audio-service/media/video-persistence.html [ Pa
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
 
 crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Failure ]
+
+crbug.com/914134 [ Mac ] vr/events_vrdisplayactivate.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/events_vrdisplaypresentchange.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/exitPresent_resolve.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/getLayers_notpresenting.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/getLayers_presenting.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/getLayers_presenting_nondefaultbounds.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/getLayers_update.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestAnimationFrame_consistentTimestamps.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestAnimationFrame_handoff.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestAnimationFrame_submitFrame_combinations.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestPresent_resolve.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithgesture.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithoutgesture.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestPresent_resolve_then_reject.html [ Failure ]
