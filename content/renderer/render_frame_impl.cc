@@ -2514,7 +2514,11 @@ void RenderFrameImpl::OnDeleteFrame(FrameDeleteIntention intent) {
       // frame when a commit (and ownership transfer) is imminent.
       // TODO(dcheng): This is the case of https://crbug.com/838348.
       DCHECK(is_main_frame_);
+#if !defined(OS_ANDROID)
+      // This check is not enabled on Android, since it seems like it's much
+      // easier to trigger data races there.
       CHECK(!in_frame_tree_);
+#endif  // !defined(OS_ANDROID)
       break;
   }
 
