@@ -194,7 +194,8 @@ void LayerImpl::PopulateTransformedSharedQuadState(
   scaled_visible_layer_rect.Intersect(gfx::Rect(scaled_bounds));
 
   state->SetAll(scaled_draw_transform, gfx::Rect(scaled_bounds),
-                scaled_visible_layer_rect, draw_properties().clip_rect,
+                scaled_visible_layer_rect, draw_properties().rounded_corner_bounds,
+                draw_properties().clip_rect,
                 draw_properties().is_clipped, contents_opaque, draw_properties().opacity,
                 SkBlendMode::kSrcOver, GetSortingContextId());
 }
