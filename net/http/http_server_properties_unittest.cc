@@ -90,9 +90,10 @@ class HttpServerPropertiesTest : public TestWithTaskEnvironment {
     test_clock_.Advance(base::TimeDelta::FromSeconds(12345));
   }
 
-  bool HasAlternativeService(const url::SchemeHostPort& origin) {
+  bool HasAlternativeService(const url::SchemeHostPort& origin,
+                             const NetworkIsolationKey& network_isolation_key) {
     const AlternativeServiceInfoVector alternative_service_info_vector =
-        impl_.GetAlternativeServiceInfos(origin);
+        impl_.GetAlternativeServiceInfos(origin, network_isolation_key);
     return !alternative_service_info_vector.empty();
   }
 
@@ -482,18 +483,18 @@ typedef HttpServerPropertiesTest AlternateProtocolServerPropertiesTest;
 
 TEST_F(AlternateProtocolServerPropertiesTest, Basic) {
   url::SchemeHostPort test_server("http", "foo", 80);
-  EXPECT_FALSE(HasAlternativeService(test_server));
+  EXPECT_FALSE(HasAlternativeService(test_server, NetworkIsolationKey()));
 
   AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
   SetAlternativeService(test_server, alternative_service);
   const AlternativeServiceInfoVector alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
 
   impl_.Clear(base::OnceClosure());
-  EXPECT_FALSE(HasAlternativeService(test_server));
+  EXPECT_FALSE(HasAlternativeService(test_server, NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ExcludeOrigin) {
@@ -522,10 +523,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, ExcludeOrigin) {
   alternative_service_info_vector.push_back(alternative_service_info4);
 
   url::SchemeHostPort test_server("https", "foo", 443);
-  impl_.SetAlternativeServices(test_server, alternative_service_info_vector);
+  impl_.SetAlternativeServices(test_server, NetworkIsolationKey(),
+                               alternative_service_info_vector);
 
   const AlternativeServiceInfoVector alternative_service_info_vector2 =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(3u, alternative_service_info_vector2.size());
   EXPECT_EQ(alternative_service_info2, alternative_service_info_vector2[0]);
   EXPECT_EQ(alternative_service_info3, alternative_service_info_vector2[1]);
@@ -556,7 +558,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
           alternative_service2, expiration2));
   url::SchemeHostPort test_server2("http", "foo2", 80);
   // 0th entry in the memory.
-  impl_.SetAlternativeServices(test_server2, alternative_service_info_vector);
+  impl_.SetAlternativeServices(test_server2, NetworkIsolationKey(),
+                               alternative_service_info_vector);
 
   // Prepare |server_info_map| to be loaded by OnServerInfoLoadedForTesting().
   std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
@@ -620,6 +623,84 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   EXPECT_EQ(expiration4, (*service_info)[0].expiration());
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, SetWithNetworkIsolationKey) {
+  const url::SchemeHostPort kServer("https", "foo.test", 443);
+  const AlternativeServiceInfoVector kAlternativeServices(
+      {AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          AlternativeService(kProtoHTTP2, "foo", 443),
+          base::Time::Now() + base::TimeDelta::FromDays(1) /* expiration */)});
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+
+  EXPECT_TRUE(
+      impl_.GetAlternativeServiceInfos(kServer, kNetworkIsolationKey).empty());
+  EXPECT_TRUE(
+      impl_.GetAlternativeServiceInfos(kServer, NetworkIsolationKey()).empty());
+
+  // Without network isolation keys enabled for HttpServerProperties, passing in
+  // a NetworkIsolationKey should have no effect on behavior.
+  for (const auto network_isolation_key_to_set :
+       {NetworkIsolationKey(), kNetworkIsolationKey}) {
+    impl_.SetAlternativeServices(kServer, network_isolation_key_to_set,
+                                 kAlternativeServices);
+    EXPECT_EQ(kAlternativeServices,
+              impl_.GetAlternativeServiceInfos(kServer, kNetworkIsolationKey));
+    EXPECT_EQ(kAlternativeServices,
+              impl_.GetAlternativeServiceInfos(kServer, NetworkIsolationKey()));
+
+    impl_.SetAlternativeServices(kServer, network_isolation_key_to_set,
+                                 AlternativeServiceInfoVector());
+    EXPECT_TRUE(impl_.GetAlternativeServiceInfos(kServer, kNetworkIsolationKey)
+                    .empty());
+    EXPECT_TRUE(impl_.GetAlternativeServiceInfos(kServer, NetworkIsolationKey())
+                    .empty());
+  }
+
+  // Check that with network isolation keys enabled for HttpServerProperties,
+  // the NetworkIsolationKey argument is respected.
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  HttpServerProperties properties(nullptr /* pref_delegate */,
+                                  nullptr /* net_log */, test_tick_clock_,
+                                  &test_clock_);
+
+  properties.SetAlternativeServices(kServer, kNetworkIsolationKey,
+                                    kAlternativeServices);
+  EXPECT_EQ(kAlternativeServices, properties.GetAlternativeServiceInfos(
+                                      kServer, kNetworkIsolationKey));
+  EXPECT_TRUE(
+      properties.GetAlternativeServiceInfos(kServer, NetworkIsolationKey())
+          .empty());
+
+  properties.SetAlternativeServices(kServer, NetworkIsolationKey(),
+                                    kAlternativeServices);
+  EXPECT_EQ(kAlternativeServices, properties.GetAlternativeServiceInfos(
+                                      kServer, kNetworkIsolationKey));
+  EXPECT_EQ(kAlternativeServices, properties.GetAlternativeServiceInfos(
+                                      kServer, NetworkIsolationKey()));
+
+  properties.SetAlternativeServices(kServer, kNetworkIsolationKey,
+                                    AlternativeServiceInfoVector());
+  EXPECT_TRUE(
+      properties.GetAlternativeServiceInfos(kServer, kNetworkIsolationKey)
+          .empty());
+  EXPECT_EQ(kAlternativeServices, properties.GetAlternativeServiceInfos(
+                                      kServer, NetworkIsolationKey()));
+
+  properties.SetAlternativeServices(kServer, NetworkIsolationKey(),
+                                    AlternativeServiceInfoVector());
+  EXPECT_TRUE(
+      properties.GetAlternativeServiceInfos(kServer, kNetworkIsolationKey)
+          .empty());
+  EXPECT_TRUE(
+      properties.GetAlternativeServiceInfos(kServer, NetworkIsolationKey())
+          .empty());
+}
+
 // Regression test for https://crbug.com/504032:
 // OnServerInfoLoadedForTesting() should not crash if there is an
 // empty hostname is the mapping.
@@ -639,7 +720,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetWithEmptyHostname) {
   EXPECT_TRUE(
       impl_.IsAlternativeServiceBroken(alternative_service_with_foo_hostname));
   const AlternativeServiceInfoVector alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(server);
+      impl_.GetAlternativeServiceInfos(server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service_with_foo_hostname,
             alternative_service_info_vector[0].alternative_service());
@@ -668,16 +749,18 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVector) {
   // GetAlternativeServiceInfos() should remove such AlternativeServiceInfo from
   // |server_info_map_|, emptying the AlternativeServiceInfoVector
   // corresponding to |server|.
-  ASSERT_TRUE(impl_.GetAlternativeServiceInfos(server).empty());
+  ASSERT_TRUE(
+      impl_.GetAlternativeServiceInfos(server, NetworkIsolationKey()).empty());
 
   // GetAlternativeServiceInfos() should remove this key from
   // |server_info_map_|, and SetAlternativeServices() should not crash.
   impl_.SetAlternativeServices(
-      server,
+      server, NetworkIsolationKey(),
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
 
   // There should still be no alternative service assigned to |server|.
-  ASSERT_TRUE(impl_.GetAlternativeServiceInfos(server).empty());
+  ASSERT_TRUE(
+      impl_.GetAlternativeServiceInfos(server, NetworkIsolationKey()).empty());
 }
 
 // Regression test for https://crbug.com/516486 for the canonical host case.
@@ -703,17 +786,20 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVectorForCanonical) {
   // |server_info_map_|, emptying the AlternativeServiceInfoVector
   // corresponding to |canonical_server|, even when looking up
   // alternative services for |server|.
-  ASSERT_TRUE(impl_.GetAlternativeServiceInfos(server).empty());
+  ASSERT_TRUE(
+      impl_.GetAlternativeServiceInfos(server, NetworkIsolationKey()).empty());
 
   // GetAlternativeServiceInfos() should remove this key from
   // |server_info_map_|, and SetAlternativeServices() should not crash.
   impl_.SetAlternativeServices(
-      canonical_server,
+      canonical_server, NetworkIsolationKey(),
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
 
   // There should still be no alternative service assigned to
   // |canonical_server|.
-  ASSERT_TRUE(impl_.GetAlternativeServiceInfos(canonical_server).empty());
+  ASSERT_TRUE(
+      impl_.GetAlternativeServiceInfos(canonical_server, NetworkIsolationKey())
+          .empty());
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearServerWithCanonical) {
@@ -727,12 +813,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearServerWithCanonical) {
           HttpNetworkSession::Params().quic_params.supported_versions);
 
   impl_.SetAlternativeServices(
-      canonical_server,
+      canonical_server, NetworkIsolationKey(),
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
 
   // Make sure the canonical service is returned for the other server.
   const AlternativeServiceInfoVector alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(server);
+      impl_.GetAlternativeServiceInfos(server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(kProtoQUIC,
             alternative_service_info_vector[0].alternative_service().protocol);
@@ -742,9 +828,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearServerWithCanonical) {
   // cleared.
   // GetAlternativeServices() should remove this key from
   // |server_info_map_|, and SetAlternativeServices() should not crash.
-  impl_.SetAlternativeServices(server, AlternativeServiceInfoVector());
+  impl_.SetAlternativeServices(server, NetworkIsolationKey(),
+                               AlternativeServiceInfoVector());
 
-  ASSERT_TRUE(impl_.GetAlternativeServiceInfos(server).empty());
+  ASSERT_TRUE(
+      impl_.GetAlternativeServiceInfos(server, NetworkIsolationKey()).empty());
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServiceInfos) {
@@ -766,7 +854,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServiceInfos) {
             it->second.alternative_services.value()[0].alternative_service());
 
   const AlternativeServiceInfoVector alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server1);
+      impl_.GetAlternativeServiceInfos(test_server1, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
@@ -786,7 +874,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   const AlternativeService alternative_service1(kProtoHTTP2, "foo", 443);
   SetAlternativeService(test_server, alternative_service1);
   AlternativeServiceInfoVector alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
@@ -795,7 +883,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   // GetAlternativeServiceInfos should return the broken alternative service.
   impl_.MarkAlternativeServiceBroken(alternative_service1);
   alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
@@ -811,9 +899,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   alternative_service_info_vector2.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           alternative_service2, expiration));
-  impl_.SetAlternativeServices(test_server, alternative_service_info_vector2);
+  impl_.SetAlternativeServices(test_server, NetworkIsolationKey(),
+                               alternative_service_info_vector2);
   alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(2u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
@@ -825,7 +914,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   // SetAlternativeService should add a broken alternative service to the map.
   SetAlternativeService(test_server, alternative_service1);
   alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
@@ -838,7 +927,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   const AlternativeService alternative_service1(kProtoHTTP2, "foo", 443);
   SetAlternativeService(test_server, alternative_service1);
   AlternativeServiceInfoVector alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
@@ -849,7 +938,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
       alternative_service1);
   // The alternative service should be persisted and marked as broken.
   alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
@@ -865,9 +954,10 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   alternative_service_info_vector2.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           alternative_service2, expiration));
-  impl_.SetAlternativeServices(test_server, alternative_service_info_vector2);
+  impl_.SetAlternativeServices(test_server, NetworkIsolationKey(),
+                               alternative_service_info_vector2);
   alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(2u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
@@ -879,7 +969,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   // SetAlternativeService should add a broken alternative service to the map.
   SetAlternativeService(test_server, alternative_service1);
   alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
@@ -906,10 +996,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, MaxAge) {
           alternative_service2, now + one_day));
 
   url::SchemeHostPort test_server("http", "foo", 80);
-  impl_.SetAlternativeServices(test_server, alternative_service_info_vector);
+  impl_.SetAlternativeServices(test_server, NetworkIsolationKey(),
+                               alternative_service_info_vector);
 
   AlternativeServiceInfoVector alternative_service_info_vector2 =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector2.size());
   EXPECT_EQ(alternative_service2,
             alternative_service_info_vector2[0].alternative_service());
@@ -935,12 +1026,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, MaxAgeCanonical) {
           alternative_service2, now + one_day));
 
   url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
-  impl_.SetAlternativeServices(canonical_server,
+  impl_.SetAlternativeServices(canonical_server, NetworkIsolationKey(),
                                alternative_service_info_vector);
 
   url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
   AlternativeServiceInfoVector alternative_service_info_vector2 =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector2.size());
   EXPECT_EQ(alternative_service2,
             alternative_service_info_vector2[0].alternative_service());
@@ -959,7 +1050,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, AlternativeServiceWithScheme) {
           alternative_service2, expiration));
   // Set Alt-Svc list for |http_server|.
   url::SchemeHostPort http_server("http", "foo", 80);
-  impl_.SetAlternativeServices(http_server, alternative_service_info_vector);
+  impl_.SetAlternativeServices(http_server, NetworkIsolationKey(),
+                               alternative_service_info_vector);
 
   const net::HttpServerProperties::ServerInfoMap& map =
       impl_.server_info_map_for_testing();
@@ -975,18 +1067,30 @@ TEST_F(AlternateProtocolServerPropertiesTest, AlternativeServiceWithScheme) {
 
   // Check Alt-Svc list should not be set for |https_server|.
   url::SchemeHostPort https_server("https", "foo", 80);
-  EXPECT_EQ(0u, impl_.GetAlternativeServiceInfos(https_server).size());
+  EXPECT_EQ(
+      0u, impl_.GetAlternativeServiceInfos(https_server, NetworkIsolationKey())
+              .size());
 
   // Set Alt-Svc list for |https_server|.
-  impl_.SetAlternativeServices(https_server, alternative_service_info_vector);
-  EXPECT_EQ(2u, impl_.GetAlternativeServiceInfos(https_server).size());
-  EXPECT_EQ(2u, impl_.GetAlternativeServiceInfos(http_server).size());
+  impl_.SetAlternativeServices(https_server, NetworkIsolationKey(),
+                               alternative_service_info_vector);
+  EXPECT_EQ(
+      2u, impl_.GetAlternativeServiceInfos(https_server, NetworkIsolationKey())
+              .size());
+  EXPECT_EQ(2u,
+            impl_.GetAlternativeServiceInfos(http_server, NetworkIsolationKey())
+                .size());
 
   // Clear Alt-Svc list for |http_server|.
-  impl_.SetAlternativeServices(http_server, AlternativeServiceInfoVector());
+  impl_.SetAlternativeServices(http_server, NetworkIsolationKey(),
+                               AlternativeServiceInfoVector());
 
-  EXPECT_EQ(0u, impl_.GetAlternativeServiceInfos(http_server).size());
-  EXPECT_EQ(2u, impl_.GetAlternativeServiceInfos(https_server).size());
+  EXPECT_EQ(0u,
+            impl_.GetAlternativeServiceInfos(http_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(
+      2u, impl_.GetAlternativeServiceInfos(https_server, NetworkIsolationKey())
+              .size());
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
@@ -1001,7 +1105,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           alternative_service2, expiration));
   url::SchemeHostPort test_server("http", "foo", 80);
-  impl_.SetAlternativeServices(test_server, alternative_service_info_vector);
+  impl_.SetAlternativeServices(test_server, NetworkIsolationKey(),
+                               alternative_service_info_vector);
 
   const net::HttpServerProperties::ServerInfoMap& map =
       impl_.server_info_map_for_testing();
@@ -1015,7 +1120,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
   EXPECT_EQ(alternative_service2,
             it->second.alternative_services.value()[1].alternative_service());
 
-  impl_.SetAlternativeServices(test_server, AlternativeServiceInfoVector());
+  impl_.SetAlternativeServices(test_server, NetworkIsolationKey(),
+                               AlternativeServiceInfoVector());
   EXPECT_TRUE(map.empty());
 }
 
@@ -1030,7 +1136,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
                                                    "bar.c.youtube.com", 1234);
   SetAlternativeService(canonical_server, canonical_alternative_service);
   AlternativeServiceInfoVector alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(canonical_alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -1041,7 +1147,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
 
   SetAlternativeService(test_server, broken_alternative_service);
   alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(broken_alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -1053,11 +1159,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
   const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
   SetAlternativeService(test_server, alternative_service);
   impl_.MarkAlternativeServiceBroken(alternative_service);
-  ASSERT_TRUE(HasAlternativeService(test_server));
+  ASSERT_TRUE(HasAlternativeService(test_server, NetworkIsolationKey()));
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
   // SetAlternativeServices should leave a broken alternative service marked
   // as such.
-  impl_.SetAlternativeServices(test_server, AlternativeServiceInfoVector());
+  impl_.SetAlternativeServices(test_server, NetworkIsolationKey(),
+                               AlternativeServiceInfoVector());
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
 }
 
@@ -1145,10 +1252,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, OnDefaultNetworkChanged) {
 
 TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
   url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
-  EXPECT_FALSE(HasAlternativeService(test_server));
+  EXPECT_FALSE(HasAlternativeService(test_server, NetworkIsolationKey()));
 
   url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
-  EXPECT_FALSE(HasAlternativeService(canonical_server));
+  EXPECT_FALSE(HasAlternativeService(canonical_server, NetworkIsolationKey()));
 
   AlternativeServiceInfoVector alternative_service_info_vector;
   const AlternativeService canonical_alternative_service1(
@@ -1162,13 +1269,13 @@ TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           canonical_alternative_service2, expiration));
-  impl_.SetAlternativeServices(canonical_server,
+  impl_.SetAlternativeServices(canonical_server, NetworkIsolationKey(),
                                alternative_service_info_vector);
 
   // Since |test_server| does not have an alternative service itself,
   // GetAlternativeServiceInfos should return those of |canonical_server|.
   AlternativeServiceInfoVector alternative_service_info_vector2 =
-      impl_.GetAlternativeServiceInfos(test_server);
+      impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(2u, alternative_service_info_vector2.size());
   EXPECT_EQ(canonical_alternative_service1,
             alternative_service_info_vector2[0].alternative_service());
@@ -1197,9 +1304,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearCanonical) {
                                                    "bar.c.youtube.com", 1234);
 
   SetAlternativeService(canonical_server, canonical_alternative_service);
-  impl_.SetAlternativeServices(canonical_server,
+  impl_.SetAlternativeServices(canonical_server, NetworkIsolationKey(),
                                AlternativeServiceInfoVector());
-  EXPECT_FALSE(HasAlternativeService(test_server));
+  EXPECT_FALSE(HasAlternativeService(test_server, NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
@@ -1209,9 +1316,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
                                                    "bar.c.youtube.com", 1234);
 
   SetAlternativeService(canonical_server, canonical_alternative_service);
-  EXPECT_TRUE(HasAlternativeService(test_server));
+  EXPECT_TRUE(HasAlternativeService(test_server, NetworkIsolationKey()));
   impl_.MarkAlternativeServiceBroken(canonical_alternative_service);
-  EXPECT_FALSE(HasAlternativeService(test_server));
+  EXPECT_FALSE(HasAlternativeService(test_server, NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest,
@@ -1222,10 +1329,10 @@ TEST_F(AlternateProtocolServerPropertiesTest,
                                                    "bar.c.youtube.com", 1234);
 
   SetAlternativeService(canonical_server, canonical_alternative_service);
-  EXPECT_TRUE(HasAlternativeService(test_server));
+  EXPECT_TRUE(HasAlternativeService(test_server, NetworkIsolationKey()));
   impl_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
       canonical_alternative_service);
-  EXPECT_FALSE(HasAlternativeService(test_server));
+  EXPECT_FALSE(HasAlternativeService(test_server, NetworkIsolationKey()));
 }
 
 // Adding an alternative service for a new host overrides canonical host.
@@ -1236,7 +1343,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, CanonicalOverride) {
                                              1234);
   SetAlternativeService(bar_server, bar_alternative_service);
   AlternativeServiceInfoVector alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(foo_server);
+      impl_.GetAlternativeServiceInfos(foo_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(bar_alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -1246,7 +1353,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, CanonicalOverride) {
                                              443);
   SetAlternativeService(qux_server, qux_alternative_service);
   alternative_service_info_vector =
-      impl_.GetAlternativeServiceInfos(foo_server);
+      impl_.GetAlternativeServiceInfos(foo_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(qux_alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -1260,7 +1367,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearWithCanonical) {
 
   SetAlternativeService(canonical_server, canonical_alternative_service);
   impl_.Clear(base::OnceClosure());
-  EXPECT_FALSE(HasAlternativeService(test_server));
+  EXPECT_FALSE(HasAlternativeService(test_server, NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest,
@@ -1268,7 +1375,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   url::SchemeHostPort server("https", "foo", 443);
   AlternativeService alternative_service(kProtoQUIC, "foo", 443);
   SetAlternativeService(server, alternative_service);
-  EXPECT_TRUE(HasAlternativeService(server));
+  EXPECT_TRUE(HasAlternativeService(server, NetworkIsolationKey()));
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 
@@ -1289,17 +1396,17 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc) {
   url::SchemeHostPort foo_server("https", "foo", 443);
   AlternativeService bar_alternative_service(kProtoQUIC, "bar", 443);
   SetAlternativeService(foo_server, bar_alternative_service);
-  EXPECT_TRUE(HasAlternativeService(foo_server));
+  EXPECT_TRUE(HasAlternativeService(foo_server, NetworkIsolationKey()));
 
   url::SchemeHostPort bar_server1("http", "bar", 80);
   AlternativeService nohost_alternative_service(kProtoQUIC, "", 443);
   SetAlternativeService(bar_server1, nohost_alternative_service);
-  EXPECT_TRUE(HasAlternativeService(bar_server1));
+  EXPECT_TRUE(HasAlternativeService(bar_server1, NetworkIsolationKey()));
 
   url::SchemeHostPort bar_server2("https", "bar", 443);
   AlternativeService baz_alternative_service(kProtoQUIC, "baz", 1234);
   SetAlternativeService(bar_server2, baz_alternative_service);
-  EXPECT_TRUE(HasAlternativeService(bar_server2));
+  EXPECT_TRUE(HasAlternativeService(bar_server2, NetworkIsolationKey()));
 
   // Mark "bar:443" as broken.
   base::TimeTicks past =
@@ -1311,11 +1418,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc) {
   HttpServerPropertiesPeer::ExpireBrokenAlternateProtocolMappings(&impl_);
 
   // "foo:443" should have no alternative service now.
-  EXPECT_FALSE(HasAlternativeService(foo_server));
+  EXPECT_FALSE(HasAlternativeService(foo_server, NetworkIsolationKey()));
   // "bar:80" should have no alternative service now.
-  EXPECT_FALSE(HasAlternativeService(bar_server1));
+  EXPECT_FALSE(HasAlternativeService(bar_server1, NetworkIsolationKey()));
   // The alternative service of "bar:443" should be unaffected.
-  EXPECT_TRUE(HasAlternativeService(bar_server2));
+  EXPECT_TRUE(HasAlternativeService(bar_server2, NetworkIsolationKey()));
 
   EXPECT_TRUE(
       impl_.WasAlternativeServiceRecentlyBroken(bar_alternative_service));
@@ -1413,6 +1520,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
           HttpNetworkSession::Params().quic_params.supported_versions));
 
   impl_.SetAlternativeServices(url::SchemeHostPort("https", "youtube.com", 443),
+                               NetworkIsolationKey(),
                                alternative_service_info_vector);
 
   impl_.MarkAlternativeServiceBroken(
@@ -1427,6 +1535,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
           AlternativeService(kProtoHTTP2, "foo2", 443),
           now + base::TimeDelta::FromDays(1)));
   impl_.SetAlternativeServices(url::SchemeHostPort("http", "test.com", 80),
+                               NetworkIsolationKey(),
                                alternative_service_info_vector);
 
   const char expected_json[] =

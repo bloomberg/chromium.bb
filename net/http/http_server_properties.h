@@ -253,14 +253,17 @@ class NET_EXPORT HttpServerProperties
   // Modify SSLConfig to force HTTP/1.1 if necessary.
   void MaybeForceHTTP11(const HostPortPair& server, SSLConfig* ssl_config);
 
-  // Return all alternative services for |origin|, including broken ones.
-  // Returned alternative services never have empty hostnames.
+  // Return all alternative services for |origin|, learned in the context of
+  // |network_isolation_key|, including broken ones. Returned alternative
+  // services never have empty hostnames.
   AlternativeServiceInfoVector GetAlternativeServiceInfos(
-      const url::SchemeHostPort& origin);
+      const url::SchemeHostPort& origin,
+      const net::NetworkIsolationKey& network_isolation_key);
 
   // Set a single HTTP/2 alternative service for |origin|.  Previous
   // alternative services for |origin| are discarded.
   // |alternative_service.host| may be empty.
+  // TODO(mmenke):  Add NetworkIsolationKey argument.
   void SetHttp2AlternativeService(const url::SchemeHostPort& origin,
                                   const AlternativeService& alternative_service,
                                   base::Time expiration);
@@ -268,18 +271,20 @@ class NET_EXPORT HttpServerProperties
   // Set a single QUIC alternative service for |origin|.  Previous alternative
   // services for |origin| are discarded.
   // |alternative_service.host| may be empty.
+  // TODO(mmenke):  Add NetworkIsolationKey argument.
   void SetQuicAlternativeService(
       const url::SchemeHostPort& origin,
       const AlternativeService& alternative_service,
       base::Time expiration,
       const quic::ParsedQuicVersionVector& advertised_versions);
 
-  // Set alternative services for |origin|.  Previous alternative services for
-  // |origin| are discarded.
-  // Hostnames in |alternative_service_info_vector| may be empty.
+  // Set alternative services for |origin|, learned in the context of
+  // |network_isolation_key|.  Previous alternative services for |origin| are
+  // discarded. Hostnames in |alternative_service_info_vector| may be empty.
   // |alternative_service_info_vector| may be empty.
   void SetAlternativeServices(
       const url::SchemeHostPort& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
       const AlternativeServiceInfoVector& alternative_service_info_vector);
 
   // Marks |alternative_service| as broken.

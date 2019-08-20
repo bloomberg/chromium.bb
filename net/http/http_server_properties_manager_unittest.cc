@@ -271,9 +271,11 @@ class HttpServerPropertiesManagerTest : public testing::Test,
     http_server_props_.reset();
   }
 
-  bool HasAlternativeService(const url::SchemeHostPort& server) {
+  bool HasAlternativeService(const url::SchemeHostPort& server,
+                             const NetworkIsolationKey& network_isolation_key) {
     const AlternativeServiceInfoVector alternative_service_info_vector =
-        http_server_props_->GetAlternativeServiceInfos(server);
+        http_server_props_->GetAlternativeServiceInfos(server,
+                                                       network_isolation_key);
     return !alternative_service_info_vector.empty();
   }
 
@@ -345,7 +347,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
 
   EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
       gooler_server, NetworkIsolationKey()));
-  EXPECT_FALSE(HasAlternativeService(gooler_server));
+  EXPECT_FALSE(HasAlternativeService(gooler_server, NetworkIsolationKey()));
   const ServerNetworkStats* stats1 =
       http_server_props_->GetServerNetworkStats(gooler_server);
   EXPECT_EQ(nullptr, stats1);
@@ -381,8 +383,9 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
     InitializePrefs(http_server_properties_dict);
 
     // Verify alternative service is not set.
-    EXPECT_FALSE(HasAlternativeService(
-        url::SchemeHostPort("http", "www.google.com", 80)));
+    EXPECT_FALSE(
+        HasAlternativeService(url::SchemeHostPort("http", "www.google.com", 80),
+                              NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
@@ -469,7 +472,7 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
   InitializePrefs();
 
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
   http_server_props_->SetHttp2AlternativeService(
@@ -485,7 +488,8 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -495,7 +499,7 @@ TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServices) {
   InitializePrefs();
 
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   AlternativeServiceInfoVector alternative_service_info_vector;
   const AlternativeService alternative_service1(kProtoHTTP2, "mail.google.com",
                                                 443);
@@ -507,11 +511,11 @@ TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServices) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           alternative_service2, one_day_from_now_, advertised_versions_));
-  http_server_props_->SetAlternativeServices(spdy_server_mail,
-                                             alternative_service_info_vector);
+  http_server_props_->SetAlternativeServices(
+      spdy_server_mail, NetworkIsolationKey(), alternative_service_info_vector);
   // ExpectScheduleUpdatePrefs() should be called only once.
-  http_server_props_->SetAlternativeServices(spdy_server_mail,
-                                             alternative_service_info_vector);
+  http_server_props_->SetAlternativeServices(
+      spdy_server_mail, NetworkIsolationKey(), alternative_service_info_vector);
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -519,7 +523,8 @@ TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServices) {
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   AlternativeServiceInfoVector alternative_service_info_vector2 =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   ASSERT_EQ(2u, alternative_service_info_vector2.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector2[0].alternative_service());
@@ -531,16 +536,16 @@ TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
   InitializePrefs();
 
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
-  http_server_props_->SetAlternativeServices(spdy_server_mail,
-                                             AlternativeServiceInfoVector());
+  http_server_props_->SetAlternativeServices(
+      spdy_server_mail, NetworkIsolationKey(), AlternativeServiceInfoVector());
 
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
@@ -550,7 +555,7 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   AlternativeService alternative_service;
 
   spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
@@ -595,7 +600,7 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
 // info. Prefs should not be written until after the load happens.
 TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
   http_server_props_->SetHttp2AlternativeService(
@@ -606,7 +611,8 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 
   AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -614,7 +620,8 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   // Initializing prefs does not result in a task to write the prefs.
   InitializePrefs(base::DictionaryValue(), true /* expect_pref_update */);
   alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   EXPECT_EQ(1u, alternative_service_info_vector.size());
 
   // Updating the entry should result in a task to save prefs. Have to at least
@@ -628,7 +635,8 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
   alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   EXPECT_EQ(1u, alternative_service_info_vector.size());
 }
 
@@ -636,7 +644,7 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
 TEST_F(HttpServerPropertiesManagerTest,
        ClearPrefsBeforeLoadAlternativeServiceInfo) {
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
   http_server_props_->SetHttp2AlternativeService(
@@ -648,7 +656,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 
   AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -666,7 +675,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   std::move(pref_delegate_->GetSetPropertiesCallback()).Run();
   EXPECT_TRUE(callback_invoked_);
   alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   EXPECT_EQ(0u, alternative_service_info_vector.size());
 
   // Re-creating the entry should result in a task to save prefs.
@@ -677,7 +687,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
   alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   EXPECT_EQ(1u, alternative_service_info_vector.size());
 }
 
@@ -689,7 +700,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   AlternativeService alternative_service;
 
   spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
@@ -739,7 +750,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   AlternativeService alternative_service;
 
   spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
@@ -788,7 +799,7 @@ TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
   AlternativeService alternative_service;
 
   spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
@@ -939,7 +950,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   alt_svc_info_vector.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           broken_alternative_service, one_day_from_now_));
-  http_server_props_->SetAlternativeServices(spdy_server, alt_svc_info_vector);
+  http_server_props_->SetAlternativeServices(spdy_server, NetworkIsolationKey(),
+                                             alt_svc_info_vector);
 
   http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service);
   http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
@@ -960,7 +972,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
       broken_alternative_service));
   EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
       spdy_server, NetworkIsolationKey()));
-  EXPECT_TRUE(HasAlternativeService(spdy_server));
+  EXPECT_TRUE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
   IPAddress address;
   EXPECT_TRUE(http_server_props_->GetSupportsQuic(&address));
   EXPECT_EQ(actual_address, address);
@@ -988,7 +1000,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
       broken_alternative_service));
   EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
       spdy_server, NetworkIsolationKey()));
-  EXPECT_FALSE(HasAlternativeService(spdy_server));
+  EXPECT_FALSE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->GetSupportsQuic(&address));
   const ServerNetworkStats* stats2 =
       http_server_props_->GetServerNetworkStats(spdy_server);
@@ -1046,7 +1058,8 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
       server_gurl = GURL(StringPrintf("https://www.google.com:%d", i));
     url::SchemeHostPort server(server_gurl);
     AlternativeServiceInfoVector alternative_service_info_vector =
-        http_server_props_->GetAlternativeServiceInfos(server);
+        http_server_props_->GetAlternativeServiceInfos(server,
+                                                       NetworkIsolationKey());
     ASSERT_EQ(1u, alternative_service_info_vector.size());
     EXPECT_EQ(
         kProtoQUIC,
@@ -1082,7 +1095,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           www_alternative_service2, expiration2));
-  http_server_props_->SetAlternativeServices(server_www,
+  http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector);
 
   AlternativeService mail_alternative_service(kProtoHTTP2, "foo.google.com",
@@ -1316,7 +1329,7 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
 
   const url::SchemeHostPort server("https", "www.example.com", 443);
   // #2: SetAlternativeServices().
-  http_server_props_->SetAlternativeServices(server,
+  http_server_props_->SetAlternativeServices(server, NetworkIsolationKey(),
                                              alternative_service_info_vector);
 
   // |net_test_task_runner_| has a remaining pending task to expire
@@ -1453,7 +1466,7 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           h2_alternative_service, expiration2));
-  http_server_props_->SetAlternativeServices(server_www,
+  http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector);
 
   // Set another QUIC alternative service with a single advertised QUIC version.
@@ -1583,7 +1596,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions_));
-  http_server_props_->SetAlternativeServices(server_www,
+  http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector);
 
   // Set quic_server_info string.
@@ -1632,7 +1645,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   alternative_service_info_vector_2.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions));
-  http_server_props_->SetAlternativeServices(server_www,
+  http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector_2);
 
   // Update Prefs.
@@ -1667,7 +1680,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   alternative_service_info_vector_3.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions_2));
-  http_server_props_->SetAlternativeServices(server_www,
+  http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector_3);
 
   // No Prefs update.
@@ -1760,7 +1773,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   //
   AlternativeServiceInfoVector alternative_service_info_vector =
       http_server_props_->GetAlternativeServiceInfos(
-          url::SchemeHostPort("https", "www.google.com", 80));
+          url::SchemeHostPort("https", "www.google.com", 80),
+          NetworkIsolationKey());
   ASSERT_EQ(2u, alternative_service_info_vector.size());
 
   EXPECT_EQ(kProtoHTTP2,
@@ -1789,7 +1803,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   //
   alternative_service_info_vector =
       http_server_props_->GetAlternativeServiceInfos(
-          url::SchemeHostPort("https", "mail.google.com", 80));
+          url::SchemeHostPort("https", "mail.google.com", 80),
+          NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
 
   EXPECT_EQ(kProtoHTTP2,
@@ -1839,7 +1854,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // been removed from the alternative services info vectors of all servers.
   alternative_service_info_vector =
       http_server_props_->GetAlternativeServiceInfos(
-          url::SchemeHostPort("https", "www.google.com", 80));
+          url::SchemeHostPort("https", "www.google.com", 80),
+          NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
 
   //

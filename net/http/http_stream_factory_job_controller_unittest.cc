@@ -298,7 +298,8 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
                                             bool should_mark_broken) {
     const url::SchemeHostPort server(request_info.url);
     const AlternativeServiceInfoVector alternative_service_info_vector =
-        session_->http_server_properties()->GetAlternativeServiceInfos(server);
+        session_->http_server_properties()->GetAlternativeServiceInfos(
+            server, NetworkIsolationKey());
     EXPECT_EQ(1u, alternative_service_info_vector.size());
     EXPECT_EQ(should_mark_broken,
               session_->http_server_properties()->IsAlternativeServiceBroken(

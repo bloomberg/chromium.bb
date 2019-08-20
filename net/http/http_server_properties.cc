@@ -171,7 +171,7 @@ bool HttpServerProperties::SupportsRequestPriority(
   if (GetSupportsSpdy(server, network_isolation_key))
     return true;
   const AlternativeServiceInfoVector alternative_service_info_vector =
-      GetAlternativeServiceInfos(server);
+      GetAlternativeServiceInfos(server, network_isolation_key);
   for (const AlternativeServiceInfo& alternative_service_info :
        alternative_service_info_vector) {
     if (alternative_service_info.alternative_service().protocol == kProtoQUIC) {
@@ -246,13 +246,14 @@ void HttpServerProperties::MaybeForceHTTP11(const HostPortPair& server,
 }
 
 AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
-    const url::SchemeHostPort& origin) {
+    const url::SchemeHostPort& origin,
+    const net::NetworkIsolationKey& network_isolation_key) {
   // Copy valid alternative service infos into
   // |valid_alternative_service_infos|.
   AlternativeServiceInfoVector valid_alternative_service_infos;
   const base::Time now = clock_->Now();
   auto map_it =
-      server_info_map_.Get(CreateServerInfoKey(origin, NetworkIsolationKey()));
+      server_info_map_.Get(CreateServerInfoKey(origin, network_isolation_key));
   if (map_it != server_info_map_.end() &&
       map_it->second.alternative_services.has_value()) {
     AlternativeServiceInfoVector* service_info =
@@ -298,7 +299,7 @@ AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
     return AlternativeServiceInfoVector();
   }
   map_it = server_info_map_.Get(
-      CreateServerInfoKey(canonical->second, NetworkIsolationKey()));
+      CreateServerInfoKey(canonical->second, network_isolation_key));
   if (map_it == server_info_map_.end() ||
       !map_it->second.alternative_services.has_value()) {
     return AlternativeServiceInfoVector();
@@ -346,7 +347,7 @@ void HttpServerProperties::SetHttp2AlternativeService(
   DCHECK_EQ(alternative_service.protocol, kProtoHTTP2);
 
   SetAlternativeServices(
-      origin,
+      origin, net::NetworkIsolationKey(),
       AlternativeServiceInfoVector(
           /*size=*/1, AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
                           alternative_service, expiration)));
@@ -360,20 +361,22 @@ void HttpServerProperties::SetQuicAlternativeService(
   DCHECK(alternative_service.protocol == kProtoQUIC);
 
   SetAlternativeServices(
-      origin, AlternativeServiceInfoVector(
-                  /*size=*/1,
-                  AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
-                      alternative_service, expiration, advertised_versions)));
+      origin, net::NetworkIsolationKey(),
+      AlternativeServiceInfoVector(
+          /*size=*/1,
+          AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+              alternative_service, expiration, advertised_versions)));
 }
 
 void HttpServerProperties::SetAlternativeServices(
     const url::SchemeHostPort& origin,
+    const net::NetworkIsolationKey& network_isolation_key,
     const AlternativeServiceInfoVector& alternative_service_info_vector) {
   if (alternative_service_info_vector.empty()) {
     RemoveAltSvcCanonicalHost(origin);
     // Don't bother moving to front when erasing information.
     auto it = server_info_map_.Peek(
-        CreateServerInfoKey(origin, NetworkIsolationKey()));
+        CreateServerInfoKey(origin, network_isolation_key));
 
     if (it == server_info_map_.end() ||
         !it->second.alternative_services.has_value()) {
@@ -387,7 +390,7 @@ void HttpServerProperties::SetAlternativeServices(
   }
 
   auto it = server_info_map_.GetOrPut(
-      CreateServerInfoKey(origin, NetworkIsolationKey()));
+      CreateServerInfoKey(origin, network_isolation_key));
   bool need_update_pref = true;
   if (it->second.alternative_services.has_value()) {
     DCHECK(!it->second.empty());
@@ -429,7 +432,7 @@ void HttpServerProperties::SetAlternativeServices(
   it->second.alternative_services = alternative_service_info_vector;
 
   if (previously_no_alternative_services &&
-      !GetAlternativeServiceInfos(origin).empty()) {
+      !GetAlternativeServiceInfos(origin, network_isolation_key).empty()) {
     // TODO(rch): Consider the case where multiple requests are started
     // before the first completes. In this case, only one of the jobs
     // would reach this code, whereas all of them should should have.

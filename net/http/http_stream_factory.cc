@@ -52,6 +52,7 @@ HttpStreamFactory::~HttpStreamFactory() {}
 
 void HttpStreamFactory::ProcessAlternativeServices(
     HttpNetworkSession* session,
+    const net::NetworkIsolationKey& network_isolation_key,
     const HttpResponseHeaders* headers,
     const url::SchemeHostPort& http_server) {
   if (!headers->HasHeader(kAlternativeServiceHeader))
@@ -109,7 +110,8 @@ void HttpStreamFactory::ProcessAlternativeServices(
   }
 
   session->http_server_properties()->SetAlternativeServices(
-      RewriteHost(http_server), alternative_service_info_vector);
+      RewriteHost(http_server), network_isolation_key,
+      alternative_service_info_vector);
 }
 
 url::SchemeHostPort HttpStreamFactory::RewriteHost(
