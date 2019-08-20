@@ -173,7 +173,6 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/memory/memory_pressure_monitor_mac.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -381,9 +380,7 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
                   "not support notifications.";
   }
   return nullptr;
-#elif defined(OS_MACOSX)
-  return std::make_unique<base::mac::MemoryPressureMonitor>();
-#elif defined(OS_WIN)
+#elif defined(OS_MACOSX) || defined(OS_WIN)
   return std::make_unique<util::MultiSourceMemoryPressureMonitor>();
 #else
   // No memory monitor on other platforms...
