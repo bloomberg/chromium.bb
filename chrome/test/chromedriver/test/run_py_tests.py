@@ -378,9 +378,22 @@ class ChromeDriverBaseTestWithWebServer(ChromeDriverBaseTest):
   def GlobalSetUp():
     ChromeDriverBaseTestWithWebServer._http_server = webserver.WebServer(
         chrome_paths.GetTestData())
+    ChromeDriverBaseTestWithWebServer._sync_server = webserver.SyncWebServer()
+    if _ANDROID_PACKAGE_KEY:
+      ChromeDriverBaseTestWithWebServer._device = (
+          device_utils.DeviceUtils.HealthyDevices()[0])
+      http_host_port = (
+          ChromeDriverBaseTestWithWebServer._http_server._server.server_port)
+      sync_host_port = (
+          ChromeDriverBaseTestWithWebServer._sync_server._server.server_port)
+      forwarder.Forwarder.Map(
+          [(http_host_port, http_host_port), (sync_host_port, sync_host_port)],
+          ChromeDriverBaseTestWithWebServer._device)
 
   @staticmethod
   def GlobalTearDown():
+    if _ANDROID_PACKAGE_KEY:
+      forwarder.Forwarder.UnmapAllDevicePorts(ChromeDriverTest._device)
     ChromeDriverBaseTestWithWebServer._http_server.Shutdown()
 
   @staticmethod
@@ -388,26 +401,35 @@ class ChromeDriverBaseTestWithWebServer(ChromeDriverBaseTest):
     return ChromeDriverBaseTestWithWebServer._http_server.GetUrl() + file_path
 
 
+class ChromeDriverTestWithCustomCapability(ChromeDriverBaseTestWithWebServer):
+
+  def testEagerMode(self):
+    send_response = threading.Event()
+    def waitAndRespond():
+        send_response.wait(10)
+        self._sync_server.RespondWithContent('#')
+    thread = threading.Thread(target=waitAndRespond)
+
+    self._http_server.SetDataForPath('/top.html',
+     """
+     <html><body>
+     <div id='top'>
+       <img src='%s'>
+     </div>
+     </body></html>""" % self._sync_server.GetUrl())
+    eager_driver = self.CreateDriver(page_load_strategy='eager')
+    thread.start()
+    start_eager = time.time()
+    eager_driver.Load(self._http_server.GetUrl() + '/top.html')
+    stop_eager = time.time()
+    send_response.set()
+    eager_time = stop_eager - start_eager
+    self.assertTrue(eager_time < 9)
+    thread.join()
+
+
 class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   """End to end tests for ChromeDriver."""
-
-  @staticmethod
-  def GlobalSetUp():
-    ChromeDriverBaseTestWithWebServer.GlobalSetUp()
-    ChromeDriverTest._sync_server = webserver.SyncWebServer()
-    if _ANDROID_PACKAGE_KEY:
-      ChromeDriverTest._device = device_utils.DeviceUtils.HealthyDevices()[0]
-      http_host_port = ChromeDriverTest._http_server._server.server_port
-      sync_host_port = ChromeDriverTest._sync_server._server.server_port
-      forwarder.Forwarder.Map(
-          [(http_host_port, http_host_port), (sync_host_port, sync_host_port)],
-          ChromeDriverTest._device)
-
-  @staticmethod
-  def GlobalTearDown():
-    if _ANDROID_PACKAGE_KEY:
-      forwarder.Forwarder.UnmapAllDevicePorts(ChromeDriverTest._device)
-    ChromeDriverBaseTestWithWebServer.GlobalTearDown()
 
   def setUp(self):
     self._driver = self.CreateDriver()
@@ -1048,30 +1070,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testPageLoadStrategyIsNormalByDefault(self):
     self.assertEquals('normal',
                       self._driver.capabilities['pageLoadStrategy'])
-
-  def testEagerMode(self):
-    send_response = threading.Event()
-    def waitAndRespond():
-        send_response.wait(10)
-        self._sync_server.RespondWithContent('#')
-    thread = threading.Thread(target=waitAndRespond)
-
-    self._http_server.SetDataForPath('/top.html',
-     """
-     <html><body>
-     <div id='top'>
-       <img src='%s'>
-     </div>
-     </body></html>""" % self._sync_server.GetUrl())
-    eager_driver = self.CreateDriver(page_load_strategy='eager')
-    thread.start()
-    start_eager = time.time()
-    eager_driver.Load(self._http_server.GetUrl() + '/top.html')
-    stop_eager = time.time()
-    send_response.set()
-    eager_time = stop_eager - start_eager
-    self.assertTrue(eager_time < 9)
-    thread.join()
 
   def testClearElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -3892,12 +3890,12 @@ if __name__ == '__main__':
   # TODO(johnchen@chromium.org): Investigate feasibility of combining
   # multiple GlobalSetup and GlobalTearDown, and reducing the number of HTTP
   # servers used for the test.
-  ChromeDriverTest.GlobalSetUp()
+  ChromeDriverBaseTestWithWebServer.GlobalSetUp()
   ChromeDriverSecureContextTest.GlobalSetUp()
   HeadlessInvalidCertificateTest.GlobalSetUp()
   MobileEmulationCapabilityTest.GlobalSetUp()
   result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(tests)
-  ChromeDriverTest.GlobalTearDown()
+  ChromeDriverBaseTestWithWebServer.GlobalTearDown()
   ChromeDriverSecureContextTest.GlobalTearDown()
   HeadlessInvalidCertificateTest.GlobalTearDown()
   MobileEmulationCapabilityTest.GlobalTearDown()
