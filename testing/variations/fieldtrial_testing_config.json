@@ -5685,6 +5685,13 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:iph_tabgroups_longtap;comparator:==0;window:30;storage:365",
+                        "event_trigger2": "name:iph_tabgroups_longtap;comparator:<2;window:90;storage:365",
+                        "event_used": "name:tabgroups_dummy;comparator:==0;window:1;storage:1",
+                        "session_rate": "<1"
+                    },
                     "enable_features": [
                         "IPH_TabGroupsQuicklyComparePages"
                     ]
@@ -5700,6 +5707,13 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:iph_tabgroups_strip;comparator:==0;window:30;storage:365",
+                        "event_trigger2": "name:iph_tabgroups_strip;comparator:<2;window:90;storage:365",
+                        "event_used": "name:tabgroups_dummy;comparator:==0;window:1;storage:1",
+                        "session_rate": "<1"
+                    },
                     "enable_features": [
                         "IPH_TabGroupsTapToSeeAnotherTab"
                     ]
@@ -5730,6 +5744,13 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:iph_tabgroups_grouped_card;comparator:==0;window:30;storage:365",
+                        "event_trigger2": "name:iph_tabgroups_grouped_card;comparator:<2;window:90;storage:365",
+                        "event_used": "name:tabgroups_dummy;comparator:==0;window:1;storage:1",
+                        "session_rate": "<1"
+                    },
                     "enable_features": [
                         "IPH_TabGroupsYourTabsTogether"
                     ]
