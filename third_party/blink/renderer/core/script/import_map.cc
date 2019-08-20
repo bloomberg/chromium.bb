@@ -234,9 +234,10 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
         // <spec step="2.6">Otherwise, report a warning to the console that
         // addresses must be strings, arrays, or null.</spec>
         AddIgnoredValueMessage(logger, entry.first, "Invalid value type.");
-        // TODO(hiroshige): Return here. Currently an empty list is set, while
-        // according to the spec no value should be set.
-        break;
+
+        // By continuing here, we leave |normalized[normalized_specifier_key]|
+        // unset, and continue processing.
+        continue;
 
       case JSONValue::ValueType::kTypeString: {
         // <spec step="2.3">If value is a string, then set
