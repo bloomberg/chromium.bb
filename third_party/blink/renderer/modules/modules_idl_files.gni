@@ -507,6 +507,8 @@ modules_idl_files =
           "webusb/usb_isochronous_out_transfer_result.idl",
           "webusb/usb_out_transfer_result.idl",
           "xr/xr.idl",
+          "xr/xr_anchor.idl",
+          "xr/xr_anchor_set.idl",
           "xr/xr_bounded_reference_space.idl",
           "xr/xr_frame.idl",
           "xr/xr_hit_result.idl",
