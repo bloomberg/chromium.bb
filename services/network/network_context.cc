@@ -2255,7 +2255,7 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
 
 #if defined(OS_CHROMEOS)
 void NetworkContext::TrustAnchorUsed() {
-  network_service_->client()->OnTrustAnchorUsed(params_->username_hash);
+  client_->OnTrustAnchorUsed();
 }
 
 scoped_refptr<net::CertVerifyProc> NetworkContext::CreateCertVerifyProcForUser(

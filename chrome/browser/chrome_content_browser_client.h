@@ -255,7 +255,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& embedding_origin) override;
   std::string GetWebBluetoothBlocklist() override;
 #if defined(OS_CHROMEOS)
-  void OnTrustAnchorUsed(const std::string& username_hash) override;
+  void OnTrustAnchorUsed(content::BrowserContext* browser_context) override;
 #endif
   scoped_refptr<network::SharedURLLoaderFactory>
   GetSystemSharedURLLoaderFactory() override;
