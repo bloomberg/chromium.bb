@@ -231,9 +231,8 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   DCHECK_EQ(!!(flags & HitTestRegionFlags::kHitTestAsk),
             !!hit_test_data_[region_index].async_hit_test_reasons);
 
-  if (features::IsVizHitTestingSurfaceLayerEnabled() &&
-      ((flags & HitTestRegionFlags::kHitTestAsk) &&
-       !(flags & HitTestRegionFlags::kHitTestIgnore))) {
+  if ((flags & HitTestRegionFlags::kHitTestAsk) &&
+      !(flags & HitTestRegionFlags::kHitTestIgnore)) {
     target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = location_in_target;
     target->flags = flags;
@@ -260,8 +259,7 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   if (!RegionMatchEventSource(event_source, flags))
     return false;
 
-  if ((flags &
-       (HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestAsk)) &&
+  if ((flags & HitTestRegionFlags::kHitTestMine) &&
       !(flags & HitTestRegionFlags::kHitTestIgnore)) {
     target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = location_in_target;
