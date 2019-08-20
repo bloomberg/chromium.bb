@@ -85,6 +85,11 @@ gpu::Mailbox StreamTextureHost::CreateSharedImage(const gfx::Size& size) {
 }
 
 gpu::SyncToken StreamTextureHost::GenUnverifiedSyncToken() {
+  // |channel_| can be set to null via OnChannelError() which means
+  // StreamTextureHost could still be alive when |channel_| is gone.
+  if (!channel_)
+    return gpu::SyncToken();
+  
   return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                         gpu::CommandBufferIdFromChannelAndRoute(
                             channel_->channel_id(), route_id_),

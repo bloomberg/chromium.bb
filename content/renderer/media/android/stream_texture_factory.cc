@@ -78,7 +78,7 @@ void StreamTextureProxy::CreateSharedImage(
     gpu::Mailbox* mailbox,
     gpu::SyncToken* unverified_sync_token) {
   *mailbox = host_->CreateSharedImage(size);
-  if (!mailbox)
+  if (mailbox->IsZero())
     return;
   *unverified_sync_token = host_->GenUnverifiedSyncToken();
 }
