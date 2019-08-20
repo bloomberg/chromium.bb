@@ -1525,7 +1525,7 @@ This file contains the strings for ash.
         PIN or password
       </message>
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER" desc="Text to display as placeholder in the password field when the user can click/tap their profile picture to unlock.">
-        Select your photo
+        Tap your profile image
       </message>
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_SMART_CARD_PIN_PLACEHOLDER" desc="Text to display as placeholder in the password field on the Login or Lock screen when the smart card PIN is requested.">
         Smart card PIN
