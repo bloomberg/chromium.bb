@@ -165,7 +165,7 @@ void FeedContentDatabase::PerformNextOperation(
     ConfirmationCallback callback) {
   DCHECK(!content_mutation->Empty());
 
-  ContentOperation operation = content_mutation->TakeFristOperation();
+  ContentOperation operation = content_mutation->TakeFirstOperation();
 
   switch (operation.type()) {
     case ContentOperation::CONTENT_DELETE:
