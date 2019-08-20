@@ -772,9 +772,6 @@ extern const char kNewUsbBackendDescription[];
 extern const char kNewblueName[];
 extern const char kNewblueDescription[];
 
-extern const char kNewTabLoadingAnimation[];
-extern const char kNewTabLoadingAnimationDescription[];
-
 extern const char kNewTabstripAnimationName[];
 extern const char kNewTabstripAnimationDescription[];
 

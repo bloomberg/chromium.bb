@@ -1512,11 +1512,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebUITabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebUITabStrip)},
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-#if !defined(OS_ANDROID)
-    {"new-tab-loading-animation", flag_descriptions::kNewTabLoadingAnimation,
-     flag_descriptions::kNewTabLoadingAnimationDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kNewTabLoadingAnimation)},
-#endif  // !defined(OS_ANDROID)
     {"focus-mode", flag_descriptions::kFocusMode,
      flag_descriptions::kFocusModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kFocusMode)},
