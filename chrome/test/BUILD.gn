@@ -2964,6 +2964,7 @@ test("unit_tests") {
     "../browser/notifications/stub_notification_center_mac.h",
     "../browser/notifications/stub_notification_center_mac.mm",
     "../browser/optimization_guide/optimization_guide_hints_manager_unittest.cc",
+    "../browser/optimization_guide/optimization_guide_navigation_data_unittest.cc",
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_unittest.cc",

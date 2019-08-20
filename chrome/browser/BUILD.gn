@@ -947,6 +947,8 @@ jumbo_split_static_library("browser") {
     "optimization_guide/optimization_guide_keyed_service.h",
     "optimization_guide/optimization_guide_keyed_service_factory.cc",
     "optimization_guide/optimization_guide_keyed_service_factory.h",
+    "optimization_guide/optimization_guide_navigation_data.cc",
+    "optimization_guide/optimization_guide_navigation_data.h",
     "optimization_guide/optimization_guide_web_contents_observer.cc",
     "optimization_guide/optimization_guide_web_contents_observer.h",
     "page_load_metrics/metrics_navigation_throttle.cc",
