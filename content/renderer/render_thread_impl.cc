@@ -2091,9 +2091,10 @@ void RenderThreadImpl::CreateFrameProxy(
 }
 
 void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
-    blink::mojom::EmbeddedWorkerInstanceClientRequest client_request) {
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+        client_receiver) {
   EmbeddedWorkerInstanceClientImpl::Create(
-      std::move(client_request),
+      std::move(client_receiver),
       GetWebMainThreadScheduler()->DefaultTaskRunner());
 }
 

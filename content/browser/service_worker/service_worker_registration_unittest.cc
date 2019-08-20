@@ -106,7 +106,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
 };
 
 void RequestTermination(
-    blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtr* host) {
+    mojo::AssociatedRemote<blink::mojom::EmbeddedWorkerInstanceHost>* host) {
   // We can't wait for the callback since Stop() arrives first which severs
   // the connection.
   (*host)->RequestTermination(base::DoNothing());
