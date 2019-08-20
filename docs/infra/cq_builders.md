@@ -143,7 +143,8 @@ builder.
     * [`//gpu/.+`](https://cs.chromium.org/chromium/src/gpu/)
     * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
     * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu)
+    * [`//third_party/blink/web_tests/external/wpt/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webgpu/)
+    * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/WebGPUExpectations)
     * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
 
 * [dawn-mac-x64-deps-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/dawn-mac-x64-deps-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/dawn-mac-x64-deps-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+dawn-mac-x64-deps-rel))
@@ -152,7 +153,8 @@ builder.
     * [`//gpu/.+`](https://cs.chromium.org/chromium/src/gpu/)
     * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
     * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu)
+    * [`//third_party/blink/web_tests/external/wpt/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webgpu/)
+    * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/WebGPUExpectations)
     * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
 
 * [dawn-win10-x64-deps-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/dawn-win10-x64-deps-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/dawn-win10-x64-deps-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+dawn-win10-x64-deps-rel))
@@ -161,7 +163,8 @@ builder.
     * [`//gpu/.+`](https://cs.chromium.org/chromium/src/gpu/)
     * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
     * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu)
+    * [`//third_party/blink/web_tests/external/wpt/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webgpu/)
+    * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/WebGPUExpectations)
     * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
 
 * [dawn-win10-x86-deps-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/dawn-win10-x86-deps-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/dawn-win10-x86-deps-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+dawn-win10-x86-deps-rel))
@@ -170,7 +173,8 @@ builder.
     * [`//gpu/.+`](https://cs.chromium.org/chromium/src/gpu/)
     * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
     * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu)
+    * [`//third_party/blink/web_tests/external/wpt/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webgpu/)
+    * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/WebGPUExpectations)
     * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
 
 * [fuchsia-arm64-cast](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/fuchsia-arm64-cast) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/fuchsia-arm64-cast)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+fuchsia-arm64-cast))
