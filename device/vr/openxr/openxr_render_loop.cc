@@ -90,9 +90,12 @@ bool OpenXrRenderLoop::StartRuntime() {
 }
 
 void OpenXrRenderLoop::StopRuntime() {
+  // Has to reset gamepad_helper_ before reset openxr_. If we destroy openxr_
+  // first, gamepad_helper_destructor will try to call the actual openxr runtime
+  // rather than the mock in tests.
+  gamepad_helper_.reset();
   openxr_ = nullptr;
   texture_helper_.Reset();
-  gamepad_helper_.reset();
 }
 
 void OpenXrRenderLoop::OnSessionStart() {
