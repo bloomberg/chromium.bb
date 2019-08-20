@@ -915,10 +915,10 @@ TEST_F(ResultSelectionTest, ActionRemovedWhileSelected) {
   TestResultView* selected_view = GetCurrentSelection();
   ASSERT_TRUE(selected_view);
   ASSERT_TRUE(selected_view->AsResultViewWithActions());
-
   // Remove two trailing actions - the result action is de-selected.
   selected_view->AsResultViewWithActions()->GetActionsView()->SetActions(
-      std::vector<SearchResult::Action>(1, SearchResult::Action()));
+      std::vector<SearchResult::Action>(
+          1, SearchResult::Action(gfx::ImageSkia(), base::string16(), false)));
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
 
@@ -926,6 +926,100 @@ TEST_F(ResultSelectionTest, ActionRemovedWhileSelected) {
   EXPECT_TRUE(result_selection_controller_->MoveSelection(shift_tab_key_));
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(2));
+}
+
+TEST_F(ResultSelectionTest, ResetSelectionWithSelectionChangesBlocked) {
+  const int kContainerCount = 2;
+  const int kResultsPerContainer = 2;
+  std::vector<std::unique_ptr<SearchResultContainerView>> containers =
+      CreateContainerVector(kContainerCount,
+                            TestContainerParams(false, kResultsPerContainer));
+  SetContainers(containers);
+
+  auto create_test_location = [](int container_index, int result_index) {
+    return ResultLocationDetails(container_index, kContainerCount, result_index,
+                                 kResultsPerContainer,
+                                 false /*container_is_horizontal*/);
+  };
+
+  // Set up non default selection,
+  result_selection_controller_->ResetSelection();
+  result_selection_controller_->MoveSelection(down_arrow_);
+  ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
+
+  // Test that calling reset selection while selection changes are blocked does
+  // not change the selected result.
+  result_selection_controller_->set_block_selection_changes(true);
+
+  result_selection_controller_->ResetSelection();
+  ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
+  EXPECT_TRUE(result_selection_controller_->selected_result());
+
+  // Reset should be enabled once selection changes are unblocked.
+  result_selection_controller_->set_block_selection_changes(false);
+
+  result_selection_controller_->ResetSelection();
+
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(result_selection_controller_->selected_result());
+}
+
+TEST_F(ResultSelectionTest, InitialResetSelectionWithSelectionChangesBlocked) {
+  const int kContainerCount = 2;
+  const int kResultsPerContainer = 2;
+  std::vector<std::unique_ptr<SearchResultContainerView>> containers =
+      CreateContainerVector(kContainerCount,
+                            TestContainerParams(false, kResultsPerContainer));
+  SetContainers(containers);
+
+  // Test that calling reset selection while selection changes are blocked does
+  // not set the selected result.
+  result_selection_controller_->set_block_selection_changes(true);
+  result_selection_controller_->ResetSelection();
+
+  EXPECT_FALSE(result_selection_controller_->selected_result());
+  EXPECT_FALSE(result_selection_controller_->selected_location_details());
+
+  // Reset should be enabled once selection changes are unblocked.
+  result_selection_controller_->set_block_selection_changes(false);
+
+  result_selection_controller_->ResetSelection();
+
+  EXPECT_TRUE(result_selection_controller_->selected_result());
+  EXPECT_TRUE(result_selection_controller_->selected_location_details());
+}
+
+TEST_F(ResultSelectionTest, MoveSelectionWithSelectionChangesBlocked) {
+  const int kContainerCount = 2;
+  const int kResultsPerContainer = 2;
+  std::vector<std::unique_ptr<SearchResultContainerView>> containers =
+      CreateContainerVector(kContainerCount,
+                            TestContainerParams(false, kResultsPerContainer));
+  SetContainers(containers);
+
+  auto create_test_location = [](int container_index, int result_index) {
+    return ResultLocationDetails(container_index, kContainerCount, result_index,
+                                 kResultsPerContainer,
+                                 false /*container_is_horizontal*/);
+  };
+
+  result_selection_controller_->ResetSelection();
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+
+  // Test that calling move selection while selection chages are blocked does
+  // not change the selected result.
+  result_selection_controller_->set_block_selection_changes(true);
+
+  EXPECT_FALSE(result_selection_controller_->MoveSelection(down_arrow_));
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(result_selection_controller_->selected_result());
+
+  // Move should succeed once selection changes are unblocked.
+  result_selection_controller_->set_block_selection_changes(false);
+  EXPECT_TRUE(result_selection_controller_->MoveSelection(down_arrow_));
+
+  ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
+  EXPECT_TRUE(result_selection_controller_->selected_result());
 }
 
 }  // namespace app_list
