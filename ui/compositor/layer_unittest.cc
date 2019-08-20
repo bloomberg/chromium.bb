@@ -2654,6 +2654,106 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerMasksToBounds) {
   EXPECT_TRUE(l1->cc_layer_for_testing()->masks_to_bounds());
 }
 
+// An animation observer that deletes the layer when the animation ends.
+class TestAnimationObserver : public ImplicitAnimationObserver {
+ public:
+  TestAnimationObserver() = default;
+
+  Layer* layer() const { return layer_.get(); }
+
+  void SetLayer(std::unique_ptr<Layer> layer) { layer_ = std::move(layer); }
+
+  // ui::ImplicitAnimationObserver overrides:
+  void OnImplicitAnimationsCompleted() override {}
+
+ protected:
+  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override {
+    layer_.reset();
+  }
+
+ private:
+  std::unique_ptr<Layer> layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAnimationObserver);
+};
+
+// Triggerring a OnDeviceScaleFactorChanged while a layer is undergoing
+// transform animation, may cause a crash. This is because the layer may be
+// deleted by the animation observer leading to a seg fault.
+TEST_P(LayerWithRealCompositorTest, DeletingLayerDuringScaleFactorChange) {
+  TestAnimationObserver animation_observer;
+
+  std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
+  animation_observer.SetLayer(CreateLayer(LAYER_SOLID_COLOR));
+
+  Layer* layer_to_delete = animation_observer.layer();
+
+  GetCompositor()->SetRootLayer(root.get());
+  root->Add(layer_to_delete);
+
+  EXPECT_EQ(gfx::Transform(), layer_to_delete->GetTargetTransform());
+
+  gfx::Transform transform;
+  transform.Scale(2, 1);
+  transform.Translate(10, 5);
+
+  auto long_duration_animation =
+      std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  {
+    ui::ScopedLayerAnimationSettings animation(layer_to_delete->GetAnimator());
+    animation.AddObserver(&animation_observer);
+    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    layer_to_delete->SetTransform(transform);
+  }
+
+  // This call should not crash.
+  root->OnDeviceScaleFactorChanged(2.f);
+
+  animation_observer.SetLayer(CreateLayer(LAYER_SOLID_COLOR));
+  layer_to_delete = animation_observer.layer();
+
+  std::unique_ptr<Layer> child = CreateLayer(LAYER_SOLID_COLOR);
+
+  root->Add(layer_to_delete);
+  layer_to_delete->Add(child.get());
+
+  long_duration_animation =
+      std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  {
+    ui::ScopedLayerAnimationSettings animation(layer_to_delete->GetAnimator());
+    animation.AddObserver(&animation_observer);
+    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    layer_to_delete->SetTransform(transform);
+  }
+
+  // This call should not crash.
+  root->OnDeviceScaleFactorChanged(1.5f);
+
+  animation_observer.SetLayer(CreateLayer(LAYER_SOLID_COLOR));
+  layer_to_delete = animation_observer.layer();
+
+  std::unique_ptr<Layer> child2 = CreateLayer(LAYER_SOLID_COLOR);
+
+  root->Add(layer_to_delete);
+  layer_to_delete->Add(child.get());
+  layer_to_delete->Add(child2.get());
+
+  long_duration_animation =
+      std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  {
+    ui::ScopedLayerAnimationSettings animation(child->GetAnimator());
+    animation.AddObserver(&animation_observer);
+    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    child->SetTransform(transform);
+  }
+
+  // This call should not crash.
+  root->OnDeviceScaleFactorChanged(2.f);
+}
+
 // Tests that the animators in the layer tree is added to the
 // animator-collection when the root-layer is set to the compositor.
 TEST_F(LayerWithDelegateTest, RootLayerAnimatorsInCompositor) {
