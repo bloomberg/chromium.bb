@@ -5250,6 +5250,7 @@ crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip 
 # Canvas tests that are affected by change to Skia GPU rect shadow rendering.
 crbug.com/990918 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass Failure ]
 crbug.com/990918 virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Pass Failure ]
+crbug.com/990918 virtual/gpu/fast/canvas/canvas-shadow.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
