@@ -2223,7 +2223,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cave',
       'chell',
       'cheza',
-      'coral',
       'cyan',
       'edgar',
       'elm',
@@ -2322,6 +2321,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'atlas', # crbug.com/994783
       'capri-zfpga',  # crbug.com/995178
       'cobblepot',  # crbug.com/995178
+      'coral', # crbug.com/995386
       'fizz-moblab', # crbug.com/995170
       'littlejoe',  # crbug.com/995178
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
