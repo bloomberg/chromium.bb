@@ -30,20 +30,20 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
   CanvasResourceProviderTexture(
       const IntSize& size,
       unsigned msaa_sample_count,
-      const SkFilterQuality& filter_quality,
-      const CanvasColorParams color_params,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
       bool is_origin_top_left)
       : CanvasResourceProvider(kTexture,
                                size,
+                               msaa_sample_count,
                                filter_quality,
                                color_params,
+                               is_origin_top_left,
                                std::move(context_provider_wrapper),
-                               std::move(resource_dispatcher)),
-        msaa_sample_count_(msaa_sample_count),
-        is_origin_top_left_(is_origin_top_left) {}
+                               std::move(resource_dispatcher)) {}
 
   ~CanvasResourceProviderTexture() override = default;
 
@@ -122,17 +122,10 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
         Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
         kPremul_SkAlphaType, ColorParams().GetSkColorSpaceForSkSurfaces());
 
-    const enum GrSurfaceOrigin surface_origin =
-        is_origin_top_left_ ? kTopLeft_GrSurfaceOrigin
-                            : kBottomLeft_GrSurfaceOrigin;
-
-    return SkSurface::MakeRenderTarget(gr, SkBudgeted::kNo, info,
-                                       msaa_sample_count_, surface_origin,
-                                       ColorParams().GetSkSurfaceProps());
+    return SkSurface::MakeRenderTarget(
+        gr, SkBudgeted::kNo, info, GetMSAASampleCount(), GetGrSurfaceOrigin(),
+        ColorParams().GetSkSurfaceProps());
   }
-
-  const unsigned msaa_sample_count_;
-  const bool is_origin_top_left_;
 };
 
 // * Renders to a texture managed by Skia. Mailboxes are GPU-accelerated
@@ -144,8 +137,8 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
   CanvasResourceProviderTextureGpuMemoryBuffer(
       const IntSize& size,
       unsigned msaa_sample_count,
-      const SkFilterQuality& filter_quality,
-      const CanvasColorParams color_params,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
@@ -217,15 +210,17 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
  public:
   CanvasResourceProviderBitmap(
       const IntSize& size,
-      const SkFilterQuality& filter_quality,
-      const CanvasColorParams color_params,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProvider(kBitmap,
                                size,
+                               /*msaa_sample_count=*/0,
                                filter_quality,
                                color_params,
+                               /*is_origin_top_left=*/true,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)) {}
 
@@ -263,8 +258,8 @@ class CanvasResourceProviderBitmapGpuMemoryBuffer final
  public:
   CanvasResourceProviderBitmapGpuMemoryBuffer(
       const IntSize& size,
-      const SkFilterQuality& filter_quality,
-      const CanvasColorParams color_params,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
@@ -321,8 +316,8 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
  public:
   CanvasResourceProviderSharedBitmap(
       const IntSize& size,
-      const SkFilterQuality& filter_quality,
-      const CanvasColorParams color_params,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProviderBitmap(size,
                                      filter_quality,
@@ -374,20 +369,20 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
   CanvasResourceProviderDirectGpuMemoryBuffer(
       const IntSize& size,
       unsigned msaa_sample_count,
-      const SkFilterQuality& filter_quality,
-      const CanvasColorParams color_params,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
       bool is_origin_top_left)
       : CanvasResourceProvider(kDirectGpuMemoryBuffer,
                                size,
+                               msaa_sample_count,
                                filter_quality,
                                color_params,
+                               is_origin_top_left,
                                std::move(context_provider_wrapper),
-                               std::move(resource_dispatcher)),
-        msaa_sample_count_(msaa_sample_count),
-        is_origin_top_left_(is_origin_top_left) {
+                               std::move(resource_dispatcher)) {
     constexpr bool is_accelerated = true;
     resource_ = CanvasResourceGpuMemoryBuffer::Create(
         Size(), ColorParams(), ContextProviderWrapper(), CreateWeakPtr(),
@@ -448,20 +443,14 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
     const GrBackendTexture backend_texture(Size().Width(), Size().Height(),
                                            GrMipMapped::kNo, texture_info);
 
-    const enum GrSurfaceOrigin surface_origin =
-        is_origin_top_left_ ? kTopLeft_GrSurfaceOrigin
-                            : kBottomLeft_GrSurfaceOrigin;
-
     auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
-        gr, backend_texture, surface_origin, msaa_sample_count_,
+        gr, backend_texture, GetGrSurfaceOrigin(), GetMSAASampleCount(),
         ColorParams().GetSkColorType(),
         ColorParams().GetSkColorSpaceForSkSurfaces(),
         ColorParams().GetSkSurfaceProps());
     return surface;
   }
 
-  const unsigned msaa_sample_count_;
-  const bool is_origin_top_left_;
   scoped_refptr<CanvasResource> resource_;
 };
 
@@ -472,8 +461,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   CanvasResourceProviderSharedImage(
       const IntSize& size,
       unsigned msaa_sample_count,
-      const SkFilterQuality& filter_quality,
-      const CanvasColorParams color_params,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
@@ -484,14 +473,14 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       : CanvasResourceProvider(
             kSharedImage,
             size,
+            msaa_sample_count,
             filter_quality,
             // TODO(khushalsagar): The software path seems to be assuming N32
             // somewhere in the later pipeline but for offscreen canvas only.
             CanvasColorParams(color_params, is_accelerated /* force_rgba */),
+            is_origin_top_left,
             std::move(context_provider_wrapper),
             std::move(resource_dispatcher)),
-        msaa_sample_count_(msaa_sample_count),
-        is_origin_top_left_(is_origin_top_left),
         is_overlay_candidate_(is_overlay_candidate),
         maybe_single_buffered_(maybe_single_buffered),
         is_accelerated_(is_accelerated) {
@@ -527,7 +516,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     bool allow_concurrent_read_write_access = maybe_single_buffered_;
     return CanvasResourceSharedImage::Create(
         Size(), ContextProviderWrapper(), CreateWeakPtr(), FilterQuality(),
-        ColorParams(), is_overlay_candidate_, is_origin_top_left_,
+        ColorParams(), is_overlay_candidate_, IsOriginTopLeft(),
         allow_concurrent_read_write_access, is_accelerated_);
   }
 
@@ -677,7 +666,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (is_accelerated_) {
       return SkSurface::MakeFromBackendTexture(
           GetGrContext(), CreateGrTextureForResource(), GetGrSurfaceOrigin(),
-          msaa_sample_count_, ColorParams().GetSkColorType(),
+          GetMSAASampleCount(), ColorParams().GetSkColorType(),
           ColorParams().GetSkColorSpaceForSkSurfaces(),
           ColorParams().GetSkSurfaceProps());
     }
@@ -687,11 +676,6 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // it to the display compositor.
     return SkSurface::MakeRaster(resource_->CreateSkImageInfo(),
                                  ColorParams().GetSkSurfaceProps());
-  }
-
-  GrSurfaceOrigin GetGrSurfaceOrigin() const {
-    return is_origin_top_left_ ? kTopLeft_GrSurfaceOrigin
-                               : kBottomLeft_GrSurfaceOrigin;
   }
 
   GrBackendTexture CreateGrTextureForResource() const {
@@ -773,8 +757,6 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     return static_cast<const CanvasResourceSharedImage*>(resource_.get());
   }
 
-  const unsigned msaa_sample_count_;
-  const bool is_origin_top_left_;
   const bool is_overlay_candidate_;
   const bool maybe_single_buffered_;
   const bool is_accelerated_;
@@ -791,15 +773,17 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
  public:
   CanvasResourceProviderPassThrough(
       const IntSize& size,
-      const SkFilterQuality& filter_quality,
-      const CanvasColorParams color_params,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProvider(kPassThrough,
                                size,
+                               /*msaa_sample_count=*/0,
                                filter_quality,
                                color_params,
+                               /*is_origin_top_left=*/true,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)) {}
 
@@ -1295,16 +1279,20 @@ void CanvasResourceProvider::CanvasImageProvider::CleanupLockedImages() {
 CanvasResourceProvider::CanvasResourceProvider(
     const ResourceProviderType& type,
     const IntSize& size,
-    const SkFilterQuality& filter_quality,
+    unsigned msaa_sample_count,
+    SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
+    bool is_origin_top_left,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
     : type_(type),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       resource_dispatcher_(resource_dispatcher),
       size_(size),
+      msaa_sample_count_(msaa_sample_count),
       filter_quality_(filter_quality),
       color_params_(color_params),
+      is_origin_top_left_(is_origin_top_left),
       snapshot_paint_image_id_(cc::PaintImage::GetNextId()) {
   if (context_provider_wrapper_)
     context_provider_wrapper_->AddObserver(this);

@@ -119,13 +119,11 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
           presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
         }
 
-        const bool is_origin_top_left =
-            !SharedGpuContext::IsGpuCompositingEnabled();
-
         ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
             0 /* msaa_sample_count */, FilterQuality(), ColorParams(),
-            presentation_mode, std::move(dispatcher), is_origin_top_left));
+            presentation_mode, std::move(dispatcher),
+            RenderingContext()->IsOriginTopLeft()));
       } else {
         DCHECK(Is2d());
         const bool want_acceleration =
@@ -156,13 +154,11 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
                 ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
                 : CanvasResourceProvider::kDefaultPresentationMode;
 
-        const bool is_origin_top_left =
-            !want_acceleration || LowLatencyEnabled();
-
         ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
             GetMSAASampleCountFor2dContext(), FilterQuality(), ColorParams(),
-            presentation_mode, std::move(dispatcher), is_origin_top_left));
+            presentation_mode, std::move(dispatcher),
+            RenderingContext()->IsOriginTopLeft()));
 
         if (ResourceProvider()) {
           // Always save an initial frame, to support resetting the top level
