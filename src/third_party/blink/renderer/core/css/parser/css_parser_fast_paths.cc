@@ -964,7 +964,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyID::kWordBreak:
       return value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kBreakAll ||
-             value_id == CSSValueid::kBbKeepAllIfKorean ||
+             value_id == CSSValueID::kBbKeepAllIfKorean ||
              value_id == CSSValueID::kKeepAll ||
              value_id == CSSValueID::kBreakWord;
     case CSSPropertyID::kScrollSnapStop:
