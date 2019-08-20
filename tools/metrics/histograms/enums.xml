@@ -7219,6 +7219,7 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Shared Image"/>
   <int value="6" label="Direct Gpu Memory Buffer"/>
   <int value="7" label="Passthrough"/>
+  <int value="8" label="Swap Chain"/>
 </enum>
 
 <enum name="CanvasResourceProviderUsage">

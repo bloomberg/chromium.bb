@@ -108,15 +108,17 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
               kSoftwareCompositedResourceUsage;
         }
 
-        CanvasResourceProvider::PresentationMode presentation_mode;
-        if (RenderingContext() && RenderingContext()->UsingSwapChain()) {
-          presentation_mode =
-              CanvasResourceProvider::kAllowSwapChainPresentationMode;
-        } else if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
-          presentation_mode =
+        uint8_t presentation_mode =
+            CanvasResourceProvider::kDefaultPresentationMode;
+        if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
+          presentation_mode |=
               CanvasResourceProvider::kAllowImageChromiumPresentationMode;
-        } else {
-          presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
+        }
+        // Allow swap chain presentation only if 3d context is using a swap
+        // chain since we'll be importing it as a passthrough texture.
+        if (RenderingContext() && RenderingContext()->UsingSwapChain()) {
+          presentation_mode |=
+              CanvasResourceProvider::kAllowSwapChainPresentationMode;
         }
 
         ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
@@ -148,11 +150,22 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
           }
         }
 
-        const CanvasResourceProvider::PresentationMode presentation_mode =
-            (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled() ||
-             (LowLatencyEnabled() && want_acceleration))
-                ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
-                : CanvasResourceProvider::kDefaultPresentationMode;
+        uint8_t presentation_mode =
+            CanvasResourceProvider::kDefaultPresentationMode;
+        // Allow GMB image resources if the runtime feature is enabled or if
+        // we want to use it for low latency mode.
+        if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled() ||
+            (LowLatencyEnabled() && want_acceleration)) {
+          presentation_mode |=
+              CanvasResourceProvider::kAllowImageChromiumPresentationMode;
+        }
+        // Allow swap chains only if the runtime feature is enabled and we're
+        // in low latency mode too.
+        if (RuntimeEnabledFeatures::Canvas2dSwapChainEnabled() &&
+            LowLatencyEnabled() && want_acceleration) {
+          presentation_mode |=
+              CanvasResourceProvider::kAllowSwapChainPresentationMode;
+        }
 
         ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),

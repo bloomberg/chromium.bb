@@ -819,16 +819,104 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
   }
 };
 
+// * Renders to back buffer of a shared image swap chain.
+// * Presents swap chain and exports front buffer mailbox to compositor to
+//   support low latency mode.
+// * Layers are overlay candidates.
+class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
+ public:
+  CanvasResourceProviderSwapChain(
+      const IntSize& size,
+      unsigned msaa_sample_count,
+      SkFilterQuality filter_quality,
+      const CanvasColorParams& color_params,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+          context_provider_wrapper,
+      base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
+      : CanvasResourceProvider(kSwapChain,
+                               size,
+                               msaa_sample_count,
+                               filter_quality,
+                               color_params,
+                               /*is_origin_top_left=*/true,
+                               std::move(context_provider_wrapper),
+                               std::move(resource_dispatcher)),
+        msaa_sample_count_(msaa_sample_count) {
+    resource_ = CanvasResourceSwapChain::Create(
+        Size(), ColorParams(), ContextProviderWrapper(), CreateWeakPtr(),
+        FilterQuality());
+  }
+  ~CanvasResourceProviderSwapChain() override = default;
+
+  bool IsValid() const final { return GetSkSurface() && !IsGpuContextLost(); }
+  bool IsAccelerated() const final { return true; }
+  bool SupportsDirectCompositing() const override { return true; }
+  bool SupportsSingleBuffering() const override { return true; }
+
+ private:
+  void WillDraw() override { dirty_ = true; }
+
+  scoped_refptr<CanvasResource> CreateResource() final {
+    TRACE_EVENT0("blink", "CanvasResourceProviderSwapChain::CreateResource");
+    return resource_;
+  }
+
+  scoped_refptr<CanvasResource> ProduceCanvasResource() override {
+    DCHECK(IsSingleBuffered());
+    TRACE_EVENT0("blink",
+                 "CanvasResourceProviderSwapChain::ProduceCanvasResource");
+    if (!IsValid())
+      return nullptr;
+    if (dirty_) {
+      FlushSkia();
+      resource_->PresentSwapChain();
+      dirty_ = false;
+    }
+    return resource_;
+  }
+
+  scoped_refptr<StaticBitmapImage> Snapshot() override {
+    TRACE_EVENT0("blink", "CanvasResourceProviderSwapChain::Snapshot");
+    return SnapshotInternal();
+  }
+
+  sk_sp<SkSurface> CreateSkSurface() const override {
+    TRACE_EVENT0("blink", "CanvasResourceProviderSwapChain::CreateSkSurface");
+    if (IsGpuContextLost() || !resource_)
+      return nullptr;
+
+    DCHECK(resource_);
+    GrGLTextureInfo texture_info = {};
+    texture_info.fID = resource_->GetBackingTextureHandleForOverwrite();
+    texture_info.fTarget = resource_->TextureTarget();
+    texture_info.fFormat = ColorParams().GLSizedInternalFormat();
+
+    auto backend_texture = GrBackendTexture(Size().Width(), Size().Height(),
+                                            GrMipMapped::kNo, texture_info);
+
+    return SkSurface::MakeFromBackendTextureAsRenderTarget(
+        GetGrContext(), backend_texture, kTopLeft_GrSurfaceOrigin,
+        msaa_sample_count_, ColorParams().GetSkColorType(),
+        ColorParams().GetSkColorSpaceForSkSurfaces(),
+        ColorParams().GetSkSurfaceProps());
+  }
+
+  const unsigned msaa_sample_count_;
+  bool dirty_ = false;
+  scoped_refptr<CanvasResourceSwapChain> resource_;
+};
+
 namespace {
 
 enum class CanvasResourceType {
+  kDirect3DSwapChain,
+  kDirect2DSwapChain,
   kDirect3DGpuMemoryBuffer,
   // TODO(khushalsagar): Delete Direct2D and TextureGpuMemoryBuffer types once
   // shared image for single buffered canvas sticks.
   kDirect2DGpuMemoryBuffer,
   kTextureGpuMemoryBuffer,
   kBitmapGpuMemoryBuffer,
-  kDirect3DSwapChain,
   kSharedBitmap,
   kTexture,
   kBitmap,
@@ -873,6 +961,7 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
                     kSoftwareCompositedFallbackList.end()));
 
   static const Vector<CanvasResourceType> kAcceleratedDirect2DFallbackList({
+      CanvasResourceType::kDirect2DSwapChain,
       CanvasResourceType::kSharedImage,
       CanvasResourceType::kDirect2DGpuMemoryBuffer,
       // The rest is equal to |kAcceleratedCompositedFallbackList|.
@@ -884,7 +973,9 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
       // Fallback to no direct compositing support
       CanvasResourceType::kBitmap,
   });
-  DCHECK(std::equal(kAcceleratedDirect2DFallbackList.begin() + 2,
+  // TODO(khushalsagar): Change this DCHECK after kDirect2DGpuMemoryBuffer and
+  // kTextureGpuMemoryBuffer are removed.
+  DCHECK(std::equal(kAcceleratedDirect2DFallbackList.begin() + 3,
                     kAcceleratedDirect2DFallbackList.end(),
                     kAcceleratedCompositedFallbackList.begin() + 1,
                     kAcceleratedCompositedFallbackList.end()));
@@ -907,9 +998,11 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
       // Fallback to no direct compositing support
       CanvasResourceType::kBitmap,
   });
+  // TODO(khushalsagar): Change this DCHECK after kDirect2DGpuMemoryBuffer and
+  // kTextureGpuMemoryBuffer are removed.
   DCHECK(std::equal(kAcceleratedDirect3DFallbackList.begin() + 2,
                     kAcceleratedDirect3DFallbackList.end(),
-                    kAcceleratedDirect2DFallbackList.begin(),
+                    kAcceleratedDirect2DFallbackList.begin() + 1,
                     kAcceleratedDirect2DFallbackList.end()));
 
   switch (usage) {
@@ -944,7 +1037,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::CreateForCanvas(
     unsigned msaa_sample_count,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
-    PresentationMode presentation_mode,
+    uint8_t presentation_mode,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
     bool is_origin_top_left) {
   base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderUsage", usage);
@@ -970,7 +1063,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     unsigned msaa_sample_count,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
-    PresentationMode presentation_mode,
+    uint8_t presentation_mode,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
     bool is_origin_top_left) {
   std::unique_ptr<CanvasResourceProvider> provider;
@@ -979,7 +1072,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
 
   const bool is_gpu_memory_buffer_image_allowed =
       SharedGpuContext::IsGpuCompositingEnabled() && context_provider_wrapper &&
-      presentation_mode == kAllowImageChromiumPresentationMode &&
+      (presentation_mode & kAllowImageChromiumPresentationMode) &&
       gpu::IsImageSizeValidForGpuMemoryBufferFormat(
           gfx::Size(size), color_params.GetBufferFormat()) &&
       gpu::IsImageFromGpuMemoryBufferFormatSupported(
@@ -987,13 +1080,25 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
           context_provider_wrapper->ContextProvider()->GetCapabilities());
 
   const bool is_swap_chain_allowed =
-      presentation_mode == kAllowSwapChainPresentationMode;
+      SharedGpuContext::IsGpuCompositingEnabled() && context_provider_wrapper &&
+      context_provider_wrapper->ContextProvider()
+          ->GetCapabilities()
+          .shared_image_swap_chain &&
+      (presentation_mode & kAllowSwapChainPresentationMode);
 
   for (CanvasResourceType resource_type : fallback_list) {
     // Note: We are deliberately not using std::move() on
     // |context_provider_wrapper| and |resource_dispatcher| to ensure that the
     // pointers remain valid for the next iteration of this loop if necessary.
     switch (resource_type) {
+      case CanvasResourceType::kDirect2DSwapChain:
+        if (!is_swap_chain_allowed)
+          continue;
+        DCHECK(is_origin_top_left);
+        provider = std::make_unique<CanvasResourceProviderSwapChain>(
+            size, msaa_sample_count, filter_quality, color_params,
+            context_provider_wrapper, resource_dispatcher);
+        break;
       case CanvasResourceType::kDirect3DSwapChain:
         if (!is_swap_chain_allowed)
           continue;
@@ -1126,7 +1231,7 @@ CanvasResourceProvider::CreateForTesting(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     unsigned msaa_sample_count,
     const CanvasColorParams& color_params,
-    PresentationMode mode,
+    uint8_t presentation_mode,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
     bool is_origin_top_left) {
   switch (type) {

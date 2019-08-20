@@ -61,10 +61,14 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kMaxValue = kSoftwareCompositedDirect2DResourceUsage,
   };
 
-  enum PresentationMode {
-    kDefaultPresentationMode,             // GPU Texture or shared memory bitmap
-    kAllowImageChromiumPresentationMode,  // Use CHROMIUM_image gl extension
-    kAllowSwapChainPresentationMode       // Use swap chains (only on Windows)
+  // Bitmask of allowed presentation modes.
+  enum : uint8_t {
+    // GPU Texture or shared memory bitmap
+    kDefaultPresentationMode = 0,
+    // Allow CHROMIUM_image gl extension
+    kAllowImageChromiumPresentationMode = 1 << 0,
+    // Allow swap chains (only on Windows)
+    kAllowSwapChainPresentationMode = 1 << 1,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -78,7 +82,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kSharedImage = 5,
     kDirectGpuMemoryBuffer = 6,
     kPassThrough = 7,
-    kMaxValue = kPassThrough,
+    kSwapChain = 8,
+    kMaxValue = kSwapChain,
   };
 
   void static RecordTypeToUMA(ResourceProviderType type);
@@ -90,7 +95,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
       unsigned msaa_sample_count,
       SkFilterQuality,
       const CanvasColorParams&,
-      PresentationMode,
+      uint8_t presentation_mode,
       base::WeakPtr<CanvasResourceDispatcher>,
       bool is_origin_top_left = true);
 
@@ -101,7 +106,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
       unsigned msaa_sample_count,
       SkFilterQuality,
       const CanvasColorParams&,
-      PresentationMode,
+      uint8_t presentation_mode,
       base::WeakPtr<CanvasResourceDispatcher>,
       bool is_origin_top_left = true);
 
@@ -111,7 +116,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       unsigned msaa_sample_count,
       const CanvasColorParams&,
-      PresentationMode,
+      uint8_t presentation_mode,
       base::WeakPtr<CanvasResourceDispatcher>,
       bool is_origin_top_left = true);
 
