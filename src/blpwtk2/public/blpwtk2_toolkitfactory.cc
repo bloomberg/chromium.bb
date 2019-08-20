@@ -27,6 +27,7 @@
 #include <blpwtk2_stringref.h>
 #include <blpwtk2_toolkitcreateparams.h>
 #include <blpwtk2_toolkitimpl.h>
+#include <blpwtk2_fontcollectionimpl.h>
 
 #include <base/command_line.h>
 #include <base/environment.h>
@@ -161,6 +162,19 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
                                            commandLineSwitches,
                                            params.isIsolatedProfile(),
                                            profileDirectory);
+
+    std::vector<std::wstring> font_files;
+
+    for (size_t i = 0; i < params.numSideLoadedFonts(); ++i) {
+        StringRef fontFileRef = params.sideLoadedFontAt(i);
+		std::wstring font_filename;
+		base::UTF8ToWide(fontFileRef.data(), fontFileRef.length(), &font_filename);
+		font_files.push_back(font_filename);
+    }
+
+    if (params.numSideLoadedFonts() > 0) {
+        FontCollectionImpl::GetCurrent()->SetCustomFonts(std::move(font_files));
+    }
 
     g_created = true;
     return toolkit;
