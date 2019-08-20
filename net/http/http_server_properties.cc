@@ -162,12 +162,13 @@ void HttpServerProperties::Clear(base::OnceClosure callback) {
 }
 
 bool HttpServerProperties::SupportsRequestPriority(
-    const url::SchemeHostPort& server) {
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (server.host().empty())
     return false;
 
-  if (GetSupportsSpdy(server))
+  if (GetSupportsSpdy(server, network_isolation_key))
     return true;
   const AlternativeServiceInfoVector alternative_service_info_vector =
       GetAlternativeServiceInfos(server);
@@ -180,25 +181,29 @@ bool HttpServerProperties::SupportsRequestPriority(
   return false;
 }
 
-bool HttpServerProperties::GetSupportsSpdy(const url::SchemeHostPort& server) {
+bool HttpServerProperties::GetSupportsSpdy(
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (server.host().empty())
     return false;
 
   auto spdy_info =
-      server_info_map_.Get(CreateServerInfoKey(server, NetworkIsolationKey()));
+      server_info_map_.Get(CreateServerInfoKey(server, network_isolation_key));
   return spdy_info != server_info_map_.end() &&
          spdy_info->second.supports_spdy.value_or(false);
 }
 
-void HttpServerProperties::SetSupportsSpdy(const url::SchemeHostPort& server,
-                                           bool supports_spdy) {
+void HttpServerProperties::SetSupportsSpdy(
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key,
+    bool supports_spdy) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (server.host().empty())
     return;
 
   auto server_info = server_info_map_.GetOrPut(
-      CreateServerInfoKey(server, NetworkIsolationKey()));
+      CreateServerInfoKey(server, network_isolation_key));
   // If value is already the same as |supports_spdy|, or value is unset and
   // |supports_spdy| is false, don't queue a write.
   bool queue_write =

@@ -9,12 +9,15 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/http/http_network_session.h"
@@ -128,29 +131,119 @@ TEST_F(HttpServerPropertiesTest, SetSupportsSpdy) {
   url::SchemeHostPort https_photos_server("https", "photos.google.com", 443);
   url::SchemeHostPort valid_google_server((GURL("https://www.google.com")));
 
-  impl_.SetSupportsSpdy(https_www_server, true);
-  impl_.SetSupportsSpdy(http_photo_server, true);
-  impl_.SetSupportsSpdy(https_mail_server, false);
-  EXPECT_TRUE(impl_.GetSupportsSpdy(https_www_server));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(https_www_server));
-  EXPECT_TRUE(impl_.GetSupportsSpdy(http_photo_server));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(http_photo_server));
-  EXPECT_FALSE(impl_.GetSupportsSpdy(https_mail_server));
-  EXPECT_FALSE(impl_.SupportsRequestPriority(https_mail_server));
-  EXPECT_FALSE(impl_.GetSupportsSpdy(http_google_server));
-  EXPECT_FALSE(impl_.SupportsRequestPriority(http_google_server));
-  EXPECT_FALSE(impl_.GetSupportsSpdy(https_photos_server));
-  EXPECT_FALSE(impl_.SupportsRequestPriority(https_photos_server));
-  EXPECT_TRUE(impl_.GetSupportsSpdy(valid_google_server));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(valid_google_server));
+  impl_.SetSupportsSpdy(https_www_server, NetworkIsolationKey(), true);
+  impl_.SetSupportsSpdy(http_photo_server, NetworkIsolationKey(), true);
+  impl_.SetSupportsSpdy(https_mail_server, NetworkIsolationKey(), false);
+  EXPECT_TRUE(impl_.GetSupportsSpdy(https_www_server, NetworkIsolationKey()));
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(https_www_server, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(http_photo_server, NetworkIsolationKey()));
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(http_photo_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(https_mail_server, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      impl_.SupportsRequestPriority(https_mail_server, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      impl_.GetSupportsSpdy(http_google_server, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      impl_.SupportsRequestPriority(http_google_server, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      impl_.GetSupportsSpdy(https_photos_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(https_photos_server,
+                                             NetworkIsolationKey()));
+  EXPECT_TRUE(
+      impl_.GetSupportsSpdy(valid_google_server, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(valid_google_server,
+                                            NetworkIsolationKey()));
 
   // Flip values of two servers.
-  impl_.SetSupportsSpdy(https_www_server, false);
-  impl_.SetSupportsSpdy(https_mail_server, true);
-  EXPECT_FALSE(impl_.GetSupportsSpdy(https_www_server));
-  EXPECT_FALSE(impl_.SupportsRequestPriority(https_www_server));
-  EXPECT_TRUE(impl_.GetSupportsSpdy(https_mail_server));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(https_mail_server));
+  impl_.SetSupportsSpdy(https_www_server, NetworkIsolationKey(), false);
+  impl_.SetSupportsSpdy(https_mail_server, NetworkIsolationKey(), true);
+  EXPECT_FALSE(impl_.GetSupportsSpdy(https_www_server, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      impl_.SupportsRequestPriority(https_www_server, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(https_mail_server, NetworkIsolationKey()));
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(https_mail_server, NetworkIsolationKey()));
+}
+
+TEST_F(HttpServerPropertiesTest, SetSupportsSpdyWithNetworkIsolationKey) {
+  const url::SchemeHostPort kServer("https", "foo.test", 443);
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+
+  EXPECT_FALSE(impl_.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(kServer, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(kServer, NetworkIsolationKey()));
+
+  // Without network isolation keys enabled for HttpServerProperties, passing in
+  // a NetworkIsolationKey should have no effect on behavior.
+  for (const auto network_isolation_key_to_set :
+       {NetworkIsolationKey(), kNetworkIsolationKey}) {
+    impl_.SetSupportsSpdy(kServer, network_isolation_key_to_set, true);
+    EXPECT_TRUE(impl_.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+    EXPECT_TRUE(impl_.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+    EXPECT_TRUE(impl_.GetSupportsSpdy(kServer, NetworkIsolationKey()));
+    EXPECT_TRUE(impl_.SupportsRequestPriority(kServer, NetworkIsolationKey()));
+
+    impl_.SetSupportsSpdy(kServer, network_isolation_key_to_set, false);
+    EXPECT_FALSE(impl_.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+    EXPECT_FALSE(impl_.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+    EXPECT_FALSE(impl_.GetSupportsSpdy(kServer, NetworkIsolationKey()));
+    EXPECT_FALSE(impl_.SupportsRequestPriority(kServer, NetworkIsolationKey()));
+  }
+
+  // With network isolation keys enabled for HttpServerProperties, the
+  // NetworkIsolationKey argument should be respected.
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  HttpServerProperties properties(nullptr /* pref_delegate */,
+                                  nullptr /* net_log */, test_tick_clock_,
+                                  &test_clock_);
+
+  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(
+      properties.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      properties.SupportsRequestPriority(kServer, NetworkIsolationKey()));
+
+  properties.SetSupportsSpdy(kServer, kNetworkIsolationKey, true);
+  EXPECT_TRUE(properties.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_TRUE(
+      properties.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      properties.SupportsRequestPriority(kServer, NetworkIsolationKey()));
+
+  properties.SetSupportsSpdy(kServer, NetworkIsolationKey(), true);
+  EXPECT_TRUE(properties.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_TRUE(
+      properties.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+  EXPECT_TRUE(properties.GetSupportsSpdy(kServer, NetworkIsolationKey()));
+  EXPECT_TRUE(
+      properties.SupportsRequestPriority(kServer, NetworkIsolationKey()));
+
+  properties.SetSupportsSpdy(kServer, kNetworkIsolationKey, false);
+  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(
+      properties.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+  EXPECT_TRUE(properties.GetSupportsSpdy(kServer, NetworkIsolationKey()));
+  EXPECT_TRUE(
+      properties.SupportsRequestPriority(kServer, NetworkIsolationKey()));
+
+  properties.SetSupportsSpdy(kServer, NetworkIsolationKey(), false);
+  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(
+      properties.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      properties.SupportsRequestPriority(kServer, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesTest, LoadSupportsSpdy) {
@@ -168,7 +261,8 @@ TEST_F(HttpServerPropertiesTest, LoadSupportsSpdy) {
   std::unique_ptr<HttpServerProperties::ServerInfoMap> spdy_servers =
       std::make_unique<HttpServerProperties::ServerInfoMap>();
   impl_.OnServerInfoLoadedForTesting(std::move(spdy_servers));
-  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_google));
+  EXPECT_FALSE(
+      impl_.GetSupportsSpdy(spdy_server_google, NetworkIsolationKey()));
 
   // Check by initializing www.google.com:443 and photos.google.com:443 as spdy
   // servers.
@@ -178,8 +272,9 @@ TEST_F(HttpServerPropertiesTest, LoadSupportsSpdy) {
   spdy_servers1->Put(CreateSimpleKey(spdy_server_photos), no_spdy);
   impl_.OnServerInfoLoadedForTesting(std::move(spdy_servers1));
   // Note: these calls affect MRU order.
-  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
-  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_photos));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      impl_.GetSupportsSpdy(spdy_server_photos, NetworkIsolationKey()));
 
   // Verify google and photos are in the list in MRU order.
   ASSERT_EQ(2U, impl_.server_info_map_for_testing().size());
@@ -227,10 +322,11 @@ TEST_F(HttpServerPropertiesTest, LoadSupportsSpdy) {
   EXPECT_TRUE(*it->second.supports_spdy);
 
   // Check these in reverse MRU order so that MRU order stays the same.
-  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_mail));
-  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_docs));
-  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
-  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_photos));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_mail, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_docs, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      impl_.GetSupportsSpdy(spdy_server_photos, NetworkIsolationKey()));
 
   // Verify that old values loaded from disk take precedence over newer learned
   // values and also verify the recency list order is unchanged.
@@ -264,61 +360,72 @@ TEST_F(HttpServerPropertiesTest, LoadSupportsSpdy) {
   EXPECT_FALSE(*it->second.supports_spdy);
 
   // Verify photos server doesn't support SPDY and other servers support SPDY.
-  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_mail));
-  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_docs));
-  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
-  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_photos));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_mail, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_docs, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_photos, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesTest, SupportsRequestPriority) {
   url::SchemeHostPort spdy_server_empty("https", std::string(), 443);
-  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_empty));
+  EXPECT_FALSE(
+      impl_.SupportsRequestPriority(spdy_server_empty, NetworkIsolationKey()));
 
   // Add www.google.com:443 as supporting SPDY.
   url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
-  impl_.SetSupportsSpdy(spdy_server_google, true);
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
+  impl_.SetSupportsSpdy(spdy_server_google, NetworkIsolationKey(), true);
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(spdy_server_google, NetworkIsolationKey()));
 
   // Add mail.google.com:443 as not supporting SPDY.
   url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
-  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
+  EXPECT_FALSE(
+      impl_.SupportsRequestPriority(spdy_server_mail, NetworkIsolationKey()));
 
   // Add docs.google.com:443 as supporting SPDY.
   url::SchemeHostPort spdy_server_docs("https", "docs.google.com", 443);
-  impl_.SetSupportsSpdy(spdy_server_docs, true);
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
+  impl_.SetSupportsSpdy(spdy_server_docs, NetworkIsolationKey(), true);
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(spdy_server_docs, NetworkIsolationKey()));
 
   // Add www.youtube.com:443 as supporting QUIC.
   url::SchemeHostPort youtube_server("https", "www.youtube.com", 443);
   const AlternativeService alternative_service1(kProtoQUIC, "www.youtube.com",
                                                 443);
   SetAlternativeService(youtube_server, alternative_service1);
-  EXPECT_TRUE(impl_.SupportsRequestPriority(youtube_server));
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(youtube_server, NetworkIsolationKey()));
 
   // Add www.example.com:443 with two alternative services, one supporting QUIC.
   url::SchemeHostPort example_server("https", "www.example.com", 443);
   const AlternativeService alternative_service2(kProtoHTTP2, "", 443);
   SetAlternativeService(example_server, alternative_service2);
   SetAlternativeService(example_server, alternative_service1);
-  EXPECT_TRUE(impl_.SupportsRequestPriority(example_server));
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(example_server, NetworkIsolationKey()));
 
   // Verify all the entries are the same after additions.
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
-  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(youtube_server));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(example_server));
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(spdy_server_google, NetworkIsolationKey()));
+  EXPECT_FALSE(
+      impl_.SupportsRequestPriority(spdy_server_mail, NetworkIsolationKey()));
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(spdy_server_docs, NetworkIsolationKey()));
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(youtube_server, NetworkIsolationKey()));
+  EXPECT_TRUE(
+      impl_.SupportsRequestPriority(example_server, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesTest, ClearSupportsSpdy) {
   // Add www.google.com:443 and mail.google.com:443 as supporting SPDY.
   url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
-  impl_.SetSupportsSpdy(spdy_server_google, true);
+  impl_.SetSupportsSpdy(spdy_server_google, NetworkIsolationKey(), true);
   url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
-  impl_.SetSupportsSpdy(spdy_server_mail, true);
+  impl_.SetSupportsSpdy(spdy_server_mail, NetworkIsolationKey(), true);
 
-  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
-  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_mail));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_mail, NetworkIsolationKey()));
 
   base::RunLoop run_loop;
   bool callback_invoked_ = false;
@@ -328,8 +435,9 @@ TEST_F(HttpServerPropertiesTest, ClearSupportsSpdy) {
         std::move(quit_closure).Run();
       },
       &callback_invoked_, run_loop.QuitClosure()));
-  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_google));
-  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_mail));
+  EXPECT_FALSE(
+      impl_.GetSupportsSpdy(spdy_server_google, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_mail, NetworkIsolationKey()));
 
   // Callback should be run asynchronously.
   EXPECT_FALSE(callback_invoked_);
@@ -342,7 +450,7 @@ TEST_F(HttpServerPropertiesTest, MRUOfServerInfoMap) {
   url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
 
   // Add www.google.com:443 as supporting SPDY.
-  impl_.SetSupportsSpdy(spdy_server_google, true);
+  impl_.SetSupportsSpdy(spdy_server_google, NetworkIsolationKey(), true);
   ASSERT_EQ(1u, impl_.server_info_map_for_testing().size());
   auto it = impl_.server_info_map_for_testing().begin();
   ASSERT_EQ(spdy_server_google, it->first.server);
@@ -350,7 +458,7 @@ TEST_F(HttpServerPropertiesTest, MRUOfServerInfoMap) {
 
   // Add mail.google.com:443 as supporting SPDY. Verify mail.google.com:443 and
   // www.google.com:443 are in the list.
-  impl_.SetSupportsSpdy(spdy_server_mail, true);
+  impl_.SetSupportsSpdy(spdy_server_mail, NetworkIsolationKey(), true);
   ASSERT_EQ(2u, impl_.server_info_map_for_testing().size());
   it = impl_.server_info_map_for_testing().begin();
   ASSERT_EQ(spdy_server_mail, it->first.server);
@@ -360,7 +468,7 @@ TEST_F(HttpServerPropertiesTest, MRUOfServerInfoMap) {
   EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
 
   // Get www.google.com:443. It should become the most-recently-used server.
-  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google, NetworkIsolationKey()));
   ASSERT_EQ(2u, impl_.server_info_map_for_testing().size());
   it = impl_.server_info_map_for_testing().begin();
   ASSERT_EQ(spdy_server_google, it->first.server);

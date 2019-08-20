@@ -20,6 +20,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/parse_number.h"
 #include "net/base/port_util.h"
 #include "net/http/http_network_session.h"
@@ -306,8 +307,11 @@ bool HttpStreamFactory::ProxyServerSupportsPriorities(
   url::SchemeHostPort scheme_host_port("https", host_port_pair.host(),
                                        host_port_pair.port());
 
+  // TODO(https://crbug.com/993517): Figure out what NetworkIsolationKey() to
+  // use here, and what to do about this and |preconnecting_proxy_servers_|,
+  // which leaks data across NetworkIsolationKeys.
   return session_->http_server_properties()->SupportsRequestPriority(
-      scheme_host_port);
+      scheme_host_port, NetworkIsolationKey());
 }
 
 void HttpStreamFactory::DumpMemoryStats(

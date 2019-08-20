@@ -343,7 +343,8 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   url::SchemeHostPort gooler_server("http", google_host_port_pair.host(),
                                     google_host_port_pair.port());
 
-  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(gooler_server));
+  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
+      gooler_server, NetworkIsolationKey()));
   EXPECT_FALSE(HasAlternativeService(gooler_server));
   const ServerNetworkStats* stats1 =
       http_server_props_->GetServerNetworkStats(gooler_server);
@@ -389,11 +390,12 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
 
   // Add mail.google.com:443 as a supporting spdy server.
   url::SchemeHostPort spdy_server("https", "mail.google.com", 443);
-  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(spdy_server));
-  http_server_props_->SetSupportsSpdy(spdy_server, true);
+  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
+  http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
   // Setting the value to the same thing again should not trigger another pref
   // update.
-  http_server_props_->SetSupportsSpdy(spdy_server, true);
+  http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -403,11 +405,12 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
 
   // Setting the value to the same thing again should not trigger another pref
   // update.
-  http_server_props_->SetSupportsSpdy(spdy_server, true);
+  http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 
-  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(spdy_server));
+  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
 }
 
 // Regression test for crbug.com/670519. Test that there is only one pref update
@@ -421,8 +424,9 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Post an update task. SetSupportsSpdy calls ScheduleUpdatePrefs with a delay
   // of 60ms.
   url::SchemeHostPort spdy_server("https", "mail.google.com", 443);
-  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(spdy_server));
-  http_server_props_->SetSupportsSpdy(spdy_server, true);
+  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
+  http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
   // The pref update task should be scheduled.
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
@@ -433,7 +437,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set another spdy server to trigger another call to
   // ScheduleUpdatePrefs. There should be no new update posted.
   url::SchemeHostPort spdy_server2("https", "drive.google.com", 443);
-  http_server_props_->SetSupportsSpdy(spdy_server2, true);
+  http_server_props_->SetSupportsSpdy(spdy_server2, NetworkIsolationKey(),
+                                      true);
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
   // Move forward the extra 20ms. The pref update should be executed.
@@ -442,13 +447,16 @@ TEST_F(HttpServerPropertiesManagerTest,
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 
-  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(spdy_server));
-  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(spdy_server2));
+  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
+  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
+      spdy_server2, NetworkIsolationKey()));
   // Set the third spdy server to trigger one more call to
   // ScheduleUpdatePrefs. A new update task should be posted now since the
   // previous one is completed.
   url::SchemeHostPort spdy_server3("https", "maps.google.com", 443);
-  http_server_props_->SetSupportsSpdy(spdy_server3, true);
+  http_server_props_->SetSupportsSpdy(spdy_server3, NetworkIsolationKey(),
+                                      true);
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
   // Run the task.
@@ -934,7 +942,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   http_server_props_->SetAlternativeServices(spdy_server, alt_svc_info_vector);
 
   http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service);
-  http_server_props_->SetSupportsSpdy(spdy_server, true);
+  http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
   http_server_props_->SetSupportsQuic(true, actual_address);
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
@@ -950,7 +958,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
       broken_alternative_service));
-  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(spdy_server));
+  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
   EXPECT_TRUE(HasAlternativeService(spdy_server));
   IPAddress address;
   EXPECT_TRUE(http_server_props_->GetSupportsQuic(&address));
@@ -977,7 +986,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
       broken_alternative_service));
-  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(spdy_server));
+  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
   EXPECT_FALSE(HasAlternativeService(spdy_server));
   EXPECT_FALSE(http_server_props_->GetSupportsQuic(&address));
   const ServerNetworkStats* stats2 =
@@ -1086,10 +1096,11 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
       mail_alternative_service);
 
   // #3: Set SPDY server map
-  http_server_props_->SetSupportsSpdy(server_www, false);
-  http_server_props_->SetSupportsSpdy(server_mail, true);
+  http_server_props_->SetSupportsSpdy(server_www, NetworkIsolationKey(), false);
+  http_server_props_->SetSupportsSpdy(server_mail, NetworkIsolationKey(), true);
   http_server_props_->SetSupportsSpdy(
-      url::SchemeHostPort("http", "not_persisted.com", 80), false);
+      url::SchemeHostPort("http", "not_persisted.com", 80),
+      NetworkIsolationKey(), false);
 
   // #4: Set ServerNetworkStats.
   ServerNetworkStats stats;
@@ -1924,7 +1935,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   EXPECT_EQ(4, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 
-TEST_F(HttpServerPropertiesManagerTest, ServerInfoWithNetworkIsolationKey) {
+TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyServerInfo) {
   const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
   const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
   const url::Origin kOpaqueOrigin =
@@ -2019,6 +2030,78 @@ TEST_F(HttpServerPropertiesManagerTest, ServerInfoWithNetworkIsolationKey) {
       }
     }
   }
+}
+
+// Tests a full round trip with a NetworkIsolationKey, using the
+// HttpServerProperties interface.
+TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyIntegration) {
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const url::SchemeHostPort kServer("https", "baz.test", 443);
+
+  const url::Origin kOpaqueOrigin =
+      url::Origin::Create(GURL("data:text/plain,Hello World"));
+  const NetworkIsolationKey kOpaqueOriginNetworkIsolationKey(kOpaqueOrigin,
+                                                             kOpaqueOrigin);
+  const url::SchemeHostPort kServer2("https", "zab.test", 443);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  // Create and initialize an HttpServerProperties with no state.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  // Set a values using kNetworkIsolationKey.
+  properties->SetSupportsSpdy(kServer, kNetworkIsolationKey, true);
+  EXPECT_TRUE(properties->GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(
+      properties->GetSupportsSpdy(kServer, kOpaqueOriginNetworkIsolationKey));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer, NetworkIsolationKey()));
+
+  // Opaque origins should works with HttpServerProperties, but not be persisted
+  // to disk.
+  properties->SetSupportsSpdy(kServer2, kOpaqueOriginNetworkIsolationKey, true);
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, kNetworkIsolationKey));
+  EXPECT_TRUE(
+      properties->GetSupportsSpdy(kServer2, kOpaqueOriginNetworkIsolationKey));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
+
+  // Wait until the data's been written to prefs, and then tear down the
+  // HttpServerProperties.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+  std::unique_ptr<base::DictionaryValue> saved_value =
+      unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+  properties.reset();
+
+  // Create a new HttpServerProperties using the value saved to prefs above.
+  pref_delegate = std::make_unique<MockPrefDelegate>();
+  unowned_pref_delegate = pref_delegate.get();
+  properties = std::make_unique<HttpServerProperties>(
+      std::move(pref_delegate), /*net_log=*/nullptr, GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(*saved_value);
+
+  // The information set using kNetworkIsolationKey on the original
+  // HttpServerProperties should also be set on the restored
+  // HttpServerProperties.
+  EXPECT_TRUE(properties->GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(
+      properties->GetSupportsSpdy(kServer, kOpaqueOriginNetworkIsolationKey));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer, NetworkIsolationKey()));
+
+  // The information set using kOpaqueOriginNetworkIsolationKey should not have
+  // been restored.
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, kNetworkIsolationKey));
+  EXPECT_FALSE(
+      properties->GetSupportsSpdy(kServer2, kOpaqueOriginNetworkIsolationKey));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
 }
 
 }  // namespace net

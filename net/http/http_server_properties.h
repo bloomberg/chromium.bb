@@ -101,7 +101,8 @@ typedef base::MRUCache<quic::QuicServerId, std::string> QuicServerInfoMap;
 // * Alternative Service support;
 // * QUIC data (like ServerNetworkStats and QuicServerInfo).
 //
-// Optionally retrieves and saves properties from/to disk.
+// Optionally retrieves and saves properties from/to disk. This class is not
+// threadsafe.
 class NET_EXPORT HttpServerProperties
     : public BrokenAlternativeServices::Delegate {
  public:
@@ -218,19 +219,27 @@ class NET_EXPORT HttpServerProperties
   // disk.
   void Clear(base::OnceClosure callback);
 
-  // Returns true if |server| supports a network protocol which honors
-  // request prioritization.
+  // Returns true if |server|, in the context of |network_isolation_key|, has
+  // previously supported a network protocol which honors request
+  // prioritization.
+  //
   // Note that this also implies that the server supports request
   // multiplexing, since priorities imply a relationship between
   // multiple requests.
-  bool SupportsRequestPriority(const url::SchemeHostPort& server);
+  bool SupportsRequestPriority(
+      const url::SchemeHostPort& server,
+      const net::NetworkIsolationKey& network_isolation_key);
 
   // Returns the value set by SetSupportsSpdy(). If not set, returns false.
-  bool GetSupportsSpdy(const url::SchemeHostPort& server);
+  bool GetSupportsSpdy(const url::SchemeHostPort& server,
+                       const net::NetworkIsolationKey& network_isolation_key);
 
-  // Add |server| into the persistent store. Should only be called from IO
-  // thread.
-  void SetSupportsSpdy(const url::SchemeHostPort& server, bool supports_spdy);
+  // Records whether |server| supports H2 or not. Information is restricted to
+  // the context of |network_isolation_key|, to prevent cross-site information
+  // leakage.
+  void SetSupportsSpdy(const url::SchemeHostPort& server,
+                       const net::NetworkIsolationKey& network_isolation_key,
+                       bool supports_spdy);
 
   // Returns true if |server| has required HTTP/1.1 via HTTP/2 error code.
   bool RequiresHTTP11(const HostPortPair& server);
