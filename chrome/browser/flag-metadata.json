@@ -1799,7 +1799,7 @@
   {
     "name": "enable-viz-hit-test-surface-layer",
     "owners": [ "yigu", "rjkroege", "kylechar" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 79
   },
   {
     "name": "enable-web-authentication-ble-support",
