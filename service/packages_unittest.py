@@ -14,38 +14,6 @@ from chromite.lib.chroot_lib import Chroot
 from chromite.service import packages
 
 
-class UprevAndroidTest(cros_test_lib.RunCommandTestCase):
-  """Uprev android tests."""
-
-  def test_success(self):
-    """Test successful run handling."""
-    self.PatchObject(packages, '_parse_android_atom',
-                     return_value='ANDROID_ATOM=android/android-1.0')
-
-    build_targets = [build_target_util.BuildTarget(t) for t in ['foo', 'bar']]
-
-    packages.uprev_android('refs/tracking-branch', 'android/package',
-                           'refs/android-build-branch', Chroot(),
-                           build_targets=build_targets)
-    self.assertCommandContains(['cros_mark_android_as_stable',
-                                '--boards=foo:bar'])
-    self.assertCommandContains(['emerge-foo'])
-    self.assertCommandContains(['emerge-bar'])
-
-  def test_no_uprev(self):
-    """Test no uprev handling."""
-    self.PatchObject(packages, '_parse_android_atom', return_value=None)
-    build_targets = [build_target_util.BuildTarget(t) for t in ['foo', 'bar']]
-    packages.uprev_android('refs/tracking-branch', 'android/package',
-                           'refs/android-build-branch', Chroot(),
-                           build_targets=build_targets)
-
-    self.assertCommandContains(['cros_mark_android_as_stable',
-                                '--boards=foo:bar'])
-    self.assertCommandContains(['emerge-foo'], expected=False)
-    self.assertCommandContains(['emerge-bar'], expected=False)
-
-
 class UprevBuildTargetsTest(cros_test_lib.RunCommandTestCase):
   """uprev_build_targets tests."""
 

@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import functools
 import os
 
 from chromite.lib import cros_build_lib
@@ -51,7 +50,6 @@ def exists(*fields):
   assert fields
 
   def decorator(func):
-    @functools.wraps(func)
     def _exists(input_proto, *args, **kwargs):
       for field in fields:
         logging.debug('Validating %s exists.', field)
@@ -78,7 +76,6 @@ def is_in(field, values):
   assert values
 
   def decorator(func):
-    @functools.wraps(func)
     def _is_in(input_proto, *args, **kwargs):
       logging.debug('Validating %s is in %r', field, values)
       value = _value(field, input_proto)
@@ -103,7 +100,6 @@ def require(*fields):
   assert fields
 
   def decorator(func):
-    @functools.wraps(func)
     def _require(input_proto, *args, **kwargs):
       for field in fields:
         logging.debug('Validating %s is set.', field)
@@ -126,8 +122,6 @@ def validation_complete(func):
   The config can be checked manually if there is non-decorator validation, but
   this is much cleaner if it is all done in decorators.
   """
-
-  @functools.wraps(func)
   def _validate_only(request, response, configs, *args, **kwargs):
     if configs.validate_only:
       # Avoid calling the endpoint.

@@ -19,7 +19,6 @@ from google.protobuf import symbol_database
 
 from chromite.api import controller
 from chromite.api import field_handler
-from chromite.api.gen.chromite.api import android_pb2
 from chromite.api.gen.chromite.api import api_pb2
 from chromite.api.gen.chromite.api import artifacts_pb2
 from chromite.api.gen.chromite.api import binhost_pb2
@@ -351,7 +350,6 @@ def RegisterServices(router):
   Args:
     router (Router): The router.
   """
-  router.Register(android_pb2)
   router.Register(api_pb2)
   router.Register(artifacts_pb2)
   router.Register(binhost_pb2)
