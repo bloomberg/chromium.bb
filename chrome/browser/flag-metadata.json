@@ -2721,6 +2721,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "password-leak-detection",
+    "owners": [ "jdoerrie", "vasilii" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "password-manager-onboarding-android",
     "owners": ["achulkov", "ioanap"],
     "expiry_milestone": 80
