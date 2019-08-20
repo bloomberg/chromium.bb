@@ -28,8 +28,13 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/dialog_block_view"
-        android:clickable="true"
-        android:focusable="true">
+        android:id="@+id/dialog_frame"
+        android:background="@drawable/tab_grid_card_background">
     </View>
+    <FrameLayout
+        android:id="@+id/dialog_animation_card_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <include layout="@layout/tab_grid_card_item"/>
+    </FrameLayout>
 </FrameLayout>
