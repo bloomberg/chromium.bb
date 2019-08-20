@@ -1955,7 +1955,7 @@
   {
     "name": "enforce-tls13-downgrade",
     "owners": [ "davidben", "svaldez" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enterprise-reporting-in-browser",
