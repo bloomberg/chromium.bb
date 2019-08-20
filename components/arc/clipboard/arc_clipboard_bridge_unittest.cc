@@ -74,7 +74,7 @@ class ArcClipboardBridgeTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::unique_ptr<ArcClipboardBridge> clipboard_bridge_;
   std::unique_ptr<FakeClipboardInstance> clipboard_instance_;

@@ -203,13 +203,12 @@ class ConfigParserTest : public testing::Test {
 
   MOCK_METHOD0(Callback, void(void));
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 };
 
 ConfigParserTest::ConfigParserTest()
-    : test_browser_thread_bundle_(
-          content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+    : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
 ConfigParserTest::~ConfigParserTest() {}
 

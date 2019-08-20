@@ -64,7 +64,7 @@ class ContentIndexProviderImplTest : public testing::Test,
   }
 
  protected:
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment threads_;
   TestingProfile profile_;
   std::unique_ptr<ContentIndexProviderImpl> provider_;
 };

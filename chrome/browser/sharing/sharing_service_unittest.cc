@@ -217,7 +217,7 @@ class SharingServiceTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  content::TestBrowserThreadBundle task_environment_{
+  content::BrowserTaskEnvironment task_environment_{
       TaskEnvironment::TimeSource::MOCK_TIME};
 
   syncer::FakeDeviceInfoTracker device_info_tracker_;

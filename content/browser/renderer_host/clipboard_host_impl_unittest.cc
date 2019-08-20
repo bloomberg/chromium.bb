@@ -40,7 +40,7 @@ class ClipboardHostImplTest : public ::testing::Test {
   ui::Clipboard* system_clipboard() { return clipboard_; }
 
  private:
-  const TestBrowserThreadBundle thread_bundle_;
+  const BrowserTaskEnvironment task_environment_;
   mojo::Remote<blink::mojom::ClipboardHost> remote_;
   ui::Clipboard* const clipboard_;
 };

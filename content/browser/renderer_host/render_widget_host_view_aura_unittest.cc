@@ -664,7 +664,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   bool is_guest_view_hack_;
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<BrowserContext> browser_context_;
   std::vector<std::unique_ptr<MockRenderWidgetHostDelegate>> delegates_;

@@ -427,7 +427,7 @@ class MockLegacyCacheStorage : public LegacyCacheStorage {
 class CacheStorageCacheTest : public testing::Test {
  public:
   CacheStorageCacheTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     ChromeBlobStorageContext* blob_storage_context =
@@ -844,7 +844,7 @@ class CacheStorageCacheTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
@@ -2281,7 +2281,7 @@ TEST_P(CacheStorageCacheTestP, BlobReferenceDelaysClose) {
   cache_->Close(base::BindOnce(&CacheStorageCacheTest::CloseCallback,
                                base::Unretained(this),
                                base::Unretained(&loop)));
-  browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // If MemoryOnly closing does succeed right away.
   EXPECT_EQ(MemoryOnly(), callback_closed_);
 

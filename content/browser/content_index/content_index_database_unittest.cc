@@ -107,7 +107,7 @@ std::vector<SkBitmap> CreateTestIcons() {
 class ContentIndexDatabaseTest : public ::testing::Test {
  public:
   ContentIndexDatabaseTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         embedded_worker_test_helper_(base::FilePath() /* in memory */) {}
 
   ~ContentIndexDatabaseTest() override = default;
@@ -224,7 +224,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
 
   ContentIndexDatabase* database() { return database_.get(); }
 
-  TestBrowserThreadBundle& thread_bundle() { return thread_bundle_; }
+  BrowserTaskEnvironment& task_environment() { return task_environment_; }
 
   const url::Origin& origin() { return origin_; }
 
@@ -276,7 +276,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     return service_worker_registration_id;
   }
 
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+  BrowserTaskEnvironment task_environment_;  // Must be first member.
   ContentIndexTestBrowserContext browser_context_;
   url::Origin origin_ = url::Origin::Create(GURL("https://example.com"));
   int64_t service_worker_registration_id_ =
@@ -349,7 +349,7 @@ TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
               blink::mojom::ContentIndexError::NONE);
 
     // Wait for the provider to receive the OnContentAdded event.
-    thread_bundle().RunUntilIdle();
+    task_environment().RunUntilIdle();
 
     ASSERT_TRUE(out_entry);
     ASSERT_TRUE(out_entry->description);
@@ -364,7 +364,7 @@ TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
     EXPECT_CALL(*provider(), OnContentDeleted(service_worker_registration_id(),
                                               origin(), "id"));
     EXPECT_EQ(DeleteEntry("id"), blink::mojom::ContentIndexError::NONE);
-    thread_bundle().RunUntilIdle();
+    task_environment().RunUntilIdle();
   }
 }
 

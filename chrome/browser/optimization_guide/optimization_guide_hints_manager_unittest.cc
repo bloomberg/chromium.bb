@@ -187,7 +187,7 @@ class OptimizationGuideHintsManagerTest
     }
     optimization_guide_service_ =
         std::make_unique<TestOptimizationGuideService>(
-            browser_thread_bundle_.GetMainThreadTaskRunner());
+            task_environment_.GetMainThreadTaskRunner());
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     optimization_guide::prefs::RegisterProfilePrefs(pref_service_->registry());
 
@@ -198,7 +198,7 @@ class OptimizationGuideHintsManagerTest
     hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
         optimization_guide_service_.get(), temp_dir(), pref_service_.get(),
         db_provider_.get(), top_host_provider, url_loader_factory_);
-    hints_manager_->SetClockForTesting(browser_thread_bundle_.GetMockClock());
+    hints_manager_->SetClockForTesting(task_environment_.GetMockClock());
 
     // Add observer is called after the HintCache is fully initialized,
     // indicating that the OptimizationGuideHintsManager is ready to process
@@ -275,7 +275,7 @@ class OptimizationGuideHintsManagerTest
   }
 
   void MoveClockForwardBy(base::TimeDelta time_delta) {
-    browser_thread_bundle_.FastForwardBy(time_delta);
+    task_environment_.FastForwardBy(time_delta);
     RunUntilIdle();
   }
 
@@ -297,7 +297,7 @@ class OptimizationGuideHintsManagerTest
 
  protected:
   void RunUntilIdle() {
-    browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -311,7 +311,7 @@ class OptimizationGuideHintsManagerTest
                               serialized_config.size()));
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_ = {
+  content::BrowserTaskEnvironment task_environment_ = {
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 

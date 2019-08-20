@@ -223,7 +223,7 @@ class CacheCounterTest : public PlatformTest {
       run_loop_->Quit();
   }
 
-  web::TestWebThreadBundle bundle_;
+  web::WebTaskEnvironment bundle_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
 

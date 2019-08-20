@@ -62,7 +62,7 @@ class TestCacheStorageBlobToDiskCache : public CacheStorageBlobToDiskCache {
 class CacheStorageBlobToDiskCacheTest : public testing::Test {
  protected:
   CacheStorageBlobToDiskCacheTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()),
         cache_storage_blob_to_disk_cache_(
             new TestCacheStorageBlobToDiskCache()),
@@ -142,7 +142,7 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
     callback_called_ = true;
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   storage::BlobStorageContext* blob_storage_context_;
   std::unique_ptr<storage::BlobDataHandle> blob_handle_;
