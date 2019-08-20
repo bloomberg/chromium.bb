@@ -17771,10 +17771,11 @@ Called by update_net_error_codes.py.-->
   <int value="575" label="BuiltinCertificateVerifierEnabled"/>
   <int value="576" label="CrostiniRootAccessAllowed"/>
   <int value="577" label="VmManagementCliAllowed"/>
-  <int value="578" label="CheckURLsInRealTime"/>
+  <int value="578" label="SafeBrowsingRealTimeLookupEnabled"/>
   <int value="579" label="CACertificateManagementAllowed"/>
   <int value="580" label="PasswordLeakDetectionEnabled"/>
   <int value="581" label="LockScreenMediaPlaybackEnabled"/>
+  <int value="582" label="DnsOverHttpsMode"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -47847,7 +47848,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="PasswordManager"/>
   <int value="4" label="Proxy"/>
   <int value="5" label="Extensions"/>
-  <int value="6" label="RestoreOnStartupGroup"/>
+  <int value="6" label="RestoreOnStartup"/>
   <int value="7" label="DefaultSearchProvider"/>
   <int value="8" label="ImageSettings"/>
   <int value="9" label="CookiesSettings"/>
@@ -47871,10 +47872,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="27" label="ChromeReportingExtension"/>
   <int value="28" label="BrowserSwitcher"/>
   <int value="29" label="PluginVm"/>
-  <int value="30" label="DeviceSAML"/>
-  <int value="31" label="DeviceLoginScreenOrigins"/>
+  <int value="30" label="SAML"/>
+  <int value="31" label="LoginScreenOrigins"/>
   <int value="32" label="UserAndDeviceReporting"/>
-  <int value="33" label="DeviceWiFi"/>
+  <int value="33" label="WiFi"/>
   <int value="34" label="Kiosk"/>
   <int value="35" label="DateAndTime"/>
   <int value="36" label="Display"/>

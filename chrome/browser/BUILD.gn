@@ -876,6 +876,8 @@ jumbo_split_static_library("browser") {
     "net/proxy_service_factory.h",
     "net/referrer.cc",
     "net/referrer.h",
+    "net/secure_dns_policy_handler.cc",
+    "net/secure_dns_policy_handler.h",
     "net/service_providers_win.cc",
     "net/service_providers_win.h",
     "net/system_network_context_manager.cc",
