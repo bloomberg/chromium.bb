@@ -5679,6 +5679,10 @@ void v8::V8::InitializeExternalStartupData(const char* natives_blob,
   i::InitializeExternalStartupData(natives_blob, snapshot_blob);
 }
 
+intptr_t v8::V8::GetHeapHandle() {
+  return _get_heap_handle();
+}
+
 const char* v8::V8::GetVersion() { return i::Version::GetVersion(); }
 
 template <typename ObjectType>

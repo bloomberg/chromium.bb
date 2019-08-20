@@ -125,6 +125,9 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
 
 
     // patch section: custom CRT handler
+    content::ContentMainRunner::SetCRTErrorHandlerFunctions(
+        params.invalidParameterHandler(),
+        params.purecallHandler());
 
 
     // patch section: search highlight
