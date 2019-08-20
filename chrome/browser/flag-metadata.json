@@ -1809,7 +1809,7 @@
   {
     "name": "enable-web-authentication-ble-support",
     "owners": [ "webauthn-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enable-web-authentication-cable-support",
