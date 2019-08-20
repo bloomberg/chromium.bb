@@ -231,14 +231,15 @@ class BASE_EXPORT TaskTraits {
             static_cast<uint8_t>(
                 trait_helpers::GetEnum<TaskPriority,
                                        TaskPriority::USER_BLOCKING>(args...)) |
-            (trait_helpers::HasTrait<TaskPriority>(args...) ? kIsExplicitFlag
-                                                            : 0)),
+            (trait_helpers::HasTrait<TaskPriority, ArgTypes...>()
+                 ? kIsExplicitFlag
+                 : 0)),
         shutdown_behavior_(
             static_cast<uint8_t>(
                 trait_helpers::GetEnum<TaskShutdownBehavior,
                                        TaskShutdownBehavior::SKIP_ON_SHUTDOWN>(
                     args...)) |
-            (trait_helpers::HasTrait<TaskShutdownBehavior>(args...)
+            (trait_helpers::HasTrait<TaskShutdownBehavior, ArgTypes...>()
                  ? kIsExplicitFlag
                  : 0)),
         thread_policy_(
@@ -246,12 +247,13 @@ class BASE_EXPORT TaskTraits {
                 trait_helpers::GetEnum<ThreadPolicy,
                                        ThreadPolicy::PREFER_BACKGROUND>(
                     args...)) |
-            (trait_helpers::HasTrait<ThreadPolicy>(args...) ? kIsExplicitFlag
-                                                            : 0)),
-        may_block_(trait_helpers::HasTrait<MayBlock>(args...)),
+            (trait_helpers::HasTrait<ThreadPolicy, ArgTypes...>()
+                 ? kIsExplicitFlag
+                 : 0)),
+        may_block_(trait_helpers::HasTrait<MayBlock, ArgTypes...>()),
         with_base_sync_primitives_(
-            trait_helpers::HasTrait<WithBaseSyncPrimitives>(args...)),
-        use_thread_pool_(trait_helpers::HasTrait<ThreadPool>(args...)) {}
+            trait_helpers::HasTrait<WithBaseSyncPrimitives, ArgTypes...>()),
+        use_thread_pool_(trait_helpers::HasTrait<ThreadPool, ArgTypes...>()) {}
 
   constexpr TaskTraits(const TaskTraits& other) = default;
   TaskTraits& operator=(const TaskTraits& other) = default;
