@@ -686,6 +686,14 @@ const char kTreatUnsafeDownloadsAsActiveParamName[] = "ExtensionList";
 const base::Feature kHeavyAdIntervention{"HeavyAdIntervention",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the blocklist for the heavy ad intervention. This
+// throttles the amount of interventions that can occur on a given host in a
+// time period. This is separate from the intervention feature so it does not
+// interfere with field trial activation, as this blocklist is created for every
+// user.
+const base::Feature kHeavyAdBlocklist{"HeavyAdBlocklist",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Enables or disables usage time state notifier for supervised accounts on
 // Chrome OS.
