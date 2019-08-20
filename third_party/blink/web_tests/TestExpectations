@@ -198,8 +198,10 @@ crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pa
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
-crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer.html [ Pass Timeout Failure ]
-crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-layer.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-layer-filter.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer-filter.html [ Pass Timeout Failure ]
 
 # Flaky virtual/threaded/fast/scrolling tests
 crbug.com/841567 virtual/threaded/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
@@ -5408,7 +5410,7 @@ crbug.com/814585 [ Linux ] fast/css3-text/css3-text-decoration/text-underline-po
 # Sheriff failures 2018-02-22
 crbug.com/814889 idle-callback/test-runner-run-idle-tasks.html [ Crash Timeout Pass ]
 crbug.com/814953 fast/replaced/no-focus-ring-iframe.html [ Failure Pass ]
-crbug.com/814964 virtual/gpu-rasterization/images/color-profile-border-radius.html [ Failure Pass ]
+crbug.com/814964 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-border-radius.html [ Failure Pass ]
 
 # These pass on bots with proprietary codecs (most CQ bots) while failing on bots without.
 crbug.com/807110 external/wpt/html/semantics/embedded-content/media-elements/mime-types/canPlayType.html [ Failure Pass ]
@@ -6337,7 +6339,7 @@ crbug.com/979593 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/service-wor
 
 # Sheriff 2019-07-03
 crbug.com/979490 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-referrer.html [ Pass Timeout ]
-crbug.com/981137 [ Win ] virtual/gpu-rasterization/images/webp-no-color-profile-lossy.html [ Pass Failure ]
+crbug.com/981137 [ Win ] virtual/gpu-rasterization/images/yuv-decode-eligible/webp-no-color-profile-lossy.html [ Pass Failure ]
 crbug.com/981210 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 
 # Sheriff 2019-07-04
