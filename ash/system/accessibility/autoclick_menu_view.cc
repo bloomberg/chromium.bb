@@ -33,7 +33,6 @@ namespace {
 const int kPanelPositionButtonSize = 36;
 const int kPanelPositionButtonPadding = 14;
 const int kSeparatorHeight = 16;
-const SkColor kAutoclickMenuButtonColorActive = SkColorSetRGB(138, 180, 248);
 const SkColor kAutoclickMenuButtonIconColorActive = SkColorSetRGB(32, 33, 36);
 
 }  // namespace
@@ -89,8 +88,11 @@ class AutoclickMenuButton : public TopShortcutButton {
       gfx::Rect rect(GetContentsBounds());
       cc::PaintFlags flags;
       flags.setAntiAlias(true);
-      flags.setColor(toggled_ ? kAutoclickMenuButtonColorActive
-                              : kUnifiedMenuButtonColor);
+      flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
+          toggled_
+              ? AshColorProvider::ControlsLayerType::kActiveControlBackground
+              : AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+          AshColorProvider::AshColorMode::kDark));
       flags.setStyle(cc::PaintFlags::kFill_Style);
       canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), size_ / 2, flags);
     }

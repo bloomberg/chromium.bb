@@ -133,8 +133,6 @@ constexpr gfx::Insets kUnifiedNotificationHiddenPadding(6, 16);
 constexpr gfx::Insets kUnifiedCircularButtonFocusPadding(4);
 constexpr int kStackingNotificationCounterHeight = 32;
 constexpr gfx::Insets kStackingNotificationClearAllButtonPadding(8, 16);
-constexpr SkColor kStackingNotificationCounterLabelColor =
-    SkColorSetRGB(0x5f, 0x64, 0x68);
 
 // Size of an icon drawn inside top shortcut buttons.
 // A dark disc with |kTrayItemSize| diameter is drawn in the background.

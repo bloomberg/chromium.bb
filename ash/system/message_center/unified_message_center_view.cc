@@ -178,7 +178,9 @@ StackingNotificationCounterView::StackingNotificationCounterView(
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
-  count_label_->SetEnabledColor(kStackingNotificationCounterLabelColor);
+  count_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextSecondary,
+      AshColorProvider::AshColorMode::kLight));
   count_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   AddChildView(count_label_);
