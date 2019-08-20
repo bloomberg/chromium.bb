@@ -76,7 +76,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // the existing bubble will auto-close due to focus loss.
   static void ShowBubble(
       profiles::BubbleViewMode view_mode,
-      const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       views::Button* anchor_button,
       Browser* browser,

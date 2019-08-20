@@ -130,10 +130,8 @@ bool ProfileMenuView::close_on_deactivate_for_testing_ = true;
 
 ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
                                        Browser* browser,
-                                       signin::GAIAServiceType service_type,
                                        signin_metrics::AccessPoint access_point)
     : ProfileMenuViewBase(anchor_button, browser),
-      gaia_service_type_(service_type),
       access_point_(access_point),
       dice_enabled_(AccountConsistencyModeManager::IsDiceEnabledForProfile(
           browser->profile())) {
@@ -776,8 +774,7 @@ void ProfileMenuView::AddManageGoogleAccountButton() {
 
 void ProfileMenuView::PostActionPerformed(
     ProfileMetrics::ProfileDesktopMenu action_performed) {
-  ProfileMetrics::LogProfileDesktopMenu(action_performed, gaia_service_type_);
-  gaia_service_type_ = signin::GAIA_SERVICE_TYPE_NONE;
+  ProfileMetrics::LogProfileDesktopMenu(action_performed);
 }
 
 int ProfileMenuView::GetDiceSigninPromoShowCount() const {
