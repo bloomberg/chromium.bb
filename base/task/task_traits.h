@@ -212,13 +212,15 @@ class BASE_EXPORT TaskTraits {
   // WithBaseSyncPrimitives in any order to the constructor.
   //
   // E.g.
-  // constexpr base::TaskTraits default_traits = {};
-  // constexpr base::TaskTraits user_visible_traits =
-  //     {base::TaskPriority::USER_VISIBLE};
+  // constexpr base::TaskTraits default_traits = {base::ThreadPool()};
+  // constexpr base::TaskTraits user_visible_traits = {
+  //     base::ThreadPool(), base::TaskPriority::USER_VISIBLE};
   // constexpr base::TaskTraits user_visible_may_block_traits = {
-  //     base::TaskPriority::USER_VISIBLE, base::MayBlock()};
+  //     base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()
+  // };
   // constexpr base::TaskTraits other_user_visible_may_block_traits = {
-  //     base::MayBlock(), base::TaskPriority::USER_VISIBLE};
+  //     base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE
+  // };
   template <class... ArgTypes,
             class CheckArgumentsAreValid = std::enable_if_t<
                 trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value ||
