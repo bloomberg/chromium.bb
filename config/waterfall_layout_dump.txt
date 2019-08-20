@@ -2065,6 +2065,9 @@
   kefka-tot-chrome-pfq-informational-tryjob
   kefka-tot-chromium-pfq-informational-tryjob
   kefka-unittest-stress
+  kernel-3_14-release-afdo-verify-tryjob
+  kernel-3_18-release-afdo-verify-tryjob
+  kernel-4_4-release-afdo-verify-tryjob
   kevin-arcnext-chrome-pfq-tryjob
   kevin-arcnext-chromium-pfq-tryjob
   kevin-arcnext-compile-only-pre-cq

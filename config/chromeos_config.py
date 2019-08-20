@@ -1331,6 +1331,18 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # TODO: Add a schedule
   )
 
+  def KernelAFDOPublishBuilders(name, board):
+    site_config.Add(
+        name + '-release-afdo-verify',
+        site_config.templates.release_afdo_verify,
+        boards=[board]
+        # TODO: Add a schedule
+    )
+
+  KernelAFDOPublishBuilders('kernel-3_14', 'lulu')
+  KernelAFDOPublishBuilders('kernel-3_18', 'chell')
+  KernelAFDOPublishBuilders('kernel-4_4', 'eve')
+
   site_config.Add(
       'orderfile-generate-toolchain',
       site_config.templates.orderfile_generate_toolchain,
