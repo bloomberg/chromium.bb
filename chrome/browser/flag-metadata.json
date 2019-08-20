@@ -1793,8 +1793,8 @@
   },
   {
     "name": "enable-viz-display-compositor",
-    "owners": [ "fsamuel", "kylechar" ],
-    "expiry_milestone": 76
+    "owners": [ "kylechar", "rjkroege" ],
+    "expiry_milestone": 79
   },
   {
     "name": "enable-viz-hit-test-surface-layer",
