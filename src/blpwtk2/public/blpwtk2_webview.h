@@ -204,6 +204,9 @@ class WebView
         // Sets the region of the webview's window. Painting and hit-testing
         // will be restricted to the region.
 
+    virtual void activateKeyboardLayout(unsigned int hkl) = 0;
+        // change keyboard layout (IME).
+
     virtual void clearTooltip() = 0;
         // TODO(imran)
 
