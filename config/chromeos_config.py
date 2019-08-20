@@ -2231,7 +2231,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve-arcnext',
       'fizz',
       'fizz-accelerator',
-      'fizz-moblab',
       'flapjack',
       'gale',
       'gandof',
@@ -2323,6 +2322,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'atlas', # crbug.com/994783
       'capri-zfpga',  # crbug.com/995178
       'cobblepot',  # crbug.com/995178
+      'fizz-moblab', # crbug.com/995170
       'littlejoe',  # crbug.com/995178
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'grunt', # crbug.com/984614
