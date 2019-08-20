@@ -179,7 +179,7 @@ crbug.com/726075 [ Win ] compositing/3d-cube.html [ Failure ]
 crbug.com/726075 [ Linux ] compositing/3d-cube.html [ Failure ]
 crbug.com/726075 [ Mac ] compositing/3d-cube.html [ Failure ]
 
-# Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
+# Looks like a failure to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
 crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass Timeout ]
@@ -329,6 +329,10 @@ crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg
 # Fixed in CompositeAfterPaint.
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Failure ]
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Failure ]
+
+crbug.com/981719 external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
+crbug.com/981719 [ Linux ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
+crbug.com/981719 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -3274,11 +3278,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-list.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unset-referrer-policy/http-rp/same-origin/http-http/img-tag/swap-origin-redirect/insecure-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unsafe-url/attr-referrer/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Timeout ]
@@ -4213,7 +4212,6 @@ crbug.com/626703 external/wpt/css/css-transitions/transition-duration-004.html [
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-032.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-025.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-013.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-019.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-animations/animation-delay-010.html [ Failure ]
 crbug.com/626703 virtual/threaded/external/wpt/css/css-animations/animation-delay-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-numeric.html [ Failure ]
@@ -4254,15 +4252,11 @@ crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Fa
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-014.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-013.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-016.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-015.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-ui/text-overflow-028.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-ui/text-overflow-028.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/astral-bidi/adlam-anti-ref.html [ Failure Pass ]
 crbug.com/626703 external/wpt/css/css-writing-modes/astral-bidi/cypriot-anti-ref.html [ Failure Pass ]
 crbug.com/626703 external/wpt/css/css-fill-stroke/paint-order-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-006.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-007.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-009.html [ Failure ]
