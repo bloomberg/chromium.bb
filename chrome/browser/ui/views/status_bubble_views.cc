@@ -699,6 +699,11 @@ void StatusBubbleViews::InitPopup() {
     popup_->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, true);
     popup_->GetNativeWindow()->SetProperty(ash::kHideInDeskMiniViewKey, true);
 #endif
+#if !defined(OS_MACOSX)
+    // Stack the popup above the base widget and below higher z-order windows.
+    // This is unnecessary and even detrimental on Mac, see CreateBubbleWidget.
+    popup_->StackAboveWidget(frame);
+#endif
     RepositionPopup();
   }
 }
