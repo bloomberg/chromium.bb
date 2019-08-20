@@ -1296,7 +1296,11 @@ crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-overflow
 #crbug.com/591099 [ Mac ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 
+crbug.com/992920 [ Mac10.10 ] fast/dom/collection-item-should-be-overridden-by-own-property.html [ Crash Pass ]
+crbug.com/992920 [ Mac10.12 ] fast/dom/collection-item-should-be-overridden-by-own-property.html [ Crash Pass ]
 crbug.com/992920 [ Mac10.13 ] fast/dom/collection-item-should-be-overridden-by-own-property.html [ Crash Pass ]
+crbug.com/992920 [ Mac10.10 ] fast/text/forced-break-before-close-tag.html [ Crash Pass ]
+crbug.com/992920 [ Mac10.12 ] fast/text/forced-break-before-close-tag.html [ Crash Pass ]
 crbug.com/992920 [ Mac10.13 ] fast/text/forced-break-before-close-tag.html [ Crash Pass ]
 
 #crbug.com/974725 [ Win7 ] fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
