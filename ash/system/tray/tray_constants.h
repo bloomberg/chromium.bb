@@ -100,12 +100,6 @@ extern const int kTrayPopupInkDropInset;
 extern const int kTrayPopupInkDropCornerRadius;
 
 constexpr float kUnifiedMenuBackgroundBlur = 30.f;
-constexpr SkColor kUnifiedMenuButtonColor =
-    SkColorSetA(gfx::kGoogleGrey200, 0x14);
-constexpr SkColor kUnifiedMenuButtonColorActive =
-    SkColorSetRGB(0x25, 0x81, 0xdf);
-constexpr SkColor kUnifiedMenuButtonColorDisabled =
-    SkColorSetA(kUnifiedMenuButtonColor, 0xa);
 constexpr SkColor kUnifiedRecordingIconColor = gfx::kGoogleRed300;
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);

@@ -22,6 +22,9 @@ constexpr SkColor kUnifiedMenuBackgroundColorWithBlur =
 
 constexpr SkColor kNotificationBackgroundColor = SK_ColorWHITE;
 constexpr SkColor kUnifiedMenuTextColor = gfx::kGoogleGrey100;
+constexpr SkColor kUnifiedMenuButtonColor =
+    SkColorSetA(gfx::kGoogleGrey200, 0x14);
+constexpr SkColor kUnifiedMenuButtonColorActive = gfx::kGoogleBlueDark600;
 
 //----------------------------------End----------------------------------------
 
