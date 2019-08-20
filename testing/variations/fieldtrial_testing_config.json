@@ -2546,25 +2546,6 @@
             ]
         }
     ],
-    "GpuWatchdogV2": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "GpuWatchdogV2"
-                    ]
-                }
-            ]
-        }
-    ],
     "GridLayoutForNtpShortcuts": [
         {
             "platforms": [
