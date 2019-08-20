@@ -120,7 +120,7 @@ const base::Feature kBundledConnectionHelpFeature{
 
 // Enables the UI to configure caption settings.
 const base::Feature kCaptionSettings{"CaptionSettings",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 // Enables logging UKMs for background tab activity by TabActivityWatcher.
