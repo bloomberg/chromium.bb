@@ -508,8 +508,6 @@ function setCustomThemeStyle(themeInfo) {
 
   document.body.style.setProperty('--text-color', textColor);
   document.body.style.setProperty('--text-color-light', textColorLight);
-  // Themes reuse the "light" text color for links too.
-  document.body.style.setProperty('--text-color-link', textColorLight);
 }
 
 /**

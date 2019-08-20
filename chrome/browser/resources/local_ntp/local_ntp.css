@@ -36,7 +36,6 @@ html {
   /* These can be overridden by themes. */
   --text-color: #000;
   --text-color-light: #fff;
-  --text-color-link: rgb(17, 85, 204);
 
   height: 100%;
 }
@@ -46,7 +45,6 @@ html {
     /* These can be overridden by themes. */
     --text-color: rgb(var(--GG200-rgb));
     --text-color-light: rgb(var(--GG200-rgb));
-    --text-color-link: rgb(var(--GB400-dark-rgb));
   }
 }
 
