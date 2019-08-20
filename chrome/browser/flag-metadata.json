@@ -954,7 +954,7 @@
   {
     "name": "enable-avoid-flash-between-navigation",
     "owners": [ "schenney", "paint-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-backdrop-filter",
