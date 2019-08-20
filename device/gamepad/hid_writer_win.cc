@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/gamepad/dualshock4_controller_win.h"
+#include "device/gamepad/hid_writer_win.h"
 
 #include <Unknwn.h>
 #include <WinDef.h>
@@ -11,14 +11,14 @@
 
 namespace device {
 
-Dualshock4ControllerWin::Dualshock4ControllerWin(HANDLE device_handle) {
+HidWriterWin::HidWriterWin(HANDLE device) {
   UINT size;
   UINT result =
-      ::GetRawInputDeviceInfo(device_handle, RIDI_DEVICENAME, nullptr, &size);
+      ::GetRawInputDeviceInfo(device, RIDI_DEVICENAME, nullptr, &size);
   if (result == 0U) {
     std::unique_ptr<wchar_t[]> name_buffer(new wchar_t[size]);
-    result = ::GetRawInputDeviceInfo(device_handle, RIDI_DEVICENAME,
-                                     name_buffer.get(), &size);
+    result = ::GetRawInputDeviceInfo(device, RIDI_DEVICENAME, name_buffer.get(),
+                                     &size);
     if (result == size) {
       // Open the device handle for asynchronous I/O.
       hid_handle_.Set(
@@ -29,14 +29,9 @@ Dualshock4ControllerWin::Dualshock4ControllerWin(HANDLE device_handle) {
   }
 }
 
-Dualshock4ControllerWin::~Dualshock4ControllerWin() = default;
+HidWriterWin::~HidWriterWin() = default;
 
-void Dualshock4ControllerWin::DoShutdown() {
-  hid_handle_.Close();
-}
-
-size_t Dualshock4ControllerWin::WriteOutputReport(
-    base::span<const uint8_t> report) {
+size_t HidWriterWin::WriteOutputReport(base::span<const uint8_t> report) {
   DCHECK_GE(report.size_bytes(), 1U);
   if (!hid_handle_.IsValid())
     return 0;
@@ -73,10 +68,6 @@ size_t Dualshock4ControllerWin::WriteOutputReport(
     }
   }
   return write_success ? bytes_written : 0;
-}
-
-base::WeakPtr<AbstractHapticGamepad> Dualshock4ControllerWin::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace device

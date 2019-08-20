@@ -2,19 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_GAMEPAD_HID_HAPTIC_GAMEPAD_BASE_H_
-#define DEVICE_GAMEPAD_HID_HAPTIC_GAMEPAD_BASE_H_
+#ifndef DEVICE_GAMEPAD_HID_HAPTIC_GAMEPAD_H_
+#define DEVICE_GAMEPAD_HID_HAPTIC_GAMEPAD_H_
 
+#include <stddef.h>
+#include <stdint.h>
+#include <memory>
+
+#include "base/memory/weak_ptr.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/gamepad_export.h"
 
 namespace device {
 
-class DEVICE_GAMEPAD_EXPORT HidHapticGamepadBase
+class HidWriter;
+
+class DEVICE_GAMEPAD_EXPORT HidHapticGamepad final
     : public AbstractHapticGamepad {
  public:
   // Devices that support HID haptic effects with a simple output report can
-  // be supported through HidHapticGamepadBase by adding a new HapticReportData
+  // be supported through HidHapticGamepad by adding a new HapticReportData
   // item to kHapticReportData.
   //
   // Example:
@@ -61,26 +68,32 @@ class DEVICE_GAMEPAD_EXPORT HidHapticGamepadBase
     const uint32_t logical_max;
   };
 
-  ~HidHapticGamepadBase() override;
+  HidHapticGamepad(const HapticReportData& data,
+                   std::unique_ptr<HidWriter> writer);
+
+  ~HidHapticGamepad() override;
+
+  static std::unique_ptr<HidHapticGamepad> Create(
+      uint16_t vendor_id,
+      uint16_t product_id,
+      std::unique_ptr<HidWriter> writer);
 
   // Return true if the device IDs match an item in kHapticReportData.
   static bool IsHidHaptic(uint16_t vendor_id, uint16_t product_id);
 
   // Return the HapticReportData for the device with matching device IDs.
-  static const HidHapticGamepadBase::HapticReportData* GetHapticReportData(
+  static const HidHapticGamepad::HapticReportData* GetHapticReportData(
       uint16_t vendor_id,
       uint16_t product_id);
 
-  // Set the current vibration magnitudes.
+  // AbstractHapticGamepad public implementation.
   void SetVibration(double strong_magnitude, double weak_magnitude) override;
-
-  // Write the vibration output report to the device.
-  virtual size_t WriteOutputReport(base::span<const uint8_t> report) = 0;
-
- protected:
-  HidHapticGamepadBase(const HapticReportData& data);
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
  private:
+  // AbstractHapticGamepad private implementation.
+  void DoShutdown() override;
+
   // Report ID of the report to use for vibration commands, or zero if report
   // IDs are not used.
   uint8_t report_id_;
@@ -98,11 +111,15 @@ class DEVICE_GAMEPAD_EXPORT HidHapticGamepadBase
   // Logical bounds of the vibration magnitude. Assumed to be positive.
   uint32_t logical_min_;
   uint32_t logical_max_;
+
+  std::unique_ptr<HidWriter> writer_;
+
+  base::WeakPtrFactory<HidHapticGamepad> weak_factory_{this};
 };
 
-extern HidHapticGamepadBase::HapticReportData kHapticReportData[];
+extern HidHapticGamepad::HapticReportData kHapticReportData[];
 extern size_t kHapticReportDataLength;
 
 }  // namespace device
 
-#endif  // DEVICE_GAMEPAD_HID_HAPTIC_GAMEPAD_BASE_H_
+#endif  // DEVICE_GAMEPAD_HID_HAPTIC_GAMEPAD_H_

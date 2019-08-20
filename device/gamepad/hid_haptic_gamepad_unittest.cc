@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/gamepad/hid_haptic_gamepad_base.h"
+#include "device/gamepad/hid_haptic_gamepad.h"
 
 #include <memory>
 
@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "device/gamepad/hid_writer.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +24,7 @@ namespace {
 // magnitude fields.
 constexpr uint8_t kReportId = 0x42;
 constexpr size_t kReportLength = 5;
-constexpr HidHapticGamepadBase::HapticReportData kHapticReportData = {
+constexpr HidHapticGamepad::HapticReportData kHapticReportData = {
     0x1234, 0xabcd, kReportId, kReportLength, 1, 3, 16, 0, 0xffff};
 
 // The expected "stop vibration" report bytes (zero vibration).
@@ -51,31 +52,24 @@ constexpr double kZeroMagnitude = 0.0;
 constexpr base::TimeDelta kPendingTaskDuration =
     base::TimeDelta::FromMillisecondsD(kDurationMillis);
 
-// An implementation of HidHapticGamepadBase that records its output reports.
-class FakeHidHapticGamepad final : public HidHapticGamepadBase {
+class FakeHidWriter : public HidWriter {
  public:
-  FakeHidHapticGamepad(const HidHapticGamepadBase::HapticReportData& data)
-      : HidHapticGamepadBase(data) {}
-  ~FakeHidHapticGamepad() override = default;
+  FakeHidWriter() = default;
+  ~FakeHidWriter() override = default;
 
+  // HidWriter implementation.
   size_t WriteOutputReport(base::span<const uint8_t> report) override {
-    output_reports_.push_back(
-        std::vector<uint8_t>(report.begin(), report.end()));
+    output_reports.emplace_back(report.begin(), report.end());
     return report.size_bytes();
   }
 
-  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override {
-    return weak_factory_.GetWeakPtr();
-  }
-
-  std::vector<std::vector<uint8_t>> output_reports_;
-  base::WeakPtrFactory<FakeHidHapticGamepad> weak_factory_{this};
+  std::vector<std::vector<uint8_t>> output_reports;
 };
 
 // Main test fixture
-class HidHapticGamepadBaseTest : public testing::Test {
+class HidHapticGamepadTest : public testing::Test {
  public:
-  HidHapticGamepadBaseTest()
+  HidHapticGamepadTest()
       : start_vibration_output_report_(kStartVibrationData,
                                        kStartVibrationData + kReportLength),
         stop_vibration_output_report_(kStopVibrationData,
@@ -85,8 +79,12 @@ class HidHapticGamepadBaseTest : public testing::Test {
         first_callback_result_(
             mojom::GamepadHapticsResult::GamepadHapticsResultError),
         second_callback_result_(
-            mojom::GamepadHapticsResult::GamepadHapticsResultError),
-        gamepad_(std::make_unique<FakeHidHapticGamepad>(kHapticReportData)) {}
+            mojom::GamepadHapticsResult::GamepadHapticsResultError) {
+    auto fake_hid_writer = std::make_unique<FakeHidWriter>();
+    fake_hid_writer_ = fake_hid_writer.get();
+    gamepad_ = std::make_unique<HidHapticGamepad>(kHapticReportData,
+                                                  std::move(fake_hid_writer));
+  }
 
   void TearDown() override { gamepad_->Shutdown(); }
 
@@ -128,25 +126,26 @@ class HidHapticGamepadBaseTest : public testing::Test {
   int second_callback_count_;
   mojom::GamepadHapticsResult first_callback_result_;
   mojom::GamepadHapticsResult second_callback_result_;
-  std::unique_ptr<FakeHidHapticGamepad> gamepad_;
+  FakeHidWriter* fake_hid_writer_;
+  std::unique_ptr<HidHapticGamepad> gamepad_;
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
-  DISALLOW_COPY_AND_ASSIGN(HidHapticGamepadBaseTest);
+  DISALLOW_COPY_AND_ASSIGN(HidHapticGamepadTest);
 };
 
-TEST_F(HidHapticGamepadBaseTest, PlayEffectTest) {
-  EXPECT_TRUE(gamepad_->output_reports_.empty());
+TEST_F(HidHapticGamepadTest, PlayEffectTest) {
+  EXPECT_TRUE(fake_hid_writer_->output_reports.empty());
   EXPECT_EQ(0, first_callback_count_);
 
   PostPlayEffect(kZeroStartDelayMillis, kStrongMagnitude, kWeakMagnitude,
-                 base::BindOnce(&HidHapticGamepadBaseTest::FirstCallback,
+                 base::BindOnce(&HidHapticGamepadTest::FirstCallback,
                                 base::Unretained(this)));
 
   // Run the queued task and start vibration.
   task_environment_.RunUntilIdle();
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(start_vibration_output_report_));
   EXPECT_EQ(0, first_callback_count_);
   EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
@@ -154,7 +153,7 @@ TEST_F(HidHapticGamepadBaseTest, PlayEffectTest) {
   // Finish the effect.
   task_environment_.FastForwardBy(kPendingTaskDuration);
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(start_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
@@ -162,17 +161,17 @@ TEST_F(HidHapticGamepadBaseTest, PlayEffectTest) {
   EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
-TEST_F(HidHapticGamepadBaseTest, ResetVibrationTest) {
-  EXPECT_TRUE(gamepad_->output_reports_.empty());
+TEST_F(HidHapticGamepadTest, ResetVibrationTest) {
+  EXPECT_TRUE(fake_hid_writer_->output_reports.empty());
   EXPECT_EQ(0, first_callback_count_);
 
-  PostResetVibration(base::BindOnce(&HidHapticGamepadBaseTest::FirstCallback,
+  PostResetVibration(base::BindOnce(&HidHapticGamepadTest::FirstCallback,
                                     base::Unretained(this)));
 
   // Run the queued task and reset vibration.
   task_environment_.RunUntilIdle();
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(stop_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
@@ -180,18 +179,18 @@ TEST_F(HidHapticGamepadBaseTest, ResetVibrationTest) {
   EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
-TEST_F(HidHapticGamepadBaseTest, ZeroVibrationTest) {
-  EXPECT_TRUE(gamepad_->output_reports_.empty());
+TEST_F(HidHapticGamepadTest, ZeroVibrationTest) {
+  EXPECT_TRUE(fake_hid_writer_->output_reports.empty());
   EXPECT_EQ(0, first_callback_count_);
 
   PostPlayEffect(kZeroStartDelayMillis, kZeroMagnitude, kZeroMagnitude,
-                 base::BindOnce(&HidHapticGamepadBaseTest::FirstCallback,
+                 base::BindOnce(&HidHapticGamepadTest::FirstCallback,
                                 base::Unretained(this)));
 
   // Run the queued task.
   task_environment_.RunUntilIdle();
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(stop_vibration_output_report_));
   EXPECT_EQ(0, first_callback_count_);
   EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
@@ -199,7 +198,7 @@ TEST_F(HidHapticGamepadBaseTest, ZeroVibrationTest) {
   // Finish the effect.
   task_environment_.FastForwardBy(kPendingTaskDuration);
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(stop_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
@@ -207,19 +206,19 @@ TEST_F(HidHapticGamepadBaseTest, ZeroVibrationTest) {
   EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
-TEST_F(HidHapticGamepadBaseTest, StartDelayTest) {
-  EXPECT_TRUE(gamepad_->output_reports_.empty());
+TEST_F(HidHapticGamepadTest, StartDelayTest) {
+  EXPECT_TRUE(fake_hid_writer_->output_reports.empty());
   EXPECT_EQ(0, first_callback_count_);
 
   // Issue PlayEffect with non-zero |start_delay|.
   PostPlayEffect(kNonZeroStartDelayMillis, kStrongMagnitude, kWeakMagnitude,
-                 base::BindOnce(&HidHapticGamepadBaseTest::FirstCallback,
+                 base::BindOnce(&HidHapticGamepadTest::FirstCallback,
                                 base::Unretained(this)));
 
   // Stop vibration for the delay period.
   task_environment_.RunUntilIdle();
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(stop_vibration_output_report_));
   EXPECT_EQ(0, first_callback_count_);
   EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
@@ -227,7 +226,7 @@ TEST_F(HidHapticGamepadBaseTest, StartDelayTest) {
   // Start vibration.
   task_environment_.FastForwardBy(kPendingTaskDuration);
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(stop_vibration_output_report_,
                                    start_vibration_output_report_));
   EXPECT_EQ(0, first_callback_count_);
@@ -236,7 +235,7 @@ TEST_F(HidHapticGamepadBaseTest, StartDelayTest) {
   // Finish the effect.
   task_environment_.FastForwardBy(kPendingTaskDuration);
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(stop_vibration_output_report_,
                                    start_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
@@ -245,20 +244,20 @@ TEST_F(HidHapticGamepadBaseTest, StartDelayTest) {
   EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
-TEST_F(HidHapticGamepadBaseTest, ZeroStartDelayPreemptionTest) {
-  EXPECT_TRUE(gamepad_->output_reports_.empty());
+TEST_F(HidHapticGamepadTest, ZeroStartDelayPreemptionTest) {
+  EXPECT_TRUE(fake_hid_writer_->output_reports.empty());
   EXPECT_EQ(0, first_callback_count_);
   EXPECT_EQ(0, second_callback_count_);
 
   // Start an ongoing effect. We'll preempt this one with another effect.
   PostPlayEffect(kZeroStartDelayMillis, kStrongMagnitude, kWeakMagnitude,
-                 base::BindOnce(&HidHapticGamepadBaseTest::FirstCallback,
+                 base::BindOnce(&HidHapticGamepadTest::FirstCallback,
                                 base::Unretained(this)));
 
   // Start a second effect with zero |start_delay|. This should cause the first
   // effect to be preempted before it calls SetVibration.
   PostPlayEffect(kZeroStartDelayMillis, kStrongMagnitude, kWeakMagnitude,
-                 base::BindOnce(&HidHapticGamepadBaseTest::SecondCallback,
+                 base::BindOnce(&HidHapticGamepadTest::SecondCallback,
                                 base::Unretained(this)));
 
   // Execute the pending tasks.
@@ -266,7 +265,7 @@ TEST_F(HidHapticGamepadBaseTest, ZeroStartDelayPreemptionTest) {
 
   // The first effect should have already returned with a "preempted" result
   // without issuing a report. The second effect has started vibration.
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(start_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(0, second_callback_count_);
@@ -277,7 +276,7 @@ TEST_F(HidHapticGamepadBaseTest, ZeroStartDelayPreemptionTest) {
   // Finish the effect.
   task_environment_.FastForwardBy(kPendingTaskDuration);
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(start_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(1, second_callback_count_);
@@ -286,20 +285,20 @@ TEST_F(HidHapticGamepadBaseTest, ZeroStartDelayPreemptionTest) {
   EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
-TEST_F(HidHapticGamepadBaseTest, NonZeroStartDelayPreemptionTest) {
-  EXPECT_TRUE(gamepad_->output_reports_.empty());
+TEST_F(HidHapticGamepadTest, NonZeroStartDelayPreemptionTest) {
+  EXPECT_TRUE(fake_hid_writer_->output_reports.empty());
   EXPECT_EQ(0, first_callback_count_);
   EXPECT_EQ(0, second_callback_count_);
 
   // Start an ongoing effect. We'll preempt this one with another effect.
   PostPlayEffect(kZeroStartDelayMillis, kStrongMagnitude, kWeakMagnitude,
-                 base::BindOnce(&HidHapticGamepadBaseTest::FirstCallback,
+                 base::BindOnce(&HidHapticGamepadTest::FirstCallback,
                                 base::Unretained(this)));
 
   // Start a second effect with non-zero |start_delay|. This should cause the
   // first effect to be preempted before it calls SetVibration.
   PostPlayEffect(kNonZeroStartDelayMillis, kStrongMagnitude, kWeakMagnitude,
-                 base::BindOnce(&HidHapticGamepadBaseTest::SecondCallback,
+                 base::BindOnce(&HidHapticGamepadTest::SecondCallback,
                                 base::Unretained(this)));
 
   // Execute the pending tasks.
@@ -309,7 +308,7 @@ TEST_F(HidHapticGamepadBaseTest, NonZeroStartDelayPreemptionTest) {
   // Because the second effect has a non-zero |start_delay| and is preempting
   // another effect, it will call SetZeroVibration to ensure no vibration
   // occurs during its |start_delay| period.
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(stop_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(0, second_callback_count_);
@@ -320,7 +319,7 @@ TEST_F(HidHapticGamepadBaseTest, NonZeroStartDelayPreemptionTest) {
   // Start vibration.
   task_environment_.FastForwardBy(kPendingTaskDuration);
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(stop_vibration_output_report_,
                                    start_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
@@ -330,7 +329,7 @@ TEST_F(HidHapticGamepadBaseTest, NonZeroStartDelayPreemptionTest) {
   // Finish the effect.
   task_environment_.FastForwardBy(kPendingTaskDuration);
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(stop_vibration_output_report_,
                                    start_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
@@ -340,25 +339,25 @@ TEST_F(HidHapticGamepadBaseTest, NonZeroStartDelayPreemptionTest) {
   EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
-TEST_F(HidHapticGamepadBaseTest, ResetVibrationPreemptionTest) {
-  EXPECT_TRUE(gamepad_->output_reports_.empty());
+TEST_F(HidHapticGamepadTest, ResetVibrationPreemptionTest) {
+  EXPECT_TRUE(fake_hid_writer_->output_reports.empty());
   EXPECT_EQ(0, first_callback_count_);
   EXPECT_EQ(0, second_callback_count_);
 
   // Start an ongoing effect. We'll preempt it with a reset.
   PostPlayEffect(kZeroStartDelayMillis, kStrongMagnitude, kWeakMagnitude,
-                 base::BindOnce(&HidHapticGamepadBaseTest::FirstCallback,
+                 base::BindOnce(&HidHapticGamepadTest::FirstCallback,
                                 base::Unretained(this)));
 
   // Reset vibration. This should cause the effect to be preempted before it
   // calls SetVibration.
-  PostResetVibration(base::BindOnce(&HidHapticGamepadBaseTest::SecondCallback,
+  PostResetVibration(base::BindOnce(&HidHapticGamepadTest::SecondCallback,
                                     base::Unretained(this)));
 
   // Execute the pending tasks.
   task_environment_.RunUntilIdle();
 
-  EXPECT_THAT(gamepad_->output_reports_,
+  EXPECT_THAT(fake_hid_writer_->output_reports,
               testing::ElementsAre(stop_vibration_output_report_));
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(1, second_callback_count_);

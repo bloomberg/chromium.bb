@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/gamepad/hid_haptic_gamepad_base.h"
+#include "device/gamepad/hid_haptic_gamepad.h"
+
+#include <algorithm>
+#include <vector>
+
+#include "device/gamepad/hid_writer.h"
 
 namespace device {
 
@@ -37,7 +42,7 @@ void MagnitudeToBytes(double magnitude,
 }  // namespace
 
 // Supported HID gamepads.
-HidHapticGamepadBase::HapticReportData kHapticReportData[] = {
+HidHapticGamepad::HapticReportData kHapticReportData[] = {
     // XSkills Gamecube USB adapter
     {0x0b43, 0x0005, 0x00, 4, 3, 3, 1 * kBitsPerByte, 0, 1},
     // Stadia controller prototype
@@ -47,20 +52,33 @@ HidHapticGamepadBase::HapticReportData kHapticReportData[] = {
 };
 size_t kHapticReportDataLength = base::size(kHapticReportData);
 
-HidHapticGamepadBase::HidHapticGamepadBase(const HapticReportData& data)
+HidHapticGamepad::HidHapticGamepad(const HapticReportData& data,
+                                   std::unique_ptr<HidWriter> writer)
     : report_id_(data.report_id),
       report_length_bytes_(data.report_length_bytes),
       strong_offset_bytes_(data.strong_offset_bytes),
       weak_offset_bytes_(data.weak_offset_bytes),
       report_size_bits_(data.report_size_bits),
       logical_min_(data.logical_min),
-      logical_max_(data.logical_max) {}
+      logical_max_(data.logical_max),
+      writer_(std::move(writer)) {}
 
-HidHapticGamepadBase::~HidHapticGamepadBase() = default;
+HidHapticGamepad::~HidHapticGamepad() = default;
 
 // static
-bool HidHapticGamepadBase::IsHidHaptic(uint16_t vendor_id,
-                                       uint16_t product_id) {
+std::unique_ptr<HidHapticGamepad> HidHapticGamepad::Create(
+    uint16_t vendor_id,
+    uint16_t product_id,
+    std::unique_ptr<HidWriter> writer) {
+  DCHECK(writer);
+  const auto* haptic_data = GetHapticReportData(vendor_id, product_id);
+  if (!haptic_data)
+    return nullptr;
+  return std::make_unique<HidHapticGamepad>(*haptic_data, std::move(writer));
+}
+
+// static
+bool HidHapticGamepad::IsHidHaptic(uint16_t vendor_id, uint16_t product_id) {
   const auto* begin = kHapticReportData;
   const auto* end = kHapticReportData + kHapticReportDataLength;
   const auto* find_it =
@@ -71,9 +89,9 @@ bool HidHapticGamepadBase::IsHidHaptic(uint16_t vendor_id,
 }
 
 // static
-const HidHapticGamepadBase::HapticReportData*
-HidHapticGamepadBase::GetHapticReportData(uint16_t vendor_id,
-                                          uint16_t product_id) {
+const HidHapticGamepad::HapticReportData* HidHapticGamepad::GetHapticReportData(
+    uint16_t vendor_id,
+    uint16_t product_id) {
   const auto* begin = kHapticReportData;
   const auto* end = kHapticReportData + kHapticReportDataLength;
   const auto* find_it =
@@ -83,8 +101,13 @@ HidHapticGamepadBase::GetHapticReportData(uint16_t vendor_id,
   return find_it == end ? nullptr : &*find_it;
 }
 
-void HidHapticGamepadBase::SetVibration(double strong_magnitude,
-                                        double weak_magnitude) {
+void HidHapticGamepad::DoShutdown() {
+  writer_.reset();
+}
+
+void HidHapticGamepad::SetVibration(double strong_magnitude,
+                                    double weak_magnitude) {
+  DCHECK(writer_);
   std::vector<uint8_t> control_report(report_length_bytes_);
   control_report[0] = report_id_;
   if (strong_offset_bytes_ == weak_offset_bytes_) {
@@ -123,7 +146,11 @@ void HidHapticGamepadBase::SetVibration(double strong_magnitude,
     std::copy(right_bytes.begin(), right_bytes.end(),
               control_report.begin() + weak_offset_bytes_);
   }
-  WriteOutputReport(control_report);
+  writer_->WriteOutputReport(control_report);
+}
+
+base::WeakPtr<AbstractHapticGamepad> HidHapticGamepad::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace device
