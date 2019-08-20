@@ -5,6 +5,7 @@
 #include "net/http/http_server_properties.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,6 +17,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/socket/ssl_client_socket.h"
@@ -46,11 +48,35 @@ bool HttpServerProperties::ServerInfo::empty() const {
          !server_network_stats.has_value();
 }
 
+bool HttpServerProperties::ServerInfo::operator==(
+    const ServerInfo& other) const {
+  return supports_spdy == other.supports_spdy &&
+         alternative_services == other.alternative_services &&
+         server_network_stats == other.server_network_stats;
+}
+
+HttpServerProperties::ServerInfoMapKey::ServerInfoMapKey(
+    const url::SchemeHostPort& server,
+    const NetworkIsolationKey& network_isolation_key,
+    bool use_network_isolation_key)
+    : server(server),
+      network_isolation_key(use_network_isolation_key ? network_isolation_key
+                                                      : NetworkIsolationKey()) {
+}
+
+HttpServerProperties::ServerInfoMapKey::~ServerInfoMapKey() = default;
+
+bool HttpServerProperties::ServerInfoMapKey::operator<(
+    const ServerInfoMapKey& other) const {
+  return std::tie(server, network_isolation_key) <
+         std::tie(other.server, other.network_isolation_key);
+}
+
 HttpServerProperties::ServerInfoMap::ServerInfoMap()
-    : base::MRUCache<url::SchemeHostPort, ServerInfo>(kMaxServerInfoEntries) {}
+    : base::MRUCache<ServerInfoMapKey, ServerInfo>(kMaxServerInfoEntries) {}
 
 HttpServerProperties::ServerInfoMap::iterator
-HttpServerProperties::ServerInfoMap::GetOrPut(const url::SchemeHostPort& key) {
+HttpServerProperties::ServerInfoMap::GetOrPut(const ServerInfoMapKey& key) {
   auto it = Get(key);
   if (it != end())
     return it;
@@ -72,6 +98,8 @@ HttpServerProperties::HttpServerProperties(
     : tick_clock_(tick_clock ? tick_clock
                              : base::DefaultTickClock::GetInstance()),
       clock_(clock ? clock : base::DefaultClock::GetInstance()),
+      use_network_isolation_key_(base::FeatureList::IsEnabled(
+          features::kPartitionHttpServerPropertiesByNetworkIsolationKey)),
       is_initialized_(pref_delegate.get() == nullptr),
       queue_write_on_load_(false),
       properties_manager_(
@@ -157,7 +185,8 @@ bool HttpServerProperties::GetSupportsSpdy(const url::SchemeHostPort& server) {
   if (server.host().empty())
     return false;
 
-  auto spdy_info = server_info_map_.Get(server);
+  auto spdy_info =
+      server_info_map_.Get(CreateServerInfoKey(server, NetworkIsolationKey()));
   return spdy_info != server_info_map_.end() &&
          spdy_info->second.supports_spdy.value_or(false);
 }
@@ -168,7 +197,8 @@ void HttpServerProperties::SetSupportsSpdy(const url::SchemeHostPort& server,
   if (server.host().empty())
     return;
 
-  auto server_info = server_info_map_.GetOrPut(server);
+  auto server_info = server_info_map_.GetOrPut(
+      CreateServerInfoKey(server, NetworkIsolationKey()));
   // If value is already the same as |supports_spdy|, or value is unset and
   // |supports_spdy| is false, don't queue a write.
   bool queue_write =
@@ -216,7 +246,8 @@ AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
   // |valid_alternative_service_infos|.
   AlternativeServiceInfoVector valid_alternative_service_infos;
   const base::Time now = clock_->Now();
-  auto map_it = server_info_map_.Get(origin);
+  auto map_it =
+      server_info_map_.Get(CreateServerInfoKey(origin, NetworkIsolationKey()));
   if (map_it != server_info_map_.end() &&
       map_it->second.alternative_services.has_value()) {
     AlternativeServiceInfoVector* service_info =
@@ -261,7 +292,8 @@ AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
   if (canonical == canonical_alt_svc_map_.end()) {
     return AlternativeServiceInfoVector();
   }
-  map_it = server_info_map_.Get(canonical->second);
+  map_it = server_info_map_.Get(
+      CreateServerInfoKey(canonical->second, NetworkIsolationKey()));
   if (map_it == server_info_map_.end() ||
       !map_it->second.alternative_services.has_value()) {
     return AlternativeServiceInfoVector();
@@ -335,7 +367,8 @@ void HttpServerProperties::SetAlternativeServices(
   if (alternative_service_info_vector.empty()) {
     RemoveAltSvcCanonicalHost(origin);
     // Don't bother moving to front when erasing information.
-    auto it = server_info_map_.Peek(origin);
+    auto it = server_info_map_.Peek(
+        CreateServerInfoKey(origin, NetworkIsolationKey()));
 
     if (it == server_info_map_.end() ||
         !it->second.alternative_services.has_value()) {
@@ -348,7 +381,8 @@ void HttpServerProperties::SetAlternativeServices(
     return;
   }
 
-  auto it = server_info_map_.GetOrPut(origin);
+  auto it = server_info_map_.GetOrPut(
+      CreateServerInfoKey(origin, NetworkIsolationKey()));
   bool need_update_pref = true;
   if (it->second.alternative_services.has_value()) {
     DCHECK(!it->second.empty());
@@ -472,7 +506,7 @@ HttpServerProperties::GetAlternativeServiceInfoAsValue() const {
       continue;
     std::unique_ptr<base::ListValue> alternative_service_list(
         new base::ListValue);
-    const url::SchemeHostPort& server = server_info.first;
+    const ServerInfoMapKey& key = server_info.first;
     for (const AlternativeServiceInfo& alternative_service_info :
          server_info.second.alternative_services.value()) {
       std::string alternative_service_string(
@@ -480,7 +514,7 @@ HttpServerProperties::GetAlternativeServiceInfoAsValue() const {
       AlternativeService alternative_service(
           alternative_service_info.alternative_service());
       if (alternative_service.host.empty()) {
-        alternative_service.host = server.host();
+        alternative_service.host = key.server.host();
       }
       base::TimeTicks brokenness_expiration_ticks;
       if (broken_alternative_services_.IsBroken(alternative_service,
@@ -504,7 +538,9 @@ HttpServerProperties::GetAlternativeServiceInfoAsValue() const {
     if (alternative_service_list->empty())
       continue;
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("server", server.Serialize());
+    dict->SetString("server", key.server.Serialize());
+    dict->SetString("network_isolation_key",
+                    key.network_isolation_key.ToDebugString());
     dict->Set("alternative_service", std::unique_ptr<base::Value>(
                                          std::move(alternative_service_list)));
     dict_list->Append(std::move(dict));
@@ -536,7 +572,8 @@ void HttpServerProperties::SetSupportsQuic(bool used_quic,
 void HttpServerProperties::SetServerNetworkStats(
     const url::SchemeHostPort& server,
     ServerNetworkStats stats) {
-  auto server_info = server_info_map_.GetOrPut(server);
+  auto server_info = server_info_map_.GetOrPut(
+      CreateServerInfoKey(server, NetworkIsolationKey()));
   bool changed = !server_info->second.server_network_stats.has_value() ||
                  server_info->second.server_network_stats.value() != stats;
 
@@ -548,7 +585,8 @@ void HttpServerProperties::SetServerNetworkStats(
 
 void HttpServerProperties::ClearServerNetworkStats(
     const url::SchemeHostPort& server) {
-  auto server_info = server_info_map_.Peek(server);
+  auto server_info =
+      server_info_map_.Peek(CreateServerInfoKey(server, NetworkIsolationKey()));
   // If stats are empty, nothing to do.
   if (server_info == server_info_map_.end() ||
       !server_info->second.server_network_stats.has_value()) {
@@ -565,7 +603,8 @@ void HttpServerProperties::ClearServerNetworkStats(
 
 const ServerNetworkStats* HttpServerProperties::GetServerNetworkStats(
     const url::SchemeHostPort& server) {
-  auto server_info = server_info_map_.Get(server);
+  auto server_info =
+      server_info_map_.Get(CreateServerInfoKey(server, NetworkIsolationKey()));
   if (server_info == server_info_map_.end() ||
       !server_info->second.server_network_stats.has_value()) {
     return nullptr;
@@ -671,7 +710,7 @@ void HttpServerProperties::OnExpireBrokenAlternativeService(
       // Empty hostname in map means hostname of key: substitute before
       // comparing to |expired_alternative_service|.
       if (alternative_service.host.empty()) {
-        alternative_service.host = map_it->first.host();
+        alternative_service.host = map_it->first.server.host();
       }
       if (alternative_service == expired_alternative_service) {
         it = service_info->erase(it);
@@ -683,7 +722,7 @@ void HttpServerProperties::OnExpireBrokenAlternativeService(
     // from both |canonical_alt_svc_map_| and
     // |alternative_service_map_|.
     if (service_info->empty()) {
-      RemoveAltSvcCanonicalHost(map_it->first);
+      RemoveAltSvcCanonicalHost(map_it->first.server);
       map_it->second.alternative_services.reset();
       map_it = server_info_map_.EraseIfEmpty(map_it);
       continue;
@@ -696,10 +735,19 @@ base::TimeDelta HttpServerProperties::GetUpdatePrefsDelayForTesting() {
   return kUpdatePrefsDelay;
 }
 
+HttpServerProperties::ServerInfoMapKey
+HttpServerProperties::CreateServerInfoKey(
+    const url::SchemeHostPort& server,
+    const NetworkIsolationKey& network_isolation_key) {
+  return ServerInfoMapKey(server, network_isolation_key,
+                          use_network_isolation_key_);
+}
+
 HttpServerProperties::ServerInfoMap::const_iterator
 HttpServerProperties::GetIteratorWithAlternativeServiceInfo(
     const url::SchemeHostPort& server) {
-  ServerInfoMap::const_iterator it = server_info_map_.Get(server);
+  ServerInfoMap::const_iterator it =
+      server_info_map_.Get(CreateServerInfoKey(server, NetworkIsolationKey()));
   if (it != server_info_map_.end() && it->second.alternative_services)
     return it;
 
@@ -709,7 +757,8 @@ HttpServerProperties::GetIteratorWithAlternativeServiceInfo(
   }
 
   const url::SchemeHostPort canonical_server = canonical->second;
-  it = server_info_map_.Get(canonical_server);
+  it = server_info_map_.Get(
+      CreateServerInfoKey(canonical_server, NetworkIsolationKey()));
   if (it == server_info_map_.end() || !it->second.alternative_services)
     return server_info_map_.end();
 
@@ -827,6 +876,16 @@ void HttpServerProperties::OnServerInfoLoaded(
     std::unique_ptr<ServerInfoMap> server_info_map) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // Perform a simple sanity check on loaded data, when DCHECKs are enabled.
+#if DCHECK_IS_ON()
+  if (!use_network_isolation_key_) {
+    for (auto server_info = server_info_map->begin();
+         server_info != server_info_map->end(); ++server_info) {
+      DCHECK(server_info->first.network_isolation_key.IsEmpty());
+    }
+  }
+#endif  // DCHECK_IS_ON()
+
   // Swap in the entries from persisted data. This allows the MRU cache to be
   // sorted based on the order of the entries in the newer in-memory cache.
   server_info_map_.Swap(*server_info_map);
@@ -860,7 +919,8 @@ void HttpServerProperties::OnServerInfoLoaded(
                                          kCanonicalPort);
     // If we already have a valid canonical server, we're done.
     if (base::Contains(canonical_alt_svc_map_, canonical_server)) {
-      auto it = server_info_map_.Peek(canonical_alt_svc_map_[canonical_server]);
+      auto it = server_info_map_.Peek(CreateServerInfoKey(
+          canonical_alt_svc_map_[canonical_server], NetworkIsolationKey()));
       if (it != server_info_map_.end() &&
           it->second.alternative_services.has_value()) {
         continue;
@@ -870,11 +930,11 @@ void HttpServerProperties::OnServerInfoLoaded(
     // canonical.
     for (ServerInfoMap::const_iterator it = server_info_map_.begin();
          it != server_info_map_.end(); ++it) {
-      if (base::EndsWith(it->first.host(), canonical_suffix,
+      if (base::EndsWith(it->first.server.host(), canonical_suffix,
                          base::CompareCase::INSENSITIVE_ASCII) &&
-          it->first.scheme() == canonical_server.scheme() &&
+          it->first.server.scheme() == canonical_server.scheme() &&
           it->second.alternative_services.has_value()) {
-        canonical_alt_svc_map_[canonical_server] = it->first;
+        canonical_alt_svc_map_[canonical_server] = it->first.server;
         break;
       }
     }

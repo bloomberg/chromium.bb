@@ -65,6 +65,14 @@ class HttpServerPropertiesPeer {
 
 namespace {
 
+// Creates a ServerInfoMapKey without a NetworkIsolationKey.
+HttpServerProperties::ServerInfoMapKey CreateSimpleKey(
+    const url::SchemeHostPort& server) {
+  return HttpServerProperties::ServerInfoMapKey(
+      server, net::NetworkIsolationKey(),
+      false /* use_network_isolation_key */);
+}
+
 class HttpServerPropertiesTest : public TestWithTaskEnvironment {
  protected:
   HttpServerPropertiesTest()
@@ -166,8 +174,8 @@ TEST_F(HttpServerPropertiesTest, LoadSupportsSpdy) {
   // servers.
   std::unique_ptr<HttpServerProperties::ServerInfoMap> spdy_servers1 =
       std::make_unique<HttpServerProperties::ServerInfoMap>();
-  spdy_servers1->Put(spdy_server_google, supports_spdy);
-  spdy_servers1->Put(spdy_server_photos, no_spdy);
+  spdy_servers1->Put(CreateSimpleKey(spdy_server_google), supports_spdy);
+  spdy_servers1->Put(CreateSimpleKey(spdy_server_photos), no_spdy);
   impl_.OnServerInfoLoadedForTesting(std::move(spdy_servers1));
   // Note: these calls affect MRU order.
   EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
@@ -176,19 +184,21 @@ TEST_F(HttpServerPropertiesTest, LoadSupportsSpdy) {
   // Verify google and photos are in the list in MRU order.
   ASSERT_EQ(2U, impl_.server_info_map_for_testing().size());
   auto it = impl_.server_info_map_for_testing().begin();
-  EXPECT_EQ(spdy_server_photos, it->first);
+  EXPECT_EQ(spdy_server_photos, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.supports_spdy.has_value());
   EXPECT_FALSE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_google, it->first);
+  EXPECT_EQ(spdy_server_google, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.supports_spdy.has_value());
   EXPECT_TRUE(*it->second.supports_spdy);
 
   // Check by initializing mail.google.com:443 and docs.google.com:443.
   std::unique_ptr<HttpServerProperties::ServerInfoMap> spdy_servers2 =
       std::make_unique<HttpServerProperties::ServerInfoMap>();
-  spdy_servers2->Put(spdy_server_mail, supports_spdy);
-  spdy_servers2->Put(spdy_server_docs, supports_spdy);
+  spdy_servers2->Put(CreateSimpleKey(spdy_server_mail), supports_spdy);
+  spdy_servers2->Put(CreateSimpleKey(spdy_server_docs), supports_spdy);
   impl_.OnServerInfoLoadedForTesting(std::move(spdy_servers2));
 
   // Verify all the servers are in the list in MRU order. Note that
@@ -196,19 +206,23 @@ TEST_F(HttpServerPropertiesTest, LoadSupportsSpdy) {
   // front of newly added entries.
   ASSERT_EQ(4U, impl_.server_info_map_for_testing().size());
   it = impl_.server_info_map_for_testing().begin();
-  EXPECT_EQ(spdy_server_photos, it->first);
+  EXPECT_EQ(spdy_server_photos, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.supports_spdy.has_value());
   EXPECT_FALSE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_google, it->first);
+  EXPECT_EQ(spdy_server_google, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.supports_spdy.has_value());
   EXPECT_TRUE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_docs, it->first);
+  EXPECT_EQ(spdy_server_docs, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.supports_spdy.has_value());
   EXPECT_TRUE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_mail, it->first);
+  EXPECT_EQ(spdy_server_mail, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.supports_spdy.has_value());
   EXPECT_TRUE(*it->second.supports_spdy);
 
@@ -222,26 +236,30 @@ TEST_F(HttpServerPropertiesTest, LoadSupportsSpdy) {
   // values and also verify the recency list order is unchanged.
   std::unique_ptr<HttpServerProperties::ServerInfoMap> spdy_servers3 =
       std::make_unique<HttpServerProperties::ServerInfoMap>();
-  spdy_servers3->Put(spdy_server_mail, no_spdy);
-  spdy_servers3->Put(spdy_server_photos, supports_spdy);
+  spdy_servers3->Put(CreateSimpleKey(spdy_server_mail), no_spdy);
+  spdy_servers3->Put(CreateSimpleKey(spdy_server_photos), supports_spdy);
   impl_.OnServerInfoLoadedForTesting(std::move(spdy_servers3));
 
   // Verify the entries are in the same order.
   ASSERT_EQ(4U, impl_.server_info_map_for_testing().size());
   it = impl_.server_info_map_for_testing().begin();
-  EXPECT_EQ(spdy_server_photos, it->first);
+  EXPECT_EQ(spdy_server_photos, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.supports_spdy.has_value());
   EXPECT_TRUE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_google, it->first);
+  EXPECT_EQ(spdy_server_google, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.supports_spdy.has_value());
   EXPECT_TRUE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_docs, it->first);
+  EXPECT_EQ(spdy_server_docs, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.supports_spdy.has_value());
   EXPECT_TRUE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_mail, it->first);
+  EXPECT_EQ(spdy_server_mail, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.supports_spdy.has_value());
   EXPECT_FALSE(*it->second.supports_spdy);
 
@@ -327,24 +345,29 @@ TEST_F(HttpServerPropertiesTest, MRUOfServerInfoMap) {
   impl_.SetSupportsSpdy(spdy_server_google, true);
   ASSERT_EQ(1u, impl_.server_info_map_for_testing().size());
   auto it = impl_.server_info_map_for_testing().begin();
-  ASSERT_EQ(spdy_server_google, it->first);
+  ASSERT_EQ(spdy_server_google, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
 
   // Add mail.google.com:443 as supporting SPDY. Verify mail.google.com:443 and
   // www.google.com:443 are in the list.
   impl_.SetSupportsSpdy(spdy_server_mail, true);
   ASSERT_EQ(2u, impl_.server_info_map_for_testing().size());
   it = impl_.server_info_map_for_testing().begin();
-  ASSERT_EQ(spdy_server_mail, it->first);
+  ASSERT_EQ(spdy_server_mail, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ++it;
-  ASSERT_EQ(spdy_server_google, it->first);
+  ASSERT_EQ(spdy_server_google, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
 
   // Get www.google.com:443. It should become the most-recently-used server.
   EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
   ASSERT_EQ(2u, impl_.server_info_map_for_testing().size());
   it = impl_.server_info_map_for_testing().begin();
-  ASSERT_EQ(spdy_server_google, it->first);
+  ASSERT_EQ(spdy_server_google, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ++it;
-  ASSERT_EQ(spdy_server_mail, it->first);
+  ASSERT_EQ(spdy_server_mail, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
 }
 
 typedef HttpServerPropertiesTest AlternateProtocolServerPropertiesTest;
@@ -436,7 +459,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           alternative_service3, expiration3);
   // Simulate updating data for 0th entry with data from Preferences.
-  server_info_map->GetOrPut(test_server2)->second.alternative_services =
+  server_info_map->GetOrPut(CreateSimpleKey(test_server2))
+      ->second.alternative_services =
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info1);
 
   url::SchemeHostPort test_server3("http", "foo3", 80);
@@ -447,7 +471,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
           alternative_service4, expiration4);
   // Add an old entry from Preferences, this will be added to end of recency
   // list.
-  server_info_map->GetOrPut(test_server3)->second.alternative_services =
+  server_info_map->GetOrPut(CreateSimpleKey(test_server3))
+      ->second.alternative_services =
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info2);
 
   // MRU list will be test_server2, test_server1, test_server3.
@@ -459,22 +484,27 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   ASSERT_EQ(3u, map.size());
   auto map_it = map.begin();
 
-  EXPECT_EQ(map_it->first, test_server2);
+  EXPECT_EQ(test_server2, map_it->first.server);
+  EXPECT_TRUE(map_it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(map_it->second.alternative_services.has_value());
   const AlternativeServiceInfoVector* service_info =
       &map_it->second.alternative_services.value();
   ASSERT_EQ(1u, service_info->size());
   EXPECT_EQ(alternative_service3, (*service_info)[0].alternative_service());
   EXPECT_EQ(expiration3, (*service_info)[0].expiration());
+
   ++map_it;
-  EXPECT_EQ(map_it->first, test_server1);
+  EXPECT_EQ(test_server1, map_it->first.server);
+  EXPECT_TRUE(map_it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(map_it->second.alternative_services.has_value());
   service_info = &map_it->second.alternative_services.value();
   ASSERT_EQ(1u, service_info->size());
   EXPECT_EQ(alternative_service1, (*service_info)[0].alternative_service());
   EXPECT_EQ(expiration1, (*service_info)[0].expiration());
+
   ++map_it;
-  EXPECT_EQ(map_it->first, test_server3);
+  EXPECT_EQ(map_it->first.server, test_server3);
+  EXPECT_TRUE(map_it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(map_it->second.alternative_services.has_value());
   service_info = &map_it->second.alternative_services.value();
   ASSERT_EQ(1u, service_info->size());
@@ -519,9 +549,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVector) {
           alternative_service, expiration);
   std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
       std::make_unique<HttpServerProperties::ServerInfoMap>();
-  server_info_map->GetOrPut(server)->second.alternative_services =
-      AlternativeServiceInfoVector(
-          /*size=*/1, alternative_service_info);
+  server_info_map->GetOrPut(CreateSimpleKey(server))
+      ->second.alternative_services = AlternativeServiceInfoVector(
+      /*size=*/1, alternative_service_info);
 
   // Prepare |server_info_map_| with a single key that has a single
   // AlternativeServiceInfo with identical hostname and port.
@@ -553,7 +583,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVectorForCanonical) {
           alternative_service, expiration);
   std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
       std::make_unique<HttpServerProperties::ServerInfoMap>();
-  server_info_map->GetOrPut(canonical_server)->second.alternative_services =
+  server_info_map->GetOrPut(CreateSimpleKey(canonical_server))
+      ->second.alternative_services =
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info);
 
   // Prepare |server_info_map_| with a single key that has a single
@@ -619,7 +650,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServiceInfos) {
   const HttpServerProperties::ServerInfoMap& map =
       impl_.server_info_map_for_testing();
   auto it = map.begin();
-  EXPECT_EQ(it->first, test_server2);
+  EXPECT_EQ(test_server2, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.alternative_services.has_value());
   ASSERT_EQ(1u, it->second.alternative_services->size());
   EXPECT_EQ(alternative_service2,
@@ -633,7 +665,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServiceInfos) {
 
   // GetAlternativeServices should reorder the AlternateProtocol map.
   it = map.begin();
-  EXPECT_EQ(it->first, test_server1);
+  EXPECT_EQ(test_server1, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.alternative_services.has_value());
   ASSERT_EQ(1u, it->second.alternative_services->size());
   EXPECT_EQ(alternative_service1,
@@ -823,7 +856,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, AlternativeServiceWithScheme) {
   const net::HttpServerProperties::ServerInfoMap& map =
       impl_.server_info_map_for_testing();
   auto it = map.begin();
-  EXPECT_EQ(it->first, http_server);
+  EXPECT_EQ(http_server, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.alternative_services.has_value());
   ASSERT_EQ(2u, it->second.alternative_services->size());
   EXPECT_EQ(alternative_service1,
@@ -864,7 +898,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
   const net::HttpServerProperties::ServerInfoMap& map =
       impl_.server_info_map_for_testing();
   auto it = map.begin();
-  EXPECT_EQ(it->first, test_server);
+  EXPECT_EQ(test_server, it->first.server);
+  EXPECT_TRUE(it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(it->second.alternative_services.has_value());
   ASSERT_EQ(2u, it->second.alternative_services->size());
   EXPECT_EQ(alternative_service1,
@@ -1291,6 +1326,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
       "{"
       "\"alternative_service\":"
       "[\"h2 foo2:443, expires 2018-01-25 15:12:53\"],"
+      "\"network_isolation_key\":\"null\","
       "\"server\":\"http://test.com\""
       "},"
       "{"
@@ -1300,6 +1336,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
       " (broken until 2018-01-24 15:17:53)\","
       "\"quic baz:443, expires 2018-01-24 16:12:53"
       " (broken until 2018-01-24 15:17:53)\"],"
+      "\"network_isolation_key\":\"null\","
       "\"server\":\"https://youtube.com\""
       "}"
       "]";
@@ -1365,8 +1402,8 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
   stats_google.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(100);
   load_server_info_map =
       std::make_unique<HttpServerProperties::ServerInfoMap>();
-  load_server_info_map->GetOrPut(google_server)->second.server_network_stats =
-      stats_google;
+  load_server_info_map->GetOrPut(CreateSimpleKey(google_server))
+      ->second.server_network_stats = stats_google;
   impl_.OnServerInfoLoadedForTesting(std::move(load_server_info_map));
 
   // Verify data for www.google.com:443.
@@ -1394,15 +1431,15 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
   new_stats_docs.srtt = base::TimeDelta::FromMicroseconds(25);
   new_stats_docs.bandwidth_estimate =
       quic::QuicBandwidth::FromBitsPerSecond(250);
-  server_info_map->GetOrPut(docs_server)->second.server_network_stats =
-      new_stats_docs;
+  server_info_map->GetOrPut(CreateSimpleKey(docs_server))
+      ->second.server_network_stats = new_stats_docs;
   // Add data for mail.google.com:443.
   url::SchemeHostPort mail_server("https", "mail.google.com", 443);
   ServerNetworkStats stats_mail;
   stats_mail.srtt = base::TimeDelta::FromMicroseconds(30);
   stats_mail.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(300);
-  server_info_map->GetOrPut(mail_server)->second.server_network_stats =
-      stats_mail;
+  server_info_map->GetOrPut(CreateSimpleKey(mail_server))
+      ->second.server_network_stats = stats_mail;
 
   // Recency order will be |docs_server|, |google_server| and |mail_server|.
   impl_.OnServerInfoLoadedForTesting(std::move(server_info_map));
@@ -1412,15 +1449,18 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
   ASSERT_EQ(3u, map.size());
   auto map_it = map.begin();
 
-  EXPECT_EQ(map_it->first, docs_server);
+  EXPECT_EQ(docs_server, map_it->first.server);
+  EXPECT_TRUE(map_it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(map_it->second.server_network_stats.has_value());
   EXPECT_EQ(new_stats_docs, *map_it->second.server_network_stats);
   ++map_it;
-  EXPECT_EQ(map_it->first, google_server);
+  EXPECT_EQ(google_server, map_it->first.server);
+  EXPECT_TRUE(map_it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(map_it->second.server_network_stats.has_value());
   EXPECT_EQ(stats_google, *map_it->second.server_network_stats);
   ++map_it;
-  EXPECT_EQ(map_it->first, mail_server);
+  EXPECT_EQ(mail_server, map_it->first.server);
+  EXPECT_TRUE(map_it->first.network_isolation_key.IsEmpty());
   ASSERT_TRUE(map_it->second.server_network_stats.has_value());
   EXPECT_EQ(stats_mail, *map_it->second.server_network_stats);
 }

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -14,8 +15,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/ip_address.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
@@ -34,6 +39,45 @@ using ::testing::AtLeast;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::StrictMock;
+
+enum class NetworkIsolationKeyMode {
+  kDisabled,
+  kTopFrameOriginOnly,
+  kTopFrameOriginAndFrameOrigin,
+};
+
+const NetworkIsolationKeyMode kNetworkIsolationKeyModes[] = {
+    NetworkIsolationKeyMode::kDisabled,
+    NetworkIsolationKeyMode::kTopFrameOriginOnly,
+    NetworkIsolationKeyMode::kTopFrameOriginAndFrameOrigin,
+};
+
+std::unique_ptr<base::test::ScopedFeatureList> SetNetworkIsolationKeyMode(
+    NetworkIsolationKeyMode mode) {
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  switch (mode) {
+    case NetworkIsolationKeyMode::kDisabled:
+      feature_list->InitAndDisableFeature(
+          features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+      break;
+    case NetworkIsolationKeyMode::kTopFrameOriginOnly:
+      feature_list->InitWithFeatures(
+          // enabled_features
+          {features::kPartitionHttpServerPropertiesByNetworkIsolationKey},
+          // disabled_features
+          {features::kAppendFrameOriginToNetworkIsolationKey});
+      break;
+    case NetworkIsolationKeyMode::kTopFrameOriginAndFrameOrigin:
+      feature_list->InitWithFeatures(
+          // enabled_features
+          {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+           features::kAppendFrameOriginToNetworkIsolationKey},
+          // disabled_features
+          {});
+      break;
+  }
+  return feature_list;
+}
 
 class MockPrefDelegate : public net::HttpServerProperties::PrefDelegate {
  public:
@@ -97,6 +141,78 @@ class MockPrefDelegate : public net::HttpServerProperties::PrefDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(MockPrefDelegate);
 };
+
+// Converts |server_info_map| to a base::Value by running it through an
+// HttpServerPropertiesManager. Other fields are left empty.
+base::Value ServerInfoMapToValue(
+    const HttpServerProperties::ServerInfoMap& server_info_map) {
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  // Callback that shouldn't be invoked - this method short-circuits loading
+  // prefs by calling HttpServerPropertiesManager::WriteToPrefs() before prefs
+  // are loaded.
+  HttpServerPropertiesManager::OnPrefsLoadedCallback on_prefs_loaded_callback =
+      base::BindOnce(
+          [](std::unique_ptr<HttpServerProperties::ServerInfoMap>
+                 server_info_map,
+             const IPAddress& last_quic_address,
+             std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+             std::unique_ptr<BrokenAlternativeServiceList>
+                 broken_alternative_service_list,
+             std::unique_ptr<RecentlyBrokenAlternativeServices>
+                 recently_broken_alternative_services) { ADD_FAILURE(); });
+  HttpServerPropertiesManager manager(
+      std::move(pref_delegate), std::move(on_prefs_loaded_callback),
+      10 /* max_server_configs_stored_in_properties */, nullptr /* net_log */,
+      base::DefaultTickClock::GetInstance());
+  manager.WriteToPrefs(
+      server_info_map, HttpServerPropertiesManager::GetCannonicalSuffix(),
+      IPAddress() /* last_quic_address */, QuicServerInfoMap(10),
+      BrokenAlternativeServiceList(), RecentlyBrokenAlternativeServices(10),
+      base::OnceClosure());
+
+  return unowned_pref_delegate->GetServerProperties()->Clone();
+}
+
+// Does the inverse of ServerInfoMapToValue(). Ignores fields other than the
+// ServerInfoMap.
+std::unique_ptr<HttpServerProperties::ServerInfoMap> ValueToServerInfoMap(
+    const base::Value& value) {
+  const base::DictionaryValue* dictionary_value;
+  if (!value.GetAsDictionary(&dictionary_value))
+    return nullptr;
+
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> out;
+  bool callback_invoked = false;
+  HttpServerPropertiesManager::OnPrefsLoadedCallback on_prefs_loaded_callback =
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<HttpServerProperties::ServerInfoMap>
+                  server_info_map,
+              const IPAddress& last_quic_address,
+              std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+              std::unique_ptr<BrokenAlternativeServiceList>
+                  broken_alternative_service_list,
+              std::unique_ptr<RecentlyBrokenAlternativeServices>
+                  recently_broken_alternative_services) {
+            ASSERT_FALSE(callback_invoked);
+            callback_invoked = true;
+            out = std::move(server_info_map);
+          });
+
+  HttpServerPropertiesManager manager(
+      std::move(pref_delegate), std::move(on_prefs_loaded_callback),
+      10 /* max_server_configs_stored_in_properties */, nullptr /* net_log */,
+      base::DefaultTickClock::GetInstance());
+
+  unowned_pref_delegate->InitializePrefs(*dictionary_value);
+  EXPECT_TRUE(callback_invoked);
+  return out;
+}
 
 }  // namespace
 
@@ -874,35 +990,35 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 // https://crbug.com/444956: Add 200 alternative_service servers followed by
 // supports_quic and verify we have read supports_quic from prefs.
 TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
-  auto servers_dict = std::make_unique<base::DictionaryValue>();
   std::unique_ptr<base::ListValue> servers_list =
       std::make_unique<base::ListValue>();
 
   for (int i = 1; i <= 200; ++i) {
     // Set up alternative_service for www.google.com:i.
-    auto alternative_service_dict = std::make_unique<base::DictionaryValue>();
-    alternative_service_dict->SetString("protocol_str", "quic");
-    alternative_service_dict->SetInteger("port", i);
-    auto alternative_service_list = std::make_unique<base::ListValue>();
-    alternative_service_list->Append(std::move(alternative_service_dict));
-    auto server_pref_dict = std::make_unique<base::DictionaryValue>();
-    server_pref_dict->SetWithoutPathExpansion(
-        "alternative_service", std::move(alternative_service_list));
-      servers_dict->SetWithoutPathExpansion(
-          StringPrintf("https://www.google.com:%d", i),
-          std::move(server_pref_dict));
-      servers_list->AppendIfNotPresent(std::move(servers_dict));
-      servers_dict = std::make_unique<base::DictionaryValue>();
+    base::Value server_dict(base::Value::Type::DICTIONARY);
+    base::Value alternative_service_dict(base::Value::Type::DICTIONARY);
+    alternative_service_dict.SetStringKey("protocol_str", "quic");
+    alternative_service_dict.SetIntKey("port", i);
+    base::Value alternative_service_list(base::Value::Type::LIST);
+    alternative_service_list.GetList().emplace_back(
+        std::move(alternative_service_dict));
+    server_dict.SetKey("alternative_service",
+                       std::move(alternative_service_list));
+    server_dict.SetStringKey("server",
+                             StringPrintf("https://www.google.com:%d", i));
+    server_dict.SetKey("isolation", base::Value(base::Value::Type::LIST));
+    servers_list->GetList().emplace_back(std::move(server_dict));
   }
 
   // Set the server preference for http://mail.google.com server.
-  auto server_pref_dict1 = std::make_unique<base::DictionaryValue>();
-    servers_dict->SetWithoutPathExpansion("https://mail.google.com",
-                                          std::move(server_pref_dict1));
-    servers_list->AppendIfNotPresent(std::move(servers_dict));
-    base::DictionaryValue http_server_properties_dict = DictWithVersion();
-    http_server_properties_dict.SetWithoutPathExpansion(
-        "servers", std::move(servers_list));
+  base::Value server_dict2(base::Value::Type::DICTIONARY);
+  server_dict2.SetStringKey("server", "https://mail.google.com");
+  server_dict2.SetKey("isolation", base::Value(base::Value::Type::LIST));
+  servers_list->GetList().emplace_back(std::move(server_dict2));
+
+  base::DictionaryValue http_server_properties_dict = DictWithVersion();
+  http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                      std::move(servers_list));
 
   // Set up SupportsQuic for 127.0.0.1
   auto supports_quic = std::make_unique<base::DictionaryValue>();
@@ -1060,18 +1176,20 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
       "{\"https://mail.google.com:80\":"
       "{\"server_info\":\"quic_server_info1\"}},"
       "\"servers\":["
-      "{\"https://www.google.com:80\":{"
-      "\"alternative_service\":[{\"advertised_versions\":[],"
+      "{\"alternative_service\":[{\"advertised_versions\":[],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"h2\"},"
       "{\"advertised_versions\":[],\"expiration\":\"13758804000000000\","
-      "\"host\":\"www.google.com\",\"port\":1234,\"protocol_str\":\"h2\"}]}},"
-      "{\"https://mail.google.com:80\":{"
-      "\"alternative_service\":[{\"advertised_versions\":[],"
+      "\"host\":\"www.google.com\",\"port\":1234,\"protocol_str\":\"h2\"}],"
+      "\"isolation\":[],"
+      "\"server\":\"https://www.google.com:80\"},"
+      "{\"alternative_service\":[{\"advertised_versions\":[],"
       "\"expiration\":\"9223372036854775807\",\"host\":\"foo.google.com\","
       "\"port\":444,\"protocol_str\":\"h2\"}],"
+      "\"isolation\":[],"
       "\"network_stats\":{\"srtt\":42},"
-      "\"supports_spdy\":true}}],"
+      "\"server\":\"https://mail.google.com:80\","
+      "\"supports_spdy\":true}],"
       "\"supports_quic\":{\"address\":\"127.0.0.1\",\"used_quic\":true},"
       "\"version\":5}";
 
@@ -1209,13 +1327,18 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
   const base::DictionaryValue* server_pref_dict;
   ASSERT_TRUE(it->GetAsDictionary(&server_pref_dict));
 
-  const base::DictionaryValue* example_pref_dict;
+  const std::string* server_str = server_pref_dict->FindStringKey("server");
+  ASSERT_TRUE(server_str);
+  EXPECT_EQ("https://www.example.com", *server_str);
 
-  ASSERT_TRUE(server_pref_dict->GetDictionaryWithoutPathExpansion(
-      "https://www.example.com", &example_pref_dict));
+  const base::Value* network_isolation_key_value =
+      server_pref_dict->FindKey("isolation");
+  ASSERT_TRUE(network_isolation_key_value);
+  ASSERT_EQ(base::Value::Type::LIST, network_isolation_key_value->type());
+  EXPECT_TRUE(network_isolation_key_value->GetList().empty());
 
   const base::ListValue* altsvc_list;
-  ASSERT_TRUE(example_pref_dict->GetList("alternative_service", &altsvc_list));
+  ASSERT_TRUE(server_pref_dict->GetList("alternative_service", &altsvc_list));
 
   ASSERT_EQ(2u, altsvc_list->GetSize());
 
@@ -1352,15 +1475,20 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
   const char expected_json[] =
       "{\"quic_servers\":{\"https://mail.google.com:80\":{"
       "\"server_info\":\"quic_server_info1\"}},\"servers\":["
-      "{\"https://www.google.com:80\":{\"alternative_service\":[{"
+      "{\"alternative_service\":[{"
       "\"advertised_versions\":[39,46],\"expiration\":\"13756212000000000\","
       "\"port\":443,\"protocol_str\":\"quic\"},{\"advertised_versions\":[],"
       "\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
-      "\"port\":1234,\"protocol_str\":\"h2\"}]}},"
-      "{\"https://mail.google.com:80\":{\"alternative_service\":[{"
+      "\"port\":1234,\"protocol_str\":\"h2\"}],"
+      "\"isolation\":[],"
+      "\"server\":\"https://www.google.com:80\"},"
+      "{\"alternative_service\":[{"
       "\"advertised_versions\":[46],\"expiration\":\"9223372036854775807\","
       "\"host\":\"foo.google.com\",\"port\":444,\"protocol_str\":\"quic\"}],"
-      "\"network_stats\":{\"srtt\":42}}}],\"supports_quic\":{"
+      "\"isolation\":[],"
+      "\"network_stats\":{\"srtt\":42},"
+      "\"server\":\"https://mail.google.com:80\"}],"
+      "\"supports_quic\":{"
       "\"address\":\"127.0.0.1\",\"used_quic\":true},\"version\":5}";
 
   const base::Value* http_server_properties =
@@ -1466,10 +1594,12 @@ TEST_F(HttpServerPropertiesManagerTest,
   const char expected_json[] =
       "{\"quic_servers\":{\"https://mail.google.com:80\":"
       "{\"server_info\":\"quic_server_info1\"}},\"servers\":["
-      "{\"https://www.google.com:80\":"
       "{\"alternative_service\":[{\"advertised_versions\":[46],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
-      "\"protocol_str\":\"quic\"}]}}],\"supports_quic\":"
+      "\"protocol_str\":\"quic\"}],"
+      "\"isolation\":[],"
+      "\"server\":\"https://www.google.com:80\"}],"
+      "\"supports_quic\":"
       "{\"address\":\"127.0.0.1\",\"used_quic\":true},\"version\":5}";
 
   const base::Value* http_server_properties =
@@ -1504,10 +1634,12 @@ TEST_F(HttpServerPropertiesManagerTest,
   const char expected_json_updated[] =
       "{\"quic_servers\":{\"https://mail.google.com:80\":"
       "{\"server_info\":\"quic_server_info1\"}},\"servers\":["
-      "{\"https://www.google.com:80\":"
       "{\"alternative_service\":[{\"advertised_versions\":[39,46],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
-      "\"protocol_str\":\"quic\"}]}}],\"supports_quic\":"
+      "\"protocol_str\":\"quic\"}],"
+      "\"isolation\":[],"
+      "\"server\":\"https://www.google.com:80\"}],"
+      "\"supports_quic\":"
       "{\"address\":\"127.0.0.1\",\"used_quic\":true},\"version\":5}";
   EXPECT_TRUE(
       base::JSONWriter::Write(*http_server_properties, &preferences_json));
@@ -1574,21 +1706,23 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       "\"server_info\":\"quic_server_info1\"}"
       "},"
       "\"servers\":["
-      "{\"https://www.google.com:80\":{"
+      "{\"server\":\"https://www.google.com:80\","
+      "\"isolation\":[],"
       "\"alternative_service\":["
       "{\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"h2\"},"
       "{\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
       "\"port\":1234,\"protocol_str\":\"h2\"}"
       "]"
-      "}},"
-      "{\"https://mail.google.com:80\":{"
+      "},"
+      "{\"server\":\"https://mail.google.com:80\","
+      "\"isolation\":[],"
       "\"alternative_service\":["
       "{\"expiration\":\"9223372036854775807\",\"host\":\"foo.google.com\","
       "\"port\":444,\"protocol_str\":\"h2\"}"
       "],"
       "\"network_stats\":{\"srtt\":42}"
-      "}}"
+      "}"
       "],"
       "\"supports_quic\":"
       "{\"address\":\"127.0.0.1\",\"used_quic\":true},"
@@ -1788,6 +1922,103 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   IPAddress actual_address(127, 0, 0, 1);
   EXPECT_TRUE(http_server_props_->GetSupportsQuic(&actual_address));
   EXPECT_EQ(4, pref_delegate_->GetAndClearNumPrefUpdates());
+}
+
+TEST_F(HttpServerPropertiesManagerTest, ServerInfoWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const url::Origin kOpaqueOrigin =
+      url::Origin::Create(GURL("data:text/plain,Hello World"));
+  const url::SchemeHostPort kServer("https", "baz.test", 443);
+  const url::SchemeHostPort kServer2("https", "zab.test", 443);
+
+  HttpServerProperties::ServerInfo server_info;
+  server_info.supports_spdy = true;
+
+  for (auto save_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+    SCOPED_TRACE(static_cast<int>(save_network_isolation_key_mode));
+
+    // Save prefs using |save_network_isolation_key_mode|.
+    base::Value saved_value;
+    {
+      // Configure the the feature.
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(save_network_isolation_key_mode);
+
+      // This parameter is normally calculated by HttpServerProperties based on
+      // the kPartitionHttpServerPropertiesByNetworkIsolationKey feature, but
+      // this test doesn't use that class.
+      bool use_network_isolation_key =
+          save_network_isolation_key_mode != NetworkIsolationKeyMode::kDisabled;
+
+      HttpServerProperties::ServerInfoMap server_info_map;
+
+      // Add server info entry using two origins with value of |server_info|.
+      // NetworkIsolationKey's constructor takes the state of the
+      // kAppendFrameOriginToNetworkIsolationKey feature into account, so need
+      // to make sure to call the constructor after setting up the feature
+      // above.
+      HttpServerProperties::ServerInfoMapKey server_info_key(
+          kServer, NetworkIsolationKey(kOrigin1, kOrigin2),
+          use_network_isolation_key);
+      server_info_map.Put(server_info_key, server_info);
+
+      // Also add an etry with an opaque origin, if |use_network_isolation_key|
+      // is true. This value should not be saved to disk, since opaque origins
+      // are only meaningful within a browsing session.
+      if (use_network_isolation_key) {
+        HttpServerProperties::ServerInfoMapKey server_info_key2(
+            kServer2, NetworkIsolationKey(kOpaqueOrigin, kOpaqueOrigin),
+            use_network_isolation_key);
+        server_info_map.Put(server_info_key2, server_info);
+      }
+
+      saved_value = ServerInfoMapToValue(server_info_map);
+    }
+
+    for (auto load_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+      SCOPED_TRACE(static_cast<int>(load_network_isolation_key_mode));
+
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(load_network_isolation_key_mode);
+      std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map2 =
+          ValueToServerInfoMap(saved_value);
+      ASSERT_TRUE(server_info_map2);
+      if (save_network_isolation_key_mode ==
+          NetworkIsolationKeyMode::kDisabled) {
+        // If NetworkIsolationKey was disabled when saving, it was saved with an
+        // empty NetworkIsolationKey, which should always be loaded
+        // successfully. This is needed to continue to support consumers that
+        // don't use NetworkIsolationKeys.
+        ASSERT_EQ(1u, server_info_map2->size());
+        const HttpServerProperties::ServerInfoMapKey& server_info_key2 =
+            server_info_map2->begin()->first;
+        const HttpServerProperties::ServerInfo& server_info2 =
+            server_info_map2->begin()->second;
+        EXPECT_EQ(kServer, server_info_key2.server);
+        EXPECT_EQ(NetworkIsolationKey(),
+                  server_info_key2.network_isolation_key);
+        EXPECT_EQ(server_info, server_info2);
+      } else if (save_network_isolation_key_mode ==
+                 load_network_isolation_key_mode) {
+        // If the save and load modes are the same, the load should succeed, and
+        // the network isolation keys should match.
+        ASSERT_EQ(1u, server_info_map2->size());
+        const HttpServerProperties::ServerInfoMapKey& server_info_key2 =
+            server_info_map2->begin()->first;
+        const HttpServerProperties::ServerInfo& server_info2 =
+            server_info_map2->begin()->second;
+        EXPECT_EQ(kServer, server_info_key2.server);
+        EXPECT_EQ(NetworkIsolationKey(kOrigin1, kOrigin2),
+                  server_info_key2.network_isolation_key);
+        EXPECT_EQ(server_info, server_info2);
+      } else {
+        // Otherwise, the NetworkIsolationKey doesn't make sense with the
+        // current feature values, so the ServerInfo should be discarded.
+        EXPECT_EQ(0u, server_info_map2->size());
+      }
+    }
+  }
 }
 
 }  // namespace net
