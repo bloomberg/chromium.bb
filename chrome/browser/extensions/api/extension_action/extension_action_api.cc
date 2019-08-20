@@ -165,8 +165,10 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
 
   if (event_name) {
     std::unique_ptr<base::ListValue> args(new base::ListValue());
+    ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
+        ExtensionTabUtil::GetScrubTabBehavior(extension, web_contents);
     args->Append(ExtensionTabUtil::CreateTabObject(
-                     web_contents, ExtensionTabUtil::kScrubTab, extension)
+                     web_contents, scrub_tab_behavior, extension)
                      ->ToValue());
 
     DispatchEventToExtension(web_contents->GetBrowserContext(),
