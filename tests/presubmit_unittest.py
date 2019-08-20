@@ -2069,7 +2069,7 @@ the current line as well!
     subprocess.Popen.return_value = process
     presubmit.sigint_handler.wait.return_value = ('', None)
 
-    pylint = os.path.join(_ROOT, 'third_party', 'pylint.py')
+    pylint = os.path.join(_ROOT, 'pylint')
     pylintrc = os.path.join(_ROOT, 'pylintrc')
     env = {'PYTHONPATH': ''}
 
@@ -2079,11 +2079,11 @@ the current line as well!
     self.assertEqual([], results)
     self.assertEqual(subprocess.Popen.mock_calls, [
         mock.call(
-            ['pyyyyython', pylint, '--args-on-stdin'], env=env,
+            [pylint, '--args-on-stdin'], env=env,
             cwd='/foo', stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
             stdin=subprocess.PIPE),
         mock.call(
-            ['pyyyyython', pylint, '--args-on-stdin'], env=env,
+            [pylint, '--args-on-stdin'], env=env,
             cwd='/foo', stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
             stdin=subprocess.PIPE),
     ])
