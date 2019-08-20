@@ -60,7 +60,7 @@ class CONTENT_EXPORT ResourceRequestInfoProvider {
   bool reportRawHeaders() const;
   bool hasUserGesture() const;
   int routingId() const;
-  int appCacheHostId() const;
+  base::Optional<base::UnguessableToken> appCacheHostId() const;
   net::RequestPriority priority() const;
   scoped_refptr<network::ResourceRequestBody> requestBody() const;
 
@@ -76,7 +76,7 @@ class CONTENT_EXPORT ResourceRequestInfoProvider {
   bool reportRawHeaders_;
   bool hasUserGesture_;
   int routingId_;
-  int appCacheHostId_;
+  base::Optional<base::UnguessableToken> appCacheHostId_;
   net::RequestPriority priority_;
   scoped_refptr<network::ResourceRequestBody> requestBody_;
 };
@@ -94,8 +94,7 @@ class CONTENT_EXPORT ResourceReceiver {
 
   // Called when a chunk of response data is available. This method may
   // be called multiple times or not at all if an error occurs.
-  virtual void OnReceivedData(
-      std::unique_ptr<RequestPeer::ReceivedData> data) = 0;
+  virtual void OnReceivedData(const char* data, std::size_t data_length) = 0;
 
   // Called when the response is complete.  This method signals completion of
   // the resource load.
@@ -139,7 +138,7 @@ class CONTENT_EXPORT BodyLoaderReceiver : public ResourceReceiver {
   ~BodyLoaderReceiver() override;
 
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
-  void OnReceivedData(std::unique_ptr<RequestPeer::ReceivedData> data) override;
+  void OnReceivedData(const char* data, std::size_t data_length) override;
   void OnCompletedRequest(const network::URLLoaderCompletionStatus&,
                           const GURL&) override;
 
@@ -161,7 +160,7 @@ class CONTENT_EXPORT RequestPeerReceiver : public ResourceReceiver {
   ~RequestPeerReceiver() override;
 
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
-  void OnReceivedData(std::unique_ptr<RequestPeer::ReceivedData> data) override;
+  void OnReceivedData(const char* data, std::size_t data_length) override;
   void OnCompletedRequest(const network::URLLoaderCompletionStatus&,
                           const GURL&) override;
 

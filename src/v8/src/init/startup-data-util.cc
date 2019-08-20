@@ -4,6 +4,7 @@
 
 #include "src/init/startup-data-util.h"
 
+#include <blpwtk2_products.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -80,15 +81,15 @@ void InitializeExternalStartupData(const char* directory_path) {
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   char* natives;
   char* snapshot;
-  const char* snapshot_name = "snapshot_blob.bin";
+  [[maybe_unused]] const char* snapshot_name = "snapshot_blob.bin";
 #ifdef V8_MULTI_SNAPSHOTS
   if (!FLAG_untrusted_code_mitigations) {
     snapshot_name = "snapshot_blob_trusted.bin";
   }
 #endif
   LoadFromFiles(
-      base::RelativePath(&natives, directory_path, "natives_blob.bin"),
-      base::RelativePath(&snapshot, directory_path, snapshot_name));
+      base::RelativePath(&natives, directory_path, BLPWTK2_NATIVES_BLOB_NAME),
+      base::RelativePath(&snapshot, directory_path, BLPWTK2_SNAPSHOT_BLOB_NAME));
   free(natives);
   free(snapshot);
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA

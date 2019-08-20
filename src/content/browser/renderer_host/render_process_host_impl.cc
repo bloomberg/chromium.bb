@@ -2958,9 +2958,6 @@ void RenderProcessHostImpl::AdjustCommandLineForRenderer(
     command_line->AppendSwitch(switches::kNoZygote);
   }
 
-  if (IsPinchToZoomEnabled())
-    command_line->AppendSwitch(switches::kEnablePinch);
-
 #if defined(OS_WIN)
   command_line->AppendSwitchASCII(
       switches::kDeviceScaleFactor,

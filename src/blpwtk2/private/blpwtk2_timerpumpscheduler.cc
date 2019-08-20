@@ -22,6 +22,8 @@
 
 #include <blpwtk2_timerpumpscheduler.h>
 
+#include <float.h>
+
 namespace blpwtk2 {
 
                         // ------------------------
