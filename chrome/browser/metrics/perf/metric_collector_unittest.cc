@@ -21,7 +21,7 @@
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 #include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "third_party/protobuf/src/google/protobuf/wire_format_lite_inl.h"
+#include "third_party/protobuf/src/google/protobuf/wire_format_lite.h"
 
 namespace metrics {
 
