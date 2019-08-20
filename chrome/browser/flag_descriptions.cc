@@ -2895,11 +2895,6 @@ const char kDisablePostscriptPrintingDescription[] =
     "Disables PostScript generation when printing to PostScript capable "
     "printers, and uses EMF generation in its place.";
 
-const char kEnableAppcontainerName[] = "Enable AppContainer Lockdown.";
-const char kEnableAppcontainerDescription[] =
-    "Enables the use of an AppContainer on sandboxed processes to improve "
-    "security.";
-
 const char kEnableAuraTooltipsOnWindowsName[] =
     "Enable aura tooltips on Windows";
 const char kEnableAuraTooltipsOnWindowsDescription[] =

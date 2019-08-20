@@ -2219,11 +2219,6 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kCrosRegionsModeChoices)},
 #endif  // OS_CHROMEOS
 #if defined(OS_WIN)
-    {"enable-appcontainer", flag_descriptions::kEnableAppcontainerName,
-     flag_descriptions::kEnableAppcontainerDescription, kOsWin,
-     ENABLE_DISABLE_VALUE_TYPE(
-         service_manager::switches::kEnableAppContainer,
-         service_manager::switches::kDisableAppContainer)},
     {"enable-aura-tooltips-on-windows",
      flag_descriptions::kEnableAuraTooltipsOnWindowsName,
      flag_descriptions::kEnableAuraTooltipsOnWindowsDescription, kOsWin,

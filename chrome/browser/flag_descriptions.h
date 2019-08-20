@@ -1706,9 +1706,6 @@ extern const char kD3D11VideoDecoderDescription[];
 extern const char kDisablePostscriptPrinting[];
 extern const char kDisablePostscriptPrintingDescription[];
 
-extern const char kEnableAppcontainerName[];
-extern const char kEnableAppcontainerDescription[];
-
 extern const char kEnableAuraTooltipsOnWindowsName[];
 extern const char kEnableAuraTooltipsOnWindowsDescription[];
 
