@@ -1240,17 +1240,17 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
 
 
 
-    // patch section: rubberband (returns 637)
+    // patch section: rubberband (returns 638)
 
 
-    // patch section: lcd-text background (returns 640)
-    case CSSPropertyBbLcdBackgroundColor:
-      return 640;
-
-
-    // patch section: suppress-needs-compositing-input-update (returns 641)
-    case CSSPropertyBbSuppressNeedsCompositingInputUpdate:
+    // patch section: lcd-text background (returns 641)
+    case CSSPropertyID::kBbLcdBackgroundColor:
       return 641;
+
+
+    // patch section: suppress-needs-compositing-input-update (returns 642)
+    case CSSPropertyID::kBbSuppressNeedsCompositingInputUpdate:
+      return 642;
 
 
 
