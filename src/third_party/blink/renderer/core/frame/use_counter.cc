@@ -1244,7 +1244,7 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
 
 
     // patch section: lcd-text background (returns 641)
-    case CSSPropertyID::BbLcdBackgroundColor:
+    case CSSPropertyID::kBbLcdBackgroundColor:
       return 641;
 
 
