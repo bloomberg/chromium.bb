@@ -101,12 +101,10 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
     EXPECT_EQ(net::OK, rv);
     EXPECT_TRUE(cache_backend_);
 
-    std::unique_ptr<disk_cache::Entry*> entry(new disk_cache::Entry*());
-    disk_cache::Entry** entry_ptr = entry.get();
-    rv = cache_backend_->CreateEntry(kEntryKey, net::HIGHEST, entry_ptr,
-                                     base::DoNothing());
-    EXPECT_EQ(net::OK, rv);
-    disk_cache_entry_.reset(*entry);
+    disk_cache::EntryResult result =
+        cache_backend_->CreateEntry(kEntryKey, net::HIGHEST, base::DoNothing());
+    EXPECT_EQ(net::OK, result.net_error());
+    disk_cache_entry_.reset(result.ReleaseEntry());
   }
 
   std::string ReadCacheContent() {

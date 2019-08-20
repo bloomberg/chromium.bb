@@ -1311,16 +1311,19 @@ TEST_F(NetworkContextTest, ClearHttpCache) {
   ASSERT_TRUE(backend);
 
   for (const auto& url : entry_urls) {
-    disk_cache::Entry* entry = nullptr;
+    disk_cache::EntryResult result;
     base::RunLoop run_loop;
-    if (backend->CreateEntry(
-            url, net::HIGHEST, &entry,
-            base::Bind([](base::OnceClosure quit_loop,
-                          int rv) { std::move(quit_loop).Run(); },
-                       run_loop.QuitClosure())) == net::ERR_IO_PENDING) {
+
+    result = backend->CreateEntry(
+        url, net::HIGHEST,
+        base::BindLambdaForTesting([&](disk_cache::EntryResult got_result) {
+          result = std::move(got_result);
+          run_loop.Quit();
+        }));
+    if (result.net_error() == net::ERR_IO_PENDING)
       run_loop.Run();
-    }
-    entry->Close();
+
+    result.ReleaseEntry()->Close();
   }
   EXPECT_EQ(entry_urls.size(), static_cast<size_t>(backend->GetEntryCount()));
   base::RunLoop run_loop;

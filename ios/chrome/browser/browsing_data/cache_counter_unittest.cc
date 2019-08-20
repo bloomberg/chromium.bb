@@ -165,11 +165,13 @@ class CacheCounterTest : public PlatformTest {
           next_step_ = STEP_WRITE_DATA;
 
           DCHECK(backend_);
-          rv = backend_->CreateEntry(
-              "entry_key", net::HIGHEST, &entry_,
-              base::BindRepeating(&CacheCounterTest::CacheOperationStep,
-                                  base::Unretained(this)));
-
+          disk_cache::EntryResult result = backend_->CreateEntry(
+              "entry_key", net::HIGHEST,
+              base::BindOnce(&CacheCounterTest::SaveEntryAndStep,
+                             base::Unretained(this)));
+          rv = result.net_error();
+          if (rv != net::ERR_IO_PENDING)
+            entry_ = result.ReleaseEntry();
           break;
         }
 
@@ -206,6 +208,12 @@ class CacheCounterTest : public PlatformTest {
         }
       }
     }
+  }
+
+  void SaveEntryAndStep(disk_cache::EntryResult result) {
+    int rv = result.net_error();
+    entry_ = result.ReleaseEntry();
+    CacheOperationStep(rv);
   }
 
   // General completion callback.
