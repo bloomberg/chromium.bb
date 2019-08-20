@@ -866,25 +866,6 @@ customize.richerPicker_isShortcutOptionSelected = function() {
 };
 
 /**
- * Return true if any option is selected. Used to enable the 'done' button.
- */
-customize.richerPicker_isOptionSelected = function() {
-  return customize.isBackgroundOptionSelected() ||
-      customize.isColorOptionSelected() ||
-      customize.richerPicker_isShortcutOptionSelected();
-};
-
-/**
- * Enable the 'done' button if any option is selected. If no option is selected,
- * disable the 'done' button.
- */
-customize.richerPicker_maybeToggleDone = function() {
-  const enable = customize.richerPicker_isOptionSelected();
-  $(customize.IDS.MENU_DONE).disabled = !enable;
-  $(customize.IDS.MENU_DONE).tabIndex = enable ? 0 : -1;
-};
-
-/**
  * Apply styling to a selected option in the richer picker (i.e. the selected
  * background image, shortcut type, and color).
  * @param {?Element} option The option to apply styling to.
@@ -1015,7 +996,6 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     collectionId: '',
   };
   customize.richerPicker_applySelectedState(tile);
-  customize.richerPicker_maybeToggleDone();
 
   // Don't apply a preview for a preselected image, as it's already the
   // page background.
@@ -1042,7 +1022,6 @@ customize.richerPicker_selectShortcutType = function(shortcutType) {
   }
   customize.selectedOptions.shortcutType = shortcutType;
   customize.richerPicker_applySelectedState(shortcutType);
-  customize.richerPicker_maybeToggleDone();
 };
 
 /**
@@ -1058,7 +1037,6 @@ customize.richerPicker_toggleShortcutHide = function(areHidden) {
   $(customize.IDS.SHORTCUTS_HIDE_TOGGLE).checked = areHidden;
 
   customize.selectedOptions.shortcutsAreHidden = areHidden;
-  customize.richerPicker_maybeToggleDone();
 };
 
 /**
@@ -1504,7 +1482,7 @@ customize.richerPicker_cancelCustomization = function() {
  * picker.
  */
 customize.richerPicker_applyCustomization = function() {
-  if (customize.selectedOptions.backgroundData) {
+  if (customize.isBackgroundOptionSelected()) {
     customize.setBackground(
         customize.selectedOptions.backgroundData.url,
         customize.selectedOptions.backgroundData.attr1,
@@ -1910,9 +1888,6 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   const doneInteraction = function(event) {
     const done = configData.richerPicker ? $(customize.IDS.MENU_DONE) :
                                            $(customize.IDS.DONE);
-    if (done.disabled) {
-      return;
-    }
     if (configData.richerPicker) {
       ntpApiHandle.logEvent(customize.LOG_TYPE.NTP_CUSTOMIZATION_MENU_DONE);
       customize.richerPicker_applyCustomization();
@@ -2185,7 +2160,6 @@ customize.updateColorsMenuTileSelection = function(tile) {
   }
   customize.selectedOptions.color = tile;
   customize.richerPicker_applySelectedState(tile);
-  customize.richerPicker_maybeToggleDone();
 };
 
 /**
