@@ -6496,7 +6496,7 @@ crbug.com/979298 [ Mac ] media/video-zoom.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/overflow-menu-always-visible.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/volumechange-muted-attribute.html [ Pass Failure ]
-crbug.com/979298 [ Mac ] virtual/audio-service/media/video-persistence.html [ Pass Failure ]
+crbug.com/988248 [ Mac Linux ] virtual/audio-service/media/video-persistence.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
 
 crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Failure ]
