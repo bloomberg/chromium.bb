@@ -2361,7 +2361,7 @@
   {
     "name": "network-service-in-process",
     "owners": [ "network-service-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 84
   },
   {
     "name": "new-net-error-page-ui",
