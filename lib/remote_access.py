@@ -740,11 +740,15 @@ class RemoteDevice(object):
 
     return self._work_dir
 
+  def HasProgramInPath(self, binary):
+    """Checks if the given binary exists on the device."""
+    result = self.GetAgent().RemoteSh(
+        ['PATH=%s:$PATH which' % DEV_BIN_PATHS, binary], error_code_ok=True)
+    return result.returncode == 0
+
   def HasRsync(self):
     """Checks if rsync exists on the device."""
-    result = self.GetAgent().RemoteSh(['PATH=%s:$PATH rsync' % DEV_BIN_PATHS,
-                                       '--version'], error_code_ok=True)
-    return result.returncode == 0
+    return self.HasProgramInPath('rsync')
 
   @memoize.MemoizedSingleCall
   def HasGigabitEthernet(self):
@@ -758,7 +762,11 @@ class RemoteDevice(object):
 
   def IsSELinuxAvailable(self):
     """Check whether the device has SELinux compiled in."""
-    return self.IfFileExists('/sys/fs/selinux/enforce')
+    # Note that SELinux can be enabled for some devices that lack SELinux
+    # tools, so we need to check for the existence of the restorecon bin along
+    # with the sysfs check.
+    return (self.HasProgramInPath('restorecon') and
+            self.IfFileExists('/sys/fs/selinux/enforce'))
 
   def IsSELinuxEnforced(self):
     """Check whether the device has SELinux-enforced."""

@@ -308,6 +308,8 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
 
   def testSELinux(self):
     """Tests behavior of IsSELinuxAvailable() and IsSELinuxEnforced()."""
+    self.rsh_mock.AddCmdResult(
+        partial_mock.ListRegex('which restorecon'), returncode=0)
     with remote_access.RemoteDeviceHandler('1.1.1.1') as device:
       self.rsh_mock.AddCmdResult(
           partial_mock.ListRegex('test -f'), returncode=0)
