@@ -1,8 +1,8 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef BASE_MEMORY_MEMORY_PRESSURE_MONITOR_CHROMEOS_H_
-#define BASE_MEMORY_MEMORY_PRESSURE_MONITOR_CHROMEOS_H_
+#ifndef BASE_UTIL_MEMORY_PRESSURE_SYSTEM_MEMORY_PRESSURE_EVALUATOR_CHROMEOS_H_
+#define BASE_UTIL_MEMORY_PRESSURE_SYSTEM_MEMORY_PRESSURE_EVALUATOR_CHROMEOS_H_
 
 #include <vector>
 
@@ -10,35 +10,33 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/util/memory_pressure/memory_pressure_voter.h"
+#include "base/util/memory_pressure/system_memory_pressure_evaluator.h"
 
-namespace base {
+namespace util {
 namespace chromeos {
 
 ////////////////////////////////////////////////////////////////////////////////
-// MemoryPressureMonitor
+// SystemMemoryPressureEvaluator
 //
 // A class to handle the observation of our free memory. It notifies the
 // MemoryPressureListener of memory fill level changes, so that it can take
 // action to reduce memory resources accordingly.
-class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
+class SystemMemoryPressureEvaluator
+    : public util::SystemMemoryPressureEvaluator {
  public:
-  // The MemoryPressureMonitor reads the pressure levels from the
+  // The SystemMemoryPressureEvaluator reads the pressure levels from the
   // /sys/kernel/mm/chromeos-low_mem/margin and does not need to be configured.
   //
   // NOTE: You should check that the kernel supports notifications by calling
   // SupportsKernelNotifications() before constructing a new instance of this
   // class.
-  MemoryPressureMonitor();
-  ~MemoryPressureMonitor() override;
-
-  // Get the current memory pressure level.
-  MemoryPressureListener::MemoryPressureLevel GetCurrentPressureLevel()
-      const override;
-  void SetDispatchCallback(const DispatchCallback& callback) override;
+  explicit SystemMemoryPressureEvaluator(
+      std::unique_ptr<MemoryPressureVoter> voter);
+  ~SystemMemoryPressureEvaluator() override;
 
   // GetMarginFileParts returns a vector of the configured margin file values.
   // The margin file contains two or more values, but we're only concerned with
@@ -65,17 +63,22 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
     return critical_pressure_threshold_mb_;
   }
 
-  // Returns a type-casted version of the current memory pressure monitor. A
-  // simple wrapper to base::MemoryPressureMonitor::Get.
-  static MemoryPressureMonitor* Get();
+  // Returns the current system memory pressure evaluator.
+  static SystemMemoryPressureEvaluator* Get();
+
+  base::MemoryPressureListener::MemoryPressureLevel current_vote_for_testing()
+      const {
+    return current_vote_;
+  }
 
  protected:
   // This constructor is only used for testing.
-  MemoryPressureMonitor(
+  SystemMemoryPressureEvaluator(
       const std::string& margin_file,
       const std::string& available_file,
       base::RepeatingCallback<bool(int)> kernel_waiting_callback,
-      bool enable_metrics);
+      bool enable_metrics,
+      std::unique_ptr<MemoryPressureVoter> voter);
 
   static std::vector<int> GetMarginFileParts(const std::string& margin_file);
   void CheckMemoryPressure();
@@ -96,14 +99,12 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   // Memory.PressureLevel metric.
   base::TimeTicks last_pressure_level_report_;
 
-  MemoryPressureListener::MemoryPressureLevel current_memory_pressure_level_ =
-      MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  base::MemoryPressureListener::MemoryPressureLevel current_vote_ =
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 
   // File descriptor used to read and poll(2) available memory from sysfs,
   // In /sys/kernel/mm/chromeos-low_mem/available.
-  ScopedFD available_mem_file_;
-
-  DispatchCallback dispatch_callback_;
+  base::ScopedFD available_mem_file_;
 
   // A periodic timer which will be used to report a UMA metric on the current
   // memory pressure level as theoretically we could go a very long time without
@@ -115,11 +116,17 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   // configurable to make testing easier.
   base::RepeatingCallback<bool()> kernel_waiting_callback_;
 
-  base::WeakPtrFactory<MemoryPressureMonitor> weak_ptr_factory_{this};
+  // In charge of forwarding votes from here to the
+  // MemoryPressureVoteAggregator.
+  std::unique_ptr<MemoryPressureVoter> voter_;
 
-  DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitor);
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<SystemMemoryPressureEvaluator> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemMemoryPressureEvaluator);
 };
 
 }  // namespace chromeos
-}  // namespace base
-#endif  // BASE_MEMORY_MEMORY_PRESSURE_MONITOR_CHROMEOS_H_
+}  // namespace util
+#endif  // BASE_UTIL_MEMORY_PRESSURE_SYSTEM_MEMORY_PRESSURE_EVALUATOR_CHROMEOS_H_

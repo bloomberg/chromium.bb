@@ -1,7 +1,7 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "base/memory/memory_pressure_monitor_chromeos.h"
+#include "base/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
 
 #include <fcntl.h>
 #include <sys/poll.h>
@@ -24,17 +24,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 
-namespace base {
+namespace util {
 namespace chromeos {
 
 namespace {
-// Type-safe version of |g_monitor_notifying| from
-// base/memory/memory_pressure_monitor.cc, this was originally added because
-// TabManagerDelegate for chromeos needs to call into ScheduleEarlyCheck which
-// isn't a public API in the base MemoryPressureMonitor. This matters because
-// ChromeOS may create a FakeMemoryPressureMonitor for browser tests and that's
-// why this type-specific version was added.
-MemoryPressureMonitor* g_monitor_notifying = nullptr;
+// Pointer to the SystemMemoryPressureEvaluator used by TabManagerDelegate for
+// chromeos to need to call into ScheduleEarlyCheck.
+SystemMemoryPressureEvaluator* g_system_evaluator = nullptr;
 
 // We try not to re-notify on moderate too frequently, this time
 // controls how frequently we will notify after our first notification.
@@ -53,16 +49,16 @@ constexpr char kAvailableMemFile[] =
     "/sys/kernel/mm/chromeos-low_mem/available";
 
 // Converts an available memory value in MB to a memory pressure level.
-MemoryPressureListener::MemoryPressureLevel GetMemoryPressureLevelFromAvailable(
-    int available_mb,
-    int moderate_avail_mb,
-    int critical_avail_mb) {
+base::MemoryPressureListener::MemoryPressureLevel
+GetMemoryPressureLevelFromAvailable(int available_mb,
+                                    int moderate_avail_mb,
+                                    int critical_avail_mb) {
   if (available_mb < critical_avail_mb)
-    return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
+    return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
   if (available_mb < moderate_avail_mb)
-    return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
+    return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
 
-  return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 }
 
 int64_t ReadAvailableMemoryMB(int available_fd) {
@@ -115,29 +111,33 @@ bool WaitForMemoryPressureChanges(int available_fd) {
 
 }  // namespace
 
-MemoryPressureMonitor::MemoryPressureMonitor()
-    : MemoryPressureMonitor(kMarginMemFile,
-                            kAvailableMemFile,
-                            base::BindRepeating(&WaitForMemoryPressureChanges),
-                            /*enable_metrics=*/true) {}
+SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
+    std::unique_ptr<MemoryPressureVoter> voter)
+    : SystemMemoryPressureEvaluator(
+          kMarginMemFile,
+          kAvailableMemFile,
+          base::BindRepeating(&WaitForMemoryPressureChanges),
+          /*enable_metrics=*/true,
+          std::move(voter)) {}
 
-MemoryPressureMonitor::MemoryPressureMonitor(
+SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
     const std::string& margin_file,
     const std::string& available_file,
     base::RepeatingCallback<bool(int)> kernel_waiting_callback,
-    bool enable_metrics)
+    bool enable_metrics,
+    std::unique_ptr<MemoryPressureVoter> voter)
     : available_mem_file_(HANDLE_EINTR(open(available_file.c_str(), O_RDONLY))),
-      dispatch_callback_(
-          base::BindRepeating(&MemoryPressureListener::NotifyMemoryPressure)),
       kernel_waiting_callback_(
           base::BindRepeating(std::move(kernel_waiting_callback),
-                              available_mem_file_.get())) {
-  DCHECK(g_monitor_notifying == nullptr);
-  g_monitor_notifying = this;
+                              available_mem_file_.get())),
+      voter_(std::move(voter)),
+      weak_ptr_factory_(this) {
+  DCHECK(g_system_evaluator == nullptr);
+  g_system_evaluator = this;
 
   CHECK(available_mem_file_.is_valid());
   std::vector<int> margin_parts =
-      MemoryPressureMonitor::GetMarginFileParts(margin_file);
+      SystemMemoryPressureEvaluator::GetMarginFileParts(margin_file);
 
   // This class SHOULD have verified kernel support by calling
   // SupportsKernelNotifications() before creating a new instance of this.
@@ -151,26 +151,30 @@ MemoryPressureMonitor::MemoryPressureMonitor(
     // the metric ChromeOS.MemoryPRessureLevel is currently reported every 1s.
     reporting_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(1),
-        base::BindRepeating(
-            &MemoryPressureMonitor::CheckMemoryPressureAndRecordStatistics,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&SystemMemoryPressureEvaluator::
+                                CheckMemoryPressureAndRecordStatistics,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   ScheduleWaitForKernelNotification();
 }
-
-MemoryPressureMonitor::~MemoryPressureMonitor() {
-  DCHECK(g_monitor_notifying);
-  g_monitor_notifying = nullptr;
+SystemMemoryPressureEvaluator::~SystemMemoryPressureEvaluator() {
+  DCHECK(g_system_evaluator);
+  g_system_evaluator = nullptr;
 }
 
-std::vector<int> MemoryPressureMonitor::GetMarginFileParts() {
+// static
+SystemMemoryPressureEvaluator* SystemMemoryPressureEvaluator::Get() {
+  return g_system_evaluator;
+}
+
+std::vector<int> SystemMemoryPressureEvaluator::GetMarginFileParts() {
   static const base::NoDestructor<std::vector<int>> margin_file_parts(
       GetMarginFileParts(kMarginMemFile));
   return *margin_file_parts;
 }
 
-std::vector<int> MemoryPressureMonitor::GetMarginFileParts(
+std::vector<int> SystemMemoryPressureEvaluator::GetMarginFileParts(
     const std::string& file) {
   std::vector<int> margin_values;
   std::string margin_contents;
@@ -194,59 +198,61 @@ std::vector<int> MemoryPressureMonitor::GetMarginFileParts(
   return margin_values;
 }
 
-bool MemoryPressureMonitor::SupportsKernelNotifications() {
+bool SystemMemoryPressureEvaluator::SupportsKernelNotifications() {
   // Unfortunately at the moment the only way to determine if the chromeos
   // kernel supports polling on the available file is to observe two values
   // in the margin file, if the critical and moderate levels are specified
   // there then we know the kernel must support polling on available.
-  return MemoryPressureMonitor::GetMarginFileParts().size() >= 2;
-}
-
-MemoryPressureListener::MemoryPressureLevel
-MemoryPressureMonitor::GetCurrentPressureLevel() const {
-  return current_memory_pressure_level_;
+  return SystemMemoryPressureEvaluator::GetMarginFileParts().size() >= 2;
 }
 
 // CheckMemoryPressure will get the current memory pressure level by reading
 // the available file.
-void MemoryPressureMonitor::CheckMemoryPressure() {
-  auto previous_memory_pressure = current_memory_pressure_level_;
+void SystemMemoryPressureEvaluator::CheckMemoryPressure() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto old_vote = current_vote_;
   int64_t mem_avail = ReadAvailableMemoryMB(available_mem_file_.get());
-  current_memory_pressure_level_ = GetMemoryPressureLevelFromAvailable(
+  current_vote_ = GetMemoryPressureLevelFromAvailable(
       mem_avail, moderate_pressure_threshold_mb_,
       critical_pressure_threshold_mb_);
-  if (current_memory_pressure_level_ ==
-      MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+  bool notify = true;
+
+  if (current_vote_ ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
     last_moderate_notification_ = base::TimeTicks();
-    return;
+    notify = false;
   }
 
   // In the case of MODERATE memory pressure we may be in this state for quite
   // some time so we limit the rate at which we dispatch notifications.
-  if (current_memory_pressure_level_ ==
-      MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE) {
-    if (previous_memory_pressure == current_memory_pressure_level_) {
+  else if (current_vote_ ==
+           base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE) {
+    if (old_vote == current_vote_) {
       if (base::TimeTicks::Now() - last_moderate_notification_ <
           kModerateMemoryPressureCooldownTime) {
-        return;
-      } else if (previous_memory_pressure ==
-                 MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+        notify = false;
+      } else if (old_vote ==
+                 base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
         // Reset the moderate notification time if we just crossed back.
         last_moderate_notification_ = base::TimeTicks::Now();
-        return;
+        notify = false;
       }
     }
 
-    last_moderate_notification_ = base::TimeTicks::Now();
+    if (notify)
+      last_moderate_notification_ = base::TimeTicks::Now();
   }
 
-  VLOG(1) << "MemoryPressureMonitor::CheckMemoryPressure dispatching "
+  VLOG(1) << "SystemMemoryPressureEvaluator::CheckMemoryPressure dispatching "
              "at level: "
-          << current_memory_pressure_level_;
-  dispatch_callback_.Run(current_memory_pressure_level_);
+          << current_vote_;
+  voter_->SetVote(current_vote_, notify);
 }
 
-void MemoryPressureMonitor::HandleKernelNotification(bool result) {
+void SystemMemoryPressureEvaluator::HandleKernelNotification(bool result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // If WaitForKernelNotification returned false then the FD has been closed and
   // we just exit without waiting again.
   if (!result) {
@@ -260,53 +266,42 @@ void MemoryPressureMonitor::HandleKernelNotification(bool result) {
   ScheduleWaitForKernelNotification();
 }
 
-void MemoryPressureMonitor::CheckMemoryPressureAndRecordStatistics() {
+void SystemMemoryPressureEvaluator::CheckMemoryPressureAndRecordStatistics() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Note: If we support notifications of memory pressure changes in both
   // directions we will not have to update the cached value as it will always
   // be correct.
   CheckMemoryPressure();
 
-  // We only report Memory.PressureLevel every 5seconds while
-  // we report ChromeOS.MemoryPressureLevel every 1s.
-  if (base::TimeTicks::Now() - last_pressure_level_report_ >
-      base::MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod) {
-    // Record to UMA "Memory.PressureLevel" a tick is 5seconds.
-    RecordMemoryPressure(current_memory_pressure_level_, 1);
-    last_pressure_level_report_ = base::TimeTicks::Now();
-  }
-
   // Record UMA histogram statistics for the current memory pressure level, it
   // would seem that only Memory.PressureLevel would be necessary.
   constexpr int kNumberPressureLevels = 3;
-  UMA_HISTOGRAM_ENUMERATION("ChromeOS.MemoryPressureLevel",
-                            current_memory_pressure_level_,
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.MemoryPressureLevel", current_vote_,
                             kNumberPressureLevels);
 }
 
-void MemoryPressureMonitor::ScheduleEarlyCheck() {
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&MemoryPressureMonitor::CheckMemoryPressure,
-                                weak_ptr_factory_.GetWeakPtr()));
+void SystemMemoryPressureEvaluator::ScheduleEarlyCheck() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SystemMemoryPressureEvaluator::CheckMemoryPressure,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MemoryPressureMonitor::ScheduleWaitForKernelNotification() {
+void SystemMemoryPressureEvaluator::ScheduleWaitForKernelNotification() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {ThreadPool(), MayBlock(), TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       kernel_waiting_callback_,
-      base::BindRepeating(&MemoryPressureMonitor::HandleKernelNotification,
-                          weak_ptr_factory_.GetWeakPtr()));
-}
-
-void MemoryPressureMonitor::SetDispatchCallback(
-    const DispatchCallback& callback) {
-  dispatch_callback_ = callback;
-}
-
-// static
-MemoryPressureMonitor* MemoryPressureMonitor::Get() {
-  return g_monitor_notifying;
+      base::BindRepeating(
+          &SystemMemoryPressureEvaluator::HandleKernelNotification,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos
-}  // namespace base
+}  // namespace util

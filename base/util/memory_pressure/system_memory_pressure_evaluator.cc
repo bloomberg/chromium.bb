@@ -6,7 +6,9 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_CHROMEOS)
+#include "base/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_mac.h"
 #elif defined(OS_WIN)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_win.h"
@@ -18,7 +20,15 @@ namespace util {
 std::unique_ptr<SystemMemoryPressureEvaluator>
 SystemMemoryPressureEvaluator::CreateDefaultSystemEvaluator(
     MultiSourceMemoryPressureMonitor* monitor) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_CHROMEOS)
+  if (util::chromeos::SystemMemoryPressureEvaluator::
+          SupportsKernelNotifications()) {
+    return std::make_unique<util::chromeos::SystemMemoryPressureEvaluator>(
+        monitor->CreateVoter());
+  }
+  LOG(ERROR) << "No MemoryPressureMonitor created because the kernel does "
+                "not support notifications.";
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
   return std::make_unique<util::mac::SystemMemoryPressureEvaluator>(
       monitor->CreateVoter());
 #elif defined(OS_WIN)
