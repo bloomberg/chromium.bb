@@ -82,6 +82,8 @@ RankingItemType RankingItemTypeFromSearchResult(
       return RankingItemType::kIgnored;
     case ash::SearchResultType::kArcAppShortcut:
       return RankingItemType::kArcAppShortcut;
+    case ash::SearchResultType::kZeroStateFile:
+      return RankingItemType::kZeroStateFile;
   }
 }
 

@@ -2338,6 +2338,7 @@ Unknown properties are collapsed to zero. -->
   <int value="26" label="Omnibox, Search History"/>
   <int value="27" label="Omnibox, Search Suggest"/>
   <int value="28" label="Omnibox, Personalzied Suggestion"/>
+  <int value="29" label="Zero State Local File"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">

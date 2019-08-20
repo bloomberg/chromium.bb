@@ -5050,6 +5050,8 @@ test("unit_tests") {
       "../browser/ui/app_list/search/tests/tokenized_string_char_iterator_unittest.cc",
       "../browser/ui/app_list/search/tests/tokenized_string_match_unittest.cc",
       "../browser/ui/app_list/search/tests/tokenized_string_unittest.cc",
+      "../browser/ui/app_list/search/tests/zero_state_file_provider_unittest.cc",
+      "../browser/ui/app_list/search/tests/zero_state_file_result_unittest.cc",
       "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
       "../browser/ui/app_list/test/fake_app_list_model_updater.h",
     ]

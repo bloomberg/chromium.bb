@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider.h"
+#include "chrome/browser/ui/app_list/search/zero_state_file_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
@@ -43,6 +44,7 @@ namespace {
 constexpr size_t kMaxAppsGroupResults = 7;
 constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxLauncherSearchResults = 2;
+constexpr size_t kMaxZeroStateFileResults = 6;
 constexpr size_t kMaxAppReinstallSearchResults = 1;
 // We show up to 6 Play Store results. However, part of Play Store results may
 // be filtered out because they may correspond to already installed Web apps. So
@@ -61,6 +63,7 @@ constexpr size_t kMaxSettingsShortcutResults = 6;
 
 constexpr float kBoostOfSettingsShortcut = 10.0f;
 constexpr float kBoostOfApps = 8.0f;
+constexpr float kBoostOfZeroStateFileResults = 1.0f;
 
 }  // namespace
 
@@ -151,6 +154,13 @@ std::unique_ptr<SearchController> CreateSearchController(
         app_shortcut_group_id,
         std::make_unique<ArcAppShortcutsSearchProvider>(
             kMaxAppShortcutResults, profile, list_controller));
+  }
+
+  if (app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
+    size_t zero_state_files_group_id = controller->AddGroup(
+        kMaxZeroStateFileResults, 1.0, kBoostOfZeroStateFileResults);
+    controller->AddProvider(zero_state_files_group_id,
+                            std::make_unique<ZeroStateFileProvider>(profile));
   }
 
   return controller;
