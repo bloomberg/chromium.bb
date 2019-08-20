@@ -922,7 +922,7 @@ function handlePostMessage(event) {
       if ($(IDS.PROMO)) {
         $(IDS.PROMO).classList.add(CLASSES.SHOW_ELEMENT);
       }
-      if (customLinksEnabled() && !configData.hideShortcuts) {
+      if (customLinksEnabled()) {
         $(customize.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
             .classList.toggle(
                 customize.CLASSES.OPTION_DISABLED, !args.showRestoreDefault);
@@ -1243,11 +1243,6 @@ function createIframes() {
     clIframeDialog.classList.add(CLASSES.CUSTOMIZE_DIALOG);
     clIframeDialog.appendChild(clIframe);
     document.body.appendChild(clIframeDialog);
-
-    if (configData.hideShortcuts) {
-      $(IDS.TILES).style.display = 'none';
-      clIframeDialog.style.display = 'none';
-    }
   }
 
   window.addEventListener('message', handlePostMessage);

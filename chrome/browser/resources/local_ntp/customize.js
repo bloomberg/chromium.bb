@@ -322,8 +322,6 @@ customize.setMenuVisibility = function() {
   $(customize.IDS.UPLOAD_IMAGE).hidden = false;
   $(customize.IDS.RESTORE_DEFAULT).hidden = false;
   $(customize.IDS.EDIT_BG_DIVIDER).hidden = false;
-  $(customize.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden =
-      configData.hideShortcuts;
   $(customize.IDS.COLORS_BUTTON).hidden = !configData.chromeColors;
   $(customize.IDS.COLOR_PICKER_CONTAINER)
       .classList.toggle(
