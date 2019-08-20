@@ -87,7 +87,7 @@
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1623104350909869708">या पृष्ठास अतिरिक्त संवाद तयार करण्यापासून प्रतिबंधित करा</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 निवडलेला आयटम काढून टाका}other{# निवडलेले आयटम काढून टाका}}</translation>
-<translation id="164269334534774161">तुम्ही <ph name="CREATION_TIME" /> पासून या पेजाची ऑफलाइन प्रत पाहत आहात</translation>
+<translation id="164269334534774161">तुम्ही <ph name="CREATION_TIME" /> पासून या पेजची ऑफलाइन प्रत पाहत आहात</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1647391597548383849">तुमचा कॅमेरा अॅक्सेस करा</translation>
 <translation id="1660204651932907780">साइटना ध्वनी प्ले करण्याची परवानगी द्या (शिफारस केलेले)</translation>
@@ -212,7 +212,7 @@
 <translation id="2523184218357549926">तुम्ही भेट दिलेल्या पेजच्या URL Google ला पाठवते</translation>
 <translation id="2532336938189706096">वेब दृश्य</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> आयटम हटवले</translation>
-<translation id="2536728043171574184">या पेजाची ऑफलाइन प्रत पाहत आहे</translation>
+<translation id="2536728043171574184">या पेजची ऑफलाइन प्रत पाहत आहे</translation>
 <translation id="2546283357679194313">कुकीज आणि साइट डेटा</translation>
 <translation id="2567385386134582609">इमेज</translation>
 <translation id="257088987046510401">थीम</translation>
@@ -349,7 +349,7 @@
 <translation id="3568688522516854065">तुमच्या इतर डिव्हाइसवरून तुमचे टॅब मिळविण्यासाठी, साइन इन करा आणि सिंक सुरू करा</translation>
 <translation id="3587482841069643663">सर्व</translation>
 <translation id="358794129225322306">साइटला एकाहून अधिक फायली आपोआप डाउनलोड करू द्या.</translation>
-<translation id="3590487821116122040">Chrome साइट स्टोरेज यास महत्त्व देत नाही (उदा. ज्या साइटमध्ये सेटिंग्ज सेव्ह केलेल्या नसतात किंवा  सहसा भेट देत नाही अशा साइट)</translation>
+<translation id="3590487821116122040">Chrome साइट स्टोरेज यास महत्त्व देत नाही (उदा. ज्या साइटमध्ये सेटिंग्ज सेव्ह केलेल्या नसतात किंवा तुम्ही सहसा भेट देत नाही अशा साइट)</translation>
 <translation id="3599863153486145794">साइन-इन केलेल्या सर्व डिव्हाइसमधून इतिहास साफ करते. तुमच्या Google खात्यामध्ये <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर कदाचित ब्राउझिंगचे इतर फॉर्म असतील.</translation>
 <translation id="3600792891314830896">ध्वनी प्ले करणाऱ्या साइट म्यूट करा</translation>
 <translation id="3616113530831147358">ऑडिओ</translation>
