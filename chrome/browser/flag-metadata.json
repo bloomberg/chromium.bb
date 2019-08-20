@@ -1442,7 +1442,7 @@
   {
     "name": "enable-oop-rasterization",
     "owners": [ "enne", "khushalsagar" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-parallel-downloading",
@@ -1658,7 +1658,7 @@
   {
     "name": "enable-surfacecontrol",
     "owners": [ "khushalsagar" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-surfaces-for-videos",
