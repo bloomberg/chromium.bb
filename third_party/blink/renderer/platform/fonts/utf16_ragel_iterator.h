@@ -106,7 +106,7 @@ class PLATFORM_EXPORT UTF16RagelIterator {
   }
 
   UChar32 operator*() {
-    DCHECK(buffer_size_);
+    CHECK(buffer_size_);
     return cached_category_;
   }
 
