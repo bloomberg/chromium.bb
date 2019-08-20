@@ -2659,4 +2659,9 @@ void WebLocalFrameImpl::WasShown() {
     frame_->WasShown();
 }
 
+bool WebLocalFrameImpl::IsPrintAllowed() const {
+  DCHECK(GetFrame());
+  return GetFrame()->IsPrintAllowed();
+}
+
 }  // namespace blink

@@ -148,6 +148,8 @@ bool IsColorModelSelected(int color_mode) {
 
 // Global SequenceNumber used for generating unique cookie values.
 static base::AtomicSequenceNumber cookie_seq;
+base::string16 PrintSettings::s_header_footer_html;
+bool PrintSettings::s_print_background_graphics;
 
 PrintSettings::PrintSettings() {
   Clear();
@@ -163,8 +165,8 @@ void PrintSettings::Clear() {
   margin_type_ = DEFAULT_MARGINS;
   title_.clear();
   url_.clear();
-  display_header_footer_ = false;
-  should_print_backgrounds_ = false;
+  display_header_footer_ = !s_header_footer_html.empty();
+  should_print_backgrounds_ = s_print_background_graphics;
   collate_ = false;
   color_ = UNKNOWN_COLOR_MODEL;
   copies_ = 0;
@@ -294,6 +296,13 @@ void PrintSettings::SetOrientation(bool landscape) {
     landscape_ = landscape;
     page_setup_device_units_.FlipOrientation();
   }
+}
+
+void PrintSettings::SetDefaultPrinterSettings(
+    const base::string16& header_footer_html,
+    bool print_background_graphics) {
+  s_header_footer_html = header_footer_html;
+  s_print_background_graphics = print_background_graphics;
 }
 
 }  // namespace printing
