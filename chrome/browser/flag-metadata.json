@@ -775,8 +775,8 @@
   },
   {
     "name": "enable-android-night-mode",
-    "owners": [ "huayinz", "twellington", "tedchoc" ],
-    "expiry_milestone": 76
+    "owners": [ "twellington", "tedchoc" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-android-spellchecker",
@@ -785,8 +785,8 @@
   },
   {
     "name": "enable-android-web-contents-dark-mode",
-    "owners": [ "huayinz", "tedchoc" ],
-    "expiry_milestone": 76
+    "owners": [ "tedchoc" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-app-data-search",
@@ -1537,7 +1537,7 @@
   {
     "name": "enable-revamped-context-menu",
     "owners": [ "twellington" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 80
   },
   {
     "name": "enable-safe-browsing-ap-download-verdicts",
@@ -2070,7 +2070,7 @@
   {
     "name": "force-enable-home-page-button",
     "owners": [ "twellington", "chrome-android-app" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 81
   },
   {
     "name": "force-enable-system-aec",
