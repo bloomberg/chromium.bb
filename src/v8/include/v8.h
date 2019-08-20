@@ -42,6 +42,14 @@
 #endif
 
 /**
+ * Required so 'EmbedderHeapTracer' can friend 'gin::MultiHeapTracer'.  See the
+ * note in 'EmbedderHeapTracer' for more information.
+ */
+namespace gin {
+class MultiHeapTracer;
+}
+
+/**
  * The v8 JavaScript engine.
  */
 namespace v8 {
@@ -7296,6 +7304,17 @@ class V8_EXPORT EmbedderHeapTracer {
   v8::Isolate* isolate_ = nullptr;
 
   friend class internal::LocalEmbedderHeapTracer;
+
+  /**
+   * NOTE:
+   *   LocalEmbedderHeapTracer, which is declared as a friend, is usually
+   *   responsible for setting 'isolate_' when 'Isolate::SetEmbedderHeapTracer'
+   *   is called.  However with the introduced 'gin::MultiHeapTracer', we only
+   *   set that on the 'Isolate'.  We need to be able to set up 'isolate_' for
+   *   every tracer that is added to the 'MultiHeapTracer'.  To achieve this,
+   *   we also friend 'MultiHeapTracer'.
+   */
+  friend class gin::MultiHeapTracer;
 };
 
 /**

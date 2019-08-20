@@ -84,6 +84,8 @@ IsolateHolder::IsolateHolder(
     v8::Isolate::Initialize(isolate_, params);
   }
 
+  isolate_data_->Initialize();
+
   isolate_memory_dump_provider_.reset(
       new V8IsolateMemoryDumpProvider(this, task_runner));
 }
@@ -109,6 +111,10 @@ void IsolateHolder::EnableIdleTasks(
     std::unique_ptr<V8IdleTaskRunner> idle_task_runner) {
   DCHECK(isolate_data_.get());
   isolate_data_->EnableIdleTasks(std::move(idle_task_runner));
+}
+
+MultiHeapTracer* IsolateHolder::heap_tracer() const {
+  return isolate_data_->heap_tracer();
 }
 
 }  // namespace gin
