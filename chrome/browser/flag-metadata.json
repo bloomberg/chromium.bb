@@ -2998,7 +2998,7 @@
   {
     "name": "sync-support-secondary-account",
     "owners": [ "treib", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "sync-wifi-configurations",
