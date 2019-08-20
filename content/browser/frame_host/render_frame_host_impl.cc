@@ -4384,9 +4384,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 
   registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::BindIdleManagerRequest, base::Unretained(this)));
-
-  registry_->AddInterface(base::BindRepeating(
       &GetRestrictedCookieManager, base::Unretained(this),
       GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
 
@@ -6202,15 +6199,15 @@ void RenderFrameHostImpl::BindPresentationServiceRequest(
   presentation_service_->Bind(std::move(request));
 }
 
-void RenderFrameHostImpl::BindIdleManagerRequest(
-    blink::mojom::IdleManagerRequest request) {
+void RenderFrameHostImpl::GetIdleManager(
+    mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
   if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kIdleDetection)) {
     mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");
     return;
   }
   static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
       ->GetIdleManager()
-      ->CreateService(std::move(request));
+      ->CreateService(std::move(receiver));
 }
 
 blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {

@@ -4064,7 +4064,7 @@ void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
 
 // blink::WebLocalFrameClient implementation
 // ----------------------------------------
-const blink::BrowserInterfaceBrokerProxy*
+blink::BrowserInterfaceBrokerProxy*
 RenderFrameImpl::GetBrowserInterfaceBrokerProxy() {
   return &browser_interface_broker_proxy_;
 }
