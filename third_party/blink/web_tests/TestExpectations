@@ -6290,7 +6290,6 @@ crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Pass Timeout ]
 crbug.com/971319 [ Mac ] virtual/audio-service/media/audio-garbage-collect.html [ Pass Timeout ]
 
 # Sheriff 2019-06-06
-crbug.com/971590 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 crbug.com/971612 fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
 
 # Sheriff 2019-06-13
