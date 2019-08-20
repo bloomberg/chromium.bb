@@ -508,7 +508,14 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
   }
 }
 
-TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
+#if defined(OS_CHROMEOS)
+// Flaky on ChromeOS: https://crbug.com/995851
+#define MAYBE_ResetExtensionsByDisabling DISABLED_ResetExtensionsByDisabling
+#else
+#define MAYBE_ResetExtensionsByDisabling ResetExtensionsByDisabling
+#endif
+
+TEST_F(ProfileResetterTest, MAYBE_ResetExtensionsByDisabling) {
   service_->Init();
 
   base::ScopedTempDir temp_dir;
