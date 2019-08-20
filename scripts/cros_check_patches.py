@@ -16,9 +16,9 @@ import sys
 import tempfile
 
 from chromite.lib import cros_build_lib
+from chromite.lib import depgraph
 from chromite.lib import osutils
 from chromite.lib import portage_util
-from chromite.scripts import parallel_emerge
 
 
 class PatchReporter(object):
@@ -225,7 +225,7 @@ def main(argv):
   depgraph_argv.extend(default_rootdeps_arg)
   depgraph_argv.extend(argv)
 
-  deps = parallel_emerge.DepGraphGenerator()
+  deps = depgraph.DepGraphGenerator()
   deps.Initialize(depgraph_argv)
   deps_tree, deps_info = deps.GenDependencyTree()
   deps_map = deps.GenDependencyGraph(deps_tree, deps_info)
