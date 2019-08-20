@@ -2645,7 +2645,8 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
           if (('stable' in v['channel'] and 'stable' in _ANDROID_PACKAGE_KEY) or
               ('beta' in v['channel'] and 'beta' in _ANDROID_PACKAGE_KEY)):
             omaha = map(int, v['version'].split('.'))
-            device = map(int, self._driver.capabilities['version'].split('.'))
+            device = map(int,
+              self._driver.capabilities['browserVersion'].split('.'))
             self.assertTrue(omaha <= device)
             return
       raise RuntimeError('Malformed omaha JSON')
