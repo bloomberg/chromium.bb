@@ -72,9 +72,9 @@ void InitInput(Pixel_t *s, Pixel_t *ref_s, ACMRandom *rnd, const uint8_t limit,
         if (j < 1) {
           tmp_s[j] = rnd->Rand16();
         } else if (val & 0x20) {  // Increment by a value within the limit.
-          tmp_s[j] = tmp_s[j - 1] + (limit - 1);
+          tmp_s[j] = static_cast<uint16_t>(tmp_s[j - 1] + (limit - 1));
         } else {  // Decrement by a value within the limit.
-          tmp_s[j] = tmp_s[j - 1] - (limit - 1);
+          tmp_s[j] = static_cast<uint16_t>(tmp_s[j - 1] - (limit - 1));
         }
         j++;
       }
@@ -91,11 +91,11 @@ void InitInput(Pixel_t *s, Pixel_t *ref_s, ACMRandom *rnd, const uint8_t limit,
         if (j < 1) {
           tmp_s[j] = rnd->Rand16();
         } else if (val & 0x20) {  // Increment by a value within the limit.
-          tmp_s[(j % 32) * 32 + j / 32] =
-              tmp_s[((j - 1) % 32) * 32 + (j - 1) / 32] + (limit - 1);
+          tmp_s[(j % 32) * 32 + j / 32] = static_cast<uint16_t>(
+              tmp_s[((j - 1) % 32) * 32 + (j - 1) / 32] + (limit - 1));
         } else {  // Decrement by a value within the limit.
-          tmp_s[(j % 32) * 32 + j / 32] =
-              tmp_s[((j - 1) % 32) * 32 + (j - 1) / 32] - (limit - 1);
+          tmp_s[(j % 32) * 32 + j / 32] = static_cast<uint16_t>(
+              tmp_s[((j - 1) % 32) * 32 + (j - 1) / 32] - (limit - 1));
         }
         j++;
       }
