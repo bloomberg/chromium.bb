@@ -188,8 +188,6 @@ public class FeatureUtilities {
         cachePrioritizeBootstrapTasks();
         cacheFeedEnabled();
         cacheNetworkService();
-        cacheServiceManagerForDownloadResumption();
-        cacheServiceManagerForBackgroundPrefetch();
         cacheNetworkServiceWarmUpEnabled();
         cacheImmersiveUiModeEnabled();
         cacheSwapPixelFormatToFixConvertFromTranslucentEnabled();
@@ -202,6 +200,18 @@ public class FeatureUtilities {
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
         LibraryLoader.setReachedCodeProfilerEnabledOnNextRuns(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.REACHED_CODE_PROFILER));
+    }
+
+    /**
+     * Caches flags that are enabled in ServiceManager only mode and must take effect on startup but
+     * are set via native code. This function needs to be called in ServiceManager only mode to mark
+     * these field trials as active, otherwise histogram data recorded in ServiceManager only mode
+     * won't be tagged with their corresponding field trial experiments.
+     */
+    public static void cacheNativeFlagsForServiceManagerOnlyMode() {
+        // TODO(crbug.com/995355): Move other related flags from {@link cacheNativeFlags} to here.
+        cacheServiceManagerForDownloadResumption();
+        cacheServiceManagerForBackgroundPrefetch();
     }
 
     /**
