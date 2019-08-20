@@ -223,7 +223,10 @@ void BookmarkAppInstallationTask::OnWebAppInstalled(
               std::move(success_closure).Run();
             },
             std::move(success_closure)));
+    return;
   }
+
+  std::move(success_closure).Run();
 }
 
 }  // namespace extensions
