@@ -4,7 +4,9 @@
 
 #include "chrome/test/chromedriver/webauthn_commands.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/base64url.h"
@@ -161,4 +163,12 @@ Status ExecuteGetCredentials(WebView* web_view,
   }
 
   return status;
+}
+
+Status ExecuteRemoveAllCredentials(WebView* web_view,
+                                   const base::Value& params,
+                                   std::unique_ptr<base::Value>* value) {
+  return web_view->SendCommandAndGetResult(
+      "WebAuthn.clearCredentials",
+      MapParams({{"authenticatorId", "authenticatorId"}}, params), value);
 }

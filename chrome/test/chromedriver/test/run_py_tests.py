@@ -227,6 +227,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverSecureContextTest.testRemoveVirtualAuthenticator',
         'ChromeDriverSecureContextTest.testAddCredential',
         'ChromeDriverSecureContextTest.testGetCredentials',
+        'ChromeDriverSecureContextTest.testRemoveAllCredentials',
         # Covered by Desktop tests; can't create 2 browsers in Android
         'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
     ]
@@ -2023,7 +2024,9 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
   # The example attestation private key from the U2F spec at
   # https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-example
   # PKCS.8 encoded without encryption, as a base64url string.
-  privateKey = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg8_zMDQDYAxlU-Qhk1Dwkf0v18GZca1DMF3SaJ9HPdmShRANCAASNYX5lyVCOZLzFZzrIKmeZ2jwURmgsJYxGP__fWN_S-j5sN4tT15XEpN_7QZnt14YvI6uvAgO0uJEboFaZlOEB"
+  privateKey = ("MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg8_zMDQDYAxlU-Q"
+                "hk1Dwkf0v18GZca1DMF3SaJ9HPdmShRANCAASNYX5lyVCOZLzFZzrIKmeZ2jwU"
+                "RmgsJYxGP__fWN_S-j5sN4tT15XEpN_7QZnt14YvI6uvAgO0uJEboFaZlOEB")
 
   @staticmethod
   def GlobalSetUp():
@@ -2196,6 +2199,48 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
                       self.UrlSafeBase64Decode(credentials[0]['userHandle']))
     self.assertEquals(1, credentials[0]['signCount'])
     self.assertTrue(credentials[0]['privateKey'])
+
+  def testRemoveAllCredentials(self):
+    register_credential_script = """
+      let done = arguments[0];
+      registerCredential().then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+    authenticatorId = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = True,
+        hasUserVerification = True,
+    )['authenticatorId']
+
+    # Register a credential via the webauthn API.
+    result = self._driver.ExecuteAsyncScript(register_credential_script)
+    self.assertEquals('OK', result['status'])
+    credentialId = result['credential']['rawId']
+
+    # Attempting to register with the credential ID on excludeCredentials should
+    # fail.
+    exclude_credentials_script = """
+      let done = arguments[0];
+      registerCredential({
+        excludeCredentials: [{
+          type: "public-key",
+          id: Uint8Array.from(%s),
+          transports: ["usb"],
+        }],
+      }).then(done);
+    """ % (credentialId)
+    result = self._driver.ExecuteAsyncScript(exclude_credentials_script)
+    self.assertEquals("InvalidStateError: The user attempted to register an "
+                      "authenticator that contains one of the credentials "
+                      "already registered with the relying party.",
+                      result['status'])
+
+    # The registration should succeed after clearing the credentials.
+    self._driver.RemoveAllCredentials(authenticatorId)
+    result = self._driver.ExecuteAsyncScript(exclude_credentials_script)
+    self.assertEquals('OK', result['status'])
 
 # Tests in the following class are expected to be moved to ChromeDriverTest
 # class when we no longer support the legacy mode.
