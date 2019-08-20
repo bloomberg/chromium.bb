@@ -809,11 +809,6 @@
     "expiry_milestone": 74
   },
   {
-    "name": "enable-appcontainer",
-    "owners": [ "forshaw", "wfh" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-arc-cups-api",
     "owners": [ "luum", "skau" ],
     "expiry_milestone": 76
@@ -1207,7 +1202,7 @@
   {
     "name": "enable-gpu-appcontainer",
     "owners": [ "forshaw", "wfh" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "enable-gpu-rasterization",
