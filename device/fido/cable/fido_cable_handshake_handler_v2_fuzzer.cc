@@ -24,10 +24,6 @@ constexpr std::array<uint8_t, 32> kTestSessionPreKey = {{
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 }};
 
-constexpr std::array<uint8_t, 8> kTestNonce = {{
-    0x15, 0x14, 0x13, 0x12, 0x11, 0x10, 0x09, 0x08,
-}};
-
 constexpr char kTestDeviceAddress[] = "Fake_Address";
 
 }  // namespace
@@ -37,9 +33,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
   auto adapter =
       base::MakeRefCounted<::testing::NiceMock<device::MockBluetoothAdapter>>();
   device::FidoCableDevice test_cable_device(adapter.get(), kTestDeviceAddress);
+  test_cable_device.SetStateForTesting(
+      device::FidoCableDevice::State::kDeviceError);
 
-  device::FidoCableV1HandshakeHandler handshake_handler_v1(
-      &test_cable_device, kTestNonce, kTestSessionPreKey);
-  handshake_handler_v1.ValidateAuthenticatorHandshakeMessage(data_span);
+  device::FidoCableV2HandshakeHandler handshake_handler_v2(&test_cable_device,
+                                                           kTestSessionPreKey);
+  handshake_handler_v2.InitiateCableHandshake(base::DoNothing());
+  handshake_handler_v2.ValidateAuthenticatorHandshakeMessage(data_span);
   return 0;
 }
