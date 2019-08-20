@@ -2620,8 +2620,8 @@
   },
   {
     "name": "omnibox-ui-show-suggestion-favicons",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 79
   },
   {
     "name": "omnibox-ui-swap-title-and-url",
