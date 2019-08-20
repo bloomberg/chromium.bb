@@ -103,7 +103,6 @@ KERNEL_SKIP_AFDO_UPDATE = ['3.8']
 GSURL_CWP_SUBDIR = {
     'silvermont': '',
     'airmont': 'airmont',
-    'haswell': 'haswell',
     'broadwell': 'broadwell',
 }
 
@@ -1204,6 +1203,5 @@ PROFILE_SOURCES = {
     'benchmark': GetBenchmarkProfile,
     'silvermont': GetCWPProfile,
     'airmont': GetCWPProfile,
-    'haswell': GetCWPProfile,
     'broadwell': GetCWPProfile,
 }
