@@ -389,6 +389,12 @@ void RenderWidgetHostViewBase::FallbackCursorModeLockCursor(bool left,
 void RenderWidgetHostViewBase::FallbackCursorModeSetCursorVisibility(
     bool visible) {}
 
+void RenderWidgetHostViewBase::SetRubberbandRect(const gfx::Rect& rect) {
+}
+
+void RenderWidgetHostViewBase::HideRubberbandRect() {
+}
+
 void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
