@@ -180,7 +180,7 @@ struct NetworkServiceParams {
 [EnableIf=is_chromeos]
 struct LoggingSettings {
   uint32 logging_dest;
-  mojo_base.mojom.FilePath log_file;
+  handle log_file_descriptor;
 };
 
 // Browser interface to the network service.
