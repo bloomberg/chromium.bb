@@ -20391,6 +20391,10 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="DOWNLOADING"/>
   <int value="3" label="INSTALLING"/>
   <int value="4" label="COMPLETE"/>
+  <int value="5" label="NOTIFIED_FROM_MANAGEMENT"/>
+  <int value="6" label="NOTIFIED_FROM_MANAGEMENT_NOT_FORCED"/>
+  <int value="7" label="SEEN_BY_POLICY_LOADER"/>
+  <int value="8" label="SEEN_BY_EXTERNAL_PROVIDER"/>
 </enum>
 
 <enum name="ExtensionInstallCause">
