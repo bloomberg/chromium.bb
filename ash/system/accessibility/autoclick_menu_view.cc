@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "base/metrics/histogram_macros.h"
@@ -220,9 +219,9 @@ AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
   AddChildView(action_button_container);
 
   views::Separator* separator = new views::Separator();
-  separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+  separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparator,
-      kSeparatorOnDarkBackgroundColor));
+      AshColorProvider::AshColorMode::kDark));
   separator->SetPreferredHeight(kSeparatorHeight);
   int total_height = kUnifiedTopShortcutSpacing * 2 + kTrayItemSize;
   int separator_spacing = (total_height - kSeparatorHeight) / 2;

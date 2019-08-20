@@ -254,9 +254,9 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawSharpLine(
       gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
       gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+      AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kSeparator,
-          kSeparatorOnLightBackgroundColor));
+          AshColorProvider::AshColorMode::kLight));
 }
 
 const char* StackingNotificationCounterView::GetClassName() const {
