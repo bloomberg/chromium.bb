@@ -39,6 +39,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/optimization_guide/top_host_provider.h"
@@ -434,6 +435,7 @@ class PreviewsDeciderImplTest
         std::make_unique<TestPreviewsDeciderImpl>(&clock_);
     previews_decider_impl_ = previews_decider_impl.get();
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
+    optimization_guide::prefs::RegisterProfilePrefs(pref_service_->registry());
     ui_service_.reset(new TestPreviewsUIService(
         std::move(previews_decider_impl), std::make_unique<TestOptOutStore>(),
         std::make_unique<TestPreviewsOptimizationGuide>(
