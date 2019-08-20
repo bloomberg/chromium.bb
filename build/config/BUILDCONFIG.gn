@@ -85,14 +85,16 @@ if (is_clang) {
 # ==============================================================================
 #
 # Here we set the default toolchain. Currently only Mac and POSIX are defined.
+host_toolchain = ""
 if (current_os == "chromeos" || current_os == "linux") {
-  set_default_toolchain("//build/toolchain/linux:linux")
+  host_toolchain = "//build/toolchain/linux:linux"
 } else if (current_os == "mac") {
-  set_default_toolchain("//build/toolchain/mac:clang")
+  host_toolchain = "//build/toolchain/mac:clang"
 } else {
   # TODO(miu): Windows, and others.
   assert(false, "Toolchain for current_os is not defined.")
 }
+set_default_toolchain(host_toolchain)
 
 # =============================================================================
 # OS DEFINITIONS

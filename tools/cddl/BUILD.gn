@@ -4,28 +4,30 @@
 
 import("//build_overrides/build.gni")
 
-executable("cddl") {
-  sources = [
-    "codegen.cc",
-    "codegen.h",
-    "logging.cc",
-    "logging.h",
-    "main.cc",
-    "parse.cc",
-    "parse.h",
-    "sema.cc",
-    "sema.h",
-  ]
+if (current_toolchain == host_toolchain) {
+  executable("cddl") {
+    sources = [
+      "codegen.cc",
+      "codegen.h",
+      "logging.cc",
+      "logging.h",
+      "main.cc",
+      "parse.cc",
+      "parse.h",
+      "sema.cc",
+      "sema.h",
+    ]
 
-  if (build_with_chromium) {
-    sources += [ "stubs.cc" ]
+    if (build_with_chromium) {
+      sources += [ "stubs.cc" ]
+    }
+
+    deps = [
+      # CDDL always uses the default logger, even when embedded.
+      "../../platform",
+      "../../platform:default_logger",
+      "../../third_party/abseil",
+    ]
+    configs += [ "../../build:allow_build_from_embedder" ]
   }
-
-  deps = [
-    # CDDL always uses the default logger, even when embedded.
-    "../../platform",
-    "../../platform:default_logger",
-    "../../third_party/abseil",
-  ]
-  configs += [ "../../build:allow_build_from_embedder" ]
 }

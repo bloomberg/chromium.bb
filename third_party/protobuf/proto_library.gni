@@ -50,7 +50,7 @@ template("proto_library") {
     outputs = get_path_info(protogens_cc, "abspath")
     args = protos
 
-    protoc_label = "//third_party/protobuf:protoc"
+    protoc_label = "//third_party/protobuf:protoc($host_toolchain)"
     protoc_path = get_label_info(protoc_label, "root_out_dir") + "/protoc"
     args += [
       # Wrapper should never pick a system protoc.
