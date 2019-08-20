@@ -5255,6 +5255,10 @@ crbug.com/766404 [ Mac ] plugins/keyboard-events.html [ Pass Failure ]
 # This was previously skipped on Windows in the section for crbug.com/757165
 crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
 
+# Canvas tests that are affected by change to Skia GPU rect shadow rendering.
+crbug.com/990918 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass Failure ]
+crbug.com/990918 virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Pass Failure ]
+
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 crbug.com/767469 virtual/blink-cors/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
