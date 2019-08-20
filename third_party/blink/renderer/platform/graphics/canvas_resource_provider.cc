@@ -507,6 +507,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     WillDraw();
     return resource()->GetTextureIdForWriteAccess();
   }
+  GLenum GetBackingTextureTarget() const override {
+    return resource_->TextureTarget();
+  }
 
   scoped_refptr<CanvasResource> CreateResource() final {
     TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::CreateResource");

@@ -174,6 +174,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
     NOTREACHED();
     return 0;
   }
+  virtual GLenum GetBackingTextureTarget() const { return GL_TEXTURE_2D; }
   virtual void* GetPixelBufferAddressForOverwrite() {
     NOTREACHED();
     return nullptr;
