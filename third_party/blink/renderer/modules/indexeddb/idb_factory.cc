@@ -227,11 +227,23 @@ ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
                                           ExceptionState& exception_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
+  if (!IsContextValid(ExecutionContext::From(script_state))) {
+    resolver->Reject();
+    return resolver->Promise();
+  }
+
   if (!ExecutionContext::From(script_state)
            ->GetSecurityOrigin()
            ->CanAccessDatabase()) {
     exception_state.ThrowSecurityError(
         "Access to the IndexedDB API is denied in this context.");
+    resolver->Reject();
+    return resolver->Promise();
+  }
+
+  if (!CachedAllowIndexedDB(script_state)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
+                                      kPermissionDeniedErrorMessage);
     resolver->Reject();
     return resolver->Promise();
   }
