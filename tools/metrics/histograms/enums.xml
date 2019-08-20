@@ -11588,6 +11588,12 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Success"/>
 </enum>
 
+<enum name="CrostiniUnsupportedNotificationReason">
+  <int value="0" label="TabletMode"/>
+  <int value="1" label="VirtualKeyboard"/>
+  <int value="2" label="UnsupportedIME"/>
+</enum>
+
 <enum name="CrosTPMDictionaryAttackResetStatusEnum">
   <int value="0" label="Reset not necessary"/>
   <int value="1" label="Reset attempt succeeded"/>
