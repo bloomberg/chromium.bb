@@ -134,5 +134,12 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, GetIcons) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ContentIndexTest, RegistrationWithoutIcons) {
+  // Don't load any icons.
+  provider()->set_icon_sizes({});
+  // Registering without icons is ok since the browser doesn't need any.
+  RunScript("addContent('id1', false)");
+}
+
 }  // namespace
 }  // namespace content

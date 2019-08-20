@@ -57,7 +57,7 @@ class ContentIndexProviderImplTest : public testing::Test,
   content::ContentIndexEntry CreateEntry(const std::string& id) {
     auto description = blink::mojom::ContentDescription::New(
         id, "title", "description", blink::mojom::ContentCategory::ARTICLE,
-        "icon_url", "launch_url");
+        std::vector<blink::mojom::ContentIconDefinitionPtr>(), "launch_url");
     return content::ContentIndexEntry(kServiceWorkerRegistrationId,
                                       std::move(description), kLaunchURL,
                                       base::Time::Now());

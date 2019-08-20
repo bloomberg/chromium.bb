@@ -122,9 +122,16 @@ class ContentIndexDatabaseTest : public ::testing::Test {
   }
 
   blink::mojom::ContentDescriptionPtr CreateDescription(const std::string& id) {
+    auto icon_definition = blink::mojom::ContentIconDefinition::New();
+    icon_definition->src = "https://example.com/image.png";
+    icon_definition->type = "image/png";
+
+    std::vector<blink::mojom::ContentIconDefinitionPtr> icons;
+    icons.push_back(std::move(icon_definition));
+
     return blink::mojom::ContentDescription::New(
         id, "title", "description", blink::mojom::ContentCategory::HOME_PAGE,
-        "https://example.com", "https://example.com");
+        std::move(icons), "https://example.com");
   }
 
   blink::mojom::ContentIndexError AddEntry(

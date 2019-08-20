@@ -41,16 +41,17 @@ WTF::String ValidateDescription(const ContentDescription& description,
   if (description.description().IsEmpty())
     return "Description cannot be empty";
 
-  if (description.iconUrl().IsEmpty())
-    return "Invalid icon URL provided";
-
   if (description.launchUrl().IsEmpty())
     return "Invalid launch URL provided";
 
-  KURL icon_url =
-      registration->GetExecutionContext()->CompleteURL(description.iconUrl());
-  if (!icon_url.ProtocolIsInHTTPFamily())
-    return "Invalid icon URL protocol";
+  for (const auto& icon : description.icons()) {
+    if (icon->src().IsEmpty())
+      return "Invalid icon URL provided";
+    KURL icon_url =
+        registration->GetExecutionContext()->CompleteURL(icon->src());
+    if (!icon_url.ProtocolIsInHTTPFamily())
+      return "Invalid icon URL protocol";
+  }
 
   KURL launch_url =
       registration->GetExecutionContext()->CompleteURL(description.launchUrl());
@@ -124,8 +125,23 @@ void ContentIndex::DidGetIconSizes(
     ScriptPromiseResolver* resolver,
     mojom::blink::ContentDescriptionPtr description,
     const Vector<WebSize>& icon_sizes) {
-  KURL icon_url =
-      registration_->GetExecutionContext()->CompleteURL(description->icon_url);
+  if (!icon_sizes.IsEmpty() && description->icons.IsEmpty()) {
+    ScriptState* script_state = resolver->GetScriptState();
+    ScriptState::Scope scope(script_state);
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), "icons must be provided"));
+    return;
+  }
+
+  if (icon_sizes.IsEmpty()) {
+    DidGetIcons(resolver, std::move(description),
+                std::make_unique<Vector<SkBitmap>>());
+    return;
+  }
+
+  // TODO(crbug.com/973844): Find the best resource to use.
+  KURL icon_url = registration_->GetExecutionContext()->CompleteURL(
+      description->icons[0]->src);
 
   auto icons = std::make_unique<Vector<SkBitmap>>();
   icons->ReserveCapacity(icon_sizes.size());
