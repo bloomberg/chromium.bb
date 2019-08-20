@@ -51435,6 +51435,10 @@ Called by update_net_trust_anchors.py.-->
       label="IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE"/>
   <int value="107"
       label="IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES"/>
+  <int value="108"
+      label="IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE"/>
+  <int value="109"
+      label="IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">
