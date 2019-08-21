@@ -13,6 +13,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_web_app_database.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -229,6 +230,53 @@ TEST(WebAppRegistrar, GetAppDataFields) {
   EXPECT_FALSE(registrar->IsLocallyInstalled("unknown"));
   web_app_ptr->SetIsLocallyInstalled(/*is_locally_installed*/ true);
   EXPECT_TRUE(registrar->IsLocallyInstalled(app_id));
+}
+
+TEST(WebAppRegistrar, CanFindAppsInScope) {
+  const GURL origin_scope("https://example.com/");
+  const GURL app1_scope("https://example.com/app");
+  const GURL app2_scope("https://example.com/app-two");
+  const GURL app3_scope("https://not-example.com/app");
+
+  auto database = std::make_unique<TestWebAppDatabase>();
+  auto registrar = std::make_unique<WebAppRegistrar>(nullptr, database.get());
+
+  std::vector<web_app::AppId> in_scope =
+      registrar->FindAppsInScope(origin_scope);
+  EXPECT_EQ(0u, in_scope.size());
+
+  auto app1 = std::make_unique<WebApp>("1");
+  app1->SetScope(app1_scope);
+  registrar->RegisterApp(std::move(app1));
+
+  in_scope = registrar->FindAppsInScope(origin_scope);
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("1"));
+
+  in_scope = registrar->FindAppsInScope(app1_scope);
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("1"));
+
+  auto app2 = std::make_unique<WebApp>("2");
+  app2->SetScope(app2_scope);
+  registrar->RegisterApp(std::move(app2));
+
+  in_scope = registrar->FindAppsInScope(origin_scope);
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("1", "2"));
+
+  in_scope = registrar->FindAppsInScope(app1_scope);
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("1", "2"));
+
+  in_scope = registrar->FindAppsInScope(app2_scope);
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("2"));
+
+  auto app3 = std::make_unique<WebApp>("3");
+  app3->SetScope(app3_scope);
+  registrar->RegisterApp(std::move(app3));
+
+  in_scope = registrar->FindAppsInScope(origin_scope);
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("1", "2"));
+
+  in_scope = registrar->FindAppsInScope(app3_scope);
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("3"));
 }
 
 }  // namespace web_app

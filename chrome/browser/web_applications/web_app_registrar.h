@@ -51,7 +51,7 @@ class WebAppRegistrar : public AppRegistrar {
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
   LaunchContainer GetAppLaunchContainer(const AppId& app_id) const override;
-  base::flat_set<AppId> GetAppIdsForTesting() const override;
+  std::vector<AppId> GetAppIds() const override;
 
  private:
   void OnDatabaseOpened(base::OnceClosure callback, Registry registry);

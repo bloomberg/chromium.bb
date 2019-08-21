@@ -138,7 +138,6 @@ const GURL& WebAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
 }
 
 base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
-  NOTIMPLEMENTED();
   WebApp* web_app = GetAppById(app_id);
   return web_app ? base::Optional<GURL>(web_app->scope()) : base::nullopt;
 }
@@ -149,9 +148,12 @@ LaunchContainer WebAppRegistrar::GetAppLaunchContainer(
   return web_app ? web_app->launch_container() : LaunchContainer::kDefault;
 }
 
-base::flat_set<AppId> WebAppRegistrar::GetAppIdsForTesting() const {
-  NOTIMPLEMENTED();
-  return {};
+std::vector<AppId> WebAppRegistrar::GetAppIds() const {
+  std::vector<AppId> app_ids;
+  for (const auto& pair : registry_) {
+    app_ids.push_back(pair.first);
+  }
+  return app_ids;
 }
 
 }  // namespace web_app
