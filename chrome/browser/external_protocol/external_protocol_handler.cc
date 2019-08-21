@@ -165,8 +165,8 @@ void OnDefaultProtocolClientWorkerFinished(
   bool chrome_is_default_handler = state == shell_integration::IS_DEFAULT;
 
 #if !defined(OS_ANDROID)
-  if (web_contents &&
-      ShouldOfferClickToCall(web_contents->GetBrowserContext(), escaped_url)) {
+  if (web_contents && ShouldOfferClickToCallForURL(
+                          web_contents->GetBrowserContext(), escaped_url)) {
     // Handle tel links by opening the Click to Call dialog. This will call back
     // into LaunchUrlWithoutSecurityCheck if the user selects a system handler.
     ClickToCallUiController::ShowDialog(web_contents, escaped_url,

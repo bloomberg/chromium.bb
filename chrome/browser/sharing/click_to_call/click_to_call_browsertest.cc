@@ -253,3 +253,6 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
     device_id++;
   }
 }
+
+// TODO(himanshujaju): Add integration tests for right click on highlighted text
+// containing number.
