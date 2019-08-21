@@ -85,6 +85,11 @@ bool FakeSyncEncryptionHandler::SetKeystoreKeys(
   return true;
 }
 
+const Cryptographer* FakeSyncEncryptionHandler::GetCryptographer(
+    const syncable::BaseTransaction* const trans) const {
+  return &cryptographer_;
+}
+
 ModelTypeSet FakeSyncEncryptionHandler::GetEncryptedTypes(
     const syncable::BaseTransaction* const trans) const {
   return encrypted_types_;
@@ -130,16 +135,16 @@ base::Time FakeSyncEncryptionHandler::GetKeystoreMigrationTime() const {
   return base::Time();
 }
 
-Cryptographer* FakeSyncEncryptionHandler::GetCryptographerUnsafe() {
-  return &cryptographer_;
-}
-
 KeystoreKeysHandler* FakeSyncEncryptionHandler::GetKeystoreKeysHandler() {
   return this;
 }
 
 syncable::NigoriHandler* FakeSyncEncryptionHandler::GetNigoriHandler() {
   return this;
+}
+
+Cryptographer* FakeSyncEncryptionHandler::GetMutableCryptographer() {
+  return &cryptographer_;
 }
 
 }  // namespace syncer

@@ -70,7 +70,6 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
-  Cryptographer* GetCryptographerUnsafe() override;
   KeystoreKeysHandler* GetKeystoreKeysHandler() override;
   syncable::NigoriHandler* GetNigoriHandler() override;
 
@@ -82,6 +81,8 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
       sync_pb::NigoriSpecifics* nigori,
       const syncable::BaseTransaction* const trans) const override;
   // Can be called from any thread.
+  const Cryptographer* GetCryptographer(
+      const syncable::BaseTransaction* const trans) const override;
   ModelTypeSet GetEncryptedTypes(
       const syncable::BaseTransaction* const trans) const override;
   PassphraseType GetPassphraseType(
@@ -103,6 +104,10 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   //
   // Writes the nigori to the Directory and updates the Cryptographer.
   void RestoreNigori(const SyncEncryptionHandler::NigoriState& nigori_state);
+
+  // Returns mutable Cryptographer, used only in tests to manipulate it
+  // directly.
+  Cryptographer* GetMutableCryptographerForTesting();
 
  private:
   friend class SyncEncryptionHandlerImplTest;

@@ -15,6 +15,7 @@ class NigoriSpecifics;
 
 namespace syncer {
 
+class Cryptographer;
 enum class PassphraseType;
 
 namespace syncable {
@@ -38,6 +39,10 @@ class NigoriHandler {
   // Store the current encrypt everything/encrypted types state into |nigori|.
   virtual void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
+      const syncable::BaseTransaction* const trans) const = 0;
+
+  // Returns the original cryptographer.
+  virtual const Cryptographer* GetCryptographer(
       const syncable::BaseTransaction* const trans) const = 0;
 
   // Returns the set of currently encrypted types.

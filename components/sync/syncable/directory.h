@@ -245,8 +245,7 @@ class Directory {
       std::unique_ptr<DirectoryBackingStore> store,
       const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
-      NigoriHandler* nigori_handler,
-      const Cryptographer* cryptographer);
+      NigoriHandler* nigori_handler);
   virtual ~Directory();
 
   // Does not take ownership of |delegate|, which must not be null.
@@ -625,7 +624,6 @@ class Directory {
 
   // Not owned.
   NigoriHandler* const nigori_handler_;
-  const Cryptographer* const cryptographer_;
 
   InvariantCheckLevel invariant_check_level_;
 

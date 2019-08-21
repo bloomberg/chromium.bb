@@ -1165,7 +1165,7 @@ class SyncManagerTest : public testing::Test,
 
   Cryptographer* GetCryptographer(const BaseTransaction* trans) {
     DCHECK_EQ(user_share_.directory.get(), trans->GetDirectory());
-    return encryption_handler_->GetCryptographerUnsafe();
+    return encryption_handler_->GetMutableCryptographerForTesting();
   }
 
  private:
@@ -1180,7 +1180,7 @@ class SyncManagerTest : public testing::Test,
  protected:
   FakeEncryptor encryptor_;
   UserShare user_share_;
-  std::unique_ptr<SyncEncryptionHandler> encryption_handler_;
+  std::unique_ptr<SyncEncryptionHandlerImpl> encryption_handler_;
   SyncManagerImpl sync_manager_;
   CancelationSignal cancelation_signal_;
   WeakHandle<JsBackend> js_backend_;

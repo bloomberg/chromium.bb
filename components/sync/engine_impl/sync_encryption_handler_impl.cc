@@ -789,11 +789,6 @@ base::Time SyncEncryptionHandlerImpl::GetKeystoreMigrationTime() const {
   return keystore_migration_time_;
 }
 
-Cryptographer* SyncEncryptionHandlerImpl::GetCryptographerUnsafe() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return &vault_unsafe_.cryptographer;
-}
-
 KeystoreKeysHandler* SyncEncryptionHandlerImpl::GetKeystoreKeysHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return this;
@@ -927,6 +922,11 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   return true;
 }
 
+const Cryptographer* SyncEncryptionHandlerImpl::GetCryptographer(
+    const syncable::BaseTransaction* const trans) const {
+  return &UnlockVault(trans).cryptographer;
+}
+
 ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypes(
     const syncable::BaseTransaction* const trans) const {
   return UnlockVault(trans).encrypted_types;
@@ -984,6 +984,10 @@ void SyncEncryptionHandlerImpl::RestoreNigori(
 
   // Update our state based on the saved nigori node.
   ApplyNigoriUpdate(nigori_state.nigori_specifics, trans.GetWrappedTrans());
+}
+
+Cryptographer* SyncEncryptionHandlerImpl::GetMutableCryptographerForTesting() {
+  return &vault_unsafe_.cryptographer;
 }
 
 // This function iterates over all encrypted types.  There are many scenarios in
