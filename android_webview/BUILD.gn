@@ -12,6 +12,7 @@ import("//build/config/locales.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/trichrome.gni")
+import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
@@ -713,6 +714,7 @@ source_set("common") {
     "//components/download/public/common:public",
     "//components/embedder_support/android:web_contents_delegate",
     "//components/google/core/common",
+    "//components/gwp_asan/buildflags",
     "//components/heap_profiling",
     "//components/keyed_service/content",
     "//components/metrics",
@@ -785,6 +787,10 @@ source_set("common") {
       "//components/spellcheck/browser",
       "//components/spellcheck/renderer",
     ]
+  }
+
+  if (enable_gwp_asan) {
+    deps += [ "//components/gwp_asan/client" ]
   }
 
   configs += [
