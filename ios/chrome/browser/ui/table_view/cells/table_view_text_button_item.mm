@@ -99,7 +99,7 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
   } else if (styler.tintColor) {
     cell.button.backgroundColor = styler.tintColor;
   } else {
-    cell.button.backgroundColor = [UIColor colorNamed:kBlueColor];
+    cell.button.backgroundColor = [UIColor colorNamed:kTintColor];
   }
   cell.button.enabled = self.enabled;
   if (!self.enabled) {
