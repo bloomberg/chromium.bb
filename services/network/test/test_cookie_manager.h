@@ -42,8 +42,8 @@ class TestCookieManager : public network::mojom::CookieManager {
   void AddGlobalChangeListener(
       mojo::PendingRemote<network::mojom::CookieChangeListener>
           notification_pointer) override {}
-  void CloneInterface(
-      network::mojom::CookieManagerRequest new_interface) override {}
+  void CloneInterface(mojo::PendingReceiver<network::mojom::CookieManager>
+                          new_interface) override {}
   void FlushCookieStore(FlushCookieStoreCallback callback) override {}
   void AllowFileSchemeCookies(
       bool allow,

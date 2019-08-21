@@ -667,8 +667,9 @@ void NetworkContext::ResetURLLoaderFactories() {
     factory->ClearBindings();
 }
 
-void NetworkContext::GetCookieManager(mojom::CookieManagerRequest request) {
-  cookie_manager_->AddRequest(std::move(request));
+void NetworkContext::GetCookieManager(
+    mojo::PendingReceiver<mojom::CookieManager> receiver) {
+  cookie_manager_->AddReceiver(std::move(receiver));
 }
 
 void NetworkContext::GetRestrictedCookieManager(

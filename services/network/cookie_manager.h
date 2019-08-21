@@ -47,9 +47,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
 
   const CookieSettings& cookie_settings() const { return cookie_settings_; }
 
-  // Bind a cookie request to this object.  Mojo messages
+  // Bind a cookie receiver to this object.  Mojo messages
   // coming through the associated pipe will be served by this object.
-  void AddRequest(mojom::CookieManagerRequest request);
+  void AddReceiver(mojo::PendingReceiver<mojom::CookieManager> receiver);
 
   // TODO(rdsmith): Add a verion of AddRequest that does renderer-appropriate
   // security checks on bindings coming through that interface.
@@ -74,7 +74,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
       mojo::PendingRemote<mojom::CookieChangeListener> listener) override;
   void AddGlobalChangeListener(
       mojo::PendingRemote<mojom::CookieChangeListener> listener) override;
-  void CloneInterface(mojom::CookieManagerRequest new_interface) override;
+  void CloneInterface(
+      mojo::PendingReceiver<mojom::CookieManager> new_interface) override;
 
   size_t GetClientsBoundForTesting() const { return bindings_.size(); }
   size_t GetListenersRegisteredForTesting() const {

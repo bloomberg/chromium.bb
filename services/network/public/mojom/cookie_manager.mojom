@@ -285,7 +285,7 @@ interface CookieManager {
   // Clone the interface for use somewhere else.  After this call,
   // requests to the same implementation may be posted to the other side
   // of the pipe new_interface was configured on.
-  CloneInterface(CookieManager& new_interface);
+  CloneInterface(pending_receiver<CookieManager> new_interface);
 
   // Flush the backing store (if any) to disk.
   FlushCookieStore() => ();

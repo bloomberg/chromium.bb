@@ -64,8 +64,9 @@ CookieManager::~CookieManager() {
   }
 }
 
-void CookieManager::AddRequest(mojom::CookieManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void CookieManager::AddReceiver(
+    mojo::PendingReceiver<mojom::CookieManager> receiver) {
+  bindings_.AddBinding(this, std::move(receiver));
 }
 
 void CookieManager::GetAllCookies(GetAllCookiesCallback callback) {
@@ -201,8 +202,9 @@ void CookieManager::RemoveChangeListener(ListenerRegistration* registration) {
   NOTREACHED();
 }
 
-void CookieManager::CloneInterface(mojom::CookieManagerRequest new_interface) {
-  AddRequest(std::move(new_interface));
+void CookieManager::CloneInterface(
+    mojo::PendingReceiver<mojom::CookieManager> new_interface) {
+  AddReceiver(std::move(new_interface));
 }
 
 void CookieManager::FlushCookieStore(FlushCookieStoreCallback callback) {

@@ -309,7 +309,7 @@ class CookieManagerTest : public testing::Test {
         std::move(store), nullptr /* netlog */);
     cookie_service_ = std::make_unique<CookieManager>(
         cookie_monster_.get(), std::move(cleanup_store), nullptr);
-    cookie_service_->AddRequest(mojo::MakeRequest(&cookie_service_ptr_));
+    cookie_service_->AddReceiver(mojo::MakeRequest(&cookie_service_ptr_));
     service_wrapper_ =
         std::make_unique<SynchronousCookieManager>(cookie_service_ptr_.get());
     cookie_service_ptr_.set_connection_error_handler(base::BindOnce(
