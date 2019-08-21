@@ -60,7 +60,7 @@ bool FakeSyncEncryptionHandler::ApplyNigoriUpdate(
 
 void FakeSyncEncryptionHandler::UpdateNigoriFromEncryptedTypes(
     sync_pb::NigoriSpecifics* nigori,
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   syncable::UpdateNigoriFromEncryptedTypes(encrypted_types_,
                                            encrypt_everything_, nigori);
 }
@@ -86,7 +86,7 @@ bool FakeSyncEncryptionHandler::SetKeystoreKeys(
 }
 
 ModelTypeSet FakeSyncEncryptionHandler::GetEncryptedTypes(
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   return encrypted_types_;
 }
 
@@ -122,7 +122,7 @@ bool FakeSyncEncryptionHandler::IsEncryptEverythingEnabled() const {
 }
 
 PassphraseType FakeSyncEncryptionHandler::GetPassphraseType(
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   return passphrase_type_;
 }
 

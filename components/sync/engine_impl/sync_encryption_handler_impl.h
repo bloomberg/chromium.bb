@@ -80,12 +80,12 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
                          syncable::BaseTransaction* const trans) override;
   void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
-      syncable::BaseTransaction* const trans) const override;
+      const syncable::BaseTransaction* const trans) const override;
   // Can be called from any thread.
   ModelTypeSet GetEncryptedTypes(
-      syncable::BaseTransaction* const trans) const override;
+      const syncable::BaseTransaction* const trans) const override;
   PassphraseType GetPassphraseType(
-      syncable::BaseTransaction* const trans) const override;
+      const syncable::BaseTransaction* const trans) const override;
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;
@@ -281,8 +281,8 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
 
   // Helper methods for ensuring transactions are held when accessing
   // |vault_unsafe_|.
-  Vault* UnlockVaultMutable(syncable::BaseTransaction* const trans);
-  const Vault& UnlockVault(syncable::BaseTransaction* const trans) const;
+  Vault* UnlockVaultMutable(const syncable::BaseTransaction* const trans);
+  const Vault& UnlockVault(const syncable::BaseTransaction* const trans) const;
 
   // Helper method for determining if migration of a nigori node should be
   // triggered or not. In case migration shouldn't be triggered the method will

@@ -849,7 +849,7 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
 
 void SyncEncryptionHandlerImpl::UpdateNigoriFromEncryptedTypes(
     sync_pb::NigoriSpecifics* nigori,
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   syncable::UpdateNigoriFromEncryptedTypes(UnlockVault(trans).encrypted_types,
                                            encrypt_everything_, nigori);
@@ -928,12 +928,12 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
 }
 
 ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypes(
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   return UnlockVault(trans).encrypted_types;
 }
 
 PassphraseType SyncEncryptionHandlerImpl::GetPassphraseType(
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   return UnlockVault(trans).passphrase_type;
 }
 
@@ -1633,13 +1633,13 @@ void SyncEncryptionHandlerImpl::MergeEncryptedTypes(
 }
 
 SyncEncryptionHandlerImpl::Vault* SyncEncryptionHandlerImpl::UnlockVaultMutable(
-    syncable::BaseTransaction* const trans) {
+    const syncable::BaseTransaction* const trans) {
   DCHECK_EQ(user_share_->directory.get(), trans->directory());
   return &vault_unsafe_;
 }
 
 const SyncEncryptionHandlerImpl::Vault& SyncEncryptionHandlerImpl::UnlockVault(
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   DCHECK_EQ(user_share_->directory.get(), trans->directory());
   return vault_unsafe_;
 }
