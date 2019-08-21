@@ -4656,6 +4656,14 @@ TEST_F(ViewLayerTest, SnapLayerToPixel) {
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       2.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ("0.00 0.00", ToString(v11->layer()->GetSubpixelOffset()));
+
+  // DSF reset followed by DSF change should update the offset.
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(
+      1.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ("0.00 0.00", ToString(v11->layer()->GetSubpixelOffset()));
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(
+      1.5f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ("0.33 0.33", ToString(v11->layer()->GetSubpixelOffset()));
 }
 
 TEST_F(ViewLayerTest, LayerBeneathTriggersPaintToLayer) {
@@ -5018,6 +5026,14 @@ TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       2.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ("0.00 0.00", ToString(v3->layer()->GetSubpixelOffset()));
+
+  // DSF reset followed by DSF change should update the offset.
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(
+      1.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ("0.00 0.00", ToString(v3->layer()->GetSubpixelOffset()));
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(
+      1.33f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ("0.06 -0.44", ToString(v3->layer()->GetSubpixelOffset()));
 }
 
 TEST_F(ViewLayerPixelCanvasTest, LayerBeneathOnPixelCanvas) {
