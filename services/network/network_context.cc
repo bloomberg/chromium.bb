@@ -1757,8 +1757,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
         network_service_->host_resolver_manager());
     builder.set_host_resolver_factory(
         network_service_->host_resolver_factory());
-    builder.set_shared_http_auth_handler_factory(
-        network_service_->GetHttpAuthHandlerFactory());
+    builder.SetHttpAuthHandlerFactory(
+        network_service_->CreateHttpAuthHandlerFactory(this));
     builder.set_network_quality_estimator(
         network_service_->network_quality_estimator());
   }
