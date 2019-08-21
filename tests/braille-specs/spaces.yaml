@@ -854,7 +854,7 @@ tests:
   - ['\x200a', '\x0020']
   - ['\x202f', '\x0020']
   - ['\x205f', '\x0020']
-table: ga.tbl
+table: ga-g2.ctb
 flags: {testmode: bothDirections}
 tests:
   - ['\x0020', '\x0020']
