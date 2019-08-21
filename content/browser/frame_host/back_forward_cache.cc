@@ -85,6 +85,29 @@ void SetPageFrozenImpl(
   }
 }
 
+// Recursively checks whether this RenderFrameHost and all child frames
+// can be cached.
+bool CanStoreRenderFrameHost(RenderFrameHostImpl* rfh) {
+  // For the main frame, we don't check loading at the FrameTreeNode level,
+  // because the FrameTreeNode has already begun loading the page being
+  // navigated to.
+  bool is_loading = rfh->frame_tree_node()->IsMainFrame()
+                        ? rfh->is_loading()
+                        : rfh->frame_tree_node()->IsLoading();
+  if (is_loading)
+    return false;
+
+  // TODO(lowell): Check subframe for disallowed features.
+
+  for (size_t i = 0; i < rfh->child_count(); i++) {
+    if (!CanStoreRenderFrameHost(rfh->child_at(i)->current_frame_host())) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
 
 BackForwardCache::BackForwardCache() = default;
@@ -106,14 +129,7 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   if (rfh->was_granted_media_access())
     return false;
 
-  // Note that we check is_loading on the rfh directly, rather than calling
-  // FrameTreeNode::IsLoading. This is because FrameTreeNode is already
-  // loading the new page being navigated to.
-  // TODO(lowell): Consider also checking whether any subframes are loading.
-  if (rfh->is_loading())
-    return false;
-
-  // Don't enable BackForwardCache if the page has any disallowed features.
+  // Don't enable BackForwardCache if the document has any disallowed features.
   // TODO(lowell): Handle races involving scheduler_tracked_features.
   // One solution could be to listen for changes to scheduler_tracked_features
   // and if we see a frame in bfcache starting to use something forbidden, evict
@@ -138,7 +154,7 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   if (rfh->last_http_status_code() != net::HTTP_OK)
     return false;
 
-  return true;
+  return CanStoreRenderFrameHost(rfh);
 }
 
 void BackForwardCache::StoreDocument(std::unique_ptr<RenderFrameHostImpl> rfh) {
