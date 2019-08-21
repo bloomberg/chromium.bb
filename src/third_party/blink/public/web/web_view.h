@@ -457,6 +457,11 @@ class WebView {
   virtual void ClearAutoplayFlags() = 0;
   virtual int32_t AutoplayFlagsForTest() = 0;
 
+  // HWND ----------------------------------------------------------------
+  // Save the hwnd of WebView if available
+  virtual HWND GetHwnd() { return 0; }
+  virtual void SetHwnd(HWND hwnd) {}
+
   // Non-composited support -----------------------------------------------
 
   // Called to paint the rectangular region within the WebView's main frame

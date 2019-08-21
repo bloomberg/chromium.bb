@@ -52,6 +52,7 @@ std::string g_dictDir;
 bool g_in_process_renderer = true;
 bool g_custom_hit_test = false;
 bool g_custom_tooltip = false;
+bool g_renderer_ui = false;
 HANDLE g_hJob;
 MSG g_msg;
 bool g_isInsideEventLoop;
@@ -789,6 +790,9 @@ int main(int, const char**)
                 host = blpwtk2::ThreadMode::RENDERER_MAIN;
                 isProcessHost = true;
             }
+            else if (0 == wcscmp(L"--renderer-ui", argv[i])) {
+                g_renderer_ui = true;
+            }
             else if (0 == wcsncmp(L"--file-mapping=", argv[i], 15)) {
                 char buf[1024];
                 sprintf_s(buf, sizeof(buf), "%S", argv[i]+15);
@@ -861,11 +865,10 @@ int main(int, const char**)
         if (!g_in_process_renderer) {
             toolkitParams.disableInProcessRenderer();
         }
-
-
-
         // patch section: renderer ui
-
+	else {
+            toolkitParams.setRendererUIEnabled(g_renderer_ui);
+        }
 
         // patch section: web script context
 
