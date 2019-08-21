@@ -2361,6 +2361,7 @@ enum WebFeature {
   kAutoplayDynamicDelegation = 2977,
   kFragmentDoubleHash = 2979,
   kContactsManagerSelect = 2993,
+  kPerformanceObserverBufferedFlag = 3004,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
