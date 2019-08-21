@@ -76,6 +76,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void SetAutoclickEnabled(bool enabled);
   bool autoclick_enabled() const { return autoclick_enabled_; }
   bool IsAutoclickSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForAutoclick();
 
   void SetAutoclickEventType(AutoclickEventType event_type);
   AutoclickEventType GetAutoclickEventType();
@@ -91,47 +92,58 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void SetCaretHighlightEnabled(bool enabled);
   bool caret_highlight_enabled() const { return caret_highlight_enabled_; }
   bool IsCaretHighlightSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForCaretHighlight();
 
   void SetCursorHighlightEnabled(bool enabled);
   bool cursor_highlight_enabled() const { return cursor_highlight_enabled_; }
   bool IsCursorHighlightSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForCursorHighlight();
 
   void SetDictationEnabled(bool enabled);
   bool dictation_enabled() const { return dictation_enabled_; }
   bool IsDictationSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForDictation();
 
   void SetFocusHighlightEnabled(bool enabled);
   bool focus_highlight_enabled() const { return focus_highlight_enabled_; }
   bool IsFocusHighlightSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForFocusHighlight();
 
   void SetFullscreenMagnifierEnabled(bool enabled);
   bool IsFullscreenMagnifierEnabledForTesting();
   bool IsFullScreenMagnifierSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForFullScreenMagnifier();
 
   void SetDockedMagnifierEnabledForTesting(bool enabled);
   bool IsDockedMagnifierEnabledForTesting();
   bool IsDockedMagnifierSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForDockedMagnifier();
 
   void SetHighContrastEnabled(bool enabled);
   bool high_contrast_enabled() const { return high_contrast_enabled_; }
   bool IsHighContrastSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForHighContrast();
 
   void SetLargeCursorEnabled(bool enabled);
   bool large_cursor_enabled() const { return large_cursor_enabled_; }
   bool IsLargeCursorSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForLargeCursor();
 
   void SetMonoAudioEnabled(bool enabled);
   bool mono_audio_enabled() const { return mono_audio_enabled_; }
   bool IsMonoAudioSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForMonoAudio();
 
   void SetSpokenFeedbackEnabled(bool enabled,
                                 AccessibilityNotificationVisibility notify);
   bool spoken_feedback_enabled() const { return spoken_feedback_enabled_; }
   bool IsSpokenFeedbackSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForSpokenFeedback();
 
   void SetSelectToSpeakEnabled(bool enabled);
   bool select_to_speak_enabled() const { return select_to_speak_enabled_; }
   bool IsSelectToSpeakSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForSelectToSpeak();
 
   void RequestSelectToSpeakStateChange();
   SelectToSpeakState GetSelectToSpeakState() const;
@@ -139,16 +151,19 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void SetStickyKeysEnabled(bool enabled);
   bool sticky_keys_enabled() const { return sticky_keys_enabled_; }
   bool IsStickyKeysSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForStickyKeys();
 
   void SetSwitchAccessEnabled(bool enabled);
   bool switch_access_enabled() const { return switch_access_enabled_; }
   bool IsSwitchAccessSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForSwitchAccess();
 
   void SetSwitchAccessIgnoreVirtualKeyEvent(bool should_ignore);
 
   void SetVirtualKeyboardEnabled(bool enabled);
   bool virtual_keyboard_enabled() const { return virtual_keyboard_enabled_; }
   bool IsVirtualKeyboardSettingVisibleInTray();
+  bool IsEnterpriseIconVisibleForVirtualKeyboard();
 
   bool dictation_active() const { return dictation_active_; }
 
@@ -191,6 +206,24 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // Plays tick sound indicating spoken feedback will be toggled after
   // countdown.
   void PlaySpokenFeedbackToggleCountdown(int tick_count);
+
+  // Returns true if that accessibility feature pref |path| is being controlled
+  // by a policy and false otherwise.
+  bool IsEnterpriseIconVisibleInTrayMenu(const std::string& path);
+
+  // Returns true if at least one of the primary settings of the accessibility
+  // features is going to be visible in the accessibility tray menu.
+  bool IsPrimarySettingsViewVisibleInTray();
+
+  // Returns true if at least one of the additional settings of the
+  // accessibility features is going to be visible in the accessibility tray
+  // menu.
+  bool IsAdditionalSettingsViewVisibleInTray();
+
+  // Returns true if there exist one of the additional accessibility features
+  // and one of the primary accessibility features which are going to visible on
+  // accessibility tray menu.
+  bool IsAdditionalSettingsSeparatorVisibleInTray();
 
   // AccessibilityController:
   void SetClient(AccessibilityControllerClient* client) override;

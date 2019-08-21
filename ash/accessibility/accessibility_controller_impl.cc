@@ -43,6 +43,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -458,6 +459,39 @@ bool AccessibilityControllerImpl::IsAutoclickSettingVisibleInTray() {
       prefs::kAccessibilityAutoclickEnabled);
 }
 
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForAutoclick() {
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilityAutoclickEnabled);
+}
+
+bool AccessibilityControllerImpl::IsPrimarySettingsViewVisibleInTray() {
+  return (IsSpokenFeedbackSettingVisibleInTray() ||
+          IsSelectToSpeakSettingVisibleInTray() ||
+          IsDictationSettingVisibleInTray() ||
+          IsHighContrastSettingVisibleInTray() ||
+          IsFullScreenMagnifierSettingVisibleInTray() ||
+          IsDockedMagnifierSettingVisibleInTray() ||
+          IsAutoclickSettingVisibleInTray() ||
+          IsVirtualKeyboardSettingVisibleInTray() ||
+          (base::CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kEnableExperimentalAccessibilitySwitchAccess) &&
+           IsSwitchAccessSettingVisibleInTray()));
+}
+
+bool AccessibilityControllerImpl::IsAdditionalSettingsViewVisibleInTray() {
+  return (IsLargeCursorSettingVisibleInTray() ||
+          IsMonoAudioSettingVisibleInTray() ||
+          IsCaretHighlightSettingVisibleInTray() ||
+          IsCursorHighlightSettingVisibleInTray() ||
+          IsFocusHighlightSettingVisibleInTray() ||
+          IsStickyKeysSettingVisibleInTray());
+}
+
+bool AccessibilityControllerImpl::IsAdditionalSettingsSeparatorVisibleInTray() {
+  return IsPrimarySettingsViewVisibleInTray() &&
+         IsAdditionalSettingsViewVisibleInTray();
+}
+
 void AccessibilityControllerImpl::SetCaretHighlightEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -471,6 +505,11 @@ bool AccessibilityControllerImpl::IsCaretHighlightSettingVisibleInTray() {
       prefs::kAccessibilityCaretHighlightEnabled);
 }
 
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForCaretHighlight() {
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilityCaretHighlightEnabled);
+}
+
 void AccessibilityControllerImpl::SetCursorHighlightEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -481,6 +520,11 @@ void AccessibilityControllerImpl::SetCursorHighlightEnabled(bool enabled) {
 
 bool AccessibilityControllerImpl::IsCursorHighlightSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityCursorHighlightEnabled);
+}
+
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForCursorHighlight() {
+  return IsEnterpriseIconVisibleInTrayMenu(
       prefs::kAccessibilityCursorHighlightEnabled);
 }
 
@@ -514,6 +558,11 @@ bool AccessibilityControllerImpl::IsDictationSettingVisibleInTray() {
       prefs::kAccessibilityDictationEnabled);
 }
 
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForDictation() {
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilityDictationEnabled);
+}
+
 void AccessibilityControllerImpl::SetFocusHighlightEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -524,6 +573,11 @@ void AccessibilityControllerImpl::SetFocusHighlightEnabled(bool enabled) {
 
 bool AccessibilityControllerImpl::IsFocusHighlightSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityFocusHighlightEnabled);
+}
+
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForFocusHighlight() {
+  return IsEnterpriseIconVisibleInTrayMenu(
       prefs::kAccessibilityFocusHighlightEnabled);
 }
 
@@ -545,6 +599,12 @@ bool AccessibilityControllerImpl::IsFullScreenMagnifierSettingVisibleInTray() {
       prefs::kAccessibilityScreenMagnifierEnabled);
 }
 
+bool AccessibilityControllerImpl::
+    IsEnterpriseIconVisibleForFullScreenMagnifier() {
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilityScreenMagnifierEnabled);
+}
+
 void AccessibilityControllerImpl::SetDockedMagnifierEnabledForTesting(
     bool enabled) {
   if (!active_user_prefs_)
@@ -563,6 +623,10 @@ bool AccessibilityControllerImpl::IsDockedMagnifierSettingVisibleInTray() {
       prefs::kDockedMagnifierEnabled);
 }
 
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForDockedMagnifier() {
+  return IsEnterpriseIconVisibleInTrayMenu(prefs::kDockedMagnifierEnabled);
+}
+
 void AccessibilityControllerImpl::SetHighContrastEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -573,6 +637,11 @@ void AccessibilityControllerImpl::SetHighContrastEnabled(bool enabled) {
 
 bool AccessibilityControllerImpl::IsHighContrastSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityHighContrastEnabled);
+}
+
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForHighContrast() {
+  return IsEnterpriseIconVisibleInTrayMenu(
       prefs::kAccessibilityHighContrastEnabled);
 }
 
@@ -589,6 +658,11 @@ bool AccessibilityControllerImpl::IsLargeCursorSettingVisibleInTray() {
       prefs::kAccessibilityLargeCursorEnabled);
 }
 
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForLargeCursor() {
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilityLargeCursorEnabled);
+}
+
 void AccessibilityControllerImpl::SetMonoAudioEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -599,6 +673,11 @@ void AccessibilityControllerImpl::SetMonoAudioEnabled(bool enabled) {
 
 bool AccessibilityControllerImpl::IsMonoAudioSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityMonoAudioEnabled);
+}
+
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForMonoAudio() {
+  return IsEnterpriseIconVisibleInTrayMenu(
       prefs::kAccessibilityMonoAudioEnabled);
 }
 
@@ -627,6 +706,11 @@ bool AccessibilityControllerImpl::IsSpokenFeedbackSettingVisibleInTray() {
       prefs::kAccessibilitySpokenFeedbackEnabled);
 }
 
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForSpokenFeedback() {
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilitySpokenFeedbackEnabled);
+}
+
 void AccessibilityControllerImpl::SetSelectToSpeakEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -637,6 +721,11 @@ void AccessibilityControllerImpl::SetSelectToSpeakEnabled(bool enabled) {
 
 bool AccessibilityControllerImpl::IsSelectToSpeakSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilitySelectToSpeakEnabled);
+}
+
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForSelectToSpeak() {
+  return IsEnterpriseIconVisibleInTrayMenu(
       prefs::kAccessibilitySelectToSpeakEnabled);
 }
 
@@ -681,6 +770,11 @@ bool AccessibilityControllerImpl::IsSwitchAccessSettingVisibleInTray() {
       prefs::kAccessibilitySwitchAccessEnabled);
 }
 
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForSwitchAccess() {
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilitySwitchAccessEnabled);
+}
+
 void AccessibilityControllerImpl::SetSwitchAccessIgnoreVirtualKeyEvent(
     bool should_ignore) {
   switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);
@@ -710,6 +804,11 @@ bool AccessibilityControllerImpl::IsStickyKeysSettingVisibleInTray() {
       prefs::kAccessibilityStickyKeysEnabled);
 }
 
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForStickyKeys() {
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilityStickyKeysEnabled);
+}
+
 void AccessibilityControllerImpl::SetVirtualKeyboardEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -720,6 +819,11 @@ void AccessibilityControllerImpl::SetVirtualKeyboardEnabled(bool enabled) {
 
 bool AccessibilityControllerImpl::IsVirtualKeyboardSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityVirtualKeyboardEnabled);
+}
+
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForVirtualKeyboard() {
+  return IsEnterpriseIconVisibleInTrayMenu(
       prefs::kAccessibilityVirtualKeyboardEnabled);
 }
 
@@ -800,6 +904,12 @@ void AccessibilityControllerImpl::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {
   if (client_)
     client_->PlaySpokenFeedbackToggleCountdown(tick_count);
+}
+
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleInTrayMenu(
+    const std::string& path) {
+  return active_user_prefs_ &&
+         active_user_prefs_->FindPreference(path)->IsManaged();
 }
 
 void AccessibilityControllerImpl::SetClient(
