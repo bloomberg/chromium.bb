@@ -232,10 +232,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/previews/content/previews_decider.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
-#include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -5333,7 +5333,7 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
         (previews_data->AllowedPreviewsState() & server_previews_enabled_state);
   } else {
     if (previews_decider_impl->ShouldAllowPreviewAtNavigationStart(
-            previews_data, current_navigation_url, is_reload,
+            previews_data, navigation_handle, is_reload,
             previews::PreviewsType::LITE_PAGE)) {
       previews_state |= server_previews_enabled_state;
     }
