@@ -1383,6 +1383,7 @@ test("content_browsertests") {
     deps += [
       "//chromeos/audio",
       "//chromeos/dbus/audio",
+      "//chromeos/system",
     ]
   }
 
