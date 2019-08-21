@@ -1077,7 +1077,11 @@ class PixelTestPages(object):
 
   @staticmethod
   def DirectCompositionPages(base_name):
-    browser_args = ['--enable-direct-composition-video-overlays']
+    browser_args = [
+      '--enable-direct-composition-video-overlays',
+      # All bots are connected with a power source, however, we want to to test
+      # with the code path that's enabled with battery power.
+      '--disable_vp_scaling=1']
     browser_args_Underlay = browser_args + [
       '--enable-features=DirectCompositionUnderlays']
     browser_args_Nonroot = browser_args +[
