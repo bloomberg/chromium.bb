@@ -3883,7 +3883,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "OmniboxGroupSuggestionsBySearchVsUrl"
+                        "OmniboxGroupSuggestionsBySearchVsUrl",
+                        "OmniboxPreserveDefaultMatchScore"
                     ]
                 }
             ]
