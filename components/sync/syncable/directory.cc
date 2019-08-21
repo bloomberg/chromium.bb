@@ -114,7 +114,7 @@ Directory::Directory(
     const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
     NigoriHandler* nigori_handler,
-    Cryptographer* cryptographer)
+    const Cryptographer* cryptographer)
     : store_(std::move(store)),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       report_unrecoverable_error_function_(report_unrecoverable_error_function),
@@ -1075,7 +1075,7 @@ NigoriHandler* Directory::GetNigoriHandler() {
   return nigori_handler_;
 }
 
-Cryptographer* Directory::GetCryptographer(const BaseTransaction* trans) {
+const Cryptographer* Directory::GetCryptographer(const BaseTransaction* trans) {
   DCHECK_EQ(this, trans->directory());
   return cryptographer_;
 }

@@ -79,4 +79,10 @@ void TestDirectorySetterUpper::RunInvariantCheck() {
   directory()->FullyCheckTreeInvariants(&trans);
 }
 
+Cryptographer* TestDirectorySetterUpper::GetCryptographer(
+    const syncable::BaseTransaction* trans) {
+  DCHECK_EQ(directory_.get(), trans->directory());
+  return encryption_handler_.GetCryptographerUnsafe();
+}
+
 }  // namespace syncer

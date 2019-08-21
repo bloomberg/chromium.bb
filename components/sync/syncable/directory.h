@@ -246,7 +246,7 @@ class Directory {
       const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       NigoriHandler* nigori_handler,
-      Cryptographer* cryptographer);
+      const Cryptographer* cryptographer);
   virtual ~Directory();
 
   // Does not take ownership of |delegate|, which must not be null.
@@ -334,7 +334,7 @@ class Directory {
 
   // Returns a pointer to our cryptographer. Does not transfer ownership.
   // Not thread safe, so should only be accessed while holding a transaction.
-  Cryptographer* GetCryptographer(const BaseTransaction* trans);
+  const Cryptographer* GetCryptographer(const BaseTransaction* trans);
 
   // Called to immediately report an unrecoverable error (but don't
   // propagate it up).
@@ -625,7 +625,7 @@ class Directory {
 
   // Not owned.
   NigoriHandler* const nigori_handler_;
-  Cryptographer* const cryptographer_;
+  const Cryptographer* const cryptographer_;
 
   InvariantCheckLevel invariant_check_level_;
 

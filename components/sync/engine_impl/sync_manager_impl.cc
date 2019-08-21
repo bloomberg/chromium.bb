@@ -187,7 +187,7 @@ bool SyncManagerImpl::VisiblePositionsDiffer(
 
 bool SyncManagerImpl::VisiblePropertiesDiffer(
     const syncable::EntryKernelMutation& mutation,
-    Cryptographer* cryptographer) const {
+    const Cryptographer* cryptographer) const {
   const syncable::EntryKernel& a = mutation.original;
   const syncable::EntryKernel& b = mutation.mutated;
   const sync_pb::EntitySpecifics& a_specifics = a.ref(SPECIFICS);
@@ -790,7 +790,7 @@ void SyncManagerImpl::SetExtraChangeRecordData(
     int64_t id,
     ModelType type,
     ChangeReorderBuffer* buffer,
-    Cryptographer* cryptographer,
+    const Cryptographer* cryptographer,
     const syncable::EntryKernel& original,
     bool existed_before,
     bool exists_now) {
@@ -832,7 +832,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
 
   ChangeReorderBuffer change_buffers[ModelType::NUM_ENTRIES];
 
-  Cryptographer* crypto = directory()->GetCryptographer(trans);
+  const Cryptographer* crypto = directory()->GetCryptographer(trans);
   const syncable::ImmutableEntryKernelMutationMap& mutations =
       write_transaction_info.Get().mutations;
   for (auto it = mutations.Get().begin(); it != mutations.Get().end(); ++it) {
