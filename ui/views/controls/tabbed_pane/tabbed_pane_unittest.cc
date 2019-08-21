@@ -139,6 +139,7 @@ TEST_F(TabbedPaneTest, SizeAndLayout) {
   EXPECT_GT(tabbed_pane_->GetPreferredSize().height(), 10);
 
   // The child views should resize to fit in larger tabbed panes.
+  widget_->SetBounds(gfx::Rect(0, 0, 100, 200));
   tabbed_pane_->SetBounds(0, 0, 100, 200);
   RunPendingMessages();
   // |tabbed_pane_| has no border. Therefore the children should be as wide as
