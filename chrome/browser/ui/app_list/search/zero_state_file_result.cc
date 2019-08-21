@@ -4,15 +4,19 @@
 
 #include "chrome/browser/ui/app_list/search/zero_state_file_result.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/app_list/search/common/file_icon_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -22,7 +26,21 @@ namespace {
 
 constexpr char kZeroStateFilePrefix[] = "zerostatefile://";
 
+std::string StripHostedFileExtensions(const std::string& filename) {
+  static const base::NoDestructor<std::vector<std::string>> hosted_extensions(
+      {".GDOC", ".GSHEET", ".GSLIDES", ".GDRAW", ".GTABLE", ".GLINK", ".GFORM",
+       ".GMAPS", ".GSITE"});
+
+  for (const auto& extension : *hosted_extensions) {
+    if (EndsWith(filename, extension, base::CompareCase::INSENSITIVE_ASCII)) {
+      return filename.substr(0, filename.size() - extension.size());
+    }
+  }
+
+  return filename;
 }
+
+}  // namespace
 
 ZeroStateFileResult::ZeroStateFileResult(const base::FilePath& filepath,
                                          float relevance,
@@ -32,7 +50,8 @@ ZeroStateFileResult::ZeroStateFileResult(const base::FilePath& filepath,
   set_id(kZeroStateFilePrefix + filepath.value());
   set_relevance(relevance);
 
-  SetTitle(base::UTF8ToUTF16(filepath.BaseName().value()));
+  SetTitle(base::UTF8ToUTF16(
+      StripHostedFileExtensions(filepath.BaseName().value())));
   SetResultType(ResultType::kZeroStateFile);
   SetDisplayType(DisplayType::kList);
 
@@ -42,8 +61,7 @@ ZeroStateFileResult::ZeroStateFileResult(const base::FilePath& filepath,
       l10n_util::GetStringUTF16(IDS_FILEMANAGER_APP_NAME), true);
   base::i18n::SanitizeUserSuppliedString(&sanitized_name);
   SetDetails(sanitized_name);
-
-  // TODO(crbug.com/955893): Set the icon.
+  SetIcon(GetIconForLocalFilePath(filepath));
 }
 
 ZeroStateFileResult::~ZeroStateFileResult() = default;
