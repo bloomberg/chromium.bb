@@ -255,7 +255,16 @@ class BASE_EXPORT TaskTraits {
         may_block_(trait_helpers::HasTrait<MayBlock, ArgTypes...>()),
         with_base_sync_primitives_(
             trait_helpers::HasTrait<WithBaseSyncPrimitives, ArgTypes...>()),
-        use_thread_pool_(trait_helpers::HasTrait<ThreadPool, ArgTypes...>()) {}
+        use_thread_pool_(trait_helpers::HasTrait<ThreadPool, ArgTypes...>()) {
+    constexpr bool has_thread_pool =
+        trait_helpers::HasTrait<ThreadPool, ArgTypes...>();
+    constexpr bool has_extension =
+        !trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value;
+    static_assert(
+        has_thread_pool ^ has_extension,
+        "Traits must explicitly specify a destination (e.g. ThreadPool or a "
+        "named thread like BrowserThread)");
+  }
 
   constexpr TaskTraits(const TaskTraits& other) = default;
   TaskTraits& operator=(const TaskTraits& other) = default;
