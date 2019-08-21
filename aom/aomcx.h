@@ -218,10 +218,10 @@ enum aome_enc_control_id {
    */
   AOME_SET_TUNING = AOME_SET_ARNR_STRENGTH + 2,
 
-  /*!\brief Codec control function to set constrained quality level.
+  /*!\brief Codec control function to set constrained / constant quality level.
    *
    * \attention For this value to be used aom_codec_enc_cfg_t::rc_end_usage
-   *            must be set to #AOM_CQ.
+   *            must be set to #AOM_CQ or #AOM_Q.
    * \note Valid range: 0..63
    */
   AOME_SET_CQ_LEVEL,
