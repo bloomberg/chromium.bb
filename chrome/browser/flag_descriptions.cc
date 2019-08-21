@@ -3319,6 +3319,15 @@ const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =
     "Enable ChromeVox language switching, which changes ChromeVox's "
     "output language upon detection of new language.";
 
+const char kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingName[] =
+    "Enable experimental ChromeVox sub-node (word-level) language switching.";
+const char
+    kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingDescription[] =
+        "Enable ChromeVox language switching at the sub-node level, "
+        "which changes ChromeVox's output language upon detection of a new "
+        "language. This type of switching is more granular than the ChromeVox"
+        "node-level language switching.";
+
 const char kExperimentalAccessibilitySwitchAccessName[] =
     "Experimental feature Switch Access";
 const char kExperimentalAccessibilitySwitchAccessDescription[] =

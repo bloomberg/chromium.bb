@@ -1989,6 +1989,11 @@ extern const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[];
 extern const char
     kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[];
 
+extern const char
+    kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingName[];
+extern const char
+    kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingDescription[];
+
 extern const char kExperimentalAccessibilitySwitchAccessName[];
 extern const char kExperimentalAccessibilitySwitchAccessDescription[];
 

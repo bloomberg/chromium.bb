@@ -86,6 +86,11 @@
     "dependencies": ["manifest:automation"],
     "contexts": ["blessed_extension"]
   },
+  "automation.languageAnnotationForStringAttribute": {
+    "command_line_switch": "enable-experimental-accessibility-chromevox-sub-node-language-switching",
+    "channel": "dev",
+    "contexts": ["blessed_extension"]
+  },
   "bluetooth": [{
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]

@@ -36905,6 +36905,8 @@ from previous Chrome versions.
       label="DataReductionProxyEnabledWithNetworkService:enabled"/>
   <int value="1579461102" label="MemoryCoordinator:disabled"/>
   <int value="1581002467" label="enable-explicit-dma-fences"/>
+  <int value="1585660881"
+      label="enable-experimental-accessibility-chromevox-sub-node-language-switching"/>
   <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
   <int value="1587521886" label="SSLCommittedInterstitials:enabled"/>
   <int value="1589341623" label="disable-easy-unlock"/>

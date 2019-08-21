@@ -2410,6 +2410,16 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          ::switches::
              kEnableExperimentalAccessibilityChromeVoxLanguageSwitching)},
+    {"enable-experimental-accessibility-chromevox-sub-node-language-"
+     "switching",
+     flag_descriptions::
+         kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingName,
+     flag_descriptions::
+         kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingDescription,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         ::switches::
+             kEnableExperimentalAccessibilityChromeVoxSubNodeLanguageSwitching)},
     {"enable-experimental-kernel-vm-support",
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
