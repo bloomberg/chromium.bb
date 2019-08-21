@@ -1045,7 +1045,7 @@ customize.richerPicker_toggleRefreshDaily = function(toggledOn) {
   $(customize.IDS.REFRESH_TOGGLE).checked = toggledOn;
   if (!toggledOn) {
     customize.richerPicker_selectBackgroundTile(
-        $(customize.IDS.BACKGROUNDS_DEFAULT));
+        $(customize.IDS.BACKGROUNDS_DEFAULT_ICON));
     return;
   }
 
