@@ -43,7 +43,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   MOCK_CONST_METHOD0(IsIncognito, bool());
   MOCK_CONST_METHOD0(GetPrefs, PrefService*());
-  MOCK_METHOD1(NotifyUserCredentialsWereLeaked, void(const GURL&));
+  MOCK_METHOD2(NotifyUserCredentialsWereLeaked,
+               void(password_manager::CredentialLeakType, const GURL&));
 };
 
 class MockLeakDetectionCheck : public LeakDetectionCheck {
@@ -137,7 +138,11 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDone) {
   histogram_tester.ExpectTotalCount(
       "PasswordManager.LeakDetection.NotifyIsLeakedTime", 0);
 
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(form.origin));
+  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
+                            password_manager::CreateLeakTypeFromBools(
+                                /*is_saved=*/false, /*is_reused=*/false,
+                                /*is_syncing=*/false),
+                            form.origin));
   delegate_interface->OnLeakDetectionDone(
       true, form.origin, form.username_value, form.password_value);
   histogram_tester.ExpectTotalCount(

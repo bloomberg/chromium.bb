@@ -55,7 +55,10 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
     base::UmaHistogramTimes(
         "PasswordManager.LeakDetection.NotifyIsLeakedTime",
         std::exchange(is_leaked_timer_, nullptr)->Elapsed());
-    client_->NotifyUserCredentialsWereLeaked(url);
+    client_->NotifyUserCredentialsWereLeaked(
+        password_manager::CreateLeakTypeFromBools(
+            /*is_saved=*/false, /*is_reused=*/false, /*is_syncing=*/false),
+        url);
   }
 }
 
