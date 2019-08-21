@@ -7214,10 +7214,11 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
         cookie_url +
         " was set without the `SameSite` attribute. "
         "A future release of Chrome will only deliver cookies with "
-        "cross-site requests if they are set with `SameSite=None`. You "
-        "can review cookies in developer tools under "
+        "cross-site requests if they are set with `SameSite=None` and "
+        "`Secure`. You can review cookies in developer tools under "
         "Application>Storage>Cookies and see more details at "
-        "https://www.chromestatus.com/feature/5088147346030592.";
+        "https://www.chromestatus.com/feature/5088147346030592 and "
+        "https://www.chromestatus.com/feature/5633521622188032.";
   }
   if (status == net::CanonicalCookie::CookieInclusionStatus::
                     EXCLUDE_SAMESITE_NONE_INSECURE) {
