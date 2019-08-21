@@ -2023,6 +2023,8 @@ v8_source_set("v8_base_without_compiler") {
     "include/v8-wasm-trap-handler-posix.h",
     "include/v8.h",
     "include/v8config.h",
+    "include/bb-v8-util.h",
+    "include/bb-v8-util.cc",
     "src/api/api-arguments-inl.h",
     "src/api/api-arguments.cc",
     "src/api/api-arguments.h",
