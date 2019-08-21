@@ -211,6 +211,7 @@ int64_t aom_sse_avx2(const uint8_t *a, int a_stride, const uint8_t *b,
   return sse;
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static INLINE void highbd_sse_w16_avx2(__m256i *sum, const uint16_t *a,
                                        const uint16_t *b) {
   const __m256i v_a_w = yy_loadu_256(a);
@@ -378,3 +379,4 @@ int64_t aom_highbd_sse_avx2(const uint8_t *a8, int a_stride, const uint8_t *b8,
   }
   return sse;
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH

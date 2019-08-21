@@ -175,6 +175,7 @@ int64_t aom_sse_sse4_1(const uint8_t *a, int a_stride, const uint8_t *b,
   return sse;
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static INLINE void highbd_sse_w4x2_sse4_1(__m128i *sum, const uint16_t *a,
                                           int a_stride, const uint16_t *b,
                                           int b_stride) {
@@ -348,3 +349,4 @@ int64_t aom_highbd_sse_sse4_1(const uint8_t *a8, int a_stride,
   }
   return sse;
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH

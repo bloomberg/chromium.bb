@@ -189,6 +189,7 @@ static void mode_estimation(
         0, 0, FILTER_INTRA_MODES, src, src_stride, dst, dst_stride, 0, 0, 0);
 
     if (use_satd) {
+#if CONFIG_AV1_HIGHBITDEPTH
       if (is_cur_buf_hbd(xd)) {
         aom_highbd_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
                                   dst_stride, xd->bd);
@@ -196,10 +197,15 @@ static void mode_estimation(
         aom_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
                            dst_stride);
       }
+#else
+      aom_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
+                         dst_stride);
+#endif
       wht_fwd_txfm(src_diff, bw, coeff, tx_size, is_cur_buf_hbd(xd));
       intra_cost = aom_satd(coeff, pix_num);
     } else {
       int64_t intra_sse;
+#if CONFIG_AV1_HIGHBITDEPTH
       if (is_cur_buf_hbd(xd)) {
         intra_sse =
             aom_highbd_sse(xd->cur_buf->y_buffer + mb_y_offset,
@@ -208,6 +214,10 @@ static void mode_estimation(
         intra_sse = aom_sse(xd->cur_buf->y_buffer + mb_y_offset,
                             xd->cur_buf->y_stride, predictor, bw, bw, bh);
       }
+#else
+      intra_sse = aom_sse(xd->cur_buf->y_buffer + mb_y_offset,
+                          xd->cur_buf->y_stride, predictor, bw, bw, bh);
+#endif
       intra_cost = ROUND_POWER_OF_TWO(intra_sse, (xd->bd - 8) * 2);
     }
     intra_cost += qstep_cur_noise;
@@ -261,6 +271,7 @@ static void mode_estimation(
                               mi_row * MI_SIZE, 0, 0, MV_PRECISION_Q3,
                               mi_col * MI_SIZE, mi_row * MI_SIZE, xd, 0);
     if (use_satd) {
+#if CONFIG_AV1_HIGHBITDEPTH
       if (is_cur_buf_hbd(xd)) {
         aom_highbd_subtract_block(bh, bw, src_diff, bw,
                                   xd->cur_buf->y_buffer + mb_y_offset,
@@ -270,11 +281,17 @@ static void mode_estimation(
                            xd->cur_buf->y_buffer + mb_y_offset,
                            xd->cur_buf->y_stride, predictor, bw);
       }
+#else
+      aom_subtract_block(bh, bw, src_diff, bw,
+                         xd->cur_buf->y_buffer + mb_y_offset,
+                         xd->cur_buf->y_stride, predictor, bw);
+#endif
       wht_fwd_txfm(src_diff, bw, coeff, tx_size, is_cur_buf_hbd(xd));
 
       inter_cost = aom_satd(coeff, pix_num);
     } else {
       int64_t inter_sse;
+#if CONFIG_AV1_HIGHBITDEPTH
       if (is_cur_buf_hbd(xd)) {
         inter_sse =
             aom_highbd_sse(xd->cur_buf->y_buffer + mb_y_offset,
@@ -283,6 +300,10 @@ static void mode_estimation(
         inter_sse = aom_sse(xd->cur_buf->y_buffer + mb_y_offset,
                             xd->cur_buf->y_stride, predictor, bw, bw, bh);
       }
+#else
+      inter_sse = aom_sse(xd->cur_buf->y_buffer + mb_y_offset,
+                          xd->cur_buf->y_stride, predictor, bw, bw, bh);
+#endif
       inter_cost = ROUND_POWER_OF_TWO(inter_sse, (xd->bd - 8) * 2);
     }
     inter_cost_weighted = inter_cost + qstep_ref_noise;
@@ -846,6 +867,7 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                                 dst_buf, dst_stride, 0, 0, 0);
 
         if (use_satd) {
+#if CONFIG_AV1_HIGHBITDEPTH
           if (is_cur_buf_hbd(xd)) {
             aom_highbd_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride,
                                       dst_buf, dst_stride, xd->bd);
@@ -853,17 +875,25 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
             aom_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride,
                                dst_buf, dst_stride);
           }
+#else
+          aom_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride, dst_buf,
+                             dst_stride);
+#endif
           wht_fwd_txfm(src_diff, bw, coeff, tx_size, is_cur_buf_hbd(xd));
 
           intra_cost = aom_satd(coeff, pix_num);
         } else {
           int64_t sse;
+#if CONFIG_AV1_HIGHBITDEPTH
           if (is_cur_buf_hbd(xd)) {
             sse = aom_highbd_sse(src_buf, src_stride, dst_buf, dst_stride, bw,
                                  bh);
           } else {
             sse = aom_sse(src_buf, src_stride, dst_buf, dst_stride, bw, bh);
           }
+#else
+          sse = aom_sse(src_buf, src_stride, dst_buf, dst_stride, bw, bh);
+#endif
           intra_cost = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
         }
         if (intra_cost < best_intra_cost) best_intra_cost = intra_cost;
@@ -887,6 +917,7 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
           mi_col * MI_SIZE, mi_row * MI_SIZE, 0, 0, MV_PRECISION_Q3,
           mi_col * MI_SIZE, mi_row * MI_SIZE, xd, 0);
       if (use_satd) {
+#if CONFIG_AV1_HIGHBITDEPTH
         if (is_cur_buf_hbd(xd)) {
           aom_highbd_subtract_block(bh, bw, src_diff, bw,
                                     src->y_buffer + mb_y_offset, src->y_stride,
@@ -895,10 +926,15 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
           aom_subtract_block(bh, bw, src_diff, bw, src->y_buffer + mb_y_offset,
                              src->y_stride, predictor, bw);
         }
+#else
+        aom_subtract_block(bh, bw, src_diff, bw, src->y_buffer + mb_y_offset,
+                           src->y_stride, predictor, bw);
+#endif
         wht_fwd_txfm(src_diff, bw, coeff, tx_size, is_cur_buf_hbd(xd));
         inter_cost = aom_satd(coeff, pix_num);
       } else {
         int64_t sse;
+#if CONFIG_AV1_HIGHBITDEPTH
         if (is_cur_buf_hbd(xd)) {
           sse = aom_highbd_sse(src->y_buffer + mb_y_offset, src->y_stride,
                                predictor, bw, bw, bh);
@@ -906,6 +942,10 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
           sse = aom_sse(src->y_buffer + mb_y_offset, src->y_stride, predictor,
                         bw, bw, bh);
         }
+#else
+        sse = aom_sse(src->y_buffer + mb_y_offset, src->y_stride, predictor, bw,
+                      bw, bh);
+#endif
         inter_cost = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
       }
 

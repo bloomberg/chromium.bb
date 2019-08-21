@@ -1774,6 +1774,27 @@ static int64_t get_sse(const AV1_COMP *cpi, const MACROBLOCK *x) {
   return total_sse;
 }
 
+static int64_t calculate_sse(MACROBLOCKD *const xd,
+                             const struct macroblock_plane *p,
+                             struct macroblockd_plane *pd, const int bw,
+                             const int bh) {
+  int64_t sse = 0;
+  const int shift = xd->bd - 8;
+#if CONFIG_AV1_HIGHBITDEPTH
+  if (is_cur_buf_hbd(xd)) {
+    sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
+                         bw, bh);
+  } else {
+    sse =
+        aom_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride, bw, bh);
+  }
+#else
+  sse = aom_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride, bw, bh);
+#endif
+  sse = ROUND_POWER_OF_TWO(sse, shift * 2);
+  return sse;
+}
+
 static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
                             MACROBLOCK *x, MACROBLOCKD *xd, int plane_from,
                             int plane_to, int mi_row, int mi_col,
@@ -1809,14 +1830,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
     if (x->skip_chroma_rd && plane) continue;
 
-    if (is_cur_buf_hbd(xd)) {
-      sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
-                           pd->dst.stride, bw, bh);
-    } else {
-      sse = aom_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride, bw,
-                    bh);
-    }
-    sse = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
+    sse = calculate_sse(xd, p, pd, bw, bh);
 
     model_rd_from_sse(cpi, x, plane_bsize, plane, sse, bw * bh, &rate, &dist);
 
@@ -2517,17 +2531,8 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   const int dst_stride = pd->dst.stride;
   const uint8_t *const dst = pd->dst.buf;
   const int16_t *const src_diff = p->src_diff;
-  const int shift = (xd->bd - 8);
 
-  int64_t sse;
-  if (is_cur_buf_hbd(xd)) {
-    sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
-                         bw, bh);
-  } else {
-    sse =
-        aom_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride, bw, bh);
-  }
-  sse = ROUND_POWER_OF_TWO(sse, shift * 2);
+  int64_t sse = calculate_sse(xd, p, pd, bw, bh);
   const double sse_norm = (double)sse / num_samples;
 
   const unsigned int sad =
@@ -2731,18 +2736,10 @@ static void model_rd_for_sb_with_dnn(
     if (x->skip_chroma_rd && plane) continue;
 
     const struct macroblock_plane *const p = &x->plane[plane];
-    const int shift = (xd->bd - 8);
     int bw, bh;
     get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL,
                        &bw, &bh);
-    if (is_cur_buf_hbd(xd)) {
-      sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
-                           pd->dst.stride, bw, bh);
-    } else {
-      sse = aom_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride, bw,
-                    bh);
-    }
-    sse = ROUND_POWER_OF_TWO(sse, shift * 2);
+    sse = calculate_sse(xd, p, pd, bw, bh);
 
     model_rd_with_dnn(cpi, x, plane_bsize, plane, sse, bw * bh, &rate, &dist);
 
@@ -2836,17 +2833,9 @@ static void model_rd_for_sb_with_surffit(
 
     int bw, bh;
     const struct macroblock_plane *const p = &x->plane[plane];
-    const int shift = (xd->bd - 8);
     get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL,
                        &bw, &bh);
-    if (is_cur_buf_hbd(xd)) {
-      sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
-                           pd->dst.stride, bw, bh);
-    } else {
-      sse = aom_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride, bw,
-                    bh);
-    }
-    sse = ROUND_POWER_OF_TWO(sse, shift * 2);
+    sse = calculate_sse(xd, p, pd, bw, bh);
 
     model_rd_with_surffit(cpi, x, plane_bsize, plane, sse, bw * bh, &rate,
                           &dist);
@@ -2941,19 +2930,10 @@ static void model_rd_for_sb_with_curvfit(
 
     int bw, bh;
     const struct macroblock_plane *const p = &x->plane[plane];
-    const int shift = (xd->bd - 8);
     get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL,
                        &bw, &bh);
 
-    if (is_cur_buf_hbd(xd)) {
-      sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
-                           pd->dst.stride, bw, bh);
-    } else {
-      sse = aom_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride, bw,
-                    bh);
-    }
-
-    sse = ROUND_POWER_OF_TWO(sse, shift * 2);
+    sse = calculate_sse(xd, p, pd, bw, bh);
     model_rd_with_curvfit(cpi, x, plane_bsize, plane, sse, bw * bh, &rate,
                           &dist);
 
@@ -5932,14 +5912,7 @@ static void model_rd_for_sb_with_fullrdy(
 
     if (x->skip_chroma_rd && plane) continue;
 
-    if (is_cur_buf_hbd(xd)) {
-      sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
-                           pd->dst.stride, bw, bh);
-    } else {
-      sse = aom_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride, bw,
-                    bh);
-    }
-    sse = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
+    sse = calculate_sse(xd, p, pd, bw, bh);
 
     RD_STATS rd_stats;
     if (plane == 0) {
@@ -7510,12 +7483,17 @@ static int64_t pick_wedge(const AV1_COMP *const cpi, const MACROBLOCK *const x,
   const int bd_round = hbd ? (xd->bd - 8) * 2 : 0;
 
   DECLARE_ALIGNED(32, int16_t, residual0[MAX_SB_SQUARE]);  // src - pred0
+#if CONFIG_AV1_HIGHBITDEPTH
   if (hbd) {
     aom_highbd_subtract_block(bh, bw, residual0, bw, src->buf, src->stride,
                               CONVERT_TO_BYTEPTR(p0), bw, xd->bd);
   } else {
     aom_subtract_block(bh, bw, residual0, bw, src->buf, src->stride, p0, bw);
   }
+#else
+  (void)hbd;
+  aom_subtract_block(bh, bw, residual0, bw, src->buf, src->stride, p0, bw);
+#endif
 
   int64_t sign_limit = ((int64_t)aom_sum_squares_i16(residual0, N) -
                         (int64_t)aom_sum_squares_i16(residual1, N)) *
@@ -7694,6 +7672,7 @@ static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
   const int bh = block_size_high[bsize];
   DECLARE_ALIGNED(32, int16_t, residual1[MAX_SB_SQUARE]);  // src - pred1
   DECLARE_ALIGNED(32, int16_t, diff10[MAX_SB_SQUARE]);     // pred1 - pred0
+#if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
     aom_highbd_subtract_block(bh, bw, residual1, bw, src->buf, src->stride,
                               CONVERT_TO_BYTEPTR(p1), bw, xd->bd);
@@ -7703,6 +7682,10 @@ static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
     aom_subtract_block(bh, bw, residual1, bw, src->buf, src->stride, p1, bw);
     aom_subtract_block(bh, bw, diff10, bw, p1, bw, p0, bw);
   }
+#else
+  aom_subtract_block(bh, bw, residual1, bw, src->buf, src->stride, p1, bw);
+  aom_subtract_block(bh, bw, diff10, bw, p1, bw, p0, bw);
+#endif
   int8_t wedge_index = -1;
   int64_t rd =
       pick_wedge_fixed_sign(cpi, x, bsize, residual1, diff10, 0, &wedge_index);
@@ -7756,6 +7739,7 @@ static void get_inter_predictors_masked_compound(
   av1_build_inter_predictors_for_planes_single_buf(
       xd, bsize, 0, 0, mi_row, mi_col, 1, preds1, strides, can_use_previous);
   const struct buf_2d *const src = &x->plane[0].src;
+#if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
     aom_highbd_subtract_block(bh, bw, residual1, bw, src->buf, src->stride,
                               CONVERT_TO_BYTEPTR(*preds1), bw, xd->bd);
@@ -7766,6 +7750,10 @@ static void get_inter_predictors_masked_compound(
                        bw);
     aom_subtract_block(bh, bw, diff10, bw, *preds1, bw, *preds0, bw);
   }
+#else
+  aom_subtract_block(bh, bw, residual1, bw, src->buf, src->stride, *preds1, bw);
+  aom_subtract_block(bh, bw, diff10, bw, *preds1, bw, *preds0, bw);
+#endif
 }
 
 // Takes a backup of rate, distortion and model_rd for future reuse
