@@ -392,11 +392,6 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     if (net::GetValueForKeyInQuery(request.GetURL(), "html", &value)) {
       response->set_content_type("text/html");
       response->set_content(value);
-
-      // The "html" parameter is telling the server what to serve, and the XSS
-      // auditor will complain if its |value| contains JS code. Disable that
-      // protection.
-      response->AddCustomHeader("X-XSS-Protection", "0");
     }
 
     if (net::GetValueForKeyInQuery(request.GetURL(), "file", &value)) {
