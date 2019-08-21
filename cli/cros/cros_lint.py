@@ -158,7 +158,7 @@ def _CpplintFile(path, output_format, debug):
 
 def _PylintFile(path, output_format, debug):
   """Returns result of running pylint on |path|."""
-  pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint-1.5')
+  pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint-1.6')
   pylintrc = _GetPylintrc(path)
   cmd = [pylint, '--rcfile=%s' % pylintrc]
   if output_format != 'default':
