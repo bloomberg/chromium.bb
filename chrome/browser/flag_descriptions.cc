@@ -2144,6 +2144,11 @@ const char kWebXrDescription[] =
     "Enables access to experimental APIs to interact with Virtual Reality (VR) "
     "and Augmented Reality (AR) devices.";
 
+const char kWebXrArModuleName[] = "WebXR AR Module";
+const char kWebXrArModuleDescription[] =
+    "Enables access to Augmented Reality features defined in the WebXR AR "
+    "Module";
+
 const char kWebXrAnchorsName[] = "WebXR Anchors";
 const char kWebXrAnchorsDescription[] =
     "Enables access to anchors via WebXR API.";

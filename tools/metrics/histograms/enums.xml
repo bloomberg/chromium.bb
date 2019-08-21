@@ -34370,6 +34370,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1911316813" label="BlockTabUnders:disabled"/>
   <int value="-1911153473" label="enable-easy-signin"/>
   <int value="-1909983714" label="ExperimentalTabController:disabled"/>
+  <int value="-1909702940" label="WebXRARModule:disabled"/>
   <int value="-1909356390"
       label="OverlayScrollbarFlashAfterAnyScrollUpdate:enabled"/>
   <int value="-1907565048" label="HtmlBaseUsernameDetector:disabled"/>
@@ -35236,6 +35237,7 @@ from previous Chrome versions.
   <int value="-763900417" label="CCTModuleUseIntentExtras:enabled"/>
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
   <int value="-763730918" label="CCTTargetTranslateLanguage:disabled"/>
+  <int value="-763640405" label="WebXRARModule:enabled"/>
   <int value="-762738927" label="LogJsConsoleMessages:enabled"/>
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
   <int value="-759830869" label="enable-tab-discarding"/>
