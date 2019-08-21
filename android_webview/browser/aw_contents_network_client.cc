@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/aw_contents_network_client.h"
 
 #include <map>
 #include <memory>
@@ -13,7 +13,7 @@
 #include "android_webview/browser/network_service/aw_web_resource_response.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native_jni/AwContentsBackgroundThreadClient_jni.h"
-#include "android_webview/native_jni/AwContentsIoThreadClient_jni.h"
+#include "android_webview/native_jni/AwContentsNetworkClient_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
@@ -34,12 +34,12 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 
+using base::LazyInstance;
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
-using base::LazyInstance;
 using content::BrowserThread;
 using content::RenderFrameHost;
 using content::ResourceType;
@@ -52,19 +52,19 @@ namespace android_webview {
 
 namespace {
 
-struct IoThreadClientData {
+struct NetworkClientData {
   bool pending_association;
-  JavaObjectWeakGlobalRef io_thread_client;
+  JavaObjectWeakGlobalRef network_client;
 
-  IoThreadClientData();
+  NetworkClientData();
 };
 
-IoThreadClientData::IoThreadClientData() : pending_association(false) {}
+NetworkClientData::NetworkClientData() : pending_association(false) {}
 
-typedef map<pair<int, int>, IoThreadClientData>
-    RenderFrameHostToIoThreadClientType;
+typedef map<pair<int, int>, NetworkClientData>
+    RenderFrameHostToNetworkClientType;
 
-typedef pair<base::flat_set<RenderFrameHost*>, IoThreadClientData>
+typedef pair<base::flat_set<RenderFrameHost*>, NetworkClientData>
     HostsAndClientDataPair;
 
 // When browser side navigation is enabled, RenderFrameIDs do not have
@@ -73,37 +73,37 @@ typedef pair<base::flat_set<RenderFrameHost*>, IoThreadClientData>
 // to keep track of which RenderFrameHosts are associated with each
 // FrameTreeNodeId, so we know when the last RenderFrameHost is deleted (and
 // therefore the FrameTreeNodeId should be removed).
-typedef map<int, HostsAndClientDataPair> FrameTreeNodeToIoThreadClientType;
+typedef map<int, HostsAndClientDataPair> FrameTreeNodeToNetworkClientType;
 
 static pair<int, int> GetRenderFrameHostIdPair(RenderFrameHost* rfh) {
   return pair<int, int>(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
 }
 
-// RfhToIoThreadClientMap -----------------------------------------------------
-class RfhToIoThreadClientMap {
+// RfhToNetworkClientMap -----------------------------------------------------
+class RfhToNetworkClientMap {
  public:
-  static RfhToIoThreadClientMap* GetInstance();
-  void Set(pair<int, int> rfh_id, const IoThreadClientData& client);
-  bool Get(pair<int, int> rfh_id, IoThreadClientData* client);
+  static RfhToNetworkClientMap* GetInstance();
+  void Set(pair<int, int> rfh_id, const NetworkClientData& client);
+  bool Get(pair<int, int> rfh_id, NetworkClientData* client);
 
-  bool Get(int frame_tree_node_id, IoThreadClientData* client);
+  bool Get(int frame_tree_node_id, NetworkClientData* client);
 
   // Prefer to call these when RenderFrameHost* is available, because they
   // update both maps at the same time.
-  void Set(RenderFrameHost* rfh, const IoThreadClientData& client);
+  void Set(RenderFrameHost* rfh, const NetworkClientData& client);
   void Erase(RenderFrameHost* rfh);
 
  private:
   base::Lock map_lock_;
   // We maintain two maps simultaneously so that we can always get the correct
-  // IoThreadClientData, even when only HostIdPair or FrameTreeNodeId is
+  // NetworkClientData, even when only HostIdPair or FrameTreeNodeId is
   // available.
-  RenderFrameHostToIoThreadClientType rfh_to_io_thread_client_;
-  FrameTreeNodeToIoThreadClientType frame_tree_node_to_io_thread_client_;
+  RenderFrameHostToNetworkClientType rfh_to_network_client_;
+  FrameTreeNodeToNetworkClientType frame_tree_node_to_network_client_;
 };
 
 // static
-LazyInstance<RfhToIoThreadClientMap>::DestructorAtExit g_instance_ =
+LazyInstance<RfhToNetworkClientMap>::DestructorAtExit g_instance_ =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
@@ -111,77 +111,77 @@ LazyInstance<JavaObjectWeakGlobalRef>::DestructorAtExit g_sw_instance_ =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
-RfhToIoThreadClientMap* RfhToIoThreadClientMap::GetInstance() {
+RfhToNetworkClientMap* RfhToNetworkClientMap::GetInstance() {
   return g_instance_.Pointer();
 }
 
-void RfhToIoThreadClientMap::Set(pair<int, int> rfh_id,
-                                 const IoThreadClientData& client) {
+void RfhToNetworkClientMap::Set(pair<int, int> rfh_id,
+                                const NetworkClientData& client) {
   base::AutoLock lock(map_lock_);
-  rfh_to_io_thread_client_[rfh_id] = client;
+  rfh_to_network_client_[rfh_id] = client;
 }
 
-bool RfhToIoThreadClientMap::Get(pair<int, int> rfh_id,
-                                 IoThreadClientData* client) {
+bool RfhToNetworkClientMap::Get(pair<int, int> rfh_id,
+                                NetworkClientData* client) {
   base::AutoLock lock(map_lock_);
-  RenderFrameHostToIoThreadClientType::iterator iterator =
-      rfh_to_io_thread_client_.find(rfh_id);
-  if (iterator == rfh_to_io_thread_client_.end())
+  RenderFrameHostToNetworkClientType::iterator iterator =
+      rfh_to_network_client_.find(rfh_id);
+  if (iterator == rfh_to_network_client_.end())
     return false;
 
   *client = iterator->second;
   return true;
 }
 
-bool RfhToIoThreadClientMap::Get(int frame_tree_node_id,
-                                 IoThreadClientData* client) {
+bool RfhToNetworkClientMap::Get(int frame_tree_node_id,
+                                NetworkClientData* client) {
   base::AutoLock lock(map_lock_);
-  FrameTreeNodeToIoThreadClientType::iterator iterator =
-      frame_tree_node_to_io_thread_client_.find(frame_tree_node_id);
-  if (iterator == frame_tree_node_to_io_thread_client_.end())
+  FrameTreeNodeToNetworkClientType::iterator iterator =
+      frame_tree_node_to_network_client_.find(frame_tree_node_id);
+  if (iterator == frame_tree_node_to_network_client_.end())
     return false;
 
   *client = iterator->second.second;
   return true;
 }
 
-void RfhToIoThreadClientMap::Set(RenderFrameHost* rfh,
-                                 const IoThreadClientData& client) {
+void RfhToNetworkClientMap::Set(RenderFrameHost* rfh,
+                                const NetworkClientData& client) {
   int frame_tree_node_id = rfh->GetFrameTreeNodeId();
   pair<int, int> rfh_id = GetRenderFrameHostIdPair(rfh);
   base::AutoLock lock(map_lock_);
 
-  // If this FrameTreeNodeId already has an associated IoThreadClientData, add
+  // If this FrameTreeNodeId already has an associated NetworkClientData, add
   // this RenderFrameHost to the hosts set (it's harmless to overwrite the
-  // IoThreadClientData). Otherwise, operator[] creates a new map entry and we
+  // NetworkClientData). Otherwise, operator[] creates a new map entry and we
   // add this RenderFrameHost to the hosts set and insert |client| in the pair.
   HostsAndClientDataPair& current_entry =
-      frame_tree_node_to_io_thread_client_[frame_tree_node_id];
+      frame_tree_node_to_network_client_[frame_tree_node_id];
   current_entry.second = client;
   current_entry.first.insert(rfh);
 
   // Always add the entry to the HostIdPair map, since entries are 1:1 with
   // RenderFrameHosts.
-  rfh_to_io_thread_client_[rfh_id] = client;
+  rfh_to_network_client_[rfh_id] = client;
 }
 
-void RfhToIoThreadClientMap::Erase(RenderFrameHost* rfh) {
+void RfhToNetworkClientMap::Erase(RenderFrameHost* rfh) {
   int frame_tree_node_id = rfh->GetFrameTreeNodeId();
   pair<int, int> rfh_id = GetRenderFrameHostIdPair(rfh);
   base::AutoLock lock(map_lock_);
   HostsAndClientDataPair& current_entry =
-      frame_tree_node_to_io_thread_client_[frame_tree_node_id];
+      frame_tree_node_to_network_client_[frame_tree_node_id];
   size_t num_erased = current_entry.first.erase(rfh);
   DCHECK(num_erased == 1);
   // Only remove this entry from the FrameTreeNodeId map if there are no more
   // live RenderFrameHosts.
   if (current_entry.first.empty()) {
-    frame_tree_node_to_io_thread_client_.erase(frame_tree_node_id);
+    frame_tree_node_to_network_client_.erase(frame_tree_node_id);
   }
 
   // Always safe to remove the entry from the HostIdPair map, since entries are
   // 1:1 with RenderFrameHosts.
-  rfh_to_io_thread_client_.erase(rfh_id);
+  rfh_to_network_client_.erase(rfh_id);
 }
 
 // ClientMapEntryUpdater ------------------------------------------------------
@@ -212,14 +212,14 @@ ClientMapEntryUpdater::ClientMapEntryUpdater(JNIEnv* env,
 }
 
 void ClientMapEntryUpdater::RenderFrameCreated(RenderFrameHost* rfh) {
-  IoThreadClientData client_data;
-  client_data.io_thread_client = jdelegate_;
+  NetworkClientData client_data;
+  client_data.network_client = jdelegate_;
   client_data.pending_association = false;
-  RfhToIoThreadClientMap::GetInstance()->Set(rfh, client_data);
+  RfhToNetworkClientMap::GetInstance()->Set(rfh, client_data);
 }
 
 void ClientMapEntryUpdater::RenderFrameDeleted(RenderFrameHost* rfh) {
-  RfhToIoThreadClientMap::GetInstance()->Erase(rfh);
+  RfhToNetworkClientMap::GetInstance()->Erase(rfh);
 }
 
 void ClientMapEntryUpdater::WebContentsDestroyed() {
@@ -228,75 +228,74 @@ void ClientMapEntryUpdater::WebContentsDestroyed() {
 
 }  // namespace
 
-// AwContentsIoThreadClient -----------------------------------------------
+// AwContentsNetworkClient -----------------------------------------------
 
 // static
-std::unique_ptr<AwContentsIoThreadClient> AwContentsIoThreadClient::FromID(
+std::unique_ptr<AwContentsNetworkClient> AwContentsNetworkClient::FromID(
     int render_process_id,
     int render_frame_id) {
   pair<int, int> rfh_id(render_process_id, render_frame_id);
-  IoThreadClientData client_data;
-  if (!RfhToIoThreadClientMap::GetInstance()->Get(rfh_id, &client_data))
-    return std::unique_ptr<AwContentsIoThreadClient>();
+  NetworkClientData client_data;
+  if (!RfhToNetworkClientMap::GetInstance()->Get(rfh_id, &client_data))
+    return nullptr;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_delegate =
-      client_data.io_thread_client.get(env);
+      client_data.network_client.get(env);
   DCHECK(!client_data.pending_association || java_delegate.is_null());
-  return std::unique_ptr<AwContentsIoThreadClient>(new AwContentsIoThreadClient(
-      client_data.pending_association, java_delegate));
+  return std::make_unique<AwContentsNetworkClient>(
+      client_data.pending_association, java_delegate);
 }
 
-std::unique_ptr<AwContentsIoThreadClient> AwContentsIoThreadClient::FromID(
+std::unique_ptr<AwContentsNetworkClient> AwContentsNetworkClient::FromID(
     int frame_tree_node_id) {
-  IoThreadClientData client_data;
-  if (!RfhToIoThreadClientMap::GetInstance()->Get(frame_tree_node_id,
-                                                  &client_data))
-    return std::unique_ptr<AwContentsIoThreadClient>();
+  NetworkClientData client_data;
+  if (!RfhToNetworkClientMap::GetInstance()->Get(frame_tree_node_id,
+                                                 &client_data))
+    return nullptr;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_delegate =
-      client_data.io_thread_client.get(env);
+      client_data.network_client.get(env);
   DCHECK(!client_data.pending_association || java_delegate.is_null());
-  return std::unique_ptr<AwContentsIoThreadClient>(new AwContentsIoThreadClient(
-      client_data.pending_association, java_delegate));
+  return std::make_unique<AwContentsNetworkClient>(
+      client_data.pending_association, java_delegate);
 }
 
 // static
-void AwContentsIoThreadClient::SubFrameCreated(int render_process_id,
-                                               int parent_render_frame_id,
-                                               int child_render_frame_id) {
+void AwContentsNetworkClient::SubFrameCreated(int render_process_id,
+                                              int parent_render_frame_id,
+                                              int child_render_frame_id) {
   pair<int, int> parent_rfh_id(render_process_id, parent_render_frame_id);
   pair<int, int> child_rfh_id(render_process_id, child_render_frame_id);
-  IoThreadClientData client_data;
-  if (!RfhToIoThreadClientMap::GetInstance()->Get(parent_rfh_id,
-                                                  &client_data)) {
+  NetworkClientData client_data;
+  if (!RfhToNetworkClientMap::GetInstance()->Get(parent_rfh_id, &client_data)) {
     NOTREACHED();
     return;
   }
 
-  RfhToIoThreadClientMap::GetInstance()->Set(child_rfh_id, client_data);
+  RfhToNetworkClientMap::GetInstance()->Set(child_rfh_id, client_data);
 }
 
 // static
-void AwContentsIoThreadClient::RegisterPendingContents(
+void AwContentsNetworkClient::RegisterPendingContents(
     WebContents* web_contents) {
-  IoThreadClientData client_data;
+  NetworkClientData client_data;
   client_data.pending_association = true;
-  RfhToIoThreadClientMap::GetInstance()->Set(
+  RfhToNetworkClientMap::GetInstance()->Set(
       GetRenderFrameHostIdPair(web_contents->GetMainFrame()), client_data);
 }
 
 // static
-void AwContentsIoThreadClient::Associate(WebContents* web_contents,
-                                         const JavaRef<jobject>& jclient) {
+void AwContentsNetworkClient::Associate(WebContents* web_contents,
+                                        const JavaRef<jobject>& jclient) {
   JNIEnv* env = AttachCurrentThread();
   // The ClientMapEntryUpdater lifespan is tied to the WebContents.
   new ClientMapEntryUpdater(env, web_contents, jclient.obj());
 }
 
 // static
-void AwContentsIoThreadClient::SetServiceWorkerIoThreadClient(
+void AwContentsNetworkClient::SetServiceWorkerNetworkClient(
     const base::android::JavaRef<jobject>& jclient,
     const base::android::JavaRef<jobject>& browser_context) {
   // TODO: currently there is only one browser context so it is ok to
@@ -307,39 +306,42 @@ void AwContentsIoThreadClient::SetServiceWorkerIoThreadClient(
 }
 
 // static
-std::unique_ptr<AwContentsIoThreadClient>
-AwContentsIoThreadClient::GetServiceWorkerIoThreadClient() {
+std::unique_ptr<AwContentsNetworkClient>
+AwContentsNetworkClient::GetServiceWorkerNetworkClient() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_delegate = g_sw_instance_.Get().get(env);
 
   if (java_delegate.is_null())
-    return std::unique_ptr<AwContentsIoThreadClient>();
+    return nullptr;
 
-  return std::unique_ptr<AwContentsIoThreadClient>(
-      new AwContentsIoThreadClient(false, java_delegate));
+  return std::make_unique<AwContentsNetworkClient>(false, java_delegate);
 }
 
-AwContentsIoThreadClient::AwContentsIoThreadClient(bool pending_association,
-                                                   const JavaRef<jobject>& obj)
-    : pending_association_(pending_association), java_object_(obj) {}
+AwContentsNetworkClient::AwContentsNetworkClient(bool pending_association,
+                                                 const JavaRef<jobject>& obj)
+    : pending_association_(pending_association), java_object_(obj) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
-AwContentsIoThreadClient::~AwContentsIoThreadClient() {
+AwContentsNetworkClient::~AwContentsNetworkClient() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // explict, out-of-line destructor.
 }
 
-bool AwContentsIoThreadClient::PendingAssociation() const {
+bool AwContentsNetworkClient::PendingAssociation() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return pending_association_;
 }
 
-AwContentsIoThreadClient::CacheMode AwContentsIoThreadClient::GetCacheMode()
+AwContentsNetworkClient::CacheMode AwContentsNetworkClient::GetCacheMode()
     const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (java_object_.is_null())
-    return AwContentsIoThreadClient::LOAD_DEFAULT;
+    return AwContentsNetworkClient::LOAD_DEFAULT;
 
   JNIEnv* env = AttachCurrentThread();
-  return static_cast<AwContentsIoThreadClient::CacheMode>(
-      Java_AwContentsIoThreadClient_getCacheMode(env, java_object_));
+  return static_cast<AwContentsNetworkClient::CacheMode>(
+      Java_AwContentsNetworkClient_getCacheMode(env, java_object_));
 }
 
 namespace {
@@ -455,17 +457,17 @@ std::unique_ptr<AwWebResourceResponse> ReturnNull() {
 
 }  // namespace
 
-void AwContentsIoThreadClient::ShouldInterceptRequestAsync(
+void AwContentsNetworkClient::ShouldInterceptRequestAsync(
     AwWebResourceRequest request,
     ShouldInterceptRequestResultCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::OnceCallback<std::unique_ptr<AwWebResourceResponse>()> get_response =
       base::BindOnce(&ReturnNull);
   JNIEnv* env = AttachCurrentThread();
   if (bg_thread_client_object_.is_null() && !java_object_.is_null()) {
     bg_thread_client_object_.Reset(
-        Java_AwContentsIoThreadClient_getBackgroundThreadClient(env,
-                                                                java_object_));
+        Java_AwContentsNetworkClient_getBackgroundThreadClient(env,
+                                                               java_object_));
   }
   if (!bg_thread_client_object_.is_null()) {
     get_response = base::BindOnce(
@@ -477,53 +479,51 @@ void AwContentsIoThreadClient::ShouldInterceptRequestAsync(
                                    std::move(callback));
 }
 
-bool AwContentsIoThreadClient::ShouldBlockContentUrls() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+bool AwContentsNetworkClient::ShouldBlockContentUrls() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (java_object_.is_null())
     return false;
 
   JNIEnv* env = AttachCurrentThread();
-  return Java_AwContentsIoThreadClient_shouldBlockContentUrls(env,
-                                                              java_object_);
+  return Java_AwContentsNetworkClient_shouldBlockContentUrls(env, java_object_);
 }
 
-bool AwContentsIoThreadClient::ShouldBlockFileUrls() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+bool AwContentsNetworkClient::ShouldBlockFileUrls() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (java_object_.is_null())
     return false;
 
   JNIEnv* env = AttachCurrentThread();
-  return Java_AwContentsIoThreadClient_shouldBlockFileUrls(env, java_object_);
+  return Java_AwContentsNetworkClient_shouldBlockFileUrls(env, java_object_);
 }
 
-bool AwContentsIoThreadClient::ShouldAcceptThirdPartyCookies() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+bool AwContentsNetworkClient::ShouldAcceptThirdPartyCookies() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (java_object_.is_null())
     return false;
 
   JNIEnv* env = AttachCurrentThread();
-  return Java_AwContentsIoThreadClient_shouldAcceptThirdPartyCookies(
+  return Java_AwContentsNetworkClient_shouldAcceptThirdPartyCookies(
       env, java_object_);
 }
 
-bool AwContentsIoThreadClient::GetSafeBrowsingEnabled() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+bool AwContentsNetworkClient::GetSafeBrowsingEnabled() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (java_object_.is_null())
     return false;
 
   JNIEnv* env = AttachCurrentThread();
-  return Java_AwContentsIoThreadClient_getSafeBrowsingEnabled(env,
-                                                              java_object_);
+  return Java_AwContentsNetworkClient_getSafeBrowsingEnabled(env, java_object_);
 }
 
-bool AwContentsIoThreadClient::ShouldBlockNetworkLoads() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+bool AwContentsNetworkClient::ShouldBlockNetworkLoads() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (java_object_.is_null())
     return false;
 
   JNIEnv* env = AttachCurrentThread();
-  return Java_AwContentsIoThreadClient_shouldBlockNetworkLoads(env,
-                                                               java_object_);
+  return Java_AwContentsNetworkClient_shouldBlockNetworkLoads(env,
+                                                              java_object_);
 }
 
 }  // namespace android_webview

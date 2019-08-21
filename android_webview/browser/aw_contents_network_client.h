@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_IO_THREAD_CLIENT_H_
-#define ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_IO_THREAD_CLIENT_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_NETWORK_CLIENT_H_
+#define ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_NETWORK_CLIENT_H_
 
 #include <stdint.h>
 
@@ -29,8 +29,10 @@ namespace android_webview {
 class AwWebResourceResponse;
 struct AwWebResourceRequest;
 
-// This class provides a means of calling Java methods on an instance that has
-// a 1:1 relationship with a WebContents instance directly from the IO thread.
+// This class provides a means of calling Java methods on an instance that has a
+// 1:1 relationship with a WebContents instance directly from any thread. Each
+// instance of this native class should only be used on a single thread, but new
+// instances can be created to use on other threads.
 //
 // Specifically this is used to associate URLRequests with the WebContents that
 // the URLRequest is made for.
@@ -40,11 +42,11 @@ struct AwWebResourceRequest;
 // obtain a new instance of the class rather than holding on to one for
 // prolonged periods of time (see note for more details).
 //
-// Note: The native AwContentsIoThreadClient instance has a Global ref to
-// the Java object. By keeping the native AwContentsIoThreadClient
+// Note: The native AwContentsNetworkClient instance has a Global ref to
+// the Java object. By keeping the native AwContentsNetworkClient
 // instance alive you're also prolonging the lifetime of the Java instance, so
-// don't keep a AwContentsIoThreadClient if you don't need to.
-class AwContentsIoThreadClient {
+// don't keep a AwContentsNetworkClient if you don't need to.
+class AwContentsNetworkClient {
  public:
   // Corresponds to WebSettings cache mode constants.
   enum CacheMode {
@@ -59,56 +61,54 @@ class AwContentsIoThreadClient {
   static void RegisterPendingContents(content::WebContents* web_contents);
 
   // Associates the |jclient| instance (which must implement the
-  // AwContentsIoThreadClient Java interface) with the |web_contents|.
+  // AwContentsNetworkClient Java interface) with the |web_contents|.
   // This should be called at most once per |web_contents|.
   static void Associate(content::WebContents* web_contents,
                         const base::android::JavaRef<jobject>& jclient);
 
   // Sets the |jclient| java instance to which service worker related
   // callbacks should be delegated.
-  static void SetServiceWorkerIoThreadClient(
+  static void SetServiceWorkerNetworkClient(
       const base::android::JavaRef<jobject>& jclient,
       const base::android::JavaRef<jobject>& browser_context);
 
   // Either |pending_associate| is true or |jclient| holds a non-null
   // Java object.
-  AwContentsIoThreadClient(bool pending_associate,
-                           const base::android::JavaRef<jobject>& jclient);
-  ~AwContentsIoThreadClient();
+  AwContentsNetworkClient(bool pending_associate,
+                          const base::android::JavaRef<jobject>& jclient);
+  ~AwContentsNetworkClient();
 
-  // Implementation of AwContentsIoThreadClient.
+  // Implementation of AwContentsNetworkClient.
 
   // Returns whether this is a new pop up that is still waiting for association
   // with the java counter part.
   bool PendingAssociation() const;
 
   // Retrieve CacheMode setting value of this AwContents.
-  // This method is called on the IO thread only.
   CacheMode GetCacheMode() const;
 
-  // This will attempt to fetch the AwContentsIoThreadClient for the given
+  // This will attempt to fetch the AwContentsNetworkClient for the given
   // |render_process_id|, |render_frame_id| pair.
   // This method can be called from any thread.
   // A null std::unique_ptr is a valid return value.
-  static std::unique_ptr<AwContentsIoThreadClient> FromID(int render_process_id,
-                                                          int render_frame_id);
+  static std::unique_ptr<AwContentsNetworkClient> FromID(int render_process_id,
+                                                         int render_frame_id);
 
   // This map is useful when browser side navigations are enabled as
   // render_frame_ids will not be valid anymore for some of the navigations.
-  static std::unique_ptr<AwContentsIoThreadClient> FromID(
+  static std::unique_ptr<AwContentsNetworkClient> FromID(
       int frame_tree_node_id);
 
   // Returns the global thread client for service worker related callbacks.
   // A null std::unique_ptr is a valid return value.
-  static std::unique_ptr<AwContentsIoThreadClient>
-  GetServiceWorkerIoThreadClient();
+  static std::unique_ptr<AwContentsNetworkClient>
+  GetServiceWorkerNetworkClient();
 
-  // Called on the IO thread when a subframe is created.
+  // Called on the UI thread when a subframe is created.
   static void SubFrameCreated(int render_process_id,
                               int parent_render_frame_id,
                               int child_render_frame_id);
 
-  // This method is called on the IO thread only.
   using ShouldInterceptRequestResultCallback =
       base::OnceCallback<void(std::unique_ptr<AwWebResourceResponse>)>;
   void ShouldInterceptRequestAsync(
@@ -116,15 +116,12 @@ class AwContentsIoThreadClient {
       ShouldInterceptRequestResultCallback callback);
 
   // Retrieve the AllowContentAccess setting value of this AwContents.
-  // This method is called on the IO thread only.
   bool ShouldBlockContentUrls() const;
 
   // Retrieve the AllowFileAccess setting value of this AwContents.
-  // This method is called on the IO thread only.
   bool ShouldBlockFileUrls() const;
 
   // Retrieve the BlockNetworkLoads setting value of this AwContents.
-  // This method is called on the IO thread only.
   bool ShouldBlockNetworkLoads() const;
 
   // Retrieve the AcceptThirdPartyCookies setting value of this AwContents.
@@ -140,9 +137,11 @@ class AwContentsIoThreadClient {
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_ =
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
 
-  DISALLOW_COPY_AND_ASSIGN(AwContentsIoThreadClient);
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(AwContentsNetworkClient);
 };
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_IO_THREAD_CLIENT_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_NETWORK_CLIENT_H_
