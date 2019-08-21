@@ -453,12 +453,22 @@ void AccessibilityControllerImpl::SetAutoclickEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
+bool AccessibilityControllerImpl::IsAutoclickSettingVisibleInTray() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityAutoclickEnabled);
+}
+
 void AccessibilityControllerImpl::SetCaretHighlightEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(prefs::kAccessibilityCaretHighlightEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityControllerImpl::IsCaretHighlightSettingVisibleInTray() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityCaretHighlightEnabled);
 }
 
 void AccessibilityControllerImpl::SetCursorHighlightEnabled(bool enabled) {
@@ -469,7 +479,7 @@ void AccessibilityControllerImpl::SetCursorHighlightEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityControllerImpl::GetTrayVisiblityOfCursorHighlightSetting() {
+bool AccessibilityControllerImpl::IsCursorHighlightSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
       prefs::kAccessibilityCursorHighlightEnabled);
 }
@@ -499,7 +509,7 @@ void AccessibilityControllerImpl::SetDictationEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityControllerImpl::GetTrayVisiblityOfDictationSetting() {
+bool AccessibilityControllerImpl::IsDictationSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
       prefs::kAccessibilityDictationEnabled);
 }
@@ -512,12 +522,45 @@ void AccessibilityControllerImpl::SetFocusHighlightEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
+bool AccessibilityControllerImpl::IsFocusHighlightSettingVisibleInTray() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityFocusHighlightEnabled);
+}
+
 void AccessibilityControllerImpl::SetFullscreenMagnifierEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityControllerImpl::IsFullscreenMagnifierEnabledForTesting() {
+  return active_user_prefs_ && active_user_prefs_->GetBoolean(
+                                   prefs::kAccessibilityScreenMagnifierEnabled);
+}
+
+bool AccessibilityControllerImpl::IsFullScreenMagnifierSettingVisibleInTray() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityScreenMagnifierEnabled);
+}
+
+void AccessibilityControllerImpl::SetDockedMagnifierEnabledForTesting(
+    bool enabled) {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(prefs::kDockedMagnifierEnabled, enabled);
+  active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityControllerImpl::IsDockedMagnifierEnabledForTesting() {
+  return active_user_prefs_ &&
+         active_user_prefs_->GetBoolean(prefs::kDockedMagnifierEnabled);
+}
+
+bool AccessibilityControllerImpl::IsDockedMagnifierSettingVisibleInTray() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kDockedMagnifierEnabled);
 }
 
 void AccessibilityControllerImpl::SetHighContrastEnabled(bool enabled) {
@@ -528,7 +571,7 @@ void AccessibilityControllerImpl::SetHighContrastEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityControllerImpl::GetTrayVisiblityOfHighContrastSetting() {
+bool AccessibilityControllerImpl::IsHighContrastSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
       prefs::kAccessibilityHighContrastEnabled);
 }
@@ -541,7 +584,7 @@ void AccessibilityControllerImpl::SetLargeCursorEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityControllerImpl::GetTrayVisiblityOfLargeCursorSetting() {
+bool AccessibilityControllerImpl::IsLargeCursorSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
       prefs::kAccessibilityLargeCursorEnabled);
 }
@@ -554,7 +597,7 @@ void AccessibilityControllerImpl::SetMonoAudioEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityControllerImpl::GetTrayVisiblityOfMonoAudioSetting() {
+bool AccessibilityControllerImpl::IsMonoAudioSettingVisibleInTray() {
   return IsAccessibilityFeatureVisibleInTrayMenu(
       prefs::kAccessibilityMonoAudioEnabled);
 }
@@ -579,12 +622,22 @@ void AccessibilityControllerImpl::SetSpokenFeedbackEnabled(
   ShowAccessibilityNotification(type);
 }
 
+bool AccessibilityControllerImpl::IsSpokenFeedbackSettingVisibleInTray() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilitySpokenFeedbackEnabled);
+}
+
 void AccessibilityControllerImpl::SetSelectToSpeakEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(prefs::kAccessibilitySelectToSpeakEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityControllerImpl::IsSelectToSpeakSettingVisibleInTray() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilitySelectToSpeakEnabled);
 }
 
 void AccessibilityControllerImpl::RequestSelectToSpeakStateChange() {
@@ -623,6 +676,11 @@ void AccessibilityControllerImpl::SetSwitchAccessEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
+bool AccessibilityControllerImpl::IsSwitchAccessSettingVisibleInTray() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilitySwitchAccessEnabled);
+}
+
 void AccessibilityControllerImpl::SetSwitchAccessIgnoreVirtualKeyEvent(
     bool should_ignore) {
   switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);
@@ -647,12 +705,22 @@ void AccessibilityControllerImpl::SetStickyKeysEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
+bool AccessibilityControllerImpl::IsStickyKeysSettingVisibleInTray() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityStickyKeysEnabled);
+}
+
 void AccessibilityControllerImpl::SetVirtualKeyboardEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityControllerImpl::IsVirtualKeyboardSettingVisibleInTray() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityVirtualKeyboardEnabled);
 }
 
 void AccessibilityControllerImpl::TriggerAccessibilityAlert(

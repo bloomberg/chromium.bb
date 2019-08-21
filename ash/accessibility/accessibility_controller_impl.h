@@ -75,6 +75,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   void SetAutoclickEnabled(bool enabled);
   bool autoclick_enabled() const { return autoclick_enabled_; }
+  bool IsAutoclickSettingVisibleInTray();
+
   void SetAutoclickEventType(AutoclickEventType event_type);
   AutoclickEventType GetAutoclickEventType();
   void SetAutoclickMenuPosition(AutoclickMenuPosition position);
@@ -88,67 +90,65 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   void SetCaretHighlightEnabled(bool enabled);
   bool caret_highlight_enabled() const { return caret_highlight_enabled_; }
+  bool IsCaretHighlightSettingVisibleInTray();
 
   void SetCursorHighlightEnabled(bool enabled);
   bool cursor_highlight_enabled() const { return cursor_highlight_enabled_; }
-  // Returns true if the cursor highlight is being controlled by a policy
-  // which enforces turning it on or its not being controlled by any type of
-  // policy and false otherwise.
-  bool GetTrayVisiblityOfCursorHighlightSetting();
+  bool IsCursorHighlightSettingVisibleInTray();
 
   void SetDictationEnabled(bool enabled);
   bool dictation_enabled() const { return dictation_enabled_; }
-  // Returns true if the dictation is being controlled by a policy which
-  // enforces turning it on or its not being controlled by any type of policy
-  // and false otherwise.
-  bool GetTrayVisiblityOfDictationSetting();
+  bool IsDictationSettingVisibleInTray();
 
   void SetFocusHighlightEnabled(bool enabled);
   bool focus_highlight_enabled() const { return focus_highlight_enabled_; }
+  bool IsFocusHighlightSettingVisibleInTray();
 
   void SetFullscreenMagnifierEnabled(bool enabled);
+  bool IsFullscreenMagnifierEnabledForTesting();
+  bool IsFullScreenMagnifierSettingVisibleInTray();
+
+  void SetDockedMagnifierEnabledForTesting(bool enabled);
+  bool IsDockedMagnifierEnabledForTesting();
+  bool IsDockedMagnifierSettingVisibleInTray();
 
   void SetHighContrastEnabled(bool enabled);
   bool high_contrast_enabled() const { return high_contrast_enabled_; }
-  // Returns true if the high contrast is being controlled by a policy which
-  // enforces turning it on or its not being controlled by any type of policy
-  // and false otherwise.
-  bool GetTrayVisiblityOfHighContrastSetting();
+  bool IsHighContrastSettingVisibleInTray();
 
   void SetLargeCursorEnabled(bool enabled);
   bool large_cursor_enabled() const { return large_cursor_enabled_; }
-  // Returns true if the large cursor is being controlled by a policy which
-  // enforces turning it on or its not being controlled by any type of policy
-  // and false otherwise.
-  bool GetTrayVisiblityOfLargeCursorSetting();
+  bool IsLargeCursorSettingVisibleInTray();
 
   void SetMonoAudioEnabled(bool enabled);
   bool mono_audio_enabled() const { return mono_audio_enabled_; }
-  // Returns true if the mono audio is being controlled by a policy which
-  // enforces turning it on or its not being controlled by any type of policy
-  // and false otherwise.
-  bool GetTrayVisiblityOfMonoAudioSetting();
+  bool IsMonoAudioSettingVisibleInTray();
 
   void SetSpokenFeedbackEnabled(bool enabled,
                                 AccessibilityNotificationVisibility notify);
   bool spoken_feedback_enabled() const { return spoken_feedback_enabled_; }
+  bool IsSpokenFeedbackSettingVisibleInTray();
 
   void SetSelectToSpeakEnabled(bool enabled);
   bool select_to_speak_enabled() const { return select_to_speak_enabled_; }
+  bool IsSelectToSpeakSettingVisibleInTray();
 
   void RequestSelectToSpeakStateChange();
   SelectToSpeakState GetSelectToSpeakState() const;
 
   void SetStickyKeysEnabled(bool enabled);
   bool sticky_keys_enabled() const { return sticky_keys_enabled_; }
+  bool IsStickyKeysSettingVisibleInTray();
 
   void SetSwitchAccessEnabled(bool enabled);
   bool switch_access_enabled() const { return switch_access_enabled_; }
+  bool IsSwitchAccessSettingVisibleInTray();
 
   void SetSwitchAccessIgnoreVirtualKeyEvent(bool should_ignore);
 
   void SetVirtualKeyboardEnabled(bool enabled);
   bool virtual_keyboard_enabled() const { return virtual_keyboard_enabled_; }
+  bool IsVirtualKeyboardSettingVisibleInTray();
 
   bool dictation_active() const { return dictation_active_; }
 
