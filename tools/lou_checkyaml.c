@@ -1023,21 +1023,21 @@ main(int argc, char *argv[]) {
 	}
 	yaml_event_delete(&event);
 
-	int has_next;
-	has_next = yaml_parser_parse(&parser, &event);
-
-	if (has_next && event.type == YAML_SCALAR_EVENT &&
-			!strcmp((const char *)event.data.scalar.value, "display")) {
-		display_table = read_table_value(&parser, event.start_mark.line + 1);
-		yaml_event_delete(&event);
-		has_next = yaml_parser_parse(&parser, &event);
-	}
-
-	if (!has_next) simple_error("table expected", &parser, &event);
+	if (!yaml_parser_parse(&parser, &event))
+		simple_error("table expected", &parser, &event);
 
 	int MAXTABLES = 150;
 	char *tables[MAXTABLES + 1];
-	while ((tables[0] = read_table(&event, &parser))) {
+	while (1) {
+		if (event.type == YAML_SCALAR_EVENT &&
+				!strcmp((const char *)event.data.scalar.value, "display")) {
+			display_table = read_table_value(&parser, event.start_mark.line + 1);
+			yaml_event_delete(&event);
+			if (!yaml_parser_parse(&parser, &event))
+				simple_error("table expected", &parser, &event);
+		}
+
+		if (!(tables[0] = read_table(&event, &parser))) break;
 		yaml_event_delete(&event);
 		int k = 1;
 		while (1) {
