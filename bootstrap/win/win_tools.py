@@ -344,7 +344,6 @@ def main(argv):
   # Re-evaluate and regenerate our root templated files.
   for src_name, dst_name in (
       ('git-bash.template.sh', 'git-bash'),
-      ('pylint.new.bat', 'pylint.bat'),
       (python_bat_template, 'python.bat'),
       (python3_bat_template, 'python3.bat'),
       ):
