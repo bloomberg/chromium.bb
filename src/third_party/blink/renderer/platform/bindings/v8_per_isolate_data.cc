@@ -99,6 +99,16 @@ V8PerIsolateData::V8PerIsolateData(
   GetIsolate()->AddMicrotasksCompletedCallback(&MicrotasksCompletedCallback);
   if (IsMainThread())
     g_main_thread_per_isolate_data = this;
+
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()) {
+    isolate_holder_.heap_tracer()->AddHeapTracer(unified_heap_controller_.get(),
+                                                 gin::kEmbedderBlink);
+  }
+  else {
+    isolate_holder_.heap_tracer()->AddHeapTracer(script_wrappable_visitor_.get(),
+                                                 gin::kEmbedderBlink);
+
+  }
 }
 
 // This constructor is used for creating a V8 context snapshot. It must run on
@@ -117,11 +127,25 @@ V8PerIsolateData::V8PerIsolateData()
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
       is_reporting_exception_(false),
+      script_wrappable_visitor_(
+          new ScriptWrappableMarkingVisitor(ThreadState::Current())),
+      unified_heap_controller_(
+          new UnifiedHeapController(ThreadState::Current())),
       runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
   CHECK(IsMainThread());
 
   // SnapshotCreator enters the isolate, so we don't call Isolate::Enter() here.
   g_main_thread_per_isolate_data = this;
+
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()) {
+    isolate_holder_.heap_tracer()->AddHeapTracer(unified_heap_controller_.get(),
+                                                 gin::kEmbedderBlink);
+  }
+  else {
+    isolate_holder_.heap_tracer()->AddHeapTracer(script_wrappable_visitor_.get(),
+                                                 gin::kEmbedderBlink);
+
+  }
 }
 
 V8PerIsolateData::~V8PerIsolateData() = default;

@@ -78,6 +78,7 @@
 // feature 26
 // feature 27
 // feature 28
+#define BLPWTK2_FEATURE_MULTIHEAPTRACER
 // feature 29
 // feature 30
 // feature 31
