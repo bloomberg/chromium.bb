@@ -229,7 +229,11 @@ SBOX_TESTS_COMMAND int CheckPolicy(int argc, wchar_t** argv) {
         return SBOX_TEST_NOT_FOUND;
       }
       if (!policy.DisallowWin32kSystemCalls)
-        return SBOX_TEST_FAILED;
+        return SBOX_TEST_FIRST_ERROR;
+
+      // Check if we can call a Win32k API. Fail if it succeeds.
+      if (::GetDC(nullptr))
+        return SBOX_TEST_SECOND_ERROR;
 
       break;
     }
