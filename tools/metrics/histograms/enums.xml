@@ -4683,6 +4683,11 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Exit"/>
 </enum>
 
+<enum name="BackgroundSyncFiredEvents">
+  <int value="0" label="No events fired"/>
+  <int value="1" label="Some events fired"/>
+</enum>
+
 <enum name="BackgroundSyncResultPattern">
   <int value="0" label="Success Foreground"/>
   <int value="1" label="Success Background"/>
