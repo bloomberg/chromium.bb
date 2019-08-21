@@ -98,6 +98,7 @@ crbug.com/951453 [ Linux ] external/wpt/html/user-activation/activation-transfer
 
 # Sheriff 2019-08-21
 crbug.com/996235 [ Linux ] media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Leak ]
+crbug.com/996235 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Leak ]
 
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
