@@ -552,6 +552,43 @@ void ProcessHostImpl::setPacUrl(const std::string& url) {
 
 
 // patch section: spellcheck
+void ProcessHostImpl::enableSpellCheck(bool enabled)
+{
+    d_impl->context().enableSpellCheck(enabled);
+}
+
+void ProcessHostImpl::setLanguages(const std::vector<std::string>& languages)
+{
+    std::vector<StringRef> languageList;
+
+    for (auto& lang : languages) {
+        languageList.push_back(StringRef(lang));
+    }
+
+    d_impl->context().setLanguages(languageList.data(), languageList.size());
+}
+
+void ProcessHostImpl::addCustomWords(const std::vector<std::string>& words)
+{
+    std::vector<StringRef> wordList;
+
+    for (auto& word : words) {
+        wordList.push_back(StringRef(word));
+    }
+
+    d_impl->context().addCustomWords(wordList.data(), wordList.size());
+}
+
+void ProcessHostImpl::removeCustomWords(const std::vector<std::string>& words)
+{
+    std::vector<StringRef> wordList;
+
+    for (auto& word : words) {
+        wordList.push_back(StringRef(word));
+    }
+
+    d_impl->context().removeCustomWords(wordList.data(), wordList.size());
+}
 
 
 // patch section: printing

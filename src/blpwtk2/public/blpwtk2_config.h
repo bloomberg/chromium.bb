@@ -50,6 +50,7 @@
 // feature 3
 #define BLPWTK2_FEATURE_CRTHANDLER
 // feature 4
+#define BLPWTK2_FEATURE_SPELLCHECK
 // feature 5
 #define BLPWTK2_FEATURE_DEVTOOLSINTEGRATION
 // feature 6
