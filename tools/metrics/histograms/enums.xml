@@ -28121,6 +28121,11 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Both tokens had a gesture"/>
 </enum>
 
+<enum name="GestureNavigationDirection">
+  <int value="0" label="Gesture navigation back"/>
+  <int value="1" label="Gesture navigation forward"/>
+</enum>
+
 <enum name="GesturePredictionResult">
   <int value="0" label="Gesture occured and was predicted"/>
   <int value="1" label="Gesture occured but was not predicted"/>
