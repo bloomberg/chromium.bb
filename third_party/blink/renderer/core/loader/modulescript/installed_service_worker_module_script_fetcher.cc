@@ -69,8 +69,15 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
                               script_data->CreateOriginTrialTokens().get());
   }
 
+  // TODO(sasebree). Figure out how to get the correct mime type for the
+  // ModuleScriptCreationParams here. Hard-coding application/javascript will
+  // cause JSON modules to break for service workers. We need to store the mime
+  // type of the service worker scripts in ServiceWorkerStorage, and pass it up
+  // to here via InstalledScriptManager.
   ModuleScriptCreationParams params(
-      fetch_params.Url(), ParkableString(script_data->TakeSourceText().Impl()),
+      fetch_params.Url(),
+      ModuleScriptCreationParams::ModuleType::kJavaScriptModule,
+      ParkableString(script_data->TakeSourceText().Impl()),
       nullptr /* cache_handler */,
       fetch_params.GetResourceRequest().GetCredentialsMode());
   client->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());

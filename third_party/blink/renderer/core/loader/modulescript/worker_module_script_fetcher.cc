@@ -58,7 +58,9 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
 
   ScriptResource* script_resource = ToScriptResource(resource);
   HeapVector<Member<ConsoleMessage>> error_messages;
-  if (!WasModuleLoadSuccessful(script_resource, &error_messages)) {
+  ModuleScriptCreationParams::ModuleType module_type;
+  if (!WasModuleLoadSuccessful(script_resource, &error_messages,
+                               &module_type)) {
     client_->NotifyFetchFinished(base::nullopt, error_messages);
     return;
   }
@@ -128,7 +130,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
   }
 
   ModuleScriptCreationParams params(
-      script_resource->GetResponse().CurrentRequestUrl(),
+      script_resource->GetResponse().CurrentRequestUrl(), module_type,
       script_resource->SourceText(), script_resource->CacheHandler(),
       script_resource->GetResourceRequest().GetCredentialsMode());
 
