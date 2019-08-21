@@ -100,6 +100,8 @@ jumbo_static_library("renderer") {
     "sandbox_status_extension_android.h",
     "security_interstitials/security_interstitial_page_controller.cc",
     "security_interstitials/security_interstitial_page_controller.h",
+    "subresource_redirect/subresource_redirect_experiments.cc",
+    "subresource_redirect/subresource_redirect_experiments.h",
     "subresource_redirect/subresource_redirect_params.cc",
     "subresource_redirect/subresource_redirect_params.h",
     "subresource_redirect/subresource_redirect_url_loader_throttle.cc",
