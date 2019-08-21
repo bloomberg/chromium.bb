@@ -2214,7 +2214,6 @@ TEST_F(ViewTest, HandleAccelerator) {
   child_view->Reset();
   child_view->AddAccelerator(return_accelerator);
   EXPECT_EQ(child_view->accelerator_count_map_[return_accelerator], 0);
-  view->AddChildView(child_view);
   Widget* child_widget = new Widget;
   Widget::InitParams child_params =
       CreateParams(Widget::InitParams::TYPE_CONTROL);
@@ -4321,6 +4320,7 @@ TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
                                v2->layer()));
 
   // Reparent |v2|.
+  v1->RemoveChildView(v2);
   content_view->AddChildView(v2);
   delete v1;
   v1 = nullptr;
@@ -4449,6 +4449,7 @@ TEST_F(ViewLayerTest, VisibilityChildLayers) {
   EXPECT_TRUE(ViewAndLayerTreeAreConsistent(v1, v1->layer()));
 
   // Reparent |v3| to |v1|.
+  v2->RemoveChildView(v3);
   v1->AddChildView(v3);
   EXPECT_TRUE(v1->layer()->IsDrawn());
   EXPECT_TRUE(v4->layer()->IsDrawn());
@@ -5506,6 +5507,7 @@ TEST_F(ViewObserverTest, ViewParentChanged) {
   reset();
 
   // Removed from parent1, added to parent2
+  parent1->RemoveChildView(child_view.get());
   parent2->AddChildView(child_view.get());
   EXPECT_EQ(1, child_view_removed_times());
   EXPECT_EQ(1, child_view_added_times());
