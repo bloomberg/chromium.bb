@@ -43269,6 +43269,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Chrome process launch failed"/>
 </enum>
 
+<enum name="NotificationSchedulerUserActionType">
+  <int value="0" label="Click"/>
+  <int value="1" label="Button Click"/>
+  <int value="2" label="Dismiss"/>
+</enum>
+
 <enum name="NotifierType">
   <int value="0" label="Application"/>
   <int value="1" label="Arc++"/>
