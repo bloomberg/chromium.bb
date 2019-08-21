@@ -420,6 +420,8 @@ crbug.com/907599 [ mac nvidia debug ] conformance/textures/video/tex-2d-rgb-rgb-
 crbug.com/870856 [ mac amd ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
 crbug.com/870856 [ mac amd ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
 
+crbug.com/angleproject/3701 [ mac amd ] conformance2/textures/canvas/tex-2d-rg8-rg-unsigned_byte.html [ RetryOnFailure ]
+
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_lines.html [ Failure ]
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_points.html [ Failure ]
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_triangles.html [ Failure ]
