@@ -24430,6 +24430,7 @@ Called by update_net_error_codes.py.-->
   <int value="62" label="ClientHintUAPlatform"/>
   <int value="63" label="ClientHintViewportWidth"/>
   <int value="64" label="ClientHintWidth"/>
+  <int value="65" label="DocumentAccess"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
