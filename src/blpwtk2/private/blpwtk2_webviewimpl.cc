@@ -1084,7 +1084,7 @@ void WebViewImpl::OnWebContentsLostFocus(content::RenderWidgetHost*)
 // patch section: gpu
 void WebViewImpl::OnCompositorGpuErrorMessage(const std::string& message) {
   d_renderViewHost->GetMainFrame()->AddMessageToConsole(
-      content::CONSOLE_MESSAGE_LEVEL_ERROR, 
+      blink::mojom::ConsoleMessageLevel::kError, 
       "Gpu compositing error: " + message);
 }
 
