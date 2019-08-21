@@ -85,8 +85,4 @@ specific_include_rules = {
     "ukm_time_aggregator_test.cc" : [
         "+components/ukm/test_ukm_recorder.h"
     ],
-    "data_resource_helper.cc" : [
-        "+third_party/zlib/google/compression_utils.h",
-        "+ui/base/resource",
-    ],
 }
