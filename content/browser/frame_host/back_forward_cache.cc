@@ -97,7 +97,13 @@ bool CanStoreRenderFrameHost(RenderFrameHostImpl* rfh) {
   if (is_loading)
     return false;
 
-  // TODO(lowell): Check subframe for disallowed features.
+  // Don't cache the page if it uses any disallowed features.
+  // TODO(lowell): Handle races involving scheduler_tracked_features.
+  // One solution could be to listen for changes to scheduler_tracked_features
+  // and if we see a frame in bfcache starting to use something forbidden, evict
+  // it from the bfcache.
+  if (kDisallowedFeatures & rfh->scheduler_tracked_features())
+    return false;
 
   for (size_t i = 0; i < rfh->child_count(); i++) {
     if (!CanStoreRenderFrameHost(rfh->child_at(i)->current_frame_host())) {
@@ -127,14 +133,6 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   // TODO(crbug.com/989379): Consider also checking whether any subframes
   //                         have requested an media stream.
   if (rfh->was_granted_media_access())
-    return false;
-
-  // Don't enable BackForwardCache if the document has any disallowed features.
-  // TODO(lowell): Handle races involving scheduler_tracked_features.
-  // One solution could be to listen for changes to scheduler_tracked_features
-  // and if we see a frame in bfcache starting to use something forbidden, evict
-  // it from the bfcache.
-  if (kDisallowedFeatures & rfh->scheduler_tracked_features())
     return false;
 
   // Two pages in the same BrowsingInstance can script each other. When a page
