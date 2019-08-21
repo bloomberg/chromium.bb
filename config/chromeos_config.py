@@ -2230,11 +2230,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty-pi-arc',
       'bob',
       'capri',
+      'capri-zfpga',
       'caroline',
       'caroline-arcnext',
       'cave',
       'chell',
       'cheza',
+      'cobblepot',
       'cyan',
       'edgar',
       'elm',
@@ -2261,6 +2263,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu-gpu',
       'lakitu-st',
       'lasilla-ground',
+      'littlejoe',
       'mistral',
       'monroe',
       'nami',
@@ -2272,6 +2275,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'octopus',
       'rammus',
       'reef',
+      'romer',
       'sarien',
       'samus',
       'samus-kernelnext',
@@ -2331,14 +2335,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'atlas', # crbug.com/994783
-      'capri-zfpga',  # crbug.com/995178
-      'cobblepot',  # crbug.com/995178
       'coral', # crbug.com/995386
       'fizz-moblab', # crbug.com/995170
-      'littlejoe',  # crbug.com/995178
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'grunt', # crbug.com/984614
-      'romer',  # crbug.com/995178
   ])
 
 
