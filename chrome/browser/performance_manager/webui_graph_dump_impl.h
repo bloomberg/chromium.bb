@@ -47,8 +47,12 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
   // Ignored.
   void OnFrameLifecycleStateChanged(const FrameNode* frame_node) override {}
   void OnURLChanged(const FrameNode* frame_node) override;
+  // Ignored.
+  void OnIsAdFrameChanged(const FrameNode* frame_node) override {}
   void OnNonPersistentNotificationCreated(
       const FrameNode* frame_node) override {}  // Ignored.
+  // Ignored.
+  void OnPriorityAndReasonChanged(const FrameNode* frame_node) override {}
 
   // PageNodeObserver implementation:
   void OnPageNodeAdded(const PageNode* page_node) override;
