@@ -748,13 +748,12 @@ int EXPORT_CALL
 _lou_extParseDots(const char *inString, widechar *outString);
 
 int EXPORT_CALL
-_lou_translateWithTracing(const char *tableList, const widechar *inbuf, int *inlen,
-		widechar *outbuf, int *outlen, formtype *typeform, char *spacing, int *outputPos,
-		int *inputPos, int *cursorPos, int mode, const TranslationTableRule **rules,
-		int *rulesLen);
+_lou_translate(const char *tableList, const widechar *inbuf, int *inlen, widechar *outbuf,
+		int *outlen, formtype *typeform, char *spacing, int *outputPos, int *inputPos,
+		int *cursorPos, int mode, const TranslationTableRule **rules, int *rulesLen);
 
 int EXPORT_CALL
-_lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int *inlen,
+_lou_backTranslate(const char *tableList, const widechar *inbuf, int *inlen,
 		widechar *outbuf, int *outlen, formtype *typeform, char *spacing, int *outputPos,
 		int *inputPos, int *cursorPos, int mode, const TranslationTableRule **rules,
 		int *rulesLen);

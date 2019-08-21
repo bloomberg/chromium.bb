@@ -140,12 +140,12 @@ int EXPORT_CALL
 lou_backTranslate(const char *tableList, const widechar *inbuf, int *inlen,
 		widechar *outbuf, int *outlen, formtype *typeform, char *spacing, int *outputPos,
 		int *inputPos, int *cursorPos, int modex) {
-	return _lou_backTranslateWithTracing(tableList, inbuf, inlen, outbuf, outlen,
-			typeform, spacing, outputPos, inputPos, cursorPos, modex, NULL, NULL);
+	return _lou_backTranslate(tableList, inbuf, inlen, outbuf, outlen, typeform, spacing,
+			outputPos, inputPos, cursorPos, modex, NULL, NULL);
 }
 
 int EXPORT_CALL
-_lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int *inlen,
+_lou_backTranslate(const char *tableList, const widechar *inbuf, int *inlen,
 		widechar *outbuf, int *outlen, formtype *typeform, char *spacing, int *outputPos,
 		int *inputPos, int *cursorPos, int mode, const TranslationTableRule **rules,
 		int *rulesLen) {
