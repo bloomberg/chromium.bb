@@ -33,6 +33,7 @@ class ProxyConfig;
 class StringRef;
 class WebView;
 class WebViewDelegate;
+class ProcessClientDelegate;
 
 // This enum must match ProxyConfigType in blpwtk2_process.mojom
 enum class ProxyType {
@@ -159,6 +160,11 @@ class Profile
     virtual std::string getGpuInfo() = 0;
 
     // patch section: embedder ipc
+    virtual void opaqueMessageToBrowserAsync(const StringRef& msg) = 0;
+
+    virtual String opaqueMessageToBrowserSync(const StringRef& msg) = 0;
+
+    virtual void setIPCDelegate(ProcessClientDelegate *delegate) = 0;
 
 
     // patch section: web cache

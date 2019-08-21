@@ -28,6 +28,7 @@
 #include <blpwtk2_stringref.h>
 #include <blpwtk2_webviewclientimpl.h>
 #include <blpwtk2_mainmessagepump.h>
+#include <blpwtk2_processclientdelegate.h>
 
 #include <base/bind.h>
 #include <base/message_loop/message_loop.h>
@@ -60,6 +61,8 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
     : d_numWebViews(0)
     , d_processId(pid)
     , d_pump(pump)
+    , d_binding(this)
+    , d_ipcDelegate(nullptr)
 {
     static const std::string SERVICE_NAME("content_browser");
     g_instances.insert(this);
@@ -67,7 +70,10 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
     content::RenderThread* renderThread = content::RenderThread::Get();
 	renderThread->GetConnector()->BindInterface(SERVICE_NAME, &d_hostPtr);
     DCHECK(0 != pid);
-    d_hostPtr->bindProcess(pid, launchDevToolsServer);
+    d_hostPtr->bindProcess(
+        pid,
+        launchDevToolsServer,
+        base::Bind(&ProfileImpl::onBindProcessDone, base::Unretained(this)));
 
     blink::BBWindowHooks::ProfileHooks hooks;
     hooks.getGpuInfo = base::BindRepeating(&ProfileImpl::getGpuInfo, base::Unretained(this));
@@ -219,7 +225,7 @@ void ProfileImpl::createWebView(WebViewDelegate            *delegate,
     // Create a new instance of WebViewProxy.
     WebViewProxy *proxy = new WebViewProxy(delegate, this);
 
-    // Ask the process host to create a webview host. 
+    // Ask the process host to create a webview host.
     mojom::WebViewHostPtr *webViewHostPtr =
         new mojom::WebViewHostPtr;
 
@@ -340,6 +346,42 @@ std::string ProfileImpl::getGpuInfo()
 }
 
 // patch section: embedder ipc
+void ProfileImpl::onBindProcessDone(
+    mojom::ProcessClientRequest processClientRequest)
+{
+    d_binding.Bind(std::move(processClientRequest));
+}
+
+void ProfileImpl::opaqueMessageToBrowserAsync(const StringRef& msg)
+{
+    d_hostPtr->opaqueMessageToBrowserAsync(std::string(msg.data(), msg.size()));
+}
+
+String ProfileImpl::opaqueMessageToBrowserSync(const StringRef& msg)
+{
+    std::string result;
+
+    if (d_hostPtr->opaqueMessageToBrowserSync(
+                std::string(msg.data(), msg.size()), &result)) {
+
+        return String(result.data(), result.size());
+    }
+    else {
+        return String();
+    }
+}
+
+void ProfileImpl::opaqueMessageToRendererAsync(const std::string& msg)
+{
+    if (d_ipcDelegate) {
+        d_ipcDelegate->onRendererReceivedAsync(StringRef(msg.data(), msg.size()));
+    }
+}
+
+void ProfileImpl::setIPCDelegate(ProcessClientDelegate *delegate)
+{
+    d_ipcDelegate = delegate;
+}
 
 
 // patch section: web cache

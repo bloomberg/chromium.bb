@@ -32,6 +32,7 @@
 #include <base/macros.h>
 #include <base/compiler_specific.h>
 #include <ipc/ipc_sender.h>
+#include <mojo/public/cpp/bindings/binding.h>
 
 #include <string>
 
@@ -41,11 +42,11 @@ class MessageLoop;
 
 namespace blpwtk2 {
 
-class ProcessClient;
 class ProxyConfig;
 class WebViewProxy;
 class WebViewDelegate;
 class MainMessagePump;
+class ProcessClientDelegate;
 
                         // =================
                         // class ProfileImpl
@@ -60,7 +61,7 @@ class MainMessagePump;
 // thread.
 //
 // See blpwtk2_toolkit.h for an explanation about the threads.
-class ProfileImpl : public Profile {
+class ProfileImpl : public Profile, public mojom::ProcessClient {
     // DATA
     mojom::ProcessHostPtr d_hostPtr;
     int d_numWebViews;
@@ -70,6 +71,9 @@ class ProfileImpl : public Profile {
     ~ProfileImpl() final;
 
     DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
+    mojo::Binding<mojom::ProcessClient> d_binding;
+    ProcessClientDelegate *d_ipcDelegate;
+    void onBindProcessDone(mojom::ProcessClientRequest processClientRequest);
 
   public:
     static Profile *anyInstance();
@@ -188,6 +192,13 @@ class ProfileImpl : public Profile {
 
 
     // patch section: embedder ipc
+    void opaqueMessageToBrowserAsync(const StringRef& msg) override;
+
+    String opaqueMessageToBrowserSync(const StringRef& msg) override;
+
+    void opaqueMessageToRendererAsync(const std::string& msg) override;
+
+    void setIPCDelegate(ProcessClientDelegate *delegate) override;
 
 
     // patch section: web cache

@@ -261,6 +261,10 @@ shared_library("blpwtk2") {
 
 
     # patch section: embedder ipc
+    "public/blpwtk2_processclientdelegate.h",
+    "public/blpwtk2_processclientdelegate.cc",
+    "public/blpwtk2_processhostdelegate.h",
+    "public/blpwtk2_processhostdelegate.cc",
 
 
     # patch section: gpu
