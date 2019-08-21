@@ -138,20 +138,12 @@ ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
   GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
   base::RecordAction(base::UserMetricsAction("ProfileChooser_Show"));
+  set_close_on_deactivate(close_on_deactivate_for_testing_);
 }
 
 ProfileMenuView::~ProfileMenuView() = default;
 
-void ProfileMenuView::Reset() {
-  ProfileMenuViewBase::Reset();
-  first_profile_button_ = nullptr;
-  lock_button_ = nullptr;
-}
-
-void ProfileMenuView::Init() {
-  Reset();
-  set_close_on_deactivate(close_on_deactivate_for_testing_);
-
+void ProfileMenuView::BuildMenu() {
   avatar_menu_.reset(new AvatarMenu(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
       this, browser()));
@@ -163,18 +155,12 @@ void ProfileMenuView::Init() {
     dice_accounts_ =
         signin_ui_util::GetAccountsForDicePromos(browser()->profile());
   }
-
-  ShowView(avatar_menu_.get());
+  AddProfileMenuView(avatar_menu_.get());
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
     AvatarMenu* avatar_menu) {
   // TODO(crbug.com/993752): Remove AvatarMenu observer.
-}
-
-void ProfileMenuView::ShowView(AvatarMenu* avatar_menu) {
-  AddProfileMenuView(avatar_menu);
-  RepopulateViewFromMenuItems();
 }
 
 void ProfileMenuView::FocusButtonOnKeyboardOpen() {
