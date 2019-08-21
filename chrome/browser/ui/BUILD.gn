@@ -125,6 +125,8 @@ jumbo_split_static_library("ui") {
     "login/login_handler.h",
     "login/login_interstitial_delegate.cc",
     "login/login_interstitial_delegate.h",
+    "login/login_navigation_throttle.cc",
+    "login/login_navigation_throttle.h",
     "login/login_tab_helper.cc",
     "login/login_tab_helper.h",
     "navigation_correction_tab_observer.cc",
