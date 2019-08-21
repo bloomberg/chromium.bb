@@ -175,7 +175,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
                                 overall_progress, simple_iteration_progress);
   const bool current_direction_is_forwards =
       IsCurrentDirectionForwards(current_iteration, direction);
-  const double directed_progress = CalculateDirectedProgress(
+  const base::Optional<double> directed_progress = CalculateDirectedProgress(
       simple_iteration_progress, current_iteration, direction);
 
   progress = CalculateTransformedProgress(

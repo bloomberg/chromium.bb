@@ -242,13 +242,13 @@ static inline bool IsCurrentDirectionForwards(
 }
 
 // https://drafts.csswg.org/web-animations/#calculating-the-directed-progress
-static inline double CalculateDirectedProgress(
+static inline base::Optional<double> CalculateDirectedProgress(
     double simple_iteration_progress,
     double current_iteration,
     Timing::PlaybackDirection direction) {
   // 1. If the simple progress is unresolved, return unresolved.
   if (IsNull(simple_iteration_progress))
-    return NullValue();
+    return base::nullopt;
 
   // 2. Calculate the current direction.
   bool current_direction_is_forwards =
@@ -263,11 +263,11 @@ static inline double CalculateDirectedProgress(
 // https://drafts.csswg.org/web-animations/#calculating-the-transformed-progress
 static inline base::Optional<double> CalculateTransformedProgress(
     Timing::Phase phase,
-    double directed_progress,
+    base::Optional<double> directed_progress,
     double iteration_duration,
     bool is_current_direction_forward,
     scoped_refptr<TimingFunction> timing_function) {
-  if (IsNull(directed_progress))
+  if (!directed_progress)
     return base::nullopt;
 
   // Set the before flag to indicate if at the leading edge of an iteration.
@@ -282,17 +282,18 @@ static inline base::Optional<double> CalculateTransformedProgress(
   // Snap boundaries to correctly render step timing functions at 0 and 1.
   // (crbug.com/949373)
   if (phase == Timing::kPhaseAfter) {
-    if (is_current_direction_forward && IsWithinEpsilon(directed_progress, 1)) {
+    if (is_current_direction_forward &&
+        IsWithinEpsilon(directed_progress.value(), 1)) {
       directed_progress = 1;
     } else if (!is_current_direction_forward &&
-               IsWithinEpsilon(directed_progress, 0)) {
+               IsWithinEpsilon(directed_progress.value(), 0)) {
       directed_progress = 0;
     }
   }
 
   // Return the result of evaluating the animation effect’s timing function
   // passing directed progress as the input progress value.
-  return timing_function->Evaluate(directed_progress, limit_direction);
+  return timing_function->Evaluate(directed_progress.value(), limit_direction);
 }
 
 // Offsets the active time by how far into the animation we start (i.e. the

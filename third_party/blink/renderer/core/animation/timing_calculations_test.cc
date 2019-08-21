@@ -275,8 +275,8 @@ TEST(AnimationTimingCalculationsTest, CalculateDirectedProgress) {
   //                           direction);
 
   // if the simple iteration progress is null
-  EXPECT_TRUE(IsNull(CalculateDirectedProgress(
-      NullValue(), NullValue(), Timing::PlaybackDirection::NORMAL)));
+  EXPECT_FALSE(CalculateDirectedProgress(NullValue(), NullValue(),
+                                         Timing::PlaybackDirection::NORMAL));
 
   // forwards
   EXPECT_EQ(0,
@@ -324,7 +324,7 @@ TEST(AnimationTimingCalculationsTest, TransformedProgress) {
       StepsTimingFunction::Create(4, StepsTimingFunction::StepPosition::END);
 
   // directed_progress is null.
-  EXPECT_FALSE(CalculateTransformedProgress(Timing::kPhaseActive, NullValue(),
+  EXPECT_FALSE(CalculateTransformedProgress(Timing::kPhaseActive, base::nullopt,
                                             1, true, timing_function));
 
   // At step boundaries.
