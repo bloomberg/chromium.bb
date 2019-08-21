@@ -1701,7 +1701,8 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
   std::unique_ptr<HttpServerProperties::ServerInfoMap> load_server_info_map =
       std::make_unique<HttpServerProperties::ServerInfoMap>();
   impl_.OnServerInfoLoadedForTesting(std::move(load_server_info_map));
-  const ServerNetworkStats* stats = impl_.GetServerNetworkStats(google_server);
+  const ServerNetworkStats* stats =
+      impl_.GetServerNetworkStats(google_server, NetworkIsolationKey());
   EXPECT_EQ(nullptr, stats);
 
   // Check by initializing with www.google.com:443.
@@ -1716,7 +1717,8 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
 
   // Verify data for www.google.com:443.
   ASSERT_EQ(1u, impl_.server_info_map_for_testing().size());
-  EXPECT_EQ(stats_google, *(impl_.GetServerNetworkStats(google_server)));
+  EXPECT_EQ(stats_google, *(impl_.GetServerNetworkStats(
+                              google_server, NetworkIsolationKey())));
 
   // Test recency order and overwriting of data.
   //
@@ -1728,7 +1730,7 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
   stats_docs.srtt = base::TimeDelta::FromMicroseconds(20);
   stats_docs.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(200);
   // Recency order will be |docs_server| and |google_server|.
-  impl_.SetServerNetworkStats(docs_server, stats_docs);
+  impl_.SetServerNetworkStats(docs_server, NetworkIsolationKey(), stats_docs);
 
   // Prepare |server_info_map| to be loaded by OnServerInfoLoadedForTesting().
   std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
@@ -1776,24 +1778,29 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
 TEST_F(HttpServerPropertiesTest, SetServerNetworkStats) {
   url::SchemeHostPort foo_http_server("http", "foo", 443);
   url::SchemeHostPort foo_https_server("https", "foo", 443);
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server));
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server,
+                                                 NetworkIsolationKey()));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server,
+                                                 NetworkIsolationKey()));
 
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   stats1.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(100);
-  impl_.SetServerNetworkStats(foo_http_server, stats1);
+  impl_.SetServerNetworkStats(foo_http_server, NetworkIsolationKey(), stats1);
 
   const ServerNetworkStats* stats2 =
-      impl_.GetServerNetworkStats(foo_http_server);
+      impl_.GetServerNetworkStats(foo_http_server, NetworkIsolationKey());
   EXPECT_EQ(10, stats2->srtt.ToInternalValue());
   EXPECT_EQ(100, stats2->bandwidth_estimate.ToBitsPerSecond());
   // Https server should have nothing set for server network stats.
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server,
+                                                 NetworkIsolationKey()));
 
   impl_.Clear(base::OnceClosure());
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server));
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server,
+                                                 NetworkIsolationKey()));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server,
+                                                 NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesTest, ClearServerNetworkStats) {
@@ -1801,10 +1808,11 @@ TEST_F(HttpServerPropertiesTest, ClearServerNetworkStats) {
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
   stats.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(100);
   url::SchemeHostPort foo_https_server("https", "foo", 443);
-  impl_.SetServerNetworkStats(foo_https_server, stats);
+  impl_.SetServerNetworkStats(foo_https_server, NetworkIsolationKey(), stats);
 
-  impl_.ClearServerNetworkStats(foo_https_server);
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
+  impl_.ClearServerNetworkStats(foo_https_server, NetworkIsolationKey());
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server,
+                                                 NetworkIsolationKey()));
 }
 
 typedef HttpServerPropertiesTest QuicServerInfoServerPropertiesTest;

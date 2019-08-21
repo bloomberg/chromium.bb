@@ -583,9 +583,10 @@ void HttpServerProperties::SetSupportsQuic(bool used_quic,
 
 void HttpServerProperties::SetServerNetworkStats(
     const url::SchemeHostPort& server,
+    const NetworkIsolationKey& network_isolation_key,
     ServerNetworkStats stats) {
   auto server_info = server_info_map_.GetOrPut(
-      CreateServerInfoKey(server, NetworkIsolationKey()));
+      CreateServerInfoKey(server, network_isolation_key));
   bool changed = !server_info->second.server_network_stats.has_value() ||
                  server_info->second.server_network_stats.value() != stats;
 
@@ -596,9 +597,10 @@ void HttpServerProperties::SetServerNetworkStats(
 }
 
 void HttpServerProperties::ClearServerNetworkStats(
-    const url::SchemeHostPort& server) {
+    const url::SchemeHostPort& server,
+    const NetworkIsolationKey& network_isolation_key) {
   auto server_info =
-      server_info_map_.Peek(CreateServerInfoKey(server, NetworkIsolationKey()));
+      server_info_map_.Peek(CreateServerInfoKey(server, network_isolation_key));
   // If stats are empty, nothing to do.
   if (server_info == server_info_map_.end() ||
       !server_info->second.server_network_stats.has_value()) {
@@ -614,9 +616,10 @@ void HttpServerProperties::ClearServerNetworkStats(
 }
 
 const ServerNetworkStats* HttpServerProperties::GetServerNetworkStats(
-    const url::SchemeHostPort& server) {
+    const url::SchemeHostPort& server,
+    const NetworkIsolationKey& network_isolation_key) {
   auto server_info =
-      server_info_map_.Get(CreateServerInfoKey(server, NetworkIsolationKey()));
+      server_info_map_.Get(CreateServerInfoKey(server, network_isolation_key));
   if (server_info == server_info_map_.end() ||
       !server_info->second.server_network_stats.has_value()) {
     return nullptr;

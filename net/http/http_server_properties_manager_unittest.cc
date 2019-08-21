@@ -348,8 +348,8 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
       gooler_server, NetworkIsolationKey()));
   EXPECT_FALSE(HasAlternativeService(gooler_server, NetworkIsolationKey()));
-  const ServerNetworkStats* stats1 =
-      http_server_props_->GetServerNetworkStats(gooler_server);
+  const ServerNetworkStats* stats1 = http_server_props_->GetServerNetworkStats(
+      gooler_server, NetworkIsolationKey());
   EXPECT_EQ(nullptr, stats1);
   EXPECT_EQ(0u, http_server_props_->quic_server_info_map().size());
 }
@@ -879,14 +879,16 @@ TEST_F(HttpServerPropertiesManagerTest, ServerNetworkStats) {
   InitializePrefs();
 
   url::SchemeHostPort mail_server("http", "mail.google.com", 80);
-  const ServerNetworkStats* stats =
-      http_server_props_->GetServerNetworkStats(mail_server);
+  const ServerNetworkStats* stats = http_server_props_->GetServerNetworkStats(
+      mail_server, NetworkIsolationKey());
   EXPECT_EQ(nullptr, stats);
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
-  http_server_props_->SetServerNetworkStats(mail_server, stats1);
+  http_server_props_->SetServerNetworkStats(mail_server, NetworkIsolationKey(),
+                                            stats1);
   // Another task should not be scheduled.
-  http_server_props_->SetServerNetworkStats(mail_server, stats1);
+  http_server_props_->SetServerNetworkStats(mail_server, NetworkIsolationKey(),
+                                            stats1);
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -895,15 +897,17 @@ TEST_F(HttpServerPropertiesManagerTest, ServerNetworkStats) {
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   // Another task should not be scheduled.
-  http_server_props_->SetServerNetworkStats(mail_server, stats1);
+  http_server_props_->SetServerNetworkStats(mail_server, NetworkIsolationKey(),
+                                            stats1);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(GetPendingMainThreadTaskCount(), 0u);
 
-  const ServerNetworkStats* stats2 =
-      http_server_props_->GetServerNetworkStats(mail_server);
+  const ServerNetworkStats* stats2 = http_server_props_->GetServerNetworkStats(
+      mail_server, NetworkIsolationKey());
   EXPECT_EQ(10, stats2->srtt.ToInternalValue());
 
-  http_server_props_->ClearServerNetworkStats(mail_server);
+  http_server_props_->ClearServerNetworkStats(mail_server,
+                                              NetworkIsolationKey());
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -911,7 +915,8 @@ TEST_F(HttpServerPropertiesManagerTest, ServerNetworkStats) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_EQ(nullptr, http_server_props_->GetServerNetworkStats(mail_server));
+  EXPECT_EQ(nullptr, http_server_props_->GetServerNetworkStats(
+                         mail_server, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, QuicServerInfo) {
@@ -967,7 +972,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   http_server_props_->SetSupportsQuic(true, actual_address);
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
-  http_server_props_->SetServerNetworkStats(spdy_server, stats);
+  http_server_props_->SetServerNetworkStats(spdy_server, NetworkIsolationKey(),
+                                            stats);
 
   http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
 
@@ -985,8 +991,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   IPAddress address;
   EXPECT_TRUE(http_server_props_->GetSupportsQuic(&address));
   EXPECT_EQ(actual_address, address);
-  const ServerNetworkStats* stats1 =
-      http_server_props_->GetServerNetworkStats(spdy_server);
+  const ServerNetworkStats* stats1 = http_server_props_->GetServerNetworkStats(
+      spdy_server, NetworkIsolationKey());
   EXPECT_EQ(10, stats1->srtt.ToInternalValue());
   EXPECT_EQ(quic_server_info1,
             *http_server_props_->GetQuicServerInfo(mail_quic_server_id));
@@ -1011,8 +1017,8 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
       spdy_server, NetworkIsolationKey()));
   EXPECT_FALSE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->GetSupportsQuic(&address));
-  const ServerNetworkStats* stats2 =
-      http_server_props_->GetServerNetworkStats(spdy_server);
+  const ServerNetworkStats* stats2 = http_server_props_->GetServerNetworkStats(
+      spdy_server, NetworkIsolationKey());
   EXPECT_EQ(nullptr, stats2);
   EXPECT_EQ(nullptr,
             http_server_props_->GetQuicServerInfo(mail_quic_server_id));
@@ -1128,7 +1134,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   // #4: Set ServerNetworkStats.
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromInternalValue(42);
-  http_server_props_->SetServerNetworkStats(server_mail, stats);
+  http_server_props_->SetServerNetworkStats(server_mail, NetworkIsolationKey(),
+                                            stats);
 
   // #5: Set quic_server_info string.
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
@@ -1489,7 +1496,8 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
   // #3: Set ServerNetworkStats.
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromInternalValue(42);
-  http_server_props_->SetServerNetworkStats(server_mail, stats);
+  http_server_props_->SetServerNetworkStats(server_mail, NetworkIsolationKey(),
+                                            stats);
 
   // #4: Set quic_server_info string.
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
@@ -1943,7 +1951,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   //
   const ServerNetworkStats* server_network_stats =
       http_server_props_->GetServerNetworkStats(
-          url::SchemeHostPort("https", "mail.google.com", 80));
+          url::SchemeHostPort("https", "mail.google.com", 80),
+          NetworkIsolationKey());
   EXPECT_TRUE(server_network_stats);
   EXPECT_EQ(server_network_stats->srtt, base::TimeDelta::FromInternalValue(42));
 

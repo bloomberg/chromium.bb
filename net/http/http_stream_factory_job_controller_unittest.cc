@@ -717,7 +717,8 @@ TEST_F(JobControllerReconsiderProxyAfterErrorTest,
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromSeconds(100);
   session_->http_server_properties()->SetServerNetworkStats(
-      url::SchemeHostPort(GURL("http://www.example.com")), stats1);
+      url::SchemeHostPort(GURL("http://www.example.com")),
+      NetworkIsolationKey(), stats1);
 
   // Prepare the mocked data.
   MockQuicData quic_data(
@@ -1713,7 +1714,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, HostResolutionHang) {
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   session_->http_server_properties()->SetServerNetworkStats(
-      url::SchemeHostPort(GURL("https://www.google.com")), stats1);
+      url::SchemeHostPort(GURL("https://www.google.com")),
+      NetworkIsolationKey(), stats1);
 
   url::SchemeHostPort server(request_info.url);
   AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
@@ -1786,7 +1788,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCP) {
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   session_->http_server_properties()->SetServerNetworkStats(
-      url::SchemeHostPort(GURL("https://www.google.com")), stats1);
+      url::SchemeHostPort(GURL("https://www.google.com")),
+      NetworkIsolationKey(), stats1);
 
   url::SchemeHostPort server(request_info.url);
   AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
@@ -1849,7 +1852,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, ResumeMainJobLaterCanceled) {
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   session_->http_server_properties()->SetServerNetworkStats(
-      url::SchemeHostPort(GURL("https://www.google.com")), stats1);
+      url::SchemeHostPort(GURL("https://www.google.com")),
+      NetworkIsolationKey(), stats1);
 
   url::SchemeHostPort server(request_info.url);
   AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
@@ -1927,7 +1931,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPWithLargeSrtt) {
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromSeconds(100);
   session_->http_server_properties()->SetServerNetworkStats(
-      url::SchemeHostPort(GURL("https://www.google.com")), stats1);
+      url::SchemeHostPort(GURL("https://www.google.com")),
+      NetworkIsolationKey(), stats1);
 
   url::SchemeHostPort server(request_info.url);
   AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
@@ -1987,7 +1992,8 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   session_->http_server_properties()->SetServerNetworkStats(
-      url::SchemeHostPort(GURL("https://www.google.com")), stats1);
+      url::SchemeHostPort(GURL("https://www.google.com")),
+      NetworkIsolationKey(), stats1);
 
   url::SchemeHostPort server(request_info.url);
   AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
@@ -2109,7 +2115,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPAlternativeProxy) {
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   session_->http_server_properties()->SetServerNetworkStats(
-      url::SchemeHostPort(GURL("https://myproxy.org")), stats1);
+      url::SchemeHostPort(GURL("https://myproxy.org")), NetworkIsolationKey(),
+      stats1);
 
   url::SchemeHostPort server(request_info.url);
   AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
@@ -2179,7 +2186,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, FailAlternativeProxy) {
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(300 * 1000);
   session_->http_server_properties()->SetServerNetworkStats(
-      url::SchemeHostPort(GURL("https://myproxy.org")), stats1);
+      url::SchemeHostPort(GURL("https://myproxy.org")), NetworkIsolationKey(),
+      stats1);
 
   request_ =
       job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
@@ -2231,7 +2239,8 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(300 * 1000);
   session_->http_server_properties()->SetServerNetworkStats(
-      url::SchemeHostPort(GURL("https://myproxy.org")), stats1);
+      url::SchemeHostPort(GURL("https://myproxy.org")), NetworkIsolationKey(),
+      stats1);
 
   request_ =
       job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),

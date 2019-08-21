@@ -332,14 +332,18 @@ class NET_EXPORT HttpServerProperties
 
   // Sets |stats| for |server|.
   void SetServerNetworkStats(const url::SchemeHostPort& server,
+                             const NetworkIsolationKey& network_isolation_key,
                              ServerNetworkStats stats);
 
   // Clears any stats for |server|.
-  void ClearServerNetworkStats(const url::SchemeHostPort& server);
+  void ClearServerNetworkStats(
+      const url::SchemeHostPort& server,
+      const NetworkIsolationKey& network_isolation_key);
 
   // Returns any stats for |server| or nullptr if there are none.
   const ServerNetworkStats* GetServerNetworkStats(
-      const url::SchemeHostPort& server);
+      const url::SchemeHostPort& server,
+      const NetworkIsolationKey& network_isolation_key);
 
   // Save QuicServerInfo (in std::string form) for the given |server_id|.
   void SetQuicServerInfo(const quic::QuicServerId& server_id,
