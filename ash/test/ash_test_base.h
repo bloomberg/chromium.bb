@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/test_session_controller_client.h"
@@ -78,10 +77,10 @@ class AshTestBase : public testing::Test {
   // TaskEnvironment. MainThreadType always defaults to UI and must not be
   // specified.
   template <typename... TaskEnvironmentTraits>
-  NOINLINE explicit AshTestBase(TaskEnvironmentTraits&&... traits)
+  NOINLINE explicit AshTestBase(TaskEnvironmentTraits... traits)
       : task_environment_(base::in_place,
                           base::test::TaskEnvironment::MainThreadType::UI,
-                          std::forward<TaskEnvironmentTraits>(traits)...) {}
+                          traits...) {}
 
   // Alternatively a subclass may pass this tag to ask this AshTestBase not to
   // instantiate a TaskEnvironment. The subclass is then responsible to

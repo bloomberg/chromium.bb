@@ -6,7 +6,6 @@
 #define UI_VIEWS_TEST_WIDGET_TEST_H_
 
 #include <memory>
-#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -51,8 +50,8 @@ class WidgetTest : public ViewsTestBase {
   // can also be passed as a sole trait to indicate that this WidgetTest's
   // subclass will manage the task environment.
   template <typename... TaskEnvironmentTraits>
-  NOINLINE explicit WidgetTest(TaskEnvironmentTraits&&... traits)
-      : ViewsTestBase(std::forward<TaskEnvironmentTraits>(traits)...) {}
+  NOINLINE explicit WidgetTest(TaskEnvironmentTraits... traits)
+      : ViewsTestBase(traits...) {}
 
   ~WidgetTest() override;
 
