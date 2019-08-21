@@ -144,7 +144,7 @@ class WebViewHostImpl final : private WebViewImplClient
     void paste() override;
     void deleteSelection() override;
     void enableNCHitTest(bool enabled) override;
-
+    void enableAltDragRubberbanding(bool enabled) override;
     void find(int                reqId,
               const std::string& text,
               bool               matchCase,

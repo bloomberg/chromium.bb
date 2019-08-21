@@ -250,6 +250,7 @@ public:
             d_webView->setParent(d_mainWnd);
 
             d_webView->show();
+            d_webView->enableAltDragRubberbanding(true);
             d_webView->enableNCHitTest(g_custom_hit_test);
 
             SetWindowLongPtr(d_mainWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));

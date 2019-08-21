@@ -186,6 +186,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // visible viewport.
   virtual void SetInsets(const gfx::Insets& insets) = 0;
 
+  // Show/hide a rubberband rect
+  virtual void SetRubberbandRect(const gfx::Rect& rect) = 0;
+  virtual void HideRubberbandRect() = 0;
+
   // Returns true if the current display surface is available.
   virtual bool IsSurfaceAvailableForCopy() = 0;
 

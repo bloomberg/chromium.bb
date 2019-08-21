@@ -115,6 +115,7 @@ WebViewImpl::WebViewImpl(WebViewDelegate          *delegate,
     , d_isDeletingSoon(false)
     , d_ncHitTestEnabled(false)
     , d_ncHitTestPendingAck(false)
+    , d_altDragRubberbandingEnabled(false)
     , d_lastNCHitTestResult(HTCLIENT)
     , d_hostId(hostAffinity)
 {
@@ -240,6 +241,9 @@ void WebViewImpl::onRenderViewHostMadeCurrent(content::RenderViewHost *renderVie
 
 
     // patch section: rubberband
+#ifdef BB_RENDER_VIEW_HOST_SUPPORTS_RUBBERBANDING
+    renderViewHost->EnableAltDragRubberbanding(d_altDragRubberbandingEnabled);
+#endif
 
 
 
@@ -626,6 +630,42 @@ void WebViewImpl::performCustomContextMenuAction(int actionId)
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(!d_wasDestroyed);
     d_webContents->ExecuteCustomContextMenuCommand(actionId, d_customContext);
+}
+
+void WebViewImpl::enableAltDragRubberbanding(bool enabled)
+{
+    DCHECK(Statics::isInBrowserMainThread());
+    DCHECK(!d_wasDestroyed);
+    d_altDragRubberbandingEnabled = enabled;
+
+#ifdef BB_RENDER_VIEW_HOST_SUPPORTS_RUBBERBANDING
+    if (d_webContents->GetRenderViewHost()) {
+        d_webContents->GetRenderViewHost()->EnableAltDragRubberbanding(enabled);
+    }
+#endif
+}
+
+bool WebViewImpl::forceStartRubberbanding(int x, int y)
+{
+    NOTREACHED() << "forceStartRubberbanding() not supported in WebViewImpl";
+    return false;
+}
+
+bool WebViewImpl::isRubberbanding() const
+{
+    NOTREACHED() << "isRubberbanding() not supported in WebViewImpl";
+    return false;
+}
+
+void WebViewImpl::abortRubberbanding()
+{
+    NOTREACHED() << "abortRubberbanding() not supported in WebViewImpl";
+}
+
+String WebViewImpl::getTextInRubberband(const NativeRect& rect)
+{
+    NOTREACHED() << "getTextInRubberband() not supported in WebViewImpl";
+    return String();
 }
 
 void WebViewImpl::find(const StringRef& text, bool matchCase, bool forward)

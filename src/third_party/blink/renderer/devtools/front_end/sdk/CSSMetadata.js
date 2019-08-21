@@ -757,6 +757,7 @@ SDK.CSSMetadata._propertyDataMap = {
     values:
         ['baseline', 'middle', 'sub', 'super', 'text-top', 'text-bottom', 'top', 'bottom', '-webkit-baseline-middle']
   },
+  'rubberbandable': {values: ['none', 'text', 'text-with-tab']},
   'white-space': {values: ['normal', 'nowrap', 'pre', 'pre-line', 'pre-wrap', '-bb-pre-wrap-text']},
   'page-break-after': {values: ['left', 'right', 'always', 'avoid']},
   'word-break': {values: ['normal', 'break-all', 'break-word', '-bb-keep-all-if-korean', 'keep-all']},

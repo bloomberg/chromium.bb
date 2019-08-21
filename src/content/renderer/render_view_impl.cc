@@ -1294,6 +1294,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateScreenInfo, OnUpdateScreenInfo)
     IPC_MESSAGE_HANDLER(PageMsg_SetPageFrozen, SetPageFrozen)
+    IPC_MESSAGE_HANDLER(ViewMsg_EnableAltDragRubberbanding, OnEnableAltDragRubberbanding)
 
     // Adding a new message? Add platform independent ones first, then put the
     // platform specific ones at the end.
@@ -1304,6 +1305,10 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+void RenderViewImpl::OnEnableAltDragRubberbanding(bool enable) {
+  webview()->EnableAltDragRubberbanding(enable);
 }
 
 // blink::WebViewClient ------------------------------------------------------
@@ -1742,6 +1747,14 @@ int RenderViewImpl::HistoryBackListCount() {
 
 int RenderViewImpl::HistoryForwardListCount() {
   return history_list_length_ - HistoryBackListCount() - 1;
+}
+
+void RenderViewImpl::setRubberbandRect(const WebRect& rect) {
+  Send(new ViewHostMsg_SetRubberbandRect(GetWidget()->routing_id(), rect));
+}
+
+void RenderViewImpl::hideRubberbandRect() {
+  Send(new ViewHostMsg_HideRubberbandRect(GetWidget()->routing_id()));
 }
 
 // blink::WebWidgetClient ----------------------------------------------------

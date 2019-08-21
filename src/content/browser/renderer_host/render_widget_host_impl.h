@@ -860,6 +860,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnUnlockMouse();
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
+  void OnSetRubberbandRect(const gfx::Rect& rect);
+  void OnHideRubberbandRect();
   void OnSetNeedsBeginFrames(bool needs_begin_frames);
   void OnHittestData(const FrameHostMsg_HittestData_Params& params);
   void OnFocusedNodeTouched(bool editable);
