@@ -819,7 +819,9 @@ void CanvasResourceSharedImage::TearDown() {
       if (owning_thread_data().texture_id_for_read_access) {
         gl->DeleteTextures(1, &owning_thread_data().texture_id_for_read_access);
       }
-      if (owning_thread_data().texture_id_for_write_access) {
+      if (owning_thread_data().texture_id_for_write_access &&
+          owning_thread_data().texture_id_for_write_access !=
+              owning_thread_data().texture_id_for_read_access) {
         gl->DeleteTextures(1,
                            &owning_thread_data().texture_id_for_write_access);
       }
