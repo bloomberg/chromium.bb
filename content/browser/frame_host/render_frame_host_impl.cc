@@ -4235,7 +4235,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateWebSocketConnector, base::Unretained(this)));
+      &RenderFrameHostImpl::CreateWebSocketConnectorForRequest,
+      base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
@@ -6133,12 +6134,19 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
                  base::Unretained(this))));
 }
 
-void RenderFrameHostImpl::CreateWebSocketConnector(
+void RenderFrameHostImpl::CreateWebSocketConnectorForRequest(
     blink::mojom::WebSocketConnectorRequest request) {
-  mojo::MakeStrongBinding(
+  // Implicit conversion from WebSocketConnectorRequest to
+  // mojo::PendingReceiver<blink::mojom::WebSocketConnector>.
+  CreateWebSocketConnector(std::move(request));
+}
+
+void RenderFrameHostImpl::CreateWebSocketConnector(
+    mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebSocketConnectorImpl>(
           GetProcess()->GetID(), routing_id_, last_committed_origin_),
-      std::move(request));
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(

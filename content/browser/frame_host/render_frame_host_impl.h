@@ -1476,8 +1476,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindMediaInterfaceFactoryRequest(
       media::mojom::InterfaceFactoryRequest request);
 
-  void CreateWebSocketConnector(
+  // TODO(https://crbug.com/955171): Remove this method and use
+  // CreateWebSocketConnector directly once |this| uses
+  // service_manager::BinderMap instead of |registry_|.
+  void CreateWebSocketConnectorForRequest(
       blink::mojom::WebSocketConnectorRequest request);
+
+  void CreateWebSocketConnector(
+      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
 
   void CreateDedicatedWorkerHostFactory(
       blink::mojom::DedicatedWorkerHostFactoryRequest request);
