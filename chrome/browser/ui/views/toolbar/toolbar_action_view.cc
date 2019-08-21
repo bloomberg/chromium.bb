@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -71,7 +72,9 @@ ToolbarActionView::ToolbarActionView(
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   set_drag_controller(delegate_);
 
-  set_context_menu_controller(this);
+  context_menu_controller_ = std::make_unique<ExtensionContextMenuController>(
+      delegate, view_controller);
+  set_context_menu_controller(context_menu_controller_.get());
 
   // If the button is within a menu, we need to make it focusable in order to
   // have it accessible via keyboard navigation.
@@ -151,7 +154,8 @@ ToolbarActionView::CreateInkDropHighlight() const {
 
 bool ToolbarActionView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_DOWN) {
-    ShowContextMenuForViewImpl(this, gfx::Point(), ui::MENU_SOURCE_KEYBOARD);
+    context_menu_controller()->ShowContextMenuForView(this, gfx::Point(),
+                                                      ui::MENU_SOURCE_KEYBOARD);
     return true;
   }
   return MenuButton::OnKeyPressed(event);
@@ -207,13 +211,6 @@ bool ToolbarActionView::IsMenuRunningForTesting() const {
   return IsMenuRunning();
 }
 
-void ToolbarActionView::OnMenuClosed() {
-  menu_runner_.reset();
-  menu_ = nullptr;
-  view_controller_->OnContextMenuClosed();
-  menu_adapter_.reset();
-}
-
 gfx::ImageSkia ToolbarActionView::GetIconForTest() {
   return GetImage(views::Button::STATE_NORMAL);
 }
@@ -258,7 +255,7 @@ void ToolbarActionView::OnMouseReleased(const ui::MouseEvent& event) {
 
 void ToolbarActionView::OnGestureEvent(ui::GestureEvent* event) {
   // While the dropdown menu is showing, the button should not handle gestures.
-  if (menu_)
+  if (context_menu_controller_->IsMenuRunning())
     event->StopPropagation();
   else
     MenuButton::OnGestureEvent(event);
@@ -302,7 +299,7 @@ views::Button* ToolbarActionView::GetReferenceButtonForPopup() {
 }
 
 bool ToolbarActionView::IsMenuRunning() const {
-  return menu_ != nullptr;
+  return context_menu_controller_->IsMenuRunning();
 }
 
 bool ToolbarActionView::CanShowIconInToolbar() const {
@@ -324,71 +321,4 @@ void ToolbarActionView::OnPopupShown(bool by_user) {
 
 void ToolbarActionView::OnPopupClosed() {
   pressed_lock_.reset();  // Unpress the menu button if it was pressed.
-}
-
-void ToolbarActionView::ShowContextMenuForViewImpl(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
-  if (CloseActiveMenuIfNeeded())
-    return;
-
-  // Otherwise, no other menu is showing, and we can proceed normally.
-  DoShowContextMenu(source_type);
-}
-
-void ToolbarActionView::DoShowContextMenu(ui::MenuSourceType source_type) {
-  ui::MenuModel* context_menu_model = view_controller_->GetContextMenu();
-  // It's possible the action doesn't have a context menu.
-  if (!context_menu_model)
-    return;
-
-  DCHECK(
-      GetVisible());  // We should never show a context menu for a hidden item.
-
-  int run_types =
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU;
-  if (delegate_->ShownInsideMenu())
-    run_types |= views::MenuRunner::IS_NESTED;
-
-  // RunMenuAt expects a nested menu to be parented by the same widget as the
-  // already visible menu, in this case the Chrome menu.
-  views::Widget* parent =
-      delegate_->ShownInsideMenu()
-          ? delegate_->GetOverflowReferenceView()->GetWidget()
-          : GetWidget();
-
-  // Unretained() is safe here as ToolbarActionView will always outlive the
-  // menu. Any action that would lead to the deletion of |this| first triggers
-  // the closing of the menu through lost capture.
-  menu_adapter_.reset(new views::MenuModelAdapter(
-      context_menu_model, base::BindRepeating(&ToolbarActionView::OnMenuClosed,
-                                              base::Unretained(this))));
-  menu_ = menu_adapter_->CreateMenu();
-  menu_runner_.reset(new views::MenuRunner(menu_, run_types));
-
-  menu_runner_->RunMenuAt(parent, button_controller(),
-                          GetAnchorBoundsInScreen(),
-                          views::MenuAnchorPosition::kTopLeft, source_type);
-}
-
-bool ToolbarActionView::CloseActiveMenuIfNeeded() {
-  // If this view is shown inside another menu, there's a possibility that there
-  // is another context menu showing that we have to close before we can
-  // activate a different menu.
-  if (delegate_->ShownInsideMenu()) {
-    views::MenuController* menu_controller =
-        views::MenuController::GetActiveInstance();
-    // If this is shown inside a menu, then there should always be an active
-    // menu controller.
-    DCHECK(menu_controller);
-    if (menu_controller->in_nested_run()) {
-      // There is another menu showing. Close the outermost menu (since we are
-      // shown in the same menu, we don't want to close the whole thing).
-      menu_controller->Cancel(views::MenuController::ExitType::kOutermost);
-      return true;
-    }
-  }
-
-  return false;
 }
