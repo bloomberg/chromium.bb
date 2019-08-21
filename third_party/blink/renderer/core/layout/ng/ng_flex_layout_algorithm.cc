@@ -72,8 +72,10 @@ bool NGFlexLayoutAlgorithm::IsContainerCrossSizeDefinite() const {
     return true;
 
   Length cross_size = Style().LogicalHeight();
-  if (cross_size.IsAuto())
+  if (cross_size.IsAuto() || cross_size.IsMinContent() ||
+      cross_size.IsMaxContent() || cross_size.IsFitContent()) {
     return false;
+  }
   return !BlockLengthUnresolvable(ConstraintSpace(), cross_size,
                                   LengthResolvePhase::kLayout);
 }
