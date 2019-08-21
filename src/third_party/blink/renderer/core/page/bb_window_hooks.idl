@@ -29,6 +29,8 @@
     void activatePumpScheduler(long index);
     void setPumpSchedulerTunable(long index, long value);
 
+    DOMString getGpuInfo();
+
     void allowPrint(long value);
 
     boolean isBlock(Node node);

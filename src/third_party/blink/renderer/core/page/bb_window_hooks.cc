@@ -47,6 +47,12 @@ static BBWindowHooks::PumpConfigHooks& GetPumpConfigHooks()
     return *hooks;
 }
 
+static BBWindowHooks::ProfileHooks& GetProfileHooks()
+{
+    static base::NoDestructor<BBWindowHooks::ProfileHooks> hooks;
+    return *hooks;
+}
+
 BBWindowHooks::BBWindowHooks(LocalFrame* frame)
     : DOMWindowClient(frame)
 {
@@ -56,6 +62,12 @@ BBWindowHooks::BBWindowHooks(LocalFrame* frame)
 void BBWindowHooks::InstallPumpConfigHooks(PumpConfigHooks hooks)
 {
     GetPumpConfigHooks() = hooks;
+}
+
+// static
+void BBWindowHooks::InstallProfileHooks(ProfileHooks hooks)
+{
+    GetProfileHooks() = hooks;
 }
 
 String BBWindowHooks::listPumpSchedulers() {
@@ -92,6 +104,11 @@ void BBWindowHooks::activatePumpScheduler(long index) {
 
 void BBWindowHooks::setPumpSchedulerTunable(long index, long value) {
     GetPumpConfigHooks().setSchedulerTunable.Run(index, value);
+}
+
+String BBWindowHooks::getGpuInfo() {
+    std::string diagnostics = GetProfileHooks().getGpuInfo.Run();
+    return String::FromUTF8(diagnostics.data(), diagnostics.size());
 }
 
 bool BBWindowHooks::matchSelector(Node *node, const String& selector)
