@@ -688,7 +688,7 @@ def AddVar(gclient_dict, var_name, value):
   col = node.keys[0].col_offset
 
   # We use a minimal Python dictionary, so that ast can parse it.
-  var_content = '{\n%s"%s": "%s",\n}' % (' ' * col, var_name, value)
+  var_content = '{\n%s"%s": "%s",\n}\n' % (' ' * col, var_name, value)
   var_ast = ast.parse(var_content).body[0].value
 
   # Set the ast nodes for the key and value.
@@ -707,7 +707,7 @@ def AddVar(gclient_dict, var_name, value):
   var_tokens = {
       token[2]: list(token)
       # Ignore the tokens corresponding to braces and new lines.
-      for token in var_tokens[2:-2]
+      for token in var_tokens[2:-3]
   }
 
   gclient_dict.tokens = _ShiftLinesInTokens(gclient_dict.tokens, 1, line)
