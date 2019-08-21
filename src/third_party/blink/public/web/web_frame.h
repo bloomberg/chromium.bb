@@ -41,6 +41,8 @@
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "v8/include/v8.h"
 
+class SkCanvas;
+
 namespace blink {
 
 class Frame;
@@ -189,6 +191,12 @@ class BLINK_EXPORT WebFrame {
   virtual bool IsLoading() const;
 
   // Utility -------------------------------------------------------------
+
+  // Draws the contents of the web frame at the specified region onto the
+  // specified canvas
+  virtual void DrawInCanvas(const WebRect&,
+                            const WebString&,
+                            cc::PaintCanvas*) = 0;
 
   // Returns the frame inside a given frame or iframe element. Returns 0 if
   // the given node is not a frame, iframe or if the frame is empty.
