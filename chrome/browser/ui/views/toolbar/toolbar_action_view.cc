@@ -133,18 +133,7 @@ bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
 }
 
 SkColor ToolbarActionView::GetInkDropBaseColor() const {
-  if (delegate_->ShownInsideMenu()) {
-    return GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
-  }
-
   return GetToolbarInkDropBaseColor(this);
-}
-
-std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
-  auto ink_drop = MenuButton::CreateInkDrop();
-  ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
-  return ink_drop;
 }
 
 std::unique_ptr<views::InkDropHighlight>
@@ -281,6 +270,23 @@ void ToolbarActionView::ViewHierarchyChanged(
   }
 
   MenuButton::ViewHierarchyChanged(details);
+}
+
+void ToolbarActionView::StateChanged(views::Button::ButtonState old_state) {
+  MenuButton::StateChanged(old_state);
+  if (delegate_->ShownInsideMenu()) {
+    // The following code is necessary to ensure the item is properly
+    // highlighted when using keyboard navigation to select items in the menu.
+    // InkDrops will listen for hover events and highlight accordingly. However,
+    // menu items don't actually get focus so using SetShowHighlightOnFocus()
+    // won't work. The button state is set to STATE_HOVERED, so this code will
+    // ensure the InkDrop actually highlights.
+    views::InkDropState target_state = state() == views::Button::STATE_HOVERED
+                                           ? views::InkDropState::ACTIVATED
+                                           : views::InkDropState::HIDDEN;
+    if (GetInkDrop()->GetTargetInkDropState() != target_state)
+      AnimateInkDrop(target_state, nullptr);
+  }
 }
 
 views::View* ToolbarActionView::GetAsView() {

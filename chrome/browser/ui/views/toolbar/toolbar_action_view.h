@@ -68,7 +68,6 @@ class ToolbarActionView : public views::MenuButton,
       const override;
   bool IsTriggerableEvent(const ui::Event& event) override;
   SkColor GetInkDropBaseColor() const override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -109,6 +108,7 @@ class ToolbarActionView : public views::MenuButton,
   void OnDragDone() override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
+  void StateChanged(views::Button::ButtonState old_state) override;
 
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
