@@ -1003,6 +1003,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns true if frame is frozen.
   bool IsFrozen();
 
+  void CreateAppCacheBackend(
+      mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver);
+
   void GetAudioContextManager(
       mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver);
 
@@ -1514,10 +1517,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetVirtualAuthenticatorManager(
       mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
           receiver) override;
-  void RegisterAppCacheHost(
-      mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
-      mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
-      const base::UnguessableToken& host_id) override;
 
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).

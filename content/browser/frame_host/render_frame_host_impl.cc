@@ -6259,6 +6259,15 @@ void RenderFrameHostImpl::GetFrameHostTestInterface(
                               std::move(receiver));
 }
 
+void RenderFrameHostImpl::CreateAppCacheBackend(
+    mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
+  storage_partition_impl->GetAppCacheService()->CreateBackend(
+      GetProcess()->GetID(), routing_id_, std::move(receiver));
+}
+
 void RenderFrameHostImpl::GetAudioContextManager(
     mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver) {
   AudioContextManagerImpl::Create(this, std::move(receiver));
@@ -6319,18 +6328,6 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
     }
   }
 #endif  // !defined(OS_ANDROID)
-}
-
-void RenderFrameHostImpl::RegisterAppCacheHost(
-    mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
-    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
-    const base::UnguessableToken& host_id) {
-  auto* appcache_service_impl = static_cast<AppCacheServiceImpl*>(
-      GetProcess()->GetStoragePartition()->GetAppCacheService());
-
-  appcache_service_impl->RegisterHost(
-      std::move(host_receiver), std::move(frontend_remote), host_id,
-      routing_id_, GetProcess()->GetID(), mojo::GetBadMessageCallback());
 }
 
 std::unique_ptr<NavigationRequest>
