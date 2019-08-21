@@ -416,10 +416,18 @@ void MetricsService::OnAppEnterBackground(bool keep_recording_in_background) {
   }
 }
 
-void MetricsService::OnAppEnterForeground() {
+void MetricsService::OnAppEnterForeground(bool force_open_new_log) {
   state_manager_->clean_exit_beacon()->WriteBeaconValue(false);
   StartSchedulerIfNecessary();
+
+  if (force_open_new_log && recording_active() && state_ >= SENDING_LOGS) {
+    // Because state_ >= SENDING_LOGS, PushPendingLogsToPersistentStorage()
+    // will close the log, allowing a new log to be opened.
+    PushPendingLogsToPersistentStorage();
+    OpenNewLog();
+  }
 }
+
 #else
 void MetricsService::LogNeedForCleanShutdown() {
   state_manager_->clean_exit_beacon()->WriteBeaconValue(false);

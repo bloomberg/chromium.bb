@@ -134,7 +134,7 @@ class MetricsService : public base::HistogramFlattener {
   void OnAppEnterBackground(bool keep_recording_in_background = false);
 
   // Called when the application is coming out of background mode.
-  void OnAppEnterForeground();
+  void OnAppEnterForeground(bool force_open_new_log = false);
 #else
   // Set the dirty flag, which will require a later call to LogCleanShutdown().
   void LogNeedForCleanShutdown();
