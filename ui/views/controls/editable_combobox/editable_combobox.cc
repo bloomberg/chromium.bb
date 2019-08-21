@@ -385,7 +385,6 @@ void EditableCombobox::RevealPasswords(bool revealed) {
   textfield_->SetTextInputType(revealed ? ui::TEXT_INPUT_TYPE_TEXT
                                         : ui::TEXT_INPUT_TYPE_PASSWORD);
   menu_model_->UpdateItemsShown();
-  ShowDropDownMenu();
 }
 
 int EditableCombobox::GetItemCountForTest() {
