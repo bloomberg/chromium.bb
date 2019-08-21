@@ -361,6 +361,8 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
   gl->GenTextures(1, &texture_id_);
   const GLenum target = TextureTarget();
   gl->BindTexture(target, texture_id_);
+  gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, GLFilter());
+  gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, GLFilter());
   gl->BindTexImage2DCHROMIUM(target, image_id);
   gl->DestroyImageCHROMIUM(image_id);
 
