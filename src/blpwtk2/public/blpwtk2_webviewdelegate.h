@@ -117,6 +117,13 @@ class BLPWTK2_EXPORT WebViewDelegate {
 
 
     // patch section: devtools integration
+    virtual void devToolsAgentHostAttached(WebView *source);
+        // Notify the embedder that a devtools frontend is connected to this
+        // webview's devtools agent.
+
+    virtual void devToolsAgentHostDetached(WebView *source);
+        // Notify the embedder that a devtools frontend is disconnected from
+        // this webview's devtools agent.
 
 
     // patch section: performance monitor
