@@ -70,6 +70,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
+#include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -532,8 +533,12 @@ class DriveIntegrationService::DriveFsHolder
     return profile_->GetURLLoaderFactory();
   }
 
-  service_manager::Connector* GetConnector() override {
-    return content::BrowserContext::GetConnectorFor(profile_);
+  void BindIdentityAccessor(
+      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
+      override {
+    auto* service = profile_->GetIdentityService();
+    if (service)
+      service->BindIdentityAccessor(std::move(receiver));
   }
 
   const AccountId& GetAccountId() override {
