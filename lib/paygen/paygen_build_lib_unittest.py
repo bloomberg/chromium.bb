@@ -192,7 +192,8 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
         self.target_build.channel,
         self.target_build.version)
     self.delta_payload_test = paygen_build_lib.PayloadTest(
-        self.test_delta_payload)
+        self.test_delta_payload,
+        payload_type=paygen_build_lib.PAYLOAD_TYPE_OMAHA)
 
   def _GetPaygenBuildInstance(self, dry_run=False, skip_delta_payloads=False):
     """Helper method to create a standard Paygen instance."""
@@ -688,7 +689,9 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             paygen_build_lib.PayloadTest(test_full,
                                          'canary-channel', '9999.0.0'),
             paygen_build_lib.PayloadTest(n2n_delta),
-            paygen_build_lib.PayloadTest(test_delta),
+            paygen_build_lib.PayloadTest(
+                test_delta,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_OMAHA),
         ])
 
   def testCanaryPrempMismatch(self):
@@ -737,7 +740,9 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             paygen_build_lib.PayloadTest(test_full,
                                          'canary-channel', '9999.0.0'),
             paygen_build_lib.PayloadTest(n2n_delta),
-            paygen_build_lib.PayloadTest(test_delta),
+            paygen_build_lib.PayloadTest(
+                test_delta,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_OMAHA),
         ])
 
   def testCanarySkipDeltas(self):
@@ -914,15 +919,30 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             paygen_build_lib.PayloadTest(
                 test_full, 'stable-channel', '9999.0.0'),
             paygen_build_lib.PayloadTest(
-                test_full, 'stable-channel', '8530.96.0'),
+                test_full, 'stable-channel', '8530.96.0',
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_FSI),
             paygen_build_lib.PayloadTest(n2n_delta),
-            paygen_build_lib.PayloadTest(test_delta_8530),
-            paygen_build_lib.PayloadTest(test_delta_8743),
-            paygen_build_lib.PayloadTest(test_delta_8872),
-            paygen_build_lib.PayloadTest(test_delta_9000),
-            paygen_build_lib.PayloadTest(test_delta_9202),
-            paygen_build_lib.PayloadTest(test_delta_9334),
-            paygen_build_lib.PayloadTest(test_delta_9460),
+            paygen_build_lib.PayloadTest(
+                test_delta_8530,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_FSI),
+            paygen_build_lib.PayloadTest(
+                test_delta_8743,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_MILESTONE),
+            paygen_build_lib.PayloadTest(
+                test_delta_8872,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_MILESTONE),
+            paygen_build_lib.PayloadTest(
+                test_delta_9000,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_MILESTONE),
+            paygen_build_lib.PayloadTest(
+                test_delta_9202,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_MILESTONE),
+            paygen_build_lib.PayloadTest(
+                test_delta_9334,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_MILESTONE),
+            paygen_build_lib.PayloadTest(
+                test_delta_9460,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_OMAHA),
             # test_image_9460_67 had test turned off in json.
         ])
 
@@ -1147,8 +1167,10 @@ class TestAutotestPayloadsPayloads(BasePaygenBuildLibTestWithBuilds):
                   acl='public-read'),
     ])
 
-    delta_ctrl = 'autotest/au_control_files/control.paygen_au_foo_delta_1.0.0'
-    full_ctrl = 'autotest/au_control_files/control.paygen_au_foo_full_1.2.3'
+    delta_ctrl = (
+        'autotest/au_control_files/control.paygen_au_foo_delta_1.0.0_omaha')
+    full_ctrl = (
+        'autotest/au_control_files/control.paygen_au_foo_full_1.2.3_n2n')
 
     # Verify tarfile contents.
     with tarfile.open(tarball_path) as t:
@@ -1173,6 +1195,7 @@ target_payload_uri = 'None'
 SUITE = 'paygen_au_foo'
 source_payload_uri = 'foo-channel_1.0.0_uri'
 source_archive_uri = 'gs://crt/foo-channel/foo-board/1.0.0'
+payload_type = 'OMAHA'
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -1184,7 +1207,7 @@ from autotest_lib.client.cros import constants
 from autotest_lib.server import host_attributes
 
 AUTHOR = "Chromium OS"
-NAME = "autoupdate_EndToEndTest_paygen_au_foo_delta_1.0.0"
+NAME = "autoupdate_EndToEndTest_paygen_au_foo_delta_1.0.0_omaha"
 TIME = "MEDIUM"
 TEST_CATEGORY = "Functional"
 TEST_CLASS = "platform"
@@ -1215,6 +1238,7 @@ target_payload_uri = 'None'
 SUITE = 'paygen_au_foo'
 source_payload_uri = 'foo-channel_1.2.3_uri'
 source_archive_uri = 'gs://crt/foo-channel/foo-board/1.2.3'
+payload_type = 'N2N'
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -1226,7 +1250,7 @@ from autotest_lib.client.cros import constants
 from autotest_lib.server import host_attributes
 
 AUTHOR = "Chromium OS"
-NAME = "autoupdate_EndToEndTest_paygen_au_foo_full_1.2.3"
+NAME = "autoupdate_EndToEndTest_paygen_au_foo_full_1.2.3_n2n"
 TIME = "MEDIUM"
 TEST_CATEGORY = "Functional"
 TEST_CLASS = "platform"

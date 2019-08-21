@@ -72,6 +72,15 @@ PAYGEN_URI = 'gs://chromeos-build-release-console/paygen.json'
 # Sleep time used in _DiscoverRequiredPayloads. Export so tests can change.
 BUILD_DISCOVER_RETRY_SLEEP = 90
 
+# Types of updates that generate payloads.
+PAYLOAD_TYPE_N2N = 'N2N'
+PAYLOAD_TYPE_FSI = 'FSI'
+PAYLOAD_TYPE_OMAHA = 'OMAHA'
+PAYLOAD_TYPE_MILESTONE = 'MILESTONE'
+PAYLOAD_TYPE_STEPPING_STONE = 'STEPPING_STONE'
+PAYLOAD_TYPES = [PAYLOAD_TYPE_N2N, PAYLOAD_TYPE_FSI, PAYLOAD_TYPE_OMAHA,
+                 PAYLOAD_TYPE_MILESTONE, PAYLOAD_TYPE_STEPPING_STONE]
+
 class Error(Exception):
   """Exception base class for this module."""
 
@@ -326,11 +335,14 @@ class PayloadTest(utils.RestrictedAttrDict):
     src_version: The version of the image to test updating from. Required
                  if the payload is a full payload, required to be None if
                  it's a delta.
+    payload_type: The type of update we are doing with this payload. Possible
+                  types are in PAYLOAD_TYPES.
   """
-  _slots = ('payload', 'src_channel', 'src_version')
+  _slots = ('payload', 'src_channel', 'src_version', 'payload_type')
   _name = 'Payload Test'
 
-  def __init__(self, payload, src_channel=None, src_version=None):
+  def __init__(self, payload, src_channel=None, src_version=None,
+               payload_type=PAYLOAD_TYPE_N2N):
     assert bool(src_channel) == bool(src_version), (
         'src_channel(%s), src_version(%s) must both be set, or not set' %
         (src_channel, src_version))
@@ -343,9 +355,12 @@ class PayloadTest(utils.RestrictedAttrDict):
     src_channel = src_channel or payload.src_image.build.channel
     src_version = src_version or payload.src_image.build.version
 
+    assert payload_type is not None and payload_type in PAYLOAD_TYPES
+
     super(PayloadTest, self).__init__(payload=payload,
                                       src_channel=src_channel,
-                                      src_version=src_version)
+                                      src_version=src_version,
+                                      payload_type=payload_type)
 
 
 class PaygenBuild(object):
@@ -800,12 +815,14 @@ class PaygenBuild(object):
         payloads.append(test_payload)
 
         if source['delta_payload_tests']:
-          payload_tests.append(PayloadTest(test_payload))
+          payload_tests.append(PayloadTest(test_payload,
+                                           payload_type=source['delta_type']))
 
       if source['full_payload_tests']:
         # Test the full payload against this source version.
         payload_tests.append(PayloadTest(
-            full_test_payload, source_build.channel, source_build.version))
+            full_test_payload, source_build.channel, source_build.version,
+            payload_type=source['delta_type']))
 
     for p in payloads:
       p.build = self._payload_build
@@ -949,7 +966,8 @@ class PaygenBuild(object):
         src_payload_uri,
         payload.uri,
         suite_name=suite_name,
-        source_archive_uri=release_archive_uri)
+        source_archive_uri=release_archive_uri,
+        payload_type=payload_test.payload_type)
 
 
   def _EmitControlFile(self, payload_test_config, control_dump_dir):
