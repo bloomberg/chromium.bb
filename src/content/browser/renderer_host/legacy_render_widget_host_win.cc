@@ -450,8 +450,12 @@ LRESULT LegacyRenderWidgetHostHWND::OnNCHitTest(UINT message,
                                              &msg_handled);
     // If the parent returns HTNOWHERE which can happen for popup windows, etc
     // we return HTCLIENT.
+    // SHEZ: If the parent returns something other than HTCLIENT, then return
+    //       HTTRANSPARENT.  This lets the parent handle non-client events.
     if (hit_test == HTNOWHERE)
       hit_test = HTCLIENT;
+    else if (hit_test != HTCLIENT)
+      hit_test = HTTRANSPARENT;
     return hit_test;
   }
   return HTNOWHERE;
@@ -475,6 +479,9 @@ LRESULT LegacyRenderWidgetHostHWND::OnPaint(UINT message,
 LRESULT LegacyRenderWidgetHostHWND::OnSetCursor(UINT message,
                                                 WPARAM w_param,
                                                 LPARAM l_param) {
+  SetMsgHandled(FALSE);  // SHEZ: This is needed so that DefWindowProc is
+                         //       called, which lets the parent window handle
+                         //       the WM_SETCURSOR event.
   return 0;
 }
 

@@ -177,6 +177,25 @@ class VIEWS_EXPORT WidgetDelegate {
   // Returns true if window has a hit-test mask.
   virtual bool WidgetHasHitTestMask() const;
 
+  // Gets called early on in the NC hit-test handler to allow widgets to handle
+  // NC hit tests themselves, without having to provide a path.
+  virtual bool OnNCHitTest(int* result, const gfx::Point& point);
+
+  // Called when the user starts dragging in a non-client region.  Return true
+  // if the delegate will handle the non-client drag, in which case,
+  // OnNCDragMove will be called continuously until OnNCDragEnd is called.
+  virtual bool OnNCDragBegin(int hit_test_code);
+
+  // Called when the user is dragging in a non-client region.  This is only
+  // called if the previous OnNCDragBegin returned true.
+  virtual void OnNCDragMove() {}
+
+  // Called when the user is finishes dragging in a non-client region.  This is
+  // only called if the previous OnNCDragBegin returned true.
+  virtual void OnNCDragEnd() {}
+
+  virtual void OnNCDoubleClick() {}
+
   // Provides the hit-test mask if HasHitTestMask above returns true.
   virtual void GetWidgetHitTestMask(SkPath* mask) const;
 

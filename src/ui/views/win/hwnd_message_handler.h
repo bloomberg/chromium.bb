@@ -647,6 +647,12 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // area. We need this so we can correctly show the context menu on mouse-up.
   bool is_right_mouse_pressed_on_caption_;
 
+  // Set to true when the delegate is performing NC drag operations.
+  bool is_delegate_nc_dragging_;
+
+  // The NC hit-test code that is in effect while NC dragging.
+  int nc_dragging_hittest_code_;
+
   // The set of touch devices currently down.
   TouchIDs touch_ids_;
 
