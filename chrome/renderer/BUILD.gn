@@ -199,7 +199,6 @@ jumbo_static_library("renderer") {
       "//components/nacl/renderer",
     ]
   }
-
   if (enable_plugins) {
     sources += [
       "pepper/chrome_renderer_pepper_host_factory.cc",
@@ -420,6 +419,15 @@ jumbo_static_library("renderer") {
       "chromeos_merge_session_loader_throttle.cc",
       "chromeos_merge_session_loader_throttle.h",
     ]
+  }
+
+  if (is_linux) {
+    sources += [
+      "performance_manager/mechanisms/tcmalloc_tunables_impl.cc",
+      "performance_manager/mechanisms/tcmalloc_tunables_impl.h",
+    ]
+
+    deps += [ "//chrome/common/performance_manager/mojom" ]
   }
 }
 

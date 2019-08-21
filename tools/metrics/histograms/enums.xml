@@ -36355,6 +36355,7 @@ from previous Chrome versions.
   <int value="779849093" label="OfflinePagesCTSuppressNotifications:disabled"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
   <int value="783270752" label="AndroidHistoryManager:enabled"/>
+  <int value="787080596" label="DynamicTcmallocTuning:enabled"/>
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
@@ -36951,6 +36952,7 @@ from previous Chrome versions.
   <int value="1640386037" label="ContextualSuggestionsSlimPeekUI:disabled"/>
   <int value="1645479440" label="HistoryManipulationIntervention:disabled"/>
   <int value="1646498561" label="OfflineBookmarks:disabled"/>
+  <int value="1649121568" label="DynamicTcmallocTuning:disabled"/>
   <int value="1651141490" label="SaveEditedPDFForm:enabled"/>
   <int value="1657713458" label="disable-virtual-keyboard-overscroll"/>
   <int value="1658644418" label="disable-app-list-voice-search"/>

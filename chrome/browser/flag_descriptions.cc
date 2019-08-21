@@ -3542,6 +3542,14 @@ const char kTerminalSystemAppName[] = "Terminal System App";
 const char kTerminalSystemAppDescription[] =
     "Enables the Terminal System App at chrome://terminal which is used for "
     "the Chrome OS Linux terminal.";
+
+#if BUILDFLAG(USE_TCMALLOC)
+const char kDynamicTcmallocName[] = "Dynamic Tcmalloc Tuning";
+const char kDynamicTcmallocDescription[] =
+    "Allows tcmalloc to dynamically adjust tunables based on system resource "
+    "utilization.";
+#endif  // BUILDFLAG(USE_TCMALLOC)
+
 #endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 // All views-based platforms --------------------------------------------------

@@ -20,6 +20,10 @@
 #include "ui/android/buildflags.h"
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_LINUX)
+#include "base/allocator/buildflags.h"
+#endif  // defined(OS_LINUX)
+
 // This file declares strings used in chrome://flags. These messages are not
 // translated, because instead of end-users they target Chromium developers and
 // testers. See https://crbug.com/587272 and https://crbug.com/703134 for more
@@ -2127,6 +2131,12 @@ extern const char kWakeOnPacketsDescription[];
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 extern const char kTerminalSystemAppName[];
 extern const char kTerminalSystemAppDescription[];
+
+#if BUILDFLAG(USE_TCMALLOC)
+extern const char kDynamicTcmallocName[];
+extern const char kDynamicTcmallocDescription[];
+#endif  // BUILDFLAG(USE_TCMALLOC)
+
 #endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 // All views-based platforms --------------------------------------------------

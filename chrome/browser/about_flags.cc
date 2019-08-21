@@ -157,6 +157,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 
+#if defined(OS_LINUX)
+#include "base/allocator/buildflags.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
@@ -1915,6 +1919,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"terminal-system-app", flag_descriptions::kTerminalSystemAppName,
      flag_descriptions::kTerminalSystemAppDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(features::kTerminalSystemApp)},
+#if BUILDFLAG(USE_TCMALLOC)
+    {"dynamic-tcmalloc-tuning", flag_descriptions::kDynamicTcmallocName,
+     flag_descriptions::kDynamicTcmallocDescription, kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(
+         performance_manager::features::linux::kDynamicTcmallocTuning)},
+#endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // OS_CHROMEOS || OS_LINUX
 #if defined(OS_ANDROID)
     {"enable-credit-card-assist", flag_descriptions::kCreditCardAssistName,

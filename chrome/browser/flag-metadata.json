@@ -744,6 +744,12 @@
     "expiry_milestone": 88
   },
   {
+    // See: https://crbug.com/993569.
+    "name": "dynamic-tcmalloc-tuning",
+    "owners": [ "bgeffon", "sonnyrao" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "enable-accessibility-image-descriptions",
     "owners": [ "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 77

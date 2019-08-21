@@ -3019,6 +3019,7 @@ test("unit_tests") {
     "../browser/performance_manager/graph/node_attached_data_unittest.cc",
     "../browser/performance_manager/graph/node_base_unittest.cc",
     "../browser/performance_manager/graph/page_node_impl_unittest.cc",
+    "../browser/performance_manager/graph/policies/dynamic_tcmalloc_policy_linux_unittest.cc",
     "../browser/performance_manager/graph/policies/working_set_trimmer_policy_chromeos_unittest.cc",
     "../browser/performance_manager/graph/policies/working_set_trimmer_policy_unittest.cc",
     "../browser/performance_manager/graph/process_node_impl_unittest.cc",
