@@ -1545,6 +1545,9 @@ extern const char kSiteIsolationForPasswordSitesDescription[];
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
+extern const char kTabSwitcherLongpressMenuName[];
+extern const char kTabSwitcherLongpressMenuDescription[];
+
 extern const char kTranslateAndroidManualTriggerName[];
 extern const char kTranslateAndroidManualTriggerDescription[];
 

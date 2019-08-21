@@ -2624,6 +2624,12 @@ const char kStrictSiteIsolationDescription[] =
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
 
+extern const char kTabSwitcherLongpressMenuName[] =
+    "Enable tab switcher long-press menu";
+extern const char kTabSwitcherLongpressMenuDescription[] =
+    "Enable showing a popup menu when the tab switcher is long-pressed, which "
+    "displays options for 'NewTab', 'New incognito tab' and 'Close tab'.";
+
 const char kTranslateAndroidManualTriggerName[] =
     "Enable manual translate trigger";
 const char kTranslateAndroidManualTriggerDescription[] =

@@ -4336,6 +4336,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDnsOverHttpsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kDnsOverHttps)},
 
+#if defined(OS_ANDROID)
+    {"tab-switcher-longpress-menu",
+     flag_descriptions::kTabSwitcherLongpressMenuName,
+     flag_descriptions::kTabSwitcherLongpressMenuDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabSwitcherLongpressMenu)},
+#endif  // defined(OS_ANDROID)
+
     {"bundled-exchanges", flag_descriptions::kBundledHTTPExchangesName,
      flag_descriptions::kBundledHTTPExchangesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBundledHTTPExchanges)},
