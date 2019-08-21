@@ -43,8 +43,8 @@ void ReputationWebContentsObserver::DidFinishNavigation(
 ReputationWebContentsObserver::ReputationWebContentsObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      weak_factory_(this) {}
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
+}
 
 void ReputationWebContentsObserver::HandleReputationCheckResult(
     SafetyTipType type,

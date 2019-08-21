@@ -55,7 +55,7 @@ class ReputationWebContentsObserver
   // new top frame navigations.
   safety_tips::SafetyTipType last_shown_safety_tip_type_ = SafetyTipType::kNone;
 
-  base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_;
+  base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 

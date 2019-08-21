@@ -360,8 +360,7 @@ bool VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation() {
 VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
     : use_media_foundation_(
           base::FeatureList::IsEnabled(media::kMediaFoundationVideoCapture)),
-      com_thread_("Windows Video Capture COM Thread"),
-      weak_ptr_factory_(this) {
+      com_thread_("Windows Video Capture COM Thread") {
   mf_enum_device_sources_func_ =
       PlatformSupportsMediaFoundation() ? MFEnumDeviceSources : nullptr;
   direct_show_enum_devices_func_ =
