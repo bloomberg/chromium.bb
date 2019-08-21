@@ -50841,6 +50841,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="HourBinPredictorLoadingError"/>
   <int value="13" label="MarkovPredictorLoadingError"/>
   <int value="14" label="ExponentialWeightsEnsembleLoadingError"/>
+  <int value="15" label="FrequencyPredictorLoadingError"/>
 </enum>
 
 <enum name="RecurrenceRankerUsage">
