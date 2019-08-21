@@ -2452,6 +2452,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ContactsPicker.ShareStatistics">
+  <owner>finnur@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Measures statistics about the contacts shared in the contacts picker (when
+    the Contacts Picker dialog is dismissed.)
+  </summary>
+  <metric name="SelectCount">
+    <summary>
+      Measures the total number of contacts selected in the contacts picker.
+    </summary>
+  </metric>
+  <metric name="SelectPercentage">
+    <summary>
+      Measures the percentage of contacts selected in the contacts picker.
+    </summary>
+  </metric>
+</event>
+
 <event name="ContentIndex.Added">
   <owner>rayankans@chromium.org</owner>
   <summary>
