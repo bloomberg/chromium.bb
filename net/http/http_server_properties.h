@@ -409,7 +409,7 @@ class NET_EXPORT HttpServerProperties
   // friendness is no longer required.
   friend class HttpServerPropertiesPeer;
 
-  typedef base::flat_map<url::SchemeHostPort, url::SchemeHostPort>
+  typedef base::flat_map<ServerInfoMapKey, url::SchemeHostPort>
       CanonicalAltSvcMap;
   typedef base::flat_map<HostPortPair, quic::QuicServerId>
       CanonicalServerInfoMap;
@@ -420,16 +420,20 @@ class NET_EXPORT HttpServerProperties
   // |use_network_isolation_key_| to create a ServerInfoMapKey.
   ServerInfoMapKey CreateServerInfoKey(
       const url::SchemeHostPort& server,
-      const NetworkIsolationKey& network_isolation_key);
+      const NetworkIsolationKey& network_isolation_key) const;
 
-  // Return the iterator for |server|, or for its canonical host, or end. Skips
-  // over ServerInfos without |alternative_service_info| populated.
+  // Return the iterator for |server| in the context of |network_isolation_key|,
+  // or for its canonical host, or end. Skips over ServerInfos without
+  // |alternative_service_info| populated.
   ServerInfoMap::const_iterator GetIteratorWithAlternativeServiceInfo(
-      const url::SchemeHostPort& server);
+      const url::SchemeHostPort& server,
+      const net::NetworkIsolationKey& network_isolation_key);
 
-  // Return the canonical host for |server|, or end if none exists.
+  // Return the canonical host for |server|  in the context of
+  // |network_isolation_key|, or end if none exists.
   CanonicalAltSvcMap::const_iterator GetCanonicalAltSvcHost(
-      const url::SchemeHostPort& server) const;
+      const url::SchemeHostPort& server,
+      const net::NetworkIsolationKey& network_isolation_key) const;
 
   // Return the canonical host with the same canonical suffix as |server|.
   // The returned canonical host can be used to search for server info in
@@ -437,8 +441,11 @@ class NET_EXPORT HttpServerProperties
   CanonicalServerInfoMap::const_iterator GetCanonicalServerInfoHost(
       const quic::QuicServerId& server) const;
 
-  // Remove the canonical alt-svc host for |server|.
-  void RemoveAltSvcCanonicalHost(const url::SchemeHostPort& server);
+  // Remove the canonical alt-svc host for |server| with
+  // |network_isolation_key|.
+  void RemoveAltSvcCanonicalHost(
+      const url::SchemeHostPort& server,
+      const NetworkIsolationKey& network_isolation_key);
 
   // Update |canonical_server_info_map_| with the new canonical host.
   // The |server| should have the corresponding server info associated with it

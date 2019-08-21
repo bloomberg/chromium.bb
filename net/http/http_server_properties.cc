@@ -294,7 +294,7 @@ AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
     return valid_alternative_service_infos;
   }
 
-  auto canonical = GetCanonicalAltSvcHost(origin);
+  auto canonical = GetCanonicalAltSvcHost(origin, network_isolation_key);
   if (canonical == canonical_alt_svc_map_.end()) {
     return AlternativeServiceInfoVector();
   }
@@ -373,7 +373,7 @@ void HttpServerProperties::SetAlternativeServices(
     const net::NetworkIsolationKey& network_isolation_key,
     const AlternativeServiceInfoVector& alternative_service_info_vector) {
   if (alternative_service_info_vector.empty()) {
-    RemoveAltSvcCanonicalHost(origin);
+    RemoveAltSvcCanonicalHost(origin, network_isolation_key);
     // Don't bother moving to front when erasing information.
     auto it = server_info_map_.Peek(
         CreateServerInfoKey(origin, network_isolation_key));
@@ -427,7 +427,8 @@ void HttpServerProperties::SetAlternativeServices(
   }
 
   const bool previously_no_alternative_services =
-      (GetIteratorWithAlternativeServiceInfo(origin) == server_info_map_.end());
+      (GetIteratorWithAlternativeServiceInfo(origin, network_isolation_key) ==
+       server_info_map_.end());
 
   it->second.alternative_services = alternative_service_info_vector;
 
@@ -448,7 +449,8 @@ void HttpServerProperties::SetAlternativeServices(
     if (canonical_suffix != nullptr) {
       url::SchemeHostPort canonical_server(kCanonicalScheme, *canonical_suffix,
                                            origin.port());
-      canonical_alt_svc_map_[canonical_server] = origin;
+      canonical_alt_svc_map_[CreateServerInfoKey(
+          canonical_server, network_isolation_key)] = origin;
     }
   }
 
@@ -730,7 +732,8 @@ void HttpServerProperties::OnExpireBrokenAlternativeService(
     // from both |canonical_alt_svc_map_| and
     // |alternative_service_map_|.
     if (service_info->empty()) {
-      RemoveAltSvcCanonicalHost(map_it->first.server);
+      // TODO(mmenke): Take a NetworkIsolationKey as input and use it here.
+      RemoveAltSvcCanonicalHost(map_it->first.server, NetworkIsolationKey());
       map_it->second.alternative_services.reset();
       map_it = server_info_map_.EraseIfEmpty(map_it);
       continue;
@@ -746,27 +749,28 @@ base::TimeDelta HttpServerProperties::GetUpdatePrefsDelayForTesting() {
 HttpServerProperties::ServerInfoMapKey
 HttpServerProperties::CreateServerInfoKey(
     const url::SchemeHostPort& server,
-    const NetworkIsolationKey& network_isolation_key) {
+    const NetworkIsolationKey& network_isolation_key) const {
   return ServerInfoMapKey(server, network_isolation_key,
                           use_network_isolation_key_);
 }
 
 HttpServerProperties::ServerInfoMap::const_iterator
 HttpServerProperties::GetIteratorWithAlternativeServiceInfo(
-    const url::SchemeHostPort& server) {
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key) {
   ServerInfoMap::const_iterator it =
-      server_info_map_.Get(CreateServerInfoKey(server, NetworkIsolationKey()));
+      server_info_map_.Get(CreateServerInfoKey(server, network_isolation_key));
   if (it != server_info_map_.end() && it->second.alternative_services)
     return it;
 
-  auto canonical = GetCanonicalAltSvcHost(server);
+  auto canonical = GetCanonicalAltSvcHost(server, network_isolation_key);
   if (canonical == canonical_alt_svc_map_.end()) {
     return server_info_map_.end();
   }
 
   const url::SchemeHostPort canonical_server = canonical->second;
   it = server_info_map_.Get(
-      CreateServerInfoKey(canonical_server, NetworkIsolationKey()));
+      CreateServerInfoKey(canonical_server, network_isolation_key));
   if (it == server_info_map_.end() || !it->second.alternative_services)
     return server_info_map_.end();
 
@@ -782,13 +786,14 @@ HttpServerProperties::GetIteratorWithAlternativeServiceInfo(
     }
   }
 
-  RemoveAltSvcCanonicalHost(canonical_server);
+  RemoveAltSvcCanonicalHost(canonical_server, network_isolation_key);
   return server_info_map_.end();
 }
 
 HttpServerProperties::CanonicalAltSvcMap::const_iterator
 HttpServerProperties::GetCanonicalAltSvcHost(
-    const url::SchemeHostPort& server) const {
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key) const {
   const char* kCanonicalScheme = "https";
   if (server.scheme() != kCanonicalScheme)
     return canonical_alt_svc_map_.end();
@@ -799,7 +804,8 @@ HttpServerProperties::GetCanonicalAltSvcHost(
 
   url::SchemeHostPort canonical_server(kCanonicalScheme, *canonical_suffix,
                                        server.port());
-  return canonical_alt_svc_map_.find(canonical_server);
+  return canonical_alt_svc_map_.find(
+      CreateServerInfoKey(canonical_server, network_isolation_key));
 }
 
 HttpServerProperties::CanonicalServerInfoMap::const_iterator
@@ -814,8 +820,9 @@ HttpServerProperties::GetCanonicalServerInfoHost(
 }
 
 void HttpServerProperties::RemoveAltSvcCanonicalHost(
-    const url::SchemeHostPort& server) {
-  auto canonical = GetCanonicalAltSvcHost(server);
+    const url::SchemeHostPort& server,
+    const NetworkIsolationKey& network_isolation_key) {
+  auto canonical = GetCanonicalAltSvcHost(server, network_isolation_key);
   if (canonical == canonical_alt_svc_map_.end())
     return;
 
@@ -922,30 +929,28 @@ void HttpServerProperties::OnServerInfoLoaded(
   // Attempt to find canonical servers. Canonical suffix only apply to HTTPS.
   const uint16_t kCanonicalPort = 443;
   const char* kCanonicalScheme = "https";
-  for (const std::string& canonical_suffix : canonical_suffixes_) {
-    url::SchemeHostPort canonical_server(kCanonicalScheme, canonical_suffix,
-                                         kCanonicalPort);
+  for (auto it = server_info_map_.begin(); it != server_info_map_.end(); ++it) {
+    if (!it->second.alternative_services ||
+        it->first.server.scheme() != kCanonicalScheme) {
+      continue;
+    }
+    const std::string* canonical_suffix =
+        GetCanonicalSuffix(it->first.server.host());
+    if (!canonical_suffix)
+      continue;
+    ServerInfoMapKey key = CreateServerInfoKey(
+        url::SchemeHostPort(kCanonicalScheme, *canonical_suffix,
+                            kCanonicalPort),
+        it->first.network_isolation_key);
     // If we already have a valid canonical server, we're done.
-    if (base::Contains(canonical_alt_svc_map_, canonical_server)) {
-      auto it = server_info_map_.Peek(CreateServerInfoKey(
-          canonical_alt_svc_map_[canonical_server], NetworkIsolationKey()));
+    if (base::Contains(canonical_alt_svc_map_, key)) {
+      auto it = server_info_map_.Peek(key);
       if (it != server_info_map_.end() &&
           it->second.alternative_services.has_value()) {
         continue;
       }
     }
-    // Now attempt to find a server which matches this origin and set it as
-    // canonical.
-    for (ServerInfoMap::const_iterator it = server_info_map_.begin();
-         it != server_info_map_.end(); ++it) {
-      if (base::EndsWith(it->first.server.host(), canonical_suffix,
-                         base::CompareCase::INSENSITIVE_ASCII) &&
-          it->first.server.scheme() == canonical_server.scheme() &&
-          it->second.alternative_services.has_value()) {
-        canonical_alt_svc_map_[canonical_server] = it->first.server;
-        break;
-      }
-    }
+    canonical_alt_svc_map_[key] = it->first.server;
   }
 }
 

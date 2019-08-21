@@ -2120,4 +2120,172 @@ TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyIntegration) {
   EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
 }
 
+// Tests a full round trip to prefs and back in the canonical suffix case.
+// Enable NetworkIsolationKeys, as they have some interactions with the
+// canonical suffix logic.
+TEST_F(HttpServerPropertiesManagerTest,
+       CanonicalSuffixRoundTripWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  // Three servers with the same canonical suffix (".c.youtube.com").
+  const url::SchemeHostPort kServer1("https", "foo.c.youtube.com", 443);
+  const url::SchemeHostPort kServer2("https", "bar.c.youtube.com", 443);
+  const url::SchemeHostPort kServer3("https", "baz.c.youtube.com", 443);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  // Create three alt service vectors of different lengths.
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  AlternativeServiceInfo alt_service1 =
+      AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+          AlternativeService(kProtoQUIC, "foopy.c.youtube.com", 1234),
+          expiration,
+          HttpNetworkSession::Params().quic_params.supported_versions);
+  AlternativeServiceInfo alt_service2 =
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          AlternativeService(kProtoHTTP2, "foopy.c.youtube.com", 443),
+          expiration);
+  AlternativeServiceInfo alt_service3 =
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          AlternativeService(kProtoHTTP2, "foopy2.c.youtube.com", 443),
+          expiration);
+  AlternativeServiceInfoVector alt_service_vector1 = {alt_service1};
+  AlternativeServiceInfoVector alt_service_vector2 = {alt_service1,
+                                                      alt_service2};
+  AlternativeServiceInfoVector alt_service_vector3 = {
+      alt_service1, alt_service2, alt_service3};
+
+  // Create and initialize an HttpServerProperties with no state.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  // Set alternative services for kServer1 using kNetworkIsolationKey1. That
+  // information should be retrieved when fetching information for any server
+  // with the same canonical suffix, when using kNetworkIsolationKey1.
+  properties->SetAlternativeServices(kServer1, kNetworkIsolationKey1,
+                                     alt_service_vector1);
+  EXPECT_EQ(
+      1u,
+      properties->GetAlternativeServiceInfos(kServer1, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      1u,
+      properties->GetAlternativeServiceInfos(kServer2, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      1u,
+      properties->GetAlternativeServiceInfos(kServer3, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      0u,
+      properties->GetAlternativeServiceInfos(kServer1, kNetworkIsolationKey2)
+          .size());
+
+  // Set different alternative services for kServer2 using
+  // kNetworkIsolationKey1. It should not affect information retrieved for
+  // kServer1, but should for kServer2 and kServer3.
+  properties->SetAlternativeServices(kServer2, kNetworkIsolationKey1,
+                                     alt_service_vector2);
+  EXPECT_EQ(
+      1u,
+      properties->GetAlternativeServiceInfos(kServer1, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      2u,
+      properties->GetAlternativeServiceInfos(kServer2, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      2u,
+      properties->GetAlternativeServiceInfos(kServer3, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      0u,
+      properties->GetAlternativeServiceInfos(kServer1, kNetworkIsolationKey2)
+          .size());
+
+  // Set different information for kServer1 using kNetworkIsolationKey2. It
+  // should not affect information stored for kNetworkIsolationKey1.
+  properties->SetAlternativeServices(kServer1, kNetworkIsolationKey2,
+                                     alt_service_vector3);
+  EXPECT_EQ(
+      1u,
+      properties->GetAlternativeServiceInfos(kServer1, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      2u,
+      properties->GetAlternativeServiceInfos(kServer2, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      2u,
+      properties->GetAlternativeServiceInfos(kServer3, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      3u,
+      properties->GetAlternativeServiceInfos(kServer1, kNetworkIsolationKey2)
+          .size());
+  EXPECT_EQ(
+      3u,
+      properties->GetAlternativeServiceInfos(kServer2, kNetworkIsolationKey2)
+          .size());
+  EXPECT_EQ(
+      3u,
+      properties->GetAlternativeServiceInfos(kServer3, kNetworkIsolationKey2)
+          .size());
+
+  // Wait until the data's been written to prefs, and then tear down the
+  // HttpServerProperties.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+  std::unique_ptr<base::DictionaryValue> saved_value =
+      unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+  properties.reset();
+
+  // Create a new HttpServerProperties using the value saved to prefs above.
+  pref_delegate = std::make_unique<MockPrefDelegate>();
+  unowned_pref_delegate = pref_delegate.get();
+  properties = std::make_unique<HttpServerProperties>(
+      std::move(pref_delegate), /*net_log=*/nullptr, GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(*saved_value);
+
+  // Only the first of the values learned for kNetworkIsolationKey1 should have
+  // been saved, and the value for kNetworkIsolationKey2 as well. The canonical
+  // suffix logic should still be respected.
+  //
+  // TODO(mmenke): Preferring the oldest value seems unexpected.
+  // https://crbug.com/994842.
+  EXPECT_EQ(
+      1u,
+      properties->GetAlternativeServiceInfos(kServer1, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      1u,
+      properties->GetAlternativeServiceInfos(kServer2, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      1u,
+      properties->GetAlternativeServiceInfos(kServer3, kNetworkIsolationKey1)
+          .size());
+  EXPECT_EQ(
+      3u,
+      properties->GetAlternativeServiceInfos(kServer1, kNetworkIsolationKey2)
+          .size());
+  EXPECT_EQ(
+      3u,
+      properties->GetAlternativeServiceInfos(kServer2, kNetworkIsolationKey2)
+          .size());
+  EXPECT_EQ(
+      3u,
+      properties->GetAlternativeServiceInfos(kServer3, kNetworkIsolationKey2)
+          .size());
+}
+
 }  // namespace net
