@@ -71,6 +71,7 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
 
   // ProcessNodeObserver implementation:
   void OnProcessNodeAdded(const ProcessNode* process_node) override;
+  void OnProcessLifetimeChange(const ProcessNode* process_node) override;
   void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) override;
   void OnExpectedTaskQueueingDurationSample(
       const ProcessNode* process_node) override {}  // Ignored.
