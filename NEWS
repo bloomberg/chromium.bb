@@ -47,6 +47,10 @@ None
 ** Backwards incompatible changes
 None
 
+** Invisible changes
+   - Internally separate more clearly the display and translation
+     phases.
+
 ** New, renamed or removed tables
 *** New
 - grc-international-common.uti
