@@ -142,6 +142,11 @@ void NativeViewWidget::setRegion(blpwtk2::NativeRegion region)
 
 
 // patch section: gpu
+gfx::NativeWindow NativeViewWidget::GetNativeWindow()
+{
+    DCHECK(d_impl);
+    return d_impl->GetNativeWindow();
+}
 
 
 

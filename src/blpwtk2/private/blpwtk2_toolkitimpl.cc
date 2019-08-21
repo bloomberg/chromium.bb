@@ -26,6 +26,7 @@
 #include <blpwtk2_browsermainrunner.h>
 #include <blpwtk2_contentbrowserclientimpl.h>
 
+#include <blpwtk2_gpudatalogger.h>
 #include <blpwtk2_browserthread.h>
 #include <blpwtk2_channelinfo.h>
 #include <blpwtk2_desktopstreamsregistry.h>
@@ -60,6 +61,7 @@
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
 #include <content/public/browser/render_process_host.h>
+#include <content/public/browser/gpu_data_manager.h>
 #include <content/public/common/content_switches.h>
 #include <content/common/in_process_child_thread_params.h>
 #include <content/renderer/render_thread_impl.h>
@@ -470,6 +472,24 @@ std::string ToolkitImpl::createProcessHost(
     return hostChannel;
 }
 
+void ToolkitImpl::attachGPUDataLogObserver()
+{
+    detachGPUDataLogObserver();
+    // attach the GPU Data logger to the GPU Data manager as observer
+    d_gpuDataLogger = GpuDataLogger::Create();
+    d_gpuDataLogger->AddRef();
+    content::GpuDataManager::GetInstance()->AddObserver(d_gpuDataLogger.get());
+}
+
+void ToolkitImpl::detachGPUDataLogObserver()
+{
+    if (d_gpuDataLogger) {
+         content::GpuDataManager::GetInstance()->RemoveObserver(d_gpuDataLogger.get());
+        d_gpuDataLogger->Release();
+        d_gpuDataLogger = nullptr;
+    }
+}
+
 ToolkitImpl *ToolkitImpl::instance()
 {
     return g_instance;
@@ -595,6 +615,8 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     // Start pumping the message loop.
     startMessageLoop(sandboxInfo);
 
+    attachGPUDataLogObserver();
+
     if (Statics::isRendererMainThreadMode()) {
         // Initialize the renderer.
         DCHECK(!currentHostChannel.empty());
@@ -622,6 +644,8 @@ ToolkitImpl::~ToolkitImpl()
 {
     LOG(INFO) << "Shutting down threads...";
     ScopeExitGuard exit_guard{EXIT_TIME_OUT_MS};
+
+    detachGPUDataLogObserver();
 
     if (Statics::isRendererMainThreadMode()) {
         if (d_browserThread.get()) {

@@ -67,6 +67,8 @@ class BrowserMainRunner;
 class ProcessHostImpl;
 class Profile;
 class StringRef;
+class GpuDataLogger;
+
 
                         // =================
                         // class ToolkitImpl
@@ -106,6 +108,9 @@ class ToolkitImpl : public Toolkit {
 
 
     // patch section: gpu
+    scoped_refptr<GpuDataLogger> d_gpuDataLogger;
+        // GPU data manager observer to log the gpu process messages
+        // note: verbosity of the log depends on chromium gpu debugging switches
 
 
     // patch section: multi-heap tracer
@@ -128,6 +133,11 @@ class ToolkitImpl : public Toolkit {
         // toolkit is operating as the browser, it launches a
         // BrowerMainRunner.  The browser main runner requires 'sandboxInfo'
         // during its initialization.
+
+    void attachGPUDataLogObserver();
+        // attach the GPU Data logger to the GPU Data manager as observer
+    void detachGPUDataLogObserver();
+        // remove the GPU Data logger attached the GPU Data manager as observer
 
     std::string createProcessHost(
             const sandbox::SandboxInterfaceInfo& sandboxInfo,
