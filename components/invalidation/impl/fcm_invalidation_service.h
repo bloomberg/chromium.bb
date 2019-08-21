@@ -132,13 +132,13 @@ class FCMInvalidationService
   InvalidationLogger logger_;
 
   FCMNetworkHandlerCallback fcm_network_handler_callback_;
-  instance_id::InstanceIDDriver* instance_id_driver_;
+  instance_id::InstanceIDDriver* const instance_id_driver_;
   std::string client_id_;
 
-  IdentityProvider* identity_provider_;
-  PrefService* pref_service_;
-  syncer::ParseJSONCallback parse_json_;
-  network::mojom::URLLoaderFactory* loader_factory_;
+  IdentityProvider* const identity_provider_;
+  PrefService* const pref_service_;
+  syncer::ParseJSONCallback const parse_json_;
+  network::mojom::URLLoaderFactory* const loader_factory_;
   bool update_was_requested_ = false;
   Diagnostics diagnostic_info_;
 
