@@ -59,6 +59,11 @@ void OverlayWindowAndroid::Destroy(JNIEnv* env) {
   controller_->OnWindowDestroyed();
 }
 
+void OverlayWindowAndroid::Play(JNIEnv* env) {
+  DCHECK(!controller_->IsPlayerActive());
+  controller_->TogglePlayPause();
+}
+
 void OverlayWindowAndroid::Close() {
   if (java_ref_.is_uninitialized())
     return;

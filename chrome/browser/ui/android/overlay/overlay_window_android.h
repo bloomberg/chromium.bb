@@ -25,6 +25,7 @@ class OverlayWindowAndroid : public content::OverlayWindow,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jwindow_android);
   void Destroy(JNIEnv* env);
+  void Play(JNIEnv* env);
 
   // ui::WindowAndroidObserver implementation.
   void OnCompositingDidCommit() override {}
