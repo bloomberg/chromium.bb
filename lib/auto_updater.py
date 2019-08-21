@@ -392,7 +392,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     values = []
     for key in keys:
       if key not in status:
-        raise ValueError('Missing %s in the update engine status')
+        raise ValueError('Missing "%s" in the update engine status' % key)
 
       values.append(status.get(key))
 
