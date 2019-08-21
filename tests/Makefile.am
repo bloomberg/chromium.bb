@@ -26,6 +26,7 @@ typeform_SOURCES = typeform.c
 typeform_for_emphclass_SOURCES = typeform_for_emphclass.c
 check_metadata_SOURCES = check_metadata.c
 suggestChunks_SOURCES = suggestChunks.c
+charToFallbackDots_SOURCES = charToFallbackDots.c
 
 program_TESTS =					\
 	checkTable				\
@@ -39,7 +40,8 @@ program_TESTS =					\
 	resolve_table				\
 	typeform				\
 	typeform_for_emphclass			\
-	suggestChunks
+	suggestChunks				\
+	charToFallbackDots
 
 check_PROGRAMS = $(program_TESTS)
 
@@ -85,6 +87,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/en-GB-g2_backward.yaml		  \
 	braille-specs/en-GB-g2_harness.yaml		  \
 	braille-specs/en-gb-g1_harness.yaml		  \
+	braille-specs/en-nabcc.yaml			  \
 	braille-specs/en-ueb-02-stand_alone.yaml	  \
 	braille-specs/en-ueb-03-symbols.yaml		  \
 	braille-specs/en-ueb-05-grade_1_mode.yaml	  \
@@ -211,7 +214,7 @@ dist_yaml_TESTS =				\
 	yaml/repword.yaml			\
 	yaml/squash_space.yaml			\
 	yaml/syllable.yaml			\
-	yaml/undefined-dots.yaml
+	yaml/undefined.yaml
 
 # This test hangs when configured without --enable-ucs4
 if HAVE_UCS4

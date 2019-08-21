@@ -528,9 +528,6 @@ compile_findCharOrDots(widechar c, int m, TranslationTableHeader *table) {
 	return NULL;
 }
 
-static char *
-unknownDots(widechar dots);
-
 static TranslationTableCharacter *
 addCharOrDots(FileInfo *nested, widechar c, int m, TranslationTableHeader **table) {
 	/* See if a character or dot pattern is in the appropriate table. If not,
@@ -641,25 +638,6 @@ putCharAndDots(FileInfo *nested, widechar c, widechar d, DisplayTableHeader **ta
 		}
 	}
 	return 1;
-}
-
-/**
- * Print out dot numbers
- *
- * @return a string containing the dot numbers. The longest possible
- * output is "\123456789ABCDEF0/"
- */
-static char *
-unknownDots(widechar dots) {
-	static char buffer[20];
-	int k = 1;
-	buffer[0] = '\\';
-	for (int mappingPos = 0; dotMapping[mappingPos].key; mappingPos++) {
-		if (dots & dotMapping[mappingPos].key) buffer[k++] = dotMapping[mappingPos].value;
-	}
-	buffer[k++] = '/';
-	buffer[k] = 0;
-	return buffer;
 }
 
 static TranslationTableOffset gNewRuleOffset = 0;
@@ -1094,7 +1072,7 @@ getOpcode(FileInfo *nested, const CharsString *token, short opcodeLengths[]) {
 		if (opcode >= CTO_None) opcode = 0;
 	} while (opcode != lastOpcode);
 	compileError(nested, "opcode %s not defined.",
-			_lou_showString(&token->chars[0], token->length));
+			_lou_showString(&token->chars[0], token->length, 0));
 	return CTO_None;
 }
 
@@ -1381,7 +1359,7 @@ parseDots(FileInfo *nested, CharsString *cells, const CharsString *token) {
 		default:
 		invalid:
 			compileError(
-					nested, "invalid dot number %s.", _lou_showString(&character, 1));
+					nested, "invalid dot number %s.", _lou_showString(&character, 1, 0));
 			return 0;
 		}
 	}
@@ -1939,7 +1917,8 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 				break;
 			} else {
 				compileError(passNested, "%s is not a grouping name",
-						_lou_showString(&passHoldString.chars[0], passHoldString.length));
+						_lou_showString(
+								&passHoldString.chars[0], passHoldString.length, 0));
 				return 0;
 			}
 			break;
@@ -1962,7 +1941,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 				goto getRange;
 			}
 			compileError(passNested, "%s is neither a class name nor a swap name.",
-					_lou_showString(&passHoldString.chars[0], passHoldString.length));
+					_lou_showString(&passHoldString.chars[0], passHoldString.length, 0));
 			return 0;
 		case pass_endTest:
 			passInstructions[passIC++] = pass_endTest;
@@ -2062,7 +2041,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 				break;
 			}
 			compileError(passNested, "%s is not a grouping name",
-					_lou_showString(&passHoldString.chars[0], passHoldString.length));
+					_lou_showString(&passHoldString.chars[0], passHoldString.length, 0));
 			return 0;
 		case pass_swap:
 			passLinepos++;
@@ -2079,7 +2058,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 				break;
 			}
 			compileError(passNested, "%s is not a swap name.",
-					_lou_showString(&passHoldString.chars[0], passHoldString.length));
+					_lou_showString(&passHoldString.chars[0], passHoldString.length, 0));
 			return 0;
 			break;
 		default:
@@ -3478,7 +3457,7 @@ doOpcode:
 							c = compile_findCharOrDots(ruleChars.chars[k], 0, *table);
 							if (!c || !c->definitionRule) {
 								compileError(nested, "Character %s is not defined",
-										_lou_showString(&ruleChars.chars[k], 1));
+										_lou_showString(&ruleChars.chars[k], 1, 0));
 								return 0;
 							}
 						}
@@ -3581,7 +3560,7 @@ doOpcode:
 					c = compile_findCharOrDots(ruleChars.chars[k], 0, *table);
 					if (!c || !c->definitionRule) {
 						compileError(nested, "Character %s is not defined",
-								_lou_showString(&ruleChars.chars[k], 1));
+								_lou_showString(&ruleChars.chars[k], 1, 0));
 						return 0;
 					}
 				}
@@ -4163,9 +4142,6 @@ compileTable(const char *tableList, TranslationTableHeader **translationTable,
 	/* TODO: These definitions seem to be necessary for proper functioning of
 	   liblouisutdml. Find a way to satisfy those requirements without hard coding
 	   some characters in every table notably behind the users back */
-	compileString("space \\x001b 1b escape", characterClasses, characterClassAttribute,
-			opcodeLengths, newRuleOffset, newRule, ruleNames, translationTable,
-			displayTable);
 	compileString("space \\xffff 123456789abcdef LOU_ENDSEGMENT", characterClasses,
 			characterClassAttribute, opcodeLengths, newRuleOffset, newRule, ruleNames,
 			translationTable, displayTable);
@@ -4496,9 +4472,9 @@ lou_free(void) {
 	gOpcodeLengths[0] = 0;
 }
 
-char *EXPORT_CALL
+const char *EXPORT_CALL
 lou_version(void) {
-	static char *version = PACKAGE_VERSION;
+	static const char *version = PACKAGE_VERSION;
 	return version;
 }
 

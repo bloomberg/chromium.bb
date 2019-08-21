@@ -8,6 +8,12 @@ issues]].
 ** New features
 - Enable ~always~ rules with a single character and and a single
   braille cell for back-translation. Thanks to Bue Vester-Andersen.
+- Implement noUndefined mode for forward translation, thanks to Dave
+  Mielke.
+- Use fallback braille representations (NABCC) for rendering undefined
+  characters in hexadecimal notation, thanks to Dave Mielke.
+- Always render undefined characters, also ASCII characters, in
+  hexadecimal notation.
 
 ** Bug fixes
 - Don't let a caps passage end on a word with no letters. Thanks to
@@ -17,8 +23,8 @@ issues]].
   Frees.
 - Never convert to lowercase if capsletter is not defined. Thanks to
   Bert Frees.
-- Fix position mapping for back-translation when noUndefinedDots mode
-  is active. Thanks to Dave Mielke.
+- Fix position mapping for back-translation when noUndefined mode is
+  active. Thanks to Dave Mielke.
 - Fix bug where a translation would hang on words that match both a
   ~nocont~ and a ~repeated~ rule. Thanks to Dave Mielke.
 
@@ -38,6 +44,9 @@ issues]].
   Sweden, and maybe also in other countries thanks to Lars Bjørndal.
 - Fix handling of colon within number in Dutch braille, thanks to Jake
   Kyle.
+- Added North American Braille Computer Code table (en-nabcc.utb)
+  which is the counterpart of the text_nabcc.dis display table. Thanks
+  to Dave Mielke.
 
 ** Other changes
 - Metadata keys and values are now case insensitive, thanks to Dave
@@ -47,7 +56,9 @@ issues]].
   mentioned in the documentation now. See also #696.
 
 ** Deprecation notice
-None
+- The noUndefinedDots mode has been renamed to noUndefined. For
+  backwards compatibility noUndefinedDots is still available in the
+  header file and in the Python bindings, as an alias for noUndefined.
 
 ** Backwards incompatible changes
 None
@@ -61,6 +72,7 @@ None
 - grc-international-common.uti
 - grc-international-composed.uti
 - grc-international-decomposed.uti
+- en-nabcc.utb
 
 *** Renamed
 - gr-bb.ctb -> grc-international-en.utb

@@ -93,6 +93,7 @@ table_files = \
 	en-GB-g2.ctb \
 	en_GB.tbl \
 	en-in-g1.ctb \
+	en-nabcc.utb \
 	en-ueb-chardefs.uti \
 	en-ueb-g1.ctb \
 	en-ueb-g2.ctb \

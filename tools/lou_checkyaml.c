@@ -428,8 +428,8 @@ read_mode(yaml_parser_t *parser) {
 			mode |= compbrlLeftCursor;
 		} else if (!strcmp((const char *)event.data.scalar.value, "ucBrl")) {
 			mode |= ucBrl;
-		} else if (!strcmp((const char *)event.data.scalar.value, "noUndefinedDots")) {
-			mode |= noUndefinedDots;
+		} else if (!strcmp((const char *)event.data.scalar.value, "noUndefined")) {
+			mode |= noUndefined;
 		} else if (!strcmp((const char *)event.data.scalar.value, "partialTrans")) {
 			mode |= partialTrans;
 		} else {

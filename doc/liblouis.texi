@@ -2777,7 +2777,7 @@ positions as in the following example:
 A list of translation modes that should be used for this test. If not
 defined defaults to 0. Valid mode values are @samp{noContractions},
 @samp{compbrlAtCursor}, @samp{dotsIO}, @samp{compbrlLeftCursor},
-@samp{ucBrl}, @samp{noUndefinedDots} or @samp{partialTrans}.
+@samp{ucBrl}, @samp{noUndefined} or @samp{partialTrans}.
 
 For a description of the various translation mode flags, please see
 the function @ref{lou_translateString}.
@@ -3222,20 +3222,28 @@ translating input typed on a braille keyboard to provide a rough idea
 to the user of the characters they are typing before the word is
 complete.
 
-@item noUndefinedDots
-Setting this bit disables the output of dot numbers when
-back-translating undefined Braille patterns. When back translating
-input from a braille keyboard cell by cell, it is desirable to output
-characters as soon as they are produced. Similarly, when back
-translating contracted braille, it is desirable to provide a "guess" to
-the user of the characters they typed. To achieve this, liblouis needs
-to have the ability to produce no text when indicators (which don't
-produce a character by themselves) are not followed by another cell.
-This works automatically for indicators liblouis knows about such as
-capital sign, number sign, etc., but it does not work for indicators
-which are not (and cannot be) specifically defined as indicators. For
-example, in UEB, dots 4 5 6 alone produces the text "\456/". Setting
-the noUndefinedDots mode suppresses this dot number output.
+@item noUndefined
+Setting this bit disables the output of hexadecimal values when
+forward-translating undefined characters (characters that are not
+matched by any rule), and dot numbers when back-translating undefined
+braille patterns (braille patterns that are not matched by any
+rule). The default is for liblouis to output the hexadecimal value (as
+'\xhhhh') of an undefined character when forward-translating and the
+dot numbers (as \ddd/) of an undefined braille pattern when
+back-translating.
+
+When back translating input from a braille keyboard cell by cell, it
+is desirable to output characters as soon as they are
+produced. Similarly, when back translating contracted braille, it is
+desirable to provide a "guess" to the user of the characters they
+typed. To achieve this, liblouis needs to have the ability to produce
+no text when indicators (which don't produce a character by
+themselves) are not followed by another cell. This works automatically
+for indicators liblouis knows about such as capital sign, number sign,
+etc., but it does not work for indicators which are not (and cannot
+be) specifically defined as indicators. For example, in UEB, dots 4 5
+6 alone produces the text "\456/". Setting the noUndefined mode
+suppresses this dot number output.
 
 @end table
 
@@ -3304,14 +3312,15 @@ characters. @code{typeform} will indicate any emphasis found in the
 input string, while @code{spacing} will indicate any differences in
 spacing between the input and output strings. The @code{typeform} and
 @code{spacing} parameters may be @code{NULL} if this information is
-not needed. @code{mode} again specifies how the back-translation
+not needed. @code{mode} specifies how the back-translation
 should be done.
 
-There are two additional modes that only apply to back-translation. By
-default, if a dot pattern in the input is undefined, the dot numbers
-will be included in the output. If the @code{noUndefinedDots} mode is
-set, this does not occur; an undefined dot pattern simply produces no
-output. The @code{partialTrans} mode specifies that the input should be
+By default, if a dot pattern in the input is undefined
+then its dot numbers will be included in the output (as \ddd/).
+This does not occur if the @code{noUndefined} mode is set;
+an undefined dot pattern simply produces no output.
+
+The @code{partialTrans} mode specifies that the input should be
 treated as an incomplete word. That is, rules that apply only for
 complete words or at the end of a word will not take effect. This is
 intended to be used when translating input typed on a braille keyboard
@@ -3779,7 +3788,7 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  abrege decrement pre cornf comf scano cornm cornp po
 @c  LocalWords:  h's brl testtrans UCS asis libyaml url yaml formtype
 @c  LocalWords:  testmode iftex unicode ueb xfail eo noContractions
-@c  LocalWords:  dotsIO ucBrl noUndefinedDots partialTrans capsletter
+@c  LocalWords:  dotsIO ucBrl noUndefined partialTrans capsletter
 @c  LocalWords:  abc doctest inString enum cp outbufbuf logcallback fprint
 @c  LocalWords:  lbu EOF heckTable fn ispell getTypeformForEmphClass
 @c  LocalWords:  indexTables begcapsword endcapsword typeforms

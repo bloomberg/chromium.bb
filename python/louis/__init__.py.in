@@ -445,7 +445,8 @@ compbrlAtCursor = 2
 dotsIO = 4
 compbrlLeftCursor = 32
 ucBrl = 64
-noUndefinedDots = 128
+noUndefined = 128
+noUndefinedDots = noUndefined # alias for backward compatiblity
 partialTrans = 256
 #}
 

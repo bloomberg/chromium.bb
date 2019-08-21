@@ -27,6 +27,7 @@ EXTRA_DIST =					\
 	en-GB-g2_backward.yaml			\
 	en-GB-g2_harness.yaml			\
 	en-gb-g1_harness.yaml			\
+	en-nabcc.yaml				\
 	en-ueb-02-stand_alone.yaml		\
 	en-ueb-03-symbols.yaml			\
 	en-ueb-05-grade_1_mode.yaml		\
