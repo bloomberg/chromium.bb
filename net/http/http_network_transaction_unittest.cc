@@ -7573,18 +7573,9 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
               ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2)),
       &authenticate_msg);
 
-  // Retry with authorization header.
-  spdy::SpdyHeaderBlock request_headers1(
-      spdy_util_.ConstructGetHeaderBlock(kUrl));
-  request_headers1["authorization"] = std::string("NTLM ") + negotiate_msg;
-  spdy::SpdySerializedFrame request1(spdy_util_.ConstructSpdyHeaders(
-      3, std::move(request_headers1), LOWEST, true));
-
-  spdy::SpdySerializedFrame rst(
-      spdy_util_.ConstructSpdyRstStream(3, spdy::ERROR_CODE_HTTP_1_1_REQUIRED));
-
   MockWrite writes0[] = {CreateMockWrite(request0, 0)};
-  MockRead reads0[] = {CreateMockRead(resp, 1), MockRead(ASYNC, 0, 2)};
+  MockRead reads0[] = {CreateMockRead(resp, 1),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
 
   // Retry yet again using HTTP/1.1.
   MockWrite writes1[] = {
@@ -7627,7 +7618,11 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
 
   SSLSocketDataProvider ssl0(ASYNC, OK);
   ssl0.next_proto = kProtoHTTP2;
+  ssl0.next_protos_expected_in_ssl_config =
+      NextProtoVector{kProtoHTTP2, kProtoHTTP11};
   SSLSocketDataProvider ssl1(ASYNC, OK);
+  // When creating the second connection, only HTTP/1.1 should be allowed.
+  ssl1.next_protos_expected_in_ssl_config = NextProtoVector{kProtoHTTP11};
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl0);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
 
