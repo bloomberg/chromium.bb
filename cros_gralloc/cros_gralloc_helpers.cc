@@ -39,6 +39,12 @@ uint32_t cros_gralloc_convert_format(int format)
 	 */
 	case HAL_PIXEL_FORMAT_BLOB:
 		return DRM_FORMAT_R8;
+#if ANDROID_VERSION >= 0x0a00
+	case HAL_PIXEL_FORMAT_RGBA_1010102:
+		return DRM_FORMAT_ABGR2101010;
+	case HAL_PIXEL_FORMAT_RGBA_FP16:
+		return DRM_FORMAT_ABGR16161616F;
+#endif
 	}
 
 	return DRM_FORMAT_NONE;

@@ -54,6 +54,13 @@ static const struct planar_layout packed_4bpp_layout = {
 	.bytes_per_pixel = { 4 }
 };
 
+static const struct planar_layout packed_8bpp_layout = {
+	.num_planes = 1,
+	.horizontal_subsampling = { 1 },
+	.vertical_subsampling = { 1 },
+	.bytes_per_pixel = { 8 }
+};
+
 static const struct planar_layout biplanar_yuv_420_layout = {
 	.num_planes = 2,
 	.horizontal_subsampling = { 1, 2 },
@@ -145,6 +152,9 @@ static const struct planar_layout *layout_from_format(uint32_t format)
 	case DRM_FORMAT_XRGB2101010:
 	case DRM_FORMAT_XRGB8888:
 		return &packed_4bpp_layout;
+
+	case DRM_FORMAT_ABGR16161616F:
+		return &packed_8bpp_layout;
 
 	default:
 		drv_log("UNKNOWN FORMAT %d\n", format);
