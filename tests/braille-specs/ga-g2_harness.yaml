@@ -6,6 +6,7 @@ table:
   __assert-match: ga-g2.ctb
 flags: {testmode: bothDirections}
 tests:
+- ["bád", ⠃⠯⠙]
 - ["Tá Áine ar scoil.", ⠠⠞⠯⠀⠠⠯⠔⠑⠀⠜⠀⠎⠉⠕⠊⠇⠲]
 - ["Éist leis an éan.", ⠠⠿⠊⠌⠀⠇⠀⠁⠝⠀⠿⠁⠝⠲]
 - ["Íosfaidh Síle a dinnéar.", ⠠⠷⠕⠎⠋⠁⠊⠙⠓⠀⠠⠎⠷⠇⠑⠀⠁⠀⠙⠔⠝⠿⠜⠲]
