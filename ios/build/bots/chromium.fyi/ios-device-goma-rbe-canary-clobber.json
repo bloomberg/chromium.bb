@@ -1,6 +1,6 @@
 {
   "comments": [
-    "Goma latest builder for iOS.",
+    "Goma RBE canary builder for iOS.",
     "It is chromium.mac/ios-device.json + use_goma_canary, clobber."
   ],
   "xcode build version": "11m382q",
@@ -21,5 +21,5 @@
   "tests": [
   ],
   "clobber": true,
-  "goma_client_type": "latest"
+  "goma_client_type": "candidate"
 }
