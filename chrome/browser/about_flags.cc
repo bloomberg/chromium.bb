@@ -1037,6 +1037,15 @@ const FeatureEntry::FeatureParam kExploreSitesIconGrouped[] = {
          kExploreSitesMostLikelyVariationParameterName,
      chrome::android::explore_sites::
          kExploreSitesMostLikelyVariationIconGrouped}};
+const FeatureEntry::FeatureParam kExploreSitesWithGamesTop[] = {
+    {chrome::android::explore_sites::kExploreSitesVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesVariationMostLikelyTile},
+    {chrome::android::explore_sites::
+         kExploreSitesMostLikelyVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesMostLikelyVariationIconDots},
+    {chrome::android::explore_sites::
+         kExploreSitesHeadersExperimentParameterName,
+     chrome::android::explore_sites::kExploreSitesGamesTopExperiment}};
 const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
     {"Experimental", &kExploreSitesExperimental, 1, nullptr},
     {"Personalized", &kExploreSitesPersonalized, 1, nullptr},
@@ -1046,6 +1055,8 @@ const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
      nullptr},
     {"Grouped Icon", kExploreSitesIconGrouped,
      base::size(kExploreSitesIconGrouped), nullptr},
+    {"Games Top", kExploreSitesWithGamesTop,
+     base::size(kExploreSitesWithGamesTop), nullptr},
     {"Dense Title Bottom", kExploreSitesDenseTitleBottom,
      base::size(kExploreSitesDenseTitleBottom), nullptr},
     {"Dense Title Right", kExploreSitesDenseTitleRight,
@@ -1407,7 +1418,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExploreSitesDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kExploreSites,
                                     kExploreSitesVariations,
-                                    "ExploreSites")},
+                                    "ExploreSites InitialCountries")},
     {"shopping-assist", flag_descriptions::kShoppingAssistName,
      flag_descriptions::kShoppingAssistDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kShoppingAssist)},
