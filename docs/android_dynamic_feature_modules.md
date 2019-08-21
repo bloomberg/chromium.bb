@@ -680,13 +680,12 @@ public static void installModuleWithUi(
                     R.string.foo_module_title,
                     new ModuleInstallUi.FailureUiListener() {
                         @Override
-                        public void onRetry() {
-                            installModuleWithUi(tab, onFinishedListener);
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            onFinishedListener.onFinished(false);
+                        public void onFailureUiResponse(retry) {
+                            if (retry) {
+                                installModuleWithUi(tab, onFinishedListener);
+                            } else {
+                                onFinishedListener.onFinished(false);
+                            }
                         }
                     });
     // At the time of writing, shows toast informing user about install start.
