@@ -213,11 +213,9 @@ Range* BBWindowHooks::findPlainText(Range* range, const String& target, long opt
     EphemeralRangeInFlatTree result_range =
         blink::FindBuffer::FindMatchInRange(EphemeralRangeInFlatTree(range), target, options);
 
-    Range* range_object =
-        Range::Create(result_range.GetDocument(),
+    return MakeGarbageCollected<Range>(result_range.GetDocument(),
                       ToPositionInDOMTree(result_range.StartPosition()),
                       ToPositionInDOMTree(result_range.EndPosition()));
-    return range_object;
 }
 
 bool BBWindowHooks::checkSpellingForNode(Node* node)
