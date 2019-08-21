@@ -17387,6 +17387,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ProfileMenu_ActionableItemClicked">
+  <owner>msarda@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    The user clicked a button or a link in the profile menu.
+  </description>
+</action>
+
 <action name="PWAInstallIcon">
   <owner>alancutter@chromium.org</owner>
   <description>
