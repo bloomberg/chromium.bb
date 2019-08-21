@@ -4935,7 +4935,6 @@ crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/s
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-twice-manual.html [ Failure ]
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-elements-manual.html [ Failure ]
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Failure Timeout ]
-crbug.com/852645 virtual/android/fullscreen/api/document-exit-fullscreen-vs-request.html [ Failure ]
 
 # snav tests fail because of a DCHECK
 crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest-a11y.html [ Crash ]
