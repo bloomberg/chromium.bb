@@ -24339,6 +24339,7 @@ Called by update_net_error_codes.py.-->
   <int value="3004" label="PerformanceObserverBufferedFlag"/>
   <int value="3005" label="WakeLockAcquireScreenLock"/>
   <int value="3006" label="WakeLockAcquireSystemLock"/>
+  <int value="3007" label="ThirdPartyServiceWorker"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
