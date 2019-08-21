@@ -57,9 +57,7 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     LayerTreeTest::SetupTree();
     scoped_refptr<Layer> outer_viewport_scroll_layer = Layer::Create();
     outer_viewport_scroll_layer->SetBounds(layer_size);
-    CreateVirtualViewportLayers(root.get(), outer_viewport_scroll_layer,
-                                gfx::Size(50, 50), gfx::Size(50, 50),
-                                layer_tree_host());
+    SetupViewport(outer_viewport_scroll_layer, gfx::Size(50, 50));
     layer_tree_host()->outer_viewport_container_layer()->SetMasksToBounds(true);
     outer_viewport_scroll_layer->AddChild(content_layer);
 

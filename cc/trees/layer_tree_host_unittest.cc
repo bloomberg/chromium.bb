@@ -99,7 +99,7 @@ bool LayerSubtreeHasCopyRequest(Layer* layer) {
   return node->subtree_has_copy_request;
 }
 
-class LayerTreeHostTest : public LayerTreeTest {};
+using LayerTreeHostTest = LayerTreeTest;
 
 class LayerTreeHostTestHasImplThreadTest : public LayerTreeHostTest {
  public:
@@ -756,9 +756,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit2);
 class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create();
-    root->SetBounds(gfx::Size(10, 10));
-    layer_tree_host()->SetRootLayer(root);
+    SetInitialRootBounds(gfx::Size(10, 10));
     LayerTreeHostTest::SetupTree();
   }
 
@@ -1130,42 +1128,36 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSurfaceDamage);
 
 class LayerTreeHostTestLayerListSurfaceDamage : public LayerTreeHostTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->use_layer_lists = true;
-  }
+  LayerTreeHostTestLayerListSurfaceDamage() { SetUseLayerLists(); }
 
   void SetupTree() override {
-    root_ = Layer::Create();
-    child_a_ = Layer::Create();
-    child_b_ = Layer::Create();
-    child_c_ = Layer::Create();
-
-    layer_tree_host()->SetRootLayer(root_);
-
-    root_->AddChild(child_a_);
-    root_->AddChild(child_b_);
-    root_->AddChild(child_c_);
-
-    root_->SetBounds(gfx::Size(50, 50));
-
-    child_a_->SetBounds(gfx::Size(10, 20));
-    child_a_->SetForceRenderSurfaceForTesting(true);
-    child_a_->SetIsDrawable(true);
-
-    child_b_->SetBounds(gfx::Size(20, 10));
-    child_b_->SetForceRenderSurfaceForTesting(true);
-    child_b_->SetIsDrawable(true);
-
-    child_c_->SetBounds(gfx::Size(15, 15));
-    child_c_->SetForceRenderSurfaceForTesting(true);
-    child_c_->SetIsDrawable(true);
-
-    // TODO(pdr): Do not use the property tree builder for testing in layer list
-    // mode. This will require rewriting this test to manually build property
-    // trees.
-    layer_tree_host()->BuildPropertyTreesForTesting();
-
+    SetInitialRootBounds(gfx::Size(50, 50));
     LayerTreeHostTest::SetupTree();
+    root_ = layer_tree_host()->root_layer();
+
+    child_a_ = Layer::Create();
+    child_a_->SetBounds(gfx::Size(10, 20));
+    child_a_->SetIsDrawable(true);
+    CopyProperties(root_, child_a_.get());
+    auto& effect_a = CreateEffectNode(child_a_.get());
+    effect_a.render_surface_reason = RenderSurfaceReason::kTest;
+    root_->AddChild(child_a_);
+
+    child_b_ = Layer::Create();
+    child_b_->SetBounds(gfx::Size(20, 10));
+    child_b_->SetIsDrawable(true);
+    CopyProperties(root_, child_b_.get());
+    auto& effect_b = CreateEffectNode(child_b_.get());
+    effect_b.render_surface_reason = RenderSurfaceReason::kTest;
+    root_->AddChild(child_b_);
+
+    child_c_ = Layer::Create();
+    child_c_->SetBounds(gfx::Size(15, 15));
+    child_c_->SetIsDrawable(true);
+    CopyProperties(root_, child_c_.get());
+    auto& effect_c = CreateEffectNode(child_c_.get());
+    effect_c.render_surface_reason = RenderSurfaceReason::kTest;
+    root_->AddChild(child_c_);
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -1284,7 +1276,7 @@ class LayerTreeHostTestLayerListSurfaceDamage : public LayerTreeHostTest {
   }
 
  private:
-  scoped_refptr<Layer> root_;
+  Layer* root_;
   scoped_refptr<Layer> child_a_;
   scoped_refptr<Layer> child_b_;
   scoped_refptr<Layer> child_c_;
@@ -1701,44 +1693,16 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestPropertyTreesChangedSync);
 
-// Simple base class for tests that just need to mutate the layer tree
-// host and observe results without any impl thread, multi-layer, or
-// multi-frame antics.
-class LayerTreeHostTestLayerListsTest : public LayerTreeHostTest {
- public:
-  explicit LayerTreeHostTestLayerListsTest(bool use_layer_lists)
-      : use_layer_lists_(use_layer_lists) {}
-
- protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->use_layer_lists = use_layer_lists_;
-  }
-
-  void SetupTree() override {
-    root_ = Layer::Create();
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeHostTest::SetupTree();
-  }
-
-  scoped_refptr<Layer> root_;
-
- private:
-  bool use_layer_lists_;
-};
-
 class LayerTreeHostTestAnimationOpacityMutatedNotUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
- public:
-  LayerTreeHostTestAnimationOpacityMutatedNotUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(false) {}
-
+    : public LayerTreeHostTest {
  protected:
   void BeginTest() override {
-    EXPECT_EQ(1.0f, root_->opacity());
-    layer_tree_host()->SetElementOpacityMutated(root_->element_id(),
+    Layer* root = layer_tree_host()->root_layer();
+    EXPECT_EQ(1.0f, root->opacity());
+    layer_tree_host()->SetElementOpacityMutated(root->element_id(),
                                                 ElementListType::ACTIVE, 0.3f);
     // When not using layer lists, opacity is stored on the layer.
-    EXPECT_EQ(0.3f, root_->opacity());
+    EXPECT_EQ(0.3f, root->opacity());
     EndTest();
   }
 };
@@ -1747,40 +1711,31 @@ SINGLE_THREAD_TEST_F(
     LayerTreeHostTestAnimationOpacityMutatedNotUsingLayerLists);
 
 class LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
+    : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(true) {}
+  LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists() {
+    SetUseLayerLists();
+  }
 
  protected:
   void BeginTest() override {
-    // Insert a dummy effect node to observe its mutation. This would
-    // normally have been created by PaintArtifactCompositor.
-    int effect_node_id =
-        layer_tree_host()->property_trees()->effect_tree.Insert(
-            EffectNode(), EffectTree::kInvalidNodeId);
-    layer_tree_host()
-        ->property_trees()
-        ->element_id_to_effect_node_index[root_->element_id()] = effect_node_id;
+    Layer* root = layer_tree_host()->root_layer();
+    EXPECT_EQ(1.0f, root->opacity());
+    EXPECT_EQ(1.0f, layer_tree_host()
+                        ->property_trees()
+                        ->effect_tree.FindNodeFromElementId(root->element_id())
+                        ->opacity);
 
-    EXPECT_EQ(1.0f, root_->opacity());
-    EXPECT_EQ(1.0f,
-              layer_tree_host()
-                  ->property_trees()
-                  ->effect_tree.FindNodeFromElementId(root_->element_id())
-                  ->opacity);
-
-    layer_tree_host()->SetElementOpacityMutated(root_->element_id(),
+    layer_tree_host()->SetElementOpacityMutated(root->element_id(),
                                                 ElementListType::ACTIVE, 0.3f);
 
     // When using layer lists, we don't have to store the opacity on the layer.
-    EXPECT_EQ(1.0f, root_->opacity());
+    EXPECT_EQ(1.0f, root->opacity());
     // The opacity should have been set directly on the effect node instead.
-    EXPECT_EQ(0.3f,
-              layer_tree_host()
-                  ->property_trees()
-                  ->effect_tree.FindNodeFromElementId(root_->element_id())
-                  ->opacity);
+    EXPECT_EQ(0.3f, layer_tree_host()
+                        ->property_trees()
+                        ->effect_tree.FindNodeFromElementId(root->element_id())
+                        ->opacity);
     EndTest();
   }
 };
@@ -1788,20 +1743,17 @@ class LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists
 SINGLE_THREAD_TEST_F(LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists);
 
 class LayerTreeHostTestAnimationTransformMutatedNotUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
- public:
-  LayerTreeHostTestAnimationTransformMutatedNotUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(false) {}
-
+    : public LayerTreeHostTest {
  protected:
   void BeginTest() override {
-    EXPECT_EQ(gfx::Transform(), root_->transform());
+    Layer* root = layer_tree_host()->root_layer();
+    EXPECT_EQ(gfx::Transform(), root->transform());
     gfx::Transform expected_transform;
     expected_transform.Translate(42, 42);
     layer_tree_host()->SetElementTransformMutated(
-        root_->element_id(), ElementListType::ACTIVE, expected_transform);
+        root->element_id(), ElementListType::ACTIVE, expected_transform);
     // When not using layer lists, transform is stored on the layer.
-    EXPECT_EQ(expected_transform, root_->transform());
+    EXPECT_EQ(expected_transform, root->transform());
     EndTest();
   }
 };
@@ -1810,44 +1762,36 @@ SINGLE_THREAD_TEST_F(
     LayerTreeHostTestAnimationTransformMutatedNotUsingLayerLists);
 
 class LayerTreeHostTestAnimationTransformMutatedUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
+    : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestAnimationTransformMutatedUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(true) {}
+  LayerTreeHostTestAnimationTransformMutatedUsingLayerLists() {
+    SetUseLayerLists();
+  }
 
  protected:
   void BeginTest() override {
-    // Insert a dummy transform node to observe its mutation. This would
-    // normally have been created by PaintArtifactCompositor.
-    int transform_node_id =
-        layer_tree_host()->property_trees()->transform_tree.Insert(
-            TransformNode(), TransformTree::kInvalidNodeId);
-    layer_tree_host()
-        ->property_trees()
-        ->element_id_to_transform_node_index[root_->element_id()] =
-        transform_node_id;
-
-    EXPECT_EQ(gfx::Transform(), root_->transform());
+    Layer* root = layer_tree_host()->root_layer();
+    EXPECT_EQ(gfx::Transform(), root->transform());
     EXPECT_EQ(gfx::Transform(),
               layer_tree_host()
                   ->property_trees()
-                  ->transform_tree.FindNodeFromElementId(root_->element_id())
+                  ->transform_tree.FindNodeFromElementId(root->element_id())
                   ->local);
 
     gfx::Transform expected_transform;
     expected_transform.Translate(42, 42);
     layer_tree_host()->SetElementTransformMutated(
-        root_->element_id(), ElementListType::ACTIVE, expected_transform);
+        root->element_id(), ElementListType::ACTIVE, expected_transform);
 
     // When using layer lists, we don't have to store the transform on the
     // layer.
-    EXPECT_EQ(gfx::Transform(), root_->transform());
+    EXPECT_EQ(gfx::Transform(), root->transform());
     // The transform should have been set directly on the transform node
     // instead.
     EXPECT_EQ(expected_transform,
               layer_tree_host()
                   ->property_trees()
-                  ->transform_tree.FindNodeFromElementId(root_->element_id())
+                  ->transform_tree.FindNodeFromElementId(root->element_id())
                   ->local);
     EndTest();
   }
@@ -1856,21 +1800,18 @@ class LayerTreeHostTestAnimationTransformMutatedUsingLayerLists
 SINGLE_THREAD_TEST_F(LayerTreeHostTestAnimationTransformMutatedUsingLayerLists);
 
 class LayerTreeHostTestAnimationFilterMutatedNotUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
- public:
-  LayerTreeHostTestAnimationFilterMutatedNotUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(false) {}
-
+    : public LayerTreeHostTest {
  protected:
   void BeginTest() override {
+    Layer* root = layer_tree_host()->root_layer();
     FilterOperations filters;
-    EXPECT_EQ(FilterOperations(), root_->filters());
+    EXPECT_EQ(FilterOperations(), root->filters());
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
     layer_tree_host()->SetElementFilterMutated(
-        root_->element_id(), ElementListType::ACTIVE, filters);
+        root->element_id(), ElementListType::ACTIVE, filters);
     // When not using layer lists, filters are just stored directly on the
     // layer.
-    EXPECT_EQ(filters, root_->filters());
+    EXPECT_EQ(filters, root->filters());
     EndTest();
   }
 };
@@ -1878,41 +1819,34 @@ class LayerTreeHostTestAnimationFilterMutatedNotUsingLayerLists
 SINGLE_THREAD_TEST_F(LayerTreeHostTestAnimationFilterMutatedNotUsingLayerLists);
 
 class LayerTreeHostTestAnimationFilterMutatedUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
+    : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestAnimationFilterMutatedUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(true) {}
+  LayerTreeHostTestAnimationFilterMutatedUsingLayerLists() {
+    SetUseLayerLists();
+  }
 
  protected:
   void BeginTest() override {
-    // Insert a dummy effect node to observe its mutation. This would
-    // normally have been created by PaintArtifactCompositor.
-    int effect_node_id =
-        layer_tree_host()->property_trees()->effect_tree.Insert(
-            EffectNode(), EffectTree::kInvalidNodeId);
-    layer_tree_host()
-        ->property_trees()
-        ->element_id_to_effect_node_index[root_->element_id()] = effect_node_id;
-
-    EXPECT_EQ(FilterOperations(), root_->filters());
+    Layer* root = layer_tree_host()->root_layer();
+    EXPECT_EQ(FilterOperations(), root->filters());
     EXPECT_EQ(FilterOperations(),
               layer_tree_host()
                   ->property_trees()
-                  ->effect_tree.FindNodeFromElementId(root_->element_id())
+                  ->effect_tree.FindNodeFromElementId(root->element_id())
                   ->filters);
 
     FilterOperations filters;
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
     layer_tree_host()->SetElementFilterMutated(
-        root_->element_id(), ElementListType::ACTIVE, filters);
+        root->element_id(), ElementListType::ACTIVE, filters);
 
     // When using layer lists, we don't have to store the filters on the layer.
-    EXPECT_EQ(FilterOperations(), root_->filters());
+    EXPECT_EQ(FilterOperations(), root->filters());
     // The filter should have been set directly on the effect node instead.
     EXPECT_EQ(filters,
               layer_tree_host()
                   ->property_trees()
-                  ->effect_tree.FindNodeFromElementId(root_->element_id())
+                  ->effect_tree.FindNodeFromElementId(root->element_id())
                   ->filters);
     EndTest();
   }
@@ -3176,8 +3110,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
                                        2 * root_layer->bounds().height()));
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset());
 
-    CreateVirtualViewportLayers(root_layer, scroll_layer_, root_layer->bounds(),
-                                root_layer->bounds(), layer_tree_host());
+    SetupViewport(scroll_layer_, root_layer->bounds());
 
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
     client_.set_bounds(root_layer->bounds());
@@ -8250,25 +8183,17 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestQueueImageDecodeNonLazy);
 
 class LayerTreeHostTestHudLayerWithLayerLists : public LayerTreeHostTest {
  public:
+  LayerTreeHostTestHudLayerWithLayerLists() { SetUseLayerLists(); }
+
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->initial_debug_state.show_paint_rects = true;
-    settings->use_layer_lists = true;
   }
 
-  void SetupTree() override {
-    LayerTreeHostTest::SetupTree();
-
-    // Build the property trees for the root layer.
-    // TODO(pdr): Do not use the property tree builder for testing in layer list
-    // mode. This will require rewriting this test to manually build property
-    // trees.
-    layer_tree_host()->BuildPropertyTreesForTesting();
-
-    // The HUD layer should not have been setup by the property tree building.
+  void BeginTest() override {
+    // The HUD layer should not have been setup.
     DCHECK_EQ(layer_tree_host()->hud_layer(), nullptr);
+    PostSetNeedsCommitToMainThread();
   }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override { EndTest(); }
 
