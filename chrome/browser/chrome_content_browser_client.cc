@@ -684,13 +684,14 @@ const char* const kPredefinedAllowedSocketOrigins[] = {
 };
 #endif
 
-#if defined(OS_WIN) && !defined(COMPONENT_BUILD)
+#if defined(OS_WIN) && !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
 // Enables pre-launch Code Integrity Guard (CIG) for Chrome renderers, when
 // running on Windows 10 1511 and above. See
 // https://blogs.windows.com/blog/tag/code-integrity-guard/.
 const base::Feature kRendererCodeIntegrity{"RendererCodeIntegrity",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD)
+#endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD) &&
+        // !defined(ADDRESS_SANITIZER)
 
 enum AppLoadedInTabSource {
   // A platform app page tried to load one of its own URLs in a tab.
@@ -1027,7 +1028,7 @@ void MaybeAppendSecureOriginsAllowlistSwitch(base::CommandLine* cmdline) {
   }
 }
 
-#if defined(OS_WIN) && !defined(COMPONENT_BUILD)
+#if defined(OS_WIN) && !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
 // Returns the full path to |module_name|. Both dev builds (where |module_name|
 // is in the current executable's directory) and proper installs (where
 // |module_name| is in a versioned sub-directory of the current executable's
@@ -1049,7 +1050,8 @@ base::FilePath GetModulePath(base::StringPiece16 module_name) {
   // directory. This is the expected location of modules for dev builds.
   return exe_dir.Append(module_name);
 }
-#endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD)
+#endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD) &&
+        // !defined(ADDRESS_SANITIZER)
 
 }  // namespace
 
@@ -3612,7 +3614,11 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
-#if !defined(COMPONENT_BUILD)
+// Does not work under component build because all the component DLLs would need
+// to be manually added and maintained. Does not work under ASAN build because
+// ASAN has not yet fully initialized its instrumentation by the time the CIG
+// intercepts run.
+#if !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
   if (!base::FeatureList::IsEnabled(kRendererCodeIntegrity))
     return true;
 
@@ -3645,7 +3651,7 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
     if (result != sandbox::SBOX_ALL_OK)
       return false;
   }
-#endif  // !defined(COMPONENT_BUILD)
+#endif  // !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
 
   return true;
 }
