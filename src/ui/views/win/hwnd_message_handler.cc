@@ -410,6 +410,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       pointer_events_for_touch_(::features::IsUsingWMPointerForTouch()),
       precision_touchpad_scroll_phase_enabled_(base::FeatureList::IsEnabled(
           ::features::kPrecisionTouchpadScrollPhase)),
+      reroute_mouse_wheel_to_any_related_window_(false),
       autohide_factory_(this) {}
 
 HWNDMessageHandler::~HWNDMessageHandler() {
@@ -2969,7 +2970,7 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   } else if (event.type() == ui::ET_MOUSEWHEEL) {
     ui::MouseWheelEvent mouse_wheel_event(msg);
     // Reroute the mouse wheel to the window under the pointer if applicable.
-    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
+    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param, reroute_mouse_wheel_to_any_related_window_) ||
             delegate_->HandleMouseEvent(&mouse_wheel_event))
                ? 0
                : 1;

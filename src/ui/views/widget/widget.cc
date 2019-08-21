@@ -164,7 +164,8 @@ Widget::InitParams::InitParams(Type type)
       layer_type(ui::LAYER_TEXTURED),
       context(nullptr),
       force_show_in_taskbar(false),
-      force_software_compositing(false) {}
+      force_software_compositing(false),
+      reroute_mouse_wheel_to_any_related_window(false) {}
 
 Widget::InitParams::InitParams(const InitParams& other) = default;
 

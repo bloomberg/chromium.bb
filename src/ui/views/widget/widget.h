@@ -297,6 +297,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Only used on Windows.
     bool force_software_compositing;
 
+    bool reroute_mouse_wheel_to_any_related_window;
+
     // Used if widget is not activatable to do determine if mouse events should
     // be sent to the widget.
     bool wants_mouse_events_when_inactive = false;
