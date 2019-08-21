@@ -27,6 +27,8 @@ _GOMA_COMPILER_PROXY_LOG_URL_TEMPLATE = (
     'https://chromium-build-stats.appspot.com/compiler_proxy_log/%s/%s')
 _GOMA_NINJA_LOG_URL_TEMPLATE = (
     'https://chromium-build-stats.appspot.com/ninja_log/%s/%s')
+_CHROMEOS_GOMA_CIPD_PLATFORM = 'chromeos-amd64'
+_LINUX_GOMA_CIPD_PLATFORM = 'linux-amd64'
 
 
 class Goma(object):
@@ -120,9 +122,15 @@ class Goma(object):
 
     self.linux_goma_dir = goma_dir
     self.chromeos_goma_dir = chromeos_goma_dir
-    # If Goma dir for ChromeOS SDK does not set, fallback to use goma_dir.
+    # If Goma dir for ChromeOS SDK does not set,
+    # guess ChromeOS chroot Goma dir if Goma recipe module support additional,
+    # or use the linux one.
     if self.chromeos_goma_dir is None:
-      self.chromeos_goma_dir = goma_dir
+      if _LINUX_GOMA_CIPD_PLATFORM in goma_dir and 'extra' in goma_dir:
+        self.chromeos_goma_dir = goma_dir.replace(_LINUX_GOMA_CIPD_PLATFORM,
+                                                  _CHROMEOS_GOMA_CIPD_PLATFORM)
+      else:
+        self.chromeos_goma_dir = goma_dir
     # Sanity checks of given paths.
     if not os.path.isdir(self.chromeos_goma_dir):
       raise ValueError('chromeos_goma_dir does not point a directory: %s' % (
