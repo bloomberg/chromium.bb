@@ -2654,7 +2654,7 @@ class TestAnimationObserver : public ImplicitAnimationObserver {
 
   Layer* layer() const { return layer_.get(); }
 
-  void SetLayer(std::unique_ptr<Layer> layer) { layer_ = std::move(layer); }
+  void SetLayer(Layer* layer) { layer_.reset(layer); }
 
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override {}
@@ -2673,10 +2673,10 @@ class TestAnimationObserver : public ImplicitAnimationObserver {
 // Triggerring a OnDeviceScaleFactorChanged while a layer is undergoing
 // transform animation, may cause a crash. This is because the layer may be
 // deleted by the animation observer leading to a seg fault.
-TEST_P(LayerWithRealCompositorTest, DeletingLayerDuringScaleFactorChange) {
+TEST_F(LayerWithRealCompositorTest, DeletingLayerDuringScaleFactorChange) {
   TestAnimationObserver animation_observer;
 
-  std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
+  std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
   animation_observer.SetLayer(CreateLayer(LAYER_SOLID_COLOR));
 
   Layer* layer_to_delete = animation_observer.layer();
@@ -2706,7 +2706,7 @@ TEST_P(LayerWithRealCompositorTest, DeletingLayerDuringScaleFactorChange) {
   animation_observer.SetLayer(CreateLayer(LAYER_SOLID_COLOR));
   layer_to_delete = animation_observer.layer();
 
-  std::unique_ptr<Layer> child = CreateLayer(LAYER_SOLID_COLOR);
+  std::unique_ptr<Layer> child(CreateLayer(LAYER_SOLID_COLOR));
 
   root->Add(layer_to_delete);
   layer_to_delete->Add(child.get());
@@ -2727,7 +2727,7 @@ TEST_P(LayerWithRealCompositorTest, DeletingLayerDuringScaleFactorChange) {
   animation_observer.SetLayer(CreateLayer(LAYER_SOLID_COLOR));
   layer_to_delete = animation_observer.layer();
 
-  std::unique_ptr<Layer> child2 = CreateLayer(LAYER_SOLID_COLOR);
+  std::unique_ptr<Layer> child2(CreateLayer(LAYER_SOLID_COLOR));
 
   root->Add(layer_to_delete);
   layer_to_delete->Add(child.get());
