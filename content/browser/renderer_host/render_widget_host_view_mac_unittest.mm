@@ -1369,7 +1369,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(),
-      kMaximumTimeBetweenPhaseEndedAndMomentumPhaseBegan);
+      view->max_time_between_phase_ended_and_momentum_phase_began_for_test());
   run_loop.Run();
 }
 
