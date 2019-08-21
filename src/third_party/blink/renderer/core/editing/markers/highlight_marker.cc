@@ -20,27 +20,34 @@
  * IN THE SOFTWARE.
  */
 
-[
-    NoInterfaceObject
-] interface BBWindowHooks {
+#include "third_party/blink/renderer/core/editing/markers/highlight_marker.h"
 
-    DOMString listPumpSchedulers();
-    DOMString listPumpSchedulerTunables();
-    void activatePumpScheduler(long index);
-    void setPumpSchedulerTunable(long index, long value);
+namespace blink {
 
-    void allowPrint(long value);
+HighlightMarker::HighlightMarker(unsigned start_offset,
+                                 unsigned end_offset,
+                                 Color foreground_color,
+                                 Color background_color,
+                                 bool include_nonselectable_text)
+    : DocumentMarker(start_offset, end_offset),
+    	foreground_color(foreground_color),
+    	background_color(background_color),
+    	include_nonselectable_text(include_nonselectable_text) {}
 
-    boolean isBlock(Node node);
-    DOMString getPlainText(Node node, optional DOMString excluder, optional DOMString mask);
-    void setTextMatchMarkerVisibility(Document document, boolean highlight);
-    boolean checkSpellingForRange(Range range);
-    void removeMarker(Range range, long mask);
-    void addHighlightMarker(Range range, long foregroundColor, long backgroundColor, optional boolean includeNonSelectableText);
-    void removeHighlightMarker(Range range);
-    Range findPlainText(Range range, DOMString target, long options);
-    boolean checkSpellingForNode(Node node);
-    ClientRect getAbsoluteCaretRectAtOffset(Node node, long offset);
-    bool isOverwriteModeEnabled(Document document);
-    void toggleOverwriteMode(Document document);
-};
+DocumentMarker::MarkerType HighlightMarker::GetType() const {
+  return DocumentMarker::kHighlight;
+}
+
+Color HighlightMarker::ForegroundColor() const {
+  return foreground_color;
+}
+
+Color HighlightMarker::BackgroundColor() const {
+  return background_color;
+}
+
+bool HighlightMarker::IncludeNonSelectableText() const {
+  return include_nonselectable_text;
+}
+
+}  // namespace blink
