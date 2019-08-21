@@ -197,7 +197,7 @@ TEST(TrustStoreMacTest, MultiRootNotTrusted) {
   for (const auto& cert :
        {a_by_b, b_by_c, b_by_f, c_by_d, c_by_e, f_by_e, d_by_d, e_by_e}) {
     CertificateTrust trust = CertificateTrust::ForTrustAnchor();
-    trust_store.GetTrust(cert.get(), &trust);
+    trust_store.GetTrust(cert.get(), &trust, /*debug_data=*/nullptr);
     EXPECT_EQ(CertificateTrustType::UNSPECIFIED, trust.type);
   }
 }
@@ -265,7 +265,7 @@ TEST(TrustStoreMacTest, SystemCerts) {
     }
     // Check if this cert is considered a trust anchor by TrustStoreMac.
     CertificateTrust cert_trust;
-    trust_store.GetTrust(cert, &cert_trust);
+    trust_store.GetTrust(cert, &cert_trust, /*debug_data=*/nullptr);
     bool is_trust_anchor = cert_trust.IsTrustAnchor();
 
     // Check if this cert is considered a trust anchor by the OS.

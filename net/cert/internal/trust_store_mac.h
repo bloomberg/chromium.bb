@@ -42,7 +42,8 @@ class NET_EXPORT TrustStoreMac : public TrustStore {
   void SyncGetIssuersOf(const ParsedCertificate* cert,
                         ParsedCertificateList* issuers) override;
   void GetTrust(const scoped_refptr<ParsedCertificate>& cert,
-                CertificateTrust* trust) const override;
+                CertificateTrust* trust,
+                base::SupportsUserData* debug_data) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TrustStoreMacTest, MultiRootNotTrusted);

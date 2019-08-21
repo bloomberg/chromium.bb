@@ -511,7 +511,8 @@ void TrustStoreMac::SyncGetIssuersOf(const ParsedCertificate* cert,
 }
 
 void TrustStoreMac::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
-                             CertificateTrust* trust) const {
+                             CertificateTrust* trust,
+                             base::SupportsUserData* debug_data) const {
   TrustStatus trust_status = trust_cache_->IsCertTrusted(cert);
   switch (trust_status) {
     case TrustStatus::TRUSTED:
