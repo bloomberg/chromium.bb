@@ -802,6 +802,8 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     quic::SettingsFrame settings;
     settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
         kQuicMaxHeaderListSize;
+    settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+        quic::kDefaultQpackMaxDynamicTableCapacity;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -897,6 +899,8 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
     quic::SettingsFrame settings;
     settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
         kQuicMaxHeaderListSize;
+    settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+        quic::kDefaultQpackMaxDynamicTableCapacity;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -969,6 +973,8 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     quic::SettingsFrame settings;
     settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
         kQuicMaxHeaderListSize;
+    settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+        quic::kDefaultQpackMaxDynamicTableCapacity;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -1314,6 +1320,8 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
   std::string type(1, 0x00);
   quic::SettingsFrame settings;
   settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] = kQuicMaxHeaderListSize;
+  settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+      quic::kDefaultQpackMaxDynamicTableCapacity;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       http_encoder_.SerializeSettingsFrame(settings, &buffer);
@@ -1359,6 +1367,8 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
   std::string type(1, 0x00);
   quic::SettingsFrame settings;
   settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] = kQuicMaxHeaderListSize;
+  settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+      quic::kDefaultQpackMaxDynamicTableCapacity;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       http_encoder_.SerializeSettingsFrame(settings, &buffer);
@@ -1377,6 +1387,9 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
 
   std::vector<quic::QuicStreamFrame> stream_frames =
       GenerateNextStreamFrames(stream_id, false, data);
+  stream_frames.push_back(GenerateNextStreamFrame(10, false, "\x02"));
+  stream_frames.push_back(GenerateNextStreamFrame(6, false, "\x03"));
+
   for (const auto& frame : stream_frames)
     frames.push_back(quic::QuicFrame(frame));
 

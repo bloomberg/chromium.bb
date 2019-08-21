@@ -119,7 +119,7 @@ struct TestParams {
 std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllSupportedVersions();
+      quic::AllVersionsExcept99();
   for (const auto& version : all_supported_versions) {
     // TODO(rch): crbug.com/978745 - Make this work with TLS
     if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
@@ -162,7 +162,7 @@ struct PoolingTestParams {
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllSupportedVersions();
+      quic::AllVersionsExcept99();
   for (const quic::ParsedQuicVersion version : all_supported_versions) {
     // TODO(rch): crbug.com/978745 - Make this work with TLS
     if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {

@@ -379,9 +379,10 @@ QUIC_FLAG(bool,
           false)
 
 // If true, QUIC will track max ack height in BandwidthSampler.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_track_ack_height_in_bandwidth_sampler,
-          false)
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_track_ack_height_in_bandwidth_sampler2,
+    false)
 
 // If true, QuicSession::ShouldKeepConnectionAlive() will not consider locally
 // closed streams whose highest byte offset is not received yet.
@@ -407,4 +408,16 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, false)
 // When true, QuicFramer will use QueueUndecryptablePacket on all QUIC versions.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_framer_uses_undecryptable_upcall,
+          false)
+
+// When true, QuicUtils::GenerateStatelessResetToken will hash connection IDs
+// instead of XORing the bytes
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_use_hashed_stateless_reset_tokens,
+          false)
+
+// This flag enables a temporary workaround which makes us reply to a specific
+// invalid packet that is sent by an Android UDP network conformance test.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_reply_to_old_android_conformance_test,
           false)
