@@ -6484,3 +6484,5 @@ crbug.com/914134 [ Mac ] vr/requestPresent_resolve.html [ Failure ]
 crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithgesture.html [ Failure ]
 crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithoutgesture.html [ Failure ]
 crbug.com/914134 [ Mac ] vr/requestPresent_resolve_then_reject.html [ Failure ]
+
+crbug.com/996219 [ Win ] fast/text/emoji-vertical-origin-visual.html [ Failure ]
