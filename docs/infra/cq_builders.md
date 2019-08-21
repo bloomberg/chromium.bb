@@ -270,21 +270,6 @@ builder.
     * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
     * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
-* [win-asan](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win-asan) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/win-asan)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win-asan))
-
-  Path regular expressions:
-    * [`//sandbox/win/.+`](https://cs.chromium.org/chromium/src/sandbox/win/)
-
-* [win10_chromium_x64_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win10_chromium_x64_dbg_ng) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/win10_chromium_x64_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win10_chromium_x64_dbg_ng))
-
-  Path regular expressions:
-    * [`//sandbox/win/.+`](https://cs.chromium.org/chromium/src/sandbox/win/)
-
-* [win7-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/win7-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win7-rel))
-
-  Path regular expressions:
-    * [`//sandbox/win/.+`](https://cs.chromium.org/chromium/src/sandbox/win/)
-
 * [win_optional_gpu_tests_rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win_optional_gpu_tests_rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/win_optional_gpu_tests_rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win_optional_gpu_tests_rel))
 
   Path regular expressions:
