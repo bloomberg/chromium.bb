@@ -9,7 +9,10 @@
 #+contraction:full
 #+grade:2
 #+system:INBAF
-
+#
+# Updated Irish Braille (UIB) version 2019 by INBAF (ratified May 27 2019):
+# http://liblouis.org/braille-specs/irish/#updated-irish-braille-2019
+#
 #  This file is part of liblouis.
 #
 #  liblouis is free software: you can redistribute it and/or modify it
