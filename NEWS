@@ -33,6 +33,8 @@ issues]].
   #741. Thanks to Juan Pablo Bello.
 - Add a display table to match Word CX which is used in Norway and
   Sweden, and maybe also in other countries thanks to Lars Bjørndal.
+- Fix handling of colon within number in Dutch braille, thanks to Jake
+  Kyle.
 
 ** Other changes
 - Metadata keys and values are now case insensitive, thanks to Dave
