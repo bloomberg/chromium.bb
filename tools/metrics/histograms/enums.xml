@@ -24336,6 +24336,8 @@ Called by update_net_error_codes.py.-->
   <int value="3002" label="XMLHttpRequestSynchronousInSameOriginSubframe"/>
   <int value="3003" label="XMLHttpRequestSynchronousInWorker"/>
   <int value="3004" label="PerformanceObserverBufferedFlag"/>
+  <int value="3005" label="WakeLockAcquireScreenLock"/>
+  <int value="3006" label="WakeLockAcquireSystemLock"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

@@ -2380,6 +2380,8 @@ enum WebFeature {
   kXMLHttpRequestSynchronousInSameOriginSubframe = 3002,
   kXMLHttpRequestSynchronousInWorker = 3003,
   kPerformanceObserverBufferedFlag = 3004,
+  kWakeLockAcquireScreenLock = 3005,
+  kWakeLockAcquireSystemLock = 3006,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
