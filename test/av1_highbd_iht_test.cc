@@ -253,7 +253,8 @@ void AV1HighbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type_, TX_SIZE tx_size_,
     }
     txfm_param.eob = eob;
     if (gt_int16) {
-      const uint16_t inv_input_mask = (1 << (bit_depth_ + 7)) - 1;
+      const uint16_t inv_input_mask =
+          static_cast<uint16_t>((1 << (bit_depth_ + 7)) - 1);
       for (int i = 0; i < eob; i++) {
         inv_input[scan[i]] = (rnd.Rand31() & inv_input_mask);
       }
