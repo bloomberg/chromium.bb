@@ -173,7 +173,7 @@ class DlcGenerator(object):
     """
     dlc_root_dir = os.path.join(dlc_dir, self._DLC_ROOT_DIR)
     osutils.SafeMakedirs(dlc_root_dir)
-    osutils.CopyDirContents(self.src_dir, dlc_root_dir)
+    osutils.CopyDirContents(self.src_dir, dlc_root_dir, symlinks=True)
     self.PrepareLsbRelease(dlc_dir)
     self.CollectExtraResources(dlc_dir)
     self.SquashOwnerships(dlc_dir)

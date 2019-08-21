@@ -96,7 +96,8 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['/sbin/e2fsck', '-y', '-f'])
     self.assertCommandContains(['/sbin/resize2fs', '-M'])
     copy_dir_mock.assert_called_once_with(partial_mock.HasString('src'),
-                                          partial_mock.HasString('root'))
+                                          partial_mock.HasString('root'),
+                                          symlinks=True)
     mount_mock.assert_called_once_with(mock.ANY,
                                        partial_mock.HasString('mount_point'),
                                        mount_opts=('loop', 'rw'))
@@ -109,7 +110,8 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     self.GetDlcGenerator().CreateSquashfsImage()
     self.assertCommandContains(['mksquashfs', '-4k-align', '-noappend'])
     copy_dir_mock.assert_called_once_with(partial_mock.HasString('src'),
-                                          partial_mock.HasString('root'))
+                                          partial_mock.HasString('root'),
+                                          symlinks=True)
 
   def testPrepareLsbRelease(self):
     """Tests that lsb-release is created correctly."""

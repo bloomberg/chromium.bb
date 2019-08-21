@@ -363,7 +363,7 @@ class BadPathsException(Exception):
   """Raised by various osutils path manipulation functions on bad input."""
 
 
-def CopyDirContents(from_dir, to_dir, symlink=False, allow_nonempty=False):
+def CopyDirContents(from_dir, to_dir, symlinks=False, allow_nonempty=False):
   """Copy contents of from_dir to to_dir. Both should exist.
 
   shutil.copytree allows one to copy a rooted directory tree along with the
@@ -391,7 +391,9 @@ def CopyDirContents(from_dir, to_dir, symlink=False, allow_nonempty=False):
   Args:
     from_dir: The directory whose contents should be copied. Must exist.
     to_dir: The directory to which contents should be copied. Must exist.
-    symlink: Whether symlinks should be copied.
+    symlinks: Whether symlinks should be copied or dereferenced. When True, all
+        symlinks will be copied as symlinks into the destination. When False,
+        the symlinks will be dereferenced and the contents copied over.
     allow_nonempty: If True, do not die when to_dir is nonempty.
 
   Raises:
@@ -409,10 +411,10 @@ def CopyDirContents(from_dir, to_dir, symlink=False, allow_nonempty=False):
   for name in os.listdir(from_dir):
     from_path = os.path.join(from_dir, name)
     to_path = os.path.join(to_dir, name)
-    if os.path.isdir(from_path):
-      shutil.copytree(from_path, to_path)
-    elif symlink and os.path.islink(from_path):
+    if symlinks and os.path.islink(from_path):
       os.symlink(os.readlink(from_path), to_path)
+    elif os.path.isdir(from_path):
+      shutil.copytree(from_path, to_path, symlinks=symlinks)
     elif os.path.isfile(from_path):
       shutil.copy2(from_path, to_path)
 
