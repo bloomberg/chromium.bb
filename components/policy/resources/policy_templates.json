@@ -6429,6 +6429,27 @@
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
+      'name': 'PolicyAtomicGroupsEnabled',
+      'owners': ['ydago@chromium.org', 'pastarmovj@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:78-', 'chrome_os:78-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'default_for_enterprise_users': True,
+      'id': 584,
+      'caption': '''Enables the concept of policy atomic groups''',
+      'tags': [],
+      'desc': '''If this policy is enabled, policies coming from the an atomic group that do not share the source with the highest priority from that group will be ignored.
+
+      If this policy is disabled, no policy will be ignored because of its source. Policies will be ignored only if there is a conflict and the policy does not have the highest priority.
+
+      If this policy ist set from a cloud source, it cannot target a specific user''',
+    },
+    {
       'name': 'PolicyListMultipleSourceMergeList',
       'owners': ['ydago@chromium.org', 'pastarmovj@chromium.org'],
       'type': 'list',
@@ -17878,6 +17899,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 583,
+  'highest_id_currently_used': 584,
   'highest_atomic_group_id_currently_used': 37
 }

@@ -2277,6 +2277,10 @@
     "note": "This policy has no pref as it is only directly read by the policy system."
   },
 
+  "PolicyAtomicGroupsEnabled": {
+    "note": "This policy has no pref as it is only directly read by the policy system."
+  },
+
   "EnterpriseWebStoreURL": {
     "note": "This policy is retired, see http://crbug.com/178938."
   },

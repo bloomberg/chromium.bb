@@ -17795,6 +17795,7 @@ Called by update_net_error_codes.py.-->
   <int value="581" label="LockScreenMediaPlaybackEnabled"/>
   <int value="582" label="DnsOverHttpsMode"/>
   <int value="583" label="SendFilesForMalwareCheck"/>
+  <int value="584" label="PolicyAtomicGroupsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
