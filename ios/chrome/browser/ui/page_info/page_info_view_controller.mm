@@ -130,7 +130,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 
 #pragma mark - PageInfoViewController
 
-@interface PageInfoViewController ()<UIGestureRecognizerDelegate> {
+@interface PageInfoViewController () {
   // Scroll View inside the PageInfoView used to display content that exceeds
   // the available space.
   UIScrollView* _scrollView;
@@ -159,6 +159,10 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 
 @property(nonatomic, strong) UIView* containerView;
 @property(nonatomic, strong) UIView* popupContainer;
+// An invisible button added to the |containerView|. Closes the popup just like
+// the tap on the background. Exposed purely for voiceover purposes.
+@property(nonatomic, strong) UIButton* closeButton;
+
 @end
 
 @implementation PageInfoViewController
@@ -206,17 +210,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     _textWidth = _viewWidth - (kImageSize + kImageSpacing + kFramePadding * 2 +
                                kScrollViewInset * 2);
 
-    UILongPressGestureRecognizer* touchDownRecognizer =
-        [[UILongPressGestureRecognizer alloc]
-            initWithTarget:self
-                    action:@selector(rootViewTapped:)];
-    // Setting the duration to .001 makes this similar to a control event
-    // UIControlEventTouchDown.
-    [touchDownRecognizer setMinimumPressDuration:.001];
-    [touchDownRecognizer setDelegate:self];
-
     _containerView = [[UIView alloc] init];
-    [_containerView addGestureRecognizer:touchDownRecognizer];
     [_containerView setBackgroundColor:[UIColor colorWithWhite:0
                                                          alpha:kShieldAlpha]];
     [_containerView setOpaque:NO];
@@ -225,9 +219,18 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     _containerView.accessibilityIdentifier =
         kPageInfoViewAccessibilityIdentifier;
 
+    // Set up an invisible button that closes the popup.
+    _closeButton = [[UIButton alloc] init];
+    _closeButton.accessibilityLabel = l10n_util::GetNSString(IDS_DONE);
+    [_closeButton addTarget:dispatcher
+                     action:@selector(hidePageInfo)
+           forControlEvents:UIControlEventTouchDown];
+    [_containerView addSubview:_closeButton];
+
     _popupContainer = [[UIView alloc] initWithFrame:CGRectZero];
     [_popupContainer setBackgroundColor:UIColor.cr_systemBackgroundColor];
     [_popupContainer setClipsToBounds:YES];
+    _popupContainer.userInteractionEnabled = YES;
     [_containerView addSubview:_popupContainer];
 
     [self.popupContainer addSubview:_scrollView];
@@ -368,6 +371,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   }
 
   [_scrollView setContentSize:_innerContainerView.frame.size];
+  _closeButton.frame = _containerView.bounds;
 }
 
 - (void)dismiss {
@@ -376,23 +380,12 @@ void PageInfoModelBubbleBridge::PerformLayout() {
                                   nil);
 }
 
-#pragma mark UIGestureRecognizerDelegate
-
-- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
-       shouldReceiveTouch:(UITouch*)touch {
-  CGPoint pt = [touch locationInView:_containerView];
-  return !CGRectContainsPoint([_popupContainer frame], pt);
-}
-
-// Called by the tap gesture recognizer.
-- (void)rootViewTapped:(UIGestureRecognizer*)sender {
-  CGPoint pt = [sender locationInView:_containerView];
-  if (!CGRectContainsPoint([_popupContainer frame], pt)) {
-    [self.dispatcher hidePageInfo];
-  }
-}
-
 #pragma mark - internal
+
+- (BOOL)accessibilityPerformEscape {
+  [self.dispatcher hidePageInfo];
+  return YES;
+}
 
 - (void)animatePageInfoViewIn:(CGPoint)sourcePoint {
   // Animate the info card itself.
