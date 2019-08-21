@@ -126,7 +126,8 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     global_scope_->Initialize(response_url, response_referrer_policy,
                               response_address_space,
                               response_content_security_policy->Headers(),
-                              response_origin_trial_tokens.get());
+                              response_origin_trial_tokens.get(),
+                              resource->GetResponse().AppCacheID());
   }
 
   ModuleScriptCreationParams params(
