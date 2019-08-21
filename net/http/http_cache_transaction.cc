@@ -1815,7 +1815,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
 
   // Invalidate any cached GET with a successful PUT or DELETE.
   if (mode_ == WRITE && (method_ == "PUT" || method_ == "DELETE")) {
-    if (NonErrorResponse(new_response->headers->response_code()) &&
+    if (NonErrorResponse(new_response_->headers->response_code()) &&
         (entry_ && !entry_->doomed)) {
       int ret = cache_->DoomEntry(cache_key_, nullptr);
       DCHECK_EQ(OK, ret);
@@ -1826,11 +1826,11 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
 
   // Invalidate any cached GET with a successful POST.
   if (!(effective_load_flags_ & LOAD_DISABLE_CACHE) && method_ == "POST" &&
-      NonErrorResponse(new_response->headers->response_code())) {
+      NonErrorResponse(new_response_->headers->response_code())) {
     cache_->DoomMainEntryForUrl(request_->url, request_->network_isolation_key);
   }
 
-  RecordNoStoreHeaderHistogram(request_->load_flags, new_response);
+  RecordNoStoreHeaderHistogram(request_->load_flags, new_response_);
 
   if (new_response_->headers->response_code() == 416 &&
       (method_ == "GET" || method_ == "POST")) {
