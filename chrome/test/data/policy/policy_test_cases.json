@@ -5007,5 +5007,15 @@
     "pref_mappings": [
       { "pref": "ash.lock_screen_media_controls_enabled" }
     ]
+  },
+
+  "SendFilesForMalwareCheck": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "SendFilesForMalwareCheck": 2
+    },
+    "pref_mappings": [
+      { "pref": "safebrowsing.send_files_for_malware_check" }
+    ]
   }
 }

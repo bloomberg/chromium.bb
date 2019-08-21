@@ -17783,6 +17783,7 @@ Called by update_net_error_codes.py.-->
   <int value="580" label="PasswordLeakDetectionEnabled"/>
   <int value="581" label="LockScreenMediaPlaybackEnabled"/>
   <int value="582" label="DnsOverHttpsMode"/>
+  <int value="583" label="SendFilesForMalwareCheck"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
