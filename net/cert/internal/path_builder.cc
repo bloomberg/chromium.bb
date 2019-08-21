@@ -575,7 +575,6 @@ void CertPathBuilder::SetDeadline(base::TimeTicks deadline) {
 }
 
 CertPathBuilder::Result CertPathBuilder::Run() {
-  Result result;
   uint32_t iteration_count = 0;
 
   while (true) {
@@ -587,13 +586,13 @@ CertPathBuilder::Result CertPathBuilder::Run() {
                                       &iteration_count, max_iteration_count_)) {
       // No more paths to check.
       if (max_iteration_count_ > 0 && iteration_count > max_iteration_count_) {
-        result.exceeded_iteration_limit = true;
+        out_result_.exceeded_iteration_limit = true;
       }
       if (!deadline_.is_null() && base::TimeTicks::Now() > deadline_) {
-        result.exceeded_deadline = true;
+        out_result_.exceeded_deadline = true;
       }
       RecordIterationCountHistogram(iteration_count);
-      return result;
+      return std::move(out_result_);
     }
 
     // Verify the entire certificate chain.
@@ -611,26 +610,25 @@ CertPathBuilder::Result CertPathBuilder::Run() {
 
     bool path_is_good = result_path->IsValid();
 
-    AddResultPath(std::move(result_path), &result);
+    AddResultPath(std::move(result_path));
 
     if (path_is_good) {
       RecordIterationCountHistogram(iteration_count);
       // Found a valid path, return immediately.
       // TODO(mattm): add debug/test mode that tries all possible paths.
-      return result;
+      return std::move(out_result_);
     }
     // Path did not verify. Try more paths.
   }
 }
 
 void CertPathBuilder::AddResultPath(
-    std::unique_ptr<CertPathBuilderResultPath> result_path,
-    Result* out_result) {
+    std::unique_ptr<CertPathBuilderResultPath> result_path) {
   // TODO(mattm): set best_result_index based on number or severity of errors.
   if (result_path->IsValid())
-    out_result->best_result_index = out_result->paths.size();
+    out_result_.best_result_index = out_result_.paths.size();
   // TODO(mattm): add flag to only return a single path or all attempted paths?
-  out_result->paths.push_back(std::move(result_path));
+  out_result_.paths.push_back(std::move(result_path));
 }
 
 }  // namespace net
