@@ -130,7 +130,31 @@ TEST(WebAppRegistrar, DestroyRegistrarOwningRegisteredApps) {
   registrar.reset();
 }
 
-TEST(WebAppRegistrar, ForEachAndUnregisterAll) {
+TEST(WebAppRegistrar, OpenDatabaseAndDoForEachApp) {
+  auto database = std::make_unique<TestWebAppDatabase>();
+  auto registrar = std::make_unique<WebAppRegistrar>(nullptr, database.get());
+
+  std::set<AppId> ids;
+  {
+    registrar->Init(base::DoNothing());
+
+    Registry registry =
+        CreateRegistryForTesting("https://example.com/path", 100);
+    for (auto& kv : registry)
+      ids.insert(kv.second->app_id());
+
+    database->TakeOpenDatabaseCallback().Run(std::move(registry));
+  }
+
+  for (const WebApp& web_app : registrar->AllApps()) {
+    const size_t num_removed = ids.erase(web_app.app_id());
+    EXPECT_EQ(1U, num_removed);
+  }
+
+  EXPECT_TRUE(ids.empty());
+}
+
+TEST(WebAppRegistrar, DoForEachAndUnregisterAllApps) {
   auto database = std::make_unique<TestWebAppDatabase>();
   auto registrar = std::make_unique<WebAppRegistrar>(nullptr, database.get());
 
@@ -138,9 +162,8 @@ TEST(WebAppRegistrar, ForEachAndUnregisterAll) {
   auto ids = RegisterAppsForTesting(registrar.get(), std::move(registry));
   EXPECT_EQ(100UL, ids.size());
 
-  for (auto& kv : registrar->registry()) {
-    const WebApp* web_app = kv.second.get();
-    const size_t num_removed = ids.erase(web_app->app_id());
+  for (WebApp& web_app : registrar->AllApps()) {
+    const size_t num_removed = ids.erase(web_app.app_id());
     EXPECT_EQ(1U, num_removed);
   }
   EXPECT_TRUE(ids.empty());
@@ -172,11 +195,11 @@ TEST(WebAppRegistrar, AbstractWebAppDatabase) {
   auto web_app = std::make_unique<WebApp>(app_id);
   registrar->RegisterApp(std::move(web_app));
   EXPECT_EQ(app_id, database->write_web_app_id());
-  EXPECT_EQ(101UL, registrar->registry().size());
+  EXPECT_EQ(101UL, registrar->registry_for_testing().size());
 
   // Remove 1 app after opening.
   registrar->UnregisterApp(app_id);
-  EXPECT_EQ(100UL, registrar->registry().size());
+  EXPECT_EQ(100UL, registrar->registry_for_testing().size());
   EXPECT_EQ(1UL, database->delete_web_app_ids().size());
   EXPECT_EQ(app_id, database->delete_web_app_ids()[0]);
 

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "chrome/browser/web_applications/abstract_web_app_database.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -25,6 +24,8 @@ WebAppRegistrar::WebAppRegistrar(Profile* profile,
 WebAppRegistrar::~WebAppRegistrar() = default;
 
 void WebAppRegistrar::RegisterApp(std::unique_ptr<WebApp> web_app) {
+  CountMutation();
+
   const auto app_id = web_app->app_id();
   DCHECK(!app_id.empty());
   DCHECK(!GetAppById(app_id));
@@ -35,6 +36,8 @@ void WebAppRegistrar::RegisterApp(std::unique_ptr<WebApp> web_app) {
 }
 
 std::unique_ptr<WebApp> WebAppRegistrar::UnregisterApp(const AppId& app_id) {
+  CountMutation();
+
   DCHECK(!app_id.empty());
 
   database_->DeleteWebApps({app_id});
@@ -53,13 +56,9 @@ WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
 }
 
 void WebAppRegistrar::UnregisterAll() {
-  std::vector<AppId> app_ids;
-  for (auto& kv : registry()) {
-    const AppId& app_id = kv.first;
-    app_ids.push_back(app_id);
-  }
-  database_->DeleteWebApps(std::move(app_ids));
+  CountMutation();
 
+  database_->DeleteWebApps(GetAppIds());
   registry_.clear();
 }
 
@@ -150,10 +149,46 @@ LaunchContainer WebAppRegistrar::GetAppLaunchContainer(
 
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   std::vector<AppId> app_ids;
-  for (const auto& pair : registry_) {
-    app_ids.push_back(pair.first);
-  }
+  app_ids.reserve(registry_.size());
+
+  for (auto& app : AllApps())
+    app_ids.push_back(app.app_id());
+
   return app_ids;
+}
+
+WebAppRegistrar::AppSet::Iter::Iter(InternalIter&& internal_iter)
+    : internal_iter_(std::move(internal_iter)) {}
+
+WebAppRegistrar::AppSet::Iter::Iter(Iter&&) = default;
+
+WebAppRegistrar::AppSet::Iter::~Iter() = default;
+
+WebAppRegistrar::AppSet::AppSet(const WebAppRegistrar* registrar)
+    : begin_(registrar->registry_.begin()),
+      end_(registrar->registry_.end())
+#if DCHECK_IS_ON()
+      ,
+      registrar_(registrar),
+      mutations_count_(registrar->mutations_count_)
+#endif
+{
+}
+
+WebAppRegistrar::AppSet::~AppSet() {
+#if DCHECK_IS_ON()
+  DCHECK_EQ(mutations_count_, registrar_->mutations_count_);
+#endif
+}
+
+WebAppRegistrar::AppSet WebAppRegistrar::AllApps() const {
+  return AppSet(this);
+}
+
+void WebAppRegistrar::CountMutation() {
+#if DCHECK_IS_ON()
+  ++mutations_count_;
+#endif
 }
 
 }  // namespace web_app
