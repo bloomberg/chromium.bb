@@ -626,7 +626,8 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
       /*compositor_thread=*/nullptr, &test_task_graph_runner_,
       &fake_thread_scheduler_);
   layer_tree_view_->Initialize(settings,
-                               std::make_unique<cc::TestUkmRecorderFactory>());
+                               std::make_unique<cc::TestUkmRecorderFactory>(),
+                               0);
   return layer_tree_view_.get();
 }
 

@@ -101,6 +101,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     LayerTreeSettings const* settings = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
     MutatorHost* mutator_host = nullptr;
+    int routing_id =0;
 
     // The image worker task runner is used to schedule image decodes. The
     // compositor thread may make sync calls to this thread, analogous to the
@@ -309,6 +310,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   using PresentationTimeCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
+
+  virtual int GetRoutingId() const;
 
   // Layer tree accessors and modifiers ------------------------
 
@@ -868,6 +871,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // TODO(crbug.com/925855): Remove this field when removing
   // SetNonBlinkManagedRootLayer().
   bool force_use_property_tree_builder_ = false;
+
+  int routing_id_;
 
   MutatorHost* mutator_host_;
 
