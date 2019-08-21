@@ -393,9 +393,9 @@ ErrorOr<UdpPacket> UdpSocketPosix::ReceiveMessage() {
 
 // TODO(yakimakha): Consider changing the interface to accept UdpPacket as
 // an input parameter.
-Error UdpSocketPosix::SendMessage(const void* data,
-                                  size_t length,
-                                  const IPEndpoint& dest) {
+void UdpSocketPosix::SendMessage(const void* data,
+                                 size_t length,
+                                 const IPEndpoint& dest) {
   struct iovec iov = {const_cast<void*>(data), length};
   struct msghdr msg;
   msg.msg_iov = &iov;
@@ -433,11 +433,10 @@ Error UdpSocketPosix::SendMessage(const void* data,
   }
 
   if (num_bytes_sent == -1) {
-    return ChooseError(errno, Error::Code::kSocketSendFailure);
+    OnSendError(ChooseError(errno, Error::Code::kSocketSendFailure));
   }
   // Sanity-check: UDP datagram sendmsg() is all or nothing.
   OSP_DCHECK_EQ(static_cast<size_t>(num_bytes_sent), length);
-  return Error::Code::kNone;
 }
 
 Error UdpSocketPosix::SetDscp(UdpSocket::DscpMode state) {

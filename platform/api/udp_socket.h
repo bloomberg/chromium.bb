@@ -115,9 +115,9 @@ class UdpSocket {
   // Sends a message and returns the number of bytes sent, on success.
   // Error::Code::kAgain might be returned to indicate the operation would
   // block, which can be expected during normal operation.
-  virtual Error SendMessage(const void* data,
-                            size_t length,
-                            const IPEndpoint& dest) = 0;
+  virtual void SendMessage(const void* data,
+                           size_t length,
+                           const IPEndpoint& dest) = 0;
 
   // Sets the DSCP value to use for all messages sent from this socket.
   virtual Error SetDscp(DscpMode state) = 0;

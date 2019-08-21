@@ -31,16 +31,10 @@ int UdpTransport::Write(const char* buffer,
                         size_t buffer_length,
                         const PacketInfo& info) {
   TRACE_SCOPED(TraceCategory::Quic, "UdpTransport::Write");
-  switch (socket_->SendMessage(buffer, buffer_length, destination_).code()) {
-    case Error::Code::kNone:
-      OSP_DCHECK_LE(buffer_length,
-                    static_cast<size_t>(std::numeric_limits<int>::max()));
-      return static_cast<int>(buffer_length);
-    case Error::Code::kAgain:
-      return 0;
-    default:
-      return -1;
-  }
+  socket_->SendMessage(buffer, buffer_length, destination_);
+  OSP_DCHECK_LE(buffer_length,
+                static_cast<size_t>(std::numeric_limits<int>::max()));
+  return static_cast<int>(buffer_length);
 }
 
 QuicStreamImpl::QuicStreamImpl(QuicStream::Delegate* delegate,

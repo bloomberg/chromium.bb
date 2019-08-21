@@ -36,9 +36,9 @@ struct UdpSocketPosix : public UdpSocket {
   Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) override;
   Error JoinMulticastGroup(const IPAddress& address,
                            NetworkInterfaceIndex ifindex) override;
-  Error SendMessage(const void* data,
-                    size_t length,
-                    const IPEndpoint& dest) override;
+  void SendMessage(const void* data,
+                   size_t length,
+                   const IPEndpoint& dest) override;
   Error SetDscp(DscpMode state) override;
 
   int GetFd() const { return fd_; }

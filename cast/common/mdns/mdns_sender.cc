@@ -47,7 +47,9 @@ Error MdnsSender::SendUnicast(const MdnsMessage& message,
   if (!writer.Write(message)) {
     return Error::Code::kInsufficientBuffer;
   }
-  return socket_->SendMessage(buffer.data(), writer.offset(), endpoint);
+
+  socket_->SendMessage(buffer.data(), writer.offset(), endpoint);
+  return Error::Code::kNone;
 }
 
 }  // namespace mdns

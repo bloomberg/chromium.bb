@@ -32,14 +32,26 @@ IPEndpoint MockUdpSocket::GetLocalEndpoint() const {
   return IPEndpoint{};
 }
 
+void MockUdpSocket::SendMessage(const void* data,
+                                size_t length,
+                                const IPEndpoint& dest) {
+  OSP_CHECK(send_errors_.size()) << "No send responses queued.";
+  Error error = send_errors_.front();
+  send_errors_.pop();
+
+  if (!error.ok()) {
+    client_->OnSendError(this, std::move(error));
+  }
+}
+
 // static
 std::unique_ptr<MockUdpSocket> MockUdpSocket::CreateDefault(
     UdpSocket::Version version) {
   std::unique_ptr<FakeClock> clock = std::make_unique<FakeClock>(Clock::now());
   std::unique_ptr<FakeTaskRunner> task_runner =
       std::make_unique<FakeTaskRunner>(clock.get());
-  std::unique_ptr<UdpSocket::Client> client =
-      std::unique_ptr<UdpSocket::Client>(new MockUdpSocket::MockClient);
+  std::unique_ptr<MockUdpSocket::MockClient> client =
+      std::make_unique<MockUdpSocket::MockClient>();
 
   std::unique_ptr<MockUdpSocket> socket =
       std::make_unique<MockUdpSocket>(task_runner.get(), client.get(), version);
