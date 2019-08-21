@@ -554,6 +554,11 @@ void BrowserContextImpl::setIPCDelegate(ProcessClientDelegate *delegate)
 
 
 // patch section: web cache
+void BrowserContextImpl::clearWebCache()
+{
+    // NOTREACHED
+    DCHECK(false);
+}
 
 
 
