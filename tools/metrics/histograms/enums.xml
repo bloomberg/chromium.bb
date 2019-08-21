@@ -56701,6 +56701,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="NOT_EXPIRED_AND_DO_NOT_PROCEED"/>
 </enum>
 
+<enum name="SSLKeyLogFileAction">
+  <int value="0" label="SSLKeyLogger enabled"/>
+  <int value="1" label="ssl-key-log-file switch set"/>
+  <int value="2" label="SSLKEYLOGFILE environment variable set"/>
+</enum>
+
 <enum name="SSLNegotiatedAlpnProtocol">
   <int value="0" label="ALPN not used"/>
   <int value="1" label="HTTP/1.1 negotiated via ALPN"/>
