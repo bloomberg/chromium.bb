@@ -611,6 +611,20 @@ void WebViewProxy::didFailLoadForFrame(int              routingId,
               << ", didFailLoadForFrame url=" << d_url;
 }
 
+void WebViewProxy::devToolsAgentHostAttached()
+{
+    if (d_delegate) {
+        d_delegate->devToolsAgentHostAttached(this);
+    }
+}
+
+void WebViewProxy::devToolsAgentHostDetached()
+{
+    if (d_delegate) {
+        d_delegate->devToolsAgentHostDetached(this);
+    }
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et

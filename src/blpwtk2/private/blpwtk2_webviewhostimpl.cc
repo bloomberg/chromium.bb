@@ -256,6 +256,18 @@ void WebViewHostImpl::findState(WebView *source,
     NOTREACHED() << "findState should come in via findStateWithReqId";
 }
 
+void WebViewHostImpl::devToolsAgentHostAttached(WebView *source)
+{
+    DCHECK(source == d_impl);
+    d_clientPtr->devToolsAgentHostAttached();
+}
+
+void WebViewHostImpl::devToolsAgentHostDetached(WebView *source)
+{
+    DCHECK(source == d_impl);
+    d_clientPtr->devToolsAgentHostDetached();
+}
+
 // Mojo callbacks
 void WebViewHostImpl::onNCDragAck()
 {

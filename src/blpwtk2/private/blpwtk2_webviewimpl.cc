@@ -947,6 +947,20 @@ void WebViewImpl::FindReply(content::WebContents *source_contents,
     }
 }
 
+void WebViewImpl::DevToolsAgentHostAttached(content::WebContents* web_contents)
+{
+    if (d_delegate) {
+        d_delegate->devToolsAgentHostAttached(this);
+    }
+}
+
+void WebViewImpl::DevToolsAgentHostDetached(content::WebContents* web_contents)
+{
+    if (d_delegate) {
+        d_delegate->devToolsAgentHostDetached(this);
+    }
+}
+
 // WebContentsObserver overrides
 void WebViewImpl::RenderViewHostChanged(content::RenderViewHost *old_host,
                                         content::RenderViewHost *new_host)

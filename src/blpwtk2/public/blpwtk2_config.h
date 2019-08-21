@@ -50,6 +50,7 @@
 #define BLPWTK2_FEATURE_CRTHANDLER
 // feature 4
 // feature 5
+#define BLPWTK2_FEATURE_DEVTOOLSINTEGRATION
 // feature 6
 #define BLPWTK2_FEATURE_DUMPDIAGNOSTICS
 // feature 7
