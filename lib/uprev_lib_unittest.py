@@ -23,10 +23,14 @@ class ChromeVersionTest(cros_test_lib.TestCase):
   """Tests for best_chrome_version and get_chrome_version_from_refs."""
 
   def setUp(self):
+    # The tag ref template.
+    ref_tpl = 'refs/tags/%s'
+
     self.best = '4.3.2.1'
     self.versions = ['1.2.3.4', self.best, '4.2.2.1', '4.3.1.4']
-    self.best_ref = uprev_lib.GitRef('/path', self.best, 'abc123')
-    self.refs = [uprev_lib.GitRef('/path', v, 'abc123') for v in self.versions]
+    self.best_ref = uprev_lib.GitRef('/path', ref_tpl % self.best, 'abc123')
+    self.refs = [uprev_lib.GitRef('/path', ref_tpl % v, 'abc123')
+                 for v in self.versions]
 
     self.unstable = '9999'
     self.unstable_versions = self.versions + [self.unstable]

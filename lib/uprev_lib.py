@@ -73,8 +73,10 @@ def get_chrome_version_from_refs(refs):
   """
   assert refs
 
-  # Each ref (tag) is a chrome version string, e.g. "78.0.3876.1".
-  return best_chrome_version(ref.ref for ref in refs)
+  # Each tag is a chrome version string, e.g. "78.0.3876.1", so extract the
+  # tag name from the ref, e.g. "refs/tags/78.0.3876.1".
+  versions = [ref.ref.split('/')[-1] for ref in refs]
+  return best_chrome_version(versions)
 
 
 def best_chrome_version(versions):
