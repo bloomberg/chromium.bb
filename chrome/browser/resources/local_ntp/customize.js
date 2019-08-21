@@ -1923,12 +1923,14 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   $(customize.IDS.BACKGROUNDS_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
+      event.preventDefault();
       $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).focus();
     }
   };
 
   $(customize.IDS.BACKGROUNDS_IMAGE_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
+      event.preventDefault();
       document.querySelector('[id$="img_tile_0"]').focus();
     }
   };
