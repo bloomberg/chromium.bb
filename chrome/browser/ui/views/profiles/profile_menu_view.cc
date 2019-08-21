@@ -137,7 +137,6 @@ ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
           browser->profile())) {
   GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
-  base::RecordAction(base::UserMetricsAction("ProfileChooser_Show"));
   set_close_on_deactivate(close_on_deactivate_for_testing_);
 }
 

@@ -17366,6 +17366,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_Show">
+  <obsolete>This is replaced with ProfileMenu_Opened.</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>The user opened the profile chooser menu.</description>
@@ -17393,6 +17394,12 @@ should be able to be added at any place in this file.
   <description>
     The user clicked a button or a link in the profile menu.
   </description>
+</action>
+
+<action name="ProfileMenu_Opened">
+  <owner>msarda@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>The user opened the profile menu.</description>
 </action>
 
 <action name="PWAInstallIcon">
