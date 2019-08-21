@@ -6,6 +6,9 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 issues]].
 
 ** New features
+- Enable ~always~ rules with a single character and and a single
+  braille cell for back-translation. Thanks to Bue Vester-Andersen.
+
 ** Bug fixes
 - Don't let a caps passage end on a word with no letters. Thanks to
   Bert Frees.
