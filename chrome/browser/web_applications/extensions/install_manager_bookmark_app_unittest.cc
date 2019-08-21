@@ -736,7 +736,8 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
     EXPECT_FALSE(extensions::IconsInfo::GetIconResource(
                      extension, kIconSizeLarge, ExtensionIconSet::MATCH_EXACTLY)
                      .empty());
-    EXPECT_TRUE(BookmarkAppIsLocallyInstalled(profile(), extension));
+    EXPECT_EQ(expect_locally_installed,
+              BookmarkAppIsLocallyInstalled(profile(), extension));
   }
 }
 

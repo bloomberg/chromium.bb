@@ -108,7 +108,7 @@ void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
     return;
   }
 
-  bool is_locally_installed = registrar()->IsInstalled(app_id);
+  bool is_locally_installed = registrar()->IsLocallyInstalled(app_id);
 #if defined(OS_CHROMEOS)
   // On Chrome OS, sync always locally installs an app.
   is_locally_installed = true;
