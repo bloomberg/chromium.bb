@@ -6356,7 +6356,7 @@ TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
   EXPECT_TRUE(!!clipboard);
   std::vector<std::string> texts = {"text0", "text1", "text2", "text3"};
   for (auto index : active_view_sequence_) {
-    clipboard->Clear(ui::ClipboardType::kSelection);
+    clipboard->Clear(ui::ClipboardBuffer::kSelection);
 
     // Focus the corresponding widget.
     render_widget_host_delegate()->set_focused_widget(
@@ -6369,7 +6369,7 @@ TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
 
     // Retrieve the selected text from clipboard and verify it is as expected.
     base::string16 result_text;
-    clipboard->ReadText(ui::ClipboardType::kSelection, &result_text);
+    clipboard->ReadText(ui::ClipboardBuffer::kSelection, &result_text);
     EXPECT_EQ(expected_text, result_text);
   }
 }

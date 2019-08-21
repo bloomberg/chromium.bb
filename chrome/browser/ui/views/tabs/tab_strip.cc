@@ -2975,12 +2975,12 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
       const ui::MouseEvent& mouse = static_cast<const ui::MouseEvent&>(event);
       if (mouse.IsOnlyMiddleMouseButton()) {
-        if (ui::Clipboard::IsSupportedClipboardType(
-                ui::ClipboardType::kSelection)) {
+        if (ui::Clipboard::IsSupportedClipboardBuffer(
+                ui::ClipboardBuffer::kSelection)) {
           ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
           CHECK(clipboard);
           base::string16 clipboard_text;
-          clipboard->ReadText(ui::ClipboardType::kSelection, &clipboard_text);
+          clipboard->ReadText(ui::ClipboardBuffer::kSelection, &clipboard_text);
           if (!clipboard_text.empty())
             controller_->CreateNewTabWithLocation(clipboard_text);
         }
