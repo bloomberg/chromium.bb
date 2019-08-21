@@ -83,6 +83,7 @@ RankingItemType RankingItemTypeFromSearchResult(
     case ash::SearchResultType::kArcAppShortcut:
       return RankingItemType::kArcAppShortcut;
     case ash::SearchResultType::kZeroStateFile:
+    case ash::SearchResultType::kDriveQuickAccess:
       return RankingItemType::kZeroStateFile;
   }
 }

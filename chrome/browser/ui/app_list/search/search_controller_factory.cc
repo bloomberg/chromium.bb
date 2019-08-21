@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
+#include "chrome/browser/ui/app_list/search/drive_quick_access_provider.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
@@ -45,6 +46,7 @@ constexpr size_t kMaxAppsGroupResults = 7;
 constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxLauncherSearchResults = 2;
 constexpr size_t kMaxZeroStateFileResults = 6;
+constexpr size_t kMaxDriveQuickAccessResults = 6;
 constexpr size_t kMaxAppReinstallSearchResults = 1;
 // We show up to 6 Play Store results. However, part of Play Store results may
 // be filtered out because they may correspond to already installed Web apps. So
@@ -161,6 +163,11 @@ std::unique_ptr<SearchController> CreateSearchController(
         kMaxZeroStateFileResults, 1.0, kBoostOfZeroStateFileResults);
     controller->AddProvider(zero_state_files_group_id,
                             std::make_unique<ZeroStateFileProvider>(profile));
+    size_t drive_quick_access_group_id =
+        controller->AddGroup(kMaxDriveQuickAccessResults, 1.0, 0.0);
+    controller->AddProvider(
+        drive_quick_access_group_id,
+        std::make_unique<DriveQuickAccessProvider>(profile));
   }
 
   return controller;

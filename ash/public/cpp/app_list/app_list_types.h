@@ -124,6 +124,7 @@ enum class SearchResultType {
   kPlayStoreReinstallApp,  // Reinstall recommendations from PlayStore.
   kArcAppShortcut,         // ARC++ app shortcuts.
   kZeroStateFile,          // Zero state local file results.
+  kDriveQuickAccess,       // Drive QuickAccess results.
   // Add new values here.
 };
 
