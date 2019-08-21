@@ -398,18 +398,6 @@
       ]
     },
     {
-      "name": "drallion",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "edgar",
       "configs": [
         {
@@ -1656,6 +1644,27 @@
             "bvt-perbuild",
             "bvt-tast-informational"
           ],
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "drallion",
+      "reference_board_name": "drallion",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "drallion",
+          "name": "drallion",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "drallion",
+          "name": "drallion360",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
