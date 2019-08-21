@@ -369,8 +369,6 @@ const DataResource kDataResources[] = {
      ui::SCALE_FACTOR_NONE, true},
     {"DocumentXMLTreeViewer.js", IDR_DOCUMENTXMLTREEVIEWER_JS,
      ui::SCALE_FACTOR_NONE, true},
-    {"Composite", IDR_AUDIO_SPATIALIZATION_COMPOSITE, ui::SCALE_FACTOR_NONE,
-     false},
 };
 
 class NestedMessageLoopRunnerImpl
