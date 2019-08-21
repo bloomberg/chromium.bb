@@ -93,6 +93,7 @@ class WebViewProxy final : public WebView
     int getRoutingId() const override;
     void setBackgroundColor(NativeColor color) override;
     void setRegion(NativeRegion region) override;
+    void activateKeyboardLayout(unsigned int hkl) override;
     void clearTooltip() override;
     v8::MaybeLocal<v8::Value> callFunction(
             v8::Local<v8::Function>  func,

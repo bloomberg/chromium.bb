@@ -354,7 +354,8 @@ shared_library("blpwtk2") {
   }
 
   libs = [
-    "dwmapi.lib"
+    "dwmapi.lib",
+    "imm32.lib"
   ]
 
   ldflags = [

@@ -154,6 +154,7 @@ class WebViewHostImpl final : private WebViewImplClient
     void setBackgroundColor(int r, int g, int b) override;
     void applyRegion(const std::string&         blob,
                      applyRegionCallback callback) override;
+    void activateKeyboardLayout(unsigned int hkl) override;
     void clearTooltip() override;
     void setParent(unsigned int window) override;
 
