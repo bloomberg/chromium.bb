@@ -82,6 +82,7 @@ def ParallelEmergeArgParser():
   parser.add_argument(
       '--root-deps',
       action='store',
+      nargs='?',
       default=None,
       dest='root_deps',
       help=argparse.SUPPRESS,
