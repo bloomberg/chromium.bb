@@ -597,7 +597,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
 
   provider->install_manager().InstallWebAppFromInfo(
-      std::move(web_app_info), /*no_network_install=*/false,
+      std::move(web_app_info), web_app::ForInstallableSite::kYes,
       WebappInstallSource::ARC,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {

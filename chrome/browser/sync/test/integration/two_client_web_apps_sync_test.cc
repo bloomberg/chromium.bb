@@ -26,8 +26,8 @@ class TwoClientWebAppsSyncTest : public SyncTest {
     AppId app_id;
 
     WebAppProvider::Get(profile)->install_manager().InstallWebAppFromInfo(
-        std::make_unique<WebApplicationInfo>(info),
-        /*no_network_install=*/false, WebappInstallSource::DEVTOOLS,
+        std::make_unique<WebApplicationInfo>(info), ForInstallableSite::kYes,
+        WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindLambdaForTesting(
             [&run_loop, &app_id](const AppId& new_app_id,
                                  InstallResultCode code) {
