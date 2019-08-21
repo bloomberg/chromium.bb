@@ -108,6 +108,20 @@ class WebView
         // Stop loading the current contents.  This is a no-op if the WebView
         // is not loading any content.
 
+    virtual void takeKeyboardFocus() = 0;
+        // Make this WebView take keyboard focus.  This means all Windows
+        // keyboard messages will now be handled by the WebView.  Note that
+        // even though Windows keyboard messages are being processed by the
+        // WebView, they will not actually do anything unless the WebView
+        // also has logical focus.
+
+    virtual void setLogicalFocus(bool focused) = 0;
+        // Enable/disable logical focus.  This controls whether or not the
+        // WebView will display a focused UI, including whether or not the
+        // caret will be visible.  Note that setting logical focus will not
+        // cause keyboard events to be automatically processed by the
+        // WebView, unless it has keyboard focus.
+
     virtual void show() = 0;
         // Show this WebView.
 

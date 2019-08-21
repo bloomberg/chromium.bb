@@ -430,6 +430,27 @@ void WebViewImpl::stop()
     d_webContents->Stop();
 }
 
+void WebViewImpl::takeKeyboardFocus()
+{
+    DCHECK(Statics::isInBrowserMainThread());
+    DCHECK(!d_wasDestroyed);
+    if (d_widget) {
+        d_widget->focus();
+    }
+}
+
+void WebViewImpl::setLogicalFocus(bool focused)
+{
+    DCHECK(Statics::isInBrowserMainThread());
+    DCHECK(!d_wasDestroyed);
+    if (focused) {
+        d_webContents->Focus();
+    }
+    else {
+        d_webContents->GetRenderWidgetHostView()->Blur();
+    }
+}
+
 void WebViewImpl::show()
 {
     DCHECK(Statics::isInBrowserMainThread());
@@ -625,6 +646,7 @@ void WebViewImpl::createWidget(blpwtk2::NativeView parent)
         d_webContents->GetNativeView(),
         parent,
         this,
+        d_properties.activateWindowOnMouseDown,
         d_properties.rerouteMouseWheelToAnyRelatedWindow);
 
     if (d_implClient) {
@@ -816,6 +838,18 @@ aura::Window *WebViewImpl::GetDefaultActivationWindow()
     return nullptr;
 }
 
+bool WebViewImpl::ShouldSetKeyboardFocusOnMouseDown()
+{
+    DCHECK(Statics::isInBrowserMainThread());
+    return d_properties.takeKeyboardFocusOnMouseDown;
+}
+
+bool WebViewImpl::ShouldSetLogicalFocusOnMouseDown()
+{
+    DCHECK(Statics::isInBrowserMainThread());
+    return d_properties.takeLogicalFocusOnMouseDown;
+}
+
 void WebViewImpl::FindReply(content::WebContents *source_contents,
                             int                   request_id,
                             int                   number_of_matches,
@@ -897,6 +931,21 @@ void WebViewImpl::DidFailLoad(content::RenderFrameHost *render_frame_host,
 
 
 // patch section: focus
+void WebViewImpl::OnWebContentsFocused(content::RenderWidgetHost*)
+{
+    DCHECK(Statics::isInBrowserMainThread());
+    if (d_wasDestroyed) return;
+    if (d_delegate)
+        d_delegate->focused(this);
+}
+
+void WebViewImpl::OnWebContentsLostFocus(content::RenderWidgetHost*)
+{
+    DCHECK(Statics::isInBrowserMainThread());
+    if (d_wasDestroyed) return;
+    if (d_delegate)
+        d_delegate->blurred(this);
+}
 
 
 // patch section: gpu
