@@ -96,8 +96,6 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     return draw_result;
   }
 
-  void AfterTest() override {}
-
   int mask_layer_id_;
   FakeContentLayerClient client_;
 };
@@ -201,8 +199,6 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     EndTest();
     return draw_result;
   }
-
-  void AfterTest() override {}
 
   int mask_layer_id_;
   FakeContentLayerClient client_;
@@ -323,8 +319,6 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
     return draw_result;
   }
 
-  void AfterTest() override {}
-
   int mask_layer_id_;
   FakeContentLayerClient client_;
 };
@@ -437,8 +431,6 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     }
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
 };
 
@@ -513,8 +505,6 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
     EndTest();
     return draw_result;
   }
-
-  void AfterTest() override {}
 
   int mask_layer_id_;
   FakeContentLayerClient client_;

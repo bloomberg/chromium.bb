@@ -494,8 +494,6 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
     scroll_layer->ScrollBy(scroll_amount_);
   }
 
-  void AfterTest() override {}
-
  private:
   gfx::Vector2dF scroll_amount_;
 };
@@ -547,8 +545,6 @@ class LayerTreeHostScrollTestScrollSnapping : public LayerTreeHostScrollTest {
     }
     scroll_layer->ScrollBy(scroll_amount_);
   }
-
-  void AfterTest() override {}
 
  private:
   gfx::Vector2dF scroll_amount_;
@@ -1105,8 +1101,6 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   gfx::ScrollOffset initial_scroll_;
   gfx::Vector2dF impl_thread_scroll_;
@@ -1180,8 +1174,6 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     }
   }
 
-  void AfterTest() override {}
-
  private:
   int outer_viewport_container_layer_id_;
 };
@@ -1224,8 +1216,6 @@ class LayerTreeHostScrollTestScrollNonDrawnLayer
 
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollNonDrawnLayer);
@@ -1269,8 +1259,6 @@ class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
               status.main_thread_scrolling_reasons);
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -1380,8 +1368,6 @@ class LayerTreeHostScrollTestLayerStructureChange
         break;
     }
   }
-
-  void AfterTest() override {}
 
   virtual void DidScroll(Layer* layer) {
     if (scroll_destroy_whole_tree_) {
@@ -2040,8 +2026,6 @@ class LayerTreeHostScrollTestPropertyTreeUpdate
     }
   }
 
-  void AfterTest() override {}
-
  private:
   gfx::ScrollOffset initial_scroll_;
   gfx::ScrollOffset second_scroll_;
@@ -2403,8 +2387,6 @@ class NonScrollingNonFastScrollableRegion
 
     EndTest();
   }
-
-  void AfterTest() override {}
 
  private:
   FakeContentLayerClient fake_content_layer_client_;

@@ -139,7 +139,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     initial_device_scale_factor_ = initial_device_scale_factor;
   }
 
-  virtual void AfterTest() = 0;
+  virtual void AfterTest() {}
   virtual void WillBeginTest();
   virtual void BeginTest() = 0;
   virtual void SetupTree();
