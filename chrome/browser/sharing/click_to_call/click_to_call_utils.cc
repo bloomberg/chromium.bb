@@ -4,10 +4,13 @@
 
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -39,6 +42,21 @@ bool IsClickToCallEnabled(content::BrowserContext* browser_context) {
   return sharing_service && base::FeatureList::IsEnabled(kClickToCallUI);
 }
 
+// Todo(himanshujaju): Make it generic and move to base/metrics/histogram_base.h
+// Used to Log delay in parsing phone number in highlighted text to UMA.
+struct ScopedUmaHistogramMicrosecondsTimer {
+  ScopedUmaHistogramMicrosecondsTimer() : timer() {}
+
+  ~ScopedUmaHistogramMicrosecondsTimer() {
+    base::UmaHistogramCustomMicrosecondsTimes(
+        "Sharing.ClickToCallContextMenuPhoneNumberParsingDelay",
+        timer.Elapsed(), base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromSeconds(1), 50);
+  }
+
+  const base::ElapsedTimer timer;
+};
+
 }  // namespace
 
 bool ShouldOfferClickToCallForURL(content::BrowserContext* browser_context,
@@ -59,6 +77,8 @@ base::Optional<std::string> ExtractPhoneNumberForClickToCall(
       !IsClickToCallEnabled(browser_context)) {
     return base::nullopt;
   }
+
+  ScopedUmaHistogramMicrosecondsTimer scoped_uma_timer;
 
   // TODO(crbug.com/992906): Find a better way to parse phone numbers.
   static const base::NoDestructor<re2::RE2> kPhoneNumberRegex(
