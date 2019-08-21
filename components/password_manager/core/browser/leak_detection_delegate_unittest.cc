@@ -7,6 +7,7 @@
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -122,16 +123,25 @@ TEST_F(LeakDetectionDelegateTest, StartCheck) {
 }
 
 TEST_F(LeakDetectionDelegateTest, LeakDetectionDone) {
+  base::HistogramTester histogram_tester;
   LeakDetectionDelegateInterface* delegate_interface = &delegate();
   const autofill::PasswordForm form = CreateTestForm();
+
+  EXPECT_CALL(factory(), TryCreateLeakCheck)
+      .WillOnce(Return(ByMove(std::make_unique<MockLeakDetectionCheck>())));
+  delegate().StartLeakCheck(form);
 
   EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked).Times(0);
   delegate_interface->OnLeakDetectionDone(
       false, form.origin, form.username_value, form.password_value);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.LeakDetection.NotifyIsLeakedTime", 0);
 
   EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(form.origin));
   delegate_interface->OnLeakDetectionDone(
       true, form.origin, form.username_value, form.password_value);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.LeakDetection.NotifyIsLeakedTime", 1);
 }
 
 }  // namespace password_manager
