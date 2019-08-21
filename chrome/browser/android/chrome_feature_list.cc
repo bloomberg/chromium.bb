@@ -533,7 +533,7 @@ const base::Feature kTabGroupsAndroid{"TabGroupsAndroid",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTabGroupsUiImprovementsAndroid{
-    "TabGroupsUiImprovementsAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TabGroupsUiImprovementsAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTabGridLayoutAndroid{"TabGridLayoutAndroid",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
