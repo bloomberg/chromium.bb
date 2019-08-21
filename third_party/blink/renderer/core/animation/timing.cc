@@ -164,7 +164,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   base::Optional<double> progress;
   const double iteration_duration = IterationDuration().InSecondsF();
 
-  const double overall_progress =
+  const base::Optional<double> overall_progress =
       CalculateOverallProgress(current_phase, active_time, iteration_duration,
                                iteration_count, iteration_start);
   const double simple_iteration_progress = CalculateSimpleIterationProgress(
