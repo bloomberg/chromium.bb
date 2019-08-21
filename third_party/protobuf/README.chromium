@@ -89,8 +89,9 @@ Description of the patches:
 - 0028-fix-repeated-field-export.patch
 
   clang and clang-cl differ on how to do template instantiation exporting (see
-  https://crbug.com/994001). Since this shouldnt affect the chrome binary size
-  (just linking speed), it is easier to just remove them.
+  https://crbug.com/994001). This adds some macro magic copied from chromium
+  //base/export_template.h.
+  (https://github.com/protocolbuffers/protobuf/pull/6535)
 
 - 0029-Fix-order-for-mutex-macros.patch
 

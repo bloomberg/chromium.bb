@@ -2664,6 +2664,24 @@ UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
       mutable_field);
 }
 
+// Extern declarations of common instantiations to reduce libray bloat.
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<bool>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<int32>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<uint32>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<int64>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<uint64>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<float>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<double>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedPtrField<std::string>;
+
 }  // namespace protobuf
 }  // namespace google
 
