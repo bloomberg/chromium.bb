@@ -342,12 +342,13 @@ AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
 
 void HttpServerProperties::SetHttp2AlternativeService(
     const url::SchemeHostPort& origin,
+    const NetworkIsolationKey& network_isolation_key,
     const AlternativeService& alternative_service,
     base::Time expiration) {
   DCHECK_EQ(alternative_service.protocol, kProtoHTTP2);
 
   SetAlternativeServices(
-      origin, net::NetworkIsolationKey(),
+      origin, network_isolation_key,
       AlternativeServiceInfoVector(
           /*size=*/1, AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
                           alternative_service, expiration)));
@@ -355,13 +356,14 @@ void HttpServerProperties::SetHttp2AlternativeService(
 
 void HttpServerProperties::SetQuicAlternativeService(
     const url::SchemeHostPort& origin,
+    const NetworkIsolationKey& network_isolation_key,
     const AlternativeService& alternative_service,
     base::Time expiration,
     const quic::ParsedQuicVersionVector& advertised_versions) {
   DCHECK(alternative_service.protocol == kProtoQUIC);
 
   SetAlternativeServices(
-      origin, net::NetworkIsolationKey(),
+      origin, network_isolation_key,
       AlternativeServiceInfoVector(
           /*size=*/1,
           AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(

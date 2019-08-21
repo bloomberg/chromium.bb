@@ -286,11 +286,11 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     if (alternative_service.protocol == kProtoQUIC) {
       session_->http_server_properties()->SetQuicAlternativeService(
-          server, alternative_service, expiration,
+          server, NetworkIsolationKey(), alternative_service, expiration,
           session_->params().quic_params.supported_versions);
     } else {
       session_->http_server_properties()->SetHttp2AlternativeService(
-          server, alternative_service, expiration);
+          server, NetworkIsolationKey(), alternative_service, expiration);
     }
   }
 
@@ -856,7 +856,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   session_->http_server_properties()->SetQuicAlternativeService(
-      server, alternative_service, expiration,
+      server, NetworkIsolationKey(), alternative_service, expiration,
       {quic::UnsupportedQuicVersion()});
 
   request_ =
@@ -3122,7 +3122,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
 
   // Set alternative service with no advertised version.
   session_->http_server_properties()->SetQuicAlternativeService(
-      server, alternative_service, expiration, quic::ParsedQuicVersionVector());
+      server, NetworkIsolationKey(), alternative_service, expiration,
+      quic::ParsedQuicVersionVector());
 
   AlternativeServiceInfo alt_svc_info =
       JobControllerPeer::GetAlternativeServiceInfoFor(
@@ -3136,7 +3137,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
   quic::ParsedQuicVersionVector supported_versions =
       session_->params().quic_params.supported_versions;
   session_->http_server_properties()->SetQuicAlternativeService(
-      server, alternative_service, expiration, supported_versions);
+      server, NetworkIsolationKey(), alternative_service, expiration,
+      supported_versions);
 
   alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
       job_controller_, request_info, &request_delegate_,
@@ -3172,7 +3174,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
       unsupported_version_1,
       session_->params().quic_params.supported_versions[0]};
   session_->http_server_properties()->SetQuicAlternativeService(
-      server, alternative_service, expiration, mixed_quic_versions);
+      server, NetworkIsolationKey(), alternative_service, expiration,
+      mixed_quic_versions);
 
   alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
       job_controller_, request_info, &request_delegate_,
@@ -3189,7 +3192,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
   // Set alternative service for the same server with two unsupported QUIC
   // versions: |unsupported_version_1|, |unsupported_version_2|.
   session_->http_server_properties()->SetQuicAlternativeService(
-      server, alternative_service, expiration,
+      server, NetworkIsolationKey(), alternative_service, expiration,
       {unsupported_version_1, unsupported_version_2});
 
   alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
@@ -3221,8 +3224,9 @@ TEST_F(HttpStreamFactoryJobControllerTest, QuicHostAllowlist) {
   quic::ParsedQuicVersionVector supported_versions =
       session_->params().quic_params.supported_versions;
   session_->http_server_properties()->SetQuicAlternativeService(
-      server, AlternativeService(kProtoQUIC, "www.example.com", 443),
-      expiration, supported_versions);
+      server, NetworkIsolationKey(),
+      AlternativeService(kProtoQUIC, "www.example.com", 443), expiration,
+      supported_versions);
 
   AlternativeServiceInfo alt_svc_info =
       JobControllerPeer::GetAlternativeServiceInfoFor(
@@ -3238,8 +3242,9 @@ TEST_F(HttpStreamFactoryJobControllerTest, QuicHostAllowlist) {
   EXPECT_EQ(supported_versions, alt_svc_info.advertised_versions());
 
   session_->http_server_properties()->SetQuicAlternativeService(
-      server, AlternativeService(kProtoQUIC, "www.example.org", 443),
-      expiration, supported_versions);
+      server, NetworkIsolationKey(),
+      AlternativeService(kProtoQUIC, "www.example.org", 443), expiration,
+      supported_versions);
 
   alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
       job_controller_, request_info, &request_delegate_,

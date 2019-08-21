@@ -103,10 +103,11 @@ class HttpServerPropertiesTest : public TestWithTaskEnvironment {
         test_clock_.Now() + base::TimeDelta::FromDays(1);
     if (alternative_service.protocol == kProtoQUIC) {
       impl_.SetQuicAlternativeService(
-          origin, alternative_service, expiration,
+          origin, NetworkIsolationKey(), alternative_service, expiration,
           HttpNetworkSession::Params().quic_params.supported_versions);
     } else {
-      impl_.SetHttp2AlternativeService(origin, alternative_service, expiration);
+      impl_.SetHttp2AlternativeService(origin, NetworkIsolationKey(),
+                                       alternative_service, expiration);
     }
   }
 
@@ -544,8 +545,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   const base::Time now = test_clock_.Now();
   base::Time expiration1 = now + base::TimeDelta::FromDays(1);
   // 1st entry in the memory.
-  impl_.SetHttp2AlternativeService(test_server1, alternative_service1,
-                                   expiration1);
+  impl_.SetHttp2AlternativeService(test_server1, NetworkIsolationKey(),
+                                   alternative_service1, expiration1);
 
   // |test_server2| has an alternative service, which will be
   // overwritten by OnServerInfoLoadedForTesting(), because

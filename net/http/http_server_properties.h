@@ -263,17 +263,18 @@ class NET_EXPORT HttpServerProperties
   // Set a single HTTP/2 alternative service for |origin|.  Previous
   // alternative services for |origin| are discarded.
   // |alternative_service.host| may be empty.
-  // TODO(mmenke):  Add NetworkIsolationKey argument.
-  void SetHttp2AlternativeService(const url::SchemeHostPort& origin,
-                                  const AlternativeService& alternative_service,
-                                  base::Time expiration);
+  void SetHttp2AlternativeService(
+      const url::SchemeHostPort& origin,
+      const NetworkIsolationKey& network_isolation_key,
+      const AlternativeService& alternative_service,
+      base::Time expiration);
 
   // Set a single QUIC alternative service for |origin|.  Previous alternative
   // services for |origin| are discarded.
   // |alternative_service.host| may be empty.
-  // TODO(mmenke):  Add NetworkIsolationKey argument.
   void SetQuicAlternativeService(
       const url::SchemeHostPort& origin,
+      const NetworkIsolationKey& network_isolation_key,
       const AlternativeService& alternative_service,
       base::Time expiration,
       const quic::ParsedQuicVersionVector& advertised_versions);

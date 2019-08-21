@@ -476,10 +476,12 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
   http_server_props_->SetHttp2AlternativeService(
-      spdy_server_mail, alternative_service, one_day_from_now_);
+      spdy_server_mail, NetworkIsolationKey(), alternative_service,
+      one_day_from_now_);
   // ExpectScheduleUpdatePrefs() should be called only once.
   http_server_props_->SetHttp2AlternativeService(
-      spdy_server_mail, alternative_service, one_day_from_now_);
+      spdy_server_mail, NetworkIsolationKey(), alternative_service,
+      one_day_from_now_);
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -559,7 +561,8 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
-      spdy_server_mail, alternative_service, one_day_from_now_);
+      spdy_server_mail, NetworkIsolationKey(), alternative_service,
+      one_day_from_now_);
   EXPECT_FALSE(
       http_server_props_->IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
@@ -604,7 +607,8 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
   http_server_props_->SetHttp2AlternativeService(
-      spdy_server_mail, alternative_service, one_day_from_now_);
+      spdy_server_mail, NetworkIsolationKey(), alternative_service,
+      one_day_from_now_);
 
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
@@ -628,7 +632,7 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   // double (or half) the lifetime, to ensure the change triggers a save to
   // prefs.
   http_server_props_->SetHttp2AlternativeService(
-      spdy_server_mail, alternative_service,
+      spdy_server_mail, NetworkIsolationKey(), alternative_service,
       one_day_from_now_ + base::TimeDelta::FromDays(2));
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
@@ -648,7 +652,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
   http_server_props_->SetHttp2AlternativeService(
-      spdy_server_mail, alternative_service, one_day_from_now_);
+      spdy_server_mail, NetworkIsolationKey(), alternative_service,
+      one_day_from_now_);
 
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
@@ -681,7 +686,8 @@ TEST_F(HttpServerPropertiesManagerTest,
 
   // Re-creating the entry should result in a task to save prefs.
   http_server_props_->SetHttp2AlternativeService(
-      spdy_server_mail, alternative_service, one_day_from_now_);
+      spdy_server_mail, NetworkIsolationKey(), alternative_service,
+      one_day_from_now_);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
   FastForwardUntilNoTasksRemain();
@@ -704,7 +710,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
-      spdy_server_mail, alternative_service, one_day_from_now_);
+      spdy_server_mail, NetworkIsolationKey(), alternative_service,
+      one_day_from_now_);
   EXPECT_FALSE(
       http_server_props_->IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
@@ -754,7 +761,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
-      spdy_server_mail, alternative_service, one_day_from_now_);
+      spdy_server_mail, NetworkIsolationKey(), alternative_service,
+      one_day_from_now_);
   EXPECT_FALSE(
       http_server_props_->IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
@@ -803,7 +811,8 @@ TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
-      spdy_server_mail, alternative_service, one_day_from_now_);
+      spdy_server_mail, NetworkIsolationKey(), alternative_service,
+      one_day_from_now_);
   EXPECT_FALSE(
       http_server_props_->IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
@@ -1102,7 +1111,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
                                               444);
   base::Time expiration3 = base::Time::Max();
   http_server_props_->SetHttp2AlternativeService(
-      server_mail, mail_alternative_service, expiration3);
+      server_mail, NetworkIsolationKey(), mail_alternative_service,
+      expiration3);
 
   http_server_props_->MarkAlternativeServiceBroken(www_alternative_service2);
   http_server_props_->MarkAlternativeServiceRecentlyBroken(
@@ -1474,7 +1484,8 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
                                               444);
   base::Time expiration3 = base::Time::Max();
   http_server_props_->SetQuicAlternativeService(
-      server_mail, mail_alternative_service, expiration3, advertised_versions_);
+      server_mail, NetworkIsolationKey(), mail_alternative_service, expiration3,
+      advertised_versions_);
   // #3: Set ServerNetworkStats.
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromInternalValue(42);
