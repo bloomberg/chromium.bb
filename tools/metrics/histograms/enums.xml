@@ -49600,6 +49600,24 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="ProfileMenuActionableItem">
+  <int value="0" label="Manage your Google Account button"/>
+  <int value="1" label="Passwords button"/>
+  <int value="2" label="Credit cards button"/>
+  <int value="3" label="Addresses button"/>
+  <int value="4" label="Guest profile button"/>
+  <int value="5" label="Manage profiles button"/>
+  <int value="6" label="Lock button"/>
+  <int value="7" label="Exit profile button"/>
+  <int value="8" label="Sync error button"/>
+  <int value="9" label="Current profile card"/>
+  <int value="10" label="Sign-in and turn on sync button"/>
+  <int value="11" label="Turn on sync for account button"/>
+  <int value="12" label="Sign-out button"/>
+  <int value="13" label="Switch to another profile button"/>
+  <int value="14" label="Cookies cleared on exit link"/>
+</enum>
+
 <enum name="ProfileNetUserCount">
   <int value="0" label="Added new user"/>
   <int value="1" label="Deleted a profile"/>
