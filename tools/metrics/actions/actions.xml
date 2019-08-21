@@ -20334,6 +20334,62 @@ should be able to be added at any place in this file.
   <description>Please enter the description of the metric.</description>
 </action>
 
+<action name="StartSurface.SinglePane">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the single pane start surface is shown (the user taps the
+    tab switcher button or on chrome start).
+  </description>
+</action>
+
+<action name="StartSurface.SinglePane.MoreTabs">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the user taps the more tabs button on the single pane
+    start surface.
+  </description>
+</action>
+
+<action name="StartSurface.TwoPanes">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the two panes start surface is shown (the user taps the
+    tab switcher button or on chrome start).
+  </description>
+</action>
+
+<action name="StartSurface.TwoPanes.BottomBar.TapExploreSurface">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the user taps the explore button on the two panes start
+    surface.
+  </description>
+</action>
+
+<action name="StartSurface.TwoPanes.BottomBar.TapHome">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the user taps the home button on the two panes start
+    surface
+  </description>
+</action>
+
+<action name="StartSurface.TwoPanes.DefaultOnExploreSurface">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the two panes start surface is shown with explore surface
+    visible by default.
+  </description>
+</action>
+
+<action name="StartSurface.TwoPanes.DefaultOnHomeSurface">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the two panes start surface is shown with home surface
+    visible by default.
+  </description>
+</action>
+
 <action name="StartupTick" not_user_triggered="true">
   <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
