@@ -1678,6 +1678,9 @@ extern const char kOmniboxSuggestionTransparencyOptionsDescription[];
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
+extern const char kOmniboxTabSwitchSuggestionsDedicatedRowName[];
+extern const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[];
+
 extern const char kOmniboxWrapPopupPositionName[];
 extern const char kOmniboxWrapPopupPositionDescription[];
 

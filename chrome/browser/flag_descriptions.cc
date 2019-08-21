@@ -2855,6 +2855,12 @@ const char kOmniboxTabSwitchSuggestionsName[] =
 const char kOmniboxTabSwitchSuggestionsDescription[] =
     "Enable suggestions for switching to open tabs within the Omnibox.";
 
+const char kOmniboxTabSwitchSuggestionsDedicatedRowName[] =
+    "Omnibox dedicated row tab switch suggestions";
+const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[] =
+    "Put tab switch suggestions in separate suggestion, immediately following "
+    "the original suggestion.";
+
 const char kOmniboxWrapPopupPositionName[] = "Omnibox wrap pop-up position";
 const char kOmniboxWrapPopupPositionDescription[] =
     "Enable wrapping the Omnibox pop-up position between top and bottom.";
