@@ -4593,7 +4593,7 @@ void RenderFrameImpl::DidAddMessageToConsoleWithCol(
   }
 
   if (g_console_log_message_handler) {
-    g_console_log_message_handler(static_cast<int32_t>(log_severity),
+    g_console_log_message_handler(blink::ConsoleMessageLevelToLogSeverity(message.level),
                                   source_name.Utf8(),
                                   static_cast<int32_t>(source_line),
                                   static_cast<int32_t>(source_column_number),
