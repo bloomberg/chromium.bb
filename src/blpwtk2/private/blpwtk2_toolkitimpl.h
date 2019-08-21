@@ -67,8 +67,13 @@ class BrowserMainRunner;
 class ProcessHostImpl;
 class Profile;
 class StringRef;
+<<<<<<< HEAD
 class GpuDataLogger;
 
+||||||| merged common ancestors
+=======
+class LogMessageThrottler;
+>>>>>>> origin/blpwtk2/log-message-handler
 
                         // =================
                         // class ToolkitImpl
@@ -115,7 +120,7 @@ class ToolkitImpl : public Toolkit {
 
     // patch section: multi-heap tracer
 
-
+    std::shared_ptr<LogMessageThrottler> d_logMessageThrottler;
 
     ~ToolkitImpl() override;
         // Shutdown all threads and delete the toolkit.  To ensure the same
@@ -160,7 +165,8 @@ class ToolkitImpl : public Toolkit {
                          const std::vector<std::string>& cmdLineSwitches,
                          bool                            isolated,
                          bool                            browserV8Enabled,
-                         const std::string&              profileDir);
+                         const std::string&              profileDir,
+                         std::shared_ptr<LogMessageThrottler> logMessageThrottler);
 
     // blpwtk2::Toolkit overrides
     bool hasDevTools() override;

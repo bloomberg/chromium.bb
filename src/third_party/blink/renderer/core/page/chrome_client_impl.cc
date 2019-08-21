@@ -342,14 +342,15 @@ void ChromeClientImpl::AddMessageToConsole(LocalFrame* local_frame,
                                            mojom::ConsoleMessageLevel level,
                                            const String& message,
                                            unsigned line_number,
+                                           unsigned column_number,
                                            const String& source_id,
                                            const String& stack_trace) {
   WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(local_frame);
   if (frame && frame->Client()) {
-    frame->Client()->DidAddMessageToConsole(
+    frame->Client()->DidAddMessageToConsoleWithCol(
         WebConsoleMessage(static_cast<mojom::ConsoleMessageLevel>(level),
                           message),
-        source_id, line_number, stack_trace);
+        source_id, line_number, column_number, stack_trace);
   }
 }
 

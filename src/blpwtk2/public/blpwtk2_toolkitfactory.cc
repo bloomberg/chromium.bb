@@ -22,6 +22,7 @@
 
 #include <blpwtk2_toolkitfactory.h>
 
+#include <blpwtk2_logmessagethrottler.h>
 #include <blpwtk2_products.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
@@ -46,8 +47,11 @@
 #include <printing/print_settings.h>
 #include <ui/views/corewm/tooltip_win.h>
 
+#include <memory>
+
 namespace blpwtk2 {
 static bool g_created = false;
+static std::weak_ptr<LogMessageThrottler> g_logger;
 
 static void setMaxSocketsPerProxy(int count)
 {
@@ -86,6 +90,29 @@ static void setMaxSocketsPerProxy(int count)
 						// ---------------------
 						// struct ToolkitFactory
 						// ---------------------
+static bool wtk2LogMessageHandlerFunction(int severity,
+                                          const char* file,
+                                          int line,
+                                          size_t message_start,
+                                          const std::string& str)
+{
+    if(auto logger = g_logger.lock()) {
+        return logger->writeLog(severity, file, line, message_start, str);
+    }
+    return false;
+}
+
+static void wtk2ConsoleLogMessageHandlerFunction(int severity,
+                                                 const std::string& file,
+                                                 int line,
+                                                 int column,
+                                                 const std::string& message,
+                                                 const std::string& stack_trace)
+{
+    if(auto logger = g_logger.lock()) {
+        logger->writeConsole(severity, file, line, column, message, stack_trace);
+    }
+}
 
 // static
 Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
@@ -120,6 +147,14 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
         std::unique_ptr<base::Environment> env(base::Environment::Create());
         env->SetVar(subProcessModuleEnvVar, subProcessModule);
 	}
+
+
+    logging::SetWtk2LogMessageHandler(wtk2LogMessageHandlerFunction);
+    content::RenderFrameImpl::SetConsoleLogMessageHandler(wtk2ConsoleLogMessageHandlerFunction);
+    auto logger = std::make_shared<LogMessageThrottler>(
+        params.logThrottleType(), params.logMessageHandler(),
+        params.consoleLogMessageHandler());
+    g_logger = logger;
 
     base::win::SetWinProcExceptionFilter(params.winProcExceptionFilter());
 
@@ -167,7 +202,8 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
                                            commandLineSwitches,
                                            params.isIsolatedProfile(),
                                            params.browserV8Enabled(),
-                                           profileDirectory);
+                                           profileDirectory,
+                                           std::move(logger));
 
     std::vector<std::wstring> font_files;
 

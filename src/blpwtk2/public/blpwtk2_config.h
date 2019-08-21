@@ -70,6 +70,7 @@
 // feature 20
 // feature 21
 // feature 22
+#define BLPWTK2_FEATURE_LOGMESSAGEHANDLER
 // feature 23
 // feature 24
 // feature 25

@@ -41,6 +41,8 @@ namespace blpwtk2 {
 struct ToolkitCreateParamsImpl final
 {
     ThreadMode d_threadMode;
+    ToolkitCreateParams::LogMessageHandler d_logMessageHandler;
+    ToolkitCreateParams::ConsoleLogMessageHandler d_consoleLogMessageHandler;
     ToolkitCreateParams::WinProcExceptionFilter d_winProcExceptionFilter;
     ToolkitCreateParams::ChannelErrorHandler d_channelErrorHandler;
     int d_maxSocketsPerProxy;
@@ -75,6 +77,8 @@ struct ToolkitCreateParamsImpl final
 
 
 
+    ToolkitCreateParams::LogThrottleType d_logThrottleType {ToolkitCreateParams::LogThrottleType::kWarningThrottle};
+
     ToolkitCreateParamsImpl();
 };
 
@@ -84,6 +88,8 @@ struct ToolkitCreateParamsImpl final
 
 ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
     : d_threadMode(ThreadMode::ORIGINAL)
+    , d_logMessageHandler(0)
+    , d_consoleLogMessageHandler(0)
     , d_winProcExceptionFilter(0)
     , d_channelErrorHandler(0)
     , d_maxSocketsPerProxy(-1000)
@@ -151,6 +157,16 @@ void ToolkitCreateParams::setThreadMode(ThreadMode mode)
 void ToolkitCreateParams::enableDefaultPrintSettings()
 {
     d_impl->d_useDefaultPrintSettings = true;
+}
+
+void ToolkitCreateParams::setLogMessageHandler(LogMessageHandler handler)
+{
+    d_impl->d_logMessageHandler = handler;
+}
+
+void ToolkitCreateParams::setConsoleLogMessageHandler(ConsoleLogMessageHandler handler)
+{
+    d_impl->d_consoleLogMessageHandler = handler;
 }
 
 void ToolkitCreateParams::setWinProcExceptionFilter(WinProcExceptionFilter filter)
@@ -298,6 +314,11 @@ void ToolkitCreateParams::setBrowserV8Enabled(bool browserV8Enabled)
 
 
 
+void ToolkitCreateParams::setLogThrottleType(LogThrottleType throttleType)
+{
+    d_impl->d_logThrottleType = throttleType;
+}
+
 ThreadMode ToolkitCreateParams::threadMode() const
 {
     return d_impl->d_threadMode;
@@ -306,6 +327,16 @@ ThreadMode ToolkitCreateParams::threadMode() const
 bool ToolkitCreateParams::useDefaultPrintSettings() const
 {
     return d_impl->d_useDefaultPrintSettings;
+}
+
+ToolkitCreateParams::LogMessageHandler ToolkitCreateParams::logMessageHandler() const
+{
+    return d_impl->d_logMessageHandler;
+}
+
+ToolkitCreateParams::ConsoleLogMessageHandler ToolkitCreateParams::consoleLogMessageHandler() const
+{
+    return d_impl->d_consoleLogMessageHandler;
 }
 
 ToolkitCreateParams::WinProcExceptionFilter ToolkitCreateParams::winProcExceptionFilter() const
@@ -448,6 +479,11 @@ bool ToolkitCreateParams::browserV8Enabled() const
 // patch section: renderer ui
 
 
+
+ToolkitCreateParams::LogThrottleType ToolkitCreateParams::logThrottleType() const
+{
+    return d_impl->d_logThrottleType;
+}
 
 }  // close namespace blpwtk2
 
