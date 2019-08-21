@@ -181,9 +181,6 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   progress = CalculateTransformedProgress(
       current_phase, directed_progress, iteration_duration,
       current_direction_is_forwards, timing_function);
-  if (IsNull(progress.value())) {
-    progress.reset();
-  }
 
   double time_to_next_iteration = std::numeric_limits<double>::infinity();
   // Conditionally compute the time to next iteration, which is only

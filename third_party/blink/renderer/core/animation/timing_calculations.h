@@ -261,14 +261,14 @@ static inline double CalculateDirectedProgress(
 }
 
 // https://drafts.csswg.org/web-animations/#calculating-the-transformed-progress
-static inline double CalculateTransformedProgress(
+static inline base::Optional<double> CalculateTransformedProgress(
     Timing::Phase phase,
     double directed_progress,
     double iteration_duration,
     bool is_current_direction_forward,
     scoped_refptr<TimingFunction> timing_function) {
   if (IsNull(directed_progress))
-    return NullValue();
+    return base::nullopt;
 
   // Set the before flag to indicate if at the leading edge of an iteration.
   // This is used to determine if the left or right limit should be used if at a

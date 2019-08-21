@@ -324,8 +324,8 @@ TEST(AnimationTimingCalculationsTest, TransformedProgress) {
       StepsTimingFunction::Create(4, StepsTimingFunction::StepPosition::END);
 
   // directed_progress is null.
-  EXPECT_TRUE(IsNull(CalculateTransformedProgress(
-      Timing::kPhaseActive, NullValue(), 1, true, timing_function)));
+  EXPECT_FALSE(CalculateTransformedProgress(Timing::kPhaseActive, NullValue(),
+                                            1, true, timing_function));
 
   // At step boundaries.
   // Forward direction.
