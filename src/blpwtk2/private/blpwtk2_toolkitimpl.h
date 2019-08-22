@@ -71,13 +71,9 @@ class BrowserMainRunner;
 class ProcessHostImpl;
 class Profile;
 class StringRef;
-<<<<<<< HEAD
 class GpuDataLogger;
 
-||||||| merged common ancestors
-=======
 class LogMessageThrottler;
->>>>>>> origin/blpwtk2/log-message-handler
 
                         // =================
                         // class ToolkitImpl
