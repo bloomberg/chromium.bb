@@ -374,10 +374,11 @@ if (enable_openxr) {
 
     deps = [
       "//base",
-      "//device/vr:json_mock",
       "//device/vr/public/mojom:test_mojom",
       "//third_party/openxr:openxr_headers",
     ]
+
+    data_deps = [ "//device/vr:json_mock" ]
   }
 }
 
