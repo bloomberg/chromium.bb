@@ -4234,6 +4234,48 @@
             ]
         }
     ],
+    "PerProcessReclaim": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledGroupA_08222019",
+                    "params": {
+                        "GraphWalkBackoffTimeSec": "60",
+                        "NodeInvisibleTimeSec": "360",
+                        "NodeTrimBackoffTimeSec": "1200"
+                    },
+                    "enable_features": [
+                        "TrimOnMemoryPressure"
+                    ]
+                },
+                {
+                    "name": "EnabledGroupB_08222019",
+                    "params": {
+                        "GraphWalkBackoffTimeSec": "180",
+                        "NodeInvisibleTimeSec": "900",
+                        "NodeTrimBackoffTimeSec": "1800"
+                    },
+                    "enable_features": [
+                        "TrimOnMemoryPressure"
+                    ]
+                },
+                {
+                    "name": "EnabledGroupC_08222019",
+                    "params": {
+                        "GraphWalkBackoffTimeSec": "180",
+                        "NodeInvisibleTimeSec": "3600",
+                        "NodeTrimBackoffTimeSec": "7200"
+                    },
+                    "enable_features": [
+                        "TrimOnMemoryPressure"
+                    ]
+                }
+            ]
+        }
+    ],
     "PermissionPromptUIAndroid": [
         {
             "platforms": [
