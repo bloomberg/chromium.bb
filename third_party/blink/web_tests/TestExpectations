@@ -6537,5 +6537,8 @@ crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-canv
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resize.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]
 
+crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Pass Failure ]
+crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-load-metadata.html [ Pass Failure ]
+
 # Pending enabling scroll to text feature
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]
