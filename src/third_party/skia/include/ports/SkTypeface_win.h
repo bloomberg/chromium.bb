@@ -8,6 +8,8 @@
 #ifndef SkTypeface_win_DEFINED
 #define SkTypeface_win_DEFINED
 
+#include <windows.h>
+#include <winnt.h>
 #include "include/core/SkTypeface.h"
 #include "include/core/SkTypes.h"
 
