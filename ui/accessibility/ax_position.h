@@ -1019,6 +1019,7 @@ class AXPosition {
       } else {
         text_position->text_offset_ = static_cast<int>(*iterator);
         text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
+        iterator++;
       }
 
       // Continue searching for the next word start until the next logical text
@@ -1150,6 +1151,7 @@ class AXPosition {
       } else {
         text_position->text_offset_ = static_cast<int>(*iterator);
         text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
+        iterator++;
       }
 
       // Continue searching for the next word end until the next logical text
