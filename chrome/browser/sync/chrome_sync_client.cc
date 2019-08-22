@@ -292,12 +292,20 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       &syncer::ReportUnrecoverableError, chrome::GetChannel());
 
   if (!disabled_types.Has(syncer::SECURITY_EVENTS)) {
+    syncer::ModelTypeControllerDelegate* delegate =
+        SecurityEventRecorderFactory::GetForProfile(profile_)
+            ->GetControllerDelegate()
+            .get();
+    // Forward both on-disk and in-memory storage modes to the same delegate,
+    // since behavior for SECURITY_EVENTS does not differ.
     controllers.push_back(std::make_unique<syncer::ModelTypeController>(
         syncer::SECURITY_EVENTS,
+        /*delegate_on_disk=*/
         std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-            SecurityEventRecorderFactory::GetForProfile(profile_)
-                ->GetControllerDelegate()
-                .get())));
+            delegate),
+        /*delegate_in_memory=*/
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            delegate)));
   }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
