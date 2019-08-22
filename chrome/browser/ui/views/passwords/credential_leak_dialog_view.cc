@@ -118,6 +118,10 @@ int CredentialLeakDialogView::GetDialogButtons() const {
              : ui::DIALOG_BUTTON_OK;
 }
 
+bool CredentialLeakDialogView::ShouldShowCloseButton() const {
+  return false;
+}
+
 void CredentialLeakDialogView::InitWindow() {
   SetLayoutManager(std::make_unique<BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
