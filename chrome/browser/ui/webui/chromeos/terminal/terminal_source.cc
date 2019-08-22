@@ -26,7 +26,8 @@ constexpr char kDefaultMime[] = "text/html";
 void ReadFile(const base::FilePath& path,
               const content::URLDataSource::GotDataCallback& callback) {
   std::string content;
-  CHECK(base::ReadFileToString(path, &content)) << path;
+  bool result = base::ReadFileToString(path, &content);
+  DCHECK(result) << path;
   scoped_refptr<base::RefCountedString> response =
       base::RefCountedString::TakeString(&content);
   callback.Run(response.get());
