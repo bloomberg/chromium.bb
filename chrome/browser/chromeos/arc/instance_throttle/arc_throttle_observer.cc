@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_throttle_observer.h"
+#include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
 
 namespace arc {
 

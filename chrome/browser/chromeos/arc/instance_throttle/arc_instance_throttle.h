@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_BOOT_PHASE_MONITOR_ARC_INSTANCE_THROTTLE_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_BOOT_PHASE_MONITOR_ARC_INSTANCE_THROTTLE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_INSTANCE_THROTTLE_ARC_INSTANCE_THROTTLE_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_INSTANCE_THROTTLE_ARC_INSTANCE_THROTTLE_H_
 
 #include <memory>
 #include <utility>
@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_throttle_observer.h"
+#include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -79,4 +79,4 @@ class ArcInstanceThrottle : public KeyedService {
 
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_BOOT_PHASE_MONITOR_ARC_INSTANCE_THROTTLE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_INSTANCE_THROTTLE_ARC_INSTANCE_THROTTLE_H_

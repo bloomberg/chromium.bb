@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
+#include "chrome/browser/chromeos/arc/instance_throttle/arc_instance_throttle.h"
 
 #include <string>
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
-#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_throttle_observer.h"
+#include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
 
