@@ -546,99 +546,6 @@ class OncMojo {
   }
 
   /**
-   * Converts an ONC dictionary to NetworkStateProperties. See onc_spec.md
-   * for the dictionary spec.
-   * @param {!CrOnc.NetworkProperties} properties
-   * @return {!chromeos.networkConfig.mojom.NetworkStateProperties}
-   */
-  static oncPropertiesToNetworkState(properties) {
-    const mojom = chromeos.networkConfig.mojom;
-    const networkState = OncMojo.getDefaultNetworkState(
-        OncMojo.getNetworkTypeFromString(properties.Type));
-    networkState.connectable = !!properties.Connectable;
-    if (properties.ConnectionState) {
-      networkState.connectionState =
-          OncMojo.getConnectionStateTypeFromString(properties.ConnectionState);
-    }
-    networkState.guid = properties.GUID;
-    networkState.name = CrOnc.getStateOrActiveString(properties.Name);
-    if (properties.Priority) {
-      const priority = /** @type {number|undefined} */ (
-          CrOnc.getActiveValue(properties.Priority));
-      if (priority !== undefined) {
-        networkState.priority = priority;
-      }
-    }
-    if (properties.Source) {
-      networkState.source = OncMojo.getOncSourceFromString(properties.Source);
-    }
-
-    switch (networkState.type) {
-      case mojom.NetworkType.kCellular:
-        if (properties.Cellular) {
-          networkState.cellular.activationState =
-              OncMojo.getActivationStateTypeFromString(
-                  properties.Cellular.ActivationState || 'Unknown');
-          networkState.cellular.networkTechnology =
-              properties.Cellular.NetworkTechnology || '';
-          networkState.cellular.roaming =
-              properties.Cellular.RoamingState == CrOnc.RoamingState.ROAMING;
-          networkState.cellular.signalStrength =
-              properties.Cellular.SignalStrength || 0;
-        }
-        break;
-      case mojom.NetworkType.kEthernet:
-        if (properties.Ethernet) {
-          networkState.ethernet.authentication =
-              properties.Ethernet.Authentication ==
-                  CrOnc.Authentication.WEP_8021X ?
-              mojom.AuthenticationType.k8021x :
-              mojom.AuthenticationType.kNone;
-        }
-        break;
-      case mojom.NetworkType.kTether:
-        if (properties.Tether) {
-          networkState.tether.batteryPercentage =
-              properties.Tether.BatteryPercentage || 0;
-          networkState.tether.carrier =
-              properties.Tether.NetworkTechnology || '';
-          networkState.tether.hasConnectedToHost =
-              properties.Tether.HasConnectedToHost;
-          networkState.tether.signalStrength =
-              properties.Tether.SignalStrength || 0;
-        }
-        break;
-      case mojom.NetworkType.kVPN:
-        if (properties.VPN) {
-          networkState.vpn.providerName =
-              (properties.VPN.ThirdPartyVPN &&
-               properties.VPN.ThirdPartyVPN.ProviderName) ||
-              '';
-          networkState.vpn.vpnType = OncMojo.getVPNTypeFromString(
-              CrOnc.getStateOrActiveString(properties.VPN.Type) ||
-              CrOnc.VPNType.OPEN_VPN);
-        }
-        break;
-      case mojom.NetworkType.kWiFi:
-        if (properties.WiFi) {
-          networkState.wifi.bssid = properties.WiFi.BSSID || '';
-          networkState.wifi.frequency = properties.WiFi.Frequency || 0;
-          networkState.wifi.hexSsid =
-              CrOnc.getStateOrActiveString(properties.WiFi.HexSSID);
-          networkState.wifi.security = OncMojo.getSecurityTypeFromString(
-              CrOnc.getStateOrActiveString(properties.WiFi.Security) ||
-              CrOnc.Security.NONE);
-          networkState.wifi.signalStrength =
-              properties.WiFi.SignalStrength || 0;
-          networkState.wifi.ssid =
-              CrOnc.getStateOrActiveString(properties.WiFi.SSID);
-        }
-        break;
-    }
-    return networkState;
-  }
-
-  /**
    * Converts an ManagedProperties dictionary to NetworkStateProperties.
    * Used to provide state properties to CrNetworkIcon.
    * @param {!chromeos.networkConfig.mojom.ManagedProperties} properties
@@ -880,6 +787,28 @@ class OncMojo {
       policySource: chromeos.networkConfig.mojom.PolicySource.kNone,
       policyValue: false
     };
+  }
+
+  /**
+   * Returns a string to translate for the user visible connection state.
+   * @param {!chromeos.networkConfig.mojom.ConnectionStateType}
+   *     connectionState
+   * @return {string}
+   */
+  static getConnectionStateString(connectionState) {
+    const mojom = chromeos.networkConfig.mojom;
+    switch (connectionState) {
+      case mojom.ConnectionStateType.kOnline:
+      case mojom.ConnectionStateType.kConnected:
+      case mojom.ConnectionStateType.kPortal:
+        return 'OncConnected';
+      case mojom.ConnectionStateType.kConnecting:
+        return 'OncConnecting';
+      case mojom.ConnectionStateType.kNotConnected:
+        return 'OncNotConnected';
+    }
+    assertNotReached();
+    return 'OncNotConnected';
   }
 }
 

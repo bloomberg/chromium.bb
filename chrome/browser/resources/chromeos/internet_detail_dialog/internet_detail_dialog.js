@@ -7,12 +7,17 @@
  * 'internet-detail-dialog' is used in the login screen to show a subset of
  * internet details and allow configuration of proxy, IP, and nameservers.
  */
+(function() {
+'use strict';
+
+const mojom = chromeos.networkConfig.mojom;
+
 Polymer({
   is: 'internet-detail-dialog',
 
   behaviors: [
     CrNetworkListenerBehavior,
-    CrPolicyNetworkBehavior,
+    CrPolicyNetworkBehaviorMojo,
     I18nBehavior,
   ],
 
@@ -25,6 +30,9 @@ Polymer({
      * @type {!CrOnc.NetworkProperties|undefined}
      */
     networkProperties: Object,
+
+    /** @private {!OncMojo.ManagedProperties|undefined} */
+    managedProperties_: Object,
 
     /**
      * Interface for networkingPrivate calls, passed from internet_page.
@@ -55,6 +63,20 @@ Polymer({
    */
   networkPropertiesReceived_: false,
 
+  /**
+   * This UI will use both the networkingPrivate extension API and the
+   * networkConfig mojo API until we provide all of the required functionality
+   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
+   */
+  networkConfig_: null,
+
+  /** @override */
+  created: function() {
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
+  },
+
   /** @override */
   attached: function() {
     const dialogArgs = chrome.getVariableValue('dialogArguments');
@@ -78,13 +100,15 @@ Polymer({
     }
 
     // Set basic networkProperties until they are loaded.
+    this.networkPropertiesReceived_ = false;
     this.networkProperties = {
       GUID: this.guid,
       Type: type,
       ConnectionState: CrOnc.ConnectionState.NOT_CONNECTED,
       Name: {Active: name},
     };
-    this.networkPropertiesReceived_ = false;
+    this.managedProperties_ = OncMojo.getDefaultManagedProperties(
+        OncMojo.getNetworkTypeFromString(type), this.guid, name);
     this.getNetworkDetails_();
   },
 
@@ -125,12 +149,12 @@ Polymer({
    * @param {!Array<OncMojo.NetworkStateProperties>} networks
    */
   onActiveNetworksChanged: function(networks) {
-    if (!this.guid || !this.networkProperties) {
+    if (!this.guid || !this.managedProperties_) {
       return;
     }
     // If the network was or is active, request an update.
-    if (this.networkProperties.ConnectionState !=
-            CrOnc.ConnectionState.NOT_CONNECTED ||
+    if (this.managedProperties_.connectionState !=
+            mojom.ConnectionStateType.kNotConnected ||
         networks.find(network => network.guid == this.guid)) {
       this.getNetworkDetails_();
     }
@@ -182,16 +206,26 @@ Polymer({
       this.close_();
       return;
     }
-    this.networkProperties = properties;
-    this.networkPropertiesReceived_ = true;
+
+    // Get the managed properties and then update networkProperties_, etc.
+    this.networkConfig_.getManagedProperties(this.guid).then(response => {
+      if (!response.result) {
+        // Edge case, may occur when disabling. Close this.
+        this.close_();
+        return;
+      }
+      this.managedProperties_ = response.result;
+      this.networkProperties_ = properties;
+      this.networkPropertiesReceived_ = true;
+    });
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} properties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {!OncMojo.NetworkStateProperties}
    */
-  getNetworkState_: function(properties) {
-    return OncMojo.oncPropertiesToNetworkState(properties);
+  getNetworkState_: function(managedProperties) {
+    return OncMojo.managedPropertiesToNetworkState(managedProperties);
   },
 
   /**
@@ -224,179 +258,172 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getStateText_: function(networkProperties) {
-    if (!networkProperties.ConnectionState) {
+  getStateText_: function(managedProperties) {
+    if (!managedProperties) {
       return '';
     }
-    return this.i18n('Onc' + networkProperties.ConnectionState);
+    return this.i18n(
+        OncMojo.getConnectionStateString(managedProperties.connectionState));
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getNameText_: function(networkProperties) {
-    return CrOnc.getNetworkName(networkProperties);
+  getNameText_: function(managedProperties) {
+    return OncMojo.getNetworkName(managedProperties);
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean} True if the network is connected.
    * @private
    */
-  isConnectedState_: function(networkProperties) {
-    return networkProperties.ConnectionState == CrOnc.ConnectionState.CONNECTED;
+  isConnectedState_: function(managedProperties) {
+    return OncMojo.connectionStateIsConnected(
+        managedProperties.connectionState);
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!OncMojo.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  isRemembered_: function(networkProperties) {
-    const source = networkProperties.Source;
-    return !!source && source != CrOnc.Source.NONE;
+  isRemembered_: function(managedProperties) {
+    return managedProperties.source != mojom.OncSource.kNone;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!OncMojo.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  isRememberedOrConnected_: function(networkProperties) {
-    return this.isRemembered_(networkProperties) ||
-        this.isConnectedState_(networkProperties);
+  isRememberedOrConnected_: function(managedProperties) {
+    return this.isRemembered_(managedProperties) ||
+        this.isConnectedState_(managedProperties);
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!OncMojo.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  isCellular_: function(networkProperties) {
-    return networkProperties.Type == CrOnc.Type.CELLULAR &&
-        !!networkProperties.Cellular;
+  isCellular_: function(managedProperties) {
+    return managedProperties.type == mojom.NetworkType.kCellular;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!OncMojo.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showCellularSim_: function(networkProperties) {
-    return networkProperties.Type == CrOnc.Type.CELLULAR &&
-        !!networkProperties.Cellular &&
-        networkProperties.Cellular.Family != 'CDMA';
+  showCellularSim_: function(managedProperties) {
+    return managedProperties.type == mojom.NetworkType.kCellular &&
+        managedProperties.cellular.family != 'CDMA';
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!OncMojo.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showCellularChooseNetwork_: function(networkProperties) {
-    return networkProperties.Type == CrOnc.Type.CELLULAR &&
-        !!this.get('Cellular.SupportNetworkScan', this.networkProperties);
+  showCellularChooseNetwork_: function(managedProperties) {
+    return managedProperties.type == mojom.NetworkType.kCellular &&
+        managedProperties.cellular.supportNetworkScan;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!OncMojo.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getConnectDisconnectText_: function(networkProperties) {
-    if (this.showConnect_(networkProperties)) {
+  getConnectDisconnectText_: function(managedProperties) {
+    if (this.showConnect_(managedProperties)) {
       return this.i18n('networkButtonConnect');
     }
     return this.i18n('networkButtonDisconnect');
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!OncMojo.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showConnectDisconnect_: function(networkProperties) {
-    return this.showConnect_(networkProperties) ||
-        this.showDisconnect_(networkProperties);
+  showConnectDisconnect_: function(managedProperties) {
+    return this.showConnect_(managedProperties) ||
+        this.showDisconnect_(managedProperties);
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!OncMojo.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showConnect_: function(networkProperties) {
-    return networkProperties.Type != CrOnc.Type.ETHERNET &&
-        networkProperties.ConnectionState ==
-        CrOnc.ConnectionState.NOT_CONNECTED;
+  showConnect_: function(managedProperties) {
+    return managedProperties.connectable &&
+        managedProperties.type != mojom.NetworkType.kEthernet &&
+        managedProperties.connectionState ==
+        mojom.ConnectionStateType.kNotConnected;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!OncMojo.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showDisconnect_: function(networkProperties) {
-    return networkProperties.Type != CrOnc.Type.ETHERNET &&
-        networkProperties.ConnectionState !=
-        CrOnc.ConnectionState.NOT_CONNECTED;
+  showDisconnect_: function(managedProperties) {
+    return managedProperties.type != mojom.NetworkType.kEthernet &&
+        managedProperties.connectionState !=
+        mojom.ConnectionStateType.kNotConnected;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  shouldShowProxyPolicyIndicator_: function(networkProperties) {
-    const property = this.get('ProxySettings.Type', networkProperties);
-    return !!property &&
-        this.isNetworkPolicyEnforced(
-            /** @type {!CrOnc.ManagedProperty} */ (property));
+  shouldShowProxyPolicyIndicator_: function(managedProperties) {
+    if (!managedProperties.proxySettings) {
+      return false;
+    }
+    return this.isNetworkPolicyEnforced(managedProperties.proxySettings.type);
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  enableConnectDisconnect_: function(networkProperties) {
-    if (!this.showConnectDisconnect_(networkProperties)) {
+  enableConnectDisconnect_: function(managedProperties) {
+    if (!this.showConnectDisconnect_(managedProperties)) {
       return false;
     }
 
-    if (this.showConnect_(networkProperties)) {
-      return this.enableConnect_(networkProperties);
+    if (this.showConnect_(managedProperties)) {
+      return this.enableConnect_(managedProperties);
     }
 
     return true;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
-  enableConnect_: function(networkProperties) {
-    if (!this.showConnect_(networkProperties)) {
-      return false;
-    }
-    if (networkProperties.Type == CrOnc.Type.CELLULAR &&
-        CrOnc.isSimLocked(networkProperties)) {
-      return false;
-    }
-    return true;
+  enableConnect_: function(managedProperties) {
+    return this.showConnect_(managedProperties);
   },
 
   /** @private */
   onConnectDisconnectClick_: function() {
-    assert(this.networkProperties);
-    if (!this.showConnect_(this.networkProperties)) {
+    assert(this.networkProperties && this.managedProperties_);
+    if (!this.showConnect_(this.managedProperties_)) {
       this.networkingPrivate.startDisconnect(this.guid);
       return;
     }
@@ -598,3 +625,4 @@ Polymer({
         key => newValue[key] == curValue[key]);
   }
 });
+})();

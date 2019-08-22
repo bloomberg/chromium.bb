@@ -654,18 +654,8 @@ Polymer({
           this.i18n('networkOutOfRange');
     }
 
-    switch (managedProperties.connectionState) {
-      case mojom.ConnectionStateType.kOnline:
-      case mojom.ConnectionStateType.kConnected:
-      case mojom.ConnectionStateType.kPortal:
-        return this.i18n('OncConnected');
-      case mojom.ConnectionStateType.kConnecting:
-        return this.i18n('OncConnecting');
-      case mojom.ConnectionStateType.kNotConnected:
-        return this.i18n('OncNotConnected');
-    }
-    assertNotReached();
-    return this.i18n('OncNotConnected');
+    return this.i18n(
+        OncMojo.getConnectionStateString(managedProperties.connectionState));
   },
 
   /**
@@ -1068,9 +1058,9 @@ Polymer({
    * @private
    */
   fireNetworkConnect_: function(bypassDialog) {
-    assert(this.networkProperties_);
+    assert(this.managedProperties_);
     const networkState =
-        OncMojo.oncPropertiesToNetworkState(this.networkProperties_);
+        OncMojo.managedPropertiesToNetworkState(this.managedProperties_);
     this.fire(
         'network-connect',
         {networkState: networkState, bypassConnectionDialog: bypassDialog});
