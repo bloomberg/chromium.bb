@@ -244,6 +244,8 @@ crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 # Skip some tests for rendersubtree
 crbug.com/991095 wpt_internal/display-lock/rendersubtree/sizing [ Skip ]
+# MSAN failure
+crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
 
 # virtual-scroller failures
 crbug.com/986574 wpt_internal/virtual-scroller/ [ Failure ]
