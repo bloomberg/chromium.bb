@@ -186,6 +186,7 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/stack_sampling_configuration.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -1486,6 +1487,12 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   // reduce process count associated with NTP tabs.
   if (effective_url == GURL(chrome::kChromeUINewTabURL))
     return true;
+
+  // The web footer experiment should share its renderer to not effectively
+  // instantiate one per window. See https://crbug.com/993502.
+  if (effective_url == GURL(chrome::kChromeUIWebFooterExperimentURL))
+    return true;
+
 #if !defined(OS_ANDROID)
   if (search::ShouldUseProcessPerSiteForInstantURL(effective_url, profile))
     return true;
