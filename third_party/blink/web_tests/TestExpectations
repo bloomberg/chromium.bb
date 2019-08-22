@@ -1876,6 +1876,9 @@ Bug(none) virtual/layout_ng_experimental/fragmentation/scrolling-contents-scroll
 # Flexbox in NG
 #
 
+# Fails in [NG block + legacy flex]
+crbug.com/591099 external/wpt/css/css-flexbox/flexbox_align-items-stretch-3.html [ Failure ]
+
 ### virtual/layout_ng_experimental/css3/flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/box-sizing-min-max-sizes.html [ Failure ]
@@ -1911,7 +1914,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline.html [ Fa
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/negative-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/order-painting.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-auto-resizes-correctly.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-keep-scrollpos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-height-replaced-element.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/position-absolute-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relayout-align-items.html [ Failure ]
@@ -1956,6 +1958,7 @@ crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-006.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-008.xht [ Failure ]
+crbug.com/996474 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-009.html [ Pass Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-015.html [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-005.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
