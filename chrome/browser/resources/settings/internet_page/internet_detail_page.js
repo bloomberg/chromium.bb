@@ -571,10 +571,9 @@ Polymer({
    * @private
    */
   setNetworkProperties_: function(onc) {
-    if (!this.networkPropertiesReceived_) {
+    if (!this.networkPropertiesReceived_ || !this.guid) {
       return;
     }
-    assert(this.guid);
     this.networkingPrivate.setProperties(this.guid, onc, () => {
       if (chrome.runtime.lastError) {
         // An error typically indicates invalid input; request the properties
@@ -589,10 +588,9 @@ Polymer({
    * @private
    */
   setMojoNetworkProperties_: function(config) {
-    if (!this.networkPropertiesReceived_) {
+    if (!this.networkPropertiesReceived_ || !this.guid) {
       return;
     }
-    assert(this.guid);
     this.networkConfig_.setProperties(this.guid, config).then(response => {
       if (!response.success) {
         console.error('Unable to set properties: ' + JSON.stringify(config));
@@ -1115,8 +1113,6 @@ Polymer({
     const onc = this.getEmptyNetworkProperties_();
     if (field == 'APN') {
       CrOnc.setTypeProperty(onc, 'APN', value);
-    } else if (field == 'SIMLockStatus') {
-      CrOnc.setTypeProperty(onc, 'SIMLockStatus', value);
     } else {
       const valueType = typeof value;
       if (valueType == 'string' || valueType == 'number' ||
@@ -1231,9 +1227,6 @@ Polymer({
    * @private
    */
   onProxyChange_: function(event) {
-    if (!this.networkProperties_) {
-      return;
-    }
     const field = event.detail.field;
     const value = event.detail.value;
     if (field != 'ProxySettings') {

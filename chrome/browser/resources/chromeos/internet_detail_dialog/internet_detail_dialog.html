@@ -100,9 +100,9 @@
     <template is="dom-if" if="[[showCellularSim_(networkProperties)]]"
         restamp>
       <div class="section single-column">
-        <network-siminfo on-siminfo-change="onNetworkPropertyChange_">
+        <network-siminfo>
         </network-siminfo>
-      </div>
+      <div>
     </template>
 
     <!-- Choose Mobile Network (Cellular only) -->
