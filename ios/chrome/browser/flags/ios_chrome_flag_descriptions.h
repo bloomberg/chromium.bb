@@ -328,11 +328,6 @@ extern const char kSnapshotDrawViewDescription[];
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
-// Title and description for the flag to control if Chrome Sync (in standalone
-// transport mode) supports non-primary accounts.
-extern const char kSyncSupportSecondaryAccountName[];
-extern const char kSyncSupportSecondaryAccountDescription[];
-
 // Title and description for the flag to enable the toolbar container
 // implementation.
 extern const char kToolbarContainerName[];

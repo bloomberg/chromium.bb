@@ -3567,11 +3567,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          blink::features::kServiceWorkerImportedScriptUpdateCheck)},
 
-    {"sync-support-secondary-account",
-     flag_descriptions::kSyncSupportSecondaryAccountName,
-     flag_descriptions::kSyncSupportSecondaryAccountDescription, kOsAll,
-     FEATURE_VALUE_TYPE(switches::kSyncSupportSecondaryAccount)},
-
     {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
      flag_descriptions::kUseMultiloginEndpointDescription, kOsAll,
      FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
