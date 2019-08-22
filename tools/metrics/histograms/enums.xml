@@ -30810,6 +30810,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="92" label="SEND_TAB_TO_SELF_INFOBAR_DELEGATE"/>
   <int value="93" label="TAB_SHARING_INFOBAR_DELEGATE"/>
   <int value="94" label="SAFETY_TIP_INFOBAR_DELEGATE"/>
+  <int value="95" label="SMS_RECEIVER_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse">
