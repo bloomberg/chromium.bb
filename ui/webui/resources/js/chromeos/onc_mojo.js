@@ -411,27 +411,57 @@ class OncMojo {
   }
 
   /**
+   * @param {!chromeos.networkConfig.mojom.NetworkType} type
+   * @return {string}
+   */
+  static getNetworkTypeDisplayName(type) {
+    assert(CrOncStrings);
+    return CrOncStrings['OncType' + OncMojo.getNetworkTypeString(type)];
+  }
+
+  /**
+   * @param {string} networkName
+   * @param {string|undefined} providerName
+   * @return {string}
+   */
+  static getVpnDisplayName(networkName, providerName) {
+    assert(CrOncStrings);
+    if (providerName) {
+      return CrOncStrings.vpnNameTemplate.replace('$1', providerName)
+          .replace('$2', networkName);
+    }
+    return networkName;
+  }
+
+  /**
    * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
    * @return {string}
    */
-  static getNetworkDisplayName(network) {
+  static getNetworkStateDisplayName(network) {
     if (!network.name) {
-      assert(CrOncStrings);
-      const typestr = 'OncType' + OncMojo.getNetworkTypeString(network.type);
-      return CrOncStrings[typestr];
+      return OncMojo.getNetworkTypeDisplayName(network.type);
     }
-    if (network.type == chromeos.networkConfig.mojom.NetworkType.kVPN) {
-      const vpnType = network.vpn.type;
-      if (vpnType == chromeos.networkConfig.mojom.VPNType.kThirdPartyVPN) {
-        const providerName = network.vpn.providerName;
-        if (providerName) {
-          assert(CrOncStrings);
-          return CrOncStrings.vpnNameTemplate.replace('$1', providerName)
-              .replace('$2', network.name);
-        }
-      }
+    const mojom = chromeos.networkConfig.mojom;
+    if (network.type == mojom.NetworkType.kVPN && network.vpn.providerName) {
+      return OncMojo.getVpnDisplayName(network.name, network.vpn.providerName);
     }
     return network.name;
+  }
+
+  /**
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} network
+   * @return {string}
+   */
+  static getNetworkName(network) {
+    if (!network.name || !network.name.activeValue) {
+      return OncMojo.getNetworkTypeDisplayName(network.type);
+    }
+    const mojom = chromeos.networkConfig.mojom;
+    if (network.type == mojom.NetworkType.kVPN && network.vpn.providerName) {
+      return OncMojo.getVpnDisplayName(
+          network.name.activeValue, network.vpn.providerName);
+    }
+    return network.name.activeValue;
   }
 
   /**
@@ -519,7 +549,7 @@ class OncMojo {
    * Converts an ONC dictionary to NetworkStateProperties. See onc_spec.md
    * for the dictionary spec.
    * @param {!CrOnc.NetworkProperties} properties
-   * @return {chromeos.networkConfig.mojom.NetworkStateProperties}
+   * @return {!chromeos.networkConfig.mojom.NetworkStateProperties}
    */
   static oncPropertiesToNetworkState(properties) {
     const mojom = chromeos.networkConfig.mojom;
@@ -607,6 +637,250 @@ class OncMojo {
     }
     return networkState;
   }
+
+  /**
+   * Converts an ManagedProperties dictionary to NetworkStateProperties.
+   * Used to provide state properties to CrNetworkIcon.
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} properties
+   * @return {!chromeos.networkConfig.mojom.NetworkStateProperties}
+   */
+  static managedPropertiesToNetworkState(properties) {
+    const mojom = chromeos.networkConfig.mojom;
+    const networkState = OncMojo.getDefaultNetworkState(properties.type);
+    networkState.connectable = properties.connectable;
+    networkState.connectionState = properties.connectionState;
+    networkState.guid = properties.guid;
+    if (properties.name) {
+      networkState.name = properties.name.activeValue;
+    }
+    if (properties.priority) {
+      networkState.priority = properties.priority.activeValue;
+    }
+    networkState.source = properties.source;
+
+    switch (properties.type) {
+      case mojom.NetworkType.kCellular:
+        networkState.cellular.activationState =
+            properties.cellular.activationState;
+        networkState.cellular.networkTechnology =
+            properties.cellular.networkTechnology || '';
+        networkState.cellular.roaming =
+            properties.cellular.roamingState == CrOnc.RoamingState.ROAMING;
+        networkState.cellular.signalStrength =
+            properties.cellular.signalStrength;
+        break;
+      case mojom.NetworkType.kEthernet:
+        networkState.ethernet.authentication =
+            properties.ethernet.authentication ==
+                CrOnc.Authentication.WEP_8021X ?
+            mojom.AuthenticationType.k8021x :
+            mojom.AuthenticationType.kNone;
+        break;
+      case mojom.NetworkType.kTether:
+        // TODO(stevenjb): Provide Tether managed properties for completeness.
+        // (CrNetworkIcon does not currently require Tether properties).
+        break;
+      case mojom.NetworkType.kVPN:
+        networkState.vpn.providerName = properties.vpn.providerName;
+        networkState.vpn.vpnType = properties.vpn.type;
+        break;
+      case mojom.NetworkType.kWiFi:
+        networkState.wifi.bssid = properties.wifi.bssid || '';
+        networkState.wifi.frequency = properties.wifi.frequency;
+        networkState.wifi.hexSsid =
+            OncMojo.getActiveString(properties.wifi.hexSsid);
+        networkState.wifi.security = properties.wifi.security;
+        networkState.wifi.signalStrength = properties.wifi.signalStrength;
+        networkState.wifi.ssid = OncMojo.getActiveString(properties.wifi.ssid);
+        break;
+    }
+    return networkState;
+  }
+
+  /**
+   * Returns a ManagedProperties object with type, guid and name set, and all
+   * other required properties set to their default values.
+   * @param {!chromeos.networkConfig.mojom.NetworkType} type
+   * @param {string} guid
+   * @param {string} name
+   * @return {chromeos.networkConfig.mojom.ManagedProperties}
+   */
+  static getDefaultManagedProperties(type, guid, name) {
+    const mojom = chromeos.networkConfig.mojom;
+    const result = {
+      connectionState: mojom.ConnectionStateType.kNotConnected,
+      source: mojom.OncSource.kNone,
+      type: type,
+      connectable: false,
+      guid: guid,
+      name: OncMojo.createManagedString(name),
+      restrictedConnectivity: false,
+    };
+    switch (type) {
+      case mojom.NetworkType.kCellular:
+        result.cellular = {
+          activationState: mojom.ActivationStateType.kUnknown,
+          allowRoaming: false,
+          prlVersion: 0,
+          scanning: false,
+          signalStrength: 0,
+          supportNetworkScan: false,
+        };
+        break;
+      case mojom.NetworkType.kEthernet:
+        result.ethernet = {};
+        break;
+      case mojom.NetworkType.kTether:
+        break;
+      case mojom.NetworkType.kVPN:
+        result.vpn = {
+          providerName: '',
+          type: mojom.VPNType.kOpenVPN,
+          openVpn: {},
+        };
+        break;
+      case mojom.NetworkType.kWiFi:
+        result.wifi = {
+          bssid: '',
+          frequency: 0,
+          ssid: OncMojo.createManagedString(''),
+          security: mojom.SecurityType.kNone,
+          signalStrength: 0,
+        };
+        break;
+    }
+    return result;
+  }
+
+  /**
+   * @param {!chromeos.networkConfig.mojom.ManagedBoolean|
+   *         !chromeos.networkConfig.mojom.ManagedInt32|
+   *         !chromeos.networkConfig.mojom.ManagedString|undefined} property
+   * @return {boolean|number|string|undefined}
+   */
+  static getActiveValue(property) {
+    if (!property) {
+      return undefined;
+    }
+    return property.activeValue;
+  }
+
+  /**
+   * @param {!chromeos.networkConfig.mojom.ManagedString|undefined} property
+   * @return {string}
+   */
+  static getActiveString(property) {
+    if (!property) {
+      return '';
+    }
+    return property.activeValue;
+  }
+
+  /**
+   * Returns IPConfigProperties for |type|. For IPv4, these will be the static
+   * properties if IPAddressConfigType is Static and StaticIPConfig is set.
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} properties
+   * @param {string} desiredType Desired ip config type (IPv4 or IPv6).
+   * @return {!chromeos.networkConfig.mojom.IPConfigProperties|undefined}
+   */
+  static getIPConfigForType(properties, desiredType) {
+    const mojom = chromeos.networkConfig.mojom;
+    const ipConfigs = properties.ipConfigs;
+    let ipConfig;
+    if (ipConfigs) {
+      ipConfig = ipConfigs.find(ipconfig => ipconfig.type == desiredType);
+      if (ipConfig && desiredType != CrOnc.IPType.IPV4) {
+        return ipConfig;
+      }
+    }
+
+    if (!ipConfig) {
+      ipConfig = /** @type {!mojom.IPConfigProperties} */ ({routingPrefix: 0});
+    }
+
+    const staticIpConfig = properties.staticIpConfig;
+    if (!staticIpConfig) {
+      return ipConfig;
+    }
+
+    // Merge the appropriate static values into the result.
+    if (properties.ipAddressConfigType &&
+        properties.ipAddressConfigType.activeValue == 'Static') {
+      if (staticIpConfig.gateway) {
+        ipConfig.gateway = staticIpConfig.gateway.activeValue;
+      }
+      if (staticIpConfig.ipAddress) {
+        ipConfig.ipAddress = staticIpConfig.ipAddress.activeValue;
+      }
+      if (staticIpConfig.routingPrefix) {
+        ipConfig.routingPrefix = staticIpConfig.routingPrefix.activeValue;
+      }
+      if (staticIpConfig.type) {
+        ipConfig.type = staticIpConfig.type.activeValue;
+      }
+    }
+    if (properties.nameServersConfigType &&
+        properties.nameServersConfigType.activeValue == 'Static') {
+      if (staticIpConfig.nameServers) {
+        ipConfig.nameServers = staticIpConfig.nameServers.activeValue;
+      }
+    }
+    return ipConfig;
+  }
+
+  /**
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} properties
+   * @return {chromeos.networkConfig.mojom.ManagedBoolean|undefined}
+   */
+  static getManagedAutoConnect(properties) {
+    const NetworkType = chromeos.networkConfig.mojom.NetworkType;
+    const type = properties.type;
+    switch (type) {
+      case NetworkType.kCellular:
+        return properties.cellular.autoConnect;
+      case NetworkType.kVPN:
+        return properties.vpn.autoConnect;
+      case NetworkType.kWiFi:
+        return properties.wifi.autoConnect;
+    }
+    return undefined;
+  }
+
+  /**
+   * @param {string} s
+   * @return {chromeos.networkConfig.mojom.ManagedString}
+   */
+  static createManagedString(s) {
+    return {
+      activeValue: s,
+      policySource: chromeos.networkConfig.mojom.PolicySource.kNone,
+      policyValue: undefined
+    };
+  }
+
+  /**
+   * @param {number} n
+   * @return {chromeos.networkConfig.mojom.ManagedInt32}
+   */
+  static createManagedInt(n) {
+    return {
+      activeValue: n,
+      policySource: chromeos.networkConfig.mojom.PolicySource.kNone,
+      policyValue: 0
+    };
+  }
+
+  /**
+   * @param {boolean} b
+   * @return {chromeos.networkConfig.mojom.ManagedBoolean}
+   */
+  static createManagedBool(b) {
+    return {
+      activeValue: b,
+      policySource: chromeos.networkConfig.mojom.PolicySource.kNone,
+      policyValue: false
+    };
+  }
 }
 
 /** @typedef {chromeos.networkConfig.mojom.DeviceStateProperties} */
@@ -623,3 +897,6 @@ OncMojo.NetworkStateProperties;
  *           chromeos.networkConfig.mojom.ManagedApnList}
  */
 OncMojo.ManagedProperty;
+
+/** @typedef {chromeos.networkConfig.mojom.ManagedProperties} */
+OncMojo.ManagedProperties;
