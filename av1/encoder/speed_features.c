@@ -207,6 +207,8 @@ static void set_good_speed_feature_framesize_dependent(
     } else {
       sf->partition_search_breakout_dist_thr = (1 << 24);
     }
+
+    if (is_480p_or_larger) sf->tx_type_search.prune_tx_type_using_stats = 1;
   }
 }
 
@@ -391,7 +393,6 @@ static void set_good_speed_features_framesize_independent(
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->adaptive_txb_search_level = boosted ? 2 : 3;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
-    sf->tx_type_search.prune_tx_type_using_stats = 1;
   }
 
   if (speed >= 5) {
