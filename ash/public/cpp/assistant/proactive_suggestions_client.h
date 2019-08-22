@@ -19,7 +19,7 @@ class ProactiveSuggestions;
 // proactive content suggestions.
 class ASH_PUBLIC_EXPORT ProactiveSuggestionsClient {
  public:
-  // A delegate for the ProactiveSuggestionsClient.
+  // A delegate interface for the ProactiveSuggestionsClient.
   class Delegate {
    public:
     // Invoked when the proactive suggestions client is being destroyed so as to
