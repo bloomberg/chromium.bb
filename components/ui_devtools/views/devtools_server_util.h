@@ -7,16 +7,13 @@
 
 #include <memory>
 
-#include "components/ui_devtools/connector_delegate.h"
 #include "components/ui_devtools/devtools_server.h"
 
 namespace ui_devtools {
 
 // A factory helper to construct a UiDevToolsServer for Views.
-// The connector is used in TracingAgent to hook up with the tracing service.
 std::unique_ptr<UiDevToolsServer> CreateUiDevToolsServerForViews(
-    network::mojom::NetworkContext* network_context,
-    std::unique_ptr<ConnectorDelegate> connector);
+    network::mojom::NetworkContext* network_context);
 
 }  // namespace ui_devtools
 
