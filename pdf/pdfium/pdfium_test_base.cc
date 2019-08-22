@@ -21,10 +21,6 @@ std::unique_ptr<DocumentLoader> CreateTestDocumentLoader(
   return std::make_unique<TestDocumentLoader>(client, g_test_pdf_name);
 }
 
-bool IsValidLinkForTesting(const std::string& url) {
-  return !url.empty();
-}
-
 }  // namespace
 
 PDFiumTestBase::PDFiumTestBase() = default;
@@ -33,12 +29,10 @@ PDFiumTestBase::~PDFiumTestBase() = default;
 
 void PDFiumTestBase::SetUp() {
   InitializePDFium();
-  PDFiumPage::SetIsValidLinkFunctionForTesting(&IsValidLinkForTesting);
 }
 
 void PDFiumTestBase::TearDown() {
   PDFiumEngine::SetCreateDocumentLoaderFunctionForTesting(nullptr);
-  PDFiumPage::SetIsValidLinkFunctionForTesting(nullptr);
   g_test_pdf_name = nullptr;
   FPDF_DestroyLibrary();
 }
