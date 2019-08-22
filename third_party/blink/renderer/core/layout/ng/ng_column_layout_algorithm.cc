@@ -217,6 +217,13 @@ void NGColumnLayoutAlgorithm::LayoutRow(
   bool balance_columns =
       NeedsColumnBalancing(content_box_size_.block_size, Style());
 
+  // New column fragments won't be added to the fragment builder right away,
+  // since we may need to delete them and try again with a different block-size
+  // (colum balancing). Keep them in this list, and add them to the fragment
+  // builder when we have the final column fragments. Or clear the list and
+  // retry otherwise.
+  NGContainerFragmentBuilder::ChildrenVector new_columns;
+
   do {
     scoped_refptr<const NGBlockBreakToken> column_break_token =
         next_column_token;
@@ -249,8 +256,10 @@ void NGColumnLayoutAlgorithm::LayoutRow(
       scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
       const auto& column = result->PhysicalFragment();
 
+      // Add the new column fragment to the list, but don't commit anything to
+      // the fragment builder until we know whether these are the final columns.
       LogicalOffset logical_offset(column_inline_offset, column_block_offset);
-      container_builder_.AddChild(column, logical_offset);
+      new_columns.emplace_back(logical_offset, &result->PhysicalFragment());
 
       LayoutUnit space_shortage = result->MinimalSpaceShortage();
       if (space_shortage > LayoutUnit()) {
@@ -311,9 +320,9 @@ void NGColumnLayoutAlgorithm::LayoutRow(
 
       DCHECK_GE(new_column_block_size, column_size.block_size);
       if (new_column_block_size > column_size.block_size) {
-        // Re-attempt layout with taller columns.
+        // Remove column fragments and re-attempt layout with taller columns.
+        new_columns.clear();
         column_size.block_size = new_column_block_size;
-        container_builder_.RemoveChildren();
         continue;
       }
     }
@@ -321,6 +330,12 @@ void NGColumnLayoutAlgorithm::LayoutRow(
   } while (true);
 
   intrinsic_block_size_ += column_size.block_size;
+
+  // Commit all column fragments to the fragment builder.
+  for (auto column : new_columns) {
+    container_builder_.AddChild(To<NGPhysicalBoxFragment>(*column.fragment),
+                                column.offset);
+  }
 }
 
 LogicalSize NGColumnLayoutAlgorithm::CalculateColumnSize(
