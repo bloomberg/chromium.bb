@@ -44,7 +44,7 @@ class BinaryFCMService : public gcm::GCMAppHandler {
   using OnMessageCallback =
       base::RepeatingCallback<void(DeepScanningClientResponse)>;
 
-  void GetInstanceID(GetInstanceIDCallback callback);
+  virtual void GetInstanceID(GetInstanceIDCallback callback);
   void SetCallbackForToken(const std::string& token,
                            OnMessageCallback callback);
   void ClearCallbackForToken(const std::string& token);
@@ -63,6 +63,10 @@ class BinaryFCMService : public gcm::GCMAppHandler {
   bool CanHandle(const std::string& app_id) const override;
 
   static const char kInvalidId[];
+
+ protected:
+  // Constructor used by mock implementation
+  BinaryFCMService();
 
  private:
   void OnGetInstanceID(const std::string& instance_id,

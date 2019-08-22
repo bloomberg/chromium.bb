@@ -67,8 +67,12 @@ BinaryFCMService::BinaryFCMService(
                                 weakptr_factory_.GetWeakPtr()));
 }
 
+BinaryFCMService::BinaryFCMService()
+    : gcm_driver_(nullptr), instance_id_(kInvalidId), weakptr_factory_(this) {}
+
 BinaryFCMService::~BinaryFCMService() {
-  gcm_driver_->RemoveAppHandler(kBinaryFCMServiceAppId);
+  if (gcm_driver_ != nullptr)
+    gcm_driver_->RemoveAppHandler(kBinaryFCMServiceAppId);
 }
 
 void BinaryFCMService::GetInstanceID(GetInstanceIDCallback callback) {
