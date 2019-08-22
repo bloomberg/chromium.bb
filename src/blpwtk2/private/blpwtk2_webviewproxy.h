@@ -104,6 +104,8 @@ class WebViewProxy final : public WebView
     void setRegion(NativeRegion region) override;
     void activateKeyboardLayout(unsigned int hkl) override;
     void clearTooltip() override;
+    void rootWindowCompositionChanged() override;
+
     v8::MaybeLocal<v8::Value> callFunction(
             v8::Local<v8::Function>  func,
             v8::Local<v8::Value>     recv,
