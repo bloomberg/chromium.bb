@@ -354,6 +354,14 @@ void DedicatedWorkerHost::CreateNestedDedicatedWorker(
                                    origin_, std::move(request));
 }
 
+void DedicatedWorkerHost::BindFileSystemManager(
+    mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
+  RenderProcessHost* worker_process_host = GetProcessHost();
+  if (!worker_process_host)
+    return;
+  worker_process_host->BindFileSystemManager(GetOrigin(), std::move(receiver));
+}
+
 void DedicatedWorkerHost::CreateIdleManager(
     mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
