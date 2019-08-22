@@ -4404,6 +4404,7 @@
     'ozone_linux_gtests': {
       'services_unittests': {},
       'ozone_unittests': {},
+      'ozone_x11_unittests': {},
       'content_unittests': {
         'args': [
           '--ozone-platform=headless',
