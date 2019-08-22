@@ -80,10 +80,6 @@ using base::UserMetricsAction;
   ]];
 
   AVCaptureVideoPreviewLayer* previewLayer = [self.scannerView getPreviewLayer];
-  //  CGRect rect = [self.scannerView frame];
-  // NSLog(@"%@", NSStringFromCGRect(rect));
-  previewLayer.frame = CGRectMakeCenteredRectInFrame(
-      [self.scannerView frame].size, [self.scannerView viewportSize]);
 
   switch ([self.cameraController getAuthorizationStatus]) {
     case AVAuthorizationStatusNotDetermined:
