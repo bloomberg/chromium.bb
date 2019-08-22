@@ -1524,6 +1524,7 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
   // The previous WebFrameWidget must already be detached by CloseForFrame().
   DCHECK(!frame_widget_);
   frame_widget_ = frame_widget;
+  GetWidget()->SetWebWidgetInternal(frame_widget);
 
   // Initialization for the WebFrameWidget that should only occur for the main
   // frame, and that uses types not allowed in blink. This should maybe be
@@ -1539,6 +1540,9 @@ void RenderViewImpl::DetachWebFrameWidget() {
   DCHECK(frame_widget_);
   frame_widget_->Close();
   frame_widget_ = nullptr;
+
+  // This just clears the webwidget_internal_ member from RenderWidget.
+  GetWidget()->SetWebWidgetInternal(nullptr);
 }
 
 void RenderViewImpl::SetZoomLevel(double zoom_level) {

@@ -1470,8 +1470,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
       render_view->GetWidget(), web_frame);
 
-  render_widget->Init(std::move(show_callback),
-                      render_view->webview()->MainFrameWidget());
+  render_widget->Init(std::move(show_callback), web_frame_widget);
 
   render_view->AttachWebFrameWidget(web_frame_widget);
   // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent an

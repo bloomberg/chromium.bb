@@ -3871,4 +3871,8 @@ base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+void RenderWidget::SetWebWidgetInternal(blink::WebWidget* web_widget) {
+  webwidget_internal_ = web_widget;
+}
+
 }  // namespace content
