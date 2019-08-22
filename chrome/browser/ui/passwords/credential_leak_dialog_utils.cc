@@ -35,19 +35,25 @@ base::string16 GetDescription(CredentialLeakType leak_type,
       url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
   if (!password_manager::IsSyncingPasswordsNormally(leak_type) ||
       !password_manager::IsPasswordUsedOnOtherSites(leak_type)) {
-    return l10n_util::GetStringFUTF16(
-        IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE, formatted);
+    return l10n_util::GetStringFUTF16(IDS_CREDENTIAL_LEAK_CURRENT_SITE_MESSAGE,
+                                      formatted);
   } else if (password_manager::IsPasswordSaved(leak_type)) {
     return l10n_util::GetStringUTF16(
-        IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE);
+        IDS_CREDENTIAL_LEAK_SAVED_MULTIPLE_SITES_MESSAGE);
   } else {
     return l10n_util::GetStringFUTF16(
-        IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE, formatted);
+        IDS_CREDENTIAL_LEAK_NOT_SAVED_MULTIPLE_SITES_MESSAGE, formatted);
   }
 }
 
 base::string16 GetTitle(CredentialLeakType leak_type) {
-  return l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_TITLE);
+  // We don't check sync state here. For users that are not syncing their
+  // passwords or syncing with custom passphrase the title can be "Check your
+  // passwords", but there is no "Check passwords" button.
+  return l10n_util::GetStringUTF16(
+      password_manager::IsPasswordUsedOnOtherSites(leak_type)
+          ? IDS_CREDENTIAL_LEAK_MULTIPLE_SITES_TITLE
+          : IDS_CREDENTIAL_LEAK_CURRENT_SITE_TITLE);
 }
 
 bool ShouldCheckPasswords(CredentialLeakType leak_type) {
