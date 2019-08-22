@@ -1980,7 +1980,7 @@ void CompositeEditCommand::FinishBlockCommand(ContainerNode* start_scope,
                                               int start_index,
                                               int end_index)
 {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   DCHECK_EQ(start_scope, end_scope);
   DCHECK_GE(start_index, 0);
