@@ -36,13 +36,13 @@ Link::~Link() = default;
 
 // static
 Link::FocusStyle Link::GetDefaultFocusStyle() {
-  return FocusStyle::UNDERLINE;
+  return FocusStyle::kUnderline;
 }
 
 Link::FocusStyle Link::GetFocusStyle() const {
   // Use the default, unless the link would "always" be underlined.
-  if (underline_ && GetDefaultFocusStyle() == FocusStyle::UNDERLINE)
-    return FocusStyle::RING;
+  if (underline_ && GetDefaultFocusStyle() == FocusStyle::kUnderline)
+    return FocusStyle::kRing;
 
   return GetDefaultFocusStyle();
 }
@@ -63,7 +63,7 @@ SkColor Link::GetColor() const {
 }
 
 void Link::PaintFocusRing(gfx::Canvas* canvas) const {
-  if (GetFocusStyle() == FocusStyle::RING) {
+  if (GetFocusStyle() == FocusStyle::kRing) {
     gfx::Rect focus_ring_bounds = GetTextBounds();
     focus_ring_bounds.Inset(gfx::Insets(-kFocusBorderPadding));
     focus_ring_bounds.Intersect(GetLocalBounds());
@@ -73,7 +73,7 @@ void Link::PaintFocusRing(gfx::Canvas* canvas) const {
 
 gfx::Insets Link::GetInsets() const {
   gfx::Insets insets = Label::GetInsets();
-  if (GetFocusStyle() == FocusStyle::RING &&
+  if (GetFocusStyle() == FocusStyle::kRing &&
       GetFocusBehavior() != FocusBehavior::NEVER) {
     DCHECK(!GetText().empty());
     insets += gfx::Insets(kFocusBorderPadding);
@@ -230,7 +230,7 @@ void Link::SetUnderline(bool underline) {
 void Link::Init() {
   listener_ = nullptr;
   pressed_ = false;
-  underline_ = GetDefaultFocusStyle() != FocusStyle::UNDERLINE;
+  underline_ = GetDefaultFocusStyle() != FocusStyle::kUnderline;
   RecalculateFont();
 
   enabled_changed_subscription_ = AddEnabledChangedCallback(
@@ -257,7 +257,7 @@ void Link::RecalculateFont() {
   // underline to indicate focus when that's the style.
   const int style = font_list().GetFontStyle();
   const bool underline =
-      underline_ || (HasFocus() && GetFocusStyle() == FocusStyle::UNDERLINE);
+      underline_ || (HasFocus() && GetFocusStyle() == FocusStyle::kUnderline);
   const int intended_style = (GetEnabled() && underline)
                                  ? (style | gfx::Font::UNDERLINE)
                                  : (style & ~gfx::Font::UNDERLINE);
@@ -280,9 +280,9 @@ void Link::ConfigureFocus() {
 }
 
 DEFINE_ENUM_CONVERTERS(Link::FocusStyle,
-                       {Link::FocusStyle::UNDERLINE,
+                       {Link::FocusStyle::kUnderline,
                         base::ASCIIToUTF16("UNDERLINE")},
-                       {Link::FocusStyle::RING, base::ASCIIToUTF16("RING")})
+                       {Link::FocusStyle::kRing, base::ASCIIToUTF16("RING")})
 BEGIN_METADATA(Link)
 METADATA_PARENT_CLASS(Label)
 ADD_READONLY_PROPERTY_METADATA(Link, SkColor, Color)
