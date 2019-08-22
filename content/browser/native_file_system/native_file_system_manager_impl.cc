@@ -42,6 +42,7 @@ namespace {
 void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
                               int render_process_id,
                               int frame_id,
+                              bool require_user_gesture,
                               const FileSystemChooser::Options& options,
                               FileSystemChooser::ResultCallback callback,
                               scoped_refptr<base::TaskRunner> callback_runner) {
@@ -78,7 +79,7 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
   // IPC, but just to be sure double check here as well. This is not treated
   // as a BadMessage because it is possible for the transient user activation
   // to expire between the renderer side check and this check.
-  if (!rfh->HasTransientUserActivation()) {
+  if (require_user_gesture && !rfh->HasTransientUserActivation()) {
     callback_runner->PostTask(
         FROM_HERE,
         base::BindOnce(
@@ -192,7 +193,7 @@ void NativeFileSystemManagerImpl::ChooseEntries(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ShowFilePickerOnUIThread, context.origin, context.process_id,
-          context.frame_id, options,
+          context.frame_id, /*require_user_gesture=*/true, options,
           base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
                          weak_factory_.GetWeakPtr(), context, options,
                          std::move(callback)),
@@ -423,7 +424,8 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &ShowFilePickerOnUIThread, binding_context.origin,
-            binding_context.process_id, binding_context.frame_id, options,
+            binding_context.process_id, binding_context.frame_id,
+            /*require_user_gesture=*/false, options,
             base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
                            weak_factory_.GetWeakPtr(), binding_context, options,
                            std::move(callback)),
