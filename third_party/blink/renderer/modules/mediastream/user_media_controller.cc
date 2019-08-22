@@ -29,11 +29,9 @@ namespace blink {
 
 const char UserMediaController::kSupplementName[] = "UserMediaController";
 
-UserMediaController::UserMediaController(LocalFrame& frame,
-                                         UserMediaClient* client)
+UserMediaController::UserMediaController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ContextLifecycleObserver(frame.GetDocument()),
-      client_(client) {}
+      ContextLifecycleObserver(frame.GetDocument()) {}
 
 void UserMediaController::Trace(blink::Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
@@ -41,13 +39,24 @@ void UserMediaController::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
 }
 
+UserMediaClient* UserMediaController::Client() {
+  if (!client_) {
+    client_ = MakeGarbageCollected<UserMediaClient>(
+        GetFrame(), GetFrame()->GetTaskRunner(TaskType::kInternalMedia));
+  }
+
+  return client_;
+}
+
 void UserMediaController::ContextDestroyed(ExecutionContext*) {
+  if (!client_)
+    return;
   client_->ContextDestroyed();
 }
 
-void ProvideUserMediaTo(LocalFrame& frame, UserMediaClient* client) {
+void ProvideUserMediaTo(LocalFrame& frame) {
   UserMediaController::ProvideTo(
-      frame, MakeGarbageCollected<UserMediaController>(frame, client));
+      frame, MakeGarbageCollected<UserMediaController>(frame));
 }
 
 }  // namespace blink
