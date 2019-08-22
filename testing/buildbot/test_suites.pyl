@@ -4405,7 +4405,6 @@
       'services_unittests': {},
       'ozone_unittests': {},
       'content_unittests': {
-        'experiment_percentage': 100,
         'args': [
           '--ozone-platform=headless',
         ],
