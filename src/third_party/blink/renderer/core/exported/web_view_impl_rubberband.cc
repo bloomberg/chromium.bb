@@ -337,20 +337,22 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
         PaintLayer* layer = ToLayoutBoxModelObject(layoutObject)->Layer();
         RubberbandLayerContext& layerContext = *localContext.m_layerContext;
 
+        auto location = layer->Location().ToLayoutPoint();
+
         if (layer->HasTransformRelatedProperty()) {
             TransformationMatrix matrix = layer->CurrentTransform();
             if (!isSupportedTransform(matrix)) {
                 return;
             }
 
-            layerContext.m_translateX += layerContext.m_scaleX * (matrix.M41() + layer->Location().X());
-            layerContext.m_translateY += layerContext.m_scaleY * (matrix.M42() + layer->Location().Y());
+            layerContext.m_translateX += layerContext.m_scaleX * (matrix.M41() + location.X());
+            layerContext.m_translateY += layerContext.m_scaleY * (matrix.M42() + location.Y());
             layerContext.m_scaleX *= matrix.M11();
             layerContext.m_scaleY *= matrix.M22();
         }
-        else if (layer->Location() != LayoutPoint::Zero()) {
-            layerContext.m_translateX += layerContext.m_scaleX * layer->Location().X();
-            layerContext.m_translateY += layerContext.m_scaleY * layer->Location().Y();
+        else if (location != LayoutPoint::Zero()) {
+            layerContext.m_translateX += layerContext.m_scaleX * location.X();
+            layerContext.m_translateY += layerContext.m_scaleY * location.Y();
         }
 
         // TODO: how should we clip layers that are in columns?

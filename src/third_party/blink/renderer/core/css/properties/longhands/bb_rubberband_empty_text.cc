@@ -33,7 +33,7 @@ const CSSValue* BbRubberbandEmptyText::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueNone)
+  if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
   return css_property_parser_helpers::ConsumeString(range);
 }
@@ -45,8 +45,8 @@ const CSSValue* BbRubberbandEmptyText::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.BbRubberbandEmptyText() == g_null_atom)
-    return CSSIdentifierValue::Create(CSSValueNone);
-  return CSSStringValue::Create(style.BbRubberbandEmptyText());
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
+  return MakeGarbageCollected<CSSStringValue>(style.BbRubberbandEmptyText());
 }
 
 }  // namespace css_longhand
