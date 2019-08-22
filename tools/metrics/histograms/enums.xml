@@ -20356,6 +20356,7 @@ Called by update_net_error_codes.py.-->
   <int value="1374" label="AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE"/>
   <int value="1375" label="AUTOTESTPRIVATE_GETARCAPPWINDOWINFO"/>
   <int value="1376" label="AUTOTESTPRIVATE_GETALLINSTALLEDAPPS"/>
+  <int value="1377" label="AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW"/>
 </enum>
 
 <enum name="ExtensionIconState">

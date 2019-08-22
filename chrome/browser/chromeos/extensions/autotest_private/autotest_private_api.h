@@ -743,6 +743,17 @@ class AutotestPrivateGetArcAppWindowInfoFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateSwapWindowsInSplitViewFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSwapWindowsInSplitViewFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.swapWindowsInSplitView",
+                             AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW)
+
+ private:
+  ~AutotestPrivateSwapWindowsInSplitViewFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
