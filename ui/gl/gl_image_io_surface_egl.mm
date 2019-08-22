@@ -46,7 +46,6 @@ InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format) {
       return {GL_BGRA_EXT, GL_UNSIGNED_BYTE};
     case gfx::BufferFormat::RGBA_F16:
       return {GL_RGBA, GL_HALF_FLOAT};
-    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::BGRX_1010102:
       NOTIMPLEMENTED();
