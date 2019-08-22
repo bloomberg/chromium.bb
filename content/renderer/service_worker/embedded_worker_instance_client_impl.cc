@@ -96,12 +96,12 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
         blink::WebServiceWorkerInstalledScriptsManagerParams>();
     installed_scripts_manager_params->installed_scripts_urls =
         std::move(params->installed_scripts_info->installed_urls);
-    installed_scripts_manager_params->manager_request =
-        params->installed_scripts_info->manager_request.PassMessagePipe();
-    installed_scripts_manager_params->manager_host_ptr =
-        params->installed_scripts_info->manager_host_ptr.PassHandle();
-    DCHECK(installed_scripts_manager_params->manager_request.is_valid());
-    DCHECK(installed_scripts_manager_params->manager_host_ptr.is_valid());
+    installed_scripts_manager_params->manager_receiver =
+        params->installed_scripts_info->manager_receiver.PassPipe();
+    installed_scripts_manager_params->manager_host_remote =
+        params->installed_scripts_info->manager_host_remote.PassPipe();
+    DCHECK(installed_scripts_manager_params->manager_receiver.is_valid());
+    DCHECK(installed_scripts_manager_params->manager_host_remote.is_valid());
   }
 
   auto worker = blink::WebEmbeddedWorker::Create(

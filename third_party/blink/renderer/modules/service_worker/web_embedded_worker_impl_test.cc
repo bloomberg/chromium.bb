@@ -9,6 +9,8 @@
 #include "base/feature_list.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -197,9 +199,11 @@ class MockServiceWorkerInstalledScriptsManager
   MockServiceWorkerInstalledScriptsManager()
       : ServiceWorkerInstalledScriptsManager(
             Vector<KURL>() /* installed_urls */,
-            mojom::blink::ServiceWorkerInstalledScriptsManagerRequest(
+            mojo::PendingReceiver<
+                mojom::blink::ServiceWorkerInstalledScriptsManager>(
                 mojo::MessagePipe().handle1),
-            mojom::blink::ServiceWorkerInstalledScriptsManagerHostPtrInfo(
+            mojo::PendingRemote<
+                mojom::blink::ServiceWorkerInstalledScriptsManagerHost>(
                 mojo::MessagePipe().handle0,
                 mojom::blink::ServiceWorkerInstalledScriptsManagerHost::
                     Version_),
