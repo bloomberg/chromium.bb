@@ -74,17 +74,13 @@ BrowserTaskExecutor::BrowserTaskExecutor(
       browser_io_thread_delegate_(std::move(browser_io_thread_delegate)),
       browser_io_thread_handle_(browser_io_thread_delegate_->CreateHandle()) {}
 
-BrowserTaskExecutor::~BrowserTaskExecutor() {
-  base::SetTaskExecutorForCurrentThread(nullptr);
-}
+BrowserTaskExecutor::~BrowserTaskExecutor() = default;
 
 // static
 void BrowserTaskExecutor::Create() {
   DCHECK(!base::ThreadTaskRunnerHandle::IsSet());
-  CreateInternal(
-      std::make_unique<BrowserUIThreadScheduler>(),
-      std::make_unique<BrowserIOThreadDelegate>(
-          BrowserIOThreadDelegate::BrowserTaskExecutorPresent::kYes));
+  CreateInternal(std::make_unique<BrowserUIThreadScheduler>(),
+                 std::make_unique<BrowserIOThreadDelegate>());
 }
 
 // static
@@ -108,17 +104,9 @@ void BrowserTaskExecutor::CreateInternal(
   g_browser_task_executor->browser_ui_thread_handle_
       ->EnableAllExceptBestEffortQueues();
 
-  base::SetTaskExecutorForCurrentThread(g_browser_task_executor);
-
 #if defined(OS_ANDROID)
   base::PostTaskAndroid::SignalNativeSchedulerReady();
 #endif
-}
-
-// static
-BrowserTaskExecutor* BrowserTaskExecutor::Get() {
-  DCHECK(g_browser_task_executor);
-  return g_browser_task_executor;
 }
 
 // static
@@ -127,7 +115,6 @@ void BrowserTaskExecutor::ResetForTesting() {
   base::PostTaskAndroid::SignalNativeSchedulerShutdown();
 #endif
 
-  base::SetTaskExecutorForCurrentThread(nullptr);
   if (g_browser_task_executor) {
     base::UnregisterTaskExecutorForTesting(
         BrowserTaskTraitsExtension::kExtensionId);

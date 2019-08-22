@@ -7,8 +7,6 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue.h"
-#include "base/task/task_executor.h"
-#include "content/browser/scheduler/browser_task_executor.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -17,20 +15,17 @@ using ::base::sequence_manager::CreateUnboundSequenceManager;
 using ::base::sequence_manager::SequenceManager;
 using ::base::sequence_manager::TaskQueue;
 
-BrowserIOThreadDelegate::BrowserIOThreadDelegate(
-    BrowserTaskExecutorPresent browser_task_executor_present)
+BrowserIOThreadDelegate::BrowserIOThreadDelegate()
     : sequence_manager_(CreateUnboundSequenceManager(
           SequenceManager::Settings::Builder()
               .SetMessagePumpType(base::MessagePumpType::IO)
-              .Build())),
-      browser_task_executor_present_(browser_task_executor_present) {
+              .Build())) {
   Init(sequence_manager_.get());
 }
 
 BrowserIOThreadDelegate::BrowserIOThreadDelegate(
     SequenceManager* sequence_manager)
-    : sequence_manager_(nullptr),
-      browser_task_executor_present_(BrowserTaskExecutorPresent::kYes) {
+    : sequence_manager_(nullptr) {
   Init(sequence_manager);
 }
 
@@ -47,11 +42,7 @@ BrowserIOThreadDelegate::GetDefaultTaskRunner() {
   return default_task_runner_;
 }
 
-BrowserIOThreadDelegate::~BrowserIOThreadDelegate() {
-  if (browser_task_executor_present_ == BrowserTaskExecutorPresent::kYes) {
-    base::SetTaskExecutorForCurrentThread(nullptr);
-  }
-}
+BrowserIOThreadDelegate::~BrowserIOThreadDelegate() = default;
 
 void BrowserIOThreadDelegate::BindToCurrentThread(
     base::TimerSlack timer_slack) {
@@ -60,10 +51,6 @@ void BrowserIOThreadDelegate::BindToCurrentThread(
       base::MessagePump::Create(base::MessagePumpType::IO));
   sequence_manager_->SetTimerSlack(timer_slack);
   sequence_manager_->SetDefaultTaskRunner(GetDefaultTaskRunner());
-
-  if (browser_task_executor_present_ == BrowserTaskExecutorPresent::kYes) {
-    base::SetTaskExecutorForCurrentThread(BrowserTaskExecutor::Get());
-  }
 }
 
 }  // namespace content
