@@ -13,7 +13,7 @@ extern const char kQuietNotificationPromptsUIFlavourParameterName[];
 extern const char kQuietNotificationPromptsHeadsUpNotification[];
 extern const char kQuietNotificationPromptsMiniInfobar[];
 
-class QuieteNotificationPromptConfig {
+class QuietNotificationsPromptConfig {
  public:
   enum UIFlavor {
     NONE,
@@ -22,7 +22,7 @@ class QuieteNotificationPromptConfig {
     MINI_INFOBAR,
   };
 
-  UIFlavor UIFlavorToUse();
+  static UIFlavor UIFlavorToUse();
 };
 
 #endif  // OS_ANDROID

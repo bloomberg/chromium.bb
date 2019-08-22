@@ -16,8 +16,8 @@ const char kQuietNotificationPromptsHeadsUpNotification[] =
     "heads_up_notification";
 const char kQuietNotificationPromptsMiniInfobar[] = "mini_infobar";
 
-QuieteNotificationPromptConfig::UIFlavor
-QuieteNotificationPromptConfig::UIFlavorToUse() {
+QuietNotificationsPromptConfig::UIFlavor
+QuietNotificationsPromptConfig::UIFlavorToUse() {
   if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
     return UIFlavor::NONE;
   std::string ui_flavor = base::GetFieldTrialParamValueByFeature(

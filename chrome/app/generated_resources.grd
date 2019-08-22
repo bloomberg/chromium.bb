@@ -7721,6 +7721,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_NOTIFICATION_REPLY_PLACEHOLDER" desc="Placeholder text shown in the text box before any text is entered when replying directly to a notification.">
         Send message
       </message>
+      <if expr="is_android">
+        <message name="IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_TITLE" desc="Text used as notification title when requesting permission for Web Notifications via a notification.">
+          Show notifications for <ph name="ORIGIN">$1<ex>example.com</ex></ph>?
+        </message>
+        <message name="IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_MESSAGE" desc="Text used as notification message when requesting permission for Web Notifications via a notification.">
+          Notifications are currently blocked for all sites except for sites you individually allow.
+        </message>
+      </if>
 
       <!-- Mac AppleScript -->
       <if expr="is_macosx">
