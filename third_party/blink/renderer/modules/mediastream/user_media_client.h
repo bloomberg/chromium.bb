@@ -41,7 +41,7 @@ class MODULES_EXPORT UserMediaClient
   UserMediaClient(LocalFrame* frame,
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   UserMediaClient(LocalFrame* frame,
-                  std::unique_ptr<UserMediaProcessor> user_media_processor,
+                  UserMediaProcessor* user_media_processor,
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~UserMediaClient();
 
@@ -106,7 +106,8 @@ class MODULES_EXPORT UserMediaClient
   WeakMember<LocalFrame> frame_;
 
   // |user_media_processor_| is a unique_ptr for testing purposes.
-  std::unique_ptr<UserMediaProcessor> user_media_processor_;
+  Member<UserMediaProcessor> user_media_processor_;
+
   // |user_media_processor_| is a unique_ptr in order to avoid compilation
   // problems in builds that do not include WebRTC.
   std::unique_ptr<ApplyConstraintsProcessor> apply_constraints_processor_;

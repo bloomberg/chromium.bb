@@ -100,10 +100,10 @@ UserMediaClient::Request::MoveUserMediaRequest() {
 
 UserMediaClient::UserMediaClient(
     LocalFrame* frame,
-    std::unique_ptr<UserMediaProcessor> user_media_processor,
+    UserMediaProcessor* user_media_processor,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : frame_(frame),
-      user_media_processor_(std::move(user_media_processor)),
+      user_media_processor_(user_media_processor),
       // WrapWeakPersistent is safe because UserMediaClient owns
       // ApplyConstraintsProcessor.
       apply_constraints_processor_(new ApplyConstraintsProcessor(
@@ -130,7 +130,7 @@ UserMediaClient::UserMediaClient(
           frame,
           // WrapWeakPersistent is safe because UserMediaClient owns
           // UserMediaProcessor.
-          std::make_unique<UserMediaProcessor>(
+          MakeGarbageCollected<UserMediaProcessor>(
               frame,
               WTF::BindRepeating(
                   [](UserMediaClient* client)
@@ -307,6 +307,7 @@ void UserMediaClient::ContextDestroyed() {
 
 void UserMediaClient::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
+  visitor->Trace(user_media_processor_);
 }
 
 void UserMediaClient::SetMediaDevicesDispatcherForTesting(

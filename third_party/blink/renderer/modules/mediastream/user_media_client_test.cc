@@ -449,7 +449,7 @@ class UserMediaClientUnderTest : public UserMediaClient {
                            RequestState* state)
       : UserMediaClient(
             nullptr,
-            base::WrapUnique(user_media_processor),
+            user_media_processor,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
         state_(state) {}
 
@@ -487,7 +487,7 @@ class UserMediaClientTest : public ::testing::Test {
         user_media_processor_host_proxy;
     binding_user_media_processor_.Bind(
         mojo::MakeRequest(&user_media_processor_host_proxy));
-    user_media_processor_ = new UserMediaProcessorUnderTest(
+    user_media_processor_ = MakeGarbageCollected<UserMediaProcessorUnderTest>(
         base::WrapUnique(msd_observer),
         std::move(user_media_processor_host_proxy), &state_);
     blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host =
@@ -652,8 +652,7 @@ class UserMediaClientTest : public ::testing::Test {
   mojo::Binding<blink::mojom::blink::MediaDevicesDispatcherHost>
       binding_user_media_client_;
 
-  UserMediaProcessorUnderTest* user_media_processor_ =
-      nullptr;  // Owned by |user_media_client_impl_|
+  WeakPersistent<UserMediaProcessorUnderTest> user_media_processor_;
   Persistent<UserMediaClientUnderTest> user_media_client_impl_;
   RequestState state_ = REQUEST_NOT_STARTED;
 };
