@@ -174,7 +174,8 @@ FidoHidDevice::PendingTransaction::~PendingTransaction() = default;
 void FidoHidDevice::Connect(
     device::mojom::HidManager::ConnectCallback callback) {
   DCHECK(hid_manager_);
-  hid_manager_->Connect(device_info_->guid, /*connection_client=*/nullptr,
+  hid_manager_->Connect(device_info_->guid,
+                        mojo::PendingRemote<mojom::HidConnectionClient>(),
                         std::move(callback));
 }
 
