@@ -279,7 +279,6 @@ void PrintViewManagerBase::OnComposePdfDone(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
     const gfx::Point& physical_offsets,
-    std::unique_ptr<DelayedFrameDispatchHelper> helper,
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -297,13 +296,11 @@ void PrintViewManagerBase::OnComposePdfDone(
     return;
 
   PrintDocument(data, page_size, content_area, physical_offsets);
-  helper->SendCompleted();
 }
 
 void PrintViewManagerBase::OnDidPrintDocument(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_DidPrintDocument_Params& params,
-    std::unique_ptr<DelayedFrameDispatchHelper> helper) {
+    const PrintHostMsg_DidPrintDocument_Params& params) {
   if (!PrintJobHasDocument(params.document_cookie))
     return;
 
@@ -320,8 +317,7 @@ void PrintViewManagerBase::OnDidPrintDocument(
         params.document_cookie, render_frame_host, content,
         base::BindOnce(&PrintViewManagerBase::OnComposePdfDone,
                        weak_ptr_factory_.GetWeakPtr(), params.page_size,
-                       params.content_area, params.physical_offsets,
-                       std::move(helper)));
+                       params.content_area, params.physical_offsets));
     return;
   }
   auto data = base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(
@@ -334,7 +330,6 @@ void PrintViewManagerBase::OnDidPrintDocument(
 
   PrintDocument(data, params.page_size, params.content_area,
                 params.physical_offsets);
-  helper->SendCompleted();
 }
 
 void PrintViewManagerBase::OnGetDefaultPrintSettings(

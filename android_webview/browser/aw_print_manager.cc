@@ -102,8 +102,7 @@ void AwPrintManager::OnScriptedPrint(
 
 void AwPrintManager::OnDidPrintDocument(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_DidPrintDocument_Params& params,
-    std::unique_ptr<DelayedFrameDispatchHelper> helper) {
+    const PrintHostMsg_DidPrintDocument_Params& params) {
   if (params.document_cookie != cookie_)
     return;
 
@@ -131,18 +130,7 @@ void AwPrintManager::OnDidPrintDocument(
                               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::BindOnce(&SaveDataToFd, fd_, number_pages_, data),
-      base::BindOnce(&AwPrintManager::OnDidPrintDocumentWritingDone,
-                     std::move(pdf_writing_done_callback_), std::move(helper)));
-}
-
-// static
-void AwPrintManager::OnDidPrintDocumentWritingDone(
-    PdfWritingDoneCallback callback,
-    std::unique_ptr<DelayedFrameDispatchHelper> helper,
-    int page_count) {
-  if (callback)
-    std::move(callback).Run(page_count);
-  helper->SendCompleted();
+      std::move(pdf_writing_done_callback_));
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AwPrintManager)

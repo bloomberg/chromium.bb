@@ -1825,10 +1825,8 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
 #if defined(OS_WIN)
   page_params.physical_offsets = printer_printable_area_.origin();
 #endif
-  bool completed = false;
-  Send(
-      new PrintHostMsg_DidPrintDocument(routing_id(), page_params, &completed));
-  return completed;
+  Send(new PrintHostMsg_DidPrintDocument(routing_id(), page_params));
+  return true;
 }
 
 void PrintRenderFrameHelper::FinishFramePrinting() {
