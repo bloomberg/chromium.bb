@@ -1475,6 +1475,10 @@
       status: {"Android": "", "default": "experimental"},
     },
     {
+      name: "ServiceWorkerFilterFrozen",
+      status: "experimental",
+    },
+    {
       name: "SetRootScroller",
       status: "experimental",
     },
