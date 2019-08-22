@@ -10861,6 +10861,27 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Version"/>
 </enum>
 
+<enum name="CrasClientType">
+  <summary>
+    List of the client type of CRAS. The list can be found in
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/common/cras_types.h
+    (enum CRAS_CLIENT_TYPE).
+  </summary>
+  <int value="0" label="CRAS_CLIENT_TYPE_UNKNOWN">Unknown client.</int>
+  <int value="1" label="CRAS_CLIENT_TYPE_LEGACY">
+    A client using an old CRAS lib. (CRAS_PROTO_VER = 3)
+  </int>
+  <int value="2" label="CRAS_CLIENT_TYPE_TEST">
+    A client created by cras_test_client.
+  </int>
+  <int value="3" label="CRAS_CLIENT_TYPE_PCM">
+    A client using CRAS via pcm, like aplay.
+  </int>
+  <int value="4" label="CRAS_CLIENT_TYPE_CHROME"/>
+  <int value="5" label="CRAS_CLIENT_TYPE_ARC"/>
+  <int value="6" label="CRAS_CLIENT_TYPE_CROSVM"/>
+</enum>
+
 <enum name="CrashExitCodes">
 <!-- These are abs() raw exit codes, so always positive. See MapCrashExitCodeForHistogram  function. See also the WindowsExitCode enum. -->
 
