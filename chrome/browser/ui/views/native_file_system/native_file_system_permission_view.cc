@@ -100,7 +100,8 @@ ui::ModalType NativeFileSystemPermissionView::GetModalType() const {
 }
 
 views::View* NativeFileSystemPermissionView::GetInitiallyFocusedView() {
-  return GetDialogClientView()->cancel_button();
+  const views::DialogClientView* dcv = GetDialogClientView();
+  return dcv ? dcv->cancel_button() : nullptr;
 }
 
 void ShowNativeFileSystemPermissionDialog(
