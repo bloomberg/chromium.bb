@@ -329,6 +329,19 @@ void NGColumnLayoutAlgorithm::LayoutRow(
     break;
   } while (true);
 
+  // If there was no content inside to process, we don't want the resulting
+  // empty column fragment.
+  if (new_columns.size() == 1u) {
+    const NGPhysicalBoxFragment& column =
+        *To<NGPhysicalBoxFragment>(new_columns[0].fragment.get());
+    // TODO(mstensho): Keeping the empty fragment, just so that out-of-flow
+    // descendants get propagated correctly isn't right. Find some other way of
+    // propagating them.
+    if (column.Children().size() == 0 &&
+        !column.HasOutOfFlowPositionedDescendants())
+      return;
+  }
+
   intrinsic_block_size_ += column_size.block_size;
 
   // Commit all column fragments to the fragment builder.
