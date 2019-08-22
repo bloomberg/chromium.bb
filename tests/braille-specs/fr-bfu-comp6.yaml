@@ -1,4 +1,4 @@
-display: unicode-without-blank.dis
+display: unicode-without-blank.dis,fr-bfu-comp6.utb
 table:
   locale: fr
   type: literary

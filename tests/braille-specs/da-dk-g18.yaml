@@ -1,4 +1,4 @@
-display: unicode-without-blank.dis
+display: unicode-without-blank.dis,da-dk-g18.ctb
 table:
   locale: da
   grade: 1
