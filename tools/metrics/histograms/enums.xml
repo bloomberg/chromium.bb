@@ -17829,6 +17829,7 @@ Called by update_net_error_codes.py.-->
   <int value="589" label="CheckContentCompliance"/>
   <int value="590" label="DomainsToCheckComplianceOfDownloadedContent"/>
   <int value="591" label="DomainsToNotCheckComplianceOfUploadedContent"/>
+  <int value="592" label="DictationEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

@@ -254,6 +254,7 @@
 #include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -4096,6 +4097,33 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SelectToSpeakEnabled) {
   // Verify that the select to speak cannot be enabled manually anymore.
   accessibility_manager->SetSelectToSpeakEnabled(true);
   EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, DictationEnabled) {
+  // Verifies that the dictation accessibility feature can be
+  // controlled through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  PrefService* prefs = browser()->profile()->GetPrefs();
+
+  // Verify that the dictation is initially disabled
+  EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
+
+  // Manually enable the dictation.
+  prefs->SetBoolean(ash::prefs::kAccessibilityDictationEnabled, true);
+  EXPECT_TRUE(accessibility_manager->IsDictationEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kDictationEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
+
+  // Verify that the dictation cannot be enabled manually anymore.
+  prefs->SetBoolean(ash::prefs::kAccessibilityDictationEnabled, true);
+  EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
