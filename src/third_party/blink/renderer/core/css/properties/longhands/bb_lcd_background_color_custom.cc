@@ -18,7 +18,7 @@ const CSSValue* BbLcdBackgroundColor::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   // Allow the special focus color even in HTML Standard parsing mode.
-  if (range.Peek().Id() == CSSValueAuto || range.Peek().Id() == CSSValueNone)
+  if (range.Peek().Id() == CSSValueID::kAuto || range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
   return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
@@ -50,16 +50,17 @@ void BbLcdBackgroundColor::ApplyInherit(StyleResolverState& state) const {
 void BbLcdBackgroundColor::ApplyValue(StyleResolverState& state,
                                       const CSSValue& value) const {
   if (value.IsIdentifierValue()) {
-      CSSValueID id = ToCSSIdentifierValue(value).GetValueID();
+      auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+      CSSValueID id = identifier_value->GetValueID();
 
       switch (id) {
-      case CSSValueNone:
+      case CSSValueID::kNone:
           state.Style()->SetLcdBackgroundColorSource(
               ELcdBackgroundColorSource::kNone);
           state.Style()->SetBbLcdBackgroundColor(
               blink::Color::kTransparent);
           return;
-      case CSSValueAuto:
+      case CSSValueID::kAuto:
           state.Style()->SetLcdBackgroundColorSource(
               ELcdBackgroundColorSource::kAuto);
           state.Style()->SetBbLcdBackgroundColor(
