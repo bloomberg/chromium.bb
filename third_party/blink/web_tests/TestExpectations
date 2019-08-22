@@ -6446,15 +6446,12 @@ crbug.com/988890 [ Win7 Release ] external/wpt/referrer-policy/strict-origin-whe
 crbug.com/988890 [ Win7 Release ] virtual/blink-cors/external/wpt/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-insecure.http.html [ Pass Timeout ]
 
 # Sheriff 2019-07-31
-crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video-shadow.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-shadow.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-all.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-padding.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas.html [ Failure ]
-crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video-ratio.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-border.html [ Failure ]
-crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video.html [ Failure ]
 crbug.com/989365 [ Win7 ] virtual/blink-cors/http/tests/security/img-crossorigin-redirect-credentials.https.html [ Pass Timeout ]
 crbug.com/989365 [ Win7 ] http/tests/security/img-crossorigin-redirect-credentials.https.html [ Pass Timeout ]
 crbug.com/989014 [ Linux Debug ] external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_eventhandler_attribute.tentative.https.html [ Pass Timeout ]
