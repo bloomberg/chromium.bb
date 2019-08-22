@@ -36,6 +36,7 @@ web_idl/idl_type.py
 web_idl/includes.py
 web_idl/interface.py
 web_idl/ir_builder.py
+web_idl/make_copy.py
 web_idl/namespace.py
 web_idl/operation.py
 web_idl/reference.py
