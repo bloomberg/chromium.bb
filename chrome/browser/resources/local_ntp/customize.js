@@ -2019,10 +2019,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     customize.richerPicker_selectShortcutType(clOption);
   };
   clOption.onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.ENTER ||
-        event.keyCode === customize.KEYCODES.SPACE) {
-      clOption.click();
-    } else if (customize.arrowKeys.includes(event.keyCode)) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
@@ -2031,6 +2028,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       } else if (event.keyCode === customize.KEYCODES.DOWN) {
         hideToggle.focus();
       }
+    }
+  };
+  clOption.onkeyup = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      clOption.click();
     }
   };
 
@@ -2042,10 +2045,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     customize.richerPicker_selectShortcutType(mvOption);
   };
   mvOption.onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.ENTER ||
-        event.keyCode === customize.KEYCODES.SPACE) {
-      mvOption.click();
-    } else if (customize.arrowKeys.includes(event.keyCode)) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
@@ -2058,6 +2058,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       }
     }
   };
+  mvOption.onkeyup = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      mvOption.click();
+    }
+  };
 
   hideToggle.onchange = function(event) {
     customize.richerPicker_toggleShortcutHide(hideToggle.checked);
@@ -2065,10 +2071,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
         customize.LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED);
   };
   hideToggle.onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.ENTER ||
-        event.keyCode === customize.KEYCODES.SPACE) {
-      hideToggle.onchange(event);
-    } else if (customize.arrowKeys.includes(event.keyCode)) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
@@ -2076,6 +2079,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
           event.keyCode === customize.KEYCODES.UP) {
         mvOption.focus();
       }
+    }
+  };
+  hideToggle.onkeyup = function(event) {
+    // Handle enter since, unlike space, it does not trigger a click event.
+    if (event.keyCode === customize.KEYCODES.ENTER) {
+      hideToggle.click();
     }
   };
   hideToggle.onclick = function(event) {
