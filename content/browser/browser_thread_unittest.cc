@@ -57,7 +57,8 @@ class SequenceManagerThreadDelegate : public base::Thread::Delegate {
 
     BrowserTaskExecutor::CreateForTesting(
         std::move(browser_ui_thread_scheduler),
-        std::make_unique<BrowserIOThreadDelegate>());
+        std::make_unique<BrowserIOThreadDelegate>(
+            BrowserIOThreadDelegate::BrowserTaskExecutorPresent::kYes));
     BrowserTaskExecutor::EnableAllQueues();
   }
 
@@ -116,6 +117,7 @@ class BrowserThreadTest : public testing::Test {
 
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::UI);
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::IO);
+    BrowserTaskExecutor::ResetForTesting();
   }
 
   // Prepares this BrowserThreadTest for Release() to be invoked. |on_release|
@@ -311,7 +313,8 @@ class BrowserThreadWithCustomSchedulerTest : public testing::Test {
               QueueType::kDefault));
       BrowserTaskExecutor::CreateForTesting(
           std::move(browser_ui_thread_scheduler),
-          std::make_unique<BrowserIOThreadDelegate>());
+          std::make_unique<BrowserIOThreadDelegate>(
+              BrowserIOThreadDelegate::BrowserTaskExecutorPresent::kYes));
 
       ui_thread_ = BrowserTaskExecutor::CreateIOThread();
       BrowserTaskExecutor::InitializeIOThread();
