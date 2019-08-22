@@ -836,17 +836,24 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 					.max_outlen = maxOutputLen, .real_inlen = realInputLen,
 					.direction = direction, .diagnostics = !xfail);
 		}
-		if (xfail != r) errors++;
-		if ((xfail || r != 0) && !(verbose == 0 && xfail && r != 0)) {
+		if (xfail != r) {
+			// FAIL or XPASS
 			if (description) fprintf(stderr, "%s\n", description);
 			error_at_line(0, 0, file_name, event.start_mark.line + 1,
-					(xfail ? (r == 0 ? "Unexpected Pass" : "Expected Failure")
-						   : "Failure"));
+					(xfail ? "Unexpected Pass" : "Failure"));
+			errors++;
 			// on error print the table name, as it isn't always clear
 			// which table we are testing. You can can define a test
 			// for multiple tables.
 			fprintf(stderr, "Table: %s\n", *table);
 			// add an empty line after each error
+			fprintf(stderr, "\n");
+		} else if (xfail && r && verbose) {
+			// XFAIL
+			// in verbose mode print expected failures
+			if (description) fprintf(stderr, "%s\n", description);
+			error_at_line(0, 0, file_name, event.start_mark.line + 1, "Expected Failure");
+			fprintf(stderr, "Table: %s\n", *table);
 			fprintf(stderr, "\n");
 		}
 		result |= r;
