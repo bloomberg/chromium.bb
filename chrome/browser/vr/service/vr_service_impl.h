@@ -116,19 +116,23 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   void OnInlineSessionCreated(
       device::mojom::XRDeviceId session_runtime_id,
       device::mojom::VRService::RequestSessionCallback callback,
+      const std::set<device::mojom::XRSessionFeature>& enabled_features,
       device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr controller);
 
   void OnSessionCreated(
       device::mojom::XRDeviceId session_runtime_id,
       device::mojom::VRService::RequestSessionCallback callback,
+      const std::set<device::mojom::XRSessionFeature>& enabled_features,
       device::mojom::XRSessionPtr session);
   void DoRequestSession(
       device::mojom::XRSessionOptionsPtr options,
-      device::mojom::VRService::RequestSessionCallback callback);
+      device::mojom::VRService::RequestSessionCallback callback,
+      std::set<device::mojom::XRSessionFeature> enabled_features);
   void OnConsentResult(
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::VRService::RequestSessionCallback callback,
+      std::set<device::mojom::XRSessionFeature> enabled_features,
       bool is_consent_granted);
 
   bool IsConsentGrantedForDevice(device::mojom::XRDeviceId device_id);

@@ -54,7 +54,9 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   ~BrowserXRRuntime() override;
 
   void ExitVrFromPresentingService();
-
+  bool SupportsFeature(device::mojom::XRSessionFeature feature) const;
+  bool SupportsAllFeatures(
+      const std::vector<device::mojom::XRSessionFeature>& features) const;
   device::mojom::XRRuntime* GetRuntime() { return runtime_.get(); }
 
   // Methods called by VRServiceImpl to interact with the runtime's device.
