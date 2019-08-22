@@ -20,6 +20,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
@@ -30,6 +31,7 @@
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/proto/webprotect.pb.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -312,6 +314,28 @@ void CheckClientDownloadRequest::OnURLLoaderComplete(
         result, upload_requested, item_, client_download_request_data_,
         *response_body.get());
   }
+
+  if (ShouldUploadBinary(result)) {
+    auto request =
+        std::make_unique<DownloadItemRequest>(item_, base::DoNothing());
+
+    DlpDeepScanningClientRequest dlp_request;
+    request->set_request_dlp_scan(std::move(dlp_request));
+
+    MalwareDeepScanningClientRequest malware_request;
+    malware_request.set_population(
+        MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE);
+    malware_request.set_download_token(token);
+    request->set_request_malware_scan(std::move(malware_request));
+
+    content::BrowserContext* browser_context =
+        content::DownloadItemUtils::GetBrowserContext(item_);
+    if (browser_context) {
+      Profile* profile = Profile::FromBrowserContext(browser_context);
+      service_->UploadForDeepScanning(profile, std::move(request));
+    }
+  }
+
   // We don't need the loader anymore.
   loader_.reset();
   UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration",
@@ -816,6 +840,22 @@ void CheckClientDownloadRequest::FinishRequest(
   item_->RemoveObserver(this);
   service_->RequestFinished(this);
   // DownloadProtectionService::RequestFinished may delete us.
+}
+
+bool CheckClientDownloadRequest::ShouldUploadBinary(
+    DownloadCheckResult result) {
+  if (!base::FeatureList::IsEnabled(kUploadForMalwareCheck))
+    return false;
+
+  if (result != DownloadCheckResult::SAFE &&
+      result != DownloadCheckResult::UNCOMMON &&
+      result != DownloadCheckResult::UNKNOWN)
+    return false;
+
+  // TODO(drubery): Add the appropriate checks against the enterprise policy
+  // here.
+
+  return true;
 }
 
 }  // namespace safe_browsing

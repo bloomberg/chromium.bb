@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/download_protection/multipart_uploader.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
@@ -27,7 +28,8 @@ class MockRequest : public BinaryUploadService::Request {
  public:
   explicit MockRequest(BinaryUploadService::Callback callback)
       : BinaryUploadService::Request(std::move(callback)) {}
-  MOCK_METHOD0(GetFileContents, std::string());
+  MOCK_METHOD1(GetFileContents,
+               void(base::OnceCallback<void(const std::string&)>));
   MOCK_METHOD0(GetFileSize, size_t());
 };
 
@@ -133,7 +135,7 @@ class BinaryUploadServiceTest : public testing::Test {
   std::unique_ptr<MockRequest> MakeRequest(
       BinaryUploadService::Result* scanning_result,
       DeepScanningClientResponse* scanning_response) {
-    return std::make_unique<MockRequest>(base::BindOnce(
+    auto request = std::make_unique<MockRequest>(base::BindOnce(
         [](BinaryUploadService::Result* target_result,
            DeepScanningClientResponse* target_response,
            BinaryUploadService::Result result,
@@ -142,6 +144,13 @@ class BinaryUploadServiceTest : public testing::Test {
           *target_response = response;
         },
         scanning_result, scanning_response));
+    ON_CALL(*request, GetFileSize()).WillByDefault(Return(strlen("contents")));
+    ON_CALL(*request, GetFileContents(_))
+        .WillByDefault(
+            Invoke([](base::OnceCallback<void(const std::string&)> callback) {
+              std::move(callback).Run("contents");
+            }));
+    return request;
   }
 
  protected:

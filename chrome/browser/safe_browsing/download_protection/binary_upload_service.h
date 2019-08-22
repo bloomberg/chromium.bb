@@ -26,6 +26,9 @@ class BinaryUploadService {
   BinaryUploadService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Profile* profile);
+
+  // This constructor is useful in tests, if you want to keep a reference to the
+  // service's |binary_fcm_service_|.
   BinaryUploadService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<BinaryFCMService> binary_fcm_service);
@@ -66,13 +69,16 @@ class BinaryUploadService {
     virtual ~Request();
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
+    Request(Request&&) = delete;
+    Request& operator=(Request&&) = delete;
 
-    // Returns the file contents to upload.
+    // Asynchronously returns the file contents to upload.
     // TODO(drubery): This could allocate up to 50MB of memory for a large file
     // upload. We should see how often that causes errors, and possibly
     // implement some sort of streaming interface so we don't use so much
     // memory.
-    virtual std::string GetFileContents() = 0;
+    virtual void GetFileContents(
+        base::OnceCallback<void(const std::string&)> callback) = 0;
 
     // Returns the content size.
     virtual size_t GetFileSize() = 0;
@@ -86,7 +92,7 @@ class BinaryUploadService {
     void set_request_dlp_scan(DlpDeepScanningClientRequest dlp_request);
     void set_request_malware_scan(
         MalwareDeepScanningClientRequest malware_request);
-    void set_download_token(const std::string& token);
+    void set_fcm_token(const std::string& token);
 
     // Finish the request, with the given |result| and |response| from the
     // server.
@@ -106,6 +112,8 @@ class BinaryUploadService {
   friend class BinaryUploadServiceTest;
 
   void OnGetInstanceID(Request* request, const std::string& token);
+
+  void OnGetFileContents(Request* request, const std::string& file_contents);
 
   void OnUploadComplete(Request* request,
                         bool success,
@@ -127,14 +135,14 @@ class BinaryUploadService {
   std::unique_ptr<BinaryFCMService> binary_fcm_service_;
 
   // Resources associated with an in-progress request.
-  std::unordered_map<Request*, std::unique_ptr<Request>> active_requests_;
-  std::unordered_map<Request*, base::OneShotTimer> active_timers_;
-  std::unordered_map<Request*, std::unique_ptr<MultipartUploadRequest>>
+  base::flat_map<Request*, std::unique_ptr<Request>> active_requests_;
+  base::flat_map<Request*, std::unique_ptr<base::OneShotTimer>> active_timers_;
+  base::flat_map<Request*, std::unique_ptr<MultipartUploadRequest>>
       active_uploads_;
-  std::unordered_map<Request*, std::string> active_tokens_;
-  std::unordered_map<Request*, std::unique_ptr<MalwareDeepScanningVerdict>>
+  base::flat_map<Request*, std::string> active_tokens_;
+  base::flat_map<Request*, std::unique_ptr<MalwareDeepScanningVerdict>>
       received_malware_verdicts_;
-  std::unordered_map<Request*, std::unique_ptr<DlpDeepScanningVerdict>>
+  base::flat_map<Request*, std::unique_ptr<DlpDeepScanningVerdict>>
       received_dlp_verdicts_;
 
   base::WeakPtrFactory<BinaryUploadService> weakptr_factory_;

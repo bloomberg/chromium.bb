@@ -66,7 +66,8 @@ void BinaryUploadService::UploadForDeepScanning(
   binary_fcm_service_->GetInstanceID(
       base::BindOnce(&BinaryUploadService::OnGetInstanceID,
                      weakptr_factory_.GetWeakPtr(), raw_request));
-  active_timers_[raw_request].Start(
+  active_timers_[raw_request] = std::make_unique<base::OneShotTimer>();
+  active_timers_[raw_request]->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kScanningTimeoutSeconds),
       base::BindOnce(&BinaryUploadService::OnTimeout,
                      weakptr_factory_.GetWeakPtr(), raw_request));
@@ -83,9 +84,16 @@ void BinaryUploadService::OnGetInstanceID(Request* request,
     return;
   }
 
-  std::string metadata;
-  request->set_download_token(instance_id);
-  request->deep_scanning_request().SerializeToString(&metadata);
+  request->set_fcm_token(instance_id);
+  request->GetFileContents(
+      base::BindOnce(&BinaryUploadService::OnGetFileContents,
+                     weakptr_factory_.GetWeakPtr(), request));
+}
+
+void BinaryUploadService::OnGetFileContents(Request* request,
+                                            const std::string& file_contents) {
+  if (!IsActive(request))
+    return;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("safe_browsing_binary_upload", R"(
@@ -122,9 +130,12 @@ void BinaryUploadService::OnGetInstanceID(Request* request,
           }
         })");
 
+  std::string metadata;
+  request->deep_scanning_request().SerializeToString(&metadata);
+
   auto upload_request = MultipartUploadRequest::Create(
-      url_loader_factory_, GURL(kSbBinaryUploadUrl), metadata,
-      request->GetFileContents(), traffic_annotation,
+      url_loader_factory_, GURL(kSbBinaryUploadUrl), metadata, file_contents,
+      traffic_annotation,
       base::BindOnce(&BinaryUploadService::OnUploadComplete,
                      weakptr_factory_.GetWeakPtr(), request));
   upload_request->Start();
@@ -246,8 +257,7 @@ void BinaryUploadService::Request::set_request_malware_scan(
       std::move(malware_request);
 }
 
-void BinaryUploadService::Request::set_download_token(
-    const std::string& token) {
+void BinaryUploadService::Request::set_fcm_token(const std::string& token) {
   deep_scanning_request_.set_fcm_notification_token(token);
 }
 

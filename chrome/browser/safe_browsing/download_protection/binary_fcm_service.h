@@ -69,11 +69,15 @@ class BinaryFCMService : public gcm::GCMAppHandler {
   BinaryFCMService();
 
  private:
-  void OnGetInstanceID(const std::string& instance_id,
+  void OnGetInstanceID(GetInstanceIDCallback callback,
+                       const std::string& instance_id,
                        instance_id::InstanceID::Result result);
 
+  // References to the profile's GCMDriver and InstanceIDDriver. Both are
+  // unowned.
   gcm::GCMDriver* gcm_driver_;
-  std::string instance_id_;
+  instance_id::InstanceIDDriver* instance_id_driver_;
+
   std::unordered_map<std::string, OnMessageCallback> message_token_map_;
 
   base::WeakPtrFactory<BinaryFCMService> weakptr_factory_{this};
