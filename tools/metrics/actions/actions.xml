@@ -11873,6 +11873,27 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileCreditCardScannerClose">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User closed the Credit Card Scanner without scanning a credit card.
+  </description>
+</action>
+
+<action name="MobileCreditCardScannerError">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User closed the Credit Card Scanner from an error dialog.
+  </description>
+</action>
+
+<action name="MobileCreditCardScannerScannedCard">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User scanned a credit card using the Credit Card Scanner.
+  </description>
+</action>
+
 <action name="MobileCustomFeedback">
   <obsolete>
     Deprecated 12/2018. CustomFeedback never shipped to 100% and is no longer
