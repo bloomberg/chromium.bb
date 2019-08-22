@@ -817,3 +817,11 @@ Date:   Thu May 9 17:40:11 2019 -0700
 Affects:
     libavcodec/libopusdec.c
 
+------------------------------------------------------------------
+commit f1852b173307290afdd17851c2d76ab261b02d68
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Thu Aug 22 10:49:16 2019 -0700
+
+    Fail matroska parsing with an error rather than assert.
+
+    Bug: 995706
