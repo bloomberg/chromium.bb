@@ -2342,7 +2342,7 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
   // to the TabSpecificContentSettings, since the service worker is blocked
   // because of the extension, rather than because of the user's content
   // settings.
-  if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
+  if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnIO(
           scope, first_party_url, script_url, context)) {
     return false;
   }
@@ -2384,9 +2384,16 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // TODO(crbug.com/824858): Implement the extensions service worker check on
-  // the UI thread.
-  return false;
+  // Check if this is an extension-related service worker, and, if so, if it's
+  // allowed (this can return false if, e.g., the extension is disabled).
+  // If it's not allowed, return immediately. We deliberately do *not* report
+  // to the TabSpecificContentSettings, since the service worker is blocked
+  // because of the extension, rather than because of the user's content
+  // settings.
+  if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnUI(
+          scope, first_party_url, script_url, context)) {
+    return false;
+  }
 #endif
 
   Profile* profile = Profile::FromBrowserContext(context);
