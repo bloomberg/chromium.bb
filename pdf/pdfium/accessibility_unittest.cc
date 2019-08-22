@@ -134,11 +134,11 @@ TEST_F(AccessibilityTest, GetUnderlyingTextRangeForRect) {
 
   // The test rect spans across [0, 4] char indices.
   int start_index = -1;
-  uint32_t char_count = 0;
+  int char_count = 0;
   EXPECT_TRUE(page->GetUnderlyingTextRangeForRect(
       pp::FloatRect(20.0f, 50.0f, 26.0f, 8.0f), &start_index, &char_count));
   EXPECT_EQ(start_index, 0);
-  EXPECT_EQ(char_count, 5u);
+  EXPECT_EQ(char_count, 5);
 
   // The input rectangle is spanning across multiple lines.
   // GetUnderlyingTextRangeForRect() should return only the char indices
@@ -148,14 +148,16 @@ TEST_F(AccessibilityTest, GetUnderlyingTextRangeForRect) {
   EXPECT_TRUE(page->GetUnderlyingTextRangeForRect(
       pp::FloatRect(20.0f, 0.0f, 26.0f, 58.0f), &start_index, &char_count));
   EXPECT_EQ(start_index, 0);
-  EXPECT_EQ(char_count, 5u);
+  EXPECT_EQ(char_count, 5);
 
   // There is no text below this rectangle. So, GetUnderlyingTextRangeForRect()
-  // will return false.
+  // will return false and not change the dummy values set here.
+  start_index = -9;
+  char_count = -10;
   EXPECT_FALSE(page->GetUnderlyingTextRangeForRect(
       pp::FloatRect(10.0f, 10.0f, 0.0f, 0.0f), &start_index, &char_count));
-  EXPECT_EQ(start_index, 0);
-  EXPECT_EQ(char_count, 5u);
+  EXPECT_EQ(start_index, -9);
+  EXPECT_EQ(char_count, -10);
 }
 
 // This class overrides TestClient to record points received when a scroll
