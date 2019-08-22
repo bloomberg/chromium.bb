@@ -119,7 +119,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
           : nullptr);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
-  if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled())
+  if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
     wrapper_->InitializeResourceContext(browser_context_->GetResourceContext());
 
   // Install a mocked mojom::Renderer interface to catch requests to
