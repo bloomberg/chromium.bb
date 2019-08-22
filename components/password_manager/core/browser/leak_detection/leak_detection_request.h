@@ -22,6 +22,18 @@ namespace password_manager {
 // the initiated network request.
 class LeakDetectionRequest : public LeakDetectionRequestInterface {
  public:
+  // Enum representing different leak lookup response results. Needs to stay in
+  // sync with the PasswordLeakLookupResponseResult enum in enums.xml.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class LeakLookupResponseResult {
+    kSuccess = 0,
+    kFetchError = 1,
+    kParseError = 2,
+    kMaxValue = kParseError
+  };
+
   // TODO(crbug.com/986298): Switch to production endpoint once available.
   static constexpr char kLookupSingleLeakEndpoint[] =
       "https://autopush-passwordsleakcheck-pa.sandbox.googleapis.com/v1/"

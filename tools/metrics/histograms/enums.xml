@@ -45844,6 +45844,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="DB Error"/>
 </enum>
 
+<enum name="PasswordAnalyzeLeakResponseResult">
+  <int value="0" label="Decryption Error"/>
+  <int value="1" label="No Leaked Credentials"/>
+  <int value="2" label="Leaked Credentials"/>
+</enum>
+
 <enum name="PasswordApplySyncChangesState">
   <int value="0" label="Apply OK"/>
   <int value="1" label="Apply ADD failed"/>
@@ -45956,6 +45962,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Password import failed due to malformed CSV"/>
   <int value="3" label="Password import failed due to missing content"/>
   <int value="4" label="Boundary value"/>
+</enum>
+
+<enum name="PasswordLeakLookupResponseResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Network/server error"/>
+  <int value="2" label="Malformed response"/>
 </enum>
 
 <enum name="PasswordManagerActionsTaken">
