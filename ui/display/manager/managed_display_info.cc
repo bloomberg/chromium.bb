@@ -289,7 +289,8 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       is_zoom_factor_from_ui_scale_(false),
       native_(false),
       is_aspect_preserving_scaling_(false),
-      clear_overscan_insets_(false) {}
+      clear_overscan_insets_(false),
+      bits_per_channel_(0) {}
 
 ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
                                        const std::string& name,
@@ -309,7 +310,8 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       is_zoom_factor_from_ui_scale_(false),
       native_(false),
       is_aspect_preserving_scaling_(false),
-      clear_overscan_insets_(false) {}
+      clear_overscan_insets_(false),
+      bits_per_channel_(0) {}
 
 ManagedDisplayInfo::ManagedDisplayInfo(const ManagedDisplayInfo& other) =
     default;
