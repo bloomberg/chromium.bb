@@ -2278,7 +2278,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu-st',
       'lasilla-ground',
       'littlejoe',
-      'mistral',
       'monroe',
       'nami',
       'nocturne',
@@ -2350,6 +2349,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'atlas', # crbug.com/994783
       'coral', # crbug.com/995386
       'fizz-moblab', # crbug.com/995170
+      'mistral', # crbug.com/996758
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'grunt', # crbug.com/984614
       'wizpig', # crbug.com/996944
