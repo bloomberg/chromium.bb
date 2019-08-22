@@ -17801,6 +17801,13 @@ Called by update_net_error_codes.py.-->
   <int value="582" label="DnsOverHttpsMode"/>
   <int value="583" label="SendFilesForMalwareCheck"/>
   <int value="584" label="PolicyAtomicGroupsEnabled"/>
+  <int value="585" label="UnsafeEventsReportingEnabled"/>
+  <int value="586" label="BlockLargeFileTransfer"/>
+  <int value="587" label="DelayDeliveryUntilVerdict"/>
+  <int value="588" label="AllowPasswordProtectedFiles"/>
+  <int value="589" label="CheckContentCompliance"/>
+  <int value="590" label="DomainsToCheckComplianceOfDownloadedContent"/>
+  <int value="591" label="DomainsToNotCheckComplianceOfUploadedContent"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
