@@ -4,17 +4,12 @@
 
 #include "pdf/accessibility.h"
 
-#include "build/build_config.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/system/sys_info.h"
-#endif
 
 namespace chrome_pdf {
 
@@ -93,11 +88,7 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   EXPECT_EQ(links.size(), page_info.link_count);
   EXPECT_EQ(images.size(), page_info.image_count);
 
-#if defined(OS_CHROMEOS)
-  bool is_chromeos = base::SysInfo::IsRunningOnChromeOS();
-#else
-  bool is_chromeos = false;
-#endif
+  bool is_chromeos = IsRunningOnChromeOS();
 
   ASSERT_EQ(kExpectedTextRunCount, text_runs.size());
   for (size_t i = 0; i < kExpectedTextRunCount; ++i) {
