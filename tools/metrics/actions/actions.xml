@@ -6312,6 +6312,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="HatsBubble.Show">
+  <obsolete>
+    Deprecated as of 08/2019. Replaced by HappinessTrackingSurvey.BubbleUsage
+    histogram.
+  </obsolete>
   <owner>jeffreycohen@chromium.org</owner>
   <description>User saw a Happiness Tracking Survey.</description>
 </action>

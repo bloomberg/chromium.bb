@@ -29413,7 +29413,18 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Checked dont launch"/>
 </enum>
 
+<enum name="HappinessTrackingSurveyDesktopBubbleUsage">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="No Thanks"/>
+  <int value="2" label="Closed Intentionally"/>
+  <int value="3" label="Ignored"/>
+</enum>
+
 <enum name="HappinessTrackingSurveyDesktopResponse">
+  <obsolete>
+    Deprecated as of 08/2019. Replaced with
+    HappinessTrackingSurveyDesktopBubbleUsage.
+  </obsolete>
   <int value="0" label="Shown"/>
   <int value="1" label="Completed"/>
   <int value="2" label="Dismissed"/>
