@@ -5321,7 +5321,7 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           previews::switches::kForceEnablePreviews)) {
-    previews_decider_impl->LoadPageHints(current_navigation_url);
+    previews_decider_impl->LoadPageHints(navigation_handle);
     return content::ALL_SUPPORTED_PREVIEWS;
   }
 
