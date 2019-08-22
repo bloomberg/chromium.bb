@@ -4,13 +4,13 @@
      found in the LICENSE file. -->
 
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="UnusedResources">
+            xmlns:tools="http://schemas.android.com/tools"
+            tools:ignore="UnusedResources">
     <item android:drawable="@drawable/popup_bg" />
     <item>
         <shape>
             <corners android:radius="@dimen/popup_bg_corner_radius" />
-            <solid android:color="@color/popup_bg_color" />
+            <solid android:color="@color/default_bg_color_dark_elev_4" />
         </shape>
     </item>
 </layer-list>
