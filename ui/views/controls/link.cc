@@ -173,7 +173,9 @@ bool Link::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 
 void Link::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Label::GetAccessibleNodeData(node_data);
-  node_data->role = ax::mojom::Role::kLink;
+  // Prevent invisible links from being announced by screen reader.
+  node_data->role =
+      GetText().empty() ? ax::mojom::Role::kIgnored : ax::mojom::Role::kLink;
 }
 
 void Link::OnFocus() {
