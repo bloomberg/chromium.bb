@@ -44,6 +44,8 @@ issues]].
   Sweden, and maybe also in other countries thanks to Lars Bjørndal.
 - Fix handling of colon within number in Dutch braille, thanks to Jake
   Kyle.
+- Fix translation of bullet and dot operators in Dutch braille, thanks
+  to Paul Rambags
 - Added North American Braille Computer Code table (en-nabcc.utb)
   which is the counterpart of the text_nabcc.dis display table. Thanks
   to Dave Mielke.
