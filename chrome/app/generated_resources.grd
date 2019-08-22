@@ -9623,7 +9623,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Remove access
     </message>
 
-    <!-- Native File System restricted directory dialog. -->
+    <!-- Native File System restricted directory and file dialogs. -->
     <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TITLE" desc="Title of dialog explaining that the user selected a directory that chrome doesn't want to expose to the web">
       Can't open this folder
     </message>
@@ -9632,6 +9632,15 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON" desc="Text of the button in dialog explaining that the user selected a directory that chrome doesn't want to expose to the web">
       Choose a different folder
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_TITLE" desc="Title of dialog explaining that the user selected a file in a directory that chrome doesn't want to expose to the web">
+      Can't open this file
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_TEXT" desc="Text of dialog explaining that the user selected a file in a directory that chrome doesn't want to expose to the web">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can’t open files in this folder because it contains system files
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_BUTTON" desc="Text of the button in dialog explaining that the user selected a file in a directory that chrome doesn't want to expose to the web">
+      Choose a different file
     </message>
 
     <!-- Native File System directory access confirmation dialog. -->

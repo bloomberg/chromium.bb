@@ -394,9 +394,11 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
     return;
   }
   auto entries_copy = entries;
+  const bool is_directory =
+      options.type() == blink::mojom::ChooseFileSystemEntryType::kOpenDirectory;
   permission_context_->ConfirmSensitiveDirectoryAccess(
-      binding_context.origin, entries_copy, binding_context.process_id,
-      binding_context.frame_id,
+      binding_context.origin, entries_copy, is_directory,
+      binding_context.process_id, binding_context.frame_id,
       base::BindOnce(
           &NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess,
           weak_factory_.GetWeakPtr(), binding_context, options,
