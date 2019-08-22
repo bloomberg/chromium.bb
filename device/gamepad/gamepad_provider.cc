@@ -41,12 +41,7 @@ GamepadProvider::ClosureAndThread::~ClosureAndThread() = default;
 
 GamepadProvider::GamepadProvider(
     GamepadConnectionChangeClient* connection_change_client)
-    : is_paused_(true),
-      have_scheduled_do_poll_(false),
-      devices_changed_(true),
-      ever_had_user_gesture_(false),
-      sanitize_(true),
-      gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
+    : gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
       connection_change_client_(connection_change_client) {
   Initialize(std::unique_ptr<GamepadDataFetcher>());
 }
@@ -55,12 +50,7 @@ GamepadProvider::GamepadProvider(
     GamepadConnectionChangeClient* connection_change_client,
     std::unique_ptr<GamepadDataFetcher> fetcher,
     std::unique_ptr<base::Thread> polling_thread)
-    : is_paused_(true),
-      have_scheduled_do_poll_(false),
-      devices_changed_(true),
-      ever_had_user_gesture_(false),
-      sanitize_(true),
-      gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
+    : gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
       polling_thread_(std::move(polling_thread)),
       connection_change_client_(connection_change_client) {
   Initialize(std::move(fetcher));
@@ -144,6 +134,18 @@ void GamepadProvider::Resume() {
   polling_thread_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&GamepadProvider::ScheduleDoPoll, Unretained(this)));
+}
+
+void GamepadProvider::PollOnceForTesting() {
+  poll_once_ = true;
+
+  // In tests it can be difficult to simulate a user gesture from a gamepad.
+  // Pretend that a user gesture was already received.
+  OnUserGesture();
+
+  polling_thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GamepadProvider::DoPollOnce, Unretained(this)));
 }
 
 void GamepadProvider::RegisterForUserGesture(const base::Closure& closure) {
@@ -297,11 +299,25 @@ void GamepadProvider::SendPauseHint(bool paused) {
   }
 }
 
-void GamepadProvider::DoPoll() {
+void GamepadProvider::DoPollRepeating() {
   DCHECK(polling_thread_->task_runner()->BelongsToCurrentThread());
   DCHECK(have_scheduled_do_poll_);
   have_scheduled_do_poll_ = false;
+  DoPoll();
 
+  // Schedule our next interval of polling.
+  ScheduleDoPoll();
+}
+
+void GamepadProvider::DoPollOnce() {
+  DCHECK(polling_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(poll_once_);
+  poll_once_ = false;
+  DoPoll();
+}
+
+void GamepadProvider::DoPoll() {
+  DCHECK(polling_thread_->task_runner()->BelongsToCurrentThread());
   bool changed;
 
   ANNOTATE_BENIGN_RACE_SIZED(gamepad_shared_buffer_->buffer(), sizeof(Gamepads),
@@ -380,9 +396,6 @@ void GamepadProvider::DoPoll() {
     for (size_t i = 0; i < Gamepads::kItemsLengthCap; ++i)
       pad_states_.get()[i].is_newly_active = false;
   }
-
-  // Schedule our next interval of polling.
-  ScheduleDoPoll();
 }
 
 void GamepadProvider::ScheduleDoPoll() {
@@ -397,7 +410,8 @@ void GamepadProvider::ScheduleDoPoll() {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&GamepadProvider::DoPoll, Unretained(this)),
+      FROM_HERE,
+      base::BindOnce(&GamepadProvider::DoPollRepeating, Unretained(this)),
       sampling_interval_delta_);
   have_scheduled_do_poll_ = true;
 }
@@ -416,15 +430,22 @@ bool GamepadProvider::CheckForUserGesture() {
 
   const Gamepads* pads = gamepad_shared_buffer_->buffer();
   if (GamepadsHaveUserGesture(*pads)) {
-    ever_had_user_gesture_ = true;
-    for (size_t i = 0; i < user_gesture_observers_.size(); i++) {
-      user_gesture_observers_[i].task_runner->PostTask(
-          FROM_HERE, user_gesture_observers_[i].closure);
-    }
-    user_gesture_observers_.clear();
+    OnUserGesture();
     return true;
   }
   return false;
+}
+
+void GamepadProvider::OnUserGesture() {
+  ever_had_user_gesture_ = true;
+  for (auto& observer : user_gesture_observers_)
+    observer.task_runner->PostTask(FROM_HERE, observer.closure);
+  user_gesture_observers_.clear();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+GamepadProvider::GetPollingThreadRunnerForTesting() const {
+  return polling_thread_->task_runner();
 }
 
 }  // namespace device

@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
+#include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 #include "device/gamepad/public/cpp/gamepad.h"
@@ -57,7 +58,8 @@ namespace device {
 // strong and weak effect magnitudes. When a vibration effect is played on a
 // composite device, the effect is split so that each component receives one
 // channel of the dual-rumble effect.
-class NintendoController final : public AbstractHapticGamepad {
+class DEVICE_GAMEPAD_EXPORT NintendoController final
+    : public AbstractHapticGamepad {
  public:
   struct SwitchCalibrationData {
     SwitchCalibrationData();
@@ -183,6 +185,9 @@ class NintendoController final : public AbstractHapticGamepad {
   void SetVibration(double strong_magnitude, double weak_magnitude) override;
   double GetMaxEffectDurationMillis() override;
   base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
+
+  // Simulate successful initialization, for use in tests.
+  void FinishInitSequenceForTesting();
 
   NintendoController(int source_id,
                      mojom::HidDeviceInfoPtr device_info,
@@ -403,6 +408,9 @@ class NintendoController final : public AbstractHapticGamepad {
   // A closure, provided in the call to Open, to be called once the device
   // becomes ready.
   base::OnceClosure device_ready_closure_;
+
+  // True if the device is simulating an initialized state, used in tests.
+  bool initialized_for_testing_ = false;
 
   base::WeakPtrFactory<NintendoController> weak_factory_{this};
 };

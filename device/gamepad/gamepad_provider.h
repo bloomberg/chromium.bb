@@ -89,6 +89,13 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
 
   void SetSanitizationEnabled(bool sanitize) { sanitize_ = sanitize; }
 
+  // Returns a task runner for the polling thread, for use in tests.
+  scoped_refptr<base::SingleThreadTaskRunner> GetPollingThreadRunnerForTesting()
+      const;
+
+  // Calls DoPoll once on the polling thread, for use in tests.
+  void PollOnceForTesting();
+
  private:
   void Initialize(std::unique_ptr<GamepadDataFetcher> fetcher);
 
@@ -104,6 +111,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   void SendPauseHint(bool paused);
 
   // Method for polling a GamepadDataFetcher. Runs on the polling_thread_.
+  void DoPollOnce();
+  void DoPollRepeating();
   void DoPoll();
   void ScheduleDoPoll();
 
@@ -114,6 +123,10 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   // Checks the gamepad state to see if the user has interacted with it. Returns
   // true if any user gesture observers were notified.
   bool CheckForUserGesture();
+
+  // Called the first time a gamepad user gesture is received. Records that the
+  // gesture was seen and notifies observers.
+  void OnUserGesture();
 
   void PlayEffectOnPollingThread(
       uint32_t pad_index,
@@ -133,12 +146,15 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   // Keeps track of when the background thread is paused. Access to is_paused_
   // must be guarded by is_paused_lock_.
   base::Lock is_paused_lock_;
-  bool is_paused_;
+  bool is_paused_ = true;
 
-  // Keep track of when a polling task is schedlued, so as to prevent us from
+  // Keep track of when a polling task is scheduled, so as to prevent us from
   // accidentally scheduling more than one at any time, when rapidly toggling
   // |is_paused_|.
-  bool have_scheduled_do_poll_;
+  bool have_scheduled_do_poll_ = false;
+
+  // True if a single (non-repeating) polling task is scheduled. Used in tests.
+  bool poll_once_ = false;
 
   // Lists all observers registered for user gestures, and the thread which
   // to issue the callbacks on. Since we always issue the callback on the
@@ -164,10 +180,10 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   // tests. Access to devices_changed_ must be guarded by
   // devices_changed_lock_.
   base::Lock devices_changed_lock_;
-  bool devices_changed_;
+  bool devices_changed_ = true;
 
-  bool ever_had_user_gesture_;
-  bool sanitize_;
+  bool ever_had_user_gesture_ = false;
+  bool sanitize_ = true;
 
   // Only used on the polling thread.
   using GamepadFetcherVector = std::vector<std::unique_ptr<GamepadDataFetcher>>;

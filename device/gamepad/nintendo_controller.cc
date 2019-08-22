@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_id_list.h"
 
@@ -1170,6 +1169,9 @@ void NintendoController::FinishInitSequence() {
 }
 
 void NintendoController::FailInitSequence() {
+  // Ignore initialization failures in tests.
+  if (initialized_for_testing_)
+    return;
   state_ = kUninitialized;
   UpdatePadConnected();
 }
@@ -1731,6 +1733,12 @@ void NintendoController::OnTimeout() {
     retry_count_ = 0;
     StartInitSequence();
   }
+}
+
+void NintendoController::FinishInitSequenceForTesting() {
+  initialized_for_testing_ = true;
+  CancelTimeout();
+  FinishInitSequence();
 }
 
 base::WeakPtr<AbstractHapticGamepad> NintendoController::GetWeakPtr() {
