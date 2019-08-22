@@ -107,6 +107,11 @@ def ParallelEmergeArgParser():
       'in the system environment to get a log of failed packages and which '
       'phase they failed in.',
   )
+  parser.add_argument(
+      '--show-output',
+      help=argparse.SUPPRESS,
+      deprecated='This option is no longer supported.',
+  )
 
   return parser
 
