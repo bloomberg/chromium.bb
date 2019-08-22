@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -14,16 +13,11 @@ from __future__ import print_function
 
 __all__ = ('RebuildRepoCheckout',)
 
-import sys
 import math
 import os
 import shutil
 import errno
 
-_path = os.path.realpath(__file__)
-_path = os.path.normpath(os.path.join(os.path.dirname(_path), '..', '..'))
-sys.path.insert(0, _path)
-del _path
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -291,7 +285,3 @@ def main(argv):
   ret = RebuildRepoCheckout(opts.repository_root, opts.referenced_repository,
                             chroot_reference_root=opts.chroot_path)
   print('\n'.join(ret))
-
-
-if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
