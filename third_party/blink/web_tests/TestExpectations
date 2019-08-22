@@ -3232,6 +3232,12 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.10 ] external/wpt/webxr/exclusive_requestFrame_nolayer.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.10 ] wpt_internal/webxr/xrSession_dataProviderDisconnect_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.10 ] wpt_internal/webxr/render_state_vertical_fov_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/snap-to-line.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/webvtt/rendering/cues-with-video/processing-model/snap-to-line.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/snap-to-line.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
