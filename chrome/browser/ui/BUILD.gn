@@ -3698,6 +3698,8 @@ jumbo_split_static_library("ui") {
       "ash/assistant/device_actions.h",
       "ash/assistant/proactive_suggestions_client_impl.cc",
       "ash/assistant/proactive_suggestions_client_impl.h",
+      "ash/assistant/proactive_suggestions_loader.cc",
+      "ash/assistant/proactive_suggestions_loader.h",
     ]
   }
 
