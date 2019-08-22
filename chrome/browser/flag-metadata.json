@@ -436,37 +436,37 @@
   {
     "name": "contextual-search-definitions",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 80
   },
   {
     "name": "contextual-search-longpress-resolve",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "contextual-search-ml-tap-suppression",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "contextual-search-ranker-query",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "contextual-search-second-tap",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "contextual-search-simplified-server",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 81
   },
   {
     "name": "contextual-search-translation-model",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 79
   },
   {
     "name": "contextual-search-unity-integration",
