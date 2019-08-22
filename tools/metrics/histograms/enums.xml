@@ -39408,6 +39408,7 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Seek Forward"/>
   <int value="6" label="Skip Ad"/>
   <int value="7" label="Stop"/>
+  <int value="8" label="Seek To"/>
 </enum>
 
 <enum name="MediaSessionActionSource">
