@@ -87,7 +87,8 @@ HIDDevice::HIDDevice(HID* parent,
                      ExecutionContext* context)
     : ContextLifecycleObserver(context),
       parent_(parent),
-      device_info_(std::move(info)) {
+      device_info_(std::move(info)),
+      binding_(this) {
   DCHECK(device_info_);
   for (const auto& collection : device_info_->collections) {
     // Omit information about top-level collections with protected usages.
@@ -149,8 +150,8 @@ ScriptPromise HIDDevice::open(ScriptState* script_state) {
     return promise;
   }
 
-  mojo::PendingRemote<device::mojom::blink::HidConnectionClient> client;
-  receiver_.Bind(client.InitWithNewPipeAndPassReceiver());
+  device::mojom::blink::HidConnectionClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
 
   device_state_change_in_progress_ = true;
   device_requests_.insert(resolver);
@@ -242,7 +243,8 @@ ScriptPromise HIDDevice::receiveFeatureReport(ScriptState* script_state,
 void HIDDevice::ContextDestroyed(ExecutionContext*) {
   connection_.reset();
   device_requests_.clear();
-  receiver_.reset();
+  if (binding_)
+    binding_.Close();
 }
 
 void HIDDevice::Trace(blink::Visitor* visitor) {
@@ -257,7 +259,8 @@ void HIDDevice::Trace(blink::Visitor* visitor) {
 void HIDDevice::Dispose() {
   // The connection client binding holds a raw pointer to this object which must
   // be released when it becomes garbage.
-  receiver_.reset();
+  if (binding_)
+    binding_.Close();
 }
 
 bool HIDDevice::EnsureNoDeviceChangeInProgress(

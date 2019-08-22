@@ -11,7 +11,6 @@
 
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
@@ -48,10 +47,9 @@ class FakeHidManager : public mojom::HidManager {
   void GetDevicesAndSetClient(mojom::HidManagerClientAssociatedPtrInfo client,
                               GetDevicesCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
-  void Connect(
-      const std::string& device_guid,
-      mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
-      ConnectCallback callback) override;
+  void Connect(const std::string& device_guid,
+               mojom::HidConnectionClientPtr connection_client,
+               ConnectCallback callback) override;
 
   mojom::HidDeviceInfoPtr CreateAndAddDevice(uint16_t vendor_id,
                                              uint16_t product_id,

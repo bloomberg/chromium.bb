@@ -172,9 +172,8 @@ TEST_F(HidServiceTest, OpenAndCloseHidConnection) {
   device_info->guid = kTestGuid;
   hid_manager()->AddDevice(std::move(device_info));
 
-  mojo::PendingRemote<device::mojom::HidConnectionClient> hid_connection_client;
-  connection_client()->Bind(
-      hid_connection_client.InitWithNewPipeAndPassReceiver());
+  device::mojom::HidConnectionClientPtr hid_connection_client;
+  connection_client()->Bind(mojo::MakeRequest(&hid_connection_client));
 
   base::RunLoop run_loop;
   device::mojom::HidConnectionPtr connection;

@@ -6,7 +6,7 @@
 #define SERVICES_DEVICE_HID_HID_CONNECTION_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/device/hid/hid_connection.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -18,9 +18,8 @@ namespace device {
 class HidConnectionImpl : public mojom::HidConnection,
                           public HidConnection::Client {
  public:
-  HidConnectionImpl(
-      scoped_refptr<device::HidConnection> connection,
-      mojo::PendingRemote<mojom::HidConnectionClient> connection_client);
+  HidConnectionImpl(scoped_refptr<device::HidConnection> connection,
+                    mojom::HidConnectionClientPtr connection_client);
   ~HidConnectionImpl() final;
 
   // HidConnection::Client implementation:
@@ -51,7 +50,7 @@ class HidConnectionImpl : public mojom::HidConnection,
   void OnSendFeatureReport(SendFeatureReportCallback callback, bool success);
 
   scoped_refptr<device::HidConnection> hid_connection_;
-  mojo::Remote<mojom::HidConnectionClient> client_;
+  mojo::InterfacePtr<mojom::HidConnectionClient> client_;
 
   base::WeakPtrFactory<HidConnectionImpl> weak_factory_{this};
 

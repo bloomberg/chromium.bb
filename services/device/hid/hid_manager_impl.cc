@@ -68,10 +68,9 @@ void HidManagerImpl::CreateDeviceList(
   clients_.AddPtr(std::move(client_ptr));
 }
 
-void HidManagerImpl::Connect(
-    const std::string& device_guid,
-    mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
-    ConnectCallback callback) {
+void HidManagerImpl::Connect(const std::string& device_guid,
+                             mojom::HidConnectionClientPtr connection_client,
+                             ConnectCallback callback) {
   hid_service_->Connect(
       device_guid,
       base::AdaptCallbackForRepeating(base::BindOnce(
@@ -81,7 +80,7 @@ void HidManagerImpl::Connect(
 
 void HidManagerImpl::CreateConnection(
     ConnectCallback callback,
-    mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+    mojom::HidConnectionClientPtr connection_client,
     scoped_refptr<HidConnection> connection) {
   if (!connection) {
     std::move(callback).Run(nullptr);

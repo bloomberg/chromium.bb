@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_HID_HID_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_HID_HID_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom-blink.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -41,8 +40,7 @@ class HID : public EventTargetWithInlineData, public ContextLifecycleObserver {
   ScriptPromise requestDevice(ScriptState*, const HIDDeviceRequestOptions*);
 
   void Connect(const String& device_guid,
-               mojo::PendingRemote<device::mojom::blink::HidConnectionClient>
-                   connection_client,
+               device::mojom::blink::HidConnectionClientPtr connection_client,
                device::mojom::blink::HidManager::ConnectCallback callback);
 
   void Trace(blink::Visitor*) override;
@@ -66,7 +64,7 @@ class HID : public EventTargetWithInlineData, public ContextLifecycleObserver {
   void FinishRequestDevice(ScriptPromiseResolver*,
                            device::mojom::blink::HidDeviceInfoPtr);
 
-  mojo::Remote<mojom::blink::HidService> service_;
+  mojom::blink::HidServicePtr service_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_devices_promises_;
   HeapHashSet<Member<ScriptPromiseResolver>> request_device_promises_;
   HeapHashMap<String, WeakMember<HIDDevice>> device_cache_;
