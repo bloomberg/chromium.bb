@@ -391,12 +391,12 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       }
       LogMenuAction(MENU_ACTION_IMPORT_SETTINGS);
       break;
-    case IDC_BOOKMARK_PAGE:
+    case IDC_BOOKMARK_THIS_TAB:
       if (!uma_action_recorded_) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.BookmarkPage",
                                    delta);
       }
-      LogMenuAction(MENU_ACTION_BOOKMARK_PAGE);
+      LogMenuAction(MENU_ACTION_BOOKMARK_THIS_TAB);
       break;
     case IDC_BOOKMARK_ALL_TABS:
       if (!uma_action_recorded_) {
@@ -686,10 +686,10 @@ bool AppMenuModel::IsCommandIdVisible(int command_id) const {
              AppMenuIconController::IconType::UPGRADE_NOTIFICATION;
     }
 #if !defined(OS_LINUX) || defined(USE_AURA)
-    case IDC_BOOKMARK_PAGE:
-      return !chrome::ShouldRemoveBookmarkThisPageUI(browser_->profile());
+    case IDC_BOOKMARK_THIS_TAB:
+      return !chrome::ShouldRemoveBookmarkThisTabUI(browser_->profile());
     case IDC_BOOKMARK_ALL_TABS:
-      return !chrome::ShouldRemoveBookmarkOpenPagesUI(browser_->profile());
+      return !chrome::ShouldRemoveBookmarkAllTabsUI(browser_->profile());
 #endif
     default:
       return true;

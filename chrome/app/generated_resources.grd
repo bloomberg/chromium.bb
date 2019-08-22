@@ -5434,10 +5434,10 @@ the Bookmarks menu.">
         Bookmark this page to easily find it later
       </message>
       <message name="IDS_BOOKMARK_PROMO_1" desc="Text shown on promotional UI appearing next to the Bookmarks button, which encourages users to use it.">
-        You can click the star to bookmark a page
+        You can click the star to bookmark a tab
       </message>
       <message name="IDS_BOOKMARK_PROMO_2" desc="Text shown on promotional UI appearing next to the Bookmarks button, which encourages users to use it.">
-        Get back here fast by bookmarking this page
+        Get back here fast by bookmarking this tab
       </message>
       <message name="IDS_INCOGNITOWINDOW_PROMO_0" desc="Variations option 1. Text shown on promotional UI appearing next to the App Menu button, which encourages users to use it.">
         You can browse privately using an incognito window
@@ -6046,20 +6046,14 @@ the Bookmarks menu.">
 
       <!-- Tab Context Menu -->
       <if expr="not use_titlecase">
-        <message name="IDS_TAB_CXMENU_NEWTAB" desc="The label of the 'New Tab' Tab context menu item.">
-          New tab
-        </message>
         <message name="IDS_TAB_CXMENU_RELOAD" desc="The label of the 'Reload' Tab context menu item.">
           Reload
         </message>
         <message name="IDS_TAB_CXMENU_DUPLICATE" desc="The label of the 'Duplicate' Tab context menu item.">
           Duplicate
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the 'Close Tab' Tab context menu item. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Close tab} other {Close tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="The label of the 'Close Other Tabs' Tab context menu item.">
-          Close other tabs
+        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the 'Close Tab' Tab context menu item. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Close}}
         </message>
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item.">
           Close tabs to the right
@@ -6067,26 +6061,17 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_FOCUS_THIS_TAB" desc="The label of the 'Focus this tab' Tab context menu item.">
           Focus this tab
         </message>
-        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Pin tab} other {Pin tabs}}
+        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning one or more tabs. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Pin}}
         </message>
-        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="The label of the tab context menu item for unpinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Unpin tab} other {Unpin tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TAB" desc="The label of the tab context menu item for muting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Mute tab} other {Mute tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB" desc="The label of the tab context menu item for unmuting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Unmute tab} other {Unmute tabs}}
+        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="The label of the tab context menu item for unpinning one or more tabs. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Unpin}}
         </message>
         <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITE" desc="The label of the tab context menu item for muting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
           {NUM_TABS, plural, =1 {Mute site} other {Mute sites}}
         </message>
         <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITE" desc="The label of the tab context menu item for unmuting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
           {NUM_TABS, plural, =1 {Unmute site} other {Unmute sites}}
-        </message>
-        <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
-          Bookmark all tabs...
         </message>
         <message name="IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP" desc="The label of the tab context menu item for creating a new tab group and adding one or more tabs to it.">
           Add to new group
@@ -6099,20 +6084,14 @@ the Bookmarks menu.">
         </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_TAB_CXMENU_NEWTAB" desc="In Title Case: The label of the 'New Tab' Tab context menu item.">
-          New Tab
-        </message>
         <message name="IDS_TAB_CXMENU_RELOAD" desc="In Title Case: The label of the 'Reload' Tab context menu item.">
           Reload
         </message>
         <message name="IDS_TAB_CXMENU_DUPLICATE" desc="In Title Case: The label of the 'Duplicate' Tab context menu item.">
           Duplicate
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="In Title Case: The label of the 'Close Tab' Tab context menu item. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Close Tab} other {Close Tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="In Title Case: The label of the 'Close Other Tabs' Tab context menu item.">
-          Close Other Tabs
+        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="In Title Case: The label of the 'Close Tab' Tab context menu item. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Close}}
         </message>
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="In Title Case: The label of the 'Close Tabs to the Right' Tab context menu item.">
           Close Tabs to the Right
@@ -6120,26 +6099,17 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_FOCUS_THIS_TAB" desc="In Title Case: The label of the 'Focus This Tab' Tab context menu item.">
           Focus This Tab
         </message>
-        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="In Title Case: The label of the tab context menu item for pinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Pin Tab} other {Pin Tabs}}
+        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="In Title Case: The label of the tab context menu item for pinning one or more tabs. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Pin}}
         </message>
-        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="In Title Case: The label of the tab context menu item for unpinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Unpin Tab} other {Unpin Tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TAB" desc="In Title Case: The label of the tab context menu item for muting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Mute Tab} other {Mute Tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB" desc="In Title Case: The label of the tab context menu item for unmuting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Unmute Tab} other {Unmute Tabs}}
+        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="In Title Case: The label of the tab context menu item for unpinning one or more tabs. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Unpin}}
         </message>
         <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITE" desc="In Title Case: The label of the tab context menu item for muting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
           {NUM_TABS, plural, =1 {Mute Site} other {Mute Sites}}
         </message>
         <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITE" desc="In Title Case: The label of the tab context menu item for unmuting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
           {NUM_TABS, plural, =1 {Unmute Site} other {Unmute Sites}}
-        </message>
-        <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
-          Bookmark All Tabs...
         </message>
         <message name="IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP" desc="In Title Case: The label of the tab context menu item for creating a new tab group and adding one or more tabs to it.">
           Add to New Group
@@ -8033,10 +8003,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_HISTORY_CLOSED_RESTORE_WINDOW_MAC" desc="The Mac menu item for restoring all the tabs of a recently closed window.">
           Restore All Tabs
-        </message>
-        <!-- Bookmarks menu -->
-        <message name="IDS_BOOKMARK_ALL_TABS_MAC" desc="The Mac menu item for bookmarking all tabs in the current window.">
-          Bookmark All Tabs...
         </message>
         <!-- Window menu -->
         <message name="IDS_MINIMIZE_WINDOW_MAC"
