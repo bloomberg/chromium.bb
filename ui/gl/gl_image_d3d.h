@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_GL_IMAGE_DXGI_SWAP_CHAIN_H_
-#define UI_GL_GL_IMAGE_DXGI_SWAP_CHAIN_H_
+#ifndef UI_GL_GL_IMAGE_D3D_H_
+#define UI_GL_GL_IMAGE_D3D_H_
 
-#include <windows.h>
 #include <d3d11.h>
 #include <dxgi1_2.h>
+#include <windows.h>
 #include <wrl/client.h>
 
 #include "ui/gfx/buffer_types.h"
@@ -16,15 +16,15 @@
 
 namespace gl {
 
-class GL_EXPORT GLImageDXGISwapChain : public GLImage {
+class GL_EXPORT GLImageD3D : public GLImage {
  public:
-  GLImageDXGISwapChain(const gfx::Size& size,
-                       gfx::BufferFormat buffer_format,
-                       Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
-                       Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain);
+  GLImageD3D(const gfx::Size& size,
+             gfx::BufferFormat buffer_format,
+             Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
+             Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain);
 
   // Safe downcast. Returns nullptr on failure.
-  static GLImageDXGISwapChain* FromGLImage(GLImage* image);
+  static GLImageD3D* FromGLImage(GLImage* image);
 
   bool Initialize();
 
@@ -60,7 +60,7 @@ class GL_EXPORT GLImageDXGISwapChain : public GLImage {
   }
 
  private:
-  ~GLImageDXGISwapChain() override;
+  ~GLImageD3D() override;
 
   const gfx::Size size_;
   const gfx::BufferFormat buffer_format_;
@@ -68,9 +68,9 @@ class GL_EXPORT GLImageDXGISwapChain : public GLImage {
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_;
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
 
-  DISALLOW_COPY_AND_ASSIGN(GLImageDXGISwapChain);
+  DISALLOW_COPY_AND_ASSIGN(GLImageD3D);
 };
 
 }  // namespace gl
 
-#endif  // UI_GL_GL_IMAGE_DXGI_SWAP_CHAIN_H_
+#endif  // UI_GL_GL_IMAGE_D3D_H_

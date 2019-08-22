@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/swap_chain_factory_dxgi.h"
+#include "gpu/command_buffer/service/shared_image_backing_factory_d3d.h"
 
 #include <memory>
 #include <utility>
@@ -17,7 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_image_dxgi_swap_chain.h"
+#include "ui/gl/gl_image_d3d.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -55,10 +55,10 @@ GLuint MakeTextureAndSetParameters(gl::GLApi* api, GLenum target, bool fbo) {
   return texture_id;
 }
 
-class SwapChainFactoryDXGITest : public testing::TestWithParam<bool> {
+class SharedImageBackingFactoryD3DTest : public testing::TestWithParam<bool> {
  public:
   void SetUp() override {
-    if (!SwapChainFactoryDXGI::IsSupported())
+    if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
       return;
 
     use_passthrough_texture_ = GetParam();
@@ -75,8 +75,8 @@ class SwapChainFactoryDXGITest : public testing::TestWithParam<bool> {
     shared_image_representation_factory_ =
         std::make_unique<SharedImageRepresentationFactory>(
             &shared_image_manager_, nullptr);
-    swap_chain_factory_ =
-        std::make_unique<SwapChainFactoryDXGI>(use_passthrough_texture_);
+    shared_image_factory_ = std::make_unique<SharedImageBackingFactoryD3D>(
+        use_passthrough_texture_);
   }
 
  protected:
@@ -87,11 +87,11 @@ class SwapChainFactoryDXGITest : public testing::TestWithParam<bool> {
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
-  std::unique_ptr<SwapChainFactoryDXGI> swap_chain_factory_;
+  std::unique_ptr<SharedImageBackingFactoryD3D> shared_image_factory_;
 };
 
-TEST_P(SwapChainFactoryDXGITest, InvalidFormat) {
-  if (!SwapChainFactoryDXGI::IsSupported())
+TEST_P(SharedImageBackingFactoryD3DTest, InvalidFormat) {
+  if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return;
 
   auto front_buffer_mailbox = Mailbox::GenerateForSharedImage();
@@ -101,7 +101,7 @@ TEST_P(SwapChainFactoryDXGITest, InvalidFormat) {
   uint32_t usage = gpu::SHARED_IMAGE_USAGE_SCANOUT;
   {
     auto valid_format = viz::RGBA_8888;
-    auto backings = swap_chain_factory_->CreateSwapChain(
+    auto backings = shared_image_factory_->CreateSwapChain(
         front_buffer_mailbox, back_buffer_mailbox, valid_format, size,
         color_space, usage);
     EXPECT_TRUE(backings.front_buffer);
@@ -111,7 +111,7 @@ TEST_P(SwapChainFactoryDXGITest, InvalidFormat) {
   }
   {
     auto valid_format = viz::BGRA_8888;
-    auto backings = swap_chain_factory_->CreateSwapChain(
+    auto backings = shared_image_factory_->CreateSwapChain(
         front_buffer_mailbox, back_buffer_mailbox, valid_format, size,
         color_space, usage);
     EXPECT_TRUE(backings.front_buffer);
@@ -121,7 +121,7 @@ TEST_P(SwapChainFactoryDXGITest, InvalidFormat) {
   }
   {
     auto valid_format = viz::RGBA_F16;
-    auto backings = swap_chain_factory_->CreateSwapChain(
+    auto backings = shared_image_factory_->CreateSwapChain(
         front_buffer_mailbox, back_buffer_mailbox, valid_format, size,
         color_space, usage);
     EXPECT_TRUE(backings.front_buffer);
@@ -131,7 +131,7 @@ TEST_P(SwapChainFactoryDXGITest, InvalidFormat) {
   }
   {
     auto invalid_format = viz::RGBA_4444;
-    auto backings = swap_chain_factory_->CreateSwapChain(
+    auto backings = shared_image_factory_->CreateSwapChain(
         front_buffer_mailbox, back_buffer_mailbox, invalid_format, size,
         color_space, usage);
     EXPECT_FALSE(backings.front_buffer);
@@ -139,8 +139,8 @@ TEST_P(SwapChainFactoryDXGITest, InvalidFormat) {
   }
 }
 
-TEST_P(SwapChainFactoryDXGITest, CreateAndPresentSwapChain) {
-  if (!SwapChainFactoryDXGI::IsSupported())
+TEST_P(SharedImageBackingFactoryD3DTest, CreateAndPresentSwapChain) {
+  if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return;
 
   auto front_buffer_mailbox = Mailbox::GenerateForSharedImage();
@@ -153,7 +153,7 @@ TEST_P(SwapChainFactoryDXGITest, CreateAndPresentSwapChain) {
                    gpu::SHARED_IMAGE_USAGE_DISPLAY |
                    gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
-  auto backings = swap_chain_factory_->CreateSwapChain(
+  auto backings = shared_image_factory_->CreateSwapChain(
       front_buffer_mailbox, back_buffer_mailbox, format, size, color_space,
       usage);
   EXPECT_TRUE(backings.front_buffer);
@@ -167,7 +167,7 @@ TEST_P(SwapChainFactoryDXGITest, CreateAndPresentSwapChain) {
                                      memory_type_tracker_.get());
 
   GLuint back_texture_id, front_texture_id = 0u;
-  gl::GLImageDXGISwapChain *back_image, *front_image = 0u;
+  gl::GLImageD3D *back_image, *front_image = 0u;
   if (use_passthrough_texture_) {
     auto back_texture = shared_image_representation_factory_
                             ->ProduceGLTexturePassthrough(back_buffer_mailbox)
@@ -178,7 +178,7 @@ TEST_P(SwapChainFactoryDXGITest, CreateAndPresentSwapChain) {
     back_texture_id = back_texture->service_id();
     EXPECT_NE(back_texture_id, 0u);
 
-    back_image = gl::GLImageDXGISwapChain::FromGLImage(
+    back_image = gl::GLImageD3D::FromGLImage(
         back_texture->GetLevelImage(GL_TEXTURE_2D, 0));
 
     auto front_texture = shared_image_representation_factory_
@@ -190,7 +190,7 @@ TEST_P(SwapChainFactoryDXGITest, CreateAndPresentSwapChain) {
     front_texture_id = front_texture->service_id();
     EXPECT_NE(front_texture_id, 0u);
 
-    front_image = gl::GLImageDXGISwapChain::FromGLImage(
+    front_image = gl::GLImageD3D::FromGLImage(
         front_texture->GetLevelImage(GL_TEXTURE_2D, 0));
   } else {
     auto* back_texture = shared_image_representation_factory_
@@ -203,7 +203,7 @@ TEST_P(SwapChainFactoryDXGITest, CreateAndPresentSwapChain) {
     EXPECT_NE(back_texture_id, 0u);
 
     gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
-    back_image = gl::GLImageDXGISwapChain::FromGLImage(
+    back_image = gl::GLImageD3D::FromGLImage(
         back_texture->GetLevelImage(GL_TEXTURE_2D, 0, &image_state));
     EXPECT_EQ(image_state, gles2::Texture::BOUND);
 
@@ -217,7 +217,7 @@ TEST_P(SwapChainFactoryDXGITest, CreateAndPresentSwapChain) {
     EXPECT_NE(front_texture_id, 0u);
 
     image_state = gles2::Texture::UNBOUND;
-    front_image = gl::GLImageDXGISwapChain::FromGLImage(
+    front_image = gl::GLImageD3D::FromGLImage(
         front_texture->GetLevelImage(GL_TEXTURE_2D, 0, &image_state));
     EXPECT_EQ(image_state, gles2::Texture::BOUND);
   }
@@ -392,7 +392,7 @@ TEST_P(SwapChainFactoryDXGITest, CreateAndPresentSwapChain) {
 }
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         SwapChainFactoryDXGITest,
+                         SharedImageBackingFactoryD3DTest,
                          testing::Bool());
 
 }  // anonymous namespace

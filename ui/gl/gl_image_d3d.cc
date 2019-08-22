@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/gl_image_dxgi_swap_chain.h"
+#include "ui/gl/gl_image_d3d.h"
 
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
@@ -14,11 +14,10 @@
 
 namespace gl {
 
-GLImageDXGISwapChain::GLImageDXGISwapChain(
-    const gfx::Size& size,
-    gfx::BufferFormat buffer_format,
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
-    Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain)
+GLImageD3D::GLImageD3D(const gfx::Size& size,
+                       gfx::BufferFormat buffer_format,
+                       Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
+                       Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain)
     : GLImage(),
       size_(size),
       buffer_format_(buffer_format),
@@ -28,7 +27,7 @@ GLImageDXGISwapChain::GLImageDXGISwapChain(
   DCHECK(swap_chain_);
 }
 
-GLImageDXGISwapChain::~GLImageDXGISwapChain() {
+GLImageD3D::~GLImageD3D() {
   if (egl_image_ != EGL_NO_IMAGE_KHR) {
     if (eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(), egl_image_) ==
         EGL_FALSE) {
@@ -38,7 +37,7 @@ GLImageDXGISwapChain::~GLImageDXGISwapChain() {
   }
 }
 
-bool GLImageDXGISwapChain::Initialize() {
+bool GLImageD3D::Initialize() {
   DCHECK_EQ(egl_image_, EGL_NO_IMAGE_KHR);
   const EGLint attribs[] = {EGL_NONE};
   egl_image_ =
@@ -53,55 +52,54 @@ bool GLImageDXGISwapChain::Initialize() {
 }
 
 // static
-GLImageDXGISwapChain* GLImageDXGISwapChain::FromGLImage(GLImage* image) {
-  if (!image || image->GetType() != Type::DXGI_SWAP_CHAIN)
+GLImageD3D* GLImageD3D::FromGLImage(GLImage* image) {
+  if (!image || image->GetType() != Type::D3D)
     return nullptr;
-  return static_cast<GLImageDXGISwapChain*>(image);
+  return static_cast<GLImageD3D*>(image);
 }
 
-GLImage::Type GLImageDXGISwapChain::GetType() const {
-  return Type::DXGI_SWAP_CHAIN;
+GLImage::Type GLImageD3D::GetType() const {
+  return Type::D3D;
 }
 
-GLImage::BindOrCopy GLImageDXGISwapChain::ShouldBindOrCopy() {
+GLImage::BindOrCopy GLImageD3D::ShouldBindOrCopy() {
   return GLImage::BIND;
 }
 
-gfx::Size GLImageDXGISwapChain::GetSize() {
+gfx::Size GLImageD3D::GetSize() {
   return size_;
 }
 
-unsigned GLImageDXGISwapChain::GetInternalFormat() {
+unsigned GLImageD3D::GetInternalFormat() {
   return buffer_format_ == gfx::BufferFormat::RGBA_F16 ? GL_RGBA16F_EXT
                                                        : GL_BGRA8_EXT;
 }
 
-bool GLImageDXGISwapChain::BindTexImage(unsigned target) {
+bool GLImageD3D::BindTexImage(unsigned target) {
   DCHECK_NE(egl_image_, EGL_NO_IMAGE_KHR);
   glEGLImageTargetTexture2DOES(target, egl_image_);
   return glGetError() == static_cast<GLenum>(GL_NO_ERROR);
 }
 
-bool GLImageDXGISwapChain::CopyTexImage(unsigned target) {
+bool GLImageD3D::CopyTexImage(unsigned target) {
   NOTREACHED();
   return false;
 }
 
-bool GLImageDXGISwapChain::CopyTexSubImage(unsigned target,
-                                           const gfx::Point& offset,
-                                           const gfx::Rect& rect) {
+bool GLImageD3D::CopyTexSubImage(unsigned target,
+                                 const gfx::Point& offset,
+                                 const gfx::Rect& rect) {
   NOTREACHED();
   return false;
 }
 
-void GLImageDXGISwapChain::OnMemoryDump(
-    base::trace_event::ProcessMemoryDump* pmd,
-    uint64_t process_tracing_id,
-    const std::string& dump_name) {
+void GLImageD3D::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                              uint64_t process_tracing_id,
+                              const std::string& dump_name) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-bool GLImageDXGISwapChain::ScheduleOverlayPlane(
+bool GLImageD3D::ScheduleOverlayPlane(
     gfx::AcceleratedWidget widget,
     int z_order,
     gfx::OverlayTransform transform,

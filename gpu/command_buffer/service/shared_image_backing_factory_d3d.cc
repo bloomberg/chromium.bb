@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/swap_chain_factory_dxgi.h"
+#include "gpu/command_buffer/service/shared_image_backing_factory_d3d.h"
 
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -16,7 +16,7 @@
 #include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_image_dxgi_swap_chain.h"
+#include "ui/gl/gl_image_d3d.h"
 #include "ui/gl/trace_util.h"
 
 namespace gpu {
@@ -72,14 +72,14 @@ bool ClearBackBuffer(Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
 
 }  // anonymous namespace
 
-// Representation of a SharedImageBackingDXGISwapChain as a GL Texture.
-class SharedImageRepresentationGLTextureDXGISwapChain
+// Representation of a SharedImageBackingD3D as a GL Texture.
+class SharedImageRepresentationGLTextureD3D
     : public SharedImageRepresentationGLTexture {
  public:
-  SharedImageRepresentationGLTextureDXGISwapChain(SharedImageManager* manager,
-                                                  SharedImageBacking* backing,
-                                                  MemoryTypeTracker* tracker,
-                                                  gles2::Texture* texture)
+  SharedImageRepresentationGLTextureD3D(SharedImageManager* manager,
+                                        SharedImageBacking* backing,
+                                        MemoryTypeTracker* tracker,
+                                        gles2::Texture* texture)
       : SharedImageRepresentationGLTexture(manager, backing, tracker),
         texture_(texture) {}
 
@@ -89,12 +89,12 @@ class SharedImageRepresentationGLTextureDXGISwapChain
   gles2::Texture* const texture_;
 };
 
-// Representation of a SharedImageBackingDXGISwapChain as a GL
+// Representation of a SharedImageBackingD3D as a GL
 // TexturePassthrough.
-class SharedImageRepresentationGLTexturePassthroughDXGISwapChain
+class SharedImageRepresentationGLTexturePassthroughD3D
     : public SharedImageRepresentationGLTexturePassthrough {
  public:
-  SharedImageRepresentationGLTexturePassthroughDXGISwapChain(
+  SharedImageRepresentationGLTexturePassthroughD3D(
       SharedImageManager* manager,
       SharedImageBacking* backing,
       MemoryTypeTracker* tracker,
@@ -116,9 +116,9 @@ class SharedImageRepresentationGLTexturePassthroughDXGISwapChain
 // Implementation of SharedImageBacking that holds buffer (front buffer/back
 // buffer of swap chain) texture (as gles2::Texture/gles2::TexturePassthrough)
 // and a reference to created swap chain.
-class SharedImageBackingDXGISwapChain : public SharedImageBacking {
+class SharedImageBackingD3D : public SharedImageBacking {
  public:
-  SharedImageBackingDXGISwapChain(
+  SharedImageBackingD3D(
       const Mailbox& mailbox,
       viz::ResourceFormat format,
       const gfx::Size& size,
@@ -127,7 +127,7 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
       Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
       gles2::Texture* texture,
       scoped_refptr<gles2::TexturePassthrough> texture_passthrough,
-      scoped_refptr<gl::GLImageDXGISwapChain> image,
+      scoped_refptr<gl::GLImageD3D> image,
       size_t buffer_index)
       : SharedImageBacking(mailbox,
                            format,
@@ -147,7 +147,7 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
            (!texture_ && texture_passthrough_));
   }
 
-  ~SharedImageBackingDXGISwapChain() override {
+  ~SharedImageBackingD3D() override {
     // Destroy() is safe to call even if it's already been called.
     Destroy();
   }
@@ -158,7 +158,7 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
   void SetCleared() override {}
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
-    DLOG(ERROR) << "SharedImageBackingDXGISwapChain::Update : Trying to update "
+    DLOG(ERROR) << "SharedImageBackingD3D::Update : Trying to update "
                    "Shared Images associated with swap chain.";
   }
 
@@ -204,7 +204,7 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
   }
 
   bool PresentSwapChain() override {
-    TRACE_EVENT0("gpu", "SharedImageBackingDXGISwapChain::PresentSwapChain");
+    TRACE_EVENT0("gpu", "SharedImageBackingD3D::PresentSwapChain");
     if (buffer_index_ != 0) {
       DLOG(ERROR) << "Swap chain backing does not correspond to back buffer";
       return false;
@@ -231,12 +231,11 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
     api->glBindTextureFn(target, service_id);
 
     if (!image_->BindTexImage(target)) {
-      DLOG(ERROR) << "GLImageDXGISwapChain::BindTexImage failed";
+      DLOG(ERROR) << "GLImageD3D::BindTexImage failed";
       return false;
     }
 
-    TRACE_EVENT0("gpu",
-                 "SharedImageBackingDXGISwapChain::PresentSwapChain::Flush");
+    TRACE_EVENT0("gpu", "SharedImageBackingD3D::PresentSwapChain::Flush");
     // Flush device context through ANGLE otherwise present could be deferred.
     api->glFlushFn();
     return true;
@@ -247,8 +246,8 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override {
     DCHECK(texture_);
-    TRACE_EVENT0("gpu", "SharedImageBackingDXGISwapChain::ProduceGLTexture");
-    return std::make_unique<SharedImageRepresentationGLTextureDXGISwapChain>(
+    TRACE_EVENT0("gpu", "SharedImageBackingD3D::ProduceGLTexture");
+    return std::make_unique<SharedImageRepresentationGLTextureD3D>(
         manager, this, tracker, texture_);
   }
 
@@ -256,10 +255,8 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
   ProduceGLTexturePassthrough(SharedImageManager* manager,
                               MemoryTypeTracker* tracker) override {
     DCHECK(texture_passthrough_);
-    TRACE_EVENT0(
-        "gpu", "SharedImageBackingDXGISwapChain::ProduceGLTexturePassthrough");
-    return std::make_unique<
-        SharedImageRepresentationGLTexturePassthroughDXGISwapChain>(
+    TRACE_EVENT0("gpu", "SharedImageBackingD3D::ProduceGLTexturePassthrough");
+    return std::make_unique<SharedImageRepresentationGLTexturePassthroughD3D>(
         manager, this, tracker, texture_passthrough_);
   }
 
@@ -267,41 +264,41 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
   gles2::Texture* texture_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
-  scoped_refptr<gl::GLImageDXGISwapChain> image_;
+  scoped_refptr<gl::GLImageD3D> image_;
   const size_t buffer_index_;
-  DISALLOW_COPY_AND_ASSIGN(SharedImageBackingDXGISwapChain);
+  DISALLOW_COPY_AND_ASSIGN(SharedImageBackingD3D);
 };
 
-SwapChainFactoryDXGI::SwapChainFactoryDXGI(bool use_passthrough)
+SharedImageBackingFactoryD3D::SharedImageBackingFactoryD3D(bool use_passthrough)
     : use_passthrough_(use_passthrough),
       d3d11_device_(gl::QueryD3D11DeviceObjectFromANGLE()) {
   DCHECK(d3d11_device_);
 }
 
-SwapChainFactoryDXGI::~SwapChainFactoryDXGI() = default;
+SharedImageBackingFactoryD3D::~SharedImageBackingFactoryD3D() = default;
 
-SwapChainFactoryDXGI::SwapChainBackings::SwapChainBackings(
+SharedImageBackingFactoryD3D::SwapChainBackings::SwapChainBackings(
     std::unique_ptr<SharedImageBacking> front_buffer,
     std::unique_ptr<SharedImageBacking> back_buffer)
     : front_buffer(std::move(front_buffer)),
       back_buffer(std::move(back_buffer)) {}
 
-SwapChainFactoryDXGI::SwapChainBackings::~SwapChainBackings() = default;
+SharedImageBackingFactoryD3D::SwapChainBackings::~SwapChainBackings() = default;
 
-SwapChainFactoryDXGI::SwapChainBackings::SwapChainBackings(
-    SwapChainFactoryDXGI::SwapChainBackings&&) = default;
+SharedImageBackingFactoryD3D::SwapChainBackings::SwapChainBackings(
+    SharedImageBackingFactoryD3D::SwapChainBackings&&) = default;
 
-SwapChainFactoryDXGI::SwapChainBackings&
-SwapChainFactoryDXGI::SwapChainBackings::operator=(
-    SwapChainFactoryDXGI::SwapChainBackings&&) = default;
+SharedImageBackingFactoryD3D::SwapChainBackings&
+SharedImageBackingFactoryD3D::SwapChainBackings::operator=(
+    SharedImageBackingFactoryD3D::SwapChainBackings&&) = default;
 
 // static
-bool SwapChainFactoryDXGI::IsSupported() {
+bool SharedImageBackingFactoryD3D::IsSwapChainSupported() {
   return gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported() &&
          gl::DirectCompositionSurfaceWin::IsSwapChainTearingSupported();
 }
 
-std::unique_ptr<SharedImageBacking> SwapChainFactoryDXGI::MakeBacking(
+std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
     const Mailbox& mailbox,
     viz::ResourceFormat format,
     const gfx::Size& size,
@@ -334,14 +331,14 @@ std::unique_ptr<SharedImageBacking> SwapChainFactoryDXGI::MakeBacking(
                                         ? gfx::BufferFormat::RGBA_F16
                                         : gfx::BufferFormat::BGRA_8888;
 
-  auto image = base::MakeRefCounted<gl::GLImageDXGISwapChain>(
+  auto image = base::MakeRefCounted<gl::GLImageD3D>(
       size, buffer_format, std::move(d3d11_texture), swap_chain);
   if (!image->Initialize()) {
-    DLOG(ERROR) << "GLImageDXGISwapChain::Initialize failed";
+    DLOG(ERROR) << "GLImageD3D::Initialize failed";
     return nullptr;
   }
   if (!image->BindTexImage(target)) {
-    DLOG(ERROR) << "GLImageDXGISwapChain::BindTexImage failed";
+    DLOG(ERROR) << "GLImageD3D::BindTexImage failed";
     return nullptr;
   }
 
@@ -379,12 +376,13 @@ std::unique_ptr<SharedImageBacking> SwapChainFactoryDXGI::MakeBacking(
     texture->SetImmutable(true, false);
   }
 
-  return std::make_unique<SharedImageBackingDXGISwapChain>(
+  return std::make_unique<SharedImageBackingD3D>(
       mailbox, format, size, color_space, usage, std::move(swap_chain), texture,
       std::move(texture_passthrough), std::move(image), buffer_index);
 }
 
-SwapChainFactoryDXGI::SwapChainBackings SwapChainFactoryDXGI::CreateSwapChain(
+SharedImageBackingFactoryD3D::SwapChainBackings
+SharedImageBackingFactoryD3D::CreateSwapChain(
     const Mailbox& front_buffer_mailbox,
     const Mailbox& back_buffer_mailbox,
     viz::ResourceFormat format,
@@ -469,6 +467,52 @@ SwapChainFactoryDXGI::SwapChainBackings SwapChainFactoryDXGI::CreateSwapChain(
     return {nullptr, nullptr};
 
   return {std::move(front_buffer_backing), std::move(back_buffer_backing)};
+}
+
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryD3D::CreateSharedImage(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    bool is_thread_safe) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryD3D::CreateSharedImage(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    base::span<const uint8_t> pixel_data) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryD3D::CreateSharedImage(
+    const Mailbox& mailbox,
+    int client_id,
+    gfx::GpuMemoryBufferHandle handle,
+    gfx::BufferFormat format,
+    SurfaceHandle surface_handle,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+// Returns true if the specified GpuMemoryBufferType can be imported using
+// this factory.
+bool SharedImageBackingFactoryD3D::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace gpu
