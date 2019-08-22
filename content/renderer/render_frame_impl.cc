@@ -1099,7 +1099,7 @@ class RenderFrameImpl::MHTMLBodyLoaderClient
 
   ~MHTMLBodyLoaderClient() override {}
 
-  void BodyCodeCacheReceived(base::span<const uint8_t>) override {}
+  void BodyCodeCacheReceived(mojo_base::BigBuffer data) override {}
 
   void BodyDataReceived(base::span<const char> data) override {
     data_.Append(data.data(), data.size());
