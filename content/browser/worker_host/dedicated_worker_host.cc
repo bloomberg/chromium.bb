@@ -33,14 +33,17 @@
 
 namespace content {
 
-DedicatedWorkerHost::DedicatedWorkerHost(int worker_process_id,
-                                         int ancestor_render_frame_id,
-                                         int creator_render_frame_id,
-                                         const url::Origin& origin)
+DedicatedWorkerHost::DedicatedWorkerHost(
+    int worker_process_id,
+    int ancestor_render_frame_id,
+    int creator_render_frame_id,
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host)
     : worker_process_id_(worker_process_id),
       ancestor_render_frame_id_(ancestor_render_frame_id),
       creator_render_frame_id_(creator_render_frame_id),
-      origin_(origin) {
+      origin_(origin),
+      host_receiver_(this, std::move(host)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RegisterMojoInterfaces();
 }
@@ -69,6 +72,24 @@ void DedicatedWorkerHost::BindBrowserInterfaceBrokerReceiver(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(receiver.is_valid());
   broker_receiver_.Bind(std::move(receiver));
+}
+
+void DedicatedWorkerHost::LifecycleStateChanged(
+    blink::mojom::FrameLifecycleState state) {
+  switch (state) {
+    case blink::mojom::FrameLifecycleState::kFrozen:
+    case blink::mojom::FrameLifecycleState::kFrozenAutoResumeMedia:
+      is_frozen_ = true;
+      break;
+    case blink::mojom::FrameLifecycleState::kRunning:
+      is_frozen_ = false;
+      break;
+    case blink::mojom::FrameLifecycleState::kPaused:
+      // This shouldn't be reached, the render process does not send this
+      // state.
+      NOTREACHED();
+      break;
+  }
 }
 
 void DedicatedWorkerHost::StartScriptLoad(
@@ -409,7 +430,9 @@ class DedicatedWorkerHostFactoryImpl
       const url::Origin& origin,
       service_manager::mojom::InterfaceProviderRequest request,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
-          broker_receiver) override {
+          broker_receiver,
+      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host_receiver)
+      override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
       mojo::ReportBadMessage("DWH_INVALID_WORKER_CREATION");
@@ -422,7 +445,7 @@ class DedicatedWorkerHostFactoryImpl
     // (Document or DedicatedWorkerGlobalScope), or is unique.
     auto host = std::make_unique<DedicatedWorkerHost>(
         creator_process_id_, ancestor_render_frame_id_,
-        creator_render_frame_id_, origin);
+        creator_render_frame_id_, origin, std::move(host_receiver));
     host->BindBrowserInterfaceBrokerReceiver(std::move(broker_receiver));
     mojo::MakeStrongBinding(std::move(host),
                             FilterRendererExposedInterfaces(
@@ -439,7 +462,9 @@ class DedicatedWorkerHostFactoryImpl
           outside_fetch_client_settings_object,
       blink::mojom::BlobURLTokenPtr blob_url_token,
       mojo::PendingRemote<blink::mojom::DedicatedWorkerHostFactoryClient>
-          client) override {
+          client,
+      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host_receiver)
+      override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
       mojo::ReportBadMessage("DWH_BROWSER_SCRIPT_FETCH_DISABLED");
@@ -455,7 +480,8 @@ class DedicatedWorkerHostFactoryImpl
     // (Document or DedicatedWorkerGlobalScope), or is unique.
     auto host = std::make_unique<DedicatedWorkerHost>(
         creator_process_id_, ancestor_render_frame_id_,
-        creator_render_frame_id_, request_initiator_origin);
+        creator_render_frame_id_, request_initiator_origin,
+        std::move(host_receiver));
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker;
     host->BindBrowserInterfaceBrokerReceiver(
         broker.InitWithNewPipeAndPassReceiver());

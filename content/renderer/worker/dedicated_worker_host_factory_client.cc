@@ -39,7 +39,8 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHostDeprecated(
       browser_interface_broker;
   factory_->CreateWorkerHost(
       script_origin, mojo::MakeRequest(&interface_provider_ptr),
-      browser_interface_broker.InitWithNewPipeAndPassReceiver());
+      browser_interface_broker.InitWithNewPipeAndPassReceiver(),
+      remote_host_.BindNewPipeAndPassReceiver());
   OnWorkerHostCreated(std::move(interface_provider_ptr),
                       std::move(browser_interface_broker));
 }
@@ -71,7 +72,8 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
       std::move(outside_fetch_client_settings_object),
       blink::mojom::BlobURLTokenPtr(blink::mojom::BlobURLTokenPtrInfo(
           std::move(blob_url_token), blink::mojom::BlobURLToken::Version_)),
-      receiver_.BindNewPipeAndPassRemote());
+      receiver_.BindNewPipeAndPassRemote(),
+      remote_host_.BindNewPipeAndPassReceiver());
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>
@@ -95,6 +97,12 @@ DedicatedWorkerHostFactoryClient::CloneWorkerFetchContext(
             ->CloneForNestedWorkerDeprecated(std::move(task_runner));
   }
   return worker_fetch_context;
+}
+
+void DedicatedWorkerHostFactoryClient::LifecycleStateChanged(
+    blink::mojom::FrameLifecycleState state) {
+  if (remote_host_)
+    remote_host_->LifecycleStateChanged(state);
 }
 
 scoped_refptr<WebWorkerFetchContextImpl>
