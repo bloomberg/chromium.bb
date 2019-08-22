@@ -56,8 +56,7 @@ class FakeModuleInstallerBackend extends ModuleInstallerBackend {
             protected void onPostExecute(Boolean success) {
                 onFinished(success, Arrays.asList(moduleName));
             }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override

@@ -578,7 +578,7 @@ if (is_android) {
       "//chrome/android:chrome_all_java",
       "//components/crash/android:handler_java",
       "//components/crash/android:java",
-      "//components/module_installer/android:module_installer_impl_java",
+      "//components/module_installer/android:module_installer_java",
       "//content/public/android:content_java",
       "//content/public/test/android:android_test_message_pump_support_java",
       "//content/shell/android:content_shell_browsertests_java",
@@ -3564,7 +3564,7 @@ test("unit_tests") {
       "//components/favicon/core/test:test_support",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
-      "//components/module_installer/android:module_installer_stub_java",
+      "//components/module_installer/android:module_installer_java",
       "//content/public/android:content_java",
     ]
     if (use_v8_context_snapshot) {

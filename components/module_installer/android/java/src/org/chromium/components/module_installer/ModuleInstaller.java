@@ -6,7 +6,7 @@ package org.chromium.components.module_installer;
 
 import android.app.Activity;
 
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.MainDex;
 
 /**
  * This interface contains all the necessary methods to orchestrate the installation of dynamic
@@ -14,13 +14,21 @@ import org.chromium.base.VisibleForTesting;
  */
 public interface ModuleInstaller {
     /** Returns the singleton instance from the correct implementation. */
+    @MainDex
     static ModuleInstaller getInstance() {
-        return ModuleInstallerImpl.getInstance();
+        if (ModuleInstallerConfig.IS_BUNDLE) {
+            return ModuleInstallerImpl.getInstance();
+        } else {
+            return ApkModuleInstaller.getInstance();
+        }
     }
 
-    @VisibleForTesting
     static void setInstanceForTesting(ModuleInstaller moduleInstaller) {
-        ModuleInstallerImpl.setInstanceForTesting(moduleInstaller);
+        if (ModuleInstallerConfig.IS_BUNDLE) {
+            ModuleInstallerImpl.setInstanceForTesting(moduleInstaller);
+        } else {
+            ApkModuleInstaller.setInstanceForTesting(moduleInstaller);
+        }
     }
 
     /** Needs to be called before trying to access a module. */
