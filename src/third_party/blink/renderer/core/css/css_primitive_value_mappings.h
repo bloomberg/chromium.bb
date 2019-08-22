@@ -644,13 +644,13 @@ inline CSSIdentifierValue::CSSIdentifierValue(ERubberbandable e)
     : CSSValue(kIdentifierClass) {
     switch (e) {
         case ERubberbandable::kNone:
-            value_id_ = CSSValueNone;
+            value_id_ = CSSValueID::kNone;
             break;
         case ERubberbandable::kText:
-            value_id_ = CSSValueText;
+            value_id_ = CSSValueID::kText;
             break;
         case ERubberbandable::kTextWithTab:
-            value_id_ = CSSValueTextWithTab;
+            value_id_ = CSSValueID::kTextWithTab;
             break;
         default:
             break;
@@ -660,13 +660,13 @@ inline CSSIdentifierValue::CSSIdentifierValue(ERubberbandable e)
 template<>
 inline ERubberbandable CSSIdentifierValue::ConvertTo() const {
     switch (value_id_) {
-        case CSSValueAuto:
+        case CSSValueID::kAuto:
             return ERubberbandable::kText;
-        case CSSValueNone:
+        case CSSValueID::kNone:
             return ERubberbandable::kNone;
-        case CSSValueText:
+        case CSSValueID::kText:
             return ERubberbandable::kText;
-        case CSSValueTextWithTab:
+        case CSSValueID::kTextWithTab:
             return ERubberbandable::kTextWithTab;
         default:
             break;

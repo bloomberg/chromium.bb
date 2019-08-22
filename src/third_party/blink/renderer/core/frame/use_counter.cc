@@ -1241,11 +1241,11 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
 
 
     // patch section: rubberband (returns 638)
-    case CSSPropertyRubberbandable:
+    case CSSPropertyID::kRubberbandable:
       return 638;
-    case CSSPropertyBbRubberbandEmptyText:
+    case CSSPropertyID::kBbRubberbandEmptyText:
       return 639;
-    case CSSPropertyBbRubberbandGroupDelimiter:
+    case CSSPropertyID::kBbRubberbandGroupDelimiter:
       return 640;
 
 

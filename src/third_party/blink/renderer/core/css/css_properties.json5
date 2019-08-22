@@ -4007,7 +4007,7 @@
       include_paths: ["third_party/blink/renderer/platform/wtf/text/atomic_string.h"],
       default_value: "g_null_atom",
       type_name: "AtomicString",
-      converter: "ConvertString<CSSValueNone>",
+      converter: "ConvertString<CSSValueID::kNone>",
     },
     {
       name: "-bb-rubberband-group-delimiter",
@@ -4018,7 +4018,7 @@
       include_paths: ["third_party/blink/renderer/platform/wtf/text/atomic_string.h"],
       default_value: "g_null_atom",
       type_name: "AtomicString",
-      converter: "ConvertString<CSSValueNone>",
+      converter: "ConvertString<CSSValueID::kNone>",
     },
     {
       name: "white-space",
