@@ -10417,29 +10417,6 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTrilinearFiltering) {
             GetRenderSurface(parent)->DrawableContentRect());
 }
 
-TEST_F(LayerTreeHostCommonTest, VisibleRectClippedByViewport) {
-  FakeImplTaskRunnerProvider task_runner_provider;
-  TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
-
-  gfx::Size root_layer_size = gfx::Size(300, 500);
-  gfx::Size device_viewport_size = gfx::Size(300, 600);
-  gfx::Rect viewport_visible_rect = gfx::Rect(100, 100, 200, 200);
-
-  host_impl.active_tree()->SetDeviceViewportSize(device_viewport_size);
-  host_impl.active_tree()->SetViewportVisibleRect(viewport_visible_rect);
-  host_impl.active_tree()->SetRootLayerForTesting(
-      LayerImpl::Create(host_impl.active_tree(), 1));
-
-  LayerImpl* root = host_impl.active_tree()->root_layer_for_testing();
-  root->SetBounds(root_layer_size);
-  root->SetDrawsContent(true);
-  ExecuteCalculateDrawProperties(root);
-
-  EXPECT_EQ(viewport_visible_rect, root->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(root_layer_size), root->drawable_content_rect());
-}
-
 TEST_F(LayerTreeHostCommonTest, RoundedCornerBounds) {
   // Layer Tree:
   // +root
