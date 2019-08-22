@@ -134,8 +134,6 @@ std::string MomentumPhaseToString(EventMomentumPhase phase) {
       return "INERTIAL_UPDATE";
     case EventMomentumPhase::END:
       return "END";
-    case EventMomentumPhase::BLOCKED:
-      return "BLOCKED";
   }
 }
 
