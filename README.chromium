@@ -291,3 +291,16 @@ D. Local Modifications
   - patches/icupkg.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20774
+
+14. Add LocaleMatcher
+  - patches/trie.patch
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/747
+
+  - patches/tracing.patch
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/617
+
+  - patches/localematcher.patch
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/714
