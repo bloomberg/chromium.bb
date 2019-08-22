@@ -6533,6 +6533,9 @@ crbug.com/994034 [ Linux Win ] http/tests/devtools/elements/styles-3/styles-add-
 crbug.com/994027 [ Linux Win ] http/tests/devtools/elements/styles-2/force-pseudo-state.js [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] fast/canvas/canvas-large-pattern.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/canvas-large-pattern.html [ Pass Failure ]
+crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-canvas.html [ Pass Failure ]
+crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resize.html [ Pass Failure ]
+crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]
 
 # Pending enabling scroll to text feature
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]
