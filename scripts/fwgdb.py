@@ -25,11 +25,11 @@ from elftools.elf.elffile import ELFFile
 # Need to do this before Servo import
 cros_build_lib.AssertInsideChroot()
 
-# pylint: disable=import-error
+# pylint: disable=import-error,wrong-import-position
 from servo import client
 from servo import servo_parsing
 from servo import terminal_freezer
-# pylint: enable=import-error
+# pylint: enable=import-error,wrong-import-position
 
 
 _SRC_ROOT = os.path.join(constants.CHROOT_SOURCE_ROOT, 'src')

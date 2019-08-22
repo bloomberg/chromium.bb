@@ -34,7 +34,7 @@ _THIRD_PARTY = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), '..', '..', 'third_party')
 _PYLINT_QUOTES = os.path.join(_THIRD_PARTY, 'pylint-quotes')
 sys.path.insert(0, _PYLINT_QUOTES)
-# pylint: disable=unused-import
+# pylint: disable=unused-import,wrong-import-position
 from pylint_quotes.checker import StringQuoteChecker
 
 

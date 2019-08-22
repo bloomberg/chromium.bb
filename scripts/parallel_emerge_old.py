@@ -77,7 +77,7 @@ subprocess.Popen = _LockedPopen
 # /usr/lib/portage/pym/.
 #
 # TODO(davidjames): Update Portage to expose public APIs for these features.
-# pylint: disable=import-error
+# pylint: disable=import-error,wrong-import-position
 from _emerge.actions import adjust_configs
 from _emerge.actions import load_emerge_config
 from _emerge.create_depgraph_params import create_depgraph_params

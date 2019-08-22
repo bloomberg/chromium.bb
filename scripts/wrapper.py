@@ -75,6 +75,8 @@ class ChromiteImporter(object):
 
 sys.meta_path.insert(0, ChromiteImporter())
 
+# We have to put these imports after our meta-importer above.
+# pylint: disable=wrong-import-position
 from chromite.lib import commandline
 from chromite.lib import cros_import
 

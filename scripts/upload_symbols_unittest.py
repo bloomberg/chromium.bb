@@ -25,6 +25,7 @@ import mock
 # do it here because modules that are imported below will implicitly
 # initialize with this proxy setting rather than dynamically pull it
 # on the fly :(.
+# pylint: disable=wrong-import-position
 os.environ.pop('http_proxy', None)
 
 from chromite.lib import constants

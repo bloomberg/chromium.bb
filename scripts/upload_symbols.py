@@ -40,6 +40,7 @@ del third_party
 
 # Has to be after sys.path manipulation above.
 # And our sys.path muckery confuses pylint.
+# pylint: disable=wrong-import-position
 import poster  # pylint: disable=import-error
 
 from chromite.lib import cache
