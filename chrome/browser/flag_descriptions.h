@@ -1961,9 +1961,6 @@ extern const char kEnableHeuristicStylusPalmRejectionDescription[];
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];
 
-extern const char kEnableMyFilesVolumeName[];
-extern const char kEnableMyFilesVolumeDescription[];
-
 extern const char kEnableParentalControlsSettingsName[];
 extern const char kEnableParentalControlsSettingsDescription[];
 

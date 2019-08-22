@@ -3426,12 +3426,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
-    {"enable-myfiles-volume", flag_descriptions::kEnableMyFilesVolumeName,
-     flag_descriptions::kEnableMyFilesVolumeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kMyFilesVolume)},
-#endif  // OS_CHROMEOS
-
-#if defined(OS_CHROMEOS)
     {"enable-native-controls",
      flag_descriptions::kEnableVideoPlayerNativeControlsName,
      flag_descriptions::kEnableVideoPlayerNativeControlsDescription, kOsCrOS,
