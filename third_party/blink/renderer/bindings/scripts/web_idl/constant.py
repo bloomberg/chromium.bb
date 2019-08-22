@@ -9,8 +9,8 @@ from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
 from .idl_type import IdlType
+from .literal_constant import LiteralConstant
 from .make_copy import make_copy
-from .values import ConstantValue
 
 
 class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
@@ -29,7 +29,7 @@ class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
                      components=None,
                      debug_info=None):
             assert isinstance(idl_type, IdlType)
-            assert isinstance(value, ConstantValue)
+            assert isinstance(value, LiteralConstant)
 
             WithIdentifier.__init__(self, identifier)
             WithExtendedAttributes.__init__(self, extended_attributes)

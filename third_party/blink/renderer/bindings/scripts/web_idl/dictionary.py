@@ -10,10 +10,10 @@ from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
 from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlType
+from .literal_constant import LiteralConstant
 from .make_copy import make_copy
 from .reference import RefById
 from .user_defined_type import UserDefinedType
-from .values import DefaultValue
 
 
 class Dictionary(UserDefinedType, WithExtendedAttributes,
@@ -123,7 +123,7 @@ class DictionaryMember(WithIdentifier, WithExtendedAttributes,
                      debug_info=None):
             assert isinstance(idl_type, IdlType)
             assert default_value is None or isinstance(default_value,
-                                                       DefaultValue)
+                                                       LiteralConstant)
             assert not default_value or idl_type.is_optional
 
             WithIdentifier.__init__(self, identifier)
