@@ -42,19 +42,17 @@ class TabGridViewBinder {
             String title = item.get(TabProperties.TITLE);
             holder.title.setText(title);
         } else if (TabProperties.IS_SELECTED == propertyKey) {
-            int selectedTabBackground = item.get(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID);
+            Resources res = holder.itemView.getResources();
+            Resources.Theme theme = holder.itemView.getContext().getTheme();
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 if (item.get(TabProperties.IS_SELECTED)) {
-                    holder.selectedViewBelowLollipop.setBackgroundResource(selectedTabBackground);
                     holder.selectedViewBelowLollipop.setVisibility(View.VISIBLE);
                 } else {
                     holder.selectedViewBelowLollipop.setVisibility(View.GONE);
                 }
             } else {
-                Resources res = holder.itemView.getResources();
-                Resources.Theme theme = holder.itemView.getContext().getTheme();
                 Drawable drawable = new InsetDrawable(
-                        ResourcesCompat.getDrawable(res, selectedTabBackground, theme),
+                        ResourcesCompat.getDrawable(res, R.drawable.selected_tab_background, theme),
                         (int) res.getDimension(R.dimen.tab_list_selected_inset));
                 holder.itemView.setForeground(
                         item.get(TabProperties.IS_SELECTED) ? drawable : null);
@@ -70,8 +68,6 @@ class TabGridViewBinder {
             updateThumbnail(holder, item);
         } else if (TabProperties.TAB_ID == propertyKey) {
             holder.setTabId(item.get(TabProperties.TAB_ID));
-        } else if (TabProperties.IS_INCOGNITO == propertyKey) {
-            holder.updateColor(item.get(TabProperties.IS_INCOGNITO));
         }
 
         if (holder instanceof ClosableTabGridViewHolder) {

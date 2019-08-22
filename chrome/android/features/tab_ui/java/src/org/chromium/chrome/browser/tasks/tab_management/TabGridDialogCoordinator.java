@@ -29,7 +29,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
     private final TabListCoordinator mTabListCoordinator;
     private final TabGridDialogMediator mMediator;
     private final PropertyModel mToolbarPropertyModel;
-    private final TabGridSheetToolbarCoordinator mToolbarCoordinator;
+    private TabGridSheetToolbarCoordinator mToolbarCoordinator;
     private TabGridDialogParent mParentLayout;
 
     TabGridDialogCoordinator(Context context, TabModelSelector tabModelSelector,
@@ -50,10 +50,6 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
                 containerView, null, false, COMPONENT_NAME);
 
         mParentLayout = new TabGridDialogParent(context, containerView);
-
-        TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();
-        mToolbarCoordinator = new TabGridSheetToolbarCoordinator(
-                mContext, recyclerView, mToolbarPropertyModel, mParentLayout);
     }
 
     /**
@@ -62,15 +58,20 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
     public void destroy() {
         mTabListCoordinator.destroy();
         mMediator.destroy();
-        mToolbarCoordinator.destroy();
         mParentLayout.destroy();
     }
 
     private void updateDialogContent(List<Tab> tabs) {
         if (tabs != null) {
+            TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();
+            mToolbarCoordinator = new TabGridSheetToolbarCoordinator(
+                    mContext, recyclerView, mToolbarPropertyModel, mParentLayout);
             mMediator.onReset(tabs.get(0).getId());
         } else {
             mMediator.onReset(null);
+            if (mToolbarCoordinator != null) {
+                mToolbarCoordinator.destroy();
+            }
         }
     }
 
