@@ -34119,6 +34119,19 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Wrong encryption key"/>
 </enum>
 
+<enum name="LockScreenMediaControlsHideReason">
+  <int value="0" label="Session changed"/>
+  <int value="1" label="Dismissed by user"/>
+  <int value="2" label="Device unlocked"/>
+</enum>
+
+<enum name="LockScreenMediaControlsShown">
+  <int value="0" label="Not shown - controls disabled"/>
+  <int value="1" label="Not shown - no session"/>
+  <int value="2" label="Not shown - session paused"/>
+  <int value="3" label="Shown"/>
+</enum>
+
 <enum name="LockScreenNoteAppStatusOnLaunch">
   <int value="0" label="Enabled"/>
   <int value="1" label="Terminated - reloaded"/>
