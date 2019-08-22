@@ -97,7 +97,8 @@ bool SpellingServiceClient::RequestTextCheck(
   std::replace(text_copy.begin(), text_copy.end(), kRightSingleQuotationMark,
                kApostrophe);
 
-  std::string api_key = google_apis::GetAPIKey();
+  // SHEZ: remove dependency on google_apis
+  std::string api_key = ""; // google_apis::GetAPIKey();
   std::string encoded_text = base::GetQuotedJSONString(text_copy);
   std::string request_body;
 
