@@ -1767,17 +1767,15 @@ base::string16 TabStrip::GetAccessibleTabName(const Tab* tab) const {
                                         : base::string16();
 }
 
-int TabStrip::GetBackgroundResourceId(
-    bool* has_custom_image,
+base::Optional<int> TabStrip::GetCustomBackgroundId(
     BrowserNonClientFrameView::ActiveState active_state) const {
-  if (!TitlebarBackgroundIsTransparent()) {
-    return controller_->GetTabBackgroundResourceId(active_state,
-                                                   has_custom_image);
-  }
+  if (!TitlebarBackgroundIsTransparent())
+    return controller_->GetCustomBackgroundId(active_state);
 
   constexpr int kBackgroundIdGlass = IDR_THEME_TAB_BACKGROUND_V;
-  *has_custom_image = GetThemeProvider()->HasCustomImage(kBackgroundIdGlass);
-  return kBackgroundIdGlass;
+  return GetThemeProvider()->HasCustomImage(kBackgroundIdGlass)
+             ? base::make_optional(kBackgroundIdGlass)
+             : base::nullopt;
 }
 
 gfx::Rect TabStrip::GetTabAnimationTargetBounds(const Tab* tab) {
