@@ -11,6 +11,7 @@
 #include <array>
 #include <vector>
 
+#include "absl/types/span.h"
 #include "openssl/aes.h"
 #include "platform/base/macros.h"
 #include "streaming/cast/encoded_frame.h"
@@ -18,20 +19,28 @@
 namespace openscreen {
 namespace cast_streaming {
 
+class FrameCollector;
+class FrameCrypto;
+
 // A subclass of EncodedFrame that represents an EncodedFrame with encrypted
-// payload data. It can only be value-constructed by FrameCrypto, but can be
-// moved freely thereafter. Use FrameCrypto (below) to explicitly convert
-// between EncryptedFrames and EncodedFrames.
+// payload data, and owns the buffer storing the encrypted payload data. Use
+// FrameCrypto (below) to explicitly convert between EncryptedFrames and
+// EncodedFrames.
 struct EncryptedFrame : public EncodedFrame {
+  EncryptedFrame();
   ~EncryptedFrame();
   EncryptedFrame(EncryptedFrame&&) MAYBE_NOEXCEPT;
   EncryptedFrame& operator=(EncryptedFrame&&) MAYBE_NOEXCEPT;
 
- private:
+ protected:
+  // Since only FrameCrypto and FrameCollector are trusted to generate the
+  // payload data, only they are allowed direct access to the storage.
+  friend class FrameCollector;
   friend class FrameCrypto;
-  EncryptedFrame();
 
-  OSP_DISALLOW_COPY_AND_ASSIGN(EncryptedFrame);
+  // Note: EncodedFrame::data must be updated whenever any mutations are
+  // performed on this member!
+  std::vector<uint8_t> owned_data_;
 };
 
 // Encrypts EncodedFrames before sending, or decrypts EncryptedFrames that have
@@ -47,7 +56,21 @@ class FrameCrypto {
   ~FrameCrypto();
 
   EncryptedFrame Encrypt(const EncodedFrame& encoded_frame) const;
-  EncodedFrame Decrypt(const EncryptedFrame& encrypted_frame) const;
+
+  // Decrypt the given |encrypted_frame| into the output |encoded_frame|. The
+  // caller must provide a sufficiently-sized data buffer (see
+  // GetPlaintextSize()).
+  void Decrypt(const EncryptedFrame& encrypted_frame,
+               EncodedFrame* encoded_frame) const;
+
+  // AES crypto inputs and outputs (for either encrypting or decrypting) are
+  // always the same size in bytes. The following are just "documentative code."
+  static int GetEncryptedSize(const EncodedFrame& encoded_frame) {
+    return encoded_frame.data.size();
+  }
+  static int GetPlaintextSize(const EncryptedFrame& encrypted_frame) {
+    return encrypted_frame.data.size();
+  }
 
   // Returns random bytes from a cryptographically-secure RNG source.
   static std::array<uint8_t, 16> GenerateRandomBytes();
@@ -63,8 +86,9 @@ class FrameCrypto {
 
   // AES-CTR is symmetric. Thus, the "meat" of both Encrypt() and Decrypt() is
   // the same.
-  std::vector<uint8_t> EncryptCommon(FrameId frame_id,
-                                     const std::vector<uint8_t>& in) const;
+  void EncryptCommon(FrameId frame_id,
+                     absl::Span<const uint8_t> in,
+                     absl::Span<uint8_t> out) const;
 };
 
 }  // namespace cast_streaming

@@ -15,12 +15,27 @@
 namespace openscreen {
 namespace cast_streaming {
 
-EncryptedFrame::EncryptedFrame() = default;
+EncryptedFrame::EncryptedFrame() {
+  data = absl::Span<uint8_t>(owned_data_);
+}
+
 EncryptedFrame::~EncryptedFrame() = default;
 
-EncryptedFrame::EncryptedFrame(EncryptedFrame&&) MAYBE_NOEXCEPT = default;
-EncryptedFrame& EncryptedFrame::operator=(EncryptedFrame&&)
-    MAYBE_NOEXCEPT = default;
+EncryptedFrame::EncryptedFrame(EncryptedFrame&& other) MAYBE_NOEXCEPT
+    : EncodedFrame(static_cast<EncodedFrame&&>(other)),
+      owned_data_(std::move(other.owned_data_)) {
+  data = absl::Span<uint8_t>(owned_data_);
+  other.data = absl::Span<uint8_t>{};
+}
+
+EncryptedFrame& EncryptedFrame::operator=(EncryptedFrame&& other)
+    MAYBE_NOEXCEPT {
+  this->EncodedFrame::operator=(static_cast<EncodedFrame&&>(other));
+  owned_data_ = std::move(other.owned_data_);
+  data = absl::Span<uint8_t>(owned_data_);
+  other.data = absl::Span<uint8_t>{};
+  return *this;
+}
 
 FrameCrypto::FrameCrypto(const std::array<uint8_t, 16>& aes_key,
                          const std::array<uint8_t, 16>& cast_iv_mask)
@@ -46,23 +61,30 @@ FrameCrypto::~FrameCrypto() = default;
 EncryptedFrame FrameCrypto::Encrypt(const EncodedFrame& encoded_frame) const {
   EncryptedFrame result;
   encoded_frame.CopyMetadataTo(&result);
-  result.data = EncryptCommon(encoded_frame.frame_id, encoded_frame.data);
+  result.owned_data_.resize(encoded_frame.data.size());
+  result.data = absl::Span<uint8_t>(result.owned_data_);
+  EncryptCommon(encoded_frame.frame_id, encoded_frame.data, result.data);
   return result;
 }
 
-EncodedFrame FrameCrypto::Decrypt(const EncryptedFrame& encrypted_frame) const {
-  EncodedFrame result;
-  encrypted_frame.CopyMetadataTo(&result);
+void FrameCrypto::Decrypt(const EncryptedFrame& encrypted_frame,
+                          EncodedFrame* encoded_frame) const {
+  encrypted_frame.CopyMetadataTo(encoded_frame);
   // AES-CTC is symmetric. Thus, decryption back to the plaintext is the same as
-  // encrypting the ciphertext.
-  result.data = EncryptCommon(encrypted_frame.frame_id, encrypted_frame.data);
-  return result;
+  // encrypting the ciphertext; and both are the same size.
+  if (encrypted_frame.data.size() < encoded_frame->data.size()) {
+    encoded_frame->data = absl::Span<uint8_t>(encoded_frame->data.data(),
+                                              encrypted_frame.data.size());
+  }
+  EncryptCommon(encrypted_frame.frame_id, encrypted_frame.data,
+                encoded_frame->data);
 }
 
-std::vector<uint8_t> FrameCrypto::EncryptCommon(
-    FrameId frame_id,
-    const std::vector<uint8_t>& in) const {
+void FrameCrypto::EncryptCommon(FrameId frame_id,
+                                absl::Span<const uint8_t> in,
+                                absl::Span<uint8_t> out) const {
   OSP_DCHECK(!frame_id.is_null());
+  OSP_DCHECK_EQ(in.size(), out.size());
 
   // Compute the AES nonce for Cast Streaming payload encryption, which is based
   // on the |frame_id|.
@@ -76,10 +98,8 @@ std::vector<uint8_t> FrameCrypto::EncryptCommon(
 
   std::array<uint8_t, 16> ecount_buf{/* zero initialized */};
   unsigned int block_offset = 0;
-  std::vector<uint8_t> out(in.size());
   AES_ctr128_encrypt(in.data(), out.data(), in.size(), &aes_key_,
                      aes_nonce.data(), ecount_buf.data(), &block_offset);
-  return out;
 }
 
 // static

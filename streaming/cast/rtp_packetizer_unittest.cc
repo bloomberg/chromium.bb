@@ -45,10 +45,11 @@ class RtpPacketizerTest : public testing::Test {
     frame.reference_time = platform::Clock::now();
     frame.new_playout_delay = new_playout_delay;
 
-    frame.data.resize(payload_size);
+    std::unique_ptr<uint8_t[]> buffer(new uint8_t[payload_size]);
     for (int i = 0; i < payload_size; ++i) {
-      frame.data[i] = static_cast<uint8_t>(i);
+      buffer[i] = static_cast<uint8_t>(i);
     }
+    frame.data = absl::Span<uint8_t>(buffer.get(), payload_size);
 
     return crypto_.Encrypt(frame);
   }

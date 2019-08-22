@@ -10,6 +10,7 @@
 #include <chrono>
 #include <vector>
 
+#include "absl/types/span.h"
 #include "platform/api/time.h"
 #include "platform/base/macros.h"
 #include "streaming/cast/frame_id.h"
@@ -60,28 +61,38 @@ struct EncodedFrame {
   // (e.g., key frames), |referenced_frame_id| must equal |frame_id|.
   FrameId referenced_frame_id;
 
-  // The stream timestamp, on the timeline of the signal data.  For example, RTP
+  // The stream timestamp, on the timeline of the signal data. For example, RTP
   // timestamps for audio are usually defined as the total number of audio
-  // samples encoded in all prior frames.  A playback system uses this value to
-  // detect gaps in the stream, and otherwise stretch the signal to match
-  // playout targets.
+  // samples encoded in all prior frames. A playback system uses this value to
+  // detect gaps in the stream, and otherwise stretch the signal to gradually
+  // re-align towards playout targets when too much drift has occurred (see
+  // |reference_time|, below).
   RtpTimeTicks rtp_timestamp;
 
-  // The common reference clock timestamp for this frame.  This value originates
-  // from a sender and is used to provide lip synchronization between streams in
-  // a receiver.  Thus, in the sender context, this is set to the time at which
-  // the frame was captured/recorded.  In the receiver context, this is set to
-  // the target playout time.  Over a sequence of frames, this time value is
-  // expected to drift with respect to the elapsed time implied by the RTP
-  // timestamps; and it may not necessarily increment with precise regularity.
+  // The common reference clock timestamp for this frame. Over a sequence of
+  // frames, this time value is expected to drift with respect to the elapsed
+  // time implied by the RTP timestamps; and this may not necessarily increment
+  // with precise regularity.
+  //
+  // This value originates from a sender, and is the time at which the frame was
+  // captured/recorded. In the receiver context, this value is the computed
+  // target playout time, which is used for guiding the timing of presentation
+  // (see |rtp_timestamp|, above). It is also meant to be used to synchronize
+  // the presentation of multiple streams (e.g., audio and video), commonly
+  // known as "lip-sync." It is NOT meant to be a mandatory/exact playout time.
   platform::Clock::time_point reference_time;
 
   // Playout delay for this and all future frames. Used by the Adaptive
   // Playout delay extension. Non-positive values means no change.
   std::chrono::milliseconds new_playout_delay{};
 
-  // The encoded signal data.
-  std::vector<uint8_t> data;
+  // Pointer to a buffer containing the encoded signal data for the frame. In
+  // the sender context, this points to the data to be sent, and nothing will be
+  // mutated. In the receiver context, a sufficiently-large buffer must be
+  // pre-allocated by the client, and the Span here points to it (and indicates
+  // its capacity); and after the buffer is populated, this member will be
+  // adjusted to indicate exactly what portion of the buffer was populated.
+  absl::Span<uint8_t> data;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(EncodedFrame);
 };
