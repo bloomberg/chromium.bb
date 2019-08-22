@@ -123,6 +123,7 @@ class PasswordProtectionRequest
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<PasswordProtectionRequest>;
+  friend class PasswordProtectionServiceTest;
   friend class ChromePasswordProtectionServiceTest;
   virtual ~PasswordProtectionRequest();
 
