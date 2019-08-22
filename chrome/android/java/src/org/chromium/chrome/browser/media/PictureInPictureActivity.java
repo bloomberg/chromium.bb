@@ -15,6 +15,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.drawable.Icon;
+import android.util.Rational;
+import android.view.View;
+import android.view.View.OnLayoutChangeListener;
+import android.view.ViewGroup;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -23,6 +27,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.thinwebview.CompositorView;
+import org.chromium.chrome.browser.thinwebview.CompositorViewFactory;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -44,6 +50,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     private static int sInitiatorTabTaskID;
     private static InitiatorTabObserver sTabObserver;
 
+    private CompositorView mCompositorView;
     private MediaSessionObserver mMediaSessionObserver;
 
     private BroadcastReceiver mMediaSessionReceiver = new BroadcastReceiver() {
@@ -95,6 +102,28 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     }
 
     @Override
+    public void finishNativeInitialization() {
+        super.finishNativeInitialization();
+
+        mCompositorView = CompositorViewFactory.create(this, getWindowAndroid());
+        addContentView(mCompositorView.getView(),
+                new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        mCompositorView.getView().addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                PictureInPictureActivityJni.get().onViewSizeChanged(
+                        sNativeOverlayWindowAndroid, right - left, bottom - top);
+            }
+        });
+
+        PictureInPictureActivityJni.get().compositorViewCreated(
+                sNativeOverlayWindowAndroid, mCompositorView);
+    }
+
+    @Override
     public boolean shouldStartGpuProcess() {
         return true;
     }
@@ -129,6 +158,12 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
         };
 
         enterPictureInPictureMode(getPictureInPictureParams());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mCompositorView.destroy();
     }
 
     @Override
@@ -197,6 +232,14 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     }
 
     @CalledByNative
+    @SuppressLint("NewApi")
+    private void updateVideoSize(int width, int height) {
+        PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder();
+        builder.setAspectRatio(new Rational(width, height));
+        setPictureInPictureParams(builder.build());
+    }
+
+    @CalledByNative
     private static void createActivity(long nativeOverlayWindowAndroid, Object initiatorTab) {
         Context context = ContextUtils.getApplicationContext();
         Intent intent = new Intent(context, PictureInPictureActivity.class);
@@ -231,5 +274,9 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
         void destroy(long nativeOverlayWindowAndroid);
 
         void play(long nativeOverlayWindowAndroid);
+
+        void compositorViewCreated(long nativeOverlayWindowAndroid, CompositorView compositorView);
+
+        void onViewSizeChanged(long nativeOverlayWindowAndroid, int width, int height);
     }
 }
