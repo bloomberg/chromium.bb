@@ -210,11 +210,6 @@ const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
 const char kEnableSyncUSSNigoriDescription[] =
     "Enables the new, experimental implementation of sync encryption keys";
 
-const char kFCMInvalidationsName[] =
-    "Enable invalidations delivery via new FCM based protocol";
-const char kFCMInvalidationsDescription[] =
-    "Use the new FCM-based protocol for deliveling invalidations";
-
 const char kFillOnAccountSelectHttpName[] =
     "Fill passwords on account selection on HTTP origins";
 const char kFillOnAccountSelectHttpDescription[] =

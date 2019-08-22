@@ -20,7 +20,6 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -413,14 +412,9 @@ BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoService() {
 }
 
 invalidation::InvalidationService* ChromeSyncClient::GetInvalidationService() {
-  invalidation::ProfileInvalidationProvider* provider;
-  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
-    provider = invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-        profile_);
-  } else {
-    provider = invalidation::DeprecatedProfileInvalidationProviderFactory::
-        GetForProfile(profile_);
-  }
+  invalidation::ProfileInvalidationProvider* provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
+
   if (provider)
     return provider->GetInvalidationService();
   return nullptr;

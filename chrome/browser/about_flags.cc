@@ -3608,9 +3608,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTranslateAndroidManualTriggerDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(translate::kTranslateMobileManualTrigger)},
 #endif
-    {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
-     flag_descriptions::kFCMInvalidationsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(invalidation::switches::kFCMInvalidations)},
 #if defined(OS_ANDROID)
     {"enable-ephemeral-tab", flag_descriptions::kEphemeralTabName,
      flag_descriptions::kEphemeralTabDescription, kOsAndroid,
