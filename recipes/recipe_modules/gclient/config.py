@@ -442,3 +442,10 @@ def openscreen(c):
   s.name = 'openscreen'
   s.url = 'https://chromium.googlesource.com/openscreen'
   c.got_revision_mapping['openscreen'] = 'got_revision'
+
+@config_ctx()
+def devtools(c):
+  s = c.solutions.add()
+  s.name = 'devtools'
+  s.url = 'https://chromium.googlesource.com/devtools/devtools-frontend.git'
+  c.got_revision_mapping['devtools'] = 'got_revision'
