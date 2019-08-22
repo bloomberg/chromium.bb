@@ -335,7 +335,6 @@ std::vector<base::FilePath> GetPinnedAndDirtyFiles(
           GetFullPath(metadata_storage.get(), value), value.local_id()));
     }
   }
-  UMA_HISTOGRAM_COUNTS("Drive.MigrateDirtyFilesCount", dirty_files.size());
   // Destructing |metadata_storage| requires a posted task to run, so defer
   // deleting its data until after it's been destructed. This also returns the
   // list of files to pin to the UI thread without waiting for the remaining
