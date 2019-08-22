@@ -2800,6 +2800,8 @@ jumbo_split_static_library("browser") {
       "password_manager/auto_signin_first_run_dialog_android.h",
       "password_manager/credential_android.cc",
       "password_manager/credential_android.h",
+      "password_manager/credential_leak_controller_android.cc",
+      "password_manager/credential_leak_controller_android.h",
       "password_manager/generated_password_saved_infobar_delegate_android.cc",
       "password_manager/generated_password_saved_infobar_delegate_android.h",
       "password_manager/password_accessory_controller.h",
