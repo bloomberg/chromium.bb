@@ -2797,6 +2797,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "quiet-notification-prompts",
+    "owners": [ "engedy", "mkwst", "andypaicu", "hkamila" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "reader-mode-heuristics",
     "owners": [ "mdjones" ],
     "expiry_milestone": 78

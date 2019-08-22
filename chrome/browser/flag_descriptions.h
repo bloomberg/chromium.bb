@@ -1517,6 +1517,9 @@ extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 extern const char kProgressBarThrottleName[];
 extern const char kProgressBarThrottleDescription[];
 
+extern const char kQuietNotificationPromptsName[];
+extern const char kQuietNotificationPromptsDescription[];
+
 extern const char kReaderModeHeuristicsName[];
 extern const char kReaderModeHeuristicsDescription[];
 extern const char kReaderModeHeuristicsMarkup[];

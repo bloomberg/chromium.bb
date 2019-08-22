@@ -1191,6 +1191,8 @@ jumbo_split_static_library("browser") {
     "permissions/permission_context_base.h",
     "permissions/permission_decision_auto_blocker.cc",
     "permissions/permission_decision_auto_blocker.h",
+    "permissions/permission_features.cc",
+    "permissions/permission_features.h",
     "permissions/permission_manager.cc",
     "permissions/permission_manager.h",
     "permissions/permission_manager_factory.cc",

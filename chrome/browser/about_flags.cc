@@ -32,6 +32,7 @@
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
+#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -1240,6 +1241,23 @@ const FeatureEntry::FeatureVariation
          kOmniboxSearchEngineLogoRoundedEdgesVariationConstant,
          base::size(kOmniboxSearchEngineLogoRoundedEdgesVariationConstant),
          nullptr}};
+#endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kQuietNotificationPromptsHeadsUpNotifications =
+    {kQuietNotificationPromptsUIFlavourParameterName,
+     kQuietNotificationPromptsHeadsUpNotification};
+const FeatureEntry::FeatureParam kQuietNotificationPromptsMiniInfobars = {
+    kQuietNotificationPromptsUIFlavourParameterName,
+    kQuietNotificationPromptsMiniInfobar};
+// The "default" option that only shows "Enabled" will be the quiet notification
+// option, the rest are listed explicitly here.
+const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
+    {"(heads-up notifications)", &kQuietNotificationPromptsHeadsUpNotifications,
+     1, nullptr},
+    {"(mini-infobars)", &kQuietNotificationPromptsMiniInfobars, 1, nullptr},
+};
+
 #endif  // OS_ANDROID
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -4374,6 +4392,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"password-leak-detection", flag_descriptions::kPasswordLeakDetectionName,
      flag_descriptions::kPasswordLeakDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kLeakDetection)},
+
+#if defined(OS_ANDROID)
+    {"quiet-notification-prompts",
+     flag_descriptions::kQuietNotificationPromptsName,
+     flag_descriptions::kQuietNotificationPromptsDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kQuietNotificationPrompts,
+                                    kQuietNotificationPromptsVariations,
+                                    "QuietNotificationPrompts")},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -2564,6 +2564,13 @@ const char kProgressBarThrottleName[] = "Android progress update throttling.";
 const char kProgressBarThrottleDescription[] =
     "Limit the maximum progress update to make progress appear smoother.";
 
+const char kQuietNotificationPromptsName[] =
+    "Quieter notification permission prompts";
+const char kQuietNotificationPromptsDescription[] =
+    "Enables quieter permission prompts for notification permission requests. "
+    "When a site wishes to show notifications, the usual modal dialog is "
+    "replaced with a quieter version.";
+
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 const char kReaderModeHeuristicsDescription[] =
     "Determines what pages the Reader Mode infobar is shown on.";
