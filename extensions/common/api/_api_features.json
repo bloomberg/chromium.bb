@@ -233,7 +233,7 @@
         "chrome://assistant-optin/*",
         "chrome://cast/*",
         "chrome://discards/*",
-        "chrome://extensions-frame/*",
+        "chrome://extensions-frame/*",  // TODO(dbeam): still needed?
         "chrome://extensions/*",
         "chrome://home/*",
         "chrome://chrome-signin/*",
@@ -277,8 +277,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://extensions/*",
-      "chrome://extensions-frame/*",
-      "chrome://chrome/extensions/*",
+      "chrome://extensions-frame/*",  // TODO(dbeam): still needed?
       // TODO(maybelle): Audit and remove chrome://settings or
       // chrome://os-settings as appropriate
       "chrome://os-settings/*",
@@ -614,8 +613,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://extensions/*",
-      "chrome://extensions-frame/*",
-      "chrome://chrome/extensions/*"
+      "chrome://extensions-frame/*"  // TODO(dbeam): still needed?
     ]
   }],
   "types": {

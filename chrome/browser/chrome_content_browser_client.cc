@@ -5109,11 +5109,9 @@ void ChromeContentBrowserClient::RegisterRendererPreferenceWatcher(
 bool ChromeContentBrowserClient::HandleWebUI(
     GURL* url,
     content::BrowserContext* browser_context) {
-  // Rewrite chrome://help and chrome://chrome to chrome://settings/help.
+  // Rewrite chrome://help to chrome://settings/help.
   if (url->SchemeIs(content::kChromeUIScheme) &&
-      (url->host() == chrome::kChromeUIHelpHost ||
-       (url->host() == chrome::kChromeUIUberHost &&
-        (url->path().empty() || url->path() == "/")))) {
+      url->host() == chrome::kChromeUIHelpHost) {
     *url = ReplaceURLHostAndPath(*url, chrome::kChromeUISettingsHost,
                                  chrome::kChromeUIHelpHost);
     return true;  // Return true to update the displayed URL.
@@ -5155,8 +5153,7 @@ bool ChromeContentBrowserClient::ShowPaymentHandlerWindow(
 #endif
 }
 
-// Static; reverse URL handler for Web UI. Maps "chrome://chrome/foo/" to
-// "chrome://foo/".
+// static
 bool ChromeContentBrowserClient::HandleWebUIReverse(
     GURL* url,
     content::BrowserContext* browser_context) {
