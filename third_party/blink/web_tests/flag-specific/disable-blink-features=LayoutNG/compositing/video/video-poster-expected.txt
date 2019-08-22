@@ -41,7 +41,7 @@ Case: Displaying poster
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 752],
+      "bounds": [785, 781],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }
@@ -65,7 +65,7 @@ Case: Displaying movie
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 1112],
+      "bounds": [785, 1165],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
@@ -85,7 +85,7 @@ Case: Displaying movie
       "bounds": [352, 288]
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
       "position": [8, 8],
       "bounds": [352, 288]
     }
