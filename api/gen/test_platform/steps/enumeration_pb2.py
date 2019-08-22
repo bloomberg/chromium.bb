@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.steps',
   syntax='proto3',
   serialized_options=_b('Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/steps'),
-  serialized_pb=_b('\n%test_platform/steps/enumeration.proto\x12\x13test_platform.steps\x1a chromite/api/test_metadata.proto\x1a\x1btest_platform/request.proto\"\x9d\x01\n\x12\x45numerationRequest\x12\x38\n\x08metadata\x18\x01 \x01(\x0b\x32&.test_platform.Request.Params.Metadata\x12\x32\n\ttest_plan\x18\x04 \x01(\x0b\x32\x1f.test_platform.Request.TestPlanJ\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04R\x06suitesR\x05tests\"\xc9\x01\n\x13\x45numerationResponse\x12Y\n\x14\x61utotest_invocations\x18\x02 \x03(\x0b\x32;.test_platform.steps.EnumerationResponse.AutotestInvocation\x1aQ\n\x12\x41utotestInvocation\x12(\n\x04test\x18\x01 \x01(\x0b\x32\x1a.chromite.api.AutotestTest\x12\x11\n\ttest_args\x18\x02 \x01(\tJ\x04\x08\x01\x10\x02\x42?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
+  serialized_pb=_b('\n%test_platform/steps/enumeration.proto\x12\x13test_platform.steps\x1a chromite/api/test_metadata.proto\x1a\x1btest_platform/request.proto\"\x82\x01\n\x12\x45numerationRequest\x12\x38\n\x08metadata\x18\x01 \x01(\x0b\x32&.test_platform.Request.Params.Metadata\x12\x32\n\ttest_plan\x18\x04 \x01(\x0b\x32\x1f.test_platform.Request.TestPlan\"\xd9\x01\n\x13\x45numerationResponse\x12Y\n\x14\x61utotest_invocations\x18\x02 \x03(\x0b\x32;.test_platform.steps.EnumerationResponse.AutotestInvocation\x1ag\n\x12\x41utotestInvocation\x12(\n\x04test\x18\x01 \x01(\x0b\x32\x1a.chromite.api.AutotestTest\x12\x11\n\ttest_args\x18\x02 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x03 \x01(\tB?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_test__metadata__pb2.DESCRIPTOR,test__platform_dot_request__pb2.DESCRIPTOR,])
 
@@ -62,7 +62,7 @@ _ENUMERATIONREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=126,
-  serialized_end=283,
+  serialized_end=256,
 )
 
 
@@ -87,6 +87,13 @@ _ENUMERATIONRESPONSE_AUTOTESTINVOCATION = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='display_name', full_name='test_platform.steps.EnumerationResponse.AutotestInvocation.display_name', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -99,8 +106,8 @@ _ENUMERATIONRESPONSE_AUTOTESTINVOCATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=400,
-  serialized_end=481,
+  serialized_start=373,
+  serialized_end=476,
 )
 
 _ENUMERATIONRESPONSE = _descriptor.Descriptor(
@@ -129,8 +136,8 @@ _ENUMERATIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=286,
-  serialized_end=487,
+  serialized_start=259,
+  serialized_end=476,
 )
 
 _ENUMERATIONREQUEST.fields_by_name['metadata'].message_type = test__platform_dot_request__pb2._REQUEST_PARAMS_METADATA

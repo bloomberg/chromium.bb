@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromiumos',
   syntax='proto3',
   serialized_options=_b('Z4go.chromium.org/chromiumos/infra/proto/go/chromiumos'),
-  serialized_pb=_b('\n\x18\x63hromiumos/metrics.proto\x12\nchromiumos\"Z\n\x0bMetricEvent\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1e\n\x16timestamp_milliseconds\x18\x02 \x01(\x04\x12\x1d\n\x15\x64uration_milliseconds\x18\x03 \x01(\x04\x42\x36Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
+  serialized_pb=_b('\n\x18\x63hromiumos/metrics.proto\x12\nchromiumos\"Z\n\x0bMetricEvent\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1e\n\x16timestamp_milliseconds\x18\x02 \x01(\x03\x12\x1d\n\x15\x64uration_milliseconds\x18\x03 \x01(\x04\x42\x36Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
 )
 
 
@@ -41,7 +41,7 @@ _METRICEVENT = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='timestamp_milliseconds', full_name='chromiumos.MetricEvent.timestamp_milliseconds', index=1,
-      number=2, type=4, cpp_type=4, label=1,
+      number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
