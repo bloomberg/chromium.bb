@@ -362,6 +362,19 @@ class LayerTreeHostCommonDrawRectsTest : public LayerTreeHostCommonTest {
   }
 };
 
+class LayerListSettings : public LayerTreeSettings {
+ public:
+  LayerListSettings() { use_layer_lists = true; }
+};
+
+class LayerTreeHostCommonTestWithLayerLists
+    : public LayerTreeHostCommonTestBase,
+      public testing::Test {
+ public:
+  LayerTreeHostCommonTestWithLayerLists()
+      : LayerTreeHostCommonTestBase(LayerListSettings()) {}
+};
+
 TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
   // Sanity check: For layers positioned at zero, with zero size,
   // and with identity transforms, then the draw transform,
