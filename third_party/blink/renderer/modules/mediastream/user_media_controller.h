@@ -46,10 +46,10 @@ class UserMediaController final
  public:
   static const char kSupplementName[];
 
-  UserMediaController(LocalFrame&, std::unique_ptr<UserMediaClient>);
+  UserMediaController(LocalFrame&, UserMediaClient*);
   void Trace(blink::Visitor*) override;
 
-  UserMediaClient* Client() const { return client_.get(); }
+  UserMediaClient* Client() const { return client_; }
 
   void RequestUserMedia(UserMediaRequest*);
   void CancelUserMediaRequest(UserMediaRequest*);
@@ -65,7 +65,7 @@ class UserMediaController final
   }
 
  private:
-  std::unique_ptr<UserMediaClient> client_;
+  Member<UserMediaClient> client_;
   bool has_requested_user_media_ = false;
 };
 
@@ -92,8 +92,7 @@ inline bool UserMediaController::HasRequestedUserMedia() {
   return has_requested_user_media_;
 }
 
-MODULES_EXPORT void ProvideUserMediaTo(LocalFrame&,
-                                       std::unique_ptr<UserMediaClient>);
+MODULES_EXPORT void ProvideUserMediaTo(LocalFrame&, UserMediaClient*);
 
 }  // namespace blink
 
