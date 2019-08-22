@@ -201,6 +201,8 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // Support for IntrusiveHeap.
   void SetHeapHandle(const HeapHandle& handle);
   void ClearHeapHandle();
+  HeapHandle GetHeapHandle() const { return heap_handle_; }
+
   HeapHandle heap_handle() const { return heap_handle_; }
 
   // Returns the shutdown behavior of all Tasks in the TaskSource. Can be

@@ -59,9 +59,15 @@ class PriorityQueue::TaskSourceAndSortKey {
   void ClearHeapHandle() {
     // Ensure |task_source_| is not nullptr, which may be the case if
     // take_task_source() was called before this.
-    if (task_source_) {
+    if (task_source_)
       task_source_->ClearHeapHandle();
-    }
+  }
+
+  // Required by IntrusiveHeap.
+  HeapHandle GetHeapHandle() const {
+    if (task_source_)
+      return task_source_->GetHeapHandle();
+    return HeapHandle::Invalid();
   }
 
   const TaskSource* task_source() const { return task_source_.get(); }
