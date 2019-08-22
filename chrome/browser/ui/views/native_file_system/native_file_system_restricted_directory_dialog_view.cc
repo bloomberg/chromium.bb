@@ -99,7 +99,7 @@ NativeFileSystemRestrictedDirectoryDialogView::
 
   AddChildView(native_file_system_ui_helper::CreateOriginLabel(
       IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TEXT, origin,
-      CONTEXT_BODY_TEXT_LARGE));
+      CONTEXT_BODY_TEXT_LARGE, /*show_emphasis=*/true));
 }
 
 void ShowNativeFileSystemRestrictedDirectoryDialog(

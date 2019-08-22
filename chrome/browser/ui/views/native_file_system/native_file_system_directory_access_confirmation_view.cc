@@ -111,7 +111,7 @@ NativeFileSystemDirectoryAccessConfirmationView::
 
   AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
       IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TEXT, origin, path,
-      CONTEXT_BODY_TEXT_SMALL));
+      CONTEXT_BODY_TEXT_SMALL, /*show_emphasis=*/true));
 }
 
 void ShowNativeFileSystemDirectoryAccessConfirmationDialog(
