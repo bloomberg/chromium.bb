@@ -1729,7 +1729,9 @@ class NetworkContextConfigurationFtpPacBrowserTest
   DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationFtpPacBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFtpPacBrowserTest, FtpPac) {
+// Flaky: crbug.com/996367
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFtpPacBrowserTest,
+                       DISABLED_FtpPac) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   std::unique_ptr<network::ResourceRequest> request =
