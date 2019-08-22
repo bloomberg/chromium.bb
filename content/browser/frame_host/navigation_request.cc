@@ -544,15 +544,13 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     navigation_params->skip_service_worker = true;
   }
 
-  std::unique_ptr<RenderFrameHostImpl> rfh_restored_from_back_forward_cache;
+  bool is_served_from_back_forward_cache = false;
   if (entry) {
     NavigationControllerImpl* controller =
         static_cast<NavigationControllerImpl*>(
             frame_tree_node->navigator()->GetController());
-    // This will be nullptr if there is no matching document in the
-    // BackForwardCache.
-    rfh_restored_from_back_forward_cache =
-        controller->back_forward_cache().RestoreDocument(entry->GetUniqueID());
+    is_served_from_back_forward_cache =
+        controller->back_forward_cache().GetDocument(entry->GetUniqueID());
   }
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -560,7 +558,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       std::move(commit_params), browser_initiated,
       false /* from_begin_navigation */, false /* is_for_commit */, frame_entry,
       entry, std::move(navigation_ui_data), nullptr, nullptr,
-      std::move(rfh_restored_from_back_forward_cache)));
+      is_served_from_back_forward_cache));
 
   if (frame_entry) {
     navigation_request->blob_url_loader_factory_ =
@@ -649,7 +647,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       nullptr, entry,
       nullptr,  // navigation_ui_data
       std::move(navigation_client), std::move(navigation_initiator),
-      nullptr  // rfh_restored_from_back_forward_cache
+      false  // is_served_from_back_forward_cache
       ));
   navigation_request->blob_url_loader_factory_ =
       std::move(blob_url_loader_factory);
@@ -721,7 +719,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       nullptr /* navigation_ui_data */,
       mojom::NavigationClientAssociatedPtrInfo(),
       blink::mojom::NavigationInitiatorPtr(),
-      nullptr /* rfh_restores_from_bfcache */));
+      false /* is_served_from_back_forward_cache */));
 
   // Update the state of the NavigationRequest to match the fact that the
   // navigation just committed.
@@ -745,7 +743,7 @@ NavigationRequest::NavigationRequest(
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
     blink::mojom::NavigationInitiatorPtr navigation_initiator,
-    std::unique_ptr<RenderFrameHostImpl> rfh_restored_from_back_forward_cache)
+    bool is_served_from_back_forward_cache)
     : frame_tree_node_(frame_tree_node),
       common_params_(std::move(common_params)),
       begin_params_(std::move(begin_params)),
@@ -765,10 +763,7 @@ NavigationRequest::NavigationRequest(
       devtools_navigation_token_(base::UnguessableToken::Create()),
       request_navigation_client_(nullptr),
       commit_navigation_client_(nullptr),
-      rfh_restored_from_back_forward_cache_(
-          std::move(rfh_restored_from_back_forward_cache)),
-      is_served_from_back_forward_cache_(
-          rfh_restored_from_back_forward_cache_ != nullptr) {
+      is_served_from_back_forward_cache_(is_served_from_back_forward_cache) {
   DCHECK(browser_initiated || common_params_->initiator_origin.has_value());
   DCHECK(!IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
@@ -1017,6 +1012,10 @@ void NavigationRequest::BeginNavigation() {
   }
 
   if (!NeedsUrlLoader()) {
+    // The types of pages that don't need a URL Loader should never get served
+    // from the BackForwardCache.
+    DCHECK(!is_served_from_back_forward_cache());
+
     // There is no need to make a network request for this navigation, so commit
     // it immediately.
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
@@ -1024,7 +1023,8 @@ void NavigationRequest::BeginNavigation() {
     state_ = RESPONSE_STARTED;
 
     // Select an appropriate RenderFrameHost.
-    render_frame_host_ = GetFrameHostForNavigation();
+    render_frame_host_ =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         render_frame_host_, common_params_->url);
 
@@ -1484,8 +1484,29 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // Select an appropriate renderer to commit the navigation.
-  if (response_should_be_rendered_) {
-    render_frame_host_ = GetFrameHostForNavigation();
+  if (is_served_from_back_forward_cache_) {
+    NavigationControllerImpl* controller =
+        static_cast<NavigationControllerImpl*>(
+            frame_tree_node_->navigator()->GetController());
+    // TODO(https://crbug.com/995316): The render_frame_host_ referenced here
+    // can be evicted while waiting on the NavigationThrottle execution. If the
+    // RenderFrameHost is evicted, it must restart this session history
+    // navigation.
+    render_frame_host_ =
+        controller->back_forward_cache().GetDocument(nav_entry_id_);
+
+    // If render_frame_host_ is nullptr, that means the document was evicted
+    // from the cache since this navigation started. For now, we handle this
+    // by cancelling the navigation.
+    // TODO(https://crbug.com/995316): Reissue the navigation instead of
+    // cancelling it.
+    if (render_frame_host_ == nullptr) {
+      frame_tree_node_->ResetNavigationRequest(false, true);
+      return;
+    }
+  } else if (response_should_be_rendered_) {
+    render_frame_host_ =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         render_frame_host_, common_params_->url);
   } else {
@@ -1698,12 +1719,14 @@ void NavigationRequest::OnRequestFailedInternal(
     // account for clearing the expected process if it clears the speculative
     // RenderFrameHost. See https://crbug.com/793127.
     ResetExpectedProcess();
-    render_frame_host = GetFrameHostForNavigation();
+    render_frame_host =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
   } else {
     if (ShouldKeepErrorPageInCurrentProcess(status.error_code)) {
       render_frame_host = frame_tree_node_->current_frame_host();
     } else {
-      render_frame_host = GetFrameHostForNavigation();
+      render_frame_host =
+          frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
     }
   }
 
@@ -2164,13 +2187,33 @@ void NavigationRequest::CommitNavigation() {
   DCHECK(!common_params_->url.SchemeIs(url::kJavaScriptScheme));
   DCHECK(!IsRendererDebugURL(common_params_->url));
 
-  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
-
   if (is_served_from_back_forward_cache()) {
-    frame_tree_node()->render_manager()->RestoreFromBackForwardCache(
-        std::move(rfh_restored_from_back_forward_cache_));
+    NavigationControllerImpl* controller =
+        static_cast<NavigationControllerImpl*>(
+            frame_tree_node_->navigator()->GetController());
 
-    // Commit the restored frame.
+    std::unique_ptr<RenderFrameHostImpl> restored_rfh =
+        controller->back_forward_cache().RestoreDocument(nav_entry_id_);
+
+    // restored_rfh will be nullptr if the document was evicted from the
+    // BackForwardCache during the execution of this navigation.
+    if (!restored_rfh) {
+      // TODO(https://crbug.com/995316): Handle this case by reissuing the
+      // navigation instead of cancelling it.
+      frame_tree_node_->ResetNavigationRequest(false, true);
+      return;
+    }
+
+    // Transfer ownership of this NavigationRequest to the restored
+    // RenderFrameHost.
+    frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host());
+
+    // Move the restored RenderFrameHost into RenderFrameHostManager, in
+    // preparation for committing.
+    frame_tree_node_->render_manager()->RestoreFromBackForwardCache(
+        std::move(restored_rfh));
+
+    // Commit the restored RenderFrameHost.
     // Note that this will delete the NavigationRequest.
     render_frame_host()->DidCommitBackForwardCacheNavigation(
         this, MakeDidCommitProvisionalLoadParamsForBFCache());
@@ -2182,6 +2225,8 @@ void NavigationRequest::CommitNavigation() {
              frame_tree_node_->render_manager()->current_frame_host() ||
          render_frame_host_ ==
              frame_tree_node_->render_manager()->speculative_frame_host());
+
+  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
 
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
       request_navigation_client_.is_bound()) {
@@ -3239,15 +3284,6 @@ NavigationRequest::MakeDidCommitProvisionalLoadParamsForBFCache() {
   params->request_id = request_id().request_id;
 
   return params;
-}
-
-RenderFrameHostImpl* NavigationRequest::GetFrameHostForNavigation() {
-  if (is_served_from_back_forward_cache()) {
-    DCHECK(rfh_restored_from_back_forward_cache_);
-    return rfh_restored_from_back_forward_cache_.get();
-  }
-
-  return frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
 }
 
 bool NavigationRequest::IsExternalProtocol() {
