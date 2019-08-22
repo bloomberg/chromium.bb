@@ -34,10 +34,8 @@ class LeakDetectionRequest : public LeakDetectionRequestInterface {
     kMaxValue = kParseError
   };
 
-  // TODO(crbug.com/986298): Switch to production endpoint once available.
   static constexpr char kLookupSingleLeakEndpoint[] =
-      "https://autopush-passwordsleakcheck-pa.sandbox.googleapis.com/v1/"
-      "leaks:lookupSingle";
+      "https://passwordsleakcheck-pa.googleapis.com/v1/leaks:lookupSingle";
 
   LeakDetectionRequest();
   ~LeakDetectionRequest() override;
