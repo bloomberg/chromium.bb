@@ -582,11 +582,12 @@ BUILDERS = {
     'target_bits': 64,
     'dimension': {
       'pool': 'chrome.tests.perf',
-      # TODO(crbug.com/966238): Add more specific windows version.
-      'os': 'Windows-10',
-      # TODO(crbug.com/971204): Explicitly set the gpu to None to make
-      # chromium_swarming recipe_module ignore this dimension.
-      'gpu': None,
+      # Explicitly set GPU driver version and Windows OS version such
+      # that we can be informed if this
+      # version ever changes or becomes inconsistent. It is important
+      # that bots are homogeneous. See crbug.com/988045 for history.
+      'os': 'Windows-10-16299.309',
+      'gpu': '8086:5912-23.20.16.4877',
       'synthetic_product_name': 'OptiPlex 7050 (Dell Inc.)'
     },
   },

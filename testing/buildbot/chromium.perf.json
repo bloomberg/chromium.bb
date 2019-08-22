@@ -2138,8 +2138,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": null,
-              "os": "Windows-10",
+              "gpu": "8086:5912-23.20.16.4877",
+              "os": "Windows-10-16299.309",
               "pool": "chrome.tests.perf",
               "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
             }
@@ -2176,8 +2176,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": null,
-              "os": "Windows-10",
+              "gpu": "8086:5912-23.20.16.4877",
+              "os": "Windows-10-16299.309",
               "pool": "chrome.tests.perf",
               "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
             }
@@ -2214,8 +2214,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": null,
-              "os": "Windows-10",
+              "gpu": "8086:5912-23.20.16.4877",
+              "os": "Windows-10-16299.309",
               "pool": "chrome.tests.perf",
               "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
             }
@@ -2252,8 +2252,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": null,
-              "os": "Windows-10",
+              "gpu": "8086:5912-23.20.16.4877",
+              "os": "Windows-10-16299.309",
               "pool": "chrome.tests.perf",
               "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
             }
@@ -2290,8 +2290,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": null,
-              "os": "Windows-10",
+              "gpu": "8086:5912-23.20.16.4877",
+              "os": "Windows-10-16299.309",
               "pool": "chrome.tests.perf",
               "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
             }
@@ -2332,8 +2332,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": null,
-              "os": "Windows-10",
+              "gpu": "8086:5912-23.20.16.4877",
+              "os": "Windows-10-16299.309",
               "pool": "chrome.tests.perf",
               "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
             }
