@@ -1101,6 +1101,7 @@ test("content_browsertests") {
     "//components/network_session_configurator/common",
     "//components/payments/mojom",
     "//components/services/leveldb/public/cpp:cpp",
+    "//components/services/quarantine:test_support",
     "//components/ukm:test_support",
     "//components/url_formatter:url_formatter",
     "//components/viz/test:test_support",

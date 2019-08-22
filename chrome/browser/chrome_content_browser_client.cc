@@ -2272,6 +2272,11 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
 #endif
 }
 
+std::string
+ChromeContentBrowserClient::GetApplicationClientGUIDForQuarantineCheck() {
+  return std::string(chrome::kApplicationClientIDStringForAVScanning);
+}
+
 std::string ChromeContentBrowserClient::GetApplicationLocale() {
   if (BrowserThread::CurrentlyOn(BrowserThread::IO))
     return GetIOThreadApplicationLocale();

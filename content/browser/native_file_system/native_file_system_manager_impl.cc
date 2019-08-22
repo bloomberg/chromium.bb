@@ -114,10 +114,12 @@ NativeFileSystemManagerImpl::SharedHandleState::~SharedHandleState() = default;
 NativeFileSystemManagerImpl::NativeFileSystemManagerImpl(
     scoped_refptr<storage::FileSystemContext> context,
     scoped_refptr<ChromeBlobStorageContext> blob_context,
-    NativeFileSystemPermissionContext* permission_context)
+    NativeFileSystemPermissionContext* permission_context,
+    bool off_the_record)
     : context_(std::move(context)),
       blob_context_(std::move(blob_context)),
-      permission_context_(permission_context) {
+      permission_context_(permission_context),
+      off_the_record_(off_the_record) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context_);
   DCHECK(blob_context_);
