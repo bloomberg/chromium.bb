@@ -253,11 +253,11 @@ main_loop(int backward_translation, char *table, int mode) {
 		outlen = BUFSIZE;
 		ruleslen = RULESSIZE;
 		if (backward_translation) {
-			if (!_lou_backTranslate(table, inbuf, &inlen, outbuf, &outlen, NULL, NULL,
-						NULL, NULL, NULL, mode, rules, &ruleslen))
+			if (!_lou_backTranslate(table, table, inbuf, &inlen, outbuf, &outlen, NULL,
+						NULL, NULL, NULL, NULL, mode, rules, &ruleslen))
 				break;
-		} else if (!_lou_translate(table, inbuf, &inlen, outbuf, &outlen, NULL, NULL,
-						   NULL, NULL, NULL, mode, rules, &ruleslen))
+		} else if (!_lou_translate(table, table, inbuf, &inlen, outbuf, &outlen, NULL,
+						   NULL, NULL, NULL, NULL, mode, rules, &ruleslen))
 			break;
 		if ((mode & dotsIO) && !backward_translation)
 			printf("Dot patterns: %s\n", _lou_showDots(outbuf, outlen));

@@ -223,7 +223,7 @@ lou_logEnd(void);
  * and by the tools.
  */
 LIBLOUIS_API
-void *EXPORT_CALL
+const void *EXPORT_CALL
 lou_getTable(const char *tableList);
 
 /**
