@@ -96,7 +96,7 @@ gfx::Size CredentialLeakDialogView::CalculatePreferredSize() const {
 base::string16 CredentialLeakDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ? controller_->GetAcceptButtonLabel()
-                                        : controller_->GetCloseButtonLabel();
+                                        : controller_->GetCancelButtonLabel();
 }
 
 void CredentialLeakDialogView::WindowClosing() {
@@ -113,7 +113,7 @@ bool CredentialLeakDialogView::Accept() {
 }
 
 int CredentialLeakDialogView::GetDialogButtons() const {
-  return controller_->ShouldShowCloseButton()
+  return controller_->ShouldShowCancelButton()
              ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
              : ui::DIALOG_BUTTON_OK;
 }
