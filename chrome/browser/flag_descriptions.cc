@@ -2853,8 +2853,8 @@ const char kOmniboxTabSwitchSuggestionsDescription[] =
 const char kOmniboxTabSwitchSuggestionsDedicatedRowName[] =
     "Omnibox dedicated row tab switch suggestions";
 const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[] =
-    "Put tab switch suggestions in separate suggestion, immediately following "
-    "the original suggestion.";
+    "Put each tab switch suggestion in a separate suggestion, immediately "
+    "following the original suggestion.";
 
 const char kOmniboxWrapPopupPositionName[] = "Omnibox wrap pop-up position";
 const char kOmniboxWrapPopupPositionDescription[] =
