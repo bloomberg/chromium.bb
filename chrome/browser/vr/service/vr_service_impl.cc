@@ -62,6 +62,43 @@ device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
   runtime_options->is_legacy_webvr = options->is_legacy_webvr;
   return runtime_options;
 }
+
+vr::XrConsentPromptLevel GetRequiredConsentLevel(
+    bool immersive,
+    const vr::BrowserXRRuntime* runtime,
+    const std::set<device::mojom::XRSessionFeature>& requested_features) {
+  if (requested_features.find(
+          device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR) !=
+      requested_features.end()) {
+    return vr::XrConsentPromptLevel::kVRFloorPlan;
+  }
+
+  // If the device supports a custom IPD and it will be exposed (via immersive),
+  // we need to warn about physical features Being exposed.
+  if (runtime->SupportsCustomIPD() && immersive) {
+    return vr::XrConsentPromptLevel::kVRFeatures;
+  }
+
+  // If local-floor is requested and the device supports a user inputted or real
+  // height, we need to warn about physical features being exposed.
+  // Note that while this is also the case for bounded-floor, that is covered
+  // by the stricter kVRFloorPlan Prompt set above.
+  if (requested_features.find(
+          device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR) !=
+          requested_features.end() &&
+      runtime->SupportsNonEmulatedHeight()) {
+    return vr::XrConsentPromptLevel::kVRFeatures;
+  }
+
+  // In the absence of other items that need to be consented, an immersive
+  // session always requires some level of consent.
+  if (immersive) {
+    return vr::XrConsentPromptLevel::kDefault;
+  }
+
+  return vr::XrConsentPromptLevel::kNone;
+}
+
 }  // namespace
 
 namespace vr {
@@ -322,17 +359,33 @@ void VRServiceImpl::RequestSession(
     }
   }
 
-  // Inline sessions do not need permissions. WebVR did not require
-  // permissions.
+  ShowConsentPrompt(std::move(options), std::move(callback), runtime,
+                    std::move(requested_features));
+}
+
+void VRServiceImpl::ShowConsentPrompt(
+    device::mojom::XRSessionOptionsPtr options,
+    device::mojom::VRService::RequestSessionCallback callback,
+    const BrowserXRRuntime* runtime,
+    std::set<device::mojom::XRSessionFeature> requested_features) {
+  DCHECK(options);
+  DCHECK(runtime);
+
+  // WebVR did not require permissions.
   // TODO(crbug.com/968221): Address privacy requirements for inline sessions
-  if (!options->immersive || options->is_legacy_webvr) {
+  if (options->is_legacy_webvr) {
     DoRequestSession(std::move(options), std::move(callback),
                      std::move(requested_features));
     return;
   }
 
-  // Skip the consent prompt if the user has already consented for this device.
-  if (IsConsentGrantedForDevice(runtime->GetId())) {
+  XrConsentPromptLevel consent_level =
+      GetRequiredConsentLevel(options->immersive, runtime, requested_features);
+
+  // Skip the consent prompt if the user has already consented for this device,
+  // or if consent is not needed.
+  if (consent_level == XrConsentPromptLevel::kNone ||
+      IsConsentGrantedForDevice(runtime->GetId(), consent_level)) {
     DoRequestSession(std::move(options), std::move(callback),
                      std::move(requested_features));
     return;
@@ -358,7 +411,8 @@ void VRServiceImpl::RequestSession(
             render_frame_host_->GetRoutingID(),
             base::BindOnce(&VRServiceImpl::OnConsentResult,
                            weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                           std::move(callback), std::move(requested_features)));
+                           std::move(callback), std::move(requested_features),
+                           consent_level));
       }
     }
 #else
@@ -379,7 +433,7 @@ void VRServiceImpl::RequestSession(
       } else {
         GvrConsentHelper::GetInstance()->PromptUserAndGetConsent(
             render_frame_host_->GetProcess()->GetID(),
-            render_frame_host_->GetRoutingID(),
+            render_frame_host_->GetRoutingID(), consent_level,
             base::BindOnce(&VRServiceImpl::OnConsentResult,
                            weak_ptr_factory_.GetWeakPtr(), std::move(options),
                            std::move(callback), std::move(requested_features)));
@@ -396,7 +450,7 @@ void VRServiceImpl::RequestSession(
                      std::move(requested_features));
   } else {
     XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
-        GetWebContents(),
+        GetWebContents(), consent_level,
         base::BindOnce(&VRServiceImpl::OnConsentResult,
                        weak_ptr_factory_.GetWeakPtr(), std::move(options),
                        std::move(callback), std::move(requested_features)));
@@ -414,6 +468,7 @@ void VRServiceImpl::OnConsentResult(
     device::mojom::XRSessionOptionsPtr options,
     device::mojom::VRService::RequestSessionCallback callback,
     std::set<device::mojom::XRSessionFeature> enabled_features,
+    XrConsentPromptLevel consent_level,
     bool is_consent_granted) {
   if (!is_consent_granted) {
     std::move(callback).Run(
@@ -429,7 +484,7 @@ void VRServiceImpl::OnConsentResult(
             device::mojom::RequestSessionError::NO_RUNTIME_FOUND));
     return;
   }
-  AddConsentGrantedDevice(runtime->GetId());
+  AddConsentGrantedDevice(runtime->GetId(), consent_level);
 
   // Re-check for another client instance after a potential user consent.
   if (runtime_manager_->IsOtherClientPresenting(this)) {
@@ -614,15 +669,19 @@ bool VRServiceImpl::IsSecureContextRequirementSatisfied() {
 }
 
 bool VRServiceImpl::IsConsentGrantedForDevice(
-    device::mojom::XRDeviceId device_id) {
-  return consent_granted_devices_.find(device_id) !=
-         consent_granted_devices_.end();
+    device::mojom::XRDeviceId device_id,
+    XrConsentPromptLevel consent_level) {
+  auto it = consent_granted_devices_.find(device_id);
+  return it != consent_granted_devices_.end() && it->second >= consent_level;
 }
 
 void VRServiceImpl::AddConsentGrantedDevice(
-    device::mojom::XRDeviceId device_id) {
-  DCHECK(!IsConsentGrantedForDevice(device_id));
-  consent_granted_devices_.insert(device_id);
+    device::mojom::XRDeviceId device_id,
+    XrConsentPromptLevel consent_level) {
+  auto it = consent_granted_devices_.find(device_id);
+  if (it == consent_granted_devices_.end() || it->second < consent_level) {
+    consent_granted_devices_[device_id] = consent_level;
+  }
 }
 
 }  // namespace vr

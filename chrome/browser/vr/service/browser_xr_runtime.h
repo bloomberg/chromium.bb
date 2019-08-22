@@ -57,6 +57,10 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   bool SupportsFeature(device::mojom::XRSessionFeature feature) const;
   bool SupportsAllFeatures(
       const std::vector<device::mojom::XRSessionFeature>& features) const;
+
+  bool SupportsCustomIPD() const;
+  bool SupportsNonEmulatedHeight() const;
+
   device::mojom::XRRuntime* GetRuntime() { return runtime_.get(); }
 
   // Methods called by VRServiceImpl to interact with the runtime's device.
@@ -84,7 +88,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void RemoveObserver(BrowserXRRuntimeObserver* observer) {
     observers_.RemoveObserver(observer);
   }
-  device::mojom::XRDeviceId GetId() { return id_; }
+  device::mojom::XRDeviceId GetId() const { return id_; }
 
  private:
   // device::XRRuntimeEventListener

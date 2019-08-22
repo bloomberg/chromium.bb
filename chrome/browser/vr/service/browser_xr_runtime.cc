@@ -285,6 +285,61 @@ bool BrowserXRRuntime::SupportsAllFeatures(
   return true;
 }
 
+bool BrowserXRRuntime::SupportsCustomIPD() const {
+  switch (id_) {
+    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
+    case device::mojom::XRDeviceId::WEB_TEST_DEVICE_ID:
+    case device::mojom::XRDeviceId::FAKE_DEVICE_ID:
+    case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
+    case device::mojom::XRDeviceId::GVR_DEVICE_ID:
+      return false;
+#if BUILDFLAG(ENABLE_OPENVR)
+    case device::mojom::XRDeviceId::OPENVR_DEVICE_ID:
+      return true;
+#endif
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+    case device::mojom::XRDeviceId::OCULUS_DEVICE_ID:
+      return true;
+#endif
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    case device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID:
+      return true;
+#endif
+#if BUILDFLAG(ENABLE_OPENXR)
+    case device::mojom::XRDeviceId::OPENXR_DEVICE_ID:
+      return true;
+#endif
+  }
+
+  NOTREACHED();
+}
+
+bool BrowserXRRuntime::SupportsNonEmulatedHeight() const {
+  switch (id_) {
+    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
+    case device::mojom::XRDeviceId::WEB_TEST_DEVICE_ID:
+    case device::mojom::XRDeviceId::FAKE_DEVICE_ID:
+    case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
+      return false;
+    case device::mojom::XRDeviceId::GVR_DEVICE_ID:
+#if BUILDFLAG(ENABLE_OPENVR)
+    case device::mojom::XRDeviceId::OPENVR_DEVICE_ID:
+#endif
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+    case device::mojom::XRDeviceId::OCULUS_DEVICE_ID:
+#endif
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    case device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID:
+#endif
+#if BUILDFLAG(ENABLE_OPENXR)
+    case device::mojom::XRDeviceId::OPENXR_DEVICE_ID:
+#endif
+      return true;
+  }
+
+  NOTREACHED();
+}
+
 void BrowserXRRuntime::OnDisplayInfoChanged(
     device::mojom::VRDisplayInfoPtr vr_device_info) {
   bool had_display_info = !!display_info_;

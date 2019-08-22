@@ -14,6 +14,7 @@
 
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/service/interface_set.h"
+#include "chrome/browser/vr/service/xr_consent_prompt_level.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/public/cpp/session_mode.h"
@@ -129,14 +130,22 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::VRService::RequestSessionCallback callback,
       std::set<device::mojom::XRSessionFeature> enabled_features);
+  void ShowConsentPrompt(
+      device::mojom::XRSessionOptionsPtr options,
+      device::mojom::VRService::RequestSessionCallback callback,
+      const BrowserXRRuntime* runtime,
+      std::set<device::mojom::XRSessionFeature> requested_features);
   void OnConsentResult(
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::VRService::RequestSessionCallback callback,
       std::set<device::mojom::XRSessionFeature> enabled_features,
+      XrConsentPromptLevel consent_level,
       bool is_consent_granted);
 
-  bool IsConsentGrantedForDevice(device::mojom::XRDeviceId device_id);
-  void AddConsentGrantedDevice(device::mojom::XRDeviceId device_id);
+  bool IsConsentGrantedForDevice(device::mojom::XRDeviceId device_id,
+                                 XrConsentPromptLevel consent_level);
+  void AddConsentGrantedDevice(device::mojom::XRDeviceId device_id,
+                               XrConsentPromptLevel consent_level);
 
   scoped_refptr<XRRuntimeManager> runtime_manager_;
   mojo::InterfacePtrSet<device::mojom::XRSessionClient> session_clients_;
@@ -154,7 +163,8 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   bool initialization_complete_ = false;
   bool in_focused_frame_ = false;
 
-  std::set<device::mojom::XRDeviceId> consent_granted_devices_;
+  std::map<device::mojom::XRDeviceId, XrConsentPromptLevel>
+      consent_granted_devices_;
 
   base::WeakPtrFactory<VRServiceImpl> weak_ptr_factory_{this};
 
