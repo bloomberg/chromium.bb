@@ -5,7 +5,13 @@
         "output": "",
         "namespace": ["ui_devtools", "protocol"],
         "export_macro": "UI_DEVTOOLS_EXPORT",
-        "export_header": "components/ui_devtools/devtools_export.h"
+        "export_header": "components/ui_devtools/devtools_export.h",
+        "options": [
+            {
+                "domain": "Tracing",
+                "async": ["start"]
+            }
+        ]
     },
     "lib": {
         "package": "components/ui_devtools",
