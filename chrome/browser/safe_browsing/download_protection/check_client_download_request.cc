@@ -15,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
@@ -320,6 +321,7 @@ void CheckClientDownloadRequest::OnURLLoaderComplete(
         std::make_unique<DownloadItemRequest>(item_, base::DoNothing());
 
     DlpDeepScanningClientRequest dlp_request;
+    dlp_request.set_content_source(DlpDeepScanningClientRequest::FILE_DOWNLOAD);
     request->set_request_dlp_scan(std::move(dlp_request));
 
     MalwareDeepScanningClientRequest malware_request;
@@ -327,6 +329,9 @@ void CheckClientDownloadRequest::OnURLLoaderComplete(
         MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE);
     malware_request.set_download_token(token);
     request->set_request_malware_scan(std::move(malware_request));
+
+    request->set_dm_token(
+        policy::BrowserDMTokenStorage::Get()->RetrieveDMToken());
 
     content::BrowserContext* browser_context =
         content::DownloadItemUtils::GetBrowserContext(item_);
@@ -845,6 +850,9 @@ void CheckClientDownloadRequest::FinishRequest(
 bool CheckClientDownloadRequest::ShouldUploadBinary(
     DownloadCheckResult result) {
   if (!base::FeatureList::IsEnabled(kUploadForMalwareCheck))
+    return false;
+
+  if (policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty())
     return false;
 
   if (result != DownloadCheckResult::SAFE &&

@@ -93,6 +93,7 @@ class BinaryUploadService {
     void set_request_malware_scan(
         MalwareDeepScanningClientRequest malware_request);
     void set_fcm_token(const std::string& token);
+    void set_dm_token(const std::string& token);
 
     // Finish the request, with the given |result| and |response| from the
     // server.

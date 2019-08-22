@@ -261,6 +261,10 @@ void BinaryUploadService::Request::set_fcm_token(const std::string& token) {
   deep_scanning_request_.set_fcm_notification_token(token);
 }
 
+void BinaryUploadService::Request::set_dm_token(const std::string& token) {
+  deep_scanning_request_.set_dm_token(token);
+}
+
 void BinaryUploadService::Request::FinishRequest(
     Result result,
     DeepScanningClientResponse response) {
