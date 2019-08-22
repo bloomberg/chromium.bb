@@ -485,6 +485,7 @@ void RenderViewImpl::Initialize(
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
 
+  // The newly created webview_ is owned by this instance.
   webview_ = WebView::Create(this, params->hidden,
                              /*compositing_enabled=*/true,
                              opener_frame ? opener_frame->View() : nullptr);
@@ -1022,12 +1023,15 @@ RenderViewImpl* RenderViewImpl::Create(
 
 void RenderViewImpl::Destroy() {
   GetWidget()->PrepareForClose();
-  GetWidget()->Close(std::move(render_widget_));
 
+  webview_->Close();
   // The webview_ is already destroyed by the time we get here, remove any
   // references to it.
   g_view_map.Get().erase(webview_);
   webview_ = nullptr;
+
+  GetWidget()->Close(std::move(render_widget_));
+
   g_routing_id_view_map.Get().erase(GetRoutingID());
 
   delete this;
