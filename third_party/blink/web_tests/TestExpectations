@@ -6001,10 +6001,6 @@ crbug.com/936083 external/wpt/import-maps/builtin-import-scheme.tentative.html [
 crbug.com/936165 media/autoplay-muted.html [ Timeout Pass ]
 crbug.com/936165 virtual/audio-service/media/autoplay-muted.html [ Timeout Pass ]
 
-# Sheriff 2019-02-27
-crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass Timeout ]
-
-
 # Sheriff 2019-02-28
 crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remove-manual.html [ Failure Pass ]
 
@@ -6181,9 +6177,6 @@ crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-3/style-au
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-3/styles-variables.js [ Pass Timeout ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/styles-keyframes.js [ Pass Timeout ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/undo-add-new-rule.js [ Pass Timeout ]
-
-# Sheriff 2019-05-06
-crbug.com/959372 [ Win ] external/wpt/import-maps/fallback.sub.tentative.html [ Pass Timeout ]
 
 # Sheriff 2019-05-07
 crbug.com/960443 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
@@ -6445,7 +6438,6 @@ crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semanti
 crbug.com/979017 wpt_internal/scheduler/task_order.html [ Failure ]
 
 # Sheriff 2019-08-09
-crbug.com/992615 [ Linux ] external/wpt/import-maps/data.sub.tentative.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]
 
