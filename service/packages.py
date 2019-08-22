@@ -51,6 +51,18 @@ class AndroidIsPinnedUprevError(UprevError):
     self.new_android_atom = new_android_atom
 
 
+class UprevVersionedPackageResult(object):
+  """Result data object for uprev_versioned_package."""
+
+  def __init__(self, new_version=None, modified_ebuilds=None):
+    self.new_version = new_version
+    self.modified_ebuilds = modified_ebuilds or []
+
+  @property
+  def uprevved(self):
+    return bool(self.new_version)
+
+
 def uprevs_versioned_package(package):
   """Decorator to register package uprev handlers."""
   assert package
@@ -191,7 +203,7 @@ def uprev_versioned_package(package, build_targets, refs, chroot):
     chroot (chroot_lib.Chroot): The chroot to enter for cleaning.
 
   Returns:
-    list[str]: The list of modified ebuilds.
+    UprevVersionedPackageResult: The result.
   """
   assert package
 
@@ -241,7 +253,8 @@ def uprev_chrome(build_targets, refs, chroot):
   for package in constants.OTHER_CHROME_PACKAGES:
     uprev_manager.uprev(package)
 
-  return uprev_manager.modified_ebuilds
+  return UprevVersionedPackageResult(chrome_version,
+                                     uprev_manager.modified_ebuilds)
 
 
 def get_best_visible(atom):

@@ -99,7 +99,7 @@ class UprevVersionedPackageTest(cros_test_lib.MockTestCase,
     """Helper method to add a full version message to the request."""
     ref = request.versions.add()
     ref.repository = '/some/path'
-    ref.ref = version
+    ref.ref = 'refs/tags/%s' % version
     ref.revision = 'abc123'
 
   def testValidateOnly(self):
@@ -148,20 +148,24 @@ class UprevVersionedPackageTest(cros_test_lib.MockTestCase,
 
   def testOutputHandling(self):
     """Test the modified files are getting correctly added to the output."""
-    result = ['/file/one', '/file/two']
-    self.PatchObject(packages_service, 'uprev_versioned_package',
-                     return_value=result)
+    version = '1.2.3.4'
+    result = packages_service.UprevVersionedPackageResult(
+        version, ['/file/one', '/file/two'])
+    self.PatchObject(
+        packages_service, 'uprev_versioned_package', return_value=result)
 
     request = packages_pb2.UprevVersionedPackageRequest()
-    self._addVersion(request, '1.2.3.4')
+    self._addVersion(request, version)
     request.package_info.category = 'chromeos-base'
     request.package_info.package_name = 'chromeos-chrome'
 
     packages_controller.UprevVersionedPackage(request, self.response,
                                               self.api_config)
 
+    self.assertEqual(version, self.response.version)
     self.assertItemsEqual(
-        result, [ebuild.path for ebuild in self.response.modified_ebuilds])
+        result.modified_ebuilds,
+        [ebuild.path for ebuild in self.response.modified_ebuilds])
 
 
 class GetBestVisibleTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):

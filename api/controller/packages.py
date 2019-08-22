@@ -63,13 +63,18 @@ def UprevVersionedPackage(input_proto, output_proto, _config):
     refs.append(GitRef(path=ref.repository, ref=ref.ref, revision=ref.revision))
 
   try:
-    uprevved = packages.uprev_versioned_package(package, build_targets, refs,
-                                                chroot)
+    result = packages.uprev_versioned_package(package, build_targets, refs,
+                                              chroot)
   except packages.Error as e:
     # Handle module errors nicely, let everything else bubble up.
     cros_build_lib.Die(e.message)
 
-  for path in uprevved:
+  if not result.uprevved:
+    # No uprevs executed, skip the output population.
+    return
+
+  output_proto.version = result.new_version
+  for path in result.modified_ebuilds:
     output_proto.modified_ebuilds.add().path = path
 
 

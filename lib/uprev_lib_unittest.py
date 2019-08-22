@@ -184,12 +184,16 @@ class UprevChromeManagerTest(cros_test_lib.MockTempDirTestCase):
     manager.uprev(constants.CHROME_CP)
 
     # The old one should be deleted and the new one should exist.
-    new_ebuild = self.stable_path.replace(self.stable_chrome_version,
-                                          self.new_chrome_version)
-    self.assertItemsEqual([self.stable_path, new_ebuild],
+    new_path = self.stable_path.replace(self.stable_chrome_version,
+                                        self.new_chrome_version)
+    self.assertItemsEqual([self.stable_path, new_path],
                           manager.modified_ebuilds)
-    self.assertExists(new_ebuild)
+    self.assertExists(new_path)
     self.assertNotExists(self.stable_path)
+
+    new_ebuild = uprev_lib.ChromeEBuild(new_path)
+    expected_version = '%s_rc-r1' % self.new_chrome_version
+    self.assertEqual(expected_version, new_ebuild.version)
 
   def test_uprev(self):
     """Test a revision bump."""
@@ -199,13 +203,18 @@ class UprevChromeManagerTest(cros_test_lib.MockTempDirTestCase):
         self.stable_chrome_version, overlay_dir=self.tempdir)
     manager.uprev(constants.CHROME_CP)
 
-    new_ebuild = self.stable_path.replace('-r%d' % self.stable_revision,
-                                          '-r%d' % (self.stable_revision + 1))
+    new_path = self.stable_path.replace('-r%d' % self.stable_revision,
+                                        '-r%d' % (self.stable_revision + 1))
 
-    self.assertItemsEqual([self.stable_path, new_ebuild],
+    self.assertItemsEqual([self.stable_path, new_path],
                           manager.modified_ebuilds)
-    self.assertExists(new_ebuild)
+    self.assertExists(new_path)
     self.assertNotExists(self.stable_path)
+
+    new_ebuild = uprev_lib.ChromeEBuild(new_path)
+    expected_version = '%s_rc-r%d' % (self.stable_chrome_version,
+                                      self.stable_revision + 1)
+    self.assertEqual(expected_version, new_ebuild.version)
 
 
 class UprevManagerTest(cros_test_lib.MockTestCase):
