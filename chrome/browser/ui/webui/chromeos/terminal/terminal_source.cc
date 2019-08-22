@@ -42,12 +42,12 @@ void TerminalSource::StartDataRequest(
     const std::string& path,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
-  base::FilePath file_path(kTerminalRoot);
-  if (path.empty()) {
-    file_path = file_path.Append(kDefaultFile);
-  } else {
-    file_path = file_path.Append(path);
-  }
+  // Reparse path to strip any query or fragment, skip first '/' in path.
+  std::string reparsed =
+      GURL(chrome::kChromeUITerminalURL + path).path().substr(1);
+  if (reparsed.empty())
+    reparsed = kDefaultFile;
+  base::FilePath file_path = base::FilePath(kTerminalRoot).Append(reparsed);
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
