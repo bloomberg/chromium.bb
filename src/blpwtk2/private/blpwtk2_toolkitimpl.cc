@@ -72,6 +72,7 @@
 //#include <third_party/blink/public/web/blink.h>
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_controller.h>
+#include <third_party/blink/public/web/web_script_bindings.h>
 
 #include <atomic>
 #include <condition_variable>
@@ -700,6 +701,17 @@ void ToolkitImpl::postHandleMessage(const NativeMsg *msg)
 {
     DCHECK(Statics::isInApplicationMainThread());
     return d_messagePump->postHandleMessage(*msg);
+}
+
+v8::Local<v8::Context> ToolkitImpl::createWebScriptContext(const StringRef& originString)
+{
+    return blink::WebScriptBindings::CreateWebScriptContext(
+        blink::WebSecurityOrigin::CreateFromString(toWebString(originString)));
+}
+
+void ToolkitImpl::disposeWebScriptContext(v8::Local<v8::Context> context)
+{
+    blink::WebScriptBindings::DisposeWebScriptContext(context);
 }
 
 void ToolkitImpl::addOriginToTrustworthyList(const StringRef& originString)
