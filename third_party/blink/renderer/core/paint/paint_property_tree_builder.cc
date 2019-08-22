@@ -321,11 +321,13 @@ static bool NeedsReplacedContentTransform(const LayoutObject& object) {
   return false;
 }
 
-static bool NeedsPaintOffsetTranslationForScrollbars(
+static bool NeedsPaintOffsetTranslationForOverflowControls(
     const LayoutBoxModelObject& object) {
   if (auto* area = object.GetScrollableArea()) {
-    if (area->HorizontalScrollbar() || area->VerticalScrollbar())
+    if (area->HorizontalScrollbar() || area->VerticalScrollbar() ||
+        area->Resizer()) {
       return true;
+    }
   }
   return false;
 }
@@ -407,7 +409,7 @@ static bool NeedsPaintOffsetTranslation(
     return true;
   if (NeedsStickyTranslation(object))
     return true;
-  if (NeedsPaintOffsetTranslationForScrollbars(box_model))
+  if (NeedsPaintOffsetTranslationForOverflowControls(box_model))
     return true;
   if (NeedsReplacedContentTransform(object))
     return true;
