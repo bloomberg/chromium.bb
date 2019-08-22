@@ -6402,21 +6402,6 @@
             ]
         }
     ],
-    "VizDisplayCompositor": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "VizDisplayCompositor",
-                    "enable_features": [
-                        "VizDisplayCompositor"
-                    ]
-                }
-            ]
-        }
-    ],
     "VizHitTest": [
         {
             "platforms": [

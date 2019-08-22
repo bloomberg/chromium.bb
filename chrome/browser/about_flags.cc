@@ -3134,7 +3134,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-viz-display-compositor",
      flag_descriptions::kVizDisplayCompositorName,
-     flag_descriptions::kVizDisplayCompositorDescription, kOsAndroid | kOsCrOS,
+     flag_descriptions::kVizDisplayCompositorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kVizDisplayCompositor)},
 
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
