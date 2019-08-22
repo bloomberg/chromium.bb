@@ -10,6 +10,9 @@
 namespace openscreen {
 namespace cast_streaming {
 
+SenderReportParser::SenderReportWithId::SenderReportWithId() = default;
+SenderReportParser::SenderReportWithId::~SenderReportWithId() = default;
+
 SenderReportParser::SenderReportParser(RtcpSession* session)
     : session_(session) {
   OSP_DCHECK(session_);
@@ -17,9 +20,9 @@ SenderReportParser::SenderReportParser(RtcpSession* session)
 
 SenderReportParser::~SenderReportParser() = default;
 
-absl::optional<RtcpSenderReport> SenderReportParser::Parse(
-    absl::Span<const uint8_t> buffer) {
-  absl::optional<RtcpSenderReport> sender_report;
+absl::optional<SenderReportParser::SenderReportWithId>
+SenderReportParser::Parse(absl::Span<const uint8_t> buffer) {
+  absl::optional<SenderReportWithId> sender_report;
 
   // The data contained in |buffer| can be a "compound packet," which means that
   // it can be the concatenation of multiple RTCP packets. The loop here
@@ -46,8 +49,9 @@ absl::optional<RtcpSenderReport> SenderReportParser::Parse(
     if (ConsumeField<uint32_t>(&chunk) != session_->sender_ssrc()) {
       continue;
     }
-    RtcpSenderReport& report = sender_report.emplace();
+    SenderReportWithId& report = sender_report.emplace();
     const NtpTimestamp ntp_timestamp = ConsumeField<uint64_t>(&chunk);
+    report.report_id = ToStatusReportId(ntp_timestamp);
     report.reference_time =
         session_->ntp_converter().ToLocalTime(ntp_timestamp);
     report.rtp_timestamp =

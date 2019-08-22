@@ -82,6 +82,7 @@ TEST_F(SenderReportTest, Parsing) {
 
     const auto parsed = parser()->Parse(compound_packet);
     ASSERT_TRUE(parsed.has_value());
+    EXPECT_EQ(ToStatusReportId(kNtpTimestampInSenderReport), parsed->report_id);
     EXPECT_EQ(ntp_converter().ToLocalTime(kNtpTimestampInSenderReport),
               parsed->reference_time);
     EXPECT_EQ(RtpTimeTicks() + RtpTimeDelta::FromTicks(1350000),
@@ -135,12 +136,13 @@ TEST_F(SenderReportTest, BuildPackets) {
     const int expected_packet_size =
         sizeof(buffer) - (with_report_block ? 0 : kRtcpReportBlockSize);
     EXPECT_EQ(expected_packet_size, static_cast<int>(result.first.size()));
-    EXPECT_EQ(ToStatusReportId(
-                  ntp_converter().ToNtpTimestamp(original.reference_time)),
-              result.second);
+    const StatusReportId expected_status_report_id = ToStatusReportId(
+        ntp_converter().ToNtpTimestamp(original.reference_time));
+    EXPECT_EQ(expected_status_report_id, result.second);
 
     const auto parsed = parser()->Parse(result.first);
     ASSERT_TRUE(parsed.has_value());
+    EXPECT_EQ(expected_status_report_id, parsed->report_id);
     // Note: The reference time can be off by one platform clock tick due to
     // a lossy conversion when going to and from the wire-format NtpTimestamps.
     // See the unit tests in ntp_time_unittest.cc for further discussion.
