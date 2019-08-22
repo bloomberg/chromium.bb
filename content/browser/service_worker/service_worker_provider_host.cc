@@ -190,7 +190,7 @@ ServiceWorkerProviderHost::PreCreateForWebWorker(
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
         client_remote) {
   using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
-  DCHECK((blink::features::IsPlzDedicatedWorkerEnabled() &&
+  DCHECK((base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&
           provider_type == ServiceWorkerProviderType::kForDedicatedWorker) ||
          provider_type == ServiceWorkerProviderType::kForSharedWorker);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(

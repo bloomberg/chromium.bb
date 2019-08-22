@@ -80,7 +80,7 @@ void DedicatedWorkerHost::StartScriptLoad(
     blink::mojom::BlobURLTokenPtr blob_url_token,
     mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
 
   DCHECK(!client_);
   DCHECK(client);
@@ -207,7 +207,7 @@ void DedicatedWorkerHost::DidStartScriptLoad(
         controller_service_worker_object_host,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
 
   if (!success) {
     client_->OnScriptLoadStartFailed();
@@ -411,7 +411,7 @@ class DedicatedWorkerHostFactoryImpl
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (blink::features::IsPlzDedicatedWorkerEnabled()) {
+    if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
       mojo::ReportBadMessage("DWH_INVALID_WORKER_CREATION");
       return;
     }
@@ -441,7 +441,7 @@ class DedicatedWorkerHostFactoryImpl
       mojo::PendingRemote<blink::mojom::DedicatedWorkerHostFactoryClient>
           client) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (!blink::features::IsPlzDedicatedWorkerEnabled()) {
+    if (!base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
       mojo::ReportBadMessage("DWH_BROWSER_SCRIPT_FETCH_DISABLED");
       return;
     }
