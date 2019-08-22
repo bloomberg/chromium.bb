@@ -241,6 +241,8 @@ TEST_F(BinaryUploadServiceTest, TimesOut) {
   DeepScanningClientResponse scanning_response;
   std::unique_ptr<MockRequest> request =
       MakeRequest(&scanning_result, &scanning_response);
+  request->set_request_dlp_scan(DlpDeepScanningClientRequest());
+  request->set_request_malware_scan(MalwareDeepScanningClientRequest());
 
   ExpectInstanceID("valid id");
   ExpectNetworkResponse(true, DeepScanningClientResponse());
@@ -257,6 +259,8 @@ TEST_F(BinaryUploadServiceTest, OnInstanceIDAfterTimeout) {
   DeepScanningClientResponse scanning_response;
   std::unique_ptr<MockRequest> request =
       MakeRequest(&scanning_result, &scanning_response);
+  request->set_request_dlp_scan(DlpDeepScanningClientRequest());
+  request->set_request_malware_scan(MalwareDeepScanningClientRequest());
 
   BinaryFCMService::GetInstanceIDCallback instance_id_callback;
   ON_CALL(*fcm_service_, GetInstanceID(_))
@@ -284,6 +288,8 @@ TEST_F(BinaryUploadServiceTest, OnUploadCompleteAfterTimeout) {
   DeepScanningClientResponse scanning_response;
   std::unique_ptr<MockRequest> request =
       MakeRequest(&scanning_result, &scanning_response);
+  request->set_request_dlp_scan(DlpDeepScanningClientRequest());
+  request->set_request_malware_scan(MalwareDeepScanningClientRequest());
 
   ExpectInstanceID("valid id");
   ExpectNetworkResponse(true, DeepScanningClientResponse());
@@ -305,6 +311,8 @@ TEST_F(BinaryUploadServiceTest, OnGetResponseAfterTimeout) {
   DeepScanningClientResponse scanning_response;
   std::unique_ptr<MockRequest> request =
       MakeRequest(&scanning_result, &scanning_response);
+  request->set_request_dlp_scan(DlpDeepScanningClientRequest());
+  request->set_request_malware_scan(MalwareDeepScanningClientRequest());
 
   ExpectInstanceID("valid id");
   ExpectNetworkResponse(true, DeepScanningClientResponse());
@@ -318,6 +326,28 @@ TEST_F(BinaryUploadServiceTest, OnGetResponseAfterTimeout) {
   // Expect nothing to change if we get a message after the timeout.
   ReceiveMessageForRequest(raw_request, DeepScanningClientResponse());
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
+}
+
+TEST_F(BinaryUploadServiceTest, OnGetSynchronousResponse) {
+  BinaryUploadService::Result scanning_result =
+      BinaryUploadService::Result::UNKNOWN;
+  DeepScanningClientResponse scanning_response;
+  std::unique_ptr<MockRequest> request =
+      MakeRequest(&scanning_result, &scanning_response);
+  request->set_request_dlp_scan(DlpDeepScanningClientRequest());
+  request->set_request_malware_scan(MalwareDeepScanningClientRequest());
+
+  ExpectInstanceID("valid id");
+
+  DeepScanningClientResponse simulated_response;
+  simulated_response.mutable_dlp_scan_verdict();
+  simulated_response.mutable_malware_scan_verdict();
+  ExpectNetworkResponse(true, simulated_response);
+
+  service_->UploadForDeepScanning(std::move(request));
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::SUCCESS);
 }
 
 }  // namespace safe_browsing

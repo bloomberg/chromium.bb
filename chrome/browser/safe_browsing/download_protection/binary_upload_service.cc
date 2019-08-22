@@ -167,6 +167,10 @@ void BinaryUploadService::OnUploadComplete(Request* request,
       base::BindRepeating(&BinaryUploadService::OnGetResponse,
                           weakptr_factory_.GetWeakPtr(), request));
   active_uploads_.erase(request);
+
+  // Synchronous scans can return results in the initial response proto, so
+  // check for those.
+  OnGetResponse(request, response);
 }
 
 void BinaryUploadService::OnGetResponse(Request* request,
