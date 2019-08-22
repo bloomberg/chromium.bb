@@ -191,8 +191,8 @@ void EmbeddedWorkerTestHelper::OnInstanceClientReceiver(
   instance_clients_.insert(std::move(client));
 }
 
-void EmbeddedWorkerTestHelper::OnServiceWorkerRequest(
-    blink::mojom::ServiceWorkerRequest request) {
+void EmbeddedWorkerTestHelper::OnServiceWorkerReceiver(
+    mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver) {
   std::unique_ptr<FakeServiceWorker> service_worker;
   if (!pending_service_workers_.empty()) {
     // Use the service worker that was registered for this message.
@@ -206,7 +206,7 @@ void EmbeddedWorkerTestHelper::OnServiceWorkerRequest(
     service_worker = CreateServiceWorker();
   }
 
-  service_worker->Bind(std::move(request));
+  service_worker->Bind(std::move(receiver));
   service_workers_.insert(std::move(service_worker));
 }
 

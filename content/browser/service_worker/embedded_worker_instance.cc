@@ -838,7 +838,7 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
 void EmbeddedWorkerInstance::SendStartWorker(
     blink::mojom::EmbeddedWorkerStartParamsPtr params) {
   DCHECK(context_);
-  DCHECK(params->service_worker_request.is_pending());
+  DCHECK(params->service_worker_receiver.is_valid());
   DCHECK(params->controller_receiver.is_valid());
   DCHECK(!instance_host_receiver_.is_bound());
 

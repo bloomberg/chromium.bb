@@ -240,7 +240,6 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       script_type_(script_type),
       fetch_handler_existence_(FetchHandlerExistence::UNKNOWN),
       site_for_uma_(ServiceWorkerMetrics::SiteFromURL(scope_)),
-      binding_(this),
       context_(context),
       script_cache_map_(this, context),
       tick_clock_(base::DefaultTickClock::GetInstance()),
@@ -1204,7 +1203,7 @@ void ServiceWorkerVersion::PostMessageToClient(
   if (provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received Client#postMessage() request for a cross-origin client.");
-    binding_.Close();
+    receiver_.reset();
     return;
   }
   if (!provider_host->is_execution_ready()) {
@@ -1232,7 +1231,7 @@ void ServiceWorkerVersion::PostMessageToClient(
     // the message instead of crashing.
     mojo::ReportBadMessage(
         "Received Client#postMessage() request for a reserved client.");
-    binding_.Close();
+    receiver_.reset();
     return;
   }
   provider_host->PostMessageToClient(this, std::move(message));
@@ -1254,7 +1253,7 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
   if (provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received WindowClient#focus() request for a cross-origin client.");
-    binding_.Close();
+    receiver_.reset();
     return;
   }
   if (provider_host->client_type() !=
@@ -1262,7 +1261,7 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     // focus() should be called only for WindowClient.
     mojo::ReportBadMessage(
         "Received WindowClient#focus() request for a non-window client.");
-    binding_.Close();
+    receiver_.reset();
     return;
   }
 
@@ -1283,7 +1282,7 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   if (!url.is_valid() || !base::IsValidGUID(client_uuid)) {
     mojo::ReportBadMessage(
         "Received unexpected invalid URL/UUID from renderer process.");
-    binding_.Close();
+    receiver_.reset();
     return;
   }
 
@@ -1309,7 +1308,7 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   if (provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received WindowClient#navigate() request for a cross-origin client.");
-    binding_.Close();
+    receiver_.reset();
     return;
   }
   if (provider_host->client_type() !=
@@ -1317,7 +1316,7 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
     // navigate() should be called only for WindowClient.
     mojo::ReportBadMessage(
         "Received WindowClient#navigate() request for a non-window client.");
-    binding_.Close();
+    receiver_.reset();
     return;
   }
   if (provider_host->controller() != this) {
@@ -1403,7 +1402,7 @@ void ServiceWorkerVersion::OpenWindow(
   if (!url.is_valid()) {
     mojo::ReportBadMessage(
         "Received unexpected invalid URL from renderer process.");
-    binding_.Close();
+    receiver_.reset();
     return;
   }
 
@@ -1620,14 +1619,15 @@ void ServiceWorkerVersion::StartWorkerInternal() {
     installed_scripts_sender_->Start();
   }
 
-  params->service_worker_request = mojo::MakeRequest(&service_worker_ptr_);
+  params->service_worker_receiver =
+      service_worker_remote_.BindNewPipeAndPassReceiver();
   // TODO(horo): These CHECKs are for debugging crbug.com/759938.
-  CHECK(service_worker_ptr_.is_bound());
-  CHECK(params->service_worker_request.is_pending());
-  service_worker_ptr_.set_connection_error_handler(
+  CHECK(service_worker_remote_.is_bound());
+  CHECK(params->service_worker_receiver.is_valid());
+  service_worker_remote_.set_disconnect_handler(
       base::BindOnce(&OnConnectionError, embedded_worker_->AsWeakPtr()));
-  binding_.Close();
-  binding_.Bind(mojo::MakeRequest(&service_worker_host_));
+  receiver_.reset();
+  receiver_.Bind(service_worker_host_.InitWithNewEndpointAndPassReceiver());
   // Initialize the global scope now if the worker won't be paused. Otherwise,
   // delay initialization until the main script is loaded.
   if (!pause_after_download())
@@ -1991,11 +1991,11 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   inflight_requests_.Clear();
   request_timeouts_.clear();
   external_request_uuid_to_request_id_.clear();
-  service_worker_ptr_.reset();
+  service_worker_remote_.reset();
   remote_controller_.reset();
   DCHECK(!controller_receiver_.is_valid());
   installed_scripts_sender_.reset();
-  binding_.Close();
+  receiver_.reset();
   pending_external_requests_.clear();
   worker_is_idle_on_renderer_ = true;
 
@@ -2167,7 +2167,7 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
   // The registration must exist since we keep a reference to it during
   // service worker startup.
   DCHECK(registration);
-  service_worker_ptr_->InitializeGlobalScope(
+  service_worker_remote_->InitializeGlobalScope(
       std::move(service_worker_host_),
       provider_host_->CreateServiceWorkerRegistrationObjectInfo(
           std::move(registration)),
