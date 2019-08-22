@@ -1421,6 +1421,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/services/gcm/GcmUma.java",
   "java/src/org/chromium/chrome/browser/services/gcm/InvalidationGcmUpstreamSender.java",
   "java/src/org/chromium/chrome/browser/sessions/SessionTabHelper.java",
+  "java/src/org/chromium/chrome/browser/share/LensUtils.java",
   "java/src/org/chromium/chrome/browser/share/OptionalShareTargetsManager.java",
   "java/src/org/chromium/chrome/browser/share/ShareActivity.java",
   "java/src/org/chromium/chrome/browser/share/ShareDialogAdapter.java",

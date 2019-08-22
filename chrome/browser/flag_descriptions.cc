@@ -262,6 +262,12 @@ const char kCaptionSettingsName[] = "Caption Settings";
 const char kCaptionSettingsDescription[] =
     "Enable the ability to customize captions.";
 
+const char kContextMenuSearchWithGoogleLensName[] =
+    "Google Lens powered image search in the context menu.";
+const char kContextMenuSearchWithGoogleLensDescription[] =
+    "Replaces default image search with an intent to Google Lens when "
+    "supported.";
+
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "

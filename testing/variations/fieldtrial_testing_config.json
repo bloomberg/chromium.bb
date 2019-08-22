@@ -1588,6 +1588,21 @@
             ]
         }
     ],
+    "ContextMenuSearchWithGoogleLens": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ContextMenuSearchWithGoogleLensActivate",
+                    "enable_features": [
+                        "ContextMenuSearchWithGoogleLens"
+                    ]
+                }
+            ]
+        }
+    ],
     "ContextualSearch": [
         {
             "platforms": [

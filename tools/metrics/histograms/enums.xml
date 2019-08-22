@@ -9980,6 +9980,15 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Timeout"/>
 </enum>
 
+<enum name="ContextMenuLensSupportStatus">
+  <summary>Whether lens is supported and if not the reason why.</summary>
+  <int value="0" label="Lens Supported"/>
+  <int value="1" label="Not Google Search Engine"/>
+  <int value="2" label="Activity Not Accessible"/>
+  <int value="3" label="Out of Date"/>
+  <int value="4" label="Search by Image Unavailable"/>
+</enum>
+
 <enum name="ContextMenuOption">
   <obsolete>
     Removed from code as of 5/2019.
@@ -10058,6 +10067,7 @@ Called by update_net_error_codes.py.-->
   <int value="25" label="Preview image (Ephemeral tab)"/>
   <int value="26" label="Share Link (DirectShare)"/>
   <int value="27" label="Share Image (DirectShare)"/>
+  <int value="28" label="Search with Google Lens"/>
 </enum>
 
 <enum name="ContextMenuOptionDesktop">
@@ -35113,6 +35123,7 @@ from previous Chrome versions.
   <int value="-1045882995" label="UseNewDoodleApi:enabled"/>
   <int value="-1042579955" label="ChromeOSParentalControlsSettings:enabled"/>
   <int value="-1041650038" label="enable-forced-migration-to-tabbed-mode"/>
+  <int value="-1040000888" label="ContextMenuSearchWithGoogleLens:disabled"/>
   <int value="-1039889738" label="NativeNotifications:enabled"/>
   <int value="-1039555838" label="GamepadExtensions:enabled"/>
   <int value="-1037128156" label="HomeLauncherGestures:disabled"/>
@@ -37008,6 +37019,7 @@ from previous Chrome versions.
   <int value="1634732103" label="PassiveDocumentWheelEventListeners:enabled"/>
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1634980726" label="VrShellExperimentalRendering:disabled"/>
+  <int value="1635986352" label="ContextMenuSearchWithGoogleLens:enabled"/>
   <int value="1636721063"
       label="AutofillLocalCardMigrationShowFeedback:enabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>

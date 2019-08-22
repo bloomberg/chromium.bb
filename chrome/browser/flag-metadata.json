@@ -434,6 +434,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "context-menu-search-with-google-lens",
+    "owners": [ "benwgold", "lens-chrome" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "contextual-search-definitions",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 80

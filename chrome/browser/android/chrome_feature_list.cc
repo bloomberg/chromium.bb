@@ -115,6 +115,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCommandLineOnNonRooted,
     &kContactsPickerSelectAll,
     &kContentSuggestionsScrollToLoad,
+    &kContextMenuSearchWithGoogleLens,
     &kContextualSearchDefinitions,
     &kContextualSearchLongpressResolve,
     &kContextualSearchMlTapSuppression,
@@ -348,6 +349,9 @@ const base::Feature kContactsPickerSelectAll{"ContactsPickerSelectAll",
 
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextMenuSearchWithGoogleLens{
+    "ContextMenuSearchWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchDefinitions{
     "ContextualSearchDefinitions", base::FEATURE_DISABLED_BY_DEFAULT};

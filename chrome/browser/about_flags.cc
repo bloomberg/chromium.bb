@@ -4400,6 +4400,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kQuietNotificationPrompts,
                                     kQuietNotificationPromptsVariations,
                                     "QuietNotificationPrompts")},
+
+    {"context-menu-search-with-google-lens",
+     flag_descriptions::kContextMenuSearchWithGoogleLensName,
+     flag_descriptions::kContextMenuSearchWithGoogleLensDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextMenuSearchWithGoogleLens)},
 #endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
