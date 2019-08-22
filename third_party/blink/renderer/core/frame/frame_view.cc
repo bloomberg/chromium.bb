@@ -161,7 +161,7 @@ void FrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
   hidden_for_throttling_ = hidden_for_throttling;
   subtree_throttled_ = subtree_throttled || DisplayLockedInParentFrame();
   if (visibility_changed)
-    RenderThrottlingStatusChanged();
+    VisibilityForThrottlingChanged();
   if (recurse) {
     for (Frame* child = GetFrame().Tree().FirstChild(); child;
          child = child->Tree().NextSibling()) {
