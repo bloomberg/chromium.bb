@@ -6526,6 +6526,7 @@ crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/canvas-large-p
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-canvas.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resize.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]
+crbug.com/997149 [ Linux ] external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Pass Failure ]
 
 crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
 crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
