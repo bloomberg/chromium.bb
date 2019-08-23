@@ -396,7 +396,7 @@ void AssistantInteractionController::OnInteractionStarted(
   }
 
   // Start caching a new Assistant response for the interaction.
-  model_.SetPendingResponse(std::make_unique<AssistantResponse>());
+  model_.SetPendingResponse(base::MakeRefCounted<AssistantResponse>());
 }
 
 void AssistantInteractionController::OnInteractionFinished(
@@ -595,7 +595,7 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
     // It is possible that an error Tts could be sent in addition to server Tts.
     // In that case, the pending_response may have already been finalized.
     if (!model_.pending_response())
-      model_.SetPendingResponse(std::make_unique<AssistantResponse>());
+      model_.SetPendingResponse(base::MakeRefCounted<AssistantResponse>());
 
     // Add an error message to the response.
     model_.pending_response()->AddUiElement(
