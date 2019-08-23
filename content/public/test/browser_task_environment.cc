@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 
 #include <utility>
 
@@ -137,15 +137,14 @@ void BrowserTaskEnvironment::RunIOThreadUntilIdle() {
   base::WaitableEvent io_thread_idle(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          [](base::WaitableEvent* io_thread_idle) {
-            base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed)
-                .RunUntilIdle();
-            io_thread_idle->Signal();
-          },
-          Unretained(&io_thread_idle)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(
+                     [](base::WaitableEvent* io_thread_idle) {
+                       base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed)
+                           .RunUntilIdle();
+                       io_thread_idle->Signal();
+                     },
+                     Unretained(&io_thread_idle)));
   io_thread_idle.Wait();
 }
 

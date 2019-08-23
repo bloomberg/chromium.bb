@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TEST_TEST_WITH_SCOPED_TASK_ENVIRONMENT_H_
-#define NET_TEST_TEST_WITH_SCOPED_TASK_ENVIRONMENT_H_
+#ifndef NET_TEST_TEST_WITH_TASK_ENVIRONMENT_H_
+#define NET_TEST_TEST_WITH_TASK_ENVIRONMENT_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,4 +85,4 @@ class TestWithScopedTaskEnvironment : public TestWithTaskEnvironment {
 
 }  // namespace net
 
-#endif  // NET_TEST_TEST_WITH_SCOPED_TASK_ENVIRONMENT_H_
+#endif  // NET_TEST_TEST_WITH_TASK_ENVIRONMENT_H_

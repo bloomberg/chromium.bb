@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_TEST_TEST_WEB_THREAD_BUNDLE_H_
-#define IOS_WEB_PUBLIC_TEST_TEST_WEB_THREAD_BUNDLE_H_
+#ifndef IOS_WEB_PUBLIC_TEST_WEB_TASK_ENVIRONMENT_H_
+#define IOS_WEB_PUBLIC_TEST_WEB_TASK_ENVIRONMENT_H_
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 
 // TODO(crbug.com/992483): Rename this header to web_task_environment.h and
 // migrate all users.
@@ -77,4 +77,4 @@ class TestWebThreadBundle : public WebTaskEnvironment {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_TEST_TEST_WEB_THREAD_BUNDLE_H_
+#endif  // IOS_WEB_PUBLIC_TEST_WEB_TASK_ENVIRONMENT_H_

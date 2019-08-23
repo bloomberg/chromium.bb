@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
-#define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
+#ifndef CONTENT_PUBLIC_TEST_BROWSER_TASK_ENVIRONMENT_H_
+#define CONTENT_PUBLIC_TEST_BROWSER_TASK_ENVIRONMENT_H_
 
 #include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -210,4 +210,4 @@ class TestBrowserThreadBundle : public BrowserTaskEnvironment {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
+#endif  // CONTENT_PUBLIC_TEST_BROWSER_TASK_ENVIRONMENT_H_
