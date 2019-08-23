@@ -159,6 +159,7 @@ x86_internal_release_boards = frozenset([
     'terra',
     'tidus',
     'ultima',
+    'volteer',
     'winky',
     'wizpig',
     'wristpin',

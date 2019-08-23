@@ -130,6 +130,7 @@
     veyron_speedy-paladin
     veyron_tiger-paladin
     viking-paladin
+    volteer-paladin
     whirlwind-paladin
     winky-paladin
     wizpig-paladin
@@ -2445,6 +2446,7 @@
     veyron_speedy-paladin-tryjob
     veyron_tiger-paladin-tryjob
     viking-paladin-tryjob
+    volteer-paladin-tryjob
     whirlwind-paladin-tryjob
     winky-paladin-tryjob
     wizpig-paladin-tryjob
@@ -3519,6 +3521,7 @@
   viking-pre-cq
   viking-release-tryjob
   viking-unittest-stress
+  volteer-chrome-pfq-tryjob
   volteer-chromium-pfq-tryjob
   volteer-compile-only-pre-cq
   volteer-full-tryjob
@@ -3526,8 +3529,13 @@
   volteer-llvm-toolchain-tryjob
   volteer-no-vmtest-pre-cq
   volteer-paladin-tryjob
+  volteer-payloads-tryjob
   volteer-pre-cq
+  volteer-release-afdo-generate-tryjob
+  volteer-release-afdo-tryjob
+  volteer-release-afdo-use-tryjob
   volteer-release-tryjob
+  volteer-tot-chrome-pfq-informational-tryjob
   volteer-tot-chromium-pfq-informational-tryjob
   volteer-unittest-stress
   whirlwind-compile-only-pre-cq

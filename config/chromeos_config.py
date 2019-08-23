@@ -2348,6 +2348,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kumo',
       'veyron_jerry-kernelnext',
       'veyron_minnie-kernelnext',
+      'volteer',
       'zork',
   ])
 
@@ -4016,6 +4017,14 @@ def ApplyCustomOverrides(site_config):
       },
 
       'kukui-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+
+      'zork-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+
+      'volteer-release': {
           'sign_types': ['recovery', 'factory'],
       },
 
