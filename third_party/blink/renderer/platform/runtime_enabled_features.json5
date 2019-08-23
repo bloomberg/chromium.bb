@@ -419,10 +419,6 @@
       depends_on: ["CSSVariables2"],
     },
     {
-      name: "CSSPartPseudoElement",
-      status: "stable",
-    },
-    {
       name: "CSSPictureInPicture",
       status: "experimental",
       depends_on: ["PictureInPictureAPI"],
