@@ -359,9 +359,13 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
         Assert.assertTrue(mAnimationCardView.getAlpha() == 0f);
         Assert.assertTrue(mBackgroundFrameView.getAlpha() == 0f);
 
+        // Restore alpha of animation-related views.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mBackgroundFrameView.setAlpha(1f);
+            mAnimationCardView.setAlpha(1f);
+        });
+
         // Hide the dialog with basic fade-out animation.
-        mBackgroundFrameView.setAlpha(1f);
-        mAnimationCardView.setAlpha(1f);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTabGridDialogParent.hideDialog();
             if (areAnimatorsEnabled()) {
