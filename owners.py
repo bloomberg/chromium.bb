@@ -478,6 +478,10 @@ class Database(object):
               line.startswith('per-file')):
         continue
 
+      # If the line ends with a comment, strip the comment.
+      line, _delim, _comment = line.partition('#')
+      line = line.strip()
+
       if self.email_regexp.match(line) or line == EVERYONE:
         owners.add(line)
         continue
