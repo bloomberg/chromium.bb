@@ -599,10 +599,10 @@ class CrossThreadPersistent
   CrossThreadPersistent(std::nullptr_t) : Parent(nullptr) {}
   CrossThreadPersistent(const PersistentLocation& location, std::nullptr_t)
       : Parent(location, nullptr) {}
-  CrossThreadPersistent(T* raw) : Parent(raw) {}
+  explicit CrossThreadPersistent(T* raw) : Parent(raw) {}
   CrossThreadPersistent(const PersistentLocation& location, T* raw)
       : Parent(location, raw) {}
-  CrossThreadPersistent(T& raw) : Parent(raw) {}
+  explicit CrossThreadPersistent(T& raw) : Parent(raw) {}
   CrossThreadPersistent(const PersistentLocation& location, T& raw)
       : Parent(location, raw) {}
   CrossThreadPersistent(const CrossThreadPersistent& other) { *this = other; }
@@ -690,8 +690,8 @@ class CrossThreadWeakPersistent
 
  public:
   CrossThreadWeakPersistent() : Parent() {}
-  CrossThreadWeakPersistent(T* raw) : Parent(raw) {}
-  CrossThreadWeakPersistent(T& raw) : Parent(raw) {}
+  explicit CrossThreadWeakPersistent(T* raw) : Parent(raw) {}
+  explicit CrossThreadWeakPersistent(T& raw) : Parent(raw) {}
   CrossThreadWeakPersistent(const CrossThreadWeakPersistent& other) {
     *this = other;
   }
