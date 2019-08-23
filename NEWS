@@ -51,6 +51,8 @@ issues]].
   to Dave Mielke.
 - Add support for the International Phonetic Alphabet (IPA) to the
   Chinese braille table, thanks to Hurt Huang and Sponge Jhan.
+- Unified English Braille no longer displays a single underscore when
+  multiple underscores are in the text, thanks to André-Abush Clause.
 
 ** Other changes
 - Metadata keys and values are now case insensitive, thanks to Dave
