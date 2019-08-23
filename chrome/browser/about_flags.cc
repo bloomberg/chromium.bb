@@ -4072,6 +4072,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMacSystemMediaPermissionsInfoUi)},
 #endif  // defined(OS_MACOSX)
 
+    {"storage-access-api", flag_descriptions::kStorageAccessAPIName,
+     flag_descriptions::kStorageAccessAPIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kStorageAccessAPI)},
+
     {"same-site-by-default-cookies",
      flag_descriptions::kSameSiteByDefaultCookiesName,
      flag_descriptions::kSameSiteByDefaultCookiesDescription, kOsAll,

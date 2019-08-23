@@ -1551,6 +1551,11 @@
       status: "stable",
     },
     {
+      // Enabled when blink::features::kStorageAccessAPI is enabled.
+      name: "StorageAccessAPI",
+      status: "test",
+    },
+    {
       name: "StorageQuotaDetails",
       status: "stable"
     },

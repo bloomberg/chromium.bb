@@ -34646,6 +34646,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1670137340"
       label="OptimizeLoadingIPCForSmallResources:disabled"/>
   <int value="-1669486359" label="ImportantSitesInCBD:enabled"/>
+  <int value="-1664795930" label="StorageAccessAPI:disabled"/>
   <int value="-1663410466" label="top-document-isolation"/>
   <int value="-1663125441" label="OptInImeMenu:enabled"/>
   <int value="-1662646099" label="NTPOfflinePageSuggestions:enabled"/>
@@ -35206,6 +35207,7 @@ from previous Chrome versions.
   <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
   <int value="-957200826" label="enable-spdy-proxy-auth"/>
   <int value="-956696029" label="scheduler-configuration"/>
+  <int value="-953215709" label="StorageAccessAPI:enabled"/>
   <int value="-951394314" label="top-chrome-md"/>
   <int value="-950793721" label="TranslateUI2016Q2:disabled"/>
   <int value="-950384924" label="OmniboxDisableInstantExtendedLimit:enabled"/>

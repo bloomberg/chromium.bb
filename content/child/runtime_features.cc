@@ -575,6 +575,10 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableFeatureFromString(
         "IgnoreCrossOriginWindowWhenNamedAccessOnWindow", true);
   }
+
+  if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+    WebRuntimeFeatures::EnableFeatureFromString("StorageAccessAPI", true);
+  }
 }
 
 }  // namespace
