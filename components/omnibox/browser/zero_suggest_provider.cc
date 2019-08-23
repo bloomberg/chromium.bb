@@ -202,8 +202,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   client()
       ->GetRemoteSuggestionsService(/*create_if_necessary=*/true)
       ->CreateSuggestionsRequest(
-          search_terms_args, client()->GetCurrentVisitTimestamp(),
-          client()->GetTemplateURLService(),
+          search_terms_args, client()->GetTemplateURLService(),
           base::BindOnce(
               &ZeroSuggestProvider::OnRemoteSuggestionsLoaderAvailable,
               weak_ptr_factory_.GetWeakPtr()),
@@ -217,12 +216,7 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
   if (loader_)
     LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
   loader_.reset();
-  auto* remote_suggestions_service =
-      client()->GetRemoteSuggestionsService(/*create_if_necessary=*/false);
-  // remote_suggestions_service can be null if in incognito mode.
-  if (remote_suggestions_service != nullptr) {
-    remote_suggestions_service->StopCreatingSuggestionsRequest();
-  }
+
   // TODO(krb): It would allow us to remove some guards if we could also cancel
   // the TopSites::GetMostVisitedURLs request.
   done_ = true;
