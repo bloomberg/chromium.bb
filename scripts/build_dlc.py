@@ -110,6 +110,10 @@ class DlcGenerator(object):
     self.dest_table = os.path.join(self.meta_dir, 'table')
     self.dest_imageloader_json = os.path.join(self.meta_dir, 'imageloader.json')
 
+    # Log out the member variable values initially set.
+    logging.debug('Initial internal values of DlcGenerator: %s',
+                  json.dumps(self.__dict__, sort_keys=True))
+
   def SquashOwnerships(self, path):
     """Squash the owernships & permissions for files.
 
@@ -228,6 +232,7 @@ class DlcGenerator(object):
 
   def CreateImage(self):
     """Create the image and copy the DLC files to it."""
+    logging.info('Creating the DLC image.')
     if self.fs_type == _EXT4_TYPE:
       self.CreateExt4Image()
     elif self.fs_type == _SQUASHFS_TYPE:
@@ -235,10 +240,10 @@ class DlcGenerator(object):
     else:
       raise ValueError('Wrong fs type: %s used:' % self.fs_type)
 
-    self.VerifyImageSize(os.path.getsize(self.dest_image))
-
-  def VerifyImageSize(self, image_bytes):
+  def VerifyImageSize(self):
     """Verify the image can fit to the reserved file."""
+    logging.info('Verifying the DLC image size.')
+    image_bytes = os.path.getsize(self.dest_image)
     preallocated_bytes = self.pre_allocated_blocks * self._BLOCK_SIZE
     # Verifies the actual size of the DLC image is NOT smaller than the
     # preallocated space.
@@ -250,7 +255,11 @@ class DlcGenerator(object):
           '(%s) required. Increase DLC_PREALLOC_BLOCKS in your ebuild to at '
           'least %d.' % (
               self.pre_allocated_blocks, preallocated_bytes, image_bytes,
-              image_bytes // self._BLOCK_SIZE))
+              self.GetOptimalImageBlockSize(image_bytes)))
+
+  def GetOptimalImageBlockSize(self, image_bytes):
+    """Given the image bytes, get the least amount of blocks required."""
+    return int(math.ceil(image_bytes / self._BLOCK_SIZE))
 
   def GetImageloaderJsonContent(self, image_hash, table_hash, blocks):
     """Return the content of imageloader.json file.
@@ -280,6 +289,7 @@ class DlcGenerator(object):
 
   def GenerateVerity(self):
     """Generate verity parameters and hashes for the image."""
+    logging.info('Generating DLC image verity.')
     with osutils.TempDir(prefix='dlc_') as temp_dir:
       hash_tree = os.path.join(temp_dir, 'hash_tree')
       # Get blocks in the image.
@@ -312,6 +322,8 @@ class DlcGenerator(object):
     """Generate a DLC artifact."""
     # Create the image and copy the DLC files to it.
     self.CreateImage()
+    # Verify the image created is within preallocated size.
+    self.VerifyImageSize()
     # Generate hash tree and other metadata.
     self.GenerateVerity()
 
@@ -328,14 +340,19 @@ def CopyAllDlcs(sysroot, install_root_dir):
     install_root_dir: Path to DLC output directory,
         e.g. src/build/images/<board>/<version>.
   """
-  output_dir = os.path.join(install_root_dir, 'dlc')
   build_dir = os.path.join(sysroot, DLC_IMAGE_DIR)
+  output_dir = os.path.join(install_root_dir, 'dlc')
 
-  if not os.path.exists(build_dir) or not os.listdir(build_dir):
-    logging.info('There is no DLC to copy to output, ignoring.')
+  if not os.path.exists(build_dir):
+    logging.info('DLC build directory (%s) does not exists, ignorning.',
+                 build_dir)
     return
 
-  logging.info('Copying all DLC images to their destination path.')
+  if not os.listdir(build_dir):
+    logging.info('There are no DLC(s) to copy to output, ignoring.')
+    return
+
+  logging.info('Copying all DLC images from %s to %s.', build_dir, output_dir)
   logging.info('Detected the following DLCs: %s',
                ', '.join(os.listdir(build_dir)))
 
@@ -400,7 +417,7 @@ def ValidateArguments(opts):
                     '%s required for it should be passed .' % per_dlc_req_args)
 
   if opts.fs_type == _EXT4_TYPE:
-    raise Exception('ext4 unsupported, see https://crbug.com/890060')
+    raise Exception('ext4 unsupported for DLC, see https://crbug.com/890060')
 
 
 def main(argv):
