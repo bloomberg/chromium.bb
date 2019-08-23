@@ -1,6 +1,0 @@
-include_rules = [
-  "+content/app/resources",
-  "+content/app/strings",
-  "+content/public/common",
-  "+ui/base",
-]
