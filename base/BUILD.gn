@@ -3043,6 +3043,7 @@ test("base_unittests") {
       sources += [ "profiler/win32_stack_frame_unwinder_unittest.cc" ]
       data_deps += [ ":base_profiler_test_support_library" ]
     }
+    sources += [ "files/os_validation_win_unittest.cc" ]
   }
 
   if (use_allocator_shim) {
