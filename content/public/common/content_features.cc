@@ -173,6 +173,12 @@ const base::Feature kGuestViewCrossProcessFrames{
 const base::Feature kHistoryManipulationIntervention{
     "HistoryManipulationIntervention", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Prevents sandboxed iframes from using the history API to navigate frames
+// outside their subttree, if they are restricted from doing top-level
+// navigations.
+const base::Feature kHistoryPreventSandboxedNavigation{
+    "HistoryPreventSandboxedNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // This is intended as a kill switch for the Idle Detection feature. To enable
 // this feature, the experimental web platform features flag should be set,
 // or the site should obtain an Origin Trial token.
