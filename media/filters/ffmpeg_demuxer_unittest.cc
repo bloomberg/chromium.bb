@@ -1025,7 +1025,8 @@ TEST_F(FFmpegDemuxerTest, Seek) {
   base::RunLoop().Run();
 }
 
-TEST_F(FFmpegDemuxerTest, CancelledSeek) {
+// TODO(crbug.com/996040): Flaky.
+TEST_F(FFmpegDemuxerTest, DISABLED_CancelledSeek) {
   CreateDemuxer("bear-320x240.webm");
   InitializeDemuxer();
 
