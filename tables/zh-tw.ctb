@@ -834,7 +834,17 @@ sign \x24EA 246-356-135
 #end Enclosed Alphanumerics
 
 #begin Box Drawing (U+2500-U+257F)
-sign \x2500 2578-2578
+sign \x2500 36-36-36
+sign \x2502 0-1256-0
+sign \x250C 0-3467-36
+sign \x2510 36-3467-0
+sign \x2514 0-3468-36
+sign \x2518 36-3468-0
+sign \x251C 0-34678-36
+sign \x2524 36-34678-0
+sign \x252C 36-3467-36
+sign \x2534 36-3468-36
+sign \x253C 36-34678-36
 sign \x2574 1256
 #end Box Drawing
 
