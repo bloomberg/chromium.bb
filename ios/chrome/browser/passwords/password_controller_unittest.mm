@@ -1412,10 +1412,6 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
 
 // Tests password generation suggestion is shown properly.
 TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
-  TearDown();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPasswordGeneration);
-  SetUp();
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
   EXPECT_CALL(*weak_client_, GetPasswordSyncState())
@@ -1507,8 +1503,6 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
 // that this is Incognito, it won't enable password generation.
 TEST_F(PasswordControllerTest, IncognitoPasswordGenerationDisabled) {
     TearDown();
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(features::kPasswordGeneration);
     ChromeWebTest::SetUp();
 
     password_manager::NewPasswordFormManager::
