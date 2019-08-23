@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger.pb.h"
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
@@ -26,6 +28,8 @@ namespace app_list {
 // Provide the app ranking using an ML model.
 // Rankings are created asynchronously using the ML Service and retrieved
 // synchronously at any time.
+// Sequencing: Must be created and used on the same sequence (typically the UI
+// thread).
 class MlAppRankProvider {
  public:
   MlAppRankProvider();
@@ -44,16 +48,33 @@ class MlAppRankProvider {
   std::map<std::string, float> RetrieveRankings();
 
  private:
+  // Does the CPU-intensive part of CreateRankings (perparing the Tensor inputs
+  // from |app_features_map|, intended to be called on a low-priority
+  // background thread.
+  void CreateRankingsImpl(
+      base::flat_map<std::string, AppLaunchFeatures> app_features_map,
+      int total_hours,
+      int all_clicks_last_hour,
+      int all_clicks_last_24_hours);
+
   void DoInference(const std::string& app_id,
                    const std::vector<float>& features);
 
-  //  Stores the ranking score for an |app_id| in the |ranking_map_|.
-  //  Executed by the ML Service when an Execute call is complete.
+  // Execute the |executor_| on the creation thread.
+  void RunExecutor(
+      std::map<std::string, ::chromeos::machine_learning::mojom::TensorPtr>
+          inputs,
+      const std::vector<std::string> outputs,
+      const std::string app_id);
+
+  // Stores the ranking score for an |app_id| in the |ranking_map_|.
+  // Executed by the ML Service when an Execute call is complete.
   void ExecuteCallback(
       std::string app_id,
       ::chromeos::machine_learning::mojom::ExecuteResult result,
       base::Optional<
           std::vector<::chromeos::machine_learning::mojom::TensorPtr>> outputs);
+
   // Initializes the graph executor for the ML service if it's not already
   // available.
   void BindGraphExecutorIfNeeded();
@@ -80,6 +101,18 @@ class MlAppRankProvider {
 
   // Map from app id to ranking score.
   std::map<std::string, float> ranking_map_;
+
+  // Runner for tasks that should run on the creation sequence.
+  scoped_refptr<base::SequencedTaskRunner> creation_task_runner_;
+
+  // Runner for low priority background tasks.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+
+  // Sequence checker for methods that must run on the creation sequence.
+  SEQUENCE_CHECKER(creation_sequence_checker_);
+
+  // Sequence checker for background_task_runner_.
+  SEQUENCE_CHECKER(background_sequence_checker_);
 
   base::WeakPtrFactory<MlAppRankProvider> weak_factory_{this};
 

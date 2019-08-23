@@ -5,8 +5,11 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ml_app_rank_provider.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger.pb.h"
@@ -16,6 +19,8 @@
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "components/assist_ranker/example_preprocessing.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -140,7 +145,14 @@ void CreateGraphExecutorCallback(CreateGraphExecutorResult result) {
 
 }  // namespace
 
-MlAppRankProvider::MlAppRankProvider() = default;
+MlAppRankProvider::MlAppRankProvider()
+    : creation_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      background_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+  // Constructor is not required to run on |background_task_runner_|:
+  DETACH_FROM_SEQUENCE(background_sequence_checker_);
+}
 
 MlAppRankProvider::~MlAppRankProvider() = default;
 
@@ -149,6 +161,27 @@ void MlAppRankProvider::CreateRankings(
     int total_hours,
     int all_clicks_last_hour,
     int all_clicks_last_24_hours) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
+  // TODO(jennyz): Add start-to-end latency metrics for the work on each
+  // sequence.
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MlAppRankProvider::CreateRankingsImpl,
+                     base::Unretained(this), app_features_map, total_hours,
+                     all_clicks_last_hour, all_clicks_last_24_hours));
+}
+
+std::map<std::string, float> MlAppRankProvider::RetrieveRankings() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
+  return ranking_map_;
+}
+
+void MlAppRankProvider::CreateRankingsImpl(
+    base::flat_map<std::string, AppLaunchFeatures> app_features_map,
+    int total_hours,
+    int all_clicks_last_hour,
+    int all_clicks_last_24_hours) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
   const base::Time now(base::Time::Now());
   const int hour = HourOfDay(now);
   const int day = DayOfWeek(now);
@@ -167,14 +200,9 @@ void MlAppRankProvider::CreateRankings(
   }
 }
 
-std::map<std::string, float> MlAppRankProvider::RetrieveRankings() {
-  return ranking_map_;
-}
-
 void MlAppRankProvider::DoInference(const std::string& app_id,
                                     const std::vector<float>& features) {
-  BindGraphExecutorIfNeeded();
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
   // Prepare the input tensor.
   std::map<std::string, TensorPtr> inputs;
   auto tensor = Tensor::New();
@@ -187,16 +215,27 @@ void MlAppRankProvider::DoInference(const std::string& app_id,
   inputs.emplace(std::string("input"), std::move(tensor));
 
   const std::vector<std::string> outputs({std::string("output")});
+  creation_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&MlAppRankProvider::RunExecutor,
+                                weak_factory_.GetWeakPtr(), std::move(inputs),
+                                std::move(outputs), app_id));
+}
 
+void MlAppRankProvider::RunExecutor(std::map<std::string, TensorPtr> inputs,
+                                    const std::vector<std::string> outputs,
+                                    const std::string app_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
+  BindGraphExecutorIfNeeded();
   executor_->Execute(mojo::MapToFlatMap(std::move(inputs)), std::move(outputs),
                      base::BindOnce(&MlAppRankProvider::ExecuteCallback,
-                                    weak_factory_.GetWeakPtr(), app_id));
+                                    base::Unretained(this), app_id));
 }
 
 void MlAppRankProvider::ExecuteCallback(
     std::string app_id,
     ExecuteResult result,
     const base::Optional<std::vector<TensorPtr>> outputs) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
   if (result != ExecuteResult::OK) {
     LOG(ERROR) << "Top Cat inference execution failed.";
     return;
@@ -205,6 +244,7 @@ void MlAppRankProvider::ExecuteCallback(
 }
 
 void MlAppRankProvider::BindGraphExecutorIfNeeded() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
   if (!model_) {
     // Load the model.
     ModelSpecPtr spec = ModelSpec::New(ModelId::TOP_CAT_20190722);
@@ -218,7 +258,7 @@ void MlAppRankProvider::BindGraphExecutorIfNeeded() {
     model_->CreateGraphExecutor(executor_.BindNewPipeAndPassReceiver(),
                                 base::BindOnce(&CreateGraphExecutorCallback));
     executor_.set_disconnect_handler(base::BindOnce(
-        &MlAppRankProvider::OnConnectionError, weak_factory_.GetWeakPtr()));
+        &MlAppRankProvider::OnConnectionError, base::Unretained(this)));
   }
 }
 

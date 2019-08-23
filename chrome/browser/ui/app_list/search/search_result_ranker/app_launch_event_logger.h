@@ -154,7 +154,8 @@ class AppLaunchEventLogger {
   const std::unique_ptr<chromeos::power::ml::RecentEventsCounter>
       all_clicks_last_24_hours_;
 
-  MlAppRankProvider ml_app_rank_provider_;
+  // Empty until/unless CreateRankings is called.
+  std::unique_ptr<MlAppRankProvider> ml_app_rank_provider_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<AppLaunchEventLogger> weak_factory_;

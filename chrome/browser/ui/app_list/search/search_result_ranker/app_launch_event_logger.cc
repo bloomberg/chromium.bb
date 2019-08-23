@@ -135,7 +135,11 @@ void AppLaunchEventLogger::OnGridClicked(const std::string& id) {
 
 void AppLaunchEventLogger::CreateRankings() {
   const base::TimeDelta duration = base::Time::Now() - start_time_;
-  ml_app_rank_provider_.CreateRankings(
+  if (!ml_app_rank_provider_) {
+    ml_app_rank_provider_ = std::make_unique<MlAppRankProvider>();
+  }
+
+  ml_app_rank_provider_->CreateRankings(
       app_features_map_,
       ExponentialBucket(duration.InHours(), kTotalHoursBucketSizeMultiplier),
       Bucketize(all_clicks_last_hour_->GetTotal(duration), kClickBuckets),
@@ -143,7 +147,10 @@ void AppLaunchEventLogger::CreateRankings() {
 }
 
 std::map<std::string, float> AppLaunchEventLogger::RetrieveRankings() {
-  return ml_app_rank_provider_.RetrieveRankings();
+  if (!ml_app_rank_provider_) {
+    return {};
+  }
+  return ml_app_rank_provider_->RetrieveRankings();
 }
 
 std::string AppLaunchEventLogger::RemoveScheme(const std::string& id) {
