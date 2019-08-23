@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
+import android.support.v13.view.inputmethod.EditorInfoCompat;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -90,7 +91,6 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
     private static final float SUGGESTION_HIGHLIGHT_BACKGROUND_TRANSPARENCY = 0.4f;
 
     public static final int COMPOSITION_KEY_CODE = ImeAdapter.COMPOSITION_KEY_CODE;
-    private static final int IME_FLAG_NO_PERSONALIZED_LEARNING = 0x1000000;
 
     // Color used by AOSP Android for a SuggestionSpan with FLAG_EASY_CORRECT set
     private static final int DEFAULT_SUGGESTION_SPAN_COLOR = 0x88C8C8C8;
@@ -297,10 +297,10 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         // null. This makes sure IME doesn't enter fullscreen mode or open custom UI.
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI;
 
-        // TODO(changwan): Replace with EditorInfoCompat#IME_FLAG_NO_PERSONALIZED_LEARNING or
-        //                 EditorInfo#IME_FLAG_NO_PERSONALIZED_LEARNING as soon as either is
-        //                 available in all build config types.
-        if (!allowKeyboardLearning) outAttrs.imeOptions |= IME_FLAG_NO_PERSONALIZED_LEARNING;
+        if (!allowKeyboardLearning) {
+            outAttrs.imeOptions |= EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING;
+        }
+
         // Without this line, some third-party IMEs will try to compose text even when
         // not on an editable node. Even when we return null here, key events can still go
         // through ImeAdapter#dispatchKeyEvent().
