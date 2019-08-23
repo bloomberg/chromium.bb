@@ -557,12 +557,14 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   }
   base::string16 domain;
   if (domain_url.SchemeIsFile()) {
+    title_label_->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
     title_label_->SetMultiLine(false);
     title_label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
     domain = l10n_util::GetStringUTF16(IDS_HOVER_CARD_FILE_URL_SOURCE);
   } else {
     title_label_->SetElideBehavior(gfx::ELIDE_TAIL);
     title_label_->SetMultiLine(true);
+    title_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
     domain = url_formatter::FormatUrl(
         domain_url,
         url_formatter::kFormatUrlOmitDefaults |
