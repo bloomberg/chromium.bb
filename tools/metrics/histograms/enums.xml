@@ -17838,6 +17838,7 @@ Called by update_net_error_codes.py.-->
   <int value="592" label="DictationEnabled"/>
   <int value="593" label="KeyboardFocusHighlightEnabled"/>
   <int value="594" label="CursorHighlightEnabled"/>
+  <int value="595" label="CaretHighlightEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

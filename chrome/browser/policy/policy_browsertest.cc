@@ -4179,6 +4179,42 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, CursorHighlightEnabled) {
   EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, CaretHighlightEnabled) {
+  // Verifies that the caret highlight accessibility feature can be controlled
+  // through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Verify that the caret highlight is initially disabled.
+  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Manually enable the caret highlight.
+  accessibility_manager->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kCaretHighlightEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Verify that the caret highlight cannot be enabled manually anymore.
+  accessibility_manager->SetCaretHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
+
+  policies.Set(key::kCaretHighlightEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Verify that the caret highlight cannot be disabled manually anymore.
+  accessibility_manager->SetCaretHighlightEnabled(false);
+  EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(

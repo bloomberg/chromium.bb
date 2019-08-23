@@ -3207,6 +3207,18 @@
     ]
   },
 
+  "CaretHighlightEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "CaretHighlightEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.caret_highlight",
+        "indicator_tests": [
+          { "policy": { "CaretHighlightEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "HighContrastEnabled": {
     "os": ["chromeos"],
     "test_policy": { "HighContrastEnabled": true },
