@@ -73,8 +73,7 @@ SkColor TrayPopupItemStyle::GetTextColor() const {
     case ColorStyle::DISABLED:
       return SkColorSetA(kBaseTextColor, kDisabledAlpha);
     case ColorStyle::CONNECTED:
-      return use_unified_theme_ ? gfx::kGoogleGreenDark600
-                                : gfx::kGoogleGreen700;
+      return gfx::kGoogleGreenDark600;
   }
   NOTREACHED();
   return gfx::kPlaceholderColor;
@@ -96,17 +95,8 @@ void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
                                                gfx::Font::Weight::MEDIUM));
       break;
     case FontStyle::SUB_HEADER:
-      label->SetFontList(base_font_list.Derive(use_unified_theme_ ? 4 : 1,
-                                               gfx::Font::NORMAL,
+      label->SetFontList(base_font_list.Derive(4, gfx::Font::NORMAL,
                                                gfx::Font::Weight::MEDIUM));
-      label->SetEnabledColor(
-          use_unified_theme_
-              ? AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-                    AshColorProvider::ContentLayerType::kTextPrimary,
-                    kUnifiedMenuTextColor)
-              : label->GetNativeTheme()->GetSystemColor(
-                    ui::NativeTheme::kColorId_ProminentButtonColor));
-      label->SetAutoColorReadabilityEnabled(false);
       break;
     case FontStyle::DETAILED_VIEW_LABEL:
     case FontStyle::SYSTEM_INFO:
