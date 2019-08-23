@@ -71,6 +71,8 @@ issues]].
   real part of the table. Because it is not recommended to append an
   own hyphenation table in this case, a ~#-has-nocross~ metadata field
   was added to indicate that a table contains nocross rules.
+- ~lou_hyphenate~ can now handle more than just words (sequences of
+  letters), e.g compound words, thanks to Bert Frees.
 
 ** Deprecation notice
 - The noUndefinedDots mode has been renamed to noUndefined. For
