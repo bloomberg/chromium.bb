@@ -295,9 +295,8 @@
             <!-- Choose Mobile Network (Cellular only). -->
             <template is="dom-if"
                 if="[[showCellularChooseNetwork_(managedProperties_)]]">
-              <network-choose-mobile
-                  networking-private="[[networkingPrivate]]"
-                  network-properties="[[networkProperties_]]">
+              <network-choose-mobile device-state="[[deviceState_]]"
+                  managed-properties="[[managedProperties_]]">
               </network-choose-mobile>
             </template>
 
