@@ -109,10 +109,10 @@ class MenuManager {
   }
 
   /**
-   * Enter the menu and highlight the first available action.
-   *
-   * @param {!chrome.automation.AutomationNode} navNode the currently selected
-   *        node, for which the menu is to be displayed.
+   * If multiple actions are available for the currently highlighted node,
+   * opens the main menu. Otherwise, selects the node by default.
+   * @param {!chrome.automation.AutomationNode} navNode the currently
+   * highlighted node, for which the menu is to be displayed.
    */
   enter(navNode) {
     if (!this.menuPanel_) {
@@ -120,96 +120,24 @@ class MenuManager {
       return;
     }
 
-    const actions = this.getMainMenuActionsForNode_(navNode);
-    // getMainMenuActionsForNode_ will return null when there is only one
-    // interesting action (selection) specific to this node. In this case,
-    // rather than forcing the user to repeatedly disambiguate, we will simply
-    // select by default.
-    if (actions === null) {
+    if (!this.openMenu_(navNode, SAConstants.MenuId.MAIN)) {
+      // openMenu_ will return false (indicating that the menu was not opened
+      // successfully) when there is only one interesting action (selection)
+      // specific to this node. In this case, rather than forcing the user to
+      // repeatedly disambiguate, we will simply select by default.
       this.navigationManager_.selectCurrentNode();
       return;
     }
 
     this.inMenu_ = true;
-    if (actions !== this.actions_) {
-      this.actions_ = actions;
-      this.menuPanel_.setActions(this.actions_);
-    }
-
-    if (navNode.location) {
-      chrome.accessibilityPrivate.setSwitchAccessMenuState(
-          true, navNode.location, actions.length);
-      this.menuOriginNode_ = navNode;
-      if (window.switchAccess.improvedTextInputEnabled()) {
-        this.menuOriginNode_.addEventListener(
-            chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-            this.onSelectionChanged_.bind(this),
-            false /** Don't use capture. */);
-      }
-    } else {
-      console.log('Unable to show Switch Access menu.');
-    }
-
-    let firstNode =
-        this.menuNode().find({role: chrome.automation.RoleType.BUTTON});
-    while (firstNode && !this.isActionAvailable_(firstNode.htmlAttributes.id))
-      firstNode = firstNode.nextSibling;
-
-    if (firstNode) {
-      this.node_ = firstNode;
-      this.updateFocusRing_();
-    }
-  }
-
-  /**
-   * TODO(rosalindag): Refactor enter and reloadMenu to reduce duplicated code.
-   * Reload the menu.
-   * @param {!chrome.automation.AutomationNode} navNode the node for which the
-   * menu is to be displayed.
-   * @private
-   */
-  reloadMenu_(navNode) {
-    const actionNode = this.node_;
-
-    if (!this.menuPanel_) {
-      console.log('Error: Menu panel has not loaded.');
-      return;
-    }
-
-    const actions = this.getMainMenuActionsForNode_(navNode);
-    if (actions === null) {
-      return;
-    }
-
-    this.inMenu_ = true;
-    if (actions !== this.actions_) {
-      this.actions_ = actions;
-      this.menuPanel_.setActions(this.actions_);
-    }
-
-    if (navNode.location) {
-      chrome.accessibilityPrivate.setSwitchAccessMenuState(
-          true /* show menu */, navNode.location, actions.length);
-      this.menuOriginNode_ = navNode;
-    } else {
-      console.log('Unable to show Switch Access menu.');
-    }
-
-    if (actionNode) {
-      this.menuOriginNode_ = navNode;
-      this.node_ = actionNode;
-      this.updateFocusRing_();
-    }
   }
 
   /**
    * Exits the menu.
    */
   exit() {
-    this.clearFocusRing_();
+    this.closeCurrentMenu_();
     this.inMenu_ = false;
-    if (this.node_)
-      this.node_ = null;
 
     if (window.switchAccess.improvedTextInputEnabled()) {
       this.menuOriginNode_.removeEventListener(
@@ -228,8 +156,6 @@ class MenuManager {
    * will be highlighted. Otherwise, the first available action will
    * be highlighted. Returns a boolean of whether or not the menu was
    * successfully opened.
-   * TODO(sophyang): Once menu_panel.html is reorganized into submenus, use
-   * this function to replace most of enter() and eliminate reloadMenu_().
    * @param {!chrome.automation.AutomationNode} navNode The currently
    *     highlighted node, for which the menu is being opened.
    * @param {!SAConstants.MenuId} menuId Indicates the menu being opened.
@@ -267,7 +193,7 @@ class MenuManager {
     if (JSON.stringify(actions) !== JSON.stringify(this.actions_)) {
       // Set new menu actions in the panel.
       this.actions_ = actions;
-      this.menuPanel_.setActionsFromMenu(this.actions_, menuId);
+      this.menuPanel_.setActions(this.actions_, menuId);
     }
 
     if (!navNode.location) {
@@ -437,22 +363,17 @@ class MenuManager {
   selectCurrentNode() {
     this.calculateCurrentNode();
 
-    if (!this.inMenu_ || !this.node_)
+    if (!this.inMenu_ || !this.node_) {
       return false;
-
-
-    if (window.switchAccess.improvedTextInputEnabled()) {
-      if (this.node_.role == RoleType.BUTTON) {
-        this.node_.doDefault();
-      } else {
-        this.exit();
-      }
-    } else {
-      this.clearFocusRing_();
-      this.node_.doDefault();
-      this.exit();
     }
 
+    if (this.node_.role == RoleType.BUTTON) {
+      // An action was selected.
+      this.node_.doDefault();
+    } else {
+      // The back button was selected.
+      this.exit();
+    }
     return true;
   }
 
@@ -468,9 +389,6 @@ class MenuManager {
 
   /**
    * Get the menu panel node. If it's not defined, search for it.
-   * TODO(sophyang): Replace menuNode() with this function once menu_panel.html
-   * has been reorganized into submenus. Change menuNode() to get the node
-   * of the menu currently within the menu panel node.
    * @return {!chrome.automation.AutomationNode}
    */
   menuPanelNode() {
@@ -480,7 +398,7 @@ class MenuManager {
 
     const treeWalker = new AutomationTreeWalker(
         this.desktop_, constants.Dir.FORWARD,
-        SwitchAccessPredicate.switchAccessMenuDiscoveryRestrictions());
+        SwitchAccessPredicate.switchAccessMenuPanelDiscoveryRestrictions());
     const node = treeWalker.next().node;
     if (node) {
       this.menuPanelNode_ = node;
@@ -491,22 +409,23 @@ class MenuManager {
   }
 
   /**
-   * Get the menu node. If it's not defined, search for it.
+   * Get the menu node. With the current design, the menu panel should
+   * always contain at most one menu. When a menu is open in the panel,
+   * the menu node is the first child of the menu panel node.
    * @return {!chrome.automation.AutomationNode}
    */
   menuNode() {
-    if (this.menuNode_)
-      return this.menuNode_;
-
-    const treeWalker = new AutomationTreeWalker(
-        this.desktop_, constants.Dir.FORWARD,
-        SwitchAccessPredicate.switchAccessMenuDiscoveryRestrictions());
-    const node = treeWalker.next().node;
-    if (node) {
-      this.menuNode_ = node;
+    if (this.menuNode_) {
       return this.menuNode_;
     }
-    console.log('Unable to find the Switch Access menu.');
+
+    if (this.menuPanelNode() !== this.desktop_) {
+      if (this.menuPanelNode_.firstChild) {
+        this.menuNode_ = this.menuPanelNode_.firstChild;
+        return this.menuNode_;
+      }
+    }
+
     return this.desktop_;
   }
 
@@ -518,7 +437,7 @@ class MenuManager {
   updateClipboardHasData() {
     this.clipboardHasData_ = true;
     if (this.menuOriginNode_) {
-      this.reloadMenu_(this.menuOriginNode_);
+      this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
     }
   }
 
@@ -558,7 +477,7 @@ class MenuManager {
     if (this.selectionExists_ != newSelectionState) {
       this.selectionExists_ = newSelectionState;
       if (this.menuOriginNode_) {
-        this.reloadMenu_(this.menuOriginNode_);
+        this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
       }
     }
   }
@@ -727,8 +646,9 @@ class MenuManager {
         break;
       case SAConstants.MenuAction.SELECT_START:
         this.navigationManager_.saveSelectStart();
-        if (this.menuOriginNode_)
-          this.reloadMenu_(this.menuOriginNode_);
+        if (this.menuOriginNode_) {
+          this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
+        }
         break;
       case SAConstants.MenuAction.SELECT_END:
         this.navigationManager_.saveSelectEnd();
@@ -761,7 +681,7 @@ class MenuManager {
     let id = this.node_.htmlAttributes.id;
 
     // If the selection will close the menu, highlight the back button.
-    if (id === SAConstants.MENU_PANEL_ID) {
+    if (id === this.menuPanel_.currentMenuId()) {
       id = SAConstants.BACK_ID;
     }
 
