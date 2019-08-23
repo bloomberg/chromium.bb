@@ -605,7 +605,7 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
     if (password_type.account_type() ==
         ReusedPasswordAccountType::SAVED_PASSWORD)
-      return true;
+      return IsExtendedReporting();
 
     PasswordProtectionTrigger trigger_level =
         GetPasswordProtectionWarningTriggerPref(password_type);
