@@ -6,9 +6,10 @@
 
 #include <shlobj.h>
 
+#include <iterator>
+#include <memory>
 #include <string>
 #include <tuple>
-#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -109,7 +110,7 @@ class OpenFileTest : public OsValidationTest,
   static void AppendAccessString(DWORD access, std::string* result) {
 #define ENTRY(a) \
   { a, #a }
-    static constexpr std::array<BitAndName, 13> kBitNames{{
+    static constexpr BitAndName kBitNames[] = {
         // The standard access rights:
         ENTRY(SYNCHRONIZE),
         ENTRY(WRITE_OWNER),
@@ -125,10 +126,10 @@ class OpenFileTest : public OsValidationTest,
         ENTRY(FILE_APPEND_DATA),
         ENTRY(FILE_WRITE_DATA),
         ENTRY(FILE_READ_DATA),
-    }};
+    };
 #undef ENTRY
-    ASSERT_NO_FATAL_FAILURE(
-        AppendBitsToString(access, kBitNames.begin(), kBitNames.end(), result));
+    ASSERT_NO_FATAL_FAILURE(AppendBitsToString(access, std::begin(kBitNames),
+                                               std::end(kBitNames), result));
   }
 
   // Appends a string representation of the sharing mode bits present in
@@ -136,14 +137,14 @@ class OpenFileTest : public OsValidationTest,
   static void AppendShareModeString(DWORD share_mode, std::string* result) {
 #define ENTRY(a) \
   { a, #a }
-    static constexpr std::array<BitAndName, 3> kBitNames{{
+    static constexpr BitAndName kBitNames[] = {
         ENTRY(FILE_SHARE_DELETE),
         ENTRY(FILE_SHARE_WRITE),
         ENTRY(FILE_SHARE_READ),
-    }};
+    };
 #undef ENTRY
-    ASSERT_NO_FATAL_FAILURE(AppendBitsToString(share_mode, kBitNames.begin(),
-                                               kBitNames.end(), result));
+    ASSERT_NO_FATAL_FAILURE(AppendBitsToString(
+        share_mode, std::begin(kBitNames), std::end(kBitNames), result));
   }
 
   // Returns true if we expect that a file opened with |access| access rights
