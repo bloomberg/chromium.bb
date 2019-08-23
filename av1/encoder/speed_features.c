@@ -379,6 +379,7 @@ static void set_good_speed_features_framesize_independent(
         frame_is_intra_only(&cpi->common) ? 0 : 1;
     sf->reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
+    sf->simple_motion_search_prune_agg = 1;
   }
 
   if (speed >= 4) {
