@@ -1599,7 +1599,8 @@ bool TabStrip::HoverCardIsShowingForTab(Tab* tab) {
     return false;
 
   return hover_card_ && hover_card_->GetWidget()->IsVisible() &&
-         !hover_card_->IsFadingOut() && hover_card_->GetAnchorView() == tab;
+         !hover_card_->IsFadingOut() &&
+         hover_card_->GetDesiredAnchorView() == tab;
 }
 
 bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) {
