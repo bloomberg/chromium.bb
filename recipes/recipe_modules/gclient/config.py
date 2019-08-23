@@ -449,3 +449,7 @@ def devtools(c):
   s.name = 'devtools'
   s.url = 'https://chromium.googlesource.com/devtools/devtools-frontend.git'
   c.got_revision_mapping['devtools'] = 'got_revision'
+  c.repo_path_map.update({
+      'https://chromium.googlesource.com/devtools/devtools-frontend': (
+          'devtools/devtools-frontend', 'HEAD'),
+  })
