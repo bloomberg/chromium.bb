@@ -3538,6 +3538,11 @@ const char kWakeOnPacketsName[] = "Wake On Packets";
 const char kWakeOnPacketsDescription[] =
     "Enables waking the device based on the receipt of some network packets.";
 
+const char kZeroStateFilesName[] = "Enable Launcher Zero State Files";
+const char kZeroStateFilesDescription[] =
+    "Enables zero state file recommendations in the Launcher, which appear when"
+    "the search box is active and no query has been entered.";
+
 // Prefer keeping this section sorted to adding new definitions down here.
 
 #endif  // defined(OS_CHROMEOS)

@@ -4407,6 +4407,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kContextMenuSearchWithGoogleLens)},
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+    {"zero-state-files", flag_descriptions::kZeroStateFilesName,
+     flag_descriptions::kZeroStateFilesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnableZeroStateMixedTypesRanker)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -2126,6 +2126,9 @@ extern const char kVirtualKeyboardDescription[];
 extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
 
+extern const char kZeroStateFilesName[];
+extern const char kZeroStateFilesDescription[];
+
 // Prefer keeping this section sorted to adding new declarations down here.
 
 #endif  // #if defined(OS_CHROMEOS)

@@ -3339,5 +3339,10 @@
     "name": "xr-sandbox",
     "owners": [ "//chrome/services/isolated_xr_device/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 79
+  },
+  {
+    "name": "zero-state-files",
+    "owners": [ "tby", "jiameng" ],
+    "expiry_milestone": 82
   }
 ]
