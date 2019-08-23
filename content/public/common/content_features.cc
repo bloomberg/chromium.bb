@@ -306,10 +306,6 @@ const base::Feature kNotificationTriggers{"NotificationTriggers",
 const base::Feature kOriginPolicy{"OriginPolicy",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Origin Trials for controlling access to feature/API experiments.
-const base::Feature kOriginTrials{"OriginTrials",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 // History navigation in response to horizontal overscroll (aka gesture-nav).
 const base::Feature kOverscrollHistoryNavigation {
   "OverscrollHistoryNavigation",

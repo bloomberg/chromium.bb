@@ -58,8 +58,6 @@ void SetRuntimeFeatureDefaultsForPlatform() {
 void SetIndividualRuntimeFeatures(
     const base::CommandLine& command_line,
     bool enable_experimental_web_platform_features) {
-  WebRuntimeFeatures::EnableOriginTrials(
-      base::FeatureList::IsEnabled(features::kOriginTrials));
 
   if (!base::FeatureList::IsEnabled(features::kWebUsb))
     WebRuntimeFeatures::EnableWebUsb(false);
