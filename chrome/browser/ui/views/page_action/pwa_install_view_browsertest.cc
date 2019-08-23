@@ -11,7 +11,6 @@
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -108,12 +107,8 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  struct OpenTabResult {
-    content::WebContents* web_contents;
-    banners::TestAppBannerManagerDesktop* app_banner_manager;
-  };
-
-  OpenTabResult OpenNewTab(const GURL& url) {
+  content::WebContents* OpenNewTab(const GURL& url,
+                                   bool expected_installability) {
     chrome::NewTab(browser());
     content::WebContents* web_contents = GetCurrentTab();
     auto* app_banner_manager =
@@ -122,8 +117,10 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
     DCHECK(!app_banner_manager->WaitForInstallableCheck());
 
     ui_test_utils::NavigateToURL(browser(), url);
+    DCHECK_EQ(app_banner_manager->WaitForInstallableCheck(),
+              expected_installability);
 
-    return OpenTabResult{web_contents, app_banner_manager};
+    return web_contents;
   }
 
   GURL GetInstallableAppURL() {
@@ -209,74 +206,14 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PwaInstallViewBrowserTest);
 };
 
-// Tests that the plus icon is not shown when an existing app is installed and
-// set to open in a window.
-IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
-                       PwaSetToOpenInWindowIsNotInstallable) {
-  NavigateToURL(https_server_.GetURL("/banners/manifest_test_page.html"));
-  EXPECT_FALSE(pwa_install_view_->GetVisible());
-  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
-  ExecutePwaInstallIcon();
-
-  // New tab instead of navigate because installed app opened in new window and
-  // we need a new TestAppBannerManagerDesktop created.
-  banners::TestAppBannerManagerDesktop* app_banner_manager =
-      OpenNewTab(https_server_.GetURL("/banners/manifest_test_page.html"))
-          .app_banner_manager;
-
-  // Ignore result of WaitForInstallableCheck because test class checks
-  // different things to class under test.
-  app_banner_manager->WaitForInstallableCheck();
-  EXPECT_EQ(app_banner_manager->GetInstallableWebAppCheckResultForTesting(),
-            banners::AppBannerManager::InstallableWebAppCheckResult::kNo);
-  EXPECT_FALSE(pwa_install_view_->GetVisible());
-}
-
-// Tests that the plus icon is shown when an existing app is installed and set
-// to open in a tab.
-IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
-                       PwaSetToOpenInTabIsInstallable) {
-  NavigateToURL(https_server_.GetURL("/banners/manifest_test_page.html"));
-  EXPECT_FALSE(pwa_install_view_->GetVisible());
-  EXPECT_TRUE(app_banner_manager_->WaitForInstallableCheck());
-  web_app::AppId app_id = ExecutePwaInstallIcon();
-
-  // Change launch container to open in tab.
-  extensions::SetLaunchType(web_contents_->GetBrowserContext(), app_id,
-                            extensions::LAUNCH_TYPE_REGULAR);
-
-  // New tab instead of navigate because installed app opened in new window and
-  // we need a new TestAppBannerManagerDesktop created.
-  banners::TestAppBannerManagerDesktop* app_banner_manager =
-      OpenNewTab(https_server_.GetURL("/banners/manifest_test_page.html"))
-          .app_banner_manager;
-
-  // Ignore result of WaitForInstallableCheck because test class checks
-  // different things to class under test.
-  app_banner_manager->WaitForInstallableCheck();
-  EXPECT_EQ(
-      app_banner_manager->GetInstallableWebAppCheckResultForTesting(),
-      banners::AppBannerManager::InstallableWebAppCheckResult::kPromotable);
-  EXPECT_TRUE(pwa_install_view_->GetVisible());
-}
-
 // Tests that the plus icon updates its visibiliy when switching between
 // installable/non-installable tabs.
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
                        IconVisibilityAfterTabSwitching) {
-  content::WebContents* installable_web_contents;
-  {
-    OpenTabResult result = OpenNewTab(GetInstallableAppURL());
-    installable_web_contents = result.web_contents;
-    ASSERT_TRUE(result.app_banner_manager->WaitForInstallableCheck());
-  }
-
-  content::WebContents* non_installable_web_contents;
-  {
-    OpenTabResult result = OpenNewTab(GetNonInstallableAppURL());
-    non_installable_web_contents = result.web_contents;
-    ASSERT_FALSE(result.app_banner_manager->WaitForInstallableCheck());
-  }
+  content::WebContents* installable_web_contents =
+      OpenNewTab(GetInstallableAppURL(), true);
+  content::WebContents* non_installable_web_contents =
+      OpenNewTab(GetNonInstallableAppURL(), false);
 
   chrome::SelectPreviousTab(browser());
   ASSERT_EQ(installable_web_contents, GetCurrentTab());

@@ -120,6 +120,9 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PWA_CONFIRMATION);
 
+  if (g_auto_accept_pwa_for_testing)
+    Accept();
+
   SetHighlightedButton(highlight_button);
 }
 
@@ -184,9 +187,6 @@ void ShowPWAInstallBubble(content::WebContents* web_contents,
       anchor_view, icon, std::move(web_app_info), std::move(callback));
 
   views::BubbleDialogDelegateView::CreateBubble(g_bubble_)->Show();
-
-  if (g_auto_accept_pwa_for_testing)
-    g_bubble_->GetDialogClientView()->AcceptWindow();
 
   icon->Update();
   DCHECK(icon->GetVisible());

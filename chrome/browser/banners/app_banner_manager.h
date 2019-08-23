@@ -176,8 +176,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // install the site.
   bool IsPromptAvailableForTesting() const;
 
-  InstallableWebAppCheckResult GetInstallableWebAppCheckResultForTesting();
-
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);
   ~AppBannerManager() override;
@@ -228,10 +226,6 @@ class AppBannerManager : public content::WebContentsObserver,
                                            const GURL& validated_url,
                                            const GURL& start_url,
                                            const GURL& manifest_url);
-
-  // Returns whether the installed web app at the current page can be
-  // reinstalled over the top of the existing installation.
-  virtual bool ShouldAllowWebAppReplacementInstall();
 
   // Callback invoked by the InstallableManager once it has fetched the page's
   // manifest.

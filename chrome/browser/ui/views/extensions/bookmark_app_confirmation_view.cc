@@ -29,7 +29,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -96,6 +95,9 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
   title_tf_->SelectAll(true);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::BOOKMARK_APP_CONFIRMATION);
+
+  if (g_auto_accept_bookmark_app_for_testing)
+    Accept();
 }
 
 views::View* BookmarkAppConfirmationView::GetInitiallyFocusedView() {
@@ -160,13 +162,10 @@ namespace chrome {
 void ShowBookmarkAppDialog(content::WebContents* web_contents,
                            std::unique_ptr<WebApplicationInfo> web_app_info,
                            AppInstallationAcceptanceCallback callback) {
-  auto* dialog = new BookmarkAppConfirmationView(std::move(web_app_info),
-                                                 std::move(callback));
-  constrained_window::ShowWebModalDialogViews(dialog, web_contents);
-
-  if (g_auto_accept_bookmark_app_for_testing) {
-    dialog->GetDialogClientView()->AcceptWindow();
-  }
+  constrained_window::ShowWebModalDialogViews(
+      new BookmarkAppConfirmationView(std::move(web_app_info),
+                                      std::move(callback)),
+      web_contents);
 }
 
 void SetAutoAcceptBookmarkAppDialogForTesting(bool auto_accept) {

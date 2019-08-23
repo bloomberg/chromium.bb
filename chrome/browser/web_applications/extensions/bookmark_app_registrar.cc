@@ -184,28 +184,6 @@ web_app::LaunchContainer BookmarkAppRegistrar::GetAppLaunchContainer(
   }
 }
 
-void BookmarkAppRegistrar::SetAppLaunchContainer(
-    const web_app::AppId& app_id,
-    web_app::LaunchContainer launch_container) {
-  const Extension* extension = GetExtension(app_id);
-  if (!extension)
-    return;
-
-  switch (launch_container) {
-    case web_app::LaunchContainer::kWindow:
-      extensions::SetLaunchType(profile(), extension->id(),
-                                extensions::LAUNCH_TYPE_WINDOW);
-      return;
-    case web_app::LaunchContainer::kTab:
-      extensions::SetLaunchType(profile(), extension->id(),
-                                extensions::LAUNCH_TYPE_REGULAR);
-      return;
-    case web_app::LaunchContainer::kDefault:
-      NOTREACHED();
-      return;
-  }
-}
-
 std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {
   std::vector<web_app::AppId> app_ids;
   for (scoped_refptr<const Extension> app :
