@@ -22,6 +22,10 @@ namespace user_manager {
 class ScopedUserManager;
 class RemoveUserDelegate;
 
+// A list pref of the the regular users known on this device, arranged in LRU
+// order, stored in local state.
+USER_MANAGER_EXPORT extern const char kRegularUsersPref[];
+
 // Interface for UserManagerBase - that provides base implementation for
 // Chrome OS user management. Typical features:
 // * Get list of all know users (who have logged into this Chrome OS device)
