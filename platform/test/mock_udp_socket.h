@@ -44,8 +44,8 @@ class MockUdpSocket : public UdpSocket {
   bool IsIPv6() const override;
   IPEndpoint GetLocalEndpoint() const override;
 
-  void QueueBindResult(Error error) { bind_errors_.push(error); }
-  void QueueSendResult(Error error) { send_errors_.push(error); }
+  void EnqueueBindResult(Error error) { bind_errors_.push(error); }
+  void EnqueueSendResult(Error error) { send_errors_.push(error); }
 
   // UdpSocket overrides
   void Bind() override;
