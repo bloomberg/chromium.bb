@@ -2101,10 +2101,10 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
         customize.LOG_TYPE.NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED);
     customize.richerPicker_toggleRefreshDaily(refreshToggle.checked);
   };
-  refreshToggle.onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.ENTER ||
-        event.keyCode === customize.KEYCODES.SPACE) {
-      refreshToggle.onchange(event);
+  refreshToggle.onkeyup = function(event) {
+    // Handle enter since, unlike space, it does not trigger a click event.
+    if (event.keyCode === customize.KEYCODES.ENTER) {
+      refreshToggle.click();
     }
   };
   refreshToggle.onclick = function(event) {
