@@ -618,7 +618,7 @@ void SVGSMILElement::SetTargetElement(SVGElement* target) {
 }
 
 SMILTime SVGSMILElement::Elapsed() const {
-  return time_container_ ? time_container_->CurrentDocumentTime() : 0;
+  return time_container_ ? time_container_->Elapsed() : 0;
 }
 
 bool SVGSMILElement::IsFrozen() const {
@@ -685,18 +685,9 @@ SMILTime SVGSMILElement::SimpleDuration() const {
   return std::min(Dur(), SMILTime::Indefinite());
 }
 
-static void InsertSortedAndUnique(Vector<SMILTimeWithOrigin>& list,
-                                  SMILTimeWithOrigin time) {
+static void InsertSorted(Vector<SMILTimeWithOrigin>& list,
+                         SMILTimeWithOrigin time) {
   auto* position = std::lower_bound(list.begin(), list.end(), time);
-  // Don't add it if we already have one of those.
-  for (auto* it = position; it < list.end(); ++it) {
-    if (position->Time() != time.Time())
-      break;
-    // If they share both time and origin, we don't need to add it,
-    // we just need to react.
-    if (position->ShareOrigin(time))
-      return;
-  }
   list.insert(position - list.begin(), time);
 }
 
@@ -714,7 +705,7 @@ void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
     return;
   Vector<SMILTimeWithOrigin>& list =
       begin_or_end == kBegin ? begin_times_ : end_times_;
-  InsertSortedAndUnique(list, time_with_origin);
+  InsertSorted(list, time_with_origin);
   if (begin_or_end == kBegin)
     BeginListChanged(elapsed);
   else
@@ -858,46 +849,6 @@ base::Optional<SMILInterval> SVGSMILElement::ResolveNextInterval() {
   return base::nullopt;
 }
 
-SMILTime SVGSMILElement::NextInterestingTime(SMILTime document_time) const {
-  // TODO(edvardt): This can probably be smarter
-  //
-  // We currently just step at a delta smaller than the instance time,
-  // this lets us update it in the loop, but it costs one extra cycle.
-  // There is probably a way to make this cleaner, and faster.
-  unsigned repeat;
-  if (interval_.begin.IsFinite())
-    repeat = CalculateAnimationRepeat(document_time.Value()) + 1;
-  else
-    repeat = 0;
-  SMILTime simple_duration = SimpleDuration();
-  // The comments here trick to formatter into having them
-  // on separate lines, which makes it a lot easier to read.
-  SMILTime times[] = {
-      //
-      interval_.begin + simple_duration * repeat,
-      // TODO(edvardt): This is a vile hack.
-      // However, I am removing 0.5ms, which is less than the minimum
-      // precision time. This is a vile hack, and I would love to see it
-      // gone, but it should work "as is".
-      //
-      // Fixing this "for real" would require rewriting parts of the
-      // FindInstanceTime and the whole "sync base loop". This is a large
-      // undertaking, should not be taken lightly, but is needed in my opinion.
-      FindInstanceTime(kBegin, document_time, false) - 0.00005,
-      //
-      interval_.begin,
-      //
-      interval_.end};
-  std::sort(times, times + sizeof(times) / sizeof(times[0]));
-  for (SMILTime time : times) {
-    if (!time.IsFinite())
-      continue;
-    if (document_time < time)
-      return time;
-  }
-  return SMILTime::Indefinite();
-}
-
 SMILTime SVGSMILElement::NextProgressTime() const {
   return next_progress_time_;
 }
@@ -974,6 +925,63 @@ base::Optional<SMILInterval> SVGSMILElement::CheckForNewRestartInterval(
   }
 
   return modified;
+}
+
+void SVGSMILElement::SeekToIntervalCorrespondingToTime(double elapsed) {
+  DCHECK(!is_waiting_for_first_interval_);
+  DCHECK(interval_.begin.IsFinite());
+
+  // Manually seek from interval to interval, just as if the animation would run
+  // regulary.
+  while (true) {
+    // Figure out the next value in the begin time list after the current
+    // interval begin.
+    SMILTime next_begin = FindInstanceTime(kBegin, interval_.begin, false);
+
+    // If the 'nextBegin' time is unresolved (eg. just one defined interval),
+    // we're done seeking.
+    if (next_begin.IsUnresolved())
+      return;
+
+    // If the 'nextBegin' time is larger than or equal to the current interval
+    // end time, we're done seeking.  If the 'elapsed' time is smaller than the
+    // next begin interval time, we're done seeking.
+    if (next_begin < interval_.end && elapsed >= next_begin) {
+      // End current interval, and start a new interval from the 'nextBegin'
+      // time.
+      interval_.end = next_begin;
+
+      base::Optional<SMILInterval> next_interval = ResolveNextInterval();
+      if (!next_interval)
+        break;
+
+      interval_ = *next_interval;
+      NotifyDependentsIntervalChanged(interval_);
+      next_progress_time_ =
+          next_progress_time_.IsUnresolved()
+              ? interval_.begin
+              : std::min(next_progress_time_, interval_.begin);
+      continue;
+    }
+
+    // If the desired 'elapsed' time is past the current interval, advance to
+    // the next.
+    if (elapsed >= interval_.end) {
+      base::Optional<SMILInterval> next_interval = ResolveNextInterval();
+      if (!next_interval)
+        break;
+
+      interval_ = *next_interval;
+      NotifyDependentsIntervalChanged(interval_);
+      next_progress_time_ =
+          next_progress_time_.IsUnresolved()
+              ? interval_.begin
+              : std::min(next_progress_time_, interval_.begin);
+      continue;
+    }
+
+    return;
+  }
 }
 
 unsigned SVGSMILElement::CalculateAnimationRepeat(double elapsed) const {
@@ -1096,6 +1104,7 @@ bool SVGSMILElement::NeedsToProgress(double elapsed) {
     return false;
   }
 
+
   if (is_waiting_for_first_interval_) {
     is_waiting_for_first_interval_ = false;
     ResolveFirstInterval();
@@ -1128,7 +1137,18 @@ void SVGSMILElement::UpdateNextProgressTime(double elapsed) {
   next_progress_time_ = CalculateNextProgressTime(elapsed);
 }
 
-void SVGSMILElement::Progress(double elapsed) {
+void SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
+  // This call may obtain a new interval -- never call
+  // CalculateAnimation{ Percent, Repeat }() before!
+  if (seek_to_time) {
+    SeekToIntervalCorrespondingToTime(elapsed);
+    if (elapsed < interval_.begin) {
+      // elapsed is not within an interval.
+      next_progress_time_ = interval_.begin;
+      return;
+    }
+  }
+
   float percent = CalculateAnimationPercent(elapsed);
   unsigned repeat = CalculateAnimationRepeat(elapsed);
 
@@ -1157,8 +1177,11 @@ void SVGSMILElement::Progress(double elapsed) {
   }
 
   // Copy over the value from last frame
-  // TODO: Is this needed?
-  // last_syncbase_repeat_ = last_repeat_;
+  last_syncbase_repeat_ = last_repeat_;
+  if (seek_to_time) {
+    interval_has_changed_ = true;
+    last_repeat_ = repeat;
+  }
 
   ActiveState old_active_state = GetActiveState();
   active_state_ = DetermineActiveState(elapsed);
@@ -1169,13 +1192,11 @@ void SVGSMILElement::Progress(double elapsed) {
       StartedActiveInterval();
     }
 
-    if (repeat && repeat != last_repeat_) {
-      last_repeat_ = repeat;
-      NotifyDependentsIntervalChanged(interval_);
+    if (repeat && repeat != last_repeat_)
       ScheduleRepeatEvents();
-    }
 
     last_percent_ = percent;
+    last_repeat_ = repeat;
   }
 
   if ((old_active_state == kActive && GetActiveState() != kActive) ||

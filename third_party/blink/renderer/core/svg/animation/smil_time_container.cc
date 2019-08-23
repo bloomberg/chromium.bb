@@ -45,12 +45,10 @@ static constexpr base::TimeDelta kAnimationPolicyOnceDuration =
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     : presentation_time_(0),
       reference_time_(0),
-      latest_update_time_(0),
       frame_scheduling_state_(kIdle),
       started_(false),
       paused_(false),
       document_order_indexes_dirty_(false),
-      intervals_dirty_(true),
       wakeup_timer_(
           owner.GetDocument().GetTaskRunner(TaskType::kInternalDefault),
           this,
@@ -136,7 +134,6 @@ bool SMILTimeContainer::HasPendingSynchronization() const {
 }
 
 void SMILTimeContainer::NotifyIntervalsChanged() {
-  intervals_dirty_ = true;
   if (!IsStarted())
     return;
   // Schedule updateAnimations() to be called asynchronously so multiple
@@ -178,10 +175,6 @@ void SMILTimeContainer::ResetDocumentTime() {
   SynchronizeToDocumentTimeline();
 }
 
-double SMILTimeContainer::CurrentDocumentTime() const {
-  return latest_update_time_;
-}
-
 void SMILTimeContainer::SynchronizeToDocumentTimeline() {
   reference_time_ = GetDocument()
                         .Timeline()
@@ -217,7 +210,11 @@ void SMILTimeContainer::Start() {
   SynchronizeToDocumentTimeline();
   started_ = true;
 
-  UpdateAnimationsAndScheduleFrameIfNeeded(presentation_time_);
+  // If the "presentation time" is non-zero, the timeline was modified via
+  // SetElapsed() before the document began. In this case pass on
+  // seek_to_time=true to issue a seek.
+  UpdateAnimationsAndScheduleFrameIfNeeded(presentation_time_,
+                                           presentation_time_ ? true : false);
 }
 
 void SMILTimeContainer::Pause() {
@@ -272,9 +269,8 @@ void SMILTimeContainer::SetElapsed(double elapsed) {
 #if DCHECK_IS_ON()
   prevent_scheduled_animations_changes_ = false;
 #endif
-  intervals_dirty_ = true;
-  latest_update_time_ = 0;
-  UpdateAnimationsAndScheduleFrameIfNeeded(elapsed);
+
+  UpdateAnimationsAndScheduleFrameIfNeeded(elapsed, true);
 }
 
 void SMILTimeContainer::ScheduleAnimationFrame(double delay_time) {
@@ -414,11 +410,12 @@ bool SMILTimeContainer::CanScheduleFrame(SMILTime earliest_fire_time) const {
 }
 
 void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
-    double elapsed) {
+    double elapsed,
+    bool seek_to_time) {
   if (!GetDocument().IsActive())
     return;
 
-  UpdateAnimationTimings(elapsed);
+  UpdateAnimationTimings(elapsed, seek_to_time);
   ApplyAnimationValues(elapsed);
 
   SMILTime earliest_fire_time = SMILTime::Unresolved();
@@ -434,51 +431,8 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
   ScheduleAnimationFrame(delay_time);
 }
 
-// A helper function to fetch the next interesting time after document_time
-SMILTime SMILTimeContainer::NextInterestingTime(SMILTime document_time) const {
-  DCHECK(document_time.IsFinite());
-  DCHECK(document_time >= 0.0);
-  SMILTime next_interesting_time = SMILTime::Indefinite();
-  for (const auto& entry : scheduled_animations_) {
-    const auto* sandwich = entry.value.Get();
-    SMILTime interesting_time = sandwich->NextInterestingTime(document_time);
-    next_interesting_time = std::min(next_interesting_time, interesting_time);
-  }
-  DCHECK(!next_interesting_time.IsFinite() ||
-         document_time < next_interesting_time);
-  return next_interesting_time;
-}
-
-void SMILTimeContainer::RemoveUnusedKeys() {
-  Vector<AnimationId> invalid_keys;
-  for (auto& entry : scheduled_animations_) {
-    if (entry.value->IsEmpty()) {
-      invalid_keys.push_back(entry.key);
-    }
-  }
-  scheduled_animations_.RemoveAll(invalid_keys);
-}
-
-void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
-  // This Shrink should free up the memory from the previous
-  // run in this loop. Otherwise it won't do anything.
-  DCHECK(document_time.IsFinite());
-  DCHECK(document_time >= 0.0);
-  active_sandwiches_.Shrink(0);
-  for (auto& entry : scheduled_animations_) {
-    auto* sandwich = entry.value.Get();
-    sandwich->UpdateTiming(document_time.Value());
-
-    if (!sandwich->IsEmpty()) {
-      active_sandwiches_.push_back(sandwich);
-    }
-  }
-
-  for (auto& sandwich : active_sandwiches_)
-    sandwich->SendEvents(document_time.Value());
-}
-
-void SMILTimeContainer::UpdateAnimationTimings(SMILTime elapsed) {
+void SMILTimeContainer::UpdateAnimationTimings(double elapsed,
+                                               bool seek_to_time) {
   DCHECK(GetDocument().IsActive());
 
 #if DCHECK_IS_ON()
@@ -493,30 +447,29 @@ void SMILTimeContainer::UpdateAnimationTimings(SMILTime elapsed) {
   if (document_order_indexes_dirty_)
     UpdateDocumentOrderIndexes();
 
-  RemoveUnusedKeys();
-
-  // Don't update if it's a duplicate.
-  if (elapsed == latest_update_time_ && elapsed != 0.0) {
-    return;
+  {
+    Vector<AnimationId> invalid_keys;
+    for (auto& entry : scheduled_animations_) {
+      if (entry.value->IsEmpty()) {
+        invalid_keys.push_back(entry.key);
+      }
+    }
+    scheduled_animations_.RemoveAll(invalid_keys);
   }
 
   active_sandwiches_.ReserveCapacity(scheduled_animations_.size());
-  intervals_dirty_ |= latest_update_time_ == elapsed;
-  if (intervals_dirty_) {
-    const SMILTime interesting_time = NextInterestingTime(latest_update_time_);
-    latest_update_time_ = std::min(elapsed, interesting_time).Value();
-    UpdateIntervals(latest_update_time_);
+  for (auto& entry : scheduled_animations_) {
+    auto* sandwich = entry.value.Get();
+    sandwich->UpdateTiming(elapsed, seek_to_time);
+
+    if (!sandwich->IsEmpty()) {
+      active_sandwiches_.push_back(sandwich);
+    }
   }
 
-  while (latest_update_time_ < elapsed) {
-    const SMILTime interesting_time = NextInterestingTime(latest_update_time_);
-    latest_update_time_ = std::min(elapsed, interesting_time).Value();
-    UpdateIntervals(latest_update_time_);
+  for (auto& sandwich : active_sandwiches_) {
+    sandwich->SendEvents(elapsed, seek_to_time);
   }
-  // Deliberate resetting of the flag afterwards. This is so
-  // we don't toggle it on again in the loop, which causes us
-  // to be trapped in an infinet loop.
-  intervals_dirty_ = false;
 }
 
 void SMILTimeContainer::ApplyAnimationValues(double elapsed) {
