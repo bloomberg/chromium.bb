@@ -431,8 +431,8 @@ run other checks (e.g. pyflakes, etc.)
                                    self.options.output, self.options.debug)
 
     # Special case one file as it's common -- faster to avoid parallel startup.
-    if sum([len(x) for _, x in linter_map.items()]) == 1:
-      linter, files = linter_map.items()[0]
+    if sum(len(x) for x in linter_map.values()) == 1:
+      linter, files = next(iter(linter_map.items()))
       dispatcher(linter, files[0])
     else:
       # Run the linter in parallel on the files.

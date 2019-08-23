@@ -8,9 +8,8 @@
 from __future__ import print_function
 
 import collections
+import io
 import os
-
-from six.moves import StringIO
 
 from chromite.cli.cros import lint
 from chromite.lib import cros_test_lib
@@ -623,7 +622,7 @@ class DocStringCheckerTest(CheckerTestCase):
 
          Returns:
            some value
-         """, [
+         """, collections.OrderedDict((
              ('Args', lint.DocStringSectionDetails(
                  name='Args',
                  header='         Args:',
@@ -639,12 +638,12 @@ class DocStringCheckerTest(CheckerTestCase):
                  header='         Returns:',
                  lines=['           some value'],
                  lineno=12)),
-         ]),
+         ))),
     )
     for dc, expected in datasets:
       node = TestNode(doc=dc)
       sections = self.checker._parse_docstring_sections(node, node.lines)
-      self.assertEqual(expected, sections.items())
+      self.assertEqual(expected, sections)
 
 
 class ChromiteLoggingCheckerTest(CheckerTestCase):
@@ -675,7 +674,7 @@ class SourceCheckerTest(CheckerTestCase):
     for shebang in shebangs:
       self.results = []
       node = TestNode()
-      stream = StringIO(shebang)
+      stream = io.BytesIO(shebang)
       st = StatStub(size=len(shebang), mode=mode)
       self.checker._check_shebang(node, stream, st)
       msg = 'processing shebang failed: %r' % shebang
@@ -687,28 +686,28 @@ class SourceCheckerTest(CheckerTestCase):
   def testBadShebang(self):
     """Verify _check_shebang rejects bad shebangs"""
     shebangs = (
-        '#!/usr/bin/python\n',
-        '#! /usr/bin/python2 \n',
-        '#!/usr/bin/env python\n',
-        '#! /usr/bin/env python2 \n',
-        '#!/usr/bin/python2\n',
+        b'#!/usr/bin/python\n',
+        b'#! /usr/bin/python2 \n',
+        b'#!/usr/bin/env python\n',
+        b'#! /usr/bin/env python2 \n',
+        b'#!/usr/bin/python2\n',
     )
     self._testShebang(shebangs, ('R9200',), 0o755)
 
   def testGoodShebangNoExec(self):
     """Verify _check_shebang rejects shebangs on non-exec files"""
     shebangs = (
-        '#!/usr/bin/env python2\n',
-        '#!/usr/bin/env python3\n',
+        b'#!/usr/bin/env python2\n',
+        b'#!/usr/bin/env python3\n',
     )
     self._testShebang(shebangs, ('R9202',), 0o644)
 
   def testGoodShebang(self):
     """Verify _check_shebang accepts good shebangs"""
     shebangs = (
-        '#!/usr/bin/env python2\n',
-        '#!/usr/bin/env python3\n',
-        '#!/usr/bin/env python2\t\n',
+        b'#!/usr/bin/env python2\n',
+        b'#!/usr/bin/env python3\n',
+        b'#!/usr/bin/env python2\t\n',
     )
     self._testShebang(shebangs, (), 0o755)
 
@@ -716,56 +715,56 @@ class SourceCheckerTest(CheckerTestCase):
     """_check_encoding should ignore 0 byte files"""
     node = TestNode()
     self.results = []
-    stream = StringIO('')
+    stream = io.BytesIO(b'')
     self.checker._check_encoding(node, stream, StatStub())
     self.assertLintPassed()
 
   def testMissingEncoding(self):
     """_check_encoding should fail when there is no encoding"""
     headers = (
-        '#',
-        '#\n',
-        '#\n#',
-        '#\n#\n',
-        '#!/usr/bin/python\n# foo\n'
-        '#!/usr/bin/python\n',
-        '# some comment\n',
-        '# some comment\n# another line\n',
-        '# first line is not a shebang\n# -*- coding: utf-8 -*-\n',
-        '#!/usr/bin/python\n# second line\n# -*- coding: utf-8 -*-\n',
+        b'#',
+        b'#\n',
+        b'#\n#',
+        b'#\n#\n',
+        b'#!/usr/bin/python\n# foo\n'
+        b'#!/usr/bin/python\n',
+        b'# some comment\n',
+        b'# some comment\n# another line\n',
+        b'# first line is not a shebang\n# -*- coding: utf-8 -*-\n',
+        b'#!/usr/bin/python\n# second line\n# -*- coding: utf-8 -*-\n',
     )
     node = TestNode()
     for header in headers:
       self.results = []
-      stream = StringIO(header)
+      stream = io.BytesIO(header)
       self.checker._check_encoding(node, stream, StatStub(size=len(header)))
       self.assertLintFailed(expected=('R9204',))
 
   def testBadEncoding(self):
     """_check_encoding should reject non-"utf-8" encodings"""
     encodings = (
-        'UTF8', 'UTF-8', 'utf8', 'ISO-8859-1',
+        b'UTF8', b'UTF-8', b'utf8', b'ISO-8859-1',
     )
     node = TestNode()
     for encoding in encodings:
       self.results = []
-      header = '# -*- coding: %s -*-\n' % (encoding,)
-      stream = StringIO(header)
+      header = b'# -*- coding: %s -*-\n' % (encoding,)
+      stream = io.BytesIO(header)
       self.checker._check_encoding(node, stream, StatStub(size=len(header)))
       self.assertLintFailed(expected=('R9205',))
 
   def testGoodEncodings(self):
     """Verify _check_encoding accepts various correct encoding forms"""
-    shebang = '#!/usr/bin/python\n'
+    shebang = b'#!/usr/bin/python\n'
     encodings = (
-        '# -*- coding: utf-8 -*-',
+        b'# -*- coding: utf-8 -*-',
     )
     node = TestNode()
     self.results = []
-    for first in ('', shebang):
+    for first in (b'', shebang):
       for encoding in encodings:
-        data = first + encoding + '\n'
-        stream = StringIO(data)
+        data = first + encoding + b'\n'
+        stream = io.BytesIO(data)
         self.checker._check_encoding(node, stream, StatStub(size=len(data)))
         self.assertLintPassed()
 

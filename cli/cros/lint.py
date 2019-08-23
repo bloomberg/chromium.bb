@@ -447,7 +447,7 @@ class DocStringChecker(pylint.checkers.BaseChecker):
 
     # Make sure the sections are in the right order.
     found_sections = [x for x in valid_sections if x in sections]
-    if found_sections != sections.keys():
+    if found_sections != list(sections):
       margs = {'sections': ', '.join(valid_sections)}
       self.add_message('C9008', node=node, line=node.fromlineno, args=margs)
 
@@ -642,7 +642,7 @@ class SourceChecker(pylint.checkers.BaseChecker):
   options = ()
 
   # Taken from PEP-263.
-  _ENCODING_RE = re.compile(r'^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
+  _ENCODING_RE = re.compile(br'^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
 
   def visit_module(self, node):
     """Called when the whole file has been read"""
@@ -660,7 +660,7 @@ class SourceChecker(pylint.checkers.BaseChecker):
     executable = bool(mode & 0o0111)
 
     shebang = stream.readline()
-    if shebang[0:2] != '#!':
+    if shebang[0:2] != b'#!':
       if executable:
         self.add_message('R9201')
       return
@@ -668,7 +668,7 @@ class SourceChecker(pylint.checkers.BaseChecker):
       self.add_message('R9202')
 
     if shebang.strip() not in (
-        '#!/usr/bin/env python2', '#!/usr/bin/env python3'):
+        b'#!/usr/bin/env python2', b'#!/usr/bin/env python3'):
       self.add_message('R9200')
 
   def _check_encoding(self, _node, stream, st):
@@ -685,13 +685,13 @@ class SourceChecker(pylint.checkers.BaseChecker):
     encoding = stream.readline()
 
     # If the first line is the shebang, then the encoding is the second line.
-    if encoding[0:2] == '#!':
+    if encoding[0:2] == b'#!':
       encoding = stream.readline()
 
     # See if the encoding matches the standard.
     m = self._ENCODING_RE.match(encoding)
     if m:
-      if m.group(1) != 'utf-8':
+      if m.group(1) != b'utf-8':
         self.add_message('R9205')
     else:
       self.add_message('R9204')

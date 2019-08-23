@@ -164,6 +164,7 @@ PYTHON3_TESTS = {
     'cli/cros/cros_stage_unittest',
     'cli/cros/cros_tryjob_unittest',
     'cli/cros/lint_autotest_unittest',
+    'cli/cros/lint_unittest',
     'config/config_skew_unittest',
     'cros_bisect/manual_evaluator_unittest',
     'lib/accounts_lib_unittest',
