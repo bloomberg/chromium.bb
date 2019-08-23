@@ -243,7 +243,7 @@ static uint32_t mediatek_resolve_format(struct driver *drv, uint32_t format, uin
 		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
 			return DRM_FORMAT_NV12;
 #endif
-		return DRM_FORMAT_NV12;
+		return DRM_FORMAT_YVU420;
 	default:
 		return format;
 	}
