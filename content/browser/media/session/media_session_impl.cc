@@ -891,6 +891,9 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
 
   info->is_controllable = IsControllable();
 
+  // If the browser context is off the record then it should be sensitive.
+  info->is_sensitive = web_contents()->GetBrowserContext()->IsOffTheRecord();
+
   return info;
 }
 
