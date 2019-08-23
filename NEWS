@@ -49,6 +49,8 @@ issues]].
 - Added North American Braille Computer Code table (en-nabcc.utb)
   which is the counterpart of the text_nabcc.dis display table. Thanks
   to Dave Mielke.
+- Add support for the International Phonetic Alphabet (IPA) to the
+  Chinese braille table, thanks to Hurt Huang and Sponge Jhan.
 
 ** Other changes
 - Metadata keys and values are now case insensitive, thanks to Dave
