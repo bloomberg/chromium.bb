@@ -241,12 +241,6 @@ class USER_MANAGER_EXPORT UserManager {
   virtual void SaveUserDisplayEmail(const AccountId& account_id,
                                     const std::string& display_email) = 0;
 
-  // Returns the display email for user |account_id| if it is known (was
-  // previously set by a |SaveUserDisplayEmail| call).
-  // Otherwise, returns |account_id| itself.
-  virtual std::string GetUserDisplayEmail(
-      const AccountId& account_id) const = 0;
-
   // Saves user's type for |user| into local state preferences.
   virtual void SaveUserType(const User* user) = 0;
 

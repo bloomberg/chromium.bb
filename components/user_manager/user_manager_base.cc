@@ -485,12 +485,6 @@ void UserManagerBase::SaveUserDisplayEmail(const AccountId& account_id,
                                base::Value(display_email));
 }
 
-std::string UserManagerBase::GetUserDisplayEmail(
-    const AccountId& account_id) const {
-  const User* user = FindUser(account_id);
-  return user ? user->display_email() : account_id.GetUserEmail();
-}
-
 void UserManagerBase::SaveUserType(const User* user) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
 
