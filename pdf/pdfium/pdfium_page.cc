@@ -33,6 +33,12 @@ namespace chrome_pdf {
 
 namespace {
 
+constexpr double k45DegreesInRadians = base::kPiDouble / 4;
+constexpr double k90DegreesInRadians = base::kPiDouble / 2;
+constexpr double k180DegreesInRadians = base::kPiDouble;
+constexpr double k270DegreesInRadians = 3 * base::kPiDouble / 2;
+constexpr double k360DegreesInRadians = 2 * base::kPiDouble;
+
 PDFiumPage::IsValidLinkFunction g_is_valid_link_func_for_testing = nullptr;
 
 // If the link cannot be converted to a pp::Var, then it is not possible to
@@ -101,13 +107,31 @@ int GetFirstNonUnicodeWhiteSpaceCharIndex(FPDF_TEXTPAGE text_page,
 }
 
 PP_PrivateDirection GetDirectionFromAngle(double angle) {
-  angle = fmod(angle + base::kPiDouble / 4.0, 2 * base::kPiDouble);
-  if (angle >= 0 && angle <= base::kPiDouble / 2.0)
+  // Rotating the angle by 45 degrees to simplify the conditions statements.
+  // It's like if we rotated the whole cartesian coordinate system like below.
+  //   X                   X
+  //     X      IV       X
+  //       X           X
+  //         X       X
+  //           X   X
+  //   III       X       I
+  //           X   X
+  //         X       X
+  //       X           X
+  //     X      II       X
+  //   X                   X
+
+  angle = fmod(angle + k45DegreesInRadians, k360DegreesInRadians);
+  // Quadrant I.
+  if (angle >= 0 && angle <= k90DegreesInRadians)
     return PP_PRIVATEDIRECTION_LTR;
-  if (angle > base::kPiDouble / 2.0 && angle <= base::kPiDouble / 2.0)
+  // Quadrant II.
+  if (angle > k90DegreesInRadians && angle <= k180DegreesInRadians)
     return PP_PRIVATEDIRECTION_TTB;
-  if (angle > base::kPiDouble && angle <= 3 * base::kPiDouble / 2.0)
+  // Quadrant III.
+  if (angle > k180DegreesInRadians && angle <= k270DegreesInRadians)
     return PP_PRIVATEDIRECTION_RTL;
+  // Quadrant IV.
   return PP_PRIVATEDIRECTION_BTT;
 }
 
@@ -133,6 +157,30 @@ void AddCharSizeToAverageCharSize(pp::FloatSize new_size,
 
 double GetRotatedCharWidth(double angle, const pp::FloatSize& size) {
   return abs(cos(angle) * size.width()) + abs(sin(angle) * size.height());
+}
+
+double GetAngleOfVector(const pp::FloatPoint& v) {
+  double angle = atan2(v.y(), v.x());
+  if (angle < 0)
+    angle += k360DegreesInRadians;
+  return angle;
+}
+
+double GetAngleDifference(double a, double b) {
+  // This is either the difference or (360 - difference).
+  double x = fmod(fabs(b - a), k360DegreesInRadians);
+  return x > k180DegreesInRadians ? k360DegreesInRadians - x : x;
+}
+
+bool DoubleEquals(double d1, double d2) {
+  // The idea behind this is to use this fraction of the larger of the
+  // two numbers as the limit of the difference.  This breaks down near
+  // zero, so we reuse this as the minimum absolute size we will use
+  // for the base of the scale too.
+  static const float epsilon_scale = 0.00001f;
+  return fabs(d1 - d2) <
+         epsilon_scale *
+             std::fmax(std::fmax(std::fabs(d1), std::fabs(d2)), epsilon_scale);
 }
 
 }  // namespace
@@ -216,14 +264,14 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
 
   pp::FloatRect start_char_rect =
       GetFloatCharRectInPixels(page, text_page, char_index);
-  int text_run_font_size = FPDFText_GetFontSize(text_page, char_index);
+  double text_run_font_size = FPDFText_GetFontSize(text_page, char_index);
 
   // Heuristic: Initialize the average character size to one-third of the font
   // size to avoid having the first few characters misrepresent the average.
   // Without it, if a text run starts with a '.', its small bounding box could
   // lead to a break in the text run after only one space. Ex: ". Hello World"
   // would be split in two runs: "." and "Hello World".
-  int font_size_minimum = FPDFText_GetFontSize(text_page, char_index) / 3.0;
+  double font_size_minimum = FPDFText_GetFontSize(text_page, char_index) / 3.0;
   pp::FloatSize avg_char_size =
       pp::FloatSize(font_size_minimum, font_size_minimum);
   int non_whitespace_chars_count = 1;
@@ -241,6 +289,10 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
   float estimated_font_size =
       std::max(start_char_rect.width(), start_char_rect.height());
 
+  // The angle of the vector starting at the first character center-point and
+  // ending at the current last character center-point.
+  double text_run_angle = 0;
+
   // Continue adding characters until heuristics indicate we should end the text
   // run.
   while (char_index < chars_count) {
@@ -250,8 +302,8 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
 
     if (!base::IsUnicodeWhitespace(character)) {
       // Heuristic: End the text run if different font size is encountered.
-      int font_size = FPDFText_GetFontSize(text_page, char_index);
-      if (font_size != text_run_font_size)
+      double font_size = FPDFText_GetFontSize(text_page, char_index);
+      if (!DoubleEquals(font_size, text_run_font_size))
         break;
 
       // Heuristic: End text run if character isn't going in the same direction.
@@ -259,21 +311,33 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
           GetDirectionFromAngle(FPDFText_GetCharAngle(text_page, char_index)))
         break;
 
+      // Heuristic: End the text run if the difference between the text run
+      // angle and the angle between the center-points of the previous and
+      // current characters is greater than 90 degrees.
+      double current_angle = GetAngleOfVector(char_rect.CenterPoint() -
+                                              prev_char_rect.CenterPoint());
+      if (start_char_rect != prev_char_rect) {
+        text_run_angle = GetAngleOfVector(prev_char_rect.CenterPoint() -
+                                          start_char_rect.CenterPoint());
+
+        if (GetAngleDifference(text_run_angle, current_angle) >
+            k90DegreesInRadians) {
+          break;
+        }
+      }
+
       // Heuristic: End the text run if the center-point distance to the
       // previous character is less than 2.5x the average character size.
       AddCharSizeToAverageCharSize(char_rect.Floatsize(), &avg_char_size,
                                    &non_whitespace_chars_count);
 
-      pp::FloatPoint current_prev_diff =
-          char_rect.CenterPoint() - prev_char_rect.CenterPoint();
-      double angle = atan2(current_prev_diff.y(), current_prev_diff.x());
-      double avg_char_width = GetRotatedCharWidth(angle, avg_char_size);
+      double avg_char_width = GetRotatedCharWidth(current_angle, avg_char_size);
 
       double distance =
           GetDistanceBetweenPoints(char_rect.CenterPoint(),
                                    prev_char_rect.CenterPoint()) -
-          GetRotatedCharWidth(angle, char_rect.Floatsize()) / 2 -
-          GetRotatedCharWidth(angle, prev_char_rect.Floatsize()) / 2;
+          GetRotatedCharWidth(current_angle, char_rect.Floatsize()) / 2 -
+          GetRotatedCharWidth(current_angle, prev_char_rect.Floatsize()) / 2;
 
       if (distance > 2.5 * avg_char_width)
         break;
