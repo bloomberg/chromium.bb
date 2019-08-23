@@ -36,6 +36,15 @@ struct TileInfo;
 struct macroblock;
 struct RD_STATS;
 
+enum {
+  // Default initialization
+  DEFAULT_EVAL = 0,
+  // Initialization for default mode evaluation
+  MODE_EVAL,
+  // Initialization for winner mode evaluation
+  WINNER_MODE_EVAL,
+} UENUM1BYTE(MODE_EVAL_TYPE);
+
 #if CONFIG_RD_DEBUG
 static INLINE void av1_update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
                                              TX_SIZE tx_size, int blk_row,
@@ -239,6 +248,84 @@ static INLINE void set_tx_size_search_method(
     x->tx_size_search_method = cpi->sf.tx_size_search_method;
   }
   x->tx_mode = select_tx_mode(cpi, x->tx_size_search_method);
+}
+
+// Checks the conditions to enable winner mode processing
+static INLINE int is_winner_mode_processing_enabled(
+    const struct AV1_COMP *cpi, MB_MODE_INFO *const mbmi,
+    const PREDICTION_MODE best_mode) {
+  const SPEED_FEATURES *sf = &cpi->sf;
+
+  // TODO(any): Move block independent condition checks to frame level
+  if (is_inter_block(mbmi)) {
+    if (is_inter_mode(best_mode) &&
+        sf->tx_type_search.fast_inter_tx_type_search &&
+        !cpi->oxcf.use_inter_dct_only)
+      return 1;
+  } else {
+    if (sf->tx_type_search.fast_intra_tx_type_search &&
+        !cpi->oxcf.use_intra_default_tx_only && !cpi->oxcf.use_intra_dct_only)
+      return 1;
+  }
+
+  // Check speed feature related to winner mode processing
+  if (sf->enable_winner_mode_for_coeff_opt &&
+      cpi->optimize_seg_arr[mbmi->segment_id] != NO_TRELLIS_OPT &&
+      cpi->optimize_seg_arr[mbmi->segment_id] != FINAL_PASS_TRELLIS_OPT)
+    return 1;
+  if (sf->enable_winner_mode_for_tx_size_srch) return 1;
+
+  return 0;
+}
+
+// This function sets mode parameters for different mode evaluation stages
+static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
+                                        MACROBLOCK *x,
+                                        MODE_EVAL_TYPE mode_eval_type) {
+  const SPEED_FEATURES *sf = &cpi->sf;
+
+  switch (mode_eval_type) {
+    case DEFAULT_EVAL:
+      x->use_default_inter_tx_type = 0;
+      x->use_default_intra_tx_type = 0;
+
+      // Get default threshold for R-D optimization of coefficients
+      x->coeff_opt_dist_threshold =
+          get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
+      // Set default transform size search method
+      set_tx_size_search_method(cpi, x, 0, 0);
+      break;
+    case MODE_EVAL:
+      x->use_default_intra_tx_type =
+          (cpi->sf.tx_type_search.fast_intra_tx_type_search ||
+           cpi->oxcf.use_intra_default_tx_only);
+      x->use_default_inter_tx_type =
+          cpi->sf.tx_type_search.fast_inter_tx_type_search;
+
+      // Get threshold for R-D optimization of coefficients during mode
+      // evaluation
+      x->coeff_opt_dist_threshold =
+          get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
+                                  sf->enable_winner_mode_for_coeff_opt, 0);
+      // Set the transform size search method for mode evaluation
+      set_tx_size_search_method(cpi, x, sf->enable_winner_mode_for_tx_size_srch,
+                                0);
+      break;
+    case WINNER_MODE_EVAL:
+      x->use_default_inter_tx_type = 0;
+      x->use_default_intra_tx_type = 0;
+
+      // Get threshold for R-D optimization of coefficients for winner mode
+      // evaluation
+      x->coeff_opt_dist_threshold =
+          get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
+                                  sf->enable_winner_mode_for_coeff_opt, 1);
+      // Set the transform size search method for winner mode evaluation
+      set_tx_size_search_method(cpi, x, sf->enable_winner_mode_for_tx_size_srch,
+                                1);
+      break;
+    default: assert(0);
+  }
 }
 #ifdef __cplusplus
 }  // extern "C"

@@ -4745,19 +4745,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
   pmi->palette_size[0] = 0;
 
-  if (cpi->sf.tx_type_search.fast_intra_tx_type_search ||
-      cpi->oxcf.use_intra_default_tx_only)
-    x->use_default_intra_tx_type = 1;
-  else
-    x->use_default_intra_tx_type = 0;
-
-  // Get the threshold for R-D optimization of coefficients during mode decision
-  x->coeff_opt_dist_threshold =
-      get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
-                              cpi->sf.enable_winner_mode_for_coeff_opt, 0);
-  // Set the transform size search method for mode evaluation
-  set_tx_size_search_method(cpi, x, cpi->sf.enable_winner_mode_for_tx_size_srch,
-                            0);
+  // Set params for mode evaluation
+  set_mode_eval_params(cpi, x, MODE_EVAL);
 
   MB_MODE_INFO best_mbmi = *mbmi;
   /* Y Search for intra prediction mode */
@@ -4838,22 +4827,10 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   // If previous searches use only the default tx type/no R-D optimization of
   // quantized coeffs, do an extra search for the best tx type/better R-D
   // optimization of quantized coeffs
-  // TODO(any) : Refactor the winner mode evaluation check control code
-  if ((cpi->sf.tx_type_search.fast_intra_tx_type_search &&
-       !cpi->oxcf.use_intra_default_tx_only) ||
-      (cpi->sf.enable_winner_mode_for_coeff_opt &&
-       (cpi->optimize_seg_arr[mbmi->segment_id] != NO_TRELLIS_OPT &&
-        cpi->optimize_seg_arr[mbmi->segment_id] != FINAL_PASS_TRELLIS_OPT)) ||
-      cpi->sf.enable_winner_mode_for_tx_size_srch) {
-    // Get the threshold for R-D optimization of coefficients for winner mode
-    x->coeff_opt_dist_threshold =
-        get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
-                                cpi->sf.enable_winner_mode_for_coeff_opt, 1);
-    // Set the transform size search method for winner mode processing
-    set_tx_size_search_method(cpi, x,
-                              cpi->sf.enable_winner_mode_for_tx_size_srch, 1);
+  if (is_winner_mode_processing_enabled(cpi, mbmi, best_mbmi.mode)) {
+    // Set params for winner mode evaluation
+    set_mode_eval_params(cpi, x, WINNER_MODE_EVAL);
     *mbmi = best_mbmi;
-    x->use_default_intra_tx_type = 0;
     intra_block_yrd(cpi, x, bsize, bmode_costs, &best_rd, rate, rate_tokenonly,
                     distortion, skippable, &best_mbmi, ctx);
   }
@@ -11003,13 +10980,8 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
       rd_pick_intra_sby_mode(cpi, x, mi_row, mi_col, &rate_y, &rate_y_tokenonly,
                              &dist_y, &y_skip, bsize, best_rd, ctx);
 
-  // Get the threshold for R-D optimization of coefficients for mode
-  // decision
-  x->coeff_opt_dist_threshold =
-      get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
-  // Set the transform size search method for mode evaluation
-  set_tx_size_search_method(cpi, x, 0, 0);
-  x->use_default_intra_tx_type = 0;
+  // Initialize default mode evaluation params
+  set_mode_eval_params(cpi, x, DEFAULT_EVAL);
 
   if (intra_yrd < best_rd) {
     // Only store reconstructed luma when there's chroma RDO. When there's no
@@ -11272,43 +11244,25 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
 // When this speed feature is on, in rd mode search, only DCT is used.
 // After the mode is determined, this function is called, to select
 // transform types and get accurate rdcost.
-static void sf_refine_fast_tx_type_search(
+static void refine_winner_mode_tx(
     const AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
     RD_STATS *rd_cost, BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
     int best_mode_index, MB_MODE_INFO *best_mbmode,
     struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE], int best_rate_y,
     int best_rate_uv, int *best_skip2) {
   const AV1_COMMON *const cm = &cpi->common;
-  const SPEED_FEATURES *const sf = &cpi->sf;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int num_planes = av1_num_planes(cm);
 
-  // TODO(any) : Refactor the winner mode evaluation check control code
   if (xd->lossless[mbmi->segment_id] == 0 && best_mode_index >= 0 &&
-      ((sf->tx_type_search.fast_inter_tx_type_search &&
-        !cpi->oxcf.use_inter_dct_only && is_inter_mode(best_mbmode->mode)) ||
-       (sf->tx_type_search.fast_intra_tx_type_search &&
-        !cpi->oxcf.use_intra_default_tx_only && !cpi->oxcf.use_intra_dct_only &&
-        !is_inter_mode(best_mbmode->mode)) ||
-       (cpi->sf.enable_winner_mode_for_coeff_opt &&
-        (cpi->optimize_seg_arr[mbmi->segment_id] != NO_TRELLIS_OPT &&
-         cpi->optimize_seg_arr[mbmi->segment_id] != FINAL_PASS_TRELLIS_OPT)) ||
-       cpi->sf.enable_winner_mode_for_tx_size_srch)) {
+      is_winner_mode_processing_enabled(cpi, mbmi, best_mbmode->mode)) {
     int skip_blk = 0;
     RD_STATS rd_stats_y, rd_stats_uv;
     const int skip_ctx = av1_get_skip_context(xd);
 
-    x->use_default_inter_tx_type = 0;
-    x->use_default_intra_tx_type = 0;
-
-    // Get the threshold for R-D optimization of coefficients for winner mode
-    x->coeff_opt_dist_threshold =
-        get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
-                                cpi->sf.enable_winner_mode_for_coeff_opt, 1);
-    // Set the transform size search method for winner mode processing
-    set_tx_size_search_method(cpi, x,
-                              cpi->sf.enable_winner_mode_for_tx_size_srch, 1);
+    // Set params for winner mode evaluation
+    set_mode_eval_params(cpi, x, WINNER_MODE_EVAL);
 
     *mbmi = *best_mbmode;
 
@@ -11698,24 +11652,8 @@ static void set_params_rd_pick_inter_mode(
 
   init_mode_skip_mask(mode_skip_mask, cpi, x, bsize);
 
-  if (cpi->sf.tx_type_search.fast_intra_tx_type_search ||
-      cpi->oxcf.use_intra_default_tx_only)
-    x->use_default_intra_tx_type = 1;
-  else
-    x->use_default_intra_tx_type = 0;
-
-  if (cpi->sf.tx_type_search.fast_inter_tx_type_search)
-    x->use_default_inter_tx_type = 1;
-  else
-    x->use_default_inter_tx_type = 0;
-
-  // Get the threshold for R-D optimization of coefficients during mode decision
-  x->coeff_opt_dist_threshold =
-      get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
-                              cpi->sf.enable_winner_mode_for_coeff_opt, 0);
-  // Set the transform size search method for mode evaluation
-  set_tx_size_search_method(cpi, x, cpi->sf.enable_winner_mode_for_tx_size_srch,
-                            0);
+  // Set params for mode evaluation
+  set_mode_eval_params(cpi, x, MODE_EVAL);
 
   if (cpi->sf.skip_repeat_interpolation_filter_search) {
     x->interp_filter_stats_idx[0] = 0;
@@ -13166,18 +13104,13 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif
 
   // In effect only when fast tx search speed features are enabled.
-  sf_refine_fast_tx_type_search(
-      cpi, x, mi_row, mi_col, rd_cost, bsize, ctx, search_state.best_mode_index,
-      &search_state.best_mbmode, yv12_mb, search_state.best_rate_y,
-      search_state.best_rate_uv, &search_state.best_skip2);
+  refine_winner_mode_tx(cpi, x, mi_row, mi_col, rd_cost, bsize, ctx,
+                        search_state.best_mode_index, &search_state.best_mbmode,
+                        yv12_mb, search_state.best_rate_y,
+                        search_state.best_rate_uv, &search_state.best_skip2);
 
-  // Get the threshold for R-D optimization of coefficients for mode evaluation
-  x->coeff_opt_dist_threshold =
-      get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
-  // Set the transform size search method for winner mode processing
-  set_tx_size_search_method(cpi, x, 0, 0);
-  x->use_default_intra_tx_type = 0;
-  x->use_default_inter_tx_type = 0;
+  // Initialize default mode evaluation params
+  set_mode_eval_params(cpi, x, DEFAULT_EVAL);
 
   // Only try palette mode when the best mode so far is an intra mode.
   const int try_palette =
