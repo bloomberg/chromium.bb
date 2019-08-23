@@ -275,7 +275,12 @@ void CrostiniPackageService::QueueUninstallApplication(
   auto registration =
       CrostiniRegistryServiceFactory::GetForProfile(profile_)->GetRegistration(
           app_id);
-  DCHECK(registration);
+  if (!registration.has_value()) {
+    LOG(ERROR)
+        << "Tried to uninstall application that has already been uninstalled";
+    return;
+  }
+
   const std::string vm_name = registration->VmName();
   const std::string container_name = registration->ContainerName();
   const std::string app_name = registration->Name();
