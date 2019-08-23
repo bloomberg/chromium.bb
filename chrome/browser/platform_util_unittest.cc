@@ -33,7 +33,7 @@
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/common/fileapi/file_system_types.h"
 #else
-#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #endif
 
 namespace platform_util {

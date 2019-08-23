@@ -33,7 +33,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/public/provider/chrome/browser/ui/logo_vendor.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/web_task_environment.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 
-#include "base/test/task_environment.h"
+#include "base/test/scoped_task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
@@ -17,7 +17,7 @@
 
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
-#include "ios/web/public/test/web_task_environment.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

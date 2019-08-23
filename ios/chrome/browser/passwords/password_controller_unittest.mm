@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/task_environment.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/logging/log_buffer_submitter.h"
 #include "components/autofill/core/browser/logging/log_manager.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/test/web_task_environment.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 
 #include <memory>
 

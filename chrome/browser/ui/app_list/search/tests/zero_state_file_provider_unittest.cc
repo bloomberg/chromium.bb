@@ -9,11 +9,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/task_environment.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/zero_state_file_result.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

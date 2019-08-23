@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/browser/extensions/test_blacklist_state_fetcher.h"
 #include "chrome/common/safe_browsing/crx_info.pb.h"
-#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

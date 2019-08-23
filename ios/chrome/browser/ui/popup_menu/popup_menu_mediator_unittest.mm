@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 #include "base/time/default_clock.h"
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
@@ -9,7 +10,6 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
@@ -25,7 +25,7 @@
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/web_task_environment.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"

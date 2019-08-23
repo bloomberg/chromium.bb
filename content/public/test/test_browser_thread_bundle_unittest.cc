@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 
 #include "base/atomicops.h"
 #include "base/bind.h"
@@ -149,8 +149,8 @@ TEST(BrowserTaskEnvironmentTest, TraitsConstructor) {
   signaled_on_real_io_thread.TimedWait(base::TimeDelta::FromSeconds(5));
   EXPECT_TRUE(signaled_on_real_io_thread.IsSignaled());
 
-  // Tasks posted via PostTask don't run in ThreadPoolExecutionMode::QUEUED
-  // until RunUntilIdle is called.
+  // Tasks posted via PostTask don't run in ThreadPoolExecutionMode::QUEUED until
+  // RunUntilIdle is called.
   base::AtomicFlag task_ran;
   PostTask(FROM_HERE,
            BindOnce([](base::AtomicFlag* task_ran) { task_ran->Set(); },

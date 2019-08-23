@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/task_environment.h"
 #include "media/audio/audio_system_impl.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/audio/audio_system_test_util.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/audio/mock_audio_manager.h"

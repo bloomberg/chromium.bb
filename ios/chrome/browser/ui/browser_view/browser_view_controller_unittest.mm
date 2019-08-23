@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 
 #import <Foundation/Foundation.h>
 #import <PassKit/PassKit.h>
@@ -33,7 +33,7 @@
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#include "ios/web/public/test/web_task_environment.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/public/web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

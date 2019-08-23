@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/test/task_environment.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"

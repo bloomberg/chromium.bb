@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/content/public/cpp/test/fake_navigable_contents_factory.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/task_environment.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/http/http_response_headers.h"
 #include "services/content/public/cpp/navigable_contents.h"
 #include "services/content/public/cpp/navigable_contents_observer.h"
 #include "services/content/public/cpp/test/fake_navigable_contents.h"
-#include "services/content/public/cpp/test/fake_navigable_contents_factory.h"
 #include "services/content/public/mojom/navigable_contents.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -22,10 +22,10 @@
 #endif  // OS_CHROMEOS
 
 #if defined(OS_IOS)
-#include "ios/web/public/test/web_task_environment.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 using MetricsTaskEnvironment = web::WebTaskEnvironment;
 #else  // !defined(OS_IOS)
-#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 using MetricsTaskEnvironment = content::BrowserTaskEnvironment;
 #endif  // defined(OS_IOS)
 

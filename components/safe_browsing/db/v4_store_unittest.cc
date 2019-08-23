@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/safe_browsing/db/v4_store.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -9,9 +10,8 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
-#include "components/safe_browsing/db/v4_store.h"
 #include "components/safe_browsing/db/v4_store.pb.h"
-#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/sha2.h"
 #include "testing/platform_test.h"
 

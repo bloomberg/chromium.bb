@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/test_blacklist_state_fetcher.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
-#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

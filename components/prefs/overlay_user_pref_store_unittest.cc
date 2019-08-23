@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
 #include "components/prefs/overlay_user_pref_store.h"
+#include <memory>
 
-#include "base/test/task_environment.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store_unittest.h"
 #include "components/prefs/pref_store_observer_mock.h"

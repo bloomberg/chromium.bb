@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/string_piece.h"
-#include "base/test/task_environment.h"
 #include "content/browser/loader/data_pipe_to_source_stream.h"
+#include "base/strings/string_piece.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"

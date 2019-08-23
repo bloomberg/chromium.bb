@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/network/session_cleanup_cookie_store.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -10,12 +11,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
-#include "base/test/task_environment.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
-#include "services/network/session_cleanup_cookie_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
