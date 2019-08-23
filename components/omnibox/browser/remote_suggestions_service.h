@@ -43,6 +43,22 @@ class RemoteSuggestionsService : public KeyedService {
       base::OnceCallback<void(const network::SimpleURLLoader* source,
                               std::unique_ptr<std::string> response_body)>;
 
+  // Returns a URL representing the address of the server where the zero suggest
+  // request is being sent. Does not take into account whether sending this
+  // request is prohibited (e.g. in an incognito window).
+  // Returns an invalid URL (i.e.: GURL::is_valid() == false) in case of an
+  // error.
+  //
+  // |search_terms_args| encapsulates the arguments sent to the suggest service.
+  // Various parts of it (including the current page URL and classification) are
+  // used to build the final endpoint URL. Note that the current page URL can
+  // be empty.
+  //
+  // Note that this method is public and is also used by ZeroSuggestProvider for
+  // suggestions that do not take the current page URL into consideration.
+  static GURL EndpointUrl(TemplateURLRef::SearchTermsArgs search_terms_args,
+                          const TemplateURLService* template_url_service);
+
   // Creates a loader for remote suggestions for |search_terms_args| and passes
   // the loader to |start_callback|. It uses a number of signals to create the
   // loader, including field trial / experimental parameters, and it may
@@ -59,30 +75,11 @@ class RemoteSuggestionsService : public KeyedService {
   //  whatever function/class receives the callback.
   //
   // |completion_callback| will be invoked when the transfer is done.
-  //
-  // This method sends a request for an OAuth2 token and temporarily
-  // instantiates |token_fetcher_|.
   void CreateSuggestionsRequest(
       const TemplateURLRef::SearchTermsArgs& search_terms_args,
       const TemplateURLService* template_url_service,
       StartCallback start_callback,
       CompletionCallback completion_callback);
-
-  // Returns a URL representing the address of the server where the zero suggest
-  // request is being sent. Does not take into account whether sending this
-  // request is prohibited (e.g. in an incognito window).
-  // Returns an invalid URL (i.e.: GURL::is_valid() == false) in case of an
-  // error.
-  //
-  // |search_terms_args| encapsulates the arguments sent to the suggest service.
-  // Various parts of it (including the current page URL and classification) are
-  // used to build the final endpoint URL. Note that the current page URL can
-  // be empty.
-  //
-  // Note that this method is public and is also used by ZeroSuggestProvider for
-  // suggestions that do not take the current page URL into consideration.
-  static GURL EndpointUrl(TemplateURLRef::SearchTermsArgs search_terms_args,
-                          const TemplateURLService* template_url_service);
 
  private:
   // Activates a loader for |request|, wiring it up to |completion_callback|,
