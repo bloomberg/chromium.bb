@@ -201,9 +201,6 @@ static void set_good_speed_feature_framesize_dependent(
     // trained and tuned on speed 1 and 2. We might get better performance if we
     // readjust them for speed 3 and 4.
     sf->simple_motion_search_split = cm->allow_screen_content_tools ? 1 : 2;
-
-    // TODO(yunqing): make this work for speed 3.
-    sf->tx_type_search.prune_tx_type_using_stats = 0;
   }
 
   if (speed >= 4) {
