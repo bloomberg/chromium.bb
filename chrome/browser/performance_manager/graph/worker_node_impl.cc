@@ -101,6 +101,11 @@ ProcessNodeImpl* WorkerNodeImpl::process_node() const {
   return process_node_;
 }
 
+const base::UnguessableToken& WorkerNodeImpl::dev_tools_token() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return dev_tools_token_;
+}
+
 const base::flat_set<FrameNodeImpl*>& WorkerNodeImpl::client_frames() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return client_frames_;
@@ -131,7 +136,7 @@ void WorkerNodeImpl::LeaveGraph() {
   process_node_->RemoveWorker(this);
 }
 
-WorkerNode::WorkerType WorkerNodeImpl::GetType() const {
+WorkerNode::WorkerType WorkerNodeImpl::GetWorkerType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return worker_type();
 }
@@ -139,6 +144,11 @@ WorkerNode::WorkerType WorkerNodeImpl::GetType() const {
 const ProcessNode* WorkerNodeImpl::GetProcessNode() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return process_node();
+}
+
+const base::UnguessableToken& WorkerNodeImpl::GetDevToolsToken() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return dev_tools_token();
 }
 
 const base::flat_set<const FrameNode*> WorkerNodeImpl::GetClientFrames() const {

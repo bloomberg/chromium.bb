@@ -44,6 +44,28 @@ TEST_F(WorkerNodeImplDeathTest, SafeDowncast) {
   ASSERT_DEATH_IF_SUPPORTED(FrameNodeImpl::FromNodeBase(worker.get()), "");
 }
 
+TEST_F(WorkerNodeImplTest, ConstProperties) {
+  const WorkerNode::WorkerType kWorkerType = WorkerNode::WorkerType::kShared;
+  auto process = CreateNode<ProcessNodeImpl>();
+  static const base::UnguessableToken kTestDevToolsToken =
+      base::UnguessableToken::Create();
+
+  auto worker_impl = CreateNode<WorkerNodeImpl>(kWorkerType, process.get(),
+                                                kTestDevToolsToken);
+
+  // Test private interface.
+  EXPECT_EQ(worker_impl->worker_type(), kWorkerType);
+  EXPECT_EQ(worker_impl->process_node(), process.get());
+  EXPECT_EQ(worker_impl->dev_tools_token(), kTestDevToolsToken);
+
+  // Test public interface.
+  const WorkerNode* worker = worker_impl.get();
+
+  EXPECT_EQ(worker->GetWorkerType(), kWorkerType);
+  EXPECT_EQ(worker->GetProcessNode(), process.get());
+  EXPECT_EQ(worker->GetDevToolsToken(), kTestDevToolsToken);
+}
+
 // Create a worker of each type and register the frame as a client of each.
 TEST_F(WorkerNodeImplTest, AddWorkerNodes) {
   auto process = CreateNode<ProcessNodeImpl>();

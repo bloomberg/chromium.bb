@@ -43,6 +43,7 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   // Getters for const properties. These can be called from any thread.
   WorkerType worker_type() const;
   ProcessNodeImpl* process_node() const;
+  const base::UnguessableToken& dev_tools_token() const;
 
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& client_frames() const;
@@ -55,8 +56,9 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
 
   // WorkerNode: These are private so that users of the
   // impl use the private getters rather than the public interface.
-  WorkerType GetType() const override;
+  WorkerType GetWorkerType() const override;
   const ProcessNode* GetProcessNode() const override;
+  const base::UnguessableToken& GetDevToolsToken() const override;
   const base::flat_set<const FrameNode*> GetClientFrames() const override;
   const base::flat_set<const WorkerNode*> GetClientWorkers() const override;
   const base::flat_set<const WorkerNode*> GetChildWorkers() const override;
