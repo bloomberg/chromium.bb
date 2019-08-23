@@ -97,7 +97,7 @@
     <color name="signin_header_animation_laptop_screen">#F4F4F4</color>
 
     <!-- NTP and Home sheet colors. Also used on the bookmarks and recent tabs pages. -->
-    <color name="ntp_bg_incognito">@color/incognito_modern_primary_color</color>
+    <color name="ntp_bg_incognito">@color/default_bg_color_dark_elev_3</color>
     <color name="suggestions_modern_bg">@color/modern_primary_color</color>
     <color name="google_logo_tint">@android:color/transparent</color>
 
@@ -119,7 +119,7 @@
     <color name="progress_bar_background">#3D4386F7</color>
 
     <!-- Incognito background and branding colors -->
-    <color name="incognito_modern_primary_color">@color/default_bg_color_dark_elev_3</color>
+    <color name="incognito_modern_primary_color">@color/modern_grey_900</color>
 
     <!-- Toolbar colors -->
     <color name="toolbar_background_primary">@color/default_bg_color_elev_3</color>
