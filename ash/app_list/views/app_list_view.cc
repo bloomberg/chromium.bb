@@ -646,6 +646,7 @@ bool AppListView::ShortAnimationsForTesting() {
 void AppListView::InitView(bool is_tablet_mode, gfx::NativeView parent) {
   base::AutoReset<bool> auto_reset(&is_building_, true);
   time_shown_ = base::Time::Now();
+  UpdateAppListConfig(parent);
   InitContents(is_tablet_mode);
   InitWidget(parent);
   InitChildWidget();
@@ -845,29 +846,7 @@ void AppListView::Layout() {
   gfx::Rect main_bounds = contents_bounds;
   main_bounds.Inset(0, 0, 0, AppListConfig::instance().shelf_height());
 
-  // The AppListMainView's size is supposed to be the same as AppsContainerView.
-  const gfx::Size min_main_size = GetAppsContainerView()->GetMinimumSize();
-
-  if ((main_bounds.width() > 0 && main_bounds.height() > 0) &&
-      (main_bounds.width() < min_main_size.width() ||
-       main_bounds.height() < min_main_size.height())) {
-    // Scale down the AppListMainView if AppsContainerView does not fit in the
-    // display.
-    const float scale = std::min(
-        (main_bounds.width()) / static_cast<float>(min_main_size.width()),
-        main_bounds.height() / static_cast<float>(min_main_size.height()));
-    DCHECK_GT(scale, 0);
-    const gfx::RectF scaled_main_bounds(main_bounds.x(), main_bounds.y(),
-                                        main_bounds.width() / scale,
-                                        main_bounds.height() / scale);
-    gfx::Transform transform;
-    transform.Scale(scale, scale);
-    app_list_main_view_->SetTransform(transform);
-    app_list_main_view_->SetBoundsRect(gfx::ToEnclosedRect(scaled_main_bounds));
-  } else {
-    app_list_main_view_->SetTransform(gfx::Transform());
-    app_list_main_view_->SetBoundsRect(main_bounds);
-  }
+  app_list_main_view_->SetBoundsRect(main_bounds);
 
   app_list_background_shield_->UpdateBounds(contents_bounds);
 
@@ -881,12 +860,49 @@ ax::mojom::Role AppListView::GetAccessibleWindowRole() {
   return ax::mojom::Role::kGroup;
 }
 
+const AppListConfig& AppListView::GetAppListConfig() const {
+  return *app_list_config_;
+}
+
 views::View* AppListView::GetAppListBackgroundShieldForTest() {
   return app_list_background_shield_;
 }
 
 SkColor AppListView::GetAppListBackgroundShieldColorForTest() {
   return app_list_background_shield_->GetColorForTest();
+}
+
+void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
+  const gfx::Size non_apps_grid_size = AppsContainerView::GetNonAppsGridSize();
+  gfx::Size available_apps_grid_size = parent_window->bounds().size();
+  available_apps_grid_size.Enlarge(
+      -non_apps_grid_size.width(),
+      -non_apps_grid_size.height() - AppListConfig::instance().shelf_height());
+
+  // Create the app list configuration override if it's needed for the current
+  // display bounds and the available apps grid size.
+  std::unique_ptr<AppListConfig> new_config =
+      AppListConfig::instance().CreateForAppListWidget(
+          display::Screen::GetScreen()
+              ->GetDisplayNearestView(parent_window)
+              .work_area()
+              .size(),
+          available_apps_grid_size, app_list_config_.get());
+
+  if (!new_config)
+    return;
+
+  const bool is_initial_config = !app_list_config_.get();
+  app_list_config_ = std::move(new_config);
+
+  // Initial config should be set before the app list main view is initialized.
+  DCHECK(!is_initial_config || !app_list_main_view_);
+
+  // If the config changed, notify apps grids the config has changed.
+  if (!is_initial_config) {
+    GetFolderAppsGridView()->OnAppListConfigUpdated();
+    GetRootAppsGridView()->OnAppListConfigUpdated();
+  }
 }
 
 void AppListView::UpdateWidget() {
@@ -1949,6 +1965,8 @@ void AppListView::OnWindowBoundsChanged(aura::Window* window,
                                         const gfx::Rect& new_bounds,
                                         ui::PropertyChangeReason reason) {
   DCHECK_EQ(GetWidget()->GetNativeView(), window);
+
+  UpdateAppListConfig(window);
 
   gfx::Transform transform;
   if (ShouldHideRoundedCorners(new_bounds))
