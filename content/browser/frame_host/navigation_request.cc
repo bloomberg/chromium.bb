@@ -2254,6 +2254,7 @@ void NavigationRequest::CommitNavigation() {
         std::move(subresource_loader_params_->prefetched_signed_exchanges);
   }
 
+  AddNetworkServiceDebugEvent("COM");
   render_frame_host_->CommitNavigation(
       this, std::move(common_params), std::move(commit_params),
       response_head_.get(), std::move(response_body_),
@@ -2311,6 +2312,16 @@ void NavigationRequest::SetExpectedProcess(
 void NavigationRequest::RenderProcessHostDestroyed(RenderProcessHost* host) {
   DCHECK_EQ(host->GetID(), expected_render_process_host_id_);
   ResetExpectedProcess();
+}
+
+void NavigationRequest::RenderProcessReady(RenderProcessHost* host) {
+  AddNetworkServiceDebugEvent("RPR");
+}
+
+void NavigationRequest::RenderProcessExited(
+    RenderProcessHost* host,
+    const ChildProcessTerminationInfo& info) {
+  AddNetworkServiceDebugEvent("RPE");
 }
 
 void NavigationRequest::UpdateSiteURL(
@@ -2941,6 +2952,7 @@ void NavigationRequest::DidCommitNavigation(
     bool did_replace_entry,
     const GURL& previous_url,
     NavigationType navigation_type) {
+  AddNetworkServiceDebugEvent("DCN");
   common_params_->url = params.url;
   did_replace_entry_ = did_replace_entry;
   should_update_history_ = params.should_update_history;
@@ -3059,6 +3071,9 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "ReadyToCommitNavigation");
 
+  AddNetworkServiceDebugEvent(
+      std::string("RTCN") +
+      (render_frame_host_->GetProcess()->IsReady() ? "1" : "0"));
   handle_state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
@@ -3113,6 +3128,7 @@ void NavigationRequest::RunCompleteCallback(
 }
 
 void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {
+  AddNetworkServiceDebugEvent(std::string("B") + (blocked ? "1" : "0"));
   if (blocked)
     StopCommitTimeout();
   else
@@ -3148,6 +3164,7 @@ void NavigationRequest::RestartCommitTimeout() {
 
 void NavigationRequest::OnCommitTimeout() {
   DCHECK_EQ(READY_TO_COMMIT, handle_state_);
+  AddNetworkServiceDebugEvent("T");
 #if defined(OS_ANDROID)
   // Rate limit the number of stack dumps so we don't overwhelm our crash
   // reports.
@@ -3174,6 +3191,12 @@ void NavigationRequest::OnCommitTimeout() {
     base::debug::ScopedCrashKeyString scoped_memory(
         memory_key,
         base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB()));
+
+    static base::debug::CrashKeyString* debug_string_key =
+        base::debug::AllocateCrashKeyString("ns_debug_events",
+                                            base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString scoped_debug_string(
+        debug_string_key, GetNetworkServiceDebugEventsString());
     base::debug::DumpWithoutCrashing();
 
     if (IsOutOfProcessNetworkService())
