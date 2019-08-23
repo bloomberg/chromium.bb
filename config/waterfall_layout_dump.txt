@@ -531,6 +531,7 @@
   amd64-pgo-generate-llvm-next-toolchain
   arm-pgo-generate-llvm-next-toolchain
   arm64-pgo-generate-llvm-next-toolchain
+  benchmark-afdo-generate
   llvm-clang-tidy-toolchain
   master-toolchain
     amd64-llvm-next-toolchain

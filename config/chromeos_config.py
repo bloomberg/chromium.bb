@@ -1334,8 +1334,13 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'benchmark-afdo-generate',
       site_config.templates.benchmark_afdo_generate,
+      # FIXME(tcwang): use chell once deployed
       boards=['samus'],
-      # TODO: Add a schedule
+      # 10 AM UTC is 2 AM PST (no daylight savings)
+      # Repeat every 12 hours
+      schedule='0 10/12 * * *',
+      # FIXME(tcwang): Enable health alert once deployed
+      #health_alert_recipients=['c-compiler-chrome@google.com'],
   )
 
   site_config.Add(
@@ -1364,7 +1369,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # anything on the board.
       boards=['terra'],
       # 10 AM UTC is 2 AM PST (no daylight savings)
-      schedule='0 10 * * *',
+      # Repeat every 12 hours
+      schedule='0 10/12 * * *',
       health_alert_recipients=['c-compiler-chrome@google.com'],
       # Send emails if this builder fails once
       health_threshold=1,
@@ -1377,7 +1383,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       boards=['eve'],
       # 2 PM UTC is 6 AM PST (no daylight savings)
       # Start this builder 4 hours after orderfile-generate-toolchain
-      schedule='0 14 * * *',
+      # Repeat every 12 hours
+      schedule='0 14/12 * * *',
       health_alert_recipients=['c-compiler-chrome@google.com'],
       # Send emails if this builder fails once
       health_threshold=1,
