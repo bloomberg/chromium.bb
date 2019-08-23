@@ -3010,6 +3010,7 @@ test("unit_tests") {
     "../browser/performance_manager/decorators/frozen_frame_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
     "../browser/performance_manager/frame_priority/frame_priority_unittest.cc",
+    "../browser/performance_manager/frame_priority/max_vote_aggregator_unittest.cc",
     "../browser/performance_manager/frame_priority/override_vote_aggregator_unittest.cc",
     "../browser/performance_manager/frame_priority/unittest_util.cc",
     "../browser/performance_manager/frame_priority/unittest_util.h",
