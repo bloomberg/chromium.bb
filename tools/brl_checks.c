@@ -294,14 +294,6 @@ check_base(const char *tableList, const char *input, const char *expected,
 						actualInlen);
 			}
 		}
-		// on error print the table name, as it isn't always
-		// clear which table we are testing. In checkyaml for
-		// example you can define a test for multiple tables.
-		if (retval != 0 && in.diagnostics) {
-			fprintf(stderr, "Table: %s\n", tableList);
-			// add an empty line after each error
-			fprintf(stderr, "\n");
-		}
 
 	fail:
 		free(inbuf);
