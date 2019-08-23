@@ -10,12 +10,9 @@
 namespace cast {
 namespace mdns {
 
-MdnsReceiver::MdnsReceiver(UdpSocket* socket,
-                           NetworkRunner* network_runner,
-                           Delegate* delegate)
-    : socket_(socket), network_runner_(network_runner), delegate_(delegate) {
+MdnsReceiver::MdnsReceiver(UdpSocket* socket, Delegate* delegate)
+    : socket_(socket), delegate_(delegate) {
   OSP_DCHECK(socket_);
-  OSP_DCHECK(network_runner_);
   OSP_DCHECK(delegate_);
 }
 
@@ -25,29 +22,22 @@ MdnsReceiver::~MdnsReceiver() {
   }
 }
 
-Error MdnsReceiver::Start() {
-  if (state_ == State::kRunning) {
-    return Error::Code::kNone;
-  }
-  Error result = network_runner_->ReadRepeatedly(socket_, this);
-  if (result.ok()) {
-    state_ = State::kRunning;
-  }
-  return result;
+void MdnsReceiver::Start() {
+  state_ = State::kRunning;
 }
 
-Error MdnsReceiver::Stop() {
-  if (state_ == State::kStopped) {
-    return Error::Code::kNone;
-  }
-  Error result = network_runner_->CancelRead(socket_);
-  if (result.ok()) {
-    state_ = State::kStopped;
-  }
-  return result;
+void MdnsReceiver::Stop() {
+  state_ = State::kStopped;
 }
 
-void MdnsReceiver::OnRead(UdpPacket packet, NetworkRunner* network_runner) {
+void MdnsReceiver::OnRead(UdpSocket* socket,
+                          openscreen::ErrorOr<UdpPacket> packet_or_error) {
+  if (state_ != State::kRunning || packet_or_error.is_error()) {
+    return;
+  }
+
+  UdpPacket packet = packet_or_error.MoveValue();
+
   TRACE_SCOPED(TraceCategory::mDNS, "MdnsReceiver::OnRead");
   MdnsReader reader(packet.data(), packet.size());
   MdnsMessage message;
@@ -59,6 +49,16 @@ void MdnsReceiver::OnRead(UdpPacket packet, NetworkRunner* network_runner) {
   } else {
     delegate_->OnQueryReceived(message, packet.source());
   }
+}
+
+void MdnsReceiver::OnError(UdpSocket* socket, Error error) {
+  // This method should never be called for MdnsReciever.
+  OSP_UNIMPLEMENTED();
+}
+
+void MdnsReceiver::OnSendError(UdpSocket* socket, Error error) {
+  // This method should never be called for MdnsReciever.
+  OSP_UNIMPLEMENTED();
 }
 
 }  // namespace mdns

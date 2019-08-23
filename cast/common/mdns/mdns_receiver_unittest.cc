@@ -16,18 +16,6 @@ using ::testing::_;
 using ::testing::Return;
 using MockUdpSocket = openscreen::platform::MockUdpSocket;
 
-// TODO(yakimakha): Update tests to use a fake NetworkRunner when implemented
-class MockNetworkRunner : public NetworkRunner {
- public:
-  MOCK_METHOD2(ReadRepeatedly, Error(UdpSocket*, UdpReadCallback*));
-  MOCK_METHOD1(CancelRead, Error(UdpSocket*));
-
-  void PostPackagedTask(Task task) override {}
-  void PostPackagedTaskWithDelay(
-      Task task,
-      openscreen::platform::Clock::duration delay) override {}
-};
-
 class MockMdnsReceiverDelegate : public MdnsReceiver::Delegate {
  public:
   MOCK_METHOD2(OnQueryReceived, void(const MdnsMessage&, const IPEndpoint&));
@@ -54,12 +42,8 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
 
   std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
       MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
-  MockNetworkRunner runner;
   MockMdnsReceiverDelegate delegate;
-  MdnsReceiver receiver(socket_info.get(), &runner, &delegate);
-
-  EXPECT_CALL(runner, ReadRepeatedly(socket_info.get(), _))
-      .WillOnce(Return(Error::Code::kNone));
+  MdnsReceiver receiver(socket_info.get(), &delegate);
   receiver.Start();
 
   MdnsQuestion question(DomainName{"testing", "local"}, DnsType::kA,
@@ -77,10 +61,8 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
 
   // Imitate a call to OnRead from NetworkRunner by calling it manually here
   EXPECT_CALL(delegate, OnQueryReceived(message, packet.source())).Times(1);
-  receiver.OnRead(std::move(packet), &runner);
+  receiver.OnRead(socket_info.get(), std::move(packet));
 
-  EXPECT_CALL(runner, CancelRead(socket_info.get()))
-      .WillOnce(Return(Error::Code::kNone));
   receiver.Stop();
 }
 
@@ -112,12 +94,8 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
 
   std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
       MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
-  MockNetworkRunner runner;
   MockMdnsReceiverDelegate delegate;
-  MdnsReceiver receiver(socket_info.get(), &runner, &delegate);
-
-  EXPECT_CALL(runner, ReadRepeatedly(socket_info.get(), _))
-      .WillOnce(Return(Error::Code::kNone));
+  MdnsReceiver receiver(socket_info.get(), &delegate);
   receiver.Start();
 
   MdnsRecord record(DomainName{"testing", "local"}, DnsType::kA, DnsClass::kIN,
@@ -137,10 +115,8 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
 
   // Imitate a call to OnRead from NetworkRunner by calling it manually here
   EXPECT_CALL(delegate, OnResponseReceived(message, packet.source())).Times(1);
-  receiver.OnRead(std::move(packet), &runner);
+  receiver.OnRead(socket_info.get(), std::move(packet));
 
-  EXPECT_CALL(runner, CancelRead(socket_info.get()))
-      .WillOnce(Return(Error::Code::kNone));
   receiver.Stop();
 }
 
