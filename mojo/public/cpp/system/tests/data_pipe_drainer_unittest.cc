@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

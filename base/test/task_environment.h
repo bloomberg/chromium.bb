@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TEST_SCOPED_TASK_ENVIRONMENT_H_
-#define BASE_TEST_SCOPED_TASK_ENVIRONMENT_H_
+#ifndef BASE_TEST_TASK_ENVIRONMENT_H_
+#define BASE_TEST_TASK_ENVIRONMENT_H_
 
 #include <memory>
 
@@ -369,4 +369,4 @@ class SingleThreadTaskEnvironment : public TaskEnvironment {
 }  // namespace test
 }  // namespace base
 
-#endif  // BASE_TEST_SCOPED_TASK_ENVIRONMENT_H_
+#endif  // BASE_TEST_TASK_ENVIRONMENT_H_

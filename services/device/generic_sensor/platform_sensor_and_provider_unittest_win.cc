@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <SensorsApi.h>
 #include <sensors.h>
+#include <SensorsApi.h>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/win/iunknown_impl.h"
 #include "base/win/propvarutil.h"
 #include "base/win/scoped_com_initializer.h"
