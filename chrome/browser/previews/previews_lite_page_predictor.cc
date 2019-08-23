@@ -102,8 +102,10 @@ bool PreviewsLitePagePredictor::PageIsBlacklisted(
   if (!opt_guide_)
     return true;
 
-  return opt_guide_->IsBlacklisted(navigation_handle,
-                                   previews::PreviewsType::LITE_PAGE_REDIRECT);
+  return !opt_guide_->CanApplyOptimization(
+      /*previews_user_data=*/nullptr, navigation_handle,
+      previews::PreviewsType::LITE_PAGE_REDIRECT,
+      /*out_ect_threshold=*/nullptr);
 }
 
 bool PreviewsLitePagePredictor::IsVisible() const {

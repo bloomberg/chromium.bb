@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/previews_optimization_guide.h"
+#include "components/previews/content/previews_optimization_guide_impl.h"
 
 #include <utility>
 
@@ -64,7 +64,7 @@ base::TimeDelta RandomFetchDelay() {
 
 }  // namespace
 
-PreviewsOptimizationGuide::PreviewsOptimizationGuide(
+PreviewsOptimizationGuideImpl::PreviewsOptimizationGuideImpl(
     optimization_guide::OptimizationGuideService* optimization_guide_service,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
@@ -89,16 +89,20 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
   DCHECK(optimization_guide_service_);
   hint_cache_->Initialize(
       optimization_guide::switches::ShouldPurgeHintCacheStoreOnStartup(),
-      base::BindOnce(&PreviewsOptimizationGuide::OnHintCacheInitialized,
+      base::BindOnce(&PreviewsOptimizationGuideImpl::OnHintCacheInitialized,
                      ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
-PreviewsOptimizationGuide::~PreviewsOptimizationGuide() {
+PreviewsOptimizationGuideImpl::~PreviewsOptimizationGuideImpl() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   optimization_guide_service_->RemoveObserver(this);
 }
 
-bool PreviewsOptimizationGuide::IsWhitelisted(
+bool PreviewsOptimizationGuideImpl::IsReady() const {
+  return !!hints_;
+}
+
+bool PreviewsOptimizationGuideImpl::CanApplyOptimization(
     PreviewsUserData* previews_data,
     content::NavigationHandle* navigation_handle,
     PreviewsType type,
@@ -108,7 +112,21 @@ bool PreviewsOptimizationGuide::IsWhitelisted(
     return false;
   }
 
-  *out_ect_threshold = params::GetECTThresholdForPreview(type);
+  if (out_ect_threshold)
+    *out_ect_threshold = params::GetECTThresholdForPreview(type);
+
+  // Check if LITE_PAGE_REDIRECT is blacklisted or not.
+  if (type == PreviewsType::LITE_PAGE_REDIRECT) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
+      return true;
+    }
+
+    return !hints_->IsBlacklisted(navigation_handle->GetURL(),
+                                  PreviewsType::LITE_PAGE_REDIRECT);
+  }
+
+  // Check other previews.
   int inflation_percent = 0;
   std::string serialized_hint_version_string;
   if (!hints_->IsWhitelisted(navigation_handle->GetURL(), type,
@@ -129,30 +147,7 @@ bool PreviewsOptimizationGuide::IsWhitelisted(
   return true;
 }
 
-bool PreviewsOptimizationGuide::IsBlacklisted(
-    content::NavigationHandle* navigation_handle,
-    PreviewsType type) const {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-
-  if (type == PreviewsType::LITE_PAGE_REDIRECT) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
-      return false;
-    }
-
-    if (!hints_)
-      return true;
-
-    return hints_->IsBlacklisted(navigation_handle->GetURL(),
-                                 PreviewsType::LITE_PAGE_REDIRECT);
-  }
-
-  // This function is only used by lite page redirect.
-  NOTREACHED();
-  return false;
-}
-
-void PreviewsOptimizationGuide::OnLoadedHint(
+void PreviewsOptimizationGuideImpl::OnLoadedHint(
     base::OnceClosure callback,
     const GURL& document_url,
     const optimization_guide::proto::Hint* loaded_hint) const {
@@ -168,7 +163,7 @@ void PreviewsOptimizationGuide::OnLoadedHint(
   std::move(callback).Run();
 }
 
-bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
+bool PreviewsOptimizationGuideImpl::MaybeLoadOptimizationHints(
     content::NavigationHandle* navigation_handle,
     base::OnceClosure callback) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
@@ -179,12 +174,12 @@ bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
 
   const GURL& url = navigation_handle->GetURL();
   return hints_->MaybeLoadOptimizationHints(
-      url, base::BindOnce(&PreviewsOptimizationGuide::OnLoadedHint,
+      url, base::BindOnce(&PreviewsOptimizationGuideImpl::OnLoadedHint,
                           ui_weak_ptr_factory_.GetWeakPtr(),
                           std::move(callback), url));
 }
 
-bool PreviewsOptimizationGuide::GetResourceLoadingHints(
+bool PreviewsOptimizationGuideImpl::GetResourceLoadingHints(
     const GURL& url,
     std::vector<std::string>* out_resource_patterns_to_block) const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
@@ -195,8 +190,8 @@ bool PreviewsOptimizationGuide::GetResourceLoadingHints(
   return hints_->GetResourceLoadingHints(url, out_resource_patterns_to_block);
 }
 
-void PreviewsOptimizationGuide::LogHintCacheMatch(const GURL& url,
-                                                  bool is_committed) const {
+void PreviewsOptimizationGuideImpl::LogHintCacheMatch(const GURL& url,
+                                                      bool is_committed) const {
   if (!hints_) {
     return;
   }
@@ -204,7 +199,7 @@ void PreviewsOptimizationGuide::LogHintCacheMatch(const GURL& url,
   hints_->LogHintCacheMatch(url, is_committed);
 }
 
-void PreviewsOptimizationGuide::OnHintCacheInitialized() {
+void PreviewsOptimizationGuideImpl::OnHintCacheInitialized() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   // Check if there is a valid hint proto given on the command line first. We
   // don't normally expect one, but if one is provided then use that and do not
@@ -221,14 +216,12 @@ void PreviewsOptimizationGuide::OnHintCacheInitialized() {
                         base::Version(kManualConfigComponentVersion))));
   }
 
-
-
   // Register as an observer regardless of hint proto override usage. This is
   // needed as a signal during testing.
   optimization_guide_service_->AddObserver(this);
 }
 
-void PreviewsOptimizationGuide::OnHintsComponentAvailable(
+void PreviewsOptimizationGuideImpl::OnHintsComponentAvailable(
     const optimization_guide::HintsComponentInfo& info) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
@@ -251,12 +244,12 @@ void PreviewsOptimizationGuide::OnHintsComponentAvailable(
       base::BindOnce(
           &PreviewsHints::CreateFromHintsComponent, info,
           hint_cache_->MaybeCreateUpdateDataForComponentHints(info.version)),
-      base::BindOnce(&PreviewsOptimizationGuide::UpdateHints,
+      base::BindOnce(&PreviewsOptimizationGuideImpl::UpdateHints,
                      ui_weak_ptr_factory_.GetWeakPtr(),
                      std::move(next_update_closure_)));
 }
 
-void PreviewsOptimizationGuide::FetchHints() {
+void PreviewsOptimizationGuideImpl::FetchHints() {
   base::Optional<std::vector<std::string>> top_hosts =
       optimization_guide::switches::ParseHintsFetchOverrideFromCommandLine();
   if (!top_hosts) {
@@ -277,12 +270,13 @@ void PreviewsOptimizationGuide::FetchHints() {
 
   if (top_hosts->size() > 0) {
     hints_fetcher_->FetchOptimizationGuideServiceHints(
-        *top_hosts, base::BindOnce(&PreviewsOptimizationGuide::OnHintsFetched,
-                                   ui_weak_ptr_factory_.GetWeakPtr()));
+        *top_hosts,
+        base::BindOnce(&PreviewsOptimizationGuideImpl::OnHintsFetched,
+                       ui_weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void PreviewsOptimizationGuide::OnHintsFetched(
+void PreviewsOptimizationGuideImpl::OnHintsFetched(
     base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
   // TODO(mcrouse): this will be dropped into a backgroundtask as it will likely
@@ -291,27 +285,28 @@ void PreviewsOptimizationGuide::OnHintsFetched(
     hint_cache_->UpdateFetchedHints(
         std::move(*get_hints_response),
         time_clock_->Now() + kUpdateFetchedHintsDelay,
-        base::BindOnce(&PreviewsOptimizationGuide::OnFetchedHintsStored,
+        base::BindOnce(&PreviewsOptimizationGuideImpl::OnFetchedHintsStored,
                        ui_weak_ptr_factory_.GetWeakPtr()));
   } else {
     // The fetch did not succeed so we will schedule to retry the fetch in
     // after delaying for |kFetchRetryDelay|
     // TODO(mcrouse): When the store is refactored from closures, the timer will
     // be scheduled on failure of the store instead.
-    hints_fetch_timer_.Start(FROM_HERE, kFetchRetryDelay, this,
-                             &PreviewsOptimizationGuide::ScheduleHintsFetch);
+    hints_fetch_timer_.Start(
+        FROM_HERE, kFetchRetryDelay, this,
+        &PreviewsOptimizationGuideImpl::ScheduleHintsFetch);
   }
 }
 
-void PreviewsOptimizationGuide::OnFetchedHintsStored() {
+void PreviewsOptimizationGuideImpl::OnFetchedHintsStored() {
   hints_fetch_timer_.Stop();
   hints_fetch_timer_.Start(
       FROM_HERE, hint_cache_->FetchedHintsUpdateTime() - time_clock_->Now(),
-      this, &PreviewsOptimizationGuide::ScheduleHintsFetch);
+      this, &PreviewsOptimizationGuideImpl::ScheduleHintsFetch);
   // TODO(mcrouse): Purge hints now that new fetched hints have been stored.
 }
 
-void PreviewsOptimizationGuide::UpdateHints(
+void PreviewsOptimizationGuideImpl::UpdateHints(
     base::OnceClosure update_closure,
     std::unique_ptr<PreviewsHints> hints) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
@@ -319,7 +314,7 @@ void PreviewsOptimizationGuide::UpdateHints(
   if (hints_) {
     hints_->Initialize(
         hint_cache_.get(),
-        base::BindOnce(&PreviewsOptimizationGuide::OnHintsUpdated,
+        base::BindOnce(&PreviewsOptimizationGuideImpl::OnHintsUpdated,
                        ui_weak_ptr_factory_.GetWeakPtr(),
                        std::move(update_closure)));
   } else {
@@ -327,14 +322,14 @@ void PreviewsOptimizationGuide::UpdateHints(
   }
 }
 
-void PreviewsOptimizationGuide::ClearFetchedHints() {
+void PreviewsOptimizationGuideImpl::ClearFetchedHints() {
   DCHECK(hint_cache_);
   hint_cache_->ClearFetchedHints();
   optimization_guide::HintsFetcher::ClearHostsSuccessfullyFetched(
       pref_service_);
 }
 
-void PreviewsOptimizationGuide::OnHintsUpdated(
+void PreviewsOptimizationGuideImpl::OnHintsUpdated(
     base::OnceClosure update_closure) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(pref_service_);
@@ -370,7 +365,7 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
   }
 }
 
-void PreviewsOptimizationGuide::SetLastHintsFetchAttemptTime(
+void PreviewsOptimizationGuideImpl::SetLastHintsFetchAttemptTime(
     base::Time last_attempt_time) {
   DCHECK(pref_service_);
   pref_service_->SetInt64(
@@ -378,14 +373,14 @@ void PreviewsOptimizationGuide::SetLastHintsFetchAttemptTime(
       last_attempt_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
-base::Time PreviewsOptimizationGuide::GetLastHintsFetchAttemptTime() const {
+base::Time PreviewsOptimizationGuideImpl::GetLastHintsFetchAttemptTime() const {
   DCHECK(pref_service_);
   return base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromMicroseconds(pref_service_->GetInt64(
           optimization_guide::prefs::kHintsFetcherLastFetchAttempt)));
 }
 
-void PreviewsOptimizationGuide::ScheduleHintsFetch() {
+void PreviewsOptimizationGuideImpl::ScheduleHintsFetch() {
   DCHECK(!hints_fetch_timer_.IsRunning());
   DCHECK(pref_service_);
 
@@ -404,7 +399,7 @@ void PreviewsOptimizationGuide::ScheduleHintsFetch() {
     // been made in last |kFetchRetryDelay|.
     SetLastHintsFetchAttemptTime(time_clock_->Now());
     hints_fetch_timer_.Start(FROM_HERE, RandomFetchDelay(), this,
-                             &PreviewsOptimizationGuide::FetchHints);
+                             &PreviewsOptimizationGuideImpl::FetchHints);
   } else {
     if (time_until_update_time >= base::TimeDelta()) {
       // If the fetched hints in the store are still up-to-date, set a timer
@@ -416,27 +411,28 @@ void PreviewsOptimizationGuide::ScheduleHintsFetch() {
       // delay.
       fetcher_delay = time_until_retry;
     }
-    hints_fetch_timer_.Start(FROM_HERE, fetcher_delay, this,
-                             &PreviewsOptimizationGuide::ScheduleHintsFetch);
+    hints_fetch_timer_.Start(
+        FROM_HERE, fetcher_delay, this,
+        &PreviewsOptimizationGuideImpl::ScheduleHintsFetch);
   }
 }
 
-void PreviewsOptimizationGuide::SetTimeClockForTesting(
+void PreviewsOptimizationGuideImpl::SetTimeClockForTesting(
     const base::Clock* time_clock) {
   time_clock_ = time_clock;
 }
 
-void PreviewsOptimizationGuide::SetHintsFetcherForTesting(
+void PreviewsOptimizationGuideImpl::SetHintsFetcherForTesting(
     std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher) {
   hints_fetcher_ = std::move(hints_fetcher);
 }
 
 optimization_guide::HintsFetcher*
-PreviewsOptimizationGuide::GetHintsFetcherForTesting() {
+PreviewsOptimizationGuideImpl::GetHintsFetcherForTesting() {
   return hints_fetcher_.get();
 }
 
-void PreviewsOptimizationGuide::ListenForNextUpdateForTesting(
+void PreviewsOptimizationGuideImpl::ListenForNextUpdateForTesting(
     base::OnceClosure next_update_closure) {
   DCHECK(next_update_closure_.is_null())
       << "Only one update closure is supported at a time";

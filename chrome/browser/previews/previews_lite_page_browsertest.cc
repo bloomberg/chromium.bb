@@ -59,14 +59,13 @@
 #include "components/infobars/core/infobar.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_decider_impl.h"
-#include "components/previews/content/previews_hints.h"
-#include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
@@ -107,6 +106,30 @@ const char kPreviewsHost[] = "litepages.googlezip.net";
 // A host that is blacklisted for Lite Page Redirect previews and won't trigger
 // on it.
 const char kBlacklistedHost[] = "blacklisted.com";
+
+// Retries fetching |histogram_name| until it contains at least |count| samples.
+void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
+                                        const std::string& histogram_name,
+                                        size_t count) {
+  while (true) {
+    base::ThreadPoolInstance::Get()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
+
+    content::FetchHistogramsFromChildProcesses();
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+    const std::vector<base::Bucket> buckets =
+        histogram_tester->GetAllSamples(histogram_name);
+    size_t total_count = 0;
+    for (const auto& bucket : buckets) {
+      total_count += bucket.count;
+    }
+    if (total_count >= count) {
+      break;
+    }
+  }
+}
+
 }  // namespace
 
 class BasePreviewsLitePageServerBrowserTest
@@ -353,20 +376,23 @@ class BasePreviewsLitePageServerBrowserTest
     }
   }
 
+  void ProcessHintsComponent(
+      const optimization_guide::HintsComponentInfo& component_info) {
+    base::HistogramTester histogram_tester;
+
+    g_browser_process->optimization_guide_service()
+        ->MaybeUpdateHintsComponentOnUIThread(component_info);
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        optimization_guide::kComponentHintsUpdatedResultHistogramString, 1);
+  }
+
   void InitializeOptimizationHints() {
-    std::unique_ptr<optimization_guide::proto::Configuration> config =
-        std::make_unique<optimization_guide::proto::Configuration>();
-    std::unique_ptr<previews::PreviewsHints> hints =
-        previews::PreviewsHints::CreateFromHintsConfiguration(std::move(config),
-                                                              nullptr);
-
-    PreviewsService* previews_service =
-        PreviewsServiceFactory::GetForProfile(browser()->profile());
-
-    previews_service->previews_ui_service()
-        ->previews_decider_impl()
-        ->previews_opt_guide()
-        ->UpdateHints(base::DoNothing(), std::move(hints));
+    ProcessHintsComponent(
+        test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
+            optimization_guide::proto::NOSCRIPT, {"doesntmatter.com"}, "*",
+            {}));
   }
 
   content::WebContents* GetWebContents() const {
@@ -647,6 +673,10 @@ class BasePreviewsLitePageServerBrowserTest
     waiting_for_report_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
+
+ protected:
+  optimization_guide::testing::TestHintsComponentCreator
+      test_hints_component_creator_;
 
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
@@ -2058,26 +2088,6 @@ class PreviewsLitePageAndPageHintsBrowserTest
 
   ~PreviewsLitePageAndPageHintsBrowserTest() override = default;
 
-  void ProcessHintsComponent(
-      const optimization_guide::HintsComponentInfo& component_info) {
-    // Register a QuitClosure for when the next hint update is started below.
-    base::RunLoop run_loop;
-    PreviewsServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(browser()
-                                        ->tab_strip_model()
-                                        ->GetActiveWebContents()
-                                        ->GetBrowserContext()))
-        ->previews_ui_service()
-        ->previews_decider_impl()
-        ->previews_opt_guide()
-        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
-
-    g_browser_process->optimization_guide_service()
-        ->MaybeUpdateHintsComponentOnUIThread(component_info);
-
-    run_loop.Run();
-  }
-
   void SetResourceLoadingHints(const std::vector<std::string>& hints_sites) {
     std::vector<std::string> resource_patterns;
     resource_patterns.push_back("foo.jpg");
@@ -2104,10 +2114,6 @@ class PreviewsLitePageAndPageHintsBrowserTest
               base::WriteFile(filePath, serialized_config.data(),
                               serialized_config.length()));
   }
-
- private:
-  optimization_guide::testing::TestHintsComponentCreator
-      test_hints_component_creator_;
 };
 
 // True if testing using the URLLoader Interceptor implementation.

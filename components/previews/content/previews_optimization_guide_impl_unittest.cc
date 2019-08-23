@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/previews_optimization_guide.h"
+#include "components/previews/content/previews_optimization_guide_impl.h"
 
 #include <memory>
 #include <utility>
@@ -162,7 +162,7 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
 
 // A Test PreviewsOptimizationGuide to observe and record when callbacks
 // from hints fetching and storing occur.
-class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
+class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuideImpl {
  public:
   TestPreviewsOptimizationGuide(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
@@ -173,14 +173,14 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
       leveldb_proto::ProtoDatabaseProvider* database_provider,
       optimization_guide::TopHostProvider* optimization_guide_top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      : PreviewsOptimizationGuide(optimization_guide_service,
-                                  ui_task_runner,
-                                  background_task_runner,
-                                  profile_path,
-                                  pref_service,
-                                  database_provider,
-                                  optimization_guide_top_host_provider,
-                                  url_loader_factory) {}
+      : PreviewsOptimizationGuideImpl(optimization_guide_service,
+                                      ui_task_runner,
+                                      background_task_runner,
+                                      profile_path,
+                                      pref_service,
+                                      database_provider,
+                                      optimization_guide_top_host_provider,
+                                      url_loader_factory) {}
 
   bool fetched_hints_stored() { return fetched_hints_stored_; }
 
@@ -190,25 +190,26 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response) override {
     fetched_hints_stored_ = false;
-    PreviewsOptimizationGuide::OnHintsFetched(std::move(get_hints_response));
+    PreviewsOptimizationGuideImpl::OnHintsFetched(
+        std::move(get_hints_response));
   }
 
   void OnFetchedHintsStored() override {
     fetched_hints_stored_ = true;
-    PreviewsOptimizationGuide::OnFetchedHintsStored();
+    PreviewsOptimizationGuideImpl::OnFetchedHintsStored();
   }
 
   bool fetched_hints_stored_ = false;
 };
 
-class PreviewsOptimizationGuideTest
+class PreviewsOptimizationGuideImplTest
     : public optimization_guide::ProtoDatabaseProviderTestBase {
  public:
-  PreviewsOptimizationGuideTest()
+  PreviewsOptimizationGuideImplTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI,
                           base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
-  ~PreviewsOptimizationGuideTest() override {}
+  ~PreviewsOptimizationGuideImplTest() override {}
 
   void SetUp() override {
     ProtoDatabaseProviderTestBase::SetUp();
@@ -222,7 +223,7 @@ class PreviewsOptimizationGuideTest
     ResetGuide();
   }
 
-  PreviewsOptimizationGuide* guide() { return guide_.get(); }
+  PreviewsOptimizationGuideImpl* guide() { return guide_.get(); }
 
   MockTopHostProvider* top_host_provider() {
     return optimization_guide_top_host_provider_.get();
@@ -372,10 +373,11 @@ class PreviewsOptimizationGuideTest
   bool CallMaybeLoadOptimizationHints(const GURL& url);
 
   // This function guarantees that all of the asynchronous processing required
-  // to load the specified hint has occurred prior to calling IsWhitelisted.
-  // It accomplishes this by calling MaybeLoadOptimizationHints() and waiting
-  // until OnLoadOptimizationHints runs before calling IsWhitelisted().
-  bool MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  // to load the specified hint has occurred prior to calling
+  // CanApplyOptimization. It accomplishes this by calling
+  // MaybeLoadOptimizationHints() and waiting until OnLoadOptimizationHints runs
+  // before calling CanApplyOptimization().
+  bool MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       PreviewsUserData* previews_data,
       const GURL& url,
       PreviewsType type,
@@ -417,14 +419,14 @@ class PreviewsOptimizationGuideTest
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
-
   GURL loaded_hints_document_gurl_;
   std::vector<std::string> loaded_hints_resource_patterns_;
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideTest);
+  DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideImplTest);
 };
 
-void PreviewsOptimizationGuideTest::InitializeFixedCountResourceLoadingHints() {
+void PreviewsOptimizationGuideImplTest::
+    InitializeFixedCountResourceLoadingHints() {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
@@ -466,7 +468,7 @@ void PreviewsOptimizationGuideTest::InitializeFixedCountResourceLoadingHints() {
   ProcessHints(config, "2.0.0");
 }
 
-void PreviewsOptimizationGuideTest::
+void PreviewsOptimizationGuideImplTest::
     InitializeFixedCountResourceLoadingHintsWithTwoExperiments() {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
@@ -502,7 +504,7 @@ void PreviewsOptimizationGuideTest::
   ProcessHints(config, "2.0.0");
 }
 
-void PreviewsOptimizationGuideTest::InitializeMultipleResourceLoadingHints(
+void PreviewsOptimizationGuideImplTest::InitializeMultipleResourceLoadingHints(
     size_t key_count,
     size_t page_patterns_per_key) {
   optimization_guide::proto::Configuration config;
@@ -540,7 +542,8 @@ void PreviewsOptimizationGuideTest::InitializeMultipleResourceLoadingHints(
   ProcessHints(config, "2.0.0");
 }
 
-void PreviewsOptimizationGuideTest::InitializeWithLitePageRedirectBlacklist() {
+void PreviewsOptimizationGuideImplTest::
+    InitializeWithLitePageRedirectBlacklist() {
   optimization_guide::BloomFilter blacklist_bloom_filter(7, 511);
   blacklist_bloom_filter.Add("blacklisteddomain.com");
   blacklist_bloom_filter.Add("blacklistedsubdomain.maindomain.co.in");
@@ -560,7 +563,7 @@ void PreviewsOptimizationGuideTest::InitializeWithLitePageRedirectBlacklist() {
   ProcessHints(config, "2.0.0");
 }
 
-bool PreviewsOptimizationGuideTest::CallMaybeLoadOptimizationHints(
+bool PreviewsOptimizationGuideImplTest::CallMaybeLoadOptimizationHints(
     const GURL& url) {
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(url);
@@ -568,8 +571,8 @@ bool PreviewsOptimizationGuideTest::CallMaybeLoadOptimizationHints(
                                              base::DoNothing());
 }
 
-bool PreviewsOptimizationGuideTest::
-    MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+bool PreviewsOptimizationGuideImplTest::
+    MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
         PreviewsUserData* previews_data,
         const GURL& url,
         PreviewsType type,
@@ -578,37 +581,37 @@ bool PreviewsOptimizationGuideTest::
   navigation_handle.set_url(url);
 
   // Ensure that all asynchronous MaybeLoadOptimizationHints processing
-  // finishes prior to calling IsWhitelisted. This is accomplished by waiting
-  // for the OnLoadOptimizationHints callback to set |requested_hints_loaded_|
-  // to true.
+  // finishes prior to calling CanApplyOptimization. This is accomplished by
+  // waiting for the OnLoadOptimizationHints callback to set
+  // |requested_hints_loaded_| to true.
   requested_hints_loaded_ = false;
   if (guide()->MaybeLoadOptimizationHints(
           &navigation_handle,
           base::BindOnce(
-              &PreviewsOptimizationGuideTest::OnLoadOptimizationHints,
+              &PreviewsOptimizationGuideImplTest::OnLoadOptimizationHints,
               base::Unretained(this)))) {
     while (!requested_hints_loaded_) {
       RunUntilIdle();
     }
   }
 
-  return guide()->IsWhitelisted(previews_data, &navigation_handle, type,
-                                out_ect_threshold);
+  return guide()->CanApplyOptimization(previews_data, &navigation_handle, type,
+                                       out_ect_threshold);
 }
 
-void PreviewsOptimizationGuideTest::OnLoadOptimizationHints() {
+void PreviewsOptimizationGuideImplTest::OnLoadOptimizationHints() {
   requested_hints_loaded_ = true;
 }
 
-TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithoutHints) {
+TEST_F(PreviewsOptimizationGuideImplTest, CanApplyOptimizationWithoutHints) {
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsForNoScriptPageHintsPopulatedCorrectly) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
@@ -648,31 +651,31 @@ TEST_F(PreviewsOptimizationGuideTest,
   net::EffectiveConnectionType ect_threshold;
 
   // Verify page matches and ECT thresholds.
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://somedomain.org/noscript_default_2g"),
       PreviewsType::NOSCRIPT, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://somedomain.org/noscript_3g"),
       PreviewsType::NOSCRIPT, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G, ect_threshold);
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://somedomain.org/no_pattern_match"),
       PreviewsType::NOSCRIPT, &ect_threshold));
 
   // Verify * matches any page.
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://anypage.com/noscript_for_all"),
       PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://anypage.com/"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://anypage.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsWithValidCommandLineOverride) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
@@ -701,13 +704,13 @@ TEST_F(PreviewsOptimizationGuideTest,
   net::EffectiveConnectionType ect_threshold;
 
   EXPECT_TRUE(guide()->GetHintsForTesting());
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://somedomain.org/noscript_default_2g"),
       PreviewsType::NOSCRIPT, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsWithValidCommandLineOverrideForDeferAllScript) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures({features::kDeferAllScriptPreviews}, {});
@@ -736,13 +739,13 @@ TEST_F(PreviewsOptimizationGuideTest,
   net::EffectiveConnectionType ect_threshold;
 
   EXPECT_TRUE(guide()->GetHintsForTesting());
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://somedomain.org/defer_default_2g"),
       PreviewsType::DEFER_ALL_SCRIPT, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsWithValidCommandLineOverrideAndPreexistingData) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
@@ -776,7 +779,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   net::EffectiveConnectionType ect_threshold;
 
   EXPECT_TRUE(guide()->GetHintsForTesting());
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://otherdomain.org/noscript_default_2g"),
       PreviewsType::NOSCRIPT, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
@@ -785,7 +788,7 @@ TEST_F(PreviewsOptimizationGuideTest,
       GURL("https://www.somedomain.org/news/football")));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsWithInvalidCommandLineOverride) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       optimization_guide::switches::kHintsProtoOverride, "this-is-not-a-proto");
@@ -794,7 +797,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   EXPECT_FALSE(guide()->GetHintsForTesting());
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsWithPurgeHintCacheStoreCommandLineAndNoPreexistingData) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       optimization_guide::switches::kPurgeHintCacheStore);
@@ -811,7 +814,7 @@ TEST_F(PreviewsOptimizationGuideTest,
       GURL("https://www.somedomain.org/news/football")));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsWithPurgeHintCacheStoreCommandLineAndPreexistingData) {
   InitializeFixedCountResourceLoadingHints();
 
@@ -835,7 +838,7 @@ TEST_F(PreviewsOptimizationGuideTest,
 }
 
 // Test when resource loading hints are enabled.
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsForResourceLoadingHintsPopulatedCorrectly) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
@@ -886,21 +889,21 @@ TEST_F(PreviewsOptimizationGuideTest,
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
   // Twitter and Facebook should be whitelisted but not Google.
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.twitter.com/example"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://google.com"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 }
 
 // Test when both NoScript and resource loading hints are enabled.
 TEST_F(
-    PreviewsOptimizationGuideTest,
+    PreviewsOptimizationGuideImplTest,
     ProcessHintsWhitelistForNoScriptAndResourceLoadingHintsPopulatedCorrectly) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
@@ -950,21 +953,21 @@ TEST_F(
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
   // Twitter and Facebook should be whitelisted but not Google.
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com/example.html"),
       PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.twitter.com/example"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://google.com"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsForResourceLoadingHintsWithSlowPageTriggering) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
@@ -1013,15 +1016,15 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://3g.com"), PreviewsType::RESOURCE_LOADING_HINTS,
       &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G, ect_threshold);
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://4g.com/example"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_4G, ect_threshold);
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://default2g.com"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
@@ -1032,7 +1035,7 @@ TEST_F(PreviewsOptimizationGuideTest,
 // multiple optimizations. The optimization under test will be marked with an
 // experiment name if one is provided in |experiment_name|. It will then be
 // tested to see if it's enabled, the expectation found in |expect_enabled|.
-void PreviewsOptimizationGuideTest::DoExperimentFlagTest(
+void PreviewsOptimizationGuideImplTest::DoExperimentFlagTest(
     base::Optional<std::string> experiment_name,
     bool expect_enabled) {
   base::test::ScopedFeatureList scoped_list;
@@ -1081,33 +1084,34 @@ void PreviewsOptimizationGuideTest::DoExperimentFlagTest(
   net::EffectiveConnectionType ect_threshold;
   // Check to ensure the optimization under test (facebook noscript) is either
   // enabled or disabled, depending on what the caller told us to expect.
-  EXPECT_EQ(expect_enabled, MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
-                                &user_data, GURL("https://m.facebook.com"),
-                                PreviewsType::NOSCRIPT, &ect_threshold));
+  EXPECT_EQ(expect_enabled,
+            MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
+                &user_data, GURL("https://m.facebook.com"),
+                PreviewsType::NOSCRIPT, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
 
   // RESOURCE_LOADING_HINTS for facebook should always be enabled.
   ect_threshold = net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   EXPECT_EQ(!expect_enabled,
-            MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+            MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
                 &user_data, GURL("https://m.facebook.com"),
                 PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
   // Twitter's NOSCRIPT should always be enabled; RESOURCE_LOADING_HINTS is not
   // configured and should be disabled.
   ect_threshold = net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.twitter.com/example"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
   // Google (which is not configured at all) should always have both NOSCRIPT
   // and RESOURCE_LOADING_HINTS disabled.
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        HandlesExperimentalFlagWithNoExperimentFlaggedOrEnabled) {
   // With the optimization NOT flagged as experimental and no experiment
   // enabled, the optimization should be enabled.
@@ -1117,7 +1121,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   DoExperimentFlagTest(base::nullopt, true);
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        HandlesExperimentalFlagWithEmptyExperimentName) {
   // Empty experiment names should be equivalent to no experiment flag set.
   base::test::ScopedFeatureList scoped_list;
@@ -1126,7 +1130,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   DoExperimentFlagTest("", true);
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        HandlesExperimentalFlagWithExperimentConfiguredAndNotRunning) {
   // With the optimization flagged as experimental and no experiment
   // enabled, the optimization should be disabled.
@@ -1136,7 +1140,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   DoExperimentFlagTest("foo_experiment", false);
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        HandlesExperimentalFlagWithExperimentConfiguredAndSameOneRunning) {
   // With the optimization flagged as experimental and an experiment with that
   // name running, the optimization should be enabled.
@@ -1147,7 +1151,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   DoExperimentFlagTest("foo_experiment", true);
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        HandlesExperimentalFlagWithExperimentConfiguredAndDifferentOneRunning) {
   // With the optimization flagged as experimental and a *different* experiment
   // enabled, the optimization should be disabled.
@@ -1158,14 +1162,15 @@ TEST_F(PreviewsOptimizationGuideTest,
   DoExperimentFlagTest("foo_experiment", false);
 }
 
-TEST_F(PreviewsOptimizationGuideTest, EnsureExperimentsDisabledByDefault) {
+TEST_F(PreviewsOptimizationGuideImplTest, EnsureExperimentsDisabledByDefault) {
   // Mark an optimization as experiment, and ensure it's disabled even though we
   // don't explicitly enable or disable the feature as part of the test. This
   // ensures the experiments feature is disabled by default.
   DoExperimentFlagTest("foo_experiment", false);
 }
 
-TEST_F(PreviewsOptimizationGuideTest, ProcessHintsUnsupportedKeyRepIsIgnored) {
+TEST_F(PreviewsOptimizationGuideImplTest,
+       ProcessHintsUnsupportedKeyRepIsIgnored) {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("facebook.com");
@@ -1180,12 +1185,12 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsUnsupportedKeyRepIsIgnored) {
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsUnsupportedOptimizationIsIgnored) {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
@@ -1202,12 +1207,12 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithExistingSentinel) {
+TEST_F(PreviewsOptimizationGuideImplTest, ProcessHintsWithExistingSentinel) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
       {features::kNoScriptPreviews, features::kResourceLoadingHints}, {});
@@ -1234,7 +1239,7 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithExistingSentinel) {
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   EXPECT_TRUE(base::PathExists(sentinel_path));
@@ -1247,7 +1252,7 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithExistingSentinel) {
   // Now verify config is processed for different version and sentinel cleared.
   ProcessHints(config, "3.0.0");
 
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
@@ -1259,7 +1264,7 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithExistingSentinel) {
       1);
 }
 
-TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithInvalidSentinelFile) {
+TEST_F(PreviewsOptimizationGuideImplTest, ProcessHintsWithInvalidSentinelFile) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
       {features::kNoScriptPreviews, features::kResourceLoadingHints}, {});
@@ -1287,7 +1292,7 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithInvalidSentinelFile) {
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   EXPECT_FALSE(base::PathExists(sentinel_path));
@@ -1300,7 +1305,7 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithInvalidSentinelFile) {
   // Now verify config is processed with sentinel cleared.
   ProcessHints(config, "2.0.0");
 
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   EXPECT_FALSE(base::PathExists(sentinel_path));
@@ -1311,7 +1316,8 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithInvalidSentinelFile) {
       1);
 }
 
-TEST_F(PreviewsOptimizationGuideTest, SkipHintProcessingForSameConfigVersion) {
+TEST_F(PreviewsOptimizationGuideImplTest,
+       SkipHintProcessingForSameConfigVersion) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
       {features::kNoScriptPreviews, features::kResourceLoadingHints}, {});
@@ -1343,10 +1349,10 @@ TEST_F(PreviewsOptimizationGuideTest, SkipHintProcessingForSameConfigVersion) {
   // Process the new hints config and verify that they are available.
   ProcessHints(config1, "2.0.0");
 
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   histogram_tester.ExpectUniqueSample(
@@ -1359,10 +1365,10 @@ TEST_F(PreviewsOptimizationGuideTest, SkipHintProcessingForSameConfigVersion) {
   // is skipped.
   ProcessHints(config2, "2.0.0");
 
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   histogram_tester.ExpectBucketCount(
@@ -1372,7 +1378,7 @@ TEST_F(PreviewsOptimizationGuideTest, SkipHintProcessingForSameConfigVersion) {
       1);
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        SkipHintProcessingForEarlierConfigVersion) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
@@ -1405,10 +1411,10 @@ TEST_F(PreviewsOptimizationGuideTest,
   // Process the new hints config and verify that they are available.
   ProcessHints(config1, "2.0.0");
 
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   histogram_tester.ExpectUniqueSample(
@@ -1421,10 +1427,10 @@ TEST_F(PreviewsOptimizationGuideTest,
   // one is skipped.
   ProcessHints(config2, "1.0.0");
 
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   histogram_tester.ExpectBucketCount(
@@ -1434,7 +1440,7 @@ TEST_F(PreviewsOptimizationGuideTest,
       1);
 }
 
-TEST_F(PreviewsOptimizationGuideTest, ProcessMultipleNewConfigs) {
+TEST_F(PreviewsOptimizationGuideImplTest, ProcessMultipleNewConfigs) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
@@ -1466,10 +1472,10 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessMultipleNewConfigs) {
   // Process the new hints config and verify that they are available.
   ProcessHints(config1, "2.0.0");
 
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   histogram_tester.ExpectUniqueSample(
@@ -1482,10 +1488,10 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessMultipleNewConfigs) {
   // is processed.
   ProcessHints(config2, "3.0.0");
 
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   histogram_tester.ExpectBucketCount(
@@ -1495,7 +1501,8 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessMultipleNewConfigs) {
       2);
 }
 
-TEST_F(PreviewsOptimizationGuideTest, ProcessHintConfigWithNoKeyFailsDcheck) {
+TEST_F(PreviewsOptimizationGuideImplTest,
+       ProcessHintConfigWithNoKeyFailsDcheck) {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
@@ -1505,12 +1512,10 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintConfigWithNoKeyFailsDcheck) {
       page_hint1->add_whitelisted_optimizations();
   optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
-  EXPECT_DCHECK_DEATH({
-    ProcessHints(config, "2.0.0");
-  });
+  EXPECT_DCHECK_DEATH({ ProcessHints(config, "2.0.0"); });
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        ProcessHintsConfigWithDuplicateKeysFailsDcheck) {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
@@ -1530,12 +1535,10 @@ TEST_F(PreviewsOptimizationGuideTest,
       page_hint2->add_whitelisted_optimizations();
   optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
-  EXPECT_DCHECK_DEATH({
-    ProcessHints(config, "2.0.0");
-  });
+  EXPECT_DCHECK_DEATH({ ProcessHints(config, "2.0.0"); });
 }
 
-TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
+TEST_F(PreviewsOptimizationGuideImplTest, MaybeLoadOptimizationHints) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
@@ -1551,20 +1554,20 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/football/seahawksrebuildingyear"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        MaybeLoadPageHintsWithTwoExperimentsDisabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
@@ -1581,20 +1584,20 @@ TEST_F(PreviewsOptimizationGuideTest,
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/football/seahawksrebuildingyear"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        MaybeLoadPageHintsWithFirstExperimentEnabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
@@ -1616,20 +1619,20 @@ TEST_F(PreviewsOptimizationGuideTest,
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/football/seahawksrebuildingyear"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        MaybeLoadPageHintsWithSecondExperimentEnabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
@@ -1651,20 +1654,20 @@ TEST_F(PreviewsOptimizationGuideTest,
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/football/seahawksrebuildingyear"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        MaybeLoadPageHintsWithBothExperimentEnabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
@@ -1687,22 +1690,22 @@ TEST_F(PreviewsOptimizationGuideTest,
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/football/seahawksrebuildingyear"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 }
 
 // Test that optimization hints with multiple page patterns is processed
 // correctly.
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        LoadManyResourceLoadingOptimizationHints) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
@@ -1729,40 +1732,40 @@ TEST_F(PreviewsOptimizationGuideTest,
       GURL("https://somedomain50.org/news0/football")));
   EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain0.org/news0/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain0.org/news24/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain0.org/news25/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain49.org/news0/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain49.org/news24/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain49.org/news25/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain50.org/news0/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain50.org/news24/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain50.org/news25/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 
   RunUntilIdle();
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        MaybeLoadOptimizationHintsWithoutEnabledPageHintsFeature) {
   // Without PageHints-oriented feature enabled, never see
   // enabled, the optimization should be disabled.
@@ -1778,13 +1781,13 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest, PreviewsUserDataPopulatedCorrectly) {
+TEST_F(PreviewsOptimizationGuideImplTest, PreviewsUserDataPopulatedCorrectly) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
@@ -1800,59 +1803,67 @@ TEST_F(PreviewsOptimizationGuideTest, PreviewsUserDataPopulatedCorrectly) {
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
-  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
   EXPECT_EQ(base::nullopt, user_data.serialized_hint_version_string());
-  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyOptimization(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
   EXPECT_EQ("someversion", user_data.serialized_hint_version_string());
 }
 
-TEST_F(PreviewsOptimizationGuideTest, IsBlacklisted) {
+TEST_F(PreviewsOptimizationGuideImplTest,
+       CanApplyOptimizationWithLitePageServerPreviewsEnabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
+  PreviewsUserData user_data(kDefaultPageId);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://m.blacklisteddomain.com/path"));
-  EXPECT_TRUE(guide()->IsBlacklisted(&navigation_handle,
-                                     PreviewsType::LITE_PAGE_REDIRECT));
+  net::EffectiveConnectionType ect_threshold;
+  EXPECT_FALSE(guide()->CanApplyOptimization(&user_data, &navigation_handle,
+                                             PreviewsType::LITE_PAGE_REDIRECT,
+                                             &ect_threshold));
 
   InitializeWithLitePageRedirectBlacklist();
 
-  EXPECT_TRUE(guide()->IsBlacklisted(&navigation_handle,
-                                     PreviewsType::LITE_PAGE_REDIRECT));
-  EXPECT_DCHECK_DEATH(
-      guide()->IsBlacklisted(&navigation_handle, PreviewsType::NOSCRIPT));
+  EXPECT_FALSE(guide()->CanApplyOptimization(&user_data, &navigation_handle,
+                                             PreviewsType::LITE_PAGE_REDIRECT,
+                                             &ect_threshold));
 
   content::MockNavigationHandle blacklisted_subdomain_navigation_handle;
   blacklisted_subdomain_navigation_handle.set_url(
       GURL("https://blacklistedsubdomain.maindomain.co.in"));
-  EXPECT_TRUE(guide()->IsBlacklisted(&blacklisted_subdomain_navigation_handle,
-                                     PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(guide()->CanApplyOptimization(
+      &user_data, &blacklisted_subdomain_navigation_handle,
+      PreviewsType::LITE_PAGE_REDIRECT, &ect_threshold));
 
   content::MockNavigationHandle main_domain_navigation_handle;
   main_domain_navigation_handle.set_url(GURL("https://maindomain.co.in"));
-  EXPECT_FALSE(guide()->IsBlacklisted(&main_domain_navigation_handle,
-                                      PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_TRUE(guide()->CanApplyOptimization(
+      &user_data, &main_domain_navigation_handle,
+      PreviewsType::LITE_PAGE_REDIRECT, &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
-       IsBlacklistedWithLitePageServerPreviewsDisabled) {
+TEST_F(PreviewsOptimizationGuideImplTest,
+       CanApplyOptimizationWithLitePageServerPreviewsDisabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndDisableFeature(features::kLitePageServerPreviews);
 
   InitializeWithLitePageRedirectBlacklist();
 
+  PreviewsUserData user_data(kDefaultPageId);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://m.blacklisteddomain.com/path"));
-  EXPECT_TRUE(guide()->IsBlacklisted(&navigation_handle,
-                                     PreviewsType::LITE_PAGE_REDIRECT));
+  net::EffectiveConnectionType ect_threshold;
+  EXPECT_FALSE(guide()->CanApplyOptimization(&user_data, &navigation_handle,
+                                             PreviewsType::LITE_PAGE_REDIRECT,
+                                             &ect_threshold));
 }
 
-TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {
+TEST_F(PreviewsOptimizationGuideImplTest, RemoveObserverCalledAtDestruction) {
   EXPECT_FALSE(optimization_guide_service()->RemoveObserverCalled());
 
   ResetGuide();
@@ -1860,7 +1871,7 @@ TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {
   EXPECT_TRUE(optimization_guide_service()->RemoveObserverCalled());
 }
 
-TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabledNoHosts) {
+TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherEnabledNoHosts) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
@@ -1879,7 +1890,7 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabledNoHosts) {
   EXPECT_FALSE(hints_fetcher()->hints_fetched());
 }
 
-TEST_F(PreviewsOptimizationGuideTest,
+TEST_F(PreviewsOptimizationGuideImplTest,
        HintsFetcherEnabledWithHostsNoHintsInResponse) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
@@ -1909,7 +1920,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(0);
 }
 
-TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabledWithHosts) {
+TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherEnabledWithHosts) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
@@ -1932,7 +1943,7 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabledWithHosts) {
   EXPECT_TRUE(hints_fetcher()->hints_fetched());
 }
 
-TEST_F(PreviewsOptimizationGuideTest, HintsFetcherTimerRetryDelay) {
+TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherTimerRetryDelay) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
@@ -1962,7 +1973,7 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherTimerRetryDelay) {
   EXPECT_TRUE(hints_fetcher()->hints_fetched());
 }
 
-TEST_F(PreviewsOptimizationGuideTest, HintsFetcherTimerFetchSucceeds) {
+TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherTimerFetchSucceeds) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
@@ -1996,7 +2007,7 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherTimerFetchSucceeds) {
   EXPECT_TRUE(hints_fetcher()->hints_fetched());
 }
 
-TEST_F(PreviewsOptimizationGuideTest, HintsFetcherDisabled) {
+TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherDisabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndDisableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
@@ -2009,7 +2020,7 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherDisabled) {
   InitializeFixedCountResourceLoadingHints();
 }
 
-TEST_F(PreviewsOptimizationGuideTest, HintsFetcherLastFetchAtttempt) {
+TEST_F(PreviewsOptimizationGuideImplTest, HintsFetcherLastFetchAtttempt) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
@@ -2048,14 +2059,14 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherLastFetchAtttempt) {
 }
 
 class PreviewsOptimizationGuideDataSaverOffTest
-    : public PreviewsOptimizationGuideTest {
+    : public PreviewsOptimizationGuideImplTest {
  public:
   PreviewsOptimizationGuideDataSaverOffTest() {}
 
   ~PreviewsOptimizationGuideDataSaverOffTest() override {}
 
   void SetUp() override {
-    PreviewsOptimizationGuideTest::SetUp();
+    PreviewsOptimizationGuideImplTest::SetUp();
     DisableDataSaver();
   }
 
