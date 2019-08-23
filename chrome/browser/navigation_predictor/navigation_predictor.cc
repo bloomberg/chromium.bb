@@ -475,7 +475,7 @@ void NavigationPredictor::MaybeSendMetricsToUkm() const {
     ukm::builders::NavigationPredictorAnchorElementMetrics
         anchor_element_builder(ukm_source_id_);
 
-    std::string url = top_urls_[i];
+    std::string url = top_urls_[i].spec();
     auto iter = navigation_scores_map_.find(url);
 
     if (iter != navigation_scores_map_.end()) {
@@ -829,6 +829,16 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     return a->ratio_area > b->ratio_area;
   });
 
+  // Store either the top 10 links (or all the links, if the page
+  // contains fewer than 10 links), in |top_urls_|. Then, shuffle the
+  // list to randomize data sent to the UKM.
+  int top_urls_size = std::min(10, static_cast<int>(metrics.size()));
+  top_urls_.reserve(top_urls_size);
+  for (int i = 0; i < top_urls_size; i++) {
+    top_urls_.push_back(metrics[i]->target_url);
+  }
+  base::RandomShuffle(top_urls_.begin(), top_urls_.end());
+
   // Loop |metrics| to compute navigation scores.
   std::vector<std::unique_ptr<NavigationScore>> navigation_scores;
   navigation_scores.reserve(metrics.size());
@@ -888,22 +898,13 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   MaybeTakeActionOnLoad(document_origin_, navigation_scores);
 
   // Store navigation scores in |navigation_scores_map_| for fast look up upon
-  // clicks. Store either the top 10 links (or all the links, if the page
-  // contains fewer than 10 links, in |top_urls_|.
+  // clicks.
   navigation_scores_map_.reserve(navigation_scores.size());
-  top_urls_.reserve(std::min(10, static_cast<int>(navigation_scores.size())));
   for (size_t i = 0; i != navigation_scores.size(); ++i) {
     navigation_scores[i]->score_rank = base::make_optional(i);
     std::string url_spec = navigation_scores[i]->url.spec();
     navigation_scores_map_[url_spec] = std::move(navigation_scores[i]);
-    if (i < 10) {
-      top_urls_.push_back(url_spec);
-    }
   }
-
-  // Shuffle the list of top URLs to randomize data sent to the UKM about which
-  // link was clicked on.
-  base::RandomShuffle(top_urls_.begin(), top_urls_.end());
 
   MaybeSendMetricsToUkm();
 }
