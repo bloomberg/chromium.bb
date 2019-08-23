@@ -32,6 +32,12 @@ class MenuManager {
     this.desktop_ = desktop;
 
     /**
+     * The root node of the menu panel.
+     * @private {chrome.automation.AutomationNode}
+     */
+    this.menuPanelNode_;
+
+    /**
      * The root node of the menu.
      * @private {chrome.automation.AutomationNode}
      */
@@ -79,9 +85,16 @@ class MenuManager {
      */
     this.menuPanel_;
 
-    if (window.switchAccess.improvedTextInputEnabled()) {
-      this.init_();
-    }
+    /**
+     * Callback for highlighting the first available action once a
+     * menu has been loaded in the panel. Bind creates a new function, so
+     * this function is saved as a field so that the event listener
+     * associated with this callback can be removed properly.
+     * @private {function(chrome.automation.AutomationEvent): undefined}
+     */
+    this.onMenuPanelChildrenChanged_ = this.highlightFirstAction_.bind(this);
+
+    this.init_();
   }
 
   /**
@@ -89,8 +102,10 @@ class MenuManager {
    * @private
    */
   init_() {
-    chrome.clipboard.onClipboardDataChanged.addListener(
-        this.updateClipboardHasData.bind(this));
+    if (window.switchAccess.improvedTextInputEnabled()) {
+      chrome.clipboard.onClipboardDataChanged.addListener(
+          this.updateClipboardHasData.bind(this));
+    }
   }
 
   /**
@@ -105,11 +120,11 @@ class MenuManager {
       return;
     }
 
-    const actions = this.getActionsForNode_(navNode);
-    // getActionsForNode_ will return null when there is only one interesting
-    // action (selection) specific to this node. In this case, rather than
-    // forcing the user to repeatedly disambiguate, we will simply select by
-    // default.
+    const actions = this.getMainMenuActionsForNode_(navNode);
+    // getMainMenuActionsForNode_ will return null when there is only one
+    // interesting action (selection) specific to this node. In this case,
+    // rather than forcing the user to repeatedly disambiguate, we will simply
+    // select by default.
     if (actions === null) {
       this.navigationManager_.selectCurrentNode();
       return;
@@ -161,7 +176,7 @@ class MenuManager {
       return;
     }
 
-    const actions = this.getActionsForNode_(navNode);
+    const actions = this.getMainMenuActionsForNode_(navNode);
     if (actions === null) {
       return;
     }
@@ -203,6 +218,157 @@ class MenuManager {
     }
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
         false /** Hide the menu. */, SAConstants.EMPTY_LOCATION, 0);
+  }
+
+  /**
+   * Opens the menu with given |menuId|. Shows the menu actions that are
+   * applicable to the currently highlighted node in the menu panel. If the
+   * menu being opened is the same as the current menu open (i.e. the menu is
+   * being reloaded), then the action that triggered the reload
+   * will be highlighted. Otherwise, the first available action will
+   * be highlighted. Returns a boolean of whether or not the menu was
+   * successfully opened.
+   * TODO(sophyang): Once menu_panel.html is reorganized into submenus, use
+   * this function to replace most of enter() and eliminate reloadMenu_().
+   * @param {!chrome.automation.AutomationNode} navNode The currently
+   *     highlighted node, for which the menu is being opened.
+   * @param {!SAConstants.MenuId} menuId Indicates the menu being opened.
+   * @return {boolean} Whether or not the menu was successfully opened.
+   * @private
+   */
+  openMenu_(navNode, menuId) {
+    // Action currently highlighted in the menu (null if the menu was closed
+    // before this function was called).
+    const actionNode = this.node_;
+
+    const currentMenuId = this.menuPanel_.currentMenuId();
+    const shouldReloadMenu = (currentMenuId === menuId);
+
+    if (!shouldReloadMenu) {
+      // Close the current menu before opening a new one.
+      this.closeCurrentMenu_();
+    }
+
+    const actions = this.getMenuActions_(navNode, menuId);
+
+    if (!actions) {
+      return false;
+    }
+
+    if (!shouldReloadMenu) {
+      // Wait for the menu to appear in the panel before highlighting the
+      // first available action.
+      this.menuPanelNode().addEventListener(
+          chrome.automation.EventType.CHILDREN_CHANGED,
+          this.onMenuPanelChildrenChanged_, false /** Don't use capture. */);
+    }
+
+    // Converting to JSON strings to check equality of Array contents.
+    if (JSON.stringify(actions) !== JSON.stringify(this.actions_)) {
+      // Set new menu actions in the panel.
+      this.actions_ = actions;
+      this.menuPanel_.setActionsFromMenu(this.actions_, menuId);
+    }
+
+    if (!navNode.location) {
+      console.log('Unable to show Switch Access menu.');
+      return false;
+    }
+    // Show the menu panel.
+    chrome.accessibilityPrivate.setSwitchAccessMenuState(
+        true, navNode.location, actions.length);
+
+    this.menuOriginNode_ = navNode;
+    if (!shouldReloadMenu && window.switchAccess.improvedTextInputEnabled()) {
+      this.menuOriginNode_.addEventListener(
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+          this.onSelectionChanged_.bind(this), false /** Don't use capture. */);
+    }
+
+    if (shouldReloadMenu && actionNode) {
+      // Highlight the same action that was highlighted before the menu was
+      // reloaded.
+      this.node_ = actionNode;
+      this.updateFocusRing_();
+    }
+    return true;
+  }
+
+  /**
+   * Closes the current menu and clears the menu panel.
+   * @private
+   */
+  closeCurrentMenu_() {
+    this.clearFocusRing_();
+    if (this.node_) {
+      this.node_ = null;
+    }
+    this.menuPanel_.clear();
+    this.actions_ = [];
+    this.menuNode_ = null;
+  }
+
+  /**
+   * Get the actions applicable for |navNode| from the menu with given
+   * |menuId|.
+   * @param {!chrome.automation.AutomationNode} navNode The currently selected
+   *     node, for which the menu is being opened.
+   * @param {SAConstants.MenuId} menuId
+   * @return {Array<SAConstants.MenuAction>}
+   * @private
+   */
+  getMenuActions_(navNode, menuId) {
+    switch (menuId) {
+      case SAConstants.MenuId.MAIN:
+        return this.getMainMenuActionsForNode_(navNode);
+      case SAConstants.MenuId.TEXT_NAVIGATION:
+        return this.getTextNavigationActions_();
+      default:
+        return this.getMainMenuActionsForNode_(navNode);
+    }
+  }
+
+  /**
+   * Get the actions in the text navigation submenu.
+   * @return {!Array<SAConstants.MenuAction>}
+   * @private
+   */
+  getTextNavigationActions_() {
+    return [
+      SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT,
+      SAConstants.MenuAction.JUMP_TO_END_OF_TEXT,
+      SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT,
+      SAConstants.MenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT,
+      SAConstants.MenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT,
+      SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT,
+      SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT,
+      SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT
+    ];
+  }
+
+  /**
+   * Highlights the first available action in the menu.
+   * @private
+   */
+  highlightFirstAction_() {
+    let firstNode =
+        this.menuNode().find({role: chrome.automation.RoleType.BUTTON});
+
+    while (firstNode && !this.isActionAvailable_(firstNode.htmlAttributes.id))
+      firstNode = firstNode.nextSibling;
+
+    if (firstNode) {
+      this.node_ = firstNode;
+      this.updateFocusRing_();
+    }
+
+    // The event is fired multiple times when a new menu is opened in the
+    // panel, so remove the listener once the callback has been called once.
+    // This ensures the first action is not continually highlighted as we
+    // navigate through the menu.
+    this.menuPanelNode().removeEventListener(
+        chrome.automation.EventType.CHILDREN_CHANGED,
+        this.onMenuPanelChildrenChanged_, false /** Don't use capture. */);
   }
 
   /**
@@ -301,6 +467,30 @@ class MenuManager {
   }
 
   /**
+   * Get the menu panel node. If it's not defined, search for it.
+   * TODO(sophyang): Replace menuNode() with this function once menu_panel.html
+   * has been reorganized into submenus. Change menuNode() to get the node
+   * of the menu currently within the menu panel node.
+   * @return {!chrome.automation.AutomationNode}
+   */
+  menuPanelNode() {
+    if (this.menuPanelNode_) {
+      return this.menuPanelNode_;
+    }
+
+    const treeWalker = new AutomationTreeWalker(
+        this.desktop_, constants.Dir.FORWARD,
+        SwitchAccessPredicate.switchAccessMenuDiscoveryRestrictions());
+    const node = treeWalker.next().node;
+    if (node) {
+      this.menuPanelNode_ = node;
+      return this.menuPanelNode_;
+    }
+    console.log('Unable to find the Switch Access menu panel.');
+    return this.desktop_;
+  }
+
+  /**
    * Get the menu node. If it's not defined, search for it.
    * @return {!chrome.automation.AutomationNode}
    */
@@ -382,7 +572,7 @@ class MenuManager {
    * @return {Array<!SAConstants.MenuAction>}
    * @private
    */
-  getActionsForNode_(node) {
+  getMainMenuActionsForNode_(node) {
     let actions = [];
 
     let scrollableAncestor = node;
@@ -411,6 +601,8 @@ class MenuManager {
 
       if (window.switchAccess.improvedTextInputEnabled() &&
           node.state[StateType.FOCUSED]) {
+        // TODO(sophyang): Replace these with getTextNavigationActionsForNode_()
+        // once the text navigation submenu is implemented.
         actions.push(SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT);
         actions.push(SAConstants.MenuAction.JUMP_TO_END_OF_TEXT);
         actions.push(SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT);

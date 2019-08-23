@@ -114,7 +114,7 @@ class Panel {
 
     // Add the menu to the panel if it is not already being shown.
     if (menuId !== this.currentMenuId_) {
-      this.panel_.clear();
+      this.clear();
       this.panel_.appendChild(menu);
     }
 
