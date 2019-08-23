@@ -595,17 +595,17 @@ void PDFiumPage::CalculateLinks() {
     return;
 
   calculated_links_ = true;
-  FPDF_PAGELINK links = FPDFLink_LoadWebLinks(GetTextPage());
-  int count = FPDFLink_CountWebLinks(links);
+  ScopedFPDFPageLink links(FPDFLink_LoadWebLinks(GetTextPage()));
+  int count = FPDFLink_CountWebLinks(links.get());
   for (int i = 0; i < count; ++i) {
     base::string16 url;
-    int url_length = FPDFLink_GetURL(links, i, nullptr, 0);
+    int url_length = FPDFLink_GetURL(links.get(), i, nullptr, 0);
     if (url_length > 0) {
       PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
           &url, url_length, true);
       unsigned short* data =
           reinterpret_cast<unsigned short*>(api_string_adapter.GetData());
-      int actual_length = FPDFLink_GetURL(links, i, data, url_length);
+      int actual_length = FPDFLink_GetURL(links.get(), i, data, url_length);
       api_string_adapter.Close(actual_length);
     }
     Link link;
@@ -633,13 +633,13 @@ void PDFiumPage::CalculateLinks() {
     if (is_invalid_url)
       continue;
 
-    int rect_count = FPDFLink_CountRects(links, i);
+    int rect_count = FPDFLink_CountRects(links.get(), i);
     for (int j = 0; j < rect_count; ++j) {
       double left;
       double top;
       double right;
       double bottom;
-      FPDFLink_GetRect(links, i, j, &left, &top, &right, &bottom);
+      FPDFLink_GetRect(links.get(), i, j, &left, &top, &right, &bottom);
       pp::Rect rect = PageToScreen(pp::Point(), 1.0, left, top, right, bottom,
                                    PageOrientation::kOriginal);
       if (rect.IsEmpty())
@@ -647,11 +647,10 @@ void PDFiumPage::CalculateLinks() {
       link.bounding_rects.push_back(rect);
     }
     FPDF_BOOL is_link_over_text = FPDFLink_GetTextRange(
-        links, i, &link.start_char_index, &link.char_count);
+        links.get(), i, &link.start_char_index, &link.char_count);
     DCHECK(is_link_over_text);
     links_.push_back(link);
   }
-  FPDFLink_CloseWebLinks(links);
 }
 
 void PDFiumPage::CalculateImages() {
