@@ -1818,6 +1818,7 @@ if (!is_android) {
         "../browser/ui/views/extensions/media_galleries_dialog_views_browsertest.cc",
         "../browser/ui/views/external_protocol_dialog_browsertest.cc",
         "../browser/ui/views/feature_promos/feature_promo_dialog_browsertest.cc",
+        "../browser/ui/views/feature_promos/global_media_controls_promo_controller_dialog_browsertest.cc",
         "../browser/ui/views/feature_promos/reopen_tab_promo_controller_dialog_browsertest.cc",
         "../browser/ui/views/folder_upload_confirmation_view_browsertest.cc",
         "../browser/ui/views/frame/browser_frame_browsertest.cc",
