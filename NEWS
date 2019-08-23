@@ -58,6 +58,9 @@ issues]].
 - Remove ~unicodedefs.cti~. It was obsolete and never meant to be
   included by any tables. Instead use the online references as
   mentioned in the documentation now. See also #696.
+- ~lou_checkyaml~ test reporting has been improved, thanks to Bert
+  Frees. For example it now has a ~--verbose~ option so that printing
+  of expected failures can be enabled.
 
 ** Deprecation notice
 - The noUndefinedDots mode has been renamed to noUndefined. For
