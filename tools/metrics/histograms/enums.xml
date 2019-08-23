@@ -24400,6 +24400,8 @@ Called by update_net_error_codes.py.-->
   <int value="3007" label="ThirdPartyServiceWorker"/>
   <int value="3008" label="JSSelfProfiling"/>
   <int value="3009" label="HTMLFrameSetElement"/>
+  <int value="3010" label="MediaCapabilitiesFramerateRatio"/>
+  <int value="3011" label="MediaCapabilitiesFramerateNumber"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
