@@ -2687,8 +2687,9 @@ void WebLocalFrameImpl::DrawInCanvas(const WebRect& rect,
       if (webBody.HasAttribute(classAttribute)) {
         WTF::String originalStyleClass = webBody.GetAttribute(classAttribute);
         WTF::String newClass(originalStyleClass);
-        newClass.append(" ");
-        newClass.append(styleClass);
+        std::string sclass(" ");
+        sclass.append(styleClass.Utf8());
+        newClass = newClass + sclass.c_str();
         webBody.SetAttribute(classAttribute, WebString(newClass));
         originalStyleClasses.emplace(htmlBody, std::move(originalStyleClass));
       } else {
