@@ -46,7 +46,7 @@ include fr-bfu-comp6.utb
 class con bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ
 class voy aeiouyéàèùâêîôûëïüœAEIOUYÉÀÈÙÂÊÄËÏÜŒ
 class bmp bmpBMP
-class apost '\X2018\x2019
+class apost '\x2018\x2019
 
 #Pour désabréger, il nous faut une classe contenant les consonnes et les abréviations commençant par une consonne
 class conabr bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ⠘⠆⠷⠩⠒⠹⠶⠻⠸⠫⠖⠴
@@ -68,7 +68,7 @@ class urlPuncs :./
 
 letsign 56
 #multind 56-46 letsign begcaps
-noletsignafter '\X2018\X2019
+noletsignafter '\x2018\x2019
 hyphen - 36
 space _ 5-36
 noback begcomp 56

@@ -6,6 +6,15 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 issues]].
 
 ** New features
+- Enable ~always~ rules with a single character and and a single
+  braille cell for back-translation. Thanks to Bue Vester-Andersen.
+- Implement noUndefined mode for forward translation, thanks to Dave
+  Mielke.
+- Use fallback braille representations (NABCC) for rendering undefined
+  characters in hexadecimal notation, thanks to Dave Mielke.
+- Always render undefined characters, also ASCII characters, in
+  hexadecimal notation.
+
 ** Bug fixes
 - Don't let a caps passage end on a word with no letters. Thanks to
   Bert Frees.
@@ -14,30 +23,84 @@ issues]].
   Frees.
 - Never convert to lowercase if capsletter is not defined. Thanks to
   Bert Frees.
-- Fix position mapping for back-translation when noUndefinedDots mode
-  is active. Thanks to Dave Mielke.
+- Fix position mapping for back-translation when noUndefined mode is
+  active. Thanks to Dave Mielke.
+- Fix bug where a translation would hang on words that match both a
+  ~nocont~ and a ~repeated~ rule. Thanks to Dave Mielke.
 
 ** Braille table improvements
 - Fix an issue with ordinal numbers inside caps passages in Dutch
   braille. Thanks to Bert Frees.
 - Improved back-translation for Mongolian thanks to Angaragerdene.
+- Fixes to Polish grade 1 and Polish computer braille thanks to Łukasz
+  Golonka.
+- Improvements to Ancient Greek braille, which has been renamed "Greek
+  international braille". A version with composed accents is made
+  available as a .uti table. Thanks to Dave Mielke and Μαρια
+  Γεωργακαράκου (Maria Georgakarakou).
+- Improvements and fixes to Spanish contracted braille. Details in
+  #741. Thanks to Juan Pablo Bello.
+- Add a display table to match Word CX which is used in Norway and
+  Sweden, and maybe also in other countries thanks to Lars Bjørndal.
+- Fix handling of colon within number in Dutch braille, thanks to Jake
+  Kyle.
+- Fix translation of bullet and dot operators in Dutch braille, thanks
+  to Paul Rambags
+- Added North American Braille Computer Code table (en-nabcc.utb)
+  which is the counterpart of the text_nabcc.dis display table. Thanks
+  to Dave Mielke.
+- Add support for the International Phonetic Alphabet (IPA) to the
+  Chinese braille table, thanks to Hurt Huang and Sponge Jhan.
+- Unified English Braille no longer displays a single underscore when
+  multiple underscores are in the text, thanks to André-Abush Clause.
 
 ** Other changes
+- Metadata keys and values are now case insensitive, thanks to Dave
+  Mielke.
+- Remove ~unicodedefs.cti~. It was obsolete and never meant to be
+  included by any tables. Instead use the online references as
+  mentioned in the documentation now. See also #696.
+- ~lou_checkyaml~ test reporting has been improved, thanks to Bert
+  Frees. For example it now has a ~--verbose~ option so that printing
+  of expected failures can be enabled.
+- Hyphenation tables have been removed from tables except those needed
+  for ~nocross~ rules, thanks to Bert Frees.
+
+  The idea is that the caller (for example ~odt2braille~ or
+  ~liblouisutdml~) should be able to decide for themselves which
+  hyphenation table to use. The case in which a table contains nocross
+  rules is an exception. In this case the hyphenation patterns are a
+  real part of the table. Because it is not recommended to append an
+  own hyphenation table in this case, a ~#-has-nocross~ metadata field
+  was added to indicate that a table contains nocross rules.
+- ~lou_hyphenate~ can now handle more than just words (sequences of
+  letters), e.g compound words, thanks to Bert Frees.
+
 ** Deprecation notice
-None
+- The noUndefinedDots mode has been renamed to noUndefined. For
+  backwards compatibility noUndefinedDots is still available in the
+  header file and in the Python bindings, as an alias for noUndefined.
 
 ** Backwards incompatible changes
 None
 
+** Invisible changes
+   - Internally separate more clearly the display and translation
+     phases.
+
 ** New, renamed or removed tables
 *** New
-- None
+- grc-international-common.uti
+- grc-international-composed.uti
+- grc-international-decomposed.uti
+- en-nabcc.utb
 
 *** Renamed
-- None
+- gr-bb.ctb -> grc-international-en.utb
 
 *** Removed
-- None
+- unicodedefs.cti
+- fi-fi.ctb
 
 * Noteworthy changes in release 3.10.0 (2019-06-03)
 This release comes across as quiet, containing just the usual

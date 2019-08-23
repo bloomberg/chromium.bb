@@ -7,8 +7,6 @@
 #+dots:6
 #+contraction:full
 #+grade:3
-#+hyphenation:yes
 
 include no-no-g3.ctb
-include hyph_nb_NO.dic
 include braille-patterns.cti

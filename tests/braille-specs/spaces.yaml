@@ -769,18 +769,6 @@ tests:
 flags: {testmode: forward}
 tests:
   - ['\x00a0', '\x0020']
-table: fi.tbl,spaces.uti
-flags: {testmode: bothDirections}
-tests:
-  - ['\x0009', '⣔']
-  - ['\x000a', '⣚']
-  - ['\x000b', '⣅']
-  - ['\x000c', '⣇']
-  - ['\x000d', '⣍']
-  - ['\x0020', '\x0020']
-flags: {testmode: forward}
-tests:
-  - ['\x00a0', '\x0020']
 table: fi.utb
 flags: {testmode: bothDirections}
 tests:
@@ -931,7 +919,7 @@ tests:
   - ['\x2029', '\x0020']
   - ['\x202f', '\x0020']
   - ['\x205f', '\x0020']
-table: gr-bb.ctb
+table: grc-international-en.utb
 flags: {testmode: bothDirections}
 tests:
   - ['\x0009', '⡀']

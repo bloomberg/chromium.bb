@@ -215,7 +215,7 @@ punctuation { 23567
 sign | 3458
 punctuation } 23568
 math ~ 3457
-space \X00A0 0 # no-break space
+space \x00A0 0 # no-break space
 punctuation \x00Ad 36 # soft hyphen
 punctuation « 1234567 # left-pointing double angle quotation mark
 punctuation » 1234568 # right-pointing double angle quotation mark

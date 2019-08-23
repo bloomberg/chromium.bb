@@ -37,6 +37,8 @@
 #+dots: 8
 #+direction: both
 
+#-has-nocross: yes
+
 # Display upcodes
 include da-dk-octobraille.dis
 
