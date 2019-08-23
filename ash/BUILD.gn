@@ -803,6 +803,7 @@ component("ash") {
     "system/network/sms_observer.h",
     "system/network/tray_network_state_model.cc",
     "system/network/tray_network_state_model.h",
+    "system/network/tray_network_state_observer.h",
     "system/network/unified_network_detailed_view_controller.cc",
     "system/network/unified_network_detailed_view_controller.h",
     "system/network/unified_vpn_detailed_view_controller.cc",
