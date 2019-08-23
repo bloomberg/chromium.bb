@@ -22,5 +22,10 @@
     }
   }
 
-  binding.ByteLengthQueuingStrategy = ByteLengthQueuingStrategy;
+  defineProperty(global, 'ByteLengthQueuingStrategy', {
+    value: ByteLengthQueuingStrategy,
+    enumerable: false,
+    configurable: true,
+    writable: true
+  });
 });
