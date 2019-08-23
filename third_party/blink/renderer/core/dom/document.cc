@@ -1057,7 +1057,11 @@ Document::Document(const DocumentInit& initializer,
       layout_view_(nullptr),
       has_fullscreen_supplement_(false),
       load_event_delay_count_(0),
-      load_event_delay_timer_(GetTaskRunner(TaskType::kNetworking),
+      // We already intentionally fire load event asynchronously and here we use
+      // kDOMManipulation to ensure that we run onload() in order with other
+      // callbacks (e.g. onloadstart()) per the spec.
+      // See: https://html.spec.whatwg.org/#delay-the-load-event
+      load_event_delay_timer_(GetTaskRunner(TaskType::kDOMManipulation),
                               this,
                               &Document::LoadEventDelayTimerFired),
       plugin_loading_timer_(GetTaskRunner(TaskType::kInternalLoading),
