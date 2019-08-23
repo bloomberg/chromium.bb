@@ -103,6 +103,7 @@ class PerformanceManager {
       FrameNodeCreationCallback creation_callback);
   std::unique_ptr<PageNodeImpl> CreatePageNode(
       const WebContentsProxy& contents_proxy,
+      const std::string& browser_context_id,
       bool is_visible,
       bool is_audible);
   std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
