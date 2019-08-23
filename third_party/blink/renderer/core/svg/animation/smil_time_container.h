@@ -76,8 +76,6 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
 
   void Trace(blink::Visitor*);
 
-  void ResetReferenceTime();
-
  private:
   enum FrameSchedulingState {
     // No frame scheduled.

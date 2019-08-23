@@ -520,12 +520,9 @@ Node::InsertionNotificationRequest SVGSVGElement::InsertedInto(
     // the load event, but if we miss that train (deferred programmatic
     // element insertion for example) we need to initialize the time container
     // here.
-    if (!GetDocument().Parsing() && GetDocument().LoadEventFinished()) {
-      if (!TimeContainer()->IsStarted())
-        TimeContainer()->Start();
-      else
-        TimeContainer()->ResetReferenceTime();
-    }
+    if (!GetDocument().Parsing() && GetDocument().LoadEventFinished() &&
+        !TimeContainer()->IsStarted())
+      TimeContainer()->Start();
   }
   return SVGGraphicsElement::InsertedInto(root_parent);
 }
