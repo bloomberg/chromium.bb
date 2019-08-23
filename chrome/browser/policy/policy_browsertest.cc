@@ -4215,6 +4215,43 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, CaretHighlightEnabled) {
   EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, MonoAudioEnabled) {
+  // Verifies that the mono audio accessibility feature can be controlled
+  // through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  accessibility_manager->EnableMonoAudio(false);
+  // Verify that the mono audio is initially disabled.
+  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Manually enable the mono audio.
+  accessibility_manager->EnableMonoAudio(true);
+  EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kMonoAudioEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Verify that the mono audio cannot be enabled manually anymore.
+  accessibility_manager->EnableMonoAudio(true);
+  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
+
+  policies.Set(key::kMonoAudioEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Verify that the mono audio cannot be disabled manually anymore.
+  accessibility_manager->EnableMonoAudio(false);
+  EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(

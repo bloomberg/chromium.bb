@@ -3219,6 +3219,18 @@
     ]
   },
 
+  "MonoAudioEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "MonoAudioEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.mono_audio",
+        "indicator_tests": [
+          { "policy": { "MonoAudioEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "HighContrastEnabled": {
     "os": ["chromeos"],
     "test_policy": { "HighContrastEnabled": true },
