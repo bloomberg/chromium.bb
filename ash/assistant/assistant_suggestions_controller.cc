@@ -130,7 +130,7 @@ void AssistantSuggestionsController::OnProactiveSuggestionsClientDestroying() {
 }
 
 void AssistantSuggestionsController::OnProactiveSuggestionsChanged(
-    std::unique_ptr<ProactiveSuggestions> proactive_suggestions) {
+    scoped_refptr<ProactiveSuggestions> proactive_suggestions) {
   model_.SetProactiveSuggestions(std::move(proactive_suggestions));
 }
 

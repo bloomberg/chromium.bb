@@ -135,7 +135,7 @@ void ProactiveSuggestionsClientImpl::SetActiveUrl(const GURL& url) {
 }
 
 void ProactiveSuggestionsClientImpl::SetActiveProactiveSuggestions(
-    std::unique_ptr<ash::ProactiveSuggestions> proactive_suggestions) {
+    scoped_refptr<ash::ProactiveSuggestions> proactive_suggestions) {
   size_t proactive_suggestions_hash =
       ash::ProactiveSuggestions::ToHash(proactive_suggestions.get());
   if (proactive_suggestions_hash == active_proactive_suggestions_hash_)

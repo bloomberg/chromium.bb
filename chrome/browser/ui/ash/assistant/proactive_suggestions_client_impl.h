@@ -56,7 +56,7 @@ class ProactiveSuggestionsClientImpl
   void SetActiveContents(content::WebContents* contents);
   void SetActiveUrl(const GURL& url);
   void SetActiveProactiveSuggestions(
-      std::unique_ptr<ash::ProactiveSuggestions> proactive_suggestions);
+      scoped_refptr<ash::ProactiveSuggestions> proactive_suggestions);
 
   void UpdateActiveState();
 
