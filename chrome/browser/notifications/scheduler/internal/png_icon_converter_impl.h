@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_ICON_CONVERTER_IMPL_H_
-#define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_ICON_CONVERTER_IMPL_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_PNG_ICON_CONVERTER_IMPL_H_
+#define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_PNG_ICON_CONVERTER_IMPL_H_
 
 #include <string>
 #include <vector>
@@ -14,10 +14,10 @@
 
 namespace notifications {
 
-class IconConverterImpl : public IconConverter {
+class PngIconConverterImpl : public IconConverter {
  public:
-  IconConverterImpl();
-  ~IconConverterImpl() override;
+  PngIconConverterImpl();
+  ~PngIconConverterImpl() override;
 
  private:
   // IconConverter implementation.
@@ -26,9 +26,9 @@ class IconConverterImpl : public IconConverter {
   void ConvertStringToIcon(std::vector<std::string> encoded_data,
                            DecodeCallback callback) override;
 
-  DISALLOW_COPY_AND_ASSIGN(IconConverterImpl);
+  DISALLOW_COPY_AND_ASSIGN(PngIconConverterImpl);
 };
 
 }  // namespace notifications
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_ICON_CONVERTER_IMPL_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_PNG_ICON_CONVERTER_IMPL_H_
