@@ -4153,6 +4153,32 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, KeyboardFocusHighlightEnabled) {
   EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, CursorHighlightEnabled) {
+  // Verifies that the cursor highlight accessibility feature accessibility
+  // feature can be controlled through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Verify that the cursor highlight is initially disabled.
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Manually enable the cursor highlight.
+  accessibility_manager->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kCursorHighlightEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Verify that the cursor highlight cannot be enabled manually anymore.
+  accessibility_manager->SetCursorHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(

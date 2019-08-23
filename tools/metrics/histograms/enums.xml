@@ -17837,6 +17837,7 @@ Called by update_net_error_codes.py.-->
   <int value="591" label="DomainsToNotCheckComplianceOfUploadedContent"/>
   <int value="592" label="DictationEnabled"/>
   <int value="593" label="KeyboardFocusHighlightEnabled"/>
+  <int value="594" label="CursorHighlightEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

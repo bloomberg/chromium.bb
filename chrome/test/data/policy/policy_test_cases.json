@@ -3195,6 +3195,18 @@
     ]
   },
 
+  "CursorHighlightEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "CursorHighlightEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.cursor_highlight",
+        "indicator_tests": [
+          { "policy": { "CursorHighlightEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "HighContrastEnabled": {
     "os": ["chromeos"],
     "test_policy": { "HighContrastEnabled": true },

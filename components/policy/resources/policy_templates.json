@@ -632,6 +632,7 @@
         'DictationEnabled',
         'SelectToSpeakEnabled',
         'KeyboardFocusHighlightEnabled',
+        'CursorHighlightEnabled',
         'DeviceLoginScreenDefaultLargeCursorEnabled',
         'DeviceLoginScreenDefaultSpokenFeedbackEnabled',
         'DeviceLoginScreenDefaultHighContrastEnabled',
@@ -9901,6 +9902,33 @@
           If this policy is left unset, the keyboard focus highlighting is disabled initially but can be enabled by the user anytime.'''
     },
     {
+      'name': 'CursorHighlightEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:78-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 594,
+      'caption': '''Enable the cursor highlight accessibility feature''',
+      'tags': [],
+      'desc': '''Enable the cursor highlight accessibility feature.
+
+          This feature is responsible for highlighting the area that surrounds the mouse cursor while moving it.
+
+          If this policy is set to enabled, the cursor highlight will always be enabled.
+
+          If this policy is set to disabled, the cursor highlight will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the cursor highlight is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
       'name': 'KeyboardDefaultToFunctionKeys',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18225,6 +18253,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 593,
+  'highest_id_currently_used': 594,
   'highest_atomic_group_id_currently_used': 37
 }
