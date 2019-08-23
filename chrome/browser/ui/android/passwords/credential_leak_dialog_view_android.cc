@@ -37,9 +37,9 @@ void CredentialLeakDialogViewAndroid::Show(ui::WindowAndroid* window_android) {
       env, window_android->GetJavaObject(), reinterpret_cast<intptr_t>(this)));
 
   base::string16 leak_warning_title =
-      l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_CURRENT_SITE_TITLE);
+      l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_TITLE);
   base::string16 leak_warning_details =
-      l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_CURRENT_SITE_MESSAGE);
+      l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE);
   base::string16 positive_button =
       l10n_util::GetStringUTF16(IDS_LEAK_CHECK_CREDENTIALS);
   base::string16 negative_button = l10n_util::GetStringUTF16(IDS_CLOSE);
