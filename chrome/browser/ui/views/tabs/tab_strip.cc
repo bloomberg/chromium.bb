@@ -2170,7 +2170,7 @@ void TabStrip::StartRemoveTabAnimation(int model_index, bool was_active) {
                              UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
   }
 
-  layout_helper_->RemoveTab(model_index);
+  layout_helper_->RemoveTab(model_index, tab);
 }
 
 void TabStrip::StartFallbackRemoveTabAnimation(int model_index,
@@ -2224,7 +2224,7 @@ void TabStrip::StartFallbackRemoveTabAnimation(int model_index,
                              UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
   }
 
-  layout_helper_->RemoveTabNoAnimation(model_index);
+  layout_helper_->RemoveTabNoAnimation(model_index, tab);
   UpdateIdealBounds();
   AnimateToIdealBounds();
 
