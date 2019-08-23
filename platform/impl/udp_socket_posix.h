@@ -5,6 +5,7 @@
 #ifndef PLATFORM_IMPL_UDP_SOCKET_POSIX_H_
 #define PLATFORM_IMPL_UDP_SOCKET_POSIX_H_
 
+#include "absl/types/optional.h"
 #include "platform/api/udp_socket.h"
 
 namespace openscreen {
@@ -32,7 +33,7 @@ struct UdpSocketPosix : public UdpSocket {
   bool IsIPv4() const override;
   bool IsIPv6() const override;
   IPEndpoint GetLocalEndpoint() const override;
-  Error Bind() override;
+  void Bind() override;
   Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) override;
   Error JoinMulticastGroup(const IPAddress& address,
                            NetworkInterfaceIndex ifindex) override;
@@ -44,6 +45,9 @@ struct UdpSocketPosix : public UdpSocket {
   int GetFd() const { return fd_; }
 
  private:
+  // Creates an error to be used in above methods.
+  Error CreateError(Error::Code code);
+
   const int fd_;
 
   // Cached value of current local endpoint. This can change (e.g., when the

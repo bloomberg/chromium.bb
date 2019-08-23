@@ -96,12 +96,7 @@ void QuicConnectionFactoryImpl::SetServerDelegate(
       continue;
     }
     platform::UdpSocketUniquePtr server_socket = create_result.MoveValue();
-    Error bind_result = server_socket->Bind();
-    if (!bind_result.ok()) {
-      OSP_LOG_ERROR << "failed to bind socket (for " << endpoint
-                    << "): " << bind_result.message();
-      continue;
-    }
+    server_socket->Bind();
     network_runner_->ReadRepeatedly(server_socket.get(), this);
     sockets_.emplace_back(std::move(server_socket));
   }
@@ -214,7 +209,7 @@ void QuicConnectionFactoryImpl::OnConnectionClosed(QuicConnection* connection) {
 
 void QuicConnectionFactoryImpl::OnError(platform::UdpSocket* socket,
                                         Error error) {
-  OSP_UNIMPLEMENTED();
+  OSP_LOG_ERROR << "failed to configure socket " << error.message();
 }
 
 void QuicConnectionFactoryImpl::OnSendError(platform::UdpSocket* socket,

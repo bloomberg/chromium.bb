@@ -44,19 +44,21 @@ class MockUdpSocket : public UdpSocket {
   bool IsIPv6() const override;
   IPEndpoint GetLocalEndpoint() const override;
 
+  void QueueBindResult(Error error) { bind_errors_.push(error); }
   void QueueSendResult(Error error) { send_errors_.push(error); }
 
   // UdpSocket overrides
+  void Bind() override;
   void SendMessage(const void* data,
                    size_t length,
                    const IPEndpoint& dest) override;
 
-  MOCK_METHOD0(Bind, Error());
   MOCK_METHOD1(SetMulticastOutboundInterface, Error(NetworkInterfaceIndex));
   MOCK_METHOD2(JoinMulticastGroup,
                Error(const IPAddress&, NetworkInterfaceIndex));
   MOCK_METHOD1(SetDscp, Error(DscpMode));
 
+  size_t bind_queue_size() { return bind_errors_.size(); }
   size_t send_queue_size() { return send_errors_.size(); }
 
   MockUdpSocket::MockClient* client() { return client_.get(); }
@@ -65,6 +67,7 @@ class MockUdpSocket : public UdpSocket {
   Version version_;
 
   // Queues for the response to calls above
+  std::queue<Error> bind_errors_;
   std::queue<Error> send_errors_;
 
   // Fake implementations to be set by CreateDefault().

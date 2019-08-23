@@ -52,8 +52,11 @@ struct Service {
 };
 
 class DemoSocketClient : public platform::UdpSocket::Client {
+ public:
   void OnError(platform::UdpSocket* socket, Error error) override {
-    OSP_UNIMPLEMENTED();
+    // TODO(issue/66): Change to OSP_LOG_FATAL.
+    OSP_LOG_ERROR << "configuration failed for interface " << error.message();
+    OSP_CHECK(false);
   }
 
   void OnSendError(platform::UdpSocket* socket, Error error) override {
@@ -143,12 +146,7 @@ std::vector<platform::UdpSocketUniquePtr> SetUpMulticastSockets(
       continue;
     }
 
-    result = socket->Bind();
-    if (!result.ok()) {
-      OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
-                    << result.message();
-      continue;
-    }
+    socket->Bind();
 
     OSP_LOG << "listening on interface " << ifindex;
     sockets.emplace_back(std::move(socket));

@@ -55,12 +55,7 @@ Error SetUpMulticastSocket(platform::UdpSocket* socket,
     return result;
   }
 
-  result = socket->Bind();
-  if (!result.ok()) {
-    OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
-                  << result.message();
-    return result;
-  }
+  socket->Bind();
 
   return Error::None();
 }
@@ -226,7 +221,8 @@ void InternalServices::DereferenceSingleton(void* instance) {
 }
 
 void InternalServices::OnError(platform::UdpSocket* socket, Error error) {
-  OSP_UNIMPLEMENTED();
+  OSP_LOG_ERROR << "failed to configure socket " << error.message();
+  this->DeregisterMdnsSocket(socket);
 }
 
 void InternalServices::OnSendError(platform::UdpSocket* socket, Error error) {

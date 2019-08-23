@@ -32,6 +32,16 @@ IPEndpoint MockUdpSocket::GetLocalEndpoint() const {
   return IPEndpoint{};
 }
 
+void MockUdpSocket::Bind() {
+  OSP_CHECK(bind_errors_.size()) << "No bind responses queued.";
+  Error error = bind_errors_.front();
+  bind_errors_.pop();
+
+  if (!error.ok()) {
+    client_->OnError(this, std::move(error));
+  }
+}
+
 void MockUdpSocket::SendMessage(const void* data,
                                 size_t length,
                                 const IPEndpoint& dest) {

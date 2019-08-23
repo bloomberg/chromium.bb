@@ -101,7 +101,7 @@ class UdpSocket {
   // local endpoint's port is zero, the operating system will automatically find
   // a free local port and bind to it. Future calls to local_endpoint() will
   // reflect the resolved port.
-  virtual Error Bind() = 0;
+  virtual void Bind() = 0;
 
   // Sets the device to use for outgoing multicast packets on the socket.
   virtual Error SetMulticastOutboundInterface(

@@ -11,6 +11,8 @@
 namespace openscreen {
 namespace platform {
 
+using testing::_;
+
 // Tests that a UdpSocket that does not specify any address or port will
 // successfully Bind(), and that the operating system will return the
 // auto-assigned socket name (i.e., the local endpoint's port will not be zero).
@@ -23,8 +25,8 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv4) {
       &task_runner, &client, IPEndpoint{IPAddress(kIpV4AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
   const auto socket = create_result.MoveValue();
-  const Error bind_result = socket->Bind();
-  ASSERT_TRUE(bind_result.ok()) << bind_result;
+  EXPECT_CALL(client, OnError(_, _)).Times(0);
+  socket->Bind();
   const IPEndpoint local_endpoint = socket->GetLocalEndpoint();
   EXPECT_NE(local_endpoint.port, 0) << local_endpoint;
 }
@@ -41,8 +43,8 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv6) {
       &task_runner, &client, IPEndpoint{IPAddress(kIpV6AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
   const auto socket = create_result.MoveValue();
-  const Error bind_result = socket->Bind();
-  ASSERT_TRUE(bind_result.ok()) << bind_result;
+  EXPECT_CALL(client, OnError(_, _)).Times(0);
+  socket->Bind();
   const IPEndpoint local_endpoint = socket->GetLocalEndpoint();
   EXPECT_NE(local_endpoint.port, 0) << local_endpoint;
 }
