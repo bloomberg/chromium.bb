@@ -1326,7 +1326,7 @@ class ContextManagerStack(object):
     # Normally a single context manager would return False to allow caller to
     # re-raise the exception itself, but here the exception might have been
     # raised during the exiting of one of the individual context managers.
-    raise exc_type, exc, exc_tb
+    six.reraise(exc_type, exc, exc_tb)
 
 
 class ApiMismatchError(Exception):
@@ -1550,7 +1550,7 @@ def SafeRun(functors, combine_exceptions=False):
     if len(errors) == 1 or not combine_exceptions:
       # To preserve the traceback.
       inst, tb = errors[0]
-      raise inst, None, tb
+      six.reraise(inst, None, tb)
     else:
       raise RuntimeError([e[0] for e in errors])
 

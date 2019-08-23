@@ -302,7 +302,7 @@ class StackedSetup(type):
     if exc_info:
       # Chuck the saved exception, w/ the same TB from
       # when it occurred.
-      raise exc_info[0], exc_info[1], exc_info[2]
+      six.reraise(exc_info[0], exc_info[1], exc_info[2])
 
 
 class TruthTable(object):

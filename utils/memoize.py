@@ -10,6 +10,8 @@ from __future__ import print_function
 import functools
 import sys
 
+import six
+
 
 def MemoizedSingleCall(functor):
   """Decorator for simple functor targets, caching the results
@@ -100,6 +102,6 @@ def SafeRun(functors, combine_exceptions=False):
     if len(errors) == 1 or not combine_exceptions:
       # To preserve the traceback.
       inst, tb = errors[0]
-      raise inst, None, tb
+      six.reraise(inst, None, tb)
     else:
       raise RuntimeError([e[0] for e in errors])

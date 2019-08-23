@@ -28,6 +28,8 @@ import tempfile
 import time
 import traceback
 
+import six
+
 from chromite.lib import failures_lib
 from chromite.lib import results_lib
 from chromite.lib import cros_build_lib
@@ -564,7 +566,8 @@ class _BackgroundTask(multiprocessing.Process):
         # Propagate any exceptions; foreground exceptions take precedence.
         if foreground_except is not None:
           # contextlib ignores caught exceptions unless explicitly re-raised.
-          raise foreground_except[0], foreground_except[1], foreground_except[2]
+          six.reraise(foreground_except[0], foreground_except[1],
+                      foreground_except[2])
         if errors:
           raise BackgroundFailure(exc_infos=errors)
 
