@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import exceptions
 import os
 
 import mock
@@ -20,14 +19,14 @@ from chromite.lib import factory
 from chromite.lib import osutils
 
 
-class RetryableOperationalError(exceptions.EnvironmentError):
+class RetryableOperationalError(EnvironmentError):
   """An operational error with retryable error code."""
 
   def __init__(self):
     super(RetryableOperationalError, self).__init__(1053, 'retryable')
 
 
-class FatalOperationalError(exceptions.EnvironmentError):
+class FatalOperationalError(EnvironmentError):
   """An operational error with fatal error code."""
 
   def __init__(self):

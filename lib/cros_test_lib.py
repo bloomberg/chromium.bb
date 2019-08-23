@@ -10,7 +10,6 @@ from __future__ import print_function
 import collections
 import contextlib
 import cStringIO
-import exceptions
 import functools
 import os
 import re
@@ -907,7 +906,7 @@ class OutputTestCase(TestCase):
                                        check_stdout, check_stderr)
 
   def FuncCatchSystemExit(self, func, *args, **kwargs):
-    """Run |func| with |args| and |kwargs| and catch exceptions.SystemExit.
+    """Run |func| with |args| and |kwargs| and catch SystemExit.
 
     Return tuple (return value or None, SystemExit number code or None).
     """
@@ -915,12 +914,12 @@ class OutputTestCase(TestCase):
       returnval = func(*args, **kwargs)
 
       return returnval, None
-    except exceptions.SystemExit as ex:
+    except SystemExit as ex:
       exit_code = ex.args[0]
       return None, exit_code
 
   def AssertFuncSystemExitZero(self, func, *args, **kwargs):
-    """Run |func| with |args| and |kwargs| catching exceptions.SystemExit.
+    """Run |func| with |args| and |kwargs| catching SystemExit.
 
     If the func does not raise a SystemExit with exit code 0 then assert.
     """
@@ -932,7 +931,7 @@ class OutputTestCase(TestCase):
                           exit_code))
 
   def AssertFuncSystemExitNonZero(self, func, *args, **kwargs):
-    """Run |func| with |args| and |kwargs| catching exceptions.SystemExit.
+    """Run |func| with |args| and |kwargs| catching SystemExit.
 
     If the func does not raise a non-zero SystemExit code then assert.
     """
