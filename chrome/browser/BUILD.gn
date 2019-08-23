@@ -5731,3 +5731,11 @@ if (!is_android) {
     ]
   }
 }
+
+if (is_android) {
+  java_cpp_enum("sharing_send_message_result_generated_enum") {
+    sources = [
+      "sharing/sharing_send_message_result.h",
+    ]
+  }
+}
