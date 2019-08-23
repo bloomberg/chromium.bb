@@ -58,6 +58,11 @@ class MockTemporaryFile(object):
     pass
 
 
+class MockProcess(object):
+  def __init__(self, returncode):
+    self.returncode = returncode
+
+
 class PresubmitTestsBase(TestCaseUtils, unittest.TestCase):
   """Sets up and tears down the mocks but doesn't test anything as-is."""
   presubmit_text = """
@@ -2521,6 +2526,7 @@ the current line as well!
                            is_committing=False,
                            uncovered_files=set())
 
+  @mock.patch('__builtin__.open', mock.mock_open(read_data=''))
   def testCannedRunUnitTests(self):
     change = presubmit.Change(
         'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
@@ -2554,6 +2560,143 @@ the current line as well!
     self.assertEqual(subprocess.Popen.mock_calls, [
         mock.call(
             cmd, cwd=self.fake_root_dir, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, stdin=subprocess.PIPE),
+        mock.call(
+            ['allo', '--verbose'], cwd=self.fake_root_dir,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            stdin=subprocess.PIPE),
+    ])
+
+    self.checkstdout('')
+
+  @mock.patch('__builtin__.open', mock.mock_open())
+  def testCannedRunUnitTestsPython3(self):
+    open().readline.return_value = '#!/usr/bin/env python3'
+    change = presubmit.Change(
+        'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
+    input_api = self.MockInputApi(change, False)
+    input_api.verbose = True
+    input_api.PresubmitLocalPath.return_value = self.fake_root_dir
+    presubmit.sigint_handler.wait.return_value = ('', None)
+
+    subprocess.Popen.side_effect = [
+        MockProcess(1),
+        MockProcess(0),
+        MockProcess(0),
+    ]
+
+    unit_tests = ['allo', 'bar.py']
+    results = presubmit_canned_checks.RunUnitTests(
+        input_api,
+        presubmit.OutputApi,
+        unit_tests)
+    self.assertEqual([result.__class__ for result in results], [
+        presubmit.OutputApi.PresubmitPromptWarning,
+        presubmit.OutputApi.PresubmitNotifyResult,
+        presubmit.OutputApi.PresubmitNotifyResult,
+    ])
+
+    cmd = ['bar.py', '--verbose']
+    vpython = 'vpython'
+    vpython3 = 'vpython3'
+    if input_api.platform == 'win32':
+      vpython += '.bat'
+      vpython3 += '.bat'
+
+    self.assertEqual(subprocess.Popen.mock_calls, [
+        mock.call(
+            [vpython] + cmd, cwd=self.fake_root_dir, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, stdin=subprocess.PIPE),
+        mock.call(
+            [vpython3] + cmd, cwd=self.fake_root_dir, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, stdin=subprocess.PIPE),
+        mock.call(
+            ['allo', '--verbose'], cwd=self.fake_root_dir,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            stdin=subprocess.PIPE),
+    ])
+
+    self.checkstdout('')
+
+  @mock.patch('__builtin__.open', mock.mock_open())
+  def testCannedRunUnitTestsDontRunOnPython2(self):
+    open().readline.return_value = '#!/usr/bin/env python3'
+    change = presubmit.Change(
+        'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
+    input_api = self.MockInputApi(change, False)
+    input_api.verbose = True
+    input_api.PresubmitLocalPath.return_value = self.fake_root_dir
+    presubmit.sigint_handler.wait.return_value = ('', None)
+
+    subprocess.Popen.side_effect = [
+        MockProcess(1),
+        MockProcess(0),
+        MockProcess(0),
+    ]
+
+    unit_tests = ['allo', 'bar.py']
+    results = presubmit_canned_checks.RunUnitTests(
+        input_api,
+        presubmit.OutputApi,
+        unit_tests,
+        run_on_python2=False)
+    self.assertEqual([result.__class__ for result in results], [
+        presubmit.OutputApi.PresubmitPromptWarning,
+        presubmit.OutputApi.PresubmitNotifyResult,
+    ])
+
+    cmd = ['bar.py', '--verbose']
+    vpython3 = 'vpython3'
+    if input_api.platform == 'win32':
+      vpython3 += '.bat'
+
+    self.assertEqual(subprocess.Popen.mock_calls, [
+        mock.call(
+            [vpython3] + cmd, cwd=self.fake_root_dir, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, stdin=subprocess.PIPE),
+        mock.call(
+            ['allo', '--verbose'], cwd=self.fake_root_dir,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            stdin=subprocess.PIPE),
+    ])
+
+    self.checkstdout('')
+
+  @mock.patch('__builtin__.open', mock.mock_open())
+  def testCannedRunUnitTestsDontRunOnPython3(self):
+    open().readline.return_value = '#!/usr/bin/env python3'
+    change = presubmit.Change(
+        'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
+    input_api = self.MockInputApi(change, False)
+    input_api.verbose = True
+    input_api.PresubmitLocalPath.return_value = self.fake_root_dir
+    presubmit.sigint_handler.wait.return_value = ('', None)
+
+    subprocess.Popen.side_effect = [
+        MockProcess(1),
+        MockProcess(0),
+        MockProcess(0),
+    ]
+
+    unit_tests = ['allo', 'bar.py']
+    results = presubmit_canned_checks.RunUnitTests(
+        input_api,
+        presubmit.OutputApi,
+        unit_tests,
+        run_on_python3=False)
+    self.assertEqual([result.__class__ for result in results], [
+        presubmit.OutputApi.PresubmitPromptWarning,
+        presubmit.OutputApi.PresubmitNotifyResult,
+    ])
+
+    cmd = ['bar.py', '--verbose']
+    vpython = 'vpython'
+    if input_api.platform == 'win32':
+      vpython += '.bat'
+
+    self.assertEqual(subprocess.Popen.mock_calls, [
+        mock.call(
+            [vpython] + cmd, cwd=self.fake_root_dir, stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT, stdin=subprocess.PIPE),
         mock.call(
             ['allo', '--verbose'], cwd=self.fake_root_dir,

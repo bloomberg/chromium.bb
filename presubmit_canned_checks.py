@@ -576,7 +576,8 @@ def CheckTreeIsOpen(input_api, output_api,
   return []
 
 def GetUnitTestsInDirectory(
-    input_api, output_api, directory, whitelist=None, blacklist=None, env=None):
+    input_api, output_api, directory, whitelist=None, blacklist=None, env=None,
+    run_on_python2=True, run_on_python3=True):
   """Lists all files in a directory and runs them. Doesn't recurse.
 
   It's mainly a wrapper for RunUnitTests. Use whitelist and blacklist to filter
@@ -609,14 +610,24 @@ def GetUnitTestsInDirectory(
           'Out of %d files, found none that matched w=%r, b=%r in directory %s'
           % (found, whitelist, blacklist, directory))
     ]
-  return GetUnitTests(input_api, output_api, unit_tests, env)
+  return GetUnitTests(
+      input_api, output_api, unit_tests, env, run_on_python2, run_on_python3)
 
 
-def GetUnitTests(input_api, output_api, unit_tests, env=None):
+def GetUnitTests(
+    input_api, output_api, unit_tests, env=None, run_on_python2=True,
+    run_on_python3=True):
   """Runs all unit tests in a directory.
 
   On Windows, sys.executable is used for unit tests ending with ".py".
   """
+  assert run_on_python3 or run_on_python2, (
+      'At least one of "run_on_python2" or "run_on_python3" must be set.')
+  def has_py3_shebang(test):
+    with open(test) as f:
+      maybe_shebang = f.readline()
+    return maybe_shebang.startswith('#!') and 'python3' in maybe_shebang
+
   # We don't want to hinder users from uploading incomplete patches.
   if input_api.is_committing:
     message_type = output_api.PresubmitError
@@ -631,11 +642,26 @@ def GetUnitTests(input_api, output_api, unit_tests, env=None):
     kwargs = {'cwd': input_api.PresubmitLocalPath()}
     if env:
       kwargs['env'] = env
-    results.append(input_api.Command(
-        name=unit_test,
-        cmd=cmd,
-        kwargs=kwargs,
-        message=message_type))
+    if not unit_test.endswith('.py'):
+      results.append(input_api.Command(
+          name=unit_test,
+          cmd=cmd,
+          kwargs=kwargs,
+          message=message_type))
+    else:
+      if has_py3_shebang(unit_test) and run_on_python3:
+        results.append(input_api.Command(
+            name=unit_test,
+            cmd=cmd,
+            kwargs=kwargs,
+            message=message_type,
+            python3=True))
+      if run_on_python2:
+        results.append(input_api.Command(
+            name=unit_test,
+            cmd=cmd,
+            kwargs=kwargs,
+            message=message_type))
   return results
 
 

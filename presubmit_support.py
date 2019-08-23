@@ -66,7 +66,7 @@ class PresubmitFailure(Exception):
 
 
 class CommandData(object):
-  def __init__(self, name, cmd, kwargs, message):
+  def __init__(self, name, cmd, kwargs, message, python3=False):
     self.name = name
     self.cmd = cmd
     self.stdin = kwargs.get('stdin', None)
@@ -76,6 +76,7 @@ class CommandData(object):
     self.kwargs['stdin'] = subprocess.PIPE
     self.message = message
     self.info = None
+    self.python3 = python3
 
 
 # Adapted from
@@ -152,7 +153,11 @@ class ThreadPool(object):
     This function converts invocation of .py files and invocations of "python"
     to vpython invocations.
     """
-    vpython = 'vpython.bat' if sys.platform == 'win32' else 'vpython'
+    vpython = 'vpython'
+    if test.python3:
+      vpython += '3'
+    if sys.platform == 'win32':
+      vpython += '.bat'
 
     cmd = test.cmd
     if cmd[0] == 'python':
