@@ -768,6 +768,73 @@ TEST_F(PasswordStoreTest, GetAllLogins) {
   store->ShutdownOnUIThread();
 }
 
+// Tests if all credentials in the store with a specific password are
+// successfully transferred to the consumer.
+TEST_F(PasswordStoreTest, GetLogisByPassword) {
+  static constexpr wchar_t tested_password[] = L"duplicated_password";
+  static constexpr wchar_t another_tested_password[] = L"some_other_password";
+  static constexpr wchar_t untested_password[] = L"and_another_password";
+
+  // The first, third and forth credentials use the same password, but the forth
+  // is blacklisted.
+  static constexpr PasswordFormData kTestCredentials[] = {
+      // Has the specified password:
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", L"", L"", L"",
+       L"username_value_1", tested_password, true, 1},
+      // Has another password:
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm2, "", "", L"", L"", L"",
+       L"username_value_2", another_tested_password, true, 1},
+      // Has the specified password:
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm3, "", "", L"", L"", L"",
+       L"username_value_3", tested_password, true, 1},
+      // Has a third password:
+      {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "", L"",
+       L"", L"", L"username_value_4", untested_password, true, 1},
+      // A PasswordFormData with nullptr as the username_value will be converted
+      // in a blacklisted PasswordForm in FillPasswordFormWithData().
+      // Has the specified password, but is blacklisted.
+      {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", L"",
+       L"", L"", nullptr, tested_password, true, 1}};
+
+  auto store = base::MakeRefCounted<PasswordStoreDefault>(
+      std::make_unique<LoginDatabase>(test_login_db_file_path()));
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  std::vector<std::unique_ptr<PasswordForm>> all_credentials;
+  for (const auto& test_credential : kTestCredentials) {
+    all_credentials.push_back(FillPasswordFormWithData(test_credential));
+    store->AddLogin(*all_credentials.back());
+  }
+
+  MockPasswordStoreConsumer mock_consumer;
+  std::vector<std::unique_ptr<PasswordForm>> expected_results;
+  expected_results.push_back(
+      std::make_unique<PasswordForm>(*all_credentials[0]));
+  expected_results.push_back(
+      std::make_unique<PasswordForm>(*all_credentials[2]));
+
+  EXPECT_CALL(mock_consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(&expected_results)));
+  store->GetLoginsByPassword(base::WideToUTF16(tested_password),
+                             &mock_consumer);
+  WaitForPasswordStore();
+
+  // Tries to find all credentials with |another_tested_password|.
+  expected_results.clear();
+  expected_results.push_back(
+      std::make_unique<PasswordForm>(*all_credentials[1]));
+
+  EXPECT_CALL(mock_consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(&expected_results)));
+  store->GetLoginsByPassword(base::WideToUTF16(another_tested_password),
+                             &mock_consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
 TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
   static constexpr PasswordFormData kTestCredentials[] = {
       {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", L"", L"", L"",
