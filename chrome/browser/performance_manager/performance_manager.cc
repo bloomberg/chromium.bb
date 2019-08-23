@@ -185,13 +185,14 @@ std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode(
 }
 
 std::unique_ptr<WorkerNodeImpl> PerformanceManager::CreateWorkerNode(
+    const std::string& browser_context_id,
     WorkerNode::WorkerType worker_type,
     ProcessNodeImpl* process_node,
     const GURL& url,
     const base::UnguessableToken& dev_tools_token) {
   return CreateNodeImpl<WorkerNodeImpl>(
-      base::OnceCallback<void(WorkerNodeImpl*)>(), worker_type, process_node,
-      url, dev_tools_token);
+      base::OnceCallback<void(WorkerNodeImpl*)>(), browser_context_id,
+      worker_type, process_node, url, dev_tools_token);
 }
 
 void PerformanceManager::BatchDeleteNodes(

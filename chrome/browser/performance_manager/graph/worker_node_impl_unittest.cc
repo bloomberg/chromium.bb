@@ -46,15 +46,19 @@ TEST_F(WorkerNodeImplDeathTest, SafeDowncast) {
 
 TEST_F(WorkerNodeImplTest, ConstProperties) {
   const WorkerNode::WorkerType kWorkerType = WorkerNode::WorkerType::kShared;
+  const std::string kTestBrowserContextId =
+      base::UnguessableToken::Create().ToString();
   auto process = CreateNode<ProcessNodeImpl>();
   static const GURL kTestUrl("testurl.com");
   static const base::UnguessableToken kTestDevToolsToken =
       base::UnguessableToken::Create();
 
   auto worker_impl = CreateNode<WorkerNodeImpl>(kWorkerType, process.get(),
-                                                kTestUrl, kTestDevToolsToken);
+                                                kTestBrowserContextId, kTestUrl,
+                                                kTestDevToolsToken);
 
   // Test private interface.
+  EXPECT_EQ(worker_impl->browser_context_id(), kTestBrowserContextId);
   EXPECT_EQ(worker_impl->worker_type(), kWorkerType);
   EXPECT_EQ(worker_impl->process_node(), process.get());
   EXPECT_EQ(worker_impl->url(), kTestUrl);
@@ -63,6 +67,7 @@ TEST_F(WorkerNodeImplTest, ConstProperties) {
   // Test public interface.
   const WorkerNode* worker = worker_impl.get();
 
+  EXPECT_EQ(worker->GetBrowserContextID(), kTestBrowserContextId);
   EXPECT_EQ(worker->GetWorkerType(), kWorkerType);
   EXPECT_EQ(worker->GetProcessNode(), process.get());
   EXPECT_EQ(worker->GetURL(), kTestUrl);

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_WORKER_NODE_IMPL_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/flat_set.h"
@@ -28,6 +29,7 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kWorker; }
 
   WorkerNodeImpl(GraphImpl* graph,
+                 const std::string& browser_context_id,
                  WorkerType worker_type,
                  ProcessNodeImpl* process_node,
                  const GURL& url,
@@ -43,6 +45,7 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   void RemoveClientWorker(WorkerNodeImpl* worker_node);
 
   // Getters for const properties. These can be called from any thread.
+  const std::string& browser_context_id() const;
   WorkerType worker_type() const;
   ProcessNodeImpl* process_node() const;
   const GURL& url() const;
@@ -60,6 +63,7 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   // WorkerNode: These are private so that users of the
   // impl use the private getters rather than the public interface.
   WorkerType GetWorkerType() const override;
+  const std::string& GetBrowserContextID() const override;
   const ProcessNode* GetProcessNode() const override;
   const GURL& GetURL() const override;
   const base::UnguessableToken& GetDevToolsToken() const override;
@@ -70,6 +74,9 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   // Invoked when |worker_node| becomes a child of this worker.
   void AddChildWorker(WorkerNodeImpl* worker_node);
   void RemoveChildWorker(WorkerNodeImpl* worker_node);
+
+  // The unique ID of the browser context that this worker belongs to.
+  const std::string browser_context_id_;
 
   // The type of this worker.
   const WorkerType worker_type_;

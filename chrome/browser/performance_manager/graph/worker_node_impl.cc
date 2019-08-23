@@ -10,11 +10,13 @@
 namespace performance_manager {
 
 WorkerNodeImpl::WorkerNodeImpl(GraphImpl* graph,
+                               const std::string& browser_context_id,
                                WorkerType worker_type,
                                ProcessNodeImpl* process_node,
                                const GURL& url,
                                const base::UnguessableToken& dev_tools_token)
     : TypedNodeBase(graph),
+      browser_context_id_(browser_context_id),
       worker_type_(worker_type),
       process_node_(process_node),
       url_(url),
@@ -93,6 +95,11 @@ void WorkerNodeImpl::RemoveClientWorker(WorkerNodeImpl* worker_node) {
   DCHECK_EQ(removed, 1u);
 }
 
+const std::string& WorkerNodeImpl::browser_context_id() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return browser_context_id_;
+}
+
 WorkerNode::WorkerType WorkerNodeImpl::worker_type() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return worker_type_;
@@ -146,6 +153,11 @@ void WorkerNodeImpl::LeaveGraph() {
 WorkerNode::WorkerType WorkerNodeImpl::GetWorkerType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return worker_type();
+}
+
+const std::string& WorkerNodeImpl::GetBrowserContextID() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return browser_context_id();
 }
 
 const ProcessNode* WorkerNodeImpl::GetProcessNode() const {

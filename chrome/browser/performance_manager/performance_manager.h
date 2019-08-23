@@ -111,6 +111,7 @@ class PerformanceManager {
   std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
       RenderProcessHostProxy proxy);
   std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(
+      const std::string& browser_context_id,
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,
       const GURL& url,
