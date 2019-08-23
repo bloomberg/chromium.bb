@@ -65,7 +65,6 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
       contents, force_shortcut_app, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
-
   tasks_.insert(std::move(task));
 }
 

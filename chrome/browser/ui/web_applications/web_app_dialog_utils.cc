@@ -77,15 +77,12 @@ void CreateWebAppFromCurrentWebContents(
     bool force_shortcut_app,
     WebAppInstalledCallback installed_callback) {
   DCHECK(CanCreateWebApp(browser));
-
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   auto* provider = WebAppProvider::GetForWebContents(web_contents);
   DCHECK(provider);
-
   WebappInstallSource install_source =
       InstallableMetrics::GetInstallSource(web_contents, InstallTrigger::MENU);
-
   provider->install_manager().InstallWebAppFromManifestWithFallback(
       web_contents, force_shortcut_app, install_source,
       base::BindOnce(WebAppInstallDialogCallback, install_source),
