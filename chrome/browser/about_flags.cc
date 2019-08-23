@@ -1079,10 +1079,14 @@ const FeatureEntry::FeatureParam kLongpressResolveHideOnScroll = {
 const FeatureEntry::FeatureParam kLongpressResolvePrivacyAggressive = {
     contextual_search::kLongpressResolveParamName,
     contextual_search::kLongpressResolvePrivacyAggressive};
+const FeatureEntry::FeatureParam kLongpressResolvePreserveTap = {
+    contextual_search::kLongpressResolveParamName,
+    contextual_search::kLongpressResolvePreserveTap};
 const FeatureEntry::FeatureVariation kLongpressResolveVariations[] = {
     {"and hide on scroll", &kLongpressResolveHideOnScroll, 1, nullptr},
     {"and allow privacy-aggressive behavior",
      &kLongpressResolvePrivacyAggressive, 1, nullptr},
+    {"and preserve Tap behavior", &kLongpressResolvePreserveTap, 1, nullptr},
 };
 
 #endif  // defined(OS_ANDROID)
