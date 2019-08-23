@@ -56,7 +56,8 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   bool AllowScriptExtensionForServiceWorker(
       const blink::WebSecurityOrigin& script_origin) override;
   blink::WebCrypto* Crypto() override;
-  const char* GetBrowserServiceName() const override;
+  blink::ThreadSafeBrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
+      override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
   std::unique_ptr<NestedMessageLoopRunner> CreateNestedMessageLoopRunner()
@@ -65,6 +66,8 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
+  const scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
+      browser_interface_broker_proxy_;
   std::unique_ptr<blink::WebThemeEngine> native_theme_engine_;
   webcrypto::WebCryptoImpl web_crypto_;
 };

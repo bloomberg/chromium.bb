@@ -23,7 +23,6 @@ class WebThreadScheduler;
 
 namespace content {
 
-class BlinkInterfaceProviderImpl;
 class MockClipboardHost;
 
 // An implementation of BlinkPlatformImpl for tests.
@@ -66,9 +65,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator() override;
 
-  service_manager::Connector* GetConnector() override;
-  blink::InterfaceProvider* GetInterfaceProvider() override;
-
   // May be called when |this| is registered as the active blink Platform
   // implementation. Overrides the result of IsThreadedAnimationEnabled() to
   // the provided value, and returns the value it was set to before the call.
@@ -79,8 +75,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
  private:
   void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
-  std::unique_ptr<service_manager::Connector> connector_;
-  std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
   base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;

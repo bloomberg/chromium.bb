@@ -24,13 +24,12 @@
 #include "content/app/mojo/mojo_init.h"
 #include "content/child/child_process.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/test/mock_clipboard_host.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
 #include "net/cookies/cookie_monster.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
@@ -169,17 +168,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
 
-  connector_ = std::make_unique<service_manager::Connector>(
-      service_manager::mojom::ConnectorPtrInfo());
-  blink_interface_provider_.reset(
-      new BlinkInterfaceProviderImpl(connector_.get()));
-
-  connector_->OverrideBinderForTesting(
-      service_manager::ServiceFilter::ByName(mojom::kBrowserServiceName),
-      blink::mojom::ClipboardHost::Name_,
-      base::BindRepeating(&TestBlinkWebUnitTestSupport::BindClipboardHost,
-                          weak_factory_.GetWeakPtr()));
-
   service_manager::BinderRegistry empty_registry;
   blink::Initialize(this, &empty_registry, main_thread_scheduler_.get());
   g_test_platform = this;
@@ -205,6 +193,11 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
   // Test shell always exposes the GC.
   std::string flags("--expose-gc");
   v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
+
+  GetBrowserInterfaceBrokerProxy()->SetBinderForTesting(
+      blink::mojom::ClipboardHost::Name_,
+      base::BindRepeating(&TestBlinkWebUnitTestSupport::BindClipboardHost,
+                          weak_factory_.GetWeakPtr()));
 }
 
 TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
@@ -339,14 +332,6 @@ class TestWebRTCCertificateGenerator
 std::unique_ptr<blink::WebRTCCertificateGenerator>
 TestBlinkWebUnitTestSupport::CreateRTCCertificateGenerator() {
   return std::make_unique<TestWebRTCCertificateGenerator>();
-}
-
-service_manager::Connector* TestBlinkWebUnitTestSupport::GetConnector() {
-  return connector_.get();
-}
-
-blink::InterfaceProvider* TestBlinkWebUnitTestSupport::GetInterfaceProvider() {
-  return blink_interface_provider_.get();
 }
 
 void TestBlinkWebUnitTestSupport::BindClipboardHost(

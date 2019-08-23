@@ -3737,14 +3737,15 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   // processes to notify the browser of modules in their address space. The
   // process handle is not yet available at this point so pass in a callback
   // to allow to retrieve a duplicate at the time the interface is actually
-  // created. It is safe to pass a raw pointer to |render_process_host|: the
-  // callback will be invoked during the Mojo initialization, which occurs while
-  // the |render_process_host| is alive.
+  // created.
   auto get_process = base::BindRepeating(
-      [](content::RenderProcessHost* host) -> base::Process {
-        return host->GetProcess().Duplicate();
+      [](int id) -> base::Process {
+        auto* host = content::RenderProcessHost::FromID(id);
+        if (host)
+          return host->GetProcess().Duplicate();
+        return base::Process();
       },
-      base::Unretained(render_process_host));
+      render_process_host->GetID());
   registry->AddInterface(
       base::BindRepeating(
           &ModuleEventSinkImpl::Create, std::move(get_process),
