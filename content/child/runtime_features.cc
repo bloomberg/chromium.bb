@@ -564,6 +564,12 @@ void SetIndividualRuntimeFeatures(
           net::features::kCookiesWithoutSameSiteMustBeSecure)) {
     WebRuntimeFeatures::EnableCookiesWithoutSameSiteMustBeSecure(true);
   }
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kIgnoreCrossOriginWindowWhenNamedAccessOnWindow)) {
+    WebRuntimeFeatures::EnableFeatureFromString(
+        "IgnoreCrossOriginWindowWhenNamedAccessOnWindow", true);
+  }
 }
 
 }  // namespace
