@@ -17846,6 +17846,7 @@ Called by update_net_error_codes.py.-->
   <int value="595" label="CaretHighlightEnabled"/>
   <int value="596" label="MonoAudioEnabled"/>
   <int value="597" label="AutoclickEnabled"/>
+  <int value="598" label="RendererCodeIntegrity"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

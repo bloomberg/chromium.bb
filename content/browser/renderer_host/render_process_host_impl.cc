@@ -381,7 +381,13 @@ SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
 class RendererSandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
-  RendererSandboxedProcessLauncherDelegate() {}
+  RendererSandboxedProcessLauncherDelegate()
+#if defined(OS_WIN)
+      : renderer_code_integrity_enabled_(
+            GetContentClient()->browser()->IsRendererCodeIntegrityEnabled())
+#endif
+  {
+  }
 
   ~RendererSandboxedProcessLauncherDelegate() override {}
 
@@ -394,8 +400,11 @@ class RendererSandboxedProcessLauncherDelegate
             GetSandboxType());
     if (!sid.empty())
       service_manager::SandboxWin::AddAppContainerPolicy(policy, sid.c_str());
-
-    return GetContentClient()->browser()->PreSpawnRenderer(policy);
+    ContentBrowserClient::RendererSpawnFlags flags(
+        ContentBrowserClient::RendererSpawnFlags::NONE);
+    if (renderer_code_integrity_enabled_)
+      flags = ContentBrowserClient::RendererSpawnFlags::RENDERER_CODE_INTEGRITY;
+    return GetContentClient()->browser()->PreSpawnRenderer(policy, flags);
   }
 #endif  // OS_WIN
 
@@ -414,6 +423,11 @@ class RendererSandboxedProcessLauncherDelegate
   service_manager::SandboxType GetSandboxType() override {
     return service_manager::SANDBOX_TYPE_RENDERER;
   }
+
+#if defined(OS_WIN)
+ private:
+  const bool renderer_code_integrity_enabled_;
+#endif
 };
 
 const char kSessionStorageHolderKey[] = "kSessionStorageHolderKey";
