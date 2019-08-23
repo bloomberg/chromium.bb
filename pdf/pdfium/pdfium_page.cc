@@ -255,12 +255,25 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
                                 uint32_t* out_len,
                                 double* out_font_size,
                                 pp::FloatRect* out_bounds) {
+  if (start_char_index < 0) {
+    *out_len = 0;
+    *out_font_size = 0;
+    *out_bounds = pp::FloatRect();
+    return;
+  }
+
   FPDF_PAGE page = GetPage();
   FPDF_TEXTPAGE text_page = GetTextPage();
   int chars_count = FPDFText_CountChars(text_page);
 
   int char_index = GetFirstNonUnicodeWhiteSpaceCharIndex(
       text_page, start_char_index, chars_count);
+  if (char_index >= chars_count) {
+    *out_len = 0;
+    *out_font_size = 0;
+    *out_bounds = pp::FloatRect();
+    return;
+  }
 
   pp::FloatRect start_char_rect =
       GetFloatCharRectInPixels(page, text_page, char_index);
