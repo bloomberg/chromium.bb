@@ -3231,6 +3231,18 @@
     ]
   },
 
+  "AutoclickEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "AutoclickEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.autoclick",
+        "indicator_tests": [
+          { "policy": { "AutoclickEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "HighContrastEnabled": {
     "os": ["chromeos"],
     "test_policy": { "HighContrastEnabled": true },

@@ -4252,6 +4252,43 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MonoAudioEnabled) {
   EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, AutoclickEnabled) {
+  // Verifies that the autoclick accessibility feature can be controlled through
+  // policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  accessibility_manager->EnableAutoclick(false);
+  // Verify that the autoclick is initially disabled.
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+
+  // Manually enable the autoclick.
+  accessibility_manager->EnableAutoclick(true);
+  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kAutoclickEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+
+  // Verify that the autoclick cannot be enabled manually anymore.
+  accessibility_manager->EnableAutoclick(true);
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+
+  policies.Set(key::kAutoclickEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
+
+  // Verify that the autoclick cannot be disabled manually anymore.
+  accessibility_manager->EnableAutoclick(false);
+  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(

@@ -635,6 +635,7 @@
         'CursorHighlightEnabled',
         'CaretHighlightEnabled',
         'MonoAudioEnabled',
+        'AutoclickEnabled',
         'DeviceLoginScreenDefaultLargeCursorEnabled',
         'DeviceLoginScreenDefaultSpokenFeedbackEnabled',
         'DeviceLoginScreenDefaultHighContrastEnabled',
@@ -9985,6 +9986,33 @@
           If this policy is left unset, the mono audio is disabled initially but can be enabled by the user anytime.'''
     },
     {
+      'name': 'AutoclickEnabled',
+      'owners': ['amraboelkher@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:78-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 597,
+      'caption': '''Enable the autoclick accessibility feature''',
+      'tags': [],
+      'desc': '''Enable the autoclick accessibility feature.
+
+          This feature is responsible to click without physically pressing your mouse or touchpad, hover over the object you'd like to click.
+
+          If this policy is set to enabled, the autoclick will always be enabled.
+
+          If this policy is set to disabled, the autoclick will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the autoclick is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
       'name': 'KeyboardDefaultToFunctionKeys',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18309,6 +18337,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 596,
+  'highest_id_currently_used': 597,
   'highest_atomic_group_id_currently_used': 37
 }

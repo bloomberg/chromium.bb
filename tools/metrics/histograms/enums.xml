@@ -17840,6 +17840,7 @@ Called by update_net_error_codes.py.-->
   <int value="594" label="CursorHighlightEnabled"/>
   <int value="595" label="CaretHighlightEnabled"/>
   <int value="596" label="MonoAudioEnabled"/>
+  <int value="597" label="AutoclickEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
