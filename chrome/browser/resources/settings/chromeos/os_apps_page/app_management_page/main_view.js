@@ -68,8 +68,10 @@ Polymer({
     const notificationApps =
         Array.from(this.notificationAppIds_, id => this.getState().apps[id]);
 
-    const /** @type {string} */ label = await cr.sendWithPromise(
-        'getPluralString', 'appListPreview', notificationApps.length);
+    // const /** @type {string} */ label = await cr.sendWithPromise(
+    //     'getPluralString', 'appListPreview', notificationApps.length);
+    // TODO(jshikaram): Add the get plural string handler to ossettingsui.
+    const label = '';
 
     const substitutions = [];
     for (let i = 0;

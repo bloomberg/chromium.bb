@@ -143,27 +143,39 @@ TEST_F('OSSettingsAndroidAppsPageTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
-// Tests for the App section.
+// Test fixture for the app management settings page.
 // eslint-disable-next-line no-var
 var OSSettingsAppManagementPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload;
+    return super.browsePreload + 'app_management/app_management_page.html';
   }
 
   /** @override */
   get extraLibraries() {
-    // TODO(https://crbug.com/979531) Add tests to this as migration progresses.
-    // Tests will be added here soon.
-    return super.extraLibraries.concat([]);
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_store.js',
+      'app_management/test_util.js',
+      'app_management/test_store.js',
+      'app_management/app_management_page_tests.js',
+    ]);
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['features::kAppManagement']};
+  }
+
+  /** @override */
+  get runAccessibilityChecks() {
+    return true;
   }
 };
 
-// TODO(https://crbug.com/979553) Disabled due to failures .
-TEST_F('OSSettingsAppManagementPageTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsAppManagementPageTest', 'AllJsTests', () => {
   mocha.run();
 });
-
 
 // Tests for the Device page.
 // eslint-disable-next-line no-var

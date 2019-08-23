@@ -11,7 +11,7 @@
     <style include="app-management-shared-css cr-icons">
       :host {
         align-items: center;
-        border-top: var(--card-separator);
+        border-bottom: var(--card-separator);
         color: var(--primary-text-color);
         cursor: pointer;
         display: flex;
@@ -33,7 +33,8 @@
         width: 32px;
       }
     </style>
-    <img id="app-icon" src="[[iconUrlFromId_(app)]]">
+    <img id="app-icon" src="[[iconUrlFromId_(app)]]"
+        alt="[[app.title]] app icon.">
     <div id="app-title">[[app.title]]</div>
     <slot name="right-content"></slot>
   </template>
