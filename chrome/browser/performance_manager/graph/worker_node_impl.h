@@ -13,6 +13,7 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/public/graph/worker_node.h"
+#include "url/gurl.h"
 
 namespace performance_manager {
 
@@ -29,6 +30,7 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   WorkerNodeImpl(GraphImpl* graph,
                  WorkerType worker_type,
                  ProcessNodeImpl* process_node,
+                 const GURL& url,
                  const base::UnguessableToken& dev_tools_token);
   ~WorkerNodeImpl() override;
 
@@ -43,6 +45,7 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   // Getters for const properties. These can be called from any thread.
   WorkerType worker_type() const;
   ProcessNodeImpl* process_node() const;
+  const GURL& url() const;
   const base::UnguessableToken& dev_tools_token() const;
 
   // Getters for non-const properties. These are not thread safe.
@@ -58,6 +61,7 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   // impl use the private getters rather than the public interface.
   WorkerType GetWorkerType() const override;
   const ProcessNode* GetProcessNode() const override;
+  const GURL& GetURL() const override;
   const base::UnguessableToken& GetDevToolsToken() const override;
   const base::flat_set<const FrameNode*> GetClientFrames() const override;
   const base::flat_set<const WorkerNode*> GetClientWorkers() const override;
@@ -72,6 +76,9 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
 
   // The process in which this worker lives.
   ProcessNodeImpl* const process_node_;
+
+  // The URL of the worker script.
+  const GURL url_;
 
   // A unique identifier shared with all representations of this node across
   // content and blink. The token is only defined by the browser process and

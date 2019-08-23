@@ -24,6 +24,8 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+class GURL;
+
 namespace ukm {
 class MojoUkmRecorder;
 }  // namespace ukm
@@ -111,6 +113,7 @@ class PerformanceManager {
   std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,
+      const GURL& url,
       const base::UnguessableToken& dev_tools_token);
 
   // Destroys a node returned from the creation functions above.

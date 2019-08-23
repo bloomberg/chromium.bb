@@ -122,9 +122,10 @@ struct TestNodeWrapper<WorkerNodeImpl>::Factory {
       GraphImpl* graph,
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,
+      const GURL& url = GURL(),
       const base::UnguessableToken& token = base::UnguessableToken::Create()) {
     return std::make_unique<WorkerNodeImpl>(graph, worker_type, process_node,
-                                            token);
+                                            url, token);
   }
 };
 

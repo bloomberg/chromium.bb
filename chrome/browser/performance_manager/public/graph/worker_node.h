@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/public/graph/node.h"
 
+class GURL;
+
 namespace base {
 class UnguessableToken;
 }
@@ -62,6 +64,9 @@ class WorkerNode : public Node {
   // Returns the process node to which this worker belongs. This is a constant
   // over the lifetime of the frame.
   virtual const ProcessNode* GetProcessNode() const = 0;
+
+  // Returns the URL of the worker script.
+  virtual const GURL& GetURL() const = 0;
 
   // Returns the dev tools token for this worker.
   virtual const base::UnguessableToken& GetDevToolsToken() const = 0;
