@@ -63,9 +63,9 @@ class Chroot(object):
     """Turn a chroot-relative path into an absolute path."""
     return os.path.join(self.path, *[part.lstrip(os.sep) for part in args])
 
-  def has_path(self, chroot_rel_path):
+  def has_path(self, *args):
     """Check if a chroot-relative path exists inside the chroot."""
-    return os.path.exists(self.full_path(chroot_rel_path))
+    return os.path.exists(self.full_path(*args))
 
   def GetEnterArgs(self):
     """Build the arguments to enter this chroot."""

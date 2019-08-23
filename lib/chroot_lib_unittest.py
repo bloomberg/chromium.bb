@@ -92,6 +92,15 @@ class ChrootTest(cros_test_lib.TempDirTestCase):
     chroot = chroot_lib.Chroot(self.tempdir)
     self.assertFalse(chroot.has_path('/does/not/exist'))
 
+  def testHasPathVariadic(self):
+    """Test multiple args to has path."""
+    path = ['some', 'file.txt']
+    tempdir_path = os.path.join(self.tempdir, *path)
+    osutils.Touch(tempdir_path, makedirs=True)
+
+    chroot = chroot_lib.Chroot(self.tempdir)
+    self.assertTrue(chroot.has_path(*path))
+
   def testEqual(self):
     """__eq__ method sanity check."""
     path = '/chroot/path'
