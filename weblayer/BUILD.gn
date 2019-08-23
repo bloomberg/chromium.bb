@@ -75,9 +75,9 @@ jumbo_static_library("weblayer_lib") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/public/app:both",
+    "//content/public/child:child",
     "//content/public/common",
     "//content/public/common:service_names",
-    "//content/public/child:child",
     "//net",
     "//net:net_resources",
     "//sandbox",
@@ -111,6 +111,9 @@ jumbo_static_library("weblayer_lib") {
 
   if (is_win) {
     deps += [ "//content:sandbox_helper_win" ]
+    if (win_console_app) {
+      defines = [ "WIN_CONSOLE_APP" ]
+    }
   }
 
   if (is_linux) {
