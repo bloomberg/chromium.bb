@@ -109,6 +109,7 @@ def ParallelEmergeArgParser():
   )
   parser.add_argument(
       '--show-output',
+      action='store_true',
       help=argparse.SUPPRESS,
       deprecated='This option is no longer supported.',
   )
