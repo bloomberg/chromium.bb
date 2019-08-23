@@ -363,14 +363,14 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Resources -----------------------------------------------------------
 
   // Returns a localized string resource (with substitution parameters).
-  virtual WebString QueryLocalizedString(WebLocalizedString::Name) {
+  virtual WebString QueryLocalizedString(int resource_id) {
     return WebString();
   }
-  virtual WebString QueryLocalizedString(WebLocalizedString::Name,
+  virtual WebString QueryLocalizedString(int resource_id,
                                          const WebString& parameter) {
     return WebString();
   }
-  virtual WebString QueryLocalizedString(WebLocalizedString::Name,
+  virtual WebString QueryLocalizedString(int resource_id,
                                          const WebString& parameter1,
                                          const WebString& parameter2) {
     return WebString();

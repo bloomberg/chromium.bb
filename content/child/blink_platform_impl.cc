@@ -87,8 +87,8 @@ std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
 #endif
 }
 
-int ToMessageID(WebLocalizedString::Name name) {
-  switch (name) {
+int ToMessageID(int resource_id) {
+  switch (resource_id) {
     case WebLocalizedString::kAXAMPMFieldText:
       return IDS_AX_AM_PM_FIELD_TEXT;
     case WebLocalizedString::kAXCalendarShowDatePicker:
@@ -431,18 +431,17 @@ WebData BlinkPlatformImpl::UncompressDataResource(int resource_id) {
   return WebData(uncompressed.data(), uncompressed.size());
 }
 
-WebString BlinkPlatformImpl::QueryLocalizedString(
-    WebLocalizedString::Name name) {
-  int message_id = ToMessageID(name);
+WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id) {
+  int message_id = ToMessageID(resource_id);
   if (message_id < 0)
     return WebString();
   return WebString::FromUTF16(
       GetContentClient()->GetLocalizedString(message_id));
 }
 
-WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
+WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id,
                                                   const WebString& value) {
-  int message_id = ToMessageID(name);
+  int message_id = ToMessageID(resource_id);
   if (message_id < 0)
     return WebString();
 
@@ -463,10 +462,10 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
       base::ReplaceStringPlaceholders(format_string, value.Utf16(), nullptr));
 }
 
-WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
+WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id,
                                                   const WebString& value1,
                                                   const WebString& value2) {
-  int message_id = ToMessageID(name);
+  int message_id = ToMessageID(resource_id);
   if (message_id < 0)
     return WebString();
   std::vector<base::string16> values;

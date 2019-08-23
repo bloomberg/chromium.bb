@@ -226,9 +226,9 @@ blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
-    blink::WebLocalizedString::Name name) {
+    int resource_id) {
   // Returns placeholder strings to check if they are correctly localized.
-  switch (name) {
+  switch (resource_id) {
     case blink::WebLocalizedString::kFileButtonNoFileSelectedLabel:
       return WebString::FromASCII("<<NoFileChosenLabel>>");
     case blink::WebLocalizedString::kOtherDateLabel:
@@ -257,26 +257,32 @@ blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
-    blink::WebLocalizedString::Name name,
+    int resource_id,
     const blink::WebString& value) {
-  if (name == blink::WebLocalizedString::kValidationRangeUnderflow)
-    return blink::WebString::FromASCII("range underflow");
-  if (name == blink::WebLocalizedString::kValidationRangeOverflow)
-    return blink::WebString::FromASCII("range overflow");
-  if (name == blink::WebLocalizedString::kSelectMenuListText)
-    return blink::WebString::FromASCII("$1 selected");
-  return BlinkPlatformImpl::QueryLocalizedString(name, value);
+  switch (resource_id) {
+    case blink::WebLocalizedString::kValidationRangeUnderflow:
+      return blink::WebString::FromASCII("range underflow");
+    case blink::WebLocalizedString::kValidationRangeOverflow:
+      return blink::WebString::FromASCII("range overflow");
+    case blink::WebLocalizedString::kSelectMenuListText:
+      return blink::WebString::FromASCII("$1 selected");
+  }
+
+  return BlinkPlatformImpl::QueryLocalizedString(resource_id, value);
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
-    blink::WebLocalizedString::Name name,
+    int resource_id,
     const blink::WebString& value1,
     const blink::WebString& value2) {
-  if (name == blink::WebLocalizedString::kValidationTooLong)
-    return blink::WebString::FromASCII("too long");
-  if (name == blink::WebLocalizedString::kValidationStepMismatch)
-    return blink::WebString::FromASCII("step mismatch");
-  return BlinkPlatformImpl::QueryLocalizedString(name, value1, value2);
+  switch (resource_id) {
+    case blink::WebLocalizedString::kValidationTooLong:
+      return blink::WebString::FromASCII("too long");
+    case blink::WebLocalizedString::kValidationStepMismatch:
+      return blink::WebString::FromASCII("step mismatch");
+  }
+
+  return BlinkPlatformImpl::QueryLocalizedString(resource_id, value1, value2);
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::DefaultLocale() {

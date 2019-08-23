@@ -45,12 +45,11 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   blink::WebData GetDataResource(int resource_id,
                                  ui::ScaleFactor scale_factor) override;
   blink::WebData UncompressDataResource(int resource_id) override;
-  blink::WebString QueryLocalizedString(
-      blink::WebLocalizedString::Name name) override;
-  blink::WebString QueryLocalizedString(blink::WebLocalizedString::Name name,
+  blink::WebString QueryLocalizedString(int resource_id) override;
+  blink::WebString QueryLocalizedString(int resource_id,
                                         const blink::WebString& value) override;
   blink::WebString QueryLocalizedString(
-      blink::WebLocalizedString::Name name,
+      int resource_id,
       const blink::WebString& value1,
       const blink::WebString& value2) override;
   void SuddenTerminationChanged(bool enabled) override {}
