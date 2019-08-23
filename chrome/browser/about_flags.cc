@@ -1659,12 +1659,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kVirtualDesks)},
     {"trim-on-all-frames-frozen", flag_descriptions::kTrimOnFreezeName,
      flag_descriptions::kTrimOnFreezeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         performance_manager::features::chromeos::kTrimOnFreeze)},
+     FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnFreeze)},
     {"trim-on-memory-pressure", flag_descriptions::kTrimOnMemoryPressureName,
      flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         performance_manager::features::chromeos::kTrimOnMemoryPressure)},
+     FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnMemoryPressure)},
     {"system-tray-pagination", flag_descriptions::kSystemTrayPaginationName,
      flag_descriptions::kSystemTrayPaginationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSystemTrayFeaturePodsPagination)},
@@ -1944,8 +1942,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(USE_TCMALLOC)
     {"dynamic-tcmalloc-tuning", flag_descriptions::kDynamicTcmallocName,
      flag_descriptions::kDynamicTcmallocDescription, kOsCrOS | kOsLinux,
-     FEATURE_VALUE_TYPE(
-         performance_manager::features::os_linux::kDynamicTcmallocTuning)},
+     FEATURE_VALUE_TYPE(performance_manager::features::kDynamicTcmallocTuning)},
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // OS_CHROMEOS || OS_LINUX
 #if defined(OS_ANDROID)

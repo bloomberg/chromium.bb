@@ -342,8 +342,7 @@ void PerformanceManager::OnStartImpl(
 
 #if defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)
-  if (base::FeatureList::IsEnabled(
-          features::os_linux::kDynamicTcmallocTuning)) {
+  if (base::FeatureList::IsEnabled(features::kDynamicTcmallocTuning)) {
     graph_.PassToGraph(std::make_unique<policies::DynamicTcmallocPolicy>());
   }
 #endif  // BUILDFLAG(USE_TCMALLOC)
