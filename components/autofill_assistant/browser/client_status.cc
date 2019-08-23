@@ -122,10 +122,6 @@ std::ostream& operator<<(std::ostream& out,
       out << "NAVIGATION_ERROR";
       break;
 
-    case ProcessedActionStatusProto::AUTOFILL_INFO_NOT_AVAILABLE:
-      out << "AUTOFILL_INFO_NOT_AVAILABLE";
-      break;
-
       // Intentionally no default case to make compilation fail if a new value
       // was added to the enum but not to this list.
   }

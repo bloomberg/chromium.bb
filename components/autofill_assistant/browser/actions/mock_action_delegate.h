@@ -146,7 +146,7 @@ class MockActionDelegate : public ActionDelegate {
                      int delay_in_millisecond,
                      base::OnceCallback<void(const ClientStatus&)> callback) {
     OnSetFieldValue(selector, value, callback);
-    OnSetFieldValue(selector, value, simulate_key_presses, delay_in_millisecond,
+    OnSetFieldValue(selector, value, delay_in_millisecond, delay_in_millisecond,
                     callback);
   }
 
@@ -168,20 +168,11 @@ class MockActionDelegate : public ActionDelegate {
                     const std::string& value,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
-  void SendKeyboardInput(
-      const Selector& selector,
-      const std::vector<UChar32>& codepoints,
-      int delay_in_millisecond,
-      base::OnceCallback<void(const ClientStatus&)> callback) {
-    OnSendKeyboardInput(selector, codepoints, delay_in_millisecond, callback);
-  }
-
-  MOCK_METHOD4(OnSendKeyboardInput,
+  MOCK_METHOD4(SendKeyboardInput,
                void(const Selector& selector,
                     const std::vector<UChar32>& codepoints,
                     int delay_in_millisecond,
-                    base::OnceCallback<void(const ClientStatus&)>& callback));
-
+                    base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD2(GetOuterHtml,
                void(const Selector& selector,
                     base::OnceCallback<void(const ClientStatus&,
