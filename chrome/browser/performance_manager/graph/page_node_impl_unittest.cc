@@ -54,7 +54,7 @@ using PageNodeImplDeathTest = PageNodeImplTest;
 
 TEST_F(PageNodeImplDeathTest, SafeDowncast) {
   auto page = CreateNode<PageNodeImpl>();
-  ASSERT_DEATH(FrameNodeImpl::FromNodeBase(page.get()), "Check failed: .*");
+  ASSERT_DEATH_IF_SUPPORTED(FrameNodeImpl::FromNodeBase(page.get()), "");
 }
 
 TEST_F(PageNodeImplTest, AddFrameBasic) {

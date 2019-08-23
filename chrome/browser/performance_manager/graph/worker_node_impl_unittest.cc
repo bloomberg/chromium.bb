@@ -41,7 +41,7 @@ TEST_F(WorkerNodeImplDeathTest, SafeDowncast) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto worker = CreateNode<WorkerNodeImpl>(WorkerNode::WorkerType::kDedicated,
                                            process.get());
-  ASSERT_DEATH(FrameNodeImpl::FromNodeBase(worker.get()), "Check failed: .*");
+  ASSERT_DEATH_IF_SUPPORTED(FrameNodeImpl::FromNodeBase(worker.get()), "");
 }
 
 // Create a worker of each type and register the frame as a client of each.
