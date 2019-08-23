@@ -21,7 +21,8 @@ from __future__ import print_function
 import datetime
 import multiprocessing
 import re
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import commandline
 from chromite.lib import constants
@@ -371,12 +372,15 @@ def Expire(ctx, dryrun, url):
     dryrun: Do we actually move the file?
     url: Address of file to move.
   """
+  # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
+  # pylint: disable=too-many-function-args
+
   logging.info('Expiring: %s', url)
   # Move gs://foo/some/file -> gs://foo-backup/some/file
-  parts = urlparse.urlparse(url)
+  parts = urllib.parse.urlparse(url)
   expired_parts = list(parts)
   expired_parts[1] = parts.netloc + '-backup'
-  target_url = urlparse.urlunparse(expired_parts)
+  target_url = urllib.parse.urlunparse(expired_parts)
   if dryrun:
     logging.notice('gsutil mv %s %s', url, target_url)
   else:

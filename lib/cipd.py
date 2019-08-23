@@ -16,9 +16,9 @@ import json
 import os
 import pprint
 import tempfile
-import urlparse
 
 import six
+from six.moves import urllib
 
 import chromite.lib.cros_logging as log
 from chromite.lib import cache
@@ -125,7 +125,7 @@ def _DownloadCIPD(instance_sha256):
 class CipdCache(cache.RemoteCache):
   """Supports caching of the CIPD download."""
   def _Fetch(self, key, path):
-    instance_sha256 = urlparse.urlparse(key).netloc
+    instance_sha256 = urllib.parse.urlparse(key).netloc
     binary = _DownloadCIPD(instance_sha256)
     log.info('Fetched CIPD package %s:%s', CIPD_CLIENT_PACKAGE, instance_sha256)
     osutils.WriteFile(path, binary)

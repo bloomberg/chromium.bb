@@ -22,7 +22,8 @@ import random
 import re
 import resource
 import sys
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.lib import cgroups
@@ -117,7 +118,7 @@ def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
   status_re = re.compile(r'^HTTP/[0-9]+(\.[0-9]+)? 200')
   # pylint: disable=undefined-loop-variable
   for url in urls:
-    parsed = urlparse.urlparse(url)
+    parsed = urllib.parse.urlparse(url)
     tarball_name = os.path.basename(parsed.path)
     if parsed.scheme in ('', 'file'):
       if os.path.exists(parsed.path):

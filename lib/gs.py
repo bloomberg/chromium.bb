@@ -20,7 +20,8 @@ import re
 import shutil
 import subprocess
 import tempfile
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.lib import cache
@@ -543,7 +544,7 @@ class GSContext(object):
     # Set HTTP proxy if environment variable http_proxy is set
     # (crbug.com/325032).
     if 'http_proxy' in os.environ:
-      url = urlparse.urlparse(os.environ['http_proxy'])
+      url = urllib.parse.urlparse(os.environ['http_proxy'])
       if not url.hostname or (not url.username and url.password):
         logging.warning('GS_ERROR: Ignoring env variable http_proxy because it '
                         'is not properly set: %s', os.environ['http_proxy'])
@@ -740,7 +741,7 @@ class GSContext(object):
     Returns:
       The list of potential tracker filenames.
     """
-    dest = urlparse.urlsplit(dest_path)
+    dest = urllib.parse.urlsplit(dest_path)
     filenames = []
     if dest.scheme == 'gs':
       prefix = 'upload'

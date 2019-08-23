@@ -26,8 +26,8 @@ import math
 import os
 import re
 import string
-import urllib
-import urllib2
+
+from six.moves import urllib
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
@@ -334,14 +334,14 @@ def _SendToDashboard(data_obj, dashboard=DASHBOARD_URL):
     PerfUploadingError if an exception was raised when uploading.
   """
   upload_url = os.path.join(dashboard, 'add_point')
-  encoded = urllib.urlencode(data_obj)
-  req = urllib2.Request(upload_url, encoded)
+  encoded = urllib.parse.urlencode(data_obj)
+  req = urllib.request.Request(upload_url, encoded)
   try:
-    urllib2.urlopen(req)
-  except urllib2.HTTPError as e:
+    urllib.request.urlopen(req)
+  except urllib.error.HTTPError as e:
     raise PerfUploadingError('HTTPError: %d %s for JSON %s\n' %
                              (e.code, e.msg, data_obj['data']), e)
-  except urllib2.URLError as e:
+  except urllib.parse.URLError as e:
     raise PerfUploadingError('URLError: %s for JSON %s\n' %
                              (str(e.reason), data_obj['data']), e)
   except httplib.HTTPException as e:
@@ -422,7 +422,7 @@ def _RetryIfServerError(perf_exc):
   Returns:
     True if the cause of |perf_exc| is HTTP 5xx error.
   """
-  return (isinstance(perf_exc.orig_exc, urllib2.HTTPError) and
+  return (isinstance(perf_exc.orig_exc, urllib.error.HTTPError) and
           perf_exc.orig_exc.code >= 500)
 
 

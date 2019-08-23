@@ -21,10 +21,9 @@ import sys
 import textwrap
 import tempfile
 import time
-import urllib2
-import urlparse
 
 import requests
+from six.moves import urllib
 
 from chromite.lib import constants
 
@@ -217,13 +216,13 @@ def FindSymbolFiles(tempdir, paths):
   tar_cache = cache.TarballCache(common_path)
 
   for p in paths:
-    o = urlparse.urlparse(p)
+    o = urllib.parse.urlparse(p)
     if o.scheme:
       # Support globs of filenames.
       ctx = gs.GSContext()
       for p in ctx.LS(p):
         logging.info('processing files inside %s', p)
-        o = urlparse.urlparse(p)
+        o = urllib.parse.urlparse(p)
         key = ('%s%s' % (o.netloc, o.path)).split('/')
         # The common cache will not be LRU, removing the need to hold a read
         # lock on the cached gsutil.
@@ -348,7 +347,7 @@ def ExecRequest(operator, url, timeout, api_key, **kwargs):
                           timeout=timeout, **kwargs)
   # Make sure we don't leak secret keys by accident.
   if resp.status_code > 399:
-    resp.url = resp.url.replace(urllib2.quote(api_key), 'XX-HIDDEN-XX')
+    resp.url = resp.url.replace(urllib.parse.quote(api_key), 'XX-HIDDEN-XX')
     logging.warning('Url: %s, Status: %s, response: "%s", in: %s',
                     resp.url, resp.status_code, resp.text, resp.elapsed)
   elif resp.content:
@@ -457,7 +456,7 @@ def PerformSymbolsFileUpload(symbols, upload_url, api_key):
         # only consider the upload a failure if these retries fail.
         def ShouldRetryUpload(exception):
           if isinstance(exception, (requests.exceptions.RequestException,
-                                    urllib2.URLError,
+                                    IOError,
                                     httplib.HTTPException, socket.error)):
             logging.info('Request failed, retrying: %s', exception)
             return True
@@ -481,7 +480,7 @@ def PerformSymbolsFileUpload(symbols, upload_url, api_key):
                         s.display_name, e)
         s.status = SymbolFile.ERROR
         failures += 1
-      except (httplib.HTTPException, urllib2.URLError, socket.error) as e:
+      except (httplib.HTTPException, IOError, socket.error) as e:
         logging.warning('could not upload: %s: %s %s', s.display_name,
                         type(e).__name__, e)
         s.status = SymbolFile.ERROR

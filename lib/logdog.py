@@ -10,7 +10,8 @@ from __future__ import print_function
 import base64
 import json
 import time
-import urllib
+
+from six.moves import urllib
 
 from chromite.lib.protos import annotations_pb2
 from chromite.lib import prpc
@@ -258,5 +259,5 @@ class LogdogClient(prpc.PRPCClient):
     return '%(scheme)s://%(host)s/v/?s=%(query)s' % {
         'scheme': self.GetScheme(),
         'host': self.host,
-        'query': urllib.quote_plus('%s/%s' % (project, stream)),
+        'query': urllib.parse.quote_plus('%s/%s' % (project, stream)),
     }

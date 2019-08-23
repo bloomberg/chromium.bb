@@ -11,7 +11,8 @@ import errno
 import os
 import shutil
 import tempfile
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -262,7 +263,7 @@ class RemoteCache(DiskCache):
 
   def _Insert(self, key, url):
     """Insert a remote file into the cache."""
-    o = urlparse.urlparse(url)
+    o = urllib.parse.urlparse(url)
     if o.scheme in ('file', ''):
       DiskCache._Insert(self, key, o.path)
       return
@@ -290,7 +291,7 @@ class TarballCache(RemoteCache):
     with osutils.TempDir(prefix='tarball-cache',
                          base_dir=self.staging_dir) as tempdir:
 
-      o = urlparse.urlsplit(tarball_path)
+      o = urllib.parse.urlsplit(tarball_path)
       if o.scheme == 'file':
         tarball_path = o.path
       elif o.scheme:

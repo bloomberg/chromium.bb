@@ -9,11 +9,11 @@ from __future__ import print_function
 
 import os
 import pwd
-import urllib
 
 import apiclient
 import httplib2
 import oauth2client.client
+from six.moves import urllib
 
 
 # Locations where to look for credentials JSON files, relative to the user's
@@ -275,18 +275,19 @@ def SplitAbUrl(ab_url):
   Raises:
     ValueError: If the URL is not a valid ab://... URL.
   """
-  # splittype turns 'ab://bucket/path' into ('ab', '//bucket/path').
-  protocol, remainder = urllib.splittype(ab_url)
-  if protocol != 'ab':
+  # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
+  # pylint: disable=too-many-function-args
+
+  o = urllib.parse.urlparse(ab_url)
+
+  if o.scheme != 'ab':
     raise ValueError('URL [%s] must start with ab:// protocol.' % ab_url)
 
-  # splithost turns '//bucket/path' into ('bucket', '/path').
-  bucket, remainder = urllib.splithost(remainder)
-  if bucket != 'android-build':
+  if o.hostname != 'android-build':
     raise ValueError('URL [%s] must use "android-build" bucket.' % ab_url)
 
   # Split the remaining fields of the path.
-  parts = remainder.split('/', 4)
+  parts = o.path.split('/', 4)
 
   if len(parts) < 3:
     raise ValueError(
@@ -294,8 +295,8 @@ def SplitAbUrl(ab_url):
 
   # First field will be empty.
   assert parts[0] == ''
-  branch = urllib.unquote(parts[1])
-  target = urllib.unquote(parts[2])
+  branch = urllib.parse.unquote(parts[1])
+  target = urllib.parse.unquote(parts[2])
 
   if not branch:
     raise ValueError('URL [%s] has an empty branch.' % ab_url)
@@ -305,7 +306,7 @@ def SplitAbUrl(ab_url):
 
   # Check if build_id is present. If present, it must be numeric.
   if len(parts) > 3:
-    build_id_str = urllib.unquote(parts[3])
+    build_id_str = urllib.parse.unquote(parts[3])
     if not build_id_str.isdigit():
       raise ValueError('URL [%s] has a non-numeric build_id component [%s].' %
                        (ab_url, build_id_str))
@@ -315,7 +316,7 @@ def SplitAbUrl(ab_url):
 
   # Last, use the remainder of the URL as the filepath.
   if len(parts) > 4:
-    filepath = urllib.unquote(parts[4])
+    filepath = urllib.parse.unquote(parts[4])
   else:
     filepath = None
 

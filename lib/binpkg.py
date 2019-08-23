@@ -18,7 +18,8 @@ import operator
 import os
 import tempfile
 import time
-import urllib2
+
+from six.moves import urllib
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -325,18 +326,18 @@ def _RetryUrlOpen(url, tries=3):
     tries: The number of times to try.
 
   Returns:
-    The result of urllib2.urlopen(url).
+    The result of urllib.request.urlopen(url).
   """
   for i in range(tries):
     try:
-      return urllib2.urlopen(url)
-    except urllib2.HTTPError as e:
+      return urllib.request.urlopen(url)
+    except urllib.error.HTTPError as e:
       if i + 1 >= tries or e.code < 500:
         e.msg += ('\nwhile processing %s' % url)
         raise
       else:
         print('Cannot GET %s: %s' % (url, str(e)))
-    except urllib2.URLError as e:
+    except urllib.error.URLError as e:
       if i + 1 >= tries:
         raise
       else:
@@ -360,7 +361,7 @@ def GrabRemotePackageIndex(binhost_url):
   if binhost_url.startswith('http'):
     try:
       f = _RetryUrlOpen(url)
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
       if e.code in HTTP_FORBIDDEN_CODES:
         logging.PrintBuildbotStepWarnings()
         logging.error('Cannot GET %s: %s', url, e)

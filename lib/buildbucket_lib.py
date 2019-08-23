@@ -19,7 +19,8 @@ from __future__ import print_function
 import collections
 import json
 import os
-import urllib
+
+from six.moves import urllib
 
 from chromite.cbuildbot import topology
 from chromite.lib import auth
@@ -376,7 +377,7 @@ class BuildbucketClient(object):
                          MAX_BUILDS_LIMIT)
       params.append(('max_builds', max_builds))
 
-    params_str = urllib.urlencode(params)
+    params_str = urllib.parse.urlencode(params)
 
     url = ('https://%(hostname)s/api/buildbucket/v1/search?%(params_str)s'
            % {'hostname': self.host, 'params_str': params_str})

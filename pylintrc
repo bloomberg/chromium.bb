@@ -367,6 +367,10 @@ max-parents=10
 # regsub: Use the 're' module instead.
 # rexec: Dropped in Python 3.
 # TERMIOS: Use the 'termios' module instead.
+# urllib2: Use the 'six.moves.urllib' module instead
+#   (or 'urllib.request' in Python 3).
+# urlparse: Use the 'six.moves.urllib' module instead
+#   (or 'urllib.parse' in Python 3).
 deprecated-modules=
     __builtin__,
     Bastion,
@@ -380,6 +384,8 @@ deprecated-modules=
     regsub,
     rexec,
     TERMIOS,
+    urllib2,
+    urlparse,
 
 # Create a graph of every (i.e. internal and external) dependencies in the
 # given file (report RP0402 must not be disabled)

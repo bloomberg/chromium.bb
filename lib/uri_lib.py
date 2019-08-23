@@ -9,8 +9,8 @@ from __future__ import print_function
 
 import os
 import re
-import urllib
-import urlparse
+
+from six.moves import urllib
 
 
 def _ExtractGobClAndSubpath(o):
@@ -65,10 +65,10 @@ def _ShortenGob(o):
   """Shorten a Gerrit-on-Borg URI.
 
   Args:
-    o: The named tuple from a urlparse.urlsplit call.
+    o: The named tuple from a urllib.parse.urlsplit call.
 
   Returns:
-    A new named tuple that can be passed to urlparse.urlunsplit.
+    A new named tuple that can be passed to urllib.parse.urlunsplit.
   """
   parts = _ExtractGobClAndSubpath(o)
   if parts is None:
@@ -94,10 +94,10 @@ def _ShortenCrosReview(o):
   """Shorten old review to new review hosts.
 
   Args:
-    o: The named tuple from a urlparse.urlsplit call.
+    o: The named tuple from a urllib.parse.urlsplit call.
 
   Returns:
-    A new named tuple that can be passed to urlparse.urlunsplit.
+    A new named tuple that can be passed to urllib.parse.urlunsplit.
   """
   m = re.match(r'^/(i/)?([0-9]+)', o.path)
   if m:
@@ -112,10 +112,10 @@ def _ShortenRietveld(o):
   """Shorten a rietveld URI.
 
   Args:
-    o: The named tuple from a urlparse.urlsplit call.
+    o: The named tuple from a urllib.parse.urlsplit call.
 
   Returns:
-    A new named tuple that can be passed to urlparse.urlunsplit.
+    A new named tuple that can be passed to urllib.parse.urlunsplit.
   """
   m = re.match(r'^/([0-9]+)', o.path)
   if m:
@@ -129,14 +129,14 @@ def _ShortenBuganizer(o):
   """Shorten a buganizer URI.
 
   Args:
-    o: The named tuple from a urlparse.urlsplit call.
+    o: The named tuple from a urllib.parse.urlsplit call.
 
   Returns:
-    A new named tuple that can be passed to urlparse.urlunsplit.
+    A new named tuple that can be passed to urllib.parse.urlunsplit.
   """
   if o.path == '/issue':
     # http://b.corp.google.com/issue?id=123
-    qs = urlparse.parse_qs(o.query)
+    qs = urllib.parse.parse_qs(o.query)
     if 'id' in qs:
       o = o._replace(path='/%s' % (qs['id'][0],), query='')
   elif o.path.startswith('/issues/'):
@@ -150,10 +150,10 @@ def _ShortenChromiumBug(o):
   """Shorten a Chromium bug URI.
 
   Args:
-    o: The named tuple from a urlparse.urlsplit call.
+    o: The named tuple from a urllib.parse.urlsplit call.
 
   Returns:
-    A new named tuple that can be passed to urlparse.urlunsplit.
+    A new named tuple that can be passed to urllib.parse.urlunsplit.
   """
   # https://bugs.chromium.org/p/chromium/issues/detail?id=123
   # https://bugs.chromium.org/p/google-breakpad/issues/list
@@ -169,7 +169,7 @@ def _ShortenChromiumBug(o):
     path = '/%s' % (m.group(1),)
 
   if m.group(2):
-    qs = urlparse.parse_qs(o.query)
+    qs = urllib.parse.parse_qs(o.query)
     if 'id' in qs:
       path += '/%s' % (qs['id'][0],)
     o = o._replace(query='')
@@ -181,10 +181,10 @@ def _ShortenGutsTicket(o):
   """Shorten a Google GUTS ticket URI.
 
   Args:
-    o: The named tuple from a urlparse.urlsplit call.
+    o: The named tuple from a urllib.parse.urlsplit call.
 
   Returns:
-    A new named tuple that can be passed to urlparse.urlunsplit.
+    A new named tuple that can be passed to urllib.parse.urlunsplit.
   """
   # https://gutsv3.corp.google.com/#ticket/123
   m = re.match(r'^ticket/([0-9]+)', o.fragment)
@@ -219,12 +219,15 @@ def ShortenUri(uri, omit_scheme=False):
   Returns:
     A (hopefully shorter) URI pointing to the same resource as |uri|.
   """
-  o = urlparse.urlsplit(uri)
+  # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
+  # pylint: disable=too-many-function-args
+
+  o = urllib.parse.urlsplit(uri)
 
   # If the scheme & host are empty, assume it's because the URI we were given
   # lacked a http:// or https:// prefix, so blindly insert a http://.
   if not o.scheme and not o.netloc:
-    o = urlparse.urlsplit('http://%s' % (uri,))
+    o = urllib.parse.urlsplit('http://%s' % (uri,))
 
   for matcher, shortener in _SHORTENERS:
     if matcher.match(o.netloc):
@@ -236,9 +239,9 @@ def ShortenUri(uri, omit_scheme=False):
   if omit_scheme:
     o = o._replace(scheme='')
     # Strip off the leading // due to blank scheme.
-    return urlparse.urlunsplit(o)[2:]
+    return urllib.parse.urlunsplit(o)[2:]
   else:
-    return urlparse.urlunsplit(o)
+    return urllib.parse.urlunsplit(o)
 
 
 _LUCI_MILO_BUILDBOT_URL = 'https://luci-milo.appspot.com/buildbot'
@@ -281,7 +284,7 @@ def ConstructDashboardUri(buildbot_master_name, builder_name, build_number):
     The fully formed URI.
   """
   url_suffix = '%s/%s' % (builder_name, str(build_number))
-  url_suffix = urllib.quote(url_suffix)
+  url_suffix = urllib.parse.quote(url_suffix)
   return os.path.join(
       _LUCI_MILO_BUILDBOT_URL, buildbot_master_name, url_suffix)
 

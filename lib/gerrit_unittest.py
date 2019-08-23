@@ -20,10 +20,10 @@ import os
 import re
 import socket
 import stat
-import urllib
 
 import mock
 import six
+from six.moves import urllib
 
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -138,6 +138,9 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     """Sets up the gerrit instances in a class-specific temp dir."""
+    # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
+    # pylint: disable=too-many-function-args
+
     self.saved_params = {}
     old_home = os.environ['HOME']
     os.environ['HOME'] = self.tempdir
@@ -164,7 +167,7 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
 
       def GetCookies(host, _path):
         ret = dict(
-            (c.name, urllib.unquote(c.value)) for c in jar
+            (c.name, urllib.parse.unquote(c.value)) for c in jar
             if c.domain == host and c.path == '/' and c.name in gi.cookie_names)
         return ret
 
@@ -214,6 +217,9 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
   def createProject(self, suffix, description='Test project', owners=None,
                     submit_type='CHERRY_PICK'):
     """Create a project on the test gerrit server."""
+    # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
+    # pylint: disable=too-many-function-args
+
     name = self.gerrit_instance.project_prefix + suffix
     body = {
         'description': description,
@@ -221,7 +227,7 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
     }
     if owners is not None:
       body['owners'] = owners
-    path = 'projects/%s' % urllib.quote(name, '')
+    path = 'projects/%s' % urllib.parse.quote(name, '')
     conn = gob_util.CreateHttpConn(
         self.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
     response = conn.getresponse()
@@ -360,7 +366,7 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
   def createAccount(self, name='Test User', email='test-user@test.org',
                     password=None, groups=None):
     """Create a new user account on gerrit."""
-    username = urllib.quote(email.partition('@')[0])
+    username = urllib.parse.quote(email.partition('@')[0])
     path = 'accounts/%s' % username
     body = {
         'name': name,

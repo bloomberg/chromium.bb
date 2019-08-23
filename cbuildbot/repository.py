@@ -13,7 +13,8 @@ import os
 import re
 import shutil
 import time
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -70,7 +71,7 @@ def _IsLocalPath(url):
     True if the url actually refers to a local path (with prefix
       'file://' or '/'); else, False.
   """
-  o = urlparse.urlparse(url)
+  o = urllib.parse.urlparse(url)
   return o.scheme in ('file', '')
 
 

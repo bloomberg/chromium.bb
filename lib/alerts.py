@@ -17,11 +17,12 @@ import smtplib
 import socket
 import sys
 import traceback
-import urllib
 
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -343,7 +344,7 @@ def GetGardenerEmailAddresses():
     Gardener email addresses.
   """
   try:
-    response = urllib.urlopen(constants.CHROME_GARDENER_URL)
+    response = urllib.request.urlopen(constants.CHROME_GARDENER_URL)
     if response.getcode() == 200:
       return json.load(response)['emails']
   except (IOError, ValueError, KeyError) as e:

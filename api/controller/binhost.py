@@ -9,7 +9,8 @@ from __future__ import print_function
 
 import os
 import shutil
-import urlparse
+
+from six.moves import urllib
 
 from chromite.api import controller
 from chromite.api import validate
@@ -95,7 +96,7 @@ def PrepareBinhostUploads(input_proto, output_proto, config):
   if config.validate_only:
     return controller.RETURN_CODE_VALID_INPUT
 
-  parsed_uri = urlparse.urlparse(uri)
+  parsed_uri = urllib.parse.urlparse(uri)
   upload_uri = gs.GetGsURL(parsed_uri.netloc, for_gsutil=True).rstrip('/')
   upload_path = parsed_uri.path.lstrip('/')
 
@@ -140,7 +141,7 @@ def PrepareDevInstallBinhostUploads(input_proto, output_proto, config):
   if config.validate_only:
     return controller.RETURN_CODE_VALID_INPUT
 
-  parsed_uri = urlparse.urlparse(uri)
+  parsed_uri = urllib.parse.urlparse(uri)
   upload_uri = gs.GetGsURL(parsed_uri.netloc, for_gsutil=True).rstrip('/')
   upload_path = parsed_uri.path.lstrip('/')
 

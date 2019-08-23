@@ -13,7 +13,8 @@ import multiprocessing
 import os
 import re
 import sys
-import urllib
+
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.cli import command
@@ -259,7 +260,7 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
   if lint_result.returncode != 0:
     bug_url = (
         'https://bugs.chromium.org/p/chromium/issues/entry?' +
-        urllib.urlencode({
+        urllib.parse.urlencode({
             'template':
                 'Defect report from Developer',
             'summary':

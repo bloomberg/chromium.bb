@@ -20,7 +20,8 @@ import os
 import pickle
 import sys
 import tempfile
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import binpkg
 from chromite.lib import cache
@@ -87,7 +88,7 @@ class DebugSymbolsInstaller(object):
                            cpv + DEBUG_SYMS_EXT)
     # GsContext does not understand file:// scheme so we need to extract the
     # path ourselves.
-    parsed_url = urlparse.urlsplit(url)
+    parsed_url = urllib.parse.urlsplit(url)
     if not parsed_url.scheme or parsed_url.scheme == 'file':
       url = parsed_url.path
 
@@ -205,7 +206,7 @@ def GetPackageIndex(binhost, binhost_cache=None):
       temp_file.file.close()
       binhost_cache.Lookup(key).Assign(temp_file.name)
   elif pkgindex is None:
-    urlparts = urlparse.urlsplit(binhost)
+    urlparts = urllib.parse.urlsplit(binhost)
     if urlparts.scheme not in ('file', ''):
       # Don't fail the build on network errors. Print a warning message and
       # continue.

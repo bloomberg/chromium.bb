@@ -19,7 +19,8 @@ import json
 import operator
 import os
 import sys
-import urlparse
+
+from six.moves import urllib
 
 from chromite.api.gen.chromite.api import test_metadata_pb2
 from chromite.api.gen.test_platform import request_pb2
@@ -455,6 +456,9 @@ class PaygenBuild(object):
     Raises:
       ArchiveError: if we could not compute the mapping.
     """
+    # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
+    # pylint: disable=too-many-function-args
+
     # Map chromeos-releases board name to its chromeos-image-archive equivalent.
     archive_board_candidates = set([
         archive_board for archive_board in self._site_config.GetBoards()
@@ -476,13 +480,13 @@ class PaygenBuild(object):
                          archive_build_search_uri)
 
     # Use the first search result.
-    uri_parts = urlparse.urlsplit(archive_build_file_uri_list[0])
+    uri_parts = urllib.parse.urlsplit(archive_build_file_uri_list[0])
     archive_build_path = os.path.dirname(uri_parts.path)
     archive_build = archive_build_path.strip('/')
-    archive_build_uri = urlparse.urlunsplit((uri_parts.scheme,
-                                             uri_parts.netloc,
-                                             archive_build_path,
-                                             '', ''))
+    archive_build_uri = urllib.parse.urlunsplit((uri_parts.scheme,
+                                                 uri_parts.netloc,
+                                                 archive_build_path,
+                                                 '', ''))
 
     return archive_board, archive_build, archive_build_uri
 

@@ -22,7 +22,8 @@ import distutils.version
 import filecmp
 import os
 import re
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -76,7 +77,7 @@ def _GetSpecificVersionUrl(git_url, revision, time_to_wait=600):
     time_to_wait: the minimum period before abandoning our wait for the
       desired revision to be present.
   """
-  parsed_url = urlparse.urlparse(git_url)
+  parsed_url = urllib.parse.urlparse(git_url)
   host = parsed_url[1]
   path = parsed_url[2].rstrip('/') + (
       '/+/%s/chrome/VERSION?format=text' % revision)
@@ -153,7 +154,7 @@ def GetLatestRelease(git_url, branch=None):
   # of writing, I can't find any callers that use this method to scan for
   # internal buildspecs.  But there may be something lurking...
 
-  parsed_url = urlparse.urlparse(git_url)
+  parsed_url = urllib.parse.urlparse(git_url)
   path = parsed_url[2].rstrip('/') + '/+refs/tags?format=JSON'
   j = gob_util.FetchUrlJson(parsed_url[1], path, ignore_404=False)
   if branch:

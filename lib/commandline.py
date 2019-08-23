@@ -19,9 +19,9 @@ import os
 import optparse  # pylint: disable=deprecated-module
 import signal
 import sys
-import urlparse
 
 import six
+from six.moves import urllib
 
 # TODO(build): sort the cbuildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
@@ -155,14 +155,17 @@ def ParseDate(value):
 
 def NormalizeUri(value):
   """Normalize a local path or URI."""
-  o = urlparse.urlparse(value)
+  # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
+  # pylint: disable=too-many-function-args
+
+  o = urllib.parse.urlparse(value)
   if o.scheme == 'file':
     # Trim off the file:// prefix.
     return VALID_TYPES['path'](value[7:])
   elif o.scheme not in ('', 'gs'):
     o = list(o)
     o[2] = os.path.normpath(o[2])
-    return urlparse.urlunparse(o)
+    return urllib.parse.urlunparse(o)
   else:
     return NormalizeLocalOrGSPath(value)
 
@@ -294,7 +297,7 @@ class DeviceParser(object):
       value = 'localhost:9222'
     elif value.strip().lower() == 'ssh://:vm:':
       value = 'ssh://localhost:9222'
-    parsed = urlparse.urlparse(value)
+    parsed = urllib.parse.urlparse(value)
     if not parsed.scheme:
       # Default to a file scheme for absolute paths, SSH scheme otherwise.
       if value and value[0] == '/':
@@ -302,7 +305,7 @@ class DeviceParser(object):
       else:
         # urlparse won't provide hostname/username/port unless a scheme is
         # specified so we need to re-parse.
-        parsed = urlparse.urlparse('%s://%s' % (DEVICE_SCHEME_SSH, value))
+        parsed = urllib.parse.urlparse('%s://%s' % (DEVICE_SCHEME_SSH, value))
         scheme = DEVICE_SCHEME_SSH
     else:
       scheme = parsed.scheme.lower()

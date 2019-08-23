@@ -22,10 +22,10 @@ import numbers
 import os
 import sys
 import threading
-import urlparse
 
 from google.protobuf import timestamp_pb2
 import six
+from six.moves import urllib
 
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -186,13 +186,16 @@ def to_units(number):
 
 def validate_root_service_url(url):
   """Raises ValueError if the URL doesn't look like https://<host>."""
+  # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
+  # pylint: disable=too-many-function-args
+
   schemes = ('https', 'http')
-  parsed = urlparse.urlparse(url)
+  parsed = urllib.parse.urlparse(url)
   if parsed.scheme not in schemes:
     raise ValueError('unsupported protocol %r' % str(parsed.scheme))
   if not parsed.netloc:
     raise ValueError('missing hostname')
-  stripped = urlparse.urlunparse((parsed[0], parsed[1], '', '', '', ''))
+  stripped = urllib.parse.urlunparse((parsed[0], parsed[1], '', '', '', ''))
   if stripped != url:
     raise ValueError('expecting root host URL, e.g. %r)' % str(stripped))
 

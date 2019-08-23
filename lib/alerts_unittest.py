@@ -11,9 +11,9 @@ import json
 import os
 import smtplib
 import socket
-import urllib
 
 import mock
+from six.moves import urllib
 
 from chromite.lib import alerts
 from chromite.lib import constants
@@ -179,7 +179,7 @@ class GetGardenerEmailAddressesTest(cros_test_lib.MockTestCase):
                      '"emails":[%s]}' % emails)
     response = mock.MagicMock(json=gardener_json, getcode=lambda: 200,
                               read=lambda: gardener_json)
-    self.PatchObject(urllib, 'urlopen', autospec=True,
+    self.PatchObject(urllib.request, 'urlopen', autospec=True,
                      side_effect=[response])
 
   def testParsingGardenerEmails(self):

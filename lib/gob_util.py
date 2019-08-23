@@ -21,8 +21,6 @@ import os
 import re
 import socket
 import sys
-import urllib
-import urlparse
 import warnings
 from cStringIO import StringIO
 
@@ -33,6 +31,7 @@ except ImportError:  # Newer oauth2client versions put it in .contrib
   # pylint: disable=import-error,no-name-in-module
   from oauth2client.contrib import gce
 import six
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -159,7 +158,7 @@ def _QueryString(param_dict, first_param=None):
 
   https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
   """
-  q = [urllib.quote(first_param)] if first_param else []
+  q = [urllib.parse.quote(first_param)] if first_param else []
   q.extend(['%s:%s' % (key, val) for key, val in param_dict.items()])
   return '+'.join(q)
 
@@ -432,7 +431,7 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
   if not change_list:
     raise RuntimeError(
         "MultiQueryChanges requires a list of change numbers/id's")
-  q = ['q=%s' % '+OR+'.join([urllib.quote(str(x)) for x in change_list])]
+  q = ['q=%s' % '+OR+'.join(urllib.parse.quote(str(x)) for x in change_list)]
   if param_dict:
     q.append(_QueryString(param_dict))
   if limit:
@@ -794,7 +793,7 @@ def ResetReviewLabels(host, change, label, value='0', revision=None,
 
 def GetTipOfTrunkRevision(git_url):
   """Returns the current git revision on the master branch."""
-  parsed_url = urlparse.urlparse(git_url)
+  parsed_url = urllib.parse.urlparse(git_url)
   path = parsed_url[2].rstrip('/') + '/+log/master?n=1&format=JSON'
   j = FetchUrlJson(parsed_url[1], path, ignore_404=False)
   if not j:
@@ -821,7 +820,7 @@ def GetCommitDate(git_url, commit):
   Returns:
     A datetime object.
   """
-  parsed_url = urlparse.urlparse(git_url)
+  parsed_url = urllib.parse.urlparse(git_url)
   path = '%s/+log/%s?n=1&format=JSON' % (parsed_url.path.rstrip('/'), commit)
   j = FetchUrlJson(parsed_url.netloc, path, ignore_404=False)
   if not j:

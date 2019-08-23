@@ -10,8 +10,8 @@ from __future__ import print_function
 import json
 import os
 import tempfile
-import urllib2
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import cros_test_lib
 from chromite.lib import perf_uploader
@@ -90,7 +90,7 @@ class SendToDashboardTest(PerfUploadTestCase):
   """Ensure perf values are sent to chromeperf via HTTP."""
 
   def setUp(self):
-    self.urlopen = self.PatchObject(urllib2, 'urlopen')
+    self.urlopen = self.PatchObject(urllib.request, 'urlopen')
 
   def testOneEntry(self):
     perf_uploader.OutputPerfValue(self.file_name, 'desc1', 42, 'unit')
@@ -101,7 +101,7 @@ class SendToDashboardTest(PerfUploadTestCase):
     self.assertEqual(os.path.join(perf_uploader.DASHBOARD_URL, 'add_point'),
                      request.get_full_url())
     data = request.get_data()
-    data = urlparse.parse_qs(data)['data']
+    data = urllib.parse.parse_qs(data)['data']
     entries = [json.loads(x) for x in data]
     entry = entries[0][0]
     self.assertEqual('cros', entry['supplemental_columns']['r_cros_version'])

@@ -14,8 +14,8 @@ import socket
 import sys
 import tempfile
 import httplib
-import urllib2
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.cli import command
@@ -87,7 +87,7 @@ def GetXbuddyPath(path):
   Raises:
     ValueError if |path| uses any scheme other than xbuddy://.
   """
-  parsed = urlparse.urlparse(path)
+  parsed = urllib.parse.urlparse(path)
 
   if parsed.scheme == 'xbuddy':
     return '%s%s' % (parsed.netloc, parsed.path)
@@ -327,11 +327,11 @@ class DevServerWrapper(multiprocessing.Process):
     """Returns the HTTP response of a URL."""
     logging.debug('Retrieving %s', url)
     try:
-      res = urllib2.urlopen(url, timeout=timeout)
-    except (urllib2.HTTPError, httplib.HTTPException) as e:
+      res = urllib.request.urlopen(url, timeout=timeout)
+    except (urllib.error.HTTPError, httplib.HTTPException) as e:
       logging.error('Devserver responded with HTTP error (%s)', e)
       raise DevServerResponseError(e)
-    except (urllib2.URLError, socket.timeout) as e:
+    except (urllib.error.URLError, socket.timeout) as e:
       if not ignore_url_error:
         logging.error('Cannot connect to devserver (%s)', e)
         raise DevServerConnectionError(e)

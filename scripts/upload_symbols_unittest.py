@@ -16,9 +16,9 @@ import socket
 import SocketServer
 import sys
 import time
-import urllib2
 
 import mock
+from six.moves import urllib
 
 # We specifically set up a local server to connect to, so make sure we
 # delete any proxy settings that might screw that up.  We also need to
@@ -69,7 +69,7 @@ STACK CFI 1234
 
   def setUp(self):
     # Make certain we don't use the network.
-    self.urlopen_mock = self.PatchObject(urllib2, 'urlopen')
+    self.urlopen_mock = self.PatchObject(urllib.request, 'urlopen')
     self.request_mock = self.PatchObject(upload_symbols, 'ExecRequest',
                                          return_value={'uploadUrl':
                                                        'testurl',
@@ -465,7 +465,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
 
   def testPerformSymbolsFileUploadFailure(self):
     """All network requests fail."""
-    self.request_mock.side_effect = urllib2.URLError('network failure')
+    self.request_mock.side_effect = IOError('network failure')
     symbols = [self.sym_initial]
 
     result = upload_symbols.PerformSymbolsFileUpload(
@@ -477,7 +477,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
 
   def testPerformSymbolsFileUploadTransisentFailure(self):
     """We fail once, then succeed."""
-    self.urlopen_mock.side_effect = (urllib2.URLError('network failure'), None)
+    self.urlopen_mock.side_effect = (IOError('network failure'), None)
     symbols = [self.sym_initial]
 
     result = upload_symbols.PerformSymbolsFileUpload(
@@ -531,7 +531,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     # Mock out UploadSymbolFile and fail for fail.sym files.
     def failSome(_url, symbol, _api_key):
       if symbol.file_name == fail_file:
-        raise urllib2.URLError('network failure')
+        raise IOError('network failure')
 
     upload_mock = self.PatchObject(upload_symbols, 'UploadSymbolFile',
                                    side_effect=failSome)
@@ -608,7 +608,7 @@ class UploadSymbolsTest(SymbolsTestBase):
 
     def failSome(_url, symbol, _api_key):
       if symbol.file_name == fail.file_name:
-        raise urllib2.URLError('network failure')
+        raise IOError('network failure')
 
     # Mock out UploadSymbolFile so it's easy to see which file to fail for.
     upload_mock = self.PatchObject(upload_symbols, 'UploadSymbolFile',
