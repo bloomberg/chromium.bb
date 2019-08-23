@@ -17,18 +17,8 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
-#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
-namespace WTF {
-
-template <>
-struct CrossThreadCopier<blink::WebApplyConstraintsRequest>
-    : public CrossThreadCopierPassThrough<blink::WebApplyConstraintsRequest> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
-}  // namespace WTF
 
 namespace blink {
 namespace {
@@ -314,39 +304,35 @@ bool ApplyConstraintsProcessor::AbortIfVideoRequestStateInvalid() {
 }
 
 void ApplyConstraintsProcessor::ApplyConstraintsSucceeded() {
-  PostCrossThreadTask(
-      *task_runner_.get(), FROM_HERE,
-      CrossThreadBindOnce(
-          &ApplyConstraintsProcessor::CleanupRequest,
-          weak_factory_.GetWeakPtr(),
-          CrossThreadBindOnce(&RequestSucceeded, current_request_)));
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  task_runner_->PostTask(
+      FROM_HERE, WTF::Bind(&ApplyConstraintsProcessor::CleanupRequest,
+                           weak_factory_.GetWeakPtr(),
+                           WTF::Bind(&RequestSucceeded, current_request_)));
 }
 
 void ApplyConstraintsProcessor::ApplyConstraintsFailed(
     const char* failed_constraint_name) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(
-      *task_runner_.get(), FROM_HERE,
-      CrossThreadBindOnce(
-          &ApplyConstraintsProcessor::CleanupRequest,
-          weak_factory_.GetWeakPtr(),
-          CrossThreadBindOnce(&RequestFailed, current_request_,
-                              String(failed_constraint_name),
-                              String("Cannot satisfy constraints"))));
+  task_runner_->PostTask(
+      FROM_HERE, WTF::Bind(&ApplyConstraintsProcessor::CleanupRequest,
+                           weak_factory_.GetWeakPtr(),
+                           WTF::Bind(&RequestFailed, current_request_,
+                                     String(failed_constraint_name),
+                                     String("Cannot satisfy constraints"))));
 }
 
 void ApplyConstraintsProcessor::CannotApplyConstraints(const String& message) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(
-      *task_runner_.get(), FROM_HERE,
-      CrossThreadBindOnce(&ApplyConstraintsProcessor::CleanupRequest,
-                          weak_factory_.GetWeakPtr(),
-                          CrossThreadBindOnce(&RequestFailed, current_request_,
-                                              String(), String(message))));
+  task_runner_->PostTask(
+      FROM_HERE, WTF::Bind(&ApplyConstraintsProcessor::CleanupRequest,
+                           weak_factory_.GetWeakPtr(),
+                           WTF::Bind(&RequestFailed, current_request_, String(),
+                                     message)));
 }
 
 void ApplyConstraintsProcessor::CleanupRequest(
-    CrossThreadOnceClosure web_request_callback) {
+    base::OnceClosure web_request_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_request_.IsNull());
   DCHECK(request_completed_cb_);

@@ -75,7 +75,7 @@ class MODULES_EXPORT ApplyConstraintsProcessor
   void ApplyConstraintsSucceeded();
   void ApplyConstraintsFailed(const char* failed_constraint_name);
   void CannotApplyConstraints(const String& message);
-  void CleanupRequest(CrossThreadOnceClosure web_request_callback);
+  void CleanupRequest(base::OnceClosure web_request_callback);
   const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();
 
