@@ -932,8 +932,6 @@ component("ash") {
     "system/tray/hover_highlight_view.h",
     "system/tray/interacted_by_tap_recorder.cc",
     "system/tray/interacted_by_tap_recorder.h",
-    "system/tray/label_tray_view.cc",
-    "system/tray/label_tray_view.h",
     "system/tray/size_range_layout.cc",
     "system/tray/size_range_layout.h",
     "system/tray/system_menu_button.cc",

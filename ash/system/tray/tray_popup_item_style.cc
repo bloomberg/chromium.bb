@@ -95,10 +95,6 @@ void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
                                                gfx::Font::NORMAL,
                                                gfx::Font::Weight::MEDIUM));
       break;
-    case FontStyle::DEFAULT_VIEW_LABEL:
-      label->SetFontList(base_font_list.Derive(1, gfx::Font::NORMAL,
-                                               gfx::Font::Weight::NORMAL));
-      break;
     case FontStyle::SUB_HEADER:
       label->SetFontList(base_font_list.Derive(use_unified_theme_ ? 4 : 1,
                                                gfx::Font::NORMAL,
