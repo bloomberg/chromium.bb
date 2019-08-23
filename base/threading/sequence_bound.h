@@ -154,28 +154,6 @@ class SequenceBound {
     return *this;
   }
 
-  // Move everything from |other|, doing pointer adjustment as needed.
-  // This method is marked as NO_SANITIZE since (a) it might run before the
-  // posted ctor runs on |impl_task_runner_|, and (b) implicit conversions to
-  // non-virtual base classes are allowed before construction by the standard.
-  // See http://eel.is/c++draft/basic.life#6 for more information.
-  template <typename From>
-  void NO_SANITIZE("cfi-unrelated-cast") MoveRecordFrom(From&& other) {
-    // |other| might be is_null(), but that's okay.
-    impl_task_runner_ = std::move(other.impl_task_runner_);
-
-    // Note that static_cast<> isn't, in general, safe, since |other| might not
-    // be constructed yet.  Implicit conversion is supported, as long as it
-    // doesn't convert to a virtual base.  Of course, it allows only upcasts.
-    t_ = other.t_;
-
-    // The original storage is kept unmodified, so we can free it later.
-    storage_ = other.storage_;
-
-    other.storage_ = nullptr;
-    other.t_ = nullptr;
-  }
-
   // Post a call to |method| to |impl_task_runner_|.
   template <typename... MethodArgs, typename... Args>
   void Post(const base::Location& from_here,
@@ -219,6 +197,28 @@ class SequenceBound {
   explicit operator bool() const { return !is_null(); }
 
  private:
+  // Move everything from |other|, doing pointer adjustment as needed.
+  // This method is marked as NO_SANITIZE since (a) it might run before the
+  // posted ctor runs on |impl_task_runner_|, and (b) implicit conversions to
+  // non-virtual base classes are allowed before construction by the standard.
+  // See http://eel.is/c++draft/basic.life#6 for more information.
+  template <typename From>
+  void NO_SANITIZE("cfi-unrelated-cast") MoveRecordFrom(From&& other) {
+    // |other| might be is_null(), but that's okay.
+    impl_task_runner_ = std::move(other.impl_task_runner_);
+
+    // Note that static_cast<> isn't, in general, safe, since |other| might not
+    // be constructed yet.  Implicit conversion is supported, as long as it
+    // doesn't convert to a virtual base.  Of course, it allows only upcasts.
+    t_ = other.t_;
+
+    // The original storage is kept unmodified, so we can free it later.
+    storage_ = other.storage_;
+
+    other.storage_ = nullptr;
+    other.t_ = nullptr;
+  }
+
   // Pointer to the object,  Pointer may be modified on the owning thread.
   T* t_ = nullptr;
 
