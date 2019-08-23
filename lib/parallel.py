@@ -15,13 +15,6 @@ import functools
 import multiprocessing
 from multiprocessing.managers import SyncManager
 import os
-try:
-  import Queue
-except ImportError:
-  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
-  # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=import-error
-  import queue as Queue
 import signal
 import sys
 import tempfile
@@ -29,6 +22,7 @@ import time
 import traceback
 
 import six
+from six.moves import queue as Queue
 
 from chromite.lib import failures_lib
 from chromite.lib import results_lib

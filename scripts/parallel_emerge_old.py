@@ -23,13 +23,6 @@ import gc
 import heapq
 import multiprocessing
 import os
-try:
-  import Queue
-except ImportError:
-  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
-  # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=import-error
-  import queue as Queue
 import signal
 import subprocess
 import sys
@@ -37,6 +30,8 @@ import tempfile
 import threading
 import time
 import traceback
+
+from six.moves import queue as Queue
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_event

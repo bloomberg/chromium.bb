@@ -16,16 +16,10 @@ import sys
 import tempfile
 import time
 import unittest
-try:
-  import Queue
-except ImportError:
-  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
-  # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=import-error
-  import queue as Queue
 
 import mock
 from six.moves import cPickle as pickle
+from six.moves import queue as Queue
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib

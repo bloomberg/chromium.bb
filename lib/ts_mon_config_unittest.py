@@ -9,7 +9,8 @@ from __future__ import print_function
 
 import itertools
 import multiprocessing
-import Queue
+
+from six.moves import queue as Queue
 
 from chromite.lib import cros_test_lib
 from chromite.lib import metrics

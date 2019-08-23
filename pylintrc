@@ -358,6 +358,7 @@ max-parents=10
 # exceptions: Dropped in Python 3.
 # mox: Use the 'mock' module instead.
 # optparse: Use the 'argparse' module instead.
+# Queue: Use the 'six.moves.queue' module instead (or 'queue' in Python 3).
 # regsub: Use the 're' module instead.
 # rexec: Dropped in Python 3.
 # TERMIOS: Use the 'termios' module instead.
@@ -367,6 +368,7 @@ deprecated-modules=
     exceptions,
     mox,
     optparse,
+    Queue,
     regsub,
     rexec,
     TERMIOS,

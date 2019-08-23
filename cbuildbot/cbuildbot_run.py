@@ -27,14 +27,9 @@ import functools
 import os
 import pickle
 import re
-try:
-  import Queue
-except ImportError:
-  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
-  # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=import-error
-  import queue as Queue
 import types
+
+from six.moves import queue as Queue
 
 from chromite.cbuildbot import archive_lib
 from chromite.lib import buildstore

@@ -16,11 +16,11 @@ from __future__ import print_function
 import collections
 import contextlib
 import datetime
-import Queue
 import ssl
 from functools import wraps
 
 import six
+from six.moves import queue as Queue
 
 from chromite.lib import cros_logging as logging
 

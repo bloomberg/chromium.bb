@@ -14,7 +14,8 @@ import os
 import socket
 import signal
 import time
-import Queue
+
+from six.moves import queue as Queue
 
 import six
 
