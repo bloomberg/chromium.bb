@@ -305,6 +305,11 @@ void SetIndividualRuntimeFeatures(
   if (network::features::ShouldEnableOutOfBlinkCors())
     WebRuntimeFeatures::EnableOutOfBlinkCors(true);
 
+  if (base::FeatureList::IsEnabled(
+          network::features::kBlockNonSecureExternalRequests)) {
+    WebRuntimeFeatures::EnableFeatureFromString("AddressSpace", true);
+  }
+
   WebRuntimeFeatures::EnableMediaCastOverlayButton(
       base::FeatureList::IsEnabled(media::kMediaCastOverlayButton));
 
