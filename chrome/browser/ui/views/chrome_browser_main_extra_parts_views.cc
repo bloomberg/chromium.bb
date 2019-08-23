@@ -81,7 +81,7 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   ui::MaterialDesignController::Initialize();
 
 #if defined(USE_AURA)
-  wm_state_.reset(new wm::WMState);
+  wm_state_ = std::make_unique<wm::WMState>();
 #endif
 
   // TODO(pkasting): Try to move ViewsDelegate creation here as well;

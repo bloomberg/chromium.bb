@@ -96,12 +96,12 @@ class BrowserTabStripController::TabContextMenuContents
  public:
   TabContextMenuContents(Tab* tab, BrowserTabStripController* controller)
       : tab_(tab), controller_(controller) {
-    model_.reset(new TabMenuModel(
+    model_ = std::make_unique<TabMenuModel>(
         this, controller->model_,
-        controller->tabstrip_->GetModelIndexOfTab(tab)));
-    menu_runner_.reset(new views::MenuRunner(
+        controller->tabstrip_->GetModelIndexOfTab(tab));
+    menu_runner_ = std::make_unique<views::MenuRunner>(
         model_.get(),
-        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
+        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
   }
 
   void Cancel() { controller_ = nullptr; }
@@ -297,7 +297,7 @@ void BrowserTabStripController::ShowContextMenuForTab(
     Tab* tab,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
-  context_menu_contents_.reset(new TabContextMenuContents(tab, this));
+  context_menu_contents_ = std::make_unique<TabContextMenuContents>(tab, this);
   context_menu_contents_->RunMenuAt(p, source_type);
 }
 

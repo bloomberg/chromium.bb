@@ -368,7 +368,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
       move_behavior = TabDragController::MOVE_VISIBLE_TABS;
     }
 
-    drag_controller_.reset(new TabDragController);
+    drag_controller_ = std::make_unique<TabDragController>();
     drag_controller_->Init(this, tab, tabs, gfx::Point(x, y), event.x(),
                            std::move(selection_model), move_behavior,
                            EventSourceFromEvent(event));
@@ -2893,9 +2893,9 @@ void TabStrip::SwapLayoutIfNecessary() {
 
   if (needs_touch) {
     const int overlap = TabStyle::GetTabOverlap();
-    touch_layout_.reset(new StackedTabStripLayout(
+    touch_layout_ = std::make_unique<StackedTabStripLayout>(
         gfx::Size(GetStackableTabWidth(), GetLayoutConstant(TAB_HEIGHT)),
-        overlap, kStackedPadding, kMaxStackedCount, &tabs_));
+        overlap, kStackedPadding, kMaxStackedCount, &tabs_);
     touch_layout_->SetWidth(GetTabAreaWidth());
     // This has to be after SetWidth() as SetWidth() is going to reset the
     // bounds of the pinned tabs (since StackedTabStripLayout doesn't yet know

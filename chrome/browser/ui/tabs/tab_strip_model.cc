@@ -309,7 +309,7 @@ class TabStripModel::GroupData {
 TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
     : delegate_(delegate), profile_(profile) {
   DCHECK(delegate_);
-  order_controller_.reset(new TabStripModelOrderController(this));
+  order_controller_ = std::make_unique<TabStripModelOrderController>(this);
 
   constexpr base::TimeDelta kTabScrubbingHistogramIntervalTime =
       base::TimeDelta::FromSeconds(30);

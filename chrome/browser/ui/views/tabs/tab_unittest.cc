@@ -356,7 +356,7 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
     parent_.AddChildView(tab_strip_);
     parent_.set_owned_by_client();
 
-    widget_.reset(new views::Widget);
+    widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams init_params =
         CreateParams(views::Widget::InitParams::TYPE_POPUP);
     init_params.ownership =

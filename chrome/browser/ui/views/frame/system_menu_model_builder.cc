@@ -123,7 +123,7 @@ void SystemMenuModelBuilder::BuildSystemMenuForAppOrPopupWindow(
     model->AddSeparator(ui::NORMAL_SEPARATOR);
     model->AddItemWithStringId(IDC_FIND, IDS_FIND);
     model->AddItemWithStringId(IDC_PRINT, IDS_PRINT);
-    zoom_menu_contents_.reset(new ZoomMenuModel(&menu_delegate_));
+    zoom_menu_contents_ = std::make_unique<ZoomMenuModel>(&menu_delegate_);
     model->AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU,
                                   zoom_menu_contents_.get());
   }
