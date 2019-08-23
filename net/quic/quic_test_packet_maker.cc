@@ -353,12 +353,12 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
   }
 
   if (quic::VersionUsesQpack(version_.transport_version)) {
-    // A stream frame containing stream type will be written on the control
-    // stream first.
-    std::string type(1, 0x00);
-    std::string settings_data = GenerateHttp3SettingsData();
-
     if (stream_offsets_[2] == 0) {
+      // A stream frame containing stream type will be written on the control
+      // stream first.
+      std::string type(1, 0x00);
+      std::string settings_data = GenerateHttp3SettingsData();
+
       frames.push_back(GenerateNextStreamFrame(2, false, type));
       frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
@@ -764,20 +764,17 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     const std::vector<std::string>& data_writes) {
   InitializeHeader(packet_number, should_include_version);
   if (quic::VersionUsesQpack(version_.transport_version)) {
-    // A stream frame containing stream type will be written on the control
-    // stream first.
-    std::string type(1, 0x00);
-
-    std::string settings_data = GenerateHttp3SettingsData();
-
     quic::QuicFrames frames;
     if (stream_offsets_[2] == 0) {
+      // A stream frame containing stream type will be written on the control
+      // stream first.
+      std::string type(1, 0x00);
+      std::string settings_data = GenerateHttp3SettingsData();
       frames.push_back(GenerateNextStreamFrame(2, false, type));
       frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
     std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-
     frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
     // STREAM frames for HEADERS.
@@ -833,20 +830,17 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
   InitializeHeader(packet_number, should_include_version);
 
   if (quic::VersionUsesQpack(version_.transport_version)) {
-    // A stream frame containing stream type will be written on the control
-    // stream first.
-    std::string type(1, 0x00);
-
-    std::string settings_data = GenerateHttp3SettingsData();
-
     quic::QuicFrames frames;
     if (stream_offsets_[2] == 0) {
+      // A stream frame containing stream type will be written on the control
+      // stream first.
+      std::string type(1, 0x00);
+      std::string settings_data = GenerateHttp3SettingsData();
       frames.push_back(GenerateNextStreamFrame(2, false, type));
       frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
     std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-
     frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
     std::vector<std::string> data = QpackEncodeHeaders(
@@ -881,20 +875,18 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     size_t* spdy_headers_frame_length,
     quic::QuicRstStreamErrorCode error_code) {
   if (quic::VersionUsesQpack(version_.transport_version)) {
-    // A stream frame containing stream type will be written on the control
-    // stream first.
-    std::string type(1, 0x00);
-
-    std::string settings_data = GenerateHttp3SettingsData();
-
     quic::QuicFrames frames;
     if (stream_offsets_[2] == 0) {
+      // A stream frame containing stream type will be written on the control
+      // stream first.
+      std::string type(1, 0x00);
+      std::string settings_data = GenerateHttp3SettingsData();
+
       frames.push_back(GenerateNextStreamFrame(2, false, type));
       frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
     std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-
     frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
     std::vector<std::string> data = QpackEncodeHeaders(
@@ -1157,6 +1149,7 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
   if (save_packet_frames_) {
     saved_frames_[header.packet_number] = frames_copy;
   } else {
+    saved_stream_data_.clear();
     DeleteFrames(&frames_copy);
   }
   return encrypted.Clone();
@@ -1420,10 +1413,10 @@ quic::QuicFrame QuicTestPacketMaker::GenerateNextStreamFrame(
     quic::QuicStreamId stream_id,
     bool fin,
     quic::QuicStringPiece data) {
-  if (save_packet_frames_) {
-    saved_stream_data_.push_back(std::make_unique<std::string>(data));
-    data = *saved_stream_data_.back();
-  }
+  // Save the stream data so that callers can use temporary objects for data.
+  saved_stream_data_.push_back(std::make_unique<std::string>(data));
+  data = *saved_stream_data_.back();
+
   quic::QuicStreamFrame frame(stream_id, fin, stream_offsets_[stream_id], data);
   stream_offsets_[stream_id] += data.length();
   DVLOG(1) << "Adding frame: " << frame;
