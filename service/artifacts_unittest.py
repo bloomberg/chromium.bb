@@ -37,9 +37,9 @@ class BundleAutotestFilesTest(cros_test_lib.MockTempDirTestCase):
     self.archive_dir = os.path.join(self.tempdir, 'archive_base_dir')
 
     sysroot_path = os.path.join(self.tempdir, 'sysroot')
-    sysroot_dne = os.path.join(self.tempdir, 'sysroot_DNE')
-    self.sysroot = sysroot_lib.Sysroot(sysroot_path)
-    self.sysroot_dne = sysroot_lib.Sysroot(sysroot_dne)
+    self.chroot = chroot_lib.Chroot(self.tempdir)
+    self.sysroot = sysroot_lib.Sysroot('sysroot')
+    self.sysroot_dne = sysroot_lib.Sysroot('sysroot_DNE')
 
     # Make sure we have the valid paths.
     osutils.SafeMakedirs(self.output_dir)
@@ -48,21 +48,23 @@ class BundleAutotestFilesTest(cros_test_lib.MockTempDirTestCase):
   def testInvalidOutputDirectory(self):
     """Test invalid output directory."""
     with self.assertRaises(AssertionError):
-      artifacts.BundleAutotestFiles(self.sysroot, None)
+      artifacts.BundleAutotestFiles(self.chroot, self.sysroot, None)
 
   def testInvalidSysroot(self):
     """Test sysroot that does not exist."""
     with self.assertRaises(AssertionError):
-      artifacts.BundleAutotestFiles(self.sysroot_dne, self.output_dir)
+      artifacts.BundleAutotestFiles(self.chroot, self.sysroot_dne,
+                                    self.output_dir)
 
   def testArchiveDirectoryDoesNotExist(self):
     """Test archive directory that does not exist causes error."""
     with self.assertRaises(artifacts.ArchiveBaseDirNotFound):
-      artifacts.BundleAutotestFiles(self.sysroot, self.output_dir)
+      artifacts.BundleAutotestFiles(self.chroot, self.sysroot, self.output_dir)
 
   def testSuccess(self):
     """Test a successful call handling."""
-    ab_path = os.path.join(self.sysroot.path, constants.AUTOTEST_BUILD_PATH)
+    ab_path = os.path.join(self.tempdir, self.sysroot.path,
+                           constants.AUTOTEST_BUILD_PATH)
     osutils.SafeMakedirs(ab_path)
 
     # Makes all of the individual calls to build out each of the tarballs work
@@ -70,7 +72,8 @@ class BundleAutotestFilesTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(autotest_util.AutotestTarballBuilder, '_BuildTarball',
                      side_effect=lambda _, path, **kwargs: osutils.Touch(path))
 
-    result = artifacts.BundleAutotestFiles(self.sysroot, self.output_dir)
+    result = artifacts.BundleAutotestFiles(self.chroot, self.sysroot,
+                                           self.output_dir)
 
     for archive in result.values():
       self.assertStartsWith(archive, self.output_dir)

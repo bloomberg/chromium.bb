@@ -92,10 +92,11 @@ def BuildFirmwareArchive(chroot, sysroot, output_directory):
   return archive_file
 
 
-def BundleAutotestFiles(sysroot, output_directory):
+def BundleAutotestFiles(chroot, sysroot, output_directory):
   """Create the Autotest Hardware Test archives.
 
   Args:
+    chroot (chroot_lib.Chroot): The chroot containing the sysroot.
     sysroot (sysroot_lib.Sysroot): The sysroot whose artifacts are being
       archived.
     output_directory (str): The path were the completed archives should be put.
@@ -103,12 +104,13 @@ def BundleAutotestFiles(sysroot, output_directory):
   Returns:
     dict - The paths of the files created in |output_directory| by their type.
   """
-  assert sysroot.Exists()
+  assert sysroot.Exists(chroot=chroot)
   assert output_directory
 
   # archive_basedir is the base directory where the archive commands are run.
   # We want the folder containing the board's autotest folder.
-  archive_basedir = os.path.join(sysroot.path, constants.AUTOTEST_BUILD_PATH)
+  archive_basedir = chroot.full_path(sysroot.path,
+                                     constants.AUTOTEST_BUILD_PATH)
   archive_basedir = os.path.dirname(archive_basedir)
 
   if not os.path.exists(archive_basedir):

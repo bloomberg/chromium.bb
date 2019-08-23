@@ -110,38 +110,29 @@ def BundleAutotestFiles(input_proto, output_proto, config):
   """
   output_dir = input_proto.output_dir
   target = input_proto.build_target.name
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+
   if target:
-    # Legacy call, build out sysroot path from default source root and the
-    # build target.
-    target = input_proto.build_target.name
-    build_root = constants.SOURCE_ROOT
-    sysroot_path = os.path.join(build_root, constants.DEFAULT_CHROOT_DIR,
-                                'build', target)
-    sysroot = sysroot_lib.Sysroot(sysroot_path)
+    sysroot_path = os.path.join('/build', target)
   else:
     # New style call, use chroot and sysroot.
-    chroot = controller_util.ParseChroot(input_proto.chroot)
-
     sysroot_path = input_proto.sysroot.path
     if not sysroot_path:
       cros_build_lib.Die('sysroot.path is required.')
 
-    # Since we're staying outside the chroot, prepend the chroot path to the
-    # sysroot path so we have a valid full path to the sysroot.
-    sysroot = sysroot_lib.Sysroot(os.path.join(chroot.path,
-                                               sysroot_path.lstrip(os.sep)))
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
 
   # TODO(saklein): Switch to the validate_only decorator when legacy handling
   #   is removed.
   if config.validate_only:
     return controller.RETURN_CODE_VALID_INPUT
 
-  if not sysroot.Exists():
+  if not sysroot.Exists(chroot=chroot):
     cros_build_lib.Die('Sysroot path must exist: %s', sysroot.path)
 
   try:
     # Note that this returns the full path to *multiple* tarballs.
-    archives = artifacts.BundleAutotestFiles(sysroot, output_dir)
+    archives = artifacts.BundleAutotestFiles(chroot, sysroot, output_dir)
   except artifacts.Error as e:
     cros_build_lib.Die(e.message)
 

@@ -76,28 +76,21 @@ class BundleTempDirTestCase(cros_test_lib.MockTempDirTestCase,
     self.output_dir = os.path.join(self.tempdir, 'artifacts')
     osutils.SafeMakedirs(self.output_dir)
 
-    # Old style paths.
-    self.old_sysroot_path = os.path.join(self.tempdir, 'cros', 'chroot',
-                                         'build', 'target')
-    self.old_sysroot = sysroot_lib.Sysroot(self.old_sysroot_path)
-    osutils.SafeMakedirs(self.old_sysroot_path)
-
     # Old style proto.
     self.input_proto = artifacts_pb2.BundleRequest()
     self.input_proto.build_target.name = 'target'
     self.input_proto.output_dir = self.output_dir
     self.output_proto = artifacts_pb2.BundleResponse()
 
-    source_root = os.path.join(self.tempdir, 'cros')
-    self.PatchObject(constants, 'SOURCE_ROOT', new=source_root)
+    self.chroot_path = os.path.join(self.tempdir, 'chroot')
+    self.PatchObject(constants, 'DEFAULT_CHROOT_PATH', new=self.chroot_path)
 
     # New style paths.
-    self.chroot_path = os.path.join(self.tempdir, 'cros', 'chroot')
     self.sysroot_path = '/build/target'
-    self.full_sysroot_path = os.path.join(self.chroot_path,
-                                          self.sysroot_path.lstrip(os.sep))
-    self.sysroot = sysroot_lib.Sysroot(self.full_sysroot_path)
-    osutils.SafeMakedirs(self.full_sysroot_path)
+    self.sysroot = sysroot_lib.Sysroot(self.sysroot_path)
+    full_sysroot_path = os.path.join(self.chroot_path,
+                                     self.sysroot_path.lstrip(os.sep))
+    osutils.SafeMakedirs(full_sysroot_path)
 
     # New style proto.
     self.request = artifacts_pb2.BundleRequest()
@@ -161,15 +154,15 @@ class BundleAutotestFilesTest(BundleTempDirTestCase):
                              return_value=files)
 
     sysroot_patch = self.PatchObject(sysroot_lib, 'Sysroot',
-                                     return_value=self.old_sysroot)
+                                     return_value=self.sysroot)
     artifacts.BundleAutotestFiles(self.input_proto, self.output_proto,
                                   self.api_config)
 
     # Verify the sysroot is being built out correctly.
-    sysroot_patch.assert_called_with(self.old_sysroot_path)
+    sysroot_patch.assert_called_with(self.sysroot_path)
 
     # Verify the arguments are being passed through.
-    patch.assert_called_with(self.old_sysroot, self.output_dir)
+    patch.assert_called_with(mock.ANY, self.sysroot, self.output_dir)
 
     # Verify the output proto is being populated correctly.
     self.assertTrue(self.output_proto.artifacts)
@@ -190,10 +183,10 @@ class BundleAutotestFilesTest(BundleTempDirTestCase):
     artifacts.BundleAutotestFiles(self.request, self.response, self.api_config)
 
     # Verify the sysroot is being built out correctly.
-    sysroot_patch.assert_called_with(self.full_sysroot_path)
+    sysroot_patch.assert_called_with(self.sysroot_path)
 
     # Verify the arguments are being passed through.
-    patch.assert_called_with(self.sysroot, self.output_dir)
+    patch.assert_called_with(mock.ANY, self.sysroot, self.output_dir)
 
     # Verify the output proto is being populated correctly.
     self.assertTrue(self.response.artifacts)
