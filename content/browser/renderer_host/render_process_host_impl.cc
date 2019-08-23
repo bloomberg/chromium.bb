@@ -2435,6 +2435,30 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     const net::NetworkIsolationKey& network_isolation_key,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
     network::mojom::URLLoaderFactoryRequest request) {
+  CreateURLLoaderFactoryInternal(
+      origin, embedder_policy, preferences, network_isolation_key,
+      std::move(header_client), std::move(request), false /* is_trusted */);
+}
+
+void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
+    const base::Optional<url::Origin>& origin,
+    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+    const WebPreferences* preferences,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    network::mojom::URLLoaderFactoryRequest request) {
+  CreateURLLoaderFactoryInternal(origin, embedder_policy, preferences,
+                                 base::nullopt, std::move(header_client),
+                                 std::move(request), true /* is_trusted */);
+}
+
+void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
+    const base::Optional<url::Origin>& origin,
+    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+    const WebPreferences* preferences,
+    base::Optional<net::NetworkIsolationKey> network_isolation_key,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    network::mojom::URLLoaderFactoryRequest request,
+    bool is_trusted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // "chrome-guest://..." is never used as a |request_initiator|.  Therefore
@@ -2461,7 +2485,13 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     params->disable_web_security =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableWebSecurity);
-    params->network_isolation_key = network_isolation_key;
+    // If |network_isolation_key| does not have a value, we do not initialize
+    // the URLLoaderFactory with a NetworkIsolationKey.
+    if (network_isolation_key)
+      params->network_isolation_key = network_isolation_key.value();
+
+    params->is_trusted = is_trusted;
+
     params->header_client = std::move(header_client);
     params->cross_origin_embedder_policy = embedder_policy;
 

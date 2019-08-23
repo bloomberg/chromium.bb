@@ -155,10 +155,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestRedirectMode, RedirectNotFollowed) {
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
 
-// TODO(domfarolino): Re-enable this when the implementation for cross-origin
-// main resource prefetches lands. See crbug.com/939317.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
-                       DISABLED_CrossOriginDocumentReusedAsNavigation) {
+                       CrossOriginDocumentReusedAsNavigation) {
   const char* prefetch_path = "/prefetch.html";
   const char* target_path = "/target.html";
   RegisterResponse(

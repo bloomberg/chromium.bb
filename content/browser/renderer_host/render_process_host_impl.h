@@ -261,6 +261,15 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
 
+  // Similar to the CreateURLLoaderFactory RenderProcessHost override, but this
+  // creates a trusted URLLoaderFactory with no default NetworkIsolationKey.
+  void CreateTrustedURLLoaderFactory(
+      const base::Optional<url::Origin>& origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+      const WebPreferences* preferences,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      network::mojom::URLLoaderFactoryRequest request);
+
   // Call this function when it is evident that the child process is actively
   // performing some operation, for example if we just received an IPC message.
   void mark_child_process_activity_time() {
@@ -690,6 +699,19 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // context (e.g. a frame, a service worker or any other kind of worker).
   void CreateURLLoaderFactoryForRendererProcess(
       network::mojom::URLLoaderFactoryRequest request);
+
+  // Creates a URLLoaderFactory whose NetworkIsolationKey is set if
+  // |network_isoation_key| has a value, and whose trust is given by
+  // |is_trusted|. Only called by CreateURLLoaderFactory and
+  // CreateTrustedURLLoaderFactory.
+  void CreateURLLoaderFactoryInternal(
+      const base::Optional<url::Origin>& origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+      const WebPreferences* preferences,
+      base::Optional<net::NetworkIsolationKey> network_isolation_key,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      network::mojom::URLLoaderFactoryRequest request,
+      bool is_trusted);
 
   // Handles incoming requests to bind a process-scoped receiver from the
   // renderer process. This is posted to the main thread by IOThreadHostImpl
