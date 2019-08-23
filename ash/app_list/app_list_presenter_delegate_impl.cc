@@ -17,7 +17,6 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_util.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
@@ -94,8 +93,6 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
   view->InitView(IsTabletMode(),
                  controller_->GetContainerForDisplayId(display_id));
 
-  SnapAppListBoundsToDisplayEdge();
-
   // By setting us as DnD recipient, the app list knows that we can
   // handle items.
   Shelf* shelf = Shelf::ForWindow(Shell::GetRootWindowForDisplayId(display_id));
@@ -122,6 +119,8 @@ void AppListPresenterDelegateImpl::ShowForDisplay(int64_t display_id) {
   view_->set_shelf_has_rounded_corners(
       IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
   view_->Show(IsSideShelf(shelf), IsTabletMode());
+
+  SnapAppListBoundsToDisplayEdge();
 
   Shell::Get()->AddPreTargetHandler(this);
   controller_->ViewShown(display_id);
@@ -312,7 +311,7 @@ void AppListPresenterDelegateImpl::SnapAppListBoundsToDisplayEdge() {
   CHECK(view_ && view_->GetWidget());
   aura::Window* window = view_->GetWidget()->GetNativeView();
   const gfx::Rect bounds =
-      ash::screen_util::SnapBoundsToDisplayEdge(window->bounds(), window);
+      controller_->SnapBoundsToDisplayEdge(window->bounds());
   window->SetBounds(bounds);
 }
 
