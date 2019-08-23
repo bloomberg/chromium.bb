@@ -4888,6 +4888,34 @@ if (enable_java_templates) {
         public_deps += [ ":$_size_info_target" ]
       }
     }
+
+    _apks_path = "$root_build_dir/apks/$_bundle_name.apks"
+    action_with_pydeps("${target_name}_apks") {
+      script = "//build/android/gyp/create_app_bundle_apks.py"
+      inputs = [
+        _bundle_path,
+      ]
+      outputs = [
+        _apks_path,
+      ]
+      args = [
+        "--bundle",
+        _rebased_bundle_path,
+        "--output",
+        rebase_path(_apks_path, root_build_dir),
+        "--aapt2-path",
+        rebase_path(android_sdk_tools_bundle_aapt2, root_build_dir),
+        "--keystore-path",
+        rebase_path(android_keystore_path, root_build_dir),
+        "--keystore-name",
+        android_keystore_name,
+        "--keystore-password",
+        android_keystore_password,
+      ]
+      deps = [
+        ":$_bundle_target_name",
+      ]
+    }
   }
 
   # Create an .apks file from an .aab file. The .apks file will contain the
@@ -4911,7 +4939,7 @@ if (enable_java_templates) {
                                "deps",
                                "testonly",
                              ])
-      script = "//build/android/gyp/create_app_bundle_minimal_apks.py"
+      script = "//build/android/gyp/create_app_bundle_apks.py"
       _dir = get_path_info(invoker.bundle_path, "dir")
       _name = get_path_info(invoker.bundle_path, "name")
       _output_path = "$_dir/$_name.minimal.apks"
@@ -4934,6 +4962,7 @@ if (enable_java_templates) {
         android_keystore_name,
         "--keystore-password",
         android_keystore_password,
+        "--minimal",
       ]
     }
   }

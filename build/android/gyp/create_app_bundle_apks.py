@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Creates an .apks from an .aab with only English strings."""
+"""Creates an .apks from an .aab."""
 
 import argparse
 import os
@@ -28,6 +28,10 @@ def main():
       '--keystore-password', required=True, help='Keystore password.')
   parser.add_argument(
       '--keystore-name', required=True, help='Key name within keystore')
+  parser.add_argument(
+      '--minimal',
+      action='store_true',
+      help='Create APKs archive with minimal language support.')
 
   args = parser.parse_args()
 
@@ -38,7 +42,7 @@ def main():
       args.keystore_path,
       args.keystore_password,
       args.keystore_name,
-      minimal=True,
+      minimal=args.minimal,
       check_for_noop=False)
 
 
