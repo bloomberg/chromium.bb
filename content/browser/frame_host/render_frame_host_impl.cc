@@ -834,6 +834,10 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       frame_host_associated_binding_(this),
       waiting_for_init_(renderer_initiated_creation),
       has_focused_editable_element_(false),
+      push_messaging_manager_(
+          nullptr,
+          base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
+              {ServiceWorkerContext::GetCoreThreadId()}))),
       active_sandbox_flags_(blink::WebSandboxFlags::kNone),
       document_scoped_interface_provider_binding_(this),
       document_interface_broker_content_binding_(this),
@@ -6356,10 +6360,11 @@ void RenderFrameHostImpl::GetPushMessaging(
             ->GetServiceWorkerContext()));
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&PushMessagingManager::AddPushMessagingReceiver,
-                                push_messaging_manager_->AsWeakPtr(),
-                                std::move(receiver)));
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(&PushMessagingManager::AddPushMessagingReceiver,
+                     push_messaging_manager_->AsWeakPtr(),
+                     std::move(receiver)));
 }
 
 void RenderFrameHostImpl::GetVirtualAuthenticatorManager(

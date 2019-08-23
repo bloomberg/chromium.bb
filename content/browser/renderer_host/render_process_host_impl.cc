@@ -1529,6 +1529,10 @@ RenderProcessHostImpl::RenderProcessHostImpl(
               storage_partition_impl_->GetIndexedDBContext()->TaskRunner())),
       channel_connected_(false),
       sent_render_process_ready_(false),
+      push_messaging_manager_(
+          nullptr,
+          base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
+              {ServiceWorkerContext::GetCoreThreadId()}))),
       renderer_host_binding_(this),
       instance_weak_factory_(base::in_place, this),
       frame_sink_provider_(id_),
@@ -1551,11 +1555,16 @@ RenderProcessHostImpl::RenderProcessHostImpl(
                                   storage_partition_impl_->GetPath()));
   }
 
-  // This instance of PushMessagingManager is only used from clients bound to
-  // service workers (i.e. PushProvider), since frame-bound clients will rely on
-  // DocumentInterfaceBroker instead. Therefore, pass an invalid frame ID here.
+  // This instance of PushMessagingManager is only used from clients
+  // bound to service workers (i.e. PushProvider), since frame-bound
+  // clients will rely on DocumentInterfaceBroker instead. Therefore,
+  // pass an invalid frame ID here.
+  //
+  // Constructing the manager must occur after RegisterHost(), since
+  // PushMessagingManager::Core looks up |this| using the process id.
   push_messaging_manager_.reset(new PushMessagingManager(
-      GetID(), /* render_frame_id= */ ChildProcessHost::kInvalidUniqueID,
+      GetID(),
+      /* render_frame_id= */ ChildProcessHost::kInvalidUniqueID,
       storage_partition_impl_->GetServiceWorkerContext()));
 
   AddObserver(indexed_db_factory_.get());
@@ -2085,9 +2094,16 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(
       base::BindRepeating(&device::GamepadHapticsManager::Create));
 
-  registry->AddInterface(
-      base::BindRepeating(&PushMessagingManager::BindRequest,
-                          base::Unretained(push_messaging_manager_.get())));
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    AddUIThreadInterface(
+        registry.get(),
+        base::BindRepeating(&PushMessagingManager::BindRequest,
+                            base::Unretained(push_messaging_manager_.get())));
+  } else {
+    registry->AddInterface(
+        base::BindRepeating(&PushMessagingManager::BindRequest,
+                            base::Unretained(push_messaging_manager_.get())));
+  }
 
   file_system_manager_impl_.reset(new FileSystemManagerImpl(
       GetID(), storage_partition_impl_->GetFileSystemContext(),
