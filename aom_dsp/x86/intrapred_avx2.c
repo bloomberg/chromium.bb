@@ -775,7 +775,7 @@ void aom_paeth_predictor_16x8_avx2(uint8_t *dst, ptrdiff_t stride,
   __m128i x = _mm_loadl_epi64((const __m128i *)left);
   const __m256i l = _mm256_inserti128_si256(_mm256_castsi128_si256(x), x, 1);
   const __m256i tl16 = _mm256_set1_epi16((uint16_t)above[-1]);
-  __m256i rep = _mm256_set1_epi16(0x8000);
+  __m256i rep = _mm256_set1_epi16((short)0x8000);
   const __m256i one = _mm256_set1_epi16(1);
   const __m256i top = get_top_vector(above);
 
@@ -799,7 +799,7 @@ void aom_paeth_predictor_16x16_avx2(uint8_t *dst, ptrdiff_t stride,
                                     const uint8_t *above, const uint8_t *left) {
   const __m256i l = get_left_vector(left);
   const __m256i tl16 = _mm256_set1_epi16((uint16_t)above[-1]);
-  __m256i rep = _mm256_set1_epi16(0x8000);
+  __m256i rep = _mm256_set1_epi16((short)0x8000);
   const __m256i one = _mm256_set1_epi16(1);
   const __m256i top = get_top_vector(above);
 
@@ -818,7 +818,7 @@ void aom_paeth_predictor_16x32_avx2(uint8_t *dst, ptrdiff_t stride,
                                     const uint8_t *above, const uint8_t *left) {
   __m256i l = get_left_vector(left);
   const __m256i tl16 = _mm256_set1_epi16((uint16_t)above[-1]);
-  __m256i rep = _mm256_set1_epi16(0x8000);
+  __m256i rep = _mm256_set1_epi16((short)0x8000);
   const __m256i one = _mm256_set1_epi16(1);
   const __m256i top = get_top_vector(above);
 
@@ -833,7 +833,7 @@ void aom_paeth_predictor_16x32_avx2(uint8_t *dst, ptrdiff_t stride,
   }
 
   l = get_left_vector(left + 16);
-  rep = _mm256_set1_epi16(0x8000);
+  rep = _mm256_set1_epi16((short)0x8000);
   for (i = 0; i < 16; ++i) {
     const __m256i l16 = _mm256_shuffle_epi8(l, rep);
     const __m128i row = paeth_16x1_pred(&l16, &top, &tl16);
@@ -852,7 +852,7 @@ void aom_paeth_predictor_16x64_avx2(uint8_t *dst, ptrdiff_t stride,
 
   for (int j = 0; j < 4; ++j) {
     const __m256i l = get_left_vector(left + j * 16);
-    __m256i rep = _mm256_set1_epi16(0x8000);
+    __m256i rep = _mm256_set1_epi16((short)0x8000);
     for (int i = 0; i < 16; ++i) {
       const __m256i l16 = _mm256_shuffle_epi8(l, rep);
       const __m128i row = paeth_16x1_pred(&l16, &top, &tl16);
@@ -885,7 +885,7 @@ void aom_paeth_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
   const __m256i t0 = get_top_vector(above);
   const __m256i t1 = get_top_vector(above + 16);
   const __m256i tl = _mm256_set1_epi16((uint16_t)above[-1]);
-  __m256i rep = _mm256_set1_epi16(0x8000);
+  __m256i rep = _mm256_set1_epi16((short)0x8000);
   const __m256i one = _mm256_set1_epi16(1);
 
   int i;
@@ -907,7 +907,7 @@ void aom_paeth_predictor_32x32_avx2(uint8_t *dst, ptrdiff_t stride,
   const __m256i t0 = get_top_vector(above);
   const __m256i t1 = get_top_vector(above + 16);
   const __m256i tl = _mm256_set1_epi16((uint16_t)above[-1]);
-  __m256i rep = _mm256_set1_epi16(0x8000);
+  __m256i rep = _mm256_set1_epi16((short)0x8000);
   const __m256i one = _mm256_set1_epi16(1);
 
   int i;
@@ -925,7 +925,7 @@ void aom_paeth_predictor_32x32_avx2(uint8_t *dst, ptrdiff_t stride,
   }
 
   l = get_left_vector(left + 16);
-  rep = _mm256_set1_epi16(0x8000);
+  rep = _mm256_set1_epi16((short)0x8000);
   for (i = 0; i < 16; ++i) {
     const __m256i l16 = _mm256_shuffle_epi8(l, rep);
 
@@ -950,7 +950,7 @@ void aom_paeth_predictor_32x64_avx2(uint8_t *dst, ptrdiff_t stride,
   int i, j;
   for (j = 0; j < 4; ++j) {
     const __m256i l = get_left_vector(left + j * 16);
-    __m256i rep = _mm256_set1_epi16(0x8000);
+    __m256i rep = _mm256_set1_epi16((short)0x8000);
     for (i = 0; i < 16; ++i) {
       const __m256i l16 = _mm256_shuffle_epi8(l, rep);
 
@@ -978,7 +978,7 @@ void aom_paeth_predictor_64x32_avx2(uint8_t *dst, ptrdiff_t stride,
   int i, j;
   for (j = 0; j < 2; ++j) {
     const __m256i l = get_left_vector(left + j * 16);
-    __m256i rep = _mm256_set1_epi16(0x8000);
+    __m256i rep = _mm256_set1_epi16((short)0x8000);
     for (i = 0; i < 16; ++i) {
       const __m256i l16 = _mm256_shuffle_epi8(l, rep);
 
@@ -1010,7 +1010,7 @@ void aom_paeth_predictor_64x64_avx2(uint8_t *dst, ptrdiff_t stride,
   int i, j;
   for (j = 0; j < 4; ++j) {
     const __m256i l = get_left_vector(left + j * 16);
-    __m256i rep = _mm256_set1_epi16(0x8000);
+    __m256i rep = _mm256_set1_epi16((short)0x8000);
     for (i = 0; i < 16; ++i) {
       const __m256i l16 = _mm256_shuffle_epi8(l, rep);
 
@@ -1041,7 +1041,7 @@ void aom_paeth_predictor_64x16_avx2(uint8_t *dst, ptrdiff_t stride,
 
   int i;
   const __m256i l = get_left_vector(left);
-  __m256i rep = _mm256_set1_epi16(0x8000);
+  __m256i rep = _mm256_set1_epi16((short)0x8000);
   for (i = 0; i < 16; ++i) {
     const __m256i l16 = _mm256_shuffle_epi8(l, rep);
 
