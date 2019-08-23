@@ -1,13 +1,20 @@
-Licenca:
+Serbian Hunspell dictionaries for Cyrillic alphabet, version 1.0 
 
-Sve datoteke su izdate pod Gnuovom Slabijom opštom javnom licencom (GNU LGPL) kako je objavljuje Zadužbina za slobodni softver (FSF); bilo verzije 2.1 te Licence, bilo (po vašem nahođenju) koje novije verzije. 
+License
 
-Dozvoljena je upotreba ovog izdanja rečnika pod uslovima Moziline javne licence u verziji 1.1 ili novije (MPL) kao i pod uslovima Gnuove Opšte javne licence 
-verzije u verziji 2 ili novije (GNU GPL).
+GPL 2.0/LGPL 2.1/MPL 1.1 tri-license
 
-Dozvoljena je upotreba ovog izdanja rečnika pod uslovima Kriejtiv komons Autorstvo-Deliti pod istim uslovima 3.0 Unported licencom (Creative Commons BY-SA Unported) kako je objavljuje organizacija Kriejtiv komons.
+The contents of this software may be used under the terms of
+the GNU General Public License Version 2 or later (the "GPL"), or
+the GNU Lesser General Public License Version 2.1 or later (the "LGPL",
+see COPYING.LGPL) or (excepting the LGPLed GNU gettext library in the
+intl/ directory) the Mozilla Public License Version 1.1 or later
+(the "MPL", see COPYING.MPL).
 
-Provera pisanja je zasnovana na srpskom GNU aspel rečniku koji je priredio Goran Rakić (http://srpski.org/aspell) uz sve potrebne dozvole za reizdavanje i relicenciranje. Izdanje uključuje ispravke i dopune koje su priredili Ranko Tomić (ranko na cirilica tačka org) i Miloš Komarčević (kmilos na gmail tačka com).
+Software distributed under these licenses is distributed on an "AS IS" basis,
+WITHOUT WARRANTY OF ANY KIND, either express or implied. See the licences
+for the specific language governing rights and limitations under the licenses.
 
-Spisak se sastoji od 222045 reči i oblika.
+2019 © Milutin Smiljanić
 
+Home: https://github.com/msmiljan/korektor
