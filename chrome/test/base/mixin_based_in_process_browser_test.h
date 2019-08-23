@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MIXIN_BASED_IN_PROCESS_BROWSER_TEST_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MIXIN_BASED_IN_PROCESS_BROWSER_TEST_H_
+#ifndef CHROME_TEST_BASE_MIXIN_BASED_IN_PROCESS_BROWSER_TEST_H_
+#define CHROME_TEST_BASE_MIXIN_BASED_IN_PROCESS_BROWSER_TEST_H_
 
 #include <memory>
 #include <vector>
 
 #include "chrome/test/base/in_process_browser_test.h"
-
-namespace chromeos {
 
 //
 // InProcessBrowserTestMixin enables writing isolated test helpers which depend
@@ -151,6 +149,4 @@ class MixinBasedInProcessBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MixinBasedInProcessBrowserTest);
 };
 
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MIXIN_BASED_IN_PROCESS_BROWSER_TEST_H_
+#endif  // CHROME_TEST_BASE_MIXIN_BASED_IN_PROCESS_BROWSER_TEST_H_
