@@ -61,6 +61,16 @@ issues]].
 - ~lou_checkyaml~ test reporting has been improved, thanks to Bert
   Frees. For example it now has a ~--verbose~ option so that printing
   of expected failures can be enabled.
+- Hyphenation tables have been removed from tables except those needed
+  for ~nocross~ rules, thanks to Bert Frees.
+
+  The idea is that the caller (for example ~odt2braille~ or
+  ~liblouisutdml~) should be able to decide for themselves which
+  hyphenation table to use. The case in which a table contains nocross
+  rules is an exception. In this case the hyphenation patterns are a
+  real part of the table. Because it is not recommended to append an
+  own hyphenation table in this case, a ~#-has-nocross~ metadata field
+  was added to indicate that a table contains nocross rules.
 
 ** Deprecation notice
 - The noUndefinedDots mode has been renamed to noUndefined. For
