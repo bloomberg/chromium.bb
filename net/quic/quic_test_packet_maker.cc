@@ -1193,9 +1193,6 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
 
   MaybeAddHttp3SettingsFrames(&frames);
 
-  frames.push_back(GenerateNextStreamFrame(10, false, "\x02"));
-  frames.push_back(GenerateNextStreamFrame(6, false, "\x03"));
-
   InitializeHeader(packet_number, /*should_include_version*/ true);
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
@@ -1535,6 +1532,14 @@ void QuicTestPacketMaker::MaybeAddHttp3SettingsFrames(
 
   for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))
     frames->push_back(frame);
+
+  if (coalesce_http_frames_) {
+    frames->push_back(GenerateNextStreamFrame(stream_id + 4, false, "\x03"));
+    frames->push_back(GenerateNextStreamFrame(stream_id + 8, false, "\x02"));
+  } else {
+    frames->push_back(GenerateNextStreamFrame(stream_id + 8, false, "\x02"));
+    frames->push_back(GenerateNextStreamFrame(stream_id + 4, false, "\x03"));
+  }
 }
 
 }  // namespace test

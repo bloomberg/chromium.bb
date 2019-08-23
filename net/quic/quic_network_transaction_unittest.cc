@@ -160,7 +160,7 @@ std::string GenerateQuicVersionsListForAltSvcHeader(
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllVersionsExcept99();
+      quic::AllSupportedVersions();
   for (const quic::ParsedQuicVersion version : all_supported_versions) {
     // TODO(rch): crbug.com/978745 - Make this work with TLS
     if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
@@ -970,7 +970,7 @@ class QuicNetworkTransactionTest
 
 quic::ParsedQuicVersionVector AllSupportedVersionsWithoutTls() {
   quic::ParsedQuicVersionVector versions;
-  for (auto version : quic::AllVersionsExcept99()) {
+  for (auto version : quic::AllSupportedVersions()) {
     // TODO(rch): crbug.com/978745 - Make this work with TLS
     if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
       versions.push_back(version);
