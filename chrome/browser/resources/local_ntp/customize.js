@@ -402,6 +402,9 @@ customize.clearAttribution = function() {
 };
 
 customize.unselectTile = function() {
+  if (configData.richerPicker) {
+    return;
+  }
   $(customize.IDS.DONE).disabled = true;
   customize.selectedOptions.background = null;
   $(customize.IDS.DONE).tabIndex = -1;
@@ -969,8 +972,7 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     return;
   }
 
-  if (customize.selectedOptions.background &&
-      customize.selectedOptions.background.id == tile.id) {
+  if (tile.parentElement.classList.contains(customize.CLASSES.SELECTED)) {
     // If the clicked tile is already selected do nothing.
     return;
   } else if (customize.selectedOptions.background) {
