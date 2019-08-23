@@ -41,7 +41,7 @@ config("protobuf_warnings") {
 config("using_proto") {
   include_dirs = [
     "src/src",
-    "$root_gen_dir/protoc_out",
+    "$root_gen_dir",
   ]
 }
 

@@ -5,8 +5,10 @@
 #include "cast/common/certificate/cast_cert_validator.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include "cast/common/certificate/cast_cert_validator_internal.h"
+#include "cast/common/certificate/test_helpers.h"
 #include "gtest/gtest.h"
 #include "openssl/pem.h"
 
@@ -29,8 +31,6 @@ enum TrustStoreDependency {
   TRUST_STORE_FROM_TEST_FILE,
 };
 
-CastTrustStore g_cast_trust_store;
-
 // Reads a test chain from |certs_file_name|, and asserts that verifying it as
 // a Cast device certificate yields |expected_result|.
 //
@@ -52,34 +52,14 @@ void RunTest(CastCertError expected_result,
              const DateTime& time,
              TrustStoreDependency trust_store_dependency,
              const std::string& optional_signed_data_file_name) {
-  FILE* fp = fopen(certs_file_name.c_str(), "r");
-  ASSERT_TRUE(fp);
-  std::vector<std::string> certs;
-#define STRCMP_LITERAL(s, l) strncmp(s, l, sizeof(l))
-  for (;;) {
-    char* name;
-    char* header;
-    unsigned char* data;
-    long length;
-    if (PEM_read(fp, &name, &header, &data, &length) == 1) {
-      if (STRCMP_LITERAL(name, "CERTIFICATE") == 0) {
-        certs.emplace_back((char*)data, length);
-      }
-      OPENSSL_free(name);
-      OPENSSL_free(header);
-      OPENSSL_free(data);
-    } else {
-      break;
-    }
-  }
-  fclose(fp);
-
+  std::vector<std::string> certs =
+      testing::ReadCertificatesFromPemFile(certs_file_name);
   TrustStore* trust_store;
   std::unique_ptr<TrustStore> fake_trust_store;
 
   switch (trust_store_dependency) {
     case TRUST_STORE_BUILTIN:
-      trust_store = g_cast_trust_store.trust_store();
+      trust_store = nullptr;
       break;
 
     case TRUST_STORE_FROM_TEST_FILE: {
@@ -141,15 +121,15 @@ void RunTest(CastCertError expected_result,
       unsigned char* data;
       long length;
       if (PEM_read(fp, &name, &header, &data, &length) == 1) {
-        if (STRCMP_LITERAL(name, "MESSAGE") == 0) {
+        if (strcmp(name, "MESSAGE") == 0) {
           ASSERT_FALSE(message.data);
           message.data = data;
           message.length = length;
-        } else if (STRCMP_LITERAL(name, "SIGNATURE SHA1") == 0) {
+        } else if (strcmp(name, "SIGNATURE SHA1") == 0) {
           ASSERT_FALSE(sha1.data);
           sha1.data = data;
           sha1.length = length;
-        } else if (STRCMP_LITERAL(name, "SIGNATURE SHA256") == 0) {
+        } else if (strcmp(name, "SIGNATURE SHA256") == 0) {
           ASSERT_FALSE(sha256.data);
           sha256.data = data;
           sha256.length = length;

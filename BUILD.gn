@@ -10,7 +10,6 @@ import("osp/build/config/services.gni")
 group("gn_all") {
   deps = [
     "cast/common:mdns",
-    "cast/common/certificate/proto",
     "osp",
     "osp/msgs",
     "platform",
