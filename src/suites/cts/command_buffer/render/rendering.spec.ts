@@ -17,7 +17,7 @@ g.test('fullscreen quad', async t => {
     size: { width: 1, height: 1, depth: 1 },
     usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
   });
-  const colorAttachmentView = colorAttachment.createDefaultView();
+  const colorAttachmentView = colorAttachment.createView();
 
   const vertexModule = t.device.createShaderModule({
     code: GLSL(
