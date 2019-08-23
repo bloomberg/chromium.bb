@@ -979,6 +979,7 @@ class SyncManagerTest : public testing::Test,
     args.engine_components_factory.reset(GetFactory());
     args.user_share = &user_share_;
     args.encryption_handler = encryption_handler_.get();
+    args.nigori_handler = encryption_handler_.get();
     args.unrecoverable_error_handler =
         MakeWeakHandle(mock_unrecoverable_error_handler_.GetWeakPtr());
     args.cancelation_signal = &cancelation_signal_;
