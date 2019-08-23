@@ -146,28 +146,6 @@ def find_chrome_ebuilds(package_dir):
   return best_chrome_ebuild(unstable_ebuilds), stable_ebuilds
 
 
-def find_chrome_uprev_candidate(stable_ebuilds):
-  """Find the ebuild to replace.
-
-  Args:
-    stable_ebuilds (list[ChromeEBuild]): All stable ebuilds that were found.
-
-  Returns:
-    EBuild: The ebuild being replaced.
-  """
-  candidates = []
-  # This is an artifact from the old process.
-  chrome_branch_re = re.compile(r'%s.*_rc.*' % CHROME_VERSION_REGEX)
-  for ebuild in stable_ebuilds:
-    if chrome_branch_re.search(ebuild.version):
-      candidates.append(ebuild)
-
-  if not candidates:
-    return None
-
-  return best_chrome_ebuild(candidates)
-
-
 class UprevChromeManager(object):
   """Class to handle uprevving chrome and its related packages."""
 
@@ -192,7 +170,7 @@ class UprevChromeManager(object):
     # Find the unstable (9999) ebuild and any existing stable ebuilds.
     unstable_ebuild, stable_ebuilds = find_chrome_ebuilds(package_dir)
     # Find the best stable candidate to uprev -- the one that will be replaced.
-    candidate = find_chrome_uprev_candidate(stable_ebuilds)
+    candidate = self._find_chrome_uprev_candidate(stable_ebuilds)
     new_ebuild = self._mark_as_stable(candidate, unstable_ebuild, package_name,
                                       package_dir)
 
@@ -208,6 +186,41 @@ class UprevChromeManager(object):
       self._clean_stale_package(new_ebuild.atom)
 
     return True
+
+  def _find_chrome_uprev_candidate(self, stable_ebuilds):
+    """Find the ebuild to replace.
+
+    Args:
+      stable_ebuilds (list[ChromeEBuild]): All stable ebuilds that were found.
+
+    Returns:
+      ChromeEBuild|None: The ebuild being replaced.
+    """
+    candidates = []
+    # This is an artifact from the old process.
+    chrome_branch_re = re.compile(r'%s.*_rc.*' % CHROME_VERSION_REGEX)
+    for ebuild in stable_ebuilds:
+      if chrome_branch_re.search(ebuild.version):
+        candidates.append(ebuild)
+
+    if not candidates:
+      return None
+
+    candidate = best_chrome_ebuild(candidates)
+
+    # A candidate is only a valid uprev candidate if its chrome version
+    # is no better than the target version. We can uprev equal versions
+    # (i.e. a revision bump), but not older. E.g.:
+    # Case 1 - Uprev: self._version = 78.0.0.0, Candidate = 77.0.0.0
+    # Case 2 - Uprev: self._version = 78.0.0.0, Candidate = 78.0.0.0
+    # Case 3 - Skip:  self._version = 78.0.0.0, Candidate = 79.0.0.0
+    best_version = best_chrome_version(
+        [self._version, candidate.chrome_version])
+    if self._version == best_version:
+      # Cases 1 and 2.
+      return candidate
+
+    return None
 
   def _mark_as_stable(self, stable_candidate, unstable_ebuild, package_name,
                       package_dir):
@@ -227,6 +240,8 @@ class UprevChromeManager(object):
     Returns:
       Full portage version atom (including rc's, etc) that was revved.
     """
+    if not stable_candidate:
+      return None
 
     def _is_new_ebuild_redundant(uprevved_ebuild, stable_ebuild):
       """Returns True if the new ebuild is redundant.

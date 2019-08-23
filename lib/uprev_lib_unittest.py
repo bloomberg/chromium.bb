@@ -176,6 +176,13 @@ class UprevChromeManagerTest(cros_test_lib.MockTempDirTestCase):
 
     self.assertFalse(manager.modified_ebuilds)
 
+  def test_older_version(self):
+    """Test uprevving to an older version."""
+    manager = uprev_lib.UprevChromeManager('1.2.3.4', overlay_dir=self.tempdir)
+    manager.uprev(constants.CHROME_CP)
+
+    self.assertFalse(manager.modified_ebuilds)
+
   def test_new_version(self):
     """Test a new chrome version."""
     # The stable ebuild should be replaced with one of the new version.
