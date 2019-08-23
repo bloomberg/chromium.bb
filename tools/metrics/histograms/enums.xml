@@ -34264,6 +34264,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2142665444" label="ScrollableTabStrip:disabled"/>
   <int value="-2141661938" label="AnimatedAppMenuIcon:enabled"/>
   <int value="-2141247271" label="AndroidOmniboxPreviewsBadge:enabled"/>
+  <int value="-2139379065" label="StoragePressureUI:enabled"/>
   <int value="-2138883960" label="AutofillRejectCompanyBirthyearName:disabled"/>
   <int value="-2136259447" label="PasswordManagerOnboardingAndroid:disabled"/>
   <int value="-2134333982" label="ShowArcFilesApp:enabled"/>
@@ -34390,6 +34391,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1996233283"
       label="OmniboxGroupSuggestionsBySearchVsUrl:enabled"/>
   <int value="-1992319691" label="AvoidFlashBetweenNavigation:enabled"/>
+  <int value="-1990614981" label="StoragePressureUI:disabled"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1985452239" label="SmartDim20190221:disabled"/>
   <int value="-1985239289" label="AutofillRichMetadataQueries:enabled"/>

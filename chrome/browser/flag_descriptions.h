@@ -1093,6 +1093,9 @@ extern const char kStopInBackgroundDescription[];
 extern const char kStopNonTimersInBackgroundName[];
 extern const char kStopNonTimersInBackgroundDescription[];
 
+extern const char kStoragePressureUIName[];
+extern const char kStoragePressureUIDescription[];
+
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];
 

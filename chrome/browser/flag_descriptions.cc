@@ -1840,6 +1840,11 @@ const char kStopNonTimersInBackgroundDescription[] =
     "Stop non-timer task queues, in the background, "
     "after a grace period.";
 
+const char kStoragePressureUIName[] = "Enable storage pressure UI";
+const char kStoragePressureUIDescription[] =
+    "If enabled, Chrome will trigger system notifications to warn about "
+    "storage pressure.";
+
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";
 const char kSuggestionsWithSubStringMatchDescription[] =

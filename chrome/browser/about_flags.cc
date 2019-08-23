@@ -3103,6 +3103,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStopInBackgroundDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(blink::features::kStopInBackground)},
 
+    {"enable-storage-pressure-ui", flag_descriptions::kStoragePressureUIName,
+     flag_descriptions::kStoragePressureUIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kStoragePressureUI)},
+
     {"enable-network-logging-to-file",
      flag_descriptions::kEnableNetworkLoggingToFileName,
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
