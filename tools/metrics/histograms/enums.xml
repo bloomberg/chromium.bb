@@ -6758,6 +6758,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Timed out"/>
 </enum>
 
+<enum name="BooleanToggled">
+  <int value="0" label="Toggled off"/>
+  <int value="1" label="Toggled on"/>
+</enum>
+
 <enum name="BooleanTooMany">
   <int value="0" label="Correct"/>
   <int value="1" label="Too many"/>
@@ -48878,6 +48883,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="tapdown"/>
   <int value="2" label="tapunconfirmed"/>
   <int value="3" label="tapdown + tapunconfirmed"/>
+</enum>
+
+<enum name="PreviewOrOriginServerConnection">
+  <int value="0" label="Connected to the origin server"/>
+  <int value="1" label="Connected to the preview server"/>
 </enum>
 
 <enum name="PreviewsContextMenuActionLoFi">

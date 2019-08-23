@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -78,10 +79,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_type.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/features.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/reporting/reporting_policy.h"
+#include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -106,7 +109,9 @@ const char kPreviewsHost[] = "litepages.googlezip.net";
 const char kBlacklistedHost[] = "blacklisted.com";
 }  // namespace
 
-class BasePreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
+class BasePreviewsLitePageServerBrowserTest
+    : public InProcessBrowserTest,
+      public net::test_server::EmbeddedTestServerConnectionListener {
  public:
   BasePreviewsLitePageServerBrowserTest() {}
 
@@ -243,6 +248,7 @@ class BasePreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     previews_server_->RegisterRequestHandler(base::BindRepeating(
         &BasePreviewsLitePageServerBrowserTest::HandleResourceRequest,
         base::Unretained(this)));
+    previews_server_->SetConnectionListener(this);
     ASSERT_TRUE(previews_server_->Start());
 
     previews_server_url_ = previews_server_->GetURL(kPreviewsHost, "/");
@@ -275,7 +281,10 @@ class BasePreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         {"max_navigation_restart", base::NumberToString(kRedirectLoopCount)},
         {"navigation_timeout_milliseconds",
          use_timeout ? base::NumberToString(kTimeoutMs) : "60000"},
-        {"control_group", is_control ? "true" : "false"}};
+        {"control_group", is_control ? "true" : "false"},
+        {"preconnect_on_slow_connections", "true"},
+        {"preresolve_on_slow_connections", "false"},
+    };
 
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         "data-reduction-proxy-pingback-url",
@@ -620,6 +629,9 @@ class BasePreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   const GURL& subframe_url() const { return subframe_url_; }
   uint64_t got_page_id() const { return got_page_id_; }
   int subresources_requested() const { return subresources_requested_; }
+  int previews_server_connections() const {
+    return previews_server_connections_.size();
+  }
 
   void WaitForPingback() {
     base::RunLoop run_loop;
@@ -880,6 +892,23 @@ class BasePreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     return std::move(response);
   }
 
+  // net::test_server::EmbeddedTestServerConnectionListener:
+  void ReadFromSocket(const net::StreamSocket& socket, int rv) override {}
+  void AcceptedSocket(const net::StreamSocket& socket) override {
+    // AcceptedSocket is called every time there is a new HTTP request/response
+    // on a socket, even if the socket is being reused. So instead of
+    // incrementing a counter, keep track of the addresses of the socket in use.
+    net::IPEndPoint server_end_point;
+    socket.GetLocalAddress(&server_end_point);
+
+    net::IPEndPoint remote_end_point;
+    socket.GetPeerAddress(&remote_end_point);
+
+    std::string unique_socket_id =
+        server_end_point.ToString() + remote_end_point.ToString();
+    previews_server_connections_.insert(unique_socket_id);
+  }
+
   base::test::ScopedFeatureList scoped_parameterized_feature_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedFeatureList url_loader_feature_list_;
@@ -904,6 +933,7 @@ class BasePreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   GURL slow_http_url_;
   uint64_t got_page_id_ = 0;
   int subresources_requested_ = 0;
+  std::unordered_set<std::string> previews_server_connections_;
   std::string intervention_report_content_;
   base::OnceClosure waiting_for_pingback_closure_;
   base::OnceClosure waiting_for_report_closure_;
@@ -1180,15 +1210,14 @@ IN_PROC_BROWSER_TEST_P(
   VerifyPreviewNotLoaded();
 }
 
-IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(PreresolverShownAndHidden)) {
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(PredictorShownAndHidden)) {
   base::HistogramTester histogram_tester;
   GetWebContents()->WasHidden();
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
   histogram_tester.ExpectTotalCount(
-      "Previews.ServerLitePage.PreresolvedToPreviewServer", 0);
+      "Previews.ServerLitePage.PreconnectedToPreviewServer", 0);
 
   GetWebContents()->WasShown();
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1196,7 +1225,7 @@ IN_PROC_BROWSER_TEST_P(
   // We expect a value of 2 because the timer will be triggered twice, once when
   // the web contents is shown, and once when a new page is committed.
   histogram_tester.ExpectUniqueSample(
-      "Previews.ServerLitePage.PreresolvedToPreviewServer", false, 2);
+      "Previews.ServerLitePage.PreconnectedToPreviewServer", false, 2);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -1939,6 +1968,88 @@ IN_PROC_BROWSER_TEST_P(
   VerifyInfoStatus(&histogram_tester, previews::ServerLitePageStatus::kControl);
   ClearDeciderState();
 }
+
+enum class NetworkIsolationKeyMode {
+  kNone,
+  kTopFrameOrigin,
+  kTopFrameAndFrameOrigins,
+};
+
+class PreviewsLitePageServerNetworkIsolationBrowserTest
+    : public BasePreviewsLitePageServerBrowserTest,
+      public testing::WithParamInterface<NetworkIsolationKeyMode> {
+ public:
+  void SetUp() override {
+    BasePreviewsLitePageServerBrowserTest::SetUp();
+
+    switch (GetParam()) {
+      case NetworkIsolationKeyMode::kNone:
+        break;
+      case NetworkIsolationKeyMode::kTopFrameOrigin:
+        scoped_feature_list_.InitWithFeatures(
+            // enabled_features
+            {net::features::kPartitionConnectionsByNetworkIsolationKey,
+             // While these tests are focusing on partitioning the socket pools,
+             // some depend on cache behavior, and it would be
+             // unfortunate if splitting the cache by the key as well broke
+             // them.
+             net::features::kSplitCacheByNetworkIsolationKey},
+            // disabled_features
+            {net::features::kAppendFrameOriginToNetworkIsolationKey});
+        break;
+      case NetworkIsolationKeyMode::kTopFrameAndFrameOrigins:
+        scoped_feature_list_.InitWithFeatures(
+            // enabled_features
+            {net::features::kPartitionConnectionsByNetworkIsolationKey,
+             net::features::kSplitCacheByNetworkIsolationKey,
+             net::features::kAppendFrameOriginToNetworkIsolationKey},
+            // disabled_features
+            {});
+        break;
+    }
+  }
+
+  bool UseURLLoaderImplementation() const override { return true; }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerNetworkIsolationBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(PreconnectToPreviewsServer)) {
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), https_media_url());
+  VerifyPreviewNotLoaded();
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.ServerLitePage.PredictorToggled", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.ServerLitePage.PreconnectedToPreviewServer", true, 1);
+
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+  WaitForInterventionReport();
+
+  // Proving which socket is reused for which purpose is tricky in a browsertest
+  // because everything happens so quickly. Instead, just prove by
+  // pigeon-holing. These connections are sent to server, and we expect at least
+  // one to be reused:
+  // * Startup probe
+  // * Preconnect
+  // * Main page request
+  // * Favicon request
+  // * Browser intervention report
+  EXPECT_LT(previews_server_connections(), 5);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PreviewsLitePageServerNetworkIsolationBrowserTest,
+    ::testing::Values(NetworkIsolationKeyMode::kNone,
+                      NetworkIsolationKeyMode::kTopFrameOrigin,
+                      NetworkIsolationKeyMode::kTopFrameAndFrameOrigins));
 
 class PreviewsLitePageAndPageHintsBrowserTest
     : public PreviewsLitePageServerBrowserTest {
