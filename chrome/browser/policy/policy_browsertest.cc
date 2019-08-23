@@ -4126,6 +4126,33 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DictationEnabled) {
   EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, KeyboardFocusHighlightEnabled) {
+  // Verifies that the keyboard focus highlight objects accessibility feature
+  // can be controlled through policy.
+  chromeos::AccessibilityManager* const accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Verify that the keyboard focus highlight objects is initially disabled.
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Manually enable the keyboard focus highlight objects.
+  accessibility_manager->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kKeyboardFocusHighlightEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Verify that the keyboard focus highlight objects cannot be enabled manually
+  // anymore.
+  accessibility_manager->SetFocusHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(

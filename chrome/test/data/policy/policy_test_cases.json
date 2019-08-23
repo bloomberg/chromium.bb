@@ -3183,6 +3183,18 @@
     ]
   },
 
+  "KeyboardFocusHighlightEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "KeyboardFocusHighlightEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.focus_highlight",
+        "indicator_tests": [
+          { "policy": { "KeyboardFocusHighlightEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "HighContrastEnabled": {
     "os": ["chromeos"],
     "test_policy": { "HighContrastEnabled": true },

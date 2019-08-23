@@ -631,6 +631,7 @@
         'ScreenMagnifierType',
         'DictationEnabled',
         'SelectToSpeakEnabled',
+        'KeyboardFocusHighlightEnabled',
         'DeviceLoginScreenDefaultLargeCursorEnabled',
         'DeviceLoginScreenDefaultSpokenFeedbackEnabled',
         'DeviceLoginScreenDefaultHighContrastEnabled',
@@ -9873,6 +9874,33 @@
           If this policy is left unset, the dictation is disabled initially but can be enabled by the user anytime.'''
     },
     {
+      'name': 'KeyboardFocusHighlightEnabled',
+      'owners': ['amraboelkher@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:78-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 593,
+      'caption': '''Enable the keyboard focus highlighting accessibility feature''',
+      'tags': [],
+      'desc': '''Enable the keyboard focus highlighting accessibility feature.
+
+          This feature is responsible for highlighting the object that has the focus by the keyboard.
+
+          If this policy is set to enabled, the keyboard focus highlighting will always be enabled.
+
+          If this policy is set to disabled, the keyboard focus highlighting will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the keyboard focus highlighting is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
       'name': 'KeyboardDefaultToFunctionKeys',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18197,6 +18225,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 592,
+  'highest_id_currently_used': 593,
   'highest_atomic_group_id_currently_used': 37
 }
