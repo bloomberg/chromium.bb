@@ -442,20 +442,6 @@ void HttpCache::Transaction::StopCaching() {
   }
 }
 
-bool HttpCache::Transaction::GetFullRequestHeaders(
-    HttpRequestHeaders* headers) const {
-  const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
-  if (transaction) {
-    return transaction->GetFullRequestHeaders(headers);
-  } else if (!network_transaction_info_.full_request_headers.IsEmpty()) {
-    *headers = network_transaction_info_.full_request_headers;
-    return true;
-  }
-
-  // TODO(juliatuttle): Read headers from cache.
-  return false;
-}
-
 int64_t HttpCache::Transaction::GetTotalReceivedBytes() const {
   int64_t total_received_bytes = network_transaction_info_.total_received_bytes;
   const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
@@ -3546,9 +3532,6 @@ void HttpCache::Transaction::SaveNetworkTransactionInfo(
     network_transaction_info_.old_connection_attempts.push_back(attempt);
   network_transaction_info_.old_remote_endpoint = IPEndPoint();
   transaction.GetRemoteEndpoint(&network_transaction_info_.old_remote_endpoint);
-
-  transaction.GetFullRequestHeaders(
-      &network_transaction_info_.full_request_headers);
 }
 
 void HttpCache::Transaction::OnIOComplete(int result) {
