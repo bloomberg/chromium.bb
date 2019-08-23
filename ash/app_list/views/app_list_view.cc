@@ -399,9 +399,7 @@ class AppListBackgroundShieldView : public views::View {
   AppListBackgroundShieldView() : color_(AppListView::kDefaultBackgroundColor) {
     SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     layer()->SetFillsBoundsOpaquely(false);
-    layer()->SetRoundedCornerRadius(
-        {AppListConfig::instance().background_radius(),
-         AppListConfig::instance().background_radius(), 0, 0});
+    SetBackgroundRadius(AppListConfig::instance().background_radius());
     layer()->SetColor(color_);
   }
 
@@ -420,7 +418,35 @@ class AppListBackgroundShieldView : public views::View {
     }
   }
 
-  void UpdateBackgroundRadius(double radius) {
+  void UpdateBackgroundRadius(
+      ash::AppListViewState state,
+      bool shelf_has_rounded_corners,
+      base::Optional<base::TimeTicks> animation_end_timestamp) {
+    const double target_corner_radius =
+        (state == ash::AppListViewState::kClosed && !shelf_has_rounded_corners)
+            ? 0
+            : AppListConfig::instance().background_radius();
+    if (radius_ == target_corner_radius)
+      return;
+
+    layer()->GetAnimator()->StopAnimatingProperty(
+        ui::LayerAnimationElement::ROUNDED_CORNERS);
+
+    std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+    if (animation_end_timestamp.has_value()) {
+      settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
+          layer()->GetAnimator());
+      settings->SetTransitionDuration((*animation_end_timestamp) -
+                                      base::TimeTicks::Now());
+      settings->SetTweenType(gfx::Tween::EASE_OUT);
+      settings->SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+    }
+    SetBackgroundRadius(target_corner_radius);
+  }
+
+  void SetBackgroundRadius(double radius) {
+    radius_ = radius;
     layer()->SetRoundedCornerRadius({radius, radius, 0, 0});
   }
 
@@ -452,6 +478,8 @@ class AppListBackgroundShieldView : public views::View {
  private:
   // Whether the background blur has been set on the background shield.
   bool blur_value_ = false;
+
+  double radius_ = 0.f;
 
   SkColor color_;
 
@@ -503,95 +531,6 @@ class PeekingResetAnimation : public ui::LayerAnimationElement {
   AppListView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(PeekingResetAnimation);
-};
-
-// Animation that vertically translates app list view between different states,
-// updating the background shield's corner radius to match the current app list
-// height as needed. The corner radius should be updated when app list is
-// animated to/from closed state with maximized shelf view (i.e. when target
-// shelf view state has no rounded corners).
-// Using single animation for both background shield and app list view to keep
-// the animation timing in sync.
-// NOTE: The final transform is identity transform - i.e. the app list view is
-// animated into it's current bounds.
-class TranslateWithChangingCornerRadiusAnimation
-    : public ui::LayerAnimationElement {
- public:
-  TranslateWithChangingCornerRadiusAnimation(
-      double initial_app_list_vertical_offset,
-      double target_app_list_height,
-      AppListView* view,
-      AppListBackgroundShieldView* background_shield,
-      base::TimeDelta duration)
-      : ui::LayerAnimationElement(ui::LayerAnimationElement::TRANSFORM,
-                                  duration),
-        transform_(gfx::PointF(0, initial_app_list_vertical_offset),
-                   gfx::PointF()),
-        initial_app_list_vertical_offset_(initial_app_list_vertical_offset),
-        target_app_list_height_(target_app_list_height),
-        view_(view),
-        background_shield_view_(background_shield) {}
-  ~TranslateWithChangingCornerRadiusAnimation() override = default;
-
-  // ui::LayerAnimationElement:
-  void OnStart(ui::LayerAnimationDelegate* delegate) override {}
-  bool OnProgress(double current,
-                  ui::LayerAnimationDelegate* delegate) override {
-    const double progress =
-        gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT, current);
-
-    delegate->SetTransformFromAnimation(
-        transform_.Interpolate(progress),
-        ui::PropertyChangeReason::FROM_ANIMATION);
-
-    // When animating to/from closed state, the app list view UI is moving into
-    // or from the shelf UI. In default state, the app list and shelf have the
-    // same rounded corners, so just translating the shelf into the final state
-    // works well (as the shelf UI matches the app list UI). When shelf is in
-    // maximized state, it has no rounded corners at all - when that is the
-    // case, the app list rounded corner radius should be animated between "no
-    // rounded corners" and the "app list background radius" values.
-    //
-    // NOTE: |shelf_has_rounded_corners()| value can change during animation. If
-    // that happens, for simplicity, immediately start applying rounded corners
-    // so they match the current app list height and shelf state.
-    if (!view_->shelf_has_rounded_corners()) {
-      const double current_offset =
-          (1 - progress) * initial_app_list_vertical_offset_;
-      const double current_height = target_app_list_height_ - current_offset;
-
-      background_shield_view_->UpdateBackgroundRadius(
-          GetBackgroundRadiusForAppListHeight(current_height));
-    } else {
-      background_shield_view_->UpdateBackgroundRadius(
-          AppListConfig::instance().background_radius());
-    }
-    return true;
-  }
-  void OnGetTarget(TargetValue* target) const override {
-    target->transform = gfx::Transform();
-  }
-  void OnAbort(ui::LayerAnimationDelegate* delegate) override {}
-
- private:
-  ui::InterpolatedTranslation transform_;
-
-  // The app list view's initial vertical offset from the target app list
-  // bounds.
-  const double initial_app_list_vertical_offset_;
-
-  // The target app list view height compared to shelf - i.e. the target
-  // difference from app list view top to the shelf top edge. Used to determine
-  // background corner radius.
-  const double target_app_list_height_;
-
-  // The animated app list view.
-  AppListView* const view_;
-
-  // The app list view's background shield view.
-  AppListBackgroundShieldView* const background_shield_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateWithChangingCornerRadiusAnimation);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1674,8 +1613,15 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
   const int current_y_with_transform =
       current_bounds_y + GetRemainingBoundsAnimationDistance();
 
-  layer->SetTransform(gfx::Transform());
+  // Schedule the animation; set to the target bounds, and make the transform
+  // to make this appear in the original location. Then set an empty transform
+  // with the animation.
   layer->SetBounds(target_bounds);
+  gfx::Transform transform;
+  const int y_offset = current_y_with_transform - target_bounds.y();
+  transform.Translate(0, y_offset);
+  layer->SetTransform(transform);
+  animation_end_timestamp_ = base::TimeTicks::Now() + duration_ms;
 
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.SetPreemptionStrategy(
@@ -1691,19 +1637,23 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
     animation.AddObserver(animation_observer);
   }
 
-  const int y_offset = current_y_with_transform - target_bounds.y();
   if (update_childview_each_frame_) {
     layer->GetAnimator()->StartAnimation(new ui::LayerAnimationSequence(
         std::make_unique<PeekingResetAnimation>(y_offset, duration_ms, this)));
     return;
   }
 
-  const double target_height =
-      std::max(0, y_for_closed_state - target_bounds.y());
-  layer->GetAnimator()->StartAnimation(new ui::LayerAnimationSequence(
-      std::make_unique<TranslateWithChangingCornerRadiusAnimation>(
-          y_offset, target_height, this, app_list_background_shield_,
-          duration_ms)));
+  animation.SetTransitionDuration(duration_ms);
+  animation.SetTweenType(gfx::Tween::EASE_OUT);
+  layer->SetTransform(gfx::Transform());
+
+  // Schedule animations of the rounded corners. When running on linux
+  // workstation, the rounded corner animation sometimes looks out-of-sync. This
+  // does not happen on actual devices.
+
+  // TODO(mukai): fix the out-of-sync problem.
+  app_list_background_shield_->UpdateBackgroundRadius(
+      target_state, shelf_has_rounded_corners_, animation_end_timestamp_);
 }
 
 void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty,
@@ -1993,6 +1943,18 @@ void AppListView::OnBoundsAnimationCompleted() {
     Layout();
 }
 
+void AppListView::SetShelfHasRoundedCorners(bool shelf_has_rounded_corners) {
+  if (shelf_has_rounded_corners_ == shelf_has_rounded_corners)
+    return;
+  shelf_has_rounded_corners_ = shelf_has_rounded_corners;
+  base::Optional<base::TimeTicks> animation_end_timestamp;
+  if (GetWidget() && GetWidget()->GetLayer()->GetAnimator()->is_animating()) {
+    animation_end_timestamp = animation_end_timestamp_;
+  }
+  app_list_background_shield_->UpdateBackgroundRadius(
+      app_list_state_, shelf_has_rounded_corners_, animation_end_timestamp);
+}
+
 void AppListView::UpdateChildViewsYPositionAndOpacity() {
   if (app_list_state_ == ash::AppListViewState::kClosed)
     return;
@@ -2210,7 +2172,7 @@ void AppListView::UpdateAppListBackgroundYPosition() {
     if (app_list_transition_progress < 1 && !shelf_has_rounded_corners()) {
       const float shelf_height =
           GetScreenBottom() - GetDisplayNearestView().work_area().bottom();
-      app_list_background_shield_->UpdateBackgroundRadius(
+      app_list_background_shield_->SetBackgroundRadius(
           GetBackgroundRadiusForAppListHeight(GetCurrentAppListHeight() -
                                               shelf_height));
     } else if (app_list_transition_progress >= 1 &&

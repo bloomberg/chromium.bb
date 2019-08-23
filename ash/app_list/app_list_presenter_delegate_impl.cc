@@ -116,7 +116,7 @@ void AppListPresenterDelegateImpl::ShowForDisplay(int64_t display_id) {
   if (!shelf_observer_.IsObserving(shelf))
     shelf_observer_.Add(shelf);
 
-  view_->set_shelf_has_rounded_corners(
+  view_->SetShelfHasRoundedCorners(
       IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
   view_->Show(IsSideShelf(shelf), IsTabletMode());
 
@@ -180,7 +180,7 @@ void AppListPresenterDelegateImpl::OnDisplayMetricsChanged(
 void AppListPresenterDelegateImpl::OnBackgroundTypeChanged(
     ShelfBackgroundType background_type,
     AnimationChangeType change_type) {
-  view_->set_shelf_has_rounded_corners(
+  view_->SetShelfHasRoundedCorners(
       IsShelfBackgroundTypeWithRoundedCorners(background_type));
 }
 
