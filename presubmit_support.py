@@ -70,7 +70,7 @@ class CommandData(object):
     self.name = name
     self.cmd = cmd
     self.stdin = kwargs.get('stdin', None)
-    self.kwargs = kwargs
+    self.kwargs = kwargs.copy()
     self.kwargs['stdout'] = subprocess.PIPE
     self.kwargs['stderr'] = subprocess.STDOUT
     self.kwargs['stdin'] = subprocess.PIPE

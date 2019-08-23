@@ -58,11 +58,6 @@ class MockTemporaryFile(object):
     pass
 
 
-class MockProcess(object):
-  def __init__(self, returncode):
-    self.returncode = returncode
-
-
 class PresubmitTestsBase(TestCaseUtils, unittest.TestCase):
   """Sets up and tears down the mocks but doesn't test anything as-is."""
   presubmit_text = """
@@ -2579,11 +2574,12 @@ the current line as well!
     input_api.PresubmitLocalPath.return_value = self.fake_root_dir
     presubmit.sigint_handler.wait.return_value = ('', None)
 
-    subprocess.Popen.side_effect = [
-        MockProcess(1),
-        MockProcess(0),
-        MockProcess(0),
+    subprocesses = [
+        mock.Mock(returncode=1),
+        mock.Mock(returncode=0),
+        mock.Mock(returncode=0),
     ]
+    subprocess.Popen.side_effect = subprocesses
 
     unit_tests = ['allo', 'bar.py']
     results = presubmit_canned_checks.RunUnitTests(
@@ -2616,6 +2612,12 @@ the current line as well!
             stdin=subprocess.PIPE),
     ])
 
+    self.assertEqual(presubmit.sigint_handler.wait.mock_calls, [
+        mock.call(subprocesses[0], None),
+        mock.call(subprocesses[1], None),
+        mock.call(subprocesses[2], None),
+    ])
+
     self.checkstdout('')
 
   @mock.patch('__builtin__.open', mock.mock_open())
@@ -2629,9 +2631,9 @@ the current line as well!
     presubmit.sigint_handler.wait.return_value = ('', None)
 
     subprocess.Popen.side_effect = [
-        MockProcess(1),
-        MockProcess(0),
-        MockProcess(0),
+        mock.Mock(returncode=1),
+        mock.Mock(returncode=0),
+        mock.Mock(returncode=0),
     ]
 
     unit_tests = ['allo', 'bar.py']
@@ -2673,9 +2675,9 @@ the current line as well!
     presubmit.sigint_handler.wait.return_value = ('', None)
 
     subprocess.Popen.side_effect = [
-        MockProcess(1),
-        MockProcess(0),
-        MockProcess(0),
+        mock.Mock(returncode=1),
+        mock.Mock(returncode=0),
+        mock.Mock(returncode=0),
     ]
 
     unit_tests = ['allo', 'bar.py']
