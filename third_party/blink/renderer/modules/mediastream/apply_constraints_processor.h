@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "media/capture/video_capture_types.h"
@@ -93,8 +92,6 @@ class MODULES_EXPORT ApplyConstraintsProcessor
   THREAD_CHECKER(thread_checker_);
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  base::WeakPtrFactory<ApplyConstraintsProcessor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ApplyConstraintsProcessor);
 };

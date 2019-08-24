@@ -130,7 +130,7 @@ void ApplyConstraintsProcessor::ProcessVideoDeviceRequest() {
   GetMediaDevicesDispatcher()->GetAllVideoInputDeviceFormats(
       String(video_source_->device().id.data()),
       WTF::Bind(&ApplyConstraintsProcessor::MaybeStopSourceForRestart,
-                weak_factory_.GetWeakPtr()));
+                WrapWeakPersistent(this)));
 }
 
 void ApplyConstraintsProcessor::MaybeStopSourceForRestart(
@@ -152,7 +152,7 @@ void ApplyConstraintsProcessor::MaybeStopSourceForRestart(
   } else {
     video_source_->StopForRestart(
         WTF::Bind(&ApplyConstraintsProcessor::MaybeSourceStoppedForRestart,
-                  weak_factory_.GetWeakPtr()));
+                  WrapWeakPersistent(this)));
   }
 }
 
@@ -171,7 +171,7 @@ void ApplyConstraintsProcessor::MaybeSourceStoppedForRestart(
   GetMediaDevicesDispatcher()->GetAvailableVideoInputDeviceFormats(
       String(video_source_->device().id.data()),
       WTF::Bind(&ApplyConstraintsProcessor::FindNewFormatAndRestart,
-                weak_factory_.GetWeakPtr()));
+                WrapWeakPersistent(this)));
 }
 
 void ApplyConstraintsProcessor::FindNewFormatAndRestart(
@@ -189,7 +189,7 @@ void ApplyConstraintsProcessor::FindNewFormatAndRestart(
       settings.HasValue() ? settings.Format()
                           : *video_source_->GetCurrentFormat(),
       WTF::Bind(&ApplyConstraintsProcessor::MaybeSourceRestarted,
-                weak_factory_.GetWeakPtr()));
+                WrapWeakPersistent(this)));
 }
 
 void ApplyConstraintsProcessor::MaybeSourceRestarted(
@@ -307,7 +307,7 @@ void ApplyConstraintsProcessor::ApplyConstraintsSucceeded() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   task_runner_->PostTask(
       FROM_HERE, WTF::Bind(&ApplyConstraintsProcessor::CleanupRequest,
-                           weak_factory_.GetWeakPtr(),
+                           WrapWeakPersistent(this),
                            WTF::Bind(&RequestSucceeded, current_request_)));
 }
 
@@ -316,7 +316,7 @@ void ApplyConstraintsProcessor::ApplyConstraintsFailed(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   task_runner_->PostTask(
       FROM_HERE, WTF::Bind(&ApplyConstraintsProcessor::CleanupRequest,
-                           weak_factory_.GetWeakPtr(),
+                           WrapWeakPersistent(this),
                            WTF::Bind(&RequestFailed, current_request_,
                                      String(failed_constraint_name),
                                      String("Cannot satisfy constraints"))));
@@ -325,10 +325,10 @@ void ApplyConstraintsProcessor::ApplyConstraintsFailed(
 void ApplyConstraintsProcessor::CannotApplyConstraints(const String& message) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   task_runner_->PostTask(
-      FROM_HERE, WTF::Bind(&ApplyConstraintsProcessor::CleanupRequest,
-                           weak_factory_.GetWeakPtr(),
-                           WTF::Bind(&RequestFailed, current_request_, String(),
-                                     message)));
+      FROM_HERE,
+      WTF::Bind(
+          &ApplyConstraintsProcessor::CleanupRequest, WrapWeakPersistent(this),
+          WTF::Bind(&RequestFailed, current_request_, String(), message)));
 }
 
 void ApplyConstraintsProcessor::CleanupRequest(
