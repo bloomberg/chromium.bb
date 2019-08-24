@@ -101,8 +101,8 @@ def GetToolchainTupleForBoard(board, buildroot=constants.SOURCE_ROOT):
     The tuples of toolchain targets ordered default, non-default for the board.
   """
   toolchains = GetToolchainsForBoard(board, buildroot)
-  return (FilterToolchains(toolchains, 'default', True).keys() +
-          FilterToolchains(toolchains, 'default', False).keys())
+  return (list(FilterToolchains(toolchains, 'default', True)) +
+          list(FilterToolchains(toolchains, 'default', False)))
 
 
 def FilterToolchains(targets, key, value):

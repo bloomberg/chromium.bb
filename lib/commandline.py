@@ -403,7 +403,7 @@ VALID_ACTIONS = {
 }
 
 _DEPRECATE_ACTIONS = [None, 'store', 'store_const', 'store_true', 'store_false',
-                      'append', 'append_const', 'count'] + VALID_ACTIONS.keys()
+                      'append', 'append_const', 'count'] + list(VALID_ACTIONS)
 
 
 class _DeprecatedAction(object):

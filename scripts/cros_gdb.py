@@ -401,7 +401,7 @@ To install the debug symbols for all available packages, run:
   def GetCrossGdb(self):
     """Find the appropriate cross-version of gdb for the board."""
     toolchains = toolchain.GetToolchainsForBoard(self.board)
-    tc = toolchain.FilterToolchains(toolchains, 'default', True).keys()
+    tc = list(toolchain.FilterToolchains(toolchains, 'default', True))
     cross_gdb = tc[0] + '-gdb'
     if not osutils.Which(cross_gdb):
       raise GdbMissingDebuggerError('Cannot find %s; do you need to run '

@@ -108,7 +108,7 @@ class GconvModules(object):
 
     logging.debug('Found %d modules and %d alias in %s', len(self._modules),
                   len(self._alias), self._filename)
-    charsets = sorted(self._alias.keys() + self._modules.keys())
+    charsets = sorted(list(self._alias) + list(self._modules))
     # Remove the 'INTERNAL' charset from the list, since it is not a charset
     # but an internal representation used to convert to and from other charsets.
     if 'INTERNAL' in charsets:

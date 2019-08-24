@@ -453,7 +453,7 @@ class Sysroot(object):
     default_toolchains = toolchain.FilterToolchains(toolchains, 'default', True)
     if not default_toolchains:
       raise ConfigurationError('No default toolchain could be found.')
-    config['CHOST'] = default_toolchains.keys()[0]
+    config['CHOST'] = list(default_toolchains)[0]
     config['ARCH'] = toolchain.GetArchForTarget(config['CHOST'])
 
     config['BOARD_OVERLAY'] = '\n'.join(board_overlays)

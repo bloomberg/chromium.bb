@@ -57,7 +57,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
 
   def assertRowsEqual(self, row1, row2):
     # Determine column superset
-    cols = set(row1.keys() + row2.keys())
+    cols = set(row1) | set(row2)
     self.assertEquals(self._GetFullRowFor(row1, cols),
                       self._GetFullRowFor(row2, cols))
 

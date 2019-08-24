@@ -948,8 +948,8 @@ class ReportStage(generic_stages.BuilderStage,
     for board in self._run.config['boards']:
       toolchains = toolchain.GetToolchainsForBoard(
           board, buildroot=src_root)
-      default = toolchain.FilterToolchains(toolchains, 'default', True).keys()
-      if len(default):
+      default = list(toolchain.FilterToolchains(toolchains, 'default', True))
+      if default:
         try:
           arches.append(toolchain.GetArchForTarget(default[0]))
         except cros_build_lib.RunCommandError as e:

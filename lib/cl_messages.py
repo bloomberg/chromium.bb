@@ -61,7 +61,7 @@ def CreateValidationFailureMessage(pre_cq_trybot,
   # Limit the number of suspects to 20 so that the list of suspects isn't
   # ridiculously long.
   max_suspects = 20
-  other_suspects = set(suspects.keys()) - set([change])
+  other_suspects = set(suspects) - set([change])
   if len(other_suspects) < max_suspects:
     other_suspects_str = cros_patch.GetChangesAsString(other_suspects)
   else:
@@ -82,7 +82,7 @@ def CreateValidationFailureMessage(pre_cq_trybot,
       msg.append('The build failure may have been caused by infrastructure '
                  'issues and/or bad %s changes.' % constants.INFRA_PROJECTS)
 
-    if change in suspects.keys():
+    if change in suspects:
       if other_suspects_str:
         msg.append('Your change may have caused this failure. There are '
                    'also other changes that may be at fault: %s'

@@ -752,8 +752,8 @@ def ShowConfig(name):
   # Make sure we display the default toolchain first.
   # Note: Do not use logging here as this is meant to be used by other tools.
   print(','.join(
-      toolchain.FilterToolchains(toolchains, 'default', True).keys() +
-      toolchain.FilterToolchains(toolchains, 'default', False).keys()))
+      list(toolchain.FilterToolchains(toolchains, 'default', True)) +
+      list(toolchain.FilterToolchains(toolchains, 'default', False))))
 
 
 def GeneratePathWrapper(root, wrappath, path):
