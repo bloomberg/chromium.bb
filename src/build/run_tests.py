@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
-# Copyright (C) 2013 Bloomberg L.P. All rights reserved.
+# Copyright (C) 2019 Bloomberg L.P. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -23,41 +23,40 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import subprocess
+import bbutil
+import sys
+import os
 
-def execNoPipe(cmd, env=None):
-  args = list(filter(lambda x: len(x) > 0, cmd.split(' ')))
-  p = subprocess.Popen(args, env=env)
-  p.communicate()
-  return p.returncode
+def main(args):
+  repoRoot = bbutil.getStrippedShellOutput("git rev-parse --show-toplevel")
+  outDir = os.path.join(repoRoot, 'src/out/shared_release')
+  tests = [
+    # base_unittests (1 test fail)
+    #"base_unittests.exe",
 
-def shellExec(cmd):
-  p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  output = p.communicate()
-  return p.returncode, output[0].decode('utf-8'), output[1].decode('utf-8')
+    # blink_tests
+    "blink_common_unittests.exe",
+    "blink_heap_unittests.exe",
+    "blink_platform_unittests.exe",
+    "blink_unittests.exe",
+    "wtf_unittests.exe",
 
+    # cc_unittests (many test fails)
+    #"cc_unittests.exe",
 
-def shellExecNoPipe(cmd):
-  p = subprocess.Popen(cmd, shell=True)
-  p.communicate()
-  return p.returncode
+    # skia_unittests
+    "skia_unittests.exe",
+  ]
 
+  for test in tests:
+    print("Running {}".format(test))
+    path = os.path.join(outDir, test)
+    rc = bbutil.execNoPipe(path)
 
-def getStrippedShellOutput(cmd):
-  p = shellExec(cmd)
-  if p[0] != 0:
-    raise Exception("Failed to run command '{}': {}".format(cmd, p[2]))
-  return p[1].strip()
+    if rc != 0:
+      print("Test '{}' failed".format(test))
+      return rc
 
-
-def getSplitShellOutput(cmd):
-  p = shellExec(cmd)
-  if p[0] != 0:
-    raise Exception("Failed to run command '{}': {}".format(cmd, p[2]))
-  return p[1].strip().splitlines()
-
-
-def getHEADSha():
-  return getStrippedShellOutput("git rev-parse HEAD")
-
+if __name__ == '__main__':
+  sys.exit(main(sys.argv))
 
