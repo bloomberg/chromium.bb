@@ -2646,6 +2646,18 @@
         },
         {
           "board_name": "octopus",
+          "name": "vorticon",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "vortininja",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
           "name": "yorp",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
