@@ -309,12 +309,13 @@ class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
     flags.setBlendMode(SkBlendMode::kSrc);
     flags.setAntiAlias(false);
     flags.setShader(gfx::CreateGradientShader(
-        0, kFadeoutZoneHeight, SK_ColorTRANSPARENT, SK_ColorBLACK));
+        gfx::Point(), gfx::Point(0, kFadeoutZoneHeight), SK_ColorTRANSPARENT,
+        SK_ColorBLACK));
     canvas->DrawRect(top_rect, flags);
     // Draw bottom gradient zone.
     flags.setShader(gfx::CreateGradientShader(
-        size.height() - kFadeoutZoneHeight, size.height(), SK_ColorBLACK,
-        SK_ColorTRANSPARENT));
+        gfx::Point(0, size.height() - kFadeoutZoneHeight),
+        gfx::Point(0, size.height()), SK_ColorBLACK, SK_ColorTRANSPARENT));
     canvas->DrawRect(bottom_rect, flags);
   }
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
