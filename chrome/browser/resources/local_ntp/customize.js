@@ -1424,7 +1424,7 @@ customize.richerPicker_preselectBackgroundOption = function() {
 
   customize.preselectedOptions.backgroundsMenuTile = null;
 
-  const themeInfo = ntpApiHandle.themeBackgroundInfo;
+  const themeInfo = assert(ntpApiHandle.themeBackgroundInfo);
   if (!themeInfo.customBackgroundConfigured) {
     // Default.
     customize.preselectedOptions.backgroundsMenuTile =
@@ -2302,7 +2302,7 @@ customize.loadColorsMenu = function() {
  */
 customize.colorsMenuOnThemeChange = function() {
   // Update webstore theme information.
-  const themeInfo = ntpApiHandle.themeBackgroundInfo;
+  const themeInfo = assert(ntpApiHandle.themeBackgroundInfo);
   if (themeInfo.themeId && themeInfo.themeName) {
     $(customize.IDS.COLORS_THEME).classList.add(customize.CLASSES.VISIBLE);
     $(customize.IDS.COLORS_THEME_NAME).innerHTML = themeInfo.themeName;
@@ -2329,7 +2329,7 @@ customize.colorsMenuOnThemeChange = function() {
  * Preselect Colors menu tile according to the theme info.
  */
 customize.colorsMenuPreselectTile = function() {
-  const themeInfo = ntpApiHandle.themeBackgroundInfo;
+  const themeInfo = assert(ntpApiHandle.themeBackgroundInfo);
 
   let tile;
   if (themeInfo.usingDefaultTheme) {
