@@ -219,9 +219,6 @@ def ShortenUri(uri, omit_scheme=False):
   Returns:
     A (hopefully shorter) URI pointing to the same resource as |uri|.
   """
-  # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
-  # pylint: disable=too-many-function-args
-
   o = urllib.parse.urlsplit(uri)
 
   # If the scheme & host are empty, assume it's because the URI we were given

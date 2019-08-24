@@ -171,11 +171,7 @@ class FileTypeDecoder(object):
     else:
       to_ints = lambda s: s
     ascii_chars = set(to_ints(b'\a\b\t\n\v\f\r\x1b'))
-    # <=Pylint-1.8 is buggy here with range detection.
-    # TODO(vapier): Drop this once we upgrade to pylint-1.9+.
-    # pylint: disable=range-builtin-not-iterating
     ascii_chars.update(range(32, 128))
-    # pylint: enable=range-builtin-not-iterating
     is_binary = any(set(to_ints(chunk)) - ascii_chars
                     for chunk in iter(lambda: fmap.read(FILE_BUFFER_SIZE), b''))
 

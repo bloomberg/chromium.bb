@@ -156,9 +156,6 @@ def ParseDate(value):
 
 def NormalizeUri(value):
   """Normalize a local path or URI."""
-  # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
-  # pylint: disable=too-many-function-args
-
   o = urllib.parse.urlparse(value)
   if o.scheme == 'file':
     # Trim off the file:// prefix.

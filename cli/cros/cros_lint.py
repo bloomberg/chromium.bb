@@ -159,7 +159,7 @@ def _CpplintFile(path, output_format, debug):
 
 def _PylintFile(path, output_format, debug):
   """Returns result of running pylint on |path|."""
-  pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint-1.7')
+  pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint-1.9')
   pylintrc = _GetPylintrc(path)
   cmd = [pylint, '--rcfile=%s' % pylintrc]
   if output_format != 'default':
@@ -170,7 +170,8 @@ def _PylintFile(path, output_format, debug):
       'EPYTHON': 'python2',
       'PYTHONPATH': ':'.join(_GetPythonPath([path])),
   }
-  return _LinterRunCommand(cmd, debug, extra_env=extra_env)
+  return _LinterRunCommand(cmd, debug, extra_env=extra_env,
+                           redirect_stderr=True)
 
 
 def _GolintFile(path, _, debug):

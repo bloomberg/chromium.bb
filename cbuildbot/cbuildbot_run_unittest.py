@@ -109,7 +109,8 @@ class _BuilderRunTestCase(cros_test_lib.MockTestCase):
     self._manager = parallel.Manager()
 
     # Mimic entering a 'with' statement.
-    self._manager.__enter__()
+    # Pylint-1.9 has a false positive on this for some reason.
+    self._manager.__enter__()  # pylint: disable=no-value-for-parameter
 
   def tearDown(self):
     # Mimic exiting a 'with' statement.

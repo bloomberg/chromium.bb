@@ -138,9 +138,6 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     """Sets up the gerrit instances in a class-specific temp dir."""
-    # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
-    # pylint: disable=too-many-function-args
-
     self.saved_params = {}
     old_home = os.environ['HOME']
     os.environ['HOME'] = self.tempdir
@@ -217,9 +214,6 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
   def createProject(self, suffix, description='Test project', owners=None,
                     submit_type='CHERRY_PICK'):
     """Create a project on the test gerrit server."""
-    # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
-    # pylint: disable=too-many-function-args
-
     name = self.gerrit_instance.project_prefix + suffix
     body = {
         'description': description,

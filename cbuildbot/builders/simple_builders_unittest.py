@@ -77,7 +77,8 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
                      return_value='R32-1234.0.0')
 
     self._manager = parallel.Manager()
-    self._manager.__enter__()
+    # Pylint-1.9 has a false positive on this for some reason.
+    self._manager.__enter__()  # pylint: disable=no-value-for-parameter
 
   def tearDown(self):
     # Mimic exiting a 'with' statement.

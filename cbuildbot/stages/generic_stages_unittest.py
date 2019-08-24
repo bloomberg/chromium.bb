@@ -67,7 +67,8 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     osutils.SafeMakedirs(os.path.join(self.build_root, '.repo'))
 
     self._manager = parallel.Manager()
-    self._manager.__enter__()
+    # Pylint-1.9 has a false positive on this for some reason.
+    self._manager.__enter__()  # pylint: disable=no-value-for-parameter
 
     # These are here to make pylint happy.  Values filled in by _Prepare.
     self._bot_id = None

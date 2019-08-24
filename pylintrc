@@ -124,11 +124,15 @@ enable=
 # We leave many of the style warnings to judgement/peer review.
 # TODO: We need to re-enable broad-except, but requires cleaning up our code.
 # TODO: Re-enable redefined-variable-type.
+# TODO: Re-enable inconsistent-return-statements.
+# TODO: Re-enable keyword-arg-before-vararg once we're on Python 3-only.
 disable=
     broad-except,
     consider-iterating-dictionary,
     fixme,
     file-ignored,
+    keyword-arg-before-vararg,
+    inconsistent-return-statements,
     invalid-name,
     locally-disabled,
     locally-enabled,
@@ -439,6 +443,8 @@ known-third-party=
     google,
     googleapiclient,
     httplib2,
+    lddtree,
+    magic,
     mock,
     oauth2client,
     portage,

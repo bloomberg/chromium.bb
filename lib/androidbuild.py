@@ -275,9 +275,6 @@ def SplitAbUrl(ab_url):
   Raises:
     ValueError: If the URL is not a valid ab://... URL.
   """
-  # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
-  # pylint: disable=too-many-function-args
-
   o = urllib.parse.urlparse(ab_url)
 
   if o.scheme != 'ab':

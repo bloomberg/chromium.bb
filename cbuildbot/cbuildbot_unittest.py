@@ -108,7 +108,8 @@ class RunBuildStagesTest(cros_test_lib.RunCommandTempDirTestCase,
     self.options.prebuilts = False
 
     self._manager = parallel.Manager()
-    self._manager.__enter__()
+    # Pylint-1.9 has a false positive on this for some reason.
+    self._manager.__enter__()  # pylint: disable=no-value-for-parameter
     self.run = cbuildbot_run.BuilderRun(self.options, self.site_config,
                                         self.build_config, self._manager)
 

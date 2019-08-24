@@ -372,9 +372,6 @@ def Expire(ctx, dryrun, url):
     dryrun: Do we actually move the file?
     url: Address of file to move.
   """
-  # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
-  # pylint: disable=too-many-function-args
-
   logging.info('Expiring: %s', url)
   # Move gs://foo/some/file -> gs://foo-backup/some/file
   parts = urllib.parse.urlparse(url)

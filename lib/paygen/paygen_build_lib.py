@@ -455,9 +455,6 @@ class PaygenBuild(object):
     Raises:
       ArchiveError: if we could not compute the mapping.
     """
-    # TODO(vapier): <pylint-1.9 is buggy w/urllib.parse.
-    # pylint: disable=too-many-function-args
-
     # Map chromeos-releases board name to its chromeos-image-archive equivalent.
     archive_board_candidates = set([
         archive_board for archive_board in self._site_config.GetBoards()

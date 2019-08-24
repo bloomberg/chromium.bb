@@ -328,7 +328,7 @@ def _GetArtifactVersionInChromium(arch, chrome_root):
                      AFDO_PROFILE_PATH_IN_CHROMIUM % arch,
                      '..')))
     raise RuntimeError(
-        'File %s containing profile name does not exist', profile_file)
+        'File %s containing profile name does not exist' % (profile_file,))
 
   return osutils.ReadFile(profile_file)
 

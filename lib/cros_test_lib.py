@@ -1391,8 +1391,6 @@ class ProfileTestRunner(unittest.TextTestRunner):
   SORT_STATS_KEYS = ()
 
   def run(self, test):
-    # TODO(vapier): Drop this after we upgrade past pylint-1.7.
-    # pylint: disable=bad-python3-import
     import cProfile
     profiler = cProfile.Profile(**self.PROFILE_KWARGS)
     ret = profiler.runcall(unittest.TextTestRunner.run, self, test)
