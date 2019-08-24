@@ -30,23 +30,38 @@ endobj
 >>
 endobj
 5 0 obj <<
-  /Length 337
+  /Length 561
 >>
 stream
 BT
+/F1 30 Tf
+10 160 Td
+(T) Tj
 /F1 10 Tf
-10 180 Td
-(This     is     a     test     with     multiple) Tj
+20 15 Td
+(his is a test with a simulated drop) Tj
 0 -10 Td
-(lines     of     text.) Tj
-0 -20 Td
-(Leaving a large space between words) Tj
+(cap. A drop cap is a large initial) Tj
 0 -10 Td
-(above defeats the a11y text-run logic and) Tj
+(letter that drops below the first line) Tj
+-20 -10 Td
+(of a paragraph. The drop cap should be) Tj
 0 -10 Td
-(ensures we have multiple runs to test the) Tj
+(considered part of the first line.) Tj
+ET
+BT
+/F1 30 Tf
+10 100 Td
+(T) Tj
+/F1 10 Tf
+20 15 Td
+(his is another      test with a simulated) Tj
 0 -10 Td
-(next-on-line / previous-on-line attributes.) Tj
+(drop cap.       We     use      large) Tj
+0 -10 Td
+(amounts of        whitespace to defeat) Tj
+-20 -10 Td
+(the         PDFium        text-run logic.) Tj
 ET
 endstream
 endobj
@@ -63,5 +78,5 @@ trailer <<
   /Size 6
 >>
 startxref
-748
+972
 %%EOF

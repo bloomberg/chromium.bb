@@ -4,6 +4,4 @@ group
 ++++++group
 ++++++++description Name='Hello,<newline> world!<newline><newline>Goodbye,<newline> world!<newline>'
 ++++++group
-++++++++description Name='This is some text '
-++++++group
-++++++++description Name='abc<newline>def'
+++++++++description Name='This is some text abc<newline>def'

@@ -4,6 +4,4 @@
 ++++++[paragraph]
 ++++++++[text] name='Hello,<newline> world!<newline><newline>Goodbye,<newline> world!<newline>'
 ++++++[paragraph]
-++++++++[text] name='This is some text '
-++++++[paragraph]
-++++++++[text] name='abc<newline>def'
+++++++++[text] name='This is some text abc<newline>def'

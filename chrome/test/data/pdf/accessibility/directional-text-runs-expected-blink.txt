@@ -8,9 +8,7 @@ embeddedObject
 ++++++++++inlineTextBox name='Goodbye,<newline> ' restriction=readOnly
 ++++++++++inlineTextBox name='world!<newline>' restriction=readOnly
 ++++++paragraph restriction=readOnly
-++++++++staticText name='This is some text ' restriction=readOnly
+++++++++staticText name='This is some text abc<newline>def' restriction=readOnly
 ++++++++++inlineTextBox name='This is some text ' restriction=readOnly
-++++++paragraph restriction=readOnly
-++++++++staticText name='abc<newline>def' restriction=readOnly
 ++++++++++inlineTextBox name='abc<newline>' restriction=readOnly
 ++++++++++inlineTextBox name='def' restriction=readOnly
