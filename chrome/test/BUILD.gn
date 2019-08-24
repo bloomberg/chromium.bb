@@ -4650,7 +4650,11 @@ test("unit_tests") {
   }
 
   if (enable_basic_printing) {
-    sources += [ "../browser/printing/print_job_unittest.cc" ]
+    sources += [
+      "../browser/printing/print_job_unittest.cc",
+      "../browser/printing/print_test_utils.cc",
+      "../browser/printing/print_test_utils.h",
+    ]
 
     deps += [
       "//printing",
@@ -4662,8 +4666,6 @@ test("unit_tests") {
         "../browser/printing/print_preview_dialog_controller_unittest.cc",
         "../browser/printing/print_preview_test.cc",
         "../browser/printing/print_preview_test.h",
-        "../browser/printing/print_test_utils.cc",
-        "../browser/printing/print_test_utils.h",
         "../browser/printing/print_view_manager_unittest.cc",
         "../browser/printing/test_print_job.cc",
         "../browser/printing/test_print_job.h",
