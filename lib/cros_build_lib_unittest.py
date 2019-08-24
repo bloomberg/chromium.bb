@@ -90,8 +90,8 @@ class CmdToStrTest(cros_test_lib.TestCase):
     # Dict of expected output strings to input lists.
     tests_quote = {
         "''": '',
-        'a': unicode('a'),
-        "'a b c'": unicode('a b c'),
+        'a': u'a',
+        "'a b c'": u'a b c',
         "'a\tb'": 'a\tb',
         "'/a$file'": '/a$file',
         "'/a#file'": '/a#file',
@@ -132,7 +132,7 @@ class CmdToStrTest(cros_test_lib.TestCase):
         # https://github.com/edaniszewski/pylint-quotes/issues/20
         r'''a "b'c"''': ['a', "b'c"],
         r'''a "/'\$b" 'a b c' "xy'z"''':
-            [unicode('a'), "/'$b", 'a b c', "xy'z"],
+            [u'a', "/'$b", 'a b c', "xy'z"],
         '': [],
     }
     self._testData(cros_build_lib.CmdToStr, tests)

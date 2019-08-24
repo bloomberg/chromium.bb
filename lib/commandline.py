@@ -223,7 +223,8 @@ class DeviceParser(object):
     Args:
       schemes: A scheme or list of schemes to accept.
     """
-    self.schemes = [schemes] if isinstance(schemes, basestring) else schemes
+    self.schemes = ([schemes] if isinstance(schemes, six.string_types)
+                    else schemes)
     # Provide __name__ for argparse to print on failure, or else it will use
     # repr() which creates a confusing error message.
     self.__name__ = type(self).__name__

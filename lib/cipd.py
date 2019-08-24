@@ -18,6 +18,8 @@ import pprint
 import tempfile
 import urlparse
 
+import six
+
 import chromite.lib.cros_logging as log
 from chromite.lib import cache
 from chromite.lib import osutils
@@ -106,7 +108,7 @@ def _DownloadCIPD(instance_sha256):
     raise Error('Got a %d response from Google Storage.' % response.status)
 
   # Check SHA256 matches what server expects.
-  digest = unicode(hashlib.sha256(binary).hexdigest())
+  digest = six.text_type(hashlib.sha256(binary).hexdigest())
   for alias in resp['clientRefAliases']:
     if alias['hashAlgo'] == 'SHA256':
       if digest != alias['hexDigest']:

@@ -19,6 +19,8 @@ import signal
 import subprocess
 import sys
 
+import six
+
 from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import process_util
@@ -47,7 +49,7 @@ def SetNS(fd, nstype):
   """
   try:
     fp = None
-    if isinstance(fd, basestring):
+    if isinstance(fd, six.string_types):
       fp = open(fd)
       fd = fp.fileno()
 

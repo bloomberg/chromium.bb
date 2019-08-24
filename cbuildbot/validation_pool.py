@@ -18,6 +18,8 @@ import os
 import time
 from xml.dom import minidom
 
+import six
+
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import patch_series
 from chromite.lib import constants
@@ -210,11 +212,11 @@ class ValidationPool(object):
     if not isinstance(build_number, int):
       raise ValueError('Invalid build_number: %r' % (build_number,))
 
-    if not isinstance(builder_name, basestring):
+    if not isinstance(builder_name, six.string_types):
       raise ValueError('Invalid builder_name: %r' % (builder_name,))
 
     if (buildbucket_id is not None and
-        not isinstance(buildbucket_id, basestring)):
+        not isinstance(buildbucket_id, six.string_types)):
       if isinstance(buildbucket_id, int):
         buildbucket_id = str(buildbucket_id)
       else:

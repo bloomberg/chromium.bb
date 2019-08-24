@@ -20,6 +20,8 @@ import Queue
 import ssl
 from functools import wraps
 
+import six
+
 from chromite.lib import cros_logging as logging
 
 try:
@@ -145,7 +147,7 @@ class FieldSpecAdapter(object):
       bool: ts_mon.BooleanField,
       int: ts_mon.IntegerField,
       str: ts_mon.StringField,
-      unicode: ts_mon.StringField,
+      six.text_type: ts_mon.StringField,
   }
 
   def __init__(self, metric_cls, *args, **kwargs):

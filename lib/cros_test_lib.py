@@ -110,7 +110,7 @@ def _FlattenStructure(base_path, dir_struct):
       flattened.append(new_base + os.sep)
       flattened.extend(_FlattenStructure(new_base, obj.contents))
     else:
-      assert isinstance(obj, basestring)
+      assert isinstance(obj, six.string_types)
       flattened.append(os.path.join(base_path, obj))
   return flattened
 

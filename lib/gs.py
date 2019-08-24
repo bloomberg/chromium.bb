@@ -757,9 +757,7 @@ class GSContext(object):
 
     hashed_filenames = []
     for filename in filenames:
-      if not isinstance(filename, unicode):
-        filename = unicode(filename, 'utf8').encode('utf-8')
-      m = hashlib.sha1(filename)
+      m = hashlib.sha1(filename.encode())
       hashed_filenames.append('%s_TRACKER_%s.%s' %
                               (prefix, m.hexdigest(), filename[-16:]))
 

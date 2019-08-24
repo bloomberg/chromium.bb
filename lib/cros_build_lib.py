@@ -316,7 +316,7 @@ def SudoRunCommand(cmd, user='root', preserve_env=False, **kwargs):
   # Finally, block people from passing options to sudo.
   sudo_cmd.append('--')
 
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, six.string_types):
     # We need to handle shell ourselves so the order is correct:
     #  $ sudo [sudo args] -- bash -c '[shell command]'
     # If we let RunCommand take care of it, we'd end up with:
@@ -547,13 +547,13 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
 
   # If input is a string, we'll create a pipe and send it through that.
   # Otherwise we assume it's a file object that can be read from directly.
-  if isinstance(input, basestring):
+  if isinstance(input, six.string_types):
     stdin = subprocess.PIPE
   elif input is not None:
     stdin = input
     input = None
 
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, six.string_types):
     if not shell:
       raise Exception('Cannot run a string command without a shell')
     cmd = ['/bin/bash', '-c', cmd]
@@ -1177,7 +1177,7 @@ def BooleanShellValue(sval, default, msg=None):
   if sval is None:
     return default
 
-  if isinstance(sval, basestring):
+  if isinstance(sval, six.string_types):
     s = sval.lower()
     if s in ('yes', 'y', '1', 'true'):
       return True
@@ -1380,7 +1380,7 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
   return major, minor
 
 
-def iflatten_instance(iterable, terminate_on_kls=(basestring,)):
+def iflatten_instance(iterable, terminate_on_kls=six.string_types):
   """Derivative of snakeoil.lists.iflatten_instance; flatten an object.
 
   Given an object, flatten it into a single depth iterable-
@@ -1400,7 +1400,7 @@ def iflatten_instance(iterable, terminate_on_kls=(basestring,)):
       return False
     # Note strings can be infinitely descended through- thus this
     # recursion limiter.
-    return not isinstance(item, basestring) or len(item) > 1
+    return not isinstance(item, six.string_types) or len(item) > 1
 
   if not descend_into(iterable):
     yield iterable
@@ -1455,7 +1455,7 @@ def PredicateSplit(func, iterable):
 @contextlib.contextmanager
 def Open(obj, mode='r'):
   """Convenience ctx that accepts a file path or an already open file object."""
-  if isinstance(obj, basestring):
+  if isinstance(obj, six.string_types):
     with open(obj, mode=mode) as f:
       yield f
   else:

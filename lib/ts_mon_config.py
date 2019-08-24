@@ -16,6 +16,8 @@ import signal
 import time
 import Queue
 
+import six
+
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
 from chromite.lib import parallel
@@ -59,7 +61,7 @@ def GetMetricFieldSpec(fields=None):
         field_spec.append(BooleanField(key))
       elif isinstance(val, int):
         field_spec.append(IntegerField(key))
-      elif isinstance(val, basestring):
+      elif isinstance(val, six.string_types):
         field_spec.append(StringField(key))
       else:
         logging.error("Couldn't classify the metric field %s:%s",

@@ -17,6 +17,8 @@ import re
 import string
 from xml import sax
 
+import six
+
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -493,7 +495,7 @@ class Manifest(object):
 
   @staticmethod
   def _GetManifestHash(source, ignore_missing=False):
-    if isinstance(source, basestring):
+    if isinstance(source, six.string_types):
       try:
         # TODO(build): convert this to osutils.ReadFile once these
         # classes are moved out into their own module (if possible;

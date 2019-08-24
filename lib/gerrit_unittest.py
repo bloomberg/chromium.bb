@@ -23,6 +23,7 @@ import stat
 import urllib
 
 import mock
+import six
 
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -369,7 +370,7 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
     if password:
       body['http_password'] = password
     if groups:
-      if isinstance(groups, basestring):
+      if isinstance(groups, six.string_types):
         groups = [groups]
       body['groups'] = groups
     conn = gob_util.CreateHttpConn(

@@ -18,6 +18,8 @@ import tempfile
 import time
 import traceback
 
+import six
+
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import topology
@@ -920,7 +922,7 @@ class BoardSpecificBuilderStage(BuilderStage):
   """
 
   def __init__(self, builder_run, buildstore, board, suffix=None, **kwargs):
-    if not isinstance(board, basestring):
+    if not isinstance(board, six.string_types):
       raise TypeError('Expected string, got %r' % (board,))
 
     self._current_board = board

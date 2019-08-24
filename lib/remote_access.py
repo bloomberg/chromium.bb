@@ -16,6 +16,8 @@ import stat
 import tempfile
 import time
 
+import six
+
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -356,7 +358,7 @@ class RemoteAccess(object):
         # Prepend sudo to cmd.
         ssh_cmd.append('sudo')
 
-      if isinstance(cmd, basestring):
+      if isinstance(cmd, six.string_types):
         if kwargs.get('shell'):
           ssh_cmd = '%s %s' % (' '.join(ssh_cmd), cmd)
         else:

@@ -25,6 +25,8 @@ import threading
 import urlparse
 
 from google.protobuf import timestamp_pb2
+import six
+
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -326,8 +328,8 @@ def get_token_fingerprint(blob):
 
   It can be used to identify this particular token in logs without revealing it.
   """
-  assert isinstance(blob, basestring)
-  if isinstance(blob, unicode):
+  assert isinstance(blob, six.string_types)
+  if isinstance(blob, six.text_type):
     blob = blob.encode('ascii', 'ignore')
   return binascii.hexlify(hashlib.sha256(blob).digest()[:16])
 

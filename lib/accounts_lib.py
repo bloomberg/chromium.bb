@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import collections
 
+import six
+
 from chromite.lib import json_lib
 from chromite.lib import user_db
 
@@ -104,19 +106,22 @@ class AccountDatabase(object):
     # By default, users are not defunct.
     user_spec.setdefault(USER_DEFUNCT_KEY, False)
 
-    name = json_lib.PopValueOfType(user_spec, USER_NAME_KEY, unicode,
+    name = json_lib.PopValueOfType(user_spec, USER_NAME_KEY, six.text_type,
                                    'username from user spec')
-    password = json_lib.PopValueOfType(user_spec, USER_PASSWORD_KEY, unicode,
-                                       'password for user %s' % name)
+    password = json_lib.PopValueOfType(
+        user_spec, USER_PASSWORD_KEY, six.string_types,
+        'password for user %s' % name)
     uid = json_lib.PopValueOfType(user_spec, USER_ID_KEY, int,
                                   'default uid for user %s' % name)
-    group_name = json_lib.PopValueOfType(user_spec, USER_GROUP_KEY, unicode,
-                                         'primary group for user %s' % name)
-    description = json_lib.PopValueOfType(user_spec, USER_COMMENT_KEY, unicode,
-                                          'description for user %s' % name)
-    home = json_lib.PopValueOfType(user_spec, USER_HOME_KEY, unicode,
+    group_name = json_lib.PopValueOfType(
+        user_spec, USER_GROUP_KEY, six.text_type,
+        'primary group for user %s' % name)
+    description = json_lib.PopValueOfType(
+        user_spec, USER_COMMENT_KEY, six.text_type,
+        'description for user %s' % name)
+    home = json_lib.PopValueOfType(user_spec, USER_HOME_KEY, six.text_type,
                                    'home directory for user %s' % name)
-    shell = json_lib.PopValueOfType(user_spec, USER_SHELL_KEY, unicode,
+    shell = json_lib.PopValueOfType(user_spec, USER_SHELL_KEY, six.text_type,
                                     'shell for user %s' % name)
     is_fixed_id = json_lib.PopValueOfType(user_spec, USER_FIXED_ID_KEY, bool,
                                           'whether UID for user %s is fixed' %
@@ -148,10 +153,11 @@ class AccountDatabase(object):
     # By default, groups are not defunct.
     group_spec.setdefault(GROUP_DEFUNCT_KEY, False)
 
-    name = json_lib.PopValueOfType(group_spec, GROUP_NAME_KEY, unicode,
+    name = json_lib.PopValueOfType(group_spec, GROUP_NAME_KEY, six.text_type,
                                    'groupname from group spec')
-    password = json_lib.PopValueOfType(group_spec, GROUP_PASSWORD_KEY, unicode,
-                                       'password for group %s' % name)
+    password = json_lib.PopValueOfType(
+        group_spec, GROUP_PASSWORD_KEY, six.text_type,
+        'password for group %s' % name)
     gid = json_lib.PopValueOfType(group_spec, GROUP_ID_KEY, int,
                                   'gid for group %s' % name)
     users = json_lib.PopValueOfType(group_spec, GROUP_USERS_KEY, list,
@@ -163,7 +169,8 @@ class AccountDatabase(object):
                                          'whether group %s is defunct' % name)
 
     for username in users:
-      json_lib.AssertIsInstance(username, unicode, 'user in group %s' % name)
+      json_lib.AssertIsInstance(
+          username, six.text_type, 'user in group %s' % name)
 
     if group_spec:
       raise ValueError('Unexpected keys in group spec for group %s: %r' %
