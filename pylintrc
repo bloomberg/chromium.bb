@@ -36,8 +36,10 @@ docstring-quote = double
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple times.
-# R9301: logging is deprecated. Use "from chromite.lib import cros_logging as
-# logging" to import chromite/lib/cros_logging
+# cros-logging-import: logging is deprecated. Use "from chromite.lib import
+#   cros_logging as logging" to import chromite/lib/cros_logging.
+# round-builtin: We omit this as all our usage of round() is OK with either
+#   Python 2 or 3 behavior (and probably leans towards 3 anyways).
 enable=
     cros-logging-import,
     apply-builtin,
