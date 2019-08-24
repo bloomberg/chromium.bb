@@ -155,10 +155,6 @@ const base::Feature kEnableGeneralAudienceBrowsing{
 const base::Feature kUseQueryableDataBackend{"use_queryable_data_backend",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Lowers frame rate
-const base::Feature kReduceHeadlessFrameRate{"reduce_headless_frame_rate",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // End Chromecast Feature definitions.
 const base::Feature* kFeatures[] = {
     &kAllowUserMediaAccess,
@@ -168,7 +164,6 @@ const base::Feature* kFeatures[] = {
     &kDisableIdleSocketsCloseOnMemoryPressure,
     &kEnableGeneralAudienceBrowsing,
     &kUseQueryableDataBackend,
-    &kReduceHeadlessFrameRate,
 };
 
 // An iterator for a base::DictionaryValue. Use an alias for brevity in loops.

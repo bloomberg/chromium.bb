@@ -4,12 +4,8 @@
 
 #include "chromecast/graphics/cast_window_manager_aura.h"
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "chromecast/base/cast_features.h"
-#include "chromecast/chromecast_buildflags.h"
-#include "chromecast/graphics/cast_external_begin_frame_client.h"
 #include "chromecast/graphics/cast_focus_client_aura.h"
 #include "chromecast/graphics/cast_touch_activity_observer.h"
 #include "chromecast/graphics/cast_touch_event_gate.h"
@@ -224,16 +220,8 @@ void CastWindowManagerAura::Setup() {
 
   LOG(INFO) << "Starting window manager, bounds: " << host_bounds.ToString();
   CHECK(aura::Env::GetInstance());
-
-#if BUILDFLAG(IS_CAST_AUDIO_ONLY)
-  if (base::base::FeatureList::IsEnabled(kReduceHeadlessFrameRate))
-    external_begin_frame_client_ =
-        std::make_unique<CastExternalBeginFrameClient>(this);
-#endif
-
   window_tree_host_ = std::make_unique<CastWindowTreeHost>(
-      enable_input_, std::move(properties), external_begin_frame_client_.get());
-
+      enable_input_, std::move(properties));
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetLayoutManager(new CastLayoutManager());
   window_tree_host_->SetRootTransform(GetPrimaryDisplayRotationTransform());
