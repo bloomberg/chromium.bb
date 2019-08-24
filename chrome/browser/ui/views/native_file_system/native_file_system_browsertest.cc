@@ -117,13 +117,7 @@ class NativeFileSystemBrowserTest : public InProcessBrowserTest {
   base::ScopedTempDir temp_dir_;
 };
 
-#if defined(OS_CHROMEOS)
-// TODO(https://crbug.com/993597): Writing is currently broken on ChromeOS.
-#define MAYBE_SaveFile DISABLED_SaveFile
-#else
-#define MAYBE_SaveFile SaveFile
-#endif
-IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, MAYBE_SaveFile) {
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, SaveFile) {
   const base::FilePath test_file = CreateTestFile("");
   const std::string file_contents = "file contents to write";
 
@@ -167,13 +161,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, MAYBE_SaveFile) {
   }
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(https://crbug.com/993597): Writing is currently broken on ChromeOS.
-#define MAYBE_OpenFile DISABLED_OpenFile
-#else
-#define MAYBE_OpenFile OpenFile
-#endif
-IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, MAYBE_OpenFile) {
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, OpenFile) {
   const base::FilePath test_file = CreateTestFile("");
   const std::string file_contents = "file contents to write";
 
