@@ -17,7 +17,6 @@
     betty-chrome-pfq
     betty-pi-arc-chrome-pfq
     bob-chrome-pfq
-    caroline-arcnext-chrome-pfq
     caroline-chrome-pfq
     chell-chrome-pfq
     coral-chrome-pfq
@@ -53,7 +52,6 @@
     bubs-paladin
     capri-paladin
     capri-zfpga-paladin
-    caroline-arcnext-paladin
     caroline-paladin
     cave-paladin
     chell-nowithdebug-paladin
@@ -365,7 +363,6 @@
   master-pi-android-pfq
     betty-arcnext-pi-android-pfq
     betty-pi-arc-pi-android-pfq
-    caroline-arcnext-pi-android-pfq
     caroline-pi-android-pfq
     coral-pi-android-pfq
     eve-pi-android-pfq
@@ -1035,24 +1032,6 @@
   caroline-arc64-release-tryjob
   caroline-arc64-tot-chromium-pfq-informational-tryjob
   caroline-arc64-unittest-stress
-  caroline-arcnext-chrome-pfq-tryjob
-  caroline-arcnext-chromium-pfq-tryjob
-  caroline-arcnext-compile-only-pre-cq
-  caroline-arcnext-full-tryjob
-  caroline-arcnext-llvm-next-toolchain-tryjob
-  caroline-arcnext-llvm-toolchain-tryjob
-  caroline-arcnext-no-vmtest-pre-cq
-  caroline-arcnext-paladin-tryjob
-  caroline-arcnext-payloads-tryjob
-  caroline-arcnext-pi-android-pfq-tryjob
-  caroline-arcnext-pre-cq
-  caroline-arcnext-release-afdo-generate-tryjob
-  caroline-arcnext-release-afdo-tryjob
-  caroline-arcnext-release-afdo-use-tryjob
-  caroline-arcnext-release-tryjob
-  caroline-arcnext-tot-chrome-pfq-informational-tryjob
-  caroline-arcnext-tot-chromium-pfq-informational-tryjob
-  caroline-arcnext-unittest-stress
   caroline-chrome-pfq-tryjob
   caroline-chromium-pfq-tryjob
   caroline-compile-only-pre-cq
@@ -2311,7 +2290,6 @@
     betty-chrome-pfq-tryjob
     betty-pi-arc-chrome-pfq-tryjob
     bob-chrome-pfq-tryjob
-    caroline-arcnext-chrome-pfq-tryjob
     caroline-chrome-pfq-tryjob
     chell-chrome-pfq-tryjob
     coral-chrome-pfq-tryjob
@@ -2369,7 +2347,6 @@
     bubs-paladin-tryjob
     capri-paladin-tryjob
     capri-zfpga-paladin-tryjob
-    caroline-arcnext-paladin-tryjob
     caroline-paladin-tryjob
     cave-paladin-tryjob
     chell-nowithdebug-paladin-tryjob
@@ -2455,7 +2432,6 @@
   master-pi-android-pfq-tryjob
     betty-arcnext-pi-android-pfq-tryjob
     betty-pi-arc-pi-android-pfq-tryjob
-    caroline-arcnext-pi-android-pfq-tryjob
     caroline-pi-android-pfq-tryjob
     coral-pi-android-pfq-tryjob
     eve-pi-android-pfq-tryjob

@@ -564,10 +564,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
-      'caroline-arcnext-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-      },
-
       'grunt-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },

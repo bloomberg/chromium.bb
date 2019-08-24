@@ -89,7 +89,6 @@ x86_internal_release_boards = frozenset([
     'buddy',
     'candy',
     'caroline',
-    'caroline-arcnext',
     'cave',
     'celes',
     'chell',

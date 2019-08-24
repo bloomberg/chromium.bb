@@ -1856,14 +1856,12 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   ])
   _pi_no_hwtest_experimental_boards = frozenset([])
   _pi_hwtest_boards = frozenset([
-      'caroline-arcnext',
       'eve',
       'grunt',
       'kevin',
   ])
   _pi_hwtest_experimental_boards = frozenset([])
   _pi_hwtest_skylab_boards = frozenset([
-      'caroline-arcnext',
       'eve',
       'grunt',
       'kevin',
@@ -2254,7 +2252,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'capri',
       'capri-zfpga',
       'caroline',
-      'caroline-arcnext',
       'cave',
       'chell',
       'cheza',
@@ -2427,7 +2424,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'atlas',
       'bob',
       'caroline',
-      'caroline-arcnext',
       'cave',
       'coral',
       'cyan',
@@ -2622,7 +2618,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('nocturne',      None,            None,               'nocturne'),         # Nocturne (KBL)
     ('atlas',         None,            None,               'atlas'),            # Atlas (KBL)
     ('octopus',       None,            None,               'octopus'),          # Octopus (GLK unibuild)
-    (None,            None,            'caroline-arcnext', 'caroline-arcnext'), # arcnext
     ('nyan_blaze',    None,            None,               'nyan_blaze'),       # Add for Skylab test
     ('scarlet'   ,    None,            None,               'scarlet'),          # scarlet (RK3399 unibuild)
     ('grunt',         None,            'grunt',            'grunt'),            # grunt (AMD unibuild)
@@ -3275,12 +3270,10 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
-      'caroline-arcnext',
   ])
 
   _chrome_pfq_skylab_boards = frozenset([
       'caroline',
-      'caroline-arcnext',
       'kevin-arcnext',
       'kevin64',
       'grunt',
