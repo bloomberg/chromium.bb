@@ -1003,12 +1003,6 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
         sorted_navigation_scores) {
   DCHECK(!browser_context_->IsOffTheRecord());
 
-  // |sorted_navigation_scores| are sorted in descending order, the first one
-  // has the highest navigation score.
-  UMA_HISTOGRAM_COUNTS_100(
-      "AnchorElementMetrics.Visible.HighestNavigationScore",
-      static_cast<int>(sorted_navigation_scores[0]->score));
-
   std::string action_histogram_name =
       source_is_default_search_engine_page_
           ? "NavigationPredictor.OnDSE.ActionTaken"
@@ -1085,23 +1079,43 @@ base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
   if (source_is_default_search_engine_page_)
     return base::nullopt;
 
-  if (sorted_navigation_scores.empty())
+  if (sorted_navigation_scores.empty() || top_urls_.empty())
     return base::nullopt;
+
+  // Find which URL in |top_urls_| has the highest navigation score.
+  double highest_navigation_score;
+  base::Optional<GURL> url_to_prefetch;
+
+  for (const auto& nav_score : sorted_navigation_scores) {
+    auto url_iter =
+        std::find(top_urls_.begin(), top_urls_.end(), nav_score->url);
+    if (url_iter != top_urls_.end()) {
+      url_to_prefetch = nav_score->url;
+      highest_navigation_score = nav_score->score;
+      break;
+    }
+  }
+
+  UMA_HISTOGRAM_COUNTS_100(
+      "AnchorElementMetrics.Visible.HighestNavigationScore",
+      static_cast<int>(highest_navigation_score));
+
+  if (!url_to_prefetch)
+    return url_to_prefetch;
 
   // Only the same origin URLs are eligible for prefetching. If the URL with
   // the highest score is from a different origin, then we skip prefetching
   // since same origin URLs are not likely to be clicked.
-  if (url::Origin::Create(sorted_navigation_scores[0]->url) !=
-      document_origin) {
+  if (url::Origin::Create(url_to_prefetch.value()) != document_origin) {
     return base::nullopt;
   }
 
   // If the prediction score of the highest scoring URL is less than the
   // threshold, then return.
-  if (sorted_navigation_scores[0]->score < prefetch_url_score_threshold_)
+  if (highest_navigation_score < prefetch_url_score_threshold_)
     return base::nullopt;
 
-  return sorted_navigation_scores[0]->url;
+  return url_to_prefetch;
 }
 
 base::Optional<url::Origin> NavigationPredictor::GetOriginToPreconnect(
