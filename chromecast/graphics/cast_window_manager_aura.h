@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chromecast/graphics/cast_external_begin_frame_client.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -18,10 +19,6 @@ namespace client {
 class ScreenPositionClient;
 }  // namespace client
 }  // namespace aura
-
-namespace ui {
-class ExternalBeginFrameClient;
-}  // namespace ui
 
 namespace chromecast {
 
@@ -92,6 +89,7 @@ class CastWindowManagerAura : public CastWindowManager,
 
  private:
   const bool enable_input_;
+  std::unique_ptr<CastExternalBeginFrameClient> external_begin_frame_client_;
   std::unique_ptr<CastWindowTreeHost> window_tree_host_;
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
   std::unique_ptr<CastFocusClientAura> focus_client_;
