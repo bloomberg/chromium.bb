@@ -43,7 +43,26 @@ namespace base {
 //   // On any thread...
 //   scoped_refptr<SequencedTaskRunner> main_task_runner = ...;
 //   auto widget = SequenceBound<MyClass>(main_task_runner, "My Title");
+//
+//   // Execute a single method on the object, on |main_task_runner|.
 //   widget.Post(FROM_HERE, &MyClass::DoSomething, 1234);
+//
+//   // Execute an arbitrary task on |main_task_runner| with a non-const pointer
+//   // to the object.
+//   widget.PostTaskWithThisObject(
+//       FROM_HERE,
+//       base::BindOnce([](MyClass* widget) {
+//         // Unlike with Post, we can issue multiple calls on |widget| within
+//         // the same stack frame.
+//         widget->DoSomething(42);
+//         widget->DoSomething(13);
+//       }));
+//
+//   // Execute an arbitrary task on |main_task_runner| with a const reference
+//   // to the object.
+//   widget.PostTaskWithThisObject(
+//       FROM_HERE,
+//       base::BindOnce([](const MyClass& widget) { ... }));
 //
 // Note that |widget| is constructed asynchronously on |main_task_runner|,
 // but calling Post() immediately is safe, since the actual call is posted
@@ -159,9 +178,35 @@ class SequenceBound {
   void Post(const base::Location& from_here,
             void (T::*method)(MethodArgs...),
             Args&&... args) const {
+    DCHECK(t_);
     impl_task_runner_->PostTask(from_here,
                                 base::BindOnce(method, base::Unretained(t_),
                                                std::forward<Args>(args)...));
+  }
+
+  // Posts |task| to |impl_task_runner_|, passing it a reference to the wrapped
+  // object. This allows arbitrary logic to be safely executed on the object's
+  // task runner. The object is guaranteed to remain alive for the duration of
+  // the task.
+  using ConstPostTaskCallback = base::OnceCallback<void(const T&)>;
+  void PostTaskWithThisObject(const base::Location& from_here,
+                              ConstPostTaskCallback callback) const {
+    DCHECK(t_);
+    impl_task_runner_->PostTask(
+        from_here,
+        base::BindOnce([](ConstPostTaskCallback callback,
+                          const T* t) { std::move(callback).Run(*t); },
+                       std::move(callback), t_));
+  }
+
+  // Same as above, but for non-const operations. The callback takes a pointer
+  // to the wrapped object rather than a const ref.
+  using PostTaskCallback = base::OnceCallback<void(T*)>;
+  void PostTaskWithThisObject(const base::Location& from_here,
+                              PostTaskCallback callback) const {
+    DCHECK(t_);
+    impl_task_runner_->PostTask(from_here,
+                                base::BindOnce(std::move(callback), t_));
   }
 
   // TODO(liberato): Add PostOrCall(), to support cases where synchronous calls
@@ -181,6 +226,26 @@ class SequenceBound {
     impl_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&DeleteOwnerRecord, base::Unretained(t_),
                                   base::Unretained(storage_)));
+
+    impl_task_runner_ = nullptr;
+    t_ = nullptr;
+    storage_ = nullptr;
+  }
+
+  // Same as above, but allows the caller to provide a closure to be invoked
+  // immediately after destruction. The Closure is invoked on
+  // |impl_task_runner_|, iff the owned object was non-null.
+  void ResetWithCallbackAfterDestruction(base::OnceClosure callback) {
+    if (is_null())
+      return;
+
+    impl_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](base::OnceClosure callback, T* t, void* storage) {
+                         DeleteOwnerRecord(t, storage);
+                         std::move(callback).Run();
+                       },
+                       std::move(callback), t_, storage_));
 
     impl_task_runner_ = nullptr;
     t_ = nullptr;
