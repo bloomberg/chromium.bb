@@ -42,14 +42,12 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestionsClient {
   // Returns the singleton instance.
   static ProactiveSuggestionsClient* Get();
 
-  // Sets the |delegate_| for the ProactiveSuggestionsClient. May be |nullptr|.
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  // Sets the delegate for the client which may be |nullptr|.
+  virtual void SetDelegate(Delegate* delegate) = 0;
 
  protected:
   ProactiveSuggestionsClient();
   virtual ~ProactiveSuggestionsClient();
-
-  Delegate* delegate_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProactiveSuggestionsClient);
