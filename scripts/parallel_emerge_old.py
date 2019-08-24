@@ -44,6 +44,9 @@ from chromite.lib import portage_util
 from chromite.lib import process_util
 from chromite.lib import proctitle
 
+# This script is being killed off, so just suppress this warning in general.
+# pylint: disable=protected-access
+
 # If PORTAGE_USERNAME isn't specified, scrape it from the $HOME variable. On
 # Chromium OS, the default "portage" user doesn't have the necessary
 # permissions. It'd be easier if we could default to $USERNAME, but $USERNAME

@@ -1626,6 +1626,7 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
 
   def testSuccessWithTooManyFiles(self):
     """Test a tarfile creation with -T /dev/stdin."""
+    # pylint: disable=protected-access
     num_inputs = cros_build_lib._THRESHOLD_TO_USE_T_FOR_TAR + 1
     inputs = ['input%s' % x for x in range(num_inputs)]
     largeInputDir = os.path.join(self.tempdir, 'largeinputs')
