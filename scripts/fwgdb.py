@@ -43,13 +43,13 @@ _PTRN_BOARD = 'Starting(?: read-only| read/write)? depthcharge on ([a-z_]+)...'
 
 def GetGdbForElf(elf):
   """Return the correct C compiler prefix for the target ELF file."""
-  with open(elf, 'rb') as elf:
+  with open(elf, 'rb') as fp:
     return {
         'EM_386': 'x86_64-cros-linux-gnu-gdb',
         'EM_X86_64': 'x86_64-cros-linux-gnu-gdb',
         'EM_ARM': 'armv7a-cros-linux-gnueabihf-gdb',
         'EM_AARCH64': 'aarch64-cros-linux-gnu-gdb',
-    }[ELFFile(elf).header.e_machine]
+    }[ELFFile(fp).header.e_machine]
 
 
 def ParseArgs(argv):

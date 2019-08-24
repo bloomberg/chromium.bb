@@ -17,7 +17,10 @@ from ssl import SSLError
 import ast
 import socket
 
+# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
+# pylint: disable=no-name-in-module
 from google.protobuf import field_mask_pb2
+# pylint: enable=no-name-in-module
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging

@@ -222,7 +222,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     except httplib2.ServerNotFoundError as e:
       pass
 
-  if not 'Authorization' in headers:
+  if 'Authorization' not in headers:
     logging.debug('No netrc file or Appengine credentials found.')
   if 'Cookie' not in headers:
     cookies = GetCookies(host, path)

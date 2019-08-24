@@ -1092,6 +1092,8 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
   lsb_release = None
   sysroot = None
   try:
+    # Somewhat confusing to clobber, but here we are.
+    # pylint: disable=redefined-argument-from-local
     with remote_access.ChromiumOSDeviceHandler(
         hostname, port=port, username=username, private_key=ssh_private_key,
         base_dir=_DEVICE_BASE_DIR, ping=ping) as device:

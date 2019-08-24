@@ -14,7 +14,12 @@ from chromite.config import chromeos_config
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+
+# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
+# pylint: disable=no-name-in-module
 from google.protobuf import json_format
+# pylint: enable=no-name-in-module
+
 
 BUILDER_CONFIG_FILENAME = os.path.join(
     constants.SOURCE_ROOT, 'infra/config/generated/builder_configs.cfg')

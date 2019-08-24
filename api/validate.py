@@ -19,7 +19,10 @@ import os
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 
+# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
+# pylint: disable=no-name-in-module
 from google.protobuf import message as protobuf_message
+# pylint: enable=no-name-in-module
 
 
 def _value(field, message):

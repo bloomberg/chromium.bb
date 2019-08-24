@@ -21,7 +21,10 @@ from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
+# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
+# pylint: disable=no-name-in-module
 from google.protobuf import message as protobuf_message
+# pylint: enable=no-name-in-module
 
 
 class Error(Exception):

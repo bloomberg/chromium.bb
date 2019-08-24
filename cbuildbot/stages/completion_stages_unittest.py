@@ -538,7 +538,7 @@ class CanaryCompletionStageTest(generic_stages_unittest.AbstractStageTestCase):
   BOT_ID = 'master-release'
 
   # We duplicate __init__ to specify a default for bot_id.
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,useless-super-delegation
   def _Prepare(self, bot_id=BOT_ID, **kwargs):
     super(CanaryCompletionStageTest, self)._Prepare(bot_id, **kwargs)
 

@@ -38,7 +38,11 @@ from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import utils
 
+# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
+# pylint: disable=no-name-in-module
 from google.protobuf import json_format
+# pylint: enable=no-name-in-module
+
 
 # For crostools access.
 sys.path.insert(0, constants.SOURCE_ROOT)

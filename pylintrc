@@ -134,6 +134,7 @@ disable=
     locally-enabled,
     missing-docstring,
     no-member,
+    no-else-return,
     no-self-use,
     redefined-variable-type,
     relative-import,
@@ -164,6 +165,9 @@ disable=
 # Tells whether to display a full report or only the messages
 # CHANGE: No report.
 reports=no
+
+# Activate the evaluation score.
+score=no
 
 # Python expression which should return a note less than 10 (10 is the highest
 # note). You have access to the variables errors warning, statement which

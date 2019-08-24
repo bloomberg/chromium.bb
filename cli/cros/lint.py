@@ -596,7 +596,7 @@ class Py3kCompatChecker(pylint.checkers.BaseChecker):
         if name == 'print_function':
           self.seen_print_func = True
 
-  def visit_from(self, node):
+  def visit_importfrom(self, node):
     """Process 'from' statements"""
     self.saw_imports = True
     self._check_print_function(node)
@@ -646,11 +646,11 @@ class SourceChecker(pylint.checkers.BaseChecker):
 
   def visit_module(self, node):
     """Called when the whole file has been read"""
-    stream = node.file_stream
-    st = os.fstat(stream.fileno())
-    self._check_shebang(node, stream, st)
-    self._check_encoding(node, stream, st)
-    self._check_module_name(node)
+    with node.stream() as stream:
+      st = os.fstat(stream.fileno())
+      self._check_shebang(node, stream, st)
+      self._check_encoding(node, stream, st)
+      self._check_module_name(node)
 
   def _check_shebang(self, _node, stream, st):
     """Verify the shebang is version specific"""

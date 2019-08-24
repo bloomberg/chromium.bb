@@ -338,6 +338,8 @@ class PipeLock(object):
     pipe2 = getattr(os, 'pipe2', None)
     if pipe2:
       cloexec = getattr(os, 'O_CLOEXEC', 0)
+      # Pylint-1.7 is unable to handle this conditional logic.
+      # pylint: disable=not-callable
       pipes = pipe2(cloexec)
     else:
       pipes = os.pipe()

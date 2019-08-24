@@ -41,6 +41,8 @@ class DebugSymbolsUploadException(Exception):
 class NothingToArchiveException(Exception):
   """Thrown if ArchiveStage found nothing to archive."""
 
+  # We duplicate __init__ to specify a default for message.
+  # pylint: disable=useless-super-delegation
   def __init__(self, message='No images found to archive.'):
     super(NothingToArchiveException, self).__init__(message)
 

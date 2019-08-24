@@ -1677,6 +1677,8 @@ class LocalPatch(GitRepoPatch):
       # remote:   https://chromium-review.googlesource.com/36756 Enforce a ...
       if 'New Changes:' in line:
         urls = []
+        # We're exiting the loop after this point.
+        # pylint: disable=redefined-outer-name
         for line in lines[num + 1:]:
           line = line.split()
           if len(line) < 2 or not line[1].startswith('http'):

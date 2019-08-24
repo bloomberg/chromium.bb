@@ -13,8 +13,11 @@ import os
 import pprint
 import time
 
+# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
+# pylint: disable=no-name-in-module
 from googleapiclient import discovery
 import google.protobuf.internal.well_known_types as types
+# pylint: enable=no-name-in-module
 from infra_libs import ts_mon
 import inotify_simple  # pylint: disable=import-error
 from oauth2client.client import GoogleCredentials
