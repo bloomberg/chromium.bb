@@ -3,6 +3,7 @@
 
 #+locale:lt
 #+type:literary
+#+contraction:no
 #+dots:8
 
 # TODO: Please correct the metadata above. It is not meant to be
