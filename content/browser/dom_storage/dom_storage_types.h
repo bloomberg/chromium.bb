@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_TYPES_H_
-#define CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_TYPES_H_
+#ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_TYPES_H_
+#define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_TYPES_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -31,4 +31,4 @@ const size_t kPerStorageAreaOverQuotaAllowance = 100 * 1024;
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_TYPES_H_
+#endif  // CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_TYPES_H_
