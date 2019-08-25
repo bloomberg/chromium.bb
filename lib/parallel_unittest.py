@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import contextlib
-import cPickle
 import multiprocessing
 import numbers
 import os
@@ -26,6 +25,7 @@ except ImportError:
   import queue as Queue
 
 import mock
+from six.moves import cPickle as pickle
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
@@ -428,7 +428,9 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
 
   def testFailedPickle(self):
     """PicklingError should be thrown when an argument fails to pickle."""
-    with self.assertRaises(cPickle.PicklingError):
+    # TODO: We have to refer to cPickle because Python internals throw it.
+    # Once we migrate to Python 3, we can switch to pickle directly.
+    with self.assertRaises(pickle.PicklingError):
       parallel.RunTasksInProcessPool(self._SystemExit, [[self._SystemExit]])
 
   def testFailedPickleOnReturn(self):

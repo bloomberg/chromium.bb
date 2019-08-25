@@ -7,7 +7,7 @@
 
 from __future__ import print_function
 
-import cPickle
+import pickle
 import time
 
 import mock
@@ -76,7 +76,7 @@ class ExceptionsTest(cros_test_lib.TestCase):
 
   def _TestException(self, err, expected_startswith):
     """Test that str and pickle behavior of |err| are as expected."""
-    err2 = cPickle.loads(cPickle.dumps(err, cPickle.HIGHEST_PROTOCOL))
+    err2 = pickle.loads(pickle.dumps(err, pickle.HIGHEST_PROTOCOL))
 
     self.assertTrue(str(err).startswith(expected_startswith))
     self.assertEqual(str(err), str(err2))
@@ -170,7 +170,7 @@ class BuilderRunPickleTest(_BuilderRunTestCase):
     upload_url = run1.GetArchive().upload_url
 
     # Pickle and unpickle run1 into run2.
-    run2 = cPickle.loads(cPickle.dumps(run1, cPickle.HIGHEST_PROTOCOL))
+    run2 = pickle.loads(pickle.dumps(run1, pickle.HIGHEST_PROTOCOL))
 
     self.assertEquals(run1.buildnumber, run2.buildnumber)
     self.assertEquals(run1.config.boards, run2.config.boards)

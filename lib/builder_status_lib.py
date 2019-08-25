@@ -8,7 +8,7 @@
 from __future__ import print_function
 
 import collections
-import cPickle
+import pickle
 
 from chromite.lib import buildbucket_lib
 from chromite.lib import build_failure_message
@@ -184,8 +184,8 @@ class BuilderStatus(object):
 
   def AsPickledDict(self):
     """Returns a pickled dictionary representation of this builder status."""
-    return cPickle.dumps(dict(status=self.status, message=self.message,
-                              dashboard_url=self.dashboard_url))
+    return pickle.dumps(dict(status=self.status, message=self.message,
+                             dashboard_url=self.dashboard_url))
 
 
 class BuilderStatusManager(object):

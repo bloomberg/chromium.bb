@@ -23,9 +23,9 @@ all, as intended.
 
 from __future__ import print_function
 
-import cPickle
 import functools
 import os
+import pickle
 import re
 try:
   import Queue
@@ -383,8 +383,8 @@ class RunAttributes(object):
     # Confirm that value can be pickled, because otherwise it will fail
     # in the queue.
     try:
-      cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL)
-    except cPickle.PicklingError:
+      pickle.dumps(value, pickle.HIGHEST_PROTOCOL)
+    except pickle.PicklingError:
       raise AttrNotPickleableError(attr, value)
 
     queue = self._GetQueue(attr, strict=True)

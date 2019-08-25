@@ -11,7 +11,7 @@ ready for the commit queue to try.
 
 from __future__ import print_function
 
-import cPickle
+import pickle
 import functools
 import httplib
 import os
@@ -933,7 +933,7 @@ class ValidationPool(object):
         for fetching cidb handle for access to metadata.
     """
     with open(filename, 'rb') as p_file:
-      pool = cPickle.load(p_file)
+      pool = pickle.load(p_file)
       # pylint: disable=protected-access
       pool._run = builder_run
       return pool
@@ -941,7 +941,7 @@ class ValidationPool(object):
   def Save(self, filename):
     """Serializes the validation pool."""
     with open(filename, 'wb') as p_file:
-      cPickle.dump(self, p_file, protocol=cPickle.HIGHEST_PROTOCOL)
+      pickle.dump(self, p_file, protocol=pickle.HIGHEST_PROTOCOL)
 
   # Note: All submit code, all gerrit code, and basically everything other
   # than patch resolution/applying needs to use .change_id from patch objects.

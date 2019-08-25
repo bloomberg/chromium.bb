@@ -8,7 +8,7 @@
 from __future__ import print_function
 
 import argparse
-import cPickle
+import pickle
 import signal
 import os
 import sys
@@ -29,7 +29,7 @@ class TestShutDownException(cros_test_lib.TestCase):
     """Test that ShutDownException can be pickled."""
     # pylint: disable=protected-access
     ex = commandline._ShutDownException(signal.SIGTERM, 'Received SIGTERM')
-    ex2 = cPickle.loads(cPickle.dumps(ex))
+    ex2 = pickle.loads(pickle.dumps(ex))
     self.assertEqual(ex.signal, ex2.signal)
     self.assertEqual(ex.message, ex2.message)
 
