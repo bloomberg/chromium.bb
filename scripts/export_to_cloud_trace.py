@@ -16,7 +16,7 @@ import time
 from googleapiclient import discovery
 import google.protobuf.internal.well_known_types as types
 from infra_libs import ts_mon
-import inotify_simple
+import inotify_simple  # pylint: disable=import-error
 from oauth2client.client import GoogleCredentials
 
 from chromite.lib import commandline

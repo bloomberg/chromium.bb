@@ -10,7 +10,7 @@ from __future__ import print_function
 
 from functools import partial
 
-import psutil
+import psutil  # pylint: disable=import-error
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics

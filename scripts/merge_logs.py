@@ -12,8 +12,8 @@ import datetime
 import os
 import re
 
-import dateutil
-import dateutil.parser
+import dateutil  # pylint: disable=import-error
+import dateutil.parser  # pylint: disable=import-error
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging

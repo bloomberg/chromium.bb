@@ -11,7 +11,7 @@ from __future__ import print_function
 import collections
 import socket
 
-import psutil
+import psutil  # pylint: disable=import-error
 from infra_libs import ts_mon
 
 from chromite.lib import cros_logging as logging

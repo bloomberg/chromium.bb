@@ -10,7 +10,7 @@ from __future__ import print_function
 import os
 
 import mock
-import sqlalchemy
+import sqlalchemy  # pylint: disable=import-error
 
 from chromite.lib import constants
 from chromite.lib import cidb

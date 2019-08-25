@@ -13,7 +13,7 @@ import operator
 import os
 import stat
 
-import ahocorasick
+import ahocorasick  # pylint: disable=import-error
 import lddtree
 
 from chromite.lib import commandline

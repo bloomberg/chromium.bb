@@ -12,7 +12,7 @@ import errno
 import os
 import time
 
-import psutil
+import psutil  # pylint: disable=import-error
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics

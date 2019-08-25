@@ -13,7 +13,7 @@ from __future__ import print_function
 import socket
 
 import mock
-import psutil
+import psutil  # pylint: disable=import-error
 
 from chromite.lib import cros_test_lib
 from chromite.scripts.sysmon import net_metrics

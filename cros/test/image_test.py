@@ -25,7 +25,7 @@ import unittest
 from elftools.elf import elffile
 from elftools.common import exceptions
 import lddtree
-import magic
+import magic  # pylint: disable=import-error
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging

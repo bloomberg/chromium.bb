@@ -29,7 +29,7 @@ import os
 import re
 import stat
 
-import magic
+import magic  # pylint: disable=import-error
 
 from chromite.lib import parseelf
 

@@ -15,6 +15,7 @@ import time
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_event
 
+# pylint: disable=import-error
 from _emerge.actions import adjust_configs
 from _emerge.actions import load_emerge_config
 from _emerge.create_depgraph_params import create_depgraph_params
