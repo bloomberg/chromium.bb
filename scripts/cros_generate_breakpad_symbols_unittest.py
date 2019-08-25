@@ -37,6 +37,9 @@ class FindDebugDirMock(partial_mock.PartialMock):
     return self.path
 
 
+# This long decorator triggers a false positive in the docstring test.
+# https://github.com/PyCQA/pylint/issues/3077
+# pylint: disable=bad-docstring-quotes
 @mock.patch('chromite.scripts.cros_generate_breakpad_symbols.'
             'GenerateBreakpadSymbol')
 class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):

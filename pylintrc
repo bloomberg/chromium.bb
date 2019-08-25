@@ -26,6 +26,7 @@
 load-plugins=
     chromite.cli.cros.lint,
     pylint.extensions.bad_builtin,
+    pylint.extensions.docstyle,
 
 # Configure quote preferences.
 string-quote = single-avoid-escape
