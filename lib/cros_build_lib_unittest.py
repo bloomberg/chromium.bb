@@ -688,8 +688,8 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     log_output = ('RunCommand: /bin/bash -c '
                   "'echo Greece; echo Italy >&2; echo Spain'\n"
                   '(stdout):\nGreece\nSpain\n\n(stderr):\nItaly\n\n')
-    self.assertEquals(self._CaptureLogOutput(cmd, shell=True, log_output=True),
-                      log_output)
+    self.assertEqual(self._CaptureLogOutput(cmd, shell=True, log_output=True),
+                     log_output)
 
 class TestTimedSection(cros_test_lib.TestCase):
   """Tests for TimedSection context manager."""
@@ -931,7 +931,7 @@ class TestInput(cros_test_lib.MockOutputTestCase):
     if sys.version_info.major < 3:
       self.PatchObject(builtins, 'raw_input', return_value=response)
     self.PatchObject(builtins, 'input', return_value=response)
-    self.assertEquals(response, cros_build_lib.GetInput('prompt'))
+    self.assertEqual(response, cros_build_lib.GetInput('prompt'))
 
   def testBooleanPrompt(self):
     """Verify BooleanPrompt() full behavior."""
@@ -1216,7 +1216,7 @@ class SafeRunTest(cros_test_lib.TestCase):
                                 Exception('testRunsSafely exception.')),
               functools.partial(append_val, 2)]
     self.assertRaises(Exception, cros_build_lib.SafeRun, f_list)
-    self.assertEquals(call_list, [1, 2])
+    self.assertEqual(call_list, [1, 2])
 
   def testRaisesFirstException(self):
     """Verify we raise the first exception when multiple are encountered."""
@@ -1259,12 +1259,12 @@ class FrozenAttributesTest(cros_test_lib.TestCase):
     obj = cls()
     obj.a = 1
     obj.b = 2
-    self.assertEquals(_Expected(1), obj.a)
-    self.assertEquals(_Expected(2), obj.b)
+    self.assertEqual(_Expected(1), obj.a)
+    self.assertEqual(_Expected(2), obj.b)
 
     obj.Freeze()
     self.assertRaises(cros_build_lib.AttributeFrozenError, setattr, obj, 'a', 3)
-    self.assertEquals(_Expected(1), obj.a)
+    self.assertEqual(_Expected(1), obj.a)
 
     self.assertRaises(cros_build_lib.AttributeFrozenError, setattr, obj, 'c', 3)
     self.assertFalse(hasattr(obj, 'c'))

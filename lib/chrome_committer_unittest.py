@@ -51,9 +51,10 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     self._assertCommand('git fetch --depth=1')
     self._assertCommand('git pull origin master')
     self._assertCommand('git checkout -B auto-commit-branch origin/master')
-    self.assertEquals(osutils.ReadFile(
-        os.path.join(self.tempdir, '.git', 'info', 'sparse-checkout')),
-                      'OWNERS\ncodereview.settings\nWATCHLISTS')
+    self.assertEqual(
+        osutils.ReadFile(os.path.join(self.tempdir, '.git', 'info',
+                                      'sparse-checkout')),
+        'OWNERS\ncodereview.settings\nWATCHLISTS')
 
   def testCommit(self):
     """Tests that we can commit a file."""

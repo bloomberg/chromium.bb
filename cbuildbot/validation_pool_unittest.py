@@ -611,7 +611,7 @@ class TestCoreLogic(_Base):
     pool = self.MakePool()
     pool.filtered_set = set(self.GetPatches(4))
     result = pool._FilterDependencyErrors(failures)
-    self.assertEquals(set(failures[:-1]), set(result))
+    self.assertEqual(set(failures[:-1]), set(result))
 
   def testFilterSpeculativeErrors(self):
     """Filter out dependency errors for speculative patches."""
@@ -622,7 +622,7 @@ class TestCoreLogic(_Base):
     pool = self.MakePool()
     pool.filtered_set = set(self.GetPatches(2))
     result = pool._FilterDependencyErrors(failures)
-    self.assertEquals(set(failures[:-1]), set(result))
+    self.assertEqual(set(failures[:-1]), set(result))
 
   def testFilterDependencyErrorsOnFilteredChanges(self):
     """Test FilterDependencyErrors on filtered changes."""

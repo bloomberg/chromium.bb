@@ -137,46 +137,46 @@ class TestWaitFors(cros_test_lib.TestCase):
     async_result = pool.apply_async(self._TestWaitForSuccess, (4, 10, ),
                                     {'period': 1})
     return_val = async_result.get()
-    self.assertEquals(4, return_val)
-    self.assertEquals(5, self.GetTryCount())
-    self.assertEquals(4, self.GetTrySeconds())
+    self.assertEqual(4, return_val)
+    self.assertEqual(5, self.GetTryCount())
+    self.assertEqual(4, self.GetTrySeconds())
 
   def testWaitForSuccess1(self):
     """Test success after a few tries."""
-    self.assertEquals(4, self._TestWaitForSuccess(4, 10, period=1))
-    self.assertEquals(5, self.GetTryCount())
-    self.assertEquals(4, self.GetTrySeconds())
+    self.assertEqual(4, self._TestWaitForSuccess(4, 10, period=1))
+    self.assertEqual(5, self.GetTryCount())
+    self.assertEqual(4, self.GetTrySeconds())
 
   def testWaitForSuccess2(self):
     """Test timeout after a couple tries."""
     self.assertRaises(timeout_util.TimeoutError, self._TestWaitForSuccess,
                       4, 3, period=1)
-    self.assertEquals(3, self.GetTryCount())
-    self.assertEquals(2, self.GetTrySeconds())
+    self.assertEqual(3, self.GetTryCount())
+    self.assertEqual(2, self.GetTrySeconds())
 
   def testWaitForSuccess3(self):
     """Test success on first try."""
-    self.assertEquals(0, self._TestWaitForSuccess(0, 10, period=1))
-    self.assertEquals(1, self.GetTryCount())
-    self.assertEquals(0, self.GetTrySeconds())
+    self.assertEqual(0, self._TestWaitForSuccess(0, 10, period=1))
+    self.assertEqual(1, self.GetTryCount())
+    self.assertEqual(0, self.GetTrySeconds())
 
   def testWaitForSuccess4(self):
     """Test success after a few tries with longer period."""
-    self.assertEquals(3, self._TestWaitForSuccess(3, 10, period=2))
-    self.assertEquals(4, self.GetTryCount())
-    self.assertEquals(6, self.GetTrySeconds())
+    self.assertEqual(3, self._TestWaitForSuccess(3, 10, period=2))
+    self.assertEqual(4, self.GetTryCount())
+    self.assertEqual(6, self.GetTrySeconds())
 
   def testWaitForReturnValue1(self):
     """Test value found after a few tries."""
-    self.assertEquals(4, self._TestWaitForReturnValue((4, 5), 10, period=1))
-    self.assertEquals(5, self.GetTryCount())
-    self.assertEquals(4, self.GetTrySeconds())
+    self.assertEqual(4, self._TestWaitForReturnValue((4, 5), 10, period=1))
+    self.assertEqual(5, self.GetTryCount())
+    self.assertEqual(4, self.GetTrySeconds())
 
   def testWaitForReturnValue2(self):
     """Test value found on first try."""
-    self.assertEquals(0, self._TestWaitForReturnValue((0, 1), 10, period=1))
-    self.assertEquals(1, self.GetTryCount())
-    self.assertEquals(0, self.GetTrySeconds())
+    self.assertEqual(0, self._TestWaitForReturnValue((0, 1), 10, period=1))
+    self.assertEqual(1, self.GetTryCount())
+    self.assertEqual(0, self.GetTrySeconds())
 
   def testWaitForCallback(self):
     """Verify side_effect_func works."""
@@ -184,7 +184,7 @@ class TestWaitFors(cros_test_lib.TestCase):
     def _SideEffect(remaining):
       self.assertTrue(isinstance(remaining, datetime.timedelta))
       side_effect_called[0] = True
-    self.assertEquals(1, self._TestWaitForSuccess(
+    self.assertEqual(1, self._TestWaitForSuccess(
         1, 10, period=0.1, side_effect_func=_SideEffect))
     self.assertTrue(side_effect_called[0])
 

@@ -236,7 +236,7 @@ class TestHelloWorld(TestBackgroundWrapper):
   def testParallelHelloWorld(self):
     """Test that output is not written multiple times when seeking."""
     out = self.wrapOutputTest(self._ParallelHelloWorld)
-    self.assertEquals(out, _GREETING)
+    self.assertEqual(out, _GREETING)
 
   def testMultipleHelloWorlds(self):
     """Test that multiple threads can be created."""
@@ -279,12 +279,12 @@ class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
       result_arg2s = set()
       for _ in range(3):
         result = results.get()
-        self.assertEquals(result[0], 'arg1')
+        self.assertEqual(result[0], 'arg1')
         result_arg2s.add(result[1])
-        self.assertEquals(result[2], 'kwarg1')
-        self.assertEquals(result[3], None)
-      self.assertEquals(arg2s, result_arg2s)
-      self.assertEquals(results.empty(), True)
+        self.assertEqual(result[2], 'kwarg1')
+        self.assertEqual(result[3], None)
+      self.assertEqual(arg2s, result_arg2s)
+      self.assertEqual(results.empty(), True)
 
 
 class TestFastPrinting(TestBackgroundWrapper):
@@ -305,12 +305,12 @@ class TestFastPrinting(TestBackgroundWrapper):
 
   def testSimpleParallelPrinter(self):
     out = self.wrapOutputTest(self._ParallelPrinter)
-    self.assertEquals(len(out), _TOTAL_BYTES)
+    self.assertEqual(len(out), _TOTAL_BYTES)
 
   def testNestedParallelPrinter(self):
     """Verify that no output is lost when lots of output is written."""
     out = self.wrapOutputTest(self._NestedParallelPrinter)
-    self.assertEquals(len(out), _TOTAL_BYTES)
+    self.assertEqual(len(out), _TOTAL_BYTES)
 
 
 class TestRunParallelSteps(cros_test_lib.TestCase):
@@ -326,7 +326,7 @@ class TestRunParallelSteps(cros_test_lib.TestCase):
       pass
 
     return_values = parallel.RunParallelSteps([f1, f2, f3], return_values=True)
-    self.assertEquals(return_values, [1, 2, None])
+    self.assertEqual(return_values, [1, 2, None])
 
   def testLargeReturnValues(self):
     """Test that the managed queue prevents hanging on large return values."""
@@ -338,7 +338,7 @@ class TestRunParallelSteps(cros_test_lib.TestCase):
       ret_value += 'This will be repeated many times.\n'
 
     return_values = parallel.RunParallelSteps([f1], return_values=True)
-    self.assertEquals(return_values, [ret_value])
+    self.assertEqual(return_values, [ret_value])
 
 
 class TestParallelMock(TestBackgroundWrapper):

@@ -54,17 +54,17 @@ class ChrootUtilTest(cros_test_lib.RunCommandTempDirTestCase):
                          rebuild_deps=rebuild_deps, use_binary=use_binary,
                          jobs=jobs, debug_output=debug_output)
       cmd = self.rc.call_args_list[-1][0][-1]
-      self.assertEquals(sysroot != '/',
-                        any(p.startswith('--sysroot') for p in cmd))
-      self.assertEquals(with_deps, '--deep' in cmd)
-      self.assertEquals(not with_deps, '--nodeps' in cmd)
-      self.assertEquals(rebuild_deps, '--rebuild-if-unbuilt' in cmd)
-      self.assertEquals(use_binary, '-g' in cmd)
-      self.assertEquals(use_binary, '--with-bdeps=y' in cmd)
-      self.assertEquals(use_binary and sysroot == '/',
-                        '--useoldpkg-atoms=%s' % toolchain_package_list in cmd)
-      self.assertEquals(bool(jobs), '--jobs=%d' % jobs in cmd)
-      self.assertEquals(debug_output, '--show-output' in cmd)
+      self.assertEqual(sysroot != '/',
+                       any(p.startswith('--sysroot') for p in cmd))
+      self.assertEqual(with_deps, '--deep' in cmd)
+      self.assertEqual(not with_deps, '--nodeps' in cmd)
+      self.assertEqual(rebuild_deps, '--rebuild-if-unbuilt' in cmd)
+      self.assertEqual(use_binary, '-g' in cmd)
+      self.assertEqual(use_binary, '--with-bdeps=y' in cmd)
+      self.assertEqual(use_binary and sysroot == '/',
+                       '--useoldpkg-atoms=%s' % toolchain_package_list in cmd)
+      self.assertEqual(bool(jobs), '--jobs=%d' % jobs in cmd)
+      self.assertEqual(debug_output, '--show-output' in cmd)
 
   def testTempDirInChroot(self):
     """Tests the correctness of TempDirInChroot."""
@@ -73,7 +73,7 @@ class ChrootUtilTest(cros_test_lib.RunCommandTempDirTestCase):
       rm_check_dir = tempdir
       self.assertExists(tempdir)
       chroot_tempdir = path_util.FromChrootPath('/tmp')
-      self.assertNotEquals(chroot_tempdir, tempdir)
+      self.assertNotEqual(chroot_tempdir, tempdir)
       self.assertStartsWith(tempdir, chroot_tempdir)
     self.assertNotExists(rm_check_dir)
 
@@ -85,7 +85,7 @@ class ChrootUtilTest(cros_test_lib.RunCommandTempDirTestCase):
     with chroot_util.TempDirInChroot(base_dir='/tmp/some-prefix') as tempdir:
       rm_check_dir = tempdir
       self.assertExists(tempdir)
-      self.assertNotEquals(chroot_tempdir, tempdir)
+      self.assertNotEqual(chroot_tempdir, tempdir)
       self.assertStartsWith(tempdir, chroot_tempdir)
     self.assertNotExists(rm_check_dir)
     osutils.RmDir(chroot_tempdir)

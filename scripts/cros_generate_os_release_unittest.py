@@ -28,7 +28,7 @@ class CrosGenerateOsReleaseTest(cros_test_lib.TempDirTestCase):
     """Tests the script without /etc/os-release."""
     osutils.WriteFile(os.path.join(self.osreleased, 'TEST'), 'hello')
     cros_generate_os_release.GenerateOsRelease(self.tempdir)
-    self.assertEquals('TEST=hello\n', osutils.ReadFile(self.osrelease))
+    self.assertEqual('TEST=hello\n', osutils.ReadFile(self.osrelease))
 
   def testOnlyOsReleaseD(self):
     """Tests the script without /etc/os-release.d."""
@@ -36,7 +36,7 @@ class CrosGenerateOsReleaseTest(cros_test_lib.TempDirTestCase):
     osutils.WriteFile(self.osrelease, 'TEST=bonjour\n')
 
     cros_generate_os_release.GenerateOsRelease(self.tempdir)
-    self.assertEquals('TEST=bonjour\n', osutils.ReadFile(self.osrelease))
+    self.assertEqual('TEST=bonjour\n', osutils.ReadFile(self.osrelease))
 
   def testFailOnDuplicate(self):
     """Tests with a field set both in os-release and os-release.d/."""
@@ -58,7 +58,7 @@ class CrosGenerateOsReleaseTest(cros_test_lib.TempDirTestCase):
                                                default_params=default_params)
     output = osutils.ReadFile(self.osrelease).splitlines()
     output.sort()
-    self.assertEquals(['TEST1=hello',
-                       'TEST2=bonjour',
-                       'TEST3=hola'],
-                      output)
+    self.assertEqual(['TEST1=hello',
+                      'TEST2=bonjour',
+                      'TEST3=hola'],
+                     output)

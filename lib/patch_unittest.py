@@ -379,13 +379,13 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     git1 = self._MakeRepo('git1', self.source)
     sha1 = self._GetSha1(git1, 'HEAD')
     patch = self._MkPatch(self.source, sha1)
-    self.assertEquals(patch._GetParents(git1), [])
+    self.assertEqual(patch._GetParents(git1), [])
 
   def testGet1Parent(self):
     git1 = self._MakeRepo('git1', self.source)
     patch1 = self.CommitFile(git1, 'foo', 'foo')
     patch2 = self.CommitFile(git1, 'bar', 'bar')
-    self.assertEquals(patch2._GetParents(git1), [patch1.sha1])
+    self.assertEqual(patch2._GetParents(git1), [patch1.sha1])
 
   def testGet2Parents(self):
     # Prepare a merge commit, then test that its two parents are correctly
@@ -402,8 +402,8 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     sha1 = self._GetSha1(git1, 'HEAD')
     patch_merge = self._MkPatch(self.source, sha1, suppress_branch=True)
 
-    self.assertEquals(patch_merge._GetParents(git1),
-                      [patch_left.sha1, patch_right.sha1])
+    self.assertEqual(patch_merge._GetParents(git1),
+                     [patch_left.sha1, patch_right.sha1])
 
   def testIsAncestor(self):
     git1 = self._MakeRepo('git1', self.source)
@@ -1277,9 +1277,9 @@ class PrepareLocalPatchesTests(cros_test_lib.RunCommandTestCase):
     self.PatchObject(cros_patch.LocalPatch, 'Fetch', return_value=output_obj)
     self.PatchObject(git, 'RunGit', return_value=output_obj)
     patch_info = cros_patch.PrepareLocalPatches(self.manifest, self.patches)[0]
-    self.assertEquals(patch_info.project, self.project)
-    self.assertEquals(patch_info.ref, self.branch)
-    self.assertEquals(patch_info.tracking_branch, self.tracking_branch)
+    self.assertEqual(patch_info.project, self.project)
+    self.assertEqual(patch_info.ref, self.branch)
+    self.assertEqual(patch_info.tracking_branch, self.tracking_branch)
 
   def testBranchSpecifiedSuccessRun(self):
     """Test success with branch specified by user."""

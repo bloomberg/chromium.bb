@@ -123,7 +123,7 @@ Too bad..."""
     ep = gob_util.ErrorParser()
     ep.feed(html_data)
     ep.close()
-    self.assertEquals(expected_parsed_data, ep.ParsedDiv())
+    self.assertEqual(expected_parsed_data, ep.ParsedDiv())
 
 
 class GetCookieTests(cros_test_lib.TestCase):

@@ -55,22 +55,22 @@ class ParserTest(cros_test_lib.MockTempDirTestCase):
     with MockChromeSDKCommand(
         ['--board', SDKFetcherMock.BOARD],
         base_args=['--cache-dir', self.tempdir]) as bootstrap:
-      self.assertEquals(bootstrap.inst.options.board, SDKFetcherMock.BOARD)
-      self.assertEquals(bootstrap.inst.options.cache_dir, self.tempdir)
+      self.assertEqual(bootstrap.inst.options.board, SDKFetcherMock.BOARD)
+      self.assertEqual(bootstrap.inst.options.cache_dir, self.tempdir)
 
   def testVersion(self):
     """Tests that a platform version is allowed."""
     VERSION = '1234.0.0'
     with MockChromeSDKCommand(
         ['--board', SDKFetcherMock.BOARD, '--version', VERSION]) as parser:
-      self.assertEquals(parser.inst.options.version, VERSION)
+      self.assertEqual(parser.inst.options.version, VERSION)
 
   def testFullVersion(self):
     """Tests that a full version is allowed."""
     FULL_VERSION = 'R56-1234.0.0'
     with MockChromeSDKCommand(
         ['--board', SDKFetcherMock.BOARD, '--version', FULL_VERSION]) as parser:
-      self.assertEquals(parser.inst.options.version, FULL_VERSION)
+      self.assertEqual(parser.inst.options.version, FULL_VERSION)
 
 
 def _GSCopyMock(_self, path, dest, **_kwargs):
@@ -267,7 +267,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       self.rc_mock.AddCmdResult(partial_mock.ListRegex('-- true'),
                                 returncode=5)
       returncode = self.cmd_mock.inst.Run()
-      self.assertEquals(returncode, 5)
+      self.assertEqual(returncode, 5)
 
   def testLocalSDKPath(self):
     """Fetch components from a local --sdk-path."""
@@ -386,7 +386,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
 
     out_dir = os.path.join(self.chrome_src_dir, 'out_%s' % SDKFetcherMock.BOARD)
 
-    self.assertEquals(out_dir, self.cmd_mock.env['CHROMIUM_OUT_DIR'])
+    self.assertEqual(out_dir, self.cmd_mock.env['CHROMIUM_OUT_DIR'])
 
   def testClearSDKCache(self):
     """Verifies cache directories are removed with --clear-sdk-cache."""
@@ -503,7 +503,7 @@ class GomaTest(cros_test_lib.MockTempDirTestCase,
     # Run it twice to exercise caching.
     for _ in range(2):
       goma_dir, goma_port = self.cmd_mock.inst._FetchGoma()
-      self.assertEquals(goma_port, 'XXXX')
+      self.assertEqual(goma_port, 'XXXX')
       self.assertTrue(bool(goma_dir))
 
 
@@ -550,8 +550,8 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     osutils.WriteFile(lkgm_file, self.VERSION)
     self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
     self.sdk.UpdateDefaultVersion()
-    self.assertEquals(self.sdk.GetDefaultVersion(),
-                      self.VERSION)
+    self.assertEqual(self.sdk.GetDefaultVersion(),
+                     self.VERSION)
 
   def testFullVersionFromFullVersion(self):
     """Test that a fully specified version is allowed."""
@@ -559,7 +559,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         output=self.FULL_VERSION)
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.FULL_VERSION))
 
@@ -569,7 +569,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         output=self.FULL_VERSION)
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.VERSION))
 
@@ -616,7 +616,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
         self.assertRaises(cros_chrome_sdk.MissingSDK, self.sdk.GetFullVersion,
                           self.VERSION)
       else:
-        self.assertEquals(
+        self.assertEqual(
             self.FULL_VERSION_RECENT,
             self.sdk.GetFullVersion(self.VERSION))
 
@@ -629,14 +629,14 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         output=self.FULL_VERSION)
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.VERSION))
     # Test that we access the cache on the next call, rather than checking GS.
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         side_effect=RaiseException)
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.VERSION))
     # Test that we access GS again if the board is changed.
@@ -644,7 +644,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         output=self.FULL_VERSION + '2')
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION + '2',
         self.sdk.GetFullVersion(self.VERSION))
 
@@ -666,7 +666,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.NON_CANARY_VERSION),
         output=self.FULL_VERSION_NON_CANARY)
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION_NON_CANARY,
         self.sdk.GetFullVersion(self.NON_CANARY_VERSION))
 
@@ -685,15 +685,15 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
   def testDefaultEnvBadBoard(self):
     """We don't use the version in the environment if board doesn't match."""
     os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = self.VERSION
-    self.assertNotEquals(self.VERSION, self.sdk_mock.VERSION)
-    self.assertEquals(self.sdk.GetDefaultVersion(), None)
+    self.assertNotEqual(self.VERSION, self.sdk_mock.VERSION)
+    self.assertEqual(self.sdk.GetDefaultVersion(), None)
 
   def testDefaultEnvGoodBoard(self):
     """We use the version in the environment if board matches."""
     sdk_version_env = cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV
     os.environ[sdk_version_env] = self.VERSION
     os.environ[cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV] = self.BOARD
-    self.assertEquals(self.sdk.GetDefaultVersion(), self.VERSION)
+    self.assertEqual(self.sdk.GetDefaultVersion(), self.VERSION)
 
 
 class PathVerifyTest(cros_test_lib.MockTempDirTestCase,

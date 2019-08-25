@@ -146,8 +146,8 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
       self.rc_mock.assertCommandContains(['partx', '-a', LOOP_DEV])
       self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV],
                                          expected=False)
-      self.assertEquals(lb.parts, LOOP_PARTS_DICT)
-      self.assertEquals(lb._gpt_table, LOOP_PARTITION_INFO)
+      self.assertEqual(lb.parts, LOOP_PARTS_DICT)
+      self.assertEqual(lb._gpt_table, LOOP_PARTITION_INFO)
     self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV])
 
@@ -172,10 +172,10 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
       self.rc_mock.assertCommandContains(['partx', '-a', LOOP_DEV])
       self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV],
                                          expected=False)
-      self.assertEquals(lb.parts, LOOP_PARTS_DICT)
-      self.assertEquals(lb._gpt_table, LOOP_PARTITION_INFO)
-      self.assertEquals(expected_calls, syml.call_args_list)
-      self.assertEquals(expected_mounts, lb._mounted)
+      self.assertEqual(lb.parts, LOOP_PARTS_DICT)
+      self.assertEqual(lb._gpt_table, LOOP_PARTITION_INFO)
+      self.assertEqual(expected_calls, syml.call_args_list)
+      self.assertEqual(expected_mounts, lb._mounted)
     self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV])
 
@@ -188,8 +188,8 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
     self.rc_mock.assertCommandContains(['partx', '-a', LOOP_DEV])
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV],
                                        expected=False)
-    self.assertEquals(lb.parts, LOOP_PARTS_DICT)
-    self.assertEquals(lb._gpt_table, LOOP_PARTITION_INFO)
+    self.assertEqual(lb.parts, LOOP_PARTS_DICT)
+    self.assertEqual(lb._gpt_table, LOOP_PARTITION_INFO)
     lb.close()
     self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV])
@@ -202,8 +202,8 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
     self.rc_mock.assertCommandContains(['partx', '-a', LOOP_DEV])
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV],
                                        expected=False)
-    self.assertEquals(lb.parts, LOOP_PARTS_DICT)
-    self.assertEquals(lb._gpt_table, LOOP_PARTITION_INFO)
+    self.assertEqual(lb.parts, LOOP_PARTS_DICT)
+    self.assertEqual(lb._gpt_table, LOOP_PARTITION_INFO)
 
   def testGarbageCollected(self):
     """Test using the loopback class closed by garbage collection."""

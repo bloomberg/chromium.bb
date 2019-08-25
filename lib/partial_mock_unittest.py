@@ -26,15 +26,15 @@ class ComparatorTest(cros_test_lib.TestCase):
       obj1 = cls(self.TEST_KEY1)
       obj2 = cls(self.TEST_KEY1)
       obj3 = cls(self.TEST_KEY2)
-      self.assertEquals(obj1, obj2)
+      self.assertEqual(obj1, obj2)
       self.assertFalse(obj1 == obj3)
-      self.assertNotEquals(obj1, obj3)
+      self.assertNotEqual(obj1, obj3)
 
   def testIgnoreEquals(self):
     """Verify __eq__ functionality for Ignore."""
     obj1 = partial_mock.Ignore()
     obj2 = partial_mock.Ignore()
-    self.assertEquals(obj1, obj2)
+    self.assertEqual(obj1, obj2)
     self.assertFalse(obj1 != obj2)
 
   def testListRegex(self):
@@ -144,25 +144,25 @@ class MockedCallResultsTest(cros_test_lib.TestCase):
     """Replacing mocks for args-only calls."""
     self.mr.AddResultForParams(self.ARGS, 1)
     self.mr.AddResultForParams(self.ARGS, 2)
-    self.assertEquals(2, self.mr.LookupResult(self.ARGS))
+    self.assertEqual(2, self.mr.LookupResult(self.ARGS))
 
   def testKwargsStrictReplacement(self):
     """Replacing strict kwargs mock with another strict mock."""
     self.KwargsHelper(1, self.KWARGS)
     self.KwargsHelper(2, self.KWARGS)
-    self.assertEquals(2, self.mr.LookupResult(self.ARGS, kwargs=self.KWARGS))
+    self.assertEqual(2, self.mr.LookupResult(self.ARGS, kwargs=self.KWARGS))
 
   def testKwargsNonStrictReplacement(self):
     """Replacing strict kwargs mock with nonstrict mock."""
     self.KwargsHelper(1, self.KWARGS)
     self.KwargsHelper(2, self.KWARGS, strict=False)
-    self.assertEquals(2, self.mr.LookupResult(self.ARGS, kwargs=self.KWARGS))
+    self.assertEqual(2, self.mr.LookupResult(self.ARGS, kwargs=self.KWARGS))
 
   def testListArgLookup(self):
     """Matching of arguments containing lists."""
     self.mr.AddResultForParams(self.LIST_ARGS, 1)
     self.mr.AddResultForParams(self.ARGS, 1)
-    self.assertEquals(1, self.mr.LookupResult(self.LIST_ARGS))
+    self.assertEqual(1, self.mr.LookupResult(self.LIST_ARGS))
 
   def testKwargsStrictLookup(self):
     """Strict lookup fails due to extra kwarg."""
@@ -177,21 +177,21 @@ class MockedCallResultsTest(cros_test_lib.TestCase):
     self.KwargsHelper(1, self.KWARGS, strict=False)
     kwargs = self.NEW_ENTRY
     kwargs.update(self.KWARGS)
-    self.assertEquals(1, self.mr.LookupResult(self.ARGS, kwargs=kwargs))
+    self.assertEqual(1, self.mr.LookupResult(self.ARGS, kwargs=kwargs))
 
   def testIgnoreMatching(self):
     """Deep matching of Ignore objects."""
     ignore = partial_mock.Ignore()
     self.mr.AddResultForParams((ignore, ignore), 1, kwargs={'test': ignore})
-    self.assertEquals(
+    self.assertEqual(
         1, self.mr.LookupResult(('some', 'values'), {'test': 'bla'}))
 
   def testRegexMatching(self):
     """Regex matching."""
     self.mr.AddResultForParams((partial_mock.Regex('pre.ix'),), 1)
     self.mr.AddResultForParams((partial_mock.Regex('suffi.'),), 2)
-    self.assertEquals(1, self.mr.LookupResult(('prefix',)))
-    self.assertEquals(2, self.mr.LookupResult(('suffix',)))
+    self.assertEqual(1, self.mr.LookupResult(('prefix',)))
+    self.assertEqual(2, self.mr.LookupResult(('suffix',)))
 
   def testMultipleMatches(self):
     """Lookup matches mutilple results."""
@@ -203,13 +203,13 @@ class MockedCallResultsTest(cros_test_lib.TestCase):
     """Test default result matching."""
     self.mr.SetDefaultResult(1)
     self.mr.AddResultForParams((partial_mock.In('test'),), 2)
-    self.assertEquals(1, self.mr.LookupResult(self.ARGS))
-    self.assertEquals(2, self.mr.LookupResult(('test',)))
+    self.assertEqual(1, self.mr.LookupResult(self.ARGS))
+    self.assertEqual(2, self.mr.LookupResult(('test',)))
 
   def _ExampleHook(self, *args, **kwargs):
     """Example hook for testing."""
-    self.assertEquals(args, self.LIST_ARGS)
-    self.assertEquals(kwargs, self.KWARGS)
+    self.assertEqual(args, self.LIST_ARGS)
+    self.assertEqual(kwargs, self.KWARGS)
     return 2
 
   def testHook(self):
@@ -226,7 +226,7 @@ class MockedCallResultsTest(cros_test_lib.TestCase):
     self.assertEqual(
         2, self.mr.LookupResult(self.ARGS, hook_args=self.LIST_ARGS,
                                 hook_kwargs=self.KWARGS))
-    self.assertEquals(3, self.mr.LookupResult(('test',)))
+    self.assertEqual(3, self.mr.LookupResult(('test',)))
 
   class _DummyException(Exception):
     """A do-nothing exception class for test."""

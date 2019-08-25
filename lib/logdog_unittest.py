@@ -170,15 +170,15 @@ class LogdogClientTest(cros_test_lib.MockTestCase):
 
   def testExtractLines(self):
     """Test ExtractLines."""
-    self.assertEquals(['hello\n', 'foo\n', '\n'],
-                      list(self.client.ExtractLines(self.logs_response)))
+    self.assertEqual(['hello\n', 'foo\n', '\n'],
+                     list(self.client.ExtractLines(self.logs_response)))
 
   def testGetLines(self):
     """Test GetLines."""
     self.mock_request.side_effect = [self.get_response, self.get_response2]
     resp = self.client.GetLines('proj', 'path', index=0, log_count=4)
-    self.assertEquals(['hello\n', 'foo\n', '\n', 'hello\n', 'foo\n', '\n'],
-                      list(resp))
+    self.assertEqual(['hello\n', 'foo\n', '\n', 'hello\n', 'foo\n', '\n'],
+                     list(resp))
     body_json = self.mock_request.call_args[0][2]
     self.assertIn('proj', body_json)
     self.assertIn('path', body_json)

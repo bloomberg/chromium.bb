@@ -215,5 +215,5 @@ class TestUtils(cros_test_lib.TempDirTestCase):
 
     # If we didn't get here a thread did not exit. This is fatal and may
     # indicate a deadlock has been introduced.
-    self.assertEquals(initial_memory, get_mem())
-    self.assertEquals(good_thread_exits[0], test_threads)
+    self.assertEqual(initial_memory, get_mem())
+    self.assertEqual(good_thread_exits[0], test_threads)

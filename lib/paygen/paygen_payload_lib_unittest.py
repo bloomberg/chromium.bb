@@ -438,8 +438,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     dlc_id, dlc_package, dlc_appid = gen._GetDlcImageParams(tgt_image)
 
-    self.assertEquals(dlc_id, 'dummy-dlc')
-    self.assertEquals(dlc_package, 'dummy-package')
+    self.assertEqual(dlc_id, 'dummy-dlc')
+    self.assertEqual(dlc_package, 'dummy-package')
     self.assertEqual(dlc_appid, 'foo-appid')
     lsb_read_mock.assert_called_once()
 
@@ -793,14 +793,14 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--properties_file=' + props_file,
            '--properties_format=json']
     run_mock.assert_called_once_with(cmd)
-    self.assertEquals(props_map,
-                      # This tests that if metadata_signature is empty, the code
-                      # converts it to None.
-                      {'metadata_signature': None,
-                       'metadata_size': 10,
-                       'appid': 'foo-appid',
-                       'md5_hex': 'deprecated',
-                       'sha1_hex': 'deprecated'})
+    self.assertEqual(props_map,
+                     # This tests that if metadata_signature is empty, the code
+                     # converts it to None.
+                     {'metadata_signature': None,
+                      'metadata_size': 10,
+                      'appid': 'foo-appid',
+                      'md5_hex': 'deprecated',
+                      'sha1_hex': 'deprecated'})
 
   def testGetPayloadPropertiesMapSigned(self):
     """Tests getting the payload properties as a dict for signed payloads."""
@@ -814,16 +814,16 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     payload_path = '/foo'
     props_map = gen.GetPayloadPropertiesMap(payload_path)
-    self.assertEquals(props_map,
-                      {'metadata_signature': 'foo-sig',
-                       'metadata_size': 10,
-                       # This tests that appid key is always added to the
-                       # properties file even if it is empty.
-                       'appid': '',
-                       # This is the base64 encode of 'foo-pubkey'.
-                       'public_key': 'Zm9vLXB1YmtleQ==',
-                       'md5_hex': 'deprecated',
-                       'sha1_hex': 'deprecated'})
+    self.assertEqual(props_map,
+                     {'metadata_signature': 'foo-sig',
+                      'metadata_size': 10,
+                      # This tests that appid key is always added to the
+                      # properties file even if it is empty.
+                      'appid': '',
+                      # This is the base64 encode of 'foo-pubkey'.
+                      'public_key': 'Zm9vLXB1YmtleQ==',
+                      'md5_hex': 'deprecated',
+                      'sha1_hex': 'deprecated'})
 
 
 class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):

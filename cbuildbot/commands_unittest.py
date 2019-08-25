@@ -906,7 +906,7 @@ c98ca54db130886142ad582a58e90ddc *./common.sh
     result = commands.GetFirmwareVersions(self._buildroot, self._board)
     versions = commands.FirmwareVersions(
         None, 'Google_Kevin.8785.178.0', None, 'kevin_v1.10.184-459421c', None)
-    self.assertEquals(result, versions)
+    self.assertEqual(result, versions)
 
   def testGetFirmwareVersionsMixedImage(self):
     """Verify that can extract the right version from a mixed RO+RW bundle."""
@@ -958,7 +958,7 @@ ae8cf9fca3165a1c1f12decfd910c4fe *./vpd
         'Google_Caroline.7820.286.0',
         'caroline_v1.9.357-ac5c7b4',
         'caroline_v1.9.370-e8b9bd2')
-    self.assertEquals(result, versions)
+    self.assertEqual(result, versions)
 
   def testGetAllFirmwareVersions(self):
     """Verify that all model firmware versions can be extracted"""
@@ -1037,8 +1037,8 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
     osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
                   makedirs=True)
     result = commands.GetAllFirmwareVersions(self._buildroot, self._board)
-    self.assertEquals(len(result), 5)
-    self.assertEquals(
+    self.assertEqual(len(result), 5)
+    self.assertEqual(
         result['reef'],
         commands.FirmwareVersions(
             'reef',
@@ -1046,7 +1046,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
             'Google_Reef.9042.110.0',
             'reef_v1.1.5900-ab1ee51',
             'reef_v1.1.5909-bd1f0c9'))
-    self.assertEquals(
+    self.assertEqual(
         result['pyro'],
         commands.FirmwareVersions(
             'pyro',
@@ -1054,7 +1054,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
             'Google_Pyro.9042.110.0',
             'pyro_v1.1.5900-ab1ee51',
             'pyro_v1.1.5909-bd1f0c9'))
-    self.assertEquals(
+    self.assertEqual(
         result['snappy'],
         commands.FirmwareVersions(
             'snappy',
@@ -1062,7 +1062,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
             None,
             'snappy_v1.1.5909-bd1f0c9',
             None))
-    self.assertEquals(
+    self.assertEqual(
         result['sand'],
         commands.FirmwareVersions(
             'sand',
@@ -1070,7 +1070,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
             None,
             'sand_v1.1.5909-bd1f0c9',
             None))
-    self.assertEquals(
+    self.assertEqual(
         result['electro'],
         commands.FirmwareVersions(
             'electro',
@@ -1085,7 +1085,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
                              'usr', 'bin')
     osutils.Touch(os.path.join(build_bin, 'cros_config_host'), makedirs=True)
     result = commands.GetModels(self._buildroot, self._board)
-    self.assertEquals(result, ['pyro', 'reef', 'snappy'])
+    self.assertEqual(result, ['pyro', 'reef', 'snappy'])
 
   def testBuildMaximum(self):
     """Base case where Build is called with all options (except extra_env)."""
@@ -1382,7 +1382,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     tarball = commands.BuildTastBundleTarball(self._buildroot,
                                               self._sysroot_build,
                                               self._tarball_dir)
-    self.assertEquals(expected_tarball, tarball)
+    self.assertEqual(expected_tarball, tarball)
     patch.assert_called_once_with(chroot, sysroot, self._tarball_dir)
 
   def testBuildTastTarballNoBundle(self):
@@ -1415,7 +1415,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
       tarball = commands.BuildPinnedGuestImagesTarball(self._buildroot,
                                                        self._board,
                                                        self._tarball_dir)
-      self.assertEquals(expected_tarball, tarball)
+      self.assertEqual(expected_tarball, tarball)
       gs_mock.assert_called_with('gs://file2', os.path.join(self._tarball_dir,
                                                             'file2.tar.gz'))
       m.assert_called_once_with(self._buildroot,
@@ -1524,7 +1524,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
                                                           fw_test_root)
     # Verify we get a valid tarball returned whose name uses the default name.
     self.assertTrue(returned_archive_name is not None)
-    self.assertEquals(returned_archive_name, constants.FIRMWARE_ARCHIVE_NAME)
+    self.assertEqual(returned_archive_name, constants.FIRMWARE_ARCHIVE_NAME)
 
     # Create an archive and specify that archive filename.
     archive_name = 'alternative_archive.tar.bz2'
@@ -1532,7 +1532,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
                                                           fw_test_root,
                                                           archive_name)
     # Verify that we get back an archive file using the specified name.
-    self.assertEquals(archive_name, returned_archive_name)
+    self.assertEqual(archive_name, returned_archive_name)
 
 
   def findFilesWithPatternExpectedResults(self, root, files):
@@ -1554,18 +1554,18 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     find_all = commands.FindFilesWithPattern('*', target=search_files_root)
     expected_find_all = self.findFilesWithPatternExpectedResults(
         search_files_root, search_files)
-    self.assertEquals(set(find_all), set(expected_find_all))
+    self.assertEqual(set(find_all), set(expected_find_all))
     find_test_files = commands.FindFilesWithPattern('test*',
                                                     target=search_files_root)
     find_test_expected = self.findFilesWithPatternExpectedResults(
         search_files_root, ['test1', 'dir1/test1'])
-    self.assertEquals(set(find_test_files), set(find_test_expected))
+    self.assertEqual(set(find_test_files), set(find_test_expected))
     find_exclude = commands.FindFilesWithPattern(
         '*', target=search_files_root,
         exclude_dirs=(os.path.join(search_files_root, 'dir1'),))
     find_exclude_expected = self.findFilesWithPatternExpectedResults(
         search_files_root, ['file1', 'test1', 'file2', 'dir2/file2'])
-    self.assertEquals(set(find_exclude), set(find_exclude_expected))
+    self.assertEqual(set(find_exclude), set(find_exclude_expected))
 
   def testGenerateUploadJSON(self):
     """Verifies GenerateUploadJSON"""
@@ -1602,7 +1602,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
                     'file2.json': json_str,
                     'file3.bin': bin_blob}
 
-    self.assertEquals(set(parsed.keys()), set(test_content.keys()))
+    self.assertEqual(set(parsed.keys()), set(test_content.keys()))
 
     # Verify the math.
     for filename, content in test_content.items():
@@ -1611,9 +1611,9 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
       sha1 = base64.b64encode(hashlib.sha1(content).digest())
       sha256 = base64.b64encode(hashlib.sha256(content).digest())
 
-      self.assertEquals(entry['size'], size)
-      self.assertEquals(entry['sha1'], sha1)
-      self.assertEquals(entry['sha256'], sha256)
+      self.assertEqual(entry['size'], size)
+      self.assertEqual(entry['sha1'], sha1)
+      self.assertEqual(entry['sha256'], sha256)
 
   def testGenerateHtmlIndexTuple(self):
     """Verifies GenerateHtmlIndex gives us something sane (input: tuple)"""
@@ -1697,7 +1697,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     artifact = {'paths': ['a.bin'], 'output': 'a.tar.gz', 'archive': 'tar',
                 'compress': 'gz'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['a.tar.gz'])
+    self.assertEqual(path, ['a.tar.gz'])
     cros_test_lib.VerifyTarball(os.path.join(archive_dir, path[0]),
                                 ['a.bin'])
 
@@ -1705,20 +1705,20 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     artifact = {'paths': ['a.bin', 'aa'], 'output': 'aa.tar.gz',
                 'archive': 'tar', 'compress': 'gz'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['aa.tar.gz'])
+    self.assertEqual(path, ['aa.tar.gz'])
     cros_test_lib.VerifyTarball(os.path.join(archive_dir, path[0]),
                                 ['a.bin', 'aa'])
 
     # Check zip functionality.
     artifact = {'paths': ['a.bin'], 'archive': 'zip'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['a.zip'])
+    self.assertEqual(path, ['a.zip'])
     self.assertExists(os.path.join(archive_dir, path[0]))
 
     # Check directory copy functionality.
     artifact = {'paths': ['dlc'], 'output': 'dlc'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['dlc'])
+    self.assertEqual(path, ['dlc'])
     self.assertExists(os.path.join(archive_dir, path[0]))
 
   def testGceTarballGeneration(self):
@@ -1733,7 +1733,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     osutils.Touch(os.path.join(image_dir, image))
 
     output_tar = commands.BuildGceTarball(archive_dir, image_dir, image)
-    self.assertEquals(output, output_tar)
+    self.assertEqual(output, output_tar)
 
     output_path = os.path.join(archive_dir, output_tar)
     self.assertExists(output_path)
@@ -1799,10 +1799,10 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     tarball_rel_path = commands.BuildEbuildLogsTarball(self.tempdir,
                                                        wrong_board,
                                                        self.tempdir)
-    self.assertEquals(tarball_rel_path, None)
+    self.assertEqual(tarball_rel_path, None)
     tarball_rel_path = commands.BuildEbuildLogsTarball(self.tempdir,
                                                        board, self.tempdir)
-    self.assertEquals(tarball_rel_path, None)
+    self.assertEqual(tarball_rel_path, None)
 
 
 class ImageTestCommandsTest(cros_test_lib.RunCommandTestCase):

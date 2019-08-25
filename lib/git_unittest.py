@@ -53,7 +53,7 @@ class NormalizeRefTest(cros_test_lib.TestCase):
       result = functor(test_input)
       msg = ('Expected %s to translate %r to %r, but got %r.' %
              (functor.__name__, test_input, test_output, result))
-      self.assertEquals(test_output, result, msg)
+      self.assertEqual(test_output, result, msg)
 
   def testNormalizeRef(self):
     """Test git.NormalizeRef function."""
@@ -168,8 +168,8 @@ class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['remote', 'add', 'origin', url])
     self.assertCommandContains(['fetch', '--depth=1'])
     self.assertCommandContains(['pull', 'origin', 'master'])
-    self.assertEquals(osutils.ReadFile(sparse_checkout),
-                      'dir1/file1\ndir2/file2')
+    self.assertEqual(osutils.ReadFile(sparse_checkout),
+                     'dir1/file1\ndir2/file2')
 
   def testFindGitTopLevel(self):
     git.FindGitTopLevel(self.fake_path)

@@ -82,7 +82,7 @@ class LockingTest(cros_test_lib.TempDirTestCase):
                                 args=(blocking, shared, locktype))
     p.start()
     p.join()
-    self.assertEquals(p.exitcode, expected)
+    self.assertEqual(p.exitcode, expected)
 
   def testSingleLock(self):
     """Just test getting releasing a lock with options."""
@@ -210,7 +210,7 @@ class LockingTest(cros_test_lib.TempDirTestCase):
     # when the with clause exits, p should unblock and get the lock, setting
     # its exit code to sucess now.
     p.join()
-    self.assertEquals(p.exitcode, LOCK_ACQUIRED)
+    self.assertEqual(p.exitcode, LOCK_ACQUIRED)
 
     # Intial lock is NON blocking.
     with locking.FileLock(self.lock_file, blocking=False).write_lock():
@@ -221,7 +221,7 @@ class LockingTest(cros_test_lib.TempDirTestCase):
     # when the with clause exits, p should unblock and get the lock, setting
     # it's exit code to sucess now.
     p.join()
-    self.assertEquals(p.exitcode, LOCK_ACQUIRED)
+    self.assertEqual(p.exitcode, LOCK_ACQUIRED)
 
     # Intial lock is shared, blocking lock is exclusive.
     with locking.FileLock(self.lock_file, blocking=False).read_lock():
@@ -234,9 +234,9 @@ class LockingTest(cros_test_lib.TempDirTestCase):
     # when the with clause exits, p should unblock and get the lock, setting
     # it's exit code to sucess now.
     p.join()
-    self.assertEquals(p.exitcode, LOCK_ACQUIRED)
+    self.assertEqual(p.exitcode, LOCK_ACQUIRED)
     q.join()
-    self.assertEquals(p.exitcode, LOCK_ACQUIRED)
+    self.assertEqual(p.exitcode, LOCK_ACQUIRED)
 
 
 class PortableLinkLockTest(cros_test_lib.TempDirTestCase):

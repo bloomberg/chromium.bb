@@ -383,7 +383,7 @@ class TempDirTests(cros_test_lib.TestCase):
       tempdir = td
       # Show the temp directory exists and is empty.
       self.assertTrue(os.path.isdir(tempdir))
-      self.assertEquals(os.listdir(tempdir), [])
+      self.assertEqual(os.listdir(tempdir), [])
 
     # Show the temp directory no longer exists.
     self.assertNotExists(tempdir)
@@ -394,7 +394,7 @@ class TempDirTests(cros_test_lib.TestCase):
       tempdir = td
       # Show the temp directory exists and is empty.
       self.assertTrue(os.path.isdir(tempdir))
-      self.assertEquals(os.listdir(tempdir), [])
+      self.assertEqual(os.listdir(tempdir), [])
 
       # Create an empty file.
       osutils.Touch(os.path.join(tempdir, 'foo.txt'))
@@ -552,19 +552,19 @@ class IteratePathsTest(cros_test_lib.TestCase):
     """Test iterating from root directory."""
     inp = '/'
     exp = ['/']
-    self.assertEquals(list(osutils.IteratePaths(inp)), exp)
+    self.assertEqual(list(osutils.IteratePaths(inp)), exp)
 
   def testOneDir(self):
     """Test iterating from a directory in a root directory."""
     inp = '/abc'
     exp = ['/', '/abc']
-    self.assertEquals(list(osutils.IteratePaths(inp)), exp)
+    self.assertEqual(list(osutils.IteratePaths(inp)), exp)
 
   def testTwoDirs(self):
     """Test iterating two dirs down."""
     inp = '/abc/def'
     exp = ['/', '/abc', '/abc/def']
-    self.assertEquals(list(osutils.IteratePaths(inp)), exp)
+    self.assertEqual(list(osutils.IteratePaths(inp)), exp)
 
   def testNormalize(self):
     """Test argument being normalized."""
@@ -575,7 +575,7 @@ class IteratePathsTest(cros_test_lib.TestCase):
         ('/abc//def', ['/', '/abc', '/abc/def']),
     ]
     for inp, exp in cases:
-      self.assertEquals(list(osutils.IteratePaths(inp)), exp)
+      self.assertEqual(list(osutils.IteratePaths(inp)), exp)
 
 
 class IteratePathParentsTest(cros_test_lib.TestCase):
@@ -588,7 +588,7 @@ class IteratePathParentsTest(cros_test_lib.TestCase):
 
     result_components.reverse()
     if expected is not None:
-      self.assertEquals(expected, result_components)
+      self.assertEqual(expected, result_components)
 
   def testIt(self):
     """Run the test vectors."""
@@ -627,13 +627,13 @@ class FindInPathParentsTest(cros_test_lib.TempDirTestCase):
     """Target is found."""
     found = osutils.FindInPathParents(
         '.repo', os.path.join(self.tempdir, self.START_PATH))
-    self.assertEquals(found, os.path.join(self.tempdir, 'a', '.repo'))
+    self.assertEqual(found, os.path.join(self.tempdir, 'a', '.repo'))
 
   def testNotFound(self):
     """Target is not found."""
     found = osutils.FindInPathParents(
         'does.not/exist', os.path.join(self.tempdir, self.START_PATH))
-    self.assertEquals(found, None)
+    self.assertEqual(found, None)
 
 
 class SourceEnvironmentTest(cros_test_lib.TempDirTestCase):
@@ -673,18 +673,18 @@ mechant"
   def testWhiteList(self):
     env_dict = osutils.SourceEnvironment(
         self.env_file, ('ENV1', 'ENV3', 'ENV5', 'ENV6'))
-    self.assertEquals(env_dict, self.ENV_WHITELIST)
+    self.assertEqual(env_dict, self.ENV_WHITELIST)
 
   def testArrays(self):
     env_dict = osutils.SourceEnvironment(self.env_file, ('ENVA',))
-    self.assertEquals(env_dict, {'ENVA': 'a b c,d,e 1234 %'})
+    self.assertEqual(env_dict, {'ENVA': 'a b c,d,e 1234 %'})
 
     env_dict = osutils.SourceEnvironment(self.env_file, ('ENVA',), ifs=' ')
-    self.assertEquals(env_dict, {'ENVA': 'a b c d e 1234 %'})
+    self.assertEqual(env_dict, {'ENVA': 'a b c d e 1234 %'})
 
     env_dict = osutils.SourceEnvironment(self.env_file_multiline, ('ENVM',),
                                          multiline=True)
-    self.assertEquals(env_dict, {'ENVM': 'gentil\nmechant'})
+    self.assertEqual(env_dict, {'ENVM': 'gentil\nmechant'})
 
 
 class DeviceInfoTests(cros_test_lib.RunCommandTestCase):

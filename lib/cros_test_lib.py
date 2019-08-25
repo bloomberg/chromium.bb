@@ -324,7 +324,7 @@ class TruthTable(object):
     for inputs in truth_table:
       a, b, c = inputs
       result = mod.Foo(a, b, c)
-      self.assertEquals(result, truth_table.GetOutput(inputs))
+      self.assertEqual(result, truth_table.GetOutput(inputs))
   """
 
   class TruthTableInputIterator(object):

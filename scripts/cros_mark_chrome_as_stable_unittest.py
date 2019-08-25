@@ -128,7 +128,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     result = {'log': [{'commit': 'deadbeef' * 5}]}
     self.PatchObject(gob_util, 'FetchUrlJson', return_value=result)
     revision = gob_util.GetTipOfTrunkRevision(A_URL)
-    self.assertEquals(revision, 'deadbeef' * 5)
+    self.assertEqual(revision, 'deadbeef' * 5)
 
   def testGetTipOfTrunkVersion(self):
     """Tests if we get the latest version from TOT."""
@@ -143,7 +143,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     # pylint: disable=protected-access
     version = cros_mark_chrome_as_stable._GetSpecificVersionUrl(
         TEST_URL, 'test-revision')
-    self.assertEquals(version, '8.0.256.0')
+    self.assertEqual(version, '8.0.256.0')
 
   def testCheckIfChromeRightForOS(self):
     """Tests if we can find the chromeos build from our mock DEPS."""

@@ -198,8 +198,8 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
 
   def testAllVMTestStagesSucceed(self):
     """Verify all VM test stages are run."""
-    self.assertEquals([], self._RunVMTests())
-    self.assertEquals(self.all_vm_test_stages, self.called_stages)
+    self.assertEqual([], self._RunVMTests())
+    self.assertEqual(self.all_vm_test_stages, self.called_stages)
 
   def testAllVMTestStagesFail(self):
     """Verify failures are reported when all VM test stages fail."""
@@ -207,26 +207,26 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
         vm_test_stages.VMTestStage: failures_lib.InfrastructureFailure(),
         tast_test_stages.TastVMTestStage: failures_lib.TestFailure(),
     }
-    self.assertEquals(
+    self.assertEqual(
         [failures_lib.InfrastructureFailure, failures_lib.TestFailure],
         self._RunVMTests())
-    self.assertEquals(self.all_vm_test_stages, self.called_stages)
+    self.assertEqual(self.all_vm_test_stages, self.called_stages)
 
   def testVMTestStageFails(self):
     """Verify TastVMTestStage is still run when VMTestStage fails."""
     self.stage_exceptions = {
         vm_test_stages.VMTestStage: failures_lib.TestFailure(),
     }
-    self.assertEquals([failures_lib.TestFailure], self._RunVMTests())
-    self.assertEquals(self.all_vm_test_stages, self.called_stages)
+    self.assertEqual([failures_lib.TestFailure], self._RunVMTests())
+    self.assertEqual(self.all_vm_test_stages, self.called_stages)
 
   def testTastVMTestStageFails(self):
     """Verify VMTestStage is still run when TastVMTestStage fails."""
     self.stage_exceptions = {
         tast_test_stages.TastVMTestStage: failures_lib.TestFailure(),
     }
-    self.assertEquals([failures_lib.TestFailure], self._RunVMTests())
-    self.assertEquals(self.all_vm_test_stages, self.called_stages)
+    self.assertEqual([failures_lib.TestFailure], self._RunVMTests())
+    self.assertEqual(self.all_vm_test_stages, self.called_stages)
 
 
 class DistributedBuilderTests(SimpleBuilderTest):

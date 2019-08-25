@@ -385,7 +385,7 @@ class TestGetFullyVerifiedChanges(cros_test_lib.MockTestCase):
         self.changes, changes_by_config, {}, failing,
         inflight, no_stat, messages, self.build_root)
     verified_changes = set(verified_results.keys())
-    self.assertEquals(verified_changes, set(self.changes))
+    self.assertEqual(verified_changes, set(self.changes))
 
   def testChangesOnNotCompletedBuilds(self):
     """Test changes on not completed builds."""
@@ -400,7 +400,7 @@ class TestGetFullyVerifiedChanges(cros_test_lib.MockTestCase):
         self.changes, changes_by_config, {}, failing,
         inflight, no_stat, messages, self.build_root)
     verified_changes = set(verified_results.keys())
-    self.assertEquals(verified_changes, set(self.changes[2:-2]))
+    self.assertEqual(verified_changes, set(self.changes[2:-2]))
 
   def testChangesOnNotCompletedBuildsWithCQHistory(self):
     """Tests changes on not completed builds with builds passed in history."""
@@ -419,7 +419,7 @@ class TestGetFullyVerifiedChanges(cros_test_lib.MockTestCase):
         self.changes, changes_by_config, passed_slave_by_change,
         failing, inflight, no_stat, messages, self.build_root)
     verified_changes = set(verified_results.keys())
-    self.assertEquals(verified_changes, set(self.changes[1:-1]))
+    self.assertEqual(verified_changes, set(self.changes[1:-1]))
 
   def testChangesNotVerifiedOnFailures(self):
     """Tests that changes are not verified if failures cannot be ignored."""
@@ -435,7 +435,7 @@ class TestGetFullyVerifiedChanges(cros_test_lib.MockTestCase):
         self.changes, changes_by_config, {}, failing,
         inflight, no_stat, messages, self.build_root)
     verified_changes = set(verified_results.keys())
-    self.assertEquals(verified_changes, set(self.changes[2:]))
+    self.assertEqual(verified_changes, set(self.changes[2:]))
 
   def testChangesNotVerifiedOnFailuresWithCQHistory(self):
     """Tests on not ignorable faiulres with CQ history."""
@@ -454,7 +454,7 @@ class TestGetFullyVerifiedChanges(cros_test_lib.MockTestCase):
         self.changes, changes_by_config, passed_slave_by_change, failing,
         inflight, no_stat, messages, self.build_root)
     verified_changes = set(verified_results.keys())
-    self.assertEquals(verified_changes, set(self.changes[1:]))
+    self.assertEqual(verified_changes, set(self.changes[1:]))
 
   def testChangesVerifiedWhenFailuresCanBeIgnored(self):
     """Tests that changes are verified if failures can be ignored."""
@@ -470,7 +470,7 @@ class TestGetFullyVerifiedChanges(cros_test_lib.MockTestCase):
         self.changes, changes_by_config, {}, failing,
         inflight, no_stat, messages, self.build_root)
     verified_changes = set(verified_results.keys())
-    self.assertEquals(verified_changes, set(self.changes))
+    self.assertEqual(verified_changes, set(self.changes))
 
   def testCanIgnoreFailures(self):
     """Tests CanIgnoreFailures()."""

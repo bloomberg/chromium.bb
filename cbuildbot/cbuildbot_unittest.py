@@ -163,7 +163,7 @@ class LogTest(cros_test_lib.TempDirTestCase):
     cbuildbot._BackupPreviousLog(os.path.join(self.tempdir, 'cbuildbot.log'),
                                  backup_limit=25)
     with open(os.path.join(self.tempdir, 'cbuildbot.log.1')) as f:
-      self.assertEquals(f.readline(), '1')
+      self.assertEqual(f.readline(), '1')
 
   def testNineToTenLogs(self):
     """Test handling *.log.9 to *.log.10 (correct sorting)."""
@@ -171,7 +171,7 @@ class LogTest(cros_test_lib.TempDirTestCase):
     cbuildbot._BackupPreviousLog(os.path.join(self.tempdir, 'cbuildbot.log'),
                                  backup_limit=25)
     with open(os.path.join(self.tempdir, 'cbuildbot.log.10')) as f:
-      self.assertEquals(f.readline(), '10')
+      self.assertEqual(f.readline(), '10')
 
   def testOverLimit(self):
     """Test going over the limit and having to purge old logs."""
@@ -179,10 +179,10 @@ class LogTest(cros_test_lib.TempDirTestCase):
     cbuildbot._BackupPreviousLog(os.path.join(self.tempdir, 'cbuildbot.log'),
                                  backup_limit=25)
     with open(os.path.join(self.tempdir, 'cbuildbot.log.26')) as f:
-      self.assertEquals(f.readline(), '26')
+      self.assertEqual(f.readline(), '26')
 
-    self.assertEquals(len(glob.glob(os.path.join(self.tempdir, 'cbuildbot*'))),
-                      25)
+    self.assertEqual(len(glob.glob(os.path.join(self.tempdir, 'cbuildbot*'))),
+                     25)
 
 
 class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
@@ -247,14 +247,14 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
     """Test that no --profile option gets defaulted."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', self._GENERIC_PREFLIGHT]
     options = cbuildbot.ParseCommandLine(self.parser, args)
-    self.assertEquals(options.profile, None)
+    self.assertEqual(options.profile, None)
 
   def testBuildBotWithProfileOption(self):
     """Test that --profile option gets parsed."""
     args = ['-r', self._BUILD_ROOT, '--buildbot',
             '--profile', 'carp', self._GENERIC_PREFLIGHT]
     options = cbuildbot.ParseCommandLine(self.parser, args)
-    self.assertEquals(options.profile, 'carp')
+    self.assertEqual(options.profile, 'carp')
 
   def testValidateClobberUserDeclines_1(self):
     """Test case where user declines in prompt."""
@@ -320,8 +320,8 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
         self._GENERIC_PREFLIGHT,
     ]
     options = cbuildbot.ParseCommandLine(self.parser, args)
-    self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
-    self.assertNotEquals(options.chrome_root, None)
+    self.assertEqual(options.chrome_rev, constants.CHROME_REV_LOCAL)
+    self.assertNotEqual(options.chrome_root, None)
 
   def testBuildBotWithGoodChromeRevAndRootOption(self):
     """chrome_rev can get reset around chrome_root."""
@@ -341,8 +341,8 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
         self._GENERIC_PREFLIGHT,
     ]
     options = cbuildbot.ParseCommandLine(self.parser, args)
-    self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
-    self.assertNotEquals(options.chrome_root, None)
+    self.assertEqual(options.chrome_rev, constants.CHROME_REV_LOCAL)
+    self.assertNotEqual(options.chrome_root, None)
 
 
 class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):

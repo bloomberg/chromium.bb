@@ -38,12 +38,12 @@ class ELFParsingTest(cros_test_lib.TempDirTestCase):
   def testUnsupportedFiles(self):
     """Tests unsupported files are ignored."""
     osutils.WriteFile(os.path.join(self.tempdir, 'foo.so'), 'foo')
-    self.assertEquals(None,
-                      parseelf.ParseELF(self.tempdir, 'foo.so', self._ldpaths))
+    self.assertEqual(None,
+                     parseelf.ParseELF(self.tempdir, 'foo.so', self._ldpaths))
 
     osutils.WriteFile(os.path.join(self.tempdir, 'foo.so'), '\x7fELF-foo')
-    self.assertEquals(None,
-                      parseelf.ParseELF(self.tempdir, 'foo.so', self._ldpaths))
+    self.assertEqual(None,
+                     parseelf.ParseELF(self.tempdir, 'foo.so', self._ldpaths))
 
   def testParsedSymbols(self):
     """Tests the list of imported/exported symbols."""
@@ -65,7 +65,7 @@ class ELFParsingTest(cros_test_lib.TempDirTestCase):
                             parse_symbols=True)
     self.assertTrue('imp_sym' in elf)
     self.assertTrue('exp_sym' in elf)
-    self.assertEquals(elf['imp_sym'], set([b'fa', b'fb', b'fc']))
+    self.assertEqual(elf['imp_sym'], set([b'fa', b'fb', b'fc']))
     self.assertIn(b'fx', elf['exp_sym'])
     self.assertIn(b'fy', elf['exp_sym'])
     self.assertIn(b'fz', elf['exp_sym'])

@@ -319,11 +319,11 @@ class TestPresence(cros_test_lib.MockTestCase):
   def testContextManager(self):
     """Test that timing context manager emits a metric."""
     with metrics.Presence('fooname'):
-      self.assertEquals(self._mockMetric.mock_calls, [
+      self.assertEqual(self._mockMetric.mock_calls, [
           mock.call.set(True, fields=None),
       ])
 
-    self.assertEquals(self._mockMetric.mock_calls, [
+    self.assertEqual(self._mockMetric.mock_calls, [
         mock.call.set(True, fields=None),
         mock.call.set(False, fields=None),
     ])
@@ -334,7 +334,7 @@ class TestPresence(cros_test_lib.MockTestCase):
       with metrics.Presence('fooname'):
         raise FakeException
 
-    self.assertEquals(self._mockMetric.mock_calls, [
+    self.assertEqual(self._mockMetric.mock_calls, [
         mock.call.set(True, fields=None),
         mock.call.set(False, fields=None),
     ])
@@ -344,7 +344,7 @@ class TestPresence(cros_test_lib.MockTestCase):
     with metrics.Presence('fooname', {'foo': 'bar', 'c': 3}):
       pass
 
-    self.assertEquals(self._mockMetric.mock_calls, [
+    self.assertEqual(self._mockMetric.mock_calls, [
         mock.call.set(True, fields={'c': 3, 'foo': 'bar'}),
         mock.call.set(False, fields={'c': 3, 'foo': 'bar'}),
     ])

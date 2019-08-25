@@ -164,9 +164,9 @@ class RemoteShTest(RemoteAccessTest):
     """Test normal functionality."""
     self.SetRemoteShResult()
     result = self.host.RemoteSh(self.TEST_CMD)
-    self.assertEquals(result.returncode, self.RETURN_CODE)
-    self.assertEquals(result.output.strip(), self.OUTPUT)
-    self.assertEquals(result.error.strip(), self.ERROR)
+    self.assertEqual(result.returncode, self.RETURN_CODE)
+    self.assertEqual(result.output.strip(), self.OUTPUT)
+    self.assertEqual(result.error.strip(), self.ERROR)
 
   def testRemoteCmdFailure(self):
     """Test failure in remote cmd."""

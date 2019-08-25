@@ -197,25 +197,25 @@ class VersionTest(AbstractGSContextTest):
     """Simple gsutil_version fetch test from stdout."""
     self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
                               output='gsutil version 3.35\n')
-    self.assertEquals('3.35', self.ctx.gsutil_version)
+    self.assertEqual('3.35', self.ctx.gsutil_version)
 
   def testGetVersionStderr(self):
     """Simple gsutil_version fetch test from stderr."""
     self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
                               error='gsutil version 3.36\n')
-    self.assertEquals('3.36', self.ctx.gsutil_version)
+    self.assertEqual('3.36', self.ctx.gsutil_version)
 
   def testGetVersionCached(self):
     """Simple gsutil_version fetch test from cache."""
     # pylint: disable=protected-access
     self.ctx._gsutil_version = '3.37'
-    self.assertEquals('3.37', self.ctx.gsutil_version)
+    self.assertEqual('3.37', self.ctx.gsutil_version)
 
   def testGetVersionNewFormat(self):
     """Simple gsutil_version fetch test for new gsutil output format."""
     self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
                               output='gsutil version: 4.5\n')
-    self.assertEquals('4.5', self.ctx.gsutil_version)
+    self.assertEqual('4.5', self.ctx.gsutil_version)
 
   def testGetVersionBadOutput(self):
     """Simple gsutil_version fetch test from cache."""
@@ -602,12 +602,12 @@ class UnmockedCopyTest(cros_test_lib.TempDirTestCase):
                         local_src_file, tempuri, version=0)
 
       # Sanity check the content is unchanged.
-      self.assertEquals(ctx.Cat(tempuri), 'gen0')
+      self.assertEqual(ctx.Cat(tempuri), 'gen0')
 
       # Upload the file, but with the right generation.
       osutils.WriteFile(local_src_file, 'gen-new')
       gen = ctx.Copy(local_src_file, tempuri, version=gen)
-      self.assertEquals(ctx.Cat(tempuri), 'gen-new')
+      self.assertEqual(ctx.Cat(tempuri), 'gen-new')
 
 
 class CopyIntoTest(CopyTest):
@@ -730,7 +730,7 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
 
   def testInitGsutilBin(self):
     """Test we use the given gsutil binary, erroring where appropriate."""
-    self.assertEquals(gs.GSContext().gsutil_bin, self.gsutil_bin)
+    self.assertEqual(gs.GSContext().gsutil_bin, self.gsutil_bin)
     self.assertRaises(gs.GSContextException,
                       gs.GSContext, gsutil_bin=self.bad_path)
 
@@ -750,7 +750,7 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
 
   def testInitBotoFileEnvError(self):
     """Boto file through env var error."""
-    self.assertEquals(gs.GSContext().boto_file, self.boto_file)
+    self.assertEqual(gs.GSContext().boto_file, self.boto_file)
     # Check env usage next; no need to cleanup, teardown handles it,
     # and we want the env var to persist for the next part of this test.
     os.environ['BOTO_CONFIG'] = self.bad_path
@@ -1515,9 +1515,9 @@ class CatTest(cros_test_lib.TempDirTestCase):
 
       result = ctx.StreamingCat(url)
       # Get the 1st chunk.
-      self.assertEquals(next(result), first_chunk)
+      self.assertEqual(next(result), first_chunk)
       # Then the second chunk.
-      self.assertEquals(next(result), second_chunk)
+      self.assertEqual(next(result), second_chunk)
       # At last, no more.
       with self.assertRaises(StopIteration):
         next(result)

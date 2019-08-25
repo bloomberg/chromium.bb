@@ -458,21 +458,21 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
 
     if 'models' in board_metadata:
       reef = board_metadata['models']['reef']
-      self.assertEquals('Google_Reef.9042.87.1',
-                        reef['main-readonly-firmware-version'])
-      self.assertEquals('Google_Reef.9042.110.0',
-                        reef['main-readwrite-firmware-version'])
-      self.assertEquals('reef_v1.1.5909-bd1f0c9', reef['ec-firmware-version'])
-      self.assertEquals('key-123', reef['firmware-key-id'])
+      self.assertEqual('Google_Reef.9042.87.1',
+                       reef['main-readonly-firmware-version'])
+      self.assertEqual('Google_Reef.9042.110.0',
+                       reef['main-readwrite-firmware-version'])
+      self.assertEqual('reef_v1.1.5909-bd1f0c9', reef['ec-firmware-version'])
+      self.assertEqual('key-123', reef['firmware-key-id'])
 
       self.assertIn('pyro', board_metadata['models'])
       self.assertIn('electro', board_metadata['models'])
       electro = board_metadata['models']['electro']
-      self.assertEquals('Google_Reef.9042.87.1',
-                        electro['main-readonly-firmware-version'])
+      self.assertEqual('Google_Reef.9042.87.1',
+                       electro['main-readonly-firmware-version'])
       # Test RW firmware is defaulted to RO version if isn't specified.
-      self.assertEquals('Google_Reef.9042.87.1',
-                        electro['main-readwrite-firmware-version'])
+      self.assertEqual('Google_Reef.9042.87.1',
+                       electro['main-readwrite-firmware-version'])
 
   def testUnifiedBuilds(self):
     """Test that unified builds are marked as such."""

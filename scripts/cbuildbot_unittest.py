@@ -31,11 +31,11 @@ class IsDistributedBuilderTest(cros_test_lib.TestCase):
     chrome_rev = None
 
     def _TestConfig(expected):
-      self.assertEquals(expected,
-                        cbuildbot._IsDistributedBuilder(
-                            options=options,
-                            chrome_rev=chrome_rev,
-                            build_config=build_config))
+      self.assertEqual(expected,
+                       cbuildbot._IsDistributedBuilder(
+                           options=options,
+                           chrome_rev=chrome_rev,
+                           build_config=build_config))
 
     # Default options.
     _TestConfig(False)
@@ -66,5 +66,5 @@ class PostsubmitBuilderTest(cros_test_lib.TestCase):
             '--cbb_build_packages', 'pkgA pkgB', 'caroline-postsubmit']
     options = cbuildbot.ParseCommandLine(parser, argv)
     expected = ['pkgA', 'pkgB']
-    self.assertEquals(expected, options.cbb_build_packages)
-    self.assertEquals('hash1234', options.cbb_snapshot_revision)
+    self.assertEqual(expected, options.cbb_build_packages)
+    self.assertEqual('hash1234', options.cbb_snapshot_revision)

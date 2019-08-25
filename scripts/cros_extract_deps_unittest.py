@@ -98,5 +98,5 @@ class FlattenDepTreeTest(cros_test_lib.TestCase):
             'full_name': 'deathstar/trooper-1.2',
         }
     }
-    self.assertEquals(
+    self.assertEqual(
         cros_extract_deps.FlattenDepTree(dep_tree), flatten_dep_tree)

@@ -205,9 +205,9 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
         self._vm.qemu_img_path, 'create', '-f', 'qcow2', '-o',
         'backing_file=%s' % initial_img_path, os.path.join(self._vm.vm_dir,
                                                            'qcow2.img')])
-    self.assertEquals(self._vm.image_path,
-                      os.path.join(self._vm.vm_dir, 'qcow2.img'))
-    self.assertEquals(self._vm.image_format, 'qcow2')
+    self.assertEqual(self._vm.image_path,
+                     os.path.join(self._vm.vm_dir, 'qcow2.img'))
+    self.assertEqual(self._vm.image_format, 'qcow2')
 
   @mock.patch('os.path.isfile', return_value=False)
   @mock.patch('chromite.lib.osutils.Which', return_value=None)
@@ -267,7 +267,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
                    '2003-2008 Fabrice Bellard')
     self.rc.AddCmdResult(partial_mock.In('--version'), output=version_str)
     self._vm._SetQemuPath()
-    self.assertEquals('2.8.0', self._vm.QemuVersion())
+    self.assertEqual('2.8.0', self._vm.QemuVersion())
     self.assertCommandContains([self._vm.qemu_path, '--version'])
 
   def testCheckQemuError(self):
@@ -372,7 +372,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     sock.close()
     with cros_test_lib.LoggingCapturer(log_level=logging.INFO) as logger:
       self._vm._WaitForSSHPort()
-    self.assertEquals(logger.messages, '')
+    self.assertEqual(logger.messages, '')
 
   @mock.patch('chromite.lib.remote_access.RemoteDevice.GetRunningPids',
               return_value=[])

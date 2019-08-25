@@ -186,7 +186,7 @@ class MarkImageToBeSignedTest(gs_unittest.AbstractGSContextTest):
     """Verify diff priority values get used correctly"""
     for prio, sprio in ((0, '00'), (9, '09'), (35, '35'), (99, '99')):
       ret = pushimage.MarkImageToBeSigned(self.ctx, '', '', prio)
-      self.assertEquals(ret, '/tobesigned/%s,' % sprio)
+      self.assertEqual(ret, '/tobesigned/%s,' % sprio)
 
   def testBadPriority(self):
     """Verify we reject bad priority values"""

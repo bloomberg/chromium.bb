@@ -159,7 +159,7 @@ class BuilderRunPickleTest(_BuilderRunTestCase):
                      return_value=DEFAULT_VERSION)
 
   def _TestPickle(self, run1):
-    self.assertEquals(DEFAULT_VERSION, run1.GetVersion())
+    self.assertEqual(DEFAULT_VERSION, run1.GetVersion())
     run1.attrs.release_tag = 'TheReleaseTag'
 
     # Accessing a method on BuilderRun has special behavior, so access and
@@ -172,14 +172,14 @@ class BuilderRunPickleTest(_BuilderRunTestCase):
     # Pickle and unpickle run1 into run2.
     run2 = pickle.loads(pickle.dumps(run1, pickle.HIGHEST_PROTOCOL))
 
-    self.assertEquals(run1.buildnumber, run2.buildnumber)
-    self.assertEquals(run1.config.boards, run2.config.boards)
-    self.assertEquals(run1.options.branch, run2.options.branch)
-    self.assertEquals(run1.attrs.release_tag, run2.attrs.release_tag)
+    self.assertEqual(run1.buildnumber, run2.buildnumber)
+    self.assertEqual(run1.config.boards, run2.config.boards)
+    self.assertEqual(run1.options.branch, run2.options.branch)
+    self.assertEqual(run1.attrs.release_tag, run2.attrs.release_tag)
     self.assertRaises(AttributeError, getattr, run1.attrs, 'manifest_manager')
     self.assertRaises(AttributeError, getattr, run2.attrs, 'manifest_manager')
-    self.assertEquals(patch_after_sync, run2.ShouldPatchAfterSync())
-    self.assertEquals(upload_url, run2.GetArchive().upload_url)
+    self.assertEqual(patch_after_sync, run2.ShouldPatchAfterSync())
+    self.assertEqual(upload_url, run2.GetArchive().upload_url)
 
     # The attrs objects should be identical.
     self.assertIs(run1.attrs, run2.attrs)
@@ -202,11 +202,11 @@ class BuilderRunTest(_BuilderRunTestCase):
       m.return_value = DEFAULT_VERSION
 
       run = self._NewBuilderRun()
-      self.assertEquals(DEFAULT_BUILDROOT, run.buildroot)
-      self.assertEquals(DEFAULT_BUILDNUMBER, run.buildnumber)
-      self.assertEquals(DEFAULT_BRANCH, run.manifest_branch)
-      self.assertEquals(DEFAULT_OPTIONS, run.options)
-      self.assertEquals(DEFAULT_CONFIG, run.config)
+      self.assertEqual(DEFAULT_BUILDROOT, run.buildroot)
+      self.assertEqual(DEFAULT_BUILDNUMBER, run.buildnumber)
+      self.assertEqual(DEFAULT_BRANCH, run.manifest_branch)
+      self.assertEqual(DEFAULT_OPTIONS, run.options)
+      self.assertEqual(DEFAULT_CONFIG, run.config)
       self.assertTrue(isinstance(run.attrs, cbuildbot_run.RunAttributes))
       self.assertTrue(isinstance(run.GetArchive(),
                                  cbuildbot_run.archive_lib.Archive))
@@ -224,16 +224,16 @@ class BuilderRunTest(_BuilderRunTestCase):
     options = _ExtendDefaultOptions(foo=True, bar=10)
     run = self._NewBuilderRun(options=options)
 
-    self.assertEquals(True, run.options.foo)
-    self.assertEquals(10, run.options.__getattr__('bar'))
+    self.assertEqual(True, run.options.foo)
+    self.assertEqual(10, run.options.__getattr__('bar'))
     self.assertRaises(AttributeError, run.options.__getattr__, 'baz')
 
   def testConfig(self):
     config = _ExtendDefaultConfig(foo=True, bar=10)
     run = self._NewBuilderRun(config=config)
 
-    self.assertEquals(True, run.config.foo)
-    self.assertEquals(10, run.config.__getattr__('bar'))
+    self.assertEqual(True, run.config.foo)
+    self.assertEqual(10, run.config.__getattr__('bar'))
     self.assertRaises(AttributeError, run.config.__getattr__, 'baz')
 
   def testAttrs(self):
@@ -244,8 +244,8 @@ class BuilderRunTest(_BuilderRunTestCase):
     self.assertRaises(AttributeError, run.attrs.__getattribute__,
                       'manifest_manager')
     run.attrs.manifest_manager = 'foo'
-    self.assertEquals('foo', run.attrs.manifest_manager)
-    self.assertEquals('foo', run.attrs.__getattribute__('manifest_manager'))
+    self.assertEqual('foo', run.attrs.manifest_manager)
+    self.assertEqual('foo', run.attrs.__getattribute__('manifest_manager'))
 
     # foobar is not a valid run attribute.  It gives AttributeError when
     # accessed or changed.
@@ -367,7 +367,7 @@ class GetVersionTest(_BuilderRunTestCase):
     verinfo = object()
     run.attrs.version_info = verinfo
     result = run.GetVersionInfo()
-    self.assertEquals(verinfo, result)
+    self.assertEqual(verinfo, result)
 
   def _TestGetVersionReleaseTag(self, release_tag, cidb_id=None):
     with mock.patch.object(cbuildbot_run._BuilderRunBase,
@@ -394,20 +394,20 @@ class GetVersionTest(_BuilderRunTestCase):
 
   def testGetVersionReleaseTag(self):
     result = self._TestGetVersionReleaseTag('RT')
-    self.assertEquals('R%s-%s' % (DEFAULT_CHROME_BRANCH, 'RT'), result)
+    self.assertEqual('R%s-%s' % (DEFAULT_CHROME_BRANCH, 'RT'), result)
 
   def testGetVersionNoReleaseTag(self):
     cidb_id = 12345678
     result = self._TestGetVersionReleaseTag(None, cidb_id)
     expected_result = ('R%s-%s-b%s' %
                        (DEFAULT_CHROME_BRANCH, 'VS', cidb_id))
-    self.assertEquals(result, expected_result)
+    self.assertEqual(result, expected_result)
 
   def testGetVersionNoReleaseTagNoCidb(self):
     result = self._TestGetVersionReleaseTag(None)
     expected_result = ('R%s-%s-b%s' %
                        (DEFAULT_CHROME_BRANCH, 'VS', 0))
-    self.assertEquals(result, expected_result)
+    self.assertEqual(result, expected_result)
 
 
 class ChildBuilderRunTest(_BuilderRunTestCase):
@@ -418,12 +418,12 @@ class ChildBuilderRunTest(_BuilderRunTestCase):
       m.return_value = DEFAULT_VERSION
 
       crun = self._NewChildBuilderRun(0)
-      self.assertEquals(DEFAULT_BUILDROOT, crun.buildroot)
-      self.assertEquals(DEFAULT_BUILDNUMBER, crun.buildnumber)
-      self.assertEquals(DEFAULT_BRANCH, crun.manifest_branch)
-      self.assertEquals(DEFAULT_OPTIONS, crun.options)
-      self.assertEquals(DEFAULT_CONFIG.child_configs[0], crun.config)
-      self.assertEquals('foo', crun.config.name)
+      self.assertEqual(DEFAULT_BUILDROOT, crun.buildroot)
+      self.assertEqual(DEFAULT_BUILDNUMBER, crun.buildnumber)
+      self.assertEqual(DEFAULT_BRANCH, crun.manifest_branch)
+      self.assertEqual(DEFAULT_OPTIONS, crun.options)
+      self.assertEqual(DEFAULT_CONFIG.child_configs[0], crun.config)
+      self.assertEqual('foo', crun.config.name)
       self.assertTrue(isinstance(crun.attrs, cbuildbot_run.RunAttributes))
       self.assertTrue(isinstance(crun.GetArchive(),
                                  cbuildbot_run.archive_lib.Archive))

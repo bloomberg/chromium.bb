@@ -48,7 +48,7 @@ class DepTrackerTest(cros_test_lib.TempDirTestCase):
     dt.Init()
     dt.ComputeELFFileDeps()
 
-    self.assertEquals(sorted(dt._files.keys()), ['abc_main', 'libabc.so'])
+    self.assertEqual(sorted(dt._files.keys()), ['abc_main', 'libabc.so'])
 
   def testFiletypeSet(self):
     """Tests that the 'ftype' member is set for ELF files first."""

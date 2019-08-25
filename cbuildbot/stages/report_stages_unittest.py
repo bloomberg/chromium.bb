@@ -312,13 +312,13 @@ class ReportStageTest(AbstractReportStageTestCase):
                         acl=mock.ANY) for filename in filenames]
 
     # Verify build stages timeline contains the stages that were mocked.
-    self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
+    self.assertEqual(calls, commands.UploadArchivedFile.call_args_list)
     timeline_content = osutils.WriteFile.call_args_list[2][0][1]
     for s in stages:
       self.assertIn('["%s", new Date' % s['name'], timeline_content)
 
     # Verify slaves timeline contains the slaves that were mocked.
-    self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
+    self.assertEqual(calls, commands.UploadArchivedFile.call_args_list)
     timeline_content = osutils.WriteFile.call_args_list[3][0][1]
     for s in statuses:
       self.assertIn('["%s - %s", new Date' %
@@ -337,7 +337,7 @@ class ReportStageTest(AbstractReportStageTestCase):
                        update_list=True, acl=mock.ANY)]
     calls += [mock.call(mock.ANY, mock.ANY, 'timeline-stages.html',
                         debug=False, update_list=True, acl=mock.ANY)]
-    self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
+    self.assertEqual(calls, commands.UploadArchivedFile.call_args_list)
 
   def testAlertEmail(self):
     """Send out alerts when streak counter reaches the threshold."""

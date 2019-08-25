@@ -65,9 +65,9 @@ class BoardBuilDependencyTest(cros_test_lib.TestCase):
       if package_dep_info.package_info.package_name == 'darthvader':
         darthvader_dep = package_dep_info
     self.assertTrue(darthvader_dep)
-    self.assertEquals(darthvader_dep.dependency_packages[0].category,
-                      'troop')
-    self.assertEquals(darthvader_dep.dependency_packages[0].package_name,
-                      'clone')
-    self.assertEquals(darthvader_dep.dependency_source_paths[0].path,
-                      '/control/room')
+    self.assertEqual(darthvader_dep.dependency_packages[0].category,
+                     'troop')
+    self.assertEqual(darthvader_dep.dependency_packages[0].package_name,
+                     'clone')
+    self.assertEqual(darthvader_dep.dependency_source_paths[0].path,
+                     '/control/room')

@@ -18,7 +18,7 @@ class GconvStriptTest(cros_test_lib.MockTempDirTestCase):
   """Tests for gconv_strip script."""
 
   def testMultipleStringMatch(self):
-    self.assertEquals(
+    self.assertEqual(
         gconv_strip.MultipleStringMatch(
             ['hell', 'a', 'z', 'k', 'spec'],
             'hello_from a very special place'),
@@ -60,4 +60,4 @@ module charset_foo   charset_A     USED_MODULE
 """
 
     content = osutils.ReadFile(tmp_gconv_module)
-    self.assertEquals(content, expected)
+    self.assertEqual(content, expected)

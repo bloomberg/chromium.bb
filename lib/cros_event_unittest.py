@@ -20,7 +20,7 @@ class EventIdGeneratorTest(cros_test_lib.TestCase):
     expected_ids = {1, 2, 3, 4, 5}
     id_gen = ce.EventIdGenerator()
     for expected_id in expected_ids:
-      self.assertEquals(expected_id, next(id_gen))
+      self.assertEqual(expected_id, next(id_gen))
 
 
 class FailTest(cros_test_lib.TestCase):
@@ -57,7 +57,7 @@ class EventTest(cros_test_lib.TestCase):
     self.emitEvent = None
 
   def testInit(self):
-    self.assertEquals(self.event1[ce.EVENT_ID], self.id1)
+    self.assertEqual(self.event1[ce.EVENT_ID], self.id1)
     self.assertDictContainsSubset(self.data1, self.event1)
 
     self.assertTrue(isinstance(self.event1, dict))

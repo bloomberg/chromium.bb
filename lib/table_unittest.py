@@ -58,8 +58,8 @@ class TableTest(cros_test_lib.TempDirTestCase):
   def assertRowsEqual(self, row1, row2):
     # Determine column superset
     cols = set(row1) | set(row2)
-    self.assertEquals(self._GetFullRowFor(row1, cols),
-                      self._GetFullRowFor(row2, cols))
+    self.assertEqual(self._GetFullRowFor(row1, cols),
+                     self._GetFullRowFor(row2, cols))
 
   def assertRowListsEqual(self, rows1, rows2):
     for (row1, row2) in zip(rows1, rows2):
@@ -77,26 +77,26 @@ class TableTest(cros_test_lib.TempDirTestCase):
     return mytable
 
   def testLen(self):
-    self.assertEquals(3, len(self._table))
+    self.assertEqual(3, len(self._table))
 
   def testGetNumRows(self):
-    self.assertEquals(3, self._table.GetNumRows())
+    self.assertEqual(3, self._table.GetNumRows())
 
   def testGetNumColumns(self):
-    self.assertEquals(4, self._table.GetNumColumns())
+    self.assertEqual(4, self._table.GetNumColumns())
 
   def testGetColumns(self):
-    self.assertEquals(self.COLUMNS, self._table.GetColumns())
+    self.assertEqual(self.COLUMNS, self._table.GetColumns())
 
   def testGetColumnIndex(self):
-    self.assertEquals(0, self._table.GetColumnIndex(self.COL0))
-    self.assertEquals(1, self._table.GetColumnIndex(self.COL1))
-    self.assertEquals(2, self._table.GetColumnIndex(self.COL2))
+    self.assertEqual(0, self._table.GetColumnIndex(self.COL0))
+    self.assertEqual(1, self._table.GetColumnIndex(self.COL1))
+    self.assertEqual(2, self._table.GetColumnIndex(self.COL2))
 
   def testGetColumnByIndex(self):
-    self.assertEquals(self.COL0, self._table.GetColumnByIndex(0))
-    self.assertEquals(self.COL1, self._table.GetColumnByIndex(1))
-    self.assertEquals(self.COL2, self._table.GetColumnByIndex(2))
+    self.assertEqual(self.COL0, self._table.GetColumnByIndex(0))
+    self.assertEqual(self.COL1, self._table.GetColumnByIndex(1))
+    self.assertEqual(self.COL2, self._table.GetColumnByIndex(2))
 
   def testGetByIndex(self):
     self.assertRowsEqual(self.ROW0, self._table.GetRowByIndex(0))
@@ -111,59 +111,59 @@ class TableTest(cros_test_lib.TempDirTestCase):
 
   def testGetByValue(self):
     rows = self._table.GetRowsByValue({self.COL0: 'Abc'})
-    self.assertEquals([self.ROW1, self.ROW2], rows)
+    self.assertEqual([self.ROW1, self.ROW2], rows)
     rows = self._table.GetRowsByValue({self.COL2: 'Opq'})
-    self.assertEquals([self.ROW1], rows)
+    self.assertEqual([self.ROW1], rows)
     rows = self._table.GetRowsByValue({self.COL3: 'Foo'})
-    self.assertEquals([self.ROW1], rows)
+    self.assertEqual([self.ROW1], rows)
 
   def testGetIndicesByValue(self):
     indices = self._table.GetRowIndicesByValue({self.COL0: 'Abc'})
-    self.assertEquals([1, 2], indices)
+    self.assertEqual([1, 2], indices)
     indices = self._table.GetRowIndicesByValue({self.COL2: 'Opq'})
-    self.assertEquals([1], indices)
+    self.assertEqual([1], indices)
     indices = self._table.GetRowIndicesByValue({self.COL3: 'Foo'})
-    self.assertEquals([1], indices)
+    self.assertEqual([1], indices)
 
   def testAppendRowDict(self):
     self._table.AppendRow(dict(self.EXTRAROW))
-    self.assertEquals(4, self._table.GetNumRows())
-    self.assertEquals(self.EXTRAROWOUT, self._table[len(self._table) - 1])
+    self.assertEqual(4, self._table.GetNumRows())
+    self.assertEqual(self.EXTRAROWOUT, self._table[len(self._table) - 1])
 
   def testAppendRowList(self):
     self._table.AppendRow(self._GetRowValsInOrder(self.EXTRAROW))
-    self.assertEquals(4, self._table.GetNumRows())
-    self.assertEquals(self.EXTRAROWOUT, self._table[len(self._table) - 1])
+    self.assertEqual(4, self._table.GetNumRows())
+    self.assertEqual(self.EXTRAROWOUT, self._table[len(self._table) - 1])
 
   def testSetRowDictByIndex(self):
     self._table.SetRowByIndex(1, dict(self.EXTRAROW))
-    self.assertEquals(3, self._table.GetNumRows())
-    self.assertEquals(self.EXTRAROWOUT, self._table[1])
+    self.assertEqual(3, self._table.GetNumRows())
+    self.assertEqual(self.EXTRAROWOUT, self._table[1])
 
   def testSetRowListByIndex(self):
     self._table.SetRowByIndex(1, self._GetRowValsInOrder(self.EXTRAROW))
-    self.assertEquals(3, self._table.GetNumRows())
-    self.assertEquals(self.EXTRAROWOUT, self._table[1])
+    self.assertEqual(3, self._table.GetNumRows())
+    self.assertEqual(self.EXTRAROWOUT, self._table[1])
 
   def testRemoveRowByIndex(self):
     self._table.RemoveRowByIndex(1)
-    self.assertEquals(2, self._table.GetNumRows())
-    self.assertEquals(self.ROW2, self._table[1])
+    self.assertEqual(2, self._table.GetNumRows())
+    self.assertEqual(self.ROW2, self._table[1])
 
   def testRemoveRowBySlice(self):
     del self._table[0:2]
-    self.assertEquals(1, self._table.GetNumRows())
-    self.assertEquals(self.ROW2, self._table[0])
+    self.assertEqual(1, self._table.GetNumRows())
+    self.assertEqual(self.ROW2, self._table[0])
 
   def testIteration(self):
     ix = 0
     for row in self._table:
-      self.assertEquals(row, self._table[ix])
+      self.assertEqual(row, self._table[ix])
       ix += 1
 
   def testClear(self):
     self._table.Clear()
-    self.assertEquals(0, len(self._table))
+    self.assertEqual(0, len(self._table))
 
   def testMergeRows(self):
     # This merge should fail without a merge rule.  Capture stderr to avoid
@@ -175,19 +175,19 @@ class TableTest(cros_test_lib.TempDirTestCase):
     # Merge but stick with current row where different.
     self._table._MergeRow(self.ROW0a, self.COL0,
                           merge_rules={self.COL3: 'accept_this_val'})
-    self.assertEquals(3, len(self._table))
+    self.assertEqual(3, len(self._table))
     self.assertRowsEqual(self.ROW0, self._table[0])
 
     # Merge and use new row where different.
     self._table._MergeRow(self.ROW0a, self.COL0,
                           merge_rules={self.COL3: 'accept_other_val'})
-    self.assertEquals(3, len(self._table))
+    self.assertEqual(3, len(self._table))
     self.assertRowsEqual(self.ROW0a, self._table[0])
 
     # Merge and combine column values where different
     self._table._MergeRow(self.ROW1a, self.COL2,
                           merge_rules={self.COL3: 'join_with: '})
-    self.assertEquals(3, len(self._table))
+    self.assertEqual(3, len(self._table))
     final_row = dict(self.ROW1a)
     final_row[self.COL3] = self.ROW1[self.COL3] + ' ' + self.ROW1a[self.COL3]
     self.assertRowsEqual(final_row, self._table[1])
@@ -218,8 +218,8 @@ class TableTest(cros_test_lib.TempDirTestCase):
                            merge_rules={self.COL3: 'join_by_space'})
 
     self.assertTrue(self._table.HasColumn(self.EXTRACOL))
-    self.assertEquals(5, self._table.GetNumColumns())
-    self.assertEquals(1, self._table.GetColumnIndex(self.EXTRACOL))
+    self.assertEqual(5, self._table.GetNumColumns())
+    self.assertEqual(1, self._table.GetColumnIndex(self.EXTRACOL))
 
     final_row0 = dict(self.ROW0)
     final_row0[self.EXTRACOL] = self.EROW0[self.EXTRACOL]
@@ -239,7 +239,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
     # Sort by COL3
     self._table.Sort(lambda row: row[self.COL3])
 
-    self.assertEquals(3, len(self._table))
+    self.assertEqual(3, len(self._table))
     self.assertRowsEqual(self.ROW0, self._table[0])
     self.assertRowsEqual(self.ROW2, self._table[1])
     self.assertRowsEqual(self.ROW1, self._table[2])
@@ -247,7 +247,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
     # Reverse sort by COL3
     self._table.Sort(lambda row: row[self.COL3], reverse=True)
 
-    self.assertEquals(3, len(self._table))
+    self.assertEqual(3, len(self._table))
     self.assertRowsEqual(self.ROW1, self._table[0])
     self.assertRowsEqual(self.ROW2, self._table[1])
     self.assertRowsEqual(self.ROW0, self._table[2])
@@ -263,7 +263,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
       return (row[self.COL0], row[self.COL1])
     self._table.Sort(sorter)
 
-    self.assertEquals(3, len(self._table))
+    self.assertEqual(3, len(self._table))
     self.assertRowsEqual(self.ROW1, self._table[0])
     self.assertRowsEqual(self.ROW2, self._table[1])
     self.assertRowsEqual(self.ROW0, self._table[2])
@@ -271,7 +271,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
     # Reverse the sort
     self._table.Sort(sorter, reverse=True)
 
-    self.assertEquals(3, len(self._table))
+    self.assertEqual(3, len(self._table))
     self.assertRowsEqual(self.ROW0, self._table[0])
     self.assertRowsEqual(self.ROW2, self._table[1])
     self.assertRowsEqual(self.ROW1, self._table[2])
@@ -295,7 +295,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
     }
     for line in tests:
       vals = table.Table._SplitCSVLine(line)
-      self.assertEquals(vals, tests[line])
+      self.assertEqual(vals, tests[line])
 
   def testWriteReadCSV(self):
     """Write and Read CSV and verify contents preserved."""
@@ -305,7 +305,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
     self._table.WriteCSV(tmpfile)
     tmpfile.close()
     mytable = table.Table.LoadFromCSV(path)
-    self.assertEquals(mytable, self._table)
+    self.assertEqual(mytable, self._table)
     self.assertFalse(mytable != self._table)
 
   def testInsertColumn(self):
@@ -313,7 +313,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
     goldenrow = dict(self.ROW1)
     goldenrow[self.EXTRACOL] = 'blah'
     self.assertRowsEqual(goldenrow, self._table.GetRowByIndex(1))
-    self.assertEquals(self.EXTRACOL, self._table.GetColumnByIndex(1))
+    self.assertEqual(self.EXTRACOL, self._table.GetColumnByIndex(1))
 
   def testAppendColumn(self):
     self._table.AppendColumn(self.EXTRACOL, 'blah')
@@ -321,7 +321,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
     goldenrow[self.EXTRACOL] = 'blah'
     self.assertRowsEqual(goldenrow, self._table.GetRowByIndex(1))
     col_size = self._table.GetNumColumns()
-    self.assertEquals(self.EXTRACOL, self._table.GetColumnByIndex(col_size - 1))
+    self.assertEqual(self.EXTRACOL, self._table.GetColumnByIndex(col_size - 1))
 
   def testProcessRows(self):
     def Processor(row):

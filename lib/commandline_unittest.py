@@ -48,7 +48,7 @@ class GSPathTest(cros_test_lib.OutputTestCase):
 
   def _RunGSPathTestCase(self, raw, parsed):
     options = self._ParseCommandLine(['--gs-path', raw])
-    self.assertEquals(options.gs_path, parsed)
+    self.assertEqual(options.gs_path, parsed)
 
   def testNoGSPathCorrectionNeeded(self):
     """Test case where GS path correction is not needed."""
@@ -98,7 +98,7 @@ class BoolTest(cros_test_lib.TestCase):
 
   def _RunBoolTestCase(self, enable, expected):
     options = self._ParseCommandLine(['--enable', enable])
-    self.assertEquals(options.enable, expected)
+    self.assertEqual(options.enable, expected)
 
   def testBoolTrue(self):
     """Test case setting the value to true."""
@@ -364,7 +364,7 @@ class CacheTest(cros_test_lib.MockTempDirTestCase):
     self.cwd_mock.return_value = cwd_retval
     self.parser.parse_args(args_to_parse)
     cache_dir_mock = self.parser.ConfigureCacheDir
-    self.assertEquals(1, cache_dir_mock.call_count)
+    self.assertEqual(1, cache_dir_mock.call_count)
     assert_func(cache_dir_mock.call_args[0][0], expected)
 
   def testRepoRootNoOverride(self):
@@ -374,7 +374,7 @@ class CacheTest(cros_test_lib.MockTempDirTestCase):
   def testRepoRootWithOverride(self):
     """User provided cache location overrides repo checkout default."""
     self._CheckCall(self.repo_root, ['--cache-dir', self.CACHE_DIR],
-                    self.CACHE_DIR, self.assertEquals)
+                    self.CACHE_DIR, self.assertEqual)
 
 
 class ParseArgsTest(cros_test_lib.TestCase):
@@ -442,31 +442,31 @@ class ParseArgsTest(cros_test_lib.TestCase):
     if isinstance(parser, commandline.FilteringParser):
       # optparse returns options and args separately.
       options, args = parsed
-      self.assertEquals(['foobar'], args)
+      self.assertEqual(['foobar'], args)
     else:
       # argparse returns just options.  Options configured above to have the
       # args stored at option "args".
       options = parsed
-      self.assertEquals(['foobar'], parsed.args)
+      self.assertEqual(['foobar'], parsed.args)
 
     self.assertTrue(options.xxx)
     self.assertFalse(options.yyy)
 
-    self.assertEquals('Allan', options.aaa)
-    self.assertEquals('Bobby', options.bbb)
-    self.assertEquals('Connor', options.ccc)
+    self.assertEqual('Allan', options.aaa)
+    self.assertEqual('Bobby', options.bbb)
+    self.assertEqual('Connor', options.ccc)
 
     self.assertRaises(AttributeError, getattr, options, 'xyz')
 
     # Now try altering option values.
     options.aaa = 'Arick'
-    self.assertEquals('Arick', options.aaa)
+    self.assertEqual('Arick', options.aaa)
 
     # Now freeze the options and try altering again.
     options.Freeze()
     self.assertRaises(commandline.cros_build_lib.AttributeFrozenError,
                       setattr, options, 'aaa', 'Arnold')
-    self.assertEquals('Arick', options.aaa)
+    self.assertEqual('Arick', options.aaa)
 
   def testFilterParser(self):
     self._TestParser(self._CreateOptionParser(commandline.FilteringParser))

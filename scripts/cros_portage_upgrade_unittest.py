@@ -383,36 +383,36 @@ class PInfoTest(cros_test_lib.OutputTestCase):
   def testInit(self):
     pinfo = cpu.PInfo(category='SomeCat', user_arg='SomeArg')
 
-    self.assertEquals('SomeCat', pinfo.category)
-    self.assertEquals('SomeArg', pinfo.user_arg)
+    self.assertEqual('SomeCat', pinfo.category)
+    self.assertEqual('SomeArg', pinfo.user_arg)
 
-    self.assertEquals(None, pinfo.cpv)
-    self.assertEquals(None, pinfo.overlay)
+    self.assertEqual(None, pinfo.cpv)
+    self.assertEqual(None, pinfo.overlay)
 
     self.assertRaises(AttributeError, getattr, pinfo, 'foobar')
 
   def testEqAndNe(self):
     pinfo1 = cpu.PInfo(category='SomeCat', user_arg='SomeArg')
 
-    self.assertEquals(pinfo1, pinfo1)
+    self.assertEqual(pinfo1, pinfo1)
     self.assertTrue(pinfo1 == pinfo1)
     self.assertFalse(pinfo1 != pinfo1)
 
     pinfo2 = cpu.PInfo(category='SomeCat', user_arg='SomeArg')
 
-    self.assertEquals(pinfo1, pinfo2)
+    self.assertEqual(pinfo1, pinfo2)
     self.assertTrue(pinfo1 == pinfo2)
     self.assertFalse(pinfo1 != pinfo2)
 
     pinfo3 = cpu.PInfo(category='SomeCat', user_arg='SomeOtherArg')
 
-    self.assertNotEquals(pinfo1, pinfo3)
+    self.assertNotEqual(pinfo1, pinfo3)
     self.assertFalse(pinfo1 == pinfo3)
     self.assertTrue(pinfo1 != pinfo3)
 
     pinfo4 = cpu.PInfo(category='SomeCat', slot='SomeSlot')
 
-    self.assertNotEquals(pinfo1, pinfo4)
+    self.assertNotEqual(pinfo1, pinfo4)
     self.assertFalse(pinfo1 == pinfo4)
     self.assertTrue(pinfo1 != pinfo4)
 
@@ -615,7 +615,7 @@ class CopyUpstreamTest(CpuTestBase):
                                             'dev-libs/A/A-2.ebuild',
                                             'inheritme',
                                             False)
-    self.assertEquals('inheritme.eclass', result)
+    self.assertEqual('inheritme.eclass', result)
 
   def testIdentifyNeededEclassOK(self):
     result = self._TestIdentifyNeededEclass('dev-libs/A-2',
@@ -753,7 +753,7 @@ class CopyUpstreamTest(CpuTestBase):
                                                    upstream_cpv)
 
     if success:
-      self.assertEquals(result, upstream_cpv)
+      self.assertEqual(result, upstream_cpv)
 
       pkgdir = os.path.join(mocked_upgrader._stable_repo, catpkg)
       mocked_upgrader._CreateManifest.assert_called_once_with(
@@ -969,7 +969,7 @@ class GetPackageUpgradeStateTest(CpuTestBase):
                       cpv_cmp_upstream=None,
                       latest_upstream_cpv=None)
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
-    self.assertEquals(result, utable.UpgradeTable.STATE_LOCAL_ONLY)
+    self.assertEqual(result, utable.UpgradeTable.STATE_LOCAL_ONLY)
 
   def testGetPackageUpgradeStateUnknown(self):
     pinfo = cpu.PInfo(cpv='foo/bar-2',
@@ -977,7 +977,7 @@ class GetPackageUpgradeStateTest(CpuTestBase):
                       cpv_cmp_upstream=None,
                       latest_upstream_cpv=None)
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
-    self.assertEquals(result, utable.UpgradeTable.STATE_UNKNOWN)
+    self.assertEqual(result, utable.UpgradeTable.STATE_UNKNOWN)
 
   def testGetPackageUpgradeStateUpgradeAndDuplicated(self):
     pinfo = cpu.PInfo(cpv='foo/bar-2',
@@ -985,8 +985,8 @@ class GetPackageUpgradeStateTest(CpuTestBase):
                       cpv_cmp_upstream=1, # outdated
                       latest_upstream_cpv='not important')
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=True)
-    self.assertEquals(result,
-                      utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED)
+    self.assertEqual(result,
+                     utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED)
 
   def testGetPackageUpgradeStateUpgradeAndPatched(self):
     pinfo = cpu.PInfo(cpv='foo/bar-2',
@@ -994,8 +994,8 @@ class GetPackageUpgradeStateTest(CpuTestBase):
                       cpv_cmp_upstream=1, # outdated
                       latest_upstream_cpv='not important')
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
-    self.assertEquals(result,
-                      utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED)
+    self.assertEqual(result,
+                     utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED)
 
   def testGetPackageUpgradeStateUpgrade(self):
     pinfo = cpu.PInfo(cpv='foo/bar-2',
@@ -1003,7 +1003,7 @@ class GetPackageUpgradeStateTest(CpuTestBase):
                       cpv_cmp_upstream=1, # outdated
                       latest_upstream_cpv='not important')
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
-    self.assertEquals(result, utable.UpgradeTable.STATE_NEEDS_UPGRADE)
+    self.assertEqual(result, utable.UpgradeTable.STATE_NEEDS_UPGRADE)
 
   def testGetPackageUpgradeStateDuplicated(self):
     pinfo = cpu.PInfo(cpv='foo/bar-2',
@@ -1011,7 +1011,7 @@ class GetPackageUpgradeStateTest(CpuTestBase):
                       cpv_cmp_upstream=0, # current
                       latest_upstream_cpv='not important')
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=True)
-    self.assertEquals(result, utable.UpgradeTable.STATE_DUPLICATED)
+    self.assertEqual(result, utable.UpgradeTable.STATE_DUPLICATED)
 
   def testGetPackageUpgradeStatePatched(self):
     pinfo = cpu.PInfo(cpv='foo/bar-2',
@@ -1019,7 +1019,7 @@ class GetPackageUpgradeStateTest(CpuTestBase):
                       cpv_cmp_upstream=0, # current
                       latest_upstream_cpv='not important')
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
-    self.assertEquals(result, utable.UpgradeTable.STATE_PATCHED)
+    self.assertEqual(result, utable.UpgradeTable.STATE_PATCHED)
 
   def testGetPackageUpgradeStateCurrent(self):
     pinfo = cpu.PInfo(cpv='foo/bar-2',
@@ -1027,7 +1027,7 @@ class GetPackageUpgradeStateTest(CpuTestBase):
                       cpv_cmp_upstream=0, # current
                       latest_upstream_cpv='not important')
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
-    self.assertEquals(result, utable.UpgradeTable.STATE_CURRENT)
+    self.assertEqual(result, utable.UpgradeTable.STATE_CURRENT)
 
 
 @unittest.skip('playground setup needs more work')
@@ -1067,7 +1067,7 @@ class EmergeableTest(CpuTestBase):
     logging.debug('Test ended with success==%r (expected==%r)', code, expect)
     logging.debug('Emerge output:\n%s', output)
 
-    self.assertEquals(code, expect)
+    self.assertEqual(code, expect)
 
   def testAreEmergeableOnePkg(self):
     """Should pass, one cpv target."""
@@ -1148,7 +1148,7 @@ class CPVUtilTest(cros_test_lib.TestCase):
 
     not_comparable = [('foo/bar-1', 'bar/foo-1')]
     for (cpv1, cpv2) in not_comparable:
-      self.assertEquals(None, self._TestCmpCpv(cpv1, cpv2))
+      self.assertEqual(None, self._TestCmpCpv(cpv1, cpv2))
 
   def _TestGetCatPkgFromCpv(self, cpv):
     """Test Upgrader._GetCatPkgFromCpv"""
@@ -1164,7 +1164,7 @@ class CPVUtilTest(cros_test_lib.TestCase):
 
     for (cpv, catpn) in data:
       result = self._TestGetCatPkgFromCpv(cpv)
-      self.assertEquals(catpn, result)
+      self.assertEqual(catpn, result)
 
   def _TestGetVerRevFromCpv(self, cpv):
     """Test Upgrader._GetVerRevFromCpv"""
@@ -1181,7 +1181,7 @@ class CPVUtilTest(cros_test_lib.TestCase):
 
     for (cpv, verrev) in data:
       result = self._TestGetVerRevFromCpv(cpv)
-      self.assertEquals(verrev, result)
+      self.assertEqual(verrev, result)
 
   def _TestGetEbuildPathFromCpv(self, cpv):
     """Test Upgrader._GetEbuildPathFromCpv"""
@@ -1196,7 +1196,7 @@ class CPVUtilTest(cros_test_lib.TestCase):
 
     for (cpv, verrev) in data:
       result = self._TestGetEbuildPathFromCpv(cpv)
-      self.assertEquals(verrev, result)
+      self.assertEqual(verrev, result)
 
 
 class PortageStableTest(CpuTestBase):
@@ -1442,17 +1442,17 @@ class UtilityTest(CpuTestBase):
     board = 'x86-alex'
     for cmd in ['emerge', 'equery', 'portageq']:
       result = self._TestGetBoardCmd(cmd, cpu.Upgrader.HOST_BOARD)
-      self.assertEquals(result, cmd)
+      self.assertEqual(result, cmd)
       result = self._TestGetBoardCmd(cmd, board)
-      self.assertEquals(result, '%s-%s' % (cmd, board))
+      self.assertEqual(result, '%s-%s' % (cmd, board))
 
   def testGetBoardCmdUnknownCmd(self):
     board = 'x86-alex'
     cmd = 'foo'
     result = self._TestGetBoardCmd(cmd, cpu.Upgrader.HOST_BOARD)
-    self.assertEquals(result, cmd)
+    self.assertEqual(result, cmd)
     result = self._TestGetBoardCmd(cmd, board)
-    self.assertEquals(result, cmd)
+    self.assertEqual(result, cmd)
 
   #
   # _GenPortageEnvvars
@@ -1472,15 +1472,15 @@ class UtilityTest(CpuTestBase):
     if unstable_ok:
       keyw = arch + ' ~' + arch
 
-    self.assertEquals(result['ACCEPT_KEYWORDS'], keyw)
+    self.assertEqual(result['ACCEPT_KEYWORDS'], keyw)
     if portdir is None:
       self.assertFalse('PORTDIR' in result)
     else:
-      self.assertEquals(result['PORTDIR'], portdir)
+      self.assertEqual(result['PORTDIR'], portdir)
     if portage_configroot is None:
       self.assertFalse('PORTAGE_CONFIGROOT' in result)
     else:
-      self.assertEquals(result['PORTAGE_CONFIGROOT'], portage_configroot)
+      self.assertEqual(result['PORTAGE_CONFIGROOT'], portage_configroot)
 
   def testGenPortageEnvvars1(self):
     self._TestGenPortageEnvvars('arm', False)
@@ -1504,7 +1504,7 @@ class UtilityTest(CpuTestBase):
     # Verify.
     result = cpu.Upgrader._SplitEBuildPath(mocked_upgrader,
                                            ebuild_path)
-    self.assertEquals(result, golden_result)
+    self.assertEqual(result, golden_result)
 
   def testSplitEBuildPath1(self):
     self._TestSplitEBuildPath('/foo/bar/portage/dev-libs/A/A-2.ebuild',
@@ -1579,21 +1579,21 @@ class TreeInspectTest(CpuTestBase):
                                                 pkg_name='A',
                                                 ver_rev='2')
     result = self._TestFindUpstreamCPV(cp, ebuild)
-    self.assertEquals(result, cpv)
+    self.assertEqual(result, cpv)
 
   def testFindUpstreamAAA(self):
     (ebuild, cpv, cp) = self._GenerateTestInput(category='dev-apps',
                                                 pkg_name='AAA',
                                                 ver_rev=None)
     result = self._TestFindUpstreamCPV(cp, ebuild)
-    self.assertEquals(result, cpv)
+    self.assertEqual(result, cpv)
 
   def testFindUpstreamF(self):
     (ebuild, cpv, cp) = self._GenerateTestInput(category='dev-libs',
                                                 pkg_name='F',
                                                 ver_rev='2')
     result = self._TestFindUpstreamCPV(cp, ebuild)
-    self.assertEquals(result, cpv)
+    self.assertEqual(result, cpv)
 
   def testFindUpstreamFlimflam(self):
     """Should find 0.0.1-r228 because more recent flimflam unstable."""
@@ -1601,7 +1601,7 @@ class TreeInspectTest(CpuTestBase):
                                                 pkg_name='flimflam',
                                                 ver_rev='0.0.1-r228')
     result = self._TestFindUpstreamCPV(cp, ebuild)
-    self.assertEquals(result, cpv)
+    self.assertEqual(result, cpv)
 
   def testFindUpstreamFlimflamUnstable(self):
     """Should find 0.0.2-r123 because of unstable_ok."""
@@ -1609,7 +1609,7 @@ class TreeInspectTest(CpuTestBase):
                                                 pkg_name='flimflam',
                                                 ver_rev='0.0.2-r123')
     result = self._TestFindUpstreamCPV(cp, ebuild, unstable_ok=True)
-    self.assertEquals(result, cpv)
+    self.assertEqual(result, cpv)
 
   #
   # _FindCurrentCPV
@@ -1653,7 +1653,7 @@ class TreeInspectTest(CpuTestBase):
                                                 pkg_name='A',
                                                 ver_rev='2')
     result = self._TestFindCurrentCPV(cp, ebuild)
-    self.assertEquals(result, cpv)
+    self.assertEqual(result, cpv)
 
   def testFindCurrentAAA(self):
     """Should find None, because dev-libs/AAA does not exist in tree."""
@@ -1661,7 +1661,7 @@ class TreeInspectTest(CpuTestBase):
                                                 pkg_name='AAA',
                                                 ver_rev=None)
     result = self._TestFindCurrentCPV(cp, ebuild)
-    self.assertEquals(result, cpv)
+    self.assertEqual(result, cpv)
 
   def testFindCurrentF(self):
     """Should find dev-libs/F-2."""
@@ -1669,7 +1669,7 @@ class TreeInspectTest(CpuTestBase):
                                                 pkg_name='F',
                                                 ver_rev='2')
     result = self._TestFindCurrentCPV(cp, ebuild)
-    self.assertEquals(result, cpv)
+    self.assertEqual(result, cpv)
 
   def testFindCurrentFlimflam(self):
     """Should find 0.0.1-r228 because more recent flimflam unstable."""
@@ -1677,7 +1677,7 @@ class TreeInspectTest(CpuTestBase):
                                                 pkg_name='flimflam',
                                                 ver_rev='0.0.1-r228')
     result = self._TestFindCurrentCPV(cp, ebuild)
-    self.assertEquals(result, cpv)
+    self.assertEqual(result, cpv)
 
 
 class RunBoardTest(CpuTestBase):
@@ -2041,8 +2041,8 @@ class CategoriesRoundtripTest(cros_test_lib.MockTempDirTestCase,
     upgrader._stable_repo_categories = None
     upgrader._LoadStableRepoCategories()
     git_mock.assert_called_once_with(stable_repo, ['add', cat_file])
-    self.assertEquals(sorted(categories),
-                      sorted(upgrader._stable_repo_categories))
+    self.assertEqual(sorted(categories),
+                     sorted(upgrader._stable_repo_categories))
 
   def test1(self):
     categories = ['alpha-omega', 'omega-beta', 'beta-chi']
@@ -2120,20 +2120,20 @@ class UpgradePackageTest(CpuTestBase):
 
     if upstream_cpv:
       mocked_upgrader._PkgUpgradeRequested.assert_called_once_with(pinfo)
-      self.assertEquals(upstream_cpv, pinfo.upstream_cpv)
+      self.assertEqual(upstream_cpv, pinfo.upstream_cpv)
 
       if upgrade_requested:
         mocked_upgrader._PkgUpgradeStaged.assert_called_once_with(upstream_cpv)
 
       if upgrade_requested and (upstream_cpv != pinfo.cpv or force):
-        self.assertEquals(upstream_cpv, pinfo.upgraded_cpv)
+        self.assertEqual(upstream_cpv, pinfo.upgraded_cpv)
       else:
         self.assertIsNone(pinfo.upgraded_cpv)
     else:
       self.assertIsNone(pinfo.upstream_cpv)
       self.assertIsNone(pinfo.upgraded_cpv)
-    self.assertEquals(stable_up, pinfo.stable_upstream_cpv)
-    self.assertEquals(latest_up, pinfo.latest_upstream_cpv)
+    self.assertEqual(stable_up, pinfo.stable_upstream_cpv)
+    self.assertEqual(latest_up, pinfo.latest_upstream_cpv)
 
     return result
 
@@ -2411,7 +2411,7 @@ class CommitTest(CpuTestBase):
         'Upgraded mno/pqr to version 12345 on x86',
     ]
     result = self._TestExtractUpgradedPkgs(upgrade_lines)
-    self.assertEquals(result, ['efg', 'pqr', 'uvw'])
+    self.assertEqual(result, ['efg', 'pqr', 'uvw'])
 
   #
   # _AmendCommitMessage
@@ -2698,11 +2698,11 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
       result = cpu.Upgrader._ResolveAndVerifyArgs(mocked_upgrader, args,
                                                   upgrade_mode=upgrade_mode)
 
-    self.assertEquals(result, [cpu.PInfo(user_arg='world',
-                                         package='world',
-                                         package_name='world',
-                                         category=None,
-                                         cpv='world')])
+    self.assertEqual(result, [cpu.PInfo(user_arg='world',
+                                        package='world',
+                                        package_name='world',
+                                        category=None,
+                                        cpv='world')])
 
   def testResolveAndVerifyArgsWorldUpgradeMode(self):
     self._TestResolveAndVerifyArgsWorld(True)
@@ -2774,7 +2774,7 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
                            upstream_cpv='dev-libs/B-2')]
     cmdargs = ['--upgrade', '--unstable-ok']
     result = self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs)
-    self.assertEquals(result, pinfolist)
+    self.assertEqual(result, pinfolist)
 
   def testResolveAndVerifyArgsNonWorldUpgradeSpecificVer(self):
     pinfolist = [cpu.PInfo(user_arg='dev-libs/B-2',
@@ -2782,7 +2782,7 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
                            upstream_cpv='dev-libs/B-2')]
     cmdargs = ['--upgrade', '--unstable-ok']
     result = self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs)
-    self.assertEquals(result, pinfolist)
+    self.assertEqual(result, pinfolist)
 
   def testResolveAndVerifyArgsNonWorldUpgradeSpecificVerNotFoundStable(self):
     pinfolist = [cpu.PInfo(user_arg='dev-libs/B-2',
@@ -2835,7 +2835,7 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
                            upstream_cpv='dev-libs/B-2')]
     cmdargs = ['--upgrade', '--unstable-ok']
     result = self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs)
-    self.assertEquals(result, pinfolist)
+    self.assertEqual(result, pinfolist)
 
   def testResolveAndVerifyArgsNonWorldNeither(self):
     pinfolist = [cpu.PInfo(user_arg='dev-libs/B')]
@@ -2880,7 +2880,7 @@ class StabilizeEbuildTest(CpuTestBase):
     lines1 = [ln for ln in lines1 if not ln.startswith('#')]
     lines2 = [ln for ln in lines2 if not ln.startswith('#')]
 
-    self.assertEquals(lines1, lines2)
+    self.assertEqual(lines1, lines2)
 
   def _TestStabilizeEbuildWrapper(self, ebuild_path, arch,
                                   keyword_line, gold_keyword_line):
@@ -3065,7 +3065,7 @@ class GetPreOrderDepGraphTest(CpuTestBase):
 
     deps_list = cpu.Upgrader._GetPreOrderDepGraph(deps_graph)
     golden_deps_set = _GetGoldenDepsSet(pkg)
-    self.assertEquals(set(deps_list), golden_deps_set)
+    self.assertEqual(set(deps_list), golden_deps_set)
 
   def testGetPreOrderDepGraphDevLibsA(self):
     return self._TestGetPreOrderDepGraph('dev-libs/A')
@@ -3093,13 +3093,13 @@ class MainTest(CpuTestBase):
       cpu.main(args)
     except SystemExit as e:
       if expect_zero:
-        self.assertEquals(e.args[0], 0,
-                          msg='expected call to main() to exit cleanly, '
-                          'but it exited with code %d' % e.args[0])
+        self.assertEqual(e.args[0], 0,
+                         msg='expected call to main() to exit cleanly, '
+                         'but it exited with code %d' % e.args[0])
       else:
-        self.assertNotEquals(e.args[0], 0,
-                             msg='expected call to main() to exit with '
-                             'failure code, but exited with code 0 instead.')
+        self.assertNotEqual(e.args[0], 0,
+                            msg='expected call to main() to exit with '
+                            'failure code, but exited with code 0 instead.')
 
   def testHelp(self):
     """Test that --help is functioning"""
@@ -3109,7 +3109,7 @@ class MainTest(CpuTestBase):
       try:
         cpu.main(['--help'])
       except SystemExit as e:
-        self.assertEquals(e.args[0], 0)
+        self.assertEqual(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed.
     stdout = output.GetStdout()
@@ -3122,7 +3122,7 @@ class MainTest(CpuTestBase):
       try:
         cpu.main([])
       except SystemExit as e:
-        self.assertNotEquals(e.args[0], 0)
+        self.assertNotEqual(e.args[0], 0)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()

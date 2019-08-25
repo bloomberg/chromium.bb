@@ -88,13 +88,13 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
     with parallel_unittest.ParallelMock():
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir)
-      self.assertEquals(ret, 0)
-      self.assertEquals(gen_mock.call_count, 3)
+      self.assertEqual(ret, 0)
+      self.assertEqual(gen_mock.call_count, 3)
 
       # The largest ELF should be processed first.
       call1 = (os.path.join(self.board_dir, 'iii/large-elf'),
                os.path.join(self.debug_dir, 'iii/large-elf.debug'))
-      self.assertEquals(gen_mock.call_args_list[0][0], call1)
+      self.assertEqual(gen_mock.call_args_list[0][0], call1)
 
       # The other ELFs can be called in any order.
       call2 = (os.path.join(self.board_dir, 'bin/elf'),
@@ -104,7 +104,7 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
       exp_calls = set((call2, call3))
       actual_calls = set((gen_mock.call_args_list[1][0],
                           gen_mock.call_args_list[2][0]))
-      self.assertEquals(exp_calls, actual_calls)
+      self.assertEqual(exp_calls, actual_calls)
 
   def testFileList(self, gen_mock):
     """Verify that file_list restricts the symbols generated"""
@@ -116,18 +116,18 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir, breakpad_dir=self.breakpad_dir,
           file_list=[os.path.join(self.board_dir, 'usr', 'sbin', 'elf')])
-      self.assertEquals(ret, 0)
-      self.assertEquals(gen_mock.call_count, 1)
-      self.assertEquals(gen_mock.call_args_list[0][0], call1)
+      self.assertEqual(ret, 0)
+      self.assertEqual(gen_mock.call_count, 1)
+      self.assertEqual(gen_mock.call_args_list[0][0], call1)
 
       # Filter with debug symbols file path.
       gen_mock.reset_mock()
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir, breakpad_dir=self.breakpad_dir,
           file_list=[os.path.join(self.debug_dir, 'usr', 'sbin', 'elf.debug')])
-      self.assertEquals(ret, 0)
-      self.assertEquals(gen_mock.call_count, 1)
-      self.assertEquals(gen_mock.call_args_list[0][0], call1)
+      self.assertEqual(ret, 0)
+      self.assertEqual(gen_mock.call_count, 1)
+      self.assertEqual(gen_mock.call_args_list[0][0], call1)
 
 
   def testGenLimit(self, gen_mock):
@@ -137,20 +137,20 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir, breakpad_dir=self.breakpad_dir,
           generate_count=0)
-      self.assertEquals(ret, 0)
-      self.assertEquals(gen_mock.call_count, 0)
+      self.assertEqual(ret, 0)
+      self.assertEqual(gen_mock.call_count, 0)
 
       # Generate just one.
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir, breakpad_dir=self.breakpad_dir,
           generate_count=1)
-      self.assertEquals(ret, 0)
-      self.assertEquals(gen_mock.call_count, 1)
+      self.assertEqual(ret, 0)
+      self.assertEqual(gen_mock.call_count, 1)
 
       # The largest ELF should be processed first.
       call1 = (os.path.join(self.board_dir, 'iii/large-elf'),
                os.path.join(self.debug_dir, 'iii/large-elf.debug'))
-      self.assertEquals(gen_mock.call_args_list[0][0], call1)
+      self.assertEqual(gen_mock.call_args_list[0][0], call1)
 
   def testGenErrors(self, gen_mock):
     """Verify we handle errors from generation correctly"""
@@ -161,8 +161,8 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
     with parallel_unittest.ParallelMock():
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir)
-      self.assertEquals(ret, 3)
-      self.assertEquals(gen_mock.call_count, 3)
+      self.assertEqual(ret, 3)
+      self.assertEqual(gen_mock.call_count, 3)
 
   def testCleaningTrue(self, gen_mock):
     """Verify behavior of clean_breakpad=True"""
@@ -172,8 +172,8 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir, generate_count=1,
           clean_breakpad=True)
-      self.assertEquals(ret, 0)
-      self.assertEquals(gen_mock.call_count, 1)
+      self.assertEqual(ret, 0)
+      self.assertEqual(gen_mock.call_count, 1)
       self.assertExists(self.breakpad_dir)
 
       # Dir exists before & after.
@@ -183,8 +183,8 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir, generate_count=1,
           clean_breakpad=True)
-      self.assertEquals(ret, 0)
-      self.assertEquals(gen_mock.call_count, 2)
+      self.assertEqual(ret, 0)
+      self.assertEqual(gen_mock.call_count, 2)
       self.assertNotExists(dummy_file)
 
   def testCleaningFalse(self, gen_mock):
@@ -195,8 +195,8 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir, generate_count=1,
           clean_breakpad=False)
-      self.assertEquals(ret, 0)
-      self.assertEquals(gen_mock.call_count, 1)
+      self.assertEqual(ret, 0)
+      self.assertEqual(gen_mock.call_count, 1)
       self.assertExists(self.breakpad_dir)
 
       # Dir exists before & after.
@@ -206,8 +206,8 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir, generate_count=1,
           clean_breakpad=False)
-      self.assertEquals(ret, 0)
-      self.assertEquals(gen_mock.call_count, 2)
+      self.assertEqual(ret, 0)
+      self.assertEqual(gen_mock.call_count, 2)
       self.assertExists(dummy_file)
 
   def testExclusionList(self, gen_mock):
@@ -216,8 +216,8 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
     with parallel_unittest.ParallelMock():
       ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
           self.board, sysroot=self.board_dir, exclude_dirs=exclude_dirs)
-      self.assertEquals(ret, 0)
-      self.assertEquals(gen_mock.call_count, 1)
+      self.assertEqual(ret, 0)
+      self.assertEqual(gen_mock.call_count, 1)
 
 class GenerateSymbolTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test GenerateBreakpadSymbol."""
@@ -336,10 +336,10 @@ class UtilsTestDir(cros_test_lib.TempDirTestCase):
     sym_file = os.path.join(self.tempdir, 'sym')
     osutils.WriteFile(sym_file, 'MODULE Linux x86 s0m31D chrooome')
     result = cros_generate_breakpad_symbols.ReadSymsHeader(sym_file)
-    self.assertEquals(result.cpu, 'x86')
-    self.assertEquals(result.id, 's0m31D')
-    self.assertEquals(result.name, 'chrooome')
-    self.assertEquals(result.os, 'Linux')
+    self.assertEqual(result.cpu, 'x86')
+    self.assertEqual(result.id, 's0m31D')
+    self.assertEqual(result.name, 'chrooome')
+    self.assertEqual(result.os, 'Linux')
 
 
 class UtilsTest(cros_test_lib.TestCase):
@@ -349,10 +349,10 @@ class UtilsTest(cros_test_lib.TestCase):
     """Make sure ReadSymsHeader can parse sym file handles"""
     result = cros_generate_breakpad_symbols.ReadSymsHeader(
         StringIO.StringIO('MODULE Linux arm MY-ID-HERE blkid'))
-    self.assertEquals(result.cpu, 'arm')
-    self.assertEquals(result.id, 'MY-ID-HERE')
-    self.assertEquals(result.name, 'blkid')
-    self.assertEquals(result.os, 'Linux')
+    self.assertEqual(result.cpu, 'arm')
+    self.assertEqual(result.id, 'MY-ID-HERE')
+    self.assertEqual(result.name, 'blkid')
+    self.assertEqual(result.os, 'Linux')
 
   def testReadSymsHeaderBadd(self):
     """Make sure ReadSymsHeader throws on bad sym files"""
@@ -363,13 +363,13 @@ class UtilsTest(cros_test_lib.TestCase):
     """Make sure board->breakpad path expansion works"""
     expected = '/build/blah/usr/lib/debug/breakpad'
     result = cros_generate_breakpad_symbols.FindBreakpadDir('blah')
-    self.assertEquals(expected, result)
+    self.assertEqual(expected, result)
 
   def testDebugDir(self):
     """Make sure board->debug path expansion works"""
     expected = '/build/blah/usr/lib/debug'
     result = cros_generate_breakpad_symbols.FindDebugDir('blah')
-    self.assertEquals(expected, result)
+    self.assertEqual(expected, result)
 
 
 def main(_argv):

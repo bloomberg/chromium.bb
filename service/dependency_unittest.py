@@ -19,13 +19,13 @@ class DependencyTests(cros_test_lib.TestCase):
   """General unittests for dependency module."""
 
   def testNormalizeSourcePathsCollapsingSubPaths(self):
-    self.assertEquals(
+    self.assertEqual(
         dependency.NormalizeSourcePaths(
             ['/mnt/host/source/foo', '/mnt/host/source/ab/cd',
              '/mnt/host/source/foo/bar']),
         ['ab/cd', 'foo'])
 
-    self.assertEquals(
+    self.assertEqual(
         dependency.NormalizeSourcePaths(
             ['/mnt/host/source/foo/bar',
              '/mnt/host/source/ab/cd',
@@ -49,6 +49,6 @@ class DependencyTests(cros_test_lib.TestCase):
       expected_paths = [os.path.relpath(p, constants.CHROOT_SOURCE_ROOT) for
                         p in expected_paths]
 
-      self.assertEquals(
+      self.assertEqual(
           dependency.NormalizeSourcePaths([foo_dir, ab_cd_file, bar_baz_dir]),
           expected_paths)

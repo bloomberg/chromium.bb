@@ -85,7 +85,7 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
     ])
     self.RunStage()
     # pylint: disable=no-member
-    self.assertEquals(commands.PushImages.call_count, 0)
+    self.assertEqual(commands.PushImages.call_count, 0)
 
   def ConstructStageForArchiveStep(self):
     """Stage construction for archive steps."""

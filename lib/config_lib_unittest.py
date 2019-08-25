@@ -301,8 +301,8 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
     bc1 = MockBuildConfig()
     bc2 = pickle.loads(pickle.dumps(bc1))
 
-    self.assertEquals(bc1.boards, bc2.boards)
-    self.assertEquals(bc1.name, bc2.name)
+    self.assertEqual(bc1.boards, bc2.boards)
+    self.assertEqual(bc1.name, bc2.name)
 
 
 class GetSiteParamsTest(cros_test_lib.TestCase):
@@ -322,7 +322,7 @@ class GetSiteParamsTest(cros_test_lib.TestCase):
 
     # Test the dot-accessor.
     site_params.update({'foo': 'bar'})
-    self.assertEquals('bar', site_params.foo)
+    self.assertEqual('bar', site_params.foo)
 
 
 class SiteConfigTest(cros_test_lib.TestCase):
@@ -865,8 +865,8 @@ class GEBuildConfigTests(cros_test_lib.TestCase):
   def testGetUnifiedBuildConfigAllBuilds(self):
     uni_builds = config_lib.GetUnifiedBuildConfigAllBuilds(
         self._fake_ge_build_config)
-    self.assertEquals(1, len(uni_builds))
+    self.assertEqual(1, len(uni_builds))
 
   def testGetUnifiedBuildConfigAllBuildsWithNoBuilds(self):
     uni_builds = config_lib.GetUnifiedBuildConfigAllBuilds({})
-    self.assertEquals(0, len(uni_builds))
+    self.assertEqual(0, len(uni_builds))

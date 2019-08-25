@@ -21,22 +21,22 @@ class SplitShebangTest(cros_test_lib.TestCase):
 
   def testSimpleCase(self):
     """Test a simple case."""
-    self.assertEquals(('/bin/sh', ''), filetype.SplitShebang('#!/bin/sh'))
+    self.assertEqual(('/bin/sh', ''), filetype.SplitShebang('#!/bin/sh'))
 
   def testCaseWithArguments(self):
     """Test a case with arguments."""
-    self.assertEquals(('/bin/sh', '-i -c "ls"'),
-                      filetype.SplitShebang('#!/bin/sh  -i -c "ls"'))
+    self.assertEqual(('/bin/sh', '-i -c "ls"'),
+                     filetype.SplitShebang('#!/bin/sh  -i -c "ls"'))
 
   def testCaseWithEndline(self):
     """Test a case finished with a newline char."""
-    self.assertEquals(('/bin/sh', '-i'),
-                      filetype.SplitShebang('#!/bin/sh  -i\n'))
+    self.assertEqual(('/bin/sh', '-i'),
+                     filetype.SplitShebang('#!/bin/sh  -i\n'))
 
   def testCaseWithSpaces(self):
     """Test a case with several spaces in the line."""
-    self.assertEquals(('/bin/sh', '-i'),
-                      filetype.SplitShebang('#!  /bin/sh  -i   \n'))
+    self.assertEqual(('/bin/sh', '-i'),
+                     filetype.SplitShebang('#!  /bin/sh  -i   \n'))
 
   def testInvalidCases(self):
     """Thes invalid cases."""
@@ -52,23 +52,23 @@ class FileTypeDecoderTest(cros_test_lib.TempDirTestCase):
     """Tests special files, such as symlinks, directories and named pipes."""
     somedir = os.path.join(self.tempdir, 'somedir')
     osutils.SafeMakedirs(somedir)
-    self.assertEquals('inode/directory',
-                      filetype.FileTypeDecoder.DecodeFile(somedir))
+    self.assertEqual('inode/directory',
+                     filetype.FileTypeDecoder.DecodeFile(somedir))
 
     a_fifo = os.path.join(self.tempdir, 'a_fifo')
     os.mknod(a_fifo, stat.S_IFIFO)
-    self.assertEquals('inode/special',
-                      filetype.FileTypeDecoder.DecodeFile(a_fifo))
+    self.assertEqual('inode/special',
+                     filetype.FileTypeDecoder.DecodeFile(a_fifo))
 
     empty_file = os.path.join(self.tempdir, 'empty_file')
     osutils.WriteFile(empty_file, '')
-    self.assertEquals('inode/empty',
-                      filetype.FileTypeDecoder.DecodeFile(empty_file))
+    self.assertEqual('inode/empty',
+                     filetype.FileTypeDecoder.DecodeFile(empty_file))
 
     a_link = os.path.join(self.tempdir, 'a_link')
     os.symlink('somewhere', a_link)
-    self.assertEquals('inode/symlink',
-                      filetype.FileTypeDecoder.DecodeFile(a_link))
+    self.assertEqual('inode/symlink',
+                     filetype.FileTypeDecoder.DecodeFile(a_link))
 
   def testTextShebangFiles(self):
     """Test shebangs (#!) file decoding based on the executed path."""
@@ -76,31 +76,31 @@ class FileTypeDecoderTest(cros_test_lib.TempDirTestCase):
     # script.
     shebang = os.path.join(self.tempdir, 'shebang')
     osutils.WriteFile(shebang, '#!/bin/python --foo --bar\n')
-    self.assertEquals('text/shebang',
-                      filetype.FileTypeDecoder.DecodeFile(shebang))
+    self.assertEqual('text/shebang',
+                     filetype.FileTypeDecoder.DecodeFile(shebang))
 
     # A shebang with contents is considered a script.
     script = os.path.join(self.tempdir, 'script')
     osutils.WriteFile(script, '#!/bin/foobar --foo --bar\n\nexit 1\n')
-    self.assertEquals('text/script',
-                      filetype.FileTypeDecoder.DecodeFile(script))
+    self.assertEqual('text/script',
+                     filetype.FileTypeDecoder.DecodeFile(script))
 
     bash_script = os.path.join(self.tempdir, 'bash_script')
     osutils.WriteFile(bash_script,
                       '#!/bin/bash --debug\n# Copyright\nexit 42\n')
-    self.assertEquals('text/script/bash',
-                      filetype.FileTypeDecoder.DecodeFile(bash_script))
+    self.assertEqual('text/script/bash',
+                     filetype.FileTypeDecoder.DecodeFile(bash_script))
 
     pyscript = os.path.join(self.tempdir, 'pyscript')
     osutils.WriteFile(pyscript,
                       '#!/usr/bin/env PYTHONPATH=/foo python-2.7 -3\n# foo\n')
-    self.assertEquals('text/script/python',
-                      filetype.FileTypeDecoder.DecodeFile(pyscript))
+    self.assertEqual('text/script/python',
+                     filetype.FileTypeDecoder.DecodeFile(pyscript))
 
     perlscript = os.path.join(self.tempdir, 'perlscript')
     osutils.WriteFile(perlscript, '#!/usr/local/bin/perl\n#\n')
-    self.assertEquals('text/script/perl',
-                      filetype.FileTypeDecoder.DecodeFile(perlscript))
+    self.assertEqual('text/script/perl',
+                     filetype.FileTypeDecoder.DecodeFile(perlscript))
 
   def testTextPEMFiles(self):
     """Test decoding various PEM files."""
@@ -127,8 +127,8 @@ zP1Ue0MX+RqMLKjnH+E6yEoo+kYD9rzagnvORefbJeM92SiHgHPeSm8F1nQtGclj
 p8izLBlcKgPHwQLKxELmbS/xvt4cyHaLSIy50lLrdJeKtXjqq4PbH3Y=
 -----END CERTIFICATE-----
 """)
-    self.assertEquals('text/pem/cert',
-                      filetype.FileTypeDecoder.DecodeFile(some_cert))
+    self.assertEqual('text/pem/cert',
+                     filetype.FileTypeDecoder.DecodeFile(some_cert))
 
     # A RSA private key (sample from vboot_reference unittest).
     rsa_key = os.path.join(self.tempdir, 'rsa_key')
@@ -149,28 +149,28 @@ QMFOpoO+ZBA7asjfuXUCQGmHgpC0BuD4S1QlcF0nrVHTG7Y8KZ18s9qPJS3csuGf
 or10mrNRF3tyGy8e/sw88a74Q/6v/PgChZHmq6QjOOU=
 -----END RSA PRIVATE KEY-----
 """)
-    self.assertEquals('text/pem/rsa-private',
-                      filetype.FileTypeDecoder.DecodeFile(rsa_key))
+    self.assertEqual('text/pem/rsa-private',
+                     filetype.FileTypeDecoder.DecodeFile(rsa_key))
 
   def testBinaryELFFiles(self):
     """Test decoding ELF files."""
     liba_so = os.path.join(self.tempdir, 'liba.so')
     unittest_lib.BuildELF(liba_so, ['func_a'])
-    self.assertEquals('binary/elf/dynamic-so',
-                      filetype.FileTypeDecoder.DecodeFile(liba_so))
+    self.assertEqual('binary/elf/dynamic-so',
+                     filetype.FileTypeDecoder.DecodeFile(liba_so))
 
     prog = os.path.join(self.tempdir, 'prog')
     unittest_lib.BuildELF(prog,
                           undefined_symbols=['func_a'],
                           used_libs=['a'],
                           executable=True)
-    self.assertEquals('binary/elf/dynamic-bin',
-                      filetype.FileTypeDecoder.DecodeFile(prog))
+    self.assertEqual('binary/elf/dynamic-bin',
+                     filetype.FileTypeDecoder.DecodeFile(prog))
 
     prog_static = os.path.join(self.tempdir, 'prog_static')
     unittest_lib.BuildELF(prog_static, executable=True, static=True)
-    self.assertEquals('binary/elf/static',
-                      filetype.FileTypeDecoder.DecodeFile(prog_static))
+    self.assertEqual('binary/elf/static',
+                     filetype.FileTypeDecoder.DecodeFile(prog_static))
 
   def testBinaryCompressedFiles(self):
     """Test decoding compressed files."""
@@ -180,15 +180,15 @@ or10mrNRF3tyGy8e/sw88a74Q/6v/PgChZHmq6QjOOU=
     osutils.WriteFile(compressed,
                       '\x1f\x8b\x08\x00<\xce\x07T\x02\x03\xcb\xc8\xcfI\xe4\x02'
                       '\x00x\xad\xdb\xd1\x05\x00\x00\x00')
-    self.assertEquals('binary/compressed/gzip',
-                      filetype.FileTypeDecoder.DecodeFile(compressed))
+    self.assertEqual('binary/compressed/gzip',
+                     filetype.FileTypeDecoder.DecodeFile(compressed))
 
     # `echo hola | bzip2 -9`
     osutils.WriteFile(compressed,
                       'BZh91AY&SY\xfa\xd4\xdb5\x00\x00\x01A\x00\x00\x10 D\xa0'
                       '\x00!\x83A\x9a\t\xa8qw$S\x85\t\x0f\xadM\xb3P')
-    self.assertEquals('binary/compressed/bzip2',
-                      filetype.FileTypeDecoder.DecodeFile(compressed))
+    self.assertEqual('binary/compressed/bzip2',
+                     filetype.FileTypeDecoder.DecodeFile(compressed))
 
     # `echo hola | xz -9`
     osutils.WriteFile(
@@ -196,8 +196,8 @@ or10mrNRF3tyGy8e/sw88a74Q/6v/PgChZHmq6QjOOU=
         '\xfd7zXZ\x00\x00\x04\xe6\xd6\xb4F\x02\x00!\x01\x16\x00\x00\x00t/\xe5'
         '\xa3\x01\x00\x04hola\n\x00\x00\x00\x00\xdd\xb0\x00\xac6w~\x9d\x00\x01'
         '\x1d\x05\xb8-\x80\xaf\x1f\xb6\xf3}\x01\x00\x00\x00\x00\x04YZ')
-    self.assertEquals('binary/compressed/xz',
-                      filetype.FileTypeDecoder.DecodeFile(compressed))
+    self.assertEqual('binary/compressed/xz',
+                     filetype.FileTypeDecoder.DecodeFile(compressed))
 
   def testBinaryMiscFiles(self):
     """Test for various binary file formats."""
@@ -211,11 +211,11 @@ or10mrNRF3tyGy8e/sw88a74Q/6v/PgChZHmq6QjOOU=
         '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         '\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         '\x01\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00UTC\x00\x00\x00\nUTC0\n')
-    self.assertEquals('binary/tzfile',
-                      filetype.FileTypeDecoder.DecodeFile(some_timezone))
+    self.assertEqual('binary/tzfile',
+                     filetype.FileTypeDecoder.DecodeFile(some_timezone))
 
     # A x86 boot sector with just nops.
     bootsec = os.path.join(self.tempdir, 'bootsec')
     osutils.WriteFile(bootsec, '\x90' * 510 + '\x55\xaa')
-    self.assertEquals('binary/bootsector/x86',
-                      filetype.FileTypeDecoder.DecodeFile(bootsec))
+    self.assertEqual('binary/bootsector/x86',
+                     filetype.FileTypeDecoder.DecodeFile(bootsec))

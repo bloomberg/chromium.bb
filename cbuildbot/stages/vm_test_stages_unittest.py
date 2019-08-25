@@ -543,7 +543,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
         test_report_2,
         makedirs=True)
 
-    self.assertEquals(
+    self.assertEqual(
         vm_test_stages.ListTests(results_path, show_passed=False),
         [('has_cheese', 'taste_tests/all/results-02-has_cheese')])
 
@@ -624,4 +624,4 @@ Some random stuff.
     expected_result = [
         os.path.join(test_path_archive_output, 'chromiumos_qemu_mem.bin.tar')
     ]
-    self.assertEquals(result, expected_result)
+    self.assertEqual(result, expected_result)

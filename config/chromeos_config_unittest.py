@@ -150,7 +150,7 @@ class FindConfigsForBoardTest(cros_test_lib.TestCase):
     check_expected(internal, internal_expected)
 
   def _CheckCanonicalConfig(self, board, ending):
-    self.assertEquals(
+    self.assertEqual(
         '-'.join((board, ending)),
         self.config.FindCanonicalConfigForBoard(board)['name'])
 
@@ -303,7 +303,7 @@ class UnifiedBuildCqBuilders(
     coral_paladin = self._site_config['coral-paladin']
     self.assertIsNotNone(coral_paladin)
     models = coral_paladin['models']
-    self.assertEquals(len(models), 1)
+    self.assertEqual(len(models), 1)
     self.assertIn(config_lib.ModelTestConfig('robo', 'robo'), models)
 
     master_paladin = self._site_config['master-paladin']
@@ -508,7 +508,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
         masters[push_overlays] = build_name
 
     if 'both' in masters:
-      self.assertEquals(len(masters), 1, 'Found too many masters.')
+      self.assertEqual(len(masters), 1, 'Found too many masters.')
 
   def testChromeRev(self):
     """Verify chrome_rev has an expected value"""
@@ -735,7 +735,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
         # stages will break if the master is considered a slave of itself,
         # because db.GetSlaveStages(...) doesn't include master stages.
         if config.build_type == constants.PALADIN_TYPE:
-          self.assertEquals(
+          self.assertEqual(
               config.boards, [],
               'Master paladin %s cannot have boards.' % build_name)
           self.assertNotIn(

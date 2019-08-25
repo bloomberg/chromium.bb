@@ -95,8 +95,8 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
   def assertRowsEqual(self, row1, row2):
     # Determine column superset
     cols = set(row1) | set(row2)
-    self.assertEquals(self._GetFullRowFor(row1, cols),
-                      self._GetFullRowFor(row2, cols))
+    self.assertEqual(self._GetFullRowFor(row1, cols),
+                     self._GetFullRowFor(row2, cols))
 
   def testGetCrosTargetRank(self):
     cros_rank = mps._GetCrosTargetRank('virtual/target-os')
@@ -132,14 +132,14 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
 
     for targets, good_out, rev_out in zip(test_in, test_out, test_rev_out):
       output = mps.ProcessTargets(targets)
-      self.assertEquals(output, good_out)
+      self.assertEqual(output, good_out)
       output = mps.ProcessTargets(targets, reverse_cros=True)
-      self.assertEquals(output, rev_out)
+      self.assertEqual(output, rev_out)
 
   def testLoadTable(self):
     path = self._CreateTmpCsvFile(self._table)
     csv_table = mps.LoadTable(path)
-    self.assertEquals(self._table, csv_table)
+    self.assertEqual(self._table, csv_table)
     os.unlink(path)
 
   def testLoadAndMergeTables(self):
@@ -207,14 +207,14 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
     os.unlink(path2)
 
   def testFinalizeTable(self):
-    self.assertEquals(3, self._table.GetNumRows())
-    self.assertEquals(len(self.COLUMNS), self._table.GetNumColumns())
+    self.assertEqual(3, self._table.GetNumRows())
+    self.assertEqual(len(self.COLUMNS), self._table.GetNumColumns())
 
     with self.OutputCapturer():
       mps.FinalizeTable(self._table)
 
-    self.assertEquals(3, self._table.GetNumRows())
-    self.assertEquals(len(self.COLUMNS) + 3, self._table.GetNumColumns())
+    self.assertEqual(3, self._table.GetNumRows())
+    self.assertEqual(len(self.COLUMNS) + 3, self._table.GetNumColumns())
 
     final_rows = (self.ROW0_FINAL, self.ROW1_FINAL, self.ROW2_FINAL)
     for ix, row_out in enumerate(final_rows):
@@ -231,7 +231,7 @@ class MainTest(cros_test_lib.MockOutputTestCase):
       try:
         mps.main(['--help'])
       except SystemExit as e:
-        self.assertEquals(e.args[0], 0)
+        self.assertEqual(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed
     stdout = output.GetStdout()
@@ -246,7 +246,7 @@ class MainTest(cros_test_lib.MockOutputTestCase):
       try:
         mps.main(['pkg'])
       except SystemExit as e:
-        self.assertNotEquals(e.args[0], 0)
+        self.assertNotEqual(e.args[0], 0)
 
     # Verify that output ends in error.
     stderr = output.GetStderr()
@@ -259,7 +259,7 @@ class MainTest(cros_test_lib.MockOutputTestCase):
       try:
         mps.main(['--out=any-out'])
       except SystemExit as e:
-        self.assertNotEquals(e.args[0], 0)
+        self.assertNotEqual(e.args[0], 0)
 
     # Verify that output ends in error.
     stderr = output.GetStderr()

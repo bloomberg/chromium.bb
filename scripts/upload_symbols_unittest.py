@@ -569,7 +569,7 @@ class UploadSymbolsTest(SymbolsTestBase):
     """Upload dir is empty."""
     result = upload_symbols.UploadSymbols([self.data], 'fake_url')
 
-    self.assertEquals(result, 0)
+    self.assertEqual(result, 0)
     self.assertEqual(self.urlopen_mock.call_count, 0)
 
   def testUploadSymbols(self):
@@ -583,9 +583,9 @@ class UploadSymbolsTest(SymbolsTestBase):
         failed_list=self.failure_file, strip_cfi=len(self.SLIM_CONTENT)+1,
         api_key='testkey')
 
-    self.assertEquals(result, 0)
+    self.assertEqual(result, 0)
     self.assertEqual(self.request_mock.call_count, 10)
-    self.assertEquals(osutils.ReadFile(self.failure_file), '')
+    self.assertEqual(osutils.ReadFile(self.failure_file), '')
 
   def testUploadSymbolsLimited(self):
     """Upload a few files."""
@@ -597,7 +597,7 @@ class UploadSymbolsTest(SymbolsTestBase):
         [self.data], 'fake_url', upload_limit=2,
         api_key='testkey')
 
-    self.assertEquals(result, 0)
+    self.assertEqual(result, 0)
     self.assertEqual(self.request_mock.call_count, 7)
     self.assertNotExists(self.failure_file)
 
@@ -620,9 +620,9 @@ class UploadSymbolsTest(SymbolsTestBase):
         [self.data], 'fake_url',
         failed_list=self.failure_file, api_key='testkey')
 
-    self.assertEquals(result, 1)
+    self.assertEqual(result, 1)
     self.assertEqual(upload_mock.call_count, 8)
-    self.assertEquals(osutils.ReadFile(self.failure_file), 'fail.sym\n')
+    self.assertEqual(osutils.ReadFile(self.failure_file), 'fail.sym\n')
 
 # TODO: We removed --network integration tests.
 

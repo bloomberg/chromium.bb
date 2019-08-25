@@ -231,12 +231,12 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
     conn = gob_util.CreateHttpConn(
         self.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
     response = conn.getresponse()
-    self.assertEquals(201, response.status,
-                      'Expected 201, got %s' % response.status)
+    self.assertEqual(201, response.status,
+                     'Expected 201, got %s' % response.status)
     s = cStringIO.StringIO(response.read())
-    self.assertEquals(")]}'", s.readline().rstrip())
+    self.assertEqual(")]}'", s.readline().rstrip())
     jmsg = json.load(s)
-    self.assertEquals(name, jmsg['name'])
+    self.assertEqual(name, jmsg['name'])
     return name
 
   def _CloneProject(self, name, path):
@@ -382,11 +382,11 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
     conn = gob_util.CreateHttpConn(
         self.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
     response = conn.getresponse()
-    self.assertEquals(201, response.status)
+    self.assertEqual(201, response.status)
     s = cStringIO.StringIO(response.read())
-    self.assertEquals(")]}'", s.readline().rstrip())
+    self.assertEqual(")]}'", s.readline().rstrip())
     jmsg = json.load(s)
-    self.assertEquals(email, jmsg['email'])
+    self.assertEqual(email, jmsg['email'])
 
 
 @cros_test_lib.NetworkTest()
