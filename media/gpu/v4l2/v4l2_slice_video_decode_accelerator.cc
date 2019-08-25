@@ -584,7 +584,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
       FROM_HERE,
       base::BindOnce(
           &VideoDecodeAccelerator::Client::ProvidePictureBuffersWithVisibleRect,
-          client_, num_pictures, pixel_format, 1, coded_size_,
+          client_, num_pictures, pixel_format, 1, gl_image_size_,
           decoder_->GetVisibleRect(), device_->GetTextureTarget()));
 
   // Go into kAwaitingPictureBuffers to prevent us from doing any more decoding
