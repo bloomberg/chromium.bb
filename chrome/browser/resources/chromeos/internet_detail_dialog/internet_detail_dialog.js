@@ -273,6 +273,24 @@ Polymer({
   },
 
   /**
+   * @param {!mojom.ConfigProperties} config
+   * @private
+   */
+  setMojoNetworkProperties_: function(config) {
+    if (!this.networkPropertiesReceived_ || !this.guid) {
+      return;
+    }
+    this.networkConfig_.setProperties(this.guid, config).then(response => {
+      if (!response.success) {
+        console.error('Unable to set properties: ' + JSON.stringify(config));
+        // An error typically indicates invalid input; request the properties
+        // to update any invalid fields.
+        this.getNetworkDetails_();
+      }
+    });
+  },
+
+  /**
    * @return {!chrome.networkingPrivate.NetworkConfigProperties} An ONC
    *     dictionary with just the Type property set. Used for passing properties
    *     to setNetworkProperties_.
@@ -469,24 +487,16 @@ Polymer({
   },
 
   /**
-   * Event triggered for elements associated with network properties.
-   * @param {!CustomEvent<!{field: string, value: (string|!Object)}>} event
+   * @param {!CustomEvent<!mojom.ApnProperties>} event
    * @private
    */
-  onNetworkPropertyChange_: function(event) {
-    if (!this.networkProperties) {
+  onApnChange_: function(event) {
+    if (!this.networkPropertiesReceived_) {
       return;
     }
-    const field = event.detail.field;
-    const value = event.detail.value;
-    const onc = this.getEmptyNetworkProperties_();
-    if (field == 'APN') {
-      CrOnc.setTypeProperty(onc, 'APN', value);
-    } else {
-      console.error('Unexpected property change event: ' + field);
-      return;
-    }
-    this.setNetworkProperties_(onc);
+    const apn = event.detail;
+    const config = {cellular: {apn: apn}};
+    this.setMojoNetworkProperties_(config);
   },
 
   /**

@@ -303,8 +303,8 @@
 
             <!-- APN -->
             <template is="dom-if" if="[[isCellular_(managedProperties_)]]">
-              <network-apnlist on-apn-change="onNetworkPropertyChange_"
-                  network-properties="[[networkProperties_]]">
+              <network-apnlist on-apn-change="onApnChange_"
+                  managed-properties="[[managedProperties_]]">
               </network-apnlist>
             </template>
 

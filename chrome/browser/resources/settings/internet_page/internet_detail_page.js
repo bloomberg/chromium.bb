@@ -1160,29 +1160,37 @@ Polymer({
     const field = e.detail.field;
     const value = e.detail.value;
     const onc = this.getEmptyNetworkProperties_();
-    if (field == 'APN') {
-      CrOnc.setTypeProperty(onc, 'APN', value);
-    } else {
-      const valueType = typeof value;
-      if (valueType == 'string' || valueType == 'number' ||
-          valueType == 'boolean' || Array.isArray(value)) {
-        CrOnc.setProperty(onc, field, value);
-        // Ensure any required configuration properties are also set.
-        if (field.match(/^VPN/)) {
-          const vpnType =
-              CrOnc.getActiveValue(this.networkProperties_.VPN.Type);
-          assert(vpnType);
-          CrOnc.setProperty(onc, 'VPN.Type', vpnType);
-        }
-      } else {
-        console.error(
-            'Unexpected property change event, Key: ' + field +
-            ' Value: ' + JSON.stringify(value));
-        return;
-      }
+    const valueType = typeof value;
+    if (valueType != 'string' && valueType != 'number' &&
+        valueType != 'boolean' && !Array.isArray(value)) {
+      console.error(
+          'Unexpected property change event, Key: ' + field +
+          ' Value: ' + JSON.stringify(value));
+      return;
+    }
+    CrOnc.setProperty(onc, field, value);
+    // Ensure any required configuration properties are also set.
+    if (field.match(/^VPN/)) {
+      const vpnType = CrOnc.getActiveValue(this.networkProperties_.VPN.Type);
+      assert(vpnType);
+      CrOnc.setProperty(onc, 'VPN.Type', vpnType);
     }
     this.setNetworkProperties_(onc);
   },
+
+  /**
+   * @param {!CustomEvent<!mojom.ApnProperties>} event
+   * @private
+   */
+  onApnChange_: function(event) {
+    if (!this.networkPropertiesReceived_) {
+      return;
+    }
+    const apn = event.detail;
+    const config = {cellular: {apn: apn}};
+    this.setMojoNetworkProperties_(config);
+  },
+
 
   /**
    * Event triggered when the IP Config or NameServers element changes.

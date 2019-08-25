@@ -662,8 +662,11 @@ class OncMojo {
   /**
    * @param {!chromeos.networkConfig.mojom.ManagedBoolean|
    *         !chromeos.networkConfig.mojom.ManagedInt32|
-   *         !chromeos.networkConfig.mojom.ManagedString|undefined} property
-   * @return {boolean|number|string|undefined}
+   *         !chromeos.networkConfig.mojom.ManagedString|
+   *         !chromeos.networkConfig.mojom.ManagedStringList|
+   *         !chromeos.networkConfig.mojom.ManagedApnList|undefined} property
+   * @return {boolean|number|string|!Array<string>|
+   *          !Array<!chromeos.networkConfig.mojom.ApnProperties>|undefined}
    */
   static getActiveValue(property) {
     if (!property) {
