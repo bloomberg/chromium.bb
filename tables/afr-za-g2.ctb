@@ -1,26 +1,46 @@
 # liblouis: Afrikaans Braille Code (Grade 2)
 #
 # -----------
-#-name: Afrikaans braille, grade 2
-#-display-name: Afrikaans (UBC) contracted braille
+#-name: Afrikaans gekontrakteerde
+#-index-name: Afrikaans, contracted
+#-display-name: Afrikaans contracted braille
 #
 #+locale:af
 #+type:literary
 #+contraction:full
 #+grade:2
-#+system:ueb
+#+system:ubc-af
 #
-# TODO: Please correct the metadata above. It is not meant to be
-# accurate nor complete. It hasn't been verified by the table
-# author yet. It is merely an attempt by the liblouis maintainers
-# to get some sensible initial values in place.
+# "UBC" stands for "Unified Braille Code" and is a generalization of UEB.
+# See https://sabrailleauthority.org.za/unified-braille-code-ubc.
+# ------------
 #
-# TODO: Please add a reference to official documentation about
-# the implemented braille code. Preferably submit the documents
-# to https://github.com/liblouis/braille-specs.
-# -----------
+# Afrikaans is one of the 11 official languages in South Africa and is
+# among the top 3 most widely spoken local languages. It is a language
+# closely related to Dutch and uses the same alphabet, but in addition
+# it makes frequent use of the following diacritic marks on vowels:
+# acute and grave accent, circumflex and umlaut.
 #
-#  Copyright (C) 2019 South African Braille Authority (http://www.sabrailleauthority.org.za)
+# The first braille system for Afrikaans was developed in about
+# 1935. After the adoption of the UEB in 2004 in Toronto, Canada, we
+# also unified the Afrikaans braille code according to the principles
+# of the UEB. The grade 1 code is identical to grade 1 UEB. Grade 2
+# has 183 contractions. Each letter of the alphabet except the letter
+# u (which is a word on its own) represents a contraction in grade
+# 2. As with UEB, we eliminated the contractions which could cause
+# ambiguity. In one respect Afrikaans braille is simpler than UEB, but
+# in another respect it is more complex: It is simpler in that it does
+# not have the complexity around shortforms found in UEB grade 2. It
+# is more complex because of linguistic reasons. In Afrikaans compound
+# words are frequently created on the fly and this can cause
+# contraction issues at word boundaries.
+#
+# We do not use additional codes such as Nemeth or computer braille
+# codes; we use our unified Afrikaans code also for technical
+# material.
+#
+#  Copyright (C) 2019 Greg Kearney <gkearney@gmail.com>
+#  Copyright (C) 2019 South African Braille Authority <http://www.sabrailleauthority.org.za>
 #
 #  This file is part of liblouis.
 #

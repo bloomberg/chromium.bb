@@ -1,4 +1,5 @@
-* ../../tables/afr-za-g1.ctb                    Afrikaans braille
+* ../../tables/afr-za-g1.ctb                    Afrikaans uncontracted braille
+* ../../tables/afr-za-g2.ctb                    Afrikaans contracted braille
 * ../../tables/ar.tbl                           Arabic uncontracted braille
 * ../../tables/ar-ar-g2.ctb                     Arabic contracted braille
 * ../../tables/ar-ar-comp8.utb                  Arabic computer braille

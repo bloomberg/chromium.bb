@@ -2,7 +2,6 @@ display: unicode.dis
 table:
   locale: af
   grade: 2
-  system: ueb
   __assert-match: afr-za-g2.ctb
 flags: {testmode: bothDirections}
 tests:
