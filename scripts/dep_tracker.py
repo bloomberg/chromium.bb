@@ -20,11 +20,12 @@ in several cases to help understand the contents of the built image.
 
 from __future__ import print_function
 
-import itertools
 import json
 import multiprocessing
 import os
 import stat
+
+from six.moves import map as imap
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
@@ -85,7 +86,7 @@ class DepTracker(object):
       self._pool = multiprocessing.Pool(jobs)
       self._imap = self._pool.map
     else:
-      self._imap = itertools.imap
+      self._imap = imap
 
     self._files = {}
     self._ebuilds = {}

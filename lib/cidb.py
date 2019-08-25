@@ -10,9 +10,10 @@ from __future__ import print_function
 import collections
 import datetime
 import glob
-import itertools
 import os
 import re
+
+from six.moves import zip as izip
 
 from chromite.lib import build_requests
 from chromite.lib import constants
@@ -1756,7 +1757,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     results = self._Execute(query).fetchall()
     keys = ('build_config', 'flake_count', 'build_count')
-    return [dict(itertools.izip(keys, row)) for row in results]
+    return [dict(izip(keys, row)) for row in results]
 
 
 def _INV():

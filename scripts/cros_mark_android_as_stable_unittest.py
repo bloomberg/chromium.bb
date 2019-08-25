@@ -7,11 +7,11 @@
 
 from __future__ import print_function
 
-import itertools
 import os
 import re
 
 import mock
+from six.moves import zip as izip
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -282,7 +282,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
       logging.warn('mocking no %s', dst_url)
 
       # Allow copying of source to dest.
-      for src_file, dst_file in itertools.izip(src_filelist, dst_filelist):
+      for src_file, dst_file in izip(src_filelist, dst_filelist):
         self.gs_mock.AddCmdResult(['cp', '-v', '--', src_file, dst_file])
     else:
       self.gs_mock.AddCmdResult(['ls', '--', src_url],
