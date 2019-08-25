@@ -1,7 +1,7 @@
 # liblouis: Chinese Common Braille.
 #
-#-index-name: Mandarin, mainland, with tones
-#-display-name: Mainland Mandarin braille with tones
+#-index-name: Mandarin, mainland China, with tones
+#-display-name: Chinese braille with tones
 #
 #+locale:cmn-CN
 #+type:literary

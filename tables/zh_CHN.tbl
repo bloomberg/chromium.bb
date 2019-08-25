@@ -1,5 +1,5 @@
-#-index-name: Mandarin, mainland, without tones
-#-display-name: Mainland Mandarin braille without tones
+#-index-name: Mandarin, mainland China, without tones
+#-display-name: Chinese braille without tones, for simplified Chinese characters
 
 #+locale:cmn-Hans-CN
 #+type:literary

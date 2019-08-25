@@ -3,12 +3,13 @@
 # ------------
 #-name: British English grade 1
 #-index-name: English, U.K., uncontracted
-#-display-name: U.K. English uncontracted braille
+#-display-name: English uncontracted braille as used in the U.K.
 #
 #+locale:en-GB
 #+type:literary
 #+contraction:no
 #+grade:1
+#+system:bauk
 #
 # TODO: Please correct the metadata above. It is not meant to be
 # accurate nor complete. It hasn't been verified by the table

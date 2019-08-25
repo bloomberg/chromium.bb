@@ -1,5 +1,5 @@
 #-index-name: English, Canada, computer
-#-display-name: Canadian English computer braille
+#-display-name: English computer braille as used in Canada
 
 #+locale:en-CA
 #+type:computer

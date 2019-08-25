@@ -2,7 +2,7 @@
 #
 # -----------
 #-index-name: Greek, international, English
-#-display-name: International Greek braille as used by English speakers
+#-display-name: Greek internationalized braille as used by English speakers
 #
 #+locale: grc
 #+type: literary

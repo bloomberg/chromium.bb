@@ -3,7 +3,7 @@
 # -----------
 #-name: U.S. English grade 1 (EBAE)
 #-index-name: English, U.S., uncontracted
-#-display-name: U.S. English (EBAE) uncontracted braille
+#-display-name: English uncontracted braille as used in the U.S.
 #
 #+locale:en-US
 #+type:literary

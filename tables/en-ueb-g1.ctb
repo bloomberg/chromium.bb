@@ -3,7 +3,7 @@
 # -----------
 #-name: Unified English braille, grade 1
 #-index-name: English, unified, uncontracted
-#-display-name: Unified English (UEB) uncontracted braille
+#-display-name: Unified English uncontracted braille
 #
 #+locale:en
 #+type:literary
