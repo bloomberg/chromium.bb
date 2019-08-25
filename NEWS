@@ -27,6 +27,8 @@ issues]].
   active. Thanks to Dave Mielke.
 - Fix bug where a translation would hang on words that match both a
   ~nocont~ and a ~repeated~ rule. Thanks to Dave Mielke.
+- Fix bug where the effect of capsnocont would leak to the next word
+  if that word starts with a capital. Thanks to Bue Vester-Andersen.
 
 ** Braille table improvements
 - Fix an issue with ordinal numbers inside caps passages in Dutch
