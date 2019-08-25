@@ -2934,13 +2934,15 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 		formtype *typebuf, unsigned int *wordBuffer, EmphasisInfo *emphasisBuffer,
 		int haveEmphasis) {
 	/* Relies on the order of typeforms emph_1..emph_10. */
-	int last_space = -1; /* position of the last encountered space */
-	int caps_start = -1; /* position of the first uppercase after which no lowercase was
-							encountered */
-	int last_caps = -1;  /* position of the first space following the last encountered
-							letter if that letter was an uppercase */
-	int caps_cnt = 0; /* whether or not the last encountered letter was an uppercase and
-						 happened in the current word */
+	int last_space = -1;  // position of the last encountered space
+	int caps_start = -1;  // position of the first uppercase after which no lowercase was
+						  // encountered
+	int last_caps = -1;   // position of the first space following the last encountered
+						  // letter if that letter was an uppercase
+	int caps = 0;	  // whether or not the last encountered letter was an uppercase and
+					   // happened in the current word
+	int caps_cnt = 0;  // number of consecutive characters ending with the current that
+					   // are uppercase letters
 	int emph_start[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 	int caps_phrase_enabled = table->emphRules[capsRule][begWordOffset] &&
 			table->emphRules[capsRule][lenPhraseOffset];
@@ -2957,44 +2959,55 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 			wordBuffer[i] |= WORD_CHAR;
 		} else {
 			last_space = i;
-			if (caps_cnt) {
+			if (caps) {
 				last_caps = i;
-				caps_cnt = 0;
+				caps = 0;
 			}
 		}
 
 		/* if character is uppercase, caps begins or continues */
 		if (checkAttr(input->chars[i], CTC_UpperCase, 0, table)) {
 			if (caps_start < 0) caps_start = i;
+			caps = 1;
+			/* handle capsnocont */
+			/* mark two or more consecutive caps with nocont */
 			caps_cnt++;
-		} else if (caps_start >= 0) {
-			/* else if caps has begun, it should continue if there are no lowercase before
-			 * the next uppercase */
-			/* characters that cancel caps mode are handled later in resolveEmphasisResets
-			 * (note that letters that are neither uppercase nor lowercase do not cancel
-			 * caps mode) */
-			if (checkAttr(input->chars[i], CTC_Letter, 0, table) &&
-					checkAttr(input->chars[i], CTC_LowerCase, 0, table)) {
-				emphasisBuffer[caps_start].begin |= capsEmphClass;
-				if (caps_cnt) {
-					/* a passage can not end on a word without uppercase letters, so if
-					 * caps did not start inside the current word, end it after the last
-					 * word that contained a uppercase, and start over from the beginning
-					 * of the current word */
-					if (caps_phrase_enabled && caps_start < last_space) {
+			if (table->capsNoCont && caps_cnt >= 2) {
+				typebuf[i] |= no_contract;
+				/* also mark the previous one */
+				if (caps_cnt == 2) typebuf[i - 1] |= no_contract;
+			}
+		} else {
+			caps_cnt = 0;
+			if (caps_start >= 0) {
+				/* else if caps has begun, it should continue if there are no lowercase
+				 * before the next uppercase */
+				/* characters that cancel caps mode are handled later in
+				 * resolveEmphasisResets (note that letters that are neither uppercase nor
+				 * lowercase do not cancel caps mode) */
+				if (checkAttr(input->chars[i], CTC_Letter, 0, table) &&
+						checkAttr(input->chars[i], CTC_LowerCase, 0, table)) {
+					emphasisBuffer[caps_start].begin |= capsEmphClass;
+					if (caps) {
+						/* a passage can not end on a word without uppercase letters, so
+						 * if caps did not start inside the current word, end it after the
+						 * last word that contained a uppercase, and start over from the
+						 * beginning of the current word */
+						if (caps_phrase_enabled && caps_start < last_space) {
+							emphasisBuffer[last_caps].end |= capsEmphClass;
+							caps_start = -1;
+							last_caps = -1;
+							caps = 0;
+							i = last_space;
+							continue;
+						}
+						emphasisBuffer[i].end |= capsEmphClass;
+					} else
 						emphasisBuffer[last_caps].end |= capsEmphClass;
-						caps_start = -1;
-						last_caps = -1;
-						caps_cnt = 0;
-						i = last_space;
-						continue;
-					}
-					emphasisBuffer[i].end |= capsEmphClass;
-				} else
-					emphasisBuffer[last_caps].end |= capsEmphClass;
-				caps_start = -1;
-				last_caps = -1;
-				caps_cnt = 0;
+					caps_start = -1;
+					last_caps = -1;
+					caps = 0;
+				}
 			}
 		}
 
@@ -3014,7 +3027,7 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 	/* clean up input->length */
 	if (caps_start >= 0) {
 		emphasisBuffer[caps_start].begin |= capsEmphClass;
-		if (caps_cnt)
+		if (caps)
 			emphasisBuffer[input->length].end |= capsEmphClass;
 		else
 			emphasisBuffer[last_caps].end |= capsEmphClass;
@@ -3026,21 +3039,6 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 				emphasisBuffer[emph_start[j]].begin |= emphClasses[j];
 				emphasisBuffer[input->length].end |= emphClasses[j];
 			}
-		}
-	}
-
-	/* Handle capsnocont */
-	/* marks two or more consecutive caps with nocont */
-	if (table->capsNoCont) {
-		int inCaps_cnt = 0;
-		for (i = 0; i < input->length; i++) {
-			if (checkAttr(input->chars[i], CTC_UpperCase, 0, table)) {
-				inCaps_cnt++;
-				if (inCaps_cnt == 2) /* Second cap, so also mark the previous one */
-					typebuf[i - 1] |= no_contract;
-				if (inCaps_cnt >= 2) typebuf[i] |= no_contract;
-			} else /* Not a capital */
-				inCaps_cnt = 0;
 		}
 	}
 
