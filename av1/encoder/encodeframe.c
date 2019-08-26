@@ -4072,7 +4072,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 
     if ((sf->simple_motion_search_split ||
          sf->simple_motion_search_prune_rect ||
-         sf->simple_motion_search_early_term_none) &&
+         sf->simple_motion_search_early_term_none ||
+         sf->ml_early_term_after_part_split_level) &&
         !frame_is_intra_only(cm) && !use_nonrd_mode) {
       init_simple_motion_search_mvs(pc_root);
     }
