@@ -47,11 +47,6 @@ bool TestAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
   return false;
 }
 
-bool TestAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool TestAppRegistrar::WasExternalAppUninstalledByUser(
     const AppId& app_id) const {
   return base::Contains(user_uninstalled_external_apps_, app_id);
