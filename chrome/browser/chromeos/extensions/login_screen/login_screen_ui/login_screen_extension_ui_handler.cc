@@ -25,7 +25,7 @@ namespace chromeos {
 namespace {
 
 const char kErrorWindowAlreadyExists[] =
-    "Can't create more than one window per extension.";
+    "Login screen extension UI already in use.";
 const char kErrorNoExistingWindow[] = "No open window to close.";
 const char kErrorNotOnLoginOrLockScreen[] =
     "Windows can only be created on the login and lock screen.";
@@ -67,6 +67,13 @@ bool CanUseLoginScreenUiApi(const extensions::Extension* extension) {
 
 }  // namespace
 
+ExtensionIdToWindowMapping::ExtensionIdToWindowMapping(
+    const std::string& extension_id,
+    std::unique_ptr<LoginScreenExtensionUiWindow> window)
+    : extension_id(extension_id), window(std::move(window)) {}
+
+ExtensionIdToWindowMapping::~ExtensionIdToWindowMapping() = default;
+
 // static
 LoginScreenExtensionUiHandler* LoginScreenExtensionUiHandler::Get(
     bool can_create) {
@@ -107,15 +114,13 @@ bool LoginScreenExtensionUiHandler::Show(const extensions::Extension* extension,
     *error = kErrorNotOnLoginOrLockScreen;
     return false;
   }
-  if (HasOpenWindow(extension->id())) {
+  if (current_window_) {
     *error = kErrorWindowAlreadyExists;
     return false;
   }
 
-  if (!HasOpenWindow()) {
-    ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(
-        ash::OobeDialogState::EXTENSION_LOGIN);
-  }
+  ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(
+      ash::OobeDialogState::EXTENSION_LOGIN);
 
   LoginScreenExtensionUiCreateOptions create_options(
       GetHardcodedExtensionName(extension),
@@ -124,9 +129,9 @@ bool LoginScreenExtensionUiHandler::Show(const extensions::Extension* extension,
           base::IgnoreResult(
               &LoginScreenExtensionUiHandler::RemoveWindowForExtension),
           weak_ptr_factory_.GetWeakPtr(), extension->id()));
-  std::unique_ptr<LoginScreenExtensionUiWindow> window =
-      window_factory_->Create(&create_options);
-  windows_.emplace(extension->id(), std::move(window));
+
+  current_window_ = std::make_unique<ExtensionIdToWindowMapping>(
+      extension->id(), window_factory_->Create(&create_options));
 
   return true;
 }
@@ -144,26 +149,20 @@ bool LoginScreenExtensionUiHandler::Close(
 
 bool LoginScreenExtensionUiHandler::RemoveWindowForExtension(
     const std::string& extension_id) {
-  WindowMap::iterator it = windows_.find(extension_id);
-  if (it == windows_.end())
+  if (!HasOpenWindow(extension_id))
     return false;
-  windows_.erase(it);
 
-  if (!HasOpenWindow()) {
-    ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(
-        ash::OobeDialogState::HIDDEN);
-  }
+  current_window_.reset(nullptr);
+
+  ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(
+      ash::OobeDialogState::HIDDEN);
 
   return true;
 }
 
 bool LoginScreenExtensionUiHandler::HasOpenWindow(
     const std::string& extension_id) const {
-  return windows_.find(extension_id) != windows_.end();
-}
-
-bool LoginScreenExtensionUiHandler::HasOpenWindow() const {
-  return !windows_.empty();
+  return current_window_ && current_window_->extension_id == extension_id;
 }
 
 void LoginScreenExtensionUiHandler::UpdateSessionState() {
@@ -179,7 +178,7 @@ void LoginScreenExtensionUiHandler::UpdateSessionState() {
   login_or_lock_screen_active_ = new_login_or_lock_screen_active;
 
   if (!login_or_lock_screen_active_)
-    windows_.clear();
+    current_window_.reset(nullptr);
 }
 
 void LoginScreenExtensionUiHandler::OnSessionStateChanged() {
@@ -196,11 +195,10 @@ void LoginScreenExtensionUiHandler::OnExtensionUninstalled(
 LoginScreenExtensionUiWindow*
 LoginScreenExtensionUiHandler::GetWindowForTesting(
     const std::string& extension_id) {
-  WindowMap::iterator it = windows_.find(extension_id);
-  if (it == windows_.end())
+  if (!HasOpenWindow(extension_id))
     return nullptr;
 
-  return it->second.get();
+  return current_window_->window.get();
 }
 
 }  // namespace chromeos
