@@ -4,6 +4,7 @@
 
 import exceptions
 
+from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
@@ -40,7 +41,8 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
         ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
         WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
+        WithCodeGeneratorInfo.__init__(
+            self, CodeGeneratorInfo(ir.code_generator_info))
         WithComponent.__init__(self, components=ir.components)
         WithDebugInfo.__init__(self, ir.debug_info)
 

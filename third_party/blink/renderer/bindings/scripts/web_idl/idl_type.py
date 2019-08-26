@@ -7,7 +7,6 @@ import functools
 
 from blinkbuild.name_style_converter import NameStyleConverter
 
-from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
@@ -110,7 +109,7 @@ class IdlTypeFactory(object):
         return idl_type
 
 
-class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
+class IdlType(WithExtendedAttributes, WithDebugInfo):
     """
     Represents a 'type' in Web IDL.
 
@@ -130,13 +129,11 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
     def __init__(self,
                  is_optional=False,
                  extended_attributes=None,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         assert isinstance(is_optional, bool)
         assert pass_key is _IDL_TYPE_PASS_KEY
         WithExtendedAttributes.__init__(self, extended_attributes)
-        WithCodeGeneratorInfo.__init__(self, code_generator_info)
         WithDebugInfo.__init__(self, debug_info)
         self._is_optional = is_optional
 
@@ -428,7 +425,6 @@ class SimpleType(IdlType):
                  name,
                  is_optional=False,
                  extended_attributes=None,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         assert name in SimpleType._VALID_TYPES, (
@@ -437,7 +433,6 @@ class SimpleType(IdlType):
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
         self._name = name
@@ -507,14 +502,12 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
 
     _attrs_to_be_proxied = set(Proxy.get_all_attributes(IdlType)).difference(
         # attributes not to be proxied
-        set(('code_generator_info', 'debug_info', 'extended_attributes',
-             'is_optional')))
+        set(('debug_info', 'extended_attributes', 'is_optional')))
 
     def __init__(self,
                  ref_to_idl_type,
                  is_optional=False,
                  extended_attributes=None,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         assert isinstance(ref_to_idl_type, RefById)
@@ -522,7 +515,6 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
         WithIdentifier.__init__(self, ref_to_idl_type.identifier)
@@ -550,13 +542,11 @@ class DefinitionType(IdlType, WithIdentifier):
 
     def __init__(self,
                  user_defined_type,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         assert isinstance(user_defined_type, UserDefinedType)
         IdlType.__init__(
             self,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
         WithIdentifier.__init__(self, user_defined_type.identifier)
@@ -620,13 +610,11 @@ class TypedefType(IdlType, WithIdentifier):
 
     def __init__(self,
                  typedef,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         assert isinstance(typedef, Typedef)
         IdlType.__init__(
             self,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
         WithIdentifier.__init__(self, typedef.identifier)
@@ -674,7 +662,6 @@ class _ArrayLikeType(IdlType):
                  element_type,
                  is_optional=False,
                  extended_attributes=None,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         assert isinstance(element_type, IdlType)
@@ -682,7 +669,6 @@ class _ArrayLikeType(IdlType):
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
         self._element_type = element_type
@@ -711,7 +697,6 @@ class SequenceType(_ArrayLikeType):
                  element_type,
                  is_optional=False,
                  extended_attributes=None,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         _ArrayLikeType.__init__(
@@ -719,7 +704,6 @@ class SequenceType(_ArrayLikeType):
             element_type,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
 
@@ -746,7 +730,6 @@ class FrozenArrayType(_ArrayLikeType):
                  element_type,
                  is_optional=False,
                  extended_attributes=None,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         _ArrayLikeType.__init__(
@@ -754,7 +737,6 @@ class FrozenArrayType(_ArrayLikeType):
             element_type,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
 
@@ -779,13 +761,11 @@ class VariadicType(_ArrayLikeType):
 
     def __init__(self,
                  element_type,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         _ArrayLikeType.__init__(
             self,
             element_type,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
 
@@ -816,7 +796,6 @@ class RecordType(IdlType):
                  value_type,
                  is_optional=False,
                  extended_attributes=None,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         assert isinstance(key_type, IdlType)
@@ -825,7 +804,6 @@ class RecordType(IdlType):
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
         self._key_type = key_type
@@ -874,7 +852,6 @@ class PromiseType(IdlType):
                  result_type,
                  is_optional=False,
                  extended_attributes=None,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         assert isinstance(result_type, IdlType)
@@ -882,7 +859,6 @@ class PromiseType(IdlType):
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
         self._result_type = result_type
@@ -929,7 +905,6 @@ class UnionType(IdlType):
                  member_types,
                  is_optional=False,
                  extended_attributes=None,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         assert isinstance(member_types, (list, tuple))
@@ -938,7 +913,6 @@ class UnionType(IdlType):
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
         self._member_types = tuple(member_types)
@@ -1016,7 +990,6 @@ class NullableType(IdlType):
                  inner_type,
                  is_optional=False,
                  extended_attributes=None,
-                 code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
         assert isinstance(inner_type, IdlType)
@@ -1024,7 +997,6 @@ class NullableType(IdlType):
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
-            code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
         self._inner_type = inner_type
