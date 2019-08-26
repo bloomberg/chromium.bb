@@ -3105,6 +3105,8 @@ crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-block
 
 crbug.com/552085 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 
+crbug.com/626703 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
+
 # TODO(chrishtr): rebaseline these
 crbug.com/921242 [ Mac ] paint/invalidation/compositing/fixed-pos-inside-composited-intermediate-layer.html [ Failure ]
 crbug.com/921242 [ Mac ] paint/invalidation/scroll/fixed-under-composited-absolute-scrolled.html [ Failure ]
@@ -6528,8 +6530,10 @@ crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html
 crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
 crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
 
+# Sheriff 2019-08-26
 crbug.com/997669 [ Win ] http/tests/devtools/search/sources-search-scope-in-files.js [ Pass Crash ]
 crbug.com/997669 [ Win ] http/tests/devtools/search/sources-search-scope.js [ Pass Crash ]
+crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-main-thread.https.html [ Pass Failure ]
 
 # Pending enabling scroll to text feature
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]
