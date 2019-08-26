@@ -187,7 +187,8 @@ void UserMediaClient::RequestUserMedia(
   std::unique_ptr<UserMediaRequestInfo> request_info =
       std::make_unique<UserMediaRequestInfo>(request_id, web_request,
                                              user_gesture);
-  pending_request_infos_.push_back(Request(std::move(request_info)));
+  pending_request_infos_.push_back(
+      std::make_unique<Request>(std::move(request_info)));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }
@@ -196,13 +197,13 @@ void UserMediaClient::ApplyConstraints(
     const blink::WebApplyConstraintsRequest& web_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  pending_request_infos_.push_back(Request(web_request));
+  pending_request_infos_.push_back(std::make_unique<Request>(web_request));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }
 
 void UserMediaClient::StopTrack(const blink::WebMediaStreamTrack& web_track) {
-  pending_request_infos_.push_back(Request(web_track));
+  pending_request_infos_.push_back(std::make_unique<Request>(web_track));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }
@@ -216,25 +217,25 @@ void UserMediaClient::MaybeProcessNextRequestInfo() {
   if (is_processing_request_ || pending_request_infos_.empty())
     return;
 
-  Request current_request = std::move(pending_request_infos_.front());
+  auto current_request = std::move(pending_request_infos_.front());
   pending_request_infos_.pop_front();
   is_processing_request_ = true;
 
-  if (current_request.IsUserMedia()) {
+  if (current_request->IsUserMedia()) {
     user_media_processor_->ProcessRequest(
-        current_request.MoveUserMediaRequest(),
+        current_request->MoveUserMediaRequest(),
         WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
                   WrapWeakPersistent(this)));
-  } else if (current_request.IsApplyConstraints()) {
+  } else if (current_request->IsApplyConstraints()) {
     apply_constraints_processor_->ProcessRequest(
-        current_request.apply_constraints_request(),
+        current_request->apply_constraints_request(),
         WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
                   WrapWeakPersistent(this)));
   } else {
-    DCHECK(current_request.IsStopTrack());
+    DCHECK(current_request->IsStopTrack());
     blink::WebPlatformMediaStreamTrack* track =
         blink::WebPlatformMediaStreamTrack::GetTrack(
-            current_request.web_track_to_stop());
+            current_request->web_track_to_stop());
     if (track) {
       track->StopAndNotify(WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
                                      WrapWeakPersistent(this)));
@@ -273,8 +274,8 @@ void UserMediaClient::CancelUserMediaRequest(
   } else {
     for (auto it = pending_request_infos_.begin();
          it != pending_request_infos_.end(); ++it) {
-      if (it->IsUserMedia() &&
-          it->user_media_request()->web_request == web_request) {
+      if ((*it)->IsUserMedia() &&
+          (*it)->user_media_request()->web_request == web_request) {
         pending_request_infos_.erase(it);
         did_remove_request = true;
         break;

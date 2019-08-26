@@ -91,6 +91,8 @@ class MODULES_EXPORT UserMediaClient
     std::unique_ptr<UserMediaRequestInfo> user_media_request_;
     blink::WebApplyConstraintsRequest apply_constraints_request_;
     blink::WebMediaStreamTrack web_track_to_stop_;
+
+    DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
   void MaybeProcessNextRequestInfo();
@@ -119,7 +121,7 @@ class MODULES_EXPORT UserMediaClient
   // and |pending_request_infos_| is a list of queued requests.
   bool is_processing_request_ = false;
 
-  Deque<Request> pending_request_infos_;
+  Deque<std::unique_ptr<Request>> pending_request_infos_;
 
   THREAD_CHECKER(thread_checker_);
 
