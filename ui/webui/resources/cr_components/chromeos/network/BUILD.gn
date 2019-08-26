@@ -98,13 +98,16 @@ js_library("network_ip_config") {
   deps = [
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
 }
 
 js_library("network_nameservers") {
   deps = [
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
 }
 

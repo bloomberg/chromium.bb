@@ -99,8 +99,12 @@ Polymer({
     const subKeys = key.split('.');
     subKeys.forEach(subKey => {
       // Check for exceptions to CamelCase vs camelCase naming conventions.
-      if (subKey == 'apn') {
+      if (subKey == 'ipv4' || subKey == 'ipv6') {
+        result += subKey + '-';
+      } else if (subKey == 'apn') {
         result += 'APN-';
+      } else if (subKey == 'ipAddress') {
+        result += 'IPAddress-';
       } else {
         result += subKey.charAt(0).toUpperCase() + subKey.slice(1) + '-';
       }
