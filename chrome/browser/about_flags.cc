@@ -4408,6 +4408,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"zero-state-files", flag_descriptions::kZeroStateFilesName,
      flag_descriptions::kZeroStateFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableZeroStateMixedTypesRanker)},
+
+    {"new-overview-tablet-layout",
+     flag_descriptions::kNewOverviewTabletLayoutName,
+     flag_descriptions::kNewOverviewTabletLayoutDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kNewOverviewLayout)},
 #endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

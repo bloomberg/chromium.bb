@@ -3414,6 +3414,12 @@ const char kNetworkPortalNotificationDescription[] =
     "If enabled, notification is displayed when device is connected to a "
     "network behind captive portal.";
 
+const char kNewOverviewTabletLayoutName[] = "New overview tablet mode layout";
+const char kNewOverviewTabletLayoutDescription[] =
+    "If enabled, in tablet mode, overview items will be laid out in two rows "
+    "with six items showing at a time. Users can scroll through to see hidden "
+    "items.";
+
 const char kNewZipUnpackerName[] = "ZIP Archiver (unpacking)";
 const char kNewZipUnpackerDescription[] =
     "Use the ZIP Archiver for mounting/unpacking ZIP files";

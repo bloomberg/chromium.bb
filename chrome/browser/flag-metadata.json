@@ -2380,6 +2380,11 @@
     "expiry_milestone": 75
   },
   {
+    "name": "new-overview-tablet-layout",
+    "owners": [ "sammiequon" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "new-password-form-parsing",
     "owners": [ "dvadym" ],
     "expiry_milestone": 76

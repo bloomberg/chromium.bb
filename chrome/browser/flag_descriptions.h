@@ -2045,6 +2045,9 @@ extern const char kMediaSessionNotificationsDescription[];
 extern const char kNetworkPortalNotificationName[];
 extern const char kNetworkPortalNotificationDescription[];
 
+extern const char kNewOverviewTabletLayoutName[];
+extern const char kNewOverviewTabletLayoutDescription[];
+
 extern const char kNewZipUnpackerName[];
 extern const char kNewZipUnpackerDescription[];
 
