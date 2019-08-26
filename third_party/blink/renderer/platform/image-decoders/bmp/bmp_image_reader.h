@@ -107,16 +107,16 @@ class PLATFORM_EXPORT BMPImageReader final {
     kInsufficientData,
   };
 
-  // These are based on the Windows BITMAPINFOHEADER and RGBTRIPLE
-  // structs, but with unnecessary entries removed.
+  // These are based on the Windows BITMAPINFOHEADER and RGBTRIPLE structs, but
+  // with unnecessary entries removed.
   struct BitmapInfoHeader {
     DISALLOW_NEW();
-    uint32_t bi_size;
-    int32_t bi_width;
-    int32_t bi_height;
-    uint16_t bi_bit_count;
-    CompressionType bi_compression;
-    uint32_t bi_clr_used;
+    uint32_t size;
+    int32_t width;
+    int32_t height;
+    uint16_t bit_count;
+    CompressionType compression;
+    uint32_t clr_used;
   };
   struct RGBTriple {
     DISALLOW_NEW();
@@ -160,9 +160,9 @@ class PLATFORM_EXPORT BMPImageReader final {
   inline bool HasAlphaMaskInHeader() const {
     // BITMAPV3HEADER is 56 bytes; this is also a valid OS/2 2.x header size, so
     // exclude that case.
-    return (info_header_.bi_size == 56 && !is_os22x_) ||  // BITMAPV3HEADER
-           (info_header_.bi_size == 108) ||               // BITMAPV4HEADER
-           (info_header_.bi_size == 124);                 // BITMAPV5HEADER
+    return (info_header_.size == 56 && !is_os22x_) ||  // BITMAPV3HEADER
+           (info_header_.size == 108) ||               // BITMAPV4HEADER
+           (info_header_.size == 124);                 // BITMAPV5HEADER
   }
 
   // Returns true if this BMP has RGB masks in the info header
@@ -170,8 +170,8 @@ class PLATFORM_EXPORT BMPImageReader final {
   inline bool HasRGBMasksInHeader() const {
     // BITMAPV2HEADER is 52 bytes; this is also a valid OS/2 2.x header size, so
     // exclude that case.
-    return (info_header_.bi_size == 52 && !is_os22x_) ||  // BITMAPV2HEADER
-           HasAlphaMaskInHeader();                        // BITMAPV3HEADER+
+    return (info_header_.size == 52 && !is_os22x_) ||  // BITMAPV2HEADER
+           HasAlphaMaskInHeader();                     // BITMAPV3HEADER+
   }
 
   // Returns false if consistency errors are found in the info header.
