@@ -7,6 +7,7 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -30,6 +31,30 @@ const char kErrorNotOnLoginOrLockScreen[] =
     "Windows can only be created on the login and lock screen.";
 
 LoginScreenExtensionUiHandler* g_instance = nullptr;
+
+struct HardcodedExtensionNameMapping {
+  const char* extension_id;
+  const char* extension_name;
+};
+
+// Hardcoded extension names to be used in the window's dialog title.
+// Intentionally not using |extension->name()| here to prevent a compromised
+// extension from being able to control the dialog title's content.
+const HardcodedExtensionNameMapping kHardcodedExtensionNameMappings[] = {
+    {"cdgickkdpbekbnalbmpgochbninibkko", "Imprivata"},
+    {"lpimkpkllnkdlcigdbgmabfplniahkgm", "Imprivata"},
+    {"oclffehlkdgibkainkilopaalpdobkan", "LoginScreenUi test extension"},
+};
+
+std::string GetHardcodedExtensionName(const extensions::Extension* extension) {
+  for (const HardcodedExtensionNameMapping& mapping :
+       kHardcodedExtensionNameMappings) {
+    if (mapping.extension_id == extension->id())
+      return mapping.extension_name;
+  }
+  NOTREACHED();
+  return "UNKNOWN EXTENSION";
+}
 
 bool CanUseLoginScreenUiApi(const extensions::Extension* extension) {
   return extensions::ExtensionRegistry::Get(ProfileHelper::GetSigninProfile())
@@ -93,8 +118,8 @@ bool LoginScreenExtensionUiHandler::Show(const extensions::Extension* extension,
   }
 
   LoginScreenExtensionUiCreateOptions create_options(
-      extension->short_name(), extension->GetResourceURL(resource_path),
-      can_be_closed_by_user,
+      GetHardcodedExtensionName(extension),
+      extension->GetResourceURL(resource_path), can_be_closed_by_user,
       base::BindOnce(
           base::IgnoreResult(
               &LoginScreenExtensionUiHandler::RemoveWindowForExtension),

@@ -124,7 +124,8 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
     session_manager_.SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
 
-    extension_ = extensions::ExtensionBuilder("test" /*extension_name*/)
+    extension_ = extensions::ExtensionBuilder(
+                     /*extension_name=*/"LoginScreenUi test extension")
                      .SetID(kWhitelistedExtensionID1)
                      .SetLocation(extensions::Manifest::EXTERNAL_POLICY)
                      .AddPermission(kPermissionName)
@@ -286,7 +287,7 @@ TEST_F(LoginScreenExtensionUiHandlerUnittest, WindowClosedOnUnlock) {
 
 TEST_F(LoginScreenExtensionUiHandlerUnittest, TwoExtensionsInParallel) {
   scoped_refptr<const extensions::Extension> other_extension =
-      extensions::ExtensionBuilder("other extension" /*extension_name*/)
+      extensions::ExtensionBuilder(/*extension_name=*/"Imprivata")
           .SetID(kWhitelistedExtensionID2)
           .SetLocation(extensions::Manifest::EXTERNAL_POLICY)
           .AddPermission(kPermissionName)
