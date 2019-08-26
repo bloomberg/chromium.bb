@@ -384,7 +384,8 @@ Polymer({
       // Set |this.shouldShowConfigureWhenNetworkLoaded_| back to false to
       // ensure that the Tether dialog is only shown once.
       this.shouldShowConfigureWhenNetworkLoaded_ = false;
-      this.showTetherDialog_();
+      // Async call to ensure dialog is stamped.
+      setTimeout(() => this.showTetherDialog_());
     }
   },
 
@@ -750,6 +751,16 @@ Polymer({
 
   /**
    * @param {!OncMojo.ManagedProperties} managedProperties
+   * @return {boolean}
+   * @private
+   */
+  isTether_: function(managedProperties) {
+    return !!managedProperties &&
+        managedProperties.type == mojom.NetworkType.kTether;
+  },
+
+  /**
+   * @param {!OncMojo.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
@@ -1056,11 +1067,8 @@ Polymer({
 
   /** @private */
   onConnectTap_: function() {
-    // TODO(stevenjb): Add ManagedTetherProperties for hasConnectedToHost.
-    // For Tether networks that have not connected to a host, show a dialog.
-    if (this.networkProperties_.Type == CrOnc.Type.TETHER &&
-        (!this.networkProperties_.Tether ||
-         !this.networkProperties_.Tether.HasConnectedToHost)) {
+    if (this.managedProperties_.type == mojom.NetworkType.kTether &&
+        (!this.managedProperties_.tether.hasConnectedToHost)) {
       this.showTetherDialog_();
       return;
     }

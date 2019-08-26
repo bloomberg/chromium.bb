@@ -1182,9 +1182,17 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       result->ethernet = std::move(ethernet);
       break;
     }
-    case mojom::NetworkType::kTether:
-      // No Tether specific managed properties.
+    case mojom::NetworkType::kTether: {
+      // Tether has no managed properties, provide the state properties.
+      auto tether = mojom::TetherStateProperties::New();
+      tether->battery_percentage = network_state->battery_percentage();
+      tether->carrier = network_state->tether_carrier();
+      tether->has_connected_to_host =
+          network_state->tether_has_connected_to_host();
+      tether->signal_strength = network_state->signal_strength();
+      result->tether = std::move(tether);
       break;
+    }
     case mojom::NetworkType::kVPN: {
       auto vpn = mojom::ManagedVPNProperties::New();
       const base::Value* vpn_dict =

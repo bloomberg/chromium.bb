@@ -341,11 +341,13 @@
       </template>
     </template>
 
-    <tether-connection-dialog id="tetherDialog"
-        network-properties="[[networkProperties_]]"
-        on-tether-connect="onTetherConnect_"
-        out-of-range="[[outOfRange_]]">
-    </tether-connection-dialog>
+    <template is="dom-if" if="[[isTether_(managedProperties_)]]" restamp>
+      <tether-connection-dialog id="tetherDialog"
+          managed-properties="[[managedProperties_]]"
+          on-tether-connect="onTetherConnect_"
+          out-of-range="[[outOfRange_]]">
+      </tether-connection-dialog>
+    </template>
   </template>
   <script src="internet_detail_page.js"></script>
 </dom-module>

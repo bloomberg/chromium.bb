@@ -581,6 +581,9 @@ struct ManagedProperties {
   bool restricted_connectivity = false;
   ManagedIPConfigProperties? static_ip_config;
   IPConfigProperties? saved_ip_config;
+  // Tether has no managed properties. Provide TetherStateProperties for display
+  // purposes.
+  TetherStateProperties? tether;
   ManagedVPNProperties? vpn;
   ManagedWiFiProperties? wifi;
 };

@@ -584,8 +584,10 @@ class OncMojo {
             mojom.AuthenticationType.kNone;
         break;
       case mojom.NetworkType.kTether:
-        // TODO(stevenjb): Provide Tether managed properties for completeness.
-        // (CrNetworkIcon does not currently require Tether properties).
+        if (properties.tether) {
+          networkState.tether = /** @type {!mojom.TetherStateProperties}*/ (
+              Object.assign({}, properties.tether));
+        }
         break;
       case mojom.NetworkType.kVPN:
         networkState.vpn.providerName = properties.vpn.providerName;
