@@ -4920,13 +4920,13 @@ bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
     bool is_service_worker,
     int process_id,
     int routing_id,
-    network::mojom::RestrictedCookieManagerRequest* request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager>* receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (origin.scheme() == extensions::kExtensionScheme) {
     DCHECK_EQ(network::mojom::RestrictedCookieManagerRole::SCRIPT, role);
     extensions::ChromeExtensionCookies::Get(browser_context)
-        ->CreateRestrictedCookieManager(origin, std::move(*request));
+        ->CreateRestrictedCookieManager(origin, std::move(*receiver));
     return true;
   }
 #endif
