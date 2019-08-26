@@ -40,6 +40,7 @@ issues]].
   international braille". A version with composed accents is made
   available as a .uti table. Thanks to Dave Mielke and Μαρια
   Γεωργακαράκου (Maria Georgakarakou).
+- Various improvements to modern Greek thanks to Dave Mielke.
 - Improvements and fixes to Spanish contracted braille. Details in
   #741. Thanks to Juan Pablo Bello.
 - Add a display table to match Word CX which is used in Norway and
