@@ -594,6 +594,7 @@ void ExtensionTabUtil::ScrubTabForExtension(
   }
 }
 
+// static
 bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
                                         TabStripModel** tab_strip_model,
                                         int* tab_index) {
@@ -675,6 +676,30 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
                                   WebContents** contents) {
   return GetTabById(tab_id, browser_context, include_incognito, nullptr,
                     nullptr, contents, nullptr);
+}
+
+// static
+std::vector<content::WebContents*>
+ExtensionTabUtil::GetAllActiveWebContentsForContext(
+    content::BrowserContext* browser_context,
+    bool include_incognito) {
+  std::vector<content::WebContents*> active_contents;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  Profile* incognito_profile =
+      include_incognito && profile->HasOffTheRecordProfile()
+          ? profile->GetOffTheRecordProfile()
+          : nullptr;
+  for (auto* target_browser : *BrowserList::GetInstance()) {
+    if (target_browser->profile() == profile ||
+        target_browser->profile() == incognito_profile) {
+      TabStripModel* target_tab_strip = target_browser->tab_strip_model();
+
+      active_contents.push_back(target_tab_strip->GetActiveWebContents());
+    }
+  }
+
+  return active_contents;
 }
 
 GURL ExtensionTabUtil::ResolvePossiblyRelativeURL(const std::string& url_string,

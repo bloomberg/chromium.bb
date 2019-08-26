@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "chrome/common/extensions/api/tabs.h"
@@ -172,7 +173,7 @@ class ExtensionTabUtil {
   // be NULL and will not be set within the function.
   static bool GetTabById(int tab_id,
                          content::BrowserContext* browser_context,
-                         bool incognito_enabled,
+                         bool include_incognito,
                          Browser** browser,
                          TabStripModel** tab_strip,
                          content::WebContents** contents,
@@ -181,6 +182,10 @@ class ExtensionTabUtil {
                          content::BrowserContext* browser_context,
                          bool include_incognito,
                          content::WebContents** contents);
+  // Returns all active web contents for the given |browser_context|.
+  static std::vector<content::WebContents*> GetAllActiveWebContentsForContext(
+      content::BrowserContext* browser_context,
+      bool include_incognito);
 
   // Takes |url_string| and returns a GURL which is either valid and absolute
   // or invalid. If |url_string| is not directly interpretable as a valid (it is
