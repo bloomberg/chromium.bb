@@ -157,6 +157,12 @@ void AssistantPageView::ChildVisibilityChanged(views::View* child) {
   MaybeUpdateAppListState(child->GetHeightForWidth(width()));
 }
 
+void AssistantPageView::VisibilityChanged(views::View* starting_from,
+                                          bool is_visible) {
+  if (starting_from == this && !is_visible)
+    min_height_dip_ = ash::kMinHeightEmbeddedDip;
+}
+
 void AssistantPageView::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -181,6 +187,12 @@ void AssistantPageView::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
+}
+
+void AssistantPageView::OnShown() {
+  // The preferred size might be different from the previous time, so updating
+  // to the correct size here.
+  SetSize(CalculatePreferredSize());
 }
 
 void AssistantPageView::OnAnimationStarted(ash::AppListState from_state,
