@@ -10879,6 +10879,10 @@ Called by update_net_error_codes.py.-->
   <int value="210" label="Nvmem Pre Erase Mismatch"/>
   <int value="211" label="Nvmem Page List Oveflow"/>
   <int value="212" label="Nvmem Cipher Error"/>
+  <int value="213" label="Nvmem Corrupted Init"/>
+  <int value="214" label="Nvmem Container Hash Mismatch"/>
+  <int value="215" label="Nvmem Unrecoverable Init Error"/>
+  <int value="216" label="Nvmem Wiped Out"/>
 </enum>
 
 <enum name="Cr50U2FCommands">
