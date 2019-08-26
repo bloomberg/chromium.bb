@@ -42,7 +42,7 @@ Polymer({
       type: Object,
     },
 
-    /** @private {!OncMojo.ManagedProperties|undefined} */
+    /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
     managedProperties_: {
       type: Object,
       observer: 'managedPropertiesChanged_',
@@ -360,8 +360,7 @@ Polymer({
     }
 
     // Set the IPAddress property to the IPv4 Address.
-    const ipv4 =
-        OncMojo.getIPConfigForType(this.managedProperties_, CrOnc.IPType.IPV4);
+    const ipv4 = OncMojo.getIPConfigForType(this.managedProperties_, 'IPv4');
     this.ipAddress_ = (ipv4 && ipv4.ipAddress) || '';
 
     // Update the detail page title.
@@ -703,14 +702,13 @@ Polymer({
       return this.i18n('networkAllowDataRoamingDisabled');
     }
 
-    return managedProperties.cellular.roamingState ==
-            CrOnc.RoamingState.ROAMING ?
+    return managedProperties.cellular.roamingState == 'Roaming' ?
         this.i18n('networkAllowDataRoamingEnabledRoaming') :
         this.i18n('networkAllowDataRoamingEnabledHome');
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties|undefined} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {boolean} True if the network is connected.
    * @private
    */
@@ -720,7 +718,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -730,7 +728,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -740,7 +738,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -750,7 +748,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -760,7 +758,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
@@ -782,7 +780,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
@@ -813,7 +811,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -827,7 +825,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -847,7 +845,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -864,7 +862,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
@@ -901,7 +899,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.settingsPrivate.PrefObject} vpnConfigAllowed
    * @return {boolean}
    * @private
@@ -915,7 +913,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.settingsPrivate.PrefObject} vpnConfigAllowed
    * @return {boolean}
    * @private
@@ -934,7 +932,7 @@ Polymer({
 
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    */
   hasRecommendedFields_: function(managedProperties) {
@@ -958,7 +956,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -981,8 +979,7 @@ Polymer({
     // Only show for connected networks or LTE networks with a valid MDN.
     if (!this.isConnectedState_(managedProperties)) {
       const technology = managedProperties.cellular.networkTechnology;
-      if (technology != CrOnc.NetworkTechnology.LTE &&
-          technology != CrOnc.NetworkTechnology.LTE_ADVANCED) {
+      if (technology != 'LTE' && technology != 'LTEAdvanced') {
         return false;
       }
       if (!managedProperties.cellular.mdn) {
@@ -994,7 +991,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {?OncMojo.NetworkStateProperties} defaultNetwork
    * @param {boolean} networkPropertiesReceived
    * @param {boolean} outOfRange
@@ -1225,11 +1222,14 @@ Polymer({
    * @private
    */
   onProxyChange_: function(event) {
+    if (!this.networkPropertiesReceived_) {
+      return;
+    }
     this.setMojoNetworkProperties_({proxySettings: event.detail});
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the shared message should be shown.
@@ -1245,7 +1245,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the AutoConnect checkbox should be shown.
@@ -1262,7 +1262,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean} Whether the toggle for the Always-on VPN feature is
    * displayed.
    * @private
@@ -1286,17 +1286,15 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the prefer network checkbox should be shown.
    * @private
    */
   showPreferNetwork_: function(
-      networkProperties, managedProperties, globalPolicy,
-      managedNetworkAvailable) {
-    if (!networkProperties || !managedProperties) {
+      managedProperties, globalPolicy, managedNetworkAvailable) {
+    if (!managedProperties) {
       return false;
     }
 
@@ -1468,7 +1466,7 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1509,17 +1507,15 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
    */
   hasNetworkSection_: function(
-      networkProperties, managedProperties, globalPolicy,
-      managedNetworkAvailable) {
-    if (!networkProperties || !managedProperties ||
+      managedProperties, globalPolicy, managedNetworkAvailable) {
+    if (!managedProperties ||
         managedProperties.type == mojom.NetworkType.kTether) {
       // These settings apply to the underlying WiFi network, not the Tether
       // network.
@@ -1536,17 +1532,15 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
    */
   hasProxySection_: function(
-      networkProperties, managedProperties, globalPolicy,
-      managedNetworkAvailable) {
-    if (!networkProperties || !managedProperties ||
+      managedProperties, globalPolicy, managedNetworkAvailable) {
+    if (!managedProperties ||
         managedProperties.type == mojom.NetworkType.kTether) {
       // Proxy settings apply to the underlying WiFi network, not the Tether
       // network.
@@ -1560,7 +1554,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1571,7 +1565,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1582,7 +1576,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1593,7 +1587,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties|undefined} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1604,7 +1598,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties|undefined} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1616,7 +1610,7 @@ Polymer({
 
   /**
    * @param {string} ipAddress
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */

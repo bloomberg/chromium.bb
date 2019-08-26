@@ -945,9 +945,6 @@ OncMojo.NetworkStateProperties;
  */
 OncMojo.ManagedProperty;
 
-/** @typedef {chromeos.networkConfig.mojom.ManagedProperties} */
-OncMojo.ManagedProperties;
-
 /**
  * Modified version of mojom.IPConfigProperties to store routingPrefix as a
  * human-readable string instead of as a number. Used in network_ip_config.js.

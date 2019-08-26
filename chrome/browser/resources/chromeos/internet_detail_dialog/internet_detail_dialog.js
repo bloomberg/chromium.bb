@@ -31,7 +31,7 @@ Polymer({
      */
     networkProperties: Object,
 
-    /** @private {!OncMojo.ManagedProperties|undefined} */
+    /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
     managedProperties_: Object,
 
     /** @private {?OncMojo.DeviceStateProperties} */
@@ -304,7 +304,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -313,7 +313,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -323,7 +323,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -332,7 +332,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -342,7 +342,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -352,7 +352,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
@@ -364,7 +364,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -374,7 +374,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -386,7 +386,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */

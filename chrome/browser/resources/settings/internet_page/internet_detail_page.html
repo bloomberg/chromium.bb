@@ -163,8 +163,8 @@
     <template is="dom-if" if="[[!isSecondaryUser_]]">
       <!-- Prefer this network. -->
       <template is="dom-if"
-          if="[[showPreferNetwork_(networkProperties_, managedProperties_,
-              globalPolicy, managedNetworkAvailable)]]">
+          if="[[showPreferNetwork_(managedProperties_, globalPolicy,
+              managedNetworkAvailable)]]">
         <div class="settings-box"  on-click="onPreferNetworkRowClicked_"
             actionable$="[[!isNetworkPolicyEnforced(
                 managedProperties_.priority)]]">
@@ -273,8 +273,8 @@
         </iron-collapse>
       </template>
 
-      <template is="dom-if" if="[[hasNetworkSection_(networkProperties_,
-          managedProperties_, globalPolicy, managedNetworkAvailable)]]">
+      <template is="dom-if" if="[[hasNetworkSection_(managedProperties_,
+          globalPolicy, managedNetworkAvailable)]]">
         <!-- Network toggle -->
         <cr-expand-button
             alt="$i18n{networkSectionNetworkExpandA11yLabel}"
@@ -322,8 +322,8 @@
         </iron-collapse>
       </template>
 
-      <template is="dom-if" if="[[hasProxySection_(networkProperties_,
-          managedProperties_, globalPolicy, managedNetworkAvailable)]]">
+      <template is="dom-if" if="[[hasProxySection_(managedProperties_,
+          globalPolicy, managedNetworkAvailable)]]">
         <!-- Proxy toggle -->
         <cr-expand-button
             alt="$i18n{networkSectionProxyExpandA11yLabel}"
