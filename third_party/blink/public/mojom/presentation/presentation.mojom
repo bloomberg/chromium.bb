@@ -106,7 +106,7 @@ interface PresentationService {
   // Sets the PresentationController of the frame. This is called by the
   // controller page of a presentation to listen for screen availability and
   // initiate presentations.
-  SetController(PresentationController controller);
+  SetController(pending_remote<PresentationController> controller);
 
   // Sets the PresentationReceiver of the page. This is called by the
   // presentation page of a 1-UA presentation in order to receive updates on new

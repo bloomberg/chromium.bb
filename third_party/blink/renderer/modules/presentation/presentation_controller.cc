@@ -20,8 +20,7 @@ namespace blink {
 
 PresentationController::PresentationController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ContextLifecycleObserver(frame.GetDocument()),
-      controller_binding_(this) {}
+      ContextLifecycleObserver(frame.GetDocument()) {}
 
 PresentationController::~PresentationController() = default;
 
@@ -133,7 +132,7 @@ void PresentationController::OnDefaultPresentationStarted(
 }
 
 void PresentationController::ContextDestroyed(ExecutionContext*) {
-  controller_binding_.Close();
+  presentation_controller_receiver_.reset();
 }
 
 ControllerPresentationConnection*
@@ -162,10 +161,9 @@ PresentationController::GetPresentationService() {
     interface_provider->GetInterface(
         mojo::MakeRequest(&presentation_service_, task_runner));
 
-    mojom::blink::PresentationControllerPtr controller_ptr;
-    controller_binding_.Bind(mojo::MakeRequest(&controller_ptr, task_runner),
-                             task_runner);
-    presentation_service_->SetController(std::move(controller_ptr));
+    presentation_service_->SetController(
+        presentation_controller_receiver_.BindNewPipeAndPassRemote(
+            task_runner));
   }
   return presentation_service_;
 }

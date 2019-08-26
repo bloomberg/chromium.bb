@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "url/gurl.h"
 
@@ -70,8 +71,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   // PresentationService implementation.
   void SetDefaultPresentationUrls(
       const std::vector<GURL>& presentation_urls) override;
-  void SetController(
-      blink::mojom::PresentationControllerPtr controller) override;
+  void SetController(mojo::PendingRemote<blink::mojom::PresentationController>
+                         presentation_controller_remote) override;
   void SetReceiver(blink::mojom::PresentationReceiverPtr receiver) override;
   void ListenForScreenAvailability(const GURL& url) override;
   void StopListeningForScreenAvailability(const GURL& url) override;
@@ -252,7 +253,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   ReceiverPresentationServiceDelegate* receiver_delegate_;
 
   // Pointer to the PresentationController implementation in the renderer.
-  blink::mojom::PresentationControllerPtr controller_;
+  mojo::Remote<blink::mojom::PresentationController>
+      presentation_controller_remote_;
 
   // Pointer to the PresentationReceiver implementation in the renderer.
   blink::mojom::PresentationReceiverPtr receiver_;

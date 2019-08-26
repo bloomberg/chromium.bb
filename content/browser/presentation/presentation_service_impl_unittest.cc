@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_service_delegate.h"
@@ -38,7 +39,6 @@ using blink::mojom::PresentationConnectionResult;
 using blink::mojom::PresentationConnectionResultPtr;
 using blink::mojom::PresentationConnectionState;
 using blink::mojom::PresentationController;
-using blink::mojom::PresentationControllerPtr;
 using blink::mojom::PresentationError;
 using blink::mojom::PresentationErrorPtr;
 using blink::mojom::PresentationErrorType;
@@ -226,10 +226,11 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     service_impl_.reset(new PresentationServiceImpl(
         render_frame_host, contents(), &mock_delegate_, nullptr));
 
-    PresentationControllerPtr controller_ptr;
-    controller_binding_.reset(new mojo::Binding<PresentationController>(
-        &mock_controller_, mojo::MakeRequest(&controller_ptr)));
-    service_impl_->SetController(std::move(controller_ptr));
+    mojo::PendingRemote<PresentationController> presentation_controller_remote;
+    controller_receiver_.emplace(
+        &mock_controller_,
+        presentation_controller_remote.InitWithNewPipeAndPassReceiver());
+    service_impl_->SetController(std::move(presentation_controller_remote));
 
     presentation_urls_.push_back(presentation_url1_);
     presentation_urls_.push_back(presentation_url2_);
@@ -318,7 +319,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   std::unique_ptr<PresentationServiceImpl> service_impl_;
 
   MockPresentationController mock_controller_;
-  std::unique_ptr<mojo::Binding<PresentationController>> controller_binding_;
+  base::Optional<mojo::Receiver<PresentationController>> controller_receiver_;
 
   GURL presentation_url1_;
   GURL presentation_url2_;
@@ -656,11 +657,12 @@ TEST_F(PresentationServiceImplTest, ReceiverDelegateOnSubFrame) {
               RegisterReceiverConnectionAvailableCallback(_))
       .Times(0);
 
-  PresentationControllerPtr controller_ptr;
-  controller_binding_.reset(new mojo::Binding<PresentationController>(
-      &mock_controller_, mojo::MakeRequest(&controller_ptr)));
+  mojo::PendingRemote<PresentationController> presentation_controller_remote;
+  controller_receiver_.emplace(
+      &mock_controller_,
+      presentation_controller_remote.InitWithNewPipeAndPassReceiver());
   service_impl.controller_delegate_ = nullptr;
-  service_impl.SetController(std::move(controller_ptr));
+  service_impl.SetController(std::move(presentation_controller_remote));
 
   EXPECT_CALL(mock_receiver_delegate_, Reset(_, _)).Times(0);
   service_impl.Reset();
