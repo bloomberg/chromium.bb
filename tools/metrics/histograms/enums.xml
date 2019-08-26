@@ -10448,6 +10448,12 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Deleting cookie failed."/>
 </enum>
 
+<enum name="CookieControlsMode">
+  <int value="0" label="Off"/>
+  <int value="1" label="On"/>
+  <int value="2" label="IncognitoOnly"/>
+</enum>
+
 <enum name="CookieDeleteEquivalent">
   <int value="0"
       label="Attempt to delete an equivalent cookie during a set cookie
