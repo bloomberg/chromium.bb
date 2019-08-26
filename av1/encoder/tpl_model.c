@@ -1058,14 +1058,15 @@ void av1_tpl_rdmult_setup(AV1_COMP *cpi) {
 
   const TplDepFrame *const tpl_frame = &cpi->tpl_frame[tpl_idx];
   if (!tpl_frame->is_valid) return;
-  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return;
+
   const TplDepStats *const tpl_stats = tpl_frame->tpl_stats_ptr;
   const int tpl_stride = tpl_frame->stride;
+  const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
 
   const int block_size = BLOCK_16X16;
   const int num_mi_w = mi_size_wide[block_size];
   const int num_mi_h = mi_size_high[block_size];
-  const int num_cols = (cm->mi_cols + num_mi_w - 1) / num_mi_w;
+  const int num_cols = (mi_cols_sr + num_mi_w - 1) / num_mi_w;
   const int num_rows = (cm->mi_rows + num_mi_h - 1) / num_mi_h;
   const double c = 1.2;
   const int step = 1 << cpi->tpl_stats_block_mis_log2;
@@ -1081,7 +1082,7 @@ void av1_tpl_rdmult_setup(AV1_COMP *cpi) {
            mi_row += step) {
         for (int mi_col = col * num_mi_w; mi_col < (col + 1) * num_mi_w;
              mi_col += step) {
-          if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) continue;
+          if (mi_row >= cm->mi_rows || mi_col >= mi_cols_sr) continue;
           const TplDepStats *this_stats =
               &tpl_stats[av1_tpl_ptr_pos(cpi, mi_row, mi_col, tpl_stride)];
           intra_cost += (double)this_stats->intra_cost;
