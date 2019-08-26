@@ -113,14 +113,6 @@ class Shell {
   // Set the title of shell window
   void PlatformSetTitle(const base::string16& title);
 
-#if defined(OS_ANDROID)
-  void PlatformToggleFullscreenModeForTab(WebContents* web_contents,
-                                          bool enter_fullscreen);
-
-  bool PlatformIsFullscreenForTabOrPending(
-      const WebContents* web_contents) const;
-#endif
-
   std::unique_ptr<BrowserController> browser_controller_;
 
   gfx::NativeWindow window_;

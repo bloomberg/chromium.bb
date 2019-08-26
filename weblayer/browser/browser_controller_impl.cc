@@ -6,9 +6,17 @@
 
 #include "base/logging.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/views/controls/webview/webview.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
+
+#if !defined(OS_ANDROID)
+#include "ui/views/controls/webview/webview.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "base/android/jni_string.h"
+#include "weblayer/weblayer_jni/BrowserController_jni.h"
+#endif
 
 namespace weblayer {
 
@@ -30,10 +38,34 @@ NavigationController* BrowserControllerImpl::GetNavigationController() {
   return navigation_controller_.get();
 }
 
+#if !defined(OS_ANDROID)
 void BrowserControllerImpl::AttachToView(views::WebView* web_view) {
   web_view->SetWebContents(web_contents_.get());
   web_contents_->Focus();
 }
+#endif
+
+#if defined(OS_ANDROID)
+static jlong JNI_BrowserController_Init(JNIEnv* env, jlong profile) {
+  return reinterpret_cast<intptr_t>(new BrowserControllerImpl(
+      reinterpret_cast<Profile*>(profile), gfx::Size()));
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+BrowserControllerImpl::GetWebContents(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return web_contents_->GetJavaWebContents();
+}
+
+void BrowserControllerImpl::Navigate(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& path) {
+  GetNavigationController()->Navigate(
+      GURL(base::android::ConvertJavaStringToUTF8(env, path)));
+}
+#endif
 
 std::unique_ptr<BrowserController> BrowserController::Create(
     Profile* profile,

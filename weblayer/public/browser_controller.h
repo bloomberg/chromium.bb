@@ -7,13 +7,17 @@
 
 #include <algorithm>
 
+#include "build/build_config.h"
+
 namespace gfx {
 class Size;
 }
 
+#if !defined(OS_ANDROID)
 namespace views {
 class WebView;
 }
+#endif
 
 namespace weblayer {
 class Profile;
@@ -31,10 +35,12 @@ class BrowserController {
 
   virtual NavigationController* GetNavigationController() = 0;
 
+#if !defined(OS_ANDROID)
   // TODO: this isn't a stable API, so use it now for expediency in the C++ API,
   // but if we ever want to have backward or forward compatibility in C++ this
   // will have to be something else.
   virtual void AttachToView(views::WebView* web_view) = 0;
+#endif
 };
 
 }  // namespace weblayer
