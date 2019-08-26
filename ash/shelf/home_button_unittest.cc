@@ -17,6 +17,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -148,11 +149,20 @@ TEST_F(HomeButtonTest, ButtonPositionInTabletMode) {
 
   ShelfViewTestAPI test_api(GetPrimaryShelf()->GetShelfViewForTesting());
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  test_api.RunMessageLoopUntilAnimationsDone();
+  // Wait for the navigation widget's animation.
+  test_api.RunMessageLoopUntilAnimationsDone(
+      GetPrimaryShelf()
+          ->shelf_widget()
+          ->navigation_widget()
+          ->get_bounds_animator_for_testing());
   EXPECT_GT(home_button()->bounds().x(), 0);
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  test_api.RunMessageLoopUntilAnimationsDone();
+  test_api.RunMessageLoopUntilAnimationsDone(
+      GetPrimaryShelf()
+          ->shelf_widget()
+          ->navigation_widget()
+          ->get_bounds_animator_for_testing());
   // Visual space around the home button is set at the widget level.
   EXPECT_EQ(0, home_button()->bounds().x());
 }
