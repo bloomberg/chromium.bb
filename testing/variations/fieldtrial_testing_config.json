@@ -5749,6 +5749,28 @@
             ]
         }
     ],
+    "TabGroupsDragAndDrop": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:iph_tabgroups_drag_and_drop;comparator:==0;window:30;storage:365",
+                        "event_trigger2": "name:iph_tabgroups_drag_and_drop;comparator:<2;window:90;storage:365",
+                        "event_used": "name:tab_drag_and_drop_to_group;comparator:==0;window:365;storage:365",
+                        "session_rate": "<1"
+                    },
+                    "enable_features": [
+                        "IPH_TabGroupsDragAndDrop"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabGroupsQuicklyComparePages": [
         {
             "platforms": [
