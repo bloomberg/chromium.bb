@@ -11009,6 +11009,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
       get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
   // Set the transform size search method for mode evaluation
   set_tx_size_search_method(cpi, x, 0, 0);
+  x->use_default_intra_tx_type = 0;
 
   if (intra_yrd < best_rd) {
     // Only store reconstructed luma when there's chroma RDO. When there's no
@@ -13175,6 +13176,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
   // Set the transform size search method for winner mode processing
   set_tx_size_search_method(cpi, x, 0, 0);
+  x->use_default_intra_tx_type = 0;
+  x->use_default_inter_tx_type = 0;
 
   // Only try palette mode when the best mode so far is an intra mode.
   const int try_palette =
