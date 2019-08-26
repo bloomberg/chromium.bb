@@ -106,9 +106,9 @@ void SVGUseElement::Trace(blink::Visitor* visitor) {
 }
 
 #if DCHECK_IS_ON()
-static inline bool IsWellFormedDocument(Document* document) {
-  if (document->IsXMLDocument())
-    return static_cast<XMLDocumentParser*>(document->Parser())->WellFormed();
+static inline bool IsWellFormedDocument(const Document& document) {
+  if (document.IsXMLDocument())
+    return static_cast<XMLDocumentParser*>(document.Parser())->WellFormed();
   return true;
 }
 #endif
@@ -121,7 +121,7 @@ Node::InsertionNotificationRequest SVGUseElement::InsertedInto(
   if (!root_parent.isConnected())
     return kInsertionDone;
 #if DCHECK_IS_ON()
-  DCHECK(!target_element_instance_ || !IsWellFormedDocument(&GetDocument()));
+  DCHECK(!target_element_instance_ || !IsWellFormedDocument(GetDocument()));
 #endif
   InvalidateShadowTree();
   return kInsertionDone;
@@ -397,9 +397,8 @@ static void MoveChildrenToReplacementElement(ContainerNode& source_root,
   }
 }
 
-Element* SVGUseElement::CreateInstanceTree(SVGElement& target_root) const {
-  Element* instance_root = &target_root.CloneWithChildren();
-  DCHECK(instance_root->IsSVGElement());
+SVGElement* SVGUseElement::CreateInstanceTree(SVGElement& target_root) const {
+  SVGElement* instance_root = &To<SVGElement>(target_root.CloneWithChildren());
   if (IsSVGSymbolElement(target_root)) {
     // Spec: The referenced 'symbol' and its contents are deep-cloned into
     // the generated tree, with the exception that the 'symbol' is replaced
@@ -418,10 +417,9 @@ Element* SVGUseElement::CreateInstanceTree(SVGElement& target_root) const {
     MoveChildrenToReplacementElement(*instance_root, *svg_element);
     instance_root = svg_element;
   }
-  TransferUseWidthAndHeightIfNeeded(*this, To<SVGElement>(*instance_root),
-                                    target_root);
-  AssociateCorrespondingElements(target_root, To<SVGElement>(*instance_root));
-  RemoveDisallowedElementsFromSubtree(To<SVGElement>(*instance_root));
+  TransferUseWidthAndHeightIfNeeded(*this, *instance_root, target_root);
+  AssociateCorrespondingElements(target_root, *instance_root);
+  RemoveDisallowedElementsFromSubtree(*instance_root);
   return instance_root;
 }
 
@@ -437,10 +435,9 @@ void SVGUseElement::AttachShadowTree(SVGElement& target) {
   // Set up root SVG element in shadow tree.
   // Clone the target subtree into the shadow tree, not handling <use> and
   // <symbol> yet.
-  Element* instance_root = CreateInstanceTree(target);
-  target_element_instance_ = To<SVGElement>(instance_root);
+  target_element_instance_ = CreateInstanceTree(target);
   ShadowRoot& shadow_root = UseShadowRoot();
-  shadow_root.AppendChild(instance_root);
+  shadow_root.AppendChild(target_element_instance_);
 
   AddReferencesToFirstDegreeNestedUseElements(target);
 
@@ -630,12 +627,10 @@ void SVGUseElement::ExpandUseElementsInShadowTree() {
     if (target)
       clone_parent->AppendChild(use->CreateInstanceTree(*target));
 
-    SVGElement* replacing_element(clone_parent);
-
     // Replace <use> with referenced content.
     use->parentNode()->ReplaceChild(clone_parent, use);
 
-    use = Traversal<SVGUseElement>::Next(*replacing_element, &shadow_root);
+    use = Traversal<SVGUseElement>::Next(*clone_parent, &shadow_root);
   }
 }
 
