@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file is heavily based off of LUCI test_support/test_env.py.
+"""This file is heavily based off of LUCI test_support/test_env.py."""
 
 from __future__ import print_function
 
@@ -19,7 +19,7 @@ _INITIALIZED = False
 
 def setup_test_env():
   """Sets up test environment."""
-  global _INITIALIZED
+  global _INITIALIZED  # pylint: disable=global-statement
   if _INITIALIZED:
     raise Exception('Do not call test_env.setup_test_env() twice.')
   _INITIALIZED = True
@@ -28,5 +28,6 @@ def setup_test_env():
   sys.path.insert(0, ROOT_DIR)
   sys.path.insert(0, os.path.join(ROOT_DIR, '..', 'third_party_local'))
 
+  # pylint: disable=import-error
   import utils
   utils.fix_protobuf_package()
