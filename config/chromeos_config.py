@@ -1344,7 +1344,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
-      'release-afdo-verify',
+      'chrome-release-afdo-verify',
       site_config.templates.release_afdo_verify,
       boards=['eve'],
       # TODO: Add a schedule

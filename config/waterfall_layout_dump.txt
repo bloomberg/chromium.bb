@@ -1176,6 +1176,7 @@
   cheza64-tot-chrome-pfq-informational-tryjob
   cheza64-tot-chromium-pfq-informational-tryjob
   cheza64-unittest-stress
+  chrome-release-afdo-verify-tryjob
   chromeos-infra-go-pre-cq
   chromeos-infra-go-tryjob
   chromeos-infra-puppet-pre-cq
@@ -2950,7 +2951,6 @@
   reks-tot-chromium-pfq-informational-tryjob
   reks-unittest-stress
   release-afdo-profile-generate-tryjob
-  release-afdo-verify-tryjob
   relm-chrome-pfq-tryjob
   relm-chromium-pfq-tryjob
   relm-compile-only-pre-cq
