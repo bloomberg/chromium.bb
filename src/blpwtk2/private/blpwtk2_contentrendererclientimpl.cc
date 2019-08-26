@@ -30,6 +30,7 @@
 
 
 // patch section: jswidget plugin
+#include <blpwtk2_jswidget.h>
 
 
 // patch section: renderer ui
@@ -41,6 +42,7 @@
 #include <components/spellcheck/renderer/spellcheck.h>
 #include <components/spellcheck/renderer/spellcheck_provider.h>
 #include <content/child/font_warmup_win.h>
+#include <content/public/renderer/render_frame.h>
 #include <content/public/renderer/render_thread.h>
 #include <content/public/renderer/render_view.h>
 #include <net/base/net_errors.h>
@@ -168,7 +170,12 @@ bool ContentRendererClientImpl::OverrideCreatePlugin(
     const blink::WebPluginParams& params,
     blink::WebPlugin** plugin)
 {
-    return false;
+    if (params.mime_type.Ascii() != "application/x-bloomberg-jswidget") {
+        return false;
+    }
+
+    *plugin = new JsWidget(render_frame->GetWebFrame());
+    return true;
 }
 
 void ContentRendererClientImpl::OnBindInterface(
