@@ -1198,9 +1198,6 @@ void DragAndDropBrowserTest::DragImageFromDisappearingFrame_Step3(
 // a drag-and-drop loop run by Windows OS.
 #if defined(OS_WIN)
 #define MAYBE_CrossSiteDrag DISABLED_CrossSiteDrag
-#elif defined(OS_CHROMEOS)
-// Flaky: https://crbug.com/835774
-#define MAYBE_CrossSiteDrag DISABLED_CrossSiteDrag
 #else
 #define MAYBE_CrossSiteDrag CrossSiteDrag
 #endif
