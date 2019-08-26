@@ -140,8 +140,6 @@ void AXObjectCacheImpl::Dispose() {
     document->View()->UnregisterFromLifecycleNotifications(this);
   }
 
-  permission_observer_receiver_.reset();
-
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;
 #endif
