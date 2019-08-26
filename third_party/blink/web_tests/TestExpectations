@@ -4932,6 +4932,7 @@ crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/requi
 crbug.com/678499 virtual/blink-cors/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
 crbug.com/747751 [ Win ] http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
+crbug.com/747751 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 crbug.com/689781 [ Win Mac ] http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
