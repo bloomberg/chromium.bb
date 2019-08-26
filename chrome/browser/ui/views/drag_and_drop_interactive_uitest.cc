@@ -1079,10 +1079,6 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step3(
 // a drag-and-drop loop run by Windows OS.
 #define MAYBE_DragImageFromDisappearingFrame \
   DISABLED_DragImageFromDisappearingFrame
-#elif defined(OS_CHROMEOS)
-// Flakiness on CrOS tracked by https://crbug.com/835572.
-#define MAYBE_DragImageFromDisappearingFrame \
-  DISABLED_DragImageFromDisappearingFrame
 #else
 #define MAYBE_DragImageFromDisappearingFrame DragImageFromDisappearingFrame
 #endif
