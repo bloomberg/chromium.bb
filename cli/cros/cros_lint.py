@@ -224,7 +224,18 @@ def _MarkdownLintFile(path, _output_format, _debug):
 
 
 def _ShellLintFile(path, output_format, debug, gentoo_format=False):
-  """Returns result of running lint checks on |path|."""
+  """Returns result of running lint checks on |path|.
+
+  Args:
+    path: The path to the script on which to run the linter.
+    output_format: The format of the output that the linter should emit. See
+                   |SHLINT_OUTPUT_FORMAT_MAP|.
+    debug: Whether to print out the linter command.
+    gentoo_format: Whether to treat this file as an ebuild style script.
+
+  Returns:
+    A CommandResult object.
+  """
   # TODO: Try using `checkbashisms`.
   syntax_check = _LinterRunCommand(['bash', '-n', path], debug)
   if syntax_check.returncode != 0:
@@ -236,10 +247,10 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
     logging.notice('Install shellcheck for additional shell linting.')
     return syntax_check
 
-  (dir_name, file_name) = os.path.split(path)
-  pwd = os.getcwd()
-
-  cmd = [shellcheck]
+  # Instruct shellcheck to run itself from the shell script's dir. Note that
+  # 'SCRIPTDIR' is a special string that shellcheck rewrites to the dirname of
+  # the given path.
+  cmd = [shellcheck, '--source-path=SCRIPTDIR']
   if output_format != 'default':
     cmd.extend(SHLINT_OUTPUT_FORMAT_MAP[output_format])
   cmd.append('-x')
@@ -248,12 +259,9 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
     cmd.append('--exclude=SC2148')
     # ebuilds always use bash.
     cmd.append('--shell=bash')
-  cmd.append(file_name)
+  cmd.append(path)
 
-  # TODO(crbug.com/969045): Remove chdir once -P is available in shellcheck.
-  os.chdir(dir_name)
   lint_result = _LinterRunCommand(cmd, debug)
-  os.chdir(pwd)
 
   # During testing, we don't want to fail the linter for shellcheck errors,
   # so override the return code.
