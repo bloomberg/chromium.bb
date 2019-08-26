@@ -19,6 +19,10 @@
         --menu-link-color: var(--google-blue-600);
         --menu-text-color: var(--google-grey-refresh-700);
         --menu-icon-color: var(--google-grey-refresh-700);
+        /* The tap target extends slightly above each visible menu item. */
+        --tap-target-padding: 3px;
+        /* Width of the keyboard focus border. */
+        --focus-border-width: 1px;
         box-sizing: border-box;
         display: block;
         padding-bottom: 2px;
@@ -36,11 +40,11 @@
       }
 
       /* The <a> is the entire tap target, including the padding around the
-         visible icon and text. */
+       * visible icon and text. */
       a {
         background: transparent;
         display: block;
-        padding: 3px 0;
+        padding: var(--tap-target-padding) 0;
       }
 
       /* The "item" draws the icon, text, and rounded background. */
@@ -50,7 +54,8 @@
         border-color: transparent;
         border-radius: 0 20px 20px 0;
         border-style: solid;
-        border-width: 1px 1px 1px 0;
+        border-width: var(--focus-border-width) var(--focus-border-width)
+            var(--focus-border-width) 0;
         color: var(--menu-text-color);
         display: flex;
         font-weight: 500;
@@ -130,6 +135,13 @@
         #menuSeparator {
           border-bottom: var(--cr-separator-line);  /* override */
         }
+      }
+
+      #aboutItem {
+        /* Reserve space so the last menu item isn't too close to the window
+         * bottom edge, 48px under the text baseline. */
+        margin-bottom: calc(
+            48px - calc(var(--tap-target-padding) + var(--focus-border-width)));
       }
     </style>
     <iron-selector id="topMenu"
@@ -259,7 +271,7 @@
         </iron-selector>
       </iron-collapse>
       <div id="menuSeparator"></div>
-      <a id="about-menu" href="/help">
+      <a id="aboutItem" href="/help">
         <div class="item">
           $i18n{aboutOsPageTitle}
         </div>
