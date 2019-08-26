@@ -84,7 +84,6 @@ table_files = \
 	dra.ctb \
 	dra.tbl \
 	el.ctb \
-	el.tbl \
 	en_CA.ctb \
 	en_CA.tbl \
 	en-chess.ctb \

@@ -502,7 +502,7 @@ tests:
   - ['\x2029', '\x0020']
   - ['\x202f', '\x0020']
   - ['\x205f', '\x0020']
-table: el.tbl
+table: el.ctb
 flags: {testmode: bothDirections}
 tests:
   - ['\x0020', '\x0020']
