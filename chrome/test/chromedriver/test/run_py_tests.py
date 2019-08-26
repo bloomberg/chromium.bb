@@ -154,10 +154,6 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'HeadlessInvalidCertificateTest.*',
     # Similar issues with HeadlessChromeDriverTest.
     'HeadlessChromeDriverTest.*',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2277
-    # RemoteBrowserTest requires extra setup. TODO(johnchen@chromium.org):
-    # Modify the test so it runs correctly as isolated test.
-    'RemoteBrowserTest.*',
     # Flaky: https://crbug.com/899919
     'SessionHandlingTest.testGetSessions',
     # Flaky due to occasional timeout in starting Chrome
@@ -190,6 +186,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testWindowMaximize',
         'ChromeDriverTest.testWindowMinimize',
         'ChromeLogPathCapabilityTest.testChromeLogPath',
+        # Connecting to running browser is not supported on Android.
         'RemoteBrowserTest.*',
         # Don't enable perf testing on Android yet.
         'PerfTest.*',
@@ -3847,7 +3844,7 @@ if __name__ == '__main__':
     parser.error('Need path specified when replayable log set to true.')
 
   global _CHROMEDRIVER_BINARY
-  _CHROMEDRIVER_BINARY = options.chromedriver
+  _CHROMEDRIVER_BINARY = util.GetAbsolutePathOfUserPath(options.chromedriver)
 
   if (options.android_package and
       options.android_package not in _ANDROID_NEGATIVE_FILTER):
@@ -3864,7 +3861,28 @@ if __name__ == '__main__':
   if options.chrome:
     _CHROME_BINARY = util.GetAbsolutePathOfUserPath(options.chrome)
   else:
-    _CHROME_BINARY = None
+    # In some test environments (such as commit queue), it's not convenient to
+    # specify Chrome binary location on the command line. Try to use heuristics
+    # to locate the Chrome binary next to the ChromeDriver binary.
+    driver_path = os.path.dirname(_CHROMEDRIVER_BINARY)
+    chrome_path = None
+    platform = util.GetPlatformName()
+    if platform == 'linux':
+      chrome_path = os.path.join(driver_path, 'chrome')
+    elif platform == 'mac':
+      if os.path.exists(os.path.join(driver_path, 'Google Chrome.app')):
+        chrome_path = os.path.join(driver_path, 'Google Chrome.app',
+                                   'Contents', 'MacOS', 'Google Chrome')
+      else:
+        chrome_path = os.path.join(driver_path, 'Chromium.app',
+                                   'Contents', 'MacOS', 'Chromium')
+    elif platform == 'win':
+      chrome_path = os.path.join(driver_path, 'chrome.exe')
+
+    if chrome_path is not None and os.path.exists(chrome_path):
+      _CHROME_BINARY = chrome_path
+    else:
+      _CHROME_BINARY = None
 
   global _ANDROID_PACKAGE_KEY
   _ANDROID_PACKAGE_KEY = options.android_package
