@@ -45,6 +45,8 @@ struct UdpSocketPosix : public UdpSocket {
   int GetFd() const { return fd_; }
 
  private:
+  void Close() override;
+
   // Creates an error to be used in above methods.
   Error CreateError(Error::Code code);
 

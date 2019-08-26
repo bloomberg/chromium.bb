@@ -64,6 +64,8 @@ class MockUdpSocket : public UdpSocket {
   MockUdpSocket::MockClient* client() { return client_.get(); }
 
  private:
+  void Close() override {}
+
   Version version_;
 
   // Queues for the response to calls above

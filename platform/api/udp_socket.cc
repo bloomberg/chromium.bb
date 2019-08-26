@@ -16,7 +16,7 @@ UdpSocket::UdpSocket(TaskRunner* task_runner, Client* client)
 }
 
 UdpSocket::~UdpSocket() {
-  deletion_callback_(this);
+  OSP_DCHECK(is_closed_);
 }
 
 void UdpSocket::SetDeletionCallback(std::function<void(UdpSocket*)> callback) {
@@ -24,6 +24,8 @@ void UdpSocket::SetDeletionCallback(std::function<void(UdpSocket*)> callback) {
 }
 
 void UdpSocket::OnError(Error error) {
+  CloseIfError(error);
+
   if (!client_) {
     return;
   }
@@ -49,6 +51,20 @@ void UdpSocket::OnRead(ErrorOr<UdpPacket> read_data) {
   task_runner_->PostTask([data = std::move(read_data), this]() mutable {
     this->client_->OnRead(this, std::move(data));
   });
+}
+
+void UdpSocket::CloseIfError(const Error& error) {
+  if (error.code() != Error::Code::kNone &&
+      error.code() != Error::Code::kAgain) {
+    CloseIfOpen();
+  }
+}
+
+void UdpSocket::CloseIfOpen() {
+  if (!is_closed_.exchange(true)) {
+    deletion_callback_(this);
+    Close();
+  }
 }
 
 }  // namespace platform
