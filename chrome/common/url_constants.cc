@@ -18,11 +18,7 @@ const char kAdvancedProtectionDownloadLearnMoreURL[] =
     "https://support.google.com/accounts/?p=ap_faq";
 
 const char kBluetoothAdapterOffHelpURL[] =
-#if defined(OS_CHROMEOS)
-    "chrome://settings/?search=bluetooth";
-#else
     "https://support.google.com/chrome?p=bluetooth";
-#endif
 
 const char kCastCloudServicesHelpURL[] =
     "https://support.google.com/chromecast/?p=casting_cloud_services";
