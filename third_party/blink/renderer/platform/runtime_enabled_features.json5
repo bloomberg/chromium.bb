@@ -1520,10 +1520,6 @@
       settable_from_internals: true,
     },
     {
-      name: "SmoothScrollJSIntervention",
-      status: "stable",
-    },
-    {
       name: "SmsReceiver",
       status: {"Android": "experimental", "default": "test"},
     },
