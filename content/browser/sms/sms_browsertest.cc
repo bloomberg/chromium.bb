@@ -130,7 +130,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
+// Flaky. crbug.com/997549
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_AtMostOnePendingSmsRequest) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 
