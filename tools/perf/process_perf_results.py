@@ -53,6 +53,7 @@ DATA_FORMAT_UNKNOWN = 'unknown'
 # problems. So, only perform the conversion on tests that are whitelisted and
 # are okay with potentially encountering issues.
 GTEST_CONVERSION_WHITELIST = [
+  'angle_perftests',
   'xr.vr.common_perftests',
 ]
 
