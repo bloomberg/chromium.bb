@@ -117,6 +117,21 @@ mojom::VPNType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
   return mojom::VPNType::kOpenVPN;
 }
 
+std::string MojoVpnTypeToOnc(mojom::VPNType mojo_vpn_type) {
+  switch (mojo_vpn_type) {
+    case mojom::VPNType::kL2TPIPsec:
+      return ::onc::vpn::kTypeL2TP_IPsec;
+    case mojom::VPNType::kOpenVPN:
+      return ::onc::vpn::kOpenVPN;
+    case mojom::VPNType::kThirdPartyVPN:
+      return ::onc::vpn::kThirdPartyVpn;
+    case mojom::VPNType::kArcVPN:
+      return ::onc::vpn::kArcVpn;
+  }
+  NOTREACHED();
+  return ::onc::vpn::kOpenVPN;
+}
+
 mojom::DeviceStateType GetMojoDeviceStateType(
     NetworkStateHandler::TechnologyState technology_state) {
   switch (technology_state) {
@@ -1556,6 +1571,21 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
               ip_config.web_proxy_auto_discovery_url, &ip_config_dict);
     onc.SetKey(::onc::network_config::kStaticIPConfig,
                std::move(ip_config_dict));
+  }
+  if (properties->vpn) {
+    const mojom::VPNConfigProperties& vpn = *properties->vpn;
+    base::Value vpn_dict(base::Value::Type::DICTIONARY);
+    SetString(::onc::vpn::kType, MojoVpnTypeToOnc(vpn.type), &vpn_dict);
+    SetString(::onc::vpn::kHost, vpn.host, &vpn_dict);
+    if (vpn.open_vpn) {
+      const mojom::OpenVPNConfigProperties& open_vpn = *vpn.open_vpn;
+      base::Value open_vpn_dict(base::Value::Type::DICTIONARY);
+      SetStringList(::onc::openvpn::kExtraHosts, open_vpn.extra_hosts,
+                    &open_vpn_dict);
+      SetString(::onc::vpn::kUsername, open_vpn.username, &open_vpn_dict);
+      vpn_dict.SetKey(::onc::vpn::kOpenVPN, std::move(open_vpn_dict));
+    }
+    onc.SetKey(::onc::network_config::kVPN, std::move(vpn_dict));
   }
   if (!type_dict.DictEmpty()) {
     std::string type = network_util::TranslateShillTypeToONC(network->type());

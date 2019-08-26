@@ -352,6 +352,26 @@ class OncMojo {
   }
 
   /**
+   * @param {!chromeos.networkConfig.mojom.VPNType} value
+   * @return {string}
+   */
+  static getVPNTypeString(value) {
+    const VPNType = chromeos.networkConfig.mojom.VPNType;
+    switch (value) {
+      case VPNType.kL2TPIPsec:
+        return 'L2TP-IPsec';
+      case VPNType.kOpenVPN:
+        return 'OpenVPN';
+      case VPNType.kThirdPartyVPN:
+        return 'ThirdPartyVPN';
+      case VPNType.kArcVPN:
+        return 'ARCVPN';
+    }
+    assertNotReached('Unexpected enum value: ' + OncMojo.getEnumString(value));
+    return '';
+  }
+
+  /**
    * @param {string} value
    * @return {!chromeos.networkConfig.mojom.VPNType}
    */
@@ -659,6 +679,28 @@ class OncMojo {
         break;
     }
     return result;
+  }
+
+  /**
+   * Sets the value of a property in an mojo config dictionary.
+   * @param {!chromeos.networkConfig.mojom.ConfigProperties} config
+   * @param {string} key The property key which may be nested, e.g. 'foo.bar'
+   * @param {boolean|number|string|!Object} value The property value
+   */
+  static setConfigProperty(config, key, value) {
+    while (true) {
+      const index = key.indexOf('.');
+      if (index < 0) {
+        break;
+      }
+      const keyComponent = key.substr(0, index);
+      if (!config.hasOwnProperty(keyComponent)) {
+        config[keyComponent] = {};
+      }
+      config = config[keyComponent];
+      key = key.substr(index + 1);
+    }
+    config[key] = value;
   }
 
   /**
