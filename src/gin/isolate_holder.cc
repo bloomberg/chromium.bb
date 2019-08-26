@@ -84,7 +84,8 @@ IsolateHolder::IsolateHolder(
     v8::Isolate::Initialize(isolate_, params);
   }
 
-  isolate_data_->Initialize();
+  // SetEmbedderHeapTracer must come after v8::Isolate::Initialize
+  isolate_->SetEmbedderHeapTracer(isolate_data_->heap_tracer());
 
   isolate_memory_dump_provider_.reset(
       new V8IsolateMemoryDumpProvider(this, task_runner));

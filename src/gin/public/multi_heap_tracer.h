@@ -76,6 +76,12 @@ class GIN_EXPORT MultiHeapTracer : public v8::EmbedderHeapTracer {
     // 'AddHeapTracer'.  The behavior is undefined unless heap tracing is not
     // currently in progress.
 
+  void SetIsolate(v8::EmbedderHeapTracer *tracer);
+    // Set the 'isolate' member of the specified 'tracer' to the same as the
+    // 'isolate' member of this 'MultiHeapTracer'.  This is required if someone
+    // wants to have a standalone 'EmbedderHeapTracer' which can operate
+    // correctly.
+
   void RegisterV8References(
                         const WrapperFieldPairs& wrapper_field_pairs) override;
     // Notify all registered tracers of the wrapper field pairs that may need
@@ -85,7 +91,7 @@ class GIN_EXPORT MultiHeapTracer : public v8::EmbedderHeapTracer {
     // store the field pairs they care about for later tracing when
     // 'AdvanceTracing' is called.
 
-  void TracePrologue() override;
+  void TracePrologue(TraceFlags flags) override;
     // Notify all registered tracers that tracing will begin.
 
   bool AdvanceTracing(double deadline_in_ms) override;
@@ -96,15 +102,21 @@ class GIN_EXPORT MultiHeapTracer : public v8::EmbedderHeapTracer {
     // past, it does no work.  If the 'deadline_in_ms' is 'Infinity', the
     // tracers should complete tracing.
 
-  void TraceEpilogue() override;
-    // Notify all registered tracers that tracing has completed.
+  bool IsTracingDone() override;
+    // Return true if all of the registered tracers have completed, and false
+    // otherwise.
+
+  void TraceEpilogue(TraceSummary* trace_summary) override;
+    // Notify all registered tracers that tracing has completed.  Load into the
+    // specified 'trace_summary' the cumulative summary from all registered
+    // tracers.
 
   void EnterFinalPause(EmbedderStackState stack_state) override;
     // Notify all registered tracers that we're entering the final pause.
 
-  bool IsTracingDone() override;
-    // Return 'true' if all the registered tracers have done tracing, and
-    // 'false' otherwise.
+  bool IsRootForNonTracingGC(const v8::TracedGlobal<v8::Value>& handle);
+    // Return true if any of the registered tracers report the specified
+    // 'handle' as being a root for non-tracing gc, and false otherwise.
 
  private:
   using Tracers = std::unordered_map<int, v8::EmbedderHeapTracer *>;

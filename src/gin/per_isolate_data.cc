@@ -46,10 +46,6 @@ PerIsolateData::~PerIsolateData() {
   isolate_->SetData(kEmbedderNativeGin, NULL);
 }
 
-void PerIsolateData::Initialize() {
-  isolate_->SetEmbedderHeapTracer(&heap_tracer_);
-}
-
 PerIsolateData* PerIsolateData::From(Isolate* isolate) {
   return static_cast<PerIsolateData*>(isolate->GetData(kEmbedderNativeGin));
 }

@@ -13,15 +13,15 @@ namespace gin {
 
 // CLASS METHODS
 MultiHeapTracer* MultiHeapTracer::From(v8::Isolate *isolate) {
-    PerIsolateData *isolate_data = PerIsolateData::From(isolate);
-    return isolate_data ? isolate_data->heap_tracer() : nullptr;
+  PerIsolateData *isolate_data = PerIsolateData::From(isolate);
+  return isolate_data ? isolate_data->heap_tracer() : nullptr;
 }
 
 // CREATORS
 MultiHeapTracer::MultiHeapTracer()
-    : is_tracing_(false),
-      next_id_(gin::kEmbedderUnknown),
-      tracers_() {
+  : is_tracing_(false),
+    next_id_(gin::kEmbedderUnknown),
+    tracers_() {
 }
 
 MultiHeapTracer::~MultiHeapTracer() {
@@ -54,6 +54,10 @@ void MultiHeapTracer::RemoveHeapTracer(int embedder_id) {
   tracers_.erase(embedder_id);
 }
 
+void MultiHeapTracer::SetIsolate(v8::EmbedderHeapTracer *tracer) {
+  tracer->isolate_ = isolate_;
+}
+
 void MultiHeapTracer::RegisterV8References(
                                 const WrapperFieldPairs& wrapper_field_pairs) {
   for (auto&& id_and_tracer : tracers_) {
@@ -66,6 +70,14 @@ void MultiHeapTracer::TracePrologue() {
 
   for (auto&& id_and_tracer : tracers_) {
     id_and_tracer.second->TracePrologue();
+  }
+}
+
+void MultiHeapTracer::TracePrologue(TraceFlags flags) {
+  is_tracing_ = true;
+
+  for (auto&& id_and_tracer : tracers_) {
+    id_and_tracer.second->TracePrologue(flags);
   }
 }
 
@@ -85,11 +97,25 @@ bool MultiHeapTracer::AdvanceTracing(double deadline_in_ms) {
   return done;
 }
 
-void MultiHeapTracer::TraceEpilogue() {
+bool MultiHeapTracer::IsTracingDone() {
+  for (auto&& id_and_tracer : tracers_) {
+    if (!id_and_tracer.second->IsTracingDone()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void MultiHeapTracer::TraceEpilogue(TraceSummary* trace_summary) {
   is_tracing_ = false;
 
   for (auto&& id_and_tracer : tracers_) {
-    id_and_tracer.second->TraceEpilogue();
+    TraceSummary child_summary;
+    id_and_tracer.second->TraceEpilogue(&child_summary);
+
+    trace_summary->time           += child_summary.time;
+    trace_summary->allocated_size += child_summary.allocated_size;
   }
 }
 
@@ -99,14 +125,15 @@ void MultiHeapTracer::EnterFinalPause(EmbedderStackState stack_state) {
   }
 }
 
-bool MultiHeapTracer::IsTracingDone() {
+bool MultiHeapTracer::IsRootForNonTracingGC(
+                                   const v8::TracedGlobal<v8::Value>& handle) {
   for (auto&& id_and_tracer : tracers_) {
-    if (!id_and_tracer.second->IsTracingDone()) {
-      return false;
+    if (id_and_tracer.second->IsRootForNonTracingGC(handle)) {
+      return true;
     }
   }
 
-  return true;
+  return false;
 }
 
 }  // namespace gin
