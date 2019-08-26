@@ -91,6 +91,8 @@ class GIN_EXPORT MultiHeapTracer : public v8::EmbedderHeapTracer {
     // store the field pairs they care about for later tracing when
     // 'AdvanceTracing' is called.
 
+  void TracePrologue() override;
+
   void TracePrologue(TraceFlags flags) override;
     // Notify all registered tracers that tracing will begin.
 
@@ -114,7 +116,7 @@ class GIN_EXPORT MultiHeapTracer : public v8::EmbedderHeapTracer {
   void EnterFinalPause(EmbedderStackState stack_state) override;
     // Notify all registered tracers that we're entering the final pause.
 
-  bool IsRootForNonTracingGC(const v8::TracedGlobal<v8::Value>& handle);
+  bool IsRootForNonTracingGC(const v8::TracedGlobal<v8::Value>& handle) override;
     // Return true if any of the registered tracers report the specified
     // 'handle' as being a root for non-tracing gc, and false otherwise.
 

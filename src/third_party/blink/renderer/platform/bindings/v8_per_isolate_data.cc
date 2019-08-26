@@ -120,8 +120,6 @@ V8PerIsolateData::V8PerIsolateData()
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
       is_reporting_exception_(false),
-      script_wrappable_visitor_(
-          new ScriptWrappableMarkingVisitor(ThreadState::Current())),
       unified_heap_controller_(
           new UnifiedHeapController(ThreadState::Current())),
       runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
