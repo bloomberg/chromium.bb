@@ -652,6 +652,10 @@ enum ProcessedActionStatusProto {
 
   // A selector included into the current action is invalid.
   INVALID_SELECTOR = 20;
+
+  // The requested autofill info (e.g., Chrome password manager login) was not
+  // available. It might have been recently deleted.
+  AUTOFILL_INFO_NOT_AVAILABLE = 21;
 }
 
 // The pseudo type values come from
@@ -857,7 +861,8 @@ message UseAddressProto {
   repeated RequiredField required_fields = 6;
 }
 
-// Fill a form with a credit card if there is, otherwise fail this action.
+// Fill a form with a credit card if there is one stored in client memory,
+// otherwise fail this action.
 message UseCreditCardProto {
   // Message used to indicate what form fields should be filled with what
   // information.
@@ -1360,6 +1365,12 @@ message SetFormFieldValueProto {
       // layout. This can also be used for keyboard control sequences such
       // as "\r" or "\t".
       string keyboard_input = 3;
+      // Use the username from the Chrome password manager login previously
+      // selected in a GetPaymentInformationAction.
+      bool use_username = 4;
+      // Use the password from the Chrome password manager login previously
+      // selected in a GetPaymentInformationAction.
+      bool use_password = 5;
     }
   }
 
