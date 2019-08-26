@@ -228,18 +228,20 @@ class FindLatestAFDOArtifactTest(cros_test_lib.RunCommandTempDirTestCase):
             creation_time=4.0),
         MockListResult(
             url=self.unvetted_gs_url + '/chrome-afdo-78.0.2.5.afdo.xz',
-            creation_time=2.5),
+            creation_time=5.0),
     ]  # Intentionally unsorted
     self.PatchObject(gs.GSContext, 'List', return_value=self.unvetted_files)
+    self.PatchObject(
+        toolchain_util, '_FindCurrentChromeBranch', return_value='77')
 
   def testFindCurrentChromeBranch(self):
     """Test _FindCurrentChromeBranch() works correctly."""
-    chrome_name = 'chromeos-chrome-78.0.3877.0_rc-r1.ebuild'
+    chrome_name = 'chromeos-chrome-77.0.3845.0_rc-r1.ebuild'
     self.PatchObject(
         toolchain_util,
         '_FindEbuildPath',
         return_value=os.path.join('/path/to', chrome_name))
-    branch = '78'
+    branch = '77'
     ret = toolchain_util._FindCurrentChromeBranch()
     self.assertEqual(ret, branch)
 
@@ -249,16 +251,11 @@ class FindLatestAFDOArtifactTest(cros_test_lib.RunCommandTempDirTestCase):
         self.unvetted_gs_url, toolchain_util.ORDERFILE_LS_PATTERN)
     self.assertEqual(orderfile, 'chrome-orderfile-77.0.2.0.orderfile.xz')
 
-  def testFindLatestAFDO(self):
-    """Test returns latest file matching afdo."""
-    afdo = toolchain_util._FindLatestAFDOArtifact(self.unvetted_gs_url, '.afdo')
-    self.assertEqual(afdo, 'chrome-afdo-77.0.4.0.afdo.bz2')
-
   def testFindLatestAFDOWithBranch(self):
     """Test returns latest file matching afdo, and also the branch."""
     afdo_on_branch = toolchain_util._FindLatestAFDOArtifact(
-        self.unvetted_gs_url, '.afdo', branch='78')
-    self.assertEqual(afdo_on_branch, 'chrome-afdo-78.0.2.5.afdo.xz')
+        self.unvetted_gs_url, '.afdo')
+    self.assertEqual(afdo_on_branch, 'chrome-afdo-77.0.4.0.afdo.bz2')
 
 
 class UploadAFDOArtifactToGSBucketTest(cros_test_lib.MockTempDirTestCase):
@@ -532,6 +529,8 @@ class CheckAFDOArtifactExistsTest(cros_test_lib.RunCommandTempDirTestCase):
   def setUp(self):
     self.orderfile_name = 'any_orderfile_name'
     self.afdo_name = 'any_name.afdo'
+    self.PatchObject(
+        toolchain_util, '_FindCurrentChromeBranch', return_value='78')
 
   def _CheckExistCall(self, target, url_to_check, board='board'):
     """Helper function to check the Exists() call on a url."""
@@ -585,6 +584,23 @@ class CheckAFDOArtifactExistsTest(cros_test_lib.RunCommandTempDirTestCase):
 class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
   """Test wrapper functions to update ebuilds for different types."""
 
+  mock_benchmark_afdo = 'chromeos-chrome-amd64-78.0.3877.0.afdo.bz2'
+  mock_cwp_afdo = {
+      'silvermont': 'R78-3877.0-1566814872.afdo.xz',
+      'airmont': 'R78-3877.0-1566812873.afdo.xz',
+      'broadwell': 'R78-3865.35-1566812043.afdo.xz'
+  }
+
+  @staticmethod
+  def mockFindChromeAFDO(url, _pattern):
+    """Mock toolchain_util._FindLatestAFDOArtifact for Chrome AFDO."""
+    if 'benchmark' in url:
+      return AFDOUpdateEbuildTests.mock_benchmark_afdo
+
+    for arch in AFDOUpdateEbuildTests.mock_cwp_afdo:
+      if arch in url:
+        return AFDOUpdateEbuildTests.mock_cwp_afdo[arch]
+
   def setUp(self):
     self.board = 'eve'
     self.kver = '4_4'
@@ -601,6 +617,8 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
         return_value=self.chrome_branch)
     self.mock_warn = self.PatchObject(
         toolchain_util, '_WarnSheriffAboutKernelProfileExpiration')
+    self.PatchObject(
+        toolchain_util, '_FindCurrentChromeBranch', return_value='78')
 
   def testOrderfileUpdateChromePass(self):
     """Test OrderfileUpdateChromeEbuild() calls other functions correctly."""
@@ -608,12 +626,40 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
         toolchain_util, '_FindLatestAFDOArtifact', return_value=self.orderfile)
 
     toolchain_util.OrderfileUpdateChromeEbuild(self.board)
-    mock_find.assert_called_with(toolchain_util.ORDERFILE_GS_URL_UNVETTED,
-                                 toolchain_util.ORDERFILE_LS_PATTERN)
+    mock_find.assert_called_once_with(toolchain_util.ORDERFILE_GS_URL_UNVETTED,
+                                      toolchain_util.ORDERFILE_LS_PATTERN)
     self.mock_obj.assert_called_with(
         board=self.board,
         package='chromeos-chrome',
         update_rules={'UNVETTED_ORDERFILE': self.orderfile_stripped})
+
+  def testAFDOUpdateChromeEbuildPass(self):
+    """Test AFDOUpdateChromeEbuild() calls other functions correctly."""
+    mock_find = self.PatchObject(
+        toolchain_util,
+        '_FindLatestAFDOArtifact',
+        side_effect=self.mockFindChromeAFDO)
+
+    ret = toolchain_util.AFDOUpdateChromeEbuild(self.board)
+    self.assertTrue(ret)
+
+    calls = [
+        mock.call(toolchain_util.BENCHMARK_AFDO_GS_URL,
+                  toolchain_util.BENCHMARK_AFDO_LS_PATTERN)
+    ]
+    update_rules = {
+        toolchain_util.AFDO_VARIABLE_REGEX % 'benchmark':
+            os.path.splitext(self.mock_benchmark_afdo)[0]
+    }
+    for arch in toolchain_util.CWP_PROFILE_SUPPORTED_ARCHS:
+      url = os.path.join(toolchain_util.CWP_AFDO_GS_URL, arch)
+      calls.append(mock.call(url, toolchain_util.CWP_AFDO_LS_PATTERN))
+      variable = toolchain_util.AFDO_VARIABLE_REGEX % arch
+      update_rules[variable] = os.path.splitext(self.mock_cwp_afdo[arch])[0]
+
+    mock_find.assert_has_calls(calls)
+    self.mock_obj.assert_called_with(
+        board=self.board, package='chromeos-chrome', update_rules=update_rules)
 
   def testAFDOUpdateKernelEbuildPass(self):
     """Test AFDOUpdateKernelEbuild() calls other functions correctly."""
@@ -628,10 +674,8 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
 
     url = os.path.join(toolchain_util.KERNEL_PROFILE_URL,
                        self.kver.replace('_', '.'))
-    mock_find.assert_called_once_with(
-        url,
-        toolchain_util.KERNEL_PROFILE_LS_PATTERN,
-        branch=self.chrome_branch)
+    mock_find.assert_called_once_with(url,
+                                      toolchain_util.KERNEL_PROFILE_LS_PATTERN)
     mock_age.assert_called_once_with(self.kernel_stripped, 'kernel_afdo')
 
     self.mock_warn.assert_not_called()
@@ -870,9 +914,9 @@ class UploadVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
   # pylint: disable=protected-access
   def setUp(self):
     self.artifact = 'some-artifact-1.0'
-    self.board = 'chell'
     self.kver = '3.18'
-    self.PatchObject(
+    self.cwp_arch = 'broadwell'
+    self.mock_get = self.PatchObject(
         toolchain_util,
         '_GetArtifactVersionInEbuild',
         return_value=self.artifact)
@@ -883,16 +927,17 @@ class UploadVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
   def testWrongArtifactType(self):
     """Test wrong artifact_type raises exception."""
     with self.assertRaises(ValueError) as context:
-      toolchain_util._UploadVettedAFDOArtifacts('wrong-type', self.board)
-    self.assertEqual('Only orderfile and kernel_afdo are supported.',
-                     str(context.exception))
+      toolchain_util._UploadVettedAFDOArtifacts('wrong-type')
+    self.assertEqual(
+        'Only orderfile, chrome_afdo and kernel_afdo are supported.',
+        str(context.exception))
     self.mock_exist.assert_not_called()
     self.mock_upload.assert_not_called()
 
   def testArtifactExistInGSBucket(self):
     """Test the artifact is already in the GS bucket."""
     mock_exist = self.PatchObject(gs.GSContext, 'Exists', return_value=True)
-    ret = toolchain_util._UploadVettedAFDOArtifacts('orderfile', self.board)
+    ret = toolchain_util._UploadVettedAFDOArtifacts('orderfile')
     mock_exist.assert_called_once()
     self.assertIsNone(ret)
 
@@ -902,8 +947,9 @@ class UploadVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
     source_url = os.path.join(toolchain_util.ORDERFILE_GS_URL_UNVETTED,
                               full_name)
     dest_url = os.path.join(toolchain_util.ORDERFILE_GS_URL_VETTED, full_name)
-
-    ret = toolchain_util._UploadVettedAFDOArtifacts('orderfile', self.board)
+    ret = toolchain_util._UploadVettedAFDOArtifacts('orderfile')
+    self.mock_get.assert_called_once_with('chromeos-chrome',
+                                          'UNVETTED_ORDERFILE')
     self.mock_exist.assert_called_once_with(dest_url)
     self.mock_upload.assert_called_once_with(
         source_url, dest_url, acl='public-read')
@@ -916,8 +962,39 @@ class UploadVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
                               full_name)
     dest_url = os.path.join(toolchain_util.KERNEL_AFDO_GS_URL_VETTED, self.kver,
                             full_name)
+    ret = toolchain_util._UploadVettedAFDOArtifacts('kernel_afdo', self.kver)
+    self.mock_get.assert_called_once_with(
+        'chromeos-kernel-' + self.kver.replace('.', '_'),
+        'AFDO_PROFILE_VERSION')
+    self.mock_exist.assert_called_once_with(dest_url)
+    self.mock_upload.assert_called_once_with(
+        source_url, dest_url, acl='public-read')
+    self.assertEqual(ret, self.artifact)
 
-    ret = toolchain_util._UploadVettedAFDOArtifacts('kernel_afdo', self.board)
+  def testUploadVettedChromeBenchmarkAFDO(self):
+    """Test _UploadVettedAFDOArtifact works with benchmark afdo."""
+    full_name = self.artifact + toolchain_util.AFDO_COMPRESSION_SUFFIX
+    source_url = os.path.join(toolchain_util.BENCHMARK_AFDO_GS_URL, full_name)
+    dest_url = os.path.join(toolchain_util.BENCHMARK_AFDO_GS_URL_VETTED,
+                            full_name)
+    ret = toolchain_util._UploadVettedAFDOArtifacts('benchmark_afdo')
+    self.mock_get.assert_called_once_with(
+        'chromeos-chrome', toolchain_util.AFDO_VARIABLE_REGEX % 'benchmark')
+    self.mock_exist.assert_called_once_with(dest_url)
+    self.mock_upload.assert_called_once_with(
+        source_url, dest_url, acl='public-read')
+    self.assertEqual(ret, self.artifact)
+
+  def testUploadVettedChromeCWPAFDO(self):
+    """Test _UploadVettedAFDOArtifact works with cwp afdo."""
+    full_name = self.artifact + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX
+    source_url = os.path.join(toolchain_util.CWP_AFDO_GS_URL, self.cwp_arch,
+                              full_name)
+    dest_url = os.path.join(toolchain_util.CWP_AFDO_GS_URL_VETTED,
+                            self.cwp_arch, full_name)
+    ret = toolchain_util._UploadVettedAFDOArtifacts('cwp_afdo', self.cwp_arch)
+    self.mock_get.assert_called_once_with(
+        'chromeos-chrome', toolchain_util.AFDO_VARIABLE_REGEX % self.cwp_arch)
     self.mock_exist.assert_called_once_with(dest_url)
     self.mock_upload.assert_called_once_with(
         source_url, dest_url, acl='public-read')
@@ -929,67 +1006,59 @@ class PublishVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
 
   # pylint: disable=protected-access
   def setUp(self):
-    self.board = 'lulu'
-    self.artifact = 'R5678'
-    self.package = 'chromeos-kernel-3_14'
+    self.package = 'some-package-name-1'
+    self.package2 = 'some-package-name-2'
+    self.uploaded_exist = {self.package: 'R1234', self.package2: None}
+    self.uploaded = {self.package: 'R5678', self.package2: None}
     # Prepare a JSON file containing metadata
     toolchain_util.TOOLCHAIN_UTILS_PATH = self.tempdir
     osutils.SafeMakedirs(os.path.join(self.tempdir, 'afdo_metadata'))
     self.json_file = os.path.join(self.tempdir,
                                   'afdo_metadata/kernel_afdo.json')
     self.afdo_versions = {
-        'chromeos-kernel-3_14': {
-            'name': 'R1234',
+        self.package: {
+            'name': self.uploaded_exist[self.package],
         },
-        'chromeos-kernel-3_18': {
+        self.package2: {
             'name': 'R12345-12',
         },
-        'chromeos-kernel-4_4': {
+        'some-package-should-not-change': {
             'name': 'R5678-1234',
         },
     }
+
     with open(self.json_file, 'w') as f:
       json.dump(self.afdo_versions, f)
     GitStatus = collections.namedtuple('GitStatus', ['output'])
     self.mock_git = self.PatchObject(
         git, 'RunGit', return_value=GitStatus(output='non-empty'))
 
-  def testPublishOrderfileMetadataFailure(self):
-    """Test failure when publishing metadata for orderfile."""
-    with self.assertRaises(
-        toolchain_util.PublishVettedAFDOArtifactsError) as context:
-      toolchain_util._PublishVettedAFDOArtifacts('orderfile', self.board,
-                                                 self.artifact)
-    self.assertEqual('Only kernel_afdo is supported to publish metadata.',
-                     str(context.exception))
-
   def testPublishSameArtifactAsInMetadataFailure(self):
     """Test failure when publishing a same metadata as in JSON file."""
     with self.assertRaises(
         toolchain_util.PublishVettedAFDOArtifactsError) as context:
-      toolchain_util._PublishVettedAFDOArtifacts('kernel_afdo', self.board,
-                                                 'R1234')
+      toolchain_util._PublishVettedAFDOArtifacts(self.json_file,
+                                                 self.uploaded_exist)
     self.assertIn('The artifact to update is the same as in JSON file',
                   str(context.exception))
 
-  def testPublishKernelAFDOProfiles(self):
-    """Test successfully publish metadata for kernel AFDO."""
-    toolchain_util._PublishVettedAFDOArtifacts('kernel_afdo', self.board,
-                                               self.artifact)
+  def testPublishUploadedProfilesPass(self):
+    """Test successfully publish metadata for uploaded profiles."""
+    toolchain_util._PublishVettedAFDOArtifacts(self.json_file, self.uploaded)
 
     # Check changes in JSON file
     new_afdo_versions = json.loads(osutils.ReadFile(self.json_file))
     self.assertEqual(len(self.afdo_versions), len(new_afdo_versions))
-    self.assertEqual(new_afdo_versions[self.package]['name'], self.artifact)
+    self.assertEqual(new_afdo_versions[self.package]['name'],
+                     self.uploaded[self.package])
     for k in self.afdo_versions:
       # Make sure other fields are not changed
       if k != self.package:
         self.assertEqual(self.afdo_versions[k], new_afdo_versions[k])
 
     # Check the git calls correct
-    message = ('afdo_metadata: Update metadata for %s'
-               '\n\nUpdate %s from %s to %s') % (self.package, self.package,
-                                                 'R1234', 'R5678')
+    message = 'afdo_metadata: Publish new profiles.\n\n'
+    message += 'Update %s from %s to %s\n' % (self.package, 'R1234', 'R5678')
     calls = [
         mock.call(
             self.tempdir, ['status', '--porcelain', '-uno'],
@@ -999,10 +1068,91 @@ class PublishVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
         mock.call(
             self.tempdir, ['commit', '-a', '-m', message], print_cmd=True),
         mock.call(
-            self.tempdir,
-            ['push', toolchain_util.TOOLCHAIN_UTILS_REPO,
-             'HEAD:refs/for/master%submit'],
+            self.tempdir, [
+                'push', toolchain_util.TOOLCHAIN_UTILS_REPO,
+                'HEAD:refs/for/master%submit'
+            ],
             capture_output=True,
             print_cmd=True)
     ]
     self.mock_git.assert_has_calls(calls)
+
+
+class UploadAndPublishVettedAFDOArtifactsTest(
+    cros_test_lib.MockTempDirTestCase):
+  """Test UploadAndPublishVettedAFDOArtifacts()."""
+
+  orderfile_name = 'chrome.orderfile'
+  kernel_afdo = 'kernel.afdo'
+  benchmark_afdo = 'chrome.benchmark.afdo'
+  cwp_afdo = 'chrome.cwp.afdo'
+
+  @staticmethod
+  def mockUploadVettedAFDOArtifacts(artifact_type, _subcategory=None):
+    if artifact_type == 'orderfile':
+      return UploadAndPublishVettedAFDOArtifactsTest.orderfile_name
+    if artifact_type == 'kernel_afdo':
+      return UploadAndPublishVettedAFDOArtifactsTest.kernel_afdo
+    if artifact_type == 'benchmark_afdo':
+      return UploadAndPublishVettedAFDOArtifactsTest.benchmark_afdo
+    if artifact_type == 'cwp_afdo':
+      return UploadAndPublishVettedAFDOArtifactsTest.cwp_afdo
+    return None
+
+  def setUp(self):
+    self.mock_upload = self.PatchObject(
+        toolchain_util,
+        '_UploadVettedAFDOArtifacts',
+        side_effect=self.mockUploadVettedAFDOArtifacts)
+    self.mock_publish = self.PatchObject(toolchain_util,
+                                         '_PublishVettedAFDOArtifacts')
+    self.board = 'chell'  # Chose chell to test kernel
+    self.kver = '3.18'
+    self.kernel_json = os.path.join(toolchain_util.TOOLCHAIN_UTILS_PATH,
+                                    'afdo_metadata/kernel_afdo.json')
+    self.chrome_json = os.path.join(toolchain_util.TOOLCHAIN_UTILS_PATH,
+                                    'afdo_metadata/chrome_afdo.json')
+
+  def testReturnFalseWhenNoArtifactUploaded(self):
+    """Test it returns False when no new artifacts are uploaded."""
+    mock_upload_nothing = self.PatchObject(
+        toolchain_util, '_UploadVettedAFDOArtifacts', return_value=None)
+    ret = toolchain_util.UploadAndPublishVettedAFDOArtifacts(
+        'orderfile', self.board)
+    self.assertFalse(ret)
+    mock_upload_nothing.assert_called_once_with('orderfile')
+    self.mock_publish.assert_not_called()
+
+  def testChromeAFDOPass(self):
+    """Make sure for chrome_afdo, it calls other functions correctly."""
+    ret = toolchain_util.UploadAndPublishVettedAFDOArtifacts(
+        'chrome_afdo', self.board)
+    self.assertTrue(ret)
+    uploaded = {'benchmark': self.benchmark_afdo}
+    calls = [mock.call('benchmark_afdo')]
+    for arch in toolchain_util.CWP_PROFILE_SUPPORTED_ARCHS:
+      calls.append(mock.call('cwp_afdo', arch))
+      uploaded[arch] = self.cwp_afdo
+    self.mock_upload.assert_has_calls(calls)
+    self.mock_publish.assert_called_once_with(
+        self.chrome_json, uploaded,
+        'afdo_metadata: Publish new profiles for Chrome.')
+
+  def testKernelAFDOPass(self):
+    """Make sure for kernel_afdo, it calls other functions correctly."""
+    ret = toolchain_util.UploadAndPublishVettedAFDOArtifacts(
+        'kernel_afdo', self.board)
+    self.assertTrue(ret)
+    uploaded = {'chromeos-' + self.kver.replace('.', '_'): self.kernel_afdo}
+    self.mock_upload.assert_called_once_with('kernel_afdo', self.kver)
+    self.mock_publish.assert_called_once_with(
+        self.kernel_json, uploaded,
+        'afdo_metadata: Publish new profiles for kernel %s.' % self.kver)
+
+  def testOrderfilePass(self):
+    """Make sure for orderfile, it calls other functions correctly."""
+    ret = toolchain_util.UploadAndPublishVettedAFDOArtifacts(
+        'orderfile', self.board)
+    self.assertTrue(ret)
+    self.mock_upload.assert_called_once_with('orderfile')
+    self.mock_publish.assert_not_called()

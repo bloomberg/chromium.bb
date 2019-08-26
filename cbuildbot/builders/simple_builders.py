@@ -235,6 +235,8 @@ class SimpleBuilder(generic_builders.Builder):
     if config.kernel_afdo_verify:
       stage_list += [[afdo_stages.UploadVettedKernelAFDOStage, board]]
 
+    if config.chrome_afdo_verify:
+      stage_list += [[afdo_stages.UploadVettedChromeAFDOStage, board]]
 
     stage_list += [
         [release_stages.SignerTestStage, board, archive_stage],
@@ -373,6 +375,16 @@ class SimpleBuilder(generic_builders.Builder):
               target='kernel_afdo'):
             continue
           self._RunStage(afdo_stages.KernelAFDOUpdateEbuildStage,
+                         board, builder_run=builder_run)
+
+        if builder_run.config.chrome_afdo_verify:
+          # Skip verifying Chrome AFDO if both benchmark and CWP are verified.
+          if toolchain_util.CheckAFDOArtifactExists(
+              buildroot=builder_run.buildroot,
+              board=board,
+              target='chrome_afdo'):
+            continue
+          self._RunStage(afdo_stages.ChromeAFDOUpdateEbuildStage,
                          board, builder_run=builder_run)
 
         # Run BuildPackages in the foreground, generating or using AFDO data

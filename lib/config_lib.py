@@ -862,6 +862,9 @@ def DefaultSettings():
       # Verify and publish kernel profiles.
       kernel_afdo_verify=False,
 
+      # Verify and publish chrome profiles.
+      chrome_afdo_verify=False,
+
       # Generate Chrome orderfile. Will build Chrome with C3 ordering and
       # generate an orderfile for uploading as a result.
       orderfile_generate=False,

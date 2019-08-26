@@ -196,11 +196,19 @@ class VerifyAFDOArtifactStageTests(
       return afdo_stages.UploadVettedOrderfileStage(
           self._run, self.buildstore, self._current_board)
 
-    if stage_type == 'update':
-      return afdo_stages.KernelAFDOUpdateEbuildStage(
+    if artifact_type == 'kernel_afdo':
+      if stage_type == 'update':
+        return afdo_stages.KernelAFDOUpdateEbuildStage(
+            self._run, self.buildstore, self._current_board)
+
+      return afdo_stages.UploadVettedKernelAFDOStage(
           self._run, self.buildstore, self._current_board)
 
-    return afdo_stages.UploadVettedKernelAFDOStage(
+    if stage_type == 'update':
+      return afdo_stages.ChromeAFDOUpdateEbuildStage(
+          self._run, self.buildstore, self._current_board)
+
+    return afdo_stages.UploadVettedChromeAFDOStage(
         self._run, self.buildstore, self._current_board)
 
   def testOrderfileUpdateSuccess(
@@ -218,8 +226,10 @@ class VerifyAFDOArtifactStageTests(
     # Verify wrapper function is called correctly.
     if artifact_type == 'orderfile':
       target = toolchain_pb2.ORDERFILE
-    else:
+    elif artifact_type == 'kernel_afdo':
       target = toolchain_pb2.KERNEL_AFDO
+    else:
+      target = toolchain_pb2.CHROME_AFDO
 
     if stage_type == 'update':
       build_api = 'chromite.api.ToolchainService/UpdateEbuildWithAFDOArtifacts'
@@ -241,4 +251,13 @@ class VerifyAFDOArtifactStageTests(
   def testKernelAFDOUploadSuccess(self):
     """Test upload vetted kernel AFDO call correctly."""
     self.testOrderfileUpdateSuccess(artifact_type='kernel_afdo',
+                                    stage_type='upload')
+
+  def testChromeAFDOUpdateSuccess(self):
+    """Test update ebuild with Chrome AFDO call correctly."""
+    self.testOrderfileUpdateSuccess(artifact_type='chrome_afdo')
+
+  def testChromeAFDOUploadSuccess(self):
+    """Test upload vetted Chrome AFDO call correctly."""
+    self.testOrderfileUpdateSuccess(artifact_type='chrome_afdo',
                                     stage_type='upload')

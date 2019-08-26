@@ -32,6 +32,8 @@ class UpdateEbuildWithAFDOArtifactsTest(cros_test_lib.MockTestCase,
         toolchain_util, 'OrderfileUpdateChromeEbuild', return_value=True)
     self.kernel_command = self.PatchObject(
         toolchain_util, 'AFDOUpdateKernelEbuild', return_value=True)
+    self.chrome_command = self.PatchObject(
+        toolchain_util, 'AFDOUpdateChromeEbuild', return_value=True)
     self.PatchObject(cros_build_lib, 'Die', new=self.mock_die)
 
   def _GetRequest(self, build_target=None, artifact_type=None):
@@ -67,6 +69,7 @@ class UpdateEbuildWithAFDOArtifactsTest(cros_test_lib.MockTestCase,
                                             self.api_config)
     self.orderfile_command.assert_called_once_with(self.board)
     self.kernel_command.assert_not_called()
+    self.chrome_command.assert_not_called()
 
   def testKernelAFDOSuccess(self):
     """Test the command is called correctly with kernel afdo."""
@@ -76,10 +79,20 @@ class UpdateEbuildWithAFDOArtifactsTest(cros_test_lib.MockTestCase,
                                             self.api_config)
     self.kernel_command.assert_called_once_with(self.board)
     self.orderfile_command.assert_not_called()
+    self.chrome_command.assert_not_called()
+
+  def testChromeAFDOSuccess(self):
+    """Test the command is called correctly with Chrome afdo."""
+    request = self._GetRequest(
+        build_target=self.board, artifact_type=toolchain_pb2.CHROME_AFDO)
+    toolchain.UpdateEbuildWithAFDOArtifacts(request, self.response,
+                                            self.api_config)
+    self.chrome_command.assert_called_once_with(self.board)
+    self.orderfile_command.assert_not_called()
+    self.kernel_command.assert_not_called()
 
 
-class UploadVettedFDOArtifactsTest(
-    UpdateEbuildWithAFDOArtifactsTest):
+class UploadVettedFDOArtifactsTest(UpdateEbuildWithAFDOArtifactsTest):
   """Unittests for UploadVettedAFDOArtifacts."""
 
   @staticmethod
@@ -127,3 +140,10 @@ class UploadVettedFDOArtifactsTest(
         build_target=self.board, artifact_type=toolchain_pb2.KERNEL_AFDO)
     toolchain.UploadVettedAFDOArtifacts(request, self.response, self.api_config)
     self.command.assert_called_once_with('kernel_afdo', self.board)
+
+  def testChromeAFDOSuccess(self):
+    """Test the command is called correctly with Chrome afdo."""
+    request = self._GetRequest(
+        build_target=self.board, artifact_type=toolchain_pb2.CHROME_AFDO)
+    toolchain.UploadVettedAFDOArtifacts(request, self.response, self.api_config)
+    self.command.assert_called_once_with('chrome_afdo', self.board)

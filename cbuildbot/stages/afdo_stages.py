@@ -337,6 +337,15 @@ class KernelAFDOUpdateEbuildStage(VerifyAFDOArtifactStage):
         **kwargs)
 
 
+class ChromeAFDOUpdateEbuildStage(VerifyAFDOArtifactStage):
+  """Updates Chrome ebuilds with latest unvetted AFDO profiles."""
+  def __init__(self, *args, **kwargs):
+    super(ChromeAFDOUpdateEbuildStage, self).__init__(
+        *args, afdo_type=toolchain_pb2.CHROME_AFDO,
+        build_api='chromite.api.ToolchainService/UpdateEbuildWithAFDOArtifacts',
+        **kwargs)
+
+
 class UploadVettedOrderfileStage(VerifyAFDOArtifactStage):
   """Upload a vetted orderfile to GS bucket."""
   def __init__(self, *args, **kwargs):
@@ -351,5 +360,14 @@ class UploadVettedKernelAFDOStage(VerifyAFDOArtifactStage):
   def __init__(self, *args, **kwargs):
     super(UploadVettedKernelAFDOStage, self).__init__(
         *args, afdo_type=toolchain_pb2.KERNEL_AFDO,
+        build_api='chromite.api.ToolchainService/UploadVettedAFDOArtifacts',
+        **kwargs)
+
+
+class UploadVettedChromeAFDOStage(VerifyAFDOArtifactStage):
+  """Upload latest Chrome AFDO profiles."""
+  def __init__(self, *args, **kwargs):
+    super(UploadVettedChromeAFDOStage, self).__init__(
+        *args, afdo_type=toolchain_pb2.CHROME_AFDO,
         build_api='chromite.api.ToolchainService/UploadVettedAFDOArtifacts',
         **kwargs)

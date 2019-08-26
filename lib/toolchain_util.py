@@ -36,11 +36,18 @@ ORDERFILE_GS_URL_VETTED = \
     'gs://chromeos-prebuilt/afdo-job/orderfiles/vetted'
 BENCHMARK_AFDO_GS_URL = \
     'gs://chromeos-throw-away-bucket/afdo-job/llvm/benchmarks/'
-KERNEL_PROFILE_URL = 'gs://chromeos-prebuilt/afdo-job/cwp/kernel/'
+CWP_AFDO_GS_URL = \
+    'gs://chromeos-prebuilt/afdo-job/cwp/chrome/'
+KERNEL_PROFILE_URL = \
+    'gs://chromeos-prebuilt/afdo-job/cwp/kernel/'
 AFDO_GS_URL_VETTED = \
     'gs://chromeos-throw-away-bucket/afdo-job/llvm/vetted/'
 KERNEL_AFDO_GS_URL_VETTED = \
     os.path.join(AFDO_GS_URL_VETTED, 'kernel')
+BENCHMARK_AFDO_GS_URL_VETTED = \
+    os.path.join(AFDO_GS_URL_VETTED, 'benchmarks')
+CWP_AFDO_GS_URL_VETTED = \
+    os.path.join(AFDO_GS_URL_VETTED, 'cwp')
 
 # Constants
 AFDO_SUFFIX = '.afdo'
@@ -49,6 +56,8 @@ ORDERFILE_COMPRESSION_SUFFIX = '.xz'
 KERNEL_AFDO_COMPRESSION_SUFFIX = '.gcov.xz'
 ORDERFILE_LS_PATTERN = '.orderfile'
 KERNEL_PROFILE_LS_PATTERN = '.gcov.xz'
+BENCHMARK_AFDO_LS_PATTERN = '.afdo.bz2'
+CWP_AFDO_LS_PATTERN = '.afdo.xz'
 TOOLCHAIN_UTILS_PATH = '/mnt/host/source/src/third_party/toolchain-utils/'
 TOOLCHAIN_UTILS_REPO = \
     'https://chromium.googlesource.com/chromiumos/third_party/toolchain-utils'
@@ -66,6 +75,7 @@ KERNEL_WARN_STALE_DAYS = 14
 AFDO_DATA_GENERATORS_LLVM = ('chell', 'samus')
 
 KERNEL_AFDO_VERIFIER_BOARDS = {'lulu': '3.14', 'chell': '3.18', 'eve': '4.4'}
+CWP_PROFILE_SUPPORTED_ARCHS = ['silvermont', 'airmont', 'broadwell']
 
 AFDO_ALERT_RECIPIENTS = [
     'chromeos-toolchain-sheriff@grotations.appspotmail.com'
@@ -76,7 +86,7 @@ AFDO_ALERT_RECIPIENTS = [
 # until deployed and then remove the one in cbuildbot/afdo.py.
 CHROOT_ROOT = os.path.join('%(build_root)s', constants.DEFAULT_CHROOT_DIR)
 CHROOT_TMP_DIR = os.path.join('%(root)s', 'tmp')
-#AFDO_REGEX = r'^(?P<bef>AFDO_FILE\["%s"\]=")(?P<name>.*)(?P<aft>")'
+AFDO_VARIABLE_REGEX = r'AFDO_FILE\["%s"\]'
 AFDO_ARTIFACT_EBUILD_REGEX = r'^(?P<bef>%s=")(?P<name>.*)(?P<aft>")'
 AFDO_ARTIFACT_EBUILD_REPL = r'\g<bef>%s\g<aft>'
 
@@ -256,12 +266,13 @@ def _GetOrderfileName(buildroot):
     chromeos-chrome-orderfile-field-77-3809.38-1562580965-\
     benchmark-77.0.3849.0-r1
   """
-  afdo_regex = r'AFDO_FILE\["%s"\]'
   benchmark_afdo_name = _GetArtifactVersionInEbuild(
-      'chromeos-chrome', afdo_regex % 'benchmark', buildroot=buildroot)
+      'chromeos-chrome', AFDO_VARIABLE_REGEX % 'benchmark', buildroot=buildroot)
   benchmark_afdo_versions = _ParseBenchmarkProfileName(benchmark_afdo_name)
   cwp_afdo_name = _GetArtifactVersionInEbuild(
-      'chromeos-chrome', afdo_regex % 'silvermont', buildroot=buildroot)
+      'chromeos-chrome',
+      AFDO_VARIABLE_REGEX % 'silvermont',
+      buildroot=buildroot)
   cwp_afdo_versions = _ParseCWPProfileName(cwp_afdo_name)
   cwp_piece = 'field-%d-%d.%d-%d' % (
       cwp_afdo_versions.major, cwp_afdo_versions.build, cwp_afdo_versions.patch,
@@ -560,14 +571,14 @@ class UpdateEbuildWithAFDOArtifacts(object):
     self._UpdateManifest(ebuild_9999)
 
 
-def _FindLatestAFDOArtifact(gs_url, pattern, branch=None):
+def _FindLatestAFDOArtifact(gs_url, pattern):
   """Find the latest AFDO artifact in a GS bucket.
+
+  Always finds profiles that matches the current Chrome branch.
 
   Args:
     gs_url: The full path to GS bucket URL.
     pattern: A string that a valid name must contain.
-    branch: Optional. If specified, will always look for files matches
-    the branch.
 
   Returns:
     The name of the eligible latest AFDO artifact.
@@ -583,15 +594,14 @@ def _FindLatestAFDOArtifact(gs_url, pattern, branch=None):
       x for x in gs_context.List(gs_url, details=True) if pattern in x.url
   ]
 
-  if branch:
-    # If branch is specified, try to filter out files that are not on
-    # that branch. The branch appears in the name either as:
-    # R78-12371.22-1566207135 for kernel profiles
-    # OR chromeos-chrome-amd64-78.0.3877.0 for chrome profiles
-    results = [
-        x for x in results
-        if 'R%s' % branch in x.url or '-%s.' % branch in x.url
-    ]
+  chrome_branch = _FindCurrentChromeBranch()
+  # The branch should appear in the name either as:
+  # R78-12371.22-1566207135 for kernel/CWP profiles
+  # OR chromeos-chrome-amd64-78.0.3877.0 for benchmark profiles
+  results = [
+      x for x in results
+      if 'R%s' % chrome_branch in x.url or '-%s.' % chrome_branch in x.url
+  ]
 
   if not len(results):
     raise RuntimeError(
@@ -687,6 +697,33 @@ def OrderfileUpdateChromeEbuild(board):
   return True
 
 
+def AFDOUpdateChromeEbuild(board):
+  """Update Chrome ebuild with latest unvetted AFDO profiles.
+
+  Args:
+    board: Board to verify the Chrome afdo.
+
+  Returns:
+    Status of the update.
+  """
+
+  update_rules = {}
+  benchmark_afdo = _FindLatestAFDOArtifact(BENCHMARK_AFDO_GS_URL,
+                                           BENCHMARK_AFDO_LS_PATTERN)
+  update_rules[AFDO_VARIABLE_REGEX %
+               'benchmark'] = os.path.splitext(benchmark_afdo)[0]
+
+  for arch in CWP_PROFILE_SUPPORTED_ARCHS:
+    url = os.path.join(CWP_AFDO_GS_URL, arch)
+    cwp_afdo = _FindLatestAFDOArtifact(url, CWP_AFDO_LS_PATTERN)
+    update_rules[AFDO_VARIABLE_REGEX % arch] = os.path.splitext(cwp_afdo)[0]
+
+  updater = UpdateEbuildWithAFDOArtifacts(
+      board=board, package='chromeos-chrome', update_rules=update_rules)
+  updater.Perform()
+  return True
+
+
 def AFDOUpdateKernelEbuild(board):
   """Update kernel ebuild with latest unvetted AFDO profile.
 
@@ -700,8 +737,7 @@ def AFDOUpdateKernelEbuild(board):
   # For kernel profiles, need to find out the current branch in order to
   # filter out profiles on other branches.
   url = os.path.join(KERNEL_PROFILE_URL, KERNEL_AFDO_VERIFIER_BOARDS[board])
-  kernel_afdo = _FindLatestAFDOArtifact(
-      url, KERNEL_PROFILE_LS_PATTERN, branch=_FindCurrentChromeBranch())
+  kernel_afdo = _FindLatestAFDOArtifact(url, KERNEL_PROFILE_LS_PATTERN)
   kver = KERNEL_AFDO_VERIFIER_BOARDS[board].replace('.', '_')
   # The kernel_afdo from GS bucket contains .gcov.xz suffix, but the name
   # of the afdo in kernel ebuild doesn't. Need to strip it out.
@@ -1017,23 +1053,39 @@ def CheckAFDOArtifactExists(buildroot, board, target):
     afdo_name = _FindLatestAFDOArtifact(source_url, KERNEL_PROFILE_LS_PATTERN)
     return gs_context.Exists(os.path.join(dest_url, afdo_name))
 
+  if target == 'chrome_afdo':
+    # Check the latest unvetted chrome AFDO profiles are verified
+    all_exist = True
+    benchmark_afdo = _FindLatestAFDOArtifact(BENCHMARK_AFDO_GS_URL,
+                                             BENCHMARK_AFDO_LS_PATTERN)
+    all_exist &= gs_context.Exists(
+        os.path.join(BENCHMARK_AFDO_GS_URL_VETTED, benchmark_afdo))
+    for arch in CWP_PROFILE_SUPPORTED_ARCHS:
+      source_url = os.path.join(CWP_AFDO_GS_URL, arch)
+      dest_url = os.path.join(CWP_AFDO_GS_URL_VETTED, arch)
+      cwp_afdo = _FindLatestAFDOArtifact(source_url, CWP_AFDO_LS_PATTERN)
+      all_exist &= gs_context.Exists(os.path.join(dest_url, cwp_afdo))
+    return all_exist
+
   raise ValueError('Unsupported target %s to check' % target)
 
 
-def _UploadVettedAFDOArtifacts(artifact_type, board):
+def _UploadVettedAFDOArtifacts(artifact_type, subcategory=None):
   """Upload vetted artifact type to GS bucket.
 
   Args:
     artifact_type: The type of AFDO artifact to upload. Supports:
-    ('orderfile', 'kernel_afdo')
-    board: Name of the board.
+    ('orderfile', 'kernel_afdo', 'benchmark_afdo', 'cwp_afdo')
+    subcategory: Optional. Name of subcategory, used to upload
+    kernel AFDO or CWP AFDO.
 
   Returns:
     Name of the AFDO artifact, if successfully uploaded. Otherwise
     returns None.
 
   Raises:
-    ValueError: if artifact_type is not supported.
+    ValueError: if artifact_type is not supported, or subcategory
+    is not provided for kernel_afdo or cwp_afdo.
   """
   gs_context = gs.GSContext()
   if artifact_type == 'orderfile':
@@ -1043,14 +1095,31 @@ def _UploadVettedAFDOArtifacts(artifact_type, board):
     source_url = os.path.join(ORDERFILE_GS_URL_UNVETTED, full_name)
     dest_url = os.path.join(ORDERFILE_GS_URL_VETTED, full_name)
   elif artifact_type == 'kernel_afdo':
-    kver = KERNEL_AFDO_VERIFIER_BOARDS[board]
+    if not subcategory:
+      raise ValueError('Subcategory is required for kernel_afdo.')
     artifact = _GetArtifactVersionInEbuild(
-        'chromeos-kernel-' + kver.replace('.', '_'), 'AFDO_PROFILE_VERSION')
+        'chromeos-kernel-' + subcategory.replace('.', '_'),
+        'AFDO_PROFILE_VERSION')
     full_name = artifact + KERNEL_AFDO_COMPRESSION_SUFFIX
-    source_url = os.path.join(KERNEL_PROFILE_URL, kver, full_name)
-    dest_url = os.path.join(KERNEL_AFDO_GS_URL_VETTED, kver, full_name)
+    source_url = os.path.join(KERNEL_PROFILE_URL, subcategory, full_name)
+    dest_url = os.path.join(KERNEL_AFDO_GS_URL_VETTED, subcategory, full_name)
+  elif artifact_type == 'benchmark_afdo':
+    artifact = _GetArtifactVersionInEbuild('chromeos-chrome',
+                                           AFDO_VARIABLE_REGEX % 'benchmark')
+    full_name = artifact + AFDO_COMPRESSION_SUFFIX
+    source_url = os.path.join(BENCHMARK_AFDO_GS_URL, full_name)
+    dest_url = os.path.join(BENCHMARK_AFDO_GS_URL_VETTED, full_name)
+  elif artifact_type == 'cwp_afdo':
+    if not subcategory:
+      raise ValueError('Subcategory is required for cwp_afdo.')
+    artifact = _GetArtifactVersionInEbuild('chromeos-chrome',
+                                           AFDO_VARIABLE_REGEX % subcategory)
+    full_name = artifact + ORDERFILE_COMPRESSION_SUFFIX
+    source_url = os.path.join(CWP_AFDO_GS_URL, subcategory, full_name)
+    dest_url = os.path.join(CWP_AFDO_GS_URL_VETTED, subcategory, full_name)
   else:
-    raise ValueError('Only orderfile and kernel_afdo are supported.')
+    raise ValueError(
+        'Only orderfile, chrome_afdo and kernel_afdo are supported.')
 
   if gs_context.Exists(dest_url):
     return None
@@ -1060,7 +1129,7 @@ def _UploadVettedAFDOArtifacts(artifact_type, board):
   return artifact
 
 
-def _PublishVettedAFDOArtifacts(artifact_type, board, artifact):
+def _PublishVettedAFDOArtifacts(json_file, uploaded, title=None):
   """Publish the uploaded AFDO artifact to metadata.
 
   Since there're no better ways for PUpr to keep track of uploading
@@ -1068,40 +1137,42 @@ def _PublishVettedAFDOArtifacts(artifact_type, board, artifact):
   to reflect the upload.
 
   Args:
-    artifact_type: The type of artifact. Only 'kernel_afdo' is supported,
-    as 'orderfile' is using skia autoroller that can detect uploads to
-    GS bucket.
-    board: Name of the board.
-    artifact: Name of the newly uploaded artifact.
+    json_file: The path to the JSON file that contains the metadata.
+    uploaded: Dict contains pairs of (package, artifact) showing the
+    newest name of uploaded 'artifact' to update for the 'package'.
+    title: Optional. Used for putting into commit message.
 
   Raises:
     PublishVettedAFDOArtifactsError:
-    (1) if given an unsupported artifact_type, or
-    (2) if the artifact to update is not already in the metadata file, or
-    (3) if the uploaded artifact is the same as in metadata file (no new
+    if the artifact to update is not already in the metadata file, or
+    if the uploaded artifact is the same as in metadata file (no new
     AFDO artifact uploaded). This should be caught earlier before uploading.
   """
-  if artifact_type == 'kernel_afdo':
-    json_file = os.path.join(TOOLCHAIN_UTILS_PATH,
-                             'afdo_metadata/kernel_afdo.json')
-    kver = KERNEL_AFDO_VERIFIER_BOARDS[board]
-    package = 'chromeos-kernel-' + kver.replace('.', '_')
-    message = 'afdo_metadata: Update metadata for %s' % package
-  else:
-    raise PublishVettedAFDOArtifactsError(
-        'Only kernel_afdo is supported to publish metadata.')
-
   afdo_versions = json.loads(osutils.ReadFile(json_file))
-  if package not in afdo_versions:
-    raise PublishVettedAFDOArtifactsError(
-        'The kernel version is not in JSON file.')
-  if afdo_versions[package]['name'] == artifact:
-    raise PublishVettedAFDOArtifactsError(
-        'The artifact to update is the same as in JSON file %s' % artifact)
+  if title:
+    commit_message = title + '\n\n'
+  else:
+    commit_message = 'afdo_metadata: Publish new profiles.\n\n'
 
-  message += '\n\nUpdate %s from %s to %s' % (
-      package, afdo_versions[package]['name'], artifact)
-  afdo_versions[package]['name'] = artifact
+  commit_body = 'Update %s from %s to %s\n'
+  for package, artifact in uploaded.items():
+    if not artifact:
+      # It's OK that one package has nothing to publish because it's not
+      # uploaded. The case of all packages have nothing to publish is already
+      # checked before this function.
+      continue
+    if package not in afdo_versions:
+      raise PublishVettedAFDOArtifactsError(
+          'The key %s is not in JSON file.' % package)
+
+    if afdo_versions[package]['name'] == artifact:
+      raise PublishVettedAFDOArtifactsError(
+          'The artifact to update is the same as in JSON file %s' % artifact)
+
+    old_value = afdo_versions[package]['name']
+    afdo_versions[package]['name'] = artifact
+
+    commit_message += commit_body % (package, str(old_value), artifact)
 
   with open(json_file, 'w') as f:
     json.dump(afdo_versions, f, indent=4)
@@ -1120,7 +1191,8 @@ def _PublishVettedAFDOArtifacts(artifact_type, board, artifact):
   logging.info('Git diff: %s', git_diff)
   # Commit the change
   git.RunGit(
-      TOOLCHAIN_UTILS_PATH, ['commit', '-a', '-m', message], print_cmd=True)
+      TOOLCHAIN_UTILS_PATH, ['commit', '-a', '-m', commit_message],
+      print_cmd=True)
   # Push the change, this should create a CL, and auto-submit it.
   git.GitPush(
       TOOLCHAIN_UTILS_PATH,
@@ -1142,13 +1214,31 @@ def UploadAndPublishVettedAFDOArtifacts(artifact_type, board):
   Returns:
     Status of the upload and publish.
   """
-  uploaded_artifact = _UploadVettedAFDOArtifacts(artifact_type, board)
-  if not uploaded_artifact:
+
+  uploaded = {}
+  if artifact_type == 'chrome_afdo':
+    uploaded['benchmark'] = _UploadVettedAFDOArtifacts('benchmark_afdo')
+    for arch in CWP_PROFILE_SUPPORTED_ARCHS:
+      uploaded[arch] = _UploadVettedAFDOArtifacts('cwp_afdo', arch)
+    json_file = os.path.join(TOOLCHAIN_UTILS_PATH,
+                             'afdo_metadata/chrome_afdo.json')
+    title = 'afdo_metadata: Publish new profiles for Chrome.'
+  elif artifact_type == 'kernel_afdo':
+    kver = KERNEL_AFDO_VERIFIER_BOARDS[board]
+    uploaded['chromeos-' + kver.replace('.', '_')] = _UploadVettedAFDOArtifacts(
+        artifact_type, kver)
+    json_file = os.path.join(TOOLCHAIN_UTILS_PATH,
+                             'afdo_metadata/kernel_afdo.json')
+    title = 'afdo_metadata: Publish new profiles for kernel %s.' % kver
+  else:
+    uploaded['orderfile'] = _UploadVettedAFDOArtifacts('orderfile')
+
+  if len([x for x in uploaded.values() if x]) == 0:
+    # Nothing to publish to should be caught earlier
     return False
 
   if artifact_type != 'orderfile':
     # No need to publish orderfile changes.
     # Skia autoroller can pick it up from uploads.
-    _PublishVettedAFDOArtifacts(artifact_type, board, uploaded_artifact)
-
+    _PublishVettedAFDOArtifacts(json_file, uploaded, title)
   return True
