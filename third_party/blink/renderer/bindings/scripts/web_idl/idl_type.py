@@ -11,6 +11,7 @@ from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
+from .extended_attribute import ExtendedAttributes
 from .reference import Proxy
 from .reference import RefById
 from .typedef import Typedef
@@ -140,8 +141,10 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
         self._is_optional = is_optional
 
     def __eq__(self, other):
+        """Returns True if |self| and |other| represent the equivalent type."""
         return (self.__class__ == other.__class__
-                and self.extended_attributes == other.extended_attributes
+                and ExtendedAttributes.equals(self.extended_attributes,
+                                              other.extended_attributes)
                 and self.is_optional == other.is_optional)
 
     def __ne__(self, other):
@@ -150,7 +153,7 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
     def __hash__(self):
         raise exceptions.NotImplementedError()
 
-    def make_copy(self):
+    def make_copy(self, memo):
         return self
 
     @property

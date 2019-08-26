@@ -103,7 +103,7 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
     @property
     def does_include_nullable_type(self):
         """
-        Returns true if any of member type is nullable or a member union
+        Returns True if any of member type is nullable or a member union
         includes a nullable type.
         """
         return self._does_include_nullable_type
