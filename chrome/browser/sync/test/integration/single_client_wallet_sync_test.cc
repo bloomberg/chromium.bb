@@ -941,8 +941,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
 
 // Wallet data should get cleared from the database when the wallet sync type
 // flag is disabled.
+// Test is flaky: https://crbug.com/997786
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
-                       ClearOnDisableWalletSync) {
+                       DISABLED_ClearOnDisableWalletSync) {
   GetFakeServer()->SetWalletData({CreateDefaultSyncWalletAddress(),
                                   CreateDefaultSyncWalletCard(),
                                   CreateDefaultSyncPaymentsCustomerData()});
