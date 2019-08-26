@@ -747,8 +747,8 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(DragAndDropBrowserTest);
 };
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-// Flaky: https://crbug.com/835774, https://crbug.com/988938
+#if defined(OS_WIN)
+// Flaky: https://crbug.com/988938
 #define MAYBE_DropTextFromOutside DISABLED_DropTextFromOutside
 #else
 #define MAYBE_DropTextFromOutside DropTextFromOutside
