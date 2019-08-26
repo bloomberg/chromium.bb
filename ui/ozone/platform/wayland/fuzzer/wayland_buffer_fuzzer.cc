@@ -11,14 +11,19 @@
 #include <memory>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -40,7 +45,7 @@ class MockPlatformWindowDelegate : public ui::PlatformWindowDelegate {
   MOCK_METHOD1(DispatchEvent, void(ui::Event* event));
   MOCK_METHOD0(OnCloseRequest, void());
   MOCK_METHOD0(OnClosed, void());
-  MOCK_METHOD1(OnWindowStateChanged, void(PlatformWindowState new_state));
+  MOCK_METHOD1(OnWindowStateChanged, void(ui::PlatformWindowState new_state));
   MOCK_METHOD0(OnLostCapture, void());
   MOCK_METHOD1(OnAcceleratedWidgetAvailable,
                void(gfx::AcceleratedWidget widget));
@@ -56,6 +61,9 @@ class MockPlatformWindowDelegate : public ui::PlatformWindowDelegate {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   FuzzedDataProvider data_provider(data, size);
 
+  mojo::core::Init();
+  base::CommandLine::Init(0, nullptr);
+
   std::vector<uint32_t> known_fourccs{
       DRM_FORMAT_R8,          DRM_FORMAT_GR88,        DRM_FORMAT_ABGR8888,
       DRM_FORMAT_XBGR8888,    DRM_FORMAT_ARGB8888,    DRM_FORMAT_XRGB8888,
@@ -64,16 +72,20 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
 
-  MockPlatformWindowDelegate delegate;
+  wl::TestWaylandServerThread server;
+  CHECK(server.Start(6));
+
   std::unique_ptr<ui::WaylandConnection> connection =
       std::make_unique<ui::WaylandConnection>();
+  CHECK(connection->Initialize());
+
+  auto screen = connection->wayland_output_manager()->CreateWaylandScreen(
+      connection.get());
+
+  MockPlatformWindowDelegate delegate;
   std::unique_ptr<ui::WaylandWindow> window =
       std::make_unique<ui::WaylandWindow>(&delegate, connection.get());
   gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
-
-  wl::TestWaylandServerThread server;
-  CHECK(server.Start(6));
-  CHECK(connection->Initialize());
 
   EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_))
       .WillOnce(testing::SaveArg<0>(&widget));
@@ -86,14 +98,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Wait until everything is initialised.
   base::RunLoop().RunUntilIdle();
 
-  base::FilePath temp_path;
-  EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
-  base::File temp(temp_path,
-                  base::File::FLAG_WRITE | base::File::FLAG_CREATE_ALWAYS);
+  base::FilePath temp_dir, temp_path;
+  base::ScopedFD fd =
+      base::CreateAndOpenFdForTemporaryFileInDir(temp_dir, &temp_path);
+  EXPECT_TRUE(fd.is_valid());
 
   // 10K screens are reality these days.
-  const uint32_t kWidth = data_provider.ConsumeIntegralInRange(1U, 20000U);
-  const uint32_t kHeight = data_provider.ConsumeIntegralInRange(1U, 20000U);
+  const gfx::Size buffer_size(data_provider.ConsumeIntegralInRange(1U, 20000U),
+                              data_provider.ConsumeIntegralInRange(1U, 20000U));
   // The buffer manager opens a file descriptor for each plane so |plane_count|
   // cannot be really large.  Technically, the maximum is |ulimit| minus number
   // of file descriptors opened by this process already (which is 17 at the time
@@ -118,15 +130,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const uint32_t kBufferId = 1;
 
   EXPECT_CALL(*server.zwp_linux_dmabuf_v1(), CreateParams(_, _, _));
-
-  connection->CreateZwpLinuxDmabuf(std::move(temp), kWidth, kHeight, strides,
-                                   offsets, kFormat, modifiers, kPlaneCount,
-                                   kBufferId);
+  auto* manager_host = connection->buffer_manager_host();
+  manager_host->CreateDmabufBasedBuffer(
+      widget, mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd))),
+      buffer_size, strides, offsets, modifiers, kFormat, kPlaneCount,
+      kBufferId);
 
   // Wait until the buffers are created.
   base::RunLoop().RunUntilIdle();
 
-  connection->DestroyZwpLinuxDmabuf(kBufferId);
+  manager_host->DestroyBuffer(widget, kBufferId);
 
   // Wait until the buffers are destroyed.
   base::RunLoop().RunUntilIdle();
