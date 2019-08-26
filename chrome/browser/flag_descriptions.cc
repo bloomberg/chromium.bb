@@ -3180,9 +3180,9 @@ const char kDoubleTapToZoomInTabletModeDescription[] =
     "page.";
 
 const char kEnableAdvancedPpdAttributesName[] =
-    "Enables advanced PPD attributes";
+    "Enable advanced PPD attributes";
 const char kEnableAdvancedPpdAttributesDescription[] =
-    "Enables advanced settings on CUPS printers";
+    "Enable advanced settings on CUPS printers";
 
 const char kEnableAppDataSearchName[] = "Enable app data search in launcher";
 const char kEnableAppDataSearchDescription[] =
