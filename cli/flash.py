@@ -38,7 +38,7 @@ class UsbImagerOperation(operation.ProgressBarOperation):
   def __init__(self, image):
     super(UsbImagerOperation, self).__init__()
     self._size = os.path.getsize(image)
-    self._transferred = 0.
+    self._transferred = 0
     self._bytes = re.compile(r'(\d+) bytes')
 
   def _GetDDPid(self):
@@ -78,7 +78,7 @@ class UsbImagerOperation(operation.ProgressBarOperation):
 
     match = self._bytes.search(output)
     if match:
-      self._transferred = match.groups()[0]
+      self._transferred = int(match.groups()[0])
 
     self.ProgressBar(self._transferred / self._size)
 
