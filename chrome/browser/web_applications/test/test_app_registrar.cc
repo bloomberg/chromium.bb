@@ -115,9 +115,12 @@ base::Optional<SkColor> TestAppRegistrar::GetAppThemeColor(
   return base::nullopt;
 }
 
-const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId&) const {
-  NOTIMPLEMENTED();
-  return GURL::EmptyGURL();
+const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
+  auto iterator = installed_apps_.find(app_id);
+  if (iterator == installed_apps_.end())
+    return GURL::EmptyGURL();
+
+  return iterator->second.launch_url;
 }
 
 base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {

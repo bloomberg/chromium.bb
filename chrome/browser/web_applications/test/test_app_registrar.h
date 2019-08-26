@@ -20,6 +20,7 @@ class TestAppRegistrar : public AppRegistrar {
   struct AppInfo {
     GURL install_url;
     ExternalInstallSource source = ExternalInstallSource::kExternalDefault;
+    GURL launch_url;
   };
 
   TestAppRegistrar();
