@@ -4380,7 +4380,12 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
       base::BindRepeating(&language::BindContentTranslateDriver));
 
   frame_interfaces_parameterized_->AddInterface(
-      base::Bind(&InsecureSensitiveInputDriverFactory::BindDriver));
+      base::BindRepeating([](blink::mojom::InsecureInputServiceRequest request,
+                             content::RenderFrameHost* render_frame_host) {
+        // Implicit conversion to PendingReceiver<T>.
+        InsecureSensitiveInputDriverFactory::BindDriver(std::move(request),
+                                                        render_frame_host);
+      }));
 
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(base::Bind(
