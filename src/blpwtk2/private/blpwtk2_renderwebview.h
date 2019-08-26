@@ -275,6 +275,11 @@ class RenderWebView final : public WebView
     void devToolsAgentHostDetached(WebView *source) override;
 #endif
 
+#if defined(BLPWTK2_FEATURE_PERFORMANCETIMING)
+    void startPerformanceTiming() override;
+    void stopPerformanceTiming() override;
+#endif
+
     // WebViewProxyDelegate overrides:
     void notifyRoutingId(int id) override;
 
