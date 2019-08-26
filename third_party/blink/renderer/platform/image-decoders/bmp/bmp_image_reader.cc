@@ -192,12 +192,13 @@ bool BMPImageReader::ReadInfoHeaderSize() {
       (img_data_offset_ && (img_data_offset_ < header_end)))
     return parent_->SetFailed();
 
-  // See if this is a header size we understand:
-  // OS/2 1.x: 12
+  // See if this is a header size we understand.  See comments in
+  // ReadInfoHeader() for more.
+  // OS/2 1.x (and Windows V2): 12
   if (info_header_.bi_size == 12)
     is_os21x_ = true;
-  // Windows V3: 40
-  else if ((info_header_.bi_size == 40) || IsWindowsV4Plus())
+  // Windows V3+: 40, 52, 56, 108, 124
+  else if ((info_header_.bi_size == 40) || HasRGBMasksInHeader())
     ;
   // OS/2 2.x: any multiple of 4 between 16 and 64, inclusive, or 42 or 46
   else if ((info_header_.bi_size >= 16) && (info_header_.bi_size <= 64) &&
@@ -255,6 +256,27 @@ bool BMPImageReader::ProcessInfoHeader() {
 }
 
 bool BMPImageReader::ReadInfoHeader() {
+  // Supported info header formats:
+  // * BITMAPCOREHEADER/OS21XBITMAPHEADER/"Windows V2".  Windows 2.x (?),
+  //   OS/2 1.x.  12 bytes.  Incompatible with all below headers.
+  // * BITMAPINFOHEADER/"Windows V3".  Windows 3.x.  40 bytes.  Changes width/
+  //   height fields to 32 bit and adds features such as compression types.
+  //   (Nomenclature: Note that "Windows V3" here and "BITMAPV3..." below are
+  //   different things.)
+  // * OS22XBITMAPHEADER/BITMAPCOREHEADER2.  OS/2 2.x.  16-64 bytes.  The first
+  //   40 bytes are basically identical to BITMAPINFOHEADER, save that most
+  //   fields are optional.  Further fields, if present, are incompatible with
+  //   all below headers.  Adds features such as halftoning and color spaces
+  //   (not implemented here).
+  // * BITMAPV2HEADER/BITMAPV2INFOHEADER.  52 bytes.  Extends BITMAPINFOHEADER
+  //   with R/G/B masks.  Poorly-documented and obscure.
+  // * BITMAPV3HEADER/BITMAPV3INFOHEADER.  56 bytes.  Extends BITMAPV2HEADER
+  //   with an alpha mask.  Poorly-documented and obscure.
+  // * BITMAPV4HEADER/"Windows V4".  Windows 95.  108 bytes.  Extends
+  //   BITMAPV3HEADER with color space support.
+  // * BITMAPV5HEADER/"Windows V5".  Windows 98.  124 bytes.  Extends
+  //   BITMAPV4HEADER with ICC profile support.
+
   // Pre-initialize some fields that not all headers set.
   info_header_.bi_compression = RGB;
   info_header_.bi_clr_used = 0;
@@ -284,7 +306,7 @@ bool BMPImageReader::ReadInfoHeader() {
     } else if ((bi_compression == 4) && (info_header_.bi_bit_count == 24)) {
       info_header_.bi_compression = RLE24;
       is_os22x_ = true;
-    } else if (bi_compression > 5)
+    } else if (bi_compression > ALPHABITFIELDS)
       return parent_->SetFailed();  // Some type we don't understand.
     else
       info_header_.bi_compression =
@@ -295,22 +317,23 @@ bool BMPImageReader::ReadInfoHeader() {
   if (info_header_.bi_size >= 36)
     info_header_.bi_clr_used = ReadUint32(32);
 
-  // Windows V4+ can safely read the four bitmasks from 40-56 bytes in, so do
-  // that here. If the bit depth is less than 16, these values will be ignored
-  // by the image data decoders. If the bit depth is at least 16 but the
-  // compression format isn't BITFIELDS, the RGB bitmasks will be ignored and
-  // overwritten in processBitmasks(). (The alpha bitmask will never be
-  // overwritten: images that actually want alpha have to specify a valid
-  // alpha mask. See comments in ProcessBitmasks().)
+  // If we can safely read the four bitmasks from 40-56 bytes in, do that here.
+  // If the bit depth is less than 16, these values will be ignored by the image
+  // data decoders. If the bit depth is at least 16 but the compression format
+  // isn't [ALPHA]BITFIELDS, the RGB bitmasks will be ignored and overwritten in
+  // processBitmasks(). (The alpha bitmask will never be overwritten: images
+  // that actually want alpha have to specify a valid alpha mask. See comments
+  // in ProcessBitmasks().)
   //
-  // For non-Windows V4+, bit_masks_[] et. al will be initialized later
-  // during ProcessBitmasks().
-  if (IsWindowsV4Plus()) {
+  // For other BMPs, bit_masks_[] et. al will be initialized later during
+  // ProcessBitmasks().
+  if (HasRGBMasksInHeader()) {
     bit_masks_[0] = ReadUint32(40);
     bit_masks_[1] = ReadUint32(44);
     bit_masks_[2] = ReadUint32(48);
-    bit_masks_[3] = ReadUint32(52);
   }
+  if (HasAlphaMaskInHeader())
+    bit_masks_[3] = ReadUint32(52);
 
   // Detect top-down BMPs.
   if (info_header_.bi_height < 0) {
@@ -340,9 +363,10 @@ bool BMPImageReader::IsInfoHeaderValid() const {
   if ((info_header_.bi_bit_count != 1) && (info_header_.bi_bit_count != 4) &&
       (info_header_.bi_bit_count != 8) && (info_header_.bi_bit_count != 24)) {
     // Windows V3+ additionally supports bit depths of 0 (for embedded
-    // JPEG/PNG images), 16, and 32.
+    // JPEG/PNG images), 2 (on Windows CE), 16, and 32.
     if (is_os21x_ || is_os22x_ ||
-        (info_header_.bi_bit_count && (info_header_.bi_bit_count != 16) &&
+        (info_header_.bi_bit_count && (info_header_.bi_bit_count != 2) &&
+         (info_header_.bi_bit_count != 16) &&
          (info_header_.bi_bit_count != 32)))
       return false;
   }
@@ -372,6 +396,7 @@ bool BMPImageReader::IsInfoHeaderValid() const {
       break;
 
     case BITFIELDS:
+    case ALPHABITFIELDS:
       // Only valid for Windows V3+.
       if (is_os21x_ || is_os22x_ ||
           ((info_header_.bi_bit_count != 16) &&
@@ -405,11 +430,6 @@ bool BMPImageReader::IsInfoHeaderValid() const {
       return false;
   }
 
-  // Top-down bitmaps cannot be compressed; they must be RGB or BITFIELDS.
-  if (is_top_down_ && (info_header_.bi_compression != RGB) &&
-      (info_header_.bi_compression != BITFIELDS))
-    return false;
-
   // Reject the following valid bitmap types that we don't currently bother
   // decoding.  Few other people decode these either, they're unlikely to be
   // in much use.
@@ -436,7 +456,8 @@ bool BMPImageReader::IsInfoHeaderValid() const {
 
 bool BMPImageReader::ProcessBitmasks() {
   // Create bit_masks_[] values for R/G/B.
-  if (info_header_.bi_compression != BITFIELDS) {
+  if ((info_header_.bi_compression != BITFIELDS) &&
+      (info_header_.bi_compression != ALPHABITFIELDS)) {
     // The format doesn't actually use bitmasks.  To simplify the decode
     // logic later, create bitmasks for the RGB data.  For Windows V4+,
     // this overwrites the masks we read from the header, which are
@@ -447,13 +468,14 @@ bool BMPImageReader::ProcessBitmasks() {
     for (int i = 0; i <= 2; ++i)
       bit_masks_[i] = ((static_cast<uint32_t>(1) << (num_bits * (3 - i))) - 1) ^
                       ((static_cast<uint32_t>(1) << (num_bits * (2 - i))) - 1);
-  } else if (!IsWindowsV4Plus()) {
-    // For Windows V4+ BITFIELDS mode bitmaps, this was already done when
-    // we read the info header.
+  } else if (!HasRGBMasksInHeader()) {
+    // For HasRGBMasksInHeader() bitmaps, this was already done when we read the
+    // info header.
 
     // Fail if we don't have enough file space for the bitmasks.
     const size_t header_end = header_offset_ + info_header_.bi_size;
-    const size_t kBitmasksSize = 12;
+    const bool read_alpha = info_header_.bi_compression == ALPHABITFIELDS;
+    const size_t kBitmasksSize = read_alpha ? 16 : 12;
     const size_t bitmasks_end = header_end + kBitmasksSize;
     if ((bitmasks_end < header_end) ||
         (img_data_offset_ && (img_data_offset_ < bitmasks_end)))
@@ -465,23 +487,28 @@ bool BMPImageReader::ProcessBitmasks() {
     bit_masks_[0] = ReadUint32(0);
     bit_masks_[1] = ReadUint32(4);
     bit_masks_[2] = ReadUint32(8);
+    if (read_alpha)
+      bit_masks_[3] = ReadUint32(12);
 
     decoded_offset_ += kBitmasksSize;
   }
 
   // Alpha is a poorly-documented and inconsistently-used feature.
   //
-  // Windows V4+ has an alpha bitmask in the info header. Unlike the R/G/B
+  // BITMAPV3HEADER+ have an alpha bitmask in the info header.  Unlike the R/G/B
   // bitmasks, the MSDN docs don't indicate that it is only valid for the
   // BITFIELDS compression format, so we respect it at all times.
   //
-  // To complicate things, Windows V3 BMPs, which lack this mask, can specify
-  // 32bpp format, which to any sane reader would imply an 8-bit alpha
-  // channel -- and for BMPs-in-ICOs, that's precisely what's intended to
-  // happen. There also exist standalone BMPs in this format which clearly
-  // expect the alpha channel to be respected. However, there are many other
-  // BMPs which, for example, fill this channel with all 0s, yet clearly
-  // expect to not be displayed as a fully-transparent rectangle.
+  // Windows CE supports the ALPHABITFIELDS compression format, which is rare.
+  // We assume any mask specified by this format is valid as well.
+  //
+  // To complicate things, Windows V3 BMPs, which lack a mask, can specify 32bpp
+  // format, which to any sane reader would imply an 8-bit alpha channel -- and
+  // for BMPs-in-ICOs, that's precisely what's intended to happen. There also
+  // exist standalone BMPs in this format which clearly expect the alpha channel
+  // to be respected. However, there are many other BMPs which, for example,
+  // fill this channel with all 0s, yet clearly expect to not be displayed as a
+  // fully-transparent rectangle.
   //
   // If these were the only two types of Windows V3, 32bpp BMPs in the wild,
   // we could distinguish between them by scanning the alpha channel in the
@@ -500,7 +527,8 @@ bool BMPImageReader::ProcessBitmasks() {
   // and we have to choose what to break. Given the paragraph above, we match
   // other browsers and ignore alpha in Windows V3 BMPs except inside ICO
   // files.
-  if (!IsWindowsV4Plus())
+  if (!HasAlphaMaskInHeader() &&
+      (info_header_.bi_compression != ALPHABITFIELDS))
     bit_masks_[3] = (is_in_ico_ && (info_header_.bi_compression != BITFIELDS) &&
                      (info_header_.bi_bit_count == 32))
                         ? static_cast<uint32_t>(0xff000000)
@@ -566,14 +594,21 @@ bool BMPImageReader::ProcessBitmasks() {
 }
 
 bool BMPImageReader::ProcessColorTable() {
-  // Fail if we don't have enough file space for the color table.
+  // On non-OS/2 1.x, an extra padding byte is present, which we need to skip.
+  const size_t bytes_per_color = is_os21x_ ? 3 : 4;
+
   const size_t header_end = header_offset_ + info_header_.bi_size;
-  const size_t table_size_in_bytes =
-      info_header_.bi_clr_used * (is_os21x_ ? 3 : 4);
+  size_t colors_in_palette = info_header_.bi_clr_used;
+  size_t table_size_in_bytes = colors_in_palette * bytes_per_color;
   const size_t table_end = header_end + table_size_in_bytes;
-  if ((table_end < header_end) ||
-      (img_data_offset_ && (img_data_offset_ < table_end)))
+  if (table_end < header_end)
     return parent_->SetFailed();
+
+  // Some BMPs don't contain a complete palette.  Avoid reading off the end.
+  if (img_data_offset_ && (img_data_offset_ < table_end)) {
+    colors_in_palette = (img_data_offset_ - header_end) / bytes_per_color;
+    table_size_in_bytes = colors_in_palette * bytes_per_color;
+  }
 
   // Read color table.
   if ((decoded_offset_ > data_->size()) ||
@@ -581,13 +616,17 @@ bool BMPImageReader::ProcessColorTable() {
     return false;
   color_table_.resize(info_header_.bi_clr_used);
 
-  // On non-OS/2 1.x, an extra padding byte is present, which we need to skip.
-  const size_t bytes_per_color = is_os21x_ ? 3 : 4;
-  for (size_t i = 0; i < info_header_.bi_clr_used; ++i) {
+  for (size_t i = 0; i < colors_in_palette; ++i) {
     color_table_[i].rgb_blue = ReadUint8(0);
     color_table_[i].rgb_green = ReadUint8(1);
     color_table_[i].rgb_red = ReadUint8(2);
     decoded_offset_ += bytes_per_color;
+  }
+  // Explicitly zero any colors past the end of a truncated palette.
+  for (size_t i = colors_in_palette; i < info_header_.bi_clr_used; ++i) {
+    color_table_[i].rgb_blue = 0;
+    color_table_[i].rgb_green = 0;
+    color_table_[i].rgb_red = 0;
   }
 
   // We've now decoded all the non-image data we care about.  Skip anything
