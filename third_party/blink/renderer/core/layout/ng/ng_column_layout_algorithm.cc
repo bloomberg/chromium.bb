@@ -89,6 +89,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
   if (ConstraintSpace().HasBlockFragmentation())
     container_builder_.SetHasBlockFragmentation();
+  container_builder_.SetIsBlockFragmentationContextRoot();
 
   // Omit leading border+padding+scrollbar for all fragments but the first.
   if (!IsResumingLayout(BreakToken()))
@@ -107,8 +108,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     // container.
     const auto child_tokens = token->ChildBreakTokens();
     if (child_tokens.size()) {
-      child_break_token =
-          To<NGBlockBreakToken>(child_tokens[child_tokens.size() - 1]);
+      DCHECK_EQ(child_tokens.size(), 1u);
+      child_break_token = child_tokens[0];
     }
   }
 
@@ -147,6 +148,9 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   }
 
   if (ConstraintSpace().HasBlockFragmentation()) {
+    if (child_break_token)
+      container_builder_.AddBreakToken(std::move(child_break_token));
+
     // In addition to establishing one, we're nested inside another
     // fragmentation context.
     FinishFragmentation(&container_builder_, block_size, intrinsic_block_size_,
