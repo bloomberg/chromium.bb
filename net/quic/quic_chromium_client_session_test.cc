@@ -1751,11 +1751,6 @@ TEST_P(QuicChromiumClientSessionTest, DetectPathDegradingDuringHandshake) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
-  // TODO(crbug/997684): Re-enable this test
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99)
-    return;
-
   migrate_session_early_v2_ = true;
 
   MockQuicData quic_data(version_);
