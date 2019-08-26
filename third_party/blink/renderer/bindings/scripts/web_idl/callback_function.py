@@ -7,7 +7,7 @@ from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .function_like import FunctionLike
-from .identifier_ir_map import IdentifierIRMap
+from .ir_map import IRMap
 from .make_copy import make_copy
 from .user_defined_type import UserDefinedType
 
@@ -16,7 +16,7 @@ class CallbackFunction(UserDefinedType, FunctionLike, WithExtendedAttributes,
                        WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-callback-functions"""
 
-    class IR(IdentifierIRMap.IR, FunctionLike.IR, WithExtendedAttributes,
+    class IR(IRMap.IR, FunctionLike.IR, WithExtendedAttributes,
              WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
@@ -26,10 +26,10 @@ class CallbackFunction(UserDefinedType, FunctionLike, WithExtendedAttributes,
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
-            IdentifierIRMap.IR.__init__(
+            IRMap.IR.__init__(
                 self,
                 identifier=identifier,
-                kind=IdentifierIRMap.IR.Kind.CALLBACK_FUNCTION)
+                kind=IRMap.IR.Kind.CALLBACK_FUNCTION)
             FunctionLike.IR.__init__(
                 self,
                 identifier=identifier,

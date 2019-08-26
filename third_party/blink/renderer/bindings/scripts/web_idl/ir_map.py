@@ -6,7 +6,7 @@ from .composition_parts import Identifier
 from .composition_parts import WithIdentifier
 
 
-class IdentifierIRMap(object):
+class IRMap(object):
     """
     Manages an identifier-IR map, where IR is IdIRMap.IR.  This class is
     designed to work together with IdlCompiler closely.  See also
@@ -96,8 +96,7 @@ class IdentifierIRMap(object):
             identifier for some kinds, e.g. partial interface and includes.
             This function returns True for such kinds.
             """
-            return IdentifierIRMap.IR.Kind.does_support_multiple_defs(
-                self.kind)
+            return IRMap.IR.Kind.does_support_multiple_defs(self.kind)
 
     def __init__(self):
         # IRs whose does_support_multiple_defs is False
@@ -122,7 +121,7 @@ class IdentifierIRMap(object):
         Duplicated registration is not allowed.  The registration must be for
         the first time.
         """
-        assert isinstance(ir, IdentifierIRMap.IR), ir
+        assert isinstance(ir, IRMap.IR), ir
         # Assert |ir| doesn't yet exist in this map.
         try:
             if ir.does_support_multiple_defs:
@@ -140,7 +139,7 @@ class IdentifierIRMap(object):
         self.add(ir)
 
     def add(self, ir):
-        assert isinstance(ir, IdentifierIRMap.IR)
+        assert isinstance(ir, IRMap.IR)
 
         ir_map = (self._multiple_value_irs
                   if ir.does_support_multiple_defs else self._single_value_irs)
@@ -162,34 +161,27 @@ class IdentifierIRMap(object):
                     irs_per_kind[identifier].debug_info.location))
             irs_per_kind[identifier] = ir
 
-    def find_by_identifier(self, identifier, skip_current_phase=False):
+    def find_by_identifier(self, identifier):
         """
         Returns the latest IR whose identifier is |identifier| and
-        does_support_multiple_defs is False.  Raises KeyError, if not found.
-
-        If |skip_current_phase| is True, skips the current phase when looking
-        for the identifier.
+        |does_support_multiple_defs| is False.  Raises KeyError if not found.
         """
         assert isinstance(identifier, Identifier)
-        start_phase = self._current_phase - (1 if skip_current_phase else 0)
-        for irs_per_phase in self._single_value_irs[start_phase::-1]:
+        for irs_per_phase in self._single_value_irs[self._current_phase::-1]:
             for irs_per_kind in irs_per_phase.values():
                 if identifier in irs_per_kind:
                     return irs_per_kind[identifier]
         raise KeyError(identifier)
 
-    def find_by_kind(self, kind, skip_current_phase=False):
+    def find_by_kind(self, kind):
         """
-        Returns a map of identifier to IR(s) for the latest IRs of |kind|.
-
-        If |skip_current_phase| is True, skips the current phase when looking
-        for the kind.
+        Returns a map from identifiers to the latest IRs of |kind|.  Returns an
+        empty map if not found.
         """
-        start_phase = self._current_phase - (1 if skip_current_phase else 0)
         ir_map = (self._multiple_value_irs
-                  if IdentifierIRMap.IR.Kind.does_support_multiple_defs(kind)
-                  else self._single_value_irs)
-        for irs_per_phase in ir_map[start_phase::-1]:
+                  if IRMap.IR.Kind.does_support_multiple_defs(kind) else
+                  self._single_value_irs)
+        for irs_per_phase in ir_map[self._current_phase::-1]:
             if kind in irs_per_phase:
                 return irs_per_phase[kind]
         return dict()

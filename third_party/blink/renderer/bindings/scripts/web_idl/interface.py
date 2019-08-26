@@ -8,8 +8,8 @@ from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .constant import Constant
-from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlType
+from .ir_map import IRMap
 from .make_copy import make_copy
 from .operation import Operation
 from .reference import RefById
@@ -20,7 +20,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                 WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-interfaces"""
 
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+    class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
@@ -63,15 +63,15 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             kind = None
             if is_partial:
                 if is_mixin:
-                    kind = IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN
+                    kind = IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN
                 else:
-                    kind = IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE
+                    kind = IRMap.IR.Kind.PARTIAL_INTERFACE
             else:
                 if is_mixin:
-                    kind = IdentifierIRMap.IR.Kind.INTERFACE_MIXIN
+                    kind = IRMap.IR.Kind.INTERFACE_MIXIN
                 else:
-                    kind = IdentifierIRMap.IR.Kind.INTERFACE
-            IdentifierIRMap.IR.__init__(self, identifier=identifier, kind=kind)
+                    kind = IRMap.IR.Kind.INTERFACE
+            IRMap.IR.__init__(self, identifier=identifier, kind=kind)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(

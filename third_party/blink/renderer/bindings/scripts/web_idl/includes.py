@@ -5,13 +5,13 @@
 from .composition_parts import Identifier
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
-from .identifier_ir_map import IdentifierIRMap
+from .ir_map import IRMap
 
 
 class Includes(WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#include"""
 
-    class IR(IdentifierIRMap.IR, WithComponent, WithDebugInfo):
+    class IR(IRMap.IR, WithComponent, WithDebugInfo):
         def __init__(self,
                      interface_identifier,
                      mixin_identifier,
@@ -25,10 +25,10 @@ class Includes(WithComponent, WithDebugInfo):
             # grouped by interface's identifier, for example, a group of mixins
             # are merged into an interface.  So, the interface's identifier is
             # turned into this IR's identifier.
-            IdentifierIRMap.IR.__init__(
+            IRMap.IR.__init__(
                 self,
                 identifier=interface_identifier,
-                kind=IdentifierIRMap.IR.Kind.INCLUDES)
+                kind=IRMap.IR.Kind.INCLUDES)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 

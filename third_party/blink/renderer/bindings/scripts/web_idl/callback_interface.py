@@ -8,7 +8,7 @@ from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
-from .identifier_ir_map import IdentifierIRMap
+from .ir_map import IRMap
 from .make_copy import make_copy
 from .user_defined_type import UserDefinedType
 
@@ -17,7 +17,7 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
                         WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-interfaces"""
 
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+    class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
@@ -25,10 +25,10 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
-            IdentifierIRMap.IR.__init__(
+            IRMap.IR.__init__(
                 self,
                 identifier=identifier,
-                kind=IdentifierIRMap.IR.Kind.CALLBACK_INTERFACE)
+                kind=IRMap.IR.Kind.CALLBACK_INTERFACE)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)

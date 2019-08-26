@@ -6,7 +6,7 @@ from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
-from .identifier_ir_map import IdentifierIRMap
+from .ir_map import IRMap
 from .make_copy import make_copy
 from .user_defined_type import UserDefinedType
 
@@ -15,7 +15,7 @@ class Enumeration(UserDefinedType, WithExtendedAttributes,
                   WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-enums"""
 
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+    class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
@@ -27,10 +27,8 @@ class Enumeration(UserDefinedType, WithExtendedAttributes,
             assert isinstance(values, (list, tuple))
             assert all(isinstance(value, str) for value in values)
 
-            IdentifierIRMap.IR.__init__(
-                self,
-                identifier=identifier,
-                kind=IdentifierIRMap.IR.Kind.ENUMERATION)
+            IRMap.IR.__init__(
+                self, identifier=identifier, kind=IRMap.IR.Kind.ENUMERATION)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)
