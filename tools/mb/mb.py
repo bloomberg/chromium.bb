@@ -1084,6 +1084,7 @@ class MetaBuildWrapper(object):
     is_cros = ('target_os="chromeos"' in vals['gn_args'] or
                vals.get('cros_passthrough', False))
     is_mac = self.platform == 'darwin'
+    is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
     is_msan = 'is_msan=true' in vals['gn_args']
 
     err = ''
@@ -1091,7 +1092,7 @@ class MetaBuildWrapper(object):
       # Skip a few configs that need extra cleanup for now.
       # TODO(https://crbug.com/912946): Fix everything on all platforms and
       # enable check everywhere.
-      if is_android or is_cros or is_mac or is_msan:
+      if is_android or is_cros or is_mac or is_win or is_msan:
         break
 
       # Skip a few existing violations that need to be cleaned up. Each of
@@ -1107,17 +1108,19 @@ class MetaBuildWrapper(object):
           f == 'test_url_loader_data/'):
         continue
 
-      # This runs before the build, so we can't use isdir(f). But
+      path = os.path.normpath(self.PathJoin(build_dir, f))
+      # This runs before the build, so we can't use isdir(path). But
       # isolate.py luckily requires data directories to end with '/', so we
-      # can check for that.
-      if not f.startswith('../../') and f.endswith('/'):
-        # Don't use self.PathJoin() -- all involved paths consistently use
-        # forward slashes, so don't add one single backslash on Windows.
-        err += '\n' + build_dir + '/' +  f
+      # can check for that. (Check f instead of path because normpath() removes
+      # trailing slashes.)
+      if path.startswith(build_dir) and f.endswith('/'):
+        # See https://crbug.com/912946
+        err += '\n' + path
 
     if err:
       self.Print('error: gn `data` items may not list generated directories; '
-                 'list files in directory instead for:' + err)
+                 'list files in directory instead for:' + err,
+                 file=sys.stderr)
       return 1
 
     self.WriteFile(isolate_path,
