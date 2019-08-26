@@ -494,6 +494,9 @@ const char kTetherStub[] = "tether-stub";
 const char kTetherHostScansIgnoreWiredConnections[] =
     "tether-host-scans-ignore-wired-connections";
 
+// Shows all Bluetooth devices in UI (System Tray/Settings Page.)
+const char kUnfilteredBluetoothDevices[] = "unfiltered-bluetooth-devices";
+
 // Used to tell the policy infrastructure to not let profile initialization
 // complete until policy is manually set by a test. This is used to provide
 // backward compatibility with a few tests that incorrectly use the
@@ -580,6 +583,11 @@ bool IsGaiaServicesDisabled() {
 bool IsArcCpuRestrictionDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableArcCpuRestriction);
+}
+
+bool IsUnfilteredBluetoothDevicesEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kUnfilteredBluetoothDevices);
 }
 
 }  // namespace switches

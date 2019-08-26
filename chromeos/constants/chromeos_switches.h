@@ -197,6 +197,8 @@ extern const char kTetherHostScansIgnoreWiredConnections[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kWaitForInitialPolicyFetchForTest[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kWakeOnWifiPacket[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kUnfilteredBluetoothDevices[];
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -249,6 +251,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsGaiaServicesDisabled();
 
 // Returns true if |kDisableArcCpuRestriction| is true.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsArcCpuRestrictionDisabled();
+
+// Returns true if all Bluetooth devices in UI (System Tray/Settings Page.)
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsUnfilteredBluetoothDevicesEnabled();
 
 }  // namespace switches
 }  // namespace chromeos

@@ -3517,10 +3517,6 @@ const char kUiShowCompositedLayerBordersAll[] = "All";
 const char kUiSlowAnimationsName[] = "Slow UI animations";
 const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
 
-const char kUnfilteredBluetoothDevicesName[] = "Unfiltered Bluetooth devices";
-const char kUnfilteredBluetoothDevicesDescription[] =
-    "Shows all Bluetooth devices in UI (System Tray/Settings Page.)";
-
 const char kUsbguardName[] = "Block new USB devices at the lock screen.";
 const char kUsbguardDescription[] =
     "Prevents newly connected USB devices from operating at the lock screen"

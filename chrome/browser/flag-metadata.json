@@ -3185,11 +3185,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "unfiltered-bluetooth-devices",
-    "owners": [ "sonnysasaka", "qiyuh@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "unified-consent",
     "owners": [ "msarda", "tangltom" ],
     "expiry_milestone": 76

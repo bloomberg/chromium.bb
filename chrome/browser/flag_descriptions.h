@@ -2108,9 +2108,6 @@ extern const char kUiShowCompositedLayerBordersAll[];
 extern const char kUiSlowAnimationsName[];
 extern const char kUiSlowAnimationsDescription[];
 
-extern const char kUnfilteredBluetoothDevicesName[];
-extern const char kUnfilteredBluetoothDevicesDescription[];
-
 extern const char kUsbguardName[];
 extern const char kUsbguardDescription[];
 

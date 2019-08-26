@@ -1999,7 +1999,6 @@ test("ash_unittests") {
     "//components/sync_preferences:test_support",
     "//components/user_manager",
     "//components/user_manager:test_support",
-    "//device/base",
     "//device/bluetooth",
     "//device/bluetooth:mocks",
     "//extensions/common:common_constants",
