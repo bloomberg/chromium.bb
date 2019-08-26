@@ -9,7 +9,6 @@ from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .constant import Constant
 from .identifier_ir_map import IdentifierIRMap
-from .idl_member import IdlMember
 from .idl_type import IdlType
 from .make_copy import make_copy
 from .operation import Operation
@@ -326,7 +325,7 @@ class Setlike(WithCodeGeneratorInfo, WithDebugInfo):
         return self._is_readonly
 
 
-class IndexedPropertyHandler(IdlMember):
+class IndexedPropertyHandler(object):
     @property
     def getter(self):
         """
@@ -352,7 +351,7 @@ class IndexedPropertyHandler(IdlMember):
         assert False, "Not implemented yet."
 
 
-class NamedPropertyHandler(IdlMember):
+class NamedPropertyHandler(object):
     @property
     def getter(self):
         """

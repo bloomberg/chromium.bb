@@ -31,7 +31,6 @@ web_idl/file_io.py
 web_idl/function_like.py
 web_idl/identifier_ir_map.py
 web_idl/idl_compiler.py
-web_idl/idl_member.py
 web_idl/idl_type.py
 web_idl/includes.py
 web_idl/interface.py
