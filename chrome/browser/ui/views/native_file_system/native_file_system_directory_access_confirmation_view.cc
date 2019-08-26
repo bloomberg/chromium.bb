@@ -94,7 +94,8 @@ ui::ModalType NativeFileSystemDirectoryAccessConfirmationView::GetModalType()
 
 views::View*
 NativeFileSystemDirectoryAccessConfirmationView::GetInitiallyFocusedView() {
-  return GetDialogClientView()->cancel_button();
+  const views::DialogClientView* dcv = GetDialogClientView();
+  return dcv ? dcv->cancel_button() : nullptr;
 }
 
 NativeFileSystemDirectoryAccessConfirmationView::
