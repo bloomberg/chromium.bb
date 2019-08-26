@@ -52,14 +52,13 @@ void UpdateAPICount(blink::WebUserMediaRequest::MediaType media_type) {
 UserMediaClient::Request::Request(std::unique_ptr<UserMediaRequestInfo> request)
     : user_media_request_(std::move(request)) {
   DCHECK(user_media_request_);
-  DCHECK(apply_constraints_request_.IsNull());
+  DCHECK(!apply_constraints_request_);
   DCHECK(web_track_to_stop_.IsNull());
 }
 
-UserMediaClient::Request::Request(
-    const blink::WebApplyConstraintsRequest& request)
+UserMediaClient::Request::Request(blink::ApplyConstraintsRequest* request)
     : apply_constraints_request_(request) {
-  DCHECK(!apply_constraints_request_.IsNull());
+  DCHECK(apply_constraints_request_);
   DCHECK(!user_media_request_);
   DCHECK(web_track_to_stop_.IsNull());
 }
@@ -69,28 +68,9 @@ UserMediaClient::Request::Request(
     : web_track_to_stop_(web_track_to_stop) {
   DCHECK(!web_track_to_stop_.IsNull());
   DCHECK(!user_media_request_);
-  DCHECK(apply_constraints_request_.IsNull());
+  DCHECK(!apply_constraints_request_);
 }
 
-UserMediaClient::Request::Request(Request&& other)
-    : user_media_request_(std::move(other.user_media_request_)),
-      apply_constraints_request_(other.apply_constraints_request_),
-      web_track_to_stop_(other.web_track_to_stop_) {
-#if DCHECK_IS_ON()
-  int num_types = 0;
-  if (IsUserMedia())
-    num_types++;
-  if (IsApplyConstraints())
-    num_types++;
-  if (IsStopTrack())
-    num_types++;
-
-  DCHECK_EQ(num_types, 1);
-#endif
-}
-
-UserMediaClient::Request& UserMediaClient::Request::operator=(Request&& other) =
-    default;
 UserMediaClient::Request::~Request() = default;
 
 std::unique_ptr<UserMediaRequestInfo>
@@ -188,22 +168,22 @@ void UserMediaClient::RequestUserMedia(
       std::make_unique<UserMediaRequestInfo>(request_id, web_request,
                                              user_gesture);
   pending_request_infos_.push_back(
-      std::make_unique<Request>(std::move(request_info)));
+      MakeGarbageCollected<Request>(std::move(request_info)));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }
 
 void UserMediaClient::ApplyConstraints(
-    const blink::WebApplyConstraintsRequest& web_request) {
+    blink::ApplyConstraintsRequest* web_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  pending_request_infos_.push_back(std::make_unique<Request>(web_request));
+  pending_request_infos_.push_back(MakeGarbageCollected<Request>(web_request));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }
 
 void UserMediaClient::StopTrack(const blink::WebMediaStreamTrack& web_track) {
-  pending_request_infos_.push_back(std::make_unique<Request>(web_track));
+  pending_request_infos_.push_back(MakeGarbageCollected<Request>(web_track));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }
@@ -311,6 +291,7 @@ void UserMediaClient::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(user_media_processor_);
   visitor->Trace(apply_constraints_processor_);
+  visitor->Trace(pending_request_infos_);
 }
 
 void UserMediaClient::SetMediaDevicesDispatcherForTesting(
