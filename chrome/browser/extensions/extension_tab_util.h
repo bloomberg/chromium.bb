@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "chrome/common/extensions/api/tabs.h"
+#include "extensions/common/features/feature.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
@@ -87,7 +88,8 @@ class ExtensionTabUtil {
   static int GetWindowIdOfTab(const content::WebContents* web_contents);
   static std::unique_ptr<base::ListValue> CreateTabList(
       const Browser* browser,
-      const Extension* extension);
+      const Extension* extension,
+      Feature::Context context);
 
   static Browser* GetBrowserFromWindowID(
       const ChromeExtensionFunctionDetails& details,
@@ -121,12 +123,14 @@ class ExtensionTabUtil {
   // Creates a DictionaryValue representing the window for the given |browser|,
   // and scrubs any privacy-sensitive data that |extension| does not have
   // access to. |populate_tab_behavior| determines whether tabs will be
-  // populated in the result.
+  // populated in the result. |context| is used to determine the
+  // ScrubTabBehavior for the populated tabs data.
   // TODO(devlin): Convert this to a api::Windows::Window object.
   static std::unique_ptr<base::DictionaryValue> CreateWindowValueForExtension(
       const Browser& browser,
       const Extension* extension,
-      PopulateTabBehavior populate_tab_behavior);
+      PopulateTabBehavior populate_tab_behavior,
+      Feature::Context context);
 
   // Creates a tab MutedInfo object (see chrome/common/extensions/api/tabs.json)
   // with information about the mute state of a browser tab.
@@ -141,10 +145,12 @@ class ExtensionTabUtil {
   // extension and web contents. This is the preferred way to get
   // ScrubTabBehavior.
   static ScrubTabBehavior GetScrubTabBehavior(const Extension* extension,
+                                              Feature::Context context,
                                               content::WebContents* contents);
   // Only use this if there is no access to a specific WebContents, such as when
   // the tab has been closed and there is no active WebContents anymore.
   static ScrubTabBehavior GetScrubTabBehavior(const Extension* extension,
+                                              Feature::Context context,
                                               const GURL& url);
 
   // Removes any privacy-sensitive fields from a Tab object if appropriate,

@@ -120,8 +120,13 @@ ExtensionTabUtil::Delegate* GetExtensionTabUtilDelegate() {
 
 ExtensionTabUtil::ScrubTabBehavior GetScrubTabBehaviorImpl(
     const Extension* extension,
+    Feature::Context context,
     const GURL& url,
     int tab_id) {
+  if (context == Feature::Context::WEBUI_CONTEXT) {
+    return ExtensionTabUtil::kDontScrubTab;
+  }
+
   bool has_permission = false;
 
   if (extension) {
@@ -314,7 +319,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
 
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
       ExtensionTabUtil::GetScrubTabBehavior(
-          function->extension(),
+          function->extension(), function->source_context_type(),
           navigate_params.navigated_or_inserted_contents);
 
   // Return data about the newly created tab.
@@ -451,13 +456,14 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
 
 std::unique_ptr<base::ListValue> ExtensionTabUtil::CreateTabList(
     const Browser* browser,
-    const Extension* extension) {
+    const Extension* extension,
+    Feature::Context context) {
   std::unique_ptr<base::ListValue> tab_list(new base::ListValue());
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
     WebContents* web_contents = tab_strip->GetWebContentsAt(i);
     ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
-        ExtensionTabUtil::GetScrubTabBehavior(extension, web_contents);
+        ExtensionTabUtil::GetScrubTabBehavior(extension, context, web_contents);
     tab_list->Append(CreateTabObject(web_contents, scrub_tab_behavior,
                                      extension, tab_strip, i)
                          ->ToValue());
@@ -471,7 +477,8 @@ std::unique_ptr<base::DictionaryValue>
 ExtensionTabUtil::CreateWindowValueForExtension(
     const Browser& browser,
     const Extension* extension,
-    PopulateTabBehavior populate_tab_behavior) {
+    PopulateTabBehavior populate_tab_behavior,
+    Feature::Context context) {
   auto result = std::make_unique<base::DictionaryValue>();
 
   result->SetInteger(tabs_constants::kIdKey, browser.session_id().id());
@@ -510,7 +517,8 @@ ExtensionTabUtil::CreateWindowValueForExtension(
   result->SetInteger(tabs_constants::kHeightKey, bounds.height());
 
   if (populate_tab_behavior == kPopulateTabs)
-    result->Set(tabs_constants::kTabsKey, CreateTabList(&browser, extension));
+    result->Set(tabs_constants::kTabsKey,
+                CreateTabList(&browser, extension, context));
 
   return result;
 }
@@ -550,16 +558,19 @@ void ExtensionTabUtil::SetPlatformDelegate(std::unique_ptr<Delegate> delegate) {
 // static
 ExtensionTabUtil::ScrubTabBehavior ExtensionTabUtil::GetScrubTabBehavior(
     const Extension* extension,
+    Feature::Context context,
     content::WebContents* contents) {
-  return GetScrubTabBehaviorImpl(extension, contents->GetURL(),
+  return GetScrubTabBehaviorImpl(extension, context, contents->GetURL(),
                                  GetTabId(contents));
 }
 
 // static
 ExtensionTabUtil::ScrubTabBehavior ExtensionTabUtil::GetScrubTabBehavior(
     const Extension* extension,
+    Feature::Context context,
     const GURL& url) {
-  return GetScrubTabBehaviorImpl(extension, url, api::tabs::TAB_ID_NONE);
+  return GetScrubTabBehaviorImpl(extension, context, url,
+                                 api::tabs::TAB_ID_NONE);
 }
 
 // static
