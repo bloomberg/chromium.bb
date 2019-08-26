@@ -1489,6 +1489,7 @@ nofor pass2 @6-3467 *
 nofor pass2 @6-2567 *
 nofor pass2 @6-2367 *
 nofor pass2 @6-34567 *
+nofor pass2 @6-367 *
 
 # remove any superfluous capsletter marks.
 noback pass2 @f ?
