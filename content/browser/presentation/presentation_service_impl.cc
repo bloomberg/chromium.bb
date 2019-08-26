@@ -139,7 +139,8 @@ void PresentationServiceImpl::SetController(
 }
 
 void PresentationServiceImpl::SetReceiver(
-    blink::mojom::PresentationReceiverPtr receiver) {
+    mojo::PendingRemote<blink::mojom::PresentationReceiver>
+        presentation_receiver_remote) {
   // Presentation receiver virtual web tests (which have the flag set) has no
   // ReceiverPresentationServiceDelegate implementation.
   // TODO(imcheng): Refactor content_browser_client to return a no-op
@@ -156,13 +157,13 @@ void PresentationServiceImpl::SetReceiver(
     return;
   }
 
-  if (receiver_) {
+  if (presentation_receiver_remote_) {
     mojo::ReportBadMessage("SetReceiver can only be called once.");
     return;
   }
 
-  receiver_ = std::move(receiver);
-  receiver_.set_connection_error_handler(base::BindOnce(
+  presentation_receiver_remote_.Bind(std::move(presentation_receiver_remote));
+  presentation_receiver_remote_.set_disconnect_handler(base::BindOnce(
       &PresentationServiceImpl::OnConnectionError, base::Unretained(this)));
   receiver_delegate_->RegisterReceiverConnectionAvailableCallback(
       base::Bind(&PresentationServiceImpl::OnReceiverConnectionAvailable,
@@ -442,7 +443,7 @@ void PresentationServiceImpl::OnReceiverConnectionAvailable(
         receiver_connection_receiver) {
   DVLOG(2) << "PresentationServiceImpl::OnReceiverConnectionAvailable";
 
-  receiver_->OnReceiverConnectionAvailable(
+  presentation_receiver_remote_->OnReceiverConnectionAvailable(
       std::move(presentation_info), std::move(controller_connection_remote),
       std::move(receiver_connection_receiver));
 }
@@ -485,7 +486,7 @@ void PresentationServiceImpl::Reset() {
 
   binding_.Close();
   presentation_controller_remote_.reset();
-  receiver_.reset();
+  presentation_receiver_remote_.reset();
 }
 
 void PresentationServiceImpl::OnDelegateDestroyed() {

@@ -73,7 +73,8 @@ class CONTENT_EXPORT PresentationServiceImpl
       const std::vector<GURL>& presentation_urls) override;
   void SetController(mojo::PendingRemote<blink::mojom::PresentationController>
                          presentation_controller_remote) override;
-  void SetReceiver(blink::mojom::PresentationReceiverPtr receiver) override;
+  void SetReceiver(mojo::PendingRemote<blink::mojom::PresentationReceiver>
+                       presentation_receiver_remote) override;
   void ListenForScreenAvailability(const GURL& url) override;
   void StopListeningForScreenAvailability(const GURL& url) override;
   void StartPresentation(const std::vector<GURL>& presentation_urls,
@@ -257,7 +258,8 @@ class CONTENT_EXPORT PresentationServiceImpl
       presentation_controller_remote_;
 
   // Pointer to the PresentationReceiver implementation in the renderer.
-  blink::mojom::PresentationReceiverPtr receiver_;
+  mojo::Remote<blink::mojom::PresentationReceiver>
+      presentation_receiver_remote_;
 
   std::vector<GURL> default_presentation_urls_;
 

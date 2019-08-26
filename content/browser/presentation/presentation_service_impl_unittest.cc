@@ -24,7 +24,6 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -164,7 +163,7 @@ class MockPresentationReceiver : public blink::mojom::PresentationReceiver {
       void(PresentationInfoPtr info,
            mojo::PendingRemote<PresentationConnection> controller_connection,
            mojo::PendingReceiver<PresentationConnection>
-               receiver_connection_receiver));
+               presentation_receiver_receiver));
 };
 
 class MockReceiverPresentationServiceDelegate
@@ -413,12 +412,13 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrls) {
       });
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _));
 
-  mojo::PendingRemote<PresentationConnection> receiver_remote;
+  mojo::PendingRemote<PresentationConnection> presentation_connection_remote;
   mojo::Remote<PresentationConnection> controller_remote;
-  ignore_result(receiver_remote.InitWithNewPipeAndPassReceiver());
+  ignore_result(
+      presentation_connection_remote.InitWithNewPipeAndPassReceiver());
   std::move(callback).Run(PresentationConnectionResult::New(
       blink::mojom::PresentationInfo::New(presentation_url2_, kPresentationId),
-      std::move(receiver_remote),
+      std::move(presentation_connection_remote),
       controller_remote.BindNewPipeAndPassReceiver()));
   base::RunLoop().RunUntilIdle();
 }
@@ -617,11 +617,10 @@ TEST_F(PresentationServiceImplTest, ReceiverPresentationServiceDelegate) {
       .WillOnce(SaveArg<0>(&callback));
 
   MockPresentationReceiver mock_receiver;
-  blink::mojom::PresentationReceiverPtr receiver_ptr;
-  mojo::Binding<blink::mojom::PresentationReceiver> receiver_binding(
-      &mock_receiver, mojo::MakeRequest(&receiver_ptr));
-  service_impl.controller_delegate_ = nullptr;
-  service_impl.SetReceiver(std::move(receiver_ptr));
+  mojo::Receiver<blink::mojom::PresentationReceiver>
+      presentation_receiver_receiver(&mock_receiver);
+  service_impl.SetReceiver(
+      presentation_receiver_receiver.BindNewPipeAndPassRemote());
   EXPECT_FALSE(callback.is_null());
 
   PresentationInfo expected(presentation_url1_, kPresentationId);

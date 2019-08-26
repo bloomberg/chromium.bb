@@ -113,7 +113,7 @@ interface PresentationService {
   // connections (initiated by a controller) becoming available.
   // TODO(crbug.com/749327): Move this method out of PresentationService and
   // define a new interface that implements only Presentation Receiver APIs.
-  SetReceiver(PresentationReceiver receiver);
+  SetReceiver(pending_remote<PresentationReceiver> receiver);
 
   ///////////// Functions here are for the controller part of the API. /////////
 
