@@ -789,8 +789,8 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropTextFromOutside) {
   }
 }
 
-#if defined(OS_CHROMEOS) || !defined(NDEBUG) || defined(OS_WIN)
-// Flaky: https://crbug.com/835774, https://crbug.com/988938
+#if !defined(NDEBUG) || defined(OS_WIN)
+// Flaky: https://crbug.com/988938
 #define MAYBE_DragStartInFrame DISABLED_DragStartInFrame
 #else
 #define MAYBE_DragStartInFrame DragStartInFrame
