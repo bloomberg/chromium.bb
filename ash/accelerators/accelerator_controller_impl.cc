@@ -807,10 +807,6 @@ void HandleToggleAmbientMode(const ui::Accelerator& accelerator) {
   Shell::Get()->ambient_controller()->Toggle();
 }
 
-bool CanHandleStartVoiceInteraction() {
-  return chromeos::features::IsAssistantEnabled();
-}
-
 void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
   if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_SPACE) {
     base::RecordAction(
@@ -862,11 +858,6 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
-      return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_FLAG:
-      ShowToast(kVoiceInteractionErrorToastId,
-                l10n_util::GetStringUTF16(
-                    IDS_ASH_VOICE_INTERACTION_DISABLED_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
       // supervised user is deprecated, wait for the code clean up.
@@ -1579,7 +1570,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case START_AMBIENT_MODE:
       return CanHandleStartAmbientMode();
     case START_VOICE_INTERACTION:
-      return CanHandleStartVoiceInteraction();
+      return true;
     case SWAP_PRIMARY_DISPLAY:
       return display::Screen::GetScreen()->GetNumDisplays() > 1;
     case SWITCH_IME:

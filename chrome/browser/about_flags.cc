@@ -3633,11 +3633,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-    {"enable-native-google-assistant",
-     flag_descriptions::kEnableGoogleAssistantName,
-     flag_descriptions::kEnableGoogleAssistantDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAssistantFeature)},
-
     {"enable-assistant-dsp", flag_descriptions::kEnableGoogleAssistantDspName,
      flag_descriptions::kEnableGoogleAssistantDspDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kEnableDspHotword)},

@@ -54,10 +54,8 @@ HomeButtonController::HomeButtonController(HomeButton* button)
   // Initialize voice interaction overlay and sync the flags if active user
   // session has already started. This could happen when an external monitor
   // is plugged in.
-  if (shell->session_controller()->IsActiveUserSessionStarted() &&
-      chromeos::features::IsAssistantEnabled()) {
+  if (shell->session_controller()->IsActiveUserSessionStarted())
     InitializeVoiceInteractionOverlay();
-  }
 }
 
 HomeButtonController::~HomeButtonController() {
@@ -164,7 +162,7 @@ void HomeButtonController::OnActiveUserSessionChanged(
   // Initialize voice interaction overlay when primary user session becomes
   // active.
   if (Shell::Get()->session_controller()->IsUserPrimary() &&
-      !assistant_overlay_ && chromeos::features::IsAssistantEnabled()) {
+      !assistant_overlay_) {
     InitializeVoiceInteractionOverlay();
   }
 }
@@ -187,14 +185,6 @@ void HomeButtonController::OnVoiceInteractionStatusChanged(
           base::TimeTicks::Now() - voice_interaction_start_timestamp_);
       break;
     case mojom::VoiceInteractionState::NOT_READY:
-      // If we are showing the bursting or waiting animation, no need to do
-      // anything. Otherwise show the waiting animation now.
-      // NOTE: No waiting animation for native assistant.
-      if (!chromeos::features::IsAssistantEnabled() &&
-          !assistant_overlay_->IsBursting() &&
-          !assistant_overlay_->IsWaiting()) {
-        assistant_overlay_->WaitingAnimation();
-      }
       break;
     case mojom::VoiceInteractionState::RUNNING:
       // we start hiding the animation if it is running.

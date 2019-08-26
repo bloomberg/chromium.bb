@@ -1949,9 +1949,6 @@ extern const char kEnableEncryptionMigrationDescription[];
 extern const char kEnableGesturePropertiesDBusServiceName[];
 extern const char kEnableGesturePropertiesDBusServiceDescription[];
 
-extern const char kEnableGoogleAssistantName[];
-extern const char kEnableGoogleAssistantDescription[];
-
 extern const char kEnableGoogleAssistantDspName[];
 extern const char kEnableGoogleAssistantDspDescription[];
 

@@ -71,7 +71,6 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
       mojom::AssistantAllowedState::ALLOWED,
       mojom::AssistantAllowedState::DISALLOWED_BY_POLICY,
       mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE,
-      mojom::AssistantAllowedState::DISALLOWED_BY_FLAG,
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER,
       mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER,
       mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO,

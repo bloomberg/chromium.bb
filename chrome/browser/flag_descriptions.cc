@@ -3258,11 +3258,6 @@ const char kEnableGesturePropertiesDBusServiceDescription[] =
     "Enable a D-Bus service for accessing gesture properties, which are used "
     "to configure input devices.";
 
-const char kEnableGoogleAssistantName[] = "Enable Google Assistant";
-const char kEnableGoogleAssistantDescription[] =
-    "Enable an experimental Assistant implementation that will work on all "
-    "Chromebooks.";
-
 const char kEnableGoogleAssistantDspName[] =
     "Enable Google Assistant with hardware-based hotword";
 const char kEnableGoogleAssistantDspDescription[] =

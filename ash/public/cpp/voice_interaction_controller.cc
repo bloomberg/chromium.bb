@@ -21,8 +21,7 @@ VoiceInteractionController* VoiceInteractionController::Get() {
 VoiceInteractionController::VoiceInteractionController() {
   DCHECK(!g_voice_interaction_cotroller);
   g_voice_interaction_cotroller = this;
-  if (chromeos::features::IsAssistantEnabled())
-    voice_interaction_state_ = mojom::VoiceInteractionState::NOT_READY;
+  voice_interaction_state_ = mojom::VoiceInteractionState::NOT_READY;
 }
 
 VoiceInteractionController::~VoiceInteractionController() {

@@ -49,9 +49,7 @@ VoiceInteractionControllerClient::VoiceInteractionControllerClient() {
   arc::ArcSessionManager::Get()->AddObserver(this);
   g_voice_interaction_controller_client_instance = this;
 
-  if (chromeos::features::IsAssistantEnabled()) {
-    voice_interaction_state_ = ash::mojom::VoiceInteractionState::NOT_READY;
-  }
+  voice_interaction_state_ = ash::mojom::VoiceInteractionState::NOT_READY;
 }
 
 VoiceInteractionControllerClient::~VoiceInteractionControllerClient() {

@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 
@@ -41,10 +40,6 @@ class AssistantPrefsControllerTest : public AshTestBase {
   ~AssistantPrefsControllerTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kAssistantFeature);
-    ASSERT_TRUE(chromeos::features::IsAssistantEnabled());
-
     AshTestBase::SetUp();
 
     prefs_ = Shell::Get()->session_controller()->GetPrimaryUserPrefService();
@@ -58,8 +53,6 @@ class AssistantPrefsControllerTest : public AshTestBase {
   TestAssistantPrefsObserver* observer() { return observer_.get(); }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   PrefService* prefs_ = nullptr;
   std::unique_ptr<TestAssistantPrefsObserver> observer_;
 

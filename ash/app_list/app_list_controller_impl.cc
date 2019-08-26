@@ -1175,9 +1175,6 @@ void AppListControllerImpl::NotifySearchResultsForLogging(
 }
 
 bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
-  if (!chromeos::features::IsAssistantEnabled())
-    return false;
-
   if (!Shell::Get()->assistant_controller()->IsAssistantReady())
     return false;
 

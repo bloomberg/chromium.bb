@@ -1377,11 +1377,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "enable-native-google-assistant",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-native-notifications",
     "owners": [ "peter", "finnur" ],
     "expiry_milestone": 76

@@ -247,9 +247,6 @@ void AssistantClient::OnExtendedAccountInfoUpdated(const AccountInfo& info) {
 }
 
 void AssistantClient::OnUserProfileLoaded(const AccountId& account_id) {
-  if (!chromeos::features::IsAssistantEnabled())
-    return;
-
   // Initialize Assistant when primary user profile is loaded so that it could
   // be used in post oobe steps. OnUserSessionStarted() is too late
   // because it happens after post oobe steps

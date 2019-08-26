@@ -354,7 +354,6 @@ bool Shell::IsSystemModalWindowOpen() {
 }
 
 AssistantController* Shell::assistant_controller() {
-  DCHECK(chromeos::features::IsAssistantEnabled());
   return assistant_controller_.get();
 }
 
@@ -663,8 +662,7 @@ Shell::~Shell() {
   // Destroy |assistant_controller_| earlier than |tablet_mode_controller_| so
   // that the former will destroy the Assistant view hierarchy which has a
   // dependency on the latter.
-  if (chromeos::features::IsAssistantEnabled())
-    assistant_controller_.reset();
+  assistant_controller_.reset();
 
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
@@ -1056,9 +1054,7 @@ void Shell::Init(
 
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
-  assistant_controller_ = chromeos::features::IsAssistantEnabled()
-                              ? std::make_unique<AssistantController>()
-                              : nullptr;
+  assistant_controller_ = std::make_unique<AssistantController>();
 
   // |assistant_controller_| is put before |ambient_controller_| as it will be
   // used by the latter.
