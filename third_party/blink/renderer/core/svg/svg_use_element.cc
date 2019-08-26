@@ -315,21 +315,23 @@ Element* SVGUseElement::ResolveTargetElement(ObserveBehavior observe_behavior) {
 }
 
 void SVGUseElement::BuildPendingResource() {
-  // Do not build the shadow/instance tree for nested <use> elements
-  // because they will get expanded in a second pass -- see
-  // ExpandUseElementsInShadowTree().
-  if (InUseShadowTree())
-    return;
+  // This runs just before computed style is updated, so this SVGUseElement
+  // should always be connected to the Document. It should also not be an
+  // SVGUseElement that is part of a shadow tree, since we should never
+  // schedule shadow tree updates for those.
+  DCHECK(!InUseShadowTree());
+  DCHECK(isConnected());
+
   DetachShadowTree();
   ClearResourceReference();
   CancelShadowTreeRecreation();
-  if (!isConnected())
-    return;
-  auto* target = DynamicTo<SVGElement>(ResolveTargetElement(kAddObserver));
-  // TODO(fs): Why would the Element not be "connected" at this point?
-  if (target && target->isConnected())
-    AttachShadowTree(*target);
+  DCHECK(isConnected());
 
+  auto* target = DynamicTo<SVGElement>(ResolveTargetElement(kAddObserver));
+  if (target) {
+    DCHECK(target->isConnected());
+    AttachShadowTree(*target);
+  }
   DCHECK(!needs_shadow_tree_recreation_);
 }
 
