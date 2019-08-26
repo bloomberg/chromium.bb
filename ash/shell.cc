@@ -72,7 +72,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/session/session_controller_impl.h"
@@ -751,7 +750,6 @@ Shell::~Shell() {
   laser_pointer_controller_.reset();
   partial_magnification_controller_.reset();
   highlighter_controller_.reset();
-  voice_interaction_controller_.reset();
   key_accessibility_enabler_.reset();
 
   display_speaker_controller_.reset();
@@ -978,8 +976,6 @@ void Shell::Init(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
   accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
-  voice_interaction_controller_ =
-      std::make_unique<VoiceInteractionController>();
 
   shelf_controller_ = std::make_unique<ShelfController>();
 

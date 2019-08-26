@@ -17,6 +17,7 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
@@ -259,8 +260,7 @@ void AssistantPageView::OnUiVisibilityChanged(
 
   const bool prefer_voice =
       assistant_view_delegate_->IsTabletMode() ||
-      assistant_view_delegate_->GetState()->launch_with_mic_open().value_or(
-          false);
+      ash::AssistantState::Get()->launch_with_mic_open().value_or(false);
   if (!ash::assistant::util::IsVoiceEntryPoint(entry_point.value(),
                                                prefer_voice)) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);

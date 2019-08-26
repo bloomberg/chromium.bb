@@ -13,7 +13,6 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/test_assistant_service.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -63,6 +62,8 @@ class HomeButtonTest : public AshTestBase {
   const HomeButton* home_button() const {
     return GetPrimaryShelf()->shelf_widget()->GetHomeButton();
   }
+
+  AssistantState* assistant_state() const { return AssistantState::Get(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HomeButtonTest);
@@ -163,11 +164,10 @@ TEST_F(HomeButtonTest, LongPressGesture) {
   CreateUserSessions(2);
 
   // Enable voice interaction in system settings.
-  VoiceInteractionController::Get()->NotifySettingsEnabled(true);
-  VoiceInteractionController::Get()->NotifyFeatureAllowed(
+  assistant_state()->NotifySettingsEnabled(true);
+  assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::ALLOWED);
-  VoiceInteractionController::Get()->NotifyStatusChanged(
-      mojom::VoiceInteractionState::STOPPED);
+  assistant_state()->NotifyStatusChanged(mojom::VoiceInteractionState::STOPPED);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -193,11 +193,11 @@ TEST_F(HomeButtonTest, LongPressGesture) {
 
 TEST_F(HomeButtonTest, LongPressGestureWithSecondaryUser) {
   // Disallowed by secondary user.
-  VoiceInteractionController::Get()->NotifyFeatureAllowed(
+  assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER);
 
   // Enable voice interaction in system settings.
-  VoiceInteractionController::Get()->NotifySettingsEnabled(true);
+  assistant_state()->NotifySettingsEnabled(true);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -224,8 +224,8 @@ TEST_F(HomeButtonTest, LongPressGestureWithSettingsDisabled) {
 
   // Simulate a user who has already completed setup flow, but disabled voice
   // interaction in settings.
-  VoiceInteractionController::Get()->NotifySettingsEnabled(false);
-  VoiceInteractionController::Get()->NotifyFeatureAllowed(
+  assistant_state()->NotifySettingsEnabled(false);
+  assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::ALLOWED);
 
   ui::GestureEvent long_press =
