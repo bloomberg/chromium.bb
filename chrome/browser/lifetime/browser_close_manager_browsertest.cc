@@ -445,8 +445,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 // Test that tabs in the same window with a beforeunload event that hangs are
 // treated the same as the user accepting the close, but do not close the tab
 // early.
+// crbug.com/997649. The test is flaky.
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
-                       TestHangInBeforeUnloadMultipleTabs) {
+                       DISABLED_TestHangInBeforeUnloadMultipleTabs) {
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browsers_[0], embedded_test_server()->GetURL("/beforeunload_hang.html")));
   AddBlankTabAndShow(browsers_[0]);
