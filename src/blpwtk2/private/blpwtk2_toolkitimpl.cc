@@ -844,6 +844,11 @@ int ToolkitImpl::addV8HeapTracer(EmbedderHeapTracer *tracer)
 {
     auto *multiHeapTracer = gin::MultiHeapTracer::From(v8::Isolate::GetCurrent());
 
+    // As 'multiHeapTracer' never sees 'tracer' directly, we have to configure
+    // its 'isolate' member manually.
+
+    multiHeapTracer->SetIsolate(tracer);
+
     // We wrap the specified 'tracer' in an 'EmbedderHeapTracerShim' to avoid
     // passing C++ objects across dll boundaries.
 
@@ -870,6 +875,11 @@ void ToolkitImpl::removeV8HeapTracer(int embedder_id)
     d_heapTracers.erase(embedder_id);
 }
 
+void ToolkitImpl::setIsolate(EmbedderHeapTracer *tracer)
+{
+    auto *multiHeapTracer = gin::MultiHeapTracer::From(v8::Isolate::GetCurrent());
+    multiHeapTracer->SetIsolate(tracer);
+}
 
 
 }  // close namespace blpwtk2

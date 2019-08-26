@@ -91,7 +91,7 @@ class ToolkitImpl : public Toolkit {
     ContentMainDelegateImpl d_mainDelegate;
     std::unique_ptr<content::ContentMainRunner> d_mainRunner;
     MainMessagePump *d_messagePump;
-    std::unique_ptr<base::FieldTrialList> field_trial_list;
+	std::unique_ptr<base::FieldTrialList> field_trial_list;
 
     std::unique_ptr<BrowserThread> d_browserThread;
         // Only used for the RENDERER_MAIN thread mode and when an external
@@ -197,6 +197,7 @@ class ToolkitImpl : public Toolkit {
     // patch section: multi-heap tracer
     int addV8HeapTracer(EmbedderHeapTracer *tracer) override;
     void removeV8HeapTracer(int embedder_id) override;
+    void setIsolate(EmbedderHeapTracer *tracer) override;
 
 
 

@@ -76,6 +76,11 @@ class EmbedderHeapTracerShim : public v8::EmbedderHeapTracer {
     void EnterFinalPause(EmbedderStackState stack_state) override;
         // Notify the wrapped tracer that we are entering the final pause.
 
+    bool IsRootForNonTracingGC(
+        const v8::TracedGlobal<v8::Value>& handle) override;
+        // Return 'true' if the specified 'handle' should be considered as a
+        // root for non-tracing GC, and 'false' otherwise.
+
     bool IsTracingDone() override;
         // Return 'true' if there is no more work to be done, and 'false'
         // otherwise.
@@ -85,10 +90,10 @@ class EmbedderHeapTracerShim : public v8::EmbedderHeapTracer {
         // Notify the wrapped tracer of the embedder fields V8 has discovered
         // that may need to be traced.
 
-    void TraceEpilogue() override;
+    void TraceEpilogue(TraceSummary *trace_summary) override;
         // Notify the wrapped tracer of the trace epilogue.
 
-    void TracePrologue() override;
+    void TracePrologue(TraceFlags flags) override;
         // Notify the wrapped tracer of the trace prologue.
 };
 
@@ -113,21 +118,28 @@ void EmbedderHeapTracerShim::EnterFinalPause(EmbedderStackState stack_state)
 }
 
 inline
+bool EmbedderHeapTracerShim::IsRootForNonTracingGC(
+                                     const v8::TracedGlobal<v8::Value>& handle)
+{
+    return d_tracer_p->IsRootForNonTracingGC(handle);
+}
+
+inline
 bool EmbedderHeapTracerShim::IsTracingDone()
 {
     return d_tracer_p->IsTracingDone();
 }
 
 inline
-void EmbedderHeapTracerShim::TraceEpilogue()
+void EmbedderHeapTracerShim::TraceEpilogue(TraceSummary *trace_summary)
 {
-    d_tracer_p->TraceEpilogue();
+    d_tracer_p->TraceEpilogue(trace_summary);
 }
 
 inline
-void EmbedderHeapTracerShim::TracePrologue()
+void EmbedderHeapTracerShim::TracePrologue(TraceFlags flags)
 {
-    d_tracer_p->TracePrologue();
+    d_tracer_p->TracePrologue(flags);
 }
 
 }  // close blpwtk2 namespace
