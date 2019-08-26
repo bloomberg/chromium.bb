@@ -1100,7 +1100,6 @@ class MetaBuildWrapper(object):
       # TODO(https://crbug.com/912946): Remove this if statement.
       if (f == 'angledata/gl_cts/' or  # http://anglebug.com/3827
           f == 'gen/chrome/browser/resources/media_router/extension/' or
-          f == 'gen/components/subresource_filter/tools/' or
           f == 'locales/' or
           f.startswith('nacl_test_data/') or
           f.startswith('ppapi_nacl_tests_libs/') or
