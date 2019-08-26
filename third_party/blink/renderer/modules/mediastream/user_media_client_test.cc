@@ -257,7 +257,8 @@ class MockMediaDevicesDispatcherHost
       bool subscribe_audio_input,
       bool subscribe_video_input,
       bool subscribe_audio_output,
-      blink::mojom::blink::MediaDevicesListenerPtr listener) override {
+      mojo::PendingRemote<blink::mojom::blink::MediaDevicesListener> listener)
+      override {
     NOTREACHED();
   }
 
