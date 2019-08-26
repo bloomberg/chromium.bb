@@ -85,13 +85,15 @@ void PresentationReceiver::RemoveConnection(
 
 void PresentationReceiver::OnReceiverConnectionAvailable(
     mojom::blink::PresentationInfoPtr info,
-    mojom::blink::PresentationConnectionPtr controller_connection,
-    mojom::blink::PresentationConnectionRequest receiver_connection_request) {
+    mojo::PendingRemote<mojom::blink::PresentationConnection>
+        controller_connection,
+    mojo::PendingReceiver<mojom::blink::PresentationConnection>
+        receiver_connection_receiver) {
   // Take() will call PresentationReceiver::registerConnection()
   // and register the connection.
   auto* connection = ReceiverPresentationConnection::Take(
       this, *info, std::move(controller_connection),
-      std::move(receiver_connection_request));
+      std::move(receiver_connection_receiver));
 
   // Only notify receiver.connectionList property if it has been acccessed
   // previously.

@@ -433,13 +433,15 @@ PresentationServiceImpl::GetPresentationServiceDelegate() {
 // TODO(btolsch): Convert to PresentationConnectionResultPtr.
 void PresentationServiceImpl::OnReceiverConnectionAvailable(
     PresentationInfoPtr presentation_info,
-    PresentationConnectionPtr controller_connection_ptr,
-    PresentationConnectionRequest receiver_connection_request) {
+    mojo::PendingRemote<blink::mojom::PresentationConnection>
+        controller_connection_remote,
+    mojo::PendingReceiver<blink::mojom::PresentationConnection>
+        receiver_connection_receiver) {
   DVLOG(2) << "PresentationServiceImpl::OnReceiverConnectionAvailable";
 
   receiver_->OnReceiverConnectionAvailable(
-      std::move(presentation_info), std::move(controller_connection_ptr),
-      std::move(receiver_connection_request));
+      std::move(presentation_info), std::move(controller_connection_remote),
+      std::move(receiver_connection_receiver));
 }
 
 void PresentationServiceImpl::DidFinishNavigation(

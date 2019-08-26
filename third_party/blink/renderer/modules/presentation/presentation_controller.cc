@@ -119,7 +119,7 @@ void PresentationController::OnDefaultPresentationStarted(
     mojom::blink::PresentationConnectionResultPtr result) {
   DCHECK(result);
   DCHECK(result->presentation_info);
-  DCHECK(result->connection_ptr && result->connection_request);
+  DCHECK(result->connection_remote && result->connection_receiver);
   if (!presentation_ || !presentation_->defaultRequest())
     return;
 
@@ -128,9 +128,8 @@ void PresentationController::OnDefaultPresentationStarted(
   // TODO(btolsch): Convert this and similar calls to just use InterfacePtrInfo
   // instead of constructing an InterfacePtr every time we have
   // InterfacePtrInfo.
-  connection->Init(mojom::blink::PresentationConnectionPtr(
-                       std::move(result->connection_ptr)),
-                   std::move(result->connection_request));
+  connection->Init(std::move(result->connection_remote),
+                   std::move(result->connection_receiver));
 }
 
 void PresentationController::ContextDestroyed(ExecutionContext*) {

@@ -23,6 +23,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "url/gurl.h"
 
@@ -208,8 +210,10 @@ class CONTENT_EXPORT PresentationServiceImpl
   // Calls |receiver_| to create a new PresentationConnection on receiver page.
   void OnReceiverConnectionAvailable(
       blink::mojom::PresentationInfoPtr presentation_info,
-      PresentationConnectionPtr controller_connection_ptr,
-      PresentationConnectionRequest receiver_connection_request);
+      mojo::PendingRemote<blink::mojom::PresentationConnection>
+          controller_connection_remote,
+      mojo::PendingReceiver<blink::mojom::PresentationConnection>
+          receiver_connection_receiver);
 
   // Associates a ReconnectPresentation |callback| with a unique request ID and
   // stores it in a map. Moves out |callback| object if |callback| is registered
