@@ -1500,6 +1500,22 @@ void RenderWebView::devToolsAgentHostDetached(WebView *source)
 }
 #endif
 
+#if defined(BLPWTK2_FEATURE_PERFORMANCETIMING)
+void RenderWebView::startPerformanceTiming()
+{
+    if (d_delegate) {
+        d_delegate->startPerformanceTiming();
+    }
+}
+
+void RenderWebView::stopPerformanceTiming()
+{
+    if (d_delegate) {
+        d_delegate->stopPerformanceTiming();
+    }
+}
+#endif
+
 // WebViewProxyDelegate overrides
 void RenderWebView::notifyRoutingId(int id)
 {
