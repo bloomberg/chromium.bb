@@ -51,7 +51,9 @@ class FakeBlob final : public blink::mojom::Blob {
 
  private:
   // Implements blink::mojom::Blob.
-  void Clone(blink::mojom::BlobRequest) override { NOTREACHED(); }
+  void Clone(mojo::PendingReceiver<blink::mojom::Blob>) override {
+    NOTREACHED();
+  }
   void AsDataPipeGetter(network::mojom::DataPipeGetterRequest) override {
     NOTREACHED();
   }
