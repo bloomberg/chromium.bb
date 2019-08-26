@@ -344,7 +344,7 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
 #else
 #define MAYBE_TabManagerBasics TabManagerBasics
 #endif
-IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
+IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   using content::WindowedNotificationObserver;
 
   // Get three tabs open.
