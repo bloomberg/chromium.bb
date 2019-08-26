@@ -1764,6 +1764,10 @@
       depends_on: ["WebShare"],
     },
     {
+      name: "WebSocketStream",
+      status: "experimental",
+    },
+    {
       name: "WebUSB",
       status: "stable",
     },
