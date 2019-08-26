@@ -2257,6 +2257,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cheza',
       'cobblepot',
       'cyan',
+      'drallion',
       'edgar',
       'elm',
       'eve',
@@ -2315,6 +2316,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'whirlwind',
       'winky',
       'wooten',
+      'zork',
   ])
 
   # Paladin configs that exist and should be important as soon as they are
@@ -2339,14 +2341,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'betty-kernelnext',
       'bubs',
-      'drallion',
       'jacuzzi',
       'kefka-kernelnext',
       'kumo',
       'veyron_jerry-kernelnext',
       'veyron_minnie-kernelnext',
       'volteer',
-      'zork',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
