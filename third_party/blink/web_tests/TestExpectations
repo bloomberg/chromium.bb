@@ -3370,7 +3370,6 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-r
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/idl.any.serviceworker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/meta-referrer/cross-origin/http-http/xhr-request/swap-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/cross-origin/http-http/xhr-request/swap-origin-redirect/cross-origin.http.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/basic/scheme-data.any.worker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/policies/referrer-unsafe-url.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/swap-origin-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Timeout ]
