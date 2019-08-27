@@ -1228,14 +1228,6 @@ static inline bool UserScrollableVertical(LayerImpl* layer) {
   return layer->test_properties()->user_scrollable_vertical;
 }
 
-static inline OverscrollBehavior GetOverscrollBehavior(Layer* layer) {
-  return layer->overscroll_behavior();
-}
-
-static inline OverscrollBehavior GetOverscrollBehavior(LayerImpl* layer) {
-  return layer->test_properties()->overscroll_behavior;
-}
-
 static inline const base::Optional<SnapContainerData>& GetSnapContainerData(
     Layer* layer) {
   return layer->snap_container_data();
@@ -1310,7 +1302,6 @@ void PropertyTreeBuilderContext<LayerType>::AddScrollNodeIfNeeded(
     node.user_scrollable_vertical = UserScrollableVertical(layer);
     node.element_id = layer->element_id();
     node.transform_id = data_for_children->transform_tree_parent;
-    node.overscroll_behavior = GetOverscrollBehavior(layer);
     node.snap_container_data = GetSnapContainerData(layer);
 
     node_id = scroll_tree_.Insert(node, parent_id);

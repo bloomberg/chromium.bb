@@ -27,8 +27,7 @@ LayerImplTestProperties::LayerImplTestProperties(LayerImpl* owning_layer)
       scroll_parent(nullptr),
       clip_parent(nullptr),
       mask_layer(nullptr),
-      parent(nullptr),
-      overscroll_behavior(OverscrollBehavior()) {}
+      parent(nullptr) {}
 
 LayerImplTestProperties::~LayerImplTestProperties() = default;
 

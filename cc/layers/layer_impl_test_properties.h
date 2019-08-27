@@ -8,7 +8,6 @@
 #include <set>
 #include <vector>
 
-#include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
@@ -69,7 +68,6 @@ struct CC_EXPORT LayerImplTestProperties {
   uint32_t main_thread_scrolling_reasons = 0;
   bool user_scrollable_horizontal = true;
   bool user_scrollable_vertical = true;
-  OverscrollBehavior overscroll_behavior;
   base::Optional<SnapContainerData> snap_container_data;
   gfx::RRectF rounded_corner_bounds;
 };

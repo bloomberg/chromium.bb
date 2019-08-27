@@ -31,7 +31,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"

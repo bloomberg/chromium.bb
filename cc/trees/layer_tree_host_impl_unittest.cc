@@ -1800,10 +1800,9 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 30), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
-  overflow->test_properties()->overscroll_behavior =
+  GetScrollNode(overflow)->overscroll_behavior =
       OverscrollBehavior(OverscrollBehavior::kOverscrollBehaviorTypeContain,
                          OverscrollBehavior::kOverscrollBehaviorTypeAuto);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   DrawFrame();
 
@@ -1853,10 +1852,9 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
   // Changing scroll-boundary-behavior to y axis.
-  overflow->test_properties()->overscroll_behavior =
+  GetScrollNode(overflow)->overscroll_behavior =
       OverscrollBehavior(OverscrollBehavior::kOverscrollBehaviorTypeAuto,
                          OverscrollBehavior::kOverscrollBehaviorTypeContain);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   DrawFrame();
 
@@ -1907,10 +1905,9 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
 
   // Gesture scroll should latch to the first scroller that has non-auto
   // overscroll-behavior.
-  overflow->test_properties()->overscroll_behavior =
+  GetScrollNode(overflow)->overscroll_behavior =
       OverscrollBehavior(OverscrollBehavior::kOverscrollBehaviorTypeContain,
                          OverscrollBehavior::kOverscrollBehaviorTypeContain);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   DrawFrame();
 

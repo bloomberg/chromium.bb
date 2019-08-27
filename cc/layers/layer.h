@@ -21,7 +21,6 @@
 #include "cc/benchmarks/micro_benchmark.h"
 #include "cc/cc_export.h"
 #include "cc/input/input_handler.h"
-#include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
@@ -190,15 +189,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // the device scale factor.
   void SetBounds(const gfx::Size& bounds);
   const gfx::Size& bounds() const { return inputs_.bounds; }
-
-  // Set and get the behaviour to be applied for compositor-thread scrolling of
-  // this layer beyond the beginning or end of the layer's content.
-  // TODO(bokan): With blink-gen-property-trees this is stored on the
-  // ScrollNode and can be removed here.
-  void SetOverscrollBehavior(const OverscrollBehavior& behavior);
-  OverscrollBehavior overscroll_behavior() const {
-    return inputs_.overscroll_behavior;
-  }
 
   // Set and get the snapping behaviour for compositor-thread scrolling of
   // this layer. The default value of null means there is no snapping for the
@@ -1061,8 +1051,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     base::RepeatingCallback<void(const gfx::ScrollOffset&, const ElementId&)>
         did_scroll_callback;
     std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
-
-    OverscrollBehavior overscroll_behavior;
 
     base::Optional<SnapContainerData> snap_container_data;
 

@@ -27,7 +27,6 @@
 
 #include <memory>
 
-#include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/accessibility/apply_dark_mode.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
