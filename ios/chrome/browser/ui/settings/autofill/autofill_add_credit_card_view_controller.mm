@@ -106,7 +106,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierName];
   [model addSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-  [model addSectionWithIdentifier:SectionIdentifierCameraButton];
 
   AutofillEditItem* cardHolderNameItem =
       [self createTableViewItemWithType:ItemTypeName
@@ -166,8 +165,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cameraButtonItem.text = l10n_util::GetNSString(
       IDS_IOS_AUTOFILL_ADD_CREDIT_CARD_OPEN_CAMERA_BUTTON_LABEL);
   cameraButtonItem.textAlignment = NSTextAlignmentCenter;
-  [model addItem:cameraButtonItem
-      toSectionWithIdentifier:SectionIdentifierCameraButton];
+  if (@available(iOS 13, *)) {
+    [model addSectionWithIdentifier:SectionIdentifierCameraButton];
+    [model addItem:cameraButtonItem
+        toSectionWithIdentifier:SectionIdentifierCameraButton];
+  }
 }
 
 #pragma mark - UITableViewDelegate
