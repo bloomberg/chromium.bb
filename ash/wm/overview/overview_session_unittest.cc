@@ -2813,6 +2813,15 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
     GetEventGenerator()->Dispatch(&long_press);
   }
 
+  // Creates |n| test windows. They are created in reverse order, so that the
+  // first window in the vector is the MRU window.
+  std::vector<std::unique_ptr<aura::Window>> CreateTestWindows(int n) {
+    std::vector<std::unique_ptr<aura::Window>> windows(n);
+    for (int i = n - 1; i >= 0; --i)
+      windows[i] = CreateTestWindow();
+    return windows;
+  }
+
   // TODO(sammiequon): Investigate simulating fling event for testing inertial
   // scrolling.
 
@@ -2824,23 +2833,14 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
 
 // Tests that windows are in proper positions in the new overview layout.
 TEST_F(OverviewSessionNewLayoutTest, CheckNewLayoutWindowPositions) {
-  // Windows are created in this order because overview orders windows in terms
-  // of most recently used. |window4| will be created first, but will be
-  // determined last recently used. |window1| will be created last, but will be
-  // determined most recently used. Thus this order will be reflected in
-  // overview mode.
-  std::unique_ptr<aura::Window> window4 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
-
+  auto windows = CreateTestWindows(6);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
-  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
-  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
-  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
-  OverviewItem* item4 = GetOverviewItemForWindow(window4.get());
+  OverviewItem* item1 = GetOverviewItemForWindow(windows[0].get());
+  OverviewItem* item2 = GetOverviewItemForWindow(windows[1].get());
+  OverviewItem* item3 = GetOverviewItemForWindow(windows[2].get());
+  OverviewItem* item4 = GetOverviewItemForWindow(windows[3].get());
 
   const gfx::RectF item1_bounds = item1->target_bounds();
   const gfx::RectF item2_bounds = item2->target_bounds();
@@ -2864,15 +2864,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckNewLayoutWindowPositions) {
 }
 
 TEST_F(OverviewSessionNewLayoutTest, CheckOffscreenWindows) {
-  // Windows are created in this order because overview orders windows in terms
-  // of most recently used. |window|7|| will be created first, but will be
-  // determined last recently used. |window|0|| will be created last, but will
-  // be determined most recently used. Thus this order will be reflected in
-  // overview mode.
-  std::vector<std::unique_ptr<aura::Window>> windows(8);
-  for (int i = 7; i >= 0; --i)
-    windows[i] = CreateTestWindow();
-
+  auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
@@ -2901,10 +2893,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOffscreenWindows) {
 // Tests to see if windows are not shifted if all already available windows
 // fit on screen.
 TEST_F(OverviewSessionNewLayoutTest, CheckNoOverviewItemShift) {
-  std::vector<std::unique_ptr<aura::Window>> windows(4);
-  for (int i = 3; i >= 0; --i)
-    windows[i] = CreateTestWindow();
-
+  auto windows = CreateTestWindows(4);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
@@ -2918,10 +2907,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckNoOverviewItemShift) {
 // Tests to see if windows are shifted if at least one window is
 // partially/completely positioned offscreen.
 TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemShift) {
-  std::vector<std::unique_ptr<aura::Window>> windows(7);
-  for (int i = 6; i >= 0; --i)
-    windows[i] = CreateTestWindow();
-
+  auto windows = CreateTestWindows(7);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
@@ -2934,15 +2920,12 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemShift) {
 
 // Tests to see if windows remain in bounds after scrolling extremely far.
 TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
-  std::vector<std::unique_ptr<aura::Window>> windows(8);
-  for (int i = 7; i >= 0; --i)
-    windows[i] = CreateTestWindow();
-
+  auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
   // Scroll an extreme amount to see if windows on the far left are still in
-  // bounds. First, align the left-most window (|windows|0||) to the left-hand
+  // bounds. First, align the left-most window (|windows[0]|) to the left-hand
   // bound and store the item's location. Then, scroll a far amount and check to
   // see if the item moved at all.
   OverviewItem* leftmost_window = GetOverviewItemForWindow(windows[0].get());
@@ -2953,7 +2936,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
   EXPECT_EQ(left_bounds, leftmost_window->target_bounds());
 
   // Scroll an extreme amount to see if windows on the far right are still in
-  // bounds. First, align the right-most window (|windows|7||) to the right-hand
+  // bounds. First, align the right-most window (|windows[7]|) to the right-hand
   // bound and store the item's location. Then, scroll a far amount and check to
   // see if the item moved at all.
   OverviewItem* rightmost_window = GetOverviewItemForWindow(windows[7].get());
@@ -2996,10 +2979,7 @@ TEST_F(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
 // Test that scrolling occurs if started on top of a window using the window's
 // center-point as a start.
 TEST_F(OverviewSessionNewLayoutTest, CheckScrollingOnWindowItems) {
-  std::vector<std::unique_ptr<aura::Window>> windows(8);
-  for (int i = 7; i >= 0; --i)
-    windows[i] = CreateTestWindow();
-
+  auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
@@ -3012,24 +2992,35 @@ TEST_F(OverviewSessionNewLayoutTest, CheckScrollingOnWindowItems) {
   EXPECT_LT(leftmost_window->target_bounds(), left_bounds);
 }
 
+// Test that scrolling occurs if we hit the associated keyboard shortcut.
+TEST_F(OverviewSessionNewLayoutTest, CheckScrollingWithKeyboardShortcut) {
+  auto windows = CreateTestWindows(8);
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* leftmost_window = GetOverviewItemForWindow(windows[0].get());
+  const gfx::RectF left_bounds = leftmost_window->target_bounds();
+
+  SendKey(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
+  EXPECT_LT(leftmost_window->target_bounds(), left_bounds);
+}
+
 // Test that tapping a window in overview closes overview mode.
 TEST_F(OverviewSessionNewLayoutTest, CheckWindowActivateOnTap) {
   base::UserActionTester user_action_tester;
-  std::vector<std::unique_ptr<aura::Window>> windows(8);
-  for (int i = 7; i >= 0; --i)
-    windows[i] = CreateTestWindow();
+  auto windows = CreateTestWindows(8);
   wm::ActivateWindow(windows[1].get());
 
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
-  // Tap on |windows|1|| to exit overview.
+  // Tap on |windows[1]| to exit overview.
   GetEventGenerator()->GestureTapAt(
       GetTransformedTargetBounds(windows[1].get()).CenterPoint());
   EXPECT_EQ(
       0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
 
-  // |windows|1|| remains active. Click on it to exit overview.
+  // |windows[1]| remains active. Click on it to exit overview.
   ASSERT_EQ(windows[1].get(), window_util::GetFocusedWindow());
   ToggleOverview();
   ClickWindow(windows[1].get());

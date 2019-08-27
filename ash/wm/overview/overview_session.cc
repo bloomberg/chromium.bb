@@ -67,6 +67,11 @@ constexpr SkColor kNoItemsIndicatorBackgroundColor =
     SkColorSetA(SK_ColorBLACK, 204);
 constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
 
+// Values for scrolling the grid by using the keyboard.
+// TODO(sammiequon): See if we can use the same values used for web scrolling.
+constexpr int kKeyboardPressScrollingDp = 25;
+constexpr int kKeyboardHoldScrollingDp = 5;
+
 // Returns the bounds for the overview window grid according to the split view
 // state. If split view mode is active, the overview window should open on the
 // opposite side of the default snap window. If |divider_changed| is true, maybe
@@ -840,7 +845,11 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
-  if (event->type() != ui::ET_KEY_PRESSED)
+  const bool process_released_key_event =
+      (event->key_code() == ui::VKEY_LEFT ||
+       event->key_code() == ui::VKEY_RIGHT) &&
+      ShouldUseTabletModeGridLayout();
+  if (event->type() != ui::ET_KEY_PRESSED && !process_released_key_event)
     return;
 
   switch (event->key_code()) {
@@ -857,17 +866,22 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       Move(/*reverse=*/false);
       break;
     case ui::VKEY_RIGHT:
-    case ui::VKEY_TAB:
-      if (event->key_code() == ui::VKEY_RIGHT ||
-          !(event->flags() & ui::EF_SHIFT_DOWN)) {
+      if (!ProcessForScrolling(*event)) {
         ++num_key_presses_;
         Move(/*reverse=*/false);
-        break;
       }
-      FALLTHROUGH;
-    case ui::VKEY_LEFT:
+      break;
+    case ui::VKEY_TAB: {
+      const bool reverse = event->flags() & ui::EF_SHIFT_DOWN;
       ++num_key_presses_;
-      Move(/*reverse=*/true);
+      Move(reverse);
+      break;
+    }
+    case ui::VKEY_LEFT:
+      if (!ProcessForScrolling(*event)) {
+        ++num_key_presses_;
+        Move(/*reverse=*/true);
+      }
       break;
     case ui::VKEY_W: {
       if (!(event->flags() & ui::EF_CONTROL_DOWN))
@@ -984,6 +998,37 @@ void OverviewSession::Move(bool reverse) {
     return;
 
   highlight_controller_->MoveHighlight(reverse);
+}
+
+bool OverviewSession::ProcessForScrolling(const ui::KeyEvent& event) {
+  if (!ShouldUseTabletModeGridLayout() ||
+      !(event.flags() & ui::EF_CONTROL_DOWN)) {
+    return false;
+  }
+
+  const bool press = (event.type() == ui::ET_KEY_PRESSED);
+  const bool repeat = event.is_repeat();
+  DCHECK(event.key_code() == ui::VKEY_LEFT ||
+         event.key_code() == ui::VKEY_RIGHT);
+  const bool reverse = event.key_code() == ui::VKEY_LEFT;
+
+  // TODO(sammiequon): This only works for tablet mode at the moment, so using
+  // the primary display works. If this feature is adapted for multi display
+  // then this needs to be revisited.
+  auto* grid = GetGridWithRootWindow(Shell::GetPrimaryRootWindow());
+  if (press && !repeat) {
+    grid->StartScroll();
+    grid->UpdateScrollOffset(kKeyboardPressScrollingDp * (reverse ? 1 : -1));
+    return true;
+  }
+
+  if (press && repeat) {
+    grid->UpdateScrollOffset(kKeyboardHoldScrollingDp * (reverse ? 1 : -1));
+    return true;
+  }
+
+  grid->EndScroll();
+  return true;
 }
 
 void OverviewSession::RemoveAllObservers() {
