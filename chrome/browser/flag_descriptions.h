@@ -1361,6 +1361,9 @@ extern const char kClearOldBrowsingDataDescription[];
 extern const char kClickToCallOpenDialerDirectlyName[];
 extern const char kClickToCallOpenDialerDirectlyDescription[];
 
+extern const char kCloseTabSuggestionsStaleName[];
+extern const char kCloseTabSuggestionsStaleDescription[];
+
 extern const char kClickToCallReceiverName[];
 extern const char kClickToCallReceiverDescription[];
 

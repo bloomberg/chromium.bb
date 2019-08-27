@@ -1018,6 +1018,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "enable-close-tab-suggestions-stale",
+    "owners": [ "memex-team@google.com" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-cloud-print-xps",
     "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76

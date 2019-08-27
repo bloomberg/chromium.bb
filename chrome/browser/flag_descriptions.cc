@@ -2284,6 +2284,10 @@ const char kClickToCallOpenDialerDirectlyName[] =
 const char kClickToCallOpenDialerDirectlyDescription[] =
     "Enables opening the dialer directly instead of displaying a notification. "
     "Only available on Android P- and when the screen is on and unlocked.";
+const char kCloseTabSuggestionsStaleName[] = "Suggest to close stale Tabs";
+const char kCloseTabSuggestionsStaleDescription[] =
+    "Suggests to the user to close Tabs that have not been used above a "
+    "threshold such as 1 day. The threshold is configurable.";
 
 const char kClickToCallReceiverName[] =
     "Enable receiver device to handle click to call feature";

@@ -468,6 +468,23 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
      kForceDark_SelectiveGeneralInversion,
      base::size(kForceDark_SelectiveGeneralInversion), nullptr}};
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_4Hours[] = {
+    {"close_tab_suggestions_stale_time_ms", "14400000"}};
+const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_8Hours[] = {
+    {"close_tab_suggestions_stale_time_ms", "28800000"}};
+const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_7Days[] = {
+    {"close_tab_suggestions_stale_time_ms", "604800000"}};
+const FeatureEntry::FeatureVariation kCloseTabSuggestionsStaleVariations[] = {
+    {"4 hours", kCloseTabSuggestionsStale_4Hours,
+     base::size(kCloseTabSuggestionsStale_4Hours), nullptr},
+    {"8 hours", kCloseTabSuggestionsStale_8Hours,
+     base::size(kCloseTabSuggestionsStale_8Hours), nullptr},
+    {"7 days", kCloseTabSuggestionsStale_7Days,
+     base::size(kCloseTabSuggestionsStale_7Days), nullptr},
+};
+#endif  // OS_ANDROID
+
 const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceEnabled,
@@ -3213,6 +3230,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kStartSurfaceAndroid,
                                     kStartSurfaceAndroidVariations,
                                     "StartSurfaceAndroid")},
+
+    {"enable-close-tab-suggestions-stale",
+     flag_descriptions::kCloseTabSuggestionsStaleName,
+     flag_descriptions::kCloseTabSuggestionsStaleDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kCloseTabSuggestionsStale,
+                                    kCloseTabSuggestionsStaleVariations,
+                                    "CloseSuggestionsStaleTab")},
 
     {"enable-horizontal-tab-switcher",
      flag_descriptions::kHorizontalTabSwitcherAndroidName,
