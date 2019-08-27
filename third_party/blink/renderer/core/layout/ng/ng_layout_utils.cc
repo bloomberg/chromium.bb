@@ -454,23 +454,34 @@ bool MaySkipLayoutWithinBlockFormattingContext(
 
   // We can now try to adjust the BFC block-offset for regular blocks.
   DCHECK(*bfc_block_offset);
+  DCHECK_EQ(old_space.AncestorHasClearancePastAdjoiningFloats(),
+            new_space.AncestorHasClearancePastAdjoiningFloats());
 
-  // New formatting-contexts have (potentially) complex positioning logic. In
-  // some cases they will resolve a BFC block-offset twice (with their margins
-  // adjoining, and not adjoining), resulting in two different "forced" BFC
-  // block-offsets. We don't allow caching as we can't determine which pass a
-  // layout result belongs to for this case.
-  // TODO(ikilpatrick): We need to relax this restriction for fragments which
-  // have clearance past adjoining floats (which is quite common).
-  if (old_space.ForcedBfcBlockOffset() != new_space.ForcedBfcBlockOffset())
-    return false;
+  bool ancestor_has_clearance_past_adjoining_floats =
+      new_space.AncestorHasClearancePastAdjoiningFloats();
+
+  if (ancestor_has_clearance_past_adjoining_floats) {
+    // The subsequent code will break if these invariants don't hold true.
+    DCHECK(old_space.ForcedBfcBlockOffset());
+    DCHECK(new_space.ForcedBfcBlockOffset());
+    DCHECK_EQ(*old_space.ForcedBfcBlockOffset(), old_clearance_offset);
+    DCHECK_EQ(*new_space.ForcedBfcBlockOffset(), new_clearance_offset);
+  } else {
+    // New formatting-contexts have (potentially) complex positioning logic. In
+    // some cases they will resolve a BFC block-offset twice (with their margins
+    // adjoining, and not adjoining), resulting in two different "forced" BFC
+    // block-offsets. We don't allow caching as we can't determine which pass a
+    // layout result belongs to for this case.
+    if (old_space.ForcedBfcBlockOffset() != new_space.ForcedBfcBlockOffset())
+      return false;
+  }
 
   // Check if the previous position intersects with any floats.
   if (**bfc_block_offset <
       old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
     return false;
 
-  if (is_pushed_by_floats) {
+  if (is_pushed_by_floats || ancestor_has_clearance_past_adjoining_floats) {
     DCHECK_EQ(**bfc_block_offset, old_clearance_offset);
     *block_offset_delta = new_clearance_offset - old_clearance_offset;
     *bfc_block_offset = new_clearance_offset;
