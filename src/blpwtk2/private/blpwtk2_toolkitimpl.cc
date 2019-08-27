@@ -887,7 +887,7 @@ void ToolkitImpl::removeV8HeapTracer(int embedder_id)
     d_heapTracers.erase(embedder_id);
 }
 
-void ToolkitImpl::setIsolate(EmbedderHeapTracer *tracer)
+void ToolkitImpl::setIsolate(v8::EmbedderHeapTracer *tracer)
 {
     auto *multiHeapTracer = gin::MultiHeapTracer::From(v8::Isolate::GetCurrent());
     multiHeapTracer->SetIsolate(tracer);

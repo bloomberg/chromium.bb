@@ -216,7 +216,7 @@ class Toolkit {
     virtual void removeV8HeapTracer(int embedder_id) = 0;
         // Unregisters an embedder heap trace from the multi heap tracer.
 
-    virtual void setIsolate(EmbedderHeapTracer *tracer) = 0;
+    virtual void setIsolate(v8::EmbedderHeapTracer *tracer) = 0;
         // Set the 'isolate' field of the specified 'tracer' to the same value
         // as the 'isolate' field of the multi heap tracer so that 'tracer' is
         // operational.
