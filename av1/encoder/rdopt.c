@@ -229,8 +229,8 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { GLOBALMV, { LAST3_FRAME, NONE_FRAME } },
   { GLOBALMV, { BWDREF_FRAME, NONE_FRAME } },
   { GLOBALMV, { ALTREF2_FRAME, NONE_FRAME } },
-  { GLOBALMV, { GOLDEN_FRAME, NONE_FRAME } },
   { GLOBALMV, { ALTREF_FRAME, NONE_FRAME } },
+  { GLOBALMV, { GOLDEN_FRAME, NONE_FRAME } },
 
   // TODO(zoeliu): May need to reconsider the order on the modes to check
 
