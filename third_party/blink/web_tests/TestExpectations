@@ -243,6 +243,7 @@ crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 # Skip some tests for rendersubtree
+crbug.com/991095 wpt_internal/display-lock/rendersubtree/paint/locked-svg-doesnt-paint-contents.html [ Skip ]
 crbug.com/991095 wpt_internal/display-lock/rendersubtree/sizing [ Skip ]
 crbug.com/991095 wpt_internal/display-lock/rendersubtree/acquire-clone.html [ Failure ]
 

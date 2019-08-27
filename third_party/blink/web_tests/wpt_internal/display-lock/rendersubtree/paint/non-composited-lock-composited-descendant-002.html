@@ -4,14 +4,15 @@
 <title>Display Locking: acquire on a non-composited layer with a composited descendant</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="pass-if-nothing-below-ref.html">
+<link rel="match" href="non-composited-lock-composited-descendant-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 #outer {
-  contain: style layout;
   width: 100px;
   height: 100px;
+  background: lightblue;
   color: blue;
 }
 #inner {
@@ -23,7 +24,6 @@
 }
 </style>
 
-The test passes if there's nothing below.
 <div id="outer">
   Lorem
   <div id="inner">
@@ -32,10 +32,16 @@ The test passes if there's nothing below.
 </div>
 
 <script>
+async function commitAndFinish() {
+  const container = document.getElementById("outer");
+  await setVisible(container);
+  takeScreenshot();
+}
+
 async function runTest() {
   const container = document.getElementById("outer");
-  await container.displayLock.acquire({ timeout: Infinity });
-  takeScreenshot();
+  await setInvisible(container);
+  requestAnimationFrame(commitAndFinish);
 }
 
 window.onload = () => {

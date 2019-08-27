@@ -1,10 +1,11 @@
 <!doctype HTML>
 <html>
 <meta charset="utf8">
-<title>Display Locking: hit testing</title>
+<title>Display Locking: hit testing (composited outer)</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="scroll-into-view-ref.html">
+<script src="../resources/utils.js"></script>
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
@@ -15,7 +16,7 @@ body {
   padding: 0;
 }
 #outer {
-  contain: style layout;
+  will-change: transform;
   width: 100px;
   height: 100px;
   background: lightblue;
@@ -36,7 +37,7 @@ body {
 async_test((t) => {
   async function runTest() {
     const container = document.getElementById("outer");
-    await container.displayLock.acquire({ timeout: Infinity });
+    await setInvisible(container);
     let target = document.elementFromPoint(50, 50);
     t.step(() => assert_equals(target.id, "outer", "center hits outer"));
     target = document.elementFromPoint(10, 50);

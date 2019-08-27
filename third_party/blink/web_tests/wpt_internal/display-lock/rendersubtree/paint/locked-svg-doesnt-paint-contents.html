@@ -6,13 +6,13 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="locked-svg-doesnt-paint-contents-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 div {
   background: blue;
 }
 svg {
-  contain: style layout;
   border: 1px solid black;
   background: lightblue;
 }
@@ -36,7 +36,7 @@ svg {
 <script>
 async function runTest() {
   const container = document.getElementById("svg");
-  await container.displayLock.acquire({ timeout: Infinity });
+  await setInvisible(container);
   takeScreenshot();
 }
 
