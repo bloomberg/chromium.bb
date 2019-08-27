@@ -225,8 +225,7 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
     EXPECT_TRUE(table()->UpdateModelTypeState(syncer::AUTOFILL_WALLET_DATA,
                                               model_type_state));
     bridge_ = std::make_unique<AutofillWalletSyncBridge>(
-        active_callback_.Get(), mock_processor_.CreateForwardingProcessor(),
-        &backend_);
+        mock_processor_.CreateForwardingProcessor(), &backend_);
   }
 
   void StartSyncing(
@@ -305,10 +304,6 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
 
   MockAutofillWebDataBackend* backend() { return &backend_; }
 
-  base::MockCallback<base::RepeatingCallback<void(bool)>>* active_callback() {
-    return &active_callback_;
-  }
-
  private:
   autofill::TestAutofillClock test_clock_;
   ScopedTempDir temp_dir_;
@@ -319,8 +314,6 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   std::unique_ptr<syncer::ClientTagBasedModelTypeProcessor> real_processor_;
   std::unique_ptr<AutofillWalletSyncBridge> bridge_;
-  NiceMock<base::MockCallback<base::RepeatingCallback<void(bool)>>>
-      active_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletSyncBridgeTest);
 };
@@ -768,31 +761,6 @@ TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_KeepData) {
   bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
 
   EXPECT_FALSE(GetAllLocalData().empty());
-}
-
-TEST_F(AutofillWalletSyncBridgeTest, NotifiesWhenActivelySyncing) {
-  testing::InSequence seq;
-
-  ResetProcessor();
-
-  EXPECT_CALL(*active_callback(), Run(true));
-  ResetBridge(/*initial_sync_done=*/true);
-
-  // Start and stop sync to check that we notify the callback.
-  StartSyncing({});
-
-  EXPECT_CALL(*active_callback(), Run(false));
-  // Stopping sync with change list to indicate that the type is disabled.
-  bridge()->ApplyStopSyncChanges(
-      std::make_unique<syncer::InMemoryMetadataChangeList>());
-
-  EXPECT_CALL(*active_callback(), Run(true));
-  // Start and stop sync again to make sure we notify the callback again.
-  StartSyncing({});
-  // Passing in a non-null metadata change list indicates to the bridge that
-  // sync is stopping but the data type is not disabled, so we should not get
-  // a callback.
-  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
 }
 
 }  // namespace autofill

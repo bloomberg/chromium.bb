@@ -57,19 +57,10 @@ void InitWalletSyncBridgesOnDBSequence(
     autofill::AutofillWebDataBackend* autofill_backend) {
   DCHECK(db_task_runner->RunsTasksInCurrentSequence());
 
-  base::RepeatingCallback<void(bool)> wallet_active_callback;
+  autofill::AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
+      app_locale, autofill_backend, autofill_web_data.get());
   autofill::AutofillWalletMetadataSyncBridge::CreateForWebDataServiceAndBackend(
       app_locale, autofill_backend, autofill_web_data.get());
-  wallet_active_callback = base::BindRepeating(
-      &autofill::AutofillWalletMetadataSyncBridge::
-          OnWalletDataTrackingStateChanged,
-      autofill::AutofillWalletMetadataSyncBridge::FromWebDataService(
-          autofill_web_data.get())
-          ->GetWeakPtr());
-
-  autofill::AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
-      app_locale, wallet_active_callback, autofill_backend,
-      autofill_web_data.get());
 }
 
 }  // namespace
