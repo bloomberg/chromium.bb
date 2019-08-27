@@ -50,16 +50,11 @@ class MenuManager {
     this.node_;
 
     /**
-     * The node that the menu has been opened for.
+     * The node that the menu has been opened for. Null if the menu is not
+     * currently open.
      * @private {chrome.automation.AutomationNode}
      */
     this.menuOriginNode_;
-
-    /**
-     * The node that the menu has been opened for.
-     * @private {!chrome.automation.AutomationNode}
-     */
-    this.menuOriginNode_ = desktop;
 
     /**
      * Keeps track of when we're in the Switch Access menu.
@@ -152,6 +147,8 @@ class MenuManager {
           chrome.automation.EventType.TEXT_SELECTION_CHANGED,
           this.onSelectionChanged_.bind(this), false /** Don't use capture. */);
     }
+    this.menuOriginNode_ = null;
+
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
         false /** Hide the menu. */, SAConstants.EMPTY_LOCATION, 0);
   }
