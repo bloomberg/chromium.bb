@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
@@ -42,6 +43,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // The AddCreditCardViewControllerDelegate for this ViewController.
 @property(nonatomic, weak) id<AddCreditCardViewControllerDelegate> delegate;
+
+// The card number set from the CreditCardConsumer protocol, used to update the
+// UI.
+@property(nonatomic, strong) NSString* cardNumber;
+
+// The expiration month set from the CreditCardConsumer protocol, used to update
+// the UI.
+@property(nonatomic, strong) NSString* expirationMonth;
+
+// The expiration year set from the CreditCardConsumer protocol, used to update
+// the UI.
+@property(nonatomic, strong) NSString* expirationYear;
 
 @end
 
@@ -99,6 +112,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self createTableViewItemWithType:ItemTypeName
                           textFieldName:l10n_util::GetNSString(
                                             IDS_IOS_AUTOFILL_CARDHOLDER)
+                         textFieldValue:@""
                    textFieldPlaceholder:
                        l10n_util::GetNSString(
                            IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_HOLDER_NAME)
@@ -111,6 +125,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self createTableViewItemWithType:ItemTypeCardNumber
                           textFieldName:l10n_util::GetNSString(
                                             IDS_IOS_AUTOFILL_CARD_NUMBER)
+                         textFieldValue:self.cardNumber
                    textFieldPlaceholder:
                        l10n_util::GetNSString(
                            IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER)
@@ -123,6 +138,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self createTableViewItemWithType:ItemTypeExpirationMonth
                           textFieldName:l10n_util::GetNSString(
                                             IDS_IOS_AUTOFILL_EXP_MONTH)
+                         textFieldValue:self.expirationMonth
                    textFieldPlaceholder:
                        l10n_util::GetNSString(
                            IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH)
@@ -135,6 +151,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self createTableViewItemWithType:ItemTypeExpirationYear
                           textFieldName:l10n_util::GetNSString(
                                             IDS_IOS_AUTOFILL_EXP_YEAR)
+                         textFieldValue:self.expirationYear
                    textFieldPlaceholder:
                        l10n_util::GetNSString(
                            IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRATION_YEAR)
@@ -173,6 +190,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return indexPath;
   }
   return nil;
+}
+#pragma mark - CreditCardConsumer
+
+// TODO(crbug.com/984545): This method will be called from
+// CreditCardScannerMediator after it is implemented.
+- (void)setCreditCardNumber:(NSString*)cardNumber
+            expirationMonth:(NSString*)expirationMonth
+             expirationYear:(NSString*)expirationYear {
+  self.cardNumber = cardNumber;
+  self.expirationMonth = expirationMonth;
+  self.expirationYear = expirationYear;
+
+  // TODO(crbug.com/984545): Update each tableview cell independently.
+  // Reload the model.
+  [self loadModel];
+  [self.tableView reloadData];
 }
 
 #pragma mark - Private
@@ -222,12 +255,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Returns initialized tableViewItem with passed arguments.
 - (AutofillEditItem*)createTableViewItemWithType:(NSInteger)itemType
                                    textFieldName:(NSString*)textFieldName
+                                  textFieldValue:(NSString*)textFieldValue
                             textFieldPlaceholder:(NSString*)textFieldPlaceholder
                                     keyboardType:(UIKeyboardType)keyboardType
                                   autofillUIType:
                                       (AutofillUIType)autofillUIType {
   AutofillEditItem* item = [[AutofillEditItem alloc] initWithType:itemType];
   item.textFieldName = textFieldName;
+  item.textFieldValue = textFieldValue;
   item.textFieldPlaceholder = textFieldPlaceholder;
   item.keyboardType = keyboardType;
   item.hideEditIcon = NO;
