@@ -5,7 +5,7 @@
 #include "chrome/browser/web_applications/pending_app_registration_task.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/pending_app_manager_observer.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"

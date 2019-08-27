@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
 #include "base/test/bind_test_util.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
