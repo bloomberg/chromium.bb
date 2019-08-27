@@ -1362,9 +1362,11 @@ StoragePartitionImpl::GetCookieManagerForBrowserProcess() {
   DCHECK(initialized_);
   // Create the CookieManager as needed.
   if (!cookie_manager_for_browser_process_ ||
-      cookie_manager_for_browser_process_.encountered_error()) {
+      !cookie_manager_for_browser_process_.is_connected()) {
+    // Reset |cookie_manager_for_browser_process_| before binding it again.
+    cookie_manager_for_browser_process_.reset();
     GetNetworkContext()->GetCookieManager(
-        mojo::MakeRequest(&cookie_manager_for_browser_process_));
+        cookie_manager_for_browser_process_.BindNewPipeAndPassReceiver());
   }
   return cookie_manager_for_browser_process_.get();
 }

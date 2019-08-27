@@ -71,8 +71,9 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   void LoadAllSubscriptions(base::OnceCallback<void(bool)> callback);
 
   // Processes cookie changes from a network service instance.
-  void ListenToCookieChanges(::network::mojom::CookieManagerPtr cookie_manager,
-                             base::OnceCallback<void(bool)> callback);
+  void ListenToCookieChanges(
+      mojo::PendingRemote<::network::mojom::CookieManager> cookie_manager,
+      base::OnceCallback<void(bool)> callback);
 
   // content::mojom::CookieStore implementation
   void AppendSubscriptions(
@@ -186,7 +187,7 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   mojo::UniqueReceiverSet<blink::mojom::CookieStore> receivers_;
 
   // Used to receive cookie changes from the network service.
-  ::network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<::network::mojom::CookieManager> cookie_manager_;
   mojo::Receiver<::network::mojom::CookieChangeListener>
       cookie_change_listener_receiver_{this};
 

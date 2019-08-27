@@ -74,7 +74,8 @@ class CONTENT_EXPORT CookieStoreContext
       base::OnceCallback<void(bool)> success_callback);
 
   void ListenToCookieChangesOnIOThread(
-      ::network::mojom::CookieManagerPtrInfo cookie_manager_ptr_info,
+      mojo::PendingRemote<::network::mojom::CookieManager>
+          cookie_manager_remote,
       base::OnceCallback<void(bool)> success_callback);
 
   void CreateServiceOnIOThread(

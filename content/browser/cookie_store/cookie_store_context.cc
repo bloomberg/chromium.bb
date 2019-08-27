@@ -56,15 +56,15 @@ void CookieStoreContext::ListenToCookieChanges(
   DCHECK(initialize_called_) << __func__ << " called before Initialize()";
 #endif  // DCHECK_IS_ON()
 
-  ::network::mojom::CookieManagerPtrInfo cookie_manager_ptr_info;
+  mojo::PendingRemote<::network::mojom::CookieManager> cookie_manager_remote;
   network_context->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager_ptr_info));
+      cookie_manager_remote.InitWithNewPipeAndPassReceiver());
 
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &CookieStoreContext::ListenToCookieChangesOnIOThread, this,
-          std::move(cookie_manager_ptr_info),
+          std::move(cookie_manager_remote),
           base::BindOnce(
               [](scoped_refptr<base::SequencedTaskRunner> task_runner,
                  base::OnceCallback<void(bool)> callback, bool result) {
@@ -100,14 +100,13 @@ void CookieStoreContext::InitializeOnIOThread(
 }
 
 void CookieStoreContext::ListenToCookieChangesOnIOThread(
-    ::network::mojom::CookieManagerPtrInfo cookie_manager_ptr_info,
+    mojo::PendingRemote<::network::mojom::CookieManager> cookie_manager_remote,
     base::OnceCallback<void(bool)> success_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cookie_store_manager_);
 
-  cookie_store_manager_->ListenToCookieChanges(
-      ::network::mojom::CookieManagerPtr(std::move(cookie_manager_ptr_info)),
-      std::move(success_callback));
+  cookie_store_manager_->ListenToCookieChanges(std::move(cookie_manager_remote),
+                                               std::move(success_callback));
 }
 
 void CookieStoreContext::CreateServiceOnIOThread(

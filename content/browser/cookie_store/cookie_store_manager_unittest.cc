@@ -273,7 +273,8 @@ class CookieStoreManagerTest
         network_context, base::BindOnce([](bool success) {
           CHECK(success) << "ListenToCookieChanges failed";
         }));
-    network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
+    network_context->GetCookieManager(
+        cookie_manager_.BindNewPipeAndPassReceiver());
 
     cookie_store_context_->CreateService(
         example_service_remote_.BindNewPipeAndPassReceiver(),
@@ -356,7 +357,7 @@ class CookieStoreManagerTest
   std::unique_ptr<CookieStoreWorkerTestHelper> worker_test_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   scoped_refptr<CookieStoreContext> cookie_store_context_;
-  ::network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<::network::mojom::CookieManager> cookie_manager_;
 
   mojo::Remote<blink::mojom::CookieStore> example_service_remote_,
       google_service_remote_;
