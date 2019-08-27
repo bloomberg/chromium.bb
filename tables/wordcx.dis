@@ -2,9 +2,8 @@
 # Useful for convertion from or to the charset used to simulate
 # braille patterns on screen in Word CX / CX for Word. The table is 6
 # dot only. The character mapping is derived from the publication
-# Håndbok i punktskrift, Offentlig utvalg for punktskrift, see either
-# https://github.com/liblouis/braille-specs/tree/master/norwegian or
-# http://www.punktskriftutvalget.no/standarder/handbok-innhold/
+# Håndbok i punktskrift, Offentlig utvalg for punktskrift, see
+# http://liblouis.org/braille-specs/norwegian/#h%C3%A5ndbok-i-litter%C3%A6r-punktskrift
 #
 # Copyright (C) 2019 Lars Bjørndal <lars@lamasti.net>
 #
