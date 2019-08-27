@@ -2075,8 +2075,9 @@ gfx::Rect AppListView::GetPreferredWidgetBoundsForState(
   CHECK(GetWidget());
   aura::Window* parent = GetWidget()->GetNativeView()->parent();
   CHECK(parent);
-  return gfx::Rect(0, GetPreferredWidgetYForState(state),
-                   parent->bounds().width(), GetFullscreenStateHeight());
+  return delegate_->SnapBoundsToDisplayEdge(
+      gfx::Rect(0, GetPreferredWidgetYForState(state), parent->bounds().width(),
+                GetFullscreenStateHeight()));
 }
 
 void AppListView::UpdateAppListBackgroundYPosition() {
