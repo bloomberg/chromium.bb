@@ -111,7 +111,7 @@ void TabCloseButton::Layout() {
   ImageButton::Layout();
   if (focus_ring()) {
     SkPath path;
-    path.addOval(gfx::RectToSkRect(GetMirroredRect(GetContentsBounds())));
+    path.addOval(gfx::RectToSkRect(GetContentsBounds()));
     focus_ring()->SetPath(path);
   }
 }
