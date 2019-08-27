@@ -44,6 +44,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // The AddCreditCardViewControllerDelegate for this ViewController.
 @property(nonatomic, weak) id<AddCreditCardViewControllerDelegate> delegate;
 
+// The card holder name updated with the text in tableview cell.
+@property(nonatomic, strong) NSString* cardHolderName;
+
 // The card number set from the CreditCardConsumer protocol, used to update the
 // UI.
 @property(nonatomic, strong) NSString* cardNumber;
@@ -86,7 +89,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Adds 'Cancel' and 'Add' buttons to Navigation bar.
   self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_CANCEL_BUTTON)
-              style:UIBarButtonItemStyleDone
+              style:UIBarButtonItemStylePlain
              target:self
              action:@selector(handleCancelButton:)];
 
@@ -96,6 +99,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
              target:self
              action:@selector(didTapAddButton:)];
   [self loadModel];
+}
+
+- (BOOL)tableViewHasUserInput {
+  [self updateCreditCardData];
+
+  return self.cardHolderName.length || self.cardNumber.length ||
+         self.expirationMonth.length || self.expirationYear.length;
 }
 
 #pragma mark - ChromeTableViewController
@@ -111,7 +121,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self createTableViewItemWithType:ItemTypeName
                           textFieldName:l10n_util::GetNSString(
                                             IDS_IOS_AUTOFILL_CARDHOLDER)
-                         textFieldValue:@""
+                         textFieldValue:self.cardHolderName
                    textFieldPlaceholder:
                        l10n_util::GetNSString(
                            IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_HOLDER_NAME)
@@ -212,28 +222,33 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Private
 
-// Reads the data from text fields and sends it to the mediator.
+// Handles Add button to add a new credit card.
 - (void)didTapAddButton:(id)sender {
-  NSString* cardHolderName = [self readTextFromItemtype:ItemTypeName
-                                      sectionIdentifier:SectionIdentifierName];
+  [self updateCreditCardData];
 
-  NSString* cardNumber =
+  [self.delegate addCreditCardViewController:self
+                 addCreditCardWithHolderName:self.cardHolderName
+                                  cardNumber:self.cardNumber
+                             expirationMonth:self.expirationMonth
+                              expirationYear:self.expirationYear];
+}
+
+// Updates credit card data properties with the text in TableView cells.
+- (void)updateCreditCardData {
+  self.cardHolderName = [self readTextFromItemtype:ItemTypeName
+                                 sectionIdentifier:SectionIdentifierName];
+
+  self.cardNumber =
       [self readTextFromItemtype:ItemTypeCardNumber
                sectionIdentifier:SectionIdentifierCreditCardDetails];
 
-  NSString* expirationMonth =
+  self.expirationMonth =
       [self readTextFromItemtype:ItemTypeExpirationMonth
                sectionIdentifier:SectionIdentifierCreditCardDetails];
 
-  NSString* expirationYear =
+  self.expirationYear =
       [self readTextFromItemtype:ItemTypeExpirationYear
                sectionIdentifier:SectionIdentifierCreditCardDetails];
-
-  [self.delegate addCreditCardViewController:self
-                 addCreditCardWithHolderName:cardHolderName
-                                  cardNumber:cardNumber
-                             expirationMonth:expirationMonth
-                              expirationYear:expirationYear];
 }
 
 // Reads and returns the data from the item with passed |itemType| and

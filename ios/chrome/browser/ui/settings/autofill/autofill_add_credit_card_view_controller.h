@@ -25,6 +25,10 @@
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
 
+// Returns "YES" if any of tableview cells has user input.
+@property(nonatomic, getter=tableViewHasUserInput, readonly)
+    BOOL tableViewHasUserInput;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_AUTOFILL_ADD_CREDIT_CARD_VIEW_CONTROLLER_H_
