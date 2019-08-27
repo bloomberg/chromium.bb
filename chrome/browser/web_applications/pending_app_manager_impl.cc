@@ -173,7 +173,8 @@ void PendingAppManagerImpl::MaybeStartNext() {
 
       // Otherwise no need to do anything.
       std::move(front->callback)
-          .Run(install_options.url, InstallResultCode::kAlreadyInstalled);
+          .Run(install_options.url,
+               InstallResultCode::kSuccessAlreadyInstalled);
       continue;
     }
 
@@ -253,7 +254,7 @@ void PendingAppManagerImpl::OnInstalled(PendingAppInstallTask::Result result) {
 void PendingAppManagerImpl::CurrentInstallationFinished(
     const base::Optional<AppId>& app_id,
     InstallResultCode code) {
-  if (app_id && code == InstallResultCode::kSuccess) {
+  if (app_id && code == InstallResultCode::kSuccessNewInstall) {
     const GURL& launch_url = registrar()->GetAppLaunchURL(*app_id);
     if (!launch_url.is_empty() && launch_url.scheme() != "chrome")
       pending_registrations_.push_back(launch_url);

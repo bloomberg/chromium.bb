@@ -117,15 +117,9 @@ void PendingAppManager::InstallForSynchronizeCallback(
     ExternalInstallSource source,
     const GURL& app_url,
     InstallResultCode code) {
-  switch (code) {
-    case InstallResultCode::kSuccess:
-    case InstallResultCode::kAlreadyInstalled:
-      break;
-    default:
-      LOG(ERROR) << app_url << " from install source "
-                 << static_cast<int>(source)
-                 << " failed to install with reason " << static_cast<int>(code);
-      break;
+  if (!IsSuccess(code)) {
+    LOG(ERROR) << app_url << " from install source " << static_cast<int>(source)
+               << " failed to install with reason " << static_cast<int>(code);
   }
 
   auto source_and_request = synchronize_requests_.find(source);
