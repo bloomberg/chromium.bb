@@ -1231,7 +1231,9 @@ def _TestPlan(payload_test_configs, suite_name=None, build=None):
                 name=test_name,
                 allow_retries=True,
                 # Matching autoupdate_EndToEndTest control file.
-                max_retries=1
+                max_retries=1,
+                execution_environment=(
+                    test_metadata_pb2.AutotestTest.EXECUTION_ENVIRONMENT_SERVER)
             ),
             test_args=test_args,
             display_name=tko_label,

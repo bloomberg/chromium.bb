@@ -1313,7 +1313,8 @@ class HWTest(cros_test_lib.MockTestCase):
                 'test': {
                     'name': 'autoupdate_EndToEndTest',
                     'allowRetries': True,
-                    'maxRetries': 1
+                    'maxRetries': 1,
+                    'executionEnvironment': 'EXECUTION_ENVIRONMENT_SERVER'
                 },
                 'displayName': 'dummy-build/dummy-suite/' +
                                'autoupdate_EndToEndTest_' +
