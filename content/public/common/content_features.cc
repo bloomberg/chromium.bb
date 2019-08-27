@@ -136,10 +136,6 @@ const base::Feature kExperimentalAccessibilityLabels{
 const base::Feature kExpensiveBackgroundTimerThrottling{
     "ExpensiveBackgroundTimerThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables exposing back/forward mouse buttons to the renderer and the web.
-const base::Feature kExtendedMouseButtons{"ExtendedMouseButtons",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled Feature Policy propagation is similar to sandbox flags and,
 // sandbox flags are implemented on top of Feature Policy.
 const base::Feature kFeaturePolicyForSandbox{"FeaturePolicyForSandbox",

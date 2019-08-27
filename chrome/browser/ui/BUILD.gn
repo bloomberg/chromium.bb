@@ -3210,8 +3210,6 @@ jumbo_split_static_library("ui") {
 
     if (is_linux) {
       sources += [
-        "views/frame/browser_command_handler_linux.cc",
-        "views/frame/browser_command_handler_linux.h",
         "views/process_singleton_dialog_linux.cc",
         "views/status_icons/status_tray_linux.cc",
         "views/status_icons/status_tray_linux.h",
