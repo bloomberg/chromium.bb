@@ -74,6 +74,9 @@ message UpgradeArcContainerRequest {
   // Optional mode for packages cache tests.
   optional PackageCacheMode packages_cache_mode = 4 [default = DEFAULT];
 
+  // Option to disable GMS CORE cache.
+  optional bool skip_gms_core_cache = 13 [default = false];
+
   // Option to notify ARC if the account is a child, allowing us to provide
   // special behavior for child account on ARC.
   optional bool OBSOLETE_is_child = 9 [deprecated = true];
@@ -97,5 +100,5 @@ message UpgradeArcContainerRequest {
   // a non-supervised state, and vice-versa.
   optional SupervisionTransition supervision_transition = 11;
 
-  // Next ID to use: 13
+  // Next ID to use: 14
 }
