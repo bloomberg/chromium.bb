@@ -184,7 +184,7 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         // The tasks surface is added to the explore surface in the single pane mode below.
         if (mSurfaceMode != SurfaceMode.SINGLE_PANE) {
-            mActivity.getCompositorViewHolder().addView(mTasksSurface.getView());
+            mActivity.getCompositorViewHolder().addView(mTasksSurface.getContainerView());
         }
 
         // There is nothing else to do for SurfaceMode.TASKS_ONLY for now.
@@ -209,10 +209,10 @@ public class StartSurfaceCoordinator implements StartSurface {
         // the explore surface. Remove it after deciding on where to put the omnibox.
         ViewGroup exploreSurfaceContainer =
                 (ViewGroup) mActivity.getCompositorViewHolder().getParent();
-        mExploreSurfaceCoordinator =
-                new ExploreSurfaceCoordinator(mActivity, exploreSurfaceContainer,
-                        mSurfaceMode == SurfaceMode.SINGLE_PANE ? mTasksSurface.getView() : null,
-                        mPropertyModel);
+        mExploreSurfaceCoordinator = new ExploreSurfaceCoordinator(mActivity,
+                exploreSurfaceContainer,
+                mSurfaceMode == SurfaceMode.SINGLE_PANE ? mTasksSurface.getContainerView() : null,
+                mPropertyModel);
     }
 
     private void createAndSetBottomBar() {
@@ -235,7 +235,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         mSecondaryTasksSurfacePropertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
         mSecondaryTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
                 mActivity, false, mSecondaryTasksSurfacePropertyModel);
-        mActivity.getCompositorViewHolder().addView(mSecondaryTasksSurface.getView());
+        mActivity.getCompositorViewHolder().addView(mSecondaryTasksSurface.getContainerView());
         if (mOnTabSelectingListener != null) {
             mSecondaryTasksSurface.setOnTabSelectingListener(mOnTabSelectingListener);
             mOnTabSelectingListener = null;
