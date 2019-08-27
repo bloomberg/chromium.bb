@@ -1004,7 +1004,7 @@ Polymer({
 
   /** @private */
   onActivateTap_: function() {
-    this.networkingPrivate.startActivate(this.guid);
+    this.browserProxy_.showCellularSetupUI(this.guid);
   },
 
   /** @private */
@@ -1025,8 +1025,8 @@ Polymer({
 
   /** @private */
   onViewAccountTap_: function() {
-    // startActivate() will show the account page for activated networks.
-    this.networkingPrivate.startActivate(this.guid);
+    // Currently 'Account Details' is the same as the activation UI.
+    this.browserProxy_.showCellularSetupUI(this.guid);
   },
 
   /** @type {string} */

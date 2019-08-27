@@ -27,6 +27,12 @@ cr.define('settings', function() {
   /** @interface */
   class InternetPageBrowserProxy {
     /**
+     * Shows the Cellular activation UI.
+     * @param {string} guid
+     */
+    showCellularSetupUI(guid) {}
+
+    /**
      * Shows configuration for external VPNs. Includes ThirdParty (extension
      * configured) VPNs, and Arc VPNs.
      * @param {string} guid
@@ -74,6 +80,11 @@ cr.define('settings', function() {
    * @implements {settings.InternetPageBrowserProxy}
    */
   class InternetPageBrowserProxyImpl {
+    /** @override */
+    showCellularSetupUI(guid) {
+      chrome.send('showCellularSetupUI', [guid]);
+    }
+
     /** @override */
     configureThirdPartyVpn(guid) {
       chrome.send('configureThirdPartyVpn', [guid]);
