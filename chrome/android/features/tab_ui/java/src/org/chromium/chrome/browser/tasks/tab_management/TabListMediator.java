@@ -663,7 +663,7 @@ class TabListMediator {
         sTabClosedFromMapTabClosedFromMap.put(tabId, TabClosedFrom.GRID_TAB_SWITCHER_GROUP);
     }
 
-    void setActionOnAllRelatedTabsForTest(boolean actionOnAllRelatedTabs) {
+    void setActionOnAllRelatedTabsForTesting(boolean actionOnAllRelatedTabs) {
         mActionsOnAllRelatedTabs = actionOnAllRelatedTabs;
     }
 
