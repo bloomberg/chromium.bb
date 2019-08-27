@@ -1171,13 +1171,6 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
       reused_password_account_type, LoginReputationClientResponse::PHISHING));
 }
 
-TEST_P(PasswordProtectionServiceTest, VerifyIsEventLoggingEnabled) {
-  EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
-  EXPECT_CALL(*password_protection_service_, IsIncognito())
-      .WillRepeatedly(Return(true));
-  EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
-}
-
 TEST_P(PasswordProtectionServiceTest, VerifyContentTypeIsPopulated) {
   LoginReputationClientResponse response =
       CreateVerdictProto(LoginReputationClientResponse::SAFE, 10 * kMinute,
