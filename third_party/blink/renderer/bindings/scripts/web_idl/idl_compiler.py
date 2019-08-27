@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
+
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
 from .composition_parts import Identifier
@@ -13,6 +15,7 @@ from .ir_map import IRMap
 from .idl_type import IdlTypeFactory
 from .interface import Interface
 from .make_copy import make_copy
+from .operation import OperationGroup
 from .reference import RefByIdFactory
 from .typedef import Typedef
 from .union import Union
@@ -78,6 +81,9 @@ class IdlCompiler(object):
         self._merge_partial_dictionaries()
         # Merge mixins.
         self._merge_interface_mixins()
+
+        self._group_overloaded_functions()
+
         # Process inheritances.
         self._process_interface_inheritances()
 
@@ -153,6 +159,25 @@ class IdlCompiler(object):
                     make_copy(to_be_merged.constants))
                 new_interface.operations.extend(
                     make_copy(to_be_merged.operations))
+            self._ir_map.add(new_interface)
+
+    def _group_overloaded_functions(self):
+        old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_interface in old_interfaces.itervalues():
+            assert not old_interface.operation_groups
+            new_interface = make_copy(old_interface)
+
+            sort_key = lambda x: x.identifier
+            sorted_operations = sorted(new_interface.operations, key=sort_key)
+            new_interface.operation_groups = [
+                OperationGroup.IR(operations=list(operations))
+                for identifier, operations in itertools.groupby(
+                    sorted_operations, key=sort_key) if identifier
+            ]
+
             self._ir_map.add(new_interface)
 
     def _process_interface_inheritances(self):
