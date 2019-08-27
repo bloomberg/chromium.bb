@@ -51,6 +51,7 @@ const char kSetRlzPingSent[] = "SetRlzPingSent";
 const char kSetU2fFlags[] = "SetU2fFlags";
 const char kGetU2fFlags[] = "GetU2fFlags";
 const char kSetSchedulerConfiguration[] = "SetSchedulerConfiguration";
+const char kSetSchedulerConfigurationV2[] = "SetSchedulerConfigurationV2";
 
 // Properties.
 const char kCrashSenderTestMode[] = "CrashSenderTestMode";
