@@ -26,11 +26,11 @@ Signing Flow:
 
 from __future__ import print_function
 
-import ConfigParser
 import os
 import re
 
 import six
+from six.moves import configparser
 
 from chromite.lib import cros_build_lib
 
@@ -110,7 +110,7 @@ class SignerInstructionConfig(object):
 
   def ReadIniFile(self, fd):
     """Reads given file descriptor into configuration"""
-    config = ConfigParser.ConfigParser(self.ToIniDict())
+    config = configparser.ConfigParser(self.ToIniDict())
     config.readfp(fd)
 
     self.archive = config.get('general', 'archive')

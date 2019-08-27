@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import ConfigParser
 import os
+
+from six.moves import configparser
 
 from chromite.lib import boto_compat
 from chromite.lib import cros_test_lib
@@ -24,7 +25,7 @@ class FixBotoCertsTest(cros_test_lib.TempDirTestCase):
       boto_config = os.environ['BOTO_CONFIG']
       self.assertExists(boto_config)
 
-      config = ConfigParser.SafeConfigParser()
+      config = configparser.SafeConfigParser()
       config.read(boto_config)
 
       cafile = config.get('Boto', 'ca_certificates_file')
@@ -38,7 +39,7 @@ class FixBotoCertsTest(cros_test_lib.TempDirTestCase):
     os.environ['BOTO_CONFIG'] = boto_config
 
     with boto_compat.FixBotoCerts(strict=True):
-      config = ConfigParser.SafeConfigParser()
+      config = configparser.SafeConfigParser()
       config.read(os.environ['BOTO_CONFIG'])
       self.assertEqual(config.get('S', 'k'), 'v')
       self.assertTrue(config.has_option('Boto', 'ca_certificates_file'))
@@ -53,7 +54,7 @@ class FixBotoCertsTest(cros_test_lib.TempDirTestCase):
     os.environ['BOTO_PATH'] = boto_path = '%s:%s' % (cfgfile1, cfgfile2)
 
     with boto_compat.FixBotoCerts(strict=True):
-      config = ConfigParser.SafeConfigParser()
+      config = configparser.SafeConfigParser()
       config.read(os.environ['BOTO_CONFIG'])
       self.assertEqual(config.get('S', 'k'), 'v')
       self.assertEqual(config.get('S', 'k2'), 'v2')

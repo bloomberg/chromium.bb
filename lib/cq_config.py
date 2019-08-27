@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import ConfigParser
 import os
+
+from six.moves import configparser
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -69,7 +70,7 @@ class CQConfigParser(object):
       try:
         result = self._GetOptionFromConfigFile(
             config_path, section, option)
-      except ConfigParser.Error as e:
+      except configparser.Error as e:
         error = MalformedCQConfigException(
             self.change, config_path, e)
         if self.forgiving:
@@ -268,7 +269,7 @@ class CQConfigParser(object):
     Returns:
       The value (string) of the option.
     """
-    parser = ConfigParser.SafeConfigParser()
+    parser = configparser.SafeConfigParser()
     parser.read(config_path)
     if parser.has_option(section, option):
       return parser.get(section, option)

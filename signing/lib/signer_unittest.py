@@ -7,9 +7,10 @@
 
 from __future__ import print_function
 
-import ConfigParser
 import io
 import os
+
+from six.moves import configparser
 
 from chromite.lib import cros_test_lib
 from chromite.signing.lib import keys
@@ -53,7 +54,7 @@ class TestSignerConfig(cros_test_lib.TestCase):
     initial_sc = self.GetSignerConfig()
 
     # Create INI file from initial SignerConfig
-    cp = ConfigParser.ConfigParser()
+    cp = configparser.ConfigParser()
     for section, options in initial_sc.ToIniDict().items():
       cp.add_section(section)
       for option, value in options.items():

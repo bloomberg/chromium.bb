@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import collections
-import ConfigParser
 import os
 import re
+
+from six.moves import configparser
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -323,7 +324,7 @@ class Keyset(object):
       loem_config_filename = os.path.join(key_dir, 'loem.ini')
       if os.path.exists(loem_config_filename):
         logging.debug('Reading loem.ini file')
-        loem_config = ConfigParser.ConfigParser()
+        loem_config = configparser.ConfigParser()
         if loem_config.read(loem_config_filename):
           if loem_config.has_section('loem'):
             self._root_of_trust_key_prefixes = self._root_of_trust_key_names
