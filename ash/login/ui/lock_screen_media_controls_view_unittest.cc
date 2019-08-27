@@ -796,7 +796,7 @@ TEST_F(LockScreenMediaControlsViewTest, DismissControlsVelocity) {
 
   gfx::Point scroll_start(
       media_controls_view_->GetBoundsInScreen().CenterPoint());
-  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() - 50);
+  gfx::Point scroll_end(scroll_start.x() + 50, scroll_start.y());
 
   // Simulate scroll with velocity past the threshold.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -809,15 +809,16 @@ TEST_F(LockScreenMediaControlsViewTest, DismissControlsVelocity) {
   EXPECT_FALSE(media_controls_view_->IsDrawn());
 }
 
-TEST_F(LockScreenMediaControlsViewTest, DismissControlsHeight) {
+TEST_F(LockScreenMediaControlsViewTest, DismissControlsDistance) {
   SimulateMediaSessionChanged(
       media_session::mojom::MediaPlaybackState::kPlaying);
 
   gfx::Point scroll_start(
       media_controls_view_->GetBoundsInScreen().CenterPoint());
-  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() - 200);
+  gfx::Point scroll_end(media_controls_view_->GetBoundsInScreen().right() - 10,
+                        scroll_start.y());
 
-  // Simulate scroll with height past the threshold.
+  // Simulate scroll with distance past the threshold.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->GestureScrollSequence(scroll_start, scroll_end,
                                    base::TimeDelta::FromSeconds(3), 3);
@@ -839,9 +840,9 @@ TEST_F(LockScreenMediaControlsViewTest, DragReset) {
 
   gfx::Point scroll_start(
       media_controls_view_->GetBoundsInScreen().CenterPoint());
-  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() - 10);
+  gfx::Point scroll_end(scroll_start.x() + 10, scroll_start.y());
 
-  // Simulate scroll with neither height nor velocity past the thresholds.
+  // Simulate scroll with neither distance nor velocity past the thresholds.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->GestureScrollSequence(scroll_start, scroll_end,
                                    base::TimeDelta::FromSeconds(3), 3);
@@ -865,7 +866,7 @@ TEST_F(LockScreenMediaControlsViewTest, DragBounds) {
 
   gfx::Point scroll_start(
       media_controls_view_->GetBoundsInScreen().CenterPoint());
-  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() + 10);
+  gfx::Point scroll_end(scroll_start.x() - 10, scroll_start.y());
 
   // Simulate scroll that attempts to go below the view bounds.
   ui::test::EventGenerator* generator = GetEventGenerator();
