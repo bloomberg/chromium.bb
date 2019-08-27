@@ -1793,9 +1793,6 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 extern const char kAppServiceAshName[];
 extern const char kAppServiceAshDescription[];
 
-extern const char kArcAvailableForChildName[];
-extern const char kArcAvailableForChildDescription[];
-
 extern const char kArcBootCompleted[];
 extern const char kArcBootCompletedDescription[];
 

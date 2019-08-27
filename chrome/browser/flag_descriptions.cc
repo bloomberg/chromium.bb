@@ -3012,10 +3012,6 @@ const char kAppServiceAshDescription[] =
     "Use the App Service to provide data to the Ash UI, such as the shelf and "
     "app list.";
 
-const char kArcAvailableForChildName[] = "Allow ARC for child accounts";
-const char kArcAvailableForChildDescription[] =
-    "Allow child accounts to start Android apps.";
-
 const char kArcBootCompleted[] = "Load Android apps automatically";
 const char kArcBootCompletedDescription[] =
     "Allow Android apps to start automatically after signing in.";
