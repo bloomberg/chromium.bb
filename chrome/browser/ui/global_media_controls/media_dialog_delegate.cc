@@ -2,6 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/global_media_controls/media_dialog_controller_delegate.h"
+#include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 
-MediaDialogControllerDelegate::~MediaDialogControllerDelegate() = default;
+MediaDialogDelegate::~MediaDialogDelegate() = default;

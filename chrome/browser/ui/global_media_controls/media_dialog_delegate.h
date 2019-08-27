@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_CONTROLLER_DELEGATE_H_
-#define CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_CONTROLLER_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_DELEGATE_H_
+#define CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_DELEGATE_H_
 
 #include <string>
 
@@ -13,9 +13,9 @@ namespace media_message_center {
 class MediaNotificationItem;
 }  // namespace media_message_center
 
-// Delegate for MediaDialogController that is told when to display or hide a
-// media session.
-class MediaDialogControllerDelegate {
+// Delegate for MediaToolbarButtonController that is told when to display or
+// hide a media session.
+class MediaDialogDelegate {
  public:
   virtual void ShowMediaSession(
       const std::string& id,
@@ -23,7 +23,7 @@ class MediaDialogControllerDelegate {
   virtual void HideMediaSession(const std::string& id) = 0;
 
  protected:
-  virtual ~MediaDialogControllerDelegate();
+  virtual ~MediaDialogDelegate();
 };
 
-#endif  // CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_CONTROLLER_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_DELEGATE_H_
