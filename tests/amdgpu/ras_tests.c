@@ -30,7 +30,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include "xf86drm.h"
-#include "json.h"
+#include "stdlib.h"
 
 const char *ras_block_string[] = {
 	"umc",
@@ -775,169 +775,12 @@ static void amdgpu_ras_enable_test(void)
 	}
 }
 
-static int _json_get_block_id(json_object *block_obj, const char *name)
-{
-	json_object *item_obj, *index_obj;
-
-	if (!json_object_object_get_ex(block_obj, name, &item_obj))
-		return -1;
-
-	if (!json_object_object_get_ex(item_obj, "index", &index_obj))
-		return -1;
-
-	return json_object_get_int(index_obj);
-}
-
-static int _json_get_subblock_id(json_object *block_obj, const char *block_name,
-				 const char *subblock_name)
-{
-	json_object *item_obj, *subblock_obj, *name_obj;
-
-	if (!json_object_object_get_ex(block_obj, block_name, &item_obj))
-		return -1;
-
-	if (!json_object_object_get_ex(item_obj, "subblock", &subblock_obj))
-		return -1;
-
-	if (!json_object_object_get_ex(subblock_obj, subblock_name, &name_obj))
-		return -1;
-
-	return json_object_get_int(name_obj);
-}
-
 static int amdgpu_ras_get_test_items(struct ras_test_item **pitems, int *size)
 {
-	json_object *root_obj = NULL;
-	json_object *block_obj = NULL;
-	json_object *type_obj = NULL;
-	json_object *tests_obj = NULL;
-	json_object *test_obj = NULL;
-	json_object *tmp_obj = NULL;
-	json_object *tmp_type_obj = NULL;
-	json_object *subblock_obj = NULL;
-	int i, length;
-	struct ras_test_item *items = NULL;
-	int ret = -1;
+	*pitems = NULL;
+	*size = 0;
 
-	root_obj = json_object_from_file("./amdgpu_ras.json");
-	if (!root_obj)
-		root_obj = json_object_from_file(
-			"/usr/share/libdrm/amdgpu_ras.json");
-
-	if (!root_obj) {
-		CU_FAIL_FATAL("Couldn't find amdgpu_ras.json");
-		goto pro_end;
-	}
-
-	/* Check Version */
-	if (!json_object_object_get_ex(root_obj, "version", &tmp_obj)) {
-		CU_FAIL_FATAL("Wrong format of amdgpu_ras.json");
-		goto pro_end;
-	}
-
-	/* Block Definition */
-	if (!json_object_object_get_ex(root_obj, "block", &block_obj)) {
-		fprintf(stderr, "block isn't defined\n");
-		goto pro_end;
-	}
-
-	/* Type Definition */
-	if (!json_object_object_get_ex(root_obj, "type", &type_obj)) {
-		fprintf(stderr, "type isn't defined\n");
-		goto pro_end;
-	}
-
-	/* Enumulate test items */
-	if (!json_object_object_get_ex(root_obj, "tests", &tests_obj)) {
-		fprintf(stderr, "tests are empty\n");
-		goto pro_end;
-	}
-
-	length = json_object_array_length(tests_obj);
-
-	items = malloc(sizeof(struct ras_test_item) * length);
-	if (!items) {
-		fprintf(stderr, "malloc failed\n");
-		goto pro_end;
-	}
-
-	for (i = 0; i < length; i++) {
-		test_obj = json_object_array_get_idx(tests_obj, i);
-
-		/* Name */
-		if (!json_object_object_get_ex(test_obj, "name", &tmp_obj)) {
-			fprintf(stderr, "Test %d has no name\n", i);
-			goto pro_end;
-		}
-		strncpy(items[i].name, json_object_get_string(tmp_obj), 64);
-
-		/* block */
-		if (!json_object_object_get_ex(test_obj, "block", &tmp_obj)) {
-			fprintf(stderr, "Test:%s: block isn't defined\n",
-				items[i].name);
-			goto pro_end;
-		}
-		items[i].block = _json_get_block_id(
-			block_obj, json_object_get_string(tmp_obj));
-
-		/* check block id */
-		if (items[i].block < AMDGPU_RAS_BLOCK__UMC ||
-		    items[i].block >= AMDGPU_RAS_BLOCK__LAST) {
-			fprintf(stderr, "Test:%s: block id %d is invalid\n",
-				items[i].name, items[i].block);
-			goto pro_end;
-		}
-
-		/* subblock */
-		if (json_object_object_get_ex(test_obj, "subblock", &tmp_obj)) {
-			json_object_object_get_ex(test_obj, "block",
-				&subblock_obj);
-
-			items[i].sub_block = _json_get_subblock_id(
-				block_obj,
-				json_object_get_string(subblock_obj),
-				json_object_get_string(tmp_obj));
-			if (items[i].sub_block < 0) {
-				fprintf(stderr, "Test:%s: subblock in block id %d is invalid\n",
-					items[i].name, items[i].block);
-				goto pro_end;
-			}
-		} else
-			items[i].sub_block = 0;
-
-		/* type */
-		if (json_object_object_get_ex(test_obj, "type", &tmp_obj)) {
-			strncpy(items[i].error_type_str,
-				json_object_get_string(tmp_obj), 64);
-
-			if (json_object_object_get_ex(type_obj,
-				json_object_get_string(tmp_obj), &tmp_type_obj))
-				items[i].type = json_object_get_int(tmp_type_obj);
-			else
-				items[i].type = (enum amdgpu_ras_error_type)0;
-		}
-
-		/* address */
-		if (json_object_object_get_ex(test_obj, "address", &tmp_obj))
-			items[i].address = json_object_get_int(tmp_obj);
-		else
-			items[i].address = 0; /* default address 0 */
-
-		/* value */
-		if (json_object_object_get_ex(test_obj, "value", &tmp_obj))
-			items[i].value = json_object_get_int(tmp_obj);
-		else
-			items[i].value = 0; /* default value 0 */
-	}
-
-	*pitems = items;
-	*size = length;
-	ret = 0;
-pro_end:
-	if (root_obj)
-		json_object_put(root_obj);
-
-	return ret;
+	return 0;
 }
 
 static void __amdgpu_ras_inject_test(void)

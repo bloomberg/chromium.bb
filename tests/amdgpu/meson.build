@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if dep_cunit.found() and dep_json.found()
+if dep_cunit.found()
   amdgpu_test = executable(
     'amdgpu_test',
     files(
@@ -26,19 +26,9 @@ if dep_cunit.found() and dep_json.found()
       'vce_tests.c', 'uvd_enc_tests.c', 'vcn_tests.c', 'deadlock_tests.c',
       'vm_tests.c', 'ras_tests.c', 'syncobj_tests.c',
     ),
-    dependencies : [dep_cunit, dep_json, dep_threads],
+    dependencies : [dep_cunit, dep_threads],
     include_directories : [inc_root, inc_drm, include_directories('../../amdgpu')],
     link_with : [libdrm, libdrm_amdgpu],
     install : with_install_tests,
-  )
-
-  configure_file(input : '../../data/amdgpu_ras.json',
-    output : 'amdgpu_ras.json',
-    configuration : configuration_data())
-
-  install_data(
-    '../../data/amdgpu_ras.json',
-    install_mode : 'rw-r--r--',
-    install_dir : datadir_amdgpu,
   )
 endif

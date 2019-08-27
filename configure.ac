@@ -430,24 +430,10 @@ if test "x$AMDGPU" != xno; then
 			AC_SUBST([CUNIT_CFLAGS])
 		fi
 	fi
-
-	# Detect json-c library
-	PKG_CHECK_MODULES([JSONC], [json-c >= 0.10.1], [have_jsonc=yes], [have_jsonc=no])
-	if test "x${have_jsonc}" = "xno"; then
-		AC_CHECK_LIB([json-c], [json_object_object_get], [have_jsonc=yes], [have_jsonc=no])
-		if test "x${have_jsonc}" = "xyes"; then
-			JSONC_LIBS="-ljson-c"
-			JSONC_CFLAGS=""
-			AC_SUBST([JSONC_LIBS])
-			AC_SUBST([JSONC_CFLAGS])
-		fi
-	fi
 else
 	have_cunit=no
-	have_jsonc=no
 fi
 AM_CONDITIONAL(HAVE_CUNIT, [test "x$have_cunit" != "xno"])
-AM_CONDITIONAL(HAVE_JSONC, [test "x$have_jsonc" != "xno"])
 
 AM_CONDITIONAL(HAVE_AMDGPU, [test "x$AMDGPU" = xyes])
 if test "x$AMDGPU" = xyes; then
@@ -455,10 +441,6 @@ if test "x$AMDGPU" = xyes; then
 
 	if test "x$have_cunit" = "xno"; then
 		AC_MSG_WARN([Could not find cunit library. Disabling amdgpu tests])
-	fi
-
-	if test "x$have_jsonc" = "xno"; then
-		AC_MSG_WARN([Could not find json-c library. Disabling amdgpu tests])
 	fi
 else
 	AC_DEFINE(HAVE_AMDGPU, 0)

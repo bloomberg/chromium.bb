@@ -7,8 +7,7 @@ AM_CFLAGS = \
 
 LDADD = $(top_builddir)/libdrm.la \
 	$(top_builddir)/amdgpu/libdrm_amdgpu.la \
-	$(CUNIT_LIBS) \
-	$(JSONC_LIBS)
+	$(CUNIT_LIBS)
 
 if HAVE_INSTALL_TESTS
 bin_PROGRAMS = \
@@ -18,7 +17,7 @@ noinst_PROGRAMS = \
 	amdgpu_test
 endif
 
-amdgpu_test_CPPFLAGS = $(CUNIT_CFLAGS) $(JSONC_CFLAGS)
+amdgpu_test_CPPFLAGS = $(CUNIT_CFLAGS)
 
 amdgpu_test_SOURCES = \
 	amdgpu_test.c \

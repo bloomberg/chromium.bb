@@ -222,7 +222,6 @@ libdrm_c_args = warn_c_args + ['-fvisibility=hidden']
 
 dep_pciaccess = dependency('pciaccess', version : '>= 0.10', required : with_intel)
 dep_cunit = dependency('cunit', version : '>= 2.1', required : false)
-dep_json = dependency('json-c', version : '>= 0.10.1', required : false)
 _cairo_tests = get_option('cairo-tests')
 if _cairo_tests != 'false'
   dep_cairo = dependency('cairo', required : _cairo_tests == 'true')
