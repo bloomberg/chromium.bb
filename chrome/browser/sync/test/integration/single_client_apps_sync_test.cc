@@ -25,7 +25,7 @@ class SingleClientAppsSyncTest : public SyncTest {
 };
 
 // crbug.com/997984
-#if defined(MEMORY_SANITIZER)
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define MAYBE_StartWithNoApps DISABLED_StartWithNoApps
 #define MAYBE_StartWithSomeLegacyApps DISABLED_StartWithSomeLegacyApps
 #define MAYBE_StartWithSomePlatformApps DISABLED_StartWithSomePlatformApps
