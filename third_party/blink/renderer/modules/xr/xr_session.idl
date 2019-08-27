@@ -55,7 +55,7 @@ enum XRVisibilityState {
   [RuntimeEnabled=WebXRPlaneDetection, RaisesException] void updateWorldTrackingState(optional XRWorldTrackingStateInit state);
 
   [RuntimeEnabled=WebXRAnchors] readonly attribute XRAnchorSet trackedAnchors;
-  [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState] Promise<XRAnchor> createAnchor(XRPose pose, XRSpace space);
+  [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
 
   [CallWith=ScriptState, Measure] Promise<void> end();
 };

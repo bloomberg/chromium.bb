@@ -67,6 +67,10 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
   return MakeGarbageCollected<XRViewerPose>(session(), *pose);
 }
 
+XRAnchorSet* XRFrame::trackedAnchors() const {
+  return session_->trackedAnchors();
+}
+
 // Return an XRPose that has a transform mapping to space A from space B, while
 // accounting for the base pose matrix of this frame. If computing a transform
 // isn't possible, return nullptr.

@@ -22,6 +22,7 @@ class XRReferenceSpace;
 class XRSession;
 class XRSpace;
 class XRViewerPose;
+class XRAnchorSet;
 class XRWorldInformation;
 
 class XRFrame final : public ScriptWrappable {
@@ -35,6 +36,7 @@ class XRFrame final : public ScriptWrappable {
   XRViewerPose* getViewerPose(XRReferenceSpace*, ExceptionState&) const;
   XRPose* getPose(XRSpace*, XRSpace*, ExceptionState&);
   XRWorldInformation* worldInformation() const { return world_information_; }
+  XRAnchorSet* trackedAnchors() const;
 
   void SetBasePoseMatrix(const TransformationMatrix&);
 

@@ -35,11 +35,11 @@ class V8XRFrameRequestCallback;
 class XR;
 class XRAnchorSet;
 class XRCanvasInputProvider;
-class XRPose;
 class XRRay;
 class XRReferenceSpace;
 class XRRenderState;
 class XRRenderStateInit;
+class XRRigidTransform;
 class XRSpace;
 class XRViewData;
 class XRWorldInformation;
@@ -100,7 +100,7 @@ class XRSession final
                                       const String& type);
 
   ScriptPromise createAnchor(ScriptState* script_state,
-                             XRPose* pose,
+                             XRRigidTransform* initial_pose,
                              XRSpace* space);
 
   int requestAnimationFrame(V8XRFrameRequestCallback* callback);
