@@ -5906,10 +5906,6 @@ crbug.com/853326 external/wpt/native-file-system/ [ Skip ]
 # while they can be investigated.
 crbug.com/921719 scrollbars/mock-scrollbars.html [ Skip ]
 crbug.com/921719 virtual/prefer_compositing_to_lcd_text/scrollbars/mock-scrollbars.html [ Skip ]
-crbug.com/922951 animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Skip ]
-crbug.com/922951 animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Skip ]
-crbug.com/922951 animations/direction-and-fill/fill-mode-transform.html [ Skip ]
-crbug.com/922951 animations/direction-and-fill/fill-mode.html [ Skip ]
 crbug.com/922951 compositing/overflow/overflow-scroll-with-local-background.html [ Skip ]
 crbug.com/922951 external/wpt/longtask-timing/longtask-in-sibling-iframe-crossorigin.html [ Skip ]
 crbug.com/922951 external/wpt/pointerevents/pointerevent_capture_mouse.html [ Skip ]
@@ -5923,7 +5919,6 @@ crbug.com/922951 fast/forms/number/number-input-event-composed.html [ Skip ]
 crbug.com/922951 fast/loader/detach-while-printing.html [ Skip ]
 crbug.com/922951 fast/loader/document-open-iframe-then-detach.html [ Skip ]
 crbug.com/922951 fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Skip ]
-crbug.com/922951 fast/scroll-snap/snaps-for-different-key-granularity.html [ Skip ]
 crbug.com/922951 fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ Skip ]
 crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Skip ]
 crbug.com/922951 http/tests/devtools/tracing/timeline-network-received-data.js [ Skip ]
@@ -5941,8 +5936,6 @@ crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-clic
 crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-click-outside.html [ Skip ]
 crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-toggle-class-for-animation.html [ Skip ]
 crbug.com/922951 scrollbars/resize-scales-with-dpi-150.html [ Skip ]
-crbug.com/922951 svg/animations/dynamic-modify-transform-without-baseval.html [ Skip ]
-crbug.com/922951 svg/animations/target-condition-crash.html [ Skip ]
 crbug.com/922951 svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Skip ]
 crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-auto-auto-intrinsic-ratio.html [ Skip ]
 crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-auto-auto-no-intrinsic-ratio.html [ Skip ]
@@ -5969,14 +5962,28 @@ crbug.com/922951 virtual/gpu/fast/canvas/color-space/canvas-drawImage-offscreenC
 crbug.com/922951 virtual/mouseevent_fractional/fast/events/synthetic-events/tap-on-scaled-screen.html [ Skip ]
 crbug.com/922951 virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Skip ]
 crbug.com/922951 virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html [ Skip ]
-crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Skip ]
-crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Skip ]
-crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode.html [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-reason.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-record-reload.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Skip ]
+
+
+
+# These were marked as skipped in 922951. Flakiness no longer produces localy.
+# Marking them as Failure/Pass to collect data on bots. Once confirmed they are
+# no longer flaky we can re-enable.
+crbug.com/986018 fast/scroll-snap/snaps-for-different-key-granularity.html [ Failure Pass ]
+crbug.com/991565 animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Failure Pass ]
+crbug.com/991565 animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Failure Pass ]
+crbug.com/991565 animations/direction-and-fill/fill-mode-transform.html [ Failure Pass ]
+crbug.com/991565 animations/direction-and-fill/fill-mode.html [ Failure Pass ]
+crbug.com/991565 virtual/threaded/animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Failure Pass ]
+crbug.com/991565 virtual/threaded/animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Failure Pass ]
+crbug.com/991565 virtual/threaded/animations/direction-and-fill/fill-mode.html [ Failure Pass ]
+crbug.com/991565 svg/animations/dynamic-modify-transform-without-baseval.html [ Failure Pass ]
+crbug.com/991565 svg/animations/target-condition-crash.html [ Failure Pass ]
+
 
 # Race: The RTCIceConnectionState can become "connected" before getStats()
 # returns candidate-pair whose state is "succeeded", this sounds like a
