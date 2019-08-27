@@ -142,6 +142,8 @@ Bug(none) external/wpt/css/filter-effects/backdrop-filter-reference-filter.html 
 crbug.com/979352 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
 crbug.com/979352 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
 crbug.com/979352 virtual/threaded/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
+crbug.com/979352 virtual/android/rootscroller/fixed-chaining-with-implicit.html [ Failure ]
+crbug.com/979352 virtual/android/rootscroller/fixed-scroller-chaining-with-implicit.html [ Failure ]
 
 # Less invalidations or different invalidations without pixel failures.
 # Some might be good. Some might be under-invalidations for which under-invalidation

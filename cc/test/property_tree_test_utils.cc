@@ -223,10 +223,12 @@ void SetupViewport(Layer* root,
     CopyProperties(overscroll_elasticity_layer.get(), page_scale_layer.get());
     CreateTransformNode(page_scale_layer.get());
     CopyProperties(page_scale_layer.get(), inner_viewport_scroll_layer.get());
+    CreateScrollNode(inner_viewport_scroll_layer.get());
     CopyProperties(inner_viewport_scroll_layer.get(),
                    outer_viewport_container_layer.get());
     CopyProperties(outer_viewport_container_layer.get(),
                    outer_scroll_layer.get());
+    CreateScrollNode(outer_scroll_layer.get());
     // TODO(wangxianzhu): Create other property nodes when they are needed by
     // tests newly converted to layer list mode.
   } else {

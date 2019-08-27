@@ -722,7 +722,10 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   LayerImpl* CreateLayerForSnapping() {
-    LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
+    SetupScrollAndContentsLayers(gfx::Size(200, 200));
+    LayerImpl* scroll_layer =
+        host_impl_->active_tree()->OuterViewportScrollLayer();
+
     host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
 
     gfx::Size overflow_size(400, 400);
@@ -1754,8 +1757,13 @@ TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoWhenZoomed) {
 }
 
 TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
-  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  const gfx::Size kViewportSize(100, 100);
+  const gfx::Size kContentSize(200, 200);
+  CreateBasicVirtualViewportLayers(kViewportSize, kContentSize);
+
+  LayerImpl* scroll_layer =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+  host_impl_->active_tree()->SetDeviceViewportSize(kViewportSize);
 
   gfx::Size overflow_size(400, 400);
   ASSERT_EQ(1u, scroll_layer->test_properties()->children.size());
@@ -1924,8 +1932,13 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
-  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  const gfx::Size kViewportSize(100, 100);
+  const gfx::Size kContentSize(200, 200);
+  CreateBasicVirtualViewportLayers(kViewportSize, kContentSize);
+
+  LayerImpl* scroll_layer =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+  host_impl_->active_tree()->SetDeviceViewportSize(kViewportSize);
 
   gfx::Size overflow_size(400, 400);
   ASSERT_EQ(1u, scroll_layer->test_properties()->children.size());

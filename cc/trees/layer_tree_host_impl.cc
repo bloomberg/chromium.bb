@@ -3610,9 +3610,13 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     return scroll_status;
   }
 
+  // The outer viewport should be scrolled even if it has no scroll extent
+  // since it'll scroll using the Viewport class which will generate browser
+  // controls movement and overscroll delta.
   gfx::ScrollOffset max_scroll_offset =
       scroll_tree.MaxScrollOffset(scroll_node->id);
-  if (max_scroll_offset.x() <= 0 && max_scroll_offset.y() <= 0) {
+  if (max_scroll_offset.x() <= 0 && max_scroll_offset.y() <= 0 &&
+      !scroll_node->scrolls_outer_viewport) {
     TRACE_EVENT0("cc",
                  "LayerImpl::tryScroll: Ignored. Technically scrollable,"
                  " but has no affordance in either direction.");
@@ -3710,28 +3714,53 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
     }
   }
 
-  // Falling back to the viewport layer ensures generation of root overscroll
-  // notifications. We use the viewport's main scroll layer to represent the
-  // viewport in scrolling code.
-  bool scrolls_inner_viewport =
-      impl_scroll_node && impl_scroll_node->scrolls_inner_viewport;
-  bool scrolls_outer_viewport =
-      impl_scroll_node && impl_scroll_node->scrolls_outer_viewport;
-  if (!impl_scroll_node || scrolls_inner_viewport || scrolls_outer_viewport)
+  // TODO(bokan): We shouldn't need this - ordinarily all scrolls should pass
+  // through the outer viewport. If we aren't able to find a scroller we should
+  // return nullptr here and ignore the scroll. However, it looks like on some
+  // pages (reddit.com) we start scrolling from the inner node.
+  if (!impl_scroll_node)
+    impl_scroll_node = InnerViewportScrollNode();
+
+  if (!impl_scroll_node)
+    return nullptr;
+
+  // Blink has a notion of a "root scroller", which is the scroller in a page
+  // that is considered to host the main content. Typically this will be the
+  // document/LayoutView contents; however, in some situations Blink may choose
+  // a sub-scroller (div, iframe) that should scroll with "viewport" behavior.
+  // The "root scroller" is the node designated as the outer viewport in CC.
+  // See third_party/blink/renderer/core/page/scrolling/README.md for details.
+  //
+  // "Viewport" scrolling ensures generation of overscroll events, top controls
+  // movement, as well as correct multi-viewport panning in pinch-zoom and
+  // other scenarios.  We use the viewport's outer scroll node to represent the
+  // viewport in the scroll chain and apply scroll delta using CC's Viewport
+  // class.
+  //
+  // Scrolling from position: fixed layers will chain directly up to the inner
+  // viewport. Whether that should use the outer viewport (and thus the
+  // Viewport class) to scroll or not depends on the root scroller scenario
+  // because we don't want setting a root scroller to change the scroll chain
+  // order. The |prevent_viewport_scrolling_from_inner| bit is used to
+  // communicate that context.
+  DCHECK(!impl_scroll_node->prevent_viewport_scrolling_from_inner ||
+         impl_scroll_node->scrolls_inner_viewport);
+  bool should_use_viewport =
+      OuterViewportScrollNode() && impl_scroll_node->scrolls_inner_viewport &&
+      !impl_scroll_node->prevent_viewport_scrolling_from_inner;
+  if (should_use_viewport)
     impl_scroll_node = OuterViewportScrollNode();
 
-  if (impl_scroll_node) {
-    // Ensure that final layer scrolls on impl thread (crbug.com/625100)
-    ScrollStatus status =
-        TryScroll(device_viewport_point, scroll_tree, impl_scroll_node);
-    if (IsMainThreadScrolling(status, impl_scroll_node)) {
-      *scroll_on_main_thread = true;
-      *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
-    } else if (non_fast_scrollable_nodes.contains(impl_scroll_node->id)) {
-      *scroll_on_main_thread = true;
-      *main_thread_scrolling_reasons =
-          MainThreadScrollingReason::kNonFastScrollableRegion;
-    }
+  // Ensure that final scroll node scrolls on impl thread (crbug.com/625100)
+  ScrollStatus status =
+      TryScroll(device_viewport_point, scroll_tree, impl_scroll_node);
+  if (IsMainThreadScrolling(status, impl_scroll_node)) {
+    *scroll_on_main_thread = true;
+    *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
+  } else if (non_fast_scrollable_nodes.contains(impl_scroll_node->id)) {
+    *scroll_on_main_thread = true;
+    *main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNonFastScrollableRegion;
   }
 
   return impl_scroll_node;

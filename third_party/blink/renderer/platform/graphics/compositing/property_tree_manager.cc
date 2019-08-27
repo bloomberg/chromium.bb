@@ -533,6 +533,13 @@ void PropertyTreeManager::CreateCompositorScrollNode(
       scroll_node.UserScrollableVertical();
   compositor_node.scrolls_inner_viewport = scroll_node.ScrollsInnerViewport();
   compositor_node.scrolls_outer_viewport = scroll_node.ScrollsOuterViewport();
+  compositor_node.prevent_viewport_scrolling_from_inner =
+      scroll_node.PreventViewportScrollingFromInner();
+
+  // |scrolls_using_viewport| should only ever be set on the inner scroll node.
+  DCHECK(!compositor_node.prevent_viewport_scrolling_from_inner ||
+         compositor_node.scrolls_inner_viewport);
+
   compositor_node.max_scroll_offset_affected_by_page_scale =
       scroll_node.MaxScrollOffsetAffectedByPageScale();
   compositor_node.main_thread_scrolling_reasons =
