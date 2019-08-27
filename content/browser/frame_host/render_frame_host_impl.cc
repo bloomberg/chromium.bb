@@ -4365,7 +4365,20 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
           },
           // Same as above.
           base::Unretained(this)),
-      std::move(save_stats_cb)));
+      std::move(save_stats_cb),
+      base::BindRepeating(
+          [](base::WeakPtr<RenderFrameHostImpl> frame)
+              -> media::learning::LearningSession* {
+            if (!base::FeatureList::IsEnabled(media::kMediaLearningFramework) ||
+                !frame) {
+              return nullptr;
+            }
+
+            return frame->GetProcess()
+                ->GetBrowserContext()
+                ->GetLearningSession();
+          },
+          weak_ptr_factory_.GetWeakPtr())));
 
   if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     registry_->AddInterface(
