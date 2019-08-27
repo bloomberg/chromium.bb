@@ -16,7 +16,7 @@ Polymer({
 
   behaviors: [
     CrNetworkListenerBehavior,
-    CrPolicyNetworkBehavior,
+    CrPolicyNetworkBehaviorMojo,
     settings.RouteObserverBehavior,
     I18nBehavior,
   ],
@@ -577,7 +577,7 @@ Polymer({
    */
   isBlockedByPolicy_: function(state) {
     if (state.type != mojom.NetworkType.kWiFi ||
-        this.isPolicySourceMojo(state.source) || !this.globalPolicy) {
+        this.isPolicySource(state.source) || !this.globalPolicy) {
       return false;
     }
     return !!this.globalPolicy.AllowOnlyPolicyNetworksToConnect ||
