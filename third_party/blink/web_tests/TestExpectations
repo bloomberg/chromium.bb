@@ -2993,7 +2993,6 @@ crbug.com/763830 virtual/blink-cors/http/tests/security/cors-rfc1918/ [ Skip ]
 
 crbug.com/831729 external/wpt/event-timing/crossiframe.html [ Timeout ]
 crbug.com/831729 external/wpt/event-timing/observer-manual.html [ Skip ]
-crbug.com/987236  [ Linux ] external/wpt/event-timing/bufferbeforeonload.html [ Timeout ]
 
 # Working on getting the CSP tests going:
 crbug.com/694525 external/wpt/content-security-policy/connect-src/worker-from-guid.sub.html [ Skip ]
@@ -6406,7 +6405,6 @@ crbug.com/987138 [ Linux Win ] virtual/audio-service/media/controls/doubletap-to
 # Sheriff 2019-07-26
 crbug.com/835943 [ Debug ] http/tests/appcache/non-html.xhtml [ Crash Pass ]
 crbug.com/874866 [ Linux Debug ] media/controls/doubletap-to-jump-backwards.html [ Failure ]
-crbug.com/988231 external/wpt/event-timing/observethenonload.html [ Pass Timeout ]
 crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/password-alt-f8-twice.html [ Pass Failure ]
 crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/password-alt-f8.html [ Pass Failure ]
 crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/password-eye-icon-font-size-48px.html [ Pass Failure ]
