@@ -73,7 +73,7 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
       return AudioFocusDelegate::AudioFocusResult::kDelayed;
     } else {
       audio_focus_type_ = audio_focus_type;
-      return AudioFocusDelegate::AudioFocusResult::kSuccess;
+      return sync_result_;
     }
   }
 
@@ -97,7 +97,14 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
 
   bool HasRequests() const { return !requests_.empty(); }
 
+  void SetSyncResult(AudioFocusDelegate::AudioFocusResult result) {
+    sync_result_ = result;
+  }
+
  private:
+  AudioFocusDelegate::AudioFocusResult sync_result_ =
+      AudioFocusDelegate::AudioFocusResult::kSuccess;
+
   MediaSessionImpl* media_session_;
   const bool async_mode_ = false;
 
@@ -219,6 +226,10 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
     mock_audio_focus_delegate()->ResolveRequest(false /* result */);
   }
 
+  void SetSyncAudioFocusResult(AudioFocusDelegate::AudioFocusResult result) {
+    mock_audio_focus_delegate()->SetSyncResult(result);
+  }
+
   bool HasUnresolvedAudioFocusRequest() {
     return mock_audio_focus_delegate()->HasRequests();
   }
@@ -270,6 +281,18 @@ class MediaSessionImplParamBrowserTest
 
     SetAudioFocusDelegateForTests(
         new NiceMock<MockAudioFocusDelegate>(media_session_, GetParam()));
+  }
+};
+
+class MediaSessionImplSyncBrowserTest : public MediaSessionImplBrowserTest {
+ protected:
+  MediaSessionImplSyncBrowserTest() = default;
+
+  void SetUpOnMainThread() override {
+    MediaSessionImplBrowserTest::SetUpOnMainThread();
+
+    SetAudioFocusDelegateForTests(new NiceMock<MockAudioFocusDelegate>(
+        media_session_, false /* async_mode */));
   }
 };
 
@@ -2211,6 +2234,19 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 
     observer.WaitForExpectedMetadata(expected_metadata);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplSyncBrowserTest,
+                       PepperPlayerNotAddedIfFocusFailed) {
+  SetSyncAudioFocusResult(AudioFocusDelegate::AudioFocusResult::kFailed);
+
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+  int player_id = player_observer->StartNewPlayer();
+
+  EXPECT_FALSE(AddPlayer(player_observer.get(), player_id,
+                         media::MediaContentType::Pepper));
+
+  EXPECT_FALSE(media_session_->HasPepper());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, Async_RequestFailure_Gain) {
