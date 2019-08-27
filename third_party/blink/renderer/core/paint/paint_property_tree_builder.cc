@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
+#include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
@@ -473,8 +474,15 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
 bool FragmentPaintPropertyTreeBuilder::IsAffectedByOuterViewportBoundsDelta()
     const {
   if (object_.StyleRef().GetPosition() != EPosition::kFixed ||
-      !object_.StyleRef().IsFixedToBottom() ||
-      !object_.GetFrame()->IsMainFrame())
+      !object_.StyleRef().IsFixedToBottom())
+    return false;
+
+  // Objects inside an iframe that's the root scroller should get the same
+  // "pushed by top controls" behavior as for the main frame.
+  auto& controller =
+      object_.GetFrame()->GetPage()->GlobalRootScrollerController();
+  if (!object_.GetFrame()->IsMainFrame() &&
+      object_.GetFrame()->GetDocument() != controller.GlobalRootScroller())
     return false;
 
   // It's affected by viewport only if the container is the LayoutView.
