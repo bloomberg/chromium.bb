@@ -326,8 +326,7 @@ class SkylabHWTestStage(HWTestStage):
 
     # Retain all moblab boards on cq pool, until it is able
     # to migrate to Skylab. See crbug.com/949217
-    if ('moblab' in self._board_name and
-        config_lib.IsCQType(self._run.config.build_type)):
+    if self._IsMoblabCQ():
       pool = constants.HWTEST_PALADIN_POOL
 
     return pool
@@ -337,13 +336,19 @@ class SkylabHWTestStage(HWTestStage):
   def _InferQuotaAccount(self):
     """Attempt to infer quota account to use for this test, if applicable."""
     build_type = self._run.config.build_type
-    # The order of checks matters here, because CQ builds are considered to be
-    # PFQ type as well.
+    # The order of checks matters here.
+    # CQ builds are considered to be PFQ type as well.
+    if self._IsMoblabCQ():
+      return None
     if config_lib.IsCQType(build_type):
       return 'cq'
     if config_lib.IsPFQType(build_type):
       return 'pfq'
     return None
+
+  def _IsMoblabCQ(self):
+    return ('moblab' in self._board_name
+            and config_lib.IsCQType(self._run.config.build_type))
 
   def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
