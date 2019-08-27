@@ -361,12 +361,7 @@ bool AutofillWalletSyncBridge::SetWalletCards(
       ComputeAutofillWalletDiff(existing_cards, wallet_cards);
 
   if (!diff.IsEmpty()) {
-    if (base::FeatureList::IsEnabled(
-            ::switches::kSyncUSSAutofillWalletMetadata)) {
-      table->SetServerCardsData(wallet_cards);
-    } else {
-      table->SetServerCreditCards(wallet_cards);
-    }
+    table->SetServerCardsData(wallet_cards);
     if (notify_metadata_bridge) {
       for (const CreditCardChange& change : diff.changes) {
         web_data_backend_->NotifyOfCreditCardChanged(change);
@@ -399,12 +394,7 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
       ComputeAutofillWalletDiff(existing_addresses, wallet_addresses);
 
   if (!diff.IsEmpty()) {
-    if (base::FeatureList::IsEnabled(
-            ::switches::kSyncUSSAutofillWalletMetadata)) {
-      table->SetServerAddressesData(wallet_addresses);
-    } else {
-      table->SetServerProfiles(wallet_addresses);
-    }
+    table->SetServerAddressesData(wallet_addresses);
     if (notify_metadata_bridge) {
       for (const AutofillProfileChange& change : diff.changes) {
         web_data_backend_->NotifyOfAutofillProfileChanged(change);
