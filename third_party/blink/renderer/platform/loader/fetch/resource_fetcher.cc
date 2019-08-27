@@ -685,7 +685,8 @@ Resource* ResourceFetcher::ResourceForStaticData(
   scoped_refptr<SharedBuffer> data;
   if (url.ProtocolIsData()) {
     int result;
-    std::tie(result, response, data) = network_utils::ParseDataURL(url);
+    std::tie(result, response, data) = network_utils::ParseDataURL(
+        url, params.GetResourceRequest().HttpMethod());
     if (result != net::OK) {
       return nullptr;
     }
