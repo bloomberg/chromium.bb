@@ -312,8 +312,6 @@ IN_PROC_BROWSER_TEST_F(
                                       true);
 }
 
-// Disable flake on Linux too (via only Android) until crbug/997697 resolved.
-#if defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptClientRedirectLoopStopped)) {
@@ -333,8 +331,8 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(), client_redirect_url());
 
   RetryForHistogramUntilCountReached(
-      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
-      1);
+      &histogram_tester, "Navigation.ClientRedirectCycle.RedirectToReferrer",
+      2);
 
   // Client redirect loop is broken on 2nd pass around the loop so expect 3
   // previews before previews turned off to stop loop.
@@ -342,4 +340,3 @@ IN_PROC_BROWSER_TEST_F(
       "Navigation.ClientRedirectCycle.RedirectToReferrer", 2);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
 }
-#endif  // defined(OS_ANDROID)
