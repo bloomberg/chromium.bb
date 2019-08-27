@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PAGE_LOAD_METRICS_TEST_PAGE_LOAD_METRICS_TEST_UTIL_H_
-#define CHROME_COMMON_PAGE_LOAD_METRICS_TEST_PAGE_LOAD_METRICS_TEST_UTIL_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_COMMON_TEST_PAGE_LOAD_METRICS_TEST_UTIL_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_COMMON_TEST_PAGE_LOAD_METRICS_TEST_UTIL_H_
 
 #include <stdint.h>
 
 #include <vector>
 
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 
 // Helper that fills in any timing fields that page load metrics requires but
 // that are currently missing.
@@ -28,4 +28,4 @@ page_load_metrics::mojom::ResourceDataUpdatePtr CreateResource(
 std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>
 GetSampleResourceDataUpdateForTesting(int64_t resource_size);
 
-#endif  // CHROME_COMMON_PAGE_LOAD_METRICS_TEST_PAGE_LOAD_METRICS_TEST_UTIL_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_COMMON_TEST_PAGE_LOAD_METRICS_TEST_UTIL_H_

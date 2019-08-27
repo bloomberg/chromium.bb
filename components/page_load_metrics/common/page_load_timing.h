@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_LOAD_TIMING_H_
-#define CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_LOAD_TIMING_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_LOAD_TIMING_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_LOAD_TIMING_H_
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 namespace page_load_metrics {
@@ -24,4 +24,4 @@ void InitPageLoadTimingForTest(mojom::PageLoadTiming* timing);
 
 }  // namespace page_load_metrics
 
-#endif  // CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_LOAD_TIMING_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_LOAD_TIMING_H_

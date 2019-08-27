@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UTIL_H_
-#define CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UTIL_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_LOAD_METRICS_UTIL_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_LOAD_METRICS_UTIL_H_
 
 #include <string>
 
@@ -37,4 +37,4 @@ base::Optional<std::string> GetGoogleHostnamePrefix(const GURL& url);
 
 }  // namespace page_load_metrics
 
-#endif  // CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UTIL_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_LOAD_METRICS_UTIL_H_

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
+#include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 
-#include "chrome/common/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/common/page_load_metrics_util.h"
 
 using page_load_metrics::OptionalMin;
 

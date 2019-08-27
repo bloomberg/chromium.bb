@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/page_load_metrics/test/weak_mock_timer.h"
+#include "components/page_load_metrics/common/test/weak_mock_timer.h"
 
 namespace page_load_metrics {
 namespace test {

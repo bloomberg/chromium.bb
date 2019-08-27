@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_END_REASON_H_
-#define CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_END_REASON_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_END_REASON_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_END_REASON_H_
 
 namespace page_load_metrics {
 
@@ -55,4 +55,4 @@ enum PageEndReason {
 
 }  // namespace page_load_metrics
 
-#endif  // CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_END_REASON_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_END_REASON_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PAGE_LOAD_METRICS_TEST_WEAK_MOCK_TIMER_H_
-#define CHROME_COMMON_PAGE_LOAD_METRICS_TEST_WEAK_MOCK_TIMER_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_COMMON_TEST_WEAK_MOCK_TIMER_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_COMMON_TEST_WEAK_MOCK_TIMER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -41,4 +41,4 @@ class WeakMockTimerProvider {
 }  // namespace test
 }  // namespace page_load_metrics
 
-#endif  // CHROME_COMMON_PAGE_LOAD_METRICS_TEST_WEAK_MOCK_TIMER_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_COMMON_TEST_WEAK_MOCK_TIMER_H_
