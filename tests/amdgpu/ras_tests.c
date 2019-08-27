@@ -30,7 +30,8 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include "xf86drm.h"
-#include "stdlib.h"
+
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 const char *ras_block_string[] = {
 	"umc",
@@ -311,11 +312,10 @@ enum amdgpu_ras_error_type {
 	AMDGPU_RAS_ERROR__POISON				= 8,
 };
 
-struct ras_test_item {
+struct ras_inject_test_config {
 	char name[64];
-	int block;
+	char block[32];
 	int sub_block;
-	char error_type_str[64];
 	enum amdgpu_ras_error_type type;
 	uint64_t address;
 	uint64_t value;
@@ -390,11 +390,77 @@ struct ras_DID_test_mask{
 	DEFAULT_RAS_BLOCK_MASK_BASIC\
 }
 
+static const struct ras_inject_test_config umc_ras_inject_test[] = {
+	{"ras_umc.1.0", "umc", 0, AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+};
+
+static const struct ras_inject_test_config gfx_ras_inject_test[] = {
+	{"ras_gfx.2.0", "gfx", AMDGPU_RAS_BLOCK__GFX_CPC_UCODE,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.1", "gfx", AMDGPU_RAS_BLOCK__GFX_CPF_TAG,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.2", "gfx", AMDGPU_RAS_BLOCK__GFX_CPG_TAG,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.3", "gfx", AMDGPU_RAS_BLOCK__GFX_SQ_LDS_D,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.4", "gfx", AMDGPU_RAS_BLOCK__GFX_SQC_DATA_CU1_UTCL1_LFIFO,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.5", "gfx", AMDGPU_RAS_BLOCK__GFX_SQC_INST_BANKA_TAG_RAM,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.6", "gfx", AMDGPU_RAS_BLOCK__GFX_SQC_INST_BANKB_TAG_RAM,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.7", "gfx", AMDGPU_RAS_BLOCK__GFX_TA_FS_DFIFO,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.8", "gfx", AMDGPU_RAS_BLOCK__GFX_TCC_CACHE_DATA,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.9", "gfx", AMDGPU_RAS_BLOCK__GFX_TCC_CACHE_DATA_BANK_0_1,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.10", "gfx", AMDGPU_RAS_BLOCK__GFX_TCC_CACHE_DATA_BANK_1_0,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.11", "gfx", AMDGPU_RAS_BLOCK__GFX_TCC_CACHE_DATA_BANK_1_1,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.12", "gfx", AMDGPU_RAS_BLOCK__GFX_TCP_CACHE_RAM,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.13", "gfx", AMDGPU_RAS_BLOCK__GFX_TD_SS_FIFO_LO,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+	{"ras_gfx.2.14", "gfx", AMDGPU_RAS_BLOCK__GFX_EA_DRAMRD_CMDMEM,
+		AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE, 0, 0},
+};
+
 static const struct ras_DID_test_mask ras_DID_array[] = {
 	{0x66a1, 0x00, RAS_BLOCK_MASK_ALL},
 	{0x66a1, 0x01, RAS_BLOCK_MASK_ALL},
 	{0x66a1, 0x04, RAS_BLOCK_MASK_ALL},
 };
+
+static uint32_t amdgpu_ras_find_block_id_by_name(const char *name)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(ras_block_string); i++) {
+		if (strcmp(name, ras_block_string[i]) == 0)
+			return i;
+	}
+
+	return ARRAY_SIZE(ras_block_string);
+}
+
+static char *amdgpu_ras_get_error_type_id(enum amdgpu_ras_error_type type)
+{
+	switch (type) {
+	case AMDGPU_RAS_ERROR__PARITY:
+		return "parity";
+	case AMDGPU_RAS_ERROR__SINGLE_CORRECTABLE:
+		return "single_correctable";
+	case AMDGPU_RAS_ERROR__MULTI_UNCORRECTABLE:
+		return "multi_uncorrectable";
+	case AMDGPU_RAS_ERROR__POISON:
+		return "poison";
+	case AMDGPU_RAS_ERROR__NONE:
+	default:
+		return NULL;
+	}
+}
 
 static struct ras_test_mask amdgpu_ras_get_test_mask(drmDevicePtr device)
 {
@@ -775,43 +841,36 @@ static void amdgpu_ras_enable_test(void)
 	}
 }
 
-static int amdgpu_ras_get_test_items(struct ras_test_item **pitems, int *size)
+static void __amdgpu_ras_ip_inject_test(const struct ras_inject_test_config *ip_test,
+					uint32_t size)
 {
-	*pitems = NULL;
-	*size = 0;
-
-	return 0;
-}
-
-static void __amdgpu_ras_inject_test(void)
-{
-	struct ras_test_item *items = NULL;
-	int i, size;
-	int ret;
+	int i, ret;
 	unsigned long old_ue, old_ce;
 	unsigned long ue, ce;
+	uint32_t block;
 	int timeout;
 	bool pass;
 
-	ret = amdgpu_ras_get_test_items(&items, &size);
-	CU_ASSERT_EQUAL(ret, 0);
-	if (ret)
-		goto mem_free;
-
-	printf("...\n");
 	for (i = 0; i < size; i++) {
 		timeout = 3;
 		pass = false;
 
-		ret = amdgpu_ras_query_err_count(items[i].block, &old_ue,
-						 &old_ce);
+		block = amdgpu_ras_find_block_id_by_name(ip_test[i].block);
+
+		/* Ensure one valid ip block */
+		if (block == ARRAY_SIZE(ras_block_string))
+			break;
+
+		ret = amdgpu_ras_query_err_count(block, &old_ue, &old_ce);
 		CU_ASSERT_EQUAL(ret, 0);
 		if (ret)
 			break;
 
-		ret = amdgpu_ras_inject(items[i].block, items[i].sub_block,
-					items[i].type, items[i].address,
-					items[i].value);
+		ret = amdgpu_ras_inject(block,
+					ip_test[i].sub_block,
+					ip_test[i].type,
+					ip_test[i].address,
+					ip_test[i].value);
 		CU_ASSERT_EQUAL(ret, 0);
 		if (ret)
 			break;
@@ -819,8 +878,7 @@ static void __amdgpu_ras_inject_test(void)
 		while (timeout > 0) {
 			sleep(5);
 
-			ret = amdgpu_ras_query_err_count(items[i].block, &ue,
-							 &ce);
+			ret = amdgpu_ras_query_err_count(block, &ue, &ce);
 			CU_ASSERT_EQUAL(ret, 0);
 			if (ret)
 				break;
@@ -832,16 +890,28 @@ static void __amdgpu_ras_inject_test(void)
 			}
 			timeout -= 1;
 		}
-		printf("\t Test %s@%s, address %ld, value %ld: %s\n",
-			items[i].name, items[i].error_type_str, items[i].address,
-			items[i].value,	pass ? "Pass" : "Fail");
+		printf("\t Test %s@block %s, subblock %d, error_type %s, address %ld, value %ld: %s\n",
+			ip_test[i].name,
+			ip_test[i].block,
+			ip_test[i].sub_block,
+			amdgpu_ras_get_error_type_id(ip_test[i].type),
+			ip_test[i].address,
+			ip_test[i].value,
+			pass ? "Pass" : "Fail");
 	}
+}
 
-mem_free:
-	if (items) {
-		free(items);
-		items = NULL;
-	}
+static void __amdgpu_ras_inject_test(void)
+{
+	printf("...\n");
+
+	/* run UMC ras inject test */
+	__amdgpu_ras_ip_inject_test(umc_ras_inject_test,
+		ARRAY_SIZE(umc_ras_inject_test));
+
+	/* run GFX ras inject test */
+	__amdgpu_ras_ip_inject_test(gfx_ras_inject_test,
+		ARRAY_SIZE(gfx_ras_inject_test));
 }
 
 static void amdgpu_ras_inject_test(void)
