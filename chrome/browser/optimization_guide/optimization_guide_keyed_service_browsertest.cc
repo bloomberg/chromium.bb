@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/optimization_guide/command_line_top_host_provider.h"
 #include "components/optimization_guide/hint_cache_store.h"
+#include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
@@ -81,11 +82,22 @@ class OptimizationGuideConsumerWebContentsObserver
     OptimizationGuideKeyedService* service =
         OptimizationGuideKeyedServiceFactory::GetForProfile(
             Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-    service->CanApplyOptimization(
+    last_optimization_guide_decision_ = service->CanApplyOptimization(
         navigation_handle,
         optimization_guide::OptimizationTarget::kPainfulPageLoad,
         optimization_guide::proto::NOSCRIPT, /*optimization_metadata=*/nullptr);
   }
+
+  // Returns the last optimization guide decision that was returned by the
+  // OptimizationGuideKeyedService.
+  optimization_guide::OptimizationGuideDecision
+  last_optimization_guide_decision() const {
+    return last_optimization_guide_decision_;
+  }
+
+ private:
+  optimization_guide::OptimizationGuideDecision
+      last_optimization_guide_decision_;
 };
 
 }  // namespace
@@ -151,9 +163,8 @@ class OptimizationGuideKeyedServiceBrowserTest
     consumer_.reset(new OptimizationGuideConsumerWebContentsObserver(
         browser()->tab_strip_model()->GetActiveWebContents()));
 
-    g_browser_process->network_quality_tracker()
-        ->ReportEffectiveConnectionTypeForTesting(
-            net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+    SetEffectiveConnectionType(
+        net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   }
 
   void TearDown() override {
@@ -188,6 +199,20 @@ class OptimizationGuideKeyedServiceBrowserTest
         component_info);
 
     run_loop.Run();
+  }
+
+  // Sets the effective connection type that the Network Quality Tracker will
+  // report.
+  void SetEffectiveConnectionType(
+      net::EffectiveConnectionType effective_connection_type) {
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(effective_connection_type);
+  }
+
+  // Returns the last decision seen by the consumer of the
+  // OptimizationGuideKeyedService.
+  optimization_guide::OptimizationGuideDecision last_consumer_decision() {
+    return consumer_->last_optimization_guide_decision();
   }
 
   GURL url_with_hints() { return url_with_hints_; }
@@ -234,6 +259,9 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(), url_with_hints());
 
   histogram_tester.ExpectTotalCount("OptimizationGuide.LoadedHint.Result", 0);
+  // There is a hint that matches this URL but it wasn't loaded.
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
+            last_consumer_decision());
 }
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
@@ -254,6 +282,57 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
 
+  // We had a hint but it wasn't loaded and it was painful enough.
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_consumer_decision());
+  // Expect that the optimization guide UKM was recorded.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries.at(0);
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::OptimizationGuide::kHintSourceName,
+      static_cast<int>(
+          optimization_guide::proto::HINT_SOURCE_OPTIMIZATION_HINTS_COMPONENT));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName,
+      123);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    OptimizationGuideKeyedServiceBrowserTest,
+    NavigateToPageWithHintsLoadsHintButDoesNotAllowApplyDueToECT) {
+  PushHintsComponentAndWaitForCompletion();
+  RegisterWithKeyedService();
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  base::HistogramTester histogram_tester;
+
+  SetEffectiveConnectionType(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
+            0);
+  // There is a hint that matches this URL, so there should be an attempt to
+  // load a hint that succeeds.
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
+                                      true, 1);
+
+  // We had a matching hint but the page load was not painful.
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_consumer_decision());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.TargetDecision.PainfulPageLoad",
+      static_cast<int>(optimization_guide::OptimizationTargetDecision::
+                           kPageLoadDoesNotMatch),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecision.NoScript",
+      static_cast<int>(
+          optimization_guide::OptimizationTypeDecision::kAllowedByHint),
+      1);
   // Expect that the optimization guide UKM was recorded.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
@@ -288,6 +367,9 @@ IN_PROC_BROWSER_TEST_F(
   // Should attempt and succeed to load a hint once for the redirect.
   histogram_tester.ExpectBucketCount("OptimizationGuide.LoadedHint.Result",
                                      true, 1);
+  // Hint is still applicable so we expect it to be allowed to be applied.
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_consumer_decision());
   // Expect that the optimization guide UKM was recorded.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
@@ -319,6 +401,18 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // attempt to load a hint but still fail.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       false, 1);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_consumer_decision());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecision.NoScript",
+      static_cast<int>(
+          optimization_guide::OptimizationTypeDecision::kNoHintAvailable),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.TargetDecision.PainfulPageLoad",
+      static_cast<int>(
+          optimization_guide::OptimizationTargetDecision::kPageLoadMatches),
+      1);
   // Should expect that no hints were loaded and so we don't have a hint
   // version recorded.
   auto entries = ukm_recorder.GetEntriesByName(
@@ -342,6 +436,18 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // There should be a hint that matches this URL.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_consumer_decision());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecision.NoScript",
+      static_cast<int>(
+          optimization_guide::OptimizationTypeDecision::kNotAllowedByHint),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.TargetDecision.PainfulPageLoad",
+      static_cast<int>(
+          optimization_guide::OptimizationTargetDecision::kPageLoadMatches),
+      1);
   // Should expect that UKM was not recorded since it did not have a version.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
@@ -364,6 +470,18 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // There should be a hint that matches this URL.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_consumer_decision());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecision.NoScript",
+      static_cast<int>(
+          optimization_guide::OptimizationTypeDecision::kNotAllowedByHint),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.TargetDecision.PainfulPageLoad",
+      static_cast<int>(
+          optimization_guide::OptimizationTargetDecision::kPageLoadMatches),
+      1);
   // Should expect that UKM was not recorded since it had a bad version string.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
@@ -664,6 +782,11 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsFetcherTest,
         "OptimizationGuide.HintCache.HintType.Loaded",
         static_cast<int>(
             optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
+        1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ApplyDecision.NoScript",
+        static_cast<int>(
+            optimization_guide::OptimizationTypeDecision::kAllowedByHint),
         1);
     // Expect that the optimization guide UKM was recorded.
     auto entries = ukm_recorder.GetEntriesByName(

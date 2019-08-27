@@ -45070,6 +45070,62 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OptimizationGuideOptimizationTargetDecision">
+  <int value="0" label="Unknown">
+    There was no model for the optimization target evaluated, so the target
+    decision is unknown.
+  </int>
+  <int value="1" label="Page load does not match target">
+    The model for the optimization target was evaluated and the page load was
+    not predicted to match the optimization target.
+  </int>
+  <int value="2" label="Page load matches target">
+    The model for the optimization target was evaluated and the page load was
+    predicted to match the optimization target.
+  </int>
+</enum>
+
+<enum name="OptimizationGuideOptimizationTypeDecision">
+  <int value="0" label="Unknown">
+    There was no hint or optimization filter consulted for the optimization
+    type, so the type decision is unknown.
+  </int>
+  <int value="1" label="Page load allowed by optimization filter">
+    An optimization filter for the optimization type was consulted and the page
+    load was allowed by the filter.
+  </int>
+  <int value="2" label="Page load not allowed by optimization filter">
+    An optimization filter for the optimization type was consulted and the page
+    load was not allowed by the filter.
+  </int>
+  <int value="3" label="Optimization filter on device but not loaded yet">
+    An optimization filter for the optimization type was on the device but was
+    not loaded in time to make a decision. There is no guarantee that had the
+    filter been loaded that the page load would have been allowed for the
+    optimization type.
+  </int>
+  <int value="4" label="Page load allowed by hint">
+    The optimization type was allowed to be applied based on information from a
+    hint.
+  </int>
+  <int value="5" label="Page load not allowed by hint">
+    The optimization type was not allowed to be applied based on information
+    from a hint.
+  </int>
+  <int value="6" label="No matching page hint for page load">
+    There was a hint loaded that matched the page load, but no matching page
+    hint for the page load.
+  </int>
+  <int value="7" label="Hint on device but not loaded yet">
+    A hint for the page load was on the device but was not loaded in time to
+    make a decision. There is no guarantee that had the hint been loaded that
+    the page load would have been allowed for the optimization type.
+  </int>
+  <int value="8" label="No hint available for page load">
+    There was no hint on the device that matched the page load.
+  </int>
+</enum>
+
 <enum name="OptimizationGuideProcessHintsResult">
   <int value="0" label="Success">
     Hints were processed and at least one supported hint was stored.
