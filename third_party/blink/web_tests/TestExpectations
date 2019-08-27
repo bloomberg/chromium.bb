@@ -1641,6 +1641,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-auto-height
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-auto-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-auto-height-short-first-row.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/nested-balanced-inner-column-count-1-with-forced-break.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/nested-balanced-inner-column-count-1-with-forced-break-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balanced-inner-with-many-breaks-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balanced-inner-with-many-breaks.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balanced-with-strut-before-first-line.html [ Failure ]
