@@ -93,7 +93,7 @@ class CloudTraceContextTest(cros_test_lib.MockTestCase):
 
   def testHeaderValue(self):
     """Tests that the header value makes sense."""
-    trace_id = 'deadbeef12345678deadbeef12345678',
+    trace_id = 'deadbeef12345678deadbeef12345678'
     stack = cloud_trace.SpanStack(
         traceId=trace_id,
         parentSpanId='0',

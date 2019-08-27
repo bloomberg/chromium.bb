@@ -386,9 +386,9 @@ def _MethodCallRepr(message):
   """
   if not message:
     return repr(message)
-  obj = message.metric_name,
-  method = message.method,
-  args = message.method_args,
+  obj = message.metric_name
+  method = message.method
+  args = message.method_args
   kwargs = message.method_kwargs
 
   args_strings = ([repr(x) for x in args] +
