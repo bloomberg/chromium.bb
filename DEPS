@@ -1105,6 +1105,12 @@ deps = {
       'condition': 'checkout_linux',
   },
 
+  # The library for IPP protocol (Chrome OS).
+  'src/third_party/libipp/libipp': {
+      'url': Var('chromium_git') + '/chromiumos/platform2/libipp.git' + '@' + '6c45a4f3a05cb5dd700414fe4d94cf685159d3ce',
+      'condition': 'checkout_linux',
+  },
+
   'src/third_party/libjpeg_turbo':
     Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + 'd460d6b1cb965c3363f36f7ed716f13d60cdb65d',
 
