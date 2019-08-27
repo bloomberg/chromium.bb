@@ -442,6 +442,7 @@ void aom_lpf_vertical_14_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
   mb_lpf_vertical_edge_w(s + 4 * pitch, pitch, blimit1, limit1, thresh1, 4);
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 // Should we apply any filter at all: 11111111 yes, 00000000 no ?
 static INLINE int8_t highbd_filter_mask2(uint8_t limit, uint8_t blimit,
                                          uint16_t p1, uint16_t p0, uint16_t q0,
@@ -923,3 +924,4 @@ void aom_highbd_lpf_vertical_14_dual_c(
   highbd_mb_lpf_vertical_edge_w(s + 4 * pitch, pitch, blimit1, limit1, thresh1,
                                 4, bd);
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH

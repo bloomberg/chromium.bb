@@ -78,7 +78,8 @@ list(APPEND AOM_DSP_COMMON_INTRIN_SSE2
 
 if(NOT CONFIG_AV1_HIGHBITDEPTH)
   list(REMOVE_ITEM AOM_DSP_COMMON_INTRIN_SSE2
-                   "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_sse2.c")
+                   "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_sse2.c"
+                   "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_sse2.c")
 endif()
 
 list(APPEND AOM_DSP_COMMON_ASM_SSSE3
@@ -116,7 +117,8 @@ list(APPEND AOM_DSP_COMMON_INTRIN_AVX2
 
 if(NOT CONFIG_AV1_HIGHBITDEPTH)
   list(REMOVE_ITEM AOM_DSP_COMMON_INTRIN_AVX2
-                   "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c")
+                   "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c"
+                   "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_avx2.c")
 endif()
 
 list(APPEND AOM_DSP_COMMON_INTRIN_NEON "${AOM_ROOT}/aom_dsp/arm/fwd_txfm_neon.c"
