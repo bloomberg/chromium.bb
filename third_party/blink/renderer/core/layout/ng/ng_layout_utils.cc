@@ -368,10 +368,12 @@ bool MaySkipLegacyLayout(const NGBlockNode& node,
 bool MaySkipLayoutWithinBlockFormattingContext(
     const NGLayoutResult& cached_layout_result,
     const NGConstraintSpace& new_space,
-    base::Optional<LayoutUnit>* bfc_block_offset) {
+    base::Optional<LayoutUnit>* bfc_block_offset,
+    LayoutUnit* block_offset_delta) {
   DCHECK_EQ(cached_layout_result.Status(), NGLayoutResult::kSuccess);
   DCHECK(cached_layout_result.HasValidConstraintSpaceForCaching());
   DCHECK(bfc_block_offset);
+  DCHECK(block_offset_delta);
 
   const NGConstraintSpace& old_space =
       cached_layout_result.GetConstraintSpaceForCaching();
@@ -408,36 +410,80 @@ bool MaySkipLayoutWithinBlockFormattingContext(
     }
   }
 
+  const auto& physical_fragment = cached_layout_result.PhysicalFragment();
+
   // Check we have a descendant that *may* be positioned above the block-start
   // edge. We abort if either the old or new space has floats, as we don't keep
   // track of how far above the child could be. This case is relatively rare,
   // and only occurs with negative margins.
-  if (cached_layout_result.PhysicalFragment()
-          .MayHaveDescendantAboveBlockStart() &&
+  if (physical_fragment.MayHaveDescendantAboveBlockStart() &&
       (old_space.HasFloats() || new_space.HasFloats()))
     return false;
 
-  // We can now try to adjust the BFC block-offset.
-  if (*bfc_block_offset) {
-    // Check if the previous position may intersect with any floats.
-    if (**bfc_block_offset <
-        old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
-      return false;
+  // Self collapsing blocks have different "shifting" rules applied to them.
+  if (cached_layout_result.IsSelfCollapsing()) {
+    DCHECK(!is_pushed_by_floats);
 
-    if (is_pushed_by_floats) {
-      DCHECK_EQ(**bfc_block_offset, old_clearance_offset);
-      *bfc_block_offset = new_clearance_offset;
-    } else {
-      *bfc_block_offset = **bfc_block_offset -
-                          old_space.BfcOffset().block_offset +
-                          new_space.BfcOffset().block_offset;
+    // The "expected" BFC block-offset is where adjoining objects will be
+    // placed (which may be wrong due to adjoining margins).
+    LayoutUnit old_expected = old_space.ExpectedBfcBlockOffset();
+    LayoutUnit new_expected = new_space.ExpectedBfcBlockOffset();
+
+    // If we have any adjoining object descendants (floats), we need to ensure
+    // that their position wouldn't be impacted by any preceding floats.
+    if (physical_fragment.HasAdjoiningObjectDescendants()) {
+      // Check if the previous position intersects with any floats.
+      if (old_expected <
+          old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+        return false;
+
+      // Check if the new position intersects with any floats.
+      if (new_expected <
+          new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+        return false;
     }
 
-    // Check if the new position may intersect with any floats.
-    if (**bfc_block_offset <
-        new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
-      return false;
+    *block_offset_delta = new_expected - old_expected;
+
+    // Self-collapsing blocks with a "forced" BFC block-offset input receive a
+    // "resolved" BFC block-offset on their layout result.
+    *bfc_block_offset = new_space.ForcedBfcBlockOffset();
+
+    return true;
   }
+
+  // We can now try to adjust the BFC block-offset for regular blocks.
+  DCHECK(*bfc_block_offset);
+
+  // New formatting-contexts have (potentially) complex positioning logic. In
+  // some cases they will resolve a BFC block-offset twice (with their margins
+  // adjoining, and not adjoining), resulting in two different "forced" BFC
+  // block-offsets. We don't allow caching as we can't determine which pass a
+  // layout result belongs to for this case.
+  // TODO(ikilpatrick): We need to relax this restriction for fragments which
+  // have clearance past adjoining floats (which is quite common).
+  if (old_space.ForcedBfcBlockOffset() != new_space.ForcedBfcBlockOffset())
+    return false;
+
+  // Check if the previous position intersects with any floats.
+  if (**bfc_block_offset <
+      old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+    return false;
+
+  if (is_pushed_by_floats) {
+    DCHECK_EQ(**bfc_block_offset, old_clearance_offset);
+    *block_offset_delta = new_clearance_offset - old_clearance_offset;
+    *bfc_block_offset = new_clearance_offset;
+  } else {
+    *block_offset_delta =
+        new_space.BfcOffset().block_offset - old_space.BfcOffset().block_offset;
+    *bfc_block_offset = **bfc_block_offset + *block_offset_delta;
+  }
+
+  // Check if the new position intersects with any floats.
+  if (**bfc_block_offset <
+      new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+    return false;
 
   return true;
 }
