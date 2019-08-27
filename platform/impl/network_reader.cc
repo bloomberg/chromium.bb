@@ -27,8 +27,6 @@ NetworkReader::NetworkReader(TaskRunner* task_runner,
 NetworkReader::~NetworkReader() = default;
 
 Error NetworkReader::ReadRepeatedly(UdpSocket* socket, Callback callback) {
-  socket->SetDeletionCallback(
-      [this](UdpSocket* socket) { this->CancelReadForSocketDeletion(socket); });
   std::lock_guard<std::mutex> lock(mutex_);
   return !read_callbacks_.emplace(socket, std::move(callback)).second
              ? Error::Code::kIOFailure
@@ -107,7 +105,9 @@ void NetworkReader::RequestStopSoon() {
   is_running_.store(false);
 }
 
-void NetworkReader::CancelReadForSocketDeletion(UdpSocket* socket) {
+void NetworkReader::OnCreate(UdpSocket* socket) {}
+
+void NetworkReader::OnDestroy(UdpSocket* socket) {
   std::unique_lock<std::mutex> lock(mutex_);
   if (read_callbacks_.erase(socket) != 0) {
     // This code will allow us to block completion of the socket destructor (and

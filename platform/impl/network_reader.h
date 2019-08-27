@@ -12,6 +12,7 @@
 #include "platform/api/network_waiter.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
+#include "platform/api/udp_socket.h"
 
 namespace openscreen {
 namespace platform {
@@ -20,7 +21,7 @@ namespace platform {
 // calling the function associated with these sockets once that data is read.
 // NOTE: This class will only function as intended while its RunUntilStopped
 // method is running.
-class NetworkReader {
+class NetworkReader : public UdpSocket::LifetimeObserver {
  public:
   // Create a type for readability
   using Callback = std::function<void(UdpPacket)>;
@@ -53,6 +54,10 @@ class NetworkReader {
   // Signals for the RunUntilStopped loop to cease running.
   void RequestStopSoon();
 
+  // UdpSocket::LifetimeObserver overrides.
+  void OnCreate(UdpSocket* socket) override;
+  void OnDestroy(UdpSocket* socket) override;
+
  protected:
   // Creates a new instance of this object.
   // NOTE: The provided TaskRunner must be running and must live for the
@@ -78,12 +83,6 @@ class NetworkReader {
   std::map<UdpSocket*, Callback> read_callbacks_;
 
  private:
-  // Callback to call when a socket is deleted. This method will cancel any
-  // pending wait on reading |socket| and then block until deletion is safe.
-  // TODO(rwkeane): Discuss with the team to see if this is the correct approach
-  // or what a better approach may be long-term.
-  void CancelReadForSocketDeletion(UdpSocket* socket);
-
   // Abstractions around socket handling to ensure platform independence.
   std::unique_ptr<NetworkWaiter> waiter_;
 

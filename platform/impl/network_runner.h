@@ -25,19 +25,12 @@ namespace platform {
 // TODO(rwkeane): Update to NetworkRunnerImpl<T> : public NetworkRunner, T
 // (for TaskRunner T) instead of taking a TaskRunner as a parameter to eliminate
 // having to pass calls to the TaskRunner instance.
-class NetworkRunnerImpl final : public NetworkRunner {
+class NetworkRunnerImpl final : public NetworkRunner,
+                                public UdpSocket::LifetimeObserver {
  public:
   // Creates a new NetworkRunnerImpl with the provided TaskRunner. Note that the
   // Task Runner is expected to be running at the time it is provided.
   explicit NetworkRunnerImpl(std::unique_ptr<TaskRunner> task_runner);
-
-  Error ReadRepeatedly(UdpSocket* socket, UdpReadCallback* callback);
-
-  Error CancelRead(UdpSocket* socket);
-
-  void PostPackagedTask(Task task);
-
-  void PostPackagedTaskWithDelay(Task task, Clock::duration delay);
 
   // This method will process Network Read Events until the RequestStopSoon(...)
   // method is called, and will block the current thread until this time.
@@ -46,6 +39,18 @@ class NetworkRunnerImpl final : public NetworkRunner {
   // Stops this instance from processing network events and causes the
   // RunUntilStopped(...) method to exit.
   void RequestStopSoon();
+
+  // NetworkRunner overrides.
+  Error ReadRepeatedly(UdpSocket* socket, UdpReadCallback* callback) override;
+  Error CancelRead(UdpSocket* socket) override;
+  void PostPackagedTask(Task task) override;
+  void PostPackagedTaskWithDelay(Task task, Clock::duration delay) override;
+
+  // UdpSocket::LifetimeObserver overrides.
+  void OnCreate(UdpSocket* socket) override { network_loop_->OnCreate(socket); }
+  void OnDestroy(UdpSocket* socket) override {
+    network_loop_->OnDestroy(socket);
+  }
 
  protected:
   // Objects handling actual processing of this instance's calls.

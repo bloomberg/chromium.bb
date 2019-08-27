@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <mutex>
 
 #include "platform/api/network_interface.h"
 #include "platform/api/udp_read_callback.h"
@@ -40,6 +41,17 @@ using UdpSocketUniquePtr = std::unique_ptr<UdpSocket>;
 class UdpSocket {
  public:
   virtual ~UdpSocket();
+
+  class LifetimeObserver {
+   public:
+    virtual ~LifetimeObserver() = default;
+
+    // Function to call upon creation of a new UdpSocket.
+    virtual void OnCreate(UdpSocket* socket) = 0;
+
+    // Function to call upon deletion of a UdpSocket.
+    virtual void OnDestroy(UdpSocket* socket) = 0;
+  };
 
   // Client for the UdpSocket class.
   class Client {
@@ -75,6 +87,11 @@ class UdpSocket {
     // Mode for low priority operations such as trace log data.
     kLowPriority = 0x20
   };
+
+  // The LifetimeObserver set here must exist during ANY future UdpSocket
+  // creations. SetLifetimeObserver(nullptr) must be called before any future
+  // socket creations on destructions after the observer is destroyed
+  static void SetLifetimeObserver(LifetimeObserver* observer);
 
   using Version = IPAddress::Version;
 
@@ -122,11 +139,6 @@ class UdpSocket {
   // Sets the DSCP value to use for all messages sent from this socket.
   virtual void SetDscp(DscpMode state) = 0;
 
-  // Sets the callback that should be called upon deletion of this socket. This
-  // allows other objects to observe the socket's destructor and act when it is
-  // called.
-  void SetDeletionCallback(std::function<void(UdpSocket*)> callback);
-
  protected:
   // Creates a new UdpSocket. The provided client and task_runner must exist for
   // the duration of this socket's lifetime.
@@ -152,6 +164,8 @@ class UdpSocket {
   bool is_closed() { return is_closed_.load(); }
 
  private:
+  static std::atomic<LifetimeObserver*> lifetime_observer_;
+
   // Closes this socket.
   // NOTE: This method will only be called once.
   virtual void Close() {}
@@ -159,10 +173,6 @@ class UdpSocket {
   // Atomically keeps track of if the socket is closed, so that threading
   // across different implementations isn't a problem.
   std::atomic_bool is_closed_{false};
-
-  // This callback allows other objects to observe the socket's destructor and
-  // act when it is called.
-  std::function<void(UdpSocket*)> deletion_callback_;
 
   // Client to use for callbacks.
   // NOTE: client_ can be nullptr if the user does not want any callbacks (for

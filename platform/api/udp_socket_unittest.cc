@@ -12,36 +12,48 @@
 
 namespace openscreen {
 namespace platform {
+namespace {
 
-// Under some conditions, calling a callback can result in an exception
-// "terminate called after throwing an instance of 'std::bad_function_call'"
-// which will then crash the running code. This test ensures that deleting a
-// new, unmodified UDP Socket object doesn't hit this edge case.
+class MockCallbacks : public UdpSocket::LifetimeObserver {
+ public:
+  MOCK_METHOD1(OnCreate, void(UdpSocket*));
+  MOCK_METHOD1(OnDestroy, void(UdpSocket*));
+};
+
+}  // namespace
+
+using testing::_;
+
 TEST(UdpSocketTest, TestDeletionWithoutCallbackSet) {
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
   MockUdpSocket::MockClient client;
-  UdpSocket* socket =
-      new MockUdpSocket(&task_runner, &client, UdpSocket::Version::kV4);
-  delete socket;
+  MockCallbacks callbacks;
+  EXPECT_CALL(callbacks, OnCreate(_)).Times(0);
+  EXPECT_CALL(callbacks, OnDestroy(_)).Times(0);
+  {
+    UdpSocket* socket =
+        new MockUdpSocket(&task_runner, &client, UdpSocket::Version::kV4);
+    delete socket;
+  }
 }
 
 TEST(UdpSocketTest, TestCallbackCalledOnDeletion) {
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
   MockUdpSocket::MockClient client;
-  UdpSocket* socket =
-      new MockUdpSocket(&task_runner, &client, UdpSocket::Version::kV4);
-  int call_count = 0;
-  std::function<void(UdpSocket*)> callback = [&call_count](UdpSocket* socket) {
-    call_count++;
-  };
-  socket->SetDeletionCallback(callback);
+  MockCallbacks callbacks;
+  EXPECT_CALL(callbacks, OnCreate(_)).Times(1);
+  EXPECT_CALL(callbacks, OnDestroy(_)).Times(1);
+  UdpSocket::SetLifetimeObserver(&callbacks);
 
-  EXPECT_EQ(call_count, 0);
-  delete socket;
+  {
+    UdpSocket* socket =
+        new MockUdpSocket(&task_runner, &client, UdpSocket::Version::kV4);
+    delete socket;
+  }
 
-  EXPECT_EQ(call_count, 1);
+  UdpSocket::SetLifetimeObserver(nullptr);
 }
 
 }  // namespace platform

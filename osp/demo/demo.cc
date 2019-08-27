@@ -428,6 +428,8 @@ void ListenerDemo() {
       network_runner_manager = platform::NetworkRunnerLifetimeManager::Create();
   network_runner_manager->CreateNetworkRunner();
   platform::NetworkRunner* network_runner = network_runner_manager->Get();
+  platform::UdpSocket::SetLifetimeObserver(
+      static_cast<platform::NetworkRunnerImpl*>(network_runner));
 
   ListenerObserver listener_observer;
   MdnsServiceListenerConfig listener_config;
@@ -519,6 +521,8 @@ void PublisherDemo(absl::string_view friendly_name) {
       network_runner_manager = platform::NetworkRunnerLifetimeManager::Create();
   network_runner_manager->CreateNetworkRunner();
   platform::NetworkRunner* network_runner = network_runner_manager->Get();
+  platform::UdpSocket::SetLifetimeObserver(
+      static_cast<platform::NetworkRunnerImpl*>(network_runner));
 
   PublisherObserver publisher_observer;
   // TODO(btolsch): aggregate initialization probably better?

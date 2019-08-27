@@ -359,6 +359,7 @@ int main(int argc, char** argv) {
   auto network_runner =
       std::make_unique<openscreen::platform::NetworkRunnerImpl>(
           std::move(task_runner));
+  openscreen::platform::UdpSocket::SetLifetimeObserver(network_runner.get());
   std::thread network_runner_thread(
       [&network_runner]() { network_runner->RunUntilStopped(); });
 
