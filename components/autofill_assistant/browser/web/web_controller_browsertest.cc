@@ -10,7 +10,7 @@
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/top_padding.h"
-#include "components/autofill_assistant/browser/web_controller.h"
+#include "components/autofill_assistant/browser/web/web_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -238,7 +238,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
 
   void FindElement(const Selector& selector,
                    ClientStatus* status_out,
-                   WebController::FindElementResult* result_out) {
+                   ElementFinder::Result* result_out) {
     base::RunLoop run_loop;
     web_controller_->FindElement(
         selector, /* strict_mode= */ true,
@@ -251,9 +251,9 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
 
   void OnFindElement(const base::Closure& done_callback,
                      ClientStatus* status_out,
-                     WebController::FindElementResult* result_out,
+                     ElementFinder::Result* result_out,
                      const ClientStatus& status,
-                     std::unique_ptr<WebController::FindElementResult> result) {
+                     std::unique_ptr<ElementFinder::Result> result) {
     ASSERT_TRUE(result);
     done_callback.Run();
     if (status_out)
@@ -268,7 +268,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
                            bool is_main_frame) {
     SCOPED_TRACE(::testing::Message() << selector << " strict");
     ClientStatus status;
-    WebController::FindElementResult result;
+    ElementFinder::Result result;
     FindElement(selector, &status, &result);
     EXPECT_EQ(ACTION_APPLIED, status.proto_status());
     CheckFindElementResult(result, expected_index, is_main_frame);
@@ -277,13 +277,13 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   void FindElementExpectEmptyResult(const Selector& selector) {
     SCOPED_TRACE(::testing::Message() << selector << " strict");
     ClientStatus status;
-    WebController::FindElementResult result;
+    ElementFinder::Result result;
     FindElement(selector, &status, &result);
     EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, status.proto_status());
     EXPECT_THAT(result.object_id, IsEmpty());
   }
 
-  void CheckFindElementResult(const WebController::FindElementResult& result,
+  void CheckFindElementResult(const ElementFinder::Result& result,
                               size_t expected_index,
                               bool is_main_frame) {
     if (is_main_frame) {
@@ -677,8 +677,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
   WaitForElementRemove(selector);
 }
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       ClickElementInIFrame) {
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElementInIFrame) {
   Selector selector;
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#shadowsection");
@@ -1241,4 +1240,4 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
               AnyOf(DOCUMENT_LOADED, DOCUMENT_INTERACTIVE, DOCUMENT_COMPLETE));
 }
 
-}  // namespace
+}  // namespace autofill_assistant

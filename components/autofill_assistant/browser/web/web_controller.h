@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_CONTROLLER_H_
-#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_CONTROLLER_H_
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_WEB_CONTROLLER_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_WEB_CONTROLLER_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,6 +23,9 @@
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/top_padding.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
+#include "components/autofill_assistant/browser/web/element_position_getter.h"
+#include "components/autofill_assistant/browser/web/web_controller_worker.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 #include "url/gurl.h"
 
@@ -40,7 +42,7 @@ class RenderFrameHost;
 namespace autofill {
 struct FormData;
 struct FormFieldData;
-}
+}  // namespace autofill
 
 namespace autofill_assistant {
 struct ClientSettings;
@@ -204,47 +206,6 @@ class WebController {
  private:
   friend class WebControllerBrowserTest;
 
-  // Callback that receives the position that corresponds to the center
-  // of an element, from ElementPositionGetter.
-  //
-  // If the first element is false, the call failed. Otherwise, the second
-  // element contains the x position and the third the y position of the center
-  // of the element in viewport coordinates.
-  using ElementPositionCallback = base::OnceCallback<void(bool, int, int)>;
-
-  // Superclass for workers that execute complex operation and keep a pointer to
-  // this controller or the devtools client. Workers are owned by
-  // pending_workers_ and are removed once the operation is finished.
-  class Worker;
-
-  // Worker class to get element's position in viewport coordinates when is
-  // stable and the frame it belongs finished visual update.
-  class ElementPositionGetter;
-
-  // Worker class to find element(s) matching a selector. Returns
-  // FindElementResult.
-  class ElementFinder;
-
-  struct FindElementResult {
-    FindElementResult() = default;
-    ~FindElementResult() = default;
-
-    // The render frame host contains the element.
-    content::RenderFrameHost* container_frame_host;
-
-    // The selector index in the given selectors corresponding to the container
-    // frame. Zero indicates the element is in main frame or the first element
-    // is the container frame selector. Compare main frame with the above
-    // |container_frame_host| to distinguish them.
-    size_t container_frame_selector_index;
-
-    // The object id of the element.
-    std::string object_id;
-  };
-  using FindElementCallback =
-      base::OnceCallback<void(const ClientStatus&,
-                              std::unique_ptr<FindElementResult>)>;
-
   struct FillFormInputData {
     FillFormInputData();
     ~FillFormInputData();
@@ -261,23 +222,23 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback,
       ClickAction::ClickType click_type,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> result);
+      std::unique_ptr<ElementFinder::Result> result);
   void OnWaitDocumentToBecomeInteractiveForClickOrTap(
       base::OnceCallback<void(const ClientStatus&)> callback,
       ClickAction::ClickType click_type,
-      std::unique_ptr<FindElementResult> target_element,
+      std::unique_ptr<ElementFinder::Result> target_element,
       bool result);
   void OnFindElementForTap(
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> result);
+      std::unique_ptr<ElementFinder::Result> result);
   void ClickOrTapElement(
-      std::unique_ptr<FindElementResult> target_element,
+      std::unique_ptr<ElementFinder::Result> target_element,
       ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback);
   void OnClickJS(base::OnceCallback<void(const ClientStatus&)> callback,
                  std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnScrollIntoView(std::unique_ptr<FindElementResult> target_element,
+  void OnScrollIntoView(std::unique_ptr<ElementFinder::Result> target_element,
                         base::OnceCallback<void(const ClientStatus&)> callback,
                         ClickAction::ClickType click_type,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
@@ -304,7 +265,7 @@ class WebController {
       std::unique_ptr<input::DispatchTouchEventResult> result);
   void OnFindElementForCheck(base::OnceCallback<void(bool)> callback,
                              const ClientStatus& status,
-                             std::unique_ptr<FindElementResult> result);
+                             std::unique_ptr<ElementFinder::Result> result);
   void OnWaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<runtime::EvaluateResult> result);
@@ -314,17 +275,17 @@ class WebController {
   // found. Otherwise if |strict-mode| is true, do not return any.
   void FindElement(const Selector& selector,
                    bool strict_mode,
-                   FindElementCallback callback);
+                   ElementFinder::Callback callback);
   void OnFindElementResult(ElementFinder* finder_to_release,
-                           FindElementCallback callback,
+                           ElementFinder::Callback callback,
                            const ClientStatus& status,
-                           std::unique_ptr<FindElementResult> result);
+                           std::unique_ptr<ElementFinder::Result> result);
   void OnFindElementForFillingForm(
       std::unique_ptr<FillFormInputData> data_to_autofill,
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element_result);
+      std::unique_ptr<ElementFinder::Result> element_result);
   void OnGetFormAndFieldDataForFillingForm(
       std::unique_ptr<FillFormInputData> data_to_autofill,
       base::OnceCallback<void(const ClientStatus&)> callback,
@@ -335,11 +296,11 @@ class WebController {
       const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element_result);
+      std::unique_ptr<ElementFinder::Result> element_result);
   void OnWaitDocumentToBecomeInteractiveForFocusElement(
       const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback,
-      std::unique_ptr<FindElementResult> target_element,
+      std::unique_ptr<ElementFinder::Result> target_element,
       bool result);
   void OnFocusElement(base::OnceCallback<void(const ClientStatus&)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
@@ -347,20 +308,20 @@ class WebController {
       const std::string& selected_option,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element_result);
+      std::unique_ptr<ElementFinder::Result> element_result);
   void OnSelectOption(base::OnceCallback<void(const ClientStatus&)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForHighlightElement(
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element_result);
+      std::unique_ptr<ElementFinder::Result> element_result);
   void OnHighlightElement(
       base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForGetFieldValue(
       base::OnceCallback<void(bool, const std::string&)> callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element_result);
+      std::unique_ptr<ElementFinder::Result> element_result);
   void OnGetValueAttribute(
       base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
@@ -395,7 +356,7 @@ class WebController {
       const std::string& value,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element_result);
+      std::unique_ptr<ElementFinder::Result> element_result);
   void OnSetAttribute(base::OnceCallback<void(const ClientStatus&)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSendKeyboardInput(
@@ -404,12 +365,12 @@ class WebController {
       int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element_result);
+      std::unique_ptr<ElementFinder::Result> element_result);
   void OnFindElementForSetFieldValue(
       const std::string& value,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element_result);
+      std::unique_ptr<ElementFinder::Result> element_result);
   void OnSetValueAttribute(
       base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
@@ -417,14 +378,14 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element_result);
+      std::unique_ptr<ElementFinder::Result> element_result);
   void OnGetOuterHtml(base::OnceCallback<void(const ClientStatus&,
                                               const std::string&)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForPosition(
       base::OnceCallback<void(bool, const RectF&)> callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> result);
+      std::unique_ptr<ElementFinder::Result> result);
   void OnGetVisualViewport(
       base::OnceCallback<void(bool, const RectF&)> callback,
       std::unique_ptr<runtime::EvaluateResult> result);
@@ -450,17 +411,12 @@ class WebController {
       std::string object_id,
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnFindElementForDocumentReadyState(
-      base::OnceCallback<void(const ClientStatus&, const std::string&)>
-          callback,
-      const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element);
   void OnFindElementForWaitForDocumentReadyState(
       DocumentReadyState min_ready_state,
       base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
           callback,
       const ClientStatus& status,
-      std::unique_ptr<FindElementResult> element);
+      std::unique_ptr<ElementFinder::Result> element);
 
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.
@@ -468,11 +424,11 @@ class WebController {
   std::unique_ptr<DevtoolsClient> devtools_client_;
   const ClientSettings* const settings_;
 
-  // Workers currently running and using |devtools_client_|.
-  std::map<Worker*, std::unique_ptr<Worker>> pending_workers_;
+  // Currently running workers.
+  std::vector<std::unique_ptr<WebControllerWorker>> pending_workers_;
 
   base::WeakPtrFactory<WebController> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(WebController);
 };
 }  // namespace autofill_assistant
-#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_CONTROLLER_H_
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_WEB_CONTROLLER_H_
