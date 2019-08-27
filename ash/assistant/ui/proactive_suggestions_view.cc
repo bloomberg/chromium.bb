@@ -11,6 +11,7 @@
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -20,6 +21,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
@@ -40,11 +42,18 @@ ProactiveSuggestionsView::ProactiveSuggestionsView(
   InitLayout();
   InitWidget();
 
+  // We observe the proactive suggestions window in order to modify entry/exit
+  // animation behavior prior to window visibility changes.
+  GetWidget()->GetNativeWindow()->AddObserver(this);
+
   delegate_->AddUiModelObserver(this);
 }
 
 ProactiveSuggestionsView::~ProactiveSuggestionsView() {
   delegate_->RemoveUiModelObserver(this);
+
+  if (GetWidget() && GetWidget()->GetNativeWindow())
+    GetWidget()->GetNativeWindow()->RemoveObserver(this);
 }
 
 const char* ProactiveSuggestionsView::GetClassName() const {
@@ -88,6 +97,36 @@ void ProactiveSuggestionsView::ButtonPressed(views::Button* sender,
 void ProactiveSuggestionsView::OnUsableWorkAreaChanged(
     const gfx::Rect& usable_work_area) {
   UpdateBounds();
+}
+
+void ProactiveSuggestionsView::OnWindowDestroying(aura::Window* window) {
+  window->RemoveObserver(this);
+}
+
+void ProactiveSuggestionsView::OnWindowVisibilityChanging(aura::Window* window,
+                                                          bool visible) {
+  if (!visible) {
+    // When exiting, the proactive suggestions window fades out.
+    wm::SetWindowVisibilityAnimationType(
+        window, wm::WindowVisibilityAnimationType::
+                    WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+    return;
+  }
+
+  // When entering, the proactive suggestions window translates in vertically.
+  wm::SetWindowVisibilityAnimationType(
+      window, wm::WindowVisibilityAnimationType::
+                  WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+
+  // The vertical position is equal to the distance from the top of the
+  // proactive suggestions view to the bottom of the screen. This gives the
+  // effect of animating the proactive suggestions window up from offscreen.
+  wm::SetWindowVisibilityAnimationVerticalPosition(
+      window, display::Screen::GetScreen()
+                      ->GetDisplayNearestWindow(window)
+                      .bounds()
+                      .bottom() -
+                  GetBoundsInScreen().y());
 }
 
 void ProactiveSuggestionsView::InitLayout() {
