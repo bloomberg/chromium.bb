@@ -44,7 +44,7 @@ Polymer({
      */
     tetherDeviceState: Object,
 
-    /** @type {!chrome.networkingPrivate.GlobalPolicy|undefined} */
+    /** @type {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
     globalPolicy: Object,
 
     /**
@@ -428,17 +428,17 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
    */
   allowAddConnection_: function(globalPolicy) {
-    return globalPolicy && !globalPolicy.AllowOnlyPolicyNetworksToConnect;
+    return globalPolicy && !globalPolicy.allowOnlyPolicyNetworksToConnect;
   },
 
   /**
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
    */
@@ -578,11 +578,11 @@ Polymer({
         this.isPolicySource(state.source) || !this.globalPolicy) {
       return false;
     }
-    return !!this.globalPolicy.AllowOnlyPolicyNetworksToConnect ||
-        (!!this.globalPolicy.AllowOnlyPolicyNetworksToConnectIfAvailable &&
+    return !!this.globalPolicy.allowOnlyPolicyNetworksToConnect ||
+        (!!this.globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable &&
          !!this.deviceState && !!this.deviceState.managedNetworkAvailable) ||
-        (!!this.globalPolicy.BlacklistedHexSSIDs &&
-         this.globalPolicy.BlacklistedHexSSIDs.includes(state.wifi.hexSsid));
+        (!!this.globalPolicy.blockedHexSsids &&
+         this.globalPolicy.blockedHexSsids.includes(state.wifi.hexSsid));
   },
 
   /**

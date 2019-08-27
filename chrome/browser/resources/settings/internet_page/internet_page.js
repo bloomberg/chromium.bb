@@ -84,11 +84,8 @@ Polymer({
       value: false,
     },
 
-    /** @private {!chrome.networkingPrivate.GlobalPolicy|undefined} */
-    globalPolicy_: {
-      type: Object,
-      value: null,
-    },
+    /** @private {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
+    globalPolicy_: Object,
 
     /**
      * Whether a managed network is available in the visible network list.
@@ -198,8 +195,8 @@ Polymer({
 
     chrome.management.getAll(this.onGetAllExtensions_.bind(this));
 
-    this.networkingPrivate.getGlobalPolicy(policy => {
-      this.globalPolicy_ = policy;
+    this.networkConfig_.getGlobalPolicy().then(response => {
+      this.globalPolicy_ = response.result;
     });
   },
 
@@ -587,7 +584,7 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    */
@@ -596,8 +593,8 @@ Polymer({
       return true;
     }
 
-    return !globalPolicy.AllowOnlyPolicyNetworksToConnect &&
-        (!globalPolicy.AllowOnlyPolicyNetworksToConnectIfAvailable ||
+    return !globalPolicy.allowOnlyPolicyNetworksToConnect &&
+        (!globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable ||
          !managedNetworkAvailable);
   },
 
