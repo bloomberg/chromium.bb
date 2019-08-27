@@ -201,7 +201,7 @@ void DedicatedWorkerHost::StartScriptLoad(
       request_initiator_origin, network_isolation_key_, credentials_mode,
       std::move(outside_fetch_client_settings_object), ResourceType::kWorker,
       storage_partition_impl->GetServiceWorkerContext(),
-      service_worker_handle_.get(), appcache_handle_->core(),
+      service_worker_handle_.get(), appcache_handle_->host()->GetWeakPtr(),
       std::move(blob_url_loader_factory), nullptr, storage_partition_impl,
       storage_domain,
       base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
