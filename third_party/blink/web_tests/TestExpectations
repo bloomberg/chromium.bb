@@ -5752,9 +5752,6 @@ crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Time
 # Sheriff 2018-09-25
 crbug.com/888609 [ Mac ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 
-# Sheriff 2018-10-03
-crbug.com/891530 [ Linux ] virtual/android/rootscroller/remove-rootscroller-crash.html [ Pass Timeout ]
-
 # Sheriff 2018-10-09
 crbug.com/893869 [ Mac ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
 
