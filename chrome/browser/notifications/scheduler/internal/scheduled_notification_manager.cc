@@ -97,16 +97,14 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 
     auto entry =
         std::make_unique<NotificationEntry>(notification_params->type, guid);
+    auto icon_bundles = std::move(notification_params->notification_data.icons);
     entry->notification_data =
         std::move(notification_params->notification_data);
-
     entry->schedule_params = std::move(notification_params->schedule_params);
-    auto* entry_ptr = entry.get();
-    notifications_[type][guid] = std::move(entry);
-    notification_store_->Add(
-        guid, *entry_ptr,
-        base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationAdded,
-                       weak_ptr_factory_.GetWeakPtr(), type, guid));
+    icon_store_->AddIcons(
+        std::move(icon_bundles),
+        base::BindOnce(&ScheduledNotificationManagerImpl::OnIconsAdded,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(entry)));
   }
 
   void DisplayNotification(const std::string& guid) override {
@@ -244,11 +242,26 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     }
   }
 
-  void OnIconAdded(SchedulerClientType type,
-                   std::string guid,
-                   std::string icon_uuid,
-                   bool success) {
-    NOTIMPLEMENTED();
+  void OnIconsAdded(std::unique_ptr<NotificationEntry> entry,
+                    IconStore::IconTypeUuidMap icons_uuid_map,
+                    bool success) {
+    if (!success)
+      // TODO(hesen): Log icon stats.
+      return;
+
+    entry->icons_uuid = std::move(icons_uuid_map);
+    SaveNotificationEntry(std::move(entry));
+  }
+
+  void SaveNotificationEntry(std::unique_ptr<NotificationEntry> entry) {
+    auto type = entry->type;
+    auto guid = entry->guid;
+    auto* entry_ptr = entry.get();
+    notifications_[type][guid] = std::move(entry);
+    notification_store_->Add(
+        guid, *entry_ptr,
+        base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationAdded,
+                       weak_ptr_factory_.GetWeakPtr(), type, guid));
   }
 
   void OnNotificationDeleted(bool success) {

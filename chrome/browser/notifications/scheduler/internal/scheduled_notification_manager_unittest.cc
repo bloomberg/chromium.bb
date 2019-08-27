@@ -30,9 +30,18 @@ namespace {
 
 const char kGuid[] = "test_guid_1234";
 const char kTitle[] = "test_title";
+const char kSmallIconUuid[] = "test_small_icon_uuid";
+const char kLargeIconUuid[] = "test_large_icon_uuid";
 
 NotificationEntry CreateNotificationEntry(SchedulerClientType type) {
   return NotificationEntry(type, base::GenerateGUID());
+}
+
+IconStore::IconTypeBundleMap CreateIcons() {
+  IconStore::IconTypeBundleMap result;
+  result.emplace(IconType::kLargeIcon, IconBundle());
+  result.emplace(IconType::kSmallIcon, IconBundle());
+  return result;
 }
 
 class MockDelegate : public ScheduledNotificationManager::Delegate {
@@ -73,7 +82,8 @@ class MockIconStore : public IconStore {
   MOCK_METHOD2(LoadIcons,
                void(const std::vector<std::string>&,
                     IconStore::LoadIconsCallback));
-  MOCK_METHOD2(AddIcons, void(std::vector<SkBitmap>, IconStore::AddCallback));
+  MOCK_METHOD2(AddIcons,
+               void(IconStore::IconTypeBundleMap, IconStore::AddCallback));
   MOCK_METHOD2(DeleteIcons,
                void(const std::vector<std::string>&,
                     IconStore::UpdateCallback));
@@ -188,6 +198,11 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   EXPECT_FALSE(guid.empty());
 
   // Verify call contract.
+  EXPECT_CALL(*icon_store(), AddIcons(_, _))
+      .WillOnce(Invoke([](IconStore::IconTypeBundleMap icons,
+                          IconStore::AddCallback callback) {
+        std::move(callback).Run({}, true);
+      }));
   EXPECT_CALL(*notification_store(), Add(guid, _, _))
       .WillOnce(Invoke([guid](const std::string&, const NotificationEntry&,
                               base::OnceCallback<void(bool)> cb) {
@@ -226,6 +241,11 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationEmptyGuid) {
       base::Time::Now() + base::TimeDelta::FromDays(1);
 
   // Verify call contract.
+  EXPECT_CALL(*icon_store(), AddIcons(_, _))
+      .WillOnce(Invoke([](IconStore::IconTypeBundleMap icons,
+                          IconStore::AddCallback callback) {
+        std::move(callback).Run({}, true);
+      }));
   EXPECT_CALL(*notification_store(), Add(_, _, _));
   manager()->ScheduleNotification(std::move(params));
 
@@ -374,6 +394,88 @@ TEST_F(ScheduledNotificationManagerTest, PruneExpiredNotifications) {
   EXPECT_EQ(notifications.size(), 2u);
   EXPECT_EQ(notifications[SchedulerClientType::kTest1].size(), 1u);
   EXPECT_EQ(notifications[SchedulerClientType::kTest2].size(), 2u);
+}
+
+// Test to schedule a notification with two icons in notification data.
+TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationWithIcons) {
+  InitWithData(std::vector<NotificationEntry>());
+  NotificationData notification_data;
+  notification_data.icons = CreateIcons();
+  ScheduleParams schedule_params;
+  auto params = std::make_unique<NotificationParams>(
+      SchedulerClientType::kTest1, notification_data, schedule_params);
+  params->schedule_params.deliver_time_start = base::Time::Now();
+  params->schedule_params.deliver_time_end =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
+
+  std::string guid = params->guid;
+  EXPECT_FALSE(guid.empty());
+
+  // Verify call contract.
+  EXPECT_CALL(*icon_store(), AddIcons(_, _))
+      .WillOnce(Invoke([](IconStore::IconTypeBundleMap icons,
+                          IconStore::AddCallback callback) {
+        IconStore::IconTypeUuidMap icons_uuid_map;
+        for (const auto& pair : icons) {
+          if (pair.first == IconType::kLargeIcon)
+            icons_uuid_map.emplace(pair.first, kLargeIconUuid);
+          else if (pair.first == IconType::kSmallIcon)
+            icons_uuid_map.emplace(pair.first, kSmallIconUuid);
+        }
+        std::move(callback).Run(std::move(icons_uuid_map), true);
+      }));
+
+  EXPECT_CALL(*notification_store(), Add(guid, _, _))
+      .WillOnce(Invoke([guid](const std::string&, const NotificationEntry&,
+                              base::OnceCallback<void(bool)> cb) {
+        std::move(cb).Run(true);
+      }));
+  manager()->ScheduleNotification(std::move(params));
+
+  // Verify in-memory data.
+  ScheduledNotificationManager::Notifications notifications;
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_EQ(notifications.size(), 1u);
+  const NotificationEntry* entry = *(notifications.begin()->second.begin());
+  EXPECT_EQ(entry->guid, guid);
+  EXPECT_NE(entry->create_time, base::Time());
+  EXPECT_EQ(entry->icons_uuid.size(), 2u);
+  EXPECT_EQ(entry->icons_uuid.at(IconType::kLargeIcon), kLargeIconUuid);
+  EXPECT_EQ(entry->icons_uuid.at(IconType::kSmallIcon), kSmallIconUuid);
+}
+
+// Test to schedule a notification failed on saving icons.
+TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationWithIconsFailed) {
+  InitWithData(std::vector<NotificationEntry>());
+  NotificationData notification_data;
+  notification_data.icons = CreateIcons();
+  ScheduleParams schedule_params;
+  auto params = std::make_unique<NotificationParams>(
+      SchedulerClientType::kTest1, notification_data, schedule_params);
+  params->schedule_params.deliver_time_start = base::Time::Now();
+  params->schedule_params.deliver_time_end =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
+
+  // Verify call contract.
+  EXPECT_CALL(*icon_store(), AddIcons(_, _))
+      .WillOnce(Invoke([](IconStore::IconTypeBundleMap icons,
+                          IconStore::AddCallback callback) {
+        IconStore::IconTypeUuidMap icons_uuid_map;
+        for (const auto& pair : icons) {
+          if (pair.first == IconType::kLargeIcon)
+            icons_uuid_map.emplace(pair.first, kLargeIconUuid);
+          else if (pair.first == IconType::kSmallIcon)
+            icons_uuid_map.emplace(pair.first, kSmallIconUuid);
+        }
+        std::move(callback).Run(std::move(icons_uuid_map), false);
+      }));
+
+  manager()->ScheduleNotification(std::move(params));
+
+  // Verify in-memory data.
+  ScheduledNotificationManager::Notifications notifications;
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_TRUE(notifications.empty());
 }
 
 }  // namespace
