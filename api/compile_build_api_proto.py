@@ -202,5 +202,5 @@ def main(argv):
   try:
     CompileProto(output=opts.destination)
   except Error as e:
-    logging.error(e.message)
+    logging.error(e)
     return 1

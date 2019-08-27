@@ -104,7 +104,7 @@ def Create(input_proto, output_proto, _config):
   try:
     vm_path = image.CreateVm(board, is_test=is_test)
   except image.ImageToVmError as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)
 
   new_image = output_proto.images.add()
   new_image.path = vm_path

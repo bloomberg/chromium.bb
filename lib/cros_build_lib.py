@@ -1527,7 +1527,7 @@ def SetDefaultBoard(board):
     with open(config_path, 'w') as f:
       f.write(board)
   except IOError as e:
-    logging.error('Unable to write default board: %s', e.message)
+    logging.error('Unable to write default board: %s', e)
     return False
 
   return True

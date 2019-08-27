@@ -726,7 +726,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     try:
       toolchain.InstallToolchain(self)
     except toolchain.ToolchainInstallError as e:
-      raise ToolchainInstallError(e.message, e.result, exception=e.exception,
+      raise ToolchainInstallError(str(e), e.result, exception=e.exception,
                                   tc_info=e.failed_toolchain_info)
 
     if not self.IsToolchainInstalled():
@@ -743,7 +743,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
         except cros_build_lib.RunCommandError as e:
           # Include failed packages from the status file in the error.
           failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
-          raise ToolchainInstallError(e.message, e.result, exception=e,
+          raise ToolchainInstallError(str(e), e.result, exception=e,
                                       tc_info=failed_pkgs)
 
       # Record we've installed them so we don't call emerge each time.

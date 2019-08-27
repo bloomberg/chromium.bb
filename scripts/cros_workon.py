@@ -107,6 +107,6 @@ def main(argv):
                                   use_all=options.all,
                                   use_workon_only=options.workon_only)
   except workon_helper.WorkonError as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)
 
   return 0

@@ -154,7 +154,7 @@ def BundleAutotestFiles(input_proto, output_proto, config):
     # Note that this returns the full path to *multiple* tarballs.
     archives = artifacts.BundleAutotestFiles(chroot, sysroot, output_dir)
   except artifacts.Error as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)
 
   for archive in archives.values():
     output_proto.artifacts.add().path = archive

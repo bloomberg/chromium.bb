@@ -41,7 +41,7 @@ def _value(field, message):
     try:
       value = getattr(value, part)
     except AttributeError as e:
-      cros_build_lib.Die('Invalid field: %s', e.message)
+      cros_build_lib.Die('Invalid field: %s', e)
 
   return value
 

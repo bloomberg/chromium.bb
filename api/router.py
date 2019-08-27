@@ -147,7 +147,7 @@ class Router(object):
     try:
       input_json = osutils.ReadFile(input_path).strip()
     except IOError as e:
-      raise InvalidInputFileError('Unable to read input file: %s' % e.message)
+      raise InvalidInputFileError('Unable to read input file: %s' % e)
 
     try:
       svc, module_name = self._services[service_name]
@@ -166,8 +166,7 @@ class Router(object):
     try:
       json_format.Parse(input_json, input_msg, ignore_unknown_fields=True)
     except json_format.ParseError as e:
-      raise InvalidInputFormatError(
-          'Unable to parse the input json: %s' % e.message)
+      raise InvalidInputFormatError('Unable to parse the input json: %s' % e)
 
     # Get an empty output message instance.
     output_msg = self._sym_db.GetPrototype(method_desc.output_type)()
@@ -198,7 +197,7 @@ class Router(object):
     try:
       osutils.WriteFile(output_path, json_format.MessageToJson(output_msg))
     except IOError as e:
-      raise InvalidOutputFileError('Cannot write output file: %s' % e.message)
+      raise InvalidOutputFileError('Cannot write output file: %s' % e)
 
     return return_code
 
@@ -307,11 +306,11 @@ class Router(object):
     try:
       module = importlib.import_module(controller.IMPORT_PATTERN % module_name)
     except ImportError as e:
-      raise ServiceControllerNotFoundError(e.message)
+      raise ServiceControllerNotFoundError(str(e))
     try:
       return getattr(module, method_name)
     except AttributeError as e:
-      raise MethodNotFoundError(e.message)
+      raise MethodNotFoundError(str(e))
 
 
 def RegisterServices(router):

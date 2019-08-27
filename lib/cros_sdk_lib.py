@@ -85,7 +85,7 @@ def GetChrootVersion(chroot):
   try:
     return updater.GetVersion()
   except (IOError, Error) as e:
-    logging.debug(e.message)
+    logging.debug(e)
 
   return None
 

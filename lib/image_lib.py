@@ -374,7 +374,7 @@ def SecurityTest(board=None, image=None, baselines=None, vboot_hash=None):
     try:
       image = BuildImagePath(board, image)
     except ImageDoesNotExistError as e:
-      raise SecurityTestArgumentError(e.message)
+      raise SecurityTestArgumentError(str(e))
     logging.info('Using %s', image)
 
     if not baselines:
@@ -501,7 +501,7 @@ class SecurityTestConfig(object):
     try:
       self._RunCommand(cmd)
     except cros_build_lib.RunCommandError as e:
-      logging.error('%s test failed: %s', check, e.message)
+      logging.error('%s test failed: %s', check, e)
       return False
     else:
       return True
@@ -516,13 +516,13 @@ class SecurityTestConfig(object):
         git.Clone(self._repo_dir, self._VBOOT_SRC, reference=self._VBOOT_SRC)
       except cros_build_lib.RunCommandError as e:
         raise VbootCheckoutError('Failed cloning repo from %s: %s' %
-                                 (self._VBOOT_SRC, e.message))
+                                 (self._VBOOT_SRC, e))
       try:
         cros_build_lib.run(['git', 'checkout', '-q', self.vboot_hash],
                            cwd=self._repo_dir)
       except cros_build_lib.RunCommandError as e:
         raise VbootCheckoutError('Failed checking out %s from %s: %s' %
-                                 (self.vboot_hash, self._VBOOT_SRC, e.message))
+                                 (self.vboot_hash, self._VBOOT_SRC, e))
       self._checked_out = True
 
   def _RunCommand(self, cmd, *args, **kwargs):

@@ -477,7 +477,7 @@ class PatchSeries(object):
       except cros_patch.PatchException as e:
         yield (change, (), e)
       except RuntimeError as e:
-        if 'maximum recursion depth' in e.message:
+        if 'maximum recursion depth' in str(e):
           yield (change, (), PatchExceededRecursionLimit(change))
         else:
           raise

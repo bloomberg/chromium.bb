@@ -650,6 +650,6 @@ def main(argv):
       functor(opts, *opts.args)
     except (cros_build_lib.RunCommandError, gerrit.GerritException,
             gob_util.GOBError) as e:
-      cros_build_lib.Die(e.message)
+      cros_build_lib.Die(e)
   else:
     parser.error('unknown action: %s' % (opts.action,))

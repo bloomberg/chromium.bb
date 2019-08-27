@@ -679,7 +679,7 @@ class TestCase(unittest.TestCase):
     try:
       self.assertSequenceEqual(seq1, seq2)
     except AssertionError as ex:
-      return ex.message
+      return str(ex)
     else:
       return 'no differences'
 

@@ -73,4 +73,4 @@ def main(argv):
                                toolchain=opts.toolchain,
                                force=opts.force, configure=opts.configure)
   except (toolchain.Error, cros_build_lib.RunCommandError, ValueError) as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)

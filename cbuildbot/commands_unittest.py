@@ -334,7 +334,7 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
         wait_for_results=True)
     error = result.to_raise
     self.assertTrue(isinstance(error, failures_lib.TestFailure))
-    self.assertTrue('Suite failed' in error.message)
+    self.assertIn('Suite failed', str(error))
 
   def testCreateTest(self):
     """Test that function call args are mapped correctly to commandline args."""

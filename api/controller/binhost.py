@@ -57,7 +57,7 @@ def GetPrivatePrebuiltAclArgs(input_proto, output_proto, _config):
   try:
     args = binhost.GetPrebuiltAclArgs(build_target)
   except binhost.Error as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)
 
   for arg, value in args:
     new_arg = output_proto.args.add()

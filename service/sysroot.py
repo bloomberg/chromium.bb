@@ -344,7 +344,7 @@ def BuildPackages(target, sysroot, run_configs):
     except cros_build_lib.RunCommandError as e:
       failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
       raise sysroot_lib.PackageInstallError(
-          e.message, e.result, exception=e, packages=failed_pkgs)
+          str(e), e.result, exception=e, packages=failed_pkgs)
 
 
 def _CreateSysrootSkeleton(sysroot):

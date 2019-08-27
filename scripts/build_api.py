@@ -168,4 +168,4 @@ def main(argv):
   except router_lib.Error as e:
     # Handle router_lib.Error derivatives nicely, but let anything else bubble
     # up.
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)

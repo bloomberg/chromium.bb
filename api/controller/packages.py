@@ -43,7 +43,7 @@ def Uprev(input_proto, output_proto, _config):
                                             output_dir)
   except packages.Error as e:
     # Handle module errors nicely, let everything else bubble up.
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)
 
   for path in uprevved:
     output_proto.modified_ebuilds.add().path = path
@@ -70,7 +70,7 @@ def UprevVersionedPackage(input_proto, output_proto, _config):
                                               chroot)
   except packages.Error as e:
     # Handle module errors nicely, let everything else bubble up.
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)
 
   if not result.uprevved:
     # No uprevs executed, skip the output population.

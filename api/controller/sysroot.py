@@ -43,7 +43,7 @@ def Create(input_proto, output_proto, _config):
     created = sysroot.Create(build_target, run_configs,
                              accept_licenses=_ACCEPTED_LICENSES)
   except sysroot.Error as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)
 
   output_proto.sysroot.path = created.path
   output_proto.sysroot.build_target.name = build_target_name

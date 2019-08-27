@@ -253,7 +253,7 @@ class ToolchainInstaller(object):
       try:
         cros_build_lib.sudo_run(cmd)
       except cros_build_lib.RunCommandError as e:
-        raise ToolchainInstallError(e.message, e.result, exception=e,
+        raise ToolchainInstallError(str(e), e.result, exception=e,
                                     tc_info=[tc_info.libc_cpv])
     else:
       # They do not match, install appropriate cross-toolchain variant package.
