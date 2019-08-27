@@ -1453,7 +1453,7 @@ jumbo_component("base") {
 
     deps += [
       ":base_jni_headers",
-      "//third_party/android_sdk:cpu_features",
+      "//third_party/android_ndk:cpu_features",
       "//third_party/ashmem",
     ]
 
