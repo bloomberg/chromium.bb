@@ -52,9 +52,8 @@ PendingAppRegistrationTask::~PendingAppRegistrationTask() {
 }
 
 void PendingAppRegistrationTask::OnRegistrationCompleted(const GURL& scope) {
-  if (!content::ServiceWorkerContext::ScopeMatches(scope, launch_url())) {
+  if (!content::ServiceWorkerContext::ScopeMatches(scope, launch_url()))
     return;
-  }
 
   registration_timer_.Stop();
   std::move(callback_).Run(RegistrationResultCode::kSuccess);

@@ -222,13 +222,12 @@ void PendingAppManagerImpl::StartInstallationTask(
 }
 
 bool PendingAppManagerImpl::RunNextRegistration() {
-  if (pending_registrations_.empty()) {
+  if (pending_registrations_.empty())
     return false;
-  }
 
-  GURL front = pending_registrations_.front();
+  GURL url_to_check = std::move(pending_registrations_.front());
   pending_registrations_.pop_front();
-  current_registration_ = StartRegistration(front);
+  current_registration_ = StartRegistration(std::move(url_to_check));
   return true;
 }
 
