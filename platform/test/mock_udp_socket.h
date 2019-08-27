@@ -19,6 +19,7 @@
 namespace openscreen {
 namespace platform {
 
+// TODO(rwkeane): Rename this class to "FakeUdpSocket".
 class MockUdpSocket : public UdpSocket {
  public:
   class MockClient : public UdpSocket::Client {
@@ -44,26 +45,43 @@ class MockUdpSocket : public UdpSocket {
   bool IsIPv6() const override;
   IPEndpoint GetLocalEndpoint() const override;
 
-  void EnqueueBindResult(Error error) { bind_errors_.push(error); }
-  void EnqueueSendResult(Error error) { send_errors_.push(error); }
-
   // UdpSocket overrides
   void Bind() override;
   void SendMessage(const void* data,
                    size_t length,
                    const IPEndpoint& dest) override;
+  void SetMulticastOutboundInterface(NetworkInterfaceIndex interface) override;
+  void JoinMulticastGroup(const IPAddress& address,
+                          NetworkInterfaceIndex interface) override;
+  void SetDscp(DscpMode mode) override;
 
-  MOCK_METHOD1(SetMulticastOutboundInterface, Error(NetworkInterfaceIndex));
-  MOCK_METHOD2(JoinMulticastGroup,
-               Error(const IPAddress&, NetworkInterfaceIndex));
-  MOCK_METHOD1(SetDscp, Error(DscpMode));
+  // Operatons to queue errors to be returned by the above functions
+  void EnqueueBindResult(Error error) { bind_errors_.push(error); }
+  void EnqueueSendResult(Error error) { send_errors_.push(error); }
+  void EnqueueSetMulticastOutboundInterfaceResult(Error error) {
+    set_multicast_outbound_interface_errors_.push(error);
+  }
+  void EnqueueJoinMulticastGroupResult(Error error) {
+    join_multicast_group_errors_.push(error);
+  }
+  void EnqueueSetDscpResult(Error error) { set_dscp_errors_.push(error); }
 
+  // Accessors for the size of the internal error queues.
   size_t bind_queue_size() { return bind_errors_.size(); }
   size_t send_queue_size() { return send_errors_.size(); }
+  size_t set_multicast_outbound_interface_queue_size() {
+    return set_multicast_outbound_interface_errors_.size();
+  }
+  size_t join_multicast_group_queue_size() {
+    return join_multicast_group_errors_.size();
+  }
+  size_t set_dscp_queue_size() { return set_dscp_errors_.size(); }
 
   MockUdpSocket::MockClient* client() { return client_.get(); }
 
  private:
+  void ProcessConfigurationMethod(std::queue<Error>* errors);
+
   void Close() override {}
 
   Version version_;
@@ -71,6 +89,9 @@ class MockUdpSocket : public UdpSocket {
   // Queues for the response to calls above
   std::queue<Error> bind_errors_;
   std::queue<Error> send_errors_;
+  std::queue<Error> set_multicast_outbound_interface_errors_;
+  std::queue<Error> join_multicast_group_errors_;
+  std::queue<Error> set_dscp_errors_;
 
   // Fake implementations to be set by CreateDefault().
   std::unique_ptr<FakeTaskRunner> task_runner_;

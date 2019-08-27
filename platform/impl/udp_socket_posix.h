@@ -34,13 +34,13 @@ struct UdpSocketPosix : public UdpSocket {
   bool IsIPv6() const override;
   IPEndpoint GetLocalEndpoint() const override;
   void Bind() override;
-  Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) override;
-  Error JoinMulticastGroup(const IPAddress& address,
-                           NetworkInterfaceIndex ifindex) override;
+  void SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) override;
+  void JoinMulticastGroup(const IPAddress& address,
+                          NetworkInterfaceIndex ifindex) override;
   void SendMessage(const void* data,
                    size_t length,
                    const IPEndpoint& dest) override;
-  Error SetDscp(DscpMode state) override;
+  void SetDscp(DscpMode state) override;
 
   int GetFd() const { return fd_; }
 

@@ -35,9 +35,32 @@ IPEndpoint MockUdpSocket::GetLocalEndpoint() const {
 }
 
 void MockUdpSocket::Bind() {
-  OSP_CHECK(bind_errors_.size()) << "No bind responses queued.";
-  Error error = bind_errors_.front();
-  bind_errors_.pop();
+  OSP_CHECK(bind_errors_.size()) << "No Bind responses queued.";
+  ProcessConfigurationMethod(&bind_errors_);
+}
+
+void MockUdpSocket::SetMulticastOutboundInterface(
+    NetworkInterfaceIndex interface) {
+  OSP_CHECK(set_multicast_outbound_interface_errors_.size())
+      << "No SetMulticastOutboundInterface responses queued.";
+  ProcessConfigurationMethod(&set_multicast_outbound_interface_errors_);
+}
+
+void MockUdpSocket::JoinMulticastGroup(const IPAddress& address,
+                                       NetworkInterfaceIndex interface) {
+  OSP_CHECK(join_multicast_group_errors_.size())
+      << "No JoinMulticastGroup responses queued.";
+  ProcessConfigurationMethod(&join_multicast_group_errors_);
+}
+
+void MockUdpSocket::SetDscp(DscpMode mode) {
+  OSP_CHECK(set_dscp_errors_.size()) << "No SetDscp responses queued.";
+  ProcessConfigurationMethod(&set_dscp_errors_);
+}
+
+void MockUdpSocket::ProcessConfigurationMethod(std::queue<Error>* errors) {
+  Error error = errors->front();
+  errors->pop();
 
   if (!error.ok()) {
     client_->OnError(this, std::move(error));
@@ -47,7 +70,7 @@ void MockUdpSocket::Bind() {
 void MockUdpSocket::SendMessage(const void* data,
                                 size_t length,
                                 const IPEndpoint& dest) {
-  OSP_CHECK(send_errors_.size()) << "No send responses queued.";
+  OSP_CHECK(send_errors_.size()) << "No SendMessage responses queued.";
   Error error = send_errors_.front();
   send_errors_.pop();
 

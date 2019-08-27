@@ -131,21 +131,8 @@ std::vector<platform::UdpSocketUniquePtr> SetUpMulticastSockets(
     }
     platform::UdpSocketUniquePtr socket = create_result.MoveValue();
 
-    Error result =
-        socket->JoinMulticastGroup(IPAddress{224, 0, 0, 251}, ifindex);
-    if (!result.ok()) {
-      OSP_LOG_ERROR << "join multicast group failed for interface " << ifindex
-                    << ": " << result.message();
-      continue;
-    }
-
-    result = socket->SetMulticastOutboundInterface(ifindex);
-    if (!result.ok()) {
-      OSP_LOG_ERROR << "set multicast outbound interface failed for interface "
-                    << ifindex << ": " << result.message();
-      continue;
-    }
-
+    socket->JoinMulticastGroup(IPAddress{224, 0, 0, 251}, ifindex);
+    socket->SetMulticastOutboundInterface(ifindex);
     socket->Bind();
 
     OSP_LOG << "listening on interface " << ifindex;

@@ -41,20 +41,8 @@ Error SetUpMulticastSocket(platform::UdpSocket* socket,
   const IPAddress broadcast_address =
       socket->IsIPv6() ? kMulticastIPv6Address : kMulticastAddress;
 
-  Error result = socket->JoinMulticastGroup(broadcast_address, ifindex);
-  if (!result.ok()) {
-    OSP_LOG_ERROR << "join multicast group failed for interface " << ifindex
-                  << ": " << result.message();
-    return result;
-  }
-
-  result = socket->SetMulticastOutboundInterface(ifindex);
-  if (!result.ok()) {
-    OSP_LOG_ERROR << "set multicast outbound interface failed for interface "
-                  << ifindex << ": " << result.message();
-    return result;
-  }
-
+  socket->JoinMulticastGroup(broadcast_address, ifindex);
+  socket->SetMulticastOutboundInterface(ifindex);
   socket->Bind();
 
   return Error::None();

@@ -189,10 +189,11 @@ void UdpSocketPosix::Bind() {
   OSP_NOTREACHED();
 }
 
-Error UdpSocketPosix::SetMulticastOutboundInterface(
+void UdpSocketPosix::SetMulticastOutboundInterface(
     NetworkInterfaceIndex ifindex) {
   if (is_closed()) {
-    return Error::Code::kSocketClosedFailure;
+    OnError(CreateError(Error::Code::kSocketClosedFailure));
+    return;
   }
 
   switch (local_endpoint_.address.version()) {
@@ -205,29 +206,29 @@ Error UdpSocketPosix::SetMulticastOutboundInterface(
           static_cast<IPv4NetworkInterfaceIndex>(ifindex);
       if (setsockopt(fd_, IPPROTO_IP, IP_MULTICAST_IF, &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
       }
-      return Error::Code::kNone;
+      return;
     }
 
     case UdpSocket::Version::kV6: {
       const auto index = static_cast<IPv6NetworkInterfaceIndex>(ifindex);
       if (setsockopt(fd_, IPPROTO_IPV6, IPV6_MULTICAST_IF, &index,
                      sizeof(index)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
       }
-      return Error::Code::kNone;
+      return;
     }
   }
 
   OSP_NOTREACHED();
-  return Error::Code::kUnknownError;
 }
 
-Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
-                                         NetworkInterfaceIndex ifindex) {
+void UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
+                                        NetworkInterfaceIndex ifindex) {
   if (is_closed()) {
-    return Error::Code::kSocketClosedFailure;
+    OnError(CreateError(Error::Code::kSocketClosedFailure));
+    return;
   }
 
   switch (local_endpoint_.address.version()) {
@@ -237,7 +238,7 @@ Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
       const int enable_pktinfo = 1;
       if (setsockopt(fd_, IPPROTO_IP, IP_PKTINFO, &enable_pktinfo,
                      sizeof(enable_pktinfo)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
       }
       struct ip_mreqn multicast_properties;
       // Appropriate address is set based on |imr_ifindex| when set.
@@ -250,9 +251,9 @@ Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
           reinterpret_cast<uint8_t*>(&multicast_properties.imr_multiaddr));
       if (setsockopt(fd_, IPPROTO_IP, IP_ADD_MEMBERSHIP, &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
       }
-      return Error::Code::kNone;
+      return;
     }
 
     case UdpSocket::Version::kV6: {
@@ -261,7 +262,7 @@ Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
       const int enable_pktinfo = 1;
       if (setsockopt(fd_, IPPROTO_IPV6, IPV6_RECVPKTINFO, &enable_pktinfo,
                      sizeof(enable_pktinfo)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
       }
       struct ipv6_mreq multicast_properties = {
           {/* filled-in below */},
@@ -275,14 +276,13 @@ Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
       // synonymous with IPV6_ADD_MEMBERSHIP.
       if (setsockopt(fd_, IPPROTO_IPV6, IPV6_JOIN_GROUP, &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
       }
-      return Error::Code::kNone;
+      return;
     }
   }
 
   OSP_NOTREACHED();
-  return Error::Code::kUnknownError;
 }
 
 namespace {
@@ -474,9 +474,10 @@ void UdpSocketPosix::SendMessage(const void* data,
   OSP_DCHECK_EQ(static_cast<size_t>(num_bytes_sent), length);
 }
 
-Error UdpSocketPosix::SetDscp(UdpSocket::DscpMode state) {
+void UdpSocketPosix::SetDscp(UdpSocket::DscpMode state) {
   if (is_closed()) {
-    return Error::Code::kSocketClosedFailure;
+    OnError(CreateError(Error::Code::kSocketClosedFailure));
+    return;
   }
 
   constexpr auto kSettingLevel = IPPROTO_IP;
@@ -486,16 +487,14 @@ Error UdpSocketPosix::SetDscp(UdpSocket::DscpMode state) {
 
   if (code == EBADF || code == ENOTSOCK || code == EFAULT) {
     OSP_VLOG << "BAD SOCKET PROVIDED. CODE: " << code;
-    return Error::Code::kSocketOptionSettingFailure;
+    OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
   } else if (code == EINVAL) {
     OSP_VLOG << "INVALID DSCP INFO PROVIDED";
-    return Error::Code::kSocketOptionSettingFailure;
+    OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
   } else if (code == ENOPROTOOPT) {
     OSP_VLOG << "INVALID DSCP SETTING LEVEL PROVIDED: " << kSettingLevel;
-    return Error::Code::kSocketOptionSettingFailure;
+    OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
   }
-
-  return Error::Code::kNone;
 }
 
 }  // namespace platform

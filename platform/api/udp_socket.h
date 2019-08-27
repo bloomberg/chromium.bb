@@ -105,13 +105,12 @@ class UdpSocket {
   virtual void Bind() = 0;
 
   // Sets the device to use for outgoing multicast packets on the socket.
-  virtual Error SetMulticastOutboundInterface(
-      NetworkInterfaceIndex ifindex) = 0;
+  virtual void SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) = 0;
 
   // Joins to the multicast group at the given address, using the specified
   // interface.
-  virtual Error JoinMulticastGroup(const IPAddress& address,
-                                   NetworkInterfaceIndex ifindex) = 0;
+  virtual void JoinMulticastGroup(const IPAddress& address,
+                                  NetworkInterfaceIndex ifindex) = 0;
 
   // Sends a message and returns the number of bytes sent, on success.
   // Error::Code::kAgain might be returned to indicate the operation would
@@ -121,7 +120,7 @@ class UdpSocket {
                            const IPEndpoint& dest) = 0;
 
   // Sets the DSCP value to use for all messages sent from this socket.
-  virtual Error SetDscp(DscpMode state) = 0;
+  virtual void SetDscp(DscpMode state) = 0;
 
   // Sets the callback that should be called upon deletion of this socket. This
   // allows other objects to observe the socket's destructor and act when it is
