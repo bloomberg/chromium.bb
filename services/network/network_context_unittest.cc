@@ -3161,6 +3161,8 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   EXPECT_TRUE(resolver_closed);
 }
 
+// Config overrides are not supported on iOS.
+#if !defined(OS_IOS)
 TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   // Inject a factory to control and capture created net::HostResolvers.
   TestResolverFactory* factory =
@@ -3184,11 +3186,12 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   // enablable for the build config).
   ASSERT_EQ(1u, factory->resolvers().size());
   net::ContextHostResolver* internal_resolver = factory->resolvers().front();
-#if defined(ENABLE_BUILT_IN_DNS)
+
   EXPECT_TRUE(internal_resolver->GetDnsConfigAsValue());
-#endif
 
   // Override DnsClient with a basic mock.
+  net::DnsConfig base_configuration;
+  base_configuration.nameservers = {CreateExpectedEndPoint("12.12.12.12", 53)};
   const std::string kQueryHostname = "example.com";
   const std::string kResult = "1.2.3.4";
   net::IPAddress result;
@@ -3203,20 +3206,17 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
       kQueryHostname, net::dns_protocol::kTypeAAAA, false /* secure */,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::ResultType::EMPTY),
       false /* delay */);
-  auto mock_dns_client =
-      std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
+  auto mock_dns_client = std::make_unique<net::MockDnsClient>(
+      base_configuration, std::move(rules));
+  mock_dns_client->SetInsecureEnabled(true);
+  mock_dns_client->set_ignore_system_config_changes(true);
   auto* mock_dns_client_ptr = mock_dns_client.get();
   internal_resolver->GetManagerForTesting()->SetDnsClientForTesting(
       std::move(mock_dns_client));
 
-  // Force the base configuration to ensure consistent overriding.
-  net::DnsConfig base_configuration;
-  base_configuration.nameservers = {CreateExpectedEndPoint("12.12.12.12", 53)};
-  internal_resolver->SetBaseDnsConfigForTesting(base_configuration);
-
   // Test that the DnsClient is getting the overridden configuration.
   EXPECT_TRUE(overrides.ApplyOverrides(base_configuration)
-                  .Equals(*mock_dns_client_ptr->GetConfig()));
+                  .Equals(*mock_dns_client_ptr->GetEffectiveConfig()));
 
   // Ensure we are using the private resolver by testing that we get results
   // from the overridden DnsClient.
@@ -3236,6 +3236,7 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
               testing::ElementsAre(CreateExpectedEndPoint(kResult, 80)));
 }
+#endif  // defined(OS_IOS)
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledByDefault) {
   std::unique_ptr<NetworkContext> network_context =
