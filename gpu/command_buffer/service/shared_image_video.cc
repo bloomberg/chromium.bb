@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/shared_image_video.h"
+#include "gpu/command_buffer/service/shared_image_video.h"
 
 #include <utility>
 
@@ -20,17 +20,17 @@
 #include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_util.h"
-#include "media/gpu/android/codec_image.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 
-namespace media {
+namespace gpu {
 
 namespace {
 sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
@@ -38,7 +38,7 @@ sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
     base::android::ScopedHardwareBufferHandle ahb_handle,
     gfx::Size size,
     viz::ResourceFormat format) {
-  gpu::VulkanImplementation* vk_implementation =
+  VulkanImplementation* vk_implementation =
       context_provider->GetVulkanImplementation();
   VkDevice vk_device = context_provider->GetDeviceQueue()->GetVulkanDevice();
   VkPhysicalDevice vk_physical_device =
@@ -49,7 +49,7 @@ sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
   VkImageCreateInfo vk_image_info;
   VkDeviceMemory vk_device_memory;
   VkDeviceSize mem_allocation_size;
-  gpu::VulkanYCbCrInfo ycbcr_info;
+  VulkanYCbCrInfo ycbcr_info;
   if (!vk_implementation->CreateVkImageAndImportAHB(
           vk_device, vk_physical_device, size, std::move(ahb_handle), &vk_image,
           &vk_image_info, &vk_device_memory, &mem_allocation_size,
@@ -103,7 +103,7 @@ void DestroyVkPromiseTexture(viz::VulkanContextProvider* context_provider,
       promise_texture->backendTexture().getVkImageInfo(&vk_image_info);
   DCHECK(result);
 
-  gpu::VulkanFenceHelper* fence_helper =
+  VulkanFenceHelper* fence_helper =
       context_provider->GetDeviceQueue()->GetFenceHelper();
   fence_helper->EnqueueImageCleanupForSubmittedWork(
       vk_image_info.fImage, vk_image_info.fAlloc.fMemory);
@@ -112,26 +112,26 @@ void DestroyVkPromiseTexture(viz::VulkanContextProvider* context_provider,
 }  // namespace
 
 SharedImageVideo::SharedImageVideo(
-    const gpu::Mailbox& mailbox,
+    const Mailbox& mailbox,
     const gfx::ColorSpace color_space,
-    scoped_refptr<CodecImage> codec_image,
-    std::unique_ptr<gpu::gles2::AbstractTexture> abstract_texture,
-    scoped_refptr<gpu::SharedContextState> context_state,
+    scoped_refptr<StreamTextureSharedImageInterface> stream_texture_sii,
+    std::unique_ptr<gles2::AbstractTexture> abstract_texture,
+    scoped_refptr<SharedContextState> context_state,
     bool is_thread_safe)
     : SharedImageBacking(
           mailbox,
           viz::RGBA_8888,
-          codec_image->GetSize(),
+          stream_texture_sii->GetSize(),
           color_space,
-          (gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_GLES2),
+          (SHARED_IMAGE_USAGE_DISPLAY | SHARED_IMAGE_USAGE_GLES2),
           viz::ResourceSizes::UncheckedSizeInBytes<size_t>(
-              codec_image->GetSize(),
+              stream_texture_sii->GetSize(),
               viz::RGBA_8888),
           is_thread_safe),
-      codec_image_(std::move(codec_image)),
+      stream_texture_sii_(std::move(stream_texture_sii)),
       abstract_texture_(std::move(abstract_texture)),
       context_state_(std::move(context_state)) {
-  DCHECK(codec_image_);
+  DCHECK(stream_texture_sii_);
   DCHECK(context_state_);
 
   // Currently this backing is not thread safe.
@@ -140,7 +140,7 @@ SharedImageVideo::SharedImageVideo(
 }
 
 SharedImageVideo::~SharedImageVideo() {
-  codec_image_->ReleaseCodecBuffer();
+  stream_texture_sii_->ReleaseResources();
   if (context_state_)
     context_state_->RemoveContextLostObserver(this);
 }
@@ -155,8 +155,7 @@ void SharedImageVideo::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   DCHECK(!in_fence);
 }
 
-bool SharedImageVideo::ProduceLegacyMailbox(
-    gpu::MailboxManager* mailbox_manager) {
+bool SharedImageVideo::ProduceLegacyMailbox(MailboxManager* mailbox_manager) {
   DCHECK(abstract_texture_);
   mailbox_manager->ProduceTexture(mailbox(),
                                   abstract_texture_->GetTextureBase());
@@ -168,60 +167,57 @@ void SharedImageVideo::Destroy() {}
 size_t SharedImageVideo::EstimatedSizeForMemTracking() const {
   // This backing contributes to gpu memory only if its bound to the texture and
   // not when the backing is created.
-  return codec_image_->was_tex_image_bound() ? estimated_size() : 0;
+  return stream_texture_sii_->IsUsingGpuMemory() ? estimated_size() : 0;
 }
 
 void SharedImageVideo::OnContextLost() {
   // We release codec buffers when shared image context is lost. This is because
   // texture owner's texture was created on shared context. Once shared context
   // is lost, no one should try to use that texture.
-  codec_image_->ReleaseCodecBuffer();
+  stream_texture_sii_->ReleaseResources();
   context_state_->RemoveContextLostObserver(this);
   context_state_ = nullptr;
 }
 
-base::Optional<gpu::VulkanYCbCrInfo> SharedImageVideo::GetYcbcrInfo() {
+base::Optional<VulkanYCbCrInfo> SharedImageVideo::GetYcbcrInfo() {
   // For non-vulkan context, return null.
   if (!context_state_->GrContextIsVulkan())
     return base::nullopt;
 
-  // Render the codec image.
-  codec_image_->RenderToFrontBuffer();
-
-  // Get the AHB from the latest image.
-  auto scoped_hardware_buffer =
-      codec_image_->texture_owner()->GetAHardwareBuffer();
+  // GetAHardwareBuffer() renders the latest image and gets AHardwareBuffer
+  // from it.
+  auto scoped_hardware_buffer = stream_texture_sii_->GetAHardwareBuffer();
   if (!scoped_hardware_buffer) {
     return base::nullopt;
   }
 
   DCHECK(scoped_hardware_buffer->buffer());
   auto* context_provider = context_state_->vk_context_provider();
-  gpu::VulkanImplementation* vk_implementation =
+  VulkanImplementation* vk_implementation =
       context_provider->GetVulkanImplementation();
   VkDevice vk_device = context_provider->GetDeviceQueue()->GetVulkanDevice();
 
-  gpu::VulkanYCbCrInfo ycbcr_info;
+  VulkanYCbCrInfo ycbcr_info;
   if (!vk_implementation->GetSamplerYcbcrConversionInfo(
           vk_device, scoped_hardware_buffer->TakeBuffer(), &ycbcr_info)) {
     LOG(ERROR) << "Failed to get the ycbcr info.";
     return base::nullopt;
   }
-  return base::Optional<gpu::VulkanYCbCrInfo>(ycbcr_info);
+  return base::Optional<VulkanYCbCrInfo>(ycbcr_info);
 }
 
 // Representation of SharedImageVideo as a GL Texture.
 class SharedImageRepresentationGLTextureVideo
-    : public gpu::SharedImageRepresentationGLTexture {
+    : public SharedImageRepresentationGLTexture {
  public:
-  SharedImageRepresentationGLTextureVideo(gpu::SharedImageManager* manager,
+  SharedImageRepresentationGLTextureVideo(SharedImageManager* manager,
                                           SharedImageVideo* backing,
-                                          gpu::MemoryTypeTracker* tracker,
-                                          gpu::gles2::Texture* texture)
-      : gpu::SharedImageRepresentationGLTexture(manager, backing, tracker),
+                                          MemoryTypeTracker* tracker,
+                                          gles2::Texture* texture)
+      : SharedImageRepresentationGLTexture(manager, backing, tracker),
         texture_(texture) {}
 
-  gpu::gles2::Texture* GetTexture() override { return texture_; }
+  gles2::Texture* GetTexture() override { return texture_; }
 
   bool BeginAccess(GLenum mode) override {
     // This representation should only be called for read.
@@ -236,26 +232,26 @@ class SharedImageRepresentationGLTextureVideo
   void EndAccess() override {}
 
  private:
-  gpu::gles2::Texture* texture_;
+  gles2::Texture* texture_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTextureVideo);
 };
 
 // Representation of SharedImageVideo as a GL Texture.
 class SharedImageRepresentationGLTexturePassthroughVideo
-    : public gpu::SharedImageRepresentationGLTexturePassthrough {
+    : public SharedImageRepresentationGLTexturePassthrough {
  public:
   SharedImageRepresentationGLTexturePassthroughVideo(
-      gpu::SharedImageManager* manager,
+      SharedImageManager* manager,
       SharedImageVideo* backing,
-      gpu::MemoryTypeTracker* tracker,
-      scoped_refptr<gpu::gles2::TexturePassthrough> texture)
-      : gpu::SharedImageRepresentationGLTexturePassthrough(manager,
-                                                           backing,
-                                                           tracker),
+      MemoryTypeTracker* tracker,
+      scoped_refptr<gles2::TexturePassthrough> texture)
+      : SharedImageRepresentationGLTexturePassthrough(manager,
+                                                      backing,
+                                                      tracker),
         texture_(std::move(texture)) {}
 
-  const scoped_refptr<gpu::gles2::TexturePassthrough>& GetTexturePassthrough()
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
       override {
     return texture_;
   }
@@ -273,21 +269,21 @@ class SharedImageRepresentationGLTexturePassthroughVideo
   void EndAccess() override {}
 
  private:
-  scoped_refptr<gpu::gles2::TexturePassthrough> texture_;
+  scoped_refptr<gles2::TexturePassthrough> texture_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTexturePassthroughVideo);
 };
 
 // Vulkan backed Skia representation of SharedImageVideo.
 class SharedImageRepresentationVideoSkiaVk
-    : public gpu::SharedImageRepresentationSkia {
+    : public SharedImageRepresentationSkia {
  public:
   SharedImageRepresentationVideoSkiaVk(
-      gpu::SharedImageManager* manager,
-      gpu::SharedImageBacking* backing,
-      scoped_refptr<gpu::SharedContextState> context_state,
-      gpu::MemoryTypeTracker* tracker)
-      : gpu::SharedImageRepresentationSkia(manager, backing, tracker),
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      scoped_refptr<SharedContextState> context_state,
+      MemoryTypeTracker* tracker)
+      : SharedImageRepresentationSkia(manager, backing, tracker),
         context_state_(std::move(context_state)) {
     DCHECK(context_state_);
     DCHECK(context_state_->vk_context_provider());
@@ -321,12 +317,11 @@ class SharedImageRepresentationVideoSkiaVk
     if (!scoped_hardware_buffer_) {
       auto* video_backing = static_cast<SharedImageVideo*>(backing());
       DCHECK(video_backing);
-      auto* codec_image = video_backing->codec_image_.get();
-      auto* texture_owner = codec_image->texture_owner().get();
+      auto* stream_texture_sii = video_backing->stream_texture_sii_.get();
 
-      // Render the codec image and get AHB from latest image.
-      codec_image->RenderToFrontBuffer();
-      scoped_hardware_buffer_ = texture_owner->GetAHardwareBuffer();
+      // GetAHardwareBuffer() renders the latest image and gets AHardwareBuffer
+      // from it.
+      scoped_hardware_buffer_ = stream_texture_sii->GetAHardwareBuffer();
       if (!scoped_hardware_buffer_) {
         LOG(ERROR) << "Failed to get the hardware buffer.";
         return nullptr;
@@ -354,9 +349,8 @@ class SharedImageRepresentationVideoSkiaVk
   void EndReadAccess() override {
     DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
 
-    gpu::SemaphoreHandle semaphore_handle =
-        vk_implementation()->GetSemaphoreHandle(vk_device(),
-                                                end_access_semaphore_);
+    SemaphoreHandle semaphore_handle = vk_implementation()->GetSemaphoreHandle(
+        vk_device(), end_access_semaphore_);
     auto sync_fd = semaphore_handle.TakeHandle();
     DCHECK(sync_fd.is_valid());
 
@@ -381,8 +375,8 @@ class SharedImageRepresentationVideoSkiaVk
     if (sync_fd.is_valid()) {
       begin_access_semaphore = vk_implementation()->ImportSemaphoreHandle(
           vk_device(),
-          gpu::SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
-                               std::move(sync_fd)));
+          SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
+                          std::move(sync_fd)));
       if (begin_access_semaphore == VK_NULL_HANDLE) {
         DLOG(ERROR) << "Failed to import semaphore from sync_fd.";
         return false;
@@ -416,18 +410,18 @@ class SharedImageRepresentationVideoSkiaVk
         ->GetVulkanDevice();
   }
 
-  gpu::VulkanImplementation* vk_implementation() {
+  VulkanImplementation* vk_implementation() {
     return context_state_->vk_context_provider()->GetVulkanImplementation();
   }
 
-  gpu::VulkanFenceHelper* fence_helper() {
+  VulkanFenceHelper* fence_helper() {
     return context_state_->vk_context_provider()
         ->GetDeviceQueue()
         ->GetFenceHelper();
   }
 
   sk_sp<SkPromiseImageTexture> promise_texture_;
-  scoped_refptr<gpu::SharedContextState> context_state_;
+  scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
       scoped_hardware_buffer_;
   VkSemaphore end_access_semaphore_ = VK_NULL_HANDLE;
@@ -436,19 +430,19 @@ class SharedImageRepresentationVideoSkiaVk
 // TODO(vikassoni): Currently GLRenderer doesn't support overlays with shared
 // image. Add support for overlays in GLRenderer as well as overlay
 // representations of shared image.
-std::unique_ptr<gpu::SharedImageRepresentationGLTexture>
-SharedImageVideo::ProduceGLTexture(gpu::SharedImageManager* manager,
-                                   gpu::MemoryTypeTracker* tracker) {
+std::unique_ptr<SharedImageRepresentationGLTexture>
+SharedImageVideo::ProduceGLTexture(SharedImageManager* manager,
+                                   MemoryTypeTracker* tracker) {
   // For (old) overlays, we don't have a texture owner, but overlay promotion
   // might not happen for some reasons. In that case, it will try to draw
   // which should result in no image.
-  if (!codec_image_->texture_owner())
+  if (!stream_texture_sii_->HasTextureOwner())
     return nullptr;
   // TODO(vikassoni): We would want to give the TextureOwner's underlying
   // Texture, but it was not set with the correct size. The AbstractTexture,
   // that we use for legacy mailbox, is correctly set.
   auto* texture =
-      gpu::gles2::Texture::CheckedCast(abstract_texture_->GetTextureBase());
+      gles2::Texture::CheckedCast(abstract_texture_->GetTextureBase());
   DCHECK(texture);
 
   return std::make_unique<SharedImageRepresentationGLTextureVideo>(
@@ -458,19 +452,19 @@ SharedImageVideo::ProduceGLTexture(gpu::SharedImageManager* manager,
 // TODO(vikassoni): Currently GLRenderer doesn't support overlays with shared
 // image. Add support for overlays in GLRenderer as well as overlay
 // representations of shared image.
-std::unique_ptr<gpu::SharedImageRepresentationGLTexturePassthrough>
-SharedImageVideo::ProduceGLTexturePassthrough(gpu::SharedImageManager* manager,
-                                              gpu::MemoryTypeTracker* tracker) {
+std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+SharedImageVideo::ProduceGLTexturePassthrough(SharedImageManager* manager,
+                                              MemoryTypeTracker* tracker) {
   // For (old) overlays, we don't have a texture owner, but overlay promotion
   // might not happen for some reasons. In that case, it will try to draw
   // which should result in no image.
-  if (!codec_image_->texture_owner())
+  if (!stream_texture_sii_->HasTextureOwner())
     return nullptr;
   // TODO(vikassoni): We would want to give the TextureOwner's underlying
   // Texture, but it was not set with the correct size. The AbstractTexture,
   // that we use for legacy mailbox, is correctly set.
-  scoped_refptr<gpu::gles2::TexturePassthrough> texture =
-      gpu::gles2::TexturePassthrough::CheckedCast(
+  scoped_refptr<gles2::TexturePassthrough> texture =
+      gles2::TexturePassthrough::CheckedCast(
           abstract_texture_->GetTextureBase());
   DCHECK(texture);
 
@@ -479,17 +473,16 @@ SharedImageVideo::ProduceGLTexturePassthrough(gpu::SharedImageManager* manager,
 }
 
 // Currently SkiaRenderer doesn't support overlays.
-std::unique_ptr<gpu::SharedImageRepresentationSkia>
-SharedImageVideo::ProduceSkia(
-    gpu::SharedImageManager* manager,
-    gpu::MemoryTypeTracker* tracker,
-    scoped_refptr<gpu::SharedContextState> context_state) {
+std::unique_ptr<SharedImageRepresentationSkia> SharedImageVideo::ProduceSkia(
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker,
+    scoped_refptr<SharedContextState> context_state) {
   DCHECK(context_state);
 
   // For (old) overlays, we don't have a texture owner, but overlay promotion
   // might not happen for some reasons. In that case, it will try to draw
   // which should result in no image.
-  if (!codec_image_->texture_owner())
+  if (!stream_texture_sii_->HasTextureOwner())
     return nullptr;
 
   if (context_state->GrContextIsVulkan()) {
@@ -498,8 +491,7 @@ SharedImageVideo::ProduceSkia(
   }
 
   DCHECK(context_state->GrContextIsGL());
-  auto* texture = gpu::gles2::Texture::CheckedCast(
-      codec_image_->texture_owner()->GetTextureBase());
+  auto* texture = stream_texture_sii_->GetTexture();
   DCHECK(texture);
 
   // In GL mode, create the SharedImageRepresentationGLTextureVideo
@@ -507,18 +499,13 @@ SharedImageVideo::ProduceSkia(
   auto gl_representation =
       std::make_unique<SharedImageRepresentationGLTextureVideo>(
           manager, this, tracker, texture);
-  return gpu::SharedImageRepresentationSkiaGL::Create(
+  return SharedImageRepresentationSkiaGL::Create(
       std::move(gl_representation), nullptr, manager, this, tracker);
 }
 
 void SharedImageVideo::BeginGLReadAccess() {
   // Render the codec image.
-  codec_image_->RenderToFrontBuffer();
-
-  // Bind the tex image if it's not already bound.
-  auto* texture_owner = codec_image_->texture_owner().get();
-  if (!texture_owner->binds_texture_on_update())
-    texture_owner->EnsureTexImageBound();
+  stream_texture_sii_->UpdateAndBindTexImage();
 }
 
-}  // namespace media
+}  // namespace gpu
