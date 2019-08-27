@@ -4787,6 +4787,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
            sizeof(*segment_map) * segment_map_w * segment_map_h);
 
     for (frame = ALTREF_FRAME; frame >= LAST_FRAME; --frame) {
+      const MV_REFERENCE_FRAME ref_frame[2] = { frame, NONE_FRAME };
       ref_buf[frame] = NULL;
       RefCntBuffer *buf = get_ref_frame_buf(cm, frame);
       if (buf != NULL) ref_buf[frame] = &buf->buf;
@@ -4806,6 +4807,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                  ref_buf[frame]->y_crop_width == cpi->source->y_crop_width &&
                  ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
                  do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame) &&
+                 !prune_ref_by_selective_ref_frame(cpi, ref_frame) &&
                  !(cpi->sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
         if (num_frm_corners < 0) {
           // compute interest points using FAST features

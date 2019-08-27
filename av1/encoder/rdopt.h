@@ -327,6 +327,97 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
     default: assert(0);
   }
 }
+
+static INLINE int prune_ref_by_selective_ref_frame(
+    const AV1_COMP *const cpi, const MV_REFERENCE_FRAME *const ref_frame) {
+  const SPEED_FEATURES *const sf = &cpi->sf;
+  if (sf->selective_ref_frame) {
+    const AV1_COMMON *const cm = &cpi->common;
+    const OrderHintInfo *const order_hint_info =
+        &cm->seq_params.order_hint_info;
+    const CurrentFrame *const current_frame = &cm->current_frame;
+    const int comp_pred = ref_frame[1] > INTRA_FRAME;
+    if (sf->selective_ref_frame >= 2 ||
+        (sf->selective_ref_frame == 1 && comp_pred)) {
+      if (ref_frame[0] == LAST3_FRAME || ref_frame[1] == LAST3_FRAME) {
+        if (av1_encoder_get_relative_dist(
+                order_hint_info,
+                cm->cur_frame->ref_display_order_hint[LAST3_FRAME - LAST_FRAME],
+                cm->cur_frame
+                    ->ref_display_order_hint[GOLDEN_FRAME - LAST_FRAME]) <= 0)
+          return 1;
+      }
+      if (ref_frame[0] == LAST2_FRAME || ref_frame[1] == LAST2_FRAME) {
+        if (av1_encoder_get_relative_dist(
+                order_hint_info,
+                cm->cur_frame->ref_display_order_hint[LAST2_FRAME - LAST_FRAME],
+                cm->cur_frame
+                    ->ref_display_order_hint[GOLDEN_FRAME - LAST_FRAME]) <= 0)
+          return 1;
+      }
+    }
+
+    // One-sided compound is used only when all reference frames are one-sided.
+    if (sf->selective_ref_frame >= 2 && comp_pred && !cpi->all_one_sided_refs) {
+      unsigned int ref_offsets[2];
+      for (int i = 0; i < 2; ++i) {
+        const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame[i]);
+        assert(buf != NULL);
+        ref_offsets[i] = buf->display_order_hint;
+      }
+      const int ref0_dist = av1_encoder_get_relative_dist(
+          order_hint_info, ref_offsets[0], current_frame->display_order_hint);
+      const int ref1_dist = av1_encoder_get_relative_dist(
+          order_hint_info, ref_offsets[1], current_frame->display_order_hint);
+      if ((ref0_dist <= 0 && ref1_dist <= 0) ||
+          (ref0_dist > 0 && ref1_dist > 0)) {
+        return 1;
+      }
+    }
+
+    if (sf->selective_ref_frame >= 3) {
+      if (ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME)
+        if (av1_encoder_get_relative_dist(
+                order_hint_info,
+                cm->cur_frame
+                    ->ref_display_order_hint[ALTREF2_FRAME - LAST_FRAME],
+                current_frame->display_order_hint) < 0)
+          return 1;
+      if (ref_frame[0] == BWDREF_FRAME || ref_frame[1] == BWDREF_FRAME)
+        if (av1_encoder_get_relative_dist(
+                order_hint_info,
+                cm->cur_frame
+                    ->ref_display_order_hint[BWDREF_FRAME - LAST_FRAME],
+                current_frame->display_order_hint) < 0)
+          return 1;
+    }
+
+    if (sf->selective_ref_frame >= 4 && comp_pred) {
+      // Check if one of the reference is ALTREF2_FRAME and BWDREF_FRAME is a
+      // valid reference.
+      if ((ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME) &&
+          (cpi->ref_frame_flags & av1_ref_frame_flag_list[BWDREF_FRAME])) {
+        // Check if both ALTREF2_FRAME and BWDREF_FRAME are future references.
+        const int arf2_dist = av1_encoder_get_relative_dist(
+            order_hint_info,
+            cm->cur_frame->ref_display_order_hint[ALTREF2_FRAME - LAST_FRAME],
+            current_frame->display_order_hint);
+        const int bwd_dist = av1_encoder_get_relative_dist(
+            order_hint_info,
+            cm->cur_frame->ref_display_order_hint[BWDREF_FRAME - LAST_FRAME],
+            current_frame->display_order_hint);
+        if (arf2_dist > 0 && bwd_dist > 0 && bwd_dist <= arf2_dist) {
+          // Drop ALTREF2_FRAME as a reference if BWDREF_FRAME is a closer
+          // reference to the current frame than ALTREF2_FRAME
+          assert(get_ref_frame_buf(cm, ALTREF2_FRAME) != NULL);
+          assert(get_ref_frame_buf(cm, BWDREF_FRAME) != NULL);
+          return 1;
+        }
+      }
+    }
+  }
+  return 0;
+}
 #ifdef __cplusplus
 }  // extern "C"
 #endif
