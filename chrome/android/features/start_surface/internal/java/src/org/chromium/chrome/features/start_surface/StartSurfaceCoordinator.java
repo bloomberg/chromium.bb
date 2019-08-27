@@ -206,9 +206,11 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         // Create the explore surface.
         // TODO(crbug.com/982018): This is a hack to hide the top tab switcher toolbar in
-        // the explore surface. Remove it after deciding on where to put the omnibox.
-        ViewGroup exploreSurfaceContainer =
-                (ViewGroup) mActivity.getCompositorViewHolder().getParent();
+        // the SurfaceMode.TWO_PANES mode explore surface. Remove it after deciding on where to put
+        // the omnibox.
+        ViewGroup exploreSurfaceContainer = mSurfaceMode == SurfaceMode.SINGLE_PANE
+                ? mActivity.getCompositorViewHolder()
+                : (ViewGroup) mActivity.getCompositorViewHolder().getParent();
         mExploreSurfaceCoordinator = new ExploreSurfaceCoordinator(mActivity,
                 exploreSurfaceContainer,
                 mSurfaceMode == SurfaceMode.SINGLE_PANE ? mTasksSurface.getContainerView() : null,
