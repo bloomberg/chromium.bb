@@ -30,13 +30,13 @@ endobj
 >>
 endobj
 5 0 obj <<
-  /Length 45
+  /Length 33
 >>
 stream
 BT
 20 100 Td
 /F1 16 Tf
-(Hello, world!) Tj
+( ) Tj
 ET
 endstream
 endobj
@@ -53,5 +53,5 @@ trailer <<
   /Size 6
 >>
 startxref
-459
+447
 %%EOF

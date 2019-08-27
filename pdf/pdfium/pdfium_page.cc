@@ -254,21 +254,27 @@ FPDF_TEXTPAGE PDFiumPage::GetTextPage() {
 void PDFiumPage::GetTextRunInfo(
     int start_char_index,
     PP_PrivateAccessibilityTextRunInfo* text_run_info) {
-  if (start_char_index < 0) {
+  FPDF_PAGE page = GetPage();
+  FPDF_TEXTPAGE text_page = GetTextPage();
+  int chars_count = FPDFText_CountChars(text_page);
+  // Check to make sure |start_char_index| is within bounds.
+  if (start_char_index < 0 || start_char_index >= chars_count) {
     text_run_info->len = 0;
     text_run_info->font_size = 0;
     text_run_info->bounds = pp::FloatRect();
     text_run_info->direction = PP_PRIVATEDIRECTION_NONE;
     return;
   }
-  FPDF_PAGE page = GetPage();
-  FPDF_TEXTPAGE text_page = GetTextPage();
-  int chars_count = FPDFText_CountChars(text_page);
 
   int actual_start_char_index = GetFirstNonUnicodeWhiteSpaceCharIndex(
       text_page, start_char_index, chars_count);
+  // Check to see if GetFirstNonUnicodeWhiteSpaceCharIndex() iterated through
+  // all the characters.
   if (actual_start_char_index >= chars_count) {
-    text_run_info->len = 0;
+    // If so, |text_run_info->len| needs to take the number of characters
+    // iterated into account.
+    DCHECK_GT(actual_start_char_index, start_char_index);
+    text_run_info->len = chars_count - start_char_index;
     text_run_info->font_size = 0;
     text_run_info->bounds = pp::FloatRect();
     text_run_info->direction = PP_PRIVATEDIRECTION_NONE;
