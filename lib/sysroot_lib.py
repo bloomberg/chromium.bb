@@ -766,17 +766,17 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     """Check if the toolchain has been installed."""
     return self.GetCachedField(_IMPLICIT_SYSROOT_DEPS_KEY) == 'yes'
 
-  def Delete(self, async=False):
+  def Delete(self, background=False):
     """Delete the sysroot.
 
     Optionally run asynchronously. Async delete moves the sysroot into a temp
     directory and then deletes the tempdir with a background task.
 
     Args:
-      async (bool): Whether to run the delete as an async operation.
+      background (bool): Whether to run the delete as a background operation.
     """
     rm = ['rm', '-rf', '--one-file-system', '--']
-    if async:
+    if background:
       # Make the temporary directory in the same folder as the sysroot were
       # deleting to avoid crossing disks, mounts, etc. that'd cause us to
       # synchronously copy the entire thing before we delete it.
@@ -789,7 +789,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
         # Fall back to a synchronous delete just in case.
         logging.notice('Error deleting sysroot asynchronously. Deleting '
                        'synchronously instead. This may take a minute.')
-        return self.Delete(async=False)
+        return self.Delete(background=False)
 
       tempdir = result.output.strip()
       cros_build_lib.SudoRunCommand(['mv', self.path, tempdir], quiet=True)

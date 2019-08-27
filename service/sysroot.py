@@ -221,7 +221,7 @@ def Create(target, run_configs, accept_licenses):
 
   # Delete old sysroot to force a fresh start if requested.
   if sysroot.Exists() and run_configs.force:
-    sysroot.Delete(async=True)
+    sysroot.Delete(background=True)
 
   # Step 1: Create folders.
   # Dependencies: None.
