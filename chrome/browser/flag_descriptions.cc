@@ -1982,9 +1982,9 @@ const char kTreatInsecureOriginAsSecureName[] =
     "Insecure origins treated as secure";
 const char kTreatInsecureOriginAsSecureDescription[] =
     "Treat given (insecure) origins as secure origins. Multiple origins can be "
-    "supplied as a comma-separated list. For the definition of secure "
-    "contexts, "
-    "see https://w3c.github.io/webappsec-secure-contexts/";
+    "supplied as a comma-separated list. Origins must have their protocol "
+    "specified e.g. \"http://example.com\". For the definition of secure "
+    "contexts, see https://w3c.github.io/webappsec-secure-contexts/";
 
 const char kTreatUnsafeDownloadsAsActiveName[] =
     "Treat risky downloads over insecure connections as active mixed content";
