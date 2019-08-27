@@ -8,6 +8,7 @@
 #include "content/public/browser/web_contents.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
+#include "weblayer/public/browser_observer.h"
 
 #if !defined(OS_ANDROID)
 #include "ui/views/controls/webview/webview.h"
@@ -20,19 +21,33 @@
 
 namespace weblayer {
 
-BrowserControllerImpl::BrowserControllerImpl(Profile* profile,
+BrowserControllerImpl::BrowserControllerImpl(ProfileImpl* profile,
                                              const gfx::Size& initial_size)
     : profile_(profile) {
-  auto* profile_impl = static_cast<ProfileImpl*>(profile_);
   content::WebContents::CreateParams create_params(
-      profile_impl->GetBrowserContext());
+      profile_->GetBrowserContext());
   create_params.initial_size = initial_size;
   web_contents_ = content::WebContents::Create(create_params);
+
+  web_contents_->SetDelegate(this);
+  Observe(web_contents_.get());
 
   navigation_controller_ = std::make_unique<NavigationControllerImpl>(this);
 }
 
-BrowserControllerImpl::~BrowserControllerImpl() = default;
+BrowserControllerImpl::~BrowserControllerImpl() {
+  // Destruct this now to avoid it calling back when this object is partially
+  // destructed.
+  web_contents_.reset();
+}
+
+void BrowserControllerImpl::AddObserver(BrowserObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void BrowserControllerImpl::RemoveObserver(BrowserObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 NavigationController* BrowserControllerImpl::GetNavigationController() {
   return navigation_controller_.get();
@@ -48,7 +63,7 @@ void BrowserControllerImpl::AttachToView(views::WebView* web_view) {
 #if defined(OS_ANDROID)
 static jlong JNI_BrowserController_Init(JNIEnv* env, jlong profile) {
   return reinterpret_cast<intptr_t>(new BrowserControllerImpl(
-      reinterpret_cast<Profile*>(profile), gfx::Size()));
+      reinterpret_cast<ProfileImpl*>(profile), gfx::Size()));
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -67,10 +82,29 @@ void BrowserControllerImpl::Navigate(
 }
 #endif
 
+void BrowserControllerImpl::LoadingStateChanged(content::WebContents* source,
+                                                bool to_different_document) {
+  bool is_loading = web_contents_->IsLoading();
+  for (auto& observer : observers_)
+    observer.LoadingStateChanged(is_loading, to_different_document);
+}
+
+void BrowserControllerImpl::DidNavigateMainFramePostCommit(
+    content::WebContents* web_contents) {
+  for (auto& observer : observers_)
+    observer.DisplayedURLChanged(web_contents->GetVisibleURL());
+}
+
+void BrowserControllerImpl::DidFirstVisuallyNonEmptyPaint() {
+  for (auto& observer : observers_)
+    observer.FirstContentfulPaint();
+}
+
 std::unique_ptr<BrowserController> BrowserController::Create(
     Profile* profile,
     const gfx::Size& initial_size) {
-  return std::make_unique<BrowserControllerImpl>(profile, initial_size);
+  return std::make_unique<BrowserControllerImpl>(
+      static_cast<ProfileImpl*>(profile), initial_size);
 }
 
 }  // namespace weblayer

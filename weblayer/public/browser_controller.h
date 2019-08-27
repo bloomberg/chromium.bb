@@ -20,6 +20,7 @@ class WebView;
 #endif
 
 namespace weblayer {
+class BrowserObserver;
 class Profile;
 class NavigationController;
 
@@ -32,6 +33,10 @@ class BrowserController {
       const gfx::Size& initial_size);
 
   virtual ~BrowserController() {}
+
+  virtual void AddObserver(BrowserObserver* observer) = 0;
+
+  virtual void RemoveObserver(BrowserObserver* observer) = 0;
 
   virtual NavigationController* GetNavigationController() = 0;
 
