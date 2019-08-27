@@ -38,9 +38,9 @@ class ServiceWorkerRegistration;
 // (user data) is an implementation detail. Callers should not rely on it, as
 // the storage method may change in the future.
 //
-// Instances of this class must be accessed exclusively on the IO thread,
-// because they call into ServiceWorkerContextWrapper methods that are
-// restricted to the IO thread.
+// Instances of this class must be accessed exclusively on the service worker
+// core thread, because they call into ServiceWorkerContextWrapper methods that
+// are restricted to that thread.
 class CookieStoreManager : public ServiceWorkerContextCoreObserver,
                            public ::network::mojom::CookieChangeListener {
  public:
@@ -212,10 +212,11 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   // Only defined when |done_loading_subscriptions_| is true.
   bool succeeded_loading_subscriptions_ = false;
 
-  // Instances of this class are currently bound to the IO thread, because they
-  // call ServiceWorkerContextWrapper methods that are restricted to the IO
-  // thread. However, the class implementation itself is thread-friendly, so it
-  // only checks that methods are called on the same sequence.
+  // Instances of this class are currently bound to the service worker core
+  // thread, because they call ServiceWorkerContextWrapper methods that are
+  // restricted to that thread. However, the class implementation itself is
+  // thread-friendly, so it only checks that methods are called on the same
+  // sequence.
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Supports having the manager destroyed while waiting for disk I/O.

@@ -237,6 +237,11 @@ class CookieStoreManagerTest
   }
 
   void TearDown() override {
+    // Let the service worker context cleanly shut down, so its storage can be
+    // safely opened again if the test will continue.
+    if (worker_test_helper_)
+      worker_test_helper_->ShutdownContext();
+
     task_environment_.RunUntilIdle();
 
     // Smart pointers are reset manually in destruction order because this is
