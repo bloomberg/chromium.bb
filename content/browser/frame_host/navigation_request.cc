@@ -162,9 +162,13 @@ bool IsSecureFrame(FrameTreeNode* frame) {
 // This should match blink::ResourceRequest::needsHTTPOrigin.
 bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
                      const std::string& method) {
-  // Don't add an Origin header if it is already present.
-  if (headers->HasHeader(net::HttpRequestHeaders::kOrigin))
-    return false;
+  // Blink version of this function checks if the Origin header might have
+  // already been added to |headers|.  This check is not replicated below
+  // because:
+  // 1. We want to overwrite the old (renderer-provided) header value
+  //    with a new, trustworthy (browser-provided) value.
+  // 2. The rest of the function matches the Blink version, so there should
+  //    be no discrepancies in the Origin value used.
 
   // Don't send an Origin header for GET or HEAD to avoid privacy issues.
   // For example, if an intranet page has a hyperlink to an external web
@@ -191,6 +195,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
                                  const std::string user_agent_override,
                                  bool has_user_gesture,
                                  base::Optional<url::Origin> initiator_origin,
+                                 network::mojom::ReferrerPolicy referrer_policy,
                                  FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
@@ -267,23 +272,13 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   }
 
   // Next, set the HTTP Origin if needed.
-  if (!NeedsHTTPOrigin(headers, method))
-    return;
-
-  // Create a unique origin.
-  url::Origin origin;
-  if (frame_tree_node->IsMainFrame()) {
-    // For main frame, the origin is the url currently loading.
-    origin = url::Origin::Create(url);
-  } else if ((frame_tree_node->active_sandbox_flags() &
-              blink::WebSandboxFlags::kOrigin) ==
-             blink::WebSandboxFlags::kNone) {
-    // The origin should be the origin of the root, except for sandboxed
-    // frames which have a unique origin.
-    origin = frame_tree_node->frame_tree()->root()->current_origin();
+  if (NeedsHTTPOrigin(headers, method)) {
+    url::Origin origin_header_value = initiator_origin.value_or(url::Origin());
+    origin_header_value = Referrer::SanitizeOriginForRequest(
+        url, origin_header_value, referrer_policy);
+    headers->SetHeader(net::HttpRequestHeaders::kOrigin,
+                       origin_header_value.Serialize());
   }
-
-  headers->SetHeader(net::HttpRequestHeaders::kOrigin, origin.Serialize());
 }
 
 // Should match the definition of
@@ -759,6 +754,7 @@ NavigationRequest::NavigationRequest(
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
         common_params.method, user_agent_override,
         common_params_.has_user_gesture, common_params.initiator_origin,
+        common_params_.referrer.policy,
         frame_tree_node);
 
     if (begin_params_->is_form_submission) {
