@@ -497,6 +497,7 @@ void av1_simple_motion_search_prune_rect(AV1_COMP *const cpi, MACROBLOCK *x,
                                          int *partition_horz_allowed,
                                          int *partition_vert_allowed,
                                          int *prune_horz, int *prune_vert) {
+  aom_clear_system_state();
   const AV1_COMMON *const cm = &cpi->common;
   const int bsize_idx = convert_bsize_to_idx(bsize);
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
