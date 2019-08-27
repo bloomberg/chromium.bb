@@ -14,7 +14,9 @@
 #include "base/enterprise_util.h"
 #endif
 
-bool IsValidDoHTemplate(const std::string& server_template,
+namespace chrome_browser_net {
+
+bool IsValidDohTemplate(const std::string& server_template,
                         std::string* server_method) {
   std::string url_string;
   std::string test_query = "this_is_a_test_query";
@@ -54,3 +56,4 @@ bool ShouldDisableDohForManaged() {
 #endif
   return false;
 }
+}  // namespace chrome_browser_net
