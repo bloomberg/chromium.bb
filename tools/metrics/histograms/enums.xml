@@ -35200,6 +35200,7 @@ from previous Chrome versions.
   <int value="-996673716" label="enable-web-app-frame"/>
   <int value="-994558985" label="EnableNotificationIndicator:disabled"/>
   <int value="-994088375" label="VrBrowsingExperimentalRendering:enabled"/>
+  <int value="-994044484" label="TemporaryUnexpireFlagsM76:disabled"/>
   <int value="-993476089" label="AutoScreenBrightness:disabled"/>
   <int value="-992785453" label="ExplicitLanguageAsk:disabled"/>
   <int value="-991253797"
@@ -37182,6 +37183,7 @@ from previous Chrome versions.
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1803470125" label="SyncUSSSessions:enabled"/>
+  <int value="1803914892" label="TemporaryUnexpireFlagsM76:enabled"/>
   <int value="1807374811" label="CCTModuleCache:enabled"/>
   <int value="1809940714" label="SpeculativeLaunchServiceWorker:disabled"/>
   <int value="1810258949" label="DisplayLocking:enabled"/>

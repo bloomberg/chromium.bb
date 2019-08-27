@@ -1195,8 +1195,8 @@ extern const char kTrySupportedChannelLayoutsDescription[];
 extern const char kTurnOffStreamingMediaCachingName[];
 extern const char kTurnOffStreamingMediaCachingDescription[];
 
-extern const char kUnexpireFlagsM78Name[];
-extern const char kUnexpireFlagsM78Description[];
+extern const char kUnexpireFlagsM76Name[];
+extern const char kUnexpireFlagsM76Description[];
 
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];

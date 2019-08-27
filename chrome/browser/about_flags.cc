@@ -43,6 +43,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/unexpire_flags.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
@@ -4333,9 +4334,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     // This set of flags is used to temporary reinstate expired flags; see
     // //docs/flag_expiry.md for details.
-    {"temporary-unexpire-flags-m78", flag_descriptions::kUnexpireFlagsM78Name,
-     flag_descriptions::kUnexpireFlagsM78Description, kOsAll,
-     FEATURE_VALUE_TYPE(flags_ui::kUnexpireFlagsM78)},
+    {"temporary-unexpire-flags-m76", flag_descriptions::kUnexpireFlagsM76Name,
+     flag_descriptions::kUnexpireFlagsM76Description, kOsAll,
+     FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM76)},
 
 #if defined(OS_CHROMEOS)
     {"lock-screen-media-controls",
@@ -4482,6 +4483,9 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   if (!strcmp("dns-over-https", entry.internal_name)) {
     return true;
   }
+
+  if (flags::IsFlagExpired(entry.internal_name))
+    return true;
 
   return false;
 }

@@ -2008,9 +2008,9 @@ const char kTurnOffStreamingMediaCachingDescription[] =
     "Reduces disk activity during media playback, which can result in "
     "power savings.";
 
-const char kUnexpireFlagsM78Name[] = "Temporarily unexpire M78 flags.";
-const char kUnexpireFlagsM78Description[] =
-    "Temporarily unexpire flags that are expired as of M78. These flags will "
+const char kUnexpireFlagsM76Name[] = "Temporarily unexpire M76 flags.";
+const char kUnexpireFlagsM76Description[] =
+    "Temporarily unexpire flags that are expired as of M76. These flags will "
     "be removed soon.";
 
 const char kUnifiedConsentName[] = "Unified Consent";

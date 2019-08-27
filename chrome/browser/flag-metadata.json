@@ -3077,9 +3077,9 @@
     "expiry_milestone": 81
   },
   {
-    "name": "temporary-unexpire-flags-m78",
+    "name": "temporary-unexpire-flags-m76",
     "owners": [ "ellyjones", "flags-dev" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 80
   },
   {
     "name": "terminal-system-app",
