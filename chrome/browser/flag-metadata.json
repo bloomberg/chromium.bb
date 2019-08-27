@@ -1125,7 +1125,7 @@
   {
     "name": "enable-experimental-accessibility-language-detection",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-experimental-accessibility-switch-access",

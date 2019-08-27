@@ -2267,7 +2267,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-experimental-accessibility-language-detection",
      flag_descriptions::kExperimentalAccessibilityLanguageDetectionName,
      flag_descriptions::kExperimentalAccessibilityLanguageDetectionDescription,
-     kOsCrOS,
+     kOsAll,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityLanguageDetection)},
 #if defined(OS_CHROMEOS)
