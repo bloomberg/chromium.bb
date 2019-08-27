@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/optimization_guide/hints_processing_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -41,7 +42,42 @@ OptimizationGuideNavigationData::~OptimizationGuideNavigationData() = default;
 OptimizationGuideNavigationData::OptimizationGuideNavigationData(
     const OptimizationGuideNavigationData& other) = default;
 
-void OptimizationGuideNavigationData::RecordMetrics() const {
+void OptimizationGuideNavigationData::RecordMetrics(bool has_committed) const {
+  RecordHintCacheMatch(has_committed);
+  RecordOptimizationTypeAndTargetDecisions();
+  RecordOptimizationGuideUKM();
+}
+
+void OptimizationGuideNavigationData::RecordHintCacheMatch(
+    bool has_committed) const {
+  if (has_hint_before_commit_.has_value()) {
+    UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HasHint.BeforeCommit",
+                          has_hint_before_commit_.value());
+  }
+  // If the navigation didn't commit, then don't proceed to record any of the
+  // remaining metrics.
+  if (!has_committed || !has_hint_after_commit_.has_value())
+    return;
+
+  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HasHint.AtCommit",
+                        has_hint_after_commit_.value());
+  // The remaining metrics rely on having a hint, so do not record them if we
+  // did not have a hint for the navigation.
+  if (!has_hint_after_commit_.value())
+    return;
+
+  bool had_hint_loaded = serialized_hint_version_string_.has_value();
+  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HostMatch.AtCommit",
+                        had_hint_loaded);
+  if (had_hint_loaded) {
+    UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.PageMatch.AtCommit",
+                          has_page_hint_.has_value() && has_page_hint_.value());
+  }
+}
+
+void OptimizationGuideNavigationData::RecordOptimizationTypeAndTargetDecisions()
+    const {
+  // Record optimization type decisions.
   for (const auto& optimization_type_decision : optimization_type_decisions_) {
     optimization_guide::proto::OptimizationType optimization_type =
         optimization_type_decision.first;
@@ -57,6 +93,7 @@ void OptimizationGuideNavigationData::RecordMetrics() const {
             optimization_guide::OptimizationTypeDecision::kMaxValue));
   }
 
+  // Record optimization target decisions.
   for (const auto& optimization_target_decision :
        optimization_target_decisions_) {
     optimization_guide::OptimizationTarget optimization_target =
@@ -71,7 +108,9 @@ void OptimizationGuideNavigationData::RecordMetrics() const {
         static_cast<int>(
             optimization_guide::OptimizationTargetDecision::kMaxValue));
   }
+}
 
+void OptimizationGuideNavigationData::RecordOptimizationGuideUKM() const {
   if (!serialized_hint_version_string_.has_value() ||
       serialized_hint_version_string_.value().empty())
     return;

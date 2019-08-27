@@ -241,9 +241,6 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     return content::LITE_PAGE_REDIRECT_ON;
   }
 
-  // Record whether the hint cache has a matching entry for this pre-commit URL.
-  previews_decider->LogHintCacheMatch(url, false /* is_committed */);
-
   if (!previews::params::ArePreviewsAllowed()) {
     return previews_state;
   }
@@ -254,6 +251,9 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
 
   if (!is_data_saver_user)
     return previews_state;
+
+  // Record whether the hint cache has a matching entry for this pre-commit URL.
+  previews_decider->LogHintCacheMatch(url, false /* is_committed */);
 
   auto* previews_service =
       navigation_handle && navigation_handle->GetWebContents()

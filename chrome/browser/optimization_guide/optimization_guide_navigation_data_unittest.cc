@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -19,23 +20,163 @@ using testing::AnyOf;
 using testing::HasSubstr;
 using testing::Not;
 
-TEST(OptimizationGuideNavigationDataTest, RecordMetricsNoData) {
+TEST(OptimizationGuideNavigationDataTest, RecordMetricsNoDataNoCommit) {
   base::test::TaskEnvironment env;
 
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   OptimizationGuideNavigationData data(/*navigation_id=*/3);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   // Make sure no UMA recorded.
   EXPECT_THAT(histogram_tester.GetAllHistogramsRecorded(),
               Not(AnyOf(HasSubstr("OptimizationGuide.ApplyDecision"),
+                        HasSubstr("OptimizationGuide.HintCache"),
                         HasSubstr("OptimizationGuide.TargetDecision"))));
+
   // Make sure no UKM recorded.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
   EXPECT_TRUE(entries.empty());
+}
+
+TEST(OptimizationGuideNavigationDataTest, RecordMetricsNoDataHasCommit) {
+  base::test::TaskEnvironment env;
+
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.RecordMetrics(/*has_committed=*/true);
+
+  // Make sure no UMA recorded.
+  EXPECT_THAT(histogram_tester.GetAllHistogramsRecorded(),
+              Not(AnyOf(HasSubstr("OptimizationGuide.HintCache"))));
+  // Make sure no UKM recorded.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  EXPECT_TRUE(entries.empty());
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsHintCacheNoHostMatchBeforeCommit) {
+  base::HistogramTester histogram_tester;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.set_has_hint_before_commit(false);
+  data.RecordMetrics(/*has_committed=*/false);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsHintCacheNoHintAtCommit) {
+  base::HistogramTester histogram_tester;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.set_has_hint_after_commit(false);
+  data.RecordMetrics(/*has_committed=*/true);
+
+  // This probably wouldn't actually happen in practice but make sure optional
+  // check works for before commit.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.AtCommit", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsHintCacheHasHintButNotLoadedAtCommit) {
+  base::HistogramTester histogram_tester;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.set_has_hint_after_commit(true);
+  data.RecordMetrics(/*has_committed=*/true);
+
+  // This probably wouldn't actually happen in practice but make sure optional
+  // check works for before commit.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HostMatch.AtCommit", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsHintCacheHasPageHintAtCommit) {
+  base::HistogramTester histogram_tester;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.set_has_hint_before_commit(true);
+  data.set_has_hint_after_commit(true);
+  data.set_serialized_hint_version_string("abc");
+  data.set_has_page_hint(true);
+  data.RecordMetrics(/*has_committed=*/true);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsHintCacheHasHintButPageHintNotSetAtCommit) {
+  base::HistogramTester histogram_tester;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.set_has_hint_before_commit(true);
+  data.set_has_hint_after_commit(true);
+  data.set_serialized_hint_version_string("abc");
+  data.RecordMetrics(/*has_committed=*/true);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.PageMatch.AtCommit", false, 1);
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsHintCacheHasHintButNoPageHintAtCommit) {
+  base::HistogramTester histogram_tester;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.set_has_hint_before_commit(true);
+  data.set_has_hint_after_commit(true);
+  data.set_serialized_hint_version_string("abc");
+  data.set_has_page_hint(false);
+  data.RecordMetrics(/*has_committed=*/true);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.PageMatch.AtCommit", false, 1);
 }
 
 TEST(OptimizationGuideNavigationDataTest, RecordMetricsBadHintVersion) {
@@ -45,7 +186,7 @@ TEST(OptimizationGuideNavigationDataTest, RecordMetricsBadHintVersion) {
 
   OptimizationGuideNavigationData data(/*navigation_id=*/3);
   data.set_serialized_hint_version_string("123");
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   // Make sure no UKM recorded.
   auto entries = ukm_recorder.GetEntriesByName(
@@ -60,6 +201,7 @@ TEST(OptimizationGuideNavigationDataTest, RecordMetricsEmptyHintVersion) {
 
   OptimizationGuideNavigationData data(/*navigation_id=*/123);
   data.set_serialized_hint_version_string("");
+  data.RecordMetrics(/*has_committed=*/false);
 
   // Make sure no UKM recorded.
   auto entries = ukm_recorder.GetEntriesByName(
@@ -80,7 +222,7 @@ TEST(OptimizationGuideNavigationDataTest, RecordMetricsZeroTimestampOrSource) {
   hint_version.SerializeToString(&hint_version_string);
   base::Base64Encode(hint_version_string, &hint_version_string);
   data.set_serialized_hint_version_string(hint_version_string);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   // Make sure UKM not recorded for all empty values.
   auto entries = ukm_recorder.GetEntriesByName(
@@ -102,7 +244,7 @@ TEST(OptimizationGuideNavigationDataTest, RecordMetricsGoodHintVersion) {
   hint_version.SerializeToString(&hint_version_string);
   base::Base64Encode(hint_version_string, &hint_version_string);
   data.set_serialized_hint_version_string(hint_version_string);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   // Make sure version is serialized properly and UKM is recorded.
   auto entries = ukm_recorder.GetEntriesByName(
@@ -132,7 +274,7 @@ TEST(OptimizationGuideNavigationDataTest,
   hint_version.SerializeToString(&hint_version_string);
   base::Base64Encode(hint_version_string, &hint_version_string);
   data.set_serialized_hint_version_string(hint_version_string);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   // Make sure version is serialized properly and UKM is only recorded for
   // non-empty values.
@@ -160,7 +302,7 @@ TEST(OptimizationGuideNavigationDataTest,
   hint_version.SerializeToString(&hint_version_string);
   base::Base64Encode(hint_version_string, &hint_version_string);
   data.set_serialized_hint_version_string(hint_version_string);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   // Make sure version is serialized properly and UKM is recorded.
   auto entries = ukm_recorder.GetEntriesByName(
@@ -189,7 +331,7 @@ TEST(OptimizationGuideNavigationDataTest,
   hint_version.SerializeToString(&hint_version_string);
   base::Base64Encode(hint_version_string, &hint_version_string);
   data.set_serialized_hint_version_string(hint_version_string);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   // Make sure version is serialized properly and UKM is only recorded for
   // non-empty values.
@@ -219,7 +361,7 @@ TEST(OptimizationGuideNavigationDataTest,
   hint_version.SerializeToString(&hint_version_string);
   base::Base64Encode(hint_version_string, &hint_version_string);
   data.set_serialized_hint_version_string(hint_version_string);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   // Make sure version is serialized properly and UKM is recorded.
   auto entries = ukm_recorder.GetEntriesByName(
@@ -246,7 +388,7 @@ TEST(OptimizationGuideNavigationDataTest,
       optimization_guide::proto::DEFER_ALL_SCRIPT,
       optimization_guide::OptimizationTypeDecision::
           kAllowedByOptimizationFilter);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ApplyDecision.NoScript",
@@ -271,7 +413,7 @@ TEST(OptimizationGuideNavigationDataTest, RecordMetricsRecordsLatestType) {
       optimization_guide::proto::NOSCRIPT,
       optimization_guide::OptimizationTypeDecision::
           kAllowedByOptimizationFilter);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ApplyDecision.NoScript",
@@ -291,7 +433,7 @@ TEST(OptimizationGuideNavigationDataTest,
   data.SetDecisionForOptimizationTarget(
       optimization_guide::OptimizationTarget::kUnknown,
       optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.TargetDecision.PainfulPageLoad",
@@ -315,7 +457,7 @@ TEST(OptimizationGuideNavigationDataTest, RecordMetricsRecordsLatestTarget) {
   data.SetDecisionForOptimizationTarget(
       optimization_guide::OptimizationTarget::kPainfulPageLoad,
       optimization_guide::OptimizationTargetDecision::kPageLoadMatches);
-  data.RecordMetrics();
+  data.RecordMetrics(/*has_committed=*/false);
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.TargetDecision.PainfulPageLoad",
@@ -334,6 +476,9 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
   EXPECT_EQ(base::nullopt,
             data->GetDecisionForOptimizationTarget(
                 optimization_guide::OptimizationTarget::kPainfulPageLoad));
+  EXPECT_EQ(base::nullopt, data->has_hint_before_commit());
+  EXPECT_EQ(base::nullopt, data->has_hint_after_commit());
+  EXPECT_EQ(base::nullopt, data->has_page_hint());
 
   data->set_serialized_hint_version_string("123abc");
   data->SetDecisionForOptimizationType(
@@ -342,14 +487,21 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
   data->SetDecisionForOptimizationTarget(
       optimization_guide::OptimizationTarget::kPainfulPageLoad,
       optimization_guide::OptimizationTargetDecision::kPageLoadMatches);
+  data->set_serialized_hint_version_string("123abc");
+  data->set_has_hint_before_commit(true);
+  data->set_has_hint_after_commit(true);
+  data->set_has_page_hint(false);
 
   OptimizationGuideNavigationData data_copy(*data);
   EXPECT_EQ(3, data_copy.navigation_id());
-  EXPECT_EQ("123abc", *(data_copy.serialized_hint_version_string()));
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             *data_copy.GetDecisionForOptimizationType(
                 optimization_guide::proto::NOSCRIPT));
   EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
             *data_copy.GetDecisionForOptimizationTarget(
                 optimization_guide::OptimizationTarget::kPainfulPageLoad));
+  EXPECT_TRUE(data_copy.has_hint_before_commit().value());
+  EXPECT_TRUE(data_copy.has_hint_after_commit().value());
+  EXPECT_EQ("123abc", *(data_copy.serialized_hint_version_string()));
+  EXPECT_FALSE(data_copy.has_page_hint().value());
 }

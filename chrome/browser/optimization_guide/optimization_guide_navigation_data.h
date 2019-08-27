@@ -15,6 +15,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 
 // A representation of optimization guide information related to a navigation.
+// This also includes methods for recording metrics based on this data.
 class OptimizationGuideNavigationData {
  public:
   explicit OptimizationGuideNavigationData(int64_t navigation_id);
@@ -22,8 +23,9 @@ class OptimizationGuideNavigationData {
 
   OptimizationGuideNavigationData(const OptimizationGuideNavigationData& other);
 
-  // Records metrics based on data currently held in |this|.
-  void RecordMetrics() const;
+  // Records metrics based on data currently held in |this|. |has_committed|
+  // indicates whether commit-time metrics should be recorded.
+  void RecordMetrics(bool has_committed) const;
 
   // The navigation ID of the navigation handle that this data is associated
   // with.
@@ -56,7 +58,39 @@ class OptimizationGuideNavigationData {
       optimization_guide::OptimizationTarget optimization_target,
       optimization_guide::OptimizationTargetDecision decision);
 
+  // Whether the hint cache had a hint for the navigation before commit.
+  base::Optional<bool> has_hint_before_commit() const {
+    return has_hint_before_commit_;
+  }
+  void set_has_hint_before_commit(bool has_hint_before_commit) {
+    has_hint_before_commit_ = has_hint_before_commit;
+  }
+
+  // Whether the hint cache had a hint after commit.
+  base::Optional<bool> has_hint_after_commit() const {
+    return has_hint_after_commit_;
+  }
+  void set_has_hint_after_commit(bool has_hint_after_commit) {
+    has_hint_after_commit_ = has_hint_after_commit;
+  }
+
+  // Whether the hint cache had a page hint for the navigation.
+  base::Optional<bool> has_page_hint() const { return has_page_hint_; }
+  void set_has_page_hint(bool has_page_hint) { has_page_hint_ = has_page_hint; }
+
  private:
+  // Records hint cache histograms based on data currently held in |this|.
+  void RecordHintCacheMatch(bool has_committed) const;
+
+  // Records histograms for the decisions made for each optimization target and
+  // type that was queried for the navigation based on data currently held in
+  // |this|.
+  void RecordOptimizationTypeAndTargetDecisions() const;
+
+  // Records the OptimizationGuide UKM event based on data currently held in
+  // |this|.
+  void RecordOptimizationGuideUKM() const;
+
   // The navigation ID of the navigation handle that this data is associated
   // with.
   const int64_t navigation_id_;
@@ -73,6 +107,15 @@ class OptimizationGuideNavigationData {
   std::unordered_map<optimization_guide::OptimizationTarget,
                      optimization_guide::OptimizationTargetDecision>
       optimization_target_decisions_;
+
+  // Whether the hint cache had a hint for the navigation before commit.
+  base::Optional<bool> has_hint_before_commit_ = base::nullopt;
+
+  // Whether the hint cache had a hint for the navigation after commit.
+  base::Optional<bool> has_hint_after_commit_ = base::nullopt;
+
+  // Whether there was a page hint for the navigation.
+  base::Optional<bool> has_page_hint_ = base::nullopt;
 
   DISALLOW_ASSIGN(OptimizationGuideNavigationData);
 };

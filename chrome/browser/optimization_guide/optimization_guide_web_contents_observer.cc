@@ -14,10 +14,6 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/metrics/public/cpp/ukm_source.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace {
 
@@ -124,18 +120,19 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
       base::BindOnce(&OptimizationGuideWebContentsObserver::
                          FlushMetricsAndRemoveOptimizationGuideNavigationData,
                      weak_factory_.GetWeakPtr(),
-                     navigation_handle->GetNavigationId()));
+                     navigation_handle->GetNavigationId(),
+                     navigation_handle->HasCommitted()));
 }
 
 void OptimizationGuideWebContentsObserver::
-    FlushMetricsAndRemoveOptimizationGuideNavigationData(
-        int64_t navigation_id) {
+    FlushMetricsAndRemoveOptimizationGuideNavigationData(int64_t navigation_id,
+                                                         bool has_committed) {
   auto nav_data_iter =
       inflight_optimization_guide_navigation_datas_.find(navigation_id);
   if (nav_data_iter == inflight_optimization_guide_navigation_datas_.end())
     return;
 
-  (nav_data_iter->second).RecordMetrics();
+  (nav_data_iter->second).RecordMetrics(has_committed);
 
   inflight_optimization_guide_navigation_datas_.erase(navigation_id);
 }

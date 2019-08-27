@@ -100,6 +100,21 @@ bool CanProcessComponentVersion(PrefService* pref_service,
   return true;
 }
 
+// Returns the OptimizationGuideNavigationData for |navigation_handle| if the
+// OptimizationGuideWebContentsObserver is registered.
+OptimizationGuideNavigationData* GetNavigationDataForNavigationHandle(
+    content::NavigationHandle* navigation_handle) {
+  OptimizationGuideWebContentsObserver*
+      optimization_guide_web_contents_observer =
+          OptimizationGuideWebContentsObserver::FromWebContents(
+              navigation_handle->GetWebContents());
+  if (!optimization_guide_web_contents_observer)
+    return nullptr;
+
+  return optimization_guide_web_contents_observer
+      ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
+}
+
 }  // namespace
 
 OptimizationGuideHintsManager::OptimizationGuideHintsManager(
@@ -482,6 +497,17 @@ void OptimizationGuideHintsManager::LoadHintForNavigation(
     return;
   }
 
+  OptimizationGuideNavigationData* navigation_data =
+      GetNavigationDataForNavigationHandle(navigation_handle);
+  if (navigation_data) {
+    bool has_hint = hint_cache_->HasHint(url.host());
+    if (navigation_handle->HasCommitted()) {
+      navigation_data->set_has_hint_after_commit(has_hint);
+    } else {
+      navigation_data->set_has_hint_before_commit(has_hint);
+    }
+  }
+
   hint_cache_->LoadHint(
       url.host(),
       base::BindOnce(&OptimizationGuideHintsManager::OnHintLoaded,
@@ -591,24 +617,23 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
   // Check if we have a hint already loaded for this navigation.
   const optimization_guide::proto::Hint* loaded_hint =
       hint_cache_->GetHintIfLoaded(host);
-  if (loaded_hint) {
-    OptimizationGuideNavigationData* navigation_data = nullptr;
-    OptimizationGuideWebContentsObserver*
-        optimization_guide_web_contents_observer =
-            OptimizationGuideWebContentsObserver::FromWebContents(
-                navigation_handle->GetWebContents());
-    if (optimization_guide_web_contents_observer) {
-      navigation_data =
-          optimization_guide_web_contents_observer
-              ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
-      navigation_data->set_serialized_hint_version_string(
-          loaded_hint->version());
-    }
-  }
-
+  bool has_hint_in_cache = hint_cache_->HasHint(host);
   const optimization_guide::proto::PageHint* matched_page_hint =
       loaded_hint ? optimization_guide::FindPageHintForURL(url, loaded_hint)
                   : nullptr;
+
+  // Populate navigation data with hint information.
+  OptimizationGuideNavigationData* navigation_data =
+      GetNavigationDataForNavigationHandle(navigation_handle);
+  if (navigation_data) {
+    navigation_data->set_has_hint_after_commit(has_hint_in_cache);
+    navigation_data->set_has_page_hint(matched_page_hint);
+
+    if (loaded_hint)
+      navigation_data->set_serialized_hint_version_string(
+          loaded_hint->version());
+  }
+
   if (matched_page_hint && matched_page_hint->has_max_ect_trigger()) {
     max_ect_trigger = optimization_guide::ConvertProtoEffectiveConnectionType(
         matched_page_hint->max_ect_trigger());
@@ -659,7 +684,7 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
     // cache, we do not know what to do with the URL so just return.
     // Otherwise, we do have information, but we just do not know it yet.
     *optimization_type_decision =
-        hint_cache_->HasHint(host)
+        has_hint_in_cache
             ? optimization_guide::OptimizationTypeDecision::
                   kHadHintButNotLoadedInTime
             : optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
