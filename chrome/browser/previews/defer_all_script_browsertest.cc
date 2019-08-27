@@ -66,7 +66,8 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
 
 }  // namespace
 
-class DeferAllScriptBrowserTest : public InProcessBrowserTest {
+class DeferAllScriptBrowserTest : public InProcessBrowserTest,
+                                  public testing::WithParamInterface<bool> {
  public:
   DeferAllScriptBrowserTest() = default;
   ~DeferAllScriptBrowserTest() override = default;
@@ -79,6 +80,14 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
          data_reduction_proxy::features::
              kDataReductionProxyEnabledWithNetworkService},
         {});
+
+    if (GetParam()) {
+      param_feature_list_.InitWithFeatures(
+          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
+    } else {
+      param_feature_list_.InitWithFeatures(
+          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
+    }
 
     InProcessBrowserTest::SetUp();
   }
@@ -165,6 +174,7 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList param_feature_list_;
 
  private:
   void TearDownOnMainThread() override {
@@ -183,6 +193,11 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(DeferAllScriptBrowserTest);
 };
 
+// True if testing using the OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
+                         DeferAllScriptBrowserTest,
+                         testing::Bool());
+
 // Avoid flakes and issues on non-applicable platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
@@ -190,7 +205,7 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 #define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
 #endif
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsWhitelisted)) {
   GURL url = https_url();
@@ -233,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(
       entry, UkmDeferEntry::kforce_deferred_scripts_mainframe_externalName, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsNotWhitelisted)) {
   GURL url = https_url();
@@ -264,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 0);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         DeferAllScriptHttpsWhitelistedButWithCoinFlipHoldback)) {
@@ -312,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(
                                       true);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptClientRedirectLoopStopped)) {
   GURL url = https_url();
