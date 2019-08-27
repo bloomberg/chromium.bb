@@ -466,15 +466,11 @@ void LayerTreeHostImpl::CommitComplete() {
   UpdateSyncTreeAfterCommitOrImplSideInvalidation();
   micro_benchmark_controller_.DidCompleteCommit();
 
-  if (mutator_host_->CurrentFrameHadRAF() &&
-      !request_animation_frame_tracker_) {
-    request_animation_frame_tracker_ =
-        frame_trackers_.CreateTracker(FrameSequenceTrackerType::kRAF);
-  }
+  if (mutator_host_->CurrentFrameHadRAF())
+    frame_trackers_.StartSequence(FrameSequenceTrackerType::kRAF);
 
-  if (mutator_host_->MainThreadAnimationsCount() > 0 &&
-      !main_thread_animation_frame_tracker_) {
-    main_thread_animation_frame_tracker_ = frame_trackers_.CreateTracker(
+  if (mutator_host_->MainThreadAnimationsCount() > 0) {
+    frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
   }
 }
@@ -2239,16 +2235,12 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   frame_trackers_.NotifySubmitFrame(compositor_frame.metadata.frame_token,
                                     frame->begin_frame_ack,
                                     frame->origin_begin_main_frame_args);
-  if (request_animation_frame_tracker_ &&
-      !mutator_host_->NextFrameHasPendingRAF()) {
-    frame_trackers_.ScheduleRemoval(
-        std::move(request_animation_frame_tracker_));
-  }
+  if (!mutator_host_->NextFrameHasPendingRAF())
+    frame_trackers_.StopSequence(FrameSequenceTrackerType::kRAF);
 
-  if (main_thread_animation_frame_tracker_ &&
-      mutator_host_->MainThreadAnimationsCount() == 0) {
-    frame_trackers_.ScheduleRemoval(
-        std::move(main_thread_animation_frame_tracker_));
+  if (mutator_host_->MainThreadAnimationsCount() == 0) {
+    frame_trackers_.StopSequence(
+        FrameSequenceTrackerType::kMainThreadAnimation);
   }
 
   // Clears the list of swap promises after calling DidSwap on each of them to
@@ -3407,11 +3399,6 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   bool all_resources_are_lost = layer_tree_frame_sink_->context_provider();
 
   // Destroy the submit-frame trackers before destroying the frame sink.
-  pinch_frame_tracker_ = nullptr;
-  scroll_frame_tracker_ = nullptr;
-  compositor_animation_frame_tracker_ = nullptr;
-  request_animation_frame_tracker_ = nullptr;
-  main_thread_animation_frame_tracker_ = nullptr;
   frame_trackers_.ClearAll();
 
   // Detach from the old LayerTreeFrameSink and reset |layer_tree_frame_sink_|
@@ -3813,9 +3800,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
     scroll_status.bubble = true;
   }
 
-  scroll_frame_tracker_ = frame_trackers_.CreateTracker(
-      wheel_scrolling_ ? FrameSequenceTrackerType::kWheelScroll
-                       : FrameSequenceTrackerType::kTouchScroll);
+  frame_trackers_.StartSequence(wheel_scrolling_
+                                    ? FrameSequenceTrackerType::kWheelScroll
+                                    : FrameSequenceTrackerType::kTouchScroll);
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
@@ -4909,7 +4896,9 @@ void LayerTreeHostImpl::ScrollEndImpl(ScrollState* scroll_state) {
   DistributeScrollDelta(scroll_state);
   browser_controls_offset_manager_->ScrollEnd();
   ClearCurrentlyScrollingNode();
-  frame_trackers_.ScheduleRemoval(std::move(scroll_frame_tracker_));
+  frame_trackers_.StopSequence(wheel_scrolling_
+                                   ? FrameSequenceTrackerType::kWheelScroll
+                                   : FrameSequenceTrackerType::kTouchScroll);
 }
 
 void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
@@ -5043,8 +5032,7 @@ void LayerTreeHostImpl::PinchGestureBegin() {
                        OuterViewportScrollNode() ? false : true);
   active_tree_->SetCurrentlyScrollingNode(OuterViewportScrollNode());
   browser_controls_offset_manager_->PinchBegin();
-  pinch_frame_tracker_ =
-      frame_trackers_.CreateTracker(FrameSequenceTrackerType::kPinchZoom);
+  frame_trackers_.StartSequence(FrameSequenceTrackerType::kPinchZoom);
 }
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
@@ -5077,7 +5065,7 @@ void LayerTreeHostImpl::PinchGestureEnd(const gfx::Point& anchor,
   // scales that we want when we're not inside a pinch.
   active_tree_->set_needs_update_draw_properties();
   SetNeedsRedraw();
-  frame_trackers_.ScheduleRemoval(std::move(pinch_frame_tracker_));
+  frame_trackers_.StopSequence(FrameSequenceTrackerType::kPinchZoom);
 }
 
 void LayerTreeHostImpl::CollectScrollDeltas(
@@ -5258,13 +5246,11 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
   // still request an extra SetNeedsAnimate here.
   if (animated) {
     SetNeedsOneBeginImplFrame();
-    if (!compositor_animation_frame_tracker_) {
-      compositor_animation_frame_tracker_ = frame_trackers_.CreateTracker(
-          FrameSequenceTrackerType::kCompositorAnimation);
-    }
+    frame_trackers_.StartSequence(
+        FrameSequenceTrackerType::kCompositorAnimation);
   } else {
-    frame_trackers_.ScheduleRemoval(
-        std::move(compositor_animation_frame_tracker_));
+    frame_trackers_.StopSequence(
+        FrameSequenceTrackerType::kCompositorAnimation);
   }
 
   // TODO(crbug.com/551138): We could return true only if the animaitons are on
