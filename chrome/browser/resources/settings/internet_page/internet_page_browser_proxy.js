@@ -15,6 +15,14 @@ cr.exportPath('settings');
  */
 settings.ArcVpnProvider;
 
+/**
+ * @typedef {{
+ *   extensionId: string,
+ *   providerName: (string|undefined)
+ * }}
+ */
+settings.ThirdPartyVPNProperties;
+
 cr.define('settings', function() {
   /** @interface */
   class InternetPageBrowserProxy {

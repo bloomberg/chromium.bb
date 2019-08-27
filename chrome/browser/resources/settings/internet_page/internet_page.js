@@ -101,7 +101,7 @@ Polymer({
 
     /**
      * List of third party VPN providers.
-     * @type {!Array<!chrome.networkingPrivate.ThirdPartyVPNProperties>}
+     * @type {!Array<!settings.ThirdPartyVPNProperties>}
      * @private
      */
     thirdPartyVpnProviders_: {
@@ -453,14 +453,12 @@ Polymer({
   },
 
   /**
-   * @param {!{model:
-   *            !{item: !chrome.networkingPrivate.ThirdPartyVPNProperties},
-   *        }} event
+   * @param {!{model: !{item: !settings.ThirdPartyVPNProperties}}} event
    * @private
    */
   onAddThirdPartyVpnTap_: function(event) {
     const provider = event.model.item;
-    this.browserProxy_.addThirdPartyVpn(provider.ExtensionID);
+    this.browserProxy_.addThirdPartyVpn(provider.extensionId);
   },
 
   /** @private */
@@ -496,8 +494,7 @@ Polymer({
 
   /**
    * If |extension| is a third-party VPN provider, add it to |vpnProviders|.
-   * @param {!Array<!chrome.networkingPrivate.ThirdPartyVPNProperties>}
-   *     vpnProviders
+   * @param {!Array<!settings.ThirdPartyVPNProperties>} vpnProviders
    * @param {!chrome.management.ExtensionInfo} extension
    * @private
    */
@@ -507,13 +504,13 @@ Polymer({
       return;
     }
     if (vpnProviders.find(function(provider) {
-          return provider.ExtensionID == extension.id;
+          return provider.extensionId == extension.id;
         })) {
       return;
     }
     const newProvider = {
-      ExtensionID: extension.id,
-      ProviderName: extension.name,
+      extensionId: extension.id,
+      providerName: extension.name,
     };
     vpnProviders.push(newProvider);
   },
@@ -535,7 +532,7 @@ Polymer({
   onExtensionRemoved_: function(extensionId) {
     for (let i = 0; i < this.thirdPartyVpnProviders_.length; ++i) {
       const provider = this.thirdPartyVpnProviders_[i];
-      if (provider.ExtensionID == extensionId) {
+      if (provider.extensionId == extensionId) {
         this.splice('thirdPartyVpnProviders_', i, 1);
         break;
       }
@@ -605,11 +602,11 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} provider
+   * @param {!settings.ThirdPartyVPNProperties} provider
    * @return {string}
    */
   getAddThirdPartyVpnLabel_: function(provider) {
-    return this.i18n('internetAddThirdPartyVPN', provider.ProviderName || '');
+    return this.i18n('internetAddThirdPartyVPN', provider.providerName || '');
   },
 
   /**

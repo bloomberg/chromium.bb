@@ -164,9 +164,9 @@
         <template is="dom-if" if="[[matchesType_('VPN', deviceState)]]">
           <!-- Third party VPNs. -->
           <template is="dom-repeat" items="[[thirdPartyVpnProviders]]">
-            <div id="[[item.ProviderName]]"
+            <div id="[[item.providerName]]"
                 class="vpn-header layout horizontal center">
-              <div class="flex settings-box-text">[[item.ProviderName]]</div>
+              <div class="flex settings-box-text">[[item.providerName]]</div>
               <cr-icon-button class="icon-add-circle"
                   aria-label$="[[getAddThirdPartyVpnA11yString_(item)]]"
                   on-click="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">

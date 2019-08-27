@@ -49,8 +49,7 @@ Polymer({
 
     /**
      * List of third party VPN providers.
-     * @type
-     *     {!Array<!chrome.networkingPrivate.ThirdPartyVPNProperties>|undefined}
+     * @type {!Array<!settings.ThirdPartyVPNProperties>|undefined}
      */
     thirdPartyVpnProviders: Array,
 
@@ -411,12 +410,12 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} vpnState
+   * @param {!settings.ThirdPartyVPNProperties} vpnState
    * @return {string}
    * @private
    */
   getAddThirdPartyVpnA11yString_: function(vpnState) {
-    return this.i18n('internetAddThirdPartyVPN', vpnState.ProviderName || '');
+    return this.i18n('internetAddThirdPartyVPN', vpnState.providerName || '');
   },
 
   /**
@@ -462,13 +461,12 @@ Polymer({
   },
 
   /**
-   * @param {!{model: !{item:
-   *     !chrome.networkingPrivate.ThirdPartyVPNProperties}}} event
+   * @param {!{model: !{item: !settings.ThirdPartyVPNProperties}}} event
    * @private
    */
   onAddThirdPartyVpnTap_: function(event) {
     const provider = event.model.item;
-    this.browserProxy_.addThirdPartyVpn(provider.ExtensionID);
+    this.browserProxy_.addThirdPartyVpn(provider.extensionId);
   },
 
   /**
@@ -513,17 +511,17 @@ Polymer({
 
   /**
    * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} thirdPartyVpns
-   * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} vpnState
+   * @param {!settings.ThirdPartyVPNProperties} vpnState
    * @return {!Array<!OncMojo.NetworkStateProperties>}
    * @private
    */
   getThirdPartyVpnNetworks_: function(thirdPartyVpns, vpnState) {
-    return thirdPartyVpns[vpnState.ProviderName] || [];
+    return thirdPartyVpns[vpnState.providerName] || [];
   },
 
   /**
    * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} thirdPartyVpns
-   * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} vpnState
+   * @param {!settings.ThirdPartyVPNProperties} vpnState
    * @return {boolean}
    * @private
    */
