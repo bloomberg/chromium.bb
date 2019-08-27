@@ -123,9 +123,11 @@
     "expiry_milestone": 76
   },
   {
-    "name": "arc-native-bridge-experiment",
+    "name": "arc-native-bridge-toggle",
     "owners": [ "levarum@google.com" ],
-    "expiry_milestone": 76
+    // Used on ChromeOS to compare and debug different ARC native-bridge
+    // implementations which are normally used on different platforms.
+    "expiry_milestone": -1
   },
   {
     "name": "arc-print-spooler-experiment",

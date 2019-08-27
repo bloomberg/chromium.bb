@@ -1814,8 +1814,8 @@ extern const char kArcDocumentsProviderDescription[];
 extern const char kArcFilePickerExperimentName[];
 extern const char kArcFilePickerExperimentDescription[];
 
-extern const char kArcNativeBridgeExperimentName[];
-extern const char kArcNativeBridgeExperimentDescription[];
+extern const char kArcNativeBridgeToggleName[];
+extern const char kArcNativeBridgeToggleDescription[];
 
 extern const char kArcPrintSpoolerExperimentName[];
 extern const char kArcPrintSpoolerExperimentDescription[];
