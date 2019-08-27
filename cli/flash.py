@@ -118,7 +118,7 @@ def _ChooseImageFromDirectory(dir_path):
   images = sorted([x for x in os.listdir(dir_path) if
                    _IsFilePathGPTDiskImage(os.path.join(dir_path, x))])
   idx = 0
-  if len(images) == 0:
+  if not images:
     raise ValueError('No image found in %s.' % dir_path)
   elif len(images) > 1:
     idx = cros_build_lib.GetChoice(

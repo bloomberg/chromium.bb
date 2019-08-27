@@ -569,7 +569,7 @@ class EBuild(object):
     # names. First, get rid of special characters.
     test_list = []
     raw_tests_str = settings['IUSE_TESTS']
-    if len(raw_tests_str) == 0:
+    if not raw_tests_str:
       return test_list
 
     test_list.extend(_autotest_re.findall(raw_tests_str))
@@ -690,7 +690,7 @@ class EBuild(object):
     subtrees = [
         tuple(subtree.split() or [''])
         for subtree in settings.get('CROS_WORKON_SUBTREE', '').split(',')]
-    if (len(projects) > 1 or len(srcpaths) > 1) and len(rev_subdirs) > 0:
+    if (len(projects) > 1 or len(srcpaths) > 1) and rev_subdirs:
       raise EbuildFormatIncorrectError(
           ebuild_path,
           'Must not define CROS_WORKON_SUBDIRS_TO_REV if defining multiple '
@@ -747,7 +747,7 @@ class EBuild(object):
       projects = [''] * num_projects
       localnames = [''] * num_projects
     elif len(srcpaths) < num_projects:
-      if len(srcpaths) > 0:
+      if srcpaths:
         raise EbuildFormatIncorrectError(
             ebuild_path,
             '_SRCPATH has fewer items than _PROJECT.')

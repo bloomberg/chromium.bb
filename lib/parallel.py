@@ -333,7 +333,7 @@ class _BackgroundTask(multiprocessing.Process):
           output.seek(pos)
           buf = output.read(_BUFSIZE)
 
-          if len(buf) > 0:
+          if buf:
             silent_death_time = time.time() + self.SILENT_TIMEOUT
           elif running and time.time() > silent_death_time:
             msg = ('No output from %r for %r seconds' %
@@ -348,7 +348,7 @@ class _BackgroundTask(multiprocessing.Process):
             running = False
 
           # Print output so far.
-          while len(buf) > 0:
+          while buf:
             sys.stdout.write(buf)
             pos += len(buf)
             if len(buf) < _BUFSIZE:

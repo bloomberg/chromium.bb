@@ -697,7 +697,7 @@ class UpdateEbuildWithAFDOArtifacts(object):
         if not matched:
           modified.write(line)
     not_updated = set(replacements) - found
-    if len(not_updated):
+    if not_updated:
       logging.info('Unable to update %s in the ebuild', not_updated)
       raise UpdateEbuildWithAFDOArtifactsError(
           'Ebuild file does not have appropriate marker for AFDO/orderfile.')
@@ -1612,7 +1612,7 @@ def UploadAndPublishVettedAFDOArtifacts(artifact_type, board):
   else:
     uploaded['orderfile'] = _UploadVettedAFDOArtifacts('orderfile')
 
-  if len([x for x in uploaded.values() if x]) == 0:
+  if not [x for x in uploaded.values() if x]:
     # Nothing to publish to should be caught earlier
     return False
 

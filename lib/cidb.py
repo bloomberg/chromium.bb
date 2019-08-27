@@ -78,7 +78,7 @@ def _IsRetryableException(e):
     e_orig = e
     encountered_error_codes = set()
     while e_orig:
-      if len(e_orig.args) and isinstance(e_orig.args[0], int):
+      if e_orig.args and isinstance(e_orig.args[0], int):
         encountered_error_codes.add(e_orig.args[0])
       e_orig = getattr(e_orig, 'orig', None)
 

@@ -58,7 +58,7 @@ class LogdogClient(prpc.PRPCClient):
         'content_type': 'text/x-chrome-infra-annotations; version=2',
     })
     resp = self.SendRequest('prpc/logdog.Logs', 'Query', body, dryrun=dryrun)
-    if 'streams' not in resp or len(resp['streams']) == 0:
+    if 'streams' not in resp or not resp['streams']:
       return None
     try:
       return resp['streams'][0]['path']

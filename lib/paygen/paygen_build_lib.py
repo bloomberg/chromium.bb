@@ -478,7 +478,7 @@ class PaygenBuild(object):
     archive_board_candidates = set([
         archive_board for archive_board in self._site_config.GetBoards()
         if archive_board.replace('_', '-') == board])
-    if len(archive_board_candidates) == 0:
+    if not archive_board_candidates:
       raise ArchiveError('could not find build board name for %s' % board)
     elif len(archive_board_candidates) > 1:
       raise ArchiveError('found multiple build board names for %s: %s' %

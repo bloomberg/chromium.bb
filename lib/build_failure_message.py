@@ -166,7 +166,7 @@ class BuildFailureMessage(object):
 
     # Only do broad-brush blaming if the tree is sane.
     if sanity:
-      if blame_everything or len(suspect_changes) == 0:
+      if blame_everything or not suspect_changes:
         suspect_changes.update(
             {x: constants.SUSPECT_REASON_UNKNOWN for x in changes})
       else:

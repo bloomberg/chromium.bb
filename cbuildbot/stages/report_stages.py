@@ -467,7 +467,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
           board, buildroot=build_root)
       toolchains |= set(toolchain_tuple)
       toolchain_tuples.append(','.join(toolchain_tuple))
-      if len(toolchain_tuple):
+      if toolchain_tuple:
         primary_toolchains.append(toolchain_tuple[0])
 
     # Update 'version' separately to avoid overwriting the existing
@@ -791,7 +791,7 @@ class ReportStage(generic_stages.BuilderStage,
 
     # Gather information about this build from CIDB.
     statuses = self.buildstore.GetSlaveStatuses(build_identifier)
-    if statuses is None or len(statuses) == 0:
+    if not statuses:
       return None
     # Slaves may be started at slightly different times, but what matters most
     # is which slave is the bottleneck - namely, which slave finishes last.

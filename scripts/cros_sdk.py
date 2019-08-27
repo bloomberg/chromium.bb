@@ -243,7 +243,7 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
   if working_dir is not None:
     cmd.extend(['--working_dir', working_dir])
 
-  if len(additional_args) > 0:
+  if additional_args:
     cmd.append('--')
     cmd.extend(additional_args)
 

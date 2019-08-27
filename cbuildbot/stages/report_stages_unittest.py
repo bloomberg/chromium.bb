@@ -243,6 +243,9 @@ class ReportStageTest(AbstractReportStageTestCase):
 
   RELEASE_TAG = ''
 
+  def setUp(self):
+    self.mock_cidb.GetSlaveStatuses = mock.Mock(return_value=None)
+
   def testCheckResults(self):
     """Basic sanity check for results stage functionality"""
     self.CreateMockOverlay('amd64-generic')

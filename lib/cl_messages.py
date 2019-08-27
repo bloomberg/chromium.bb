@@ -96,7 +96,7 @@ def CreateValidationFailureMessage(pre_cq_trybot,
       if len(suspects) == 1:
         msg.append('This failure was probably caused by %s'
                    % other_suspects_str)
-      elif len(suspects) > 0:
+      elif suspects:
         msg.append('One of the following changes is probably at fault: %s'
                    % other_suspects_str)
 

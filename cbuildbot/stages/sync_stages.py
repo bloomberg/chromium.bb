@@ -1173,7 +1173,7 @@ class PreCQSyncStage(SyncStage):
         builder_run=self._run)
     self.pool.ApplyPoolIntoRepo()
 
-    if len(self.pool.applied) == 0 and self.patches:
+    if not self.pool.applied and self.patches:
       cros_build_lib.Die('No changes have been applied.')
 
     changes = self.pool.applied or self.patches

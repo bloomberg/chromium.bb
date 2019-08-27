@@ -17,7 +17,7 @@ class ReleaseProfileMergeBuilder(generic_builders.ManifestVersionedBuilder):
 
   def RunStages(self):
     """Run stages for the release AFDO profile merge builder."""
-    assert len(self._run.config.boards) == 0
+    assert not self._run.config.boards
 
     # All we need is a reasonably functional SDK, so we can run llvm-profdata
     # and a few gsutil commands in it.

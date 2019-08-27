@@ -502,7 +502,7 @@ class DocStringChecker(BaseChecker):
         m = arg_re.match(aline)
         if m:
           amsg = aline[m.end():]
-          if len(amsg) and len(amsg) - len(amsg.lstrip()) != 1:
+          if amsg and len(amsg) - len(amsg.lstrip()) != 1:
             margs = {'arg': l}
             self.add_message('C9012', node=node, line=node.fromlineno,
                              args=margs)

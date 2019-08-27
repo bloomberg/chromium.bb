@@ -734,7 +734,7 @@ class BuildSpecsManager(object):
     # If version is specified, find out what Chrome branch it is on.
     if version is not None:
       dirs = glob.glob(os.path.join(self.buildspecs_dir, '*', version + '.xml'))
-      if len(dirs) == 0:
+      if not dirs:
         return False
       assert len(dirs) <= 1, 'More than one spec found for %s' % version
       dir_pfx = os.path.basename(os.path.dirname(dirs[0]))

@@ -1521,9 +1521,9 @@ class TestProgram(unittest.TestProgram):
       ProfileTestRunner.SORT_STATS_KEYS = opts.profile_sort_keys.split(',')
 
     # Figure out which tests the user/unittest wants to run.
-    if len(opts.tests) == 0 and self.defaultTest is None:
+    if not opts.tests and self.defaultTest is None:
       self.testNames = None
-    elif len(opts.tests) > 0:
+    elif opts.tests:
       self.testNames = opts.tests
     else:
       self.testNames = (self.defaultTest,)

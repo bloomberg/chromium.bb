@@ -136,7 +136,7 @@ class ConfigSkewTest(cros_test_lib.TestCase):
           importance_mismatch.update({child_name:
                                       {'chromeos_config.py': old_critical,
                                        'build_targets.star': new_critical}})
-    if len(importance_mismatch) > 0:
+    if importance_mismatch:
       self.fail('Criticality difference in configs: %s' % importance_mismatch)
 
   @cros_test_lib.ConfigSkewTest()
@@ -155,7 +155,7 @@ class ConfigSkewTest(cros_test_lib.TestCase):
           importance_mismatch.update({child_name: {
               'chromeos_config.py': old_critical,
               'build_targets.star': new_critical}})
-    if len(importance_mismatch) > 0:
+    if importance_mismatch:
       self.fail('Criticality difference in configs: %s' % importance_mismatch)
 
   @cros_test_lib.ConfigSkewTest()

@@ -58,7 +58,7 @@ def main(argv):
     candidate = [x for x in list(enumerate(threads_starttime))
                  if finish_time <= x[1]]
     candidate.sort(key=lambda x: x[0])
-    if len(candidate) == 0:
+    if not candidate:
       tid = len(threads_starttime)
       threads_starttime.append(start_time)
     else:

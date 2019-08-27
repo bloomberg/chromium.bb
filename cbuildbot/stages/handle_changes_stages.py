@@ -68,7 +68,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
                                                 submitted_change_strategies)
 
       # Record CQ wall-clock metric.
-      submitted_any = len(submitted_change_strategies) > 0
+      submitted_any = bool(submitted_change_strategies)
       bi = self.buildstore.GetBuildStatuses(buildbucket_ids=[buildbucket_id])[0]
       current_time = db.GetTime()
       elapsed_seconds = int((current_time - bi['start_time']).total_seconds())
