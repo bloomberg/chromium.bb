@@ -567,12 +567,19 @@ AccountMigrationRunner::Status AccountManagerMigrator::GetStatus() const {
   return migration_runner_.GetStatus();
 }
 
+base::Optional<AccountMigrationRunner::MigrationResult>
+AccountManagerMigrator::GetLastMigrationRunResult() const {
+  return last_migration_run_result_;
+}
+
 void AccountManagerMigrator::OnMigrationRunComplete(
     const AccountMigrationRunner::MigrationResult& result) {
   DCHECK_NE(AccountMigrationRunner::Status::kNotStarted,
             migration_runner_.GetStatus());
   DCHECK_NE(AccountMigrationRunner::Status::kRunning,
             migration_runner_.GetStatus());
+
+  last_migration_run_result_ = base::make_optional(result);
 
   VLOG(1) << "Account migrations completed with result: "
           << static_cast<int>(result.final_status);
