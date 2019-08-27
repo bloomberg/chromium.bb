@@ -63,6 +63,7 @@ constexpr int kChangeTrackIconSize = 14;
 constexpr int kSeekingIconsSize = 26;
 constexpr gfx::Size kMediaControlsButtonRowSize =
     gfx::Size(300, kMediaButtonSize.height());
+constexpr int kArtworkCornerRadius = 4;
 
 constexpr int kDragVelocityThreshold = 6;
 constexpr int kDistanceDismissalThreshold = 20;
@@ -680,6 +681,14 @@ void LockScreenMediaControlsView::SetArtwork(
 
   session_artwork_->SetImageSize(ScaleSizeToFitView(img->size(), kArtworkSize));
   session_artwork_->SetImage(*img);
+  session_artwork_->set_clip_path(GetArtworkClipPath());
+}
+
+SkPath LockScreenMediaControlsView::GetArtworkClipPath() const {
+  SkPath path;
+  path.addRoundRect(gfx::RectToSkRect(session_artwork_->GetImageBounds()),
+                    kArtworkCornerRadius, kArtworkCornerRadius);
+  return path;
 }
 
 void LockScreenMediaControlsView::UpdateDrag(
