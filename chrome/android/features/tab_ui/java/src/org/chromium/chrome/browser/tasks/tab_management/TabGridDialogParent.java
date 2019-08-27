@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.compositor.animation.CompositorAnimator.FAST_OUT_LINEAR_IN_INTERPOLATOR;
 import static org.chromium.chrome.browser.compositor.animation.CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR;
 import static org.chromium.chrome.browser.compositor.animation.CompositorAnimator.LINEAR_INTERPOLATOR;
+import static org.chromium.chrome.browser.compositor.animation.CompositorAnimator.LINEAR_OUT_SLOW_IN_INTERPOLATOR;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -16,6 +18,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.support.annotation.IntDef;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -89,6 +92,7 @@ public class TabGridDialogParent {
     private final int mToolbarHeight;
     private final int mScreenHeight;
     private final int mScreenWidth;
+    private final int mUngroupBarHeight;
     private final float mTabGridCardPadding;
     private PopupWindow mPopupWindow;
     private FrameLayout mTabGridDialogParentView;
@@ -99,10 +103,14 @@ public class TabGridDialogParent {
     private View mBackgroundFrame;
     private View mAnimationCardView;
     private View mItemView;
-    private TextView mUngroupBar;
-    private Animator mCurrentAnimator;
+    private View mUngroupBar;
+    private TextView mUngroupBarTextView;
+    private Animator mCurrentDialogAnimator;
+    private Animator mCurrentUngroupBarAnimator;
     private AnimatorSet mBasicFadeInAnimation;
     private AnimatorSet mBasicFadeOutAnimation;
+    private ObjectAnimator mUngroupBarShow;
+    private ObjectAnimator mUngroupBarHide;
     private AnimatorSet mShowDialogAnimation;
     private AnimatorSet mHideDialogAnimation;
     private AnimatorListenerAdapter mShowDialogAnimationListener;
@@ -112,6 +120,7 @@ public class TabGridDialogParent {
     private int mCurrentScreenHeight;
     private int mCurrentScreenWidth;
     private int mOrientation;
+    private int mUngroupBarStatus = UngroupBarStatus.HIDE;
 
     TabGridDialogParent(Context context, ViewGroup parent) {
         mParent = parent;
@@ -120,6 +129,8 @@ public class TabGridDialogParent {
         mTabGridCardPadding = context.getResources().getDimension(R.dimen.tab_list_card_padding);
         mToolbarHeight =
                 (int) context.getResources().getDimension(R.dimen.tab_group_toolbar_height);
+        mUngroupBarHeight =
+                (int) context.getResources().getDimension(R.dimen.bottom_sheet_peek_height);
         mContainerParams = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -153,6 +164,7 @@ public class TabGridDialogParent {
         DrawableCompat.setTint(backgroundDrawable,
                 ContextCompat.getColor(context, R.color.default_bg_color_elev_1));
         mUngroupBar = mTabGridDialogParentView.findViewById(R.id.dialog_ungroup_bar);
+        mUngroupBarTextView = mUngroupBar.findViewById(R.id.dialog_ungroup_bar_text);
         mBackgroundFrame = mTabGridDialogParentView.findViewById(R.id.dialog_frame);
         mBackgroundFrame.setLayoutParams(mContainerParams);
         mAnimationCardView = mTabGridDialogParentView.findViewById(R.id.dialog_animation_card_view);
@@ -206,16 +218,56 @@ public class TabGridDialogParent {
         mShowDialogAnimationListener = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                mCurrentAnimator = null;
+                mCurrentDialogAnimator = null;
             }
         };
         mHideDialogAnimationListener = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mPopupWindow.dismiss();
-                mCurrentAnimator = null;
+                mCurrentDialogAnimator = null;
             }
         };
+
+        mUngroupBarShow =
+                ObjectAnimator.ofFloat(mUngroupBar, View.TRANSLATION_Y, mUngroupBarHeight, 0);
+        mUngroupBarShow.setDuration(DIALOG_ANIMATION_DURATION);
+        mUngroupBarShow.setInterpolator(LINEAR_OUT_SLOW_IN_INTERPOLATOR);
+        mUngroupBarShow.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                if (mCurrentUngroupBarAnimator != null) {
+                    mCurrentUngroupBarAnimator.end();
+                }
+                mCurrentUngroupBarAnimator = mUngroupBarShow;
+                mUngroupBar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mCurrentUngroupBarAnimator = null;
+            }
+        });
+
+        mUngroupBarHide =
+                ObjectAnimator.ofFloat(mUngroupBar, View.TRANSLATION_Y, 0, mUngroupBarHeight);
+        mUngroupBarHide.setDuration(DIALOG_ANIMATION_DURATION);
+        mUngroupBarHide.setInterpolator(FAST_OUT_LINEAR_IN_INTERPOLATOR);
+        mUngroupBarHide.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                if (mCurrentUngroupBarAnimator != null) {
+                    mCurrentUngroupBarAnimator.end();
+                }
+                mCurrentUngroupBarAnimator = mUngroupBarHide;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mUngroupBar.setVisibility(View.INVISIBLE);
+                mCurrentUngroupBarAnimator = null;
+            }
+        });
     }
 
     void setupDialogAnimation(AnimationParams animationParams) {
@@ -279,9 +331,9 @@ public class TabGridDialogParent {
         // In the first half of the dialog showing animation, the animation card scales up and moves
         // towards where the dialog should be.
         final ObjectAnimator cardZoomOutMoveYAnimator = ObjectAnimator.ofFloat(
-                mAnimationCardView, "translationY", cardInitYPosition, cardScaledYPosition);
+                mAnimationCardView, View.TRANSLATION_Y, cardInitYPosition, cardScaledYPosition);
         final ObjectAnimator cardZoomOutMoveXAnimator = ObjectAnimator.ofFloat(
-                mAnimationCardView, "translationX", cardInitXPosition, cardScaledXPosition);
+                mAnimationCardView, View.TRANSLATION_X, cardInitXPosition, cardScaledXPosition);
         final ObjectAnimator cardZoomOutScaleXAnimator =
                 ObjectAnimator.ofFloat(mAnimationCardView, View.SCALE_X, 1f, cardScale);
         final ObjectAnimator cardZoomOutScaleYAnimator =
@@ -305,9 +357,9 @@ public class TabGridDialogParent {
         // In the second half of the dialog showing animation, the dialog zooms out from where the
         // card stops at the end of the first half and moves towards where the dialog should be.
         final ObjectAnimator dialogZoomOutMoveYAnimator = ObjectAnimator.ofFloat(
-                mDialogContainerView, "translationY", dialogInitYPosition, 0f);
+                mDialogContainerView, View.TRANSLATION_Y, dialogInitYPosition, 0f);
         final ObjectAnimator dialogZoomOutMoveXAnimator = ObjectAnimator.ofFloat(
-                mDialogContainerView, "translationX", dialogInitXPosition, 0f);
+                mDialogContainerView, View.TRANSLATION_X, dialogInitXPosition, 0f);
         final ObjectAnimator dialogZoomOutScaleYAnimator =
                 ObjectAnimator.ofFloat(mDialogContainerView, View.SCALE_Y, dialogScale, 1f);
         final ObjectAnimator dialogZoomOutScaleXAnimator =
@@ -331,10 +383,10 @@ public class TabGridDialogParent {
 
         // During the whole dialog showing animation, the frame background scales up and moves so
         // that it looks like the card zooms out and becomes the dialog.
-        final ObjectAnimator frameZoomOutMoveYAnimator =
-                ObjectAnimator.ofFloat(mBackgroundFrame, "translationY", frameInitYPosition, 0f);
-        final ObjectAnimator frameZoomOutMoveXAnimator =
-                ObjectAnimator.ofFloat(mBackgroundFrame, "translationX", frameInitXPosition, 0f);
+        final ObjectAnimator frameZoomOutMoveYAnimator = ObjectAnimator.ofFloat(
+                mBackgroundFrame, View.TRANSLATION_Y, frameInitYPosition, 0f);
+        final ObjectAnimator frameZoomOutMoveXAnimator = ObjectAnimator.ofFloat(
+                mBackgroundFrame, View.TRANSLATION_X, frameInitXPosition, 0f);
         final ObjectAnimator frameZoomOutScaleYAnimator =
                 ObjectAnimator.ofFloat(mBackgroundFrame, View.SCALE_Y, frameScaleY, 1f);
         final ObjectAnimator frameZoomOutScaleXAnimator =
@@ -387,9 +439,9 @@ public class TabGridDialogParent {
         // In the first half of the dialog hiding animation, the dialog scales down and moves
         // towards where the tab grid card should be.
         final ObjectAnimator dialogZoomInMoveYAnimator = ObjectAnimator.ofFloat(
-                mDialogContainerView, "translationY", 0f, dialogInitYPosition);
+                mDialogContainerView, View.TRANSLATION_Y, 0f, dialogInitYPosition);
         final ObjectAnimator dialogZoomInMoveXAnimator = ObjectAnimator.ofFloat(
-                mDialogContainerView, "translationX", 0f, dialogInitXPosition);
+                mDialogContainerView, View.TRANSLATION_X, 0f, dialogInitXPosition);
         final ObjectAnimator dialogZoomInScaleYAnimator =
                 ObjectAnimator.ofFloat(mDialogContainerView, View.SCALE_Y, 1f, dialogScale);
         final ObjectAnimator dialogZoomInScaleXAnimator =
@@ -413,9 +465,9 @@ public class TabGridDialogParent {
         // In the second half of the dialog hiding animation, the animation card zooms in from where
         // the dialog stops at the end of the first half and moves towards where the card should be.
         final ObjectAnimator cardZoomInMoveYAnimator = ObjectAnimator.ofFloat(
-                mAnimationCardView, "translationY", cardScaledYPosition, cardInitYPosition);
+                mAnimationCardView, View.TRANSLATION_Y, cardScaledYPosition, cardInitYPosition);
         final ObjectAnimator cardZoomInMoveXAnimator = ObjectAnimator.ofFloat(
-                mAnimationCardView, "translationX", cardScaledXPosition, cardInitXPosition);
+                mAnimationCardView, View.TRANSLATION_X, cardScaledXPosition, cardInitXPosition);
         final ObjectAnimator cardZoomInScaleXAnimator =
                 ObjectAnimator.ofFloat(mAnimationCardView, View.SCALE_X, cardScale, 1f);
         final ObjectAnimator cardZoomInScaleYAnimator =
@@ -439,10 +491,10 @@ public class TabGridDialogParent {
 
         // During the whole dialog hiding animation, the frame background scales down and moves so
         // that it looks like the dialog zooms in and becomes the card.
-        final ObjectAnimator frameZoomInMoveYAnimator =
-                ObjectAnimator.ofFloat(mBackgroundFrame, "translationY", 0f, frameInitYPosition);
-        final ObjectAnimator frameZoomInMoveXAnimator =
-                ObjectAnimator.ofFloat(mBackgroundFrame, "translationX", 0f, frameInitXPosition);
+        final ObjectAnimator frameZoomInMoveYAnimator = ObjectAnimator.ofFloat(
+                mBackgroundFrame, View.TRANSLATION_Y, 0f, frameInitYPosition);
+        final ObjectAnimator frameZoomInMoveXAnimator = ObjectAnimator.ofFloat(
+                mBackgroundFrame, View.TRANSLATION_X, 0f, frameInitXPosition);
         final ObjectAnimator frameZoomInScaleYAnimator =
                 ObjectAnimator.ofFloat(mBackgroundFrame, View.SCALE_Y, 1f, frameScaleY);
         final ObjectAnimator frameZoomInScaleXAnimator =
@@ -558,10 +610,10 @@ public class TabGridDialogParent {
      * Show {@link PopupWindow} for dialog with animation.
      */
     void showDialog() {
-        if (mCurrentAnimator != null && mCurrentAnimator != mShowDialogAnimation) {
-            mCurrentAnimator.end();
+        if (mCurrentDialogAnimator != null && mCurrentDialogAnimator != mShowDialogAnimation) {
+            mCurrentDialogAnimator.end();
         }
-        mCurrentAnimator = mShowDialogAnimation;
+        mCurrentDialogAnimator = mShowDialogAnimation;
         if (mScrimParams != null) {
             mScrimView.showScrim(mScrimParams);
         }
@@ -573,10 +625,10 @@ public class TabGridDialogParent {
      * Hide {@link PopupWindow} for dialog with animation.
      */
     void hideDialog() {
-        if (mCurrentAnimator != null && mCurrentAnimator != mHideDialogAnimation) {
-            mCurrentAnimator.end();
+        if (mCurrentDialogAnimator != null && mCurrentDialogAnimator != mHideDialogAnimation) {
+            mCurrentDialogAnimator.end();
         }
-        mCurrentAnimator = mHideDialogAnimation;
+        mCurrentDialogAnimator = mHideDialogAnimation;
         mScrimView.hideScrim(true);
         mHideDialogAnimation.start();
     }
@@ -594,17 +646,39 @@ public class TabGridDialogParent {
      * @param status The status in {@link TabGridDialogParent.UngroupBarStatus} that the ungroup bar
      *         should be updated to.
      */
-    public void updateUngroupBar(int status) {
-        if (status == UngroupBarStatus.SHOW) {
-            mUngroupBar.setVisibility(View.VISIBLE);
-            mUngroupBar.setAlpha(1f);
-            mUngroupBar.bringToFront();
-        } else if (status == UngroupBarStatus.HIDE) {
-            mUngroupBar.setVisibility(View.INVISIBLE);
-        } else if (status == UngroupBarStatus.HOVERED) {
-            mUngroupBar.setAlpha(0.7f);
-            mContentView.bringToFront();
+    void updateUngroupBar(int status) {
+        if (status == mUngroupBarStatus) return;
+        switch (status) {
+            case UngroupBarStatus.SHOW:
+                updateUngroupBarTextView(false);
+                if (mUngroupBarStatus == UngroupBarStatus.HIDE) {
+                    mUngroupBarShow.start();
+                }
+                break;
+            case UngroupBarStatus.HIDE:
+                mUngroupBarHide.start();
+                break;
+            case UngroupBarStatus.HOVERED:
+                updateUngroupBarTextView(true);
+                if (mUngroupBarStatus == UngroupBarStatus.HIDE) {
+                    mUngroupBarShow.start();
+                }
+                break;
+            default:
+                assert false;
         }
+        mUngroupBarStatus = status;
+    }
+
+    private void updateUngroupBarTextView(boolean isHovered) {
+        assert mUngroupBarTextView.getBackground() instanceof GradientDrawable;
+        mUngroupBar.bringToFront();
+        Context context = mParent.getContext();
+        GradientDrawable background = (GradientDrawable) mUngroupBarTextView.getBackground();
+        background.setColor(ContextCompat.getColor(context,
+                isHovered ? R.color.light_active_color : R.color.tab_grid_dialog_background_color));
+        mUngroupBarTextView.setTextAppearance(context,
+                isHovered ? R.style.TextAppearance_WhiteTitle2 : R.style.TextAppearance_BlueTitle2);
     }
 
     @VisibleForTesting
@@ -618,12 +692,17 @@ public class TabGridDialogParent {
     }
 
     @VisibleForTesting
-    Animator getCurrentAnimatorForTesting() {
-        return mCurrentAnimator;
+    Animator getCurrentDialogAnimatorForTesting() {
+        return mCurrentDialogAnimator;
     }
 
     @VisibleForTesting
     View getAnimationCardViewForTesting() {
         return mAnimationCardView;
+    }
+
+    @VisibleForTesting
+    Animator getCurrentUngroupBarAnimatorForTesting() {
+        return mCurrentUngroupBarAnimator;
     }
 }
