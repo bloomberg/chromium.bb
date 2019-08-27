@@ -7352,8 +7352,7 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
       return;
     }
     deprecation_message =
-        "[Deprecation] A cookie associated with a cross-site resource at " +
-        cookie_url +
+        "A cookie associated with a cross-site resource at " + cookie_url +
         " was set without the `SameSite` attribute. "
         "A future release of Chrome will only deliver cookies with "
         "cross-site requests if they are set with `SameSite=None` and "
@@ -7370,7 +7369,7 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
       return;
     }
     deprecation_message =
-        "[Deprecation] A cookie associated with a resource at " + cookie_url +
+        "A cookie associated with a resource at " + cookie_url +
         " was set with `SameSite=None` but without `Secure`. "
         "A future release of Chrome will only deliver cookies marked "
         "`SameSite=None` if they are also marked `Secure`. You "
