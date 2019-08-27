@@ -1267,7 +1267,7 @@ class HWTest(cros_test_lib.MockTestCase):
         debug=None, # ignored
         payload_test_configs=[],
         test_env=None, # ignored
-        job_keyvals={'k1': 'v1', 'k2': 'v2'})
+        job_keyvals=None) # ignored
 
     run_test_mock.assert_called_once_with(
         test_plan=paygen_build_lib._TestPlan(
@@ -1282,9 +1282,7 @@ class HWTest(cros_test_lib.MockTestCase):
         tags=['build:dummy-build',
               'suite:dummy-suite',
               'user:PaygenTestStage'],
-        keyvals={'k1': 'v1',
-                 'k2': 'v2',
-                 'build': 'dummy-build',
+        keyvals={'build': 'dummy-build',
                  'suite': 'dummy-suite'})
 
   def testTestPlan(self):

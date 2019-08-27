@@ -1163,13 +1163,12 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
     board: A string representing the name of the archive board.
     model: The model that will be tested against.
     build: A string representing the name of the archive build.
-    skip_duts_check: A boolean indicating to not check minimum available DUTs.
-    debug: A boolean indicating whether or not we are in debug mode.
+    skip_duts_check: Deprecated (ignored).
+    debug: Deprecated (ignored).
     payload_test_configs: A list of test_params.TestConfig objets to be
                           scheduled with.
-    test_env: A string to indicate the env that the test should run in. The
-              value could be constants.ENV_SKYLAB, constants.ENV_AUTOTEST.
-    job_keyvals: A dict of job keyvals to be injected to suite control file.
+    test_env: Deprecated (ignored).
+    job_keyvals: Deprecated (ignored).
   """
   test_plan = _TestPlan(
       payload_test_configs=payload_test_configs,
@@ -1183,8 +1182,7 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
           'suite:%s' % suite_name,
           'user:PaygenTestStage']
 
-  keyvals = job_keyvals if job_keyvals else {}
-  keyvals.update({'build': build, 'suite': suite_name})
+  keyvals = {'build': build, 'suite': suite_name}
 
   cmd_result = commands.RunSkylabHWTestPlan(
       test_plan=test_plan,
