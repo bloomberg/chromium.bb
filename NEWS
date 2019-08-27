@@ -31,7 +31,7 @@ issues]].
   Γεωργακαράκου (Maria Georgakarakou).
 - Improvements and fixes to Spanish contracted braille. Details in
   #741. Thanks to Juan Pablo Bello.
-- improvements and fixes to the Danish tables. Thanks to Bue Vester-Andersen.
+- Improvements and fixes to the Danish tables. Thanks to Bue Vester-Andersen.
 - Add a display table to match Word CX which is used in Norway and
   Sweden, and maybe also in other countries thanks to Lars Bjørndal.
 
