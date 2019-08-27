@@ -7685,6 +7685,11 @@ histogram as enum -->
   <int value="3" label="Reading"/>
 </enum>
 
+<enum name="ChromeOSJankinessTriggerStatus">
+  <int value="0" label="CollectionAttempted"/>
+  <int value="1" label="Throttled"/>
+</enum>
+
 <enum name="ChromeOSMachineIdReason">
   <int value="0" label="Unknown"/>
   <int value="1" label="Network"/>
