@@ -2,36 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
+#include "chrome/browser/apps/app_shim/test/app_shim_listener_test_api_mac.h"
 
 #include "apps/app_lifetime_monitor_factory.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
 namespace test {
 
-AppShimHostManagerTestApi::AppShimHostManagerTestApi(
-    AppShimHostManager* host_manager)
-    : host_manager_(host_manager) {
-  DCHECK(host_manager_);
+AppShimListenerTestApi::AppShimListenerTestApi(AppShimListener* listener)
+    : listener_(listener) {
+  DCHECK(listener_);
 }
 
-apps::MachBootstrapAcceptor* AppShimHostManagerTestApi::mach_acceptor() {
-  return host_manager_->mach_acceptor_.get();
+apps::MachBootstrapAcceptor* AppShimListenerTestApi::mach_acceptor() {
+  return listener_->mach_acceptor_.get();
 }
 
-const base::FilePath& AppShimHostManagerTestApi::directory_in_tmp() {
-  return host_manager_->directory_in_tmp_;
+const base::FilePath& AppShimListenerTestApi::directory_in_tmp() {
+  return listener_->directory_in_tmp_;
 }
 
-void AppShimHostManagerTestApi::SetExtensionAppShimHandler(
+void AppShimListenerTestApi::SetExtensionAppShimHandler(
     std::unique_ptr<apps::ExtensionAppShimHandler> handler) {
   apps::AppShimHandler::Set(nullptr);
   apps::AppShimHandler::Set(handler.get());
-  host_manager_->extension_app_shim_handler_.swap(handler);
+  listener_->extension_app_shim_handler_.swap(handler);
 
   // Remove old handler from all AppLifetimeMonitors. Usually this is done at
   // profile destruction.

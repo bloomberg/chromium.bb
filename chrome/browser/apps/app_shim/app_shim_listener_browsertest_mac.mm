@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_listener.h"
 
 #include <unistd.h>
 
@@ -17,7 +17,7 @@
 #include "chrome/app_shim/app_shim_controller.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
-#include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
+#include "chrome/browser/apps/app_shim/test/app_shim_listener_test_api_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -103,12 +103,12 @@ TestShimClient::TestShimClient()
       chrome::mojom::AppShimHostBootstrapPtrInfo(std::move(message_pipe), 0));
 }
 
-// Browser Test for AppShimHostManager to test IPC interactions.
-class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
-                                      public apps::AppShimHandler,
-                                      public chrome::mojom::AppShimHost {
+// Browser Test for AppShimListener to test IPC interactions.
+class AppShimListenerBrowserTest : public InProcessBrowserTest,
+                                   public apps::AppShimHandler,
+                                   public chrome::mojom::AppShimHost {
  public:
-  AppShimHostManagerBrowserTest() : binding_(this) {}
+  AppShimListenerBrowserTest() : binding_(this) {}
 
  protected:
   // Wait for OnShimProcessConnected, then send a quit, and wait for the
@@ -155,10 +155,10 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   int launch_count_ = 0;
   int quit_count_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(AppShimHostManagerBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(AppShimListenerBrowserTest);
 };
 
-void AppShimHostManagerBrowserTest::RunAndExitGracefully() {
+void AppShimListenerBrowserTest::RunAndExitGracefully() {
   runner_ = std::make_unique<base::RunLoop>();
   EXPECT_EQ(0, launch_count_);
   runner_->Run();  // Will stop in OnShimProcessConnected().
@@ -173,16 +173,16 @@ void AppShimHostManagerBrowserTest::RunAndExitGracefully() {
   test_client_.reset();
 }
 
-void AppShimHostManagerBrowserTest::SetUpOnMainThread() {
+void AppShimListenerBrowserTest::SetUpOnMainThread() {
   // Can't do this in the constructor, it needs a BrowserProcess.
   apps::AppShimHandler::Set(this);
 }
 
-void AppShimHostManagerBrowserTest::TearDownOnMainThread() {
+void AppShimListenerBrowserTest::TearDownOnMainThread() {
   apps::AppShimHandler::Set(nullptr);
 }
 
-void AppShimHostManagerBrowserTest::OnShimProcessConnected(
+void AppShimListenerBrowserTest::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   ++launch_count_;
   binding_.Bind(bootstrap->GetLaunchAppShimHostRequest());
@@ -194,7 +194,7 @@ void AppShimHostManagerBrowserTest::OnShimProcessConnected(
 }
 
 // Test regular launch, which would ask Chrome to launch the app.
-IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest, LaunchNormal) {
+IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, LaunchNormal) {
   test_client_.reset(new TestShimClient());
   test_client_->host_bootstrap()->LaunchApp(
       test_client_->GetHostRequest(), browser()->profile()->GetPath(),
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest, LaunchNormal) {
 }
 
 // Test register-only launch, used when Chrome has already launched the app.
-IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest, LaunchRegisterOnly) {
+IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, LaunchRegisterOnly) {
   test_client_.reset(new TestShimClient());
   test_client_->host_bootstrap()->LaunchApp(
       test_client_->GetHostRequest(), browser()->profile()->GetPath(),
@@ -220,27 +220,24 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest, LaunchRegisterOnly) {
 }
 
 // Ensure bootstrap name registers.
-IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
-                       PRE_ReCreate) {
-  test::AppShimHostManagerTestApi test_api(
-      g_browser_process->platform_part()->app_shim_host_manager());
+IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, PRE_ReCreate) {
+  test::AppShimListenerTestApi test_api(
+      g_browser_process->platform_part()->app_shim_listener());
   EXPECT_TRUE(test_api.mach_acceptor());
 }
 
 // Ensure the bootstrap name can be re-created after a prior browser process has
 // quit.
-IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
-                       ReCreate) {
-  test::AppShimHostManagerTestApi test_api(
-      g_browser_process->platform_part()->app_shim_host_manager());
+IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, ReCreate) {
+  test::AppShimListenerTestApi test_api(
+      g_browser_process->platform_part()->app_shim_listener());
   EXPECT_TRUE(test_api.mach_acceptor());
 }
 
-// Tests for the files created by AppShimHostManager.
-class AppShimHostManagerBrowserTestSymlink
-    : public AppShimHostManagerBrowserTest {
+// Tests for the files created by AppShimListener.
+class AppShimListenerBrowserTestSymlink : public AppShimListenerBrowserTest {
  public:
-  AppShimHostManagerBrowserTestSymlink() {}
+  AppShimListenerBrowserTestSymlink() {}
 
  protected:
   base::FilePath version_path_;
@@ -249,11 +246,11 @@ class AppShimHostManagerBrowserTestSymlink
   bool SetUpUserDataDirectory() override;
   void TearDownInProcessBrowserTestFixture() override;
 
-  DISALLOW_COPY_AND_ASSIGN(AppShimHostManagerBrowserTestSymlink);
+  DISALLOW_COPY_AND_ASSIGN(AppShimListenerBrowserTestSymlink);
 };
 
-bool AppShimHostManagerBrowserTestSymlink::SetUpUserDataDirectory() {
-  // Create an existing symlink. It should be replaced by AppShimHostManager.
+bool AppShimListenerBrowserTestSymlink::SetUpUserDataDirectory() {
+  // Create an existing symlink. It should be replaced by AppShimListener.
   base::FilePath user_data_dir;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
 
@@ -262,16 +259,15 @@ bool AppShimHostManagerBrowserTestSymlink::SetUpUserDataDirectory() {
       user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
   EXPECT_TRUE(base::CreateSymbolicLink(base::FilePath("invalid_version"),
                                        version_path_));
-  return AppShimHostManagerBrowserTest::SetUpUserDataDirectory();
+  return AppShimListenerBrowserTest::SetUpUserDataDirectory();
 }
 
-void AppShimHostManagerBrowserTestSymlink::
-    TearDownInProcessBrowserTestFixture() {
+void AppShimListenerBrowserTestSymlink::TearDownInProcessBrowserTestFixture() {
   // Check that created files have been deleted.
   EXPECT_FALSE(base::PathExists(version_path_));
 }
 
-IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSymlink,
+IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTestSymlink,
                        RunningChromeVersionCorrectlyWritten) {
   // Check that the RunningChromeVersion file is correctly written.
   base::FilePath version;

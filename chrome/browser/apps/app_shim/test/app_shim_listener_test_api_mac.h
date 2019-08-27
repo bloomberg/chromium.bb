@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APPS_APP_SHIM_TEST_APP_SHIM_HOST_MANAGER_TEST_API_MAC_H_
-#define CHROME_BROWSER_APPS_APP_SHIM_TEST_APP_SHIM_HOST_MANAGER_TEST_API_MAC_H_
+#ifndef CHROME_BROWSER_APPS_APP_SHIM_TEST_APP_SHIM_LISTENER_TEST_API_MAC_H_
+#define CHROME_BROWSER_APPS_APP_SHIM_TEST_APP_SHIM_LISTENER_TEST_API_MAC_H_
 
 #include <memory>
 
 #include "base/macros.h"
 
-class AppShimHostManager;
+class AppShimListener;
 
 namespace base {
 class FilePath;
@@ -18,13 +18,13 @@ class FilePath;
 namespace apps {
 class ExtensionAppShimHandler;
 class MachBootstrapAcceptor;
-}
+}  // namespace apps
 
 namespace test {
 
-class AppShimHostManagerTestApi {
+class AppShimListenerTestApi {
  public:
-  explicit AppShimHostManagerTestApi(AppShimHostManager* host_manager);
+  explicit AppShimListenerTestApi(AppShimListener* listener);
 
   apps::MachBootstrapAcceptor* mach_acceptor();
 
@@ -34,11 +34,11 @@ class AppShimHostManagerTestApi {
       std::unique_ptr<apps::ExtensionAppShimHandler> handler);
 
  private:
-  AppShimHostManager* host_manager_;  // Not owned.
+  AppShimListener* listener_;  // Not owned.
 
-  DISALLOW_COPY_AND_ASSIGN(AppShimHostManagerTestApi);
+  DISALLOW_COPY_AND_ASSIGN(AppShimListenerTestApi);
 };
 
 }  // namespace test
 
-#endif  // CHROME_BROWSER_APPS_APP_SHIM_TEST_APP_SHIM_HOST_MANAGER_TEST_API_MAC_H_
+#endif  // CHROME_BROWSER_APPS_APP_SHIM_TEST_APP_SHIM_LISTENER_TEST_API_MAC_H_

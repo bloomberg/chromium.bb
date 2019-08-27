@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
-#define CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
+#ifndef CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_LISTENER_H_
+#define CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_LISTENER_H_
 
 #include <memory>
 
@@ -22,20 +22,20 @@ class FilePath;
 }
 
 namespace test {
-class AppShimHostManagerTestApi;
+class AppShimListenerTestApi;
 }
 
-// The AppShimHostManager receives connections from app shims on a Mach
+// The AppShimListener receives connections from app shims on a Mach
 // bootstrap namespace entry (mach_acceptor_) and creates a helper object
 // to manage the connection.
-class AppShimHostManager : public apps::MachBootstrapAcceptor::Delegate,
-                           public base::RefCountedThreadSafe<
-                               AppShimHostManager,
-                               content::BrowserThread::DeleteOnUIThread> {
+class AppShimListener : public apps::MachBootstrapAcceptor::Delegate,
+                        public base::RefCountedThreadSafe<
+                            AppShimListener,
+                            content::BrowserThread::DeleteOnUIThread> {
  public:
-  AppShimHostManager();
+  AppShimListener();
 
-  // Init passes this AppShimHostManager to PostTask which requires it to have
+  // Init passes this AppShimListener to PostTask which requires it to have
   // a non-zero refcount. Therefore, Init cannot be called in the constructor
   // since the refcount is zero at that point.
   void Init();
@@ -45,12 +45,12 @@ class AppShimHostManager : public apps::MachBootstrapAcceptor::Delegate,
   }
 
  private:
-  friend class base::RefCountedThreadSafe<AppShimHostManager>;
+  friend class base::RefCountedThreadSafe<AppShimListener>;
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class base::DeleteHelper<AppShimHostManager>;
-  friend class test::AppShimHostManagerTestApi;
-  virtual ~AppShimHostManager();
+  friend class base::DeleteHelper<AppShimListener>;
+  friend class test::AppShimListenerTestApi;
+  virtual ~AppShimListener();
 
   // MachBootstrapAcceptor::Delegate:
   void OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
@@ -66,7 +66,7 @@ class AppShimHostManager : public apps::MachBootstrapAcceptor::Delegate,
 
   std::unique_ptr<apps::ExtensionAppShimHandler> extension_app_shim_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppShimHostManager);
+  DISALLOW_COPY_AND_ASSIGN(AppShimListener);
 };
 
-#endif  // CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
+#endif  // CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_LISTENER_H_

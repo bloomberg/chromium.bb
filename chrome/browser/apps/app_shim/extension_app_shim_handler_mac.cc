@@ -20,7 +20,7 @@
 #include "base/macros.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
-#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
@@ -378,7 +378,7 @@ ExtensionAppShimHandler::ExtensionAppShimHandler()
     : delegate_(new Delegate),
       weak_factory_(this) {
   // This is instantiated in BrowserProcessImpl::PreMainMessageLoopRun with
-  // AppShimHostManager. Since PROFILE_CREATED is not fired until
+  // AppShimListener. Since PROFILE_CREATED is not fired until
   // ProfileManager::GetLastUsedProfile/GetLastOpenedProfiles, this should catch
   // notifications for all profiles.
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
@@ -610,7 +610,7 @@ ExtensionAppShimHandler* ExtensionAppShimHandler::Get() {
   // This will only return nullptr in certain unit tests that do not initialize
   // the app shim host manager.
   auto* shim_host_manager =
-      g_browser_process->platform_part()->app_shim_host_manager();
+      g_browser_process->platform_part()->app_shim_listener();
   if (shim_host_manager)
     return shim_host_manager->extension_app_shim_handler();
   return nullptr;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_listener.h"
 
 #include <unistd.h>
 
@@ -24,9 +24,9 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 
-AppShimHostManager::AppShimHostManager() {}
+AppShimListener::AppShimListener() {}
 
-void AppShimHostManager::Init() {
+void AppShimListener::Init() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!extension_app_shim_handler_);
   extension_app_shim_handler_.reset(new apps::ExtensionAppShimHandler());
@@ -41,14 +41,14 @@ void AppShimHostManager::Init() {
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&AppShimHostManager::InitOnBackgroundThread, this));
+      base::BindOnce(&AppShimListener::InitOnBackgroundThread, this));
 }
 
-AppShimHostManager::~AppShimHostManager() {
+AppShimListener::~AppShimListener() {
   base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
       ->DeleteSoon(FROM_HERE, std::move(mach_acceptor_));
 
-  // The AppShimHostManager is only initialized if the Chrome process
+  // The AppShimListener is only initialized if the Chrome process
   // successfully took the singleton lock. If it was not initialized, do not
   // delete existing app shim socket files as they belong to another process.
   if (!extension_app_shim_handler_)
@@ -70,7 +70,7 @@ AppShimHostManager::~AppShimHostManager() {
   }
 }
 
-void AppShimHostManager::InitOnBackgroundThread() {
+void AppShimListener::InitOnBackgroundThread() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   base::FilePath user_data_dir;
@@ -94,9 +94,8 @@ void AppShimHostManager::InitOnBackgroundThread() {
                            version_path);
 }
 
-void AppShimHostManager::OnClientConnected(
-    mojo::PlatformChannelEndpoint endpoint,
-    base::ProcessId peer_pid) {
+void AppShimListener::OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
+                                        base::ProcessId peer_pid) {
   base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
       ->PostTask(
           FROM_HERE,
@@ -104,7 +103,7 @@ void AppShimHostManager::OnClientConnected(
                          std::move(endpoint), peer_pid));
 }
 
-void AppShimHostManager::OnServerChannelCreateError() {
+void AppShimListener::OnServerChannelCreateError() {
   // TODO(https://crbug.com/272577): Set a timeout and attempt to reconstruct
   // the channel. Until cases where the error could occur are better known,
   // just reset the acceptor to allow failure to be communicated via the test
