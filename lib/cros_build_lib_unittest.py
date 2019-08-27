@@ -453,6 +453,8 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     ## This is a little bit circular, since the same logic is used to compute
     ## the value inside, but at least it checks that this happens.
     total_env = os.environ.copy()
+    # The core RunCommand code forces this too.
+    total_env['LC_MESSAGES'] = 'C'
     total_env.update(extra_env)
 
     # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
