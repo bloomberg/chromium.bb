@@ -8,6 +8,7 @@
 #include "ui/events/blink/prediction/kalman_predictor.h"
 #include "ui/events/blink/prediction/least_squares_predictor.h"
 #include "ui/events/blink/prediction/linear_predictor.h"
+#include "ui/events/blink/prediction/linear_resampling.h"
 
 namespace ui {
 
@@ -18,6 +19,7 @@ const char kScrollPredictorNameKalman[] = "kalman";
 const char kScrollPredictorNameKalmanTimeFiltered[] = "kalman_time_filtered";
 const char kScrollPredictorNameLinearFirst[] = "linear_first";
 const char kScrollPredictorNameLinearSecond[] = "linear_second";
+const char kScrollPredictorNameLinearResampling[] = "linear_resampling";
 const char kScrollPredictorNameEmpty[] = "empty";
 
 }  // namespace input_prediction
@@ -28,7 +30,9 @@ using input_prediction::PredictorType;
 
 PredictorType PredictorFactory::GetPredictorTypeFromName(
     const std::string& predictor_name) {
-  if (predictor_name == input_prediction::kScrollPredictorNameLsq)
+  if (predictor_name == input_prediction::kScrollPredictorNameLinearResampling)
+    return PredictorType::kScrollPredictorTypeLinearResampling;
+  else if (predictor_name == input_prediction::kScrollPredictorNameLsq)
     return PredictorType::kScrollPredictorTypeLsq;
   else if (predictor_name == input_prediction::kScrollPredictorNameKalman)
     return PredictorType::kScrollPredictorTypeKalman;
@@ -45,7 +49,9 @@ PredictorType PredictorFactory::GetPredictorTypeFromName(
 
 std::unique_ptr<InputPredictor> PredictorFactory::GetPredictor(
     PredictorType predictor_type) {
-  if (predictor_type == PredictorType::kScrollPredictorTypeLsq)
+  if (predictor_type == PredictorType::kScrollPredictorTypeLinearResampling)
+    return std::make_unique<LinearResampling>();
+  else if (predictor_type == PredictorType::kScrollPredictorTypeLsq)
     return std::make_unique<LeastSquaresPredictor>();
   else if (predictor_type == PredictorType::kScrollPredictorTypeKalman)
     return std::make_unique<KalmanPredictor>(false /* enable_time_filtering */);
