@@ -32,19 +32,6 @@ using content::ThemeHelperMac;
 
 namespace {
 
-blink::WebScrollbarButtonsPlacement GetButtonPlacement() {
-  NSString* scrollbar_variant = [[NSUserDefaults standardUserDefaults]
-      objectForKey:@"AppleScrollBarVariant"];
-  if ([scrollbar_variant isEqualToString:@"Single"])
-    return blink::kWebScrollbarButtonsPlacementSingle;
-  else if ([scrollbar_variant isEqualToString:@"DoubleMin"])
-    return blink::kWebScrollbarButtonsPlacementDoubleStart;
-  else if ([scrollbar_variant isEqualToString:@"DoubleBoth"])
-    return blink::kWebScrollbarButtonsPlacementDoubleBoth;
-  else
-    return blink::kWebScrollbarButtonsPlacementDoubleEnd;
-}
-
 void FillScrollbarThemeParams(
     content::mojom::UpdateScrollbarThemeParams* params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -67,13 +54,7 @@ void FillScrollbarThemeParams(
   params->jump_on_track_click =
       [defaults boolForKey:@"AppleScrollerPagingBehavior"];
   params->preferred_scroller_style =
-      ThemeHelperMac::GetPreferredScrollerStyle();
-
-  // One one hand, this constant isn't registered anywhere. On the other hand,
-  // this constant is still (as of 10.15) being used by AppKit to draw controls.
-  // On the other other hand, this value sent over the wire is actually ignored.
-  // TODO(https://crbug.com/997934): Figure out why it's being ignored.
-  params->button_placement = GetButtonPlacement();
+      static_cast<blink::ScrollerStyle>([NSScroller preferredScrollerStyle]);
 
   id rubber_band_value = [defaults objectForKey:@"NSScrollViewRubberbanding"];
   params->scroll_view_rubber_banding =
@@ -309,11 +290,6 @@ namespace content {
 ThemeHelperMac* ThemeHelperMac::GetInstance() {
   static ThemeHelperMac* instance = new ThemeHelperMac();
   return instance;
-}
-
-// static
-blink::ScrollerStyle ThemeHelperMac::GetPreferredScrollerStyle() {
-  return static_cast<blink::ScrollerStyle>([NSScroller preferredScrollerStyle]);
 }
 
 base::ReadOnlySharedMemoryRegion

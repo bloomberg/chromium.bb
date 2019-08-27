@@ -159,10 +159,6 @@ struct UpdateScrollbarThemeParams {
   ScrollerStyle preferred_scroller_style;
   bool redraw;
 
-  // TODO(https://crbug.com/997934): This value is ignored on the receiving end.
-  // Either remove it, or make it not be ignored.
-  ScrollbarButtonsPlacement button_placement;
-
   bool scroll_view_rubber_banding;
 };
 
