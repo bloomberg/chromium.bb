@@ -430,37 +430,6 @@ static void set_good_speed_features_framesize_independent(
     // sf->use_transform_domain_distortion = 2;
     sf->simple_motion_search_prune_agg = 2;
   }
-
-  if (speed >= 6) {
-    int i;
-    sf->optimize_coefficients = NO_TRELLIS_OPT;
-    sf->mv.search_method = HEX;
-    sf->disable_filter_search_var_thresh = 500;
-    for (i = 0; i < TX_SIZES; ++i) {
-      sf->intra_y_mode_mask[i] = INTRA_DC;
-      sf->intra_uv_mode_mask[i] = UV_INTRA_DC_CFL;
-    }
-    sf->partition_search_breakout_rate_thr = 500;
-    sf->mv.reduce_first_step_size = 1;
-    sf->simple_model_rd_from_var = 1;
-  }
-  if (speed >= 7) {
-    sf->default_max_partition_size = BLOCK_32X32;
-    sf->default_min_partition_size = BLOCK_8X8;
-    sf->intra_y_mode_mask[TX_64X64] = INTRA_DC;
-    sf->intra_y_mode_mask[TX_32X32] = INTRA_DC;
-    sf->frame_parameter_update = 0;
-    sf->mv.search_method = FAST_HEX;
-    sf->partition_search_type = REFERENCE_PARTITION;
-    sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
-    // TODO(any): evaluate adaptive_mode_search=1 for speed 7 & 8
-    sf->adaptive_mode_search = 2;
-  }
-  if (speed >= 8) {
-    sf->mv.search_method = FAST_DIAMOND;
-    sf->mv.subpel_force_stop = HALF_PEL;
-    sf->lpf_pick = LPF_PICK_FROM_Q;
-  }
 }
 
 // TODO(kyslov): now this is very similar to

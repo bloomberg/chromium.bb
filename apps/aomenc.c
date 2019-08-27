@@ -411,7 +411,7 @@ static const arg_def_t max_intra_rate_pct =
 
 #if CONFIG_AV1_ENCODER
 static const arg_def_t cpu_used_av1 =
-    ARG_DEF(NULL, "cpu-used", 1, "CPU Used (0..8)");
+    ARG_DEF(NULL, "cpu-used", 1, "CPU Used (0..5)");
 static const arg_def_t rowmtarg =
     ARG_DEF(NULL, "row-mt", 1,
             "Enable row based multi-threading (0: off, 1: on (default))");
