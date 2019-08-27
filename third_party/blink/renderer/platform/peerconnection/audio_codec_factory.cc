@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/audio_codec_factory.h"
+#include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
 
 #include <memory>
 #include <vector>
@@ -22,7 +22,7 @@
 #include "third_party/webrtc/api/audio_codecs/opus/audio_encoder_multi_channel_opus.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_encoder_opus.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -88,4 +88,4 @@ CreateWebrtcAudioDecoderFactory() {
       NotAdvertisedDecoder<webrtc::AudioDecoderMultiChannelOpus>>();
 }
 
-}  // namespace content
+}  // namespace blink
