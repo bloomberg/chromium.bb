@@ -1054,6 +1054,10 @@ const FeatureEntry::FeatureParam kResamplingInputEventsLinearFirstEnabled[] = {
     {"predictor", ui::input_prediction::kScrollPredictorNameLinearFirst}};
 const FeatureEntry::FeatureParam kResamplingInputEventsLinearSecondEnabled[] = {
     {"predictor", ui::input_prediction::kScrollPredictorNameLinearSecond}};
+const FeatureEntry::FeatureParam
+    kResamplingInputEventsLinearResamplingEnabled[] = {
+        {"predictor",
+         ui::input_prediction::kScrollPredictorNameLinearResampling}};
 
 const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
     {{ui::input_prediction::kScrollPredictorNameLsq,
@@ -1070,7 +1074,10 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
       base::size(kResamplingInputEventsLinearFirstEnabled), nullptr},
      {ui::input_prediction::kScrollPredictorNameLinearSecond,
       kResamplingInputEventsLinearSecondEnabled,
-      base::size(kResamplingInputEventsLinearSecondEnabled), nullptr}};
+      base::size(kResamplingInputEventsLinearSecondEnabled), nullptr},
+     {ui::input_prediction::kScrollPredictorNameLinearResampling,
+      kResamplingInputEventsLinearResamplingEnabled,
+      base::size(kResamplingInputEventsLinearResamplingEnabled), nullptr}};
 
 const FeatureEntry::FeatureParam kFilteringPredictionEmptyFilterEnabled[] = {
     {"filter", ui::input_prediction::kFilterNameEmpty}};
