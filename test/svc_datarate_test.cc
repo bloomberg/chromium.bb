@@ -171,7 +171,7 @@ class DatarateTestSVC
 
     ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352,
                                          288, 30, 1, 0, 300);
-    const int bitrate_array[2] = { 150, 550 };
+    const int bitrate_array[2] = { 200, 550 };
     cfg_.rc_target_bitrate = bitrate_array[GET_PARAM(4)];
     ResetModel();
     number_temporal_layers_ = 3;

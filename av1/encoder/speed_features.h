@@ -737,6 +737,9 @@ typedef struct SPEED_FEATURES {
   // Skip a number of expensive mode evaluations for blocks with very low
   // temporal variance.
   int short_circuit_low_temp_var;
+
+  // Use interpolation filter search in non-RD mode decision.
+  int use_nonrd_filter_search;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
