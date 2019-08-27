@@ -35552,6 +35552,7 @@ from previous Chrome versions.
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508250572" label="ServiceWorkerLongRunningMessage:disabled"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
+  <int value="-506743105" label="enable-subresource-redirect"/>
   <int value="-506706655" label="respect-autocomplete-off-autofill"/>
   <int value="-506366023" label="VizHitTest:enabled"/>
   <int value="-505679399" label="FontCacheScaling:enabled"/>

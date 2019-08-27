@@ -2023,6 +2023,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDataReductionProxyServerExperimentName,
      flag_descriptions::kEnableDataReductionProxyServerExperimentDescription,
      kOsAll, MULTI_VALUE_TYPE(kDataReductionProxyServerExperiment)},
+    {"enable-subresource-redirect",
+     flag_descriptions::kEnableSubresourceRedirectName,
+     flag_descriptions::kEnableSubresourceRedirectDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableSubresourceRedirect)},
 #if defined(OS_ANDROID)
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,

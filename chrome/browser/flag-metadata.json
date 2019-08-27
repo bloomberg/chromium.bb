@@ -1664,6 +1664,11 @@
     "expiry_milestone": 77
   },
   {
+    "name" : "enable-subresource-redirect",
+    "owners" : [ "robertogden", "tbansal" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "enable-suggestions-with-substring-match",
     "owners": [ "tmartino" ],
     "expiry_milestone": 77

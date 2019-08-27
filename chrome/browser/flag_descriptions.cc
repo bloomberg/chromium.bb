@@ -907,6 +907,11 @@ const char kEnableSharedArrayBufferName[] =
 const char kEnableSharedArrayBufferDescription[] =
     "Enable SharedArrayBuffer support in JavaScript.";
 
+const char kEnableSubresourceRedirectName[] =
+    "Enable Render Level Data Use Optimization";
+const char kEnableSubresourceRedirectDescription[] =
+    "Allow Render Level Data Use Optimization";
+
 const char kEnableWasmName[] = "WebAssembly structured cloning support.";
 const char kEnableWasmDescription[] =
     "Enable web pages to use WebAssembly structured cloning.";

@@ -516,6 +516,9 @@ extern const char kEnableResourceLoadingHintsDescription[];
 extern const char kEnableSensorContentSettingName[];
 extern const char kEnableSensorContentSettingDescription[];
 
+extern const char kEnableSubresourceRedirectName[];
+extern const char kEnableSubresourceRedirectDescription[];
+
 extern const char kEnableSyncUSSBookmarksName[];
 extern const char kEnableSyncUSSBookmarksDescription[];
 
