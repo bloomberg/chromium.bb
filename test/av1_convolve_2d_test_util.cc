@@ -51,7 +51,7 @@ void AV1Convolve2DSrTest::RunCheckOutput(convolve_2d_func test_impl) {
   for (int i = 0; i < h; ++i)
     for (int j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand8();
   for (int i = 0; i < MAX_SB_SQUARE; ++i)
-    output[i] = output2[i] = rnd_.Rand31();
+    output[i] = output2[i] = static_cast<uint8_t>(rnd_.Rand31());
 
   // Make sure that sizes 2xN and Nx2 are also tested for chroma.
   const int num_sizes =
@@ -446,7 +446,7 @@ void AV1HighbdConvolve2DSrTest::RunCheckOutput(
     for (int j = 0; j < w; ++j)
       input[i * w + j] = rnd_.Rand16() & ((1 << bd) - 1);
   for (int i = 0; i < MAX_SB_SQUARE; ++i)
-    output[i] = output2[i] = rnd_.Rand31();
+    output[i] = output2[i] = static_cast<int16_t>(rnd_.Rand31());
 
   // Make sure that sizes 2xN and Nx2 are also tested for chroma.
   const int num_sizes =
