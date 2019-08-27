@@ -173,7 +173,7 @@ class ToolkitImpl : public Toolkit {
     // patch section: multi-heap tracer
     int addV8HeapTracer(EmbedderHeapTracer *tracer) override;
     void removeV8HeapTracer(int embedder_id) override;
-    void setIsolate(EmbedderHeapTracer *tracer) override;
+    void setIsolate(v8::EmbedderHeapTracer *tracer) override;
 
 
 
