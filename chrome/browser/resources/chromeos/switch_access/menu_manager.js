@@ -547,16 +547,7 @@ class MenuManager {
 
       if (window.switchAccess.improvedTextInputEnabled() &&
           node.state[StateType.FOCUSED]) {
-        // TODO(sophyang): Replace these with getTextNavigationActionsForNode_()
-        // once the text navigation submenu is implemented.
-        actions.push(SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT);
-        actions.push(SAConstants.MenuAction.JUMP_TO_END_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT);
+        actions.push(SAConstants.MenuAction.MOVE_CURSOR);
         actions.push(SAConstants.MenuAction.SELECT_START);
         if (this.navigationManager_.selectionStarted()) {
           actions.push(SAConstants.MenuAction.SELECT_END);
@@ -637,6 +628,13 @@ class MenuManager {
           this.exit();
         }
         this.navigationManager_.scroll(action);
+        break;
+      case SAConstants.MenuAction.MOVE_CURSOR:
+        if (this.menuOriginNode_) {
+          this.openMenu_(
+              this.menuOriginNode_, SAConstants.MenuId.TEXT_NAVIGATION,
+              true /** Opening a submenu. */);
+        }
         break;
       case SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT:
         this.navigationManager_.jumpToBeginningOfText();

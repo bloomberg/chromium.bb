@@ -137,6 +137,8 @@ SAConstants.MenuAction = {
   MOVE_BACKWARD_ONE_CHAR_OF_TEXT: 'moveBackwardOneCharOfText',
   // Move text caret one word backward.
   MOVE_BACKWARD_ONE_WORD_OF_TEXT: 'moveBackwardOneWordOfText',
+  // Open the text navigation menu to move the text caret.
+  MOVE_CURSOR: 'moveCursor',
   // Move text caret one line down.
   MOVE_DOWN_ONE_LINE_OF_TEXT: 'moveDownOneLineOfText',
   // Move text caret one character forward.

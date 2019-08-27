@@ -47,6 +47,7 @@ run_jsbundler("switch_access_copied_files") {
     "icons/keyboard.svg",
     "icons/moveBackwardOneCharOfText.svg",
     "icons/moveBackwardOneWordOfText.svg",
+    "icons/moveCursor.svg",
     "icons/moveDownOneLineOfText.svg",
     "icons/moveForwardOneCharOfText.svg",
     "icons/moveForwardOneWordOfText.svg",
