@@ -306,10 +306,16 @@ customize.colorsMenuLoaded = false;
 
 
 /**
+ * Default color for custom color picker in hex format.
+ * @type {string}
+ */
+customize.defaultCustomColor = '#000000';
+
+/**
  * Custom color picked in hex format.
  * @type {string}
  */
-customize.customColorPicked = '#000000';
+customize.customColorPicked = customize.defaultCustomColor;
 
 /**
  * Sets the visibility of the settings menu and individual options depending on
@@ -2390,6 +2396,7 @@ customize.cancelColor = function() {
  * picker.
  */
 customize.resetColorsMenu = function() {
+  customize.customColorPicked = customize.defaultCustomColor;
   $(customize.IDS.COLOR_PICKER).value = null;
   $(customize.IDS.COLORS_MENU).style.setProperty('--custom-color-border', '');
   $(customize.IDS.COLORS_MENU).style.setProperty('--custom-color-dark', '');
