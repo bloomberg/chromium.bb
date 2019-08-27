@@ -229,7 +229,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
     gfx::PointF* local_point) {
   // This method must only be called on a local root, which is guaranteed to
   // have a WebWidget.
-  // TODO(https://crbug.com/995981): Eventually we should be able to remote this
+  // TODO(https://crbug.com/995981): Eventually we should be able to remove this
   // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
   // synchronized with the WebWidget.
   DCHECK(widget_->GetWebWidget());
