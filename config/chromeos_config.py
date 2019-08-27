@@ -1154,7 +1154,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'orderfile_generate_toolchain',
       site_config.templates.afdo_toolchain,
       orderfile_generate=True,
-      useflags=config_lib.append_useflags(['orderfile_generate']),
+      useflags=config_lib.append_useflags(['orderfile_generate',
+                                           '-orderfile_use']),
       description='Build Chrome and generate an orderfile for better layout',
   )
 
