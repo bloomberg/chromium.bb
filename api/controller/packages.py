@@ -83,7 +83,11 @@ def UprevVersionedPackage(input_proto, output_proto, _config):
 @validate.validation_complete
 def GetBestVisible(input_proto, output_proto, _config):
   """Returns the best visible PackageInfo for the indicated atom."""
-  cpv = packages.get_best_visible(input_proto.atom)
+  build_target = None
+  if input_proto.build_target.name:
+    build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+
+  cpv = packages.get_best_visible(input_proto.atom, build_target=build_target)
   package_info = common_pb2.PackageInfo()
   controller_util.CPVToPackageInfo(cpv, package_info)
   output_proto.package_info.CopyFrom(package_info)

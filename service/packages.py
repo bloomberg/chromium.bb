@@ -257,7 +257,15 @@ def uprev_chrome(build_targets, refs, chroot):
                                      uprev_manager.modified_ebuilds)
 
 
-def get_best_visible(atom):
-  """Returns the best visible CPV for the given atom."""
+def get_best_visible(atom, build_target=None):
+  """Returns the best visible CPV for the given atom.
+
+  Args:
+    atom (str): The atom to look up.
+    build_target (build_target_util.BuildTarget): The build target whose
+        sysroot should be searched.
+  """
   assert atom
-  return portage_util.PortageqBestVisible(atom)
+
+  board = build_target.name if build_target else None
+  return portage_util.PortageqBestVisible(atom, board=board)
