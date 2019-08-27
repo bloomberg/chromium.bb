@@ -1848,9 +1848,8 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
     disk_cache_ = std::make_unique<AppCacheDiskCache>();
     if (is_incognito_) {
       rv = disk_cache_->InitWithMemBackend(
-          std::numeric_limits<int>::max(),
-          base::BindOnce(&AppCacheStorageImpl::OnDiskCacheInitialized,
-                         base::Unretained(this)));
+          0, base::BindOnce(&AppCacheStorageImpl::OnDiskCacheInitialized,
+                            base::Unretained(this)));
     } else {
       expecting_cleanup_complete_on_disable_ = true;
 
