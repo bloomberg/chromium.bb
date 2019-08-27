@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import os
+import shutil
 import urlparse
 
 from chromite.api import controller
@@ -111,6 +113,57 @@ def PrepareBinhostUploads(input_proto, output_proto, config):
   for upload_target in upload_targets:
     output_proto.upload_targets.add().path = upload_target.strip('/')
 
+@validate.require('uri', 'sysroot.path')
+@validate.exists('uploads_dir')
+def PrepareDevInstallBinhostUploads(input_proto, output_proto, config):
+  """Return a list of files to upload to the binhost"
+
+  The files will also be copied to the uploads_dir.
+  See BinhostService documentation in api/proto/binhost.proto.
+
+  Args:
+    input_proto (PrepareDevInstallBinhostUploadsRequest): The input proto.
+    output_proto (PrepareDevInstallBinhostUploadsResponse): The output proto.
+    config (api_config.ApiConfig): The API call config.
+  """
+  sysroot_path = input_proto.sysroot.path
+
+  # build_target = build_target_util.BuildTarget(target_name)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+  uri = input_proto.uri
+  # For now, we enforce that all input URIs are Google Storage buckets.
+  if not gs.PathIsGs(uri):
+    raise ValueError('Upload URI %s must be Google Storage.' % uri)
+
+  if config.validate_only:
+    return controller.RETURN_CODE_VALID_INPUT
+
+  parsed_uri = urlparse.urlparse(uri)
+  upload_uri = gs.GetGsURL(parsed_uri.netloc, for_gsutil=True).rstrip('/')
+  upload_path = parsed_uri.path.lstrip('/')
+
+  # Calculate the filename for the to-be-created Packages file, which will
+  # contain only devinstall packages.
+  devinstall_package_index_path = os.path.join(input_proto.uploads_dir,
+                                               'Packages')
+  upload_targets_list = binhost.ReadDevInstallFilesToCreatePackageIndex(
+      chroot, sysroot, devinstall_package_index_path, upload_uri, upload_path)
+
+  package_dir = chroot.full_path(sysroot.path, 'packages')
+  for upload_target in upload_targets_list:
+    # Copy each package to target/category/package
+    upload_target = upload_target.strip('/')
+    category = upload_target.split(os.sep)[0]
+    target_dir = os.path.join(input_proto.uploads_dir, category)
+    if not os.path.exists(target_dir):
+      os.makedirs(target_dir)
+    full_src_pkg_path = os.path.join(package_dir, upload_target)
+    full_target_src_path = os.path.join(input_proto.uploads_dir, upload_target)
+    shutil.copyfile(full_src_pkg_path, full_target_src_path)
+    output_proto.upload_targets.add().path = upload_target
+  output_proto.upload_targets.add().path = 'Packages'
 
 @validate.require('build_target.name', 'key', 'uri')
 @validate.validation_complete
