@@ -46,6 +46,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
  private:
   void InitLayout();
   void InitWidget();
+  void InitWindow();
   void UpdateBounds();
 
   AssistantViewDelegate* const delegate_;

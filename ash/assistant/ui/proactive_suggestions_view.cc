@@ -41,10 +41,7 @@ ProactiveSuggestionsView::ProactiveSuggestionsView(
     : views::Button(/*listener=*/this), delegate_(delegate) {
   InitLayout();
   InitWidget();
-
-  // We observe the proactive suggestions window in order to modify entry/exit
-  // animation behavior prior to window visibility changes.
-  GetWidget()->GetNativeWindow()->AddObserver(this);
+  InitWindow();
 
   delegate_->AddUiModelObserver(this);
 }
@@ -189,6 +186,26 @@ void ProactiveSuggestionsView::InitWidget() {
   widget->SetContentsView(this);
 
   UpdateBounds();
+}
+
+void ProactiveSuggestionsView::InitWindow() {
+  auto* window = GetWidget()->GetNativeWindow();
+
+  // Initialize the transition duration of the entry/exit animations.
+  constexpr int kAnimationDurationMs = 350;
+  wm::SetWindowVisibilityAnimationDuration(
+      window, base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+
+  // There is no window property support for modifying entry/exit animation
+  // tween type so we set our desired value directly on the LayerAnimator.
+  window->layer()->GetAnimator()->set_tween_type(
+      gfx::Tween::Type::FAST_OUT_SLOW_IN);
+
+  // We observe the window in order to modify animation behavior prior to window
+  // visibility changes. This needs to be done dynamically as bounds are not
+  // fully initialized yet for calculating offset position and the animation
+  // behavior for exit should only be set once the enter animation is completed.
+  window->AddObserver(this);
 }
 
 void ProactiveSuggestionsView::UpdateBounds() {
