@@ -2058,7 +2058,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                             base::Unretained(push_messaging_manager_.get())));
   } else {
     registry->AddInterface(
-        base::BindRepeating(&PushMessagingManager::BindRequest,
+        base::BindRepeating(&PushMessagingManager::AddPushMessagingReceiver,
                             base::Unretained(push_messaging_manager_.get())));
   }
 
