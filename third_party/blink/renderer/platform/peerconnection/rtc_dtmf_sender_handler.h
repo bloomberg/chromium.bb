@@ -2,25 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_RTC_DTMF_SENDER_HANDLER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_DTMF_SENDER_HANDLER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_DTMF_SENDER_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_DTMF_SENDER_HANDLER_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler_client.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/webrtc/api/dtmf_sender_interface.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
-namespace content {
+namespace blink {
 
 // RtcDtmfSenderHandler is a delegate for the RTC DTMF Sender API messages
 // going between WebKit and native DTMF Sender in libjingle.
@@ -28,8 +23,7 @@ namespace content {
 // WebKit call all of these methods on the main render thread.
 // Callbacks to the webrtc::DtmfSenderObserverInterface implementation also
 // occur on the main render thread.
-class CONTENT_EXPORT RtcDtmfSenderHandler
-    : public blink::WebRTCDTMFSenderHandler {
+class RtcDtmfSenderHandler : public blink::WebRTCDTMFSenderHandler {
  public:
   RtcDtmfSenderHandler(scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                        webrtc::DtmfSenderInterface* dtmf_sender);
@@ -43,7 +37,7 @@ class CONTENT_EXPORT RtcDtmfSenderHandler
                   int duration,
                   int interToneGap) override;
 
-  void OnToneChange(const std::string& tone);
+  void OnToneChange(const String& tone);
 
  private:
   scoped_refptr<webrtc::DtmfSenderInterface> dtmf_sender_;
@@ -59,6 +53,6 @@ class CONTENT_EXPORT RtcDtmfSenderHandler
   DISALLOW_COPY_AND_ASSIGN(RtcDtmfSenderHandler);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_RTC_DTMF_SENDER_HANDLER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_DTMF_SENDER_HANDLER_H_

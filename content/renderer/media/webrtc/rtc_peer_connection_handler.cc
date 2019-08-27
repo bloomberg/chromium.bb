@@ -31,7 +31,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/webrtc/rtc_event_log_output_sink.h"
 #include "content/renderer/media/webrtc/rtc_event_log_output_sink_proxy.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"

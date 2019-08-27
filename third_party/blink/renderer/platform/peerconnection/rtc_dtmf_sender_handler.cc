@@ -2,25 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 
-#include <string>
-
-#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using webrtc::DtmfSenderInterface;
 
-namespace content {
+namespace blink {
 
-class RtcDtmfSenderHandler::Observer :
-    public base::RefCountedThreadSafe<Observer>,
-    public webrtc::DtmfSenderObserverInterface {
+std::unique_ptr<WebRTCDTMFSenderHandler> CreateRTCDTMFSenderHandler(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+    webrtc::DtmfSenderInterface* dtmf_sender) {
+  return std::make_unique<RtcDtmfSenderHandler>(std::move(main_thread),
+                                                dtmf_sender);
+}
+
+class RtcDtmfSenderHandler::Observer
+    : public base::RefCountedThreadSafe<Observer>,
+      public webrtc::DtmfSenderObserverInterface {
  public:
   explicit Observer(scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                     const base::WeakPtr<RtcDtmfSenderHandler>& handler)
@@ -32,14 +39,13 @@ class RtcDtmfSenderHandler::Observer :
   ~Observer() override {}
 
   void OnToneChange(const std::string& tone) override {
-    main_thread_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &RtcDtmfSenderHandler::Observer::OnToneChangeOnMainThread, this,
-            tone));
+    PostCrossThreadTask(*main_thread_.get(), FROM_HERE,
+                        CrossThreadBindOnce(&Observer::OnToneChangeOnMainThread,
+                                            scoped_refptr<Observer>(this),
+                                            String(tone.data())));
   }
 
-  void OnToneChangeOnMainThread(const std::string& tone) {
+  void OnToneChangeOnMainThread(const String& tone) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     if (handler_)
       handler_->OnToneChange(tone);
@@ -87,12 +93,12 @@ bool RtcDtmfSenderHandler::InsertDTMF(const blink::WebString& tones,
   return dtmf_sender_->InsertDtmf(utf8_tones, duration, interToneGap);
 }
 
-void RtcDtmfSenderHandler::OnToneChange(const std::string& tone) {
+void RtcDtmfSenderHandler::OnToneChange(const String& tone) {
   if (!webkit_client_) {
     LOG(ERROR) << "WebRTCDTMFSenderHandlerClient not set.";
     return;
   }
-  webkit_client_->DidPlayTone(blink::WebString::FromUTF8(tone));
+  webkit_client_->DidPlayTone(tone);
 }
 
-}  // namespace content
+}  // namespace blink
