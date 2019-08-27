@@ -3825,6 +3825,10 @@ test("unit_tests") {
       "//third_party/libaddressinput",
       "//ui/native_theme:test_support",
     ]
+    if (is_win) {
+      deps +=
+          [ "//chrome/browser/safe_browsing/chrome_cleaner:test_only_proto" ]
+    }
     if (is_mac) {
       deps += [ ":firefox_importer_interface" ]
     }
