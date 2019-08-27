@@ -76,14 +76,22 @@ template("fuchsia_package_runner") {
         deps += invoker.deps
       }
 
+      # Declares the files that are needed for test execution on the
+      # swarming test client.
       data = [
         _manifest_path,
         "//build/fuchsia/",
         "//build/util/lib/",
         "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
         "${qemu_root}/",
-        "${fuchsia_sdk}/",
-        "${boot_image_root}/",
+        "${fuchsia_sdk}/tools/fvm",
+        "${fuchsia_sdk}/tools/pm",
+        "${fuchsia_sdk}/tools/symbolize",
+        "${fuchsia_sdk}/tools/zbi",
+        "${fuchsia_sdk}/.build-id/",
+        "${boot_image_root}/qemu/qemu-kernel.kernel",
+        "${boot_image_root}/qemu/storage-full.blk",
+        "${boot_image_root}/qemu/zircon-a.zbi",
       ]
 
       data_deps = [
