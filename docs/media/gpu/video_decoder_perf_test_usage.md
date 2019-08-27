@@ -9,8 +9,23 @@ framework.
 [TOC]
 
 ## Running from Tast
-__Note:__ The video decoder performance tests are in the progress of being added
-to the Tast framework. This section will be updated once this is done.
+The Tast framework provides an easy way to run the video decoder performance
+tests from a ChromeOS chroot. Test data is automatically deployed to the device
+being tested. To run all video decoder performance tests use:
+
+    tast run $HOST video.DecodeAccelPerf*
+
+Wildcards can be used to run specific sets of tests:
+* Run all VP8 performance tests: `tast run $HOST video.DecodeAccelPerfVP8*`
+* Run all 1080p 60fps performance tests:
+`tast run $HOST video.DecodeAccelPerf*1080P60FPS`
+
+Check the
+[tast video folder](https://chromium.googlesource.com/chromiumos/platform/tast-tests/+/refs/heads/master/src/chromiumos/tast/local/bundles/cros/video/)
+for a list of all available tests.
+See the
+[Tast quickstart guide](https://chromium.googlesource.com/chromiumos/platform/tast/+/HEAD/docs/quickstart.md)
+for more information about the Tast framework.
 
 ## Running manually
 To run the video decoder performance tests manually the
