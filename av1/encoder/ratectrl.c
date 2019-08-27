@@ -1880,7 +1880,8 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     frame_params->frame_type = INTER_FRAME;
     gf_group->update_type[gf_group->index] = LF_UPDATE;
   }
-  if (rc->frames_till_gf_update_due == 0 && cpi->svc.temporal_layer_id == 0) {
+  if (rc->frames_till_gf_update_due == 0 && cpi->svc.temporal_layer_id == 0 &&
+      cpi->svc.spatial_layer_id == 0) {
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ)
       av1_cyclic_refresh_set_golden_update(cpi);
     else
@@ -1890,15 +1891,27 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     rc->gfu_boost = DEFAULT_GF_BOOST_RT;
     rc->constrained_gf_group =
         (rc->baseline_gf_interval >= rc->frames_to_key) ? 1 : 0;
+    rc->frames_till_gf_update_due = rc->baseline_gf_interval;
+    gf_group->index = 0;
     // SVC does not use GF as periodid boost.
     // TODO(marpan): Find better way to disable this for SVC.
     if (cpi->use_svc) {
-      rc->baseline_gf_interval = MAX_STATIC_GF_GROUP_LENGTH;
+      SVC *const svc = &cpi->svc;
+      rc->baseline_gf_interval = MAX_STATIC_GF_GROUP_LENGTH - 1;
       rc->gfu_boost = 1;
       rc->constrained_gf_group = 0;
+      rc->frames_till_gf_update_due = rc->baseline_gf_interval;
+      for (int layer = 0;
+           layer < svc->number_spatial_layers * svc->number_temporal_layers;
+           ++layer) {
+        LAYER_CONTEXT *const lc = &svc->layer_context[layer];
+        lc->rc.baseline_gf_interval = rc->baseline_gf_interval;
+        lc->rc.gfu_boost = rc->gfu_boost;
+        lc->rc.constrained_gf_group = rc->constrained_gf_group;
+        lc->rc.frames_till_gf_update_due = rc->frames_till_gf_update_due;
+        lc->group_index = 0;
+      }
     }
-    rc->frames_till_gf_update_due = rc->baseline_gf_interval;
-    gf_group->index = 0;
     gf_group->size = rc->baseline_gf_interval;
     gf_group->update_type[0] =
         (frame_params->frame_type == KEY_FRAME) ? KF_UPDATE : GF_UPDATE;

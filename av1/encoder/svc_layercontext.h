@@ -40,6 +40,7 @@ typedef struct {
   int actual_num_seg2_blocks;
   int counter_encode_maxq_scene_change;
   uint8_t speed;
+  unsigned char group_index;
 } LAYER_CONTEXT;
 
 typedef struct SVC {

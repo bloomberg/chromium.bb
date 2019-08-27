@@ -147,12 +147,14 @@ void av1_update_temporal_layer_framerate(AV1_COMP *const cpi) {
 }
 
 void av1_restore_layer_context(AV1_COMP *const cpi) {
+  GF_GROUP *const gf_group = &cpi->gf_group;
   LAYER_CONTEXT *const lc = get_layer_context(cpi);
   const int old_frame_since_key = cpi->rc.frames_since_key;
   const int old_frame_to_key = cpi->rc.frames_to_key;
   // Restore layer rate control.
   cpi->rc = lc->rc;
   cpi->oxcf.target_bandwidth = lc->target_bandwidth;
+  gf_group->index = lc->group_index;
   // Reset the frames_since_key and frames_to_key counters to their values
   // before the layer restore. Keep these defined for the stream (not layer).
   cpi->rc.frames_since_key = old_frame_since_key;
@@ -171,17 +173,11 @@ void av1_restore_layer_context(AV1_COMP *const cpi) {
 }
 
 void av1_save_layer_context(AV1_COMP *const cpi) {
-  SVC *const svc = &cpi->svc;
+  GF_GROUP *const gf_group = &cpi->gf_group;
   LAYER_CONTEXT *lc = get_layer_context(cpi);
-  // Reset gf counters on non-base temporal layer.
-  // TODO(marpan): Temporary for now, fix this.
-  if (svc->temporal_layer_id > 0) {
-    cpi->gf_group.index--;
-    if (cpi->rc.frames_till_gf_update_due > 0)
-      cpi->rc.frames_till_gf_update_due++;
-  }
   lc->rc = cpi->rc;
   lc->target_bandwidth = (int)cpi->oxcf.target_bandwidth;
+  lc->group_index = gf_group->index;
   // For spatial-svc, allow cyclic-refresh to be applied on the spatial layers,
   // for the base temporal layer.
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ &&
