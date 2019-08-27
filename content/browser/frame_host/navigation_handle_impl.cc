@@ -5,9 +5,12 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 
 #include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/system/sys_info.h"
+#include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -478,6 +481,36 @@ void NavigationHandleImpl::RestartCommitTimeout() {
 
 void NavigationHandleImpl::OnCommitTimeout() {
   DCHECK_EQ(NavigationRequest::READY_TO_COMMIT, state());
+#if defined(OS_ANDROID)
+  // Rate limit the number of stack dumps so we don't overwhelm our crash
+  // reports.
+  // TODO(http://crbug.com/934317): Remove this once done debugging renderer
+  // hangs.
+  if (base::RandDouble() < 0.1) {
+    static base::debug::CrashKeyString* url_key =
+        base::debug::AllocateCrashKeyString("commit_timeout_url",
+                                            base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString scoped_url(
+        url_key, GetURL().possibly_invalid_spec());
+
+    static base::debug::CrashKeyString* last_crash_key =
+        base::debug::AllocateCrashKeyString("ns_last_crash_ms",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::ScopedCrashKeyString scoped_last_crash(
+        last_crash_key,
+        base::NumberToString(
+            GetTimeSinceLastNetworkServiceCrash().InMilliseconds()));
+
+    static base::debug::CrashKeyString* memory_key =
+        base::debug::AllocateCrashKeyString("physical_memory_mb",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::ScopedCrashKeyString scoped_memory(
+        memory_key,
+        base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB()));
+    base::debug::DumpWithoutCrashing();
+  }
+#endif
+
   UMA_HISTOGRAM_ENUMERATION(
       "Navigation.CommitTimeout.NetworkServiceAvailability",
       GetNetworkServiceAvailability());
