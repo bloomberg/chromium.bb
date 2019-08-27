@@ -1,15 +1,15 @@
 <!doctype HTML>
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: timeout while disconnected</title>
+<title>Display Locking: acquire, update, remove, commit</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="timeout-while-disconnected-ref.html">
+<link rel="match" href="acquire-update-remove-commit-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 #container {
-  contain: style layout;
   width: 100px;
   height: 100px;
   background: lightblue;
@@ -29,11 +29,16 @@ function runTest() {
   const container = document.createElement("div");
   container.id = "container";
 
-  container.displayLock.acquire({ timeout: 100 }).then(() => {
-    setTimeout(() => {
-      document.body.appendChild(container);
-      finishTest("PASS if container is visible");
-    }, 200);
+  setInvisible(container).then(() => {
+    document.body.appendChild(container);
+    container.displayLock.update().then(
+      () => { finishTest("FAIL"); },
+      (e) => {
+        document.body.appendChild(container);
+        finishTest("PASS " + e.message);
+      });
+    container.remove();
+    setVisible(container);
   });
 }
 

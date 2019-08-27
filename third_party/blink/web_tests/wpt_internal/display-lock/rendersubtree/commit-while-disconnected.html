@@ -1,17 +1,18 @@
 <!doctype HTML>
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: acquire infinite timeout</title>
+<title>Display Locking: commit while disconnected</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="pass-ref.html">
+<link rel="match" href="commit-while-disconnected-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 #container {
-  contain: style layout;
   width: 100px;
   height: 100px;
+  background: lightblue;
 }
 </style>
 
@@ -27,14 +28,16 @@ function finishTest(status_string) {
 function runTest() {
   const container = document.createElement("div");
   container.id = "container";
-  container.displayLock.acquire({ timeout: Infinity }).then(() => {
-    document.body.appendChild(container);
-    setTimeout(() => { finishTest("PASS"); }, 100);
+
+  setInvisible(container).then(() => {
+    setVisible(container).then(() => {
+        document.body.appendChild(container);
+        finishTest("PASS");
+      },
+      (e) => { finishTest("FAIL " + e.message); });
   });
 }
 
 window.onload = runTest;
 </script>
-
-
 </html>

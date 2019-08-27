@@ -1,20 +1,25 @@
 <!doctype HTML>
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: commit after containment added</title>
+<title>Display Locking: update without acquire</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="commit-on-added-containment-ref.html">
+<link rel="match" href="update-without-acquire-fails-ref.html">
 <script src="/common/reftest-wait.js"></script>
 
 <style>
-.contained {
-  contain: style layout;
-  width: 100px;
-  height: 100px;
+#container {
+  width: 150px;
+  height: 150px;
   background: lightblue;
 }
+#child {
+  width: 50px;
+  height: 50px;
+  background: lightgreen;
+}
 </style>
+
 <div id="log"></div>
 
 <script>
@@ -26,14 +31,11 @@ function finishTest(status_string) {
 
 function runTest() {
   const container = document.createElement("div");
-  container.displayLock.acquire({ timeout: Infinity }).then(() => {
-    container.classList = "contained";
-    document.body.appendChild(container);
-
-    container.displayLock.commit().then(
-      () => { finishTest("PASS"); },
-      (e) => { finishTest("FAIL " + e.message); });
-  });
+  container.id = "container";
+  container.displayLock.update().then(
+      () => { finishTest("FAIL"); },
+      (e) => { finishTest("PASS " + e.message); });
+  document.body.appendChild(container);
 }
 
 window.onload = runTest;

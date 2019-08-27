@@ -6,10 +6,10 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="acquire-update-measure-remove-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 #container {
-  contain: style layout;
   background: lightgreen;
 }
 #sizer {
@@ -66,7 +66,7 @@ function construct(container) {
 function runTest() {
   const container = document.createElement("div");
   container.id = "container";
-  container.displayLock.acquire({ timeout: Infinity }).then(() => {
+  setInvisible(container).then(() => {
     construct(container);
     document.getElementById("empty").appendChild(container);
     container.displayLock.update().then(measureAndRemove).then(takeScreenshot);

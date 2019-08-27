@@ -4,10 +4,10 @@
 <title>Display Locking: measure updated layout</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
+<script src="resources/utils.js"></script>
 
 <style>
 #container {
-  contain: style layout;
   background: lightgreen;
 }
 #sizer {
@@ -78,14 +78,14 @@ async_test((t) => {
   async function runTest() {
     const container = document.createElement("div");
     container.id = "container";
-    await container.displayLock.acquire({ timeout: Infinity });
+    await setInvisible(container);
 
     document.getElementById("parent").appendChild(container);
     construct(container);
 
     container.displayLock.update().then(() => {
       measureInUpdate();
-      container.displayLock.commit().then(() => {
+      setVisible(container).then(() => {
         measureInCommit();
         t.done();
       });

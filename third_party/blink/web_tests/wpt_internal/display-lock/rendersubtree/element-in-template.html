@@ -7,12 +7,7 @@
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
-
-<style>
-  div {
-    contain: style layout;
-  }
-</style>
+<script src="resources/utils.js"></script>
 
 <template id=template><div id="child">foo</div></template>
 <div id="container"></div>
@@ -25,7 +20,7 @@ async_test((t) => {
     const templateChild = template.content.firstChild;
     t.step(() => assert_not_equals(templateChild.displayLock, null, "Can access displayLock on element in template"));
 
-    const acquirePromise = templateChild.displayLock.acquire({ timeout: Infinity });
+    const acquirePromise = setInvisible(templateChild);
     await acquirePromise;
     t.step(() => assert_true(templateChild.displayLock.locked, "Can lock element in template"));
 
@@ -35,14 +30,14 @@ async_test((t) => {
     container.appendChild(adoptedNode);
     t.step(() => assert_true(adoptedNode.displayLock.locked, "Still locked after appended"));
 
-    await adoptedNode.displayLock.commit();
+    await setVisible(adoptedNode);
     t.step(() => assert_false(adoptedNode.displayLock.locked, "Can commit"));
 
-    await adoptedNode.displayLock.acquire({ timeout: Infinity });
+    await setInvisible(adoptedNode);
 
     t.step(() => assert_true(adoptedNode.displayLock.locked, "Can re-lock element"));
 
-    await adoptedNode.displayLock.commit();
+    await setVisible(adoptedNode);
     t.step(() => assert_false(adoptedNode.displayLock.locked, "Can re-commit element"));
 
     t.done();

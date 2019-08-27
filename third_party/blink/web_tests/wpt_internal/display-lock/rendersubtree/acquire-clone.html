@@ -4,10 +4,9 @@
 <title>Display Locking: acquire on a clone</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-
+<script src="resources/utils.js"></script>
 <style>
 #container {
-  contain: style layout;
   width: 150px;
   height: 150px;
   background: lightblue;
@@ -27,7 +26,7 @@ async_test((t) => {
   async function runTest() {
     const container = document.createElement("div");
     // Lock the container, put a child into it and put it into the document.
-    await container.displayLock.acquire({ timeout: Infinity }).then(() => {
+    await setInvisible(container).then(() => {
       const child = document.createElement("div");
       child.id = "child";
       container.appendChild(child);
