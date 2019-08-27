@@ -41,14 +41,30 @@ on the device (e.g. _scaling_governor_, _intel_pstate_). As these can influence
 test results it's advised to disable them.
 
 ## Performance metrics
-Currently uncapped decoder performance is measured by playing the specified test
-video from start to finish. Various performance metrics (e.g. the number of
-frames decoded per second) are collected, and written to a file called
-_perf_metrics/<test_name>.txt_. Individual frame decode times can be found in
-_perf_metrics/<test_name>.frame_times.txt_.
+To measure decoder performance two different test scenarios are used.
 
-__Note:__ A capped performance test is in the process of being added. This test
-will simulate a more realistic real-time decoding environment.
+__Uncapped decoder performance:__ In this scenario the specified test video is
+decoded from start to finish as fast as possible. This test scenario provides an
+estimate of the decoder's maximum performance (e.g. the maximum FPS).
+
+__Capped decoder performance:__ This scenario simulates a more realistic
+environment by decoding a video from start to finish at its actual frame rate,
+while simulating real-time rendering. Frames that are not decoded by the time
+they should be rendered will be dropped.
+
+Various performance metrics are collected by these tests:
+* FPS: The average number of frames the decoder was able to decode per second.
+* Frames Dropped: The number of frames that were dropped during playback, only
+relevant for the capped performance test.
+* Dropped frame percentage: The percentage of frames dropped, only relevant for
+the capped performance test.
+* Frame delivery time: The time between subsequent frame deliveries. The average
+frame delivery time and 25/50/75 percentiles are calculated.
+* Frame decode time: The time between scheduling a frame to be decoded and
+getting the decoded frame. This metric provides a measure of the decoder's
+latency. The average decode time and 25/50/75 percentiles are calculated.
+
+All performance metrics are written to _perf_metrics/<test_name>.json_.
 
 ## Command line options
 Multiple command line arguments can be given to the command:
