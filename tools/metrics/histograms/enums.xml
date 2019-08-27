@@ -43438,6 +43438,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Chrome process launch failed"/>
 </enum>
 
+<enum name="NotificationSchedulerBackgroundTaskEvent">
+  <int value="0" label="Start"/>
+  <int value="1" label="Finish"/>
+  <int value="2" label="Stop by OS"/>
+</enum>
+
 <enum name="NotificationSchedulerImpressionEvent">
   <int value="0" label="New suppression"/>
   <int value="1" label="Suppression released"/>
