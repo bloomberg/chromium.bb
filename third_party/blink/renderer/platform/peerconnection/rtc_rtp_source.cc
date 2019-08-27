@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/rtc_rtp_source.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_source.h"
 
 #include <cmath>
 
@@ -10,21 +10,26 @@
 #include "base/time/time.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
-namespace content {
+namespace blink {
+
+std::unique_ptr<WebRTCRtpSource> CreateRTCRtpSource(
+    const webrtc::RtpSource& source) {
+  return std::make_unique<RTCRtpSource>(source);
+}
 
 RTCRtpSource::RTCRtpSource(const webrtc::RtpSource& source) : source_(source) {}
 
 RTCRtpSource::~RTCRtpSource() {}
 
-blink::WebRTCRtpSource::Type RTCRtpSource::SourceType() const {
+WebRTCRtpSource::Type RTCRtpSource::SourceType() const {
   switch (source_.source_type()) {
     case webrtc::RtpSourceType::SSRC:
-      return blink::WebRTCRtpSource::Type::kSSRC;
+      return WebRTCRtpSource::Type::kSSRC;
     case webrtc::RtpSourceType::CSRC:
-      return blink::WebRTCRtpSource::Type::kCSRC;
+      return WebRTCRtpSource::Type::kCSRC;
     default:
       NOTREACHED();
-      return blink::WebRTCRtpSource::Type::kSSRC;
+      return WebRTCRtpSource::Type::kSSRC;
   }
 }
 
@@ -54,4 +59,4 @@ uint32_t RTCRtpSource::RtpTimestamp() const {
   return source_.rtp_timestamp();
 }
 
-}  // namespace content
+}  // namespace blink
