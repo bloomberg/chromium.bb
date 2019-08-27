@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/file_pre_reader_win.h"
+#include "base/win/file_pre_reader.h"
 
 #include <windows.h>
 
 #include <memoryapi.h>  // NOLINT(build/include_order)
 
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 
-void PreReadFile(const base::FilePath& file_path) {
+namespace base {
+namespace win {
+
+void PreReadFile(const FilePath& file_path, bool is_executable) {
   // On Win8 and higher use ::PrefetchVirtualMemory(). This is better than
   // a simple data file read, more from a RAM perspective than CPU. This is
   // because reading the file as data results in double mapping to
@@ -31,8 +35,8 @@ void PreReadFile(const base::FilePath& file_path) {
 
     constexpr DWORD kStepSize = 1024 * 1024;
 
-    base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
-                                   base::File::FLAG_SEQUENTIAL_SCAN);
+    File file(file_path,
+              File::FLAG_OPEN | File::FLAG_READ | File::FLAG_SEQUENTIAL_SCAN);
     if (!file.IsValid())
       return;
 
@@ -51,9 +55,12 @@ void PreReadFile(const base::FilePath& file_path) {
     // loadlibrary the file while we are doing the mapping and prefetching or
     // the process will get a private copy of the DLL via COW.
 
-    base::MemoryMappedFile mapped_file;
-    if (mapped_file.Initialize(file_path,
-                               base::MemoryMappedFile::READ_CODE_IMAGE)) {
+    MemoryMappedFile mapped_file;
+    MemoryMappedFile::Access access = is_executable
+                                          ? MemoryMappedFile::READ_CODE_IMAGE
+                                          : MemoryMappedFile::READ_ONLY;
+
+    if (mapped_file.Initialize(file_path, access)) {
       _WIN32_MEMORY_RANGE_ENTRY address_range = {mapped_file.data(),
                                                  mapped_file.length()};
 
@@ -64,3 +71,6 @@ void PreReadFile(const base::FilePath& file_path) {
     }
   }
 }
+
+}  // namespace win
+}  // namespace base

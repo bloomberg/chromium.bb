@@ -3759,7 +3759,6 @@ jumbo_split_static_library("browser") {
     ]
     deps += [
       ":chrome_process_finder",
-      "//chrome:file_pre_reader",
       "//chrome/browser/safe_browsing/chrome_cleaner",
       "//chrome/browser/safe_browsing/chrome_cleaner:public",
       "//chrome/browser/win/conflicts:module_info",
