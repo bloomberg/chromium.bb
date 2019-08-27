@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
@@ -27,9 +28,11 @@
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
@@ -508,6 +511,9 @@ void NavigationHandleImpl::OnCommitTimeout() {
         memory_key,
         base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB()));
     base::debug::DumpWithoutCrashing();
+
+    if (IsOutOfProcessNetworkService())
+      GetNetworkService()->DumpWithoutCrashing(base::Time::Now());
   }
 #endif
 
