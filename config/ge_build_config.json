@@ -1666,7 +1666,7 @@
       "reference_board_name": "drallion",
       "arch": "X86_INTERNAL",
       "builder": "RELEASE",
-      "experimental": true,
+      "experimental": false,
       "models": [
         {
           "board_name": "drallion",
@@ -2483,6 +2483,12 @@
         {
           "board_name": "octopus",
           "name": "garg",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "garg360",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
