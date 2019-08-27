@@ -12,6 +12,7 @@ import android.animation.AnimatorSet;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
@@ -111,8 +112,12 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         // janky frames.
         // When animation is off, the thumbnail is already updated when showing the GTS.
         if (FeatureUtilities.isTabToGtsAnimationEnabled()) {
-            Tab currentTab = mTabModelSelector.getCurrentTab();
-            if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
+            // Delay thumbnail taking a bit more to make it less likely to happen before the
+            // thumbnail taking triggered by ThumbnailFetcher. See crbug.com/996385 for details.
+            new Handler().postDelayed(() -> {
+                Tab currentTab = mTabModelSelector.getCurrentTab();
+                if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
+            }, ZOOMING_DURATION);
         }
     }
 
