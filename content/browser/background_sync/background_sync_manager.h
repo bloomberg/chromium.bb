@@ -142,6 +142,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // set. Once all of this is done, invokes |callback|.
   void FireReadyEvents(
       blink::mojom::BackgroundSyncType sync_type,
+      bool reschedule,
       base::OnceClosure callback,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive = nullptr);
 
@@ -346,6 +347,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   void FireReadyEventsImpl(
       blink::mojom::BackgroundSyncType sync_type,
+      bool reschedule,
       base::OnceClosure callback,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
 
@@ -358,6 +360,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration);
   void FireReadyEventsAllEventsFiring(
       blink::mojom::BackgroundSyncType sync_type,
+      bool reschedule,
       base::OnceClosure callback);
 
   // Called when a sync event has completed.
