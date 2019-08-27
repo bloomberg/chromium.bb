@@ -292,6 +292,14 @@ bool Settings::prompt_using_mojo() const {
   return prompt_using_mojo_;
 }
 
+HANDLE Settings::prompt_response_read_handle() const {
+  return prompt_response_read_handle_;
+}
+
+HANDLE Settings::prompt_request_write_handle() const {
+  return prompt_request_write_handle_;
+}
+
 bool Settings::switches_valid_for_ipc() const {
   // IPC is only used in scanning mode. In other modes ignore the flags.
   if (execution_mode() != ExecutionMode::kScanning) {
@@ -324,6 +332,12 @@ bool Settings::switches_valid_for_ipc() const {
   }
 
   return true;
+}
+
+bool Settings::has_any_ipc_switch() const {
+  return !chrome_mojo_pipe_token_.empty() || has_parent_pipe_handle_ ||
+         prompt_response_read_handle_ != INVALID_HANDLE_VALUE ||
+         prompt_request_write_handle_ != INVALID_HANDLE_VALUE;
 }
 
 bool Settings::has_parent_pipe_handle() const {
