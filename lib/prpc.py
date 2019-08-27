@@ -163,10 +163,9 @@ class PRPCClient(object):
       headers['X-Prpc-Timeout'] = '%dS' % (timeout_secs)
 
     def AllowRetry(e):
-      return (isinstance(e, httplib2.ServerNotFoundError) or
-              isinstance(e, socket.error) or
-              isinstance(e, socket.timeout) or
-              (isinstance(e, PRPCResponseException) and e.transient))
+      return (isinstance(e, (httplib2.ServerNotFoundError, socket.error,
+                             socket.timeout, PRPCResponseException))
+              and e.transient)
 
     def IsTransientHTTPStatus(status):
       return status >= 500
