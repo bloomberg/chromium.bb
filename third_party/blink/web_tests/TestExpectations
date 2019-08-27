@@ -6269,7 +6269,6 @@ crbug.com/972476 std-switch/switch-appearance.html [ Failure ]
 crbug.com/972476 std-switch/switch-appearance-customization.html [ Failure ]
 
 # Sheriff 2019-05-20
-crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Timeout ]
 crbug.com/964239 external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] virtual/audio-service/media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
