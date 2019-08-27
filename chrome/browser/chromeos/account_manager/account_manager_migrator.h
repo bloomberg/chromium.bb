@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_MIGRATOR_H_
 #define CHROME_BROWSER_CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_MIGRATOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -55,7 +57,7 @@ class AccountManagerMigrator : public KeyedService {
   Profile* const profile_;
 
   // Used for running migration steps.
-  chromeos::AccountMigrationRunner migration_runner_;
+  std::unique_ptr<AccountMigrationRunner> migration_runner_ = nullptr;
 
   // Stores if any migration steps were actually run. It is possible for the
   // migration flow to be a no-op, in which case this will be |false|.
