@@ -44,7 +44,7 @@ class MdnsSenderTest : public ::testing::Test {
                   DnsType::kA,
                   DnsClass::kIN,
                   RecordType::kShared,
-                  120,
+                  std::chrono::seconds(120),
                   ARecordRdata(IPAddress{172, 0, 0, 1})),
         query_message_(1, MessageType::Query),
         response_message_(1, MessageType::Response),

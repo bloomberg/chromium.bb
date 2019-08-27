@@ -206,7 +206,8 @@ bool MdnsWriter::Write(const MdnsRecord& record) {
   Cursor cursor(this);
   if (Write(record.name()) && Write(static_cast<uint16_t>(record.dns_type())) &&
       Write(MakeRecordClass(record.record_class(), record.record_type())) &&
-      Write(record.ttl()) && Write(record.rdata())) {
+      Write(static_cast<uint32_t>(record.ttl().count())) &&
+      Write(record.rdata())) {
     cursor.Commit();
     return true;
   }

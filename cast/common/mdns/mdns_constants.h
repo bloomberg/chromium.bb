@@ -348,7 +348,7 @@ constexpr uint16_t MakeQuestionClass(DnsClass dns_class,
 //
 // The default mDNS group address is in a range of link-local addresses, so
 // messages should not be forwarded by routers even when TTL is greater than 1.
-constexpr uint32_t kDefaultRecordTTL = 255;
+constexpr uint32_t kDefaultRecordTTLSeconds = 255;
 
 // ============================================================================
 // RDATA Constants

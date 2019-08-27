@@ -5,6 +5,7 @@
 #ifndef CAST_COMMON_MDNS_MDNS_RECORDS_H_
 #define CAST_COMMON_MDNS_MDNS_RECORDS_H_
 
+#include <chrono>
 #include <initializer_list>
 #include <string>
 #include <vector>
@@ -302,7 +303,7 @@ class MdnsRecord {
              DnsType dns_type,
              DnsClass record_class,
              RecordType record_type,
-             uint32_t ttl,
+             std::chrono::seconds ttl,
              Rdata rdata);
   MdnsRecord(const MdnsRecord& other) = default;
   MdnsRecord(MdnsRecord&& other) noexcept = default;
@@ -319,7 +320,7 @@ class MdnsRecord {
   DnsType dns_type() const { return dns_type_; }
   DnsClass record_class() const { return record_class_; }
   RecordType record_type() const { return record_type_; }
-  uint32_t ttl() const { return ttl_; }
+  std::chrono::seconds ttl() const { return ttl_; }
   const Rdata& rdata() const { return rdata_; }
 
   template <typename H>
@@ -334,7 +335,7 @@ class MdnsRecord {
   DnsType dns_type_ = static_cast<DnsType>(0);
   DnsClass record_class_ = static_cast<DnsClass>(0);
   RecordType record_type_ = RecordType::kShared;
-  uint32_t ttl_ = kDefaultRecordTTL;
+  std::chrono::seconds ttl_{kDefaultRecordTTLSeconds};
   // Default-constructed Rdata contains default-constructed RawRecordRdata
   // as it is the first alternative type and it is default-constructible.
   Rdata rdata_;

@@ -162,7 +162,7 @@ MdnsRecord::MdnsRecord(DomainName name,
                        DnsType dns_type,
                        DnsClass record_class,
                        RecordType record_type,
-                       uint32_t ttl,
+                       std::chrono::seconds ttl,
                        Rdata rdata)
     : name_(std::move(name)),
       dns_type_(dns_type),
@@ -196,8 +196,8 @@ bool MdnsRecord::operator!=(const MdnsRecord& rhs) const {
 
 size_t MdnsRecord::MaxWireSize() const {
   auto wire_size_visitor = [](auto&& arg) { return arg.MaxWireSize(); };
-  return name_.MaxWireSize() + sizeof(dns_type_) + sizeof(record_class_) +
-         sizeof(ttl_) + absl::visit(wire_size_visitor, rdata_);
+  // NAME size, 2-byte TYPE, 2-byte CLASS, 4-byte TTL, RDATA size
+  return name_.MaxWireSize() + absl::visit(wire_size_visitor, rdata_) + 8;
 }
 
 MdnsQuestion::MdnsQuestion(DomainName name,
@@ -221,7 +221,8 @@ bool MdnsQuestion::operator!=(const MdnsQuestion& rhs) const {
 }
 
 size_t MdnsQuestion::MaxWireSize() const {
-  return name_.MaxWireSize() + sizeof(dns_type_) + sizeof(record_class_);
+  // NAME size, 2-byte TYPE, 2-byte CLASS
+  return name_.MaxWireSize() + 4;
 }
 
 MdnsMessage::MdnsMessage(uint16_t id, MessageType type)
