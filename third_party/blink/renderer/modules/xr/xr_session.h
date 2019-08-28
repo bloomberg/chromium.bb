@@ -35,6 +35,7 @@ class V8XRFrameRequestCallback;
 class XR;
 class XRAnchorSet;
 class XRCanvasInputProvider;
+class XRHitTestOptionsInit;
 class XRRay;
 class XRReferenceSpace;
 class XRRenderState;
@@ -107,6 +108,9 @@ class XRSession final
   void cancelAnimationFrame(int id);
 
   XRInputSourceArray* inputSources() const;
+
+  ScriptPromise requestHitTestSource(ScriptState* script_state,
+                                     XRHitTestOptionsInit* options);
 
   ScriptPromise requestHitTest(ScriptState* script_state,
                                XRRay* ray,

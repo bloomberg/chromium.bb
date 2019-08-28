@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -16,6 +17,8 @@
 namespace blink {
 
 class ExceptionState;
+class XRHitTestResult;
+class XRHitTestSource;
 class XRInputSource;
 class XRPose;
 class XRReferenceSpace;
@@ -47,6 +50,10 @@ class XRFrame final : public ScriptWrappable {
   void SetAnimationFrame(bool is_animation_frame) {
     is_animation_frame_ = is_animation_frame;
   }
+
+  HeapVector<Member<XRHitTestResult>> getHitTestResults(
+      XRHitTestSource* hitTestSource,
+      XRSpace* relativeTo);
 
  private:
   std::unique_ptr<TransformationMatrix> GetAdjustedPoseMatrix(XRSpace*) const;

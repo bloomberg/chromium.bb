@@ -18,4 +18,6 @@
 
   [RaisesException] XRViewerPose? getViewerPose(XRReferenceSpace referenceSpace);
   [RaisesException] XRPose? getPose(XRSpace space, XRSpace relativeTo);
+
+  [RuntimeEnabled=WebXRHitTest] FrozenArray<XRHitTestResult> getHitTestResults(XRHitTestSource hitTestSource, [DefaultValue=Undefined] optional XRSpace relativeTo);
 };

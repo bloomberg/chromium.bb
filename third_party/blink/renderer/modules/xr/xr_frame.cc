@@ -111,6 +111,12 @@ void XRFrame::Deactivate() {
   is_animation_frame_ = false;
 }
 
+HeapVector<Member<XRHitTestResult>> XRFrame::getHitTestResults(
+    XRHitTestSource* hitTestSource,
+    XRSpace* relativeTo) {
+  return {};
+}
+
 void XRFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(world_information_);

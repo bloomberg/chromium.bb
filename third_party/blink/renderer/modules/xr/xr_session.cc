@@ -445,6 +445,13 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   return promise;
 }
 
+ScriptPromise XRSession::requestHitTestSource(ScriptState* script_state,
+                                              XRHitTestOptionsInit* options) {
+  return ScriptPromise::RejectWithDOMException(
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError));
+}
+
 void XRSession::OnHitTestResults(
     ScriptPromiseResolver* resolver,
     base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>> results) {
