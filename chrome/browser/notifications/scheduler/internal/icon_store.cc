@@ -163,7 +163,8 @@ void IconProtoDbStore::OnIconsDecoded(
   LoadedIconsMap icons_map;
   auto icons = std::move(decoded_result->decoded_icons);
   for (size_t i = 0; i < icons_uuid.size(); i++) {
-    icons_map.emplace(std::move(icons_uuid[i]), std::move(icons[i]));
+    IconBundle icon_bundle(std::move(icons[i]));
+    icons_map.emplace(std::move(icons_uuid[i]), std::move(icon_bundle));
   }
   std::move(callback).Run(true, std::move(icons_map));
 }

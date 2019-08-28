@@ -118,17 +118,14 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 
     DCHECK(entry);
 
-    notifications_[entry->type].erase(entry->guid);
-    if (notifications_[entry->type].empty())
-      notifications_.erase(entry->type);
-
-    notification_store_->Delete(
-        guid,
-        base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationDeleted,
-                       weak_ptr_factory_.GetWeakPtr()));
-
-    if (delegate_)
-      delegate_->DisplayNotification(std::move(entry));
+    std::vector<std::string> keys;
+    for (const auto& pair : entry->icons_uuid) {
+      keys.emplace_back(pair.second);
+    }
+    icon_store_->LoadIcons(
+        std::move(keys),
+        base::BindOnce(&ScheduledNotificationManagerImpl::OnIconsLoaded,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(entry)));
   }
 
   void GetAllNotifications(Notifications* notifications) const override {
@@ -269,6 +266,31 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   }
 
   void OnIconDeleted(bool success) { NOTIMPLEMENTED(); }
+
+  void OnIconsLoaded(std::unique_ptr<NotificationEntry> entry,
+                     bool success,
+                     IconStore::LoadedIconsMap loaded_icons_map) {
+    // TODO(hesen): delete notification entry if icons failed to load.
+    if (!success)
+      return;
+    for (const auto& pair : entry->icons_uuid) {
+      auto icon_bundle = IconBundle(std::move(loaded_icons_map[pair.second]));
+      entry->notification_data.icons.emplace(pair.first,
+                                             std::move(icon_bundle));
+    }
+    auto type = entry->type;
+    auto guid = entry->guid;
+    notifications_[type].erase(guid);
+    if (notifications_[type].empty())
+      notifications_.erase(type);
+    notification_store_->Delete(
+        guid,
+        base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationDeleted,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    if (delegate_)
+      delegate_->DisplayNotification(std::move(entry));
+  }
 
   NotificationEntry* FindNotificationEntry(SchedulerClientType type,
                                            const std::string& guid) {

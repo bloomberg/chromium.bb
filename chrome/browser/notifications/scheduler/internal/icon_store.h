@@ -36,7 +36,7 @@ namespace notifications {
 // be loaded into memory.
 class IconStore {
  public:
-  using LoadedIconsMap = std::map<std::string /*icons_uuid*/, SkBitmap>;
+  using LoadedIconsMap = std::map<std::string /*icons_uuid*/, IconBundle>;
   using IconTypeUuidMap = std::map<IconType, std::string>;
   using IconTypeBundleMap = std::map<IconType, IconBundle>;
 
