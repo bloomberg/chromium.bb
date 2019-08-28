@@ -208,15 +208,6 @@ PerformanceManager::PerformanceManager() : task_runner_(CreateTaskRunner()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-void PerformanceManager::PostBindInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle message_pipe) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&PerformanceManager::BindInterfaceImpl,
-                                        base::Unretained(this), interface_name,
-                                        std::move(message_pipe)));
-}
-
 namespace {
 
 // Helper function for adding a node to a graph, and invoking a post-creation
@@ -352,48 +343,10 @@ void PerformanceManager::OnStartImpl(
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // defined(OS_LINUX)
 
-  interface_registry_.AddInterface(base::BindRepeating(
-      &PerformanceManager::BindWebUIGraphDump, base::Unretained(this)));
-
   if (connector) {
     ukm_recorder_ = ukm::MojoUkmRecorder::Create(connector.get());
     graph_.set_ukm_recorder(ukm_recorder_.get());
   }
-}
-
-void PerformanceManager::BindInterfaceImpl(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle message_pipe) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  interface_registry_.BindInterface(interface_name, std::move(message_pipe),
-                                    service_manager::BindSourceInfo());
-}
-
-void PerformanceManager::BindWebUIGraphDump(
-    mojom::WebUIGraphDumpRequest request,
-    const service_manager::BindSourceInfo& source_info) {
-  std::unique_ptr<WebUIGraphDumpImpl> graph_dump =
-      std::make_unique<WebUIGraphDumpImpl>(&graph_);
-
-  auto error_callback =
-      base::BindOnce(&PerformanceManager::OnGraphDumpConnectionError,
-                     base::Unretained(this), graph_dump.get());
-  graph_dump->Bind(std::move(request), std::move(error_callback));
-
-  graph_dumps_.push_back(std::move(graph_dump));
-}
-
-void PerformanceManager::OnGraphDumpConnectionError(
-    WebUIGraphDumpImpl* graph_dump) {
-  const auto it = std::find_if(
-      graph_dumps_.begin(), graph_dumps_.end(),
-      [graph_dump](const std::unique_ptr<WebUIGraphDumpImpl>& graph_dump_ptr) {
-        return graph_dump_ptr.get() == graph_dump;
-      });
-
-  DCHECK(it != graph_dumps_.end());
-
-  graph_dumps_.erase(it);
 }
 
 }  // namespace performance_manager
