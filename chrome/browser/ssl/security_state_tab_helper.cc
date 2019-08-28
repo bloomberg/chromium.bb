@@ -106,6 +106,8 @@ void SecurityStateTabHelper::DidStartNavigation(
     UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.FormSubmission",
                               GetSecurityLevel(),
                               security_state::SECURITY_LEVEL_COUNT);
+    UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.FormSubmission",
+                              GetVisibleSecurityState()->safety_tip_status);
   }
 }
 
