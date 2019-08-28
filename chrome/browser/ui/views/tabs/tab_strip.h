@@ -339,6 +339,17 @@ class TabStrip : public views::AccessiblePaneView,
     DISALLOW_COPY_AND_ASSIGN(DropArrow);
   };
 
+  // Specifies how to handle tabs that are midway through closing when falling
+  // back from |layout_helper_| to |bounds_animator_|.
+  enum class ClosingTabsBehavior {
+    // Keep the tabs alive, because responsibilities for destroying them lie
+    // with |bounds_animator_|.
+    kTransferOwnership,
+    // Destroy the tabs, because responsibilities for destroying them lie with
+    // |layout_helper_|.
+    kDestroy
+  };
+
   void Init();
 
   views::ViewModelT<Tab>* tabs_view_model() { return &tabs_; }
@@ -367,7 +378,10 @@ class TabStrip : public views::AccessiblePaneView,
   // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
   // currently set in ideal_bounds.
   // TODO(958173): The notion of ideal bounds is going away. Delete this.
-  void AnimateToIdealBounds();
+  void AnimateToIdealBounds(ClosingTabsBehavior closing_tabs_behavior =
+                                ClosingTabsBehavior::kDestroy);
+
+  void ExitTabClosingMode();
 
   // Returns whether the close button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();

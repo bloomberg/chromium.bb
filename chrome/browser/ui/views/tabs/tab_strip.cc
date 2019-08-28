@@ -2098,9 +2098,7 @@ void TabStrip::StartInsertTabAnimation(
 
     PrepareForAnimation();
 
-    // The TabStrip can now use its entire width to lay out Tabs.
-    in_tab_close_ = false;
-    available_width_for_tabs_ = -1;
+    ExitTabClosingMode();
 
     UpdateIdealBounds();
 
@@ -2145,18 +2143,28 @@ void TabStrip::StartRemoveTabAnimation(int model_index, bool was_active) {
       // the TabSizer computed in the first layout phase. That might be simpler
       // to reason about than overriding standard tab size (or harder, who
       // knows).
-      StartFallbackRemoveTabAnimation(model_index, was_active);
-      return;
+      const int available_width = (available_width_for_tabs_ < 0)
+                                      ? GetTabAreaWidth()
+                                      : available_width_for_tabs_;
+      layout_helper_->EnterTabClosingMode(available_width);
     }
     if (model_index == model_count) {
       // The user closed the last tab. Override the width available for tabs so
       // that tabs take up the same total amount of space during the animation.
       // This ensures that the previous tab to the left will fall under the
       // mouse (excepting the case where tabs reach standard size).
-      // TODO(958173): Implement this case of tab removal animation.
+      // TODO(958173): Implement this case of tab removal animation. For now,
+      // fall back to the old system.
+      // In addition to moving animation responsibilities back, we must also
+      // move tab closing mode back by setting |available_width_for_tabs_|.
+      UpdateIdealBounds();
+      available_width_for_tabs_ = ideal_bounds(model_count).right();
+      layout_helper_->ExitTabClosingMode();
       StartFallbackRemoveTabAnimation(model_index, was_active);
       return;
     }
+  } else {
+    layout_helper_->ExitTabClosingMode();
   }
 
   Tab* tab = tab_at(model_index);
@@ -2224,9 +2232,14 @@ void TabStrip::StartFallbackRemoveTabAnimation(int model_index,
                              UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
   }
 
+  // Destroy any tabs that |layout_helper_| is animating closed.
+  if (layout_helper_->IsAnimating())
+    layout_helper_->CompleteAnimations();
+
   layout_helper_->RemoveTabNoAnimation(model_index, tab);
   UpdateIdealBounds();
-  AnimateToIdealBounds();
+  // Don't destroy the tab that we just started animating closed.
+  AnimateToIdealBounds(ClosingTabsBehavior::kTransferOwnership);
 
   // TODO(pkasting): When closing multiple tabs, we get repeated RemoveTabAt()
   // calls, each of which closes a new tab and thus generates different ideal
@@ -2268,20 +2281,25 @@ void TabStrip::StartMoveTabAnimation() {
   AnimateToIdealBounds();
 }
 
-void TabStrip::AnimateToIdealBounds() {
+void TabStrip::AnimateToIdealBounds(ClosingTabsBehavior closing_tabs_behavior) {
   UpdateHoverCard(nullptr);
   // |bounds_animator_| and |layout_helper_| should not run
   // concurrently. |bounds_animator_| takes precedence, and can finish what the
   // other started.
   if (layout_helper_->IsAnimating()) {
-    // Move tabs to their current bounds according to |layout_helper_| so
-    // |bounds_animator_| picks up from the correct place.
-    LayoutToCurrentBounds();
     // Complete animations so |layout_helper_| will be in sync with
-    // ideal bounds instead of the current bounds. This also destroys
-    // any tabs that are currently being closed so we don't have to wrangle
-    // handing off that responsibility.
-    layout_helper_->CompleteAnimations();
+    // ideal bounds instead of the current bounds.
+    switch (closing_tabs_behavior) {
+      case ClosingTabsBehavior::kTransferOwnership:
+        layout_helper_->CompleteAnimationsWithoutDestroyingTabs();
+        break;
+      case ClosingTabsBehavior::kDestroy:
+        layout_helper_->CompleteAnimations();
+        break;
+    }
+    // Leave tab closing mode now so that |bounds_animator| can use
+    // |layout_helper_| to calculate ideal bounds without interference.
+    layout_helper_->ExitTabClosingMode();
   }
 
   for (int i = 0; i < tab_count(); ++i) {
@@ -2315,6 +2333,12 @@ void TabStrip::AnimateToIdealBounds() {
     bounds_animator_.AnimateViewTo(new_tab_button_,
                                    new_tab_button_ideal_bounds_);
   }
+}
+
+void TabStrip::ExitTabClosingMode() {
+  in_tab_close_ = false;
+  available_width_for_tabs_ = -1;
+  layout_helper_->ExitTabClosingMode();
 }
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
@@ -2629,8 +2653,7 @@ void TabStrip::ResizeLayoutTabs() {
   // keep spying on messages forever.
   RemoveMessageLoopObserver();
 
-  in_tab_close_ = false;
-  available_width_for_tabs_ = -1;
+  ExitTabClosingMode();
   int pinned_tab_count = GetPinnedTabCount();
   if (pinned_tab_count == tab_count()) {
     // Only pinned tabs, we know the tab widths won't have changed (all
@@ -2816,8 +2839,7 @@ void TabStrip::StartResizeLayoutAnimation() {
 }
 
 void TabStrip::StartPinnedTabAnimation() {
-  in_tab_close_ = false;
-  available_width_for_tabs_ = -1;
+  ExitTabClosingMode();
 
   PrepareForAnimation();
 
