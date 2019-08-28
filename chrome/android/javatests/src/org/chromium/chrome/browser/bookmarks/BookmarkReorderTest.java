@@ -29,7 +29,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
-import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.browser.Features;

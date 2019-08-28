@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -19,7 +19,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.R;
 import org.chromium.ui.widget.AnchoredPopupWindow;
 import org.chromium.ui.widget.ChromeImageButton;
 import org.chromium.ui.widget.ViewRectProvider;
@@ -183,38 +182,39 @@ public class ListMenuButton
         dismiss();
 
         // Create the adapter for the ListView.
-        ArrayAdapter<Item> adapter = new ArrayAdapter<Item>(
-                getContext(), R.layout.list_menu_item, items) {
-            @Override
-            public boolean areAllItemsEnabled() {
-                return false;
-            }
+        ArrayAdapter<Item> adapter =
+                new ArrayAdapter<Item>(getContext(), R.layout.list_menu_item, items) {
+                    @Override
+                    public boolean areAllItemsEnabled() {
+                        return false;
+                    }
 
-            @Override
-            public boolean isEnabled(int position) {
-                return items[position].getIsEnabled();
-            }
+                    @Override
+                    public boolean isEnabled(int position) {
+                        return items[position].getIsEnabled();
+                    }
 
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
+                    @Override
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        View view = super.getView(position, convertView, parent);
 
-                // The view needs to have an OnClickListener for TalkBack to announce the disabled
-                // state. In this case, we need to let the ListView handle the click.
-                view.setOnClickListener(
-                        (View v) -> ((ListView) parent).performItemClick(v, position, 0));
+                        // The view needs to have an OnClickListener for TalkBack to announce the
+                        // disabled state. In this case, we need to let the ListView handle the
+                        // click.
+                        view.setOnClickListener(
+                                (View v) -> ((ListView) parent).performItemClick(v, position, 0));
 
-                view.setEnabled(isEnabled(position));
+                        view.setEnabled(isEnabled(position));
 
-                // Set the compound drawable at the end for items with a valid endIconId,
-                // otherwise clear the compound drawable if the endIconId is 0.
-                ((TextView) view)
-                        .setCompoundDrawablesRelativeWithIntrinsicBounds(
-                                0, 0, items[position].getEndIconId(), 0);
+                        // Set the compound drawable at the end for items with a valid endIconId,
+                        // otherwise clear the compound drawable if the endIconId is 0.
+                        ((TextView) view)
+                                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                                        0, 0, items[position].getEndIconId(), 0);
 
-                return view;
-            }
-        };
+                        return view;
+                    }
+                };
 
         // Create the content view and set up its ListView.
         ViewGroup contentView = (ViewGroup) LayoutInflater.from(getContext())

@@ -15,9 +15,9 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.widget.ListMenuButton;
-import org.chromium.chrome.browser.widget.ListMenuButton.Item;
-import org.chromium.chrome.browser.widget.ListMenuButton.PopupMenuShownListener;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton.Item;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton.PopupMenuShownListener;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.bookmarks.BookmarkId;
 
