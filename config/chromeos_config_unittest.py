@@ -670,6 +670,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
       if build_name.startswith('clapper'):
         continue
 
+      if build_name.startswith('betty'):
+        continue
+
       if (config.build_type == 'canary' and 'test' in config.images and
           config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(
