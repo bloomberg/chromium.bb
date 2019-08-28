@@ -77,7 +77,7 @@ void ProcessedTrace::AddPacket(TraceRenderer* renderer,
                      &packet});
 }
 
-absl::flat_hash_set<uint64_t>* ProcessedTrace::getPacketsAcked(
+absl::flat_hash_set<uint64_t>* ProcessedTrace::GetPacketsAcked(
     const EncryptionLevel enc_level) {
   switch (enc_level) {
     case ENCRYPTION_INITIAL:
@@ -92,7 +92,7 @@ absl::flat_hash_set<uint64_t>* ProcessedTrace::getPacketsAcked(
   }
 }
 
-absl::flat_hash_set<uint64_t>* ProcessedTrace::getPacketsLost(
+absl::flat_hash_set<uint64_t>* ProcessedTrace::GetPacketsLost(
     const EncryptionLevel enc_level) {
   switch (enc_level) {
     case ENCRYPTION_INITIAL:
@@ -131,7 +131,7 @@ ProcessedTrace::ProcessedTrace(std::unique_ptr<Trace> trace,
       for (const Frame& frame : event.frames()) {
         for (const AckBlock& range : frame.ack_info().acked_packets()) {
           for (size_t i = range.first_packet(); i <= range.last_packet(); i++) {
-            if (!getPacketsAcked(event.encryption_level())->insert(i).second) {
+            if (!GetPacketsAcked(event.encryption_level())->insert(i).second) {
               continue;
             }
             Interval mapped =
@@ -139,7 +139,7 @@ ProcessedTrace::ProcessedTrace(std::unique_ptr<Trace> trace,
             AddPacket(renderer, event, mapped, PacketType::ACKED);
             acks_.emplace(vec2(event.time_us(), mapped.offset), i);
             // Don't count spurious retransmissions as losses.
-            getPacketsLost(event.encryption_level())->erase(i);
+            GetPacketsLost(event.encryption_level())->erase(i);
           }
         }
       }
@@ -148,7 +148,7 @@ ProcessedTrace::ProcessedTrace(std::unique_ptr<Trace> trace,
       Interval mapped = numbering.GetTraceNumbering(event.packet_number(),
                                                     event.encryption_level());
       AddPacket(renderer, event, mapped, PacketType::LOST);
-      getPacketsLost(event.encryption_level())->insert(event.packet_number());
+      GetPacketsLost(event.encryption_level())->insert(event.packet_number());
     }
     if (event.event_type() == APPLICATION_LIMITED) {
       // Normally, we would use the size of the packet as height, but
@@ -190,11 +190,11 @@ bool ProcessedTrace::SummaryTable(Table* table,
       case PACKET_SENT:
         count_sent++;
         bytes_sent += it->packet_size();
-        if (getPacketsAcked(it->encryption_level())
+        if (GetPacketsAcked(it->encryption_level())
                 ->count(it->packet_number()) > 0) {
           bytes_sent_acked += it->packet_size();
         }
-        if (getPacketsLost(it->encryption_level())->count(it->packet_number()) >
+        if (GetPacketsLost(it->encryption_level())->count(it->packet_number()) >
             0) {
           bytes_sent_lost += it->packet_size();
         }

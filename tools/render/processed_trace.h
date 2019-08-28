@@ -80,8 +80,8 @@ class ProcessedTrace {
                  Interval interval,
                  PacketType type);
 
-  absl::flat_hash_set<uint64_t>* getPacketsAcked(const EncryptionLevel);
-  absl::flat_hash_set<uint64_t>* getPacketsLost(const EncryptionLevel);
+  absl::flat_hash_set<uint64_t>* GetPacketsAcked(const EncryptionLevel);
+  absl::flat_hash_set<uint64_t>* GetPacketsLost(const EncryptionLevel);
 
   std::unique_ptr<Trace> trace_;
   absl::flat_hash_set<uint64_t> packets_acked_initial_;

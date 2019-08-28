@@ -54,20 +54,20 @@ class NumberingWithoutRetransmissions {
     }
     TraceOffset offset = current_offset_;
     current_offset_ += size;
-    getOffsets(event.encryption_level())
+    GetOffsets(event.encryption_level())
         ->emplace(event.packet_number(), Interval{offset, size});
     return {offset, size};
   }
 
   Interval GetTraceNumbering(uint64_t packet_number,
                              EncryptionLevel enc_level) {
-    auto offsets = getOffsets(enc_level);
+    auto offsets = GetOffsets(enc_level);
     auto it = offsets->find(packet_number);
     return it != offsets->end() ? it->second : Interval{0, 0};
   }
 
  private:
-  absl::flat_hash_map<uint64_t, Interval>* getOffsets(
+  absl::flat_hash_map<uint64_t, Interval>* GetOffsets(
       EncryptionLevel enc_level) {
     switch (enc_level) {
       case ENCRYPTION_INITIAL:
