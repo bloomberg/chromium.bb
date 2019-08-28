@@ -3280,6 +3280,21 @@ void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
                         GetIndexInParent(), GetOrCreateAtkObject());
 }
 
+void AXPlatformNodeAuraLinux::OnParentChanged() {
+  if (!atk_object_)
+    return;
+
+  AtkPropertyValues property_values;
+  property_values.property_name = "accessible-parent";
+  property_values.new_value = G_VALUE_INIT;
+  g_value_init(&property_values.new_value, G_TYPE_OBJECT);
+  g_value_set_object(&property_values.new_value, GetParent());
+  g_signal_emit_by_name(G_OBJECT(atk_object_),
+                        "property-change::accessible-parent", &property_values,
+                        nullptr);
+  g_value_unset(&property_values.new_value);
+}
+
 void AXPlatformNodeAuraLinux::OnInvalidStatusChanged() {
   atk_object_notify_state_change(
       ATK_OBJECT(GetOrCreateAtkObject()), ATK_STATE_INVALID_ENTRY,

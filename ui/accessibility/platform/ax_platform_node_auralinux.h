@@ -164,6 +164,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnDocumentTitleChanged();
   void OnSubtreeCreated();
   void OnSubtreeWillBeDeleted();
+  void OnParentChanged();
   void OnWindowVisibilityChanged();
 
   bool SupportsSelectionWithAtkSelection();
