@@ -77,7 +77,7 @@ class DownloadProtectionService {
   // invoked on the UI thread.  This method must be called once the download
   // is finished and written to disk.
   virtual void CheckClientDownload(download::DownloadItem* item,
-                                   const CheckDownloadCallback& callback);
+                                   CheckDownloadCallback callback);
 
   // Checks whether any of the URLs in the redirect chain of the
   // download match the SafeBrowsing bad binary URL list.  The result is
@@ -85,7 +85,7 @@ class DownloadProtectionService {
   // called on the UI thread, and the callback will also be invoked on the UI
   // thread.  Pre-condition: !info.download_url_chain.empty().
   virtual void CheckDownloadUrl(download::DownloadItem* item,
-                                const CheckDownloadCallback& callback);
+                                CheckDownloadCallback callback);
 
   // Returns true iff the download specified by |info| should be scanned by
   // CheckClientDownload() for malicious content.
@@ -99,7 +99,7 @@ class DownloadProtectionService {
       const base::FilePath& default_file_path,
       const std::vector<base::FilePath::StringType>& alternate_extensions,
       Profile* profile,
-      const CheckDownloadCallback& callback);
+      CheckDownloadCallback callback);
 
   // Display more information to the user regarding the download specified by
   // |info|. This method is invoked when the user requests more information

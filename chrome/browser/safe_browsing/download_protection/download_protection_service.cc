@@ -167,14 +167,15 @@ bool DownloadProtectionService::IsHashManuallyBlacklisted(
 
 void DownloadProtectionService::CheckClientDownload(
     download::DownloadItem* item,
-    const CheckDownloadCallback& callback) {
+    CheckDownloadCallback callback) {
   if (item->GetDangerType() ==
       download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY) {
-    callback.Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
+    std::move(callback).Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
     return;
   }
   auto request = std::make_unique<CheckClientDownloadRequest>(
-      item, callback, this, database_manager_, binary_feature_extractor_.get());
+      item, std::move(callback), this, database_manager_,
+      binary_feature_extractor_.get());
   CheckClientDownloadRequest* request_copy = request.get();
   download_requests_[request_copy] = std::move(request);
   request_copy->Start();
@@ -182,7 +183,7 @@ void DownloadProtectionService::CheckClientDownload(
 
 void DownloadProtectionService::CheckDownloadUrl(
     download::DownloadItem* item,
-    const CheckDownloadCallback& callback) {
+    CheckDownloadCallback callback) {
   DCHECK(!item->GetUrlChain().empty());
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(item);
@@ -192,12 +193,12 @@ void DownloadProtectionService::CheckDownloadUrl(
       MatchesEnterpriseWhitelist(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
           item->GetUrlChain())) {
-    callback.Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
+    std::move(callback).Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
     return;
   }
 
   scoped_refptr<DownloadUrlSBClient> client(new DownloadUrlSBClient(
-      item, this, callback, ui_manager_, database_manager_));
+      item, this, std::move(callback), ui_manager_, database_manager_));
   // The client will release itself once it is done.
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
@@ -223,17 +224,18 @@ void DownloadProtectionService::CheckPPAPIDownloadRequest(
     const base::FilePath& default_file_path,
     const std::vector<base::FilePath::StringType>& alternate_extensions,
     Profile* profile,
-    const CheckDownloadCallback& callback) {
+    CheckDownloadCallback callback) {
   DVLOG(1) << __func__ << " url:" << requestor_url
            << " default_file_path:" << default_file_path.value();
   if (MatchesEnterpriseWhitelist(profile,
                                  {requestor_url, initiating_frame_url})) {
-    callback.Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
+    std::move(callback).Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
     return;
   }
   std::unique_ptr<PPAPIDownloadRequest> request(new PPAPIDownloadRequest(
       requestor_url, initiating_frame_url, web_contents, default_file_path,
-      alternate_extensions, profile, callback, this, database_manager_));
+      alternate_extensions, profile, std::move(callback), this,
+      database_manager_));
   PPAPIDownloadRequest* request_copy = request.get();
   auto insertion_result = ppapi_download_requests_.insert(
       std::make_pair(request_copy, std::move(request)));

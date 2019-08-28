@@ -155,7 +155,7 @@ void MaybeReportDownloadDeepScanningVerdict(
 
 CheckClientDownloadRequest::CheckClientDownloadRequest(
     download::DownloadItem* item,
-    const CheckDownloadCallback& callback,
+    CheckDownloadCallback callback,
     DownloadProtectionService* service,
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
     BinaryFeatureExtractor* binary_feature_extractor)
@@ -169,7 +169,7 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
 #if defined(OS_MACOSX)
       disk_image_signature_(nullptr),
 #endif
-      callback_(callback),
+      callback_(std::move(callback)),
       service_(service),
       binary_feature_extractor_(binary_feature_extractor),
       database_manager_(database_manager),
@@ -864,7 +864,7 @@ void CheckClientDownloadRequest::FinishRequest(
            << " verdict:" << reason << " result:" << static_cast<int>(result);
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                             REASON_MAX);
-  callback_.Run(result);
+  std::move(callback_).Run(result);
   item_->RemoveObserver(this);
   service_->RequestFinished(this);
   // DownloadProtectionService::RequestFinished may delete us.

@@ -47,7 +47,7 @@ class CheckClientDownloadRequest : public download::DownloadItem::Observer {
  public:
   CheckClientDownloadRequest(
       download::DownloadItem* item,
-      const CheckDownloadCallback& callback,
+      CheckDownloadCallback callback,
       DownloadProtectionService* service,
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       BinaryFeatureExtractor* binary_feature_extractor);
