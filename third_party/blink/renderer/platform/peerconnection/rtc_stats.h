@@ -2,29 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_RTC_STATS_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_STATS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
 
-namespace content {
+namespace blink {
 
 // Wrapper around a webrtc::RTCStatsReport. Filters out any stats objects that
 // aren't whitelisted. |filter| controls whether to include only standard
 // members (RTCStatsMemberInterface::is_standardized return true) or not
 // (RTCStatsMemberInterface::is_standardized return false).
-class CONTENT_EXPORT RTCStatsReport : public blink::WebRTCStatsReport {
+//
+// Note: This class is named |RTCStatsReportPlatform| not to collide with class
+// |RTCStatsReport|, from renderer/modules/peerconnection/rtc_stats_report.cc|h.
+//
+// TODO(crbug.com/787254): Switch over the classes below from using WebVector
+// and WebString to WTF::Vector and WTF::String, when their respective parent
+// classes are gone.
+class PLATFORM_EXPORT RTCStatsReportPlatform : public WebRTCStatsReport {
  public:
-  RTCStatsReport(
+  RTCStatsReportPlatform(
       const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
       const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
-  ~RTCStatsReport() override;
+  ~RTCStatsReportPlatform() override;
   std::unique_ptr<blink::WebRTCStatsReport> CopyHandle() const override;
 
   std::unique_ptr<blink::WebRTCStats> GetStats(
@@ -41,7 +48,7 @@ class CONTENT_EXPORT RTCStatsReport : public blink::WebRTCStatsReport {
   const size_t size_;
 };
 
-class CONTENT_EXPORT RTCStats : public blink::WebRTCStats {
+class PLATFORM_EXPORT RTCStats : public blink::WebRTCStats {
  public:
   RTCStats(
       const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
@@ -65,7 +72,7 @@ class CONTENT_EXPORT RTCStats : public blink::WebRTCStats {
   const std::vector<const webrtc::RTCStatsMemberInterface*> stats_members_;
 };
 
-class CONTENT_EXPORT RTCStatsMember : public blink::WebRTCStatsMember {
+class PLATFORM_EXPORT RTCStatsMember : public blink::WebRTCStatsMember {
  public:
   RTCStatsMember(const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
                  const webrtc::RTCStatsMemberInterface* member);
@@ -101,13 +108,9 @@ class CONTENT_EXPORT RTCStatsMember : public blink::WebRTCStatsMember {
 // It is invoked on the WebRTC signaling thread and will post a task to invoke
 // |callback| on the thread given in the |main_thread| argument.
 // The argument to the callback will be a |blink::WebRTCStatsReport|.
-class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
+class PLATFORM_EXPORT RTCStatsCollectorCallbackImpl
+    : public webrtc::RTCStatsCollectorCallback {
  public:
-  static rtc::scoped_refptr<RTCStatsCollectorCallbackImpl> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-      blink::WebRTCStatsReportCallback callback,
-      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
-
   void OnStatsDelivered(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override;
 
@@ -126,8 +129,6 @@ class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
   blink::WebVector<webrtc::NonStandardGroupId> exposed_group_ids_;
 };
 
-CONTENT_EXPORT void WhitelistStatsForTesting(const char* type);
+}  // namespace blink
 
-}  // namespace content
-
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_RTC_STATS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_H_

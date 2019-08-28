@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/rtc_stats.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 
 #include <algorithm>
 #include <set>
@@ -15,7 +15,7 @@
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -106,7 +106,14 @@ size_t CountWhitelistedStats(
 
 }  // namespace
 
-RTCStatsReport::RTCStatsReport(
+std::unique_ptr<blink::WebRTCStatsReport> CreateRTCStatsReport(
+    const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
+    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+  return std::make_unique<RTCStatsReportPlatform>(std::move(stats_report),
+                                                  exposed_group_ids);
+}
+
+RTCStatsReportPlatform::RTCStatsReportPlatform(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
     const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids)
     : stats_report_(stats_report),
@@ -117,37 +124,41 @@ RTCStatsReport::RTCStatsReport(
   DCHECK(stats_report_);
 }
 
-RTCStatsReport::~RTCStatsReport() {
+RTCStatsReportPlatform::~RTCStatsReportPlatform() {}
+
+std::unique_ptr<blink::WebRTCStatsReport> RTCStatsReportPlatform::CopyHandle()
+    const {
+  return CreateRTCStatsReport(stats_report_, exposed_group_ids_);
 }
 
-std::unique_ptr<blink::WebRTCStatsReport> RTCStatsReport::CopyHandle() const {
-  return std::unique_ptr<blink::WebRTCStatsReport>(
-      new RTCStatsReport(stats_report_, exposed_group_ids_));
-}
-
-std::unique_ptr<blink::WebRTCStats> RTCStatsReport::GetStats(
+std::unique_ptr<blink::WebRTCStats> RTCStatsReportPlatform::GetStats(
     blink::WebString id) const {
   const webrtc::RTCStats* stats = stats_report_->Get(id.Utf8());
   if (!stats || !IsWhitelistedStats(*stats))
     return std::unique_ptr<blink::WebRTCStats>();
-  return std::unique_ptr<blink::WebRTCStats>(
-      new RTCStats(stats_report_, stats, exposed_group_ids_));
+  return CreateRTCStats(stats_report_, stats, exposed_group_ids_);
 }
 
-std::unique_ptr<blink::WebRTCStats> RTCStatsReport::Next() {
+std::unique_ptr<blink::WebRTCStats> RTCStatsReportPlatform::Next() {
   while (it_ != end_) {
     const webrtc::RTCStats& next = *it_;
     ++it_;
-    if (IsWhitelistedStats(next)) {
-      return std::unique_ptr<blink::WebRTCStats>(
-          new RTCStats(stats_report_, &next, exposed_group_ids_));
-    }
+    if (IsWhitelistedStats(next))
+      return CreateRTCStats(stats_report_, &next, exposed_group_ids_);
   }
   return std::unique_ptr<blink::WebRTCStats>();
 }
 
-size_t RTCStatsReport::Size() const {
+size_t RTCStatsReportPlatform::Size() const {
   return size_;
+}
+
+std::unique_ptr<blink::WebRTCStats> CreateRTCStats(
+    const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
+    const webrtc::RTCStats* stats,
+    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+  return std::make_unique<RTCStats>(std::move(stats_owner), stats,
+                                    exposed_group_ids);
 }
 
 RTCStats::RTCStats(
@@ -162,8 +173,7 @@ RTCStats::RTCStats(
   DCHECK(stats_owner_->Get(stats_->id()));
 }
 
-RTCStats::~RTCStats() {
-}
+RTCStats::~RTCStats() {}
 
 blink::WebString RTCStats::Id() const {
   return blink::WebString::FromUTF8(stats_->id());
@@ -174,8 +184,8 @@ blink::WebString RTCStats::GetType() const {
 }
 
 double RTCStats::Timestamp() const {
-  return stats_->timestamp_us() / static_cast<double>(
-      base::Time::kMicrosecondsPerMillisecond);
+  return stats_->timestamp_us() /
+         static_cast<double>(base::Time::kMicrosecondsPerMillisecond);
 }
 
 size_t RTCStats::MembersCount() const {
@@ -184,21 +194,24 @@ size_t RTCStats::MembersCount() const {
 
 std::unique_ptr<blink::WebRTCStatsMember> RTCStats::GetMember(size_t i) const {
   DCHECK_LT(i, stats_members_.size());
-  return std::unique_ptr<blink::WebRTCStatsMember>(
-      new RTCStatsMember(stats_owner_, stats_members_[i]));
+  return CreateRTCStatsMember(stats_owner_, stats_members_[i]);
+}
+
+std::unique_ptr<blink::WebRTCStatsMember> CreateRTCStatsMember(
+    const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
+    const webrtc::RTCStatsMemberInterface* member) {
+  return std::make_unique<RTCStatsMember>(std::move(stats_owner), member);
 }
 
 RTCStatsMember::RTCStatsMember(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
     const webrtc::RTCStatsMemberInterface* member)
-    : stats_owner_(stats_owner),
-      member_(member) {
+    : stats_owner_(stats_owner), member_(member) {
   DCHECK(stats_owner_);
   DCHECK(member_);
 }
 
-RTCStatsMember::~RTCStatsMember() {
-}
+RTCStatsMember::~RTCStatsMember() {}
 
 blink::WebString RTCStatsMember::GetName() const {
   return blink::WebString::FromUTF8(member_->name());
@@ -332,9 +345,8 @@ blink::WebVector<blink::WebString> RTCStatsMember::ValueSequenceString() const {
   return web_sequence;
 }
 
-// static
-rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>
-RTCStatsCollectorCallbackImpl::Create(
+rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback>
+CreateRTCStatsCollectorCallback(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     blink::WebRTCStatsReportCallback callback,
     const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
@@ -370,7 +382,7 @@ void RTCStatsCollectorCallbackImpl::OnStatsDeliveredOnMainThread(
   DCHECK(report);
   DCHECK(callback_);
   // Make sure the callback is destroyed in the main thread as well.
-  std::move(callback_).Run(std::make_unique<RTCStatsReport>(
+  std::move(callback_).Run(CreateRTCStatsReport(
       base::WrapRefCounted(report.get()), exposed_group_ids_));
 }
 
@@ -378,4 +390,4 @@ void WhitelistStatsForTesting(const char* type) {
   GetStatsWhitelist()->WhitelistStatsForTesting(type);
 }
 
-}  // namespace content
+}  // namespace blink
