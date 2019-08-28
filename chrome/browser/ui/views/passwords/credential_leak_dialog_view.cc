@@ -89,10 +89,9 @@ void CredentialLeakDialogView::ShowCredentialLeakPrompt() {
 }
 
 void CredentialLeakDialogView::ControllerGone() {
-  // During Widget::Close() phase some accessibility event may occur. Thus,
-  // |controller_| should be kept around.
+  // Widget::Close() synchronously calls Close() on this instance, which resets
+  // the |controller_|.
   GetWidget()->Close();
-  controller_ = nullptr;
 }
 
 ui::ModalType CredentialLeakDialogView::GetModalType() const {
@@ -112,16 +111,30 @@ base::string16 CredentialLeakDialogView::GetDialogButtonLabel(
                                         : controller_->GetCancelButtonLabel();
 }
 
-void CredentialLeakDialogView::WindowClosing() {
-  if (controller_) {
-    controller_->OnCloseDialog();
-  }
+bool CredentialLeakDialogView::Cancel() {
+  if (controller_)
+    // Since OnCancelDialog() synchronously invokes Close() on this instance, we
+    // need to clear the |controller_| before to avoid notifying the controller
+    // twice.
+    std::exchange(controller_, nullptr)->OnCancelDialog();
+  return true;
 }
 
 bool CredentialLeakDialogView::Accept() {
-  if (controller_ && controller_->ShouldCheckPasswords()) {
-    controller_->OnCheckPasswords();
-  }
+  if (controller_)
+    // Since OnAcceptDialog() synchronously invokes Close() on this instance, we
+    // need to clear the |controller_| before to avoid notifying the controller
+    // twice.
+    std::exchange(controller_, nullptr)->OnAcceptDialog();
+  return true;
+}
+
+bool CredentialLeakDialogView::Close() {
+  if (controller_)
+    // Since OnCloseDialog() synchronously invokes Close() on this instance, we
+    // need to clear the |controller_| before to avoid notifying the controller
+    // twice.
+    std::exchange(controller_, nullptr)->OnCloseDialog();
   return true;
 }
 
