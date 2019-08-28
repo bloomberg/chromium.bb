@@ -388,6 +388,14 @@ class OwnersDatabaseTest(_BaseTestCase):
         john: {'': 'comment preceeded by empty line'},
         peter: {'': 'comment in the middle'}})
 
+  def test_owners_rooted_at_file(self):
+    self.files['/foo/OWNERS'] = owners_file(darin, file='//bar/OWNERS')
+    self.files['/bar/OWNERS'] = owners_file(john,
+        lines=['per-file nope.cc=' + ben])
+    db = self.db()
+    self.assertEqual(db.owners_rooted_at_file('foo/OWNERS'),
+                     set([john, darin]))
+
 
 class ReviewersForTest(_BaseTestCase):
   def assert_reviewers_for(self, files, potential_suggested_reviewers,
