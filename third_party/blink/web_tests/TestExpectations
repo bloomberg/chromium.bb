@@ -251,7 +251,7 @@ crbug.com/991095 wpt_internal/display-lock/rendersubtree/acquire-clone.html [ Fa
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
 
 # virtual-scroller failures
-crbug.com/986574 wpt_internal/virtual-scroller/ [ Failure ]
+crbug.com/998356 wpt_internal/virtual-scroller/part.html [ Failure ]
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
