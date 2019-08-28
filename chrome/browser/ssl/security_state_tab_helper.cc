@@ -64,21 +64,6 @@ void RecordSecurityLevel(
   }
 }
 
-security_state::SafetyTipStatus GetSecurityStateSafetyTipType(
-    safety_tips::SafetyTipType type) {
-  switch (type) {
-    case safety_tips::SafetyTipType::kNone:
-      return security_state::SafetyTipStatus::kNone;
-    case safety_tips::SafetyTipType::kBadReputation:
-      return security_state::SafetyTipStatus::kBadReputation;
-    case safety_tips::SafetyTipType::kLookalikeUrl:
-      return security_state::SafetyTipStatus::kLookalike;
-    default:
-      NOTREACHED();
-      return security_state::SafetyTipStatus::kUnknown;
-  }
-}
-
 }  // namespace
 
 using password_manager::metrics_util::PasswordType;
@@ -109,9 +94,8 @@ SecurityStateTabHelper::GetVisibleSecurityState() const {
           web_contents());
   state->safety_tip_status =
       reputation_web_contents_observer
-          ? GetSecurityStateSafetyTipType(
-                reputation_web_contents_observer
-                    ->GetSafetyTipTypeForVisibleNavigation())
+          ? reputation_web_contents_observer
+                ->GetSafetyTipStatusForVisibleNavigation()
           : security_state::SafetyTipStatus::kUnknown;
   return state;
 }
