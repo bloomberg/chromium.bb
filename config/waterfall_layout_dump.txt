@@ -2052,6 +2052,23 @@
   kernel-3_14-release-afdo-verify-tryjob
   kernel-3_18-release-afdo-verify-tryjob
   kernel-4_4-release-afdo-verify-tryjob
+  kevin-arc64-chrome-pfq-tryjob
+  kevin-arc64-chromium-pfq-tryjob
+  kevin-arc64-compile-only-pre-cq
+  kevin-arc64-full-tryjob
+  kevin-arc64-llvm-next-toolchain-tryjob
+  kevin-arc64-llvm-toolchain-tryjob
+  kevin-arc64-no-vmtest-pre-cq
+  kevin-arc64-paladin-tryjob
+  kevin-arc64-payloads-tryjob
+  kevin-arc64-pre-cq
+  kevin-arc64-release-afdo-generate-tryjob
+  kevin-arc64-release-afdo-tryjob
+  kevin-arc64-release-afdo-use-tryjob
+  kevin-arc64-release-tryjob
+  kevin-arc64-tot-chrome-pfq-informational-tryjob
+  kevin-arc64-tot-chromium-pfq-informational-tryjob
+  kevin-arc64-unittest-stress
   kevin-arcnext-chrome-pfq-tryjob
   kevin-arcnext-chromium-pfq-tryjob
   kevin-arcnext-compile-only-pre-cq
