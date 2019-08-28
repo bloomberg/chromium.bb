@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_RTC_VIDEO_DECODER_ADAPTER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_VIDEO_DECODER_ADAPTER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_DECODER_ADAPTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_DECODER_ADAPTER_H_
 
 #include <memory>
 
@@ -14,11 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
 #include "media/base/decode_status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
@@ -34,7 +34,7 @@ class MediaLog;
 class VideoFrame;
 }  // namespace media
 
-namespace content {
+namespace blink {
 
 // This class decodes video for WebRTC using a media::VideoDecoder. In
 // particular, either GpuVideoDecoder or MojoVideoDecoder are used to provide
@@ -48,7 +48,7 @@ namespace content {
 // the worker. Calling the DecodedImageCallback after the DecodingThread is
 // stopped is illegal but, because we decode on the media thread, there is no
 // way to synchronize this correctly.
-class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
+class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
  public:
   // Creates and initializes an RTCVideoDecoderAdapter. Returns nullptr if
   // |format| cannot be supported.
@@ -137,6 +137,6 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderAdapter);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_RTC_VIDEO_DECODER_ADAPTER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_DECODER_ADAPTER_H_

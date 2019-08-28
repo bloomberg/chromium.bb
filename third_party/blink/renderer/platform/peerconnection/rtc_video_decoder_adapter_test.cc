@@ -19,7 +19,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "content/renderer/media/webrtc/rtc_video_decoder_adapter.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/decode_status.h"
 #include "media/base/media_util.h"
@@ -30,6 +29,7 @@
 #include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_video_decoder_adapter.h"
 #include "third_party/webrtc/api/video_codecs/video_codec.h"
 #include "third_party/webrtc/media/base/vp9_profile.h"
 #include "ui/gfx/geometry/rect.h"
@@ -43,7 +43,7 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -413,4 +413,4 @@ TEST_F(RTCVideoDecoderAdapterTest, HandlesFlushFailure) {
             WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE);
 }
 
-}  // namespace content
+}  // namespace blink

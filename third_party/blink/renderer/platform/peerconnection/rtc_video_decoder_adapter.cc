@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/rtc_video_decoder_adapter.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_video_decoder_adapter.h"
 
 #include <algorithm>
 #include <functional>
@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -21,7 +20,6 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -30,8 +28,10 @@
 #include "media/base/video_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_decode_accelerator.h"
+#include "third_party/blink/public/platform/modules/peerconnection/web_rtc_video_frame_adapter_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_video_utils.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/webrtc/api/video/video_frame.h"
 #include "third_party/webrtc/media/base/vp9_profile.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
@@ -40,13 +40,7 @@
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 #include "ui/gfx/color_space.h"
 
-#if defined(OS_WIN)
-#include "base/command_line.h"
-#include "base/win/windows_version.h"
-#include "content/public/common/content_switches.h"
-#endif  // defined(OS_WIN)
-
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -128,6 +122,12 @@ void OnRequestOverlayInfo(bool decoder_requires_restart_for_overlay,
 
 }  // namespace
 
+std::unique_ptr<webrtc::VideoDecoder> CreateRTCVideoDecoderAdapter(
+    media::GpuVideoAcceleratorFactories* gpu_factories,
+    const webrtc::SdpVideoFormat& format) {
+  return RTCVideoDecoderAdapter::Create(gpu_factories, format);
+}
+
 // static
 std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
     media::GpuVideoAcceleratorFactories* gpu_factories,
@@ -136,17 +136,9 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
 
   const webrtc::VideoCodecType video_codec_type =
       webrtc::PayloadStringToCodecType(format.name);
-#if defined(OS_WIN)
-  // Do not use hardware decoding for H.264 on Win7, due to high latency.
-  // See https://crbug.com/webrtc/5717.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWin7WebRtcHWH264Decoding) &&
-      video_codec_type == webrtc::kVideoCodecH264 &&
-      base::win::GetVersion() == base::win::Version::WIN7) {
-    DVLOG(1) << "H.264 HW decoding is not supported on Win7";
+
+  if (!Platform::Current()->IsWebRtcHWH264DecodingEnabled(video_codec_type))
     return nullptr;
-  }
-#endif  // defined(OS_WIN)
 
   // Bail early for unknown codecs.
   if (ToVideoCodec(video_codec_type) == media::kUnknownVideoCodec)
@@ -229,10 +221,9 @@ int32_t RTCVideoDecoderAdapter::InitDecode(
   return has_error_ ? WEBRTC_VIDEO_CODEC_UNINITIALIZED : WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t RTCVideoDecoderAdapter::Decode(
-    const webrtc::EncodedImage& input_image,
-    bool missing_frames,
-    int64_t render_time_ms) {
+int32_t RTCVideoDecoderAdapter::Decode(const webrtc::EncodedImage& input_image,
+                                       bool missing_frames,
+                                       int64_t render_time_ms) {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
 
@@ -455,7 +446,7 @@ void RTCVideoDecoderAdapter::OnOutput(scoped_refptr<media::VideoFrame> frame) {
           .set_video_frame_buffer(
               new rtc::RefCountedObject<blink::WebRtcVideoFrameAdapter>(
                   std::move(frame)))
-          .set_timestamp_rtp(timestamp.InMicroseconds())
+          .set_timestamp_rtp(static_cast<uint32_t>(timestamp.InMicroseconds()))
           .set_timestamp_us(0)
           .set_rotation(webrtc::kVideoRotation_0)
           .build();
@@ -538,4 +529,4 @@ void RTCVideoDecoderAdapter::FlushOnMediaThread(FlushDoneCB flush_success_cb,
           base::Passed(&flush_success_cb), base::Passed(&flush_fail_cb)));
 }
 
-}  // namespace content
+}  // namespace blink
