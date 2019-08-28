@@ -386,9 +386,6 @@ extern const char kEnableTLS13EarlyDataDescription[];
 extern const char kWinrtSensorsImplementationName[];
 extern const char kWinrtSensorsImplementationDescription[];
 
-extern const char kEnableGenericSensorName[];
-extern const char kEnableGenericSensorDescription[];
-
 extern const char kEnableGenericSensorExtraClassesName[];
 extern const char kEnableGenericSensorExtraClassesDescription[];
 
@@ -518,9 +515,6 @@ extern const char kEnableResamplingScrollEventsDescription[];
 
 extern const char kEnableResourceLoadingHintsName[];
 extern const char kEnableResourceLoadingHintsDescription[];
-
-extern const char kEnableSensorContentSettingName[];
-extern const char kEnableSensorContentSettingDescription[];
 
 extern const char kEnableSubresourceRedirectName[];
 extern const char kEnableSubresourceRedirectDescription[];

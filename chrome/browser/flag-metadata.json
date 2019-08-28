@@ -1213,14 +1213,9 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-generic-sensor",
-    "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 72
-  },
-  {
     "name": "enable-generic-sensor-extra-classes",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 83
   },
   {
     "name": "enable-google-branded-context-menu",
@@ -1597,11 +1592,6 @@
     "name": "enable-send-tab-to-self-when-signed-in",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
     "expiry_milestone": 78
-  },
-  {
-    "name": "enable-sensor-content-setting",
-    "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-service-worker-imported-script-update-check",

@@ -73,7 +73,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &features::kPrioritizeBootstrapTasks,
     &features::kServiceWorkerPaymentApps,
-    &features::kSensorContentSetting,
     &features::kShowTrustedPublisherURL,
     &features::kUserActivationV2,
     &features::kWebAuth,

@@ -622,12 +622,6 @@ const char kWinrtSensorsImplementationDescription[] =
     "Enables usage of the Windows.Devices.Sensors WinRT APIs on Windows for "
     "sensors";
 
-const char kEnableGenericSensorName[] = "Generic Sensor";
-const char kEnableGenericSensorDescription[] =
-    "Enables motion sensor classes based on Generic Sensor API, i.e. "
-    "Accelerometer, LinearAccelerationSensor, Gyroscope, "
-    "AbsoluteOrientationSensor and RelativeOrientationSensor interfaces.";
-
 const char kEnableGenericSensorExtraClassesName[] =
     "Generic Sensor Extra Classes";
 const char kEnableGenericSensorExtraClassesDescription[] =
@@ -871,10 +865,6 @@ const char kEnableResourceLoadingHintsName[] = "Enable resource loading hints";
 const char kEnableResourceLoadingHintsDescription[] =
     "Enable using server-provided resource loading hints to provide a preview "
     "over slow network connections.";
-
-const char kEnableSensorContentSettingName[] = "Sensor content setting";
-const char kEnableSensorContentSettingDescription[] =
-    "Enable UI in content settings to control access to the sensor APIs.";
 
 const char kEnableSyncUSSBookmarksName[] = "Enable USS for bookmarks sync";
 const char kEnableSyncUSSBookmarksDescription[] =
