@@ -250,7 +250,6 @@ class CORE_EXPORT NGInlineItem {
   unsigned is_symbol_marker_ : 1;
   unsigned is_generated_for_line_break_ : 1;
   friend class NGInlineNode;
-  friend class NGInlineNodeDataEditor;
 };
 
 inline void NGInlineItem::AssertOffset(unsigned offset) const {
