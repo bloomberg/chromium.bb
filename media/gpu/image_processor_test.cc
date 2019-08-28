@@ -126,6 +126,27 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToMem) {
   EXPECT_EQ(ip_client->GetNumOfProcessedImages(), 1u);
   EXPECT_TRUE(ip_client->WaitForFrameProcessors());
 }
+
+TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToDmabuf) {
+  // Load the test input image. We only need the output image's metadata so we
+  // can compare checksums.
+  test::Image input_image(std::get<0>(GetParam()));
+  test::Image output_image(std::get<1>(GetParam()));
+  ASSERT_TRUE(input_image.Load());
+  ASSERT_TRUE(output_image.LoadMetadata());
+
+  auto ip_client =
+      CreateImageProcessorClient(input_image, {VideoFrame::STORAGE_DMABUFS},
+                                 output_image, {VideoFrame::STORAGE_DMABUFS});
+
+  ip_client->Process(input_image, output_image);
+
+  EXPECT_TRUE(ip_client->WaitUntilNumImageProcessed(1u));
+  EXPECT_EQ(ip_client->GetErrorCount(), 0u);
+  EXPECT_EQ(ip_client->GetNumOfProcessedImages(), 1u);
+  EXPECT_TRUE(ip_client->WaitForFrameProcessors());
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 // BGRA -> NV12
@@ -146,7 +167,6 @@ INSTANTIATE_TEST_SUITE_P(
 #if defined(OS_CHROMEOS)
 // TODO(hiroh): Add more tests.
 // MEM->DMABUF (V4L2VideoEncodeAccelerator),
-// DMABUF->DMABUF (GpuArcVideoEncodeAccelerator),
 #endif
 
 }  // namespace
