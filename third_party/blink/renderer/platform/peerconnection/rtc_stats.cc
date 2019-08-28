@@ -8,12 +8,24 @@
 #include <set>
 #include <string>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
+
+namespace WTF {
+
+template <typename T>
+struct CrossThreadCopier<rtc::scoped_refptr<T>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = rtc::scoped_refptr<T>;
+  static Type Copy(Type pointer) { return pointer; }
+};
+
+}  // namespace WTF
 
 namespace blink {
 
@@ -369,9 +381,9 @@ RTCStatsCollectorCallbackImpl::~RTCStatsCollectorCallbackImpl() {
 
 void RTCStatsCollectorCallbackImpl::OnStatsDelivered(
     const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
-  main_thread_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
+  PostCrossThreadTask(
+      *main_thread_.get(), FROM_HERE,
+      CrossThreadBindOnce(
           &RTCStatsCollectorCallbackImpl::OnStatsDeliveredOnMainThread,
           rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>(this), report));
 }
