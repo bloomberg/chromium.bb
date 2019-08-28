@@ -2022,7 +2022,7 @@
   {
     "name": "extensions-toolbar-menu",
     "owners": [ "//extensions/OWNERS", "pbos" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "fcm-invalidations",
@@ -2068,7 +2068,7 @@
   {
     "name": "focus-mode",
     "owners": [ "dfried", "pbos", "yiningwang@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "font-src-local-matching",
@@ -2249,7 +2249,7 @@
   {
     "name": "installable-ink-drop",
     "owners": [ "collinbaker", "pbos" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 82
   },
   {
     "name": "instant-tethering",
@@ -3101,7 +3101,7 @@
   {
     "name": "tab-outlines-in-low-contrast-themes",
     "owners": [ "dfried" ],
-    "expiry_milestone":  79
+    "expiry_milestone":  82
   },
   {
     "name": "tab-switcher-longpress-menu",
