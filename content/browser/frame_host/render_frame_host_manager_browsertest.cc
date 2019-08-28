@@ -5035,7 +5035,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(2, nav_controller.GetEntryCount());
 
   // Navigate again to the initial successful document, expecting a new
-  // navigation and new SiteInstance.
+  // navigation and new SiteInstance. A new SiteInstance is expected here
+  // because we are doing a cross-site navigation from |kUnreachableWebDataURL|
+  // to a site for |url|. This triggers the creation of a new BrowsingInstance
+  // and therefore a new SiteInstance.
   EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_NE(
       GURL(kUnreachableWebDataURL),
@@ -5046,21 +5049,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_TRUE(static_cast<SiteInstanceImpl*>(
                     shell()->web_contents()->GetMainFrame()->GetSiteInstance())
                     ->IsDefaultSiteInstance());
-    // TODO(acolwell): This should be changed to EXPECT_EQ() once the initial
-    // navigation is able to use the default SiteInstance . Right now they
-    // are not equal because the initial navigation converts an empty
-    // SiteInstance into one specifically for the initial URL.
-    EXPECT_NE(success_site_instance,
-              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
-  } else {
-    EXPECT_EQ(success_site_instance->GetSiteURL(), shell()
-                                                       ->web_contents()
-                                                       ->GetMainFrame()
-                                                       ->GetSiteInstance()
-                                                       ->GetSiteURL());
-    EXPECT_NE(success_site_instance,
-              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
   }
+  EXPECT_EQ(
+      success_site_instance->GetSiteURL(),
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_NE(success_site_instance,
+            shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+
   EXPECT_EQ(3, nav_controller.GetEntryCount());
 
   // Repeat again using a renderer-initiated navigation for the successful one.
