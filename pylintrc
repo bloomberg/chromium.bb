@@ -358,6 +358,7 @@ max-parents=10
 #   (or 'configparser' in Python 3).
 # cPickle: Use the 'pickle' module instead.
 # exceptions: Dropped in Python 3.
+# md5: Use the 'hashlib' module instead.
 # mox: Use the 'mock' module instead.
 # optparse: Use the 'argparse' module instead.
 # Queue: Use the 'six.moves.queue' module instead (or 'queue' in Python 3).
@@ -369,6 +370,7 @@ deprecated-modules=
     ConfigParser,
     cPickle,
     exceptions,
+    md5,
     mox,
     optparse,
     Queue,

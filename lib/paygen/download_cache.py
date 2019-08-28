@@ -10,7 +10,7 @@ DEPRECATED: Should be merged into chromite.lib.cache.
 
 from __future__ import print_function
 
-import md5
+import hashlib
 import os
 import shutil
 import stat
@@ -130,7 +130,8 @@ class DownloadCache(object):
     # We use the md5 hash of the URI as our file name. This allows us to
     # store all cache files in a single directory, which removes race
     # conditions around directories.
-    m = md5.new(uri)
+    m = hashlib.md5()
+    m.update(uri)
     return os.path.join(self._file_dir, m.digest().encode('hex'))
 
   def _PurgeLock(self, blocking=False, shared=False):
