@@ -29,6 +29,7 @@ enum FrameType {
   BLOCKED = 8;
   STREAM_BLOCKED = 9;
   PADDING = 10;
+  CRYPTO = 11;
 };
 
 // Metadata for STREAM frames.
@@ -38,6 +39,12 @@ message StreamFrameInfo {
   optional uint64 length = 3;
   optional uint64 offset = 4;
 };
+
+// Metadata for CRYPTO frames.
+message CryptoFrameInfo {
+  optional uint64 length = 1;
+  optional uint64 offset = 2;
+}
 
 // The intervals are closed, i.e. the interval represented here is
 // [first_packet, last_packet].
@@ -92,6 +99,7 @@ message Frame {
   optional ResetStreamInfo reset_stream_info = 4;
   optional CloseInfo close_info = 5;
   optional FlowControlInfo flow_control_info = 6;
+  optional CryptoFrameInfo crypto_frame_info = 7;
 };
 
 // Metadata that represents transport stack's understanding of the current state
