@@ -4,6 +4,7 @@
 
 #include "ash/wm/gestures/overview_gesture_handler.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_histogram_enums.h"
@@ -39,20 +40,24 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
 
   // Horizontal 4-finger scroll switches desks if possible.
   if (finger_count == 4) {
-    if (std::fabs(scroll_x_) >= std::fabs(scroll_y_)) {
-      if (std::fabs(scroll_x_) < horizontal_threshold_pixels_)
-        return false;
+    if (!features::IsVirtualDesksEnabled())
+      return false;
 
-      const bool going_left = scroll_x_ > 0;
-      scroll_x_ = scroll_y_ = 0;
+    if (std::fabs(scroll_x_) < std::fabs(scroll_y_))
+      return false;
 
-      // This does not invert if the user changes their touchpad settings
-      // currently. The scroll works Australian way (scroll left to go to the
-      // desk on the right and vice versa).
-      DesksController::Get()->ActivateAdjacentDesk(
-          going_left, DesksSwitchSource::kDeskSwitchTouchpad);
-      return true;
-    }
+    if (std::fabs(scroll_x_) < horizontal_threshold_pixels_)
+      return false;
+
+    const bool going_left = scroll_x_ > 0;
+    scroll_x_ = scroll_y_ = 0;
+
+    // This does not invert if the user changes their touchpad settings
+    // currently. The scroll works Australian way (scroll left to go to the
+    // desk on the right and vice versa).
+    DesksController::Get()->ActivateAdjacentDesk(
+        going_left, DesksSwitchSource::kDeskSwitchTouchpad);
+    return true;
   }
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
