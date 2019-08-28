@@ -4745,7 +4745,6 @@ crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-in
 crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
 
 crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.html [ Failure ]
-crbug.com/997149 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Pass Failure ]
 
 # Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.
 crbug.com/862938 external/wpt/encoding/textdecoder-fatal-single-byte.any.worker.html [ Pass Timeout ]
