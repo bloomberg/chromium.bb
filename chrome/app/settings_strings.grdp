@@ -1631,6 +1631,12 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_CHECK_CONNECTION_MESSAGE" desc="The message shown when there is no internet connection for detecting available printers">
       Please check your connection to see available printers in your network
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_INTERNET_CONNECTION" desc="The message shown when there is no internet connection.">
+      No internet connection
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONNECT_TO_NETWORK_SUBTEXT" desc="The message shown when the user needs to connect to a network with connectivity and try again.">
+      Connect to a network and try again
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_DIALOG_TITLE" desc="Text for the title of the dialog that is used to edit a CUPS printer's information.">
       Edit printer
     </message>

@@ -672,6 +672,7 @@ suite('CupsNearbyPrintersTests', function() {
       // connected to a network.
       assertTrue(!!page.$$('#cloudOffIcon'));
       assertTrue(!!page.$$('#connectionMessage'));
+      assertTrue(!!page.$$('#addManualPrinterIcon').disabled);
     });
   });
 
@@ -680,10 +681,11 @@ suite('CupsNearbyPrintersTests', function() {
     setNetworkConnectionState('wifi1_guid', 'NotConnected');
     return test_util.flushTasks()
         .then(() => {
-          // Expect "Check Connection" text to show up when no internet is
+          // Expect offline text to show up when no internet is
           // connected.
           assertTrue(!!page.$$('#cloudOffIcon'));
           assertTrue(!!page.$$('#connectionMessage'));
+          assertTrue(!!page.$$('#addManualPrinterIcon').disabled);
 
           // Simulate connecting to a network with connectivity.
           setNetworkConnectionState('wifi1_guid', 'Online');
