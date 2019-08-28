@@ -22,6 +22,9 @@
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+
 namespace {
 
 class SigninPromoViewMediatorTest : public PlatformTest {
@@ -32,6 +35,12 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   }
 
   void TearDown() override {
+    // All callbacks should be triggered to make sure tests are working
+    // correctly. If this test fails,
+    // |WaitUntilFakeChromeIdentityServiceCallbackCompleted| should be called
+    // in the test.
+    EXPECT_FALSE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+                     ->HasPendingCallback());
     [mediator_ signinPromoViewRemoved];
     EXPECT_EQ(ios::SigninPromoViewState::Invalid,
               mediator_.signinPromoViewState);
@@ -85,6 +94,12 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     CheckWarmStateConfigurator(configurator_);
     // Check a new created configurator.
     CheckWarmStateConfigurator([mediator_ createConfigurator]);
+    // The consumer should receive a notification related to the image.
+    configurator_ = nil;
+    ExpectConfiguratorNotification(NO /* identity changed */);
+    WaitUntilFakeChromeIdentityServiceCallbackCompleted();
+    // Check the configurator received by the consumer.
+    CheckWarmStateConfigurator(configurator_);
   }
 
   // Expects a notification on the consumer for an identity update, and stores
@@ -168,6 +183,17 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     }
   }
 
+  // Runs the runloop until all callback from FakeChromeIdentityService are
+  // called.
+  void WaitUntilFakeChromeIdentityServiceCallbackCompleted() {
+    ConditionBlock condition = ^() {
+      return !ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+                  ->HasPendingCallback();
+    };
+    EXPECT_TRUE(
+        WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition));
+  }
+
   // Mediator used for the tests.
   SigninPromoViewMediator* mediator_;
 
@@ -223,15 +249,6 @@ TEST_F(SigninPromoViewMediatorTest,
   user_full_name_ = nil;
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
   TestWarmState();
-}
-
-TEST_F(SigninPromoViewMediatorTest,
-       WarmStateConfigureSigninPromoViewWithImage) {
-  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
-  TestWarmState();
-  ExpectConfiguratorNotification(NO /* no identity changed */);
-  base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(0.1));
-  CheckWarmStateConfigurator(configurator_);
 }
 
 // Tests the scenario with the sign-in promo in cold state, and then adding an
