@@ -1764,7 +1764,7 @@
 <translation id="3619115746895587757">卡布奇諾</translation>
 <translation id="3623574769078102674">受監管的使用者將由 <ph name="MANAGER_EMAIL" /> 負責管理。</translation>
 <translation id="3624567683873126087">解鎖裝置並登入 Google 帳戶</translation>
-<translation id="3625258641415618104">已停用螢幕擷取畫面</translation>
+<translation id="3625258641415618104">已停用螢幕截圖</translation>
 <translation id="3625481642044239431">選取的檔案無效，請再試一次。</translation>
 <translation id="3627320433825461852">剩下不到 1 分鐘</translation>
 <translation id="3627588569887975815">在無痕式視窗中開啟連結(&amp;G)</translation>
@@ -1855,7 +1855,7 @@
 <translation id="3737536731758327622">你的下載內容會顯示在這裡</translation>
 <translation id="3738924763801731196"><ph name="OID" />：</translation>
 <translation id="3739254215541673094">要開啟「<ph name="APPLICATION" />」嗎？</translation>
-<translation id="3742055079367172538">已拍攝螢幕擷取畫面</translation>
+<translation id="3742055079367172538">已拍攝螢幕截圖</translation>
 <translation id="3742666961763734085">找不到使用該名稱的機構單位，請再試一次。</translation>
 <translation id="3744111561329211289">背景同步處理</translation>
 <translation id="3748026146096797577">尚未連線</translation>
@@ -2025,7 +2025,7 @@
 <translation id="3965965397408324205">離開<ph name="PROFILE_NAME" /></translation>
 <translation id="3966072572894326936">選擇其他資料夾...</translation>
 <translation id="3967822245660637423">下載完成</translation>
-<translation id="3967919079500697218">你的管理員已停用拍攝螢幕擷取畫面功能。</translation>
+<translation id="3967919079500697218">你的管理員已停用拍攝螢幕截圖功能。</translation>
 <translation id="3969092967100188979">已啟用，正在使用漫遊服務</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">計算中…</translation>
@@ -2204,7 +2204,7 @@
 <translation id="4249248555939881673">正在等待網路連線...</translation>
 <translation id="4249373718504745892">系統已封鎖這個網頁存取你的攝影機和麥克風。</translation>
 <translation id="424963718355121712">應用程式的安裝來源應與應用程式影響所及的主機相同</translation>
-<translation id="4250229828105606438">螢幕擷取畫面</translation>
+<translation id="4250229828105606438">螢幕截圖</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4252852543720145436">受保護內容 ID</translation>
 <translation id="4252899949534773101">已停用藍牙</translation>
@@ -3393,7 +3393,7 @@
 <translation id="6075731018162044558">糟糕！系統無法為這個裝置取得長期 API 存取符記。</translation>
 <translation id="6075907793831890935">與名稱為 <ph name="HOSTNAME" /> 的裝置交換資料</translation>
 <translation id="6076175485108489240">使用定位服務。允許具有位置存取權的應用程式和服務使用裝置的位置資訊。Google 可能會定期收集位置資料，並以匿名方式使用這類資料，藉此提高定位精確度及改善適地性服務。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
-<translation id="6076448957780543068">包含這個螢幕擷取畫面</translation>
+<translation id="6076448957780543068">包含這個螢幕截圖</translation>
 <translation id="6077131872140550515">從慣用網路移除</translation>
 <translation id="6077189836672154517"><ph name="DEVICE_TYPE" /> 的使用提示和最新快訊</translation>
 <translation id="6078323886959318429">新增捷徑</translation>
@@ -5505,7 +5505,7 @@
 <translation id="93766956588638423">修復擴充功能</translation>
 <translation id="938339467127511841">Linux (測試版) 儲存空間</translation>
 <translation id="938470336146445890">請安裝使用者憑證。</translation>
-<translation id="939252827960237676">無法儲存螢幕擷取畫面</translation>
+<translation id="939252827960237676">無法儲存螢幕截圖</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">請輸入通關密語</translation>
 <translation id="939736085109172342">新增資料夾</translation>
