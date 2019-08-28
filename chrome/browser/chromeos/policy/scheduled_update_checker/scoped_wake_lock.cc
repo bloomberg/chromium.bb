@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/scoped_wake_lock.h"
+#include "chrome/browser/chromeos/policy/scheduled_update_checker/scoped_wake_lock.h"
 
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"

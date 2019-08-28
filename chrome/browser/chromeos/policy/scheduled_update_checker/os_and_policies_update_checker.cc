@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/os_and_policies_update_checker.h"
+#include "chrome/browser/chromeos/policy/scheduled_update_checker/os_and_policies_update_checker.h"
 
 #include <utility>
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/task_executor_with_retries.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/network_handler.h"
