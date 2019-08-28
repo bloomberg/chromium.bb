@@ -192,6 +192,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetFloatingPointAttribute(const QualifiedName& attribute_name,
                                  double value);
 
+  Element* GetElementAttribute(const QualifiedName& name);
+  void SetElementAttribute(const QualifiedName&, Element*);
+
   // Call this to get the value of an attribute that is known not to be the
   // style attribute or one of the SVG animatable attributes.
   bool FastHasAttribute(const QualifiedName&) const;
@@ -1182,6 +1185,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // context. LayoutNG block fragmentation and legacy block fragmentation cannot
   // cooperate within a fragmentation context.
   void ForceLegacyLayoutInFragmentationContext(const ComputedStyle& new_style);
+  void SynchronizeContentAttributeAndElementReference(
+      const QualifiedName& name);
 
   Member<ElementData> element_data_;
 };
