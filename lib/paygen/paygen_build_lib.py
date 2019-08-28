@@ -1187,6 +1187,7 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
   cmd_result = commands.RunSkylabHWTestPlan(
       test_plan=test_plan,
       build=build,
+      legacy_suite=suite_name,
       pool='DUT_POOL_BVT',
       board=board,
       model=model,

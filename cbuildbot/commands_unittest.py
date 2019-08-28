@@ -340,6 +340,7 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     board = 'foo-board'
     model = 'foo-model'
     pool = 'foo-pool'
+    suite = 'foo-suite'
     # An OrderedDict is used to make the keyval order on the command line
     # deterministic for testing purposes.
     keyvals = {'key': 'value'}
@@ -350,6 +351,7 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     create_cmd = [
         self._SKYLAB_TOOL, 'create-testplan',
         '-image', build,
+        '-legacy-suite', suite,
         '-pool', pool,
         '-board', board,
         '-model', model,
@@ -364,7 +366,7 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
 
     result = commands.RunSkylabHWTestPlan(
         test_plan=test_plan, build=build, pool=pool, board=board, model=model,
-        timeout_mins=timeout_mins, keyvals=keyvals)
+        timeout_mins=timeout_mins, keyvals=keyvals, legacy_suite=suite)
     self.assertTrue(isinstance(result, commands.HWTestSuiteResult))
     self.assertEqual(result.to_raise, None)
     self.assertEqual(result.json_dump_result, None)

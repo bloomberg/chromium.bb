@@ -1468,6 +1468,7 @@ def RunSkylabHWTestSuite(
 
 def RunSkylabHWTestPlan(test_plan=None,
                         build=None,
+                        legacy_suite=None,
                         pool=None,
                         board=None,
                         model=None,
@@ -1479,6 +1480,8 @@ def RunSkylabHWTestPlan(test_plan=None,
   Args:
     test_plan: A JSONpb string containing a TestPlan object.
     build: A string full image name.
+    legacy_suite: A string suite name, if non-empty it overrides the test plan
+                  on the autotest backend.
     pool: A string pool to run the test on.
     board: A string board to run the test on.
     model: A string model to run the test on.
@@ -1494,6 +1497,9 @@ def RunSkylabHWTestPlan(test_plan=None,
     raise ValueError('Need to specify either board or model.')
 
   args = ['-image', build]
+
+  if legacy_suite:
+    args += ['-legacy-suite', legacy_suite]
 
   if pool:
     args += ['-pool', pool]

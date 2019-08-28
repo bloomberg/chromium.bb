@@ -1275,6 +1275,7 @@ class HWTest(cros_test_lib.MockTestCase):
             suite_name='dummy-suite',
             build='dummy-build'),
         build='dummy-build',
+        legacy_suite='dummy-suite',
         pool='DUT_POOL_BVT',
         board='dummy-board',
         model='dummy-model',
