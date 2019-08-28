@@ -89,6 +89,9 @@ class StylePropertyMapReadOnly;
 class USVStringOrTrustedURL;
 class V0CustomElementDefinition;
 
+enum class CSSPropertyID;
+enum class CSSValueID;
+
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,
   kSpellcheckAttributeFalse,
