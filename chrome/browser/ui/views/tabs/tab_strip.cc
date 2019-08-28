@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -1233,8 +1234,8 @@ bool TabStrip::ShouldDrawStrokes() const {
   // against the active frame color, to avoid toggling the stroke on and off as
   // the window activation state changes.
   constexpr float kMinimumContrastRatioForOutlines = 1.3f;
-  const SkColor background_color =
-      GetTabBackgroundColor(TAB_ACTIVE, BrowserNonClientFrameView::kActive);
+  const SkColor background_color = GetTabBackgroundColor(
+      TabActive::kActive, BrowserNonClientFrameView::kActive);
   const SkColor frame_color =
       controller_->GetFrameColor(BrowserNonClientFrameView::kActive);
   const float contrast_ratio =
@@ -1685,13 +1686,13 @@ SkColor TabStrip::GetTabSeparatorColor() const {
 }
 
 SkColor TabStrip::GetTabBackgroundColor(
-    TabState tab_state,
+    TabActive active,
     BrowserNonClientFrameView::ActiveState active_state) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
   if (!tp)
     return SK_ColorBLACK;
 
-  if (tab_state == TAB_ACTIVE)
+  if (active == TabActive::kActive)
     return tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
 
   bool is_active_frame;
@@ -1715,7 +1716,7 @@ SkColor TabStrip::GetTabBackgroundColor(
   return color_utils::GetResultingPaintColor(background, frame);
 }
 
-SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
+SkColor TabStrip::GetTabForegroundColor(TabActive active,
                                         SkColor background_color) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
   if (!tp)
@@ -1725,7 +1726,7 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
 
   // This color varies based on the tab and frame active states.
   int color_id = ThemeProperties::COLOR_TAB_TEXT;
-  if (tab_state != TAB_ACTIVE) {
+  if (active != TabActive::kActive) {
     color_id = is_active_frame
                    ? ThemeProperties::COLOR_BACKGROUND_TAB_TEXT
                    : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE;
@@ -1755,7 +1756,8 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
                                       10.46f},  // Active tab, active frame
                                      {4.5f,     // Inactive tab, inactive frame
                                       7.98f}};  // Inactive tab, active frame
-  const float contrast = kContrast[tab_state][is_active_frame];
+  const float contrast =
+      kContrast[active == TabActive::kActive ? 0 : 1][is_active_frame];
   return color_utils::BlendForMinContrast(color, background_color, target,
                                           contrast)
       .color;
@@ -2610,13 +2612,13 @@ void TabStrip::UpdateContrastRatioValues() {
   if (!controller_)
     return;
 
-  const SkColor inactive_bg = GetTabBackgroundColor(TAB_INACTIVE);
+  const SkColor inactive_bg = GetTabBackgroundColor(TabActive::kInactive);
   const auto get_blend = [inactive_bg](SkColor target, float contrast) {
     return color_utils::BlendForMinContrast(inactive_bg, inactive_bg, target,
                                             contrast);
   };
 
-  const SkColor active_bg = GetTabBackgroundColor(TAB_ACTIVE);
+  const SkColor active_bg = GetTabBackgroundColor(TabActive::kActive);
   const auto get_hover_opacity = [active_bg, &get_blend](float contrast) {
     return get_blend(active_bg, contrast).alpha / 255.0f;
   };
@@ -2636,7 +2638,8 @@ void TabStrip::UpdateContrastRatioValues() {
   constexpr float kRadialGradientContrast = 1.13728f;
   radial_highlight_opacity_ = get_hover_opacity(kRadialGradientContrast);
 
-  const SkColor inactive_fg = GetTabForegroundColor(TAB_INACTIVE, inactive_bg);
+  const SkColor inactive_fg =
+      GetTabForegroundColor(TabActive::kInactive, inactive_bg);
   // The contrast ratio for the separator between inactive tabs.
   constexpr float kTabSeparatorContrast = 2.5f;
   separator_color_ = get_blend(inactive_fg, kTabSeparatorContrast).color;
