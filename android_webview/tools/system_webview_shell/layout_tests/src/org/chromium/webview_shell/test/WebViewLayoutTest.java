@@ -15,6 +15,7 @@ import junit.framework.ComparisonFailure;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -147,6 +148,7 @@ public class WebViewLayoutTest {
 
     @Test
     @MediumTest
+    @Ignore("http://crbug.com/998478")
     public void testWebViewExcludedInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
@@ -193,6 +195,7 @@ public class WebViewLayoutTest {
 
     @Test
     @MediumTest
+    @Ignore("http://crbug.com/998478")
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
