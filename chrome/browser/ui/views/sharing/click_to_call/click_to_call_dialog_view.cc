@@ -250,7 +250,7 @@ void ClickToCallDialogView::InitErrorView() {
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE),
-      views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
+      views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(std::move(label));
 }
