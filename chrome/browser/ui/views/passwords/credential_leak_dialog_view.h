@@ -14,6 +14,7 @@ class WebContents;
 }
 
 class CredentialLeakDialogController;
+class NonAccessibleImageView;
 
 class CredentialLeakDialogView : public views::DialogDelegateView,
                                  public CredentialLeakPrompt {
@@ -36,13 +37,15 @@ class CredentialLeakDialogView : public views::DialogDelegateView,
   bool Close() override;
   int GetDialogButtons() const override;
   bool ShouldShowCloseButton() const override;
+  void OnThemeChanged() override;
 
   // Sets up the child views.
   void InitWindow();
 
   // A weak pointer to the controller.
-  CredentialLeakDialogController* controller_;
-  content::WebContents* const web_contents_;
+  CredentialLeakDialogController* controller_ = nullptr;
+  content::WebContents* const web_contents_ = nullptr;
+  NonAccessibleImageView* image_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialLeakDialogView);
 };
