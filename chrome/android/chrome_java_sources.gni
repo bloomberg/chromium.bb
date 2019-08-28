@@ -1280,7 +1280,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/sync/ManageSyncPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/sync/SignInPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/sync/SyncAndServicesPreferences.java",
-  "java/src/org/chromium/chrome/browser/preferences/sync/SyncErrorCardPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/sync/SyncPreferenceUtils.java",
   "java/src/org/chromium/chrome/browser/preferences/TextAndButtonPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/TextMessagePreference.java",
