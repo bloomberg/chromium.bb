@@ -1102,8 +1102,7 @@ class MetaBuildWrapper(object):
           f == 'mr_extension/' or # https://crbug.com/997947
           f == 'locales/' or
           f.startswith('nacl_test_data/') or
-          f.startswith('ppapi_nacl_tests_libs/') or
-          f == 'test_url_loader_data/'):
+          f.startswith('ppapi_nacl_tests_libs/')):
         continue
 
       # This runs before the build, so we can't use isdir(f). But

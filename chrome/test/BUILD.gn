@@ -725,6 +725,11 @@ if (!is_android) {
     # Runtime dependencies
     data_deps = [
       "//chrome/browser/resources/media/mei_preload:component",
+
+      # TODO(thakis): Why do these need copying in browser_tests?
+      # content_browsertests uses the non-copied files instead.
+      "//ppapi:copy_test_files",
+      "//ppapi:copy_test_files2",
       "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
       "//remoting/webapp:browser_test_resources",
@@ -761,11 +766,6 @@ if (!is_android) {
       "//third_party/tlslite/",
       "//ui/webui/resources/",
       "$root_out_dir/browser_tests.pak",
-      "$root_out_dir/test_case.html",
-      "$root_out_dir/test_case.html.mock-http-headers",
-      "$root_out_dir/test_page.css",
-      "$root_out_dir/test_page.css.mock-http-headers",
-      "$root_out_dir/test_url_loader_data/",
     ]
 
     sources = [
