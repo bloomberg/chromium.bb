@@ -5442,6 +5442,8 @@ static_library("test_support") {
     "history/history_test_utils.h",
     "installable/fake_installable_manager.cc",
     "installable/fake_installable_manager.h",
+    "lookalikes/safety_tips/safety_tip_test_utils.cc",
+    "lookalikes/safety_tips/safety_tip_test_utils.h",
     "media/webrtc/fake_desktop_media_list.cc",
     "media/webrtc/fake_desktop_media_list.h",
     "media/webrtc/fake_desktop_media_picker_factory.cc",

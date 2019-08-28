@@ -52324,6 +52324,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="NOT_SUPPORTED"/>
 </enum>
 
+<enum name="SafetyTipStatus">
+  <int value="0" label="Safety Tip status unknown/not applicable"/>
+  <int value="1" label="No Safety Tip"/>
+  <int value="2" label="Safety Tip for bad reputation"/>
+</enum>
+
 <enum name="SamlInSessionPasswordChangeEvent">
   <summary>
     Track how often we try to guide users through the in-session flow to change
