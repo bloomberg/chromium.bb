@@ -9100,7 +9100,6 @@ Called by update_net_error_codes.py.-->
   <int value="-302" label="UNKNOWN_URL_SCHEME"/>
   <int value="-301" label="DISALLOWED_URL_SCHEME"/>
   <int value="-300" label="INVALID_URL"/>
-  <int value="-216" label="CERT_END"/>
   <int value="-215" label="CERT_SYMANTEC_LEGACY"/>
   <int value="-214" label="CERTIFICATE_TRANSPARENCY_REQUIRED"/>
   <int value="-213" label="CERT_VALIDITY_TOO_LONG"/>
@@ -41281,6 +41280,7 @@ Called by update_net_error_codes.py.-->
   <int value="178" label="EARLY_DATA_REJECTED"/>
   <int value="179" label="WRONG_VERSION_ON_EARLY_DATA"/>
   <int value="180" label="TLS13_DOWNGRADE_DETECTED"/>
+  <int value="181" label="SSL_KEY_USAGE_INCOMPATIBLE"/>
   <int value="200" label="CERT_COMMON_NAME_INVALID"/>
   <int value="201" label="CERT_DATE_INVALID"/>
   <int value="202" label="CERT_AUTHORITY_INVALID"/>
@@ -41297,7 +41297,7 @@ Called by update_net_error_codes.py.-->
   <int value="213" label="CERT_VALIDITY_TOO_LONG"/>
   <int value="214" label="CERTIFICATE_TRANSPARENCY_REQUIRED"/>
   <int value="215" label="CERT_SYMANTEC_LEGACY"/>
-  <int value="216" label="CERT_END"/>
+  <int value="216" label="QUIC_CERT_ROOT_NOT_KNOWN"/>
   <int value="300" label="INVALID_URL"/>
   <int value="301" label="DISALLOWED_URL_SCHEME"/>
   <int value="302" label="UNKNOWN_URL_SCHEME"/>
@@ -41322,7 +41322,7 @@ Called by update_net_error_codes.py.-->
   <int value="334" label="UNRECOGNIZED_FTP_DIRECTORY_LISTING_FORMAT"/>
   <int value="335" label="INVALID_SPDY_STREAM"/>
   <int value="336" label="NO_SUPPORTED_PROXIES"/>
-  <int value="337" label="SPDY_PROTOCOL_ERROR"/>
+  <int value="337" label="HTTP2_PROTOCOL_ERROR"/>
   <int value="338" label="INVALID_AUTH_CREDENTIALS"/>
   <int value="339" label="UNSUPPORTED_AUTH_SCHEME"/>
   <int value="340" label="ENCODING_DETECTION_FAILED"/>
@@ -41332,12 +41332,12 @@ Called by update_net_error_codes.py.-->
   <int value="344" label="UNDOCUMENTED_SECURITY_LIBRARY_STATUS"/>
   <int value="345" label="RESPONSE_BODY_TOO_BIG_TO_DRAIN"/>
   <int value="346" label="RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH"/>
-  <int value="347" label="INCOMPLETE_SPDY_HEADERS"/>
+  <int value="347" label="INCOMPLETE_HTTP2_HEADERS"/>
   <int value="348" label="PAC_NOT_IN_DHCP"/>
   <int value="349" label="RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION"/>
   <int value="350" label="RESPONSE_HEADERS_MULTIPLE_LOCATION"/>
-  <int value="351" label="SPDY_SERVER_REFUSED_STREAM"/>
-  <int value="352" label="SPDY_PING_FAILED"/>
+  <int value="351" label="HTTP2_SERVER_REFUSED_STREAM"/>
+  <int value="352" label="HTTP2_PING_FAILED"/>
   <int value="353" label="PIPELINE_EVICTION"/>
   <int value="354" label="CONTENT_LENGTH_MISMATCH"/>
   <int value="355" label="INCOMPLETE_CHUNKED_ENCODING"/>
@@ -41345,10 +41345,10 @@ Called by update_net_error_codes.py.-->
   <int value="357" label="RESPONSE_HEADERS_TRUNCATED"/>
   <int value="358" label="QUIC_HANDSHAKE_FAILED"/>
   <int value="359" label="REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC"/>
-  <int value="360" label="SPDY_INADEQUATE_TRANSPORT_SECURITY"/>
-  <int value="361" label="SPDY_FLOW_CONTROL_ERROR"/>
-  <int value="362" label="SPDY_FRAME_SIZE_ERROR"/>
-  <int value="363" label="SPDY_COMPRESSION_ERROR"/>
+  <int value="360" label="HTTP2_INADEQUATE_TRANSPORT_SECURITY"/>
+  <int value="361" label="HTTP2_FLOW_CONTROL_ERROR"/>
+  <int value="362" label="HTTP2_FRAME_SIZE_ERROR"/>
+  <int value="363" label="HTTP2_COMPRESSION_ERROR"/>
   <int value="364" label="PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION"/>
   <int value="365" label="HTTP_1_1_REQUIRED"/>
   <int value="366" label="PROXY_HTTP_1_1_REQUIRED"/>
@@ -41357,10 +41357,13 @@ Called by update_net_error_codes.py.-->
   <int value="369" label="TEMPORARY_BACKOFF"/>
   <int value="370" label="INVALID_HTTP_RESPONSE"/>
   <int value="371" label="CONTENT_DECODING_INIT_FAILED"/>
-  <int value="372" label="SPDY_RST_STREAM_NO_ERROR_RECEIVED"/>
-  <int value="373" label="SPDY_PUSHED_STREAM_NOT_AVAILABLE"/>
-  <int value="374" label="SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER"/>
+  <int value="372" label="HTTP2_RST_STREAM_NO_ERROR_RECEIVED"/>
+  <int value="373" label="HTTP2_PUSHED_STREAM_NOT_AVAILABLE"/>
+  <int value="374" label="HTTP2_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER"/>
   <int value="375" label="TOO_MANY_RETRIES"/>
+  <int value="376" label="HTTP2_STREAM_CLOSED"/>
+  <int value="377" label="HTTP2_CLIENT_REFUSED_STREAM"/>
+  <int value="378" label="HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>
@@ -41373,9 +41376,13 @@ Called by update_net_error_codes.py.-->
   <int value="409" label="CACHE_LOCK_TIMEOUT"/>
   <int value="410" label="CACHE_AUTH_FAILURE_AFTER_READ"/>
   <int value="411" label="CACHE_ENTRY_NOT_SUITABLE"/>
+  <int value="412" label="CACHE_DOOM_FAILURE"/>
+  <int value="413" label="CACHE_OPEN_OR_CREATE_FAILURE"/>
   <int value="501" label="INSECURE_RESPONSE"/>
   <int value="502" label="NO_PRIVATE_KEY_FOR_CERT"/>
   <int value="503" label="ADD_USER_CERT_FAILED"/>
+  <int value="504" label="INVALID_SIGNED_EXCHANGE"/>
+  <int value="505" label="INVALID_BUNDLED_EXCHANGES"/>
   <int value="601" label="FTP_FAILED"/>
   <int value="602" label="FTP_SERVICE_UNAVAILABLE"/>
   <int value="603" label="FTP_TRANSFER_ABORTED"/>
