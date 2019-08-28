@@ -9,14 +9,12 @@ from __future__ import print_function
 
 import collections
 import errno
-import fileinput
 import glob
 import itertools
 import multiprocessing
 import os
 import re
 import shutil
-import sys
 
 import six
 
@@ -390,50 +388,41 @@ class EBuild(object):
     return self.is_stable and self.current_revision == 0
 
   @classmethod
-  def UpdateEBuild(cls, ebuild_path, variables, redirect_file=None,
-                   make_stable=True):
+  def UpdateEBuild(cls, ebuild_path, variables, make_stable=True):
     """Static function that updates WORKON information in the ebuild.
-
-    This function takes an ebuild_path and updates WORKON information.
-
-    Note: If an exception is thrown, the |ebuild_path| is left in a corrupt
-    state.  You should try to avoid causing exceptions ;).
 
     Args:
       ebuild_path: The path of the ebuild.
       variables: Dictionary of variables to update in ebuild.
-      redirect_file: Optionally redirect output of new ebuild somewhere else.
       make_stable: Actually make the ebuild stable.
     """
     written = False
-    try:
-      for line in fileinput.input(ebuild_path, inplace=1):
-        # Has to be done here to get changes to sys.stdout from fileinput.input.
-        if not redirect_file:
-          redirect_file = sys.stdout
+    old_lines = osutils.ReadFile(ebuild_path).splitlines()
+    new_lines = []
+    for line in old_lines:
+      # Always add variables at the top of the ebuild, before the first
+      # nonblank line other than the EAPI line.
+      if not written and not _blank_or_eapi_re.match(line):
+        for key, value in sorted(variables.items()):
+          assert key is not None and value is not None
+          new_lines.append('%s=%s' % (key, value))
+        written = True
 
-        # Always add variables at the top of the ebuild, before the first
-        # nonblank line other than the EAPI line.
-        if not written and not _blank_or_eapi_re.match(line):
-          for key, value in sorted(variables.items()):
-            assert key is not None and value is not None
-            redirect_file.write('%s=%s\n' % (key, value))
-          written = True
+      # Mark KEYWORDS as stable by removing ~'s.
+      if line.startswith('KEYWORDS=') and make_stable:
+        new_lines.append(line.replace('~', ''))
+        continue
 
-        # Mark KEYWORDS as stable by removing ~'s.
-        if line.startswith('KEYWORDS=') and make_stable:
-          line = line.replace('~', '')
+      varname, eq, _ = line.partition('=')
+      if not (eq == '=' and varname.strip() in variables):
+        # Don't write out the old value of the variable.
+        new_lines.append(line)
 
-        varname, eq, _ = line.partition('=')
-        if not (eq == '=' and varname.strip() in variables):
-          # Don't write out the old value of the variable.
-          redirect_file.write(line)
-    finally:
-      fileinput.close()
+    osutils.WriteFile(ebuild_path, '\n'.join(new_lines) + '\n')
 
   @classmethod
   def MarkAsStable(cls, unstable_ebuild_path, new_stable_ebuild_path,
-                   variables, redirect_file=None, make_stable=True):
+                   variables, make_stable=True):
     """Static function that creates a revved stable ebuild.
 
     This function assumes you have already figured out the name of the new
@@ -446,12 +435,10 @@ class EBuild(object):
       new_stable_ebuild_path: The path you want to use for the new stable
         ebuild.
       variables: Dictionary of variables to update in ebuild.
-      redirect_file: Optionally redirect output of new ebuild somewhere else.
       make_stable: Actually make the ebuild stable.
     """
     shutil.copyfile(unstable_ebuild_path, new_stable_ebuild_path)
-    EBuild.UpdateEBuild(new_stable_ebuild_path, variables, redirect_file,
-                        make_stable)
+    EBuild.UpdateEBuild(new_stable_ebuild_path, variables, make_stable)
 
   @classmethod
   def CommitChange(cls, message, overlay):
@@ -999,20 +986,16 @@ class EBuild(object):
     else:
       return '"%s"' % unformatted_list[0]
 
-  def RevWorkOnEBuild(self, srcroot, manifest, redirect_file=None):
+  def RevWorkOnEBuild(self, srcroot, manifest):
     """Revs a workon ebuild given the git commit hash.
 
     By default this class overwrites a new ebuild given the normal
-    ebuild rev'ing logic.  However, a user can specify a redirect_file
-    to redirect the new stable ebuild to another file.
+    ebuild rev'ing logic.
 
     Args:
       srcroot: full path to the 'src' subdirectory in the source
         repository.
       manifest: git.ManifestCheckout object.
-      redirect_file: Optional file to write the new ebuild.  By default
-        it is written using the standard rev'ing logic.  This file must be
-        opened and closed by the caller.
 
     Returns:
       If the revved package is different than the old ebuild, return a tuple
@@ -1099,7 +1082,7 @@ class EBuild(object):
         'Missing unstable ebuild: %s' % self._unstable_ebuild_path)
 
     self.MarkAsStable(self._unstable_ebuild_path, new_stable_ebuild_path,
-                      variables, redirect_file)
+                      variables)
 
     old_ebuild_path = self.ebuild_path
     if (EBuild._AlmostSameEBuilds(old_ebuild_path, new_stable_ebuild_path) and

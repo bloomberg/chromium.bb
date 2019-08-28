@@ -162,8 +162,8 @@ class UprevChromeManagerTest(cros_test_lib.MockTempDirTestCase):
     self.stable_path = os.path.join(self.package_dir, ebuild % stable_version)
     self.unstable_path = os.path.join(self.package_dir, ebuild % '9999')
 
-    osutils.WriteFile(self.stable_path, 'KEYWORDS=*')
-    osutils.WriteFile(self.unstable_path, 'KEYWORDS=~*')
+    osutils.WriteFile(self.stable_path, 'KEYWORDS=*\n')
+    osutils.WriteFile(self.unstable_path, 'KEYWORDS=~*\n')
 
     # Avoid chroot interactions for the tests.
     self.PatchObject(uprev_lib, 'clean_stale_packages')

@@ -9,8 +9,6 @@ from __future__ import print_function
 
 import os
 
-from six.moves import StringIO
-
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -536,7 +534,6 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     ebuild_path = package_name + '-r1.ebuild'
     self.m_ebuild = StubEBuild(ebuild_path, False)
     self.revved_ebuild_path = package_name + '-r2.ebuild'
-    self._m_file = StringIO()
     self.git_files_changed = []
 
   def createRevWorkOnMocks(self, ebuild_content, rev, multi=False):
@@ -600,25 +597,14 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
                       makedirs=True)
     osutils.WriteFile(self.m_ebuild.ebuild_path, ebuild_content, makedirs=True)
 
-  def RevWorkOnEBuild(self, *args, **kwargs):
-    """Thin helper wrapper to call the function under test.
-
-    Returns:
-      (result, revved_ebuild) where result is the result from the called
-      function, and revved_ebuild is the content of the revved ebuild.
-    """
-    m_file = StringIO()
-    kwargs['redirect_file'] = m_file
-    result = self.m_ebuild.RevWorkOnEBuild(*args, **kwargs)
-    return result, m_file.getvalue()
-
   def testRevWorkOnEBuild(self):
     """Test Uprev of a single project ebuild."""
     self.createRevWorkOnMocks(self._mock_ebuild, rev=True)
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
     self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
-    self.assertEqual(self._revved_ebuild, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
+    self.assertEqual(self._revved_ebuild,
+                     osutils.ReadFile(self.revved_ebuild_path))
 
   def testRevUnchangedEBuildSubdirsNoChange(self):
     """Test Uprev of a single-project ebuild with CROS_WORKON_SUBDIRS_TO_REV.
@@ -628,9 +614,8 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=False)
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
     self.assertIsNone(result)
-    self.assertEqual('', revved_ebuild)
     self.assertNotExists(self.revved_ebuild_path)
 
   def testRevUnchangedEBuildSubdirsChange(self):
@@ -643,10 +628,11 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=True)
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
     self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
-    self.assertEqual(self._revved_ebuild_subdir, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
+    self.assertEqual(self._revved_ebuild_subdir,
+                     osutils.ReadFile(self.revved_ebuild_path))
 
   def testRevChangedEBuildFilesChanged(self):
     """Test Uprev of a single-project ebuild whose files/ content has changed.
@@ -658,10 +644,11 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=True)
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
     self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
-    self.assertEqual(self._revved_ebuild_subdir, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
+    self.assertEqual(self._revved_ebuild_subdir,
+                     osutils.ReadFile(self.revved_ebuild_path))
 
   def testRevUnchangedEBuildFilesChanged(self):
     """Test Uprev of a single-project ebuild whose files/ content has changed.
@@ -673,10 +660,11 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=False)
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
     self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
-    self.assertEqual(self._revved_ebuild_subdir, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
+    self.assertEqual(self._revved_ebuild_subdir,
+                     osutils.ReadFile(self.revved_ebuild_path))
 
   def testRevUnchangedEBuildOtherSubdirChange(self):
     """Uprev an other subdir with no CROS_WORKON_SUBDIRS_TO_REV.
@@ -688,24 +676,24 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.createRevWorkOnMocks(self._mock_ebuild, rev=True)
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
     self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
-    self.assertEqual(self._revved_ebuild, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
+    self.assertEqual(self._revved_ebuild,
+                     osutils.ReadFile(self.revved_ebuild_path))
 
   def testNoRevUnchangedEBuildOtherSubdirChange(self):
     """Uprev an other subdir with no CROS_WORKON_SUBDIRS_TO_REV.
 
     The 'other' directory is changed in git, but CROS_WORKON_SUBDIRS_TO_REV
-    is empty , so this should not uprev.
+    is empty, so this should not uprev.
     """
     self.git_files_changed = ['other']
     self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=False)
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
-    self.assertEqual(result, None)
-    self.assertEqual('', revved_ebuild)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    self.assertIsNone(result)
     self.assertNotExists(self.revved_ebuild_path)
 
   def testRevChangedEBuildNoSubdirChange(self):
@@ -719,27 +707,28 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=True)
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
     self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
-    self.assertEqual(self._revved_ebuild_subdir, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
+    self.assertEqual(self._revved_ebuild_subdir,
+                     osutils.ReadFile(self.revved_ebuild_path))
 
   def testRevWorkOnMultiEBuild(self):
     """Test Uprev of a multi-project (array) ebuild."""
     self.createRevWorkOnMocks(self._mock_ebuild_multi, rev=True, multi=True)
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
     self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
-    self.assertEqual(self._revved_ebuild_multi, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
+    self.assertEqual(self._revved_ebuild_multi,
+                     osutils.ReadFile(self.revved_ebuild_path))
 
   def testRevUnchangedEBuild(self):
     self.createRevWorkOnMocks(self._mock_ebuild, rev=False)
 
     self.PatchObject(
         portage_util.EBuild, '_AlmostSameEBuilds', return_value=True)
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
-    self.assertEqual(result, None)
-    self.assertEqual(self._revved_ebuild, revved_ebuild)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    self.assertIsNone(result)
     self.assertNotExists(self.revved_ebuild_path)
 
   def testRevMissingEBuild(self):
@@ -750,11 +739,12 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
 
     self.createRevWorkOnMocks(self._mock_ebuild[0:1] + self._mock_ebuild[2:],
                               rev=True)
-    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    result = self.m_ebuild.RevWorkOnEBuild(self.tempdir, MANIFEST)
 
     self.assertEqual(result[0], 'category/test_package-0.0.1-r1')
-    self.assertEqual(self._revved_ebuild, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
+    self.assertEqual(self._revved_ebuild,
+                     osutils.ReadFile(self.revved_ebuild_path))
 
   def testCommitChange(self):
     m = self.PatchObject(portage_util.EBuild, '_RunGit', return_value='')
@@ -878,10 +868,11 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
 
     # First run: pass in an invalid redirect file to trigger an exception.
     try:
-      portage_util.EBuild.UpdateEBuild(ebuild, {'VAR': 'a'}, redirect_file=1234)
-      assert False, 'this should have thrown an exception ...'
+      portage_util.EBuild.UpdateEBuild(ebuild, [])
+      self.fail('this should have thrown an exception')
     except Exception:
       pass
+    self.assertEqual(content, osutils.ReadFile(ebuild))
 
     # Second run: it should pass normally.
     portage_util.EBuild.UpdateEBuild(ebuild, {'VAR': 'b'})
