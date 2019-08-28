@@ -21762,6 +21762,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TerminalSystemAppMenuButtonButton_Clicked">
+  <owner>alancutter@chromium.org</owner>
+  <owner>calamity@chromium.org</owner>
+  <owner>joelhockey@chromium.org</owner>
+  <description>
+    User clicked on the terminal system app menu button. Chrome OS only.
+  </description>
+</action>
+
 <action name="Terminate_ProcessMismatch_CreateNewWidget">
   <obsolete>
     Replaced in 1/2018 with bad_message::WCI_NEW_WIDGET_PROCESS_MISMATCH.
