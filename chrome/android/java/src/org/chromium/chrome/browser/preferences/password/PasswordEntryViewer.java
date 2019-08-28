@@ -214,8 +214,8 @@ public class PasswordEntryViewer
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.password_entry_viewer_action_bar_menu, menu);
         menu.findItem(R.id.action_edit_saved_password)
-                .setVisible(
-                        ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_EDITING_ANDROID));
+                .setVisible(ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+                        && !mException);
     }
 
     @Override
@@ -429,6 +429,7 @@ public class PasswordEntryViewer
 
     @Override
     public void passwordListAvailable(int count) {
+        if (mException) return;
         TextView passwordsLinkTextView = mView.findViewById(R.id.passwords_link);
         SavedPasswordEntry SavedPasswordEntry = PasswordManagerHandlerProvider.getInstance()
                                                         .getPasswordManagerHandler()
