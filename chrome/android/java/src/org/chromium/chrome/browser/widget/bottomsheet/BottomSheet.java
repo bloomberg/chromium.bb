@@ -477,9 +477,9 @@ public class BottomSheet
     }
 
     /**
-     * @return Whether the sheet is in the process of closing.
+     * @return Whether the sheet is in the process of hiding.
      */
-    public boolean isClosing() {
+    public boolean isHiding() {
         return mSettleAnimator != null && mTargetState == SheetState.HIDDEN;
     }
 
