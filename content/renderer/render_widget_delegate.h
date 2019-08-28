@@ -68,9 +68,6 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // Called when RenderWidget receives a SetFocus event.
   virtual void DidReceiveSetFocusEventForWidget() = 0;
 
-  // Called after RenderWidget changes focus.
-  virtual void DidChangeFocusForWidget() = 0;
-
   // Called when the RenderWidget handles
   // LayerTreeViewDelegate::DidCommitCompositorFrame().
   virtual void DidCommitCompositorFrameForWidget() = 0;

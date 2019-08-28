@@ -67,7 +67,6 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/window_features_converter.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
-#include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/history_serialization.h"
@@ -1121,12 +1120,6 @@ void RenderViewImpl::DidReceiveSetFocusEventForWidget() {
   // TODO(ajwong): Can this be removed and just check |delegate_| in
   // RenderWidget instead?
   CHECK(webview()->MainFrame()->IsWebLocalFrame());
-}
-
-void RenderViewImpl::DidChangeFocusForWidget() {
-  // Notify all BrowserPlugins of the RenderView's focus state.
-  if (BrowserPluginManager::Get())
-    BrowserPluginManager::Get()->UpdateFocusState();
 }
 
 void RenderViewImpl::DidCommitCompositorFrameForWidget() {
