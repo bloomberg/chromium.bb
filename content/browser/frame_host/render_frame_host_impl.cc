@@ -3431,8 +3431,34 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
     return;
   }
 
+  // Check if there is an in-flight navigation restoring the frame that
+  // is being evicted.
+  NavigationRequest* in_flight_navigation_request =
+      top_document->frame_tree_node()->navigation_request();
+  bool is_navigation_to_evicted_frame_in_flight =
+      (in_flight_navigation_request &&
+       in_flight_navigation_request->rfh_restored_from_back_forward_cache() ==
+           top_document);
+
+  // Hold onto a pointer to the navigation controller, in case we need it to
+  // reissue the navigation after |this| has been destroyed.
+  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
+      frame_tree_node_->navigator()->GetController());
   frame_tree_node_->render_manager()->EvictFromBackForwardCache(top_document);
-  // DO NOT ADD CODE after this. The previous call destroyed |this|.
+
+  // DO NOT REFERENCER ANY MEMBERS after this. The previous call destroyed
+  // |this|.
+
+  if (!is_navigation_to_evicted_frame_in_flight)
+    return;
+
+  // If we are currently navigating to the frame that was just destroyed, we
+  // must restart the navigation. This is important because restarting the
+  // navigation deletes the NavigationRequest associated with the destroyed
+  // frame (preventing use-after-free).
+  int nav_index = controller->GetEntryIndexWithUniqueID(
+      in_flight_navigation_request->nav_entry_id());
+  controller->GoToIndex(nav_index);
 }
 
 void RenderFrameHostImpl::OnAccessibilityLocationChanges(

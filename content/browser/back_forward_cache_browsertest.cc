@@ -1354,4 +1354,67 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_EQ(rfh_b, current_frame_host());
 }
 
+// Test the race condition where a document is evicted from the BackForwardCache
+// while it is in the middle of being restored.
+//
+// ┌───────┐                 ┌────────┐
+// │Browser│                 │Renderer│
+// └───┬───┘                 └───┬────┘
+// (Freeze & store the cache)    │
+//     │────────────────────────>│
+//     │                         │
+// (Navigate to cached document) │
+//     │──┐                      │
+//     │  │                      │
+//     │EvictFromBackForwardCache│
+//     │<────────────────────────│
+//     │  │                      │
+//     │  x Navigation cancelled │
+//     │    and reissued         │
+// ┌───┴───┐                 ┌───┴────┐
+// │Browser│                 │Renderer│
+// └───────┘                 └────────┘
+//
+// When the eviction occurs, the in flight NavigationRequest to the cached
+// document should be reissued (cancelled and replaced by a normal navigation).
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       ReissuesNavigationIfEvictedDuringNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to page A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate to page B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_NE(rfh_a, rfh_b);
+
+  // 3) Start navigation to page A, and cause the document to be evicted during
+  // the navigation.
+  TestNavigationManager navigation_manager(shell()->web_contents(), url_a);
+  web_contents()->GetController().GoBack();
+
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  // Try to execute javascript, this will cause the document we are restoring to
+  // get evicted from the cache.
+  EXPECT_FALSE(ExecJs(rfh_a, "console.log('hi');"));
+
+  // The navigation should get reissued, and ultimately finish.
+  navigation_manager.WaitForNavigationFinished();
+
+  // rfh_a should have been deleted, and page A navigated to normally.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  RenderFrameHostImpl* rfh_a2 = current_frame_host();
+  EXPECT_NE(rfh_a2, rfh_b);
+  EXPECT_EQ(rfh_a2->GetLastCommittedURL(), url_a);
+}
+
 }  // namespace content
