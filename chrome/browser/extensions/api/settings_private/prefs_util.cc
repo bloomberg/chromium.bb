@@ -453,7 +453,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[arc::prefs::kVoiceInteractionEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[arc::prefs::kVoiceInteractionContextEnabled] =
+  (*s_whitelist)[chromeos::assistant::prefs::kAssistantContextEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::assistant::prefs::kAssistantHotwordAlwaysOn] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
