@@ -3443,6 +3443,7 @@ void RenderProcessHostImpl::Cleanup() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   deleting_soon_ = true;
 
+  io_thread_host_impl_.reset();
   if (render_frame_message_filter_) {
     // RenderFrameMessageFilter is refcounted and can outlive the
     // ResourceContext. If the BrowserContext is shutting down, after
