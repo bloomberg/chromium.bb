@@ -42,6 +42,7 @@
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/testing_pref_service.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -4527,7 +4528,7 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
  public:
   class TestHeaderClient : public mojom::TrustedHeaderClient {
    public:
-    TestHeaderClient() : binding_(this) {}
+    TestHeaderClient() {}
 
     // network::mojom::TrustedHeaderClient:
     void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
@@ -4554,15 +4555,16 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
       on_headers_received_result_ = result;
     }
 
-    void Bind(network::mojom::TrustedHeaderClientRequest request) {
-      binding_.Close();
-      binding_.Bind(std::move(request));
+    void Bind(
+        mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver) {
+      receiver_.reset();
+      receiver_.Bind(std::move(receiver));
     }
 
    private:
     int on_before_send_headers_result_ = net::OK;
     int on_headers_received_result_ = net::OK;
-    mojo::Binding<mojom::TrustedHeaderClient> binding_;
+    mojo::Receiver<mojom::TrustedHeaderClient> receiver_{this};
 
     DISALLOW_COPY_AND_ASSIGN(TestHeaderClient);
   };
@@ -4574,8 +4576,9 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
       int32_t request_id,
-      network::mojom::TrustedHeaderClientRequest request) override {
-    header_client_.Bind(std::move(request));
+      mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
+      override {
+    header_client_.Bind(std::move(receiver));
   }
 
   void set_on_before_send_headers_result(int result) {
@@ -4718,7 +4721,7 @@ class HangingTestURLLoaderHeaderClient
  public:
   class TestHeaderClient : public mojom::TrustedHeaderClient {
    public:
-    TestHeaderClient() : binding_(this) {}
+    TestHeaderClient() {}
 
     // network::mojom::TrustedHeaderClient:
     void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
@@ -4754,8 +4757,9 @@ class HangingTestURLLoaderHeaderClient
 
     void WaitForOnHeadersReceived() { on_headers_received_loop_.Run(); }
 
-    void Bind(network::mojom::TrustedHeaderClientRequest request) {
-      binding_.Bind(std::move(request));
+    void Bind(
+        mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver) {
+      receiver_.Bind(std::move(receiver));
     }
 
    private:
@@ -4766,7 +4770,7 @@ class HangingTestURLLoaderHeaderClient
     base::RunLoop on_headers_received_loop_;
     std::string saved_received_headers_;
     OnHeadersReceivedCallback saved_on_headers_received_callback_;
-    mojo::Binding<mojom::TrustedHeaderClient> binding_;
+    mojo::Receiver<mojom::TrustedHeaderClient> receiver_{this};
 
     DISALLOW_COPY_AND_ASSIGN(TestHeaderClient);
   };
@@ -4778,8 +4782,9 @@ class HangingTestURLLoaderHeaderClient
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
       int32_t request_id,
-      network::mojom::TrustedHeaderClientRequest request) override {
-    header_client_.Bind(std::move(request));
+      mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
+      override {
+    header_client_.Bind(std::move(receiver));
   }
 
   void CallOnBeforeSendHeadersCallback() {
