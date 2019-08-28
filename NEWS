@@ -61,6 +61,11 @@ issues]].
   version of the specification, thanks to Ronan McGuirk
 
 ** Other changes
+- The python wrapper now encodes and decodes strings to/from UTF-16
+  and UTF-32 using the surrogatepass error handler. This ensures that
+  single UTF-16 surrogate characters are processed correctly by the
+  wrapper and don't raise an encoding/decoding error. Thanks to
+  Leonard de Ruijter.
 - Metadata keys and values are now case insensitive, thanks to Dave
   Mielke.
 - Remove ~unicodedefs.cti~. It was obsolete and never meant to be
