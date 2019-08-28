@@ -1375,6 +1375,10 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="SNACK_BAR"/>
   <int value="7" label="AUTO_OPEN"/>
   <int value="8" label="DOWNLOAD_PROGRESS_INFO_BAR"/>
+  <int value="9" label="MENU"/>
+  <int value="10" label="DINO_PAGE_OFFLINE_CONTENT"/>
+  <int value="11" label="OFFLINE_INDICATOR"/>
+  <int value="12" label="OFFLINE_CONTENT_NOTIFICATION"/>
 </enum>
 
 <enum name="AndroidEvictionReason">
