@@ -14142,41 +14142,41 @@ Called by update_net_error_codes.py.-->
 
 <enum name="DownEventInputFormFactorDestinationCombination2">
   <int value="0"
-      label="Unknown input in clamshell mode, destination is
-             others(everything except browser and apps)"/>
+      label="Unknown input in clamshell mode, destination is non-application
+             windows"/>
   <int value="1"
       label="Unknown input in touchview mode landscape orientation,
-             destination is others(everything except browser and apps)"/>
+             destination is non-application windows"/>
   <int value="2"
       label="Unknown input in touchview mode portrait orientation,
-             destination is others(everything except browser and apps)"/>
+             destination is non-application windows"/>
   <int value="3"
-      label="Mouse input in clamshell mode, destination is others(everything
-             except browser and apps)"/>
+      label="Mouse input in clamshell mode, destination is non-application
+             windows"/>
   <int value="4"
       label="Mouse input in touchview mode landscape orientation, destination
-             is others(everything except browser and apps)"/>
+             is non-application windows"/>
   <int value="5"
       label="Mouse input in touchview mode portrait orientation, destination
-             is others(everything except browser and apps)"/>
+             is non-application windows"/>
   <int value="6"
-      label="Stylus input in clamshell mode, destination is others(everything
-             except browser and apps)"/>
+      label="Stylus input in clamshell mode, destination is non-application
+             windows"/>
   <int value="7"
       label="Stylus input in touchview mode landscape orientation,
-             destination is others(everything except browser and apps)"/>
+             destination is non-application windows"/>
   <int value="8"
       label="Stylus input in touchview mode portrait orientation, destination
-             is others(everything except browser and apps)"/>
+             is non-application windows"/>
   <int value="9"
-      label="Touch input in clamshell mode, destination is others(everything
-             except browser and apps)"/>
+      label="Touch input in clamshell mode, destination is non-application
+             windows"/>
   <int value="10"
       label="Touch input in touchview mode landscape orientation, destination
-             is others(everything except browser and apps)"/>
+             is non-application windows"/>
   <int value="11"
       label="Touch input in touchview mode portrait orientation, destination
-             is others(everything except browser and apps)"/>
+             is non-application windows"/>
   <int value="12"
       label="Unknown input in clamshell mode, destination is inside the
              browser frame"/>
@@ -14319,6 +14319,42 @@ Called by update_net_error_codes.py.-->
   <int value="59"
       label="Touch input in touchview mode portrait orientation, destination
              is Crostini app(Linux app in ChromeOS)"/>
+  <int value="60"
+      label="Unknown input in clamshell mode, destination is system apps and
+             dialogs"/>
+  <int value="61"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is system apps and dialogs"/>
+  <int value="62"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is system apps and dialogs"/>
+  <int value="63"
+      label="Mouse input in clamshell mode, destination is system apps and
+             dialogs"/>
+  <int value="64"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is system apps and dialogs"/>
+  <int value="65"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is system apps and dialogs"/>
+  <int value="66"
+      label="Stylus input in clamshell mode, destination is system apps and
+             dialogs"/>
+  <int value="67"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is system apps and dialogs"/>
+  <int value="68"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is system apps and dialogs"/>
+  <int value="69"
+      label="Touch input in clamshell mode, destination is system apps and
+             dialogs"/>
+  <int value="70"
+      label="Touch input in touchview mode landscape orientation, destination
+             is system apps and dialogs"/>
+  <int value="71"
+      label="Touch input in touchview mode portrait orientation, destination
+             is system apps and dialogs"/>
 </enum>
 
 <enum name="DownEventSource">
