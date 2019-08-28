@@ -10,16 +10,16 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import io
 import os
 
 import mock
-from six.moves import StringIO
 
 from chromite.lib import cros_test_lib
 from chromite.scripts.sysmon import puppet_metrics
 
 
-_SUMMARY = """\
+_SUMMARY = u"""\
 ---
   version:
     config: 1499979608
@@ -63,22 +63,22 @@ class TestPuppetRunSummary(cros_test_lib.TestCase):
   """Tests for _PuppetRunSummary."""
 
   def test_config_version(self):
-    summary = puppet_metrics._PuppetRunSummary(StringIO(_SUMMARY))
+    summary = puppet_metrics._PuppetRunSummary(io.StringIO(_SUMMARY))
     self.assertEqual(summary.config_version, 1499979608)
 
   def test_puppet_version(self):
-    summary = puppet_metrics._PuppetRunSummary(StringIO(_SUMMARY))
+    summary = puppet_metrics._PuppetRunSummary(io.StringIO(_SUMMARY))
     self.assertEqual(summary.puppet_version, '3.4.3')
 
   def test_events(self):
-    summary = puppet_metrics._PuppetRunSummary(StringIO(_SUMMARY))
+    summary = puppet_metrics._PuppetRunSummary(io.StringIO(_SUMMARY))
     self.assertEqual(summary.events, {
         'failure': 0,
         'success': 7
     })
 
   def test_resources(self):
-    summary = puppet_metrics._PuppetRunSummary(StringIO(_SUMMARY))
+    summary = puppet_metrics._PuppetRunSummary(io.StringIO(_SUMMARY))
     self.assertEqual(summary.resources, {
         'changed': 7,
         'failed': 0,
@@ -91,7 +91,7 @@ class TestPuppetRunSummary(cros_test_lib.TestCase):
     })
 
   def test_times(self):
-    summary = puppet_metrics._PuppetRunSummary(StringIO(_SUMMARY))
+    summary = puppet_metrics._PuppetRunSummary(io.StringIO(_SUMMARY))
     self.assertEqual(summary.times, {
         'config_retrieval': 2.862796974,
         'cron': 0.004638468,
@@ -111,7 +111,7 @@ class TestPuppetRunSummary(cros_test_lib.TestCase):
     })
 
   def test_last_run_time(self):
-    summary = puppet_metrics._PuppetRunSummary(StringIO(_SUMMARY))
+    summary = puppet_metrics._PuppetRunSummary(io.StringIO(_SUMMARY))
     self.assertEqual(summary.last_run_time, 1499979671)
 
 
