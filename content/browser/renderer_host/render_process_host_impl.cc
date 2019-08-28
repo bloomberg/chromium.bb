@@ -2378,7 +2378,8 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
   CreateURLLoaderFactory(request_initiator_site_lock,
                          network::mojom::CrossOriginEmbedderPolicy::kNone,
                          nullptr /* preferences */, net::NetworkIsolationKey(),
-                         nullptr /* header_client */, std::move(request));
+                         mojo::NullRemote() /* header_client */,
+                         std::move(request));
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
@@ -2386,7 +2387,8 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     const net::NetworkIsolationKey& network_isolation_key,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+        header_client,
     network::mojom::URLLoaderFactoryRequest request) {
   CreateURLLoaderFactoryInternal(
       origin, embedder_policy, preferences, network_isolation_key,
@@ -2397,7 +2399,8 @@ void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
     const base::Optional<url::Origin>& origin,
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+        header_client,
     network::mojom::URLLoaderFactoryRequest request) {
   CreateURLLoaderFactoryInternal(origin, embedder_policy, preferences,
                                  base::nullopt, std::move(header_client),
@@ -2409,7 +2412,8 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     base::Optional<net::NetworkIsolationKey> network_isolation_key,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+        header_client,
     network::mojom::URLLoaderFactoryRequest request,
     bool is_trusted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

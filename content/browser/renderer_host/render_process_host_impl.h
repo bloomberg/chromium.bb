@@ -226,7 +226,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       const net::NetworkIsolationKey& network_isolation_key,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
       network::mojom::URLLoaderFactoryRequest request) override;
 
   void SetIsNeverSuitableForReuse() override;
@@ -268,7 +269,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const base::Optional<url::Origin>& origin,
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
       network::mojom::URLLoaderFactoryRequest request);
 
   // Call this function when it is evident that the child process is actively
@@ -725,7 +727,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       base::Optional<net::NetworkIsolationKey> network_isolation_key,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
       network::mojom::URLLoaderFactoryRequest request,
       bool is_trusted);
 

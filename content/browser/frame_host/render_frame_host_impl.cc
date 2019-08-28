@@ -5922,7 +5922,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   auto* context = GetSiteInstance()->GetBrowserContext();
   bool bypass_redirect_checks = false;
 
-  network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
+  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+      header_client;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       context, this, GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
