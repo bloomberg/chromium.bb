@@ -95,14 +95,7 @@ views::BubbleDialogDelegateView* CookieControlsIconView::GetBubble() const {
 const gfx::VectorIcon& CookieControlsIconView::GetVectorIcon() const {
   if (status_ == CookieControlsController::Status::kDisabledForSite)
     return kShieldOffIcon;
-  return kShieldOutlineIcon;
-}
-
-const gfx::VectorIcon& CookieControlsIconView::GetVectorIconBadge() const {
-  if (status_ == CookieControlsController::Status::kEnabled &&
-      has_blocked_cookies_)
-    return kBlockedBadgeIcon;
-  return gfx::kNoneIcon;
+  return has_blocked_cookies_ ? kShieldDotIcon : kShieldOutlineIcon;
 }
 
 base::string16 CookieControlsIconView::GetTextForTooltipAndAccessibleName()

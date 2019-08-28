@@ -67,7 +67,8 @@ void CookieControlsBubbleView::OnBlockedCookiesCountChanged(
   if (blocked_cookies_ == blocked_cookies)
     return;
 
-  bool has_blocked_changed = (blocked_cookies_ > 0) != (blocked_cookies > 0);
+  bool has_blocked_changed =
+      blocked_cookies_ == -1 || (blocked_cookies_ > 0) != (blocked_cookies > 0);
   blocked_cookies_ = blocked_cookies;
 
   sub_title_->SetText(
@@ -152,6 +153,7 @@ void CookieControlsBubbleView::Init() {
   sub_title_ = new views::Label(base::string16(), views::style::CONTEXT_LABEL);
   sub_title_->SetBorder(views::CreateEmptyBorder(8, 0, 0, 0));
   sub_title_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  sub_title_->SetMultiLine(true);
   AddChildView(sub_title_);
 
   spacer_ = new views::View();
