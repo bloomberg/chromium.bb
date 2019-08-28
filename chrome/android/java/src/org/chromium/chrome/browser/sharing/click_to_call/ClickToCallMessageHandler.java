@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.sharing.click_to_call;
 
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -50,9 +51,13 @@ public class ClickToCallMessageHandler {
                 dialIntent = new Intent(Intent.ACTION_DIAL);
             }
             dialIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ContextUtils.getApplicationContext().startActivity(dialIntent);
-            new CachedMetrics.BooleanHistogramSample("Sharing.ClickToCallDialIntent")
-                    .record(TextUtils.isEmpty(phoneNumber));
+            try {
+                ContextUtils.getApplicationContext().startActivity(dialIntent);
+                new CachedMetrics.BooleanHistogramSample("Sharing.ClickToCallDialIntent")
+                        .record(TextUtils.isEmpty(phoneNumber));
+            } catch (ActivityNotFoundException activityNotFound) {
+                // TODO(crbug.com/996644): Add error dialog when no dialer app is available.
+            }
         }
     }
 
