@@ -62,6 +62,33 @@ enum UIDismissalReason {
   NUM_UI_RESPONSES,
 };
 
+// Enum representing the different leak detection dialogs shown to the user.
+// Corresponds to LeakDetectionDialogType suffix in histograms.xml.
+enum class LeakDialogType {
+  // The user is asked to visit the Password Checkup.
+  kCheckup = 0,
+  // The user is asked to change the password for the current site.
+  kChange = 1,
+  // The user is asked to visit the Password Checkup and change the password for
+  // the current site.
+  kCheckupAndChange = 2,
+  kMaxValue = kCheckupAndChange,
+};
+
+// Enum recording the dismissal reason of the data breach dialog which is shown
+// in case a credential is reported as leaked. Needs to stay in sync with the
+// PasswordLeakDetectionDialogDismissalReason enum in enums.xml.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class LeakDialogDismissalReason {
+  kNoDirectInteraction = 0,
+  kClickedClose = 1,
+  kClickedCheckPasswords = 2,
+  kClickedOk = 3,
+  kMaxValue = kClickedOk,
+};
+
 enum FormDeserializationStatus {
   LOGIN_DATABASE_SUCCESS,
   LOGIN_DATABASE_FAILURE,
@@ -381,6 +408,11 @@ void LogUpdateUIDismissalReason(UIDismissalReason reason);
 // Log the |reason| a user dismissed the update password bubble when resolving a
 // conflict during generation.
 void LogPresavedUpdateUIDismissalReason(UIDismissalReason reason);
+
+// Log the |type| of a leak dialog shown to the user and the |reason| why it was
+// dismissed.
+void LogLeakDialogTypeAndDismissalReason(LeakDialogType type,
+                                         LeakDialogDismissalReason reason);
 
 // Log the appropriate display disposition.
 void LogUIDisplayDisposition(UIDisplayDisposition disposition);
