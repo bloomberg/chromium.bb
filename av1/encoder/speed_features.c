@@ -396,6 +396,9 @@ static void set_good_speed_features_framesize_independent(
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->adaptive_txb_search_level = boosted ? 2 : 3;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
+    // TODO(any): Experiment with this speed feature set to 2 for higher quality
+    // presets as well
+    sf->skip_intra_in_interframe = 2;
   }
 
   if (speed >= 5) {
@@ -791,6 +794,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->skip_wm_in_uniform_mv_field = 0;
   sf->adaptive_interp_filter_search = 0;
   sf->interp_filter_search_mask = ALLOW_ALL_INTERP_FILT_MASK;
+  sf->src_var_thresh_intra_skip = 1;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;
