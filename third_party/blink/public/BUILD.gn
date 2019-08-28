@@ -548,6 +548,7 @@ source_set("blink_headers") {
     "//third_party/blink/renderer/platform/wtf:wtf",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
     "//third_party/webrtc/api:rtc_stats_api",
+    "//third_party/webrtc/api:rtp_parameters",
     "//third_party/webrtc/api:scoped_refptr",
     "//third_party/webrtc/api/audio_codecs:audio_codecs_api",
     "//third_party/webrtc/api/video:video_frame",
