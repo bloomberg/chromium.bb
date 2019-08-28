@@ -284,7 +284,7 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerStubResolverBrowsertest,
 
 INSTANTIATE_TEST_SUITE_P(,
                          SystemNetworkContextManagerStubResolverBrowsertest,
-                         ::testing::Values(false, true));
+                         ::testing::Bool());
 
 class SystemNetworkContextManagerFreezeQUICUaBrowsertest
     : public SystemNetworkContextManagerBrowsertest,
@@ -326,4 +326,27 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerFreezeQUICUaBrowsertest,
 
 INSTANTIATE_TEST_SUITE_P(,
                          SystemNetworkContextManagerFreezeQUICUaBrowsertest,
-                         ::testing::Values(true, false));
+                         ::testing::Bool());
+
+class SystemNetworkContextManagerWPADQuickCheckBrowsertest
+    : public SystemNetworkContextManagerBrowsertest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SystemNetworkContextManagerWPADQuickCheckBrowsertest() = default;
+  ~SystemNetworkContextManagerWPADQuickCheckBrowsertest() override = default;
+};
+
+IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerWPADQuickCheckBrowsertest,
+                       WPADQuickCheckPref) {
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(prefs::kQuickCheckEnabled, GetParam());
+
+  network::mojom::NetworkContextParamsPtr network_context_params =
+      g_browser_process->system_network_context_manager()
+          ->CreateDefaultNetworkContextParams();
+  EXPECT_EQ(GetParam(), network_context_params->pac_quick_check_enabled);
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SystemNetworkContextManagerWPADQuickCheckBrowsertest,
+                         ::testing::Bool());
