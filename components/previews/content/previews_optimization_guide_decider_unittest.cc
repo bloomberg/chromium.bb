@@ -306,6 +306,14 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
 
 TEST_F(PreviewsOptimizationGuideDeciderTest,
        MaybeLoadOptimizationHintsWithAtLeastOneNonFalseDecisionReturnsTrue) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kLitePageServerPreviews,
+       previews::features::kDeferAllScriptPreviews,
+       previews::features::kNoScriptPreviews,
+       previews::features::kResourceLoadingHints},
+      {});
+
   PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
   SeedOptimizationGuideDeciderWithDefaultResponses();
 
@@ -314,6 +322,25 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
 
   EXPECT_TRUE(decider.MaybeLoadOptimizationHints(&navigation_handle,
                                                  base::DoNothing()));
+}
+
+TEST_F(PreviewsOptimizationGuideDeciderTest,
+       MaybeLoadOptimizationHintsReturnsFalseIfNoClientSidePreviewsEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kLitePageServerPreviews},
+      {previews::features::kDeferAllScriptPreviews,
+       previews::features::kNoScriptPreviews,
+       previews::features::kResourceLoadingHints});
+
+  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+  SeedOptimizationGuideDeciderWithDefaultResponses();
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(hint_not_loaded_url());
+
+  EXPECT_FALSE(decider.MaybeLoadOptimizationHints(&navigation_handle,
+                                                  base::DoNothing()));
 }
 
 TEST_F(PreviewsOptimizationGuideDeciderTest,

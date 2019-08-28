@@ -26,7 +26,6 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test_utils.h"
@@ -137,11 +136,7 @@ class OptimizationGuideKeyedServiceBrowserTest
     scoped_feature_list_.InitWithFeatures(
         {optimization_guide::features::kOptimizationHints,
          optimization_guide::features::kOptimizationGuideKeyedService},
-        // It is possible for the same things to get recorded using Previews -
-        // disable it for these tests.
-        // TODO(crbug/969558): Remove this feature disable when the switch to
-        // only instantiate the hint cache logic in one place has landed.
-        {previews::features::kPreviews});
+        {});
 
     OptimizationGuideKeyedServiceDisabledBrowserTest::SetUp();
   }
@@ -170,12 +165,6 @@ class OptimizationGuideKeyedServiceBrowserTest
 
     SetEffectiveConnectionType(
         net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  }
-
-  void TearDown() override {
-    scoped_feature_list_.Reset();
-
-    OptimizationGuideKeyedServiceDisabledBrowserTest::TearDown();
   }
 
   void TearDownOnMainThread() override {
@@ -635,220 +624,4 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceCommandLineOverridesTest,
   std::vector<std::string> top_hosts = top_host_provider->GetTopHosts(1);
   EXPECT_EQ(1ul, top_hosts.size());
   EXPECT_EQ("whatever.com", top_hosts[0]);
-}
-
-// TODO(crbug/969558): Migrate this test directly to the HintsFetcherBrowserTest
-// when it supports both the original and OptimizationGuideKeyedService path.
-class OptimizationGuideKeyedServiceHintsFetcherTest
-    : public OptimizationGuideKeyedServiceCommandLineOverridesTest {
- public:
-  OptimizationGuideKeyedServiceHintsFetcherTest() = default;
-  ~OptimizationGuideKeyedServiceHintsFetcherTest() override = default;
-
-  void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {optimization_guide::features::kOptimizationHintsFetching}, {});
-
-    api_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    api_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
-    api_server_->RegisterRequestHandler(base::BindRepeating(
-        &OptimizationGuideKeyedServiceHintsFetcherTest::HandleGetHintsRequest,
-        base::Unretained(this)));
-    ASSERT_TRUE(api_server_->InitializeAndListen());
-
-    // We run the base class's set up after we set up here since the base class
-    // runs SetUpCommandLine prior to all the API server initialization and
-    // will have a non-existent URL to override the API server URL with.
-    OptimizationGuideKeyedServiceCommandLineOverridesTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    OptimizationGuideKeyedServiceCommandLineOverridesTest::SetUpCommandLine(
-        cmd);
-
-    // Remove DataSaver switch in case it was added before. This ensures that
-    // the other implementation does not also run the hints fetch at the same
-    // time since we have not yet isolated the paths using the
-    // OptimizationGuideKeyedService feature yet.
-    cmd->RemoveSwitch("enable-spdy-proxy-auth");
-
-    cmd->AppendSwitch(optimization_guide::switches::kFetchHintsOverrideTimer);
-    cmd->AppendSwitchASCII(
-        optimization_guide::switches::kOptimizationGuideServiceURL,
-        api_server_->base_url().spec());
-  }
-
-  void SetUpOnMainThread() override {
-    OptimizationGuideKeyedServiceCommandLineOverridesTest::SetUpOnMainThread();
-
-    api_server_->StartAcceptingConnections();
-  }
-
-  void WaitForHintsFetchToComplete() {
-    // Expect that the browser initialization will record at least one sample
-    // in each of the follow histograms as OnePlatform Hints are enabled.
-    EXPECT_EQ(
-        RetryForHistogramUntilCountReached(
-            histogram_tester_,
-            "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
-        1);
-
-    // There should be 2 sites passed via command line.
-    histogram_tester_.ExpectUniqueSample(
-        "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
-
-    EXPECT_EQ(RetryForHistogramUntilCountReached(
-                  histogram_tester_,
-                  "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
-              1);
-    // There should have been 1 hint returned in the response.
-    histogram_tester_.ExpectUniqueSample(
-        "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
-
-    // Wait until fetched hints have been stored.
-    EXPECT_EQ(
-        RetryForHistogramUntilCountReached(
-            histogram_tester_, "OptimizationGuide.FetchedHints.Stored", 1),
-        1);
-  }
-
-  void TearDown() override {
-    // Make sure to reset the other feature list first, otherwise we hit a
-    // DCHECK where the feature lists aren't reset in the same order they are
-    // set up.
-    OptimizationGuideKeyedServiceCommandLineOverridesTest::TearDown();
-
-    feature_list_.Reset();
-  }
-
-  void TearDownOnMainThread() override {
-    EXPECT_TRUE(api_server_->ShutdownAndWaitUntilComplete());
-
-    OptimizationGuideKeyedServiceCommandLineOverridesTest::
-        TearDownOnMainThread();
-  }
-
- private:
-  std::unique_ptr<net::test_server::HttpResponse> HandleGetHintsRequest(
-      const net::test_server::HttpRequest& request) {
-    std::unique_ptr<net::test_server::BasicHttpResponse> response;
-
-    response.reset(new net::test_server::BasicHttpResponse);
-    // If the request is a GET, it corresponds to a navigation so return a
-    // normal response.
-    EXPECT_EQ(request.method, net::test_server::METHOD_POST);
-    response->set_code(net::HTTP_OK);
-
-    optimization_guide::proto::GetHintsResponse get_hints_response;
-    optimization_guide::proto::Version hint_version;
-    hint_version.mutable_generation_timestamp()->set_seconds(234);
-    hint_version.set_hint_source(
-        optimization_guide::proto::HINT_SOURCE_OPTIMIZATION_GUIDE_SERVICE);
-    std::string hint_version_string;
-    hint_version.SerializeToString(&hint_version_string);
-    base::Base64Encode(hint_version_string, &hint_version_string);
-
-    optimization_guide::proto::Hint* hint = get_hints_response.add_hints();
-    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-    hint->set_key("somehost.com");
-    hint->set_version(hint_version_string);
-    optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
-    page_hint->set_page_pattern("*");
-
-    std::string serialized_request;
-    get_hints_response.SerializeToString(&serialized_request);
-    response->set_content(serialized_request);
-
-    return std::move(response);
-  }
-
-  std::unique_ptr<net::EmbeddedTestServer> api_server_;
-  base::test::ScopedFeatureList feature_list_;
-  base::HistogramTester histogram_tester_;
-};
-
-// TODO(crbug/969558): Figure out why hints fetcher not fetching on ChromeOS.
-// TODO(crbug/997106): Flaky on Win, Mac and Linux.
-IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsFetcherTest,
-                       DISABLED_ClearFetchedHints) {
-  PushHintsComponentAndWaitForCompletion();
-  WaitForHintsFetchToComplete();
-
-  RegisterWithKeyedService();
-
-  // Prompt the loading of the hint that was just fetched.
-  {
-    ukm::TestAutoSetUkmRecorder ukm_recorder;
-    base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), url_with_hints());
-    EXPECT_EQ(RetryForHistogramUntilCountReached(
-                  histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
-              1);
-    histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
-                                        true, 1);
-
-    // Verifies that the fetched hint is loaded and not the component hint as
-    // fetched hints are prioritized.
-    histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.HintCache.HintType.Loaded",
-        static_cast<int>(
-            optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
-        1);
-    // Expect that the optimization guide UKM was recorded.
-    auto entries = ukm_recorder.GetEntriesByName(
-        ukm::builders::OptimizationGuide::kEntryName);
-    ASSERT_EQ(1u, entries.size());
-    auto* entry = entries.at(0);
-    ukm_recorder.ExpectEntryMetric(
-        entry, ukm::builders::OptimizationGuide::kHintSourceName,
-        static_cast<int>(
-            optimization_guide::proto::HINT_SOURCE_OPTIMIZATION_GUIDE_SERVICE));
-    ukm_recorder.ExpectEntryMetric(
-        entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName,
-        234);
-  }
-
-  // Wipe the browser history - clear all the fetched hints.
-  browser()->profile()->Wipe();
-  // Run until idle so the hints have time to clear and the hint keys are
-  // repopulated.
-  base::RunLoop().RunUntilIdle();
-
-  // Try to load the same hint to confirm fetched hints are no longer there.
-  {
-    ukm::TestAutoSetUkmRecorder ukm_recorder;
-    base::HistogramTester histogram_tester;
-
-    ui_test_utils::NavigateToURL(browser(), url_with_hints());
-    EXPECT_EQ(RetryForHistogramUntilCountReached(
-                  histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
-              1);
-    histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
-                                        true, 1);
-
-    // Component Hint should be used instead.
-    histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.HintCache.HintType.Loaded",
-        static_cast<int>(
-            optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
-        1);
-    histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.ApplyDecision.NoScript",
-        static_cast<int>(
-            optimization_guide::OptimizationTypeDecision::kAllowedByHint),
-        1);
-    // Expect that the optimization guide UKM was recorded.
-    auto entries = ukm_recorder.GetEntriesByName(
-        ukm::builders::OptimizationGuide::kEntryName);
-    ASSERT_EQ(1u, entries.size());
-    auto* entry = entries.at(0);
-    ukm_recorder.ExpectEntryMetric(
-        entry, ukm::builders::OptimizationGuide::kHintSourceName,
-        static_cast<int>(optimization_guide::proto::
-                             HINT_SOURCE_OPTIMIZATION_HINTS_COMPONENT));
-    ukm_recorder.ExpectEntryMetric(
-        entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName,
-        123);
-  }
 }

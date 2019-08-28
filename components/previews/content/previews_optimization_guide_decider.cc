@@ -44,18 +44,19 @@ ConvertPreviewsTypeToOptimizationType(PreviewsType previews_type) {
 
 // Returns the optimization types to register with the Optimization Guide
 // Decider based on which Previews are enabled for the session.
-std::vector<optimization_guide::proto::OptimizationType>
+std::unordered_set<optimization_guide::proto::OptimizationType>
 GetOptimizationTypesToRegister() {
-  std::vector<optimization_guide::proto::OptimizationType> optimization_types;
+  std::unordered_set<optimization_guide::proto::OptimizationType>
+      optimization_types;
 
   if (params::IsNoScriptPreviewsEnabled())
-    optimization_types.push_back(optimization_guide::proto::NOSCRIPT);
+    optimization_types.insert(optimization_guide::proto::NOSCRIPT);
   if (params::IsResourceLoadingHintsEnabled())
-    optimization_types.push_back(optimization_guide::proto::RESOURCE_LOADING);
+    optimization_types.insert(optimization_guide::proto::RESOURCE_LOADING);
   if (params::IsLitePageServerPreviewsEnabled())
-    optimization_types.push_back(optimization_guide::proto::LITE_PAGE_REDIRECT);
+    optimization_types.insert(optimization_guide::proto::LITE_PAGE_REDIRECT);
   if (params::IsDeferAllScriptPreviewsEnabled())
-    optimization_types.push_back(optimization_guide::proto::DEFER_ALL_SCRIPT);
+    optimization_types.insert(optimization_guide::proto::DEFER_ALL_SCRIPT);
 
   return optimization_types;
 }
@@ -83,11 +84,14 @@ std::vector<std::string> GetResourcePatternsToBlock(
 PreviewsOptimizationGuideDecider::PreviewsOptimizationGuideDecider(
     optimization_guide::OptimizationGuideDecider* optimization_guide_decider)
     : optimization_guide_decider_(optimization_guide_decider),
-      resource_loading_hints_cache_(kDefaultMaxResourceLoadingHintsCacheSize) {
+      resource_loading_hints_cache_(kDefaultMaxResourceLoadingHintsCacheSize),
+      registered_optimization_types_(GetOptimizationTypesToRegister()) {
   DCHECK(optimization_guide_decider_);
 
   optimization_guide_decider_->RegisterOptimizationTypes(
-      GetOptimizationTypesToRegister());
+      std::vector<optimization_guide::proto::OptimizationType>(
+          registered_optimization_types_.begin(),
+          registered_optimization_types_.end()));
 }
 
 PreviewsOptimizationGuideDecider::~PreviewsOptimizationGuideDecider() = default;
@@ -124,8 +128,8 @@ bool PreviewsOptimizationGuideDecider::CanApplyPreview(
           optimization_guide::OptimizationTarget::kPainfulPageLoad,
           *optimization_type, &optimization_metadata);
 
-  // Return true if we know we can apply it. (i.e. all prerequisite information
-  // is present.)
+  // Return false if we are even unsure if we can apply the optimization (i.e.
+  // hint not loaded yet or just not applicable).
   if (decision != optimization_guide::OptimizationGuideDecision::kTrue)
     return false;
 
@@ -166,6 +170,12 @@ bool PreviewsOptimizationGuideDecider::MaybeLoadOptimizationHints(
 
   bool might_have_hint = false;
   for (const auto optimization_type : optimization_types_to_check) {
+    // Don't check for the hint if the optimization type is not enabled.
+    if (registered_optimization_types_.find(optimization_type) ==
+        registered_optimization_types_.end()) {
+      continue;
+    }
+
     if (optimization_guide_decider_->CanApplyOptimization(
             navigation_handle,
             optimization_guide::OptimizationTarget::kPainfulPageLoad,

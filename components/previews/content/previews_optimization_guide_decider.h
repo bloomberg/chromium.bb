@@ -8,9 +8,11 @@
 #include "components/previews/content/previews_optimization_guide.h"
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/containers/mru_cache.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 
 namespace optimization_guide {
 class OptimizationGuideDecider;
@@ -49,6 +51,10 @@ class PreviewsOptimizationGuideDecider : public PreviewsOptimizationGuide {
   // An in-memory cache of resource loading hints keyed by the URL. This allows
   // us to avoid making too many calls to |optimization_guide_decider_|.
   base::MRUCache<GURL, std::vector<std::string>> resource_loading_hints_cache_;
+
+  // The optimization types registered with |optimization_guide_decider_|.
+  const std::unordered_set<optimization_guide::proto::OptimizationType>
+      registered_optimization_types_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideDecider);
 };
