@@ -18,15 +18,6 @@ namespace password_manager {
 
 namespace metrics_util {
 
-// Metrics: "PasswordManager.InfoBarResponse"
-enum ResponseType {
-  NO_RESPONSE = 0,
-  REMEMBER_PASSWORD,
-  NEVER_REMEMBER_PASSWORD,
-  INFOBAR_DISMISSED,
-  NUM_RESPONSE_TYPES,
-};
-
 // Metrics: "PasswordBubble.DisplayDisposition"
 enum UIDisplayDisposition {
   AUTOMATIC_WITH_PASSWORD_PENDING = 0,
