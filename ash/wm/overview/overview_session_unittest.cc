@@ -4553,7 +4553,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
 
   // 4. Test if one window is snapped, the other windows are showing in
   // overview, we can drag another window in overview to snap in splitview, and
-  // the previous snapped window will not be put back into overview.
+  // the previous snapped window will be put back into overview.
   std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
   ToggleOverview();
   overview_item1 = GetOverviewItemForWindow(window1.get());
@@ -4564,7 +4564,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   DragWindowTo(overview_item3, gfx::PointF(0, 0));
   EXPECT_FALSE(overview_controller()->overview_session()->IsWindowInOverview(
       window3.get()));
-  EXPECT_FALSE(overview_controller()->overview_session()->IsWindowInOverview(
+  EXPECT_TRUE(overview_controller()->overview_session()->IsWindowInOverview(
       window1.get()));
   EXPECT_EQ(window_state1->GetStateType(), WindowStateType::kLeftSnapped);
   EXPECT_EQ(WindowState::Get(window3.get())->GetStateType(),
