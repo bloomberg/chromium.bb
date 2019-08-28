@@ -21,6 +21,7 @@ static INLINE int8_t signed_char_clamp(int t) {
   return (int8_t)clamp(t, -128, 127);
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static INLINE int16_t signed_char_clamp_high(int t, int bd) {
   switch (bd) {
     case 10: return (int16_t)clamp(t, -128 * 4, 128 * 4 - 1);
@@ -29,6 +30,7 @@ static INLINE int16_t signed_char_clamp_high(int t, int bd) {
     default: return (int16_t)clamp(t, -128, 128 - 1);
   }
 }
+#endif
 
 // should we apply any filter at all: 11111111 yes, 00000000 no
 static INLINE int8_t filter_mask2(uint8_t limit, uint8_t blimit, uint8_t p1,
