@@ -66,6 +66,11 @@ class Goma(object):
       # reduces a lot of I/O and calculation.
       # This is the base file name under GOMA_CACHE_DIR.
       'GOMA_DEPS_CACHE_FILE': 'goma.deps',
+
+      # Only run one command in parallel per core.
+      #
+      # TODO(crbug.com/998076): Increase if Goma fork issue is fixed.
+      'NINJA_CORE_MULTIPLIER': '1',
   }
 
   def __init__(self, goma_dir, goma_client_json, goma_tmp_dir=None,
