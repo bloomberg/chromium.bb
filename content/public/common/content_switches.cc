@@ -220,9 +220,6 @@ const char kDisableNotifications[]          = "disable-notifications";
 // the use of persistent gpu memory buffers.
 const char kDisablePartialRaster[] = "disable-partial-raster";
 
-// Enable partial raster in the renderer.
-const char kEnablePartialRaster[] = "enable-partial-raster";
-
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
