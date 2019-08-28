@@ -1604,6 +1604,8 @@ jumbo_split_static_library("browser") {
     "sharing/sharing_service.h",
     "sharing/sharing_service_factory.cc",
     "sharing/sharing_service_factory.h",
+    "sharing/sharing_service_proxy_android.cc",
+    "sharing/sharing_service_proxy_android.h",
     "sharing/sharing_sync_preference.cc",
     "sharing/sharing_sync_preference.h",
     "sharing/vapid_key_manager.cc",

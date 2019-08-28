@@ -79,13 +79,13 @@ SharingService::SharingService(
   if (base::FeatureList::IsEnabled(kClickToCallReceiver)) {
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kClickToCallMessage,
-        &click_to_call_message_handler_);
+        sharing_service_proxy_android_.click_to_call_message_handler());
   }
 
   if (base::FeatureList::IsEnabled(kSharedClipboardReceiver)) {
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
-        &shared_clipboard_message_handler_);
+        sharing_service_proxy_android_.shared_clipboard_message_handler());
   }
 #endif  // defined(OS_ANDROID)
 
