@@ -272,7 +272,6 @@ static_library("test_support") {
     public_deps += [
       "//components/crash/content/app",
       "//third_party/breakpad",
-      "//third_party/ocmock",
     ]
   }
 
