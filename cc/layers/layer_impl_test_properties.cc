@@ -24,8 +24,6 @@ LayerImplTestProperties::LayerImplTestProperties(LayerImpl* owning_layer)
       sorting_context_id(0),
       opacity(1.f),
       blend_mode(SkBlendMode::kSrcOver),
-      scroll_parent(nullptr),
-      clip_parent(nullptr),
       mask_layer(nullptr),
       parent(nullptr) {}
 

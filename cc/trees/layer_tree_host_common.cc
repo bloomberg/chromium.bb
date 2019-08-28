@@ -654,6 +654,20 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
 void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
     CalcDrawPropsImplInputsForTesting* inputs) {
+  if (inputs->root_layer->layer_tree_impl()->settings().use_layer_lists) {
+    // TODO(wangxianzhu): We should DCHECK(!needs_rebuild) after we remove all
+    // unnecessary setting of the flag in layer list mode.
+    inputs->property_trees->needs_rebuild = false;
+    // The following are needed for tests that modify impl-side property trees.
+    // In production code impl-side property trees are pushed from the main
+    // thread and the following are done in other ways.
+    std::vector<std::unique_ptr<RenderSurfaceImpl>> old_render_surfaces;
+    inputs->property_trees->effect_tree.TakeRenderSurfaces(
+        &old_render_surfaces);
+    inputs->property_trees->effect_tree.CreateOrReuseRenderSurfaces(
+        &old_render_surfaces, inputs->root_layer->layer_tree_impl());
+    inputs->property_trees->ResetCachedData();
+  }
   CalculateDrawPropertiesInternal(inputs, inputs->property_trees->needs_rebuild
                                               ? BUILD_PROPERTY_TREES
                                               : DONT_BUILD_PROPERTY_TREES);

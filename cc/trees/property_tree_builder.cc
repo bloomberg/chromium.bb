@@ -75,11 +75,7 @@ class PropertyTreeBuilderContext {
         transform_tree_(property_trees->transform_tree),
         clip_tree_(property_trees->clip_tree),
         effect_tree_(property_trees->effect_tree),
-        scroll_tree_(property_trees->scroll_tree) {
-    InitializeScrollChildrenMap();
-  }
-
-  void InitializeScrollChildrenMap();
+        scroll_tree_(property_trees->scroll_tree) {}
 
   void BuildPropertyTrees(float device_scale_factor,
                           const gfx::Rect& viewport,
@@ -127,7 +123,6 @@ class PropertyTreeBuilderContext {
   ClipTree& clip_tree_;
   EffectTree& effect_tree_;
   ScrollTree& scroll_tree_;
-  std::multimap<const LayerType*, LayerType*> scroll_children_map_;
 };
 
 static LayerImplList& LayerChildren(LayerImpl* layer) {
@@ -144,22 +139,6 @@ static LayerImpl* LayerChildAt(LayerImpl* layer, int index) {
 
 static Layer* LayerChildAt(Layer* layer, int index) {
   return layer->children()[index].get();
-}
-
-static Layer* ScrollParent(Layer* layer) {
-  return layer->scroll_parent();
-}
-
-static LayerImpl* ScrollParent(LayerImpl* layer) {
-  return layer->test_properties()->scroll_parent;
-}
-
-static Layer* ClipParent(Layer* layer) {
-  return layer->clip_parent();
-}
-
-static LayerImpl* ClipParent(LayerImpl* layer) {
-  return layer->test_properties()->clip_parent;
 }
 
 static bool HasClipRect(Layer* layer) {
@@ -310,14 +289,6 @@ static gfx::RRectF RoundedCornerBounds(LayerImpl* layer) {
   return layer->test_properties()->rounded_corner_bounds;
 }
 
-template <typename LayerType>
-static int GetScrollParentId(const DataForRecursion& data, LayerType* layer) {
-  const bool inherits_scroll = !ScrollParent(layer);
-  const int id = inherits_scroll ? data.scroll_tree_parent
-                                 : ScrollParent(layer)->scroll_tree_index();
-  return id;
-}
-
 static Layer* LayerParent(Layer* layer) {
   return layer->parent();
 }
@@ -342,14 +313,6 @@ static inline bool Is3dSorted(LayerImpl* layer) {
   return layer->test_properties()->sorting_context_id != 0;
 }
 
-static inline bool HasLatestSequenceNumber(const Layer* layer, int number) {
-  return layer->property_tree_sequence_number() == number;
-}
-
-static inline bool HasLatestSequenceNumber(const LayerImpl*, int) {
-  return true;
-}
-
 static inline void SetHasClipNode(Layer* layer, bool val) {
   layer->SetHasClipNode(val);
 }
@@ -362,13 +325,7 @@ void PropertyTreeBuilderContext<LayerType>::AddClipNodeIfNeeded(
     LayerType* layer,
     bool created_transform_node,
     DataForRecursion* data_for_children) const {
-  const bool inherits_clip = !ClipParent(layer);
-  // Sanity check the clip parent already built clip node before us.
-  DCHECK(inherits_clip ||
-         HasLatestSequenceNumber(ClipParent(layer),
-                                 property_trees_.sequence_number));
-  const int parent_id = inherits_clip ? data_from_ancestor.clip_tree_parent
-                                      : ClipParent(layer)->clip_tree_index();
+  const int parent_id = data_from_ancestor.clip_tree_parent;
 
   bool layer_clips_subtree = LayerClipsSubtree(layer);
   bool requires_node =
@@ -477,6 +434,8 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
     // for the parent in the Layer tree).
     source_index = LayerParent(layer)->transform_tree_index();
     source_offset = LayerParent(layer)->offset_to_transform_parent();
+    // TODO(wangxianzhu): Remove all "source" handling code.
+    DCHECK_EQ(parent_index, source_index);
   }
 
   if (!requires_node) {
@@ -555,7 +514,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   if (is_overscroll_elasticity_layer) {
     DCHECK(!is_scrollable);
     node->scroll_offset = gfx::ScrollOffset(elastic_overscroll_);
-  } else if (!ScrollParent(layer)) {
+  } else {
     node->scroll_offset = layer->CurrentScrollOffset();
   }
 
@@ -1140,7 +1099,7 @@ void PropertyTreeBuilderContext<LayerType>::AddScrollNodeIfNeeded(
     const DataForRecursion& data_from_ancestor,
     LayerType* layer,
     DataForRecursion* data_for_children) const {
-  int parent_id = GetScrollParentId(data_from_ancestor, layer);
+  int parent_id = data_from_ancestor.scroll_tree_parent;
 
   bool is_root = !LayerParent(layer);
   bool scrollable = layer->scrollable();
@@ -1287,23 +1246,8 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
   for (size_t i = 0; i < LayerChildren(layer).size(); ++i) {
     LayerType* current_child = LayerChildAt(layer, i);
     SetLayerPropertyChangedForChild(layer, current_child);
-    if (!ScrollParent(current_child)) {
-      BuildPropertyTreesInternal(current_child, data_for_children);
-      subtree_has_rounded_corner |=
-          *data_for_children.subtree_has_rounded_corner;
-    }
-  }
-
-  auto scroll_children_range = scroll_children_map_.equal_range(layer);
-  for (auto it = scroll_children_range.first;
-       it != scroll_children_range.second; ++it) {
-    LayerType* scroll_child = it->second;
-    DCHECK_EQ(ScrollParent(scroll_child), layer);
-    DCHECK(LayerParent(scroll_child));
-    base::AutoReset<int> auto_reset_effect_tree_parent(
-        &data_for_children.effect_tree_parent,
-        LayerParent(scroll_child)->effect_tree_index());
-    BuildPropertyTreesInternal(scroll_child, data_for_children);
+    BuildPropertyTreesInternal(current_child, data_for_children);
+    subtree_has_rounded_corner |= *data_for_children.subtree_has_rounded_corner;
   }
 
   created_render_surface = UpdateRenderSurfaceIfNeeded(
@@ -1320,13 +1264,6 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
     MaskLayer(layer)->SetEffectTreeIndex(layer->effect_tree_index());
     MaskLayer(layer)->SetScrollTreeIndex(layer->scroll_tree_index());
   }
-}
-
-const LayerTreeHost& AllLayerRange(const Layer* root_layer) {
-  return *root_layer->layer_tree_host();
-}
-const LayerTreeImpl& AllLayerRange(const LayerImpl* root_layer) {
-  return *root_layer->layer_tree_impl();
 }
 
 }  // namespace
@@ -1419,41 +1356,6 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
   scroll_tree_.set_needs_update(false);
 }
 
-#if DCHECK_IS_ON()
-template <typename LayerType>
-static void CheckDanglingScrollParent(LayerType* root_layer) {
-  std::unordered_set<const LayerType*> layers;
-  for (const auto* layer : AllLayerRange(root_layer))
-    layers.insert(layer);
-  for (auto* layer : AllLayerRange(root_layer))
-    DCHECK(!ScrollParent(layer) ||
-           layers.find(ScrollParent(layer)) != layers.end());
-}
-
-static void CheckClipPointersForLayer(Layer* layer) {
-  if (!layer)
-    return;
-
-  if (layer->clip_children()) {
-    for (auto it = layer->clip_children()->begin();
-         it != layer->clip_children()->end(); ++it) {
-      DCHECK_EQ((*it)->clip_parent(), layer);
-    }
-  }
-}
-#endif
-
-template <typename LayerType>
-void PropertyTreeBuilderContext<LayerType>::InitializeScrollChildrenMap() {
-#if DCHECK_IS_ON()
-  CheckDanglingScrollParent(root_layer_);
-#endif
-  for (auto* layer : AllLayerRange(root_layer_)) {
-    if (ScrollParent(layer))
-      scroll_children_map_.emplace(ScrollParent(layer), layer);
-  }
-}
-
 void PropertyTreeBuilder::BuildPropertyTrees(
     Layer* root_layer,
     const Layer* page_scale_layer,
@@ -1479,10 +1381,6 @@ void PropertyTreeBuilder::BuildPropertyTrees(
       elastic_overscroll, page_scale_factor, device_transform,
       root_layer->layer_tree_host()->mutator_host(), property_trees)
       .BuildPropertyTrees(device_scale_factor, viewport, color);
-#if DCHECK_IS_ON()
-  for (auto* layer : AllLayerRange(root_layer))
-    CheckClipPointersForLayer(layer);
-#endif
   property_trees->ResetCachedData();
   // During building property trees, all copy requests are moved from layers to
   // effect tree, which are then pushed at commit to compositor thread and

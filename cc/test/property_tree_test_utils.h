@@ -51,6 +51,7 @@ ScrollNode& CreateScrollNode(LayerImpl*,
                              int parent_id = ScrollTree::kInvalidNodeId);
 
 void SetScrollOffset(Layer*, const gfx::ScrollOffset&);
+void SetScrollOffset(LayerImpl*, const gfx::ScrollOffset&);
 
 template <typename LayerType>
 TransformNode* GetTransformNode(LayerType* layer) {

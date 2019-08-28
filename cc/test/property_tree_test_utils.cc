@@ -80,6 +80,9 @@ ClipNode& CreateClipNodeInternal(LayerType* layer, int parent_id) {
   auto* node = clip_tree.Node(id);
   node->clip_type = ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   node->transform_id = layer->transform_tree_index();
+  node->clip = gfx::RectF(
+      gfx::PointAtOffsetFromOrigin(layer->offset_to_transform_parent()),
+      gfx::SizeF(layer->bounds()));
   clip_tree.set_needs_update(true);
   return *node;
 }
@@ -130,6 +133,17 @@ ScrollNode& CreateScrollNodeInternal(LayerType* layer, int parent_id) {
 
   scroll_tree.set_needs_update(true);
   return *node;
+}
+
+template <typename LayerType>
+void SetScrollOffsetInternal(LayerType* layer,
+                             const gfx::ScrollOffset& scroll_offset) {
+  auto* transform_node = GetTransformNode(layer);
+  transform_node->scroll_offset = scroll_offset;
+  transform_node->needs_local_transform_update = true;
+  GetPropertyTrees(layer)->transform_tree.set_needs_update(true);
+  GetPropertyTrees(layer)->scroll_tree.SetScrollOffset(layer->element_id(),
+                                                       scroll_offset);
 }
 
 }  // anonymous namespace
@@ -191,12 +205,12 @@ ScrollNode& CreateScrollNode(LayerImpl* layer, int parent_id) {
 
 void SetScrollOffset(Layer* layer, const gfx::ScrollOffset& scroll_offset) {
   layer->SetScrollOffset(scroll_offset);
-  auto* transform_node = GetTransformNode(layer);
-  transform_node->scroll_offset = scroll_offset;
-  transform_node->needs_local_transform_update = true;
-  GetPropertyTrees(layer)->transform_tree.set_needs_update(true);
-  GetPropertyTrees(layer)->scroll_tree.SetScrollOffset(layer->element_id(),
-                                                       scroll_offset);
+  SetScrollOffsetInternal(layer, scroll_offset);
+}
+
+void SetScrollOffset(LayerImpl* layer, const gfx::ScrollOffset& scroll_offset) {
+  layer->SetCurrentScrollOffset(scroll_offset);
+  SetScrollOffsetInternal(layer, scroll_offset);
 }
 
 void SetupViewport(Layer* root,

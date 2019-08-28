@@ -355,8 +355,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
     return render_surfaces_[id].get();
   }
 
-  void UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl);
-
   bool ContributesToDrawnSurface(int id);
 
   void ResetChangeTracking();

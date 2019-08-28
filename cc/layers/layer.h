@@ -213,17 +213,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Returns the bounds which is clipped by the clip rect.
   gfx::RectF EffectiveClipRect();
 
-  // Set or get a layer that is not an ancestor of this layer, but which should
-  // be clipped to this layer's bounds if SetMasksToBounds() is set to true.
-  // The parent layer does *not* retain ownership of a reference on this layer.
-  void SetClipParent(Layer* ancestor);
-  Layer* clip_parent() { return inputs_.clip_parent; }
-
-  // The set of layers which are not in this layers subtree but which should be
-  // clipped to only appear within this layer's bounds.
-  std::set<Layer*>* clip_children() { return clip_children_.get(); }
-  const std::set<Layer*>* clip_children() const { return clip_children_.get(); }
-
   // Set or get a layer that will mask the contents of this layer. The alpha
   // channel of the mask layer's content is used as an alpha mask of this
   // layer's content. IOW the mask's alpha is multiplied by this layer's alpha
@@ -363,11 +352,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   const gfx::Point3F& transform_origin() const {
     return inputs_.transform_origin;
   }
-
-  // Set or get a scroll parent layer. It is not an ancestor of this layer, but
-  // this layer will be moved by the scroll parent's scroll offset.
-  void SetScrollParent(Layer* parent);
-  Layer* scroll_parent() { return inputs_.scroll_parent; }
 
   // Set or get the scroll offset of the layer. The content of the layer, and
   // position of its subtree, as well as other layers for which this layer is
@@ -870,10 +854,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // This should only be called from RemoveFromParent().
   void RemoveChildOrDependent(Layer* child);
 
-  // If this layer has a clip parent, it removes |this| from its list of clip
-  // children.
-  void RemoveFromClipTree();
-
   // When we detach or attach layer to new LayerTreeHost, all property trees'
   // indices becomes invalid.
   void InvalidatePropertyTreesIndices();
@@ -973,9 +953,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     ElementId element_id;
 
-    Layer* scroll_parent;
-    Layer* clip_parent;
-
     bool has_will_change_transform_hint : 1;
 
     bool trilinear_filtering : 1;
@@ -1027,8 +1004,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   SkColor safe_opaque_background_color_;
   uint64_t compositing_reasons_;
   int owner_node_id_;
-
-  std::unique_ptr<std::set<Layer*>> clip_children_;
 };
 
 }  // namespace cc

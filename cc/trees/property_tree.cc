@@ -1083,24 +1083,6 @@ void EffectTree::AddMaskLayerId(int id) {
   mask_layer_ids_.push_back(id);
 }
 
-void EffectTree::UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl) {
-  for (int id = kContentsRootNodeId; id < static_cast<int>(size()); ++id) {
-    EffectNode* effect_node = Node(id);
-    bool needs_render_surface =
-        id == kContentsRootNodeId || effect_node->HasRenderSurface();
-    if (needs_render_surface == !!render_surfaces_[id])
-      continue;
-
-    if (needs_render_surface) {
-      render_surfaces_[id] = std::make_unique<RenderSurfaceImpl>(
-          layer_tree_impl, effect_node->stable_id);
-      render_surfaces_[id]->set_effect_tree_index(id);
-    } else {
-      render_surfaces_[id].reset();
-    }
-  }
-}
-
 bool EffectTree::ContributesToDrawnSurface(int id) {
   // All drawn nodes contribute to drawn surface.
   // Exception : Nodes that are hidden and are drawn only for the sake of

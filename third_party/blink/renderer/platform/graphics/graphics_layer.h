@@ -157,9 +157,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool ContentsAreVisible() const { return contents_visible_; }
   void SetContentsVisible(bool);
 
-  void SetScrollParent(cc::Layer*);
-  void SetClipParent(cc::Layer*);
-
   // For special cases, e.g. drawing missing tiles on Android.
   // The compositor should never paint this color in normal cases because the
   // Layer will paint the background by itself.
@@ -288,9 +285,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
     needs_check_raster_invalidation_ = true;
   }
 
-  bool HasScrollParent() const { return has_scroll_parent_; }
-  bool HasClipParent() const { return has_clip_parent_; }
-
   bool PaintWithoutCommitForTesting(
       const base::Optional<IntRect>& interest_rect = base::nullopt);
 
@@ -353,9 +347,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool contents_visible_ : 1;
   bool hit_testable_ : 1;
   bool needs_check_raster_invalidation_ : 1;
-
-  bool has_scroll_parent_ : 1;
-  bool has_clip_parent_ : 1;
 
   bool painted_ : 1;
 

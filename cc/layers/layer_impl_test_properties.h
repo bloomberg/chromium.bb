@@ -55,9 +55,6 @@ struct CC_EXPORT LayerImplTestProperties {
   gfx::Point3F transform_origin;
   gfx::Transform transform;
   gfx::PointF position;
-  LayerImpl* scroll_parent;
-  LayerImpl* clip_parent;
-  std::unique_ptr<std::set<LayerImpl*>> clip_children;
   std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
   LayerImplList children;
   LayerImpl* mask_layer;

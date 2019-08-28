@@ -64,8 +64,6 @@ Layer::Inputs::Inputs(int layer_id)
       user_scrollable_vertical(true),
       main_thread_scrolling_reasons(
           MainThreadScrollingReason::kNotScrollingOnMain),
-      scroll_parent(nullptr),
-      clip_parent(nullptr),
       has_will_change_transform_hint(false),
       trilinear_filtering(false),
       hide_layer_and_subtree(false),
@@ -112,8 +110,6 @@ Layer::~Layer() {
   // Similarly we shouldn't have a layer tree host since it also keeps a
   // reference to us.
   DCHECK(!layer_tree_host());
-
-  RemoveFromClipTree();
 
   // Remove the parent reference from all children and dependents.
   RemoveAllChildren();
@@ -898,48 +894,6 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   SetNeedsCommit();
 }
 
-void Layer::SetScrollParent(Layer* parent) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.scroll_parent == parent)
-    return;
-
-  inputs_.scroll_parent = parent;
-
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
-}
-
-void Layer::SetClipParent(Layer* ancestor) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.clip_parent == ancestor)
-    return;
-
-  if (inputs_.clip_parent)
-    inputs_.clip_parent->RemoveClipChild(this);
-
-  inputs_.clip_parent = ancestor;
-
-  if (inputs_.clip_parent)
-    inputs_.clip_parent->AddClipChild(this);
-
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
-}
-
-void Layer::AddClipChild(Layer* child) {
-  if (!clip_children_)
-    clip_children_.reset(new std::set<Layer*>);
-  clip_children_->insert(child);
-  SetNeedsCommit();
-}
-
-void Layer::RemoveClipChild(Layer* child) {
-  clip_children_->erase(child);
-  if (clip_children_->empty())
-    clip_children_ = nullptr;
-  SetNeedsCommit();
-}
-
 void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
 
@@ -1644,17 +1598,6 @@ void Layer::SetMirrorCount(int mirror_count) {
 
 ElementListType Layer::GetElementTypeForAnimation() const {
   return ElementListType::ACTIVE;
-}
-
-void Layer::RemoveFromClipTree() {
-  if (clip_children_.get()) {
-    std::set<Layer*> copy = *clip_children_;
-    for (auto it = copy.begin(); it != copy.end(); ++it)
-      (*it)->SetClipParent(nullptr);
-  }
-
-  DCHECK(!clip_children_);
-  SetClipParent(nullptr);
 }
 
 void Layer::AddDrawableDescendants(int num) {
