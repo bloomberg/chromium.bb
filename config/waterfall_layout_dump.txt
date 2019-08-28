@@ -473,6 +473,7 @@
     macchiato-ground-release
     mistral-release
     monroe-release
+    nami-kvm-release
     nami-release
     nautilus-release
     ninja-release
@@ -2535,6 +2536,7 @@
     macchiato-ground-release-tryjob
     mistral-release-tryjob
     monroe-release-tryjob
+    nami-kvm-release-tryjob
     nami-release-tryjob
     nautilus-release-tryjob
     ninja-release-tryjob
@@ -2636,6 +2638,17 @@
   nami-compile-only-pre-cq
   nami-factory-nami-10715.B-factorybranch-tryjob
   nami-full-tryjob
+  nami-kvm-chromium-pfq-tryjob
+  nami-kvm-compile-only-pre-cq
+  nami-kvm-full-tryjob
+  nami-kvm-llvm-next-toolchain-tryjob
+  nami-kvm-llvm-toolchain-tryjob
+  nami-kvm-no-vmtest-pre-cq
+  nami-kvm-paladin-tryjob
+  nami-kvm-pre-cq
+  nami-kvm-release-tryjob
+  nami-kvm-tot-chromium-pfq-informational-tryjob
+  nami-kvm-unittest-stress
   nami-llvm-next-toolchain-tryjob
   nami-llvm-toolchain-tryjob
   nami-no-vmtest-pre-cq
