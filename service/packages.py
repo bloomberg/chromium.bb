@@ -229,7 +229,7 @@ def uprev_sample(*_args, **_kwargs):
   for path in paths:
     osutils.WriteFile(path, cros_build_lib.GetRandomString())
 
-  return paths
+  return UprevVersionedPackageResult('1.2.3', paths)
 
 
 @uprevs_versioned_package(constants.CHROME_CP)
