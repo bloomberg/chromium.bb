@@ -3576,6 +3576,10 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   int fd = ui::GetMainAndroidPackFd(&region);
   mappings->ShareWithRegion(kAndroidUIResourcesPakDescriptor, fd, region);
 
+  // For Android: Native resources for DFMs should only be used by the browser
+  // process. Their file descriptors and memory mapped file regions are not
+  // passed to child processes.
+
   fd = ui::GetCommonResourcesPackFd(&region);
   mappings->ShareWithRegion(kAndroidChrome100PercentPakDescriptor, fd, region);
 
