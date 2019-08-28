@@ -17,9 +17,10 @@
 #ifndef THIRD_PARTY_QUIC_TRACE_LIB_ANALYSIS_TRACE_NUMBERING_H_
 #define THIRD_PARTY_QUIC_TRACE_LIB_ANALYSIS_TRACE_NUMBERING_H_
 
+#include <glog/logging.h>
+
 #include <cstdint>
 #include <unordered_map>
-#include <glog/logging.h>
 
 #include "absl/container/flat_hash_map.h"
 #include "lib/quic_trace.pb.h"
@@ -53,28 +54,31 @@ class NumberingWithoutRetransmissions {
     }
     TraceOffset offset = current_offset_;
     current_offset_ += size;
-    getOffsets(event.encryption_level())->emplace(event.packet_number(), Interval{offset, size});
+    getOffsets(event.encryption_level())
+        ->emplace(event.packet_number(), Interval{offset, size});
     return {offset, size};
   }
 
-  Interval GetTraceNumbering(uint64_t packet_number, EncryptionLevel enc_level) {
+  Interval GetTraceNumbering(uint64_t packet_number,
+                             EncryptionLevel enc_level) {
     auto offsets = getOffsets(enc_level);
     auto it = offsets->find(packet_number);
     return it != offsets->end() ? it->second : Interval{0, 0};
   }
 
  private:
-  absl::flat_hash_map<uint64_t, Interval>* getOffsets(EncryptionLevel enc_level) {
-    switch(enc_level) {
-    case ENCRYPTION_INITIAL:
-      return &offsets_initial_;
-    case ENCRYPTION_HANDSHAKE:
-      return &offsets_handshake_;
-    case ENCRYPTION_0RTT:
-    case ENCRYPTION_1RTT:
-      return &offsets_1rtt_;
-    default:
-      LOG(FATAL) << "Unknown encryption level.";
+  absl::flat_hash_map<uint64_t, Interval>* getOffsets(
+      EncryptionLevel enc_level) {
+    switch (enc_level) {
+      case ENCRYPTION_INITIAL:
+        return &offsets_initial_;
+      case ENCRYPTION_HANDSHAKE:
+        return &offsets_handshake_;
+      case ENCRYPTION_0RTT:
+      case ENCRYPTION_1RTT:
+        return &offsets_1rtt_;
+      default:
+        LOG(FATAL) << "Unknown encryption level.";
     }
   }
 

@@ -77,31 +77,33 @@ void ProcessedTrace::AddPacket(TraceRenderer* renderer,
                      &packet});
 }
 
-absl::flat_hash_set<uint64_t>* ProcessedTrace::getPacketsAcked(const EncryptionLevel enc_level) {
-  switch(enc_level) {
-  case ENCRYPTION_INITIAL:
-    return &packets_acked_initial_;
-  case ENCRYPTION_HANDSHAKE:
-    return &packets_acked_handshake_;
-  case ENCRYPTION_0RTT:
-  case ENCRYPTION_1RTT:
-    return &packets_acked_1rtt_;
-  default:
-    LOG(FATAL) << "Unknown encryption level.";
+absl::flat_hash_set<uint64_t>* ProcessedTrace::getPacketsAcked(
+    const EncryptionLevel enc_level) {
+  switch (enc_level) {
+    case ENCRYPTION_INITIAL:
+      return &packets_acked_initial_;
+    case ENCRYPTION_HANDSHAKE:
+      return &packets_acked_handshake_;
+    case ENCRYPTION_0RTT:
+    case ENCRYPTION_1RTT:
+      return &packets_acked_1rtt_;
+    default:
+      LOG(FATAL) << "Unknown encryption level.";
   }
 }
 
-absl::flat_hash_set<uint64_t>* ProcessedTrace::getPacketsLost(const EncryptionLevel enc_level) {
-  switch(enc_level) {
-  case ENCRYPTION_INITIAL:
-    return &packets_lost_initial_;
-  case ENCRYPTION_HANDSHAKE:
-    return &packets_lost_handshake_;
-  case ENCRYPTION_0RTT:
-  case ENCRYPTION_1RTT:
-    return &packets_lost_1rtt_;
-  default:
-    LOG(FATAL) << "Unknown encryption level.";
+absl::flat_hash_set<uint64_t>* ProcessedTrace::getPacketsLost(
+    const EncryptionLevel enc_level) {
+  switch (enc_level) {
+    case ENCRYPTION_INITIAL:
+      return &packets_lost_initial_;
+    case ENCRYPTION_HANDSHAKE:
+      return &packets_lost_handshake_;
+    case ENCRYPTION_0RTT:
+    case ENCRYPTION_1RTT:
+      return &packets_lost_1rtt_;
+    default:
+      LOG(FATAL) << "Unknown encryption level.";
   }
 }
 
@@ -132,7 +134,8 @@ ProcessedTrace::ProcessedTrace(std::unique_ptr<Trace> trace,
             if (!getPacketsAcked(event.encryption_level())->insert(i).second) {
               continue;
             }
-            Interval mapped = numbering.GetTraceNumbering(i, event.encryption_level());
+            Interval mapped =
+                numbering.GetTraceNumbering(i, event.encryption_level());
             AddPacket(renderer, event, mapped, PacketType::ACKED);
             acks_.emplace(vec2(event.time_us(), mapped.offset), i);
             // Don't count spurious retransmissions as losses.
@@ -142,7 +145,8 @@ ProcessedTrace::ProcessedTrace(std::unique_ptr<Trace> trace,
       }
     }
     if (event.event_type() == PACKET_LOST) {
-      Interval mapped = numbering.GetTraceNumbering(event.packet_number(), event.encryption_level());
+      Interval mapped = numbering.GetTraceNumbering(event.packet_number(),
+                                                    event.encryption_level());
       AddPacket(renderer, event, mapped, PacketType::LOST);
       getPacketsLost(event.encryption_level())->insert(event.packet_number());
     }
@@ -186,10 +190,12 @@ bool ProcessedTrace::SummaryTable(Table* table,
       case PACKET_SENT:
         count_sent++;
         bytes_sent += it->packet_size();
-        if (getPacketsAcked(it->encryption_level())->count(it->packet_number()) > 0) {
+        if (getPacketsAcked(it->encryption_level())
+                ->count(it->packet_number()) > 0) {
           bytes_sent_acked += it->packet_size();
         }
-        if (getPacketsLost(it->encryption_level())->count(it->packet_number()) > 0) {
+        if (getPacketsLost(it->encryption_level())->count(it->packet_number()) >
+            0) {
           bytes_sent_lost += it->packet_size();
         }
         break;
@@ -324,9 +330,9 @@ void ProcessedTrace::FillTableForPacket(Table* table,
 
   table->AddRow("Time", FormatTime(packet->time_us()));
 
-  if(packet->event_type() == PACKET_SENT ||
-    packet->event_type() == PACKET_LOST ||
-    packet->event_type() == PACKET_RECEIVED) {
+  if (packet->event_type() == PACKET_SENT ||
+      packet->event_type() == PACKET_LOST ||
+      packet->event_type() == PACKET_RECEIVED) {
     table->AddRow("Encryption",
                   EncryptionLevelToString(packet->encryption_level()));
   }
@@ -342,12 +348,12 @@ void ProcessedTrace::FillTableForPacket(Table* table,
       switch (frame.frame_type()) {
         case CRYPTO:
           table->AddRow(
-            "Crypto",
-            absl::StrCat(frame.crypto_frame_info().offset(), "-",
-                        frame.crypto_frame_info().offset() +
-                          frame.crypto_frame_info().length(),
-                        " (", frame.crypto_frame_info().length(), ")"));
-            break;
+              "Crypto",
+              absl::StrCat(frame.crypto_frame_info().offset(), "-",
+                           frame.crypto_frame_info().offset() +
+                               frame.crypto_frame_info().length(),
+                           " (", frame.crypto_frame_info().length(), ")"));
+          break;
         case STREAM:
           table->AddRow(
               "Stream",
