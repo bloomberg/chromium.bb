@@ -8,12 +8,10 @@
 from __future__ import print_function
 
 import collections
-import cookielib
 import cStringIO
 import datetime
 import getpass
 import hashlib
-import httplib
 import json
 import netrc
 import os
@@ -23,6 +21,8 @@ import stat
 
 import mock
 import six
+from six.moves import http_client as httplib
+from six.moves import http_cookiejar as cookielib
 from six.moves import urllib
 
 from chromite.lib import config_lib

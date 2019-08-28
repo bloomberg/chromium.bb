@@ -7,9 +7,10 @@
 
 from __future__ import print_function
 
-import httplib
 import tempfile
 import time
+
+from six.moves import http_client as httplib
 
 from chromite.lib import config_lib
 from chromite.lib import cros_test_lib

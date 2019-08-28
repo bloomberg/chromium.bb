@@ -12,7 +12,6 @@ for those executables involved).
 
 from __future__ import print_function
 
-import httplib
 import itertools
 import json
 import os
@@ -23,6 +22,7 @@ import tempfile
 import time
 
 import requests
+from six.moves import http_client as httplib
 from six.moves import urllib
 
 from chromite.lib import constants

@@ -358,8 +358,14 @@ max-parents=10
 # Bastion: Dropped in Python 3.
 # ConfigParser: Use the 'six.moves.configparser' module instead
 #   (or 'configparser' in Python 3).
+# cookielib: Use the 'six.moves.http_cookiejar' module instead
+#   (or 'http.cookiejar' in Python 3).
 # cPickle: Use the 'pickle' module instead.
 # exceptions: Dropped in Python 3.
+# HTMLParser: Use the 'six.moves.html_parser' module instead
+#   (or 'html.parser' in Python 3).
+# httplib: Use the 'six.moves.http_client' module instead
+#   (or 'http.client' in Python 3).
 # md5: Use the 'hashlib' module instead.
 # mox: Use the 'mock' module instead.
 # optparse: Use the 'argparse' module instead.
@@ -375,8 +381,11 @@ deprecated-modules=
     __builtin__,
     Bastion,
     ConfigParser,
+    cookielib,
     cPickle,
     exceptions,
+    HTMLParser,
+    httplib,
     md5,
     mox,
     optparse,

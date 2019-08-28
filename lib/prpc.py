@@ -7,11 +7,11 @@
 
 from __future__ import print_function
 
-import httplib
 import json
 import socket
 
 import httplib2
+from six.moves import http_client as httplib
 
 from chromite.lib import auth
 from chromite.lib import cros_logging as logging

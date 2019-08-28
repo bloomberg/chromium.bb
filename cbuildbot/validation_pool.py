@@ -13,12 +13,12 @@ from __future__ import print_function
 
 import pickle
 import functools
-import httplib
 import os
 import time
 from xml.dom import minidom
 
 import six
+from six.moves import http_client as httplib
 
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import patch_series

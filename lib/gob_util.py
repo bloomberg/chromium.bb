@@ -10,11 +10,8 @@ https://gerrit-review.googlesource.com/Documentation/rest-api.html
 
 from __future__ import print_function
 
-import HTMLParser
 import base64
-import cookielib
 import datetime
-import httplib
 import json
 import netrc
 import os
@@ -31,6 +28,9 @@ except ImportError:  # Newer oauth2client versions put it in .contrib
   # pylint: disable=import-error,no-name-in-module
   from oauth2client.contrib import gce
 import six
+from six.moves import html_parser as HTMLParser
+from six.moves import http_client as httplib
+from six.moves import http_cookiejar as cookielib
 from six.moves import urllib
 
 from chromite.lib import constants

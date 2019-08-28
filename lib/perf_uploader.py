@@ -20,13 +20,13 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
-import httplib
 import json
 import math
 import os
 import re
 import string
 
+from six.moves import http_client as httplib
 from six.moves import urllib
 
 from chromite.lib import cros_logging as logging

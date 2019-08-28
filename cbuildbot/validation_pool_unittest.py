@@ -10,7 +10,6 @@ from __future__ import print_function
 import collections
 import contextlib
 import copy
-import httplib
 import itertools
 import os
 import pickle
@@ -18,6 +17,7 @@ import tempfile
 import time
 
 import mock
+from six.moves import http_client as httplib
 
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository

@@ -7,17 +7,17 @@
 
 from __future__ import print_function
 
-import BaseHTTPServer
 import errno
 import itertools
 import os
 import signal
 import socket
-import SocketServer
 import sys
 import time
 
 import mock
+from six.moves import BaseHTTPServer
+from six.moves import socketserver
 from six.moves import urllib
 
 # We specifically set up a local server to connect to, so make sure we
@@ -137,7 +137,7 @@ class SymbolServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     pass
 
 
-class SymbolServer(SocketServer.ThreadingTCPServer, BaseHTTPServer.HTTPServer):
+class SymbolServer(socketserver.ThreadingTCPServer, BaseHTTPServer.HTTPServer):
   """Simple HTTP server that forks each request"""
 
 
