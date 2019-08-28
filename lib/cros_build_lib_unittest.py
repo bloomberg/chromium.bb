@@ -18,10 +18,10 @@ import signal
 import socket
 import StringIO
 import sys
-import __builtin__
 
 import mock
 import six
+from six.moves import builtins
 
 from chromite.lib import constants
 from chromite.cbuildbot import repository
@@ -929,7 +929,9 @@ class TestInput(cros_test_lib.MockOutputTestCase):
   def testGetInput(self):
     """Verify GetInput() basic behavior."""
     response = 'Some response'
-    self.PatchObject(__builtin__, 'raw_input', return_value=response)
+    if sys.version_info.major < 3:
+      self.PatchObject(builtins, 'raw_input', return_value=response)
+    self.PatchObject(builtins, 'input', return_value=response)
     self.assertEquals(response, cros_build_lib.GetInput('prompt'))
 
   def testBooleanPrompt(self):

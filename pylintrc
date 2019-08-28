@@ -353,6 +353,8 @@ max-parents=10
 [IMPORTS]
 
 # Deprecated modules which should not be used, separated by a comma.
+# __builtin__: Use the 'six.moves.builtins' module instead
+#   (or 'builtins' in Python 3).
 # Bastion: Dropped in Python 3.
 # ConfigParser: Use the 'six.moves.configparser' module instead
 #   (or 'configparser' in Python 3).
@@ -366,6 +368,7 @@ max-parents=10
 # rexec: Dropped in Python 3.
 # TERMIOS: Use the 'termios' module instead.
 deprecated-modules=
+    __builtin__,
     Bastion,
     ConfigParser,
     cPickle,
