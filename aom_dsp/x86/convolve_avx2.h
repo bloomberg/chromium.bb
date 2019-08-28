@@ -281,7 +281,7 @@ static INLINE void prepare_coeffs_lowbd(
   // Since all filter co-efficients are even, this change will not affect the
   // end result
   assert(_mm_test_all_zeros(_mm_and_si128(coeffs_8, _mm_set1_epi16(1)),
-                            _mm_set1_epi16(0xffff)));
+                            _mm_set1_epi16((short)0xffff)));
 
   const __m256i coeffs_1 = _mm256_srai_epi16(filter_coeffs, 1);
 
