@@ -120,6 +120,7 @@ class DocumentState;
 class DocumentTimeline;
 class DocumentType;
 class DOMFeaturePolicy;
+class DoubleSize;
 class Element;
 class ElementDataCache;
 class ElementRegistrationOptions;
