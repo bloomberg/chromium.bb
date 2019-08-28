@@ -159,6 +159,8 @@ AwBrowserProcess::CreateHttpAuthDynamicParams() {
   auth_dynamic_params->android_negotiate_account_type =
       local_state()->GetString(prefs::kAuthAndroidNegotiateAccountType);
 
+  auth_dynamic_params->ntlm_v2_enabled = true;
+
   return auth_dynamic_params;
 }
 
