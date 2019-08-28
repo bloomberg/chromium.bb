@@ -243,7 +243,7 @@ class Repository(object):
     projects = _ListArg(projects)
     try:
       result = self._Run(['list'] + projects, cwd=cwd, capture_output=True)
-    except cros_build_lib.RunCommandError, rce:
+    except cros_build_lib.RunCommandError as rce:
       m = PROJECT_NOT_FOUND_RE.search(rce.result.error)
       if m:
         raise ProjectNotFoundError(m.group('name'))

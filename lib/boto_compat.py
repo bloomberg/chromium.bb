@@ -72,7 +72,7 @@ def FixBotoCerts(activate=True, strict=False):
     os.environ['BOTO_CONFIG'] = boto_cfg_path
     os.environ.pop('BOTO_PATH', None)
 
-  except Exception, e:
+  except Exception as e:
     if strict:
       raise e
     logging.warning('FixBotoCerts init failed: %s', e)
@@ -88,7 +88,7 @@ def FixBotoCerts(activate=True, strict=False):
     if boto_cfg_path:
       try:
         os.remove(boto_cfg_path)
-      except Exception, e:
+      except Exception as e:
         if strict:
           raise e
         logging.warning('FixBotoCerts failed removing %s: %s', boto_cfg_path, e)
