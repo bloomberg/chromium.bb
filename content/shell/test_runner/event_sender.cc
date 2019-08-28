@@ -2844,11 +2844,11 @@ blink::WebWidget* EventSender::widget() {
 }
 
 blink::WebFrameWidget* EventSender::mainFrameWidget() {
+  if (!view() || !view()->MainFrame())
+    return nullptr;
   DCHECK(view()->MainFrame()->IsWebLocalFrame())
       << "Event Sender doesn't support being run in a remote frame for this "
          "operation.";
-  if (!view() || !view()->MainFrame())
-    return nullptr;
   return view()->MainFrame()->ToWebLocalFrame()->FrameWidget();
 }
 
