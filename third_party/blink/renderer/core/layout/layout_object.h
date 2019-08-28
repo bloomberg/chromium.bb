@@ -1322,6 +1322,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetNeedsCollectInlines();
   void SetChildNeedsCollectInlines();
   void ClearNeedsCollectInlines() { SetNeedsCollectInlines(false); }
+  void SetNeedsCollectInlines(bool b) { bitfields_.SetNeedsCollectInlines(b); }
 
   void MarkContainerChainForLayout(bool schedule_relayout = true,
                                    SubtreeLayoutScope* = nullptr);
@@ -3245,7 +3246,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetNeedsSimplifiedNormalFlowLayout(bool b) {
     bitfields_.SetNeedsSimplifiedNormalFlowLayout(b);
   }
-  void SetNeedsCollectInlines(bool b) { bitfields_.SetNeedsCollectInlines(b); }
 
  private:
   friend class LineLayoutItem;
