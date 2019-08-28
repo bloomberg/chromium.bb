@@ -1685,6 +1685,12 @@ void RenderFrameHostImpl::RenderProcessExited(
 void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   DCHECK_EQ(site_instance_.get(), site_instance);
 
+  if (is_in_back_forward_cache_) {
+    // Note: Evicting from the BackForwardCache deletes |this|.
+    EvictFromBackForwardCache();
+    return;
+  }
+
   if (owned_render_widget_host_)
     owned_render_widget_host_->RendererExited();
 

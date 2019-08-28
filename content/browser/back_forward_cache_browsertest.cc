@@ -1417,4 +1417,40 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_EQ(rfh_a2->GetLastCommittedURL(), url_a);
 }
 
+// Test that if the renderer process crashes while a document is in the
+// BackForwardCache, it gets evicted.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       EvictsFromCacheIfRendererProcessCrashes) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+
+  // 3) Crash A's renderer process while it is in the cache.
+  RenderProcessHost* process = rfh_a->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+  rfh_a->GetProcess()->Shutdown(0);
+
+  // The cached RenderFrameHost should be destroyed (not kept in the cache).
+  crash_observer.Wait();
+  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+
+  // rfh_b should still be the current frame.
+  EXPECT_EQ(current_frame_host(), rfh_b);
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+}
+
 }  // namespace content
