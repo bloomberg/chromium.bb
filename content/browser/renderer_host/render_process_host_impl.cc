@@ -1967,11 +1967,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          [](RenderProcessHostImpl* impl,
-             blink::mojom::EmbeddedFrameSinkProviderRequest request) {
-            // An implicit conversion to PendinReceiver<T> will be used below.
-            impl->CreateEmbeddedFrameSinkProvider(std::move(request));
-          },
+          &RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider,
           base::Unretained(this)));
 
   AddUIThreadInterface(
@@ -1987,33 +1983,27 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &BackgroundSyncContextImpl::CreateOneShotSyncServiceForRequest,
+          &BackgroundSyncContextImpl::CreateOneShotSyncService,
           base::Unretained(
               storage_partition_impl_->GetBackgroundSyncContext())));
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &BackgroundSyncContextImpl::CreatePeriodicSyncServiceForRequest,
+          &BackgroundSyncContextImpl::CreatePeriodicSyncService,
           base::Unretained(
               storage_partition_impl_->GetBackgroundSyncContext())));
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(
-          [](RenderProcessHostImpl* impl,
-             blink::mojom::StoragePartitionServiceRequest request) {
-            // An implicit conversion to PendinReceiver<T> will be used below.
-            impl->CreateStoragePartitionService(std::move(request));
-          },
-          base::Unretained(this)));
+      base::BindRepeating(&RenderProcessHostImpl::CreateStoragePartitionService,
+                          base::Unretained(this)));
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
           &RenderProcessHostImpl::CreateBroadcastChannelProvider,
           base::Unretained(this)));
 
-  AddUIThreadInterface(
-      registry.get(),
-      base::BindRepeating(&ClipboardHostImpl::CreateForRequest));
+  AddUIThreadInterface(registry.get(),
+                       base::BindRepeating(&ClipboardHostImpl::Create));
 
   AddUIThreadInterface(
       registry.get(),
@@ -2054,7 +2044,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     AddUIThreadInterface(
         registry.get(),
-        base::BindRepeating(&PushMessagingManager::BindRequest,
+        base::BindRepeating(&PushMessagingManager::AddPushMessagingReceiver,
                             base::Unretained(push_messaging_manager_.get())));
   } else {
     registry->AddInterface(
@@ -2254,17 +2244,14 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
 }
 
 void RenderProcessHostImpl::CreateBroadcastChannelProvider(
-    blink::mojom::BroadcastChannelProviderRequest request) {
-  // |request| is converted into
-  // mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> while
-  // RenderProcessHostImpl uses service_manager::BinderRegistry.
+    mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver) {
   if (!GetBroadcastChannelProviderReceiverHandler().is_null()) {
-    GetBroadcastChannelProviderReceiverHandler().Run(this, std::move(request));
+    GetBroadcastChannelProviderReceiverHandler().Run(this, std::move(receiver));
     return;
   }
 
   storage_partition_impl_->GetBroadcastChannelProvider()->Connect(
-      id_, std::move(request));
+      id_, std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindVideoDecoderService(
@@ -2275,13 +2262,13 @@ void RenderProcessHostImpl::BindVideoDecoderService(
 }
 
 void RenderProcessHostImpl::BindWebDatabaseHostImpl(
-    blink::mojom::WebDatabaseHostRequest request) {
+    mojo::PendingReceiver<blink::mojom::WebDatabaseHost> receiver) {
   storage::DatabaseTracker* db_tracker =
       storage_partition_impl_->GetDatabaseTracker();
   db_tracker->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebDatabaseHostImpl::Create, GetID(),
-                     base::WrapRefCounted(db_tracker), std::move(request)));
+                     base::WrapRefCounted(db_tracker), std::move(receiver)));
 }
 
 void RenderProcessHostImpl::CreateRendererHost(
