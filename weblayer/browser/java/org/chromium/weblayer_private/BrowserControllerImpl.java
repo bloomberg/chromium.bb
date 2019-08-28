@@ -18,14 +18,13 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 
 @JNINamespace("weblayer")
 public final class BrowserControllerImpl {
-    // TODO: should there be one tag for all this code?
-    private static final String TAG = "WebLayer";
     private long mNativeBrowserController;
 
     private ActivityWindowAndroid mWindowAndroid;
     private ContentViewRenderView mContentView;
     private ProfileImpl mProfile;
     private WebContents mWebContents;
+    private BrowserObserverProxy mBrowserObserverProxy;
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
@@ -48,7 +47,8 @@ public final class BrowserControllerImpl {
         public void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix) {}
     }
 
-    public BrowserControllerImpl(Activity activity, ProfileImpl profile) {
+    public BrowserControllerImpl(
+            Activity activity, ProfileImpl profile, BrowserControllerClient client) {
         mProfile = profile;
 
         mWindowAndroid = new ActivityWindowAndroid(activity);
@@ -66,9 +66,11 @@ public final class BrowserControllerImpl {
 
         mContentView.setCurrentWebContents(mWebContents);
         mWebContents.onShow();
+        mBrowserObserverProxy = new BrowserObserverProxy(mNativeBrowserController, client);
     }
 
     public void destroy() {
+        mBrowserObserverProxy.destroy();
         nativeDeleteBrowserController(mNativeBrowserController);
         mNativeBrowserController = 0;
     }
