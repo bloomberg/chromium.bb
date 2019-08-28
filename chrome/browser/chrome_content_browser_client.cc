@@ -2197,6 +2197,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kForceUIDirection,
       switches::kJavaScriptHarmony,
+      switches::kEnableExperimentalWebAssemblyFeatures,
       switches::kOriginTrialDisabledFeatures,
       switches::kOriginTrialDisabledTokens,
       switches::kOriginTrialPublicKey,

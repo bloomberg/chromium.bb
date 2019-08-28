@@ -555,6 +555,9 @@ extern const char kEnableWebAuthenticationCableSupportDescription[];
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
 
+extern const char kExperimentalWebAssemblyFeaturesName[];
+extern const char kExperimentalWebAssemblyFeaturesDescription[];
+
 extern const char kEnableWasmBaselineName[];
 extern const char kEnableWasmBaselineDescription[];
 

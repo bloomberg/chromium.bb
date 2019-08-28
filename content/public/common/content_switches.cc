@@ -349,6 +349,10 @@ const char kEnableCanvas2dSwapChain[] = "enable-canvas2d-swap-chain";
 // just a keyboard. See https://crbug.com/977390 for links to i2i.
 const char kEnableCaretBrowsing[] = "enable-caret-browsing";
 
+// Enables experimental WebAssembly features.
+const char kEnableExperimentalWebAssemblyFeatures[] =
+    "enable-experimental-webassembly-features";
+
 // Enables Web Platform features that are in development.
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";

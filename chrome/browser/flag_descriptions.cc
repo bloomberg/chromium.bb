@@ -922,6 +922,10 @@ const char kEnableWebAuthenticationCableSupportDescription[] =
     "Enable the cloud-assisted pairingless BLE protocol for use with "
     "the Web Authentication API.";
 
+const char kExperimentalWebAssemblyFeaturesName[] = "Experimental WebAssembly";
+const char kExperimentalWebAssemblyFeaturesDescription[] =
+    "Enable web pages to use experimental WebAssembly features.";
+
 const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
     "Enables WebAssembly baseline compilation and tier up.";
@@ -938,7 +942,7 @@ const char kEnableWasmSimdName[] = "WebAssembly SIMD support.";
 const char kEnableWasmSimdDescription[] =
     "Enables support for the WebAssembly SIMD proposal.";
 
-const char kEnableWasmThreadsName[] = "WebAssembly threads support.";
+const char kEnableWasmThreadsName[] = "WebAssembly threads support";
 const char kEnableWasmThreadsDescription[] =
     "Enables support for the WebAssembly Threads proposal. Implies "
     "#shared-array-buffer and #enable-webassembly.";

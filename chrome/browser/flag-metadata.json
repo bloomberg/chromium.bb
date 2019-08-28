@@ -1181,6 +1181,13 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-experimental-webassembly-features",
+    "owners": [ "adamk", "hablich" ],
+    // This flag is used by web developers to test upcoming WebAssembly
+    // features.
+    "expiry_milestone": -1
+  },
+  {
     "name": "enable-filesystem-in-incognito",
     "owners": [ "rhalavati" ],
     "expiry_milestone": 78
