@@ -57,6 +57,8 @@ issues]].
   Chinese braille table, thanks to Hurt Huang and Sponge Jhan.
 - Unified English Braille no longer displays a single underscore when
   multiple underscores are in the text, thanks to André-Abush Clause.
+- Update Irish braille (contracted and uncontracted) to the May 2019
+  version of the specification, thanks to Ronan McGuirk
 
 ** Other changes
 - Metadata keys and values are now case insensitive, thanks to Dave

@@ -135,7 +135,6 @@ table_files = \
 	fr-bfu-g2.ctb \
 	ga-g1.utb \
 	ga-g2.ctb \
-	ga.tbl \
 	gd.ctb \
 	gd.tbl \
 	gez.tbl \
