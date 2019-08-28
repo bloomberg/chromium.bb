@@ -52,7 +52,11 @@ class BinaryFeatureExtractor;
 class ClientDownloadRequest;
 class DownloadFeedbackService;
 class CheckClientDownloadRequest;
+class CheckClientDownloadRequestBase;
+class CheckNativeFileSystemWriteRequest;
 class PPAPIDownloadRequest;
+
+struct NativeFileSystemWriteItem;
 
 // This class provides an asynchronous API to check whether a particular
 // client download is malicious or not.
@@ -101,6 +105,15 @@ class DownloadProtectionService {
       Profile* profile,
       CheckDownloadCallback callback);
 
+  // Checks whether the given Native File System write operation is likely to be
+  // malicious or not. The result is delivered asynchronously via the given
+  // callback.  This method must be called on the UI thread, and the callback
+  // will also be invoked on the UI thread.  This method must be called once the
+  // write is finished and data has been written to disk.
+  virtual void CheckNativeFileSystemWrite(
+      std::unique_ptr<NativeFileSystemWriteItem> item,
+      CheckDownloadCallback callback);
+
   // Display more information to the user regarding the download specified by
   // |info|. This method is invoked when the user requests more information
   // about a download that was marked as malicious.
@@ -131,6 +144,12 @@ class DownloadProtectionService {
   // been formed.
   ClientDownloadRequestSubscription RegisterClientDownloadRequestCallback(
       const ClientDownloadRequestCallback& callback);
+
+  // Registers a callback that will be run when a NativeFileSystemWriteRequest
+  // has been formed.
+  NativeFileSystemWriteRequestSubscription
+  RegisterNativeFileSystemWriteRequestCallback(
+      const NativeFileSystemWriteRequestCallback& callback);
 
   // Registers a callback that will be run when a PPAPI ClientDownloadRequest
   // has been formed.
@@ -171,7 +190,9 @@ class DownloadProtectionService {
   friend class DownloadUrlSBClient;
   friend class DownloadProtectionServiceTest;
   friend class DownloadDangerPromptTest;
+  friend class CheckClientDownloadRequestBase;
   friend class CheckClientDownloadRequest;
+  friend class CheckNativeFileSystemWriteRequest;
 
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            TestDownloadRequestTimeout);
@@ -206,7 +227,7 @@ class DownloadProtectionService {
 
   // Called by a CheckClientDownloadRequest instance when it finishes, to
   // remove it from |download_requests_|.
-  void RequestFinished(CheckClientDownloadRequest* request);
+  void RequestFinished(CheckClientDownloadRequestBase* request);
 
   void PPAPIDownloadCheckRequestFinished(PPAPIDownloadRequest* request);
 
@@ -214,6 +235,11 @@ class DownloadProtectionService {
   // stats of download attribution result.
   std::unique_ptr<ReferrerChainData> IdentifyReferrerChain(
       const download::DownloadItem& item);
+
+  // Identify referrer chain info of a native file system write. This function
+  // also records UMA stats of download attribution result.
+  std::unique_ptr<ReferrerChainData> IdentifyReferrerChain(
+      const NativeFileSystemWriteItem& item);
 
   // Identify referrer chain of the PPAPI download based on the frame URL where
   // the download is initiated. Then add referrer chain info to
@@ -240,8 +266,8 @@ class DownloadProtectionService {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Set of pending server requests for DownloadManager mediated downloads.
-  std::unordered_map<CheckClientDownloadRequest*,
-                     std::unique_ptr<CheckClientDownloadRequest>>
+  std::unordered_map<CheckClientDownloadRequestBase*,
+                     std::unique_ptr<CheckClientDownloadRequestBase>>
       download_requests_;
 
   // Set of pending server requests for PPAPI mediated downloads. Using a map
@@ -263,6 +289,11 @@ class DownloadProtectionService {
   // A list of callbacks to be run on the main thread when a
   // ClientDownloadRequest has been formed.
   ClientDownloadRequestCallbackList client_download_request_callbacks_;
+
+  // A list of callbacks to be run on the main thread when a
+  // NativeFileSystemWriteRequest has been formed.
+  NativeFileSystemWriteRequestCallbackList
+      native_file_system_write_request_callbacks_;
 
   // A list of callbacks to be run on the main thread when a
   // PPAPIDownloadRequest has been formed.

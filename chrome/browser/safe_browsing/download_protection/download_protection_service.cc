@@ -16,6 +16,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
+#include "chrome/browser/safe_browsing/download_protection/check_native_file_system_write_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_url_sb_client.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
@@ -175,7 +176,7 @@ void DownloadProtectionService::CheckClientDownload(
   }
   auto request = std::make_unique<CheckClientDownloadRequest>(
       item, std::move(callback), this, database_manager_,
-      binary_feature_extractor_.get());
+      binary_feature_extractor_);
   CheckClientDownloadRequest* request_copy = request.get();
   download_requests_[request_copy] = std::move(request);
   request_copy->Start();
@@ -243,11 +244,36 @@ void DownloadProtectionService::CheckPPAPIDownloadRequest(
   insertion_result.first->second->Start();
 }
 
+void DownloadProtectionService::CheckNativeFileSystemWrite(
+    std::unique_ptr<NativeFileSystemWriteItem> item,
+    CheckDownloadCallback callback) {
+  if (MatchesEnterpriseWhitelist(
+          Profile::FromBrowserContext(item->browser_context),
+          {item->frame_url})) {
+    std::move(callback).Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
+    return;
+  }
+
+  auto request = std::make_unique<CheckNativeFileSystemWriteRequest>(
+      std::move(item), std::move(callback), this, database_manager_,
+      binary_feature_extractor_);
+  CheckClientDownloadRequestBase* request_copy = request.get();
+  download_requests_[request_copy] = std::move(request);
+  request_copy->Start();
+}
+
 ClientDownloadRequestSubscription
 DownloadProtectionService::RegisterClientDownloadRequestCallback(
     const ClientDownloadRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return client_download_request_callbacks_.Add(callback);
+}
+
+NativeFileSystemWriteRequestSubscription
+DownloadProtectionService::RegisterNativeFileSystemWriteRequestCallback(
+    const NativeFileSystemWriteRequestCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return native_file_system_write_request_callbacks_.Add(callback);
 }
 
 PPAPIDownloadRequestSubscription
@@ -267,7 +293,7 @@ void DownloadProtectionService::CancelPendingRequests() {
 }
 
 void DownloadProtectionService::RequestFinished(
-    CheckClientDownloadRequest* request) {
+    CheckClientDownloadRequestBase* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto it = download_requests_.find(request);
   DCHECK(it != download_requests_.end());
@@ -412,6 +438,50 @@ DownloadProtectionService::IdentifyReferrerChain(
                                  web_contents->GetBrowserContext()),
                              result)
                    : 0u;
+  navigation_observer_manager_->AppendRecentNavigations(
+      recent_navigations_to_collect, referrer_chain.get());
+
+  return std::make_unique<ReferrerChainData>(std::move(referrer_chain),
+                                             referrer_chain_length,
+                                             recent_navigations_to_collect);
+}
+
+std::unique_ptr<ReferrerChainData>
+DownloadProtectionService::IdentifyReferrerChain(
+    const NativeFileSystemWriteItem& item) {
+  // If navigation_observer_manager_ is null, return immediately. This could
+  // happen in tests.
+  if (!navigation_observer_manager_)
+    return nullptr;
+
+  std::unique_ptr<ReferrerChain> referrer_chain =
+      std::make_unique<ReferrerChain>();
+
+  SessionID tab_id = SessionTabHelper::IdForTab(item.web_contents);
+  UMA_HISTOGRAM_BOOLEAN(
+      "SafeBrowsing.ReferrerHasInvalidTabID.NativeFileSystemWriteAttribution",
+      !tab_id.is_valid());
+
+  SafeBrowsingNavigationObserverManager::AttributionResult result =
+      navigation_observer_manager_->IdentifyReferrerChainByHostingPage(
+          item.frame_url, item.tab_url, tab_id, item.has_user_gesture,
+          kDownloadAttributionUserGestureLimit, referrer_chain.get());
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "SafeBrowsing.ReferrerAttributionResult.NativeFileSystemWriteAttribution",
+      result,
+      SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
+
+  size_t referrer_chain_length = referrer_chain->size();
+
+  // Determines how many recent navigation events to append to referrer chain
+  // if any.
+  size_t recent_navigations_to_collect =
+      item.browser_context
+          ? SafeBrowsingNavigationObserverManager::
+                CountOfRecentNavigationsToAppend(
+                    *Profile::FromBrowserContext(item.browser_context), result)
+          : 0u;
   navigation_observer_manager_->AppendRecentNavigations(
       recent_navigations_to_collect, referrer_chain.get());
 
