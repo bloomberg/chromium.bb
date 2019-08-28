@@ -46,18 +46,14 @@ const char* const kDllBlocklist[kDllBlocklistMaxSize] = {
     "smdmf.dll",                // Unknown (suspected adware).
     "spappsv32.dll",            // Unknown (suspected adware).
     "systemk.dll",              // Unknown (suspected adware).
-    "tmmon.dll",                // Trend Micro. See crbug.com/882982
-    "tmmon64.dll",              // Trend Micro. See crbug.com/882982
-    "tmmonmgr.dll",             // Trend Micro. See crbug.com/882982
-    "tmmonmgr64.dll",           // Trend Micro. See crbug.com/882982
-    "virtualcamera.ax",         // %PROGRAMFILES%\ASUS\VirtualCamera.
-                                // See crbug.com/422522.
     "vntsrv.dll",               // Virtual New Tab by APN LLC.
-    "wajam_goblin.dll",         // Wajam Internet Technologies.
     "wajam_goblin_64.dll",      // Wajam Internet Technologies.
+    "wajam_goblin.dll",         // Wajam Internet Technologies.
     "windowsapihookdll32.dll",  // Lenovo One Key Theater.
                                 // See crbug.com/379218.
     "windowsapihookdll64.dll",  // Lenovo One Key Theater.
+    "virtualcamera.ax",         // %PROGRAMFILES%\ASUS\VirtualCamera.
+                                // See crbug.com/422522.
     "ycwebcamerasource.ax",     // CyberLink Youcam, crbug.com/424159
     // Keep this null pointer here to mark the end of the list.
     nullptr,
