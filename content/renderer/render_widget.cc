@@ -522,7 +522,12 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
   LayerTreeView* layer_tree_view = InitializeLayerTreeView();
-  web_widget->SetAnimationHost(layer_tree_view->animation_host());
+
+  // TODO(https://crbug.com/995981): This conditional is temporary logic to
+  // handle the case of remote main frame RenderWidgets [which shouldn't exist
+  // to begin with].
+  if (web_widget)
+    web_widget->SetAnimationHost(layer_tree_view->animation_host());
 
   blink::scheduler::WebThreadScheduler* main_thread_scheduler = nullptr;
   if (render_thread_impl)
@@ -2002,20 +2007,7 @@ blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
   if (closing_)
     return nullptr;
 
-  blink::WebWidget* widget;
-  if (delegate()) {
-    // Main frame WebFrameWidgets are held by the delegate, the internal widget
-    // points directly to the WebView.
-    // TODO(ekaramad): We should drop IPCs when |is_frozen_| instead of
-    // handling them and finding a null here. However there is also the case
-    // of the frame being detached without the widget being frozen to be
-    // resolved (https://crbug.com/906340). So for now this can return null.
-    widget = delegate()->GetWebWidgetForWidget();
-  } else {
-    // Subframes always have a WebFrameWidget themselves.
-    widget = webwidget_internal_;
-  }
-  return static_cast<blink::WebFrameWidget*>(widget);
+  return static_cast<blink::WebFrameWidget*>(webwidget_internal_);
 }
 
 void RenderWidget::ScreenRectToEmulatedIfNeeded(WebRect* window_rect) const {
@@ -3716,11 +3708,6 @@ void RenderWidget::DidNavigate() {
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {
-  if (delegate()) {
-    blink::WebWidget* delegate_widget = delegate()->GetWebWidgetForWidget();
-    if (delegate_widget)
-      return delegate_widget;
-  }
   return webwidget_internal_;
 }
 
@@ -3890,6 +3877,11 @@ base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
 }
 
 void RenderWidget::SetWebWidgetInternal(blink::WebWidget* web_widget) {
+  // TODO(https://crbug.com/995981): This method should not need to exist, since
+  // we should be creating and destroying a RenderWidget along with the
+  // WebWidget.
+  if (web_widget)
+    web_widget->SetAnimationHost(layer_tree_view_->animation_host());
   webwidget_internal_ = web_widget;
 }
 

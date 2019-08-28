@@ -520,7 +520,9 @@ void RenderViewImpl::Initialize(
     // only requires single ownership and adding scoped_refptr<RenderWidget>
     // muddies this unnecessarily -- especially since this RenderWidget should
     // ultimately be own by the main frame.
-    GetWidget()->Init(std::move(show_callback), webview_->MainFrameWidget());
+    // We intentionally pass in a null webwidget since it shouldn't be needed
+    // for remote frames.
+    GetWidget()->Init(std::move(show_callback), nullptr);
 
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
@@ -1062,10 +1064,6 @@ const blink::WebView* RenderViewImpl::webview() const {
 }
 
 // RenderWidgetOwnerDelegate -----------------------------------------
-
-blink::WebWidget* RenderViewImpl::GetWebWidgetForWidget() const {
-  return frame_widget_;
-}
 
 bool RenderViewImpl::RenderWidgetWillHandleMouseEventForWidget(
     const blink::WebMouseEvent& event) {
@@ -2077,9 +2075,9 @@ void RenderViewImpl::OnTextAutosizerPageInfoChanged(
 }
 
 void RenderViewImpl::SetFocus(bool enable) {
-  // This is not an IPC message, don't go through the IPC handler. This is used
-  // in cases where the IPC message should not happen.
-  GetWidget()->SetFocus(enable);
+  // This is only called from RenderFrameProxy.
+  CHECK(!webview()->MainFrame()->IsWebLocalFrame());
+  webview()->SetFocus(enable);
 }
 
 void RenderViewImpl::ZoomLimitsChanged(double minimum_level,
