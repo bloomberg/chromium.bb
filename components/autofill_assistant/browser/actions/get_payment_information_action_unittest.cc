@@ -126,7 +126,7 @@ TEST_F(GetPaymentInformationActionTest, SelectLogin) {
   action.ProcessAction(callback_.Get());
 }
 
-TEST_F(GetPaymentInformationActionTest, LoginChoiceHideIfNoOtherOptions) {
+TEST_F(GetPaymentInformationActionTest, LoginChoiceAutomaticIfNoOtherOptions) {
   ActionProto action_proto;
   auto* payment_information = action_proto.mutable_get_payment_information();
   payment_information->set_request_terms_and_conditions(false);
@@ -134,7 +134,7 @@ TEST_F(GetPaymentInformationActionTest, LoginChoiceHideIfNoOtherOptions) {
   auto* guest_login_option = login_details->add_login_options();
   guest_login_option->mutable_custom()->set_label("Guest Checkout");
   guest_login_option->set_payload("guest");
-  guest_login_option->set_hide_if_no_other_options(true);
+  guest_login_option->set_choose_automatically_if_no_other_options(true);
   auto* password_login_option = login_details->add_login_options();
   password_login_option->mutable_password_manager();
   password_login_option->set_payload("password_manager");
@@ -150,6 +150,24 @@ TEST_F(GetPaymentInformationActionTest, LoginChoiceHideIfNoOtherOptions) {
           AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),
                 Property(&ProcessedActionProto::payment_details,
                          Property(&PaymentDetails::login_payload, "guest"))))));
+  GetPaymentInformationAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(GetPaymentInformationActionTest, SelectLoginFailsIfNoOptionAvailable) {
+  ActionProto action_proto;
+  auto* payment_information = action_proto.mutable_get_payment_information();
+  auto* login_details = payment_information->mutable_login_details();
+  auto* login_option = login_details->add_login_options();
+  login_option->mutable_password_manager();
+  login_option->set_payload("password_manager");
+
+  ON_CALL(mock_website_login_fetcher_, OnGetLoginsForUrl(_, _))
+      .WillByDefault(
+          RunOnceCallback<1>(std::vector<WebsiteLoginFetcher::Login>{}));
+
+  EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
+                                              PAYMENT_REQUEST_ERROR))));
   GetPaymentInformationAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }
@@ -234,6 +252,20 @@ TEST_F(GetPaymentInformationActionTest, SelectPaymentMethod) {
 
   EXPECT_EQ(client_memory_.has_selected_card(), true);
   EXPECT_THAT(client_memory_.selected_card()->Compare(credit_card), Eq(0));
+}
+
+TEST_F(GetPaymentInformationActionTest,
+       MandatoryPostalCodeWithoutErrorMessageFails) {
+  ActionProto action_proto;
+  action_proto.mutable_get_payment_information()->set_ask_for_payment(true);
+  action_proto.mutable_get_payment_information()
+      ->set_require_billing_postal_code(true);
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+  GetPaymentInformationAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
 }
 
 }  // namespace
