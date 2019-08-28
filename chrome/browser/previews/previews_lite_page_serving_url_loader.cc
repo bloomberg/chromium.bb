@@ -5,7 +5,6 @@
 #include "chrome/browser/previews/previews_lite_page_serving_url_loader.h"
 
 #include <stdint.h>
-
 #include <string>
 #include <utility>
 
@@ -259,7 +258,7 @@ void PreviewsLitePageServingURLLoader::OnReceiveResponse(
   if (!response_headers) {
     UMA_HISTOGRAM_ENUMERATION(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kNoResponseHeaders);
+        PreviewsLitePageNavigationThrottle::ServerResponse::kFailed);
     Fallback();
     return;
   }
@@ -400,9 +399,9 @@ void PreviewsLitePageServingURLLoader::OnComplete(
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
-                            PreviewsLitePageNavigationThrottle::ServerResponse::
-                                kOnCompleteBeforeOnResponse);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Previews.ServerLitePage.ServerResponse",
+      PreviewsLitePageNavigationThrottle::ServerResponse::kFailed);
 
   // If OnComplete is called before, OnReceiveResponse, this is indicative of a
   // failure of some sort.
@@ -450,7 +449,7 @@ void PreviewsLitePageServingURLLoader::OnConnectionError() {
   if (!result_callback_.is_null()) {
     UMA_HISTOGRAM_ENUMERATION(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kConnectionError);
+        PreviewsLitePageNavigationThrottle::ServerResponse::kFailed);
     Fallback();
     return;
   }

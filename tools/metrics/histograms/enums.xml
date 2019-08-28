@@ -48591,9 +48591,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Failed"/>
   <int value="6" label="Previews Server Timeout"/>
   <int value="7" label="Authentication Failure"/>
-  <int value="8" label="No response headers"/>
-  <int value="9" label="Connection closed before response"/>
-  <int value="10" label="Connection Failure"/>
 </enum>
 
 <enum name="PreviewsStalePreviewTimestamp">

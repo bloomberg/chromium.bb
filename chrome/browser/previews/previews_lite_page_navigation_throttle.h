@@ -69,7 +69,7 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
 
   // The response type from the previews server. This enum must
   // remain synchronized with the enum |PreviewsServerLitePageServerResponse| in
-  // tools/metrics/histograms/enums.xml.
+  // metrics/histograms/enums.xml.
   enum class ServerResponse {
     // A preview was served (HTTP 200).
     kOk = 0,
@@ -96,16 +96,7 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     // The previews server rejected our authentication (HTTP 403).
     kAuthFailure = 7,
 
-    // No response headers were available from the preview server.
-    kNoResponseHeaders = 8,
-
-    // The connection was closed without getting a response.
-    kOnCompleteBeforeOnResponse = 9,
-
-    // There was an error connecting to the previews server.
-    kConnectionError = 10,
-
-    kMaxValue = kConnectionError,
+    kMaxValue = kAuthFailure,
   };
 
   PreviewsLitePageNavigationThrottle(
