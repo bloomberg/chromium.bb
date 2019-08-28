@@ -3032,6 +3032,10 @@ const char kAcceleratedMjpegDecodeDescription[] =
     "Enable hardware-accelerated mjpeg decode for captured frame where "
     "available.";
 
+const char kAggregatedMlAppRankingName[] = "Rank suggested apps with ML.";
+const char kAggregatedMlAppRankingDescription[] =
+    "Use the aggregated ML model to rank the suggested apps.";
+
 const char kAppServiceAshName[] = "App Service Ash";
 const char kAppServiceAshDescription[] =
     "Use the App Service to provide data to the Ash UI, such as the app list.";

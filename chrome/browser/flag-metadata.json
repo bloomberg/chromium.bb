@@ -34,6 +34,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "aggregated-ml-app-ranking",
+    "owners": [ "pdyson", "jiameng" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "allow-insecure-localhost",
     "owners": [ "security-dev" ],
     "expiry_milestone": 82

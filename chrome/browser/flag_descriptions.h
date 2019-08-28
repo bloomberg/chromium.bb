@@ -1805,6 +1805,9 @@ extern const char kPermissionPromptPersistenceToggleDescription[];
 extern const char kAcceleratedMjpegDecodeName[];
 extern const char kAcceleratedMjpegDecodeDescription[];
 
+extern const char kAggregatedMlAppRankingName[];
+extern const char kAggregatedMlAppRankingDescription[];
+
 extern const char kAppServiceAshName[];
 extern const char kAppServiceAshDescription[];
 

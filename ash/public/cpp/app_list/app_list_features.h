@@ -71,6 +71,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListLaunchRecording;
 
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableSearchBoxSelection;
 
+// Enables using the aggregated Ml model to rank suggested apps.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlAppRanking;
+
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
@@ -87,6 +90,7 @@ bool ASH_PUBLIC_EXPORT IsEmbeddedAssistantUIEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListLaunchRecordingEnabled();
 bool ASH_PUBLIC_EXPORT IsSearchBoxSelectionEnabled();
+bool ASH_PUBLIC_EXPORT IsAggregatedMlAppRankingEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();

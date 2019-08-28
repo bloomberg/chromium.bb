@@ -43,6 +43,8 @@ const base::Feature kEnableAppListLaunchRecording{
     "EnableAppListLaunchRecording", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableSearchBoxSelection{"EnableSearchBoxSelection",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kEnableAggregatedMlAppRanking{
+    "EnableAggregatedMlAppRanking", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -106,6 +108,10 @@ bool IsAppGridGhostEnabled() {
 
 bool IsSearchBoxSelectionEnabled() {
   return base::FeatureList::IsEnabled(kEnableSearchBoxSelection);
+}
+
+bool IsAggregatedMlAppRankingEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAggregatedMlAppRanking);
 }
 
 std::string AnswerServerUrl() {
