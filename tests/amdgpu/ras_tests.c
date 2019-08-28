@@ -861,6 +861,10 @@ static void __amdgpu_ras_ip_inject_test(const struct ras_inject_test_config *ip_
 		if (block == ARRAY_SIZE(ras_block_string))
 			break;
 
+		/* Ensure RAS feature for the IP block is enabled by kernel */
+		if (amdgpu_ras_is_feature_supported(block) <= 0)
+			break;
+
 		ret = amdgpu_ras_query_err_count(block, &old_ue, &old_ce);
 		CU_ASSERT_EQUAL(ret, 0);
 		if (ret)
