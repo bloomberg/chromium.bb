@@ -680,12 +680,19 @@ void OverviewSession::OnWindowActivating(
     return;
   }
 
-  auto* grid = GetGridWithRootWindow(gained_active->GetRootWindow());
-  if (!grid)
+  // If app list is open in clamshell mode, end overview. Note: we have special
+  // logic to end overview when app list (i.e., home launcher) is open in tablet
+  // mode, so do not handle it here.
+  if (gained_active == Shell::Get()->app_list_controller()->GetWindow() &&
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    ResetFocusRestoreWindow(false);
+    EndOverview();
     return;
+  }
 
-  // Do not cancel overview mode if the window activation was caused by
-  // snapping window to one side of the screen.
+  // Do not cancel overview mode if the window activation happens when split
+  // view mode is also active. SplitViewController will do the right thing to
+  // handle the window activation change.
   if (Shell::Get()->split_view_controller()->InSplitViewMode())
     return;
 
@@ -693,9 +700,6 @@ void OverviewSession::OnWindowActivating(
   // dragging overview mode offscreen.
   if (IsSlidingOutOverviewFromShelf())
     return;
-
-  // Don't restore focus on exit if a window was just activated.
-  ResetFocusRestoreWindow(false);
 
   // Do not cancel overview mode while a window or overview item is being
   // dragged as evidenced by the presence of a drop target. (Dragging to close
@@ -705,6 +709,8 @@ void OverviewSession::OnWindowActivating(
       return;
   }
 
+  auto* grid = GetGridWithRootWindow(gained_active->GetRootWindow());
+  DCHECK(grid);
   const auto& windows = grid->window_list();
   auto iter = std::find_if(
       windows.begin(), windows.end(),
@@ -714,6 +720,9 @@ void OverviewSession::OnWindowActivating(
 
   if (iter != windows.end())
     selected_item_ = iter->get();
+
+  // Don't restore focus on exit if a window was just activated.
+  ResetFocusRestoreWindow(false);
   EndOverview();
 }
 

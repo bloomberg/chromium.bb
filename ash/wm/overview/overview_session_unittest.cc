@@ -4614,7 +4614,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   // Overview bounds will adjust from snapped bounds to fullscreen bounds.
   EXPECT_EQ(GetGridBounds(), overview_bounds);
 
-  // 7. Test if split view mode is active, open the app list will not end
+  // 7. Test if split view mode is active, open the app list will end both
   // overview and splitview.
   overview_item3 = GetOverviewItemForWindow(window3.get());
   DragWindowTo(overview_item3, gfx::PointF(0, 0));
@@ -4627,57 +4627,17 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(window3.get()).id(),
       app_list::AppListShowSource::kSearchKey, base::TimeTicks());
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(overview_controller()->InOverviewSession());
-  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
-}
-
-// Test that if app list is visible when overview is open, overview should
-// ignore all key events.
-TEST_F(SplitViewOverviewSessionInClamshellTest, IgnoreEventsIfApplistVisible) {
-  const gfx::Rect bounds(400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-
-  // If splitview is not active, open app list when overview is active will
-  // just end overview.
-  ToggleOverview();
-  // Open app list.
-  AppListControllerImpl* app_list_controller =
-      Shell::Get()->app_list_controller();
-  app_list_controller->ToggleAppList(
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window1.get()).id(),
-      app_list::AppListShowSource::kSearchKey, base::TimeTicks());
-  base::RunLoop().RunUntilIdle();
-  // Test that app list is open and overview is ended.
-  EXPECT_TRUE(app_list_controller->IsVisible());
   EXPECT_FALSE(overview_controller()->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
+  // 8. Test if splitview is active, open the app list will end overview if
+  // overview is active.
   ToggleOverview();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(app_list_controller->IsVisible());
-  OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
-  DragWindowTo(overview_item1, gfx::PointF(0, 0));
-  EXPECT_TRUE(overview_controller()->InOverviewSession());
-  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
-
   // Open app list.
   app_list_controller->ToggleAppList(
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window1.get()).id(),
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window3.get()).id(),
       app_list::AppListShowSource::kSearchKey, base::TimeTicks());
   base::RunLoop().RunUntilIdle();
-  // Test that app list is open, splitview and overview are both active.
-  EXPECT_TRUE(app_list_controller->IsVisible());
-  EXPECT_TRUE(overview_controller()->InOverviewSession());
-  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
-
-  // Send ui::VKEY_ESCAPE should dismiss app list. But splitview and overview
-  // should still be active.
-  SendKey(ui::VKEY_ESCAPE);
-  EXPECT_FALSE(app_list_controller->IsVisible());
-  EXPECT_TRUE(overview_controller()->InOverviewSession());
-  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
-  // Send ui::VKEY_ESCAPE should then end overview.
-  SendKey(ui::VKEY_ESCAPE);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
