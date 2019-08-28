@@ -23,7 +23,6 @@
 #include "cc/input/input_handler.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/touch_action_region.h"
 #include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
@@ -343,50 +342,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetHitTestable(bool should_hit_test);
   virtual bool HitTestable() const;
 
-  // Set or gets if this layer is a container for fixed position layers in its
-  // subtree. Such layers will be positioned and transformed relative to this
-  // layer instead of their direct parent.
-  //
-  // A layer that is a container for fixed position layers cannot be both
-  // scrollable and have a non-identity transform.
-  void SetIsContainerForFixedPositionLayers(bool container);
-  bool IsContainerForFixedPositionLayers() const;
-
-  // Set or get constraints applied to the layer's position, where it may be
-  // in a fixed position relative to the nearest ancestor that returns true for
-  // IsContainerForFixedPositionLayers(). This may also specify which edges
-  // of the layer are fixed to the same edges of the container ancestor. When
-  // fixed position, this layer's transform will be appended to the container
-  // ancestor's transform instead of to this layer's direct parent's.
-  // Position constraints are only used by the cc property tree builder to build
-  // property trees and are not needed when using layer lists.
-  void SetPositionConstraint(const LayerPositionConstraint& constraint);
-  const LayerPositionConstraint& position_constraint() const {
-    return inputs_.position_constraint;
-  }
-
-  // Set or get constraints applied to the layer's position, where it may act
-  // like a normal layer until, during scroll, its position triggers it to
-  // become fixed position relative to its scroller. See CSS position: sticky
-  // for more details.
-  void SetStickyPositionConstraint(
-      const LayerStickyPositionConstraint& constraint);
-  const LayerStickyPositionConstraint& sticky_position_constraint() const {
-    return inputs_.sticky_position_constraint;
-  }
-
-  // On some platforms (Android renderer) the viewport may resize during scroll
-  // on the compositor thread. During this resize and until the main thread
-  // matches, position fixed layers may need to have their position adjusted on
-  // the compositor thread to keep them fixed in place.  If
-  // IsContainerForFixedPositionLayers() is true for this layer, these set and
-  // get whether fixed position descendants of this layer should have this
-  // adjustment to their position applied during such a viewport resize.
-  // This value is only used by the cc property tree builder to build property
-  // trees and is not needed when using layer lists.
-  void SetIsResizedByBrowserControls(bool resized);
-  bool IsResizedByBrowserControls() const;
-
   // Set or get the transform to be used when compositing this layer into its
   // target. The transform is inherited by this layers children.
   void SetTransform(const gfx::Transform& transform);
@@ -611,7 +566,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // While all layers have an index into the transform tree, this value
   // indicates whether the transform tree node was created for this layer.
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
-  bool has_transform_node() { return has_transform_node_; }
+  bool has_transform_node() const { return has_transform_node_; }
 
   // This value indicates whether a clip node was created for |this| layer.
   void SetHasClipNode(bool val) { has_clip_node_ = val; }
@@ -911,7 +866,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void RemoveClipChild(Layer* child);
 
   void SetParent(Layer* layer);
-  bool DescendantIsFixedToContainerLayer() const;
 
   // This should only be called from RemoveFromParent().
   void RemoveChildOrDependent(Layer* child);
@@ -1016,22 +970,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     Region non_fast_scrollable_region;
 
     TouchActionRegion touch_action_region;
-
-    // When set, position: fixed children of this layer will be affected by URL
-    // bar movement. bottom-fixed element will be pushed down as the URL bar
-    // hides (and the viewport expands) so that the element stays fixed to the
-    // viewport bottom. This will always be set on the outer viewport scroll
-    // layer. In the case of a non-default rootScroller, all iframes in the
-    // rootScroller ancestor chain will also have it set on their scroll
-    // layers.
-    // TODO(pdr): These values are only used by blink and only when blink does
-    // not generate property trees. Remove these values when
-    // BlinkGenPropertyTrees ships.
-    bool is_resized_by_browser_controls : 1;
-    bool is_container_for_fixed_position_layers : 1;
-    LayerPositionConstraint position_constraint;
-
-    LayerStickyPositionConstraint sticky_position_constraint;
 
     ElementId element_id;
 

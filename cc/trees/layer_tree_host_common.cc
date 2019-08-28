@@ -626,13 +626,20 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
   LayerList update_layer_list;
   PropertyTrees* property_trees =
       inputs->root_layer->layer_tree_host()->property_trees();
-  gfx::Vector2dF elastic_overscroll;
-  PropertyTreeBuilder::BuildPropertyTrees(
-      inputs->root_layer, inputs->page_scale_layer,
-      inputs->inner_viewport_scroll_layer, inputs->outer_viewport_scroll_layer,
-      ElementId(), elastic_overscroll, inputs->page_scale_factor,
-      inputs->device_scale_factor, gfx::Rect(inputs->device_viewport_size),
-      inputs->device_transform, property_trees);
+  if (inputs->root_layer->layer_tree_host()->IsUsingLayerLists()) {
+    // TODO(wangxianzhu): We should DCHECK(!needs_rebuild) after we remove all
+    // unnecessary setting of the flag in layer list mode.
+    property_trees->needs_rebuild = false;
+  } else {
+    gfx::Vector2dF elastic_overscroll;
+    PropertyTreeBuilder::BuildPropertyTrees(
+        inputs->root_layer, inputs->page_scale_layer,
+        inputs->inner_viewport_scroll_layer,
+        inputs->outer_viewport_scroll_layer, ElementId(), elastic_overscroll,
+        inputs->page_scale_factor, inputs->device_scale_factor,
+        gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
+        property_trees);
+  }
   draw_property_utils::UpdatePropertyTrees(
       inputs->root_layer->layer_tree_host(), property_trees);
   draw_property_utils::FindLayersThatNeedUpdates(

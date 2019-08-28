@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_LAYERS_LAYER_STICKY_POSITION_CONSTRAINT_H_
-#define CC_LAYERS_LAYER_STICKY_POSITION_CONSTRAINT_H_
+#ifndef CC_TREES_STICKY_POSITION_CONSTRAINT_H_
+#define CC_TREES_STICKY_POSITION_CONSTRAINT_H_
 
 #include "cc/cc_export.h"
 
@@ -14,11 +14,10 @@
 
 namespace cc {
 
-struct CC_EXPORT LayerStickyPositionConstraint {
-  LayerStickyPositionConstraint();
-  LayerStickyPositionConstraint(const LayerStickyPositionConstraint& other);
+struct CC_EXPORT StickyPositionConstraint {
+  StickyPositionConstraint();
+  StickyPositionConstraint(const StickyPositionConstraint& other);
 
-  bool is_sticky : 1;
   bool is_anchored_left : 1;
   bool is_anchored_right : 1;
   bool is_anchored_top : 1;
@@ -48,17 +47,17 @@ struct CC_EXPORT LayerStickyPositionConstraint {
 
   // The nearest ancestor sticky element ids that affect the sticky box
   // constraint rect and the containing block constraint rect respectively.
+  // They are used to generate nearest_node_shifting_sticky_box and
+  // nearest_node_shifting_containing_block in StickyPositionNodeData when the
+  // property trees are generated. They are useless after the property trees
+  // are generated.
   ElementId nearest_element_shifting_sticky_box;
   ElementId nearest_element_shifting_containing_block;
 
-  // Returns the nearest sticky ancestor element id or the default element id if
-  // none exists.
-  ElementId NearestStickyAncestor();
-
-  bool operator==(const LayerStickyPositionConstraint&) const;
-  bool operator!=(const LayerStickyPositionConstraint&) const;
+  bool operator==(const StickyPositionConstraint&) const;
+  bool operator!=(const StickyPositionConstraint&) const;
 };
 
 }  // namespace cc
 
-#endif  // CC_LAYERS_LAYER_STICKY_POSITION_CONSTRAINT_H_
+#endif  // CC_TREES_STICKY_POSITION_CONSTRAINT_H_

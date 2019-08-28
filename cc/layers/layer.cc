@@ -64,8 +64,6 @@ Layer::Inputs::Inputs(int layer_id)
       user_scrollable_vertical(true),
       main_thread_scrolling_reasons(
           MainThreadScrollingReason::kNotScrollingOnMain),
-      is_resized_by_browser_controls(false),
-      is_container_for_fixed_position_layers(false),
       scroll_parent(nullptr),
       clip_parent(nullptr),
       has_will_change_transform_hint(false),
@@ -824,10 +822,6 @@ void Layer::SetPosition(const gfx::PointF& position) {
   SetNeedsCommit();
 }
 
-bool Layer::IsContainerForFixedPositionLayers() const {
-  return inputs_.is_container_for_fixed_position_layers;
-}
-
 bool Are2dAxisAligned(const gfx::Transform& a, const gfx::Transform& b) {
   if (a.IsScaleOrTranslation() && b.IsScaleOrTranslation()) {
     return true;
@@ -1393,76 +1387,6 @@ void Layer::SetNeedsDisplayRect(const gfx::Rect& dirty_rect) {
 
   if (DrawsContent() && layer_tree_host_ && !ignore_set_needs_commit_)
     layer_tree_host_->SetNeedsUpdateLayers();
-}
-
-bool Layer::DescendantIsFixedToContainerLayer() const {
-  // Because position constraints are not set when using layer lists (see:
-  // Layer::SetPositionConstraint), this should only be called when not using
-  // layer lists.
-  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
-
-  for (size_t i = 0; i < inputs_.children.size(); ++i) {
-    if (inputs_.children[i]->inputs_.position_constraint.is_fixed_position() ||
-        inputs_.children[i]->DescendantIsFixedToContainerLayer())
-      return true;
-  }
-  return false;
-}
-
-void Layer::SetIsResizedByBrowserControls(bool resized) {
-  if (inputs_.is_resized_by_browser_controls == resized)
-    return;
-  inputs_.is_resized_by_browser_controls = resized;
-
-  SetNeedsCommit();
-}
-
-bool Layer::IsResizedByBrowserControls() const {
-  return inputs_.is_resized_by_browser_controls;
-}
-
-void Layer::SetIsContainerForFixedPositionLayers(bool container) {
-  // |inputs_.is_container_for_fixed_position_layers| is only used by the cc
-  // property tree builder to build property trees and is not needed when using
-  // layer lists.
-  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
-
-  if (inputs_.is_container_for_fixed_position_layers == container)
-    return;
-  inputs_.is_container_for_fixed_position_layers = container;
-
-  if (layer_tree_host_ && layer_tree_host_->CommitRequested())
-    return;
-
-  // Only request a commit if we have a fixed positioned descendant.
-  if (DescendantIsFixedToContainerLayer()) {
-    SetPropertyTreesNeedRebuild();
-    SetNeedsCommit();
-  }
-}
-
-void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
-  // Position constraints are only used by the cc property tree builder to build
-  // property trees and are not needed when using layer lists.
-  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
-
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.position_constraint == constraint)
-    return;
-  inputs_.position_constraint = constraint;
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
-}
-
-void Layer::SetStickyPositionConstraint(
-    const LayerStickyPositionConstraint& constraint) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.sticky_position_constraint == constraint)
-    return;
-  inputs_.sticky_position_constraint = constraint;
-  SetSubtreePropertyChanged();
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
 }
 
 void Layer::SetLayerClient(base::WeakPtr<LayerClient> client) {

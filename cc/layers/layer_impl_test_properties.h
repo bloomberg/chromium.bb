@@ -10,8 +10,7 @@
 
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/layers/layer_position_constraint.h"
-#include "cc/layers/layer_sticky_position_constraint.h"
+#include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -53,8 +52,6 @@ struct CC_EXPORT LayerImplTestProperties {
   float backdrop_filter_quality;
   gfx::PointF filters_origin;
   SkBlendMode blend_mode;
-  LayerPositionConstraint position_constraint;
-  LayerStickyPositionConstraint sticky_position_constraint;
   gfx::Point3F transform_origin;
   gfx::Transform transform;
   gfx::PointF position;

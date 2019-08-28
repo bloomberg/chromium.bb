@@ -6225,8 +6225,6 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
             outer_properties->StickyTranslation()->Translation2D());
   ASSERT_NE(nullptr,
             outer_properties->StickyTranslation()->GetStickyConstraint());
-  EXPECT_TRUE(
-      outer_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
   EXPECT_EQ(CompositorElementId(), outer_properties->StickyTranslation()
                                        ->GetStickyConstraint()
                                        ->nearest_element_shifting_sticky_box);
@@ -6241,8 +6239,6 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
             middle_properties->StickyTranslation()->Translation2D());
   ASSERT_NE(nullptr,
             middle_properties->StickyTranslation()->GetStickyConstraint());
-  EXPECT_TRUE(
-      middle_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
   EXPECT_EQ(CompositorElementId(), middle_properties->StickyTranslation()
                                        ->GetStickyConstraint()
                                        ->nearest_element_shifting_sticky_box);
@@ -6257,8 +6253,6 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
             inner_properties->StickyTranslation()->Translation2D());
   ASSERT_NE(nullptr,
             inner_properties->StickyTranslation()->GetStickyConstraint());
-  EXPECT_TRUE(
-      inner_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
   EXPECT_EQ(middle_properties->StickyTranslation()->GetCompositorElementId(),
             inner_properties->StickyTranslation()
                 ->GetStickyConstraint()

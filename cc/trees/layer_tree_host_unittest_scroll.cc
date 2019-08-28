@@ -1125,6 +1125,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     scroller_->SetElementId(LayerIdToElementIdForTesting(scroller_->id()));
     CopyProperties(layer_tree_host()->outer_viewport_scroll_layer(),
                    scroller_.get());
+    CreateTransformNode(scroller_.get());
     CreateScrollNode(scroller_.get());
     layer_tree_host()->outer_viewport_scroll_layer()->AddChild(scroller_.get());
   }
@@ -2255,9 +2256,8 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
     middle_scrollable_->SetScrollable(gfx::Size(100, 200));
     middle_scrollable_->SetHitTestable(true);
     CopyProperties(bottom_.get(), middle_scrollable_.get());
-    auto& scroll_node = CreateScrollNode(middle_scrollable_.get());
-    scroll_node.scrollable = true;
-    scroll_node.bounds = gfx::Size(100, 200);
+    CreateTransformNode(middle_scrollable_.get());
+    CreateScrollNode(middle_scrollable_.get());
     root->AddChild(middle_scrollable_);
 
     top_ = FakePictureLayer::Create(&fake_content_layer_client_);

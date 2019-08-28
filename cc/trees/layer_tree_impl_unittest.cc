@@ -2594,9 +2594,11 @@ TEST_F(CommitToPendingTreeLayerTreeImplTest,
 
   std::unique_ptr<LayerImpl> child_ptr =
       LayerImpl::Create(host_impl().pending_tree(), 3);
-  // The easiest way to force the child to have a TransformNode is to make it
-  // fixed position. Similarly a non-one opacity forces an EffectNode.
-  child_ptr->test_properties()->position_constraint.set_is_fixed_position(true);
+  // A scale transform forces a TransformNode.
+  gfx::Transform scale3d;
+  scale3d.Scale3d(1, 1, 0.5);
+  child_ptr->test_properties()->transform = scale3d;
+  // A non-one opacity forces an EffectNode.
   child_ptr->test_properties()->opacity = 0.9f;
   LayerImpl* child = child_ptr.get();
   pending_root->test_properties()->AddChild(std::move(child_ptr));

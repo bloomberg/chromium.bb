@@ -409,28 +409,26 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
       transform_node.IsInSubtreeOfPageScale();
 
   if (const auto* sticky_constraint = transform_node.GetStickyConstraint()) {
-    DCHECK(sticky_constraint->is_sticky);
-    cc::StickyPositionNodeData* sticky_data =
-        GetTransformTree().StickyPositionData(id);
-    sticky_data->constraints = *sticky_constraint;
+    cc::StickyPositionNodeData& sticky_data =
+        GetTransformTree().EnsureStickyPositionData(id);
+    sticky_data.constraints = *sticky_constraint;
     // TODO(pdr): This could be a performance issue because it crawls up the
     // transform tree for each pending layer. If this is on profiles, we should
     // cache a lookup of transform node to scroll translation transform node.
     const auto& scroll_ancestor = transform_node.NearestScrollTranslationNode();
-    sticky_data->scroll_ancestor = EnsureCompositorScrollNode(scroll_ancestor);
+    sticky_data.scroll_ancestor = EnsureCompositorScrollNode(scroll_ancestor);
     if (scroll_ancestor.ScrollNode()->ScrollsOuterViewport())
       GetTransformTree().AddNodeAffectedByOuterViewportBoundsDelta(id);
     if (auto shifting_sticky_box_element_id =
-            sticky_data->constraints.nearest_element_shifting_sticky_box) {
-      sticky_data->nearest_node_shifting_sticky_box =
+            sticky_data.constraints.nearest_element_shifting_sticky_box) {
+      sticky_data.nearest_node_shifting_sticky_box =
           GetTransformTree()
               .FindNodeFromElementId(shifting_sticky_box_element_id)
               ->id;
     }
     if (auto shifting_containing_block_element_id =
-            sticky_data->constraints
-                .nearest_element_shifting_containing_block) {
-      sticky_data->nearest_node_shifting_containing_block =
+            sticky_data.constraints.nearest_element_shifting_containing_block) {
+      sticky_data.nearest_node_shifting_containing_block =
           GetTransformTree()
               .FindNodeFromElementId(shifting_containing_block_element_id)
               ->id;
