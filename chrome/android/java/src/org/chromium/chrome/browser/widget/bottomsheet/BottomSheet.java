@@ -143,9 +143,6 @@ public class BottomSheet
     /** The height of the shadow that sits above the toolbar. */
     private final int mToolbarShadowHeight;
 
-    /** The {@link BottomSheetMetrics} used to record user actions and histograms. */
-    private final BottomSheetMetrics mMetrics;
-
     /** The view that contains the sheet. */
     private ViewGroup mSheetContainer;
 
@@ -411,9 +408,6 @@ public class BottomSheet
                 getResources().getDimensionPixelSize(R.dimen.bottom_sheet_min_full_half_distance);
         mToolbarShadowHeight =
                 getResources().getDimensionPixelOffset(R.dimen.toolbar_shadow_height);
-
-        mMetrics = new BottomSheetMetrics();
-        addObserver(mMetrics);
 
         mGestureDetector = new BottomSheetSwipeDetector(context, this);
         mIsTouchEnabled = true;
