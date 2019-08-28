@@ -1909,9 +1909,11 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
 
   // We need to ensure |UpdatePreferredSize| gets called. If a layout is needed,
   // force an update here which will call |DidUpdateMainFrameLayout|.
-  webview()->MainFrameWidget()->UpdateLifecycle(
-      WebWidget::LifecycleUpdate::kLayout,
-      WebWidget::LifecycleUpdateReason::kOther);
+  if (webview()->MainFrameWidget()) {
+    webview()->MainFrameWidget()->UpdateLifecycle(
+        WebWidget::LifecycleUpdate::kLayout,
+        WebWidget::LifecycleUpdateReason::kOther);
+  }
 
   // If a layout was not needed, |DidUpdateMainFrameLayout| will not be called.
   // We explicitly update the preferred size here to ensure the preferred size
@@ -1943,7 +1945,7 @@ void RenderViewImpl::OnSetRendererPrefs(
                               renderer_prefs.active_selection_fg_color,
                               renderer_prefs.inactive_selection_bg_color,
                               renderer_prefs.inactive_selection_fg_color);
-    if (webview())
+    if (webview() && webview()->MainFrameWidget())
       webview()->MainFrameWidget()->ThemeChanged();
   }
 #endif
