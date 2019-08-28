@@ -267,7 +267,6 @@
 
       'mac-hermetic-upgrade-rel': 'release_bot',
 
-      'Deterministic Fuchsia (dbg)': 'debug_bot_fuchsia',
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
@@ -420,6 +419,7 @@
     'chromium.linux': {
       'Cast Audio Linux': 'cast_audio_release_bot',
       'Cast Linux': 'cast_release_bot',
+      'Deterministic Fuchsia (dbg)': 'debug_bot_fuchsia',
       'Deterministic Linux (dbg)': {
         'local': 'debug_bot_local_build',
         'goma': 'debug_bot',
