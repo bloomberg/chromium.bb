@@ -55,6 +55,8 @@ const base::Feature kAppNotificationStatusMessaging{
 // App Service related flags. See chrome/services/app_service/README.md.
 const base::Feature kAppServiceAsh{"AppServiceAsh",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAppServiceShelf{"AppServiceShelf",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // Enables the built-in DNS resolver.

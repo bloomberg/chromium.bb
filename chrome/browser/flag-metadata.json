@@ -93,6 +93,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "app-service-shelf",
+    "owners": [ "//chrome/services/app_service/OWNERS" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "arc-available-for-child",
     "owners": [ "//chrome/browser/chromeos/arc/enterprise/OWNERS" ],
     "expiry_milestone": 76

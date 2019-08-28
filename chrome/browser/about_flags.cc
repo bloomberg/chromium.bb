@@ -3877,6 +3877,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppServiceAshDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppServiceAsh)},
 
+    {"app-service-shelf", flag_descriptions::kAppServiceShelfName,
+     flag_descriptions::kAppServiceShelfDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAppServiceShelf)},
+
     {"ash-enable-overview-rounded-corners",
      flag_descriptions::kAshEnableOverviewRoundedCornersName,
      flag_descriptions::kAshEnableOverviewRoundedCornersDescription, kOsCrOS,

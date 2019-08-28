@@ -3034,8 +3034,11 @@ const char kAcceleratedMjpegDecodeDescription[] =
 
 const char kAppServiceAshName[] = "App Service Ash";
 const char kAppServiceAshDescription[] =
-    "Use the App Service to provide data to the Ash UI, such as the shelf and "
-    "app list.";
+    "Use the App Service to provide data to the Ash UI, such as the app list.";
+
+const char kAppServiceShelfName[] = "App Service Shelf";
+const char kAppServiceShelfDescription[] =
+    "Use the App Service to provide data to the UI Shelf";
 
 const char kArcBootCompleted[] = "Load Android apps automatically";
 const char kArcBootCompletedDescription[] =

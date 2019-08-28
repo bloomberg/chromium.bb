@@ -35757,6 +35757,7 @@ from previous Chrome versions.
   <int value="-278347667" label="default-tile-height"/>
   <int value="-277144896" label="enable-viewport-meta"/>
   <int value="-277118813" label="InterestFeedNotifications:disabled"/>
+  <int value="-276946251" label="AppServiceShelf:disabled"/>
   <int value="-276260362" label="GamepadVibration:enabled"/>
   <int value="-275870837"
       label="OmniboxUIExperimentHideSuggestionUrlPath:enabled"/>
@@ -37144,6 +37145,7 @@ from previous Chrome versions.
   <int value="1677258310" label="DragAppsInTabletMode:disabled"/>
   <int value="1679558835" label="ArcAvailableForChildAccount:enabled"/>
   <int value="1684043382" label="AssistantKeyRemapping:enabled"/>
+  <int value="1685280468" label="AppServiceShelf:enabled"/>
   <int value="1688075820" label="OmniboxExperimentalKeywordMode:disabled"/>
   <int value="1689123607" label="enable-app-link"/>
   <int value="1689183477" label="enable-merge-key-char-events"/>
