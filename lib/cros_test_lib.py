@@ -22,7 +22,6 @@ import six
 
 from chromite.lib import cache
 from chromite.lib import constants
-from chromite.lib import cidb
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -34,12 +33,6 @@ from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.lib import terminal
 from chromite.lib import timeout_util
-
-
-# Unit tests should never connect to the live prod or debug instances
-# of the cidb. This call ensures that they will not accidentally
-# do so through the normal cidb SetUp / GetConnectionForBuilder factory.
-cidb.CIDBConnectionFactory.SetupMockCidb()
 
 
 Directory = collections.namedtuple('Directory', ['name', 'contents'])
@@ -1520,6 +1513,14 @@ class TestProgram(unittest.TestProgram):
     self.createTests()
 
   def runTests(self):
+    # If cidb has been imported, stub it out.  We do this dynamically so we
+    # don't have to import cidb in every single test module.
+    if 'chromite.lib.cidb' in sys.modules:
+      # Unit tests should never connect to the live prod or debug instances
+      # of the cidb. This call ensures that they will not accidentally
+      # do so through the normal cidb SetUp / GetConnectionForBuilder factory.
+      sys.modules['chromite.lib.cidb'].CIDBConnectionFactory.SetupMockCidb()
+
     try:
       super(TestProgram, self).runTests()
     finally:
