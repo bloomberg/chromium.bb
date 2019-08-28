@@ -2036,7 +2036,7 @@ String AXNodeObject::TextAlternative(bool recursive,
       }
 
       if (auto* text_node = DynamicTo<Text>(node))
-        text_alternative = text_node->wholeText();
+        text_alternative = text_node->data();
       else if (IsHTMLBRElement(node))
         text_alternative = String("\n");
       else
