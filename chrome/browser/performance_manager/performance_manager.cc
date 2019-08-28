@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
+#include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
@@ -329,6 +330,7 @@ void PerformanceManager::OnStartImpl(
   graph_.PassToGraph(std::make_unique<PageAlmostIdleDecorator>());
   graph_.PassToGraph(std::make_unique<IsolationContextMetrics>());
   graph_.PassToGraph(std::make_unique<MetricsCollector>());
+  graph_.PassToGraph(std::make_unique<ProcessMetricsDecorator>());
 
   if (policies::WorkingSetTrimmerPolicy::PlatformSupportsWorkingSetTrim()) {
     graph_.PassToGraph(
