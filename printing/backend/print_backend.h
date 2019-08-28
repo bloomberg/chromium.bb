@@ -104,7 +104,8 @@ class PRINTING_EXPORT PrintBackend
   // Gets the default printer name. Empty string if no default printer.
   virtual std::string GetDefaultPrinterName() = 0;
 
-  // Gets the basic printer info for a specific printer.
+  // Gets the basic printer info for a specific printer. Implementations must
+  // check |printer_name| validity in the same way as IsValidPrinter().
   virtual bool GetPrinterBasicInfo(const std::string& printer_name,
                                    PrinterBasicInfo* printer_info) = 0;
 
