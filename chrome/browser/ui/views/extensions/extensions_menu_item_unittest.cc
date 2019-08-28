@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/styled_label.h"
 
-class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
+class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
  protected:
-  ExtensionsMenuButtonTest()
+  ExtensionsMenuItemViewTest()
       : initial_extension_name_(base::ASCIIToUTF16("Initial Extension Name")),
         initial_tooltip_(base::ASCIIToUTF16("Initial tooltip")) {}
   void SetUp() override {
@@ -46,11 +47,11 @@ class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
     controller_ = controller.get();
     controller_->SetActionName(initial_extension_name_);
     controller_->SetTooltip(initial_tooltip_);
-    button_ = std::make_unique<ExtensionsMenuButton>(browser(),
-                                                     std::move(controller));
-    button_->set_owned_by_client();
+    menu_item_ = std::make_unique<ExtensionsMenuItemView>(
+        browser(), std::move(controller));
+    menu_item_->set_owned_by_client();
 
-    widget_->SetContentsView(button_.get());
+    widget_->SetContentsView(menu_item_.get());
   }
 
   void TearDown() override {
@@ -60,49 +61,53 @@ class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
+  ExtensionsMenuButton* primary_button() {
+    return menu_item_->primary_action_button_for_testing();
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
   const base::string16 initial_extension_name_;
   const base::string16 initial_tooltip_;
   std::unique_ptr<views::Widget> widget_;
-  std::unique_ptr<ExtensionsMenuButton> button_;
+  std::unique_ptr<ExtensionsMenuItemView> menu_item_;
   TestToolbarActionViewController* controller_ = nullptr;
 };
 
-TEST_F(ExtensionsMenuButtonTest, UpdatesToDisplayCorrectActionTitle) {
-  EXPECT_EQ(button_->title()->GetText(), initial_extension_name_);
+TEST_F(ExtensionsMenuItemViewTest, UpdatesToDisplayCorrectActionTitle) {
+  EXPECT_EQ(primary_button()->title()->GetText(), initial_extension_name_);
 
   base::string16 extension_name = base::ASCIIToUTF16("Extension Name");
   controller_->SetActionName(extension_name);
 
-  EXPECT_EQ(button_->title()->GetText(), extension_name);
+  EXPECT_EQ(primary_button()->title()->GetText(), extension_name);
 }
 
-TEST_F(ExtensionsMenuButtonTest, NotifyClickExecutesAction) {
+TEST_F(ExtensionsMenuItemViewTest, NotifyClickExecutesAction) {
   EXPECT_EQ(0, controller_->execute_action_count());
 
-  button_->SetBounds(0, 0, 100, 100);
+  primary_button()->SetBounds(0, 0, 100, 100);
   ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED,
-                             button_->GetLocalBounds().CenterPoint(),
-                             button_->GetLocalBounds().CenterPoint(),
+                             primary_button()->GetLocalBounds().CenterPoint(),
+                             primary_button()->GetLocalBounds().CenterPoint(),
                              base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-  button_->button_controller()->OnMouseReleased(click_event);
+  primary_button()->button_controller()->OnMouseReleased(click_event);
 
   EXPECT_EQ(1, controller_->execute_action_count());
 }
 
-TEST_F(ExtensionsMenuButtonTest, UpdatesToDisplayTooltip) {
-  EXPECT_EQ(button_->GetTooltipText(gfx::Point()), initial_tooltip_);
+TEST_F(ExtensionsMenuItemViewTest, UpdatesToDisplayTooltip) {
+  EXPECT_EQ(primary_button()->GetTooltipText(gfx::Point()), initial_tooltip_);
 
   base::string16 tooltip = base::ASCIIToUTF16("New Tooltip");
   controller_->SetTooltip(tooltip);
 
-  EXPECT_EQ(button_->GetTooltipText(gfx::Point()), tooltip);
+  EXPECT_EQ(primary_button()->GetTooltipText(gfx::Point()), tooltip);
 }
 
-TEST_F(ExtensionsMenuButtonTest, ButtonMatchesEnabledStateOfExtension) {
-  EXPECT_TRUE(button_->GetEnabled());
+TEST_F(ExtensionsMenuItemViewTest, ButtonMatchesEnabledStateOfExtension) {
+  EXPECT_TRUE(primary_button()->GetEnabled());
   controller_->SetEnabled(false);
-  EXPECT_FALSE(button_->GetEnabled());
+  EXPECT_FALSE(primary_button()->GetEnabled());
   controller_->SetEnabled(true);
-  EXPECT_TRUE(button_->GetEnabled());
+  EXPECT_TRUE(primary_button()->GetEnabled());
 }
