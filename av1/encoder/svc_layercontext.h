@@ -53,6 +53,11 @@ typedef struct SVC {
   int ref_idx[INTER_REFS_PER_FRAME];
   int refresh[REF_FRAMES];
   double base_framerate;
+  unsigned int current_superframe;
+  unsigned char buffer_time_index[REF_FRAMES];
+  unsigned char buffer_spatial_layer[REF_FRAMES];
+  int skip_nonzeromv_last;
+  int skip_nonzeromv_gf;
   // Layer context used for rate control in one pass temporal CBR mode or
   // two pass spatial mode.
   LAYER_CONTEXT layer_context[AOM_MAX_LAYERS];

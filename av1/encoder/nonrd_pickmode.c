@@ -1405,6 +1405,14 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (ref_frame > usable_ref_frame) continue;
     if (skip_ref_find_pred[ref_frame]) continue;
 
+    // Skip non-zero motion for SVC if skip_nonzeromv_ref is set.
+    if (frame_mv[this_mode][ref_frame].as_int != 0) {
+      if (ref_frame == LAST_FRAME && cpi->svc.skip_nonzeromv_last)
+        continue;
+      else if (ref_frame == GOLDEN_FRAME && cpi->svc.skip_nonzeromv_gf)
+        continue;
+    }
+
     // If the segment reference frame feature is enabled then do nothing if the
     // current ref frame is not allowed.
     if (segfeature_active(seg, mi->segment_id, SEG_LVL_REF_FRAME) &&

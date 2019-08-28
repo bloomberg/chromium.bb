@@ -27,6 +27,7 @@ void av1_init_layer_context(AV1_COMP *const cpi) {
   int mi_rows = cpi->common.mi_rows;
   int mi_cols = cpi->common.mi_cols;
   svc->base_framerate = 30.0;
+  svc->current_superframe = 0;
 
   for (int sl = 0; sl < svc->number_spatial_layers; ++sl) {
     for (int tl = 0; tl < svc->number_temporal_layers; ++tl) {
@@ -149,6 +150,7 @@ void av1_update_temporal_layer_framerate(AV1_COMP *const cpi) {
 
 void av1_restore_layer_context(AV1_COMP *const cpi) {
   GF_GROUP *const gf_group = &cpi->gf_group;
+  SVC *const svc = &cpi->svc;
   LAYER_CONTEXT *const lc = get_layer_context(cpi);
   const int old_frame_since_key = cpi->rc.frames_since_key;
   const int old_frame_to_key = cpi->rc.frames_to_key;
@@ -163,7 +165,7 @@ void av1_restore_layer_context(AV1_COMP *const cpi) {
   // For spatial-svc, allow cyclic-refresh to be applied on the spatial layers,
   // for the base temporal layer.
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ &&
-      cpi->svc.number_spatial_layers > 1 && cpi->svc.temporal_layer_id == 0) {
+      svc->number_spatial_layers > 1 && svc->temporal_layer_id == 0) {
     CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
     swap_ptr(&cr->map, &lc->map);
     swap_ptr(&cr->last_coded_q_map, &lc->last_coded_q_map);
@@ -171,19 +173,36 @@ void av1_restore_layer_context(AV1_COMP *const cpi) {
     cr->actual_num_seg1_blocks = lc->actual_num_seg1_blocks;
     cr->actual_num_seg2_blocks = lc->actual_num_seg2_blocks;
   }
+  svc->skip_nonzeromv_last = 0;
+  svc->skip_nonzeromv_gf = 0;
+  // For each reference (LAST/GOLDEN) set the skip_nonzero_last/gf frame flags.
+  // This is to skip testing nonzero-mv for that reference if it was last
+  // refreshed (i.e., buffer slot holding that reference was refreshed) on the
+  // previous spatial layer at the same time (current_superframe).
+  if (svc->external_ref_frame_config) {
+    int ref_frame_idx = svc->ref_idx[LAST_FRAME - 1];
+    if (svc->buffer_time_index[ref_frame_idx] == svc->current_superframe &&
+        svc->buffer_spatial_layer[ref_frame_idx] == svc->spatial_layer_id - 1)
+      svc->skip_nonzeromv_last = 1;
+    ref_frame_idx = svc->ref_idx[GOLDEN_FRAME - 1];
+    if (svc->buffer_time_index[ref_frame_idx] == svc->current_superframe &&
+        svc->buffer_spatial_layer[ref_frame_idx] == svc->spatial_layer_id - 1)
+      svc->skip_nonzeromv_gf = 1;
+  }
 }
 
 void av1_save_layer_context(AV1_COMP *const cpi) {
   GF_GROUP *const gf_group = &cpi->gf_group;
+  SVC *const svc = &cpi->svc;
   LAYER_CONTEXT *lc = get_layer_context(cpi);
   lc->rc = cpi->rc;
   lc->target_bandwidth = (int)cpi->oxcf.target_bandwidth;
   lc->group_index = gf_group->index;
-  if (cpi->svc.spatial_layer_id == 0) cpi->svc.base_framerate = cpi->framerate;
+  if (svc->spatial_layer_id == 0) svc->base_framerate = cpi->framerate;
   // For spatial-svc, allow cyclic-refresh to be applied on the spatial layers,
   // for the base temporal layer.
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ &&
-      cpi->svc.number_spatial_layers > 1 && cpi->svc.temporal_layer_id == 0) {
+      cpi->svc.number_spatial_layers > 1 && svc->temporal_layer_id == 0) {
     CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
     signed char *temp = lc->map;
     uint8_t *temp2 = lc->last_coded_q_map;
@@ -195,6 +214,25 @@ void av1_save_layer_context(AV1_COMP *const cpi) {
     lc->actual_num_seg1_blocks = cr->actual_num_seg1_blocks;
     lc->actual_num_seg2_blocks = cr->actual_num_seg2_blocks;
   }
+  // For any buffer slot that is refreshed, update it with
+  // the spatial_layer_id and the current_superframe.
+  if (cpi->common.current_frame.frame_type == KEY_FRAME) {
+    // All slots are refreshed on KEY.
+    for (unsigned int i = 0; i < REF_FRAMES; i++) {
+      svc->buffer_time_index[i] = svc->current_superframe;
+      svc->buffer_spatial_layer[i] = svc->spatial_layer_id;
+    }
+  } else if (cpi->svc.external_ref_frame_config) {
+    for (unsigned int i = 0; i < INTER_REFS_PER_FRAME; i++) {
+      int ref_frame_map_idx = svc->ref_idx[i];
+      if (cpi->svc.refresh[ref_frame_map_idx]) {
+        svc->buffer_time_index[ref_frame_map_idx] = svc->current_superframe;
+        svc->buffer_spatial_layer[ref_frame_map_idx] = svc->spatial_layer_id;
+      }
+    }
+  }
+  if (svc->spatial_layer_id == svc->number_spatial_layers - 1)
+    svc->current_superframe++;
 }
 
 void av1_free_svc_cyclic_refresh(AV1_COMP *const cpi) {
