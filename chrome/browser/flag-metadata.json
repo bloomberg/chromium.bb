@@ -1042,6 +1042,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-cooperative-scheduling",
+    "owners": [ "keishi" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "enable-credit-card-assist",
     "owners": [ "ftirelo", "gogerald" ],
     "expiry_milestone": 76

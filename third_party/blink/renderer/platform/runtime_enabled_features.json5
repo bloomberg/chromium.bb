@@ -320,6 +320,9 @@
       status: "experimental",
     },
     {
+      name: "CooperativeScheduling"
+    },
+    {
       name: "CorsRFC1918",
       depends_on: ["AddressSpace"],
     },
