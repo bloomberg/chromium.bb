@@ -1561,8 +1561,6 @@ jumbo_static_library("test_support") {
     "testing/fake_graphics_layer_client.h",
     "testing/font_test_helpers.cc",
     "testing/font_test_helpers.h",
-    "testing/fuzzed_data_provider.cc",
-    "testing/fuzzed_data_provider.h",
     "testing/histogram_tester.cc",
     "testing/histogram_tester.h",
     "testing/io_task_runner_testing_platform_support.cc",
@@ -1600,6 +1598,14 @@ jumbo_static_library("test_support") {
     "testing/weburl_loader_mock_factory_impl.cc",
     "testing/weburl_loader_mock_factory_impl.h",
   ]
+
+  # fuzzed_data_provider may not work with a custom toolchain.
+  if (custom_toolchain == "") {
+    sources += [
+      "testing/fuzzed_data_provider.cc",
+      "testing/fuzzed_data_provider.h",
+    ]
+  }
 
   configs += [
     ":blink_platform_pch",
