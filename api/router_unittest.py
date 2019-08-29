@@ -211,3 +211,21 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase,
     self.assertCommandContains(['build_api', service_method], enter_chroot=True)
     # It should be writing the empty message out.
     self.assertFileContents(self.output_file, '{}')
+
+  def testInvalidService(self):
+    """Test invalid service call."""
+    service = 'chromite.api.DoesNotExist'
+    method = 'OutsideServiceInsideMethod'
+
+    with self.assertRaises(router.UnknownServiceError):
+      self.router.Route(service, method, self.input_file, self.output_file,
+                        self.api_config)
+
+  def testInvalidMethod(self):
+    """Test invalid method call."""
+    service = 'chromite.api.OutsideChrootApiService'
+    method = 'DoesNotExist'
+
+    with self.assertRaises(router.UnknownMethodError):
+      self.router.Route(service, method, self.input_file, self.output_file,
+                        self.api_config)

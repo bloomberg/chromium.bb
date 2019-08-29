@@ -288,39 +288,6 @@ class Router(object):
 
         return result.returncode
 
-  def _GetChrootArgs(self, chroot):
-    """Translate a Chroot message to chroot enter args.
-
-    Args:
-      chroot (chromiumos.Chroot): A chroot message.
-
-    Returns:
-      list[str]: The cros_sdk args for the chroot.
-    """
-    args = []
-    if chroot.path:
-      args.extend(['--chroot', chroot.path])
-    if chroot.cache_dir:
-      args.extend(['--cache-dir', chroot.cache_dir])
-
-    return args
-
-  def _GetChrootEnv(self, chroot):
-    """Get chroot environment variables that need to be set."""
-    use_flags = [u.flag for u in chroot.env.use_flags]
-    features = [f.feature for f in chroot.env.features]
-
-    env = {}
-    if use_flags:
-      env['USE'] = ' '.join(use_flags)
-
-    # TODO(saklein) Remove the default when fully integrated in recipes.
-    env['FEATURES'] = 'separatedebug'
-    if features:
-      env['FEATURES'] = ' '.join(features)
-
-    return env
-
   def _GetMethod(self, module_name, method_name):
     """Get the implementation of the method for the service module.
 
