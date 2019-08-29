@@ -812,7 +812,7 @@ void NGBoxFragmentPainter::PaintInlineItems(
   // TODO(kojii): Copy more from |PaintLineBoxChildren|.
 
   NGInlineCursor cursor(*items_);
-  for (bool has_next = cursor.MoveToNext(); has_next;) {
+  while (cursor) {
     const NGFragmentItem* item = cursor.CurrentItem();
     DCHECK(item);
     switch (item->Type()) {
@@ -828,14 +828,14 @@ void NGBoxFragmentPainter::PaintInlineItems(
       case NGFragmentItem::kBox:
         if (const NGPhysicalBoxFragment* fragment = item->BoxFragment()) {
           if (fragment->HasSelfPaintingLayer()) {
-            has_next = cursor.MoveToNextSkippingChildren();
+            cursor.MoveToNextSkippingChildren();
             continue;
           }
           // TODO(kojii): Implement.
         }
         break;
     }
-    has_next = cursor.MoveToNext();
+    cursor.MoveToNext();
   }
 }
 
