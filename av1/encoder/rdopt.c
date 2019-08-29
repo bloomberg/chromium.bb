@@ -11627,27 +11627,29 @@ static void set_params_rd_pick_inter_mode(
 
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
 
-  if (check_num_overlappable_neighbors(mbmi) &&
-      is_motion_variation_allowed_bsize(bsize)) {
-    int dst_width1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
-    int dst_width2[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
-                                     MAX_SB_SIZE >> 1 };
-    int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
-                                      MAX_SB_SIZE >> 1 };
-    int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
-    av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col,
-                                        args->above_pred_buf, dst_width1,
-                                        dst_height1, args->above_pred_stride);
-    av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col,
-                                       args->left_pred_buf, dst_width2,
-                                       dst_height2, args->left_pred_stride);
-    const int num_planes = av1_num_planes(cm);
-    av1_setup_dst_planes(xd->plane, bsize, &cm->cur_frame->buf, mi_row, mi_col,
-                         0, num_planes);
-    calc_target_weighted_pred(
-        cm, x, xd, mi_row, mi_col, args->above_pred_buf[0],
-        args->above_pred_stride[0], args->left_pred_buf[0],
-        args->left_pred_stride[0]);
+  if (cpi->oxcf.enable_obmc) {
+    if (check_num_overlappable_neighbors(mbmi) &&
+        is_motion_variation_allowed_bsize(bsize)) {
+      int dst_width1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
+      int dst_width2[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
+                                       MAX_SB_SIZE >> 1 };
+      int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
+                                        MAX_SB_SIZE >> 1 };
+      int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
+      av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col,
+                                          args->above_pred_buf, dst_width1,
+                                          dst_height1, args->above_pred_stride);
+      av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col,
+                                         args->left_pred_buf, dst_width2,
+                                         dst_height2, args->left_pred_stride);
+      const int num_planes = av1_num_planes(cm);
+      av1_setup_dst_planes(xd->plane, bsize, &cm->cur_frame->buf, mi_row,
+                           mi_col, 0, num_planes);
+      calc_target_weighted_pred(
+          cm, x, xd, mi_row, mi_col, args->above_pred_buf[0],
+          args->above_pred_stride[0], args->left_pred_buf[0],
+          args->left_pred_stride[0]);
+    }
   }
 
   init_mode_skip_mask(mode_skip_mask, cpi, x, bsize);
