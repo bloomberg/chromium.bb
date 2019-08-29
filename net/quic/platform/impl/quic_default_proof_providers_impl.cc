@@ -65,8 +65,8 @@ std::unique_ptr<ProofSource> CreateDefaultProofSourceImpl() {
   auto proof_source = std::make_unique<net::ProofSourceChromium>();
   CHECK(proof_source->Initialize(
 #if defined(OS_WIN)
-      base::FilePath(base::UTF8ToWide(GetQuicFlag(FLAGS_certificate_file))),
-      base::FilePath(base::UTF8ToWide(GetQuicFlag(FLAGS_key_file))),
+      base::FilePath(base::UTF8ToUTF16(GetQuicFlag(FLAGS_certificate_file))),
+      base::FilePath(base::UTF8ToUTF16(GetQuicFlag(FLAGS_key_file))),
       base::FilePath()));
 #else
       base::FilePath(GetQuicFlag(FLAGS_certificate_file)),
