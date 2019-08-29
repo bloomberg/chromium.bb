@@ -721,6 +721,7 @@ crbug.com/591099 fast/events/touch/compositor-touch-hit-rects-list-translate.htm
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/889721 fast/inline/outline-continuations.html [ Failure ]
 crbug.com/591099 fast/text/font-format-support-color-cff2-vertical.html [ Failure ]
+crbug.com/998872 fast/text/international/bidi-ignored-for-first-child-inline.html [ Failure ]
 crbug.com/591099 fast/text/whitespace/018.html [ Failure ]
 crbug.com/591099 fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/591099 fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
@@ -1120,7 +1121,6 @@ crbug.com/591099 [ Mac10.13 ] fast/text/font-weight.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/alef-connected.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-AN-after-empty-run.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-LDB-2-CSS.html [ Failure ]
-crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-ignored-for-first-child-inline.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-innertext.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-linebreak-001.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-linebreak-003.html [ Failure ]
@@ -6183,9 +6183,6 @@ crbug.com/838348 external/wpt/portals/csp/frame-src.sub.html [ Pass Crash ]
 
 # Sheriff 2019-04-17
 crbug.com/953534 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
-
-crbug.com/953479 external/wpt/css/cssom-view/offsetTopLeft-empty-inline.html [ Failure ]
-crbug.com/953479 external/wpt/css/cssom-view/offsetTopLeft-leading-space-inline.html [ Failure ]
 
 crbug.com/953591 [ Win ] css3/masking/mask-repeat-space-padding.html [ Pass Failure ]
 crbug.com/953591 [ Win ] fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]

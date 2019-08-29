@@ -242,6 +242,11 @@ crbug.com/591099 external/wpt/css/css-writing-modes/two-levels-of-orthogonal-flo
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-003.xht [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-009.xht [ Failure ]
 
+### external/wpt/css/cssom-view/
+crbug.com/997705 external/wpt/css/cssom-view/getBoundingClientRect-empty-inline.html [ Failure ]
+crbug.com/953479 external/wpt/css/cssom-view/offsetTopLeft-empty-inline.html [ Failure ]
+crbug.com/953479 external/wpt/css/cssom-view/offsetTopLeft-leading-space-inline.html [ Failure ]
+
 ### external/wpt/css/filter-effects/
 crbug.com/591099 external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
 
