@@ -673,6 +673,7 @@ jumbo_source_set("browser") {
     "data_url_loader_factory.h",
     "devtools/browser_devtools_agent_host.cc",
     "devtools/browser_devtools_agent_host.h",
+    "devtools/cross_thread_protocol_callback.h",
     "devtools/devtools_agent_host_impl.cc",
     "devtools/devtools_agent_host_impl.h",
     "devtools/devtools_background_services_context_impl.cc",
