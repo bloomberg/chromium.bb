@@ -55824,6 +55824,39 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Used, relocked"/>
 </enum>
 
+<enum name="SoftwareReporterChromePromptChannelError">
+<!-- Custom errors: (1 shiftleft 16) + error code -->
+
+  <int value="65537" label="Custom | WrongHandshakeVersion"/>
+  <int value="65538" label="Custom | RequestLengthShortRead"/>
+  <int value="65539" label="Custom | RequestShortRead"/>
+  <int value="65540" label="Custom | RequestInvalidSize"/>
+  <int value="65541" label="Custom | RequestContentInvalid"/>
+  <int value="65542" label="Custom | RequestUnknown"/>
+  <int value="65543" label="Custom | RequestUnknownField"/>
+  <int value="65544" label="Custom | UndisplayableFilePath"/>
+  <int value="65545" label="Custom | UndisplayableRegistryKey"/>
+  <int value="65546" label="Custom | UndisplayableExtension"/>
+<!-- Common errors for ReadVersion operation: (2 shiftleft 16) + Windows error -->
+
+  <int value="131181" label="ReadVersion | ERROR_BROKEN_PIPE"/>
+  <int value="131306" label="ReadVersion | ERROR_MORE_DATA"/>
+<!-- Common errors for ReadRequestLength operation: (3 shiftleft 16) + Windows error -->
+
+  <int value="196717" label="ReadRequestLength | ERROR_BROKEN_PIPE"/>
+  <int value="196842" label="ReadRequestLength | ERROR_MORE_DATA"/>
+<!-- Common errors for ReadRequest operation: (4 shiftleft 16) + Windows error -->
+
+  <int value="262253" label="ReadRequest | ERROR_BROKEN_PIPE"/>
+  <int value="262378" label="ReadRequest | ERROR_MORE_DATA"/>
+<!-- Common error for WriteResponse operation: (5 shiftleft 16) + Windows error -->
+
+  <int value="327789" label="WriteResponse | ERROR_BROKEN_PIPE"/>
+<!-- Common error for WriteResponseLength operation: (6 shiftleft 16) + Windows error -->
+
+  <int value="393325" label="WriteResponseLength | ERROR_BROKEN_PIPE"/>
+</enum>
+
 <enum name="SoftwareReporterCleanerDownloadStatus">
   <int value="0" label="Succeeded"/>
   <int value="1" label="Other failure"/>
