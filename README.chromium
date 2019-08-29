@@ -304,3 +304,10 @@ D. Local Modifications
   - patches/localematcher.patch
   - upstream PR:
     https://github.com/unicode-org/icu/pull/714
+
+15. Prevent leak from adoptCalendar
+ - patches/calendarToAdopt.patch
+ - upstream bug:
+   https://unicode-org.atlassian.net/browse/ICU-20799
+ - upstream PR:
+   https://github.com/unicode-org/icu/pull/790
