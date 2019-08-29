@@ -13,41 +13,22 @@
 namespace openscreen {
 namespace platform {
 
-NetworkReader::NetworkReader(TaskRunner* task_runner)
-    : NetworkReader(task_runner, NetworkWaiter::Create()) {}
+NetworkReader::NetworkReader() : NetworkReader(NetworkWaiter::Create()) {}
 
-NetworkReader::NetworkReader(TaskRunner* task_runner,
-                             std::unique_ptr<NetworkWaiter> waiter)
-    : waiter_(std::move(waiter)),
-      task_runner_(task_runner),
-      is_running_(false) {
-  OSP_CHECK(task_runner_);
-}
+NetworkReader::NetworkReader(std::unique_ptr<NetworkWaiter> waiter)
+    : waiter_(std::move(waiter)), is_running_(false) {}
 
 NetworkReader::~NetworkReader() = default;
 
-Error NetworkReader::ReadRepeatedly(UdpSocket* socket, Callback callback) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  return !read_callbacks_.emplace(socket, std::move(callback)).second
-             ? Error::Code::kIOFailure
-             : Error::None();
-}
-
-Error NetworkReader::CancelRead(UdpSocket* socket) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  return read_callbacks_.erase(socket) != 0 ? Error::Code::kNone
-                                            : Error::Code::kOperationInvalid;
-}
-
 Error NetworkReader::WaitAndRead(Clock::duration timeout) {
-  // Get the set of all sockets we care about.
+  // Get the set of all sockets we care about. A different list than the
+  // existing unordered_set is used to avoid race conditions with the method
+  // using this new list.
   socket_deletion_block_.notify_all();
   std::vector<UdpSocket*> sockets;
   {
     std::lock_guard<std::mutex> lock(mutex_);
-    for (const auto& read : read_callbacks_) {
-      sockets.push_back(read.first);
-    }
+    sockets = sockets_;
   }
 
   // Wait for the sockets to find something interesting or for the timeout.
@@ -58,37 +39,21 @@ Error NetworkReader::WaitAndRead(Clock::duration timeout) {
 
   // Process the results.
   socket_deletion_block_.notify_all();
-  Error error = Error::None();
   {
     std::lock_guard<std::mutex> lock(mutex_);
-    for (UdpSocket* read : changed_or_error.value()) {
-      auto mapped_socket = read_callbacks_.find(read);
-      if (mapped_socket == read_callbacks_.end()) {
+    for (UdpSocket* socket : changed_or_error.value()) {
+      if (std::find(sockets_.begin(), sockets_.end(), socket) ==
+          sockets_.end()) {
         continue;
       }
 
       // TODO(rwkeane): Remove this unsafe cast.
-      UdpSocketPosix* read_socket = static_cast<UdpSocketPosix*>(read);
-      ErrorOr<UdpPacket> read_packet = read_socket->ReceiveMessage();
-      if (read_packet.is_error()) {
-        error = read_packet.error();
-        continue;
-      }
-
-      // Capture the UdpPacket by move into |arg| here to transfer the ownership
-      // and avoid copying the UdpPacket. This move constructs the UdpPacket
-      // inside of the lambda. Then the UdpPacket |arg| is passed by move to the
-      // callback function |func|.
-      auto executor = [arg = read_packet.MoveValue(),
-                       func = mapped_socket->second]() mutable {
-        func(std::move(arg));
-      };
-
-      task_runner_->PostTask(std::move(executor));
+      UdpSocketPosix* read_socket = static_cast<UdpSocketPosix*>(socket);
+      read_socket->ReceiveMessage();
     }
   }
 
-  return error;
+  return Error::None();
 }
 
 void NetworkReader::RunUntilStopped() {
@@ -105,16 +70,28 @@ void NetworkReader::RequestStopSoon() {
   is_running_.store(false);
 }
 
-void NetworkReader::OnCreate(UdpSocket* socket) {}
+void NetworkReader::OnCreate(UdpSocket* socket) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  sockets_.push_back(socket);
+}
 
 void NetworkReader::OnDestroy(UdpSocket* socket) {
+  OnDelete(socket);
+}
+
+void NetworkReader::OnDelete(UdpSocket* socket,
+                             bool disable_locking_for_testing) {
   std::unique_lock<std::mutex> lock(mutex_);
-  if (read_callbacks_.erase(socket) != 0) {
-    // This code will allow us to block completion of the socket destructor (and
-    // subsequent invalidation of pointers to this socket) until we no longer
-    // are waiting on a SELECT(...) call to it, since we only signal this
-    // condition variable's wait(...) to proceed outside of SELECT(...).
-    socket_deletion_block_.wait(lock);
+  auto it = std::find(sockets_.begin(), sockets_.end(), socket);
+  if (it != sockets_.end()) {
+    sockets_.erase(it);
+    if (!disable_locking_for_testing) {
+      // This code will allow us to block completion of the socket destructor
+      // (and subsequent invalidation of pointers to this socket) until we no
+      // longer are waiting on a SELECT(...) call to it, since we only signal
+      // this condition variable's wait(...) to proceed outside of SELECT(...).
+      socket_deletion_block_.wait(lock);
+    }
   }
 }
 

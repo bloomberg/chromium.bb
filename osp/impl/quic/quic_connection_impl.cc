@@ -76,11 +76,26 @@ void QuicStreamImpl::OnBufferChanged(::quic::QuartcStream* stream) {}
 // Passes a received UDP packet to the QUIC implementation.  If this contains
 // any stream data, it will be passed automatically to the relevant
 // QuicStream::Delegate objects.
-void QuicConnectionImpl::OnRead(platform::UdpPacket data,
-                                platform::NetworkRunner* network_runner) {
+void QuicConnectionImpl::OnRead(platform::UdpSocket* socket,
+                                ErrorOr<platform::UdpPacket> data) {
   TRACE_SCOPED(TraceCategory::Quic, "QuicConnectionImpl::OnRead");
-  session_->OnTransportReceived(reinterpret_cast<const char*>(data.data()),
-                                data.size());
+  if (data.is_error()) {
+    TRACE_SET_RESULT(data.error());
+    return;
+  }
+
+  session_->OnTransportReceived(
+      reinterpret_cast<const char*>(data.value().data()), data.value().size());
+}
+
+void QuicConnectionImpl::OnSendError(platform::UdpSocket* socket, Error error) {
+  // TODO(issue/67): Implement this method.
+  OSP_UNIMPLEMENTED();
+}
+
+void QuicConnectionImpl::OnError(platform::UdpSocket* socket, Error error) {
+  // TODO(issue/67): Implement this method.
+  OSP_UNIMPLEMENTED();
 }
 
 QuicConnectionImpl::QuicConnectionImpl(

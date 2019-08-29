@@ -390,14 +390,14 @@ Error ReceiveMessageInternal(int fd, UdpPacket* packet) {
 
 }  // namespace
 
-ErrorOr<UdpPacket> UdpSocketPosix::ReceiveMessage() {
+void UdpSocketPosix::ReceiveMessage() {
   if (is_closed()) {
-    return Error::Code::kSocketClosedFailure;
+    OnRead(Error::Code::kSocketClosedFailure);
   }
 
   ssize_t bytes_available = recv(fd_, nullptr, 0, MSG_PEEK | MSG_TRUNC);
   if (bytes_available == -1) {
-    return ChooseError(errno, Error::Code::kSocketReadFailure);
+    OnRead(ChooseError(errno, Error::Code::kSocketReadFailure));
   }
   UdpPacket packet(bytes_available);
   packet.set_socket(this);
@@ -415,8 +415,11 @@ ErrorOr<UdpPacket> UdpSocketPosix::ReceiveMessage() {
       OSP_NOTREACHED();
     }
   }
-  return result.ok() ? ErrorOr<UdpPacket>(std::move(packet))
-                     : ErrorOr<UdpPacket>(std::move(result));
+  ErrorOr<UdpPacket> error_or_packet =
+      result.ok() ? ErrorOr<UdpPacket>(std::move(packet))
+                  : ErrorOr<UdpPacket>(std::move(result));
+
+  OnRead(std::move(error_or_packet));
 }
 
 // TODO(yakimakha): Consider changing the interface to accept UdpPacket as

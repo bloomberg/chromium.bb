@@ -10,11 +10,12 @@
 #include <memory>
 #include <vector>
 
+// TODO(rwkeane): Remove references to platform/impl
 #include "osp/impl/discovery/mdns/mdns_responder_adapter_impl.h"
 #include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
-#include "platform/impl/network_runner.h"
+#include "platform/impl/network_reader.h"
 #include "platform/impl/task_runner.h"
 
 // This file contains a demo of our mDNSResponder wrapper code.  It can both
@@ -53,6 +54,8 @@ struct Service {
 
 class DemoSocketClient : public platform::UdpSocket::Client {
  public:
+  DemoSocketClient(mdns::MdnsResponderAdapterImpl* mdns) : mdns_(mdns) {}
+
   void OnError(platform::UdpSocket* socket, Error error) override {
     // TODO(issue/66): Change to OSP_LOG_FATAL.
     OSP_LOG_ERROR << "configuration failed for interface " << error.message();
@@ -65,8 +68,11 @@ class DemoSocketClient : public platform::UdpSocket::Client {
 
   void OnRead(platform::UdpSocket* socket,
               ErrorOr<platform::UdpPacket> packet) override {
-    OSP_UNIMPLEMENTED();
+    mdns_->OnRead(socket, std::move(packet));
   }
+
+ private:
+  mdns::MdnsResponderAdapterImpl* mdns_;
 };
 
 using ServiceMap =
@@ -239,7 +245,7 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
   }
 }
 
-void BrowseDemo(platform::NetworkRunner* network_runner,
+void BrowseDemo(platform::TaskRunner* task_runner,
                 const std::string& service_name,
                 const std::string& service_protocol,
                 const std::string& service_instance) {
@@ -269,8 +275,8 @@ void BrowseDemo(platform::NetworkRunner* network_runner,
       index_list.push_back(interface.info.index);
   }
 
-  DemoSocketClient client;
-  auto sockets = SetUpMulticastSockets(network_runner, index_list, &client);
+  DemoSocketClient client(mdns_adapter.get());
+  auto sockets = SetUpMulticastSockets(task_runner, index_list, &client);
   // The code below assumes the elements in |sockets| is in exact 1:1
   // correspondence with the elements in |index_list|. Crash the demo if any
   // sockets are missing (i.e., failed to be set up).
@@ -297,7 +303,6 @@ void BrowseDemo(platform::NetworkRunner* network_runner,
   }
 
   for (const platform::UdpSocketUniquePtr& socket : sockets) {
-    network_runner->ReadRepeatedly(socket.get(), mdns_adapter.get());
     mdns_adapter->StartPtrQuery(socket.get(), service_type.value());
   }
 
@@ -322,7 +327,6 @@ void BrowseDemo(platform::NetworkRunner* network_runner,
     LogService(s.second);
   }
   for (const platform::UdpSocketUniquePtr& socket : sockets) {
-    network_runner->CancelRead(socket.get());
     mdns_adapter->DeregisterInterface(socket.get());
   }
   mdns_adapter->Close();
@@ -356,19 +360,17 @@ int main(int argc, char** argv) {
       openscreen::platform::Clock::now);
   std::thread task_runner_thread(
       [&task_runner]() { task_runner->RunUntilStopped(); });
-  auto network_runner =
-      std::make_unique<openscreen::platform::NetworkRunnerImpl>(
-          std::move(task_runner));
-  openscreen::platform::UdpSocket::SetLifetimeObserver(network_runner.get());
-  std::thread network_runner_thread(
-      [&network_runner]() { network_runner->RunUntilStopped(); });
+  auto network_reader = std::make_unique<openscreen::platform::NetworkReader>();
+  openscreen::platform::UdpSocket::SetLifetimeObserver(network_reader.get());
+  std::thread network_reader_thread(
+      [&network_reader]() { network_reader->RunUntilStopped(); });
 
-  openscreen::BrowseDemo(network_runner.get(), labels[0], labels[1],
+  openscreen::BrowseDemo(task_runner.get(), labels[0], labels[1],
                          service_instance);
 
-  network_runner->RequestStopSoon();
+  network_reader->RequestStopSoon();
   task_runner->RequestStopSoon();
-  network_runner_thread.join();
+  network_reader_thread.join();
   task_runner_thread.join();
   openscreen::g_services = nullptr;
   return 0;

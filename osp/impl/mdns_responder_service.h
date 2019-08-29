@@ -17,7 +17,7 @@
 #include "osp/impl/service_listener_impl.h"
 #include "osp/impl/service_publisher_impl.h"
 #include "platform/api/network_interface.h"
-#include "platform/api/network_runner.h"
+#include "platform/api/task_runner.h"
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
@@ -31,10 +31,10 @@ class MdnsResponderAdapterFactory {
 
 class MdnsResponderService : public ServiceListenerImpl::Delegate,
                              public ServicePublisherImpl::Delegate,
-                             public platform::UdpReadCallback {
+                             public platform::UdpSocket::Client {
  public:
   MdnsResponderService(
-      platform::NetworkRunner* network_runner,
+      platform::TaskRunner* task_runner,
       const std::string& service_name,
       const std::string& service_protocol,
       std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory,
@@ -48,9 +48,11 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
       const std::vector<platform::NetworkInterfaceIndex> whitelist,
       const std::map<std::string, std::string>& txt_data);
 
-  // UdpReadCallback overrides.
-  void OnRead(platform::UdpPacket packet,
-              platform::NetworkRunner* network_runner) override;
+  // UdpSocket::Client overrides.
+  void OnRead(platform::UdpSocket* socket,
+              ErrorOr<platform::UdpPacket> packet) override;
+  void OnSendError(platform::UdpSocket* socket, Error error) override;
+  void OnError(platform::UdpSocket* socket, Error error) override;
 
   // ServiceListenerImpl::Delegate overrides.
   void StartListener() override;
@@ -193,7 +195,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
 
   std::map<std::string, ServiceInfo> receiver_info_;
 
-  platform::NetworkRunner* network_runner_;
+  platform::TaskRunner* task_runner_;
 
   friend class TestingMdnsResponderService;
 };

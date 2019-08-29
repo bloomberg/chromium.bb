@@ -36,7 +36,7 @@ class QuicStream {
   uint64_t id_;
 };
 
-class QuicConnection : public platform::UdpReadCallback {
+class QuicConnection : public platform::UdpSocket::Client {
  public:
   class Delegate {
    public:

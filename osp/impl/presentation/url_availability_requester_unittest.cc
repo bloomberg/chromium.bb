@@ -15,7 +15,7 @@
 #include "osp/public/testing/message_demuxer_test_support.h"
 #include "platform/api/logging.h"
 #include "platform/test/fake_clock.h"
-#include "platform/test/fake_network_runner.h"
+#include "platform/test/fake_task_runner.h"
 
 using std::chrono::milliseconds;
 using std::chrono::seconds;
@@ -46,8 +46,11 @@ class MockReceiverObserver : public ReceiverObserver {
 class UrlAvailabilityRequesterTest : public Test {
  public:
   UrlAvailabilityRequesterTest() {
-    network_runner_ = std::make_unique<platform::FakeNetworkRunner>();
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(network_runner_.get(),
+    fake_clock_ = std::make_unique<platform::FakeClock>(
+        platform::Clock::time_point(milliseconds(1298424)));
+    task_runner_ =
+        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
                                                     platform::FakeClock::now);
     info1_ = {service_id_, friendly_name_, 1, quic_bridge_->kReceiverEndpoint};
   }
@@ -123,11 +126,10 @@ class UrlAvailabilityRequesterTest : public Test {
     stream->Write(buffer.data(), buffer.size());
   }
 
-  std::unique_ptr<platform::FakeNetworkRunner> network_runner_;
+  std::unique_ptr<platform::FakeClock> fake_clock_;
+  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
   MockMessageCallback mock_callback_;
   MessageDemuxer::MessageWatch availability_watch_;
-  platform::FakeClock fake_clock_{
-      platform::Clock::time_point(milliseconds(1298424))};
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
   UrlAvailabilityRequester listener_{platform::FakeClock::now};
 
@@ -545,7 +547,7 @@ TEST_F(UrlAvailabilityRequesterTest, RefreshWatches) {
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(_, service_id_)).Times(0);
   quic_bridge_->RunTasksUntilIdle();
 
-  fake_clock_.Advance(seconds(60));
+  fake_clock_->Advance(seconds(60));
 
   ExpectStreamMessage(&mock_callback_, &request);
   listener_.RefreshWatches();
@@ -666,7 +668,7 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverInSteps) {
   quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ((std::vector<std::string>{url2_}), request.urls);
 
-  fake_clock_.Advance(seconds(60));
+  fake_clock_->Advance(seconds(60));
 
   listener_.RefreshWatches();
   EXPECT_CALL(mock_callback_, OnStreamMessage(_, _, _, _, _, _)).Times(0);

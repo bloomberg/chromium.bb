@@ -53,10 +53,6 @@ class FakeClientQuicConnectionFactory final : public QuicConnectionFactory {
       FakeQuicConnectionFactoryBridge* bridge);
   ~FakeClientQuicConnectionFactory() override;
 
-  // UdpReadCallback overrides.
-  void OnRead(platform::UdpPacket data,
-              platform::NetworkRunner* network_runner) override;
-
   // UdpSocket::Client overrides.
   void OnError(platform::UdpSocket* socket, Error error) override;
   void OnSendError(platform::UdpSocket* socket, Error error) override;
@@ -84,10 +80,6 @@ class FakeServerQuicConnectionFactory final : public QuicConnectionFactory {
   explicit FakeServerQuicConnectionFactory(
       FakeQuicConnectionFactoryBridge* bridge);
   ~FakeServerQuicConnectionFactory() override;
-
-  // UdpReadCallback overrides.
-  void OnRead(platform::UdpPacket data,
-              platform::NetworkRunner* network_runner) override;
 
   // UdpSocket::Client overrides.
   void OnError(platform::UdpSocket* socket, Error error) override;

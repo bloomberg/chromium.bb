@@ -300,8 +300,14 @@ Error MdnsResponderAdapterImpl::DeregisterInterface(
   responder_interface_info_.erase(info_it);
   return Error::None();
 }
-void MdnsResponderAdapterImpl::OnRead(platform::UdpPacket packet,
-                                      platform::NetworkRunner* network_runner) {
+void MdnsResponderAdapterImpl::OnRead(
+    platform::UdpSocket* socket,
+    ErrorOr<platform::UdpPacket> packet_or_error) {
+  if (packet_or_error.is_error()) {
+    return;
+  }
+
+  platform::UdpPacket packet = packet_or_error.MoveValue();
   TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::OnRead");
   mDNSAddr src;
   if (packet.source().address.IsV4()) {
@@ -329,6 +335,18 @@ void MdnsResponderAdapterImpl::OnRead(platform::UdpPacket packet,
   mDNSCoreReceive(&mdns_, const_cast<uint8_t*>(packet_data),
                   packet_data + packet.size(), &src, srcport, &dst, dstport,
                   reinterpret_cast<mDNSInterfaceID>(packet.socket()));
+}
+
+void MdnsResponderAdapterImpl::OnSendError(platform::UdpSocket* socket,
+                                           Error error) {
+  // TODO(issue/67): Implement this method.
+  OSP_UNIMPLEMENTED();
+}
+
+void MdnsResponderAdapterImpl::OnError(platform::UdpSocket* socket,
+                                       Error error) {
+  // TODO(issue/67): Implement this method.
+  OSP_UNIMPLEMENTED();
 }
 
 absl::optional<platform::Clock::duration> MdnsResponderAdapterImpl::RunTasks() {

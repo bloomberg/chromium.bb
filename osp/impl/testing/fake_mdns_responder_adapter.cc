@@ -236,9 +236,19 @@ Error FakeMdnsResponderAdapter::DeregisterInterface(
   return Error::None();
 }
 
-void FakeMdnsResponderAdapter::OnRead(platform::UdpPacket packet,
-                                      platform::NetworkRunner* network_runner) {
-  OSP_CHECK(false) << "Tests should not drive this class with packets";
+void FakeMdnsResponderAdapter::OnRead(platform::UdpSocket* socket,
+                                      ErrorOr<platform::UdpPacket> packet) {
+  OSP_NOTREACHED() << "Tests should not drive this class with packets";
+}
+
+void FakeMdnsResponderAdapter::OnSendError(platform::UdpSocket* socket,
+                                           Error error) {
+  OSP_NOTREACHED() << "Tests should not drive this class with packets";
+}
+
+void FakeMdnsResponderAdapter::OnError(platform::UdpSocket* socket,
+                                       Error error) {
+  OSP_NOTREACHED() << "Tests should not drive this class with packets";
 }
 
 absl::optional<platform::Clock::duration> FakeMdnsResponderAdapter::RunTasks() {

@@ -16,7 +16,7 @@
 #include "osp/public/network_service_manager.h"
 #include "osp/public/testing/message_demuxer_test_support.h"
 #include "platform/test/fake_clock.h"
-#include "platform/test/fake_network_runner.h"
+#include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
 namespace presentation {
@@ -77,8 +77,11 @@ class MockRequestDelegate final : public RequestDelegate {
 class ControllerTest : public ::testing::Test {
  public:
   ControllerTest() {
-    network_runner_ = std::make_unique<platform::FakeNetworkRunner>();
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(network_runner_.get(),
+    fake_clock_ = std::make_unique<platform::FakeClock>(
+        platform::Clock::time_point(seconds(11111)));
+    task_runner_ =
+        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
                                                     platform::FakeClock::now);
     receiver_info1 = {
         "service-id1", "lucas-auer", 1, quic_bridge_->kReceiverEndpoint, {}};
@@ -294,10 +297,10 @@ class ControllerTest : public ::testing::Test {
     ASSERT_TRUE(*connection);
   }
 
-  std::unique_ptr<platform::FakeNetworkRunner> network_runner_;
+  std::unique_ptr<platform::FakeClock> fake_clock_;
+  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
   MessageDemuxer::MessageWatch availability_watch_;
   MockMessageCallback mock_callback_;
-  platform::FakeClock fake_clock_{platform::Clock::time_point(seconds(11111))};
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
   MockServiceListenerDelegate mock_listener_delegate_;
   std::unique_ptr<Controller> controller_;

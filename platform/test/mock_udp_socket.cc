@@ -10,16 +10,16 @@ namespace platform {
 MockUdpSocket::MockUdpSocket(TaskRunner* task_runner,
                              Client* client,
                              Version version)
-    : UdpSocket(task_runner, client), version_(version) {}
+    : UdpSocket(task_runner, client), client_(client), version_(version) {}
 
 // Ensure that the destructors for the unique_ptr objects are called in
 // the correct order to avoid OSP_CHECK failures.
 MockUdpSocket::~MockUdpSocket() {
   CloseIfOpen();
 
-  task_runner_.reset();
-  clock_.reset();
-  client_.reset();
+  fake_task_runner_.reset();
+  fake_clock_.reset();
+  fake_client_.reset();
 }
 
 bool MockUdpSocket::IsIPv4() const {
@@ -90,9 +90,9 @@ std::unique_ptr<MockUdpSocket> MockUdpSocket::CreateDefault(
 
   std::unique_ptr<MockUdpSocket> socket =
       std::make_unique<MockUdpSocket>(task_runner.get(), client.get(), version);
-  socket->clock_.swap(clock);
-  socket->client_.swap(client);
-  socket->task_runner_.swap(task_runner);
+  socket->fake_clock_.swap(clock);
+  socket->fake_client_.swap(client);
+  socket->fake_task_runner_.swap(task_runner);
 
   return socket;
 }

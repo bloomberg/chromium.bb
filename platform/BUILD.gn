@@ -15,8 +15,6 @@ source_set("platform") {
     "api/logging_util.cc",
     "api/network_interface.cc",
     "api/network_interface.h",
-    "api/network_runner.h",
-    "api/network_runner_lifetime_manager.h",
     "api/network_waiter.h",
     "api/scoped_wake_lock.cc",
     "api/scoped_wake_lock.h",
@@ -55,10 +53,6 @@ source_set("platform") {
     sources += [
       "impl/network_reader.cc",
       "impl/network_reader.h",
-      "impl/network_runner.cc",
-      "impl/network_runner.h",
-      "impl/network_runner_lifetime_manager.cc",
-      "impl/network_runner_lifetime_manager.h",
       "impl/task_runner.cc",
       "impl/task_runner.h",
       "impl/text_trace_logging_platform.cc",
@@ -104,8 +98,6 @@ source_set("test") {
   sources = [
     "test/fake_clock.cc",
     "test/fake_clock.h",
-    "test/fake_network_runner.cc",
-    "test/fake_network_runner.h",
     "test/fake_task_runner.cc",
     "test/fake_task_runner.h",
     "test/mock_udp_socket.cc",

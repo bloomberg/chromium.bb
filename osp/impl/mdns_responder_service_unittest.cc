@@ -13,7 +13,7 @@
 #include "osp/impl/service_listener_impl.h"
 #include "osp/impl/testing/fake_mdns_platform_service.h"
 #include "osp/impl/testing/fake_mdns_responder_adapter.h"
-#include "platform/test/fake_network_runner.h"
+#include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
 
@@ -23,12 +23,12 @@ namespace openscreen {
 class TestingMdnsResponderService final : public MdnsResponderService {
  public:
   TestingMdnsResponderService(
-      platform::FakeNetworkRunner* network_runner,
+      platform::FakeTaskRunner* task_runner,
       const std::string& service_name,
       const std::string& service_protocol,
       std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory,
       std::unique_ptr<MdnsPlatformService> platform_service)
-      : MdnsResponderService(network_runner,
+      : MdnsResponderService(task_runner,
                              service_name,
                              service_protocol,
                              std::move(mdns_responder_factory),
@@ -59,7 +59,7 @@ class TestingMdnsResponderService final : public MdnsResponderService {
   void SuspendPublisher() override { SuspendPublisherInternal(); }
   void ResumePublisher() override { ResumePublisherInternal(); }
 
-  // Handles new events as OnRead does, but without the need of a NetworkRunner.
+  // Handles new events as OnRead does, but without the need of a TaskRunner.
   void HandleNewEvents() {
     if (!mdns_responder_) {
       return;
@@ -182,12 +182,13 @@ class MdnsResponderServiceTest : public ::testing::Test {
         std::make_unique<FakeMdnsResponderAdapterFactory>();
     auto wrapper_factory = std::make_unique<WrapperMdnsResponderAdapterFactory>(
         mdns_responder_factory_.get());
-    network_runner_ = std::make_unique<platform::FakeNetworkRunner>();
+    clock_ = std::make_unique<platform::FakeClock>(platform::Clock::now());
+    task_runner_ = std::make_unique<platform::FakeTaskRunner>(clock_.get());
     auto platform_service = std::make_unique<FakeMdnsPlatformService>();
     fake_platform_service_ = platform_service.get();
     fake_platform_service_->set_interfaces(bound_interfaces_);
     mdns_service_ = std::make_unique<TestingMdnsResponderService>(
-        network_runner_.get(), kTestServiceName, kTestServiceProtocol,
+        task_runner_.get(), kTestServiceName, kTestServiceProtocol,
         std::move(wrapper_factory), std::move(platform_service));
     service_listener_ =
         std::make_unique<ServiceListenerImpl>(mdns_service_.get());
@@ -199,7 +200,8 @@ class MdnsResponderServiceTest : public ::testing::Test {
         &publisher_observer_, mdns_service_.get());
   }
 
-  std::unique_ptr<platform::FakeNetworkRunner> network_runner_;
+  std::unique_ptr<platform::FakeClock> clock_;
+  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
   MockServiceListenerObserver observer_;
   FakeMdnsPlatformService* fake_platform_service_;
   std::unique_ptr<FakeMdnsResponderAdapterFactory> mdns_responder_factory_;

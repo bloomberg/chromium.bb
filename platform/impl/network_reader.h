@@ -7,8 +7,8 @@
 
 #include <map>
 #include <mutex>  // NOLINT
+#include <vector>
 
-#include "platform/api/network_runner.h"
 #include "platform/api/network_waiter.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
@@ -27,25 +27,8 @@ class NetworkReader : public UdpSocket::LifetimeObserver {
   using Callback = std::function<void(UdpPacket)>;
 
   // Creates a new instance of this object.
-  // NOTE: The provided TaskRunner must be running and must live for the
-  // duration of this instance's life.
-  explicit NetworkReader(TaskRunner* task_runner);
+  NetworkReader();
   virtual ~NetworkReader();
-
-  // Waits for |socket| to be readable and then posts a task to the currently
-  // set TaskRunner to run the provided |callback|.
-  // NOTE: Only one read callback can be registered per socket. If
-  // ReadRepeatedly is called on a socket already being watched, the new call
-  // will be ignored and an error will be returned.
-  // NOTE: The first read on any newly watched socket may be delayed up to 50
-  // ms.
-  Error ReadRepeatedly(UdpSocket* socket, Callback callback);
-
-  // Cancels any pending wait on reading |socket|. Following this call, any
-  // pending reads will proceed but their associated callbacks will not fire.
-  // This function returns Error::Code::kNone if the operation is successful and
-  // the socket is no longer watched and returns an error on failure.
-  Error CancelRead(UdpSocket* socket);
 
   // Runs the Wait function in a loop until the below RequestStopSoon function
   // is called.
@@ -55,14 +38,20 @@ class NetworkReader : public UdpSocket::LifetimeObserver {
   void RequestStopSoon();
 
   // UdpSocket::LifetimeObserver overrides.
+  // Waits for |socket| to be readable and then calls the socket's
+  // RecieveMessage(...) method to process the available packet.
+  // NOTE: The first read on any newly watched socket may be delayed up to 50
+  // ms.
   void OnCreate(UdpSocket* socket) override;
+
+  // Cancels any pending wait on reading |socket|. Following this call, any
+  // pending reads will proceed but their associated callbacks will not fire.
+  // NOTE: This method will block until a delete is safe.
   void OnDestroy(UdpSocket* socket) override;
 
  protected:
   // Creates a new instance of this object.
-  // NOTE: The provided TaskRunner must be running and must live for the
-  // duration of this instance's life.
-  NetworkReader(TaskRunner* task_runner, std::unique_ptr<NetworkWaiter> waiter);
+  explicit NetworkReader(std::unique_ptr<NetworkWaiter> waiter);
 
   // Waits for any writes to occur or for timeout to pass, whichever is sooner.
   // If an error occurs when calling WaitAndRead, then no callbacks will have
@@ -75,19 +64,15 @@ class NetworkReader : public UdpSocket::LifetimeObserver {
   // not be watched until after this wait call ends.
   Error WaitAndRead(Clock::duration timeout);
 
-  // Associations between sockets and callbacks, plus the platform-level
-  // EventWaiter. Note that the EventWaiter has not been rolled into this class
-  // and the callbacks have not been pushed to the socket layer in order to
-  // keep the platform-specific code as simple as possible and maximize
-  // code reusability.
-  std::map<UdpSocket*, Callback> read_callbacks_;
+  // Helper method to allow for OnDestroy calls without blocking.
+  void OnDelete(UdpSocket* socket, bool disable_locking_for_testing = false);
+
+  // The set of all sockets that are being read from
+  std::vector<UdpSocket*> sockets_;
 
  private:
   // Abstractions around socket handling to ensure platform independence.
   std::unique_ptr<NetworkWaiter> waiter_;
-
-  // The task runner on which all callbacks should be run
-  TaskRunner* task_runner_;
 
   // Mutex to protect against concurrent modification of socket info.
   std::mutex mutex_;

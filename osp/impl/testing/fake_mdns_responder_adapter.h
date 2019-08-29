@@ -97,9 +97,11 @@ class FakeMdnsResponderAdapter final : public mdns::MdnsResponderAdapter {
   bool aaaa_queries_empty() const;
   bool running() const { return running_; }
 
-  // UdpReadCallback overrides.
-  void OnRead(platform::UdpPacket packet,
-              platform::NetworkRunner* network_runner) override;
+  // UdpSocket::Client overrides.
+  void OnRead(platform::UdpSocket* socket,
+              ErrorOr<platform::UdpPacket> packet) override;
+  void OnSendError(platform::UdpSocket* socket, Error error) override;
+  void OnError(platform::UdpSocket* socket, Error error) override;
 
   // mdns::MdnsResponderAdapter overrides.
   Error Init() override;

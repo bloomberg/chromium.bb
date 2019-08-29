@@ -165,7 +165,7 @@ enum class MdnsResponderErrorCode {
 // called after any sequence of calls to mDNSResponder.  It also returns a
 // timeout value, after which it must be called again (e.g. for maintaining its
 // cache).
-class MdnsResponderAdapter : public platform::UdpReadCallback {
+class MdnsResponderAdapter : public platform::UdpSocket::Client {
  public:
   MdnsResponderAdapter();
   virtual ~MdnsResponderAdapter() = 0;

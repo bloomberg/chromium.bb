@@ -59,7 +59,7 @@ TEST(MdnsResponderAdapterImplTest, ExampleData) {
       new mdns::MdnsResponderAdapterImpl);
   mdns_adapter->Init();
   mdns_adapter->StartPtrQuery(0, openscreen_service);
-  mdns_adapter->OnRead(std::move(packet), nullptr);
+  mdns_adapter->OnRead(nullptr, std::move(packet));
   mdns_adapter->RunTasks();
 
   auto ptr = mdns_adapter->TakePtrResponses();

@@ -77,13 +77,17 @@ class MockUdpSocket : public UdpSocket {
   }
   size_t set_dscp_queue_size() { return set_dscp_errors_.size(); }
 
-  MockUdpSocket::MockClient* client() { return client_.get(); }
+  // Posts a task to call client_'s OnRead method
+  void MockReceivePacket(UdpPacket packet) { OnRead(std::move(packet)); }
+
+  MockUdpSocket::MockClient* client_mock() { return fake_client_.get(); }
 
  private:
   void ProcessConfigurationMethod(std::queue<Error>* errors);
 
   void Close() override {}
 
+  Client* client_;
   Version version_;
 
   // Queues for the response to calls above
@@ -94,9 +98,9 @@ class MockUdpSocket : public UdpSocket {
   std::queue<Error> set_dscp_errors_;
 
   // Fake implementations to be set by CreateDefault().
-  std::unique_ptr<FakeTaskRunner> task_runner_;
-  std::unique_ptr<MockUdpSocket::MockClient> client_;
-  std::unique_ptr<FakeClock> clock_;
+  std::unique_ptr<FakeTaskRunner> fake_task_runner_;
+  std::unique_ptr<MockUdpSocket::MockClient> fake_client_;
+  std::unique_ptr<FakeClock> fake_clock_;
 };
 
 }  // namespace platform

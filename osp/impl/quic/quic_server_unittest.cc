@@ -15,7 +15,7 @@
 #include "osp/public/testing/message_demuxer_test_support.h"
 #include "platform/base/error.h"
 #include "platform/test/fake_clock.h"
-#include "platform/test/fake_network_runner.h"
+#include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
 namespace {
@@ -48,8 +48,11 @@ class MockConnectionObserver final : public ProtocolConnection::Observer {
 class QuicServerTest : public Test {
  public:
   QuicServerTest() {
-    network_runner_ = std::make_unique<platform::FakeNetworkRunner>();
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(network_runner_.get(),
+    fake_clock_ = std::make_unique<platform::FakeClock>(
+        platform::Clock::time_point(std::chrono::milliseconds(1298424)));
+    task_runner_ =
+        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
                                                     platform::FakeClock::now);
   }
 
@@ -120,9 +123,8 @@ class QuicServerTest : public Test {
     EXPECT_EQ(received_message.message.str, message.message.str);
   }
 
-  std::unique_ptr<platform::FakeNetworkRunner> network_runner_;
-  platform::FakeClock fake_clock_{
-      platform::Clock::time_point(std::chrono::milliseconds(1298424))};
+  std::unique_ptr<platform::FakeClock> fake_clock_;
+  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
   QuicServer* server_;
 };

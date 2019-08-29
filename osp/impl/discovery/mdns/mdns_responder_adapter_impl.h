@@ -34,8 +34,11 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
                           platform::UdpSocket* socket) override;
   Error DeregisterInterface(platform::UdpSocket* socket) override;
 
-  void OnRead(platform::UdpPacket packet,
-              platform::NetworkRunner* network_runner) override;
+  void OnRead(platform::UdpSocket* socket,
+              ErrorOr<platform::UdpPacket> packet) override;
+  void OnSendError(platform::UdpSocket* socket, Error error) override;
+  void OnError(platform::UdpSocket* socket, Error error) override;
+
   absl::optional<platform::Clock::duration> RunTasks() override;
 
   std::vector<PtrEvent> TakePtrResponses() override;

@@ -21,12 +21,8 @@ class QuicTaskRunner;
 
 class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
  public:
-  QuicConnectionFactoryImpl(platform::NetworkRunner* network_runner);
+  QuicConnectionFactoryImpl(platform::TaskRunner* task_runner);
   ~QuicConnectionFactoryImpl() override;
-
-  // UdpReadCallback overrides.
-  void OnRead(platform::UdpPacket data,
-              platform::NetworkRunner* network_runner) override;
 
   // UdpSocket::Client overrides.
   void OnError(platform::UdpSocket* socket, Error error) override;
@@ -45,7 +41,7 @@ class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
 
  private:
   ::base::AtExitManager exit_manager_;
-  scoped_refptr<QuicTaskRunner> task_runner_;
+  scoped_refptr<QuicTaskRunner> quic_task_runner_;
   std::unique_ptr<::net::QuicChromiumAlarmFactory> alarm_factory_;
   std::unique_ptr<::quic::QuartcFactory> quartc_factory_;
 
@@ -59,11 +55,10 @@ class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
   };
   std::map<IPEndpoint, OpenConnection, IPEndpointComparator> connections_;
 
-  // Network runner to use for network operations.
   // NOTE: Must be provided in constructor and stored as an instance variable
   // rather than using the static accessor method to allow for UTs to mock this
   // layer.
-  platform::NetworkRunner* const network_runner_;
+  platform::TaskRunner* const task_runner_;
 };
 
 }  // namespace openscreen

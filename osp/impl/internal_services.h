@@ -24,7 +24,7 @@
 
 namespace openscreen {
 namespace platform {
-class NetworkRunner;
+class TaskRunner;
 }  // namespace platform
 
 // Factory for ServiceListener and ServicePublisher instances; owns internal
@@ -37,11 +37,11 @@ class InternalServices : platform::UdpSocket::Client {
   static std::unique_ptr<ServiceListener> CreateListener(
       const MdnsServiceListenerConfig& config,
       ServiceListener::Observer* observer,
-      platform::NetworkRunner* network_runner);
+      platform::TaskRunner* task_runner);
   static std::unique_ptr<ServicePublisher> CreatePublisher(
       const ServicePublisher::Config& config,
       ServicePublisher::Observer* observer,
-      platform::NetworkRunner* network_runner);
+      platform::TaskRunner* task_runner);
 
   // UdpSocket::Client overrides.
   void OnError(platform::UdpSocket* socket, Error error) override;
@@ -65,22 +65,21 @@ class InternalServices : platform::UdpSocket::Client {
     std::vector<platform::UdpSocketUniquePtr> open_sockets_;
   };
 
-  // Creates a new InsternalServices instance using the provided NetworkRunner.
-  // The NetworkRunner should live for the duration of this InternalService
-  // object's lifetime.
-  explicit InternalServices(platform::NetworkRunner* network_runner);
+  // The TaskRunner provided here should live for the duration of this
+  // InternalService object's lifetime.
+  explicit InternalServices(platform::TaskRunner* task_runner);
   ~InternalServices() override;
 
   void RegisterMdnsSocket(platform::UdpSocket* socket);
   void DeregisterMdnsSocket(platform::UdpSocket* socket);
 
   static InternalServices* ReferenceSingleton(
-      platform::NetworkRunner* network_runner);
+      platform::TaskRunner* task_runner);
   static void DereferenceSingleton(void* instance);
 
   MdnsResponderService mdns_service_;
 
-  platform::NetworkRunner* const network_runner_;
+  platform::TaskRunner* const task_runner_;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(InternalServices);
 };

@@ -30,7 +30,7 @@ std::string ServiceIdFromServiceInstanceName(
 }  // namespace
 
 MdnsResponderService::MdnsResponderService(
-    platform::NetworkRunner* network_runner,
+    platform::TaskRunner* task_runner,
     const std::string& service_name,
     const std::string& service_protocol,
     std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory,
@@ -38,7 +38,7 @@ MdnsResponderService::MdnsResponderService(
     : service_type_{{service_name, service_protocol}},
       mdns_responder_factory_(std::move(mdns_responder_factory)),
       platform_(std::move(platform)),
-      network_runner_(network_runner) {}
+      task_runner_(task_runner) {}
 
 MdnsResponderService::~MdnsResponderService() = default;
 
@@ -58,61 +58,69 @@ void MdnsResponderService::SetServiceConfig(
   service_txt_data_ = txt_data;
 }
 
-void MdnsResponderService::OnRead(platform::UdpPacket packet,
-                                  platform::NetworkRunner* network_runner) {
+void MdnsResponderService::OnRead(platform::UdpSocket* socket,
+                                  ErrorOr<platform::UdpPacket> packet) {
   TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderService::OnRead");
   if (!mdns_responder_) {
     return;
   }
 
-  mdns_responder_->OnRead(std::move(packet), network_runner);
+  mdns_responder_->OnRead(socket, std::move(packet));
   HandleMdnsEvents();
 }
 
+void MdnsResponderService::OnSendError(platform::UdpSocket* socket,
+                                       Error error) {
+  mdns_responder_->OnSendError(socket, std::move(error));
+}
+
+void MdnsResponderService::OnError(platform::UdpSocket* socket, Error error) {
+  mdns_responder_->OnError(socket, std::move(error));
+}
+
 void MdnsResponderService::StartListener() {
-  network_runner_->PostTask([this]() { this->StartListenerInternal(); });
+  task_runner_->PostTask([this]() { this->StartListenerInternal(); });
 }
 
 void MdnsResponderService::StartAndSuspendListener() {
-  network_runner_->PostTask(
-      [this]() { this->StartAndSuspendListenerInternal(); });
+  task_runner_->PostTask([this]() { this->StartAndSuspendListenerInternal(); });
 }
 
 void MdnsResponderService::StopListener() {
-  network_runner_->PostTask([this]() { this->StopListenerInternal(); });
+  task_runner_->PostTask([this]() { this->StopListenerInternal(); });
 }
 
 void MdnsResponderService::SuspendListener() {
-  network_runner_->PostTask([this]() { this->SuspendListenerInternal(); });
+  task_runner_->PostTask([this]() { this->SuspendListenerInternal(); });
 }
 
 void MdnsResponderService::ResumeListener() {
-  network_runner_->PostTask([this]() { this->ResumeListenerInternal(); });
+  task_runner_->PostTask([this]() { this->ResumeListenerInternal(); });
 }
 
 void MdnsResponderService::SearchNow(ServiceListener::State from) {
-  network_runner_->PostTask([this, from]() { this->SearchNowInternal(from); });
+  task_runner_->PostTask([this, from]() { this->SearchNowInternal(from); });
 }
 
 void MdnsResponderService::StartPublisher() {
-  network_runner_->PostTask([this]() { this->StartPublisherInternal(); });
+  task_runner_->PostTask([this]() { this->StartPublisherInternal(); });
 }
 
 void MdnsResponderService::StartAndSuspendPublisher() {
-  network_runner_->PostTask(
+  task_runner_->PostTask(
       [this]() { this->StartAndSuspendPublisherInternal(); });
 }
 
 void MdnsResponderService::StopPublisher() {
-  network_runner_->PostTask([this]() { this->StopPublisherInternal(); });
+  task_runner_->PostTask([this]() { this->StopPublisherInternal(); });
 }
 
 void MdnsResponderService::SuspendPublisher() {
-  network_runner_->PostTask([this]() { this->SuspendPublisherInternal(); });
+  task_runner_->PostTask([this]() { this->SuspendPublisherInternal(); });
 }
 
 void MdnsResponderService::ResumePublisher() {
-  network_runner_->PostTask([this]() { this->ResumePublisherInternal(); });
+  task_runner_->PostTask([this]() { this->ResumePublisherInternal(); });
 }
 
 void MdnsResponderService::StartListenerInternal() {
@@ -126,7 +134,7 @@ void MdnsResponderService::StartListenerInternal() {
   // Then it can be more effectively cancelled when the state changes away from
   // 'running'.
   platform::RepeatingFunction::Post(
-      network_runner_,
+      task_runner_,
       std::bind(&mdns::MdnsResponderAdapter::RunTasks, mdns_responder_.get()));
 }
 
@@ -167,7 +175,7 @@ void MdnsResponderService::StartPublisherInternal() {
   StartService();
   ServicePublisherImpl::Delegate::SetState(ServicePublisher::State::kRunning);
   platform::RepeatingFunction::Post(
-      network_runner_,
+      task_runner_,
       std::bind(&mdns::MdnsResponderAdapter::RunTasks, mdns_responder_.get()));
 }
 

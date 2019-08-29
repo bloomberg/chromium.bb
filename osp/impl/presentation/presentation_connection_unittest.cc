@@ -16,7 +16,7 @@
 #include "osp/public/network_service_manager.h"
 #include "osp/public/presentation/presentation_controller.h"
 #include "platform/test/fake_clock.h"
-#include "platform/test/fake_network_runner.h"
+#include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
 namespace presentation {
@@ -58,8 +58,11 @@ class MockConnectRequest final
 class ConnectionTest : public ::testing::Test {
  public:
   ConnectionTest() {
-    network_runner_ = std::make_unique<platform::FakeNetworkRunner>();
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(network_runner_.get(),
+    fake_clock_ = std::make_unique<platform::FakeClock>(
+        platform::Clock::time_point(std::chrono::milliseconds(1298424)));
+    task_runner_ =
+        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
                                                     platform::FakeClock::now);
     controller_connection_manager_ = std::make_unique<ConnectionManager>(
         quic_bridge_->controller_demuxer.get());
@@ -86,9 +89,8 @@ class ConnectionTest : public ::testing::Test {
     return response;
   }
 
-  std::unique_ptr<platform::FakeNetworkRunner> network_runner_;
-  platform::FakeClock fake_clock_{
-      platform::Clock::time_point(std::chrono::milliseconds(1298424))};
+  std::unique_ptr<platform::FakeClock> fake_clock_;
+  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
   std::unique_ptr<ConnectionManager> controller_connection_manager_;
   std::unique_ptr<ConnectionManager> receiver_connection_manager_;
@@ -139,8 +141,6 @@ TEST_F(ConnectionTest, ConnectAndSend) {
   EXPECT_EQ(Connection::State::kConnecting, controller.state());
   EXPECT_EQ(Connection::State::kConnecting, receiver.state());
 
-  std::cout << "1\n";
-  std::cout.flush();
   MockConnectRequest mock_connect_request;
   std::unique_ptr<ProtocolConnection> controller_stream;
   std::unique_ptr<ProtocolConnection> receiver_stream;
@@ -152,8 +152,6 @@ TEST_F(ConnectionTest, ConnectAndSend) {
         controller_stream.reset(stream);
       }));
 
-  std::cout << "2\n";
-  std::cout.flush();
   EXPECT_CALL(quic_bridge_->mock_server_observer, OnIncomingConnectionMock(_))
       .WillOnce(testing::WithArgs<0>(testing::Invoke(
           [&receiver_stream](std::unique_ptr<ProtocolConnection>& connection) {

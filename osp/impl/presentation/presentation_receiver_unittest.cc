@@ -17,7 +17,7 @@
 #include "osp/public/protocol_connection_server.h"
 #include "osp/public/testing/message_demuxer_test_support.h"
 #include "platform/test/fake_clock.h"
-#include "platform/test/fake_network_runner.h"
+#include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
 namespace presentation {
@@ -69,8 +69,11 @@ class MockReceiverDelegate final : public ReceiverDelegate {
 class PresentationReceiverTest : public ::testing::Test {
  public:
   PresentationReceiverTest() {
-    network_runner_ = std::make_unique<platform::FakeNetworkRunner>();
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(network_runner_.get(),
+    fake_clock_ = std::make_unique<platform::FakeClock>(
+        platform::Clock::time_point(std::chrono::milliseconds(1298424)));
+    task_runner_ =
+        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
                                                     platform::FakeClock::now);
   }
 
@@ -100,10 +103,9 @@ class PresentationReceiverTest : public ::testing::Test {
     NetworkServiceManager::Dispose();
   }
 
-  std::unique_ptr<platform::FakeNetworkRunner> network_runner_;
+  std::unique_ptr<platform::FakeClock> fake_clock_;
+  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
   const std::string url1_{"https://www.example.com/receiver.html"};
-  platform::FakeClock fake_clock_{
-      platform::Clock::time_point(std::chrono::milliseconds(1298424))};
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
   MockReceiverDelegate mock_receiver_delegate_;
 };

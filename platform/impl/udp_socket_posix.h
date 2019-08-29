@@ -22,12 +22,9 @@ struct UdpSocketPosix : public UdpSocket {
 
   ~UdpSocketPosix() override;
 
-  // Performs a non-blocking read on the socket, returning the number of bytes
-  // received. Note that a non-Error return value of 0 is a valid result,
-  // indicating an empty message has been received. Also note that
-  // Error::Code::kAgain might be returned if there is no message currently
-  // ready for receive, which can be expected during normal operation.
-  virtual ErrorOr<UdpPacket> ReceiveMessage();
+  // Performs a non-blocking read on the socket and then process the read packet
+  // using this socket's Client.
+  virtual void ReceiveMessage();
 
   // Implementations of UdpSocket methods.
   bool IsIPv4() const override;

@@ -59,8 +59,8 @@ int g_instance_ref_count = 0;
 std::unique_ptr<ServiceListener> InternalServices::CreateListener(
     const MdnsServiceListenerConfig& config,
     ServiceListener::Observer* observer,
-    platform::NetworkRunner* network_runner) {
-  auto* services = ReferenceSingleton(network_runner);
+    platform::TaskRunner* task_runner) {
+  auto* services = ReferenceSingleton(task_runner);
   auto listener =
       std::make_unique<ServiceListenerImpl>(&services->mdns_service_);
   listener->AddObserver(observer);
@@ -73,8 +73,8 @@ std::unique_ptr<ServiceListener> InternalServices::CreateListener(
 std::unique_ptr<ServicePublisher> InternalServices::CreatePublisher(
     const ServicePublisher::Config& config,
     ServicePublisher::Observer* observer,
-    platform::NetworkRunner* network_runner) {
-  auto* services = ReferenceSingleton(network_runner);
+    platform::TaskRunner* task_runner) {
+  auto* services = ReferenceSingleton(task_runner);
   services->mdns_service_.SetServiceConfig(
       config.hostname, config.service_instance_name,
       config.connection_server_port, config.network_interface_indices,
@@ -131,7 +131,7 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
     const platform::IPSubnet& primary_subnet = addr.addresses.front();
 
     auto create_result =
-        platform::UdpSocket::Create(parent_->network_runner_, parent_,
+        platform::UdpSocket::Create(parent_->task_runner_, parent_,
                                     IPEndpoint{{}, kMulticastListeningPort});
     if (!create_result) {
       OSP_LOG_ERROR << "failed to create socket for interface " << index << ": "
@@ -167,31 +167,33 @@ void InternalServices::InternalPlatformLinkage::DeregisterInterfaces(
   }
 }
 
-InternalServices::InternalServices(platform::NetworkRunner* network_runner)
-    : mdns_service_(network_runner,
+InternalServices::InternalServices(platform::TaskRunner* task_runner)
+    : mdns_service_(task_runner,
                     kServiceName,
                     kServiceProtocol,
                     std::make_unique<MdnsResponderAdapterImplFactory>(),
                     std::make_unique<InternalPlatformLinkage>(this)),
-      network_runner_(network_runner) {}
+      task_runner_(task_runner) {}
 
 InternalServices::~InternalServices() = default;
 
 void InternalServices::RegisterMdnsSocket(platform::UdpSocket* socket) {
   OSP_CHECK(g_instance) << "No listener or publisher is alive.";
-  network_runner_->ReadRepeatedly(socket, &g_instance->mdns_service_);
+  // TODO(rwkeane): Hook this up to the new mDNS library once we swap out the
+  // mDNSResponder.
 }
 
 void InternalServices::DeregisterMdnsSocket(platform::UdpSocket* socket) {
-  network_runner_->CancelRead(socket);
+  // TODO(rwkeane): Hook this up to the new mDNS library once we swap out the
+  // mDNSResponder.
 }
 
 // static
 InternalServices* InternalServices::ReferenceSingleton(
-    platform::NetworkRunner* network_runner) {
+    platform::TaskRunner* task_runner) {
   if (!g_instance) {
     OSP_CHECK_EQ(g_instance_ref_count, 0);
-    g_instance = new InternalServices(network_runner);
+    g_instance = new InternalServices(task_runner);
   }
   ++g_instance_ref_count;
   return g_instance;
@@ -214,12 +216,13 @@ void InternalServices::OnError(platform::UdpSocket* socket, Error error) {
 }
 
 void InternalServices::OnSendError(platform::UdpSocket* socket, Error error) {
+  // TODO(issue/67): Implement this method.
   OSP_UNIMPLEMENTED();
 }
 
 void InternalServices::OnRead(platform::UdpSocket* socket,
                               ErrorOr<platform::UdpPacket> packet) {
-  OSP_UNIMPLEMENTED();
+  g_instance->mdns_service_.OnRead(socket, std::move(packet));
 }
 
 }  // namespace openscreen

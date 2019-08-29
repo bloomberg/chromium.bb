@@ -18,9 +18,8 @@
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/ip_address.h"
-#include "platform/impl/network_runner.h"
+#include "platform/impl/task_runner.h"
 #include "platform/test/fake_clock.h"
-#include "platform/test/fake_network_runner.h"
 #include "platform/test/mock_udp_socket.h"
 
 namespace openscreen {
@@ -56,7 +55,7 @@ class MockServerObserver : public ProtocolConnectionServer::Observer {
 
 class FakeQuicBridge {
  public:
-  FakeQuicBridge(platform::FakeNetworkRunner* network_runner,
+  FakeQuicBridge(platform::FakeTaskRunner* task_runner,
                  platform::ClockNowFunctionPtr now_function);
   ~FakeQuicBridge();
 
@@ -79,7 +78,7 @@ class FakeQuicBridge {
   void PostPacketsUntilIdle();
   FakeClientQuicConnectionFactory* GetClientFactory();
   FakeServerQuicConnectionFactory* GetServerFactory();
-  platform::FakeNetworkRunner* network_runner_;
+  platform::FakeTaskRunner* task_runner_;
 
   std::unique_ptr<platform::MockUdpSocket> client_socket_;
   std::unique_ptr<platform::MockUdpSocket> server_socket_;

@@ -107,7 +107,7 @@ TEST_F(MdnsSenderTest, SendMulticastIPv4) {
       MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
-  EXPECT_CALL(*socket_info->client(), OnSendError(_, _)).Times(0);
+  EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
   EXPECT_EQ(sender.SendMulticast(query_message_), Error::Code::kNone);
   EXPECT_EQ(socket_info->send_queue_size(), size_t{0});
 }
@@ -117,7 +117,7 @@ TEST_F(MdnsSenderTest, SendMulticastIPv6) {
       MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
-  EXPECT_CALL(*socket_info->client(), OnSendError(_, _)).Times(0);
+  EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
   EXPECT_EQ(sender.SendMulticast(query_message_), Error::Code::kNone);
   EXPECT_EQ(socket_info->send_queue_size(), size_t{0});
 }
@@ -129,7 +129,7 @@ TEST_F(MdnsSenderTest, SendUnicastIPv4) {
       MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
-  EXPECT_CALL(*socket_info->client(), OnSendError(_, _)).Times(0);
+  EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
   EXPECT_EQ(sender.SendUnicast(response_message_, endpoint),
             Error::Code::kNone);
   EXPECT_EQ(socket_info->send_queue_size(), size_t{0});
@@ -146,7 +146,7 @@ TEST_F(MdnsSenderTest, SendUnicastIPv6) {
       MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
-  EXPECT_CALL(*socket_info->client(), OnSendError(_, _)).Times(0);
+  EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
   EXPECT_EQ(sender.SendUnicast(response_message_, endpoint),
             Error::Code::kNone);
   EXPECT_EQ(socket_info->send_queue_size(), size_t{0});
@@ -162,7 +162,7 @@ TEST_F(MdnsSenderTest, MessageTooBig) {
       MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
-  EXPECT_CALL(*socket_info->client(), OnSendError(_, _)).Times(0);
+  EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
   EXPECT_EQ(sender.SendMulticast(big_message_),
             Error::Code::kInsufficientBuffer);
   EXPECT_EQ(socket_info->send_queue_size(), size_t{1});
@@ -174,7 +174,7 @@ TEST_F(MdnsSenderTest, ReturnsErrorOnSocketFailure) {
   MdnsSender sender(socket_info.get());
   Error error = Error(Error::Code::kConnectionFailed, "error message");
   socket_info->EnqueueSendResult(error);
-  EXPECT_CALL(*socket_info->client(), OnSendError(_, error)).Times(1);
+  EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, error)).Times(1);
   EXPECT_EQ(sender.SendMulticast(query_message_), Error::Code::kNone);
   EXPECT_EQ(socket_info->send_queue_size(), size_t{0});
 }

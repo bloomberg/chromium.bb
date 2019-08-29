@@ -12,7 +12,7 @@
 #include <mutex>
 
 #include "platform/api/network_interface.h"
-#include "platform/api/udp_read_callback.h"
+#include "platform/api/udp_packet.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "platform/base/macros.h"
@@ -146,7 +146,8 @@ class UdpSocket {
 
   // Methods to take care of posting UdpSocket::Client callbacks for client_ to
   // task_runner_.
-  // NOTE: OnError(...) will close the socket in addition toreturning the error.
+  // NOTE: OnError(...) will close the socket in addition to returning the
+  // error.
   void OnError(Error error);
   void OnSendError(Error error);
   void OnRead(ErrorOr<UdpPacket> read_data);

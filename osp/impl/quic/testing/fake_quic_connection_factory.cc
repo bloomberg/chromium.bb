@@ -160,13 +160,6 @@ void FakeClientQuicConnectionFactory::SetServerDelegate(
   OSP_DCHECK(false) << "don't call SetServerDelegate from QuicClient side";
 }
 
-void FakeClientQuicConnectionFactory::OnRead(
-    platform::UdpPacket data,
-    platform::NetworkRunner* network_runner) {
-  bridge_->RunTasks(true);
-  idle_ = bridge_->client_idle();
-}
-
 std::unique_ptr<QuicConnection> FakeClientQuicConnectionFactory::Connect(
     const IPEndpoint& endpoint,
     QuicConnection::Delegate* connection_delegate) {
@@ -186,7 +179,8 @@ void FakeClientQuicConnectionFactory::OnSendError(platform::UdpSocket* socket,
 void FakeClientQuicConnectionFactory::OnRead(
     platform::UdpSocket* socket,
     ErrorOr<platform::UdpPacket> packet) {
-  OSP_UNIMPLEMENTED();
+  bridge_->RunTasks(true);
+  idle_ = bridge_->client_idle();
 }
 
 FakeServerQuicConnectionFactory::FakeServerQuicConnectionFactory(
@@ -203,13 +197,6 @@ void FakeServerQuicConnectionFactory::SetServerDelegate(
   }
   bridge_->SetServerDelegate(delegate,
                              endpoints.empty() ? IPEndpoint{} : endpoints[0]);
-}
-
-void FakeServerQuicConnectionFactory::OnRead(
-    platform::UdpPacket data,
-    platform::NetworkRunner* network_runner) {
-  bridge_->RunTasks(false);
-  idle_ = bridge_->server_idle();
 }
 
 std::unique_ptr<QuicConnection> FakeServerQuicConnectionFactory::Connect(
@@ -232,7 +219,8 @@ void FakeServerQuicConnectionFactory::OnSendError(platform::UdpSocket* socket,
 void FakeServerQuicConnectionFactory::OnRead(
     platform::UdpSocket* socket,
     ErrorOr<platform::UdpPacket> packet) {
-  OSP_UNIMPLEMENTED();
+  bridge_->RunTasks(false);
+  idle_ = bridge_->server_idle();
 }
 
 }  // namespace openscreen

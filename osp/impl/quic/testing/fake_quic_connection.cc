@@ -60,9 +60,17 @@ std::unique_ptr<FakeQuicStream> FakeQuicConnection::MakeIncomingStream() {
   return result;
 }
 
-void FakeQuicConnection::OnRead(platform::UdpPacket data,
-                                platform::NetworkRunner* network_runner) {
-  OSP_DCHECK(false) << "data should go directly to fake streams";
+void FakeQuicConnection::OnRead(platform::UdpSocket* socket,
+                                ErrorOr<platform::UdpPacket> data) {
+  OSP_NOTREACHED() << "data should go directly to fake streams";
+}
+
+void FakeQuicConnection::OnSendError(platform::UdpSocket* socket, Error error) {
+  OSP_NOTREACHED() << "data should go directly to fake streams";
+}
+
+void FakeQuicConnection::OnError(platform::UdpSocket* socket, Error error) {
+  OSP_NOTREACHED() << "data should go directly to fake streams";
 }
 
 std::unique_ptr<QuicStream> FakeQuicConnection::MakeOutgoingStream(
