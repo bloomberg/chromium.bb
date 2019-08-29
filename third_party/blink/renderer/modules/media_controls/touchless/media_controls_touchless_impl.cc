@@ -244,10 +244,10 @@ void MediaControlsTouchlessImpl::OnKeyDown(KeyboardEvent* event) {
 void MediaControlsTouchlessImpl::EnsureMediaControlsMenuHost() {
   if (!media_controls_host_) {
     GetDocument().GetFrame()->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&media_controls_host_,
-                          GetExecutionContext()->GetTaskRunner(
-                              blink::TaskType::kMediaElementEvent)));
-    media_controls_host_.set_connection_error_handler(WTF::Bind(
+        media_controls_host_.BindNewPipeAndPassReceiver(
+            GetExecutionContext()->GetTaskRunner(
+                blink::TaskType::kMediaElementEvent)));
+    media_controls_host_.set_disconnect_handler(WTF::Bind(
         &MediaControlsTouchlessImpl::OnMediaControlsMenuHostConnectionError,
         WrapWeakPersistent(this)));
   }
@@ -530,8 +530,8 @@ void MediaControlsTouchlessImpl::Trace(blink::Visitor* visitor) {
 }
 
 void MediaControlsTouchlessImpl::SetMediaControlsMenuHostForTesting(
-    mojom::blink::MediaControlsMenuHostPtr menu_host) {
-  media_controls_host_ = std::move(menu_host);
+    mojo::PendingRemote<mojom::blink::MediaControlsMenuHost> menu_host) {
+  media_controls_host_.Bind(std::move(menu_host));
 }
 
 void MediaControlsTouchlessImpl::MenuHostFlushForTesting() {
