@@ -2331,11 +2331,6 @@ NavigationRequest::AboutSrcDocCheckResult NavigationRequest::CheckAboutSrcDoc()
   if (frame_tree_node_->IsMainFrame())
     return AboutSrcDocCheckResult::BLOCK_REQUEST;
 
-  // Navigations to about:srcdoc?foo or about:srcdoc#foo are never caused by
-  // using the iframe srcdoc attribute. Only about:srcdoc is expected.
-  if (common_params_.url != GURL(url::kAboutSrcdocURL))
-    return AboutSrcDocCheckResult::BLOCK_REQUEST;
-
   // TODO(arthursonzogni): Disallow navigations to about:srcdoc initiated from a
   // different frame or from a different window.
 

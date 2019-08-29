@@ -4818,15 +4818,15 @@ void RenderFrameHostImpl::CommitNavigation(
     }
   }
 
-  // Main frame navigation to about:srcdoc and navigation to about:srcdoc?foo or
-  // about:srcdoc#foo are expected to be blocked.
-  //
-  // TODO(arthursonzogni): Replace DumpWithoutCrashing by a CHECK on M79 if it
-  // is never reached.
   bool is_srcdoc = common_params.url.IsAboutSrcdoc();
   if (is_srcdoc) {
-    if (frame_tree_node_->IsMainFrame() ||
-        common_params.url != GURL(url::kAboutSrcdocURL)) {
+    if (frame_tree_node_->IsMainFrame()) {
+      // Main frame srcdoc navigation are meaningless. They are blocked whenever
+      // a navigation attempt is made.
+      //
+      // TODO(arthursonzogni): Replace DumpWithoutCrashing by a CHECK on M79 if
+      // it is never reached.
+      NOTREACHED();
       base::debug::DumpWithoutCrashing();
     }
   }

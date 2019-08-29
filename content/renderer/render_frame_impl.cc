@@ -3466,7 +3466,7 @@ void RenderFrameImpl::CommitNavigationInternal(
   // Sanity check that the browser always sends us new loader factories on
   // cross-document navigations with the Network Service enabled.
   DCHECK(common_params.url.SchemeIs(url::kJavaScriptScheme) ||
-         common_params.url == GURL(url::kAboutSrcdocURL) ||
+         common_params.url.IsAboutSrcdoc() ||
          !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          subresource_loader_factories);
 
@@ -3620,7 +3620,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
       // is more conservative and feels more cautious for now.
       // TODO(arthursonzogni): Something similar needs to be done for
       // about:blank.
-      common_params.url == url::kAboutSrcdocURL;
+      common_params.url.IsAboutSrcdoc();
 
   if (inherit_loaders_from_creator) {
     // The browser process didn't provide any way to fetch subresources, it
