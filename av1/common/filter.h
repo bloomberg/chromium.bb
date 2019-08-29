@@ -263,7 +263,7 @@ static INLINE const InterpFilterParams *av1_get_filter(int subpel_search) {
 
 static INLINE void reset_interp_filter_allowed_mask(
     uint16_t *allow_interp_mask, DUAL_FILTER_TYPE filt_type) {
-  uint16_t tmp = ~(1 << filt_type);
+  uint16_t tmp = (~(1 << filt_type)) & 0xffff;
   *allow_interp_mask &= (tmp & ALLOW_ALL_INTERP_FILT_MASK);
 }
 
