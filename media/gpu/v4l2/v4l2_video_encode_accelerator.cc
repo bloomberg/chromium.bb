@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -33,6 +34,7 @@
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
 #include "media/gpu/image_processor_factory.h"
 #include "media/gpu/macros.h"
+#include "media/video/h264_level_limits.h"
 #include "media/video/h264_parser.h"
 
 #define NOTIFY_ERROR(x)                      \
@@ -1498,13 +1500,42 @@ bool V4L2VideoEncodeAccelerator::InitControls(const Config& config) {
     ctrls.push_back(ctrl);
 
     // Set H.264 output level from config. Use Level 4.0 as fallback default.
-    int32_t level_value = V4L2Device::H264LevelIdcToV4L2H264Level(
-        config.h264_output_level.value_or(
-            VideoEncodeAccelerator::kDefaultH264Level));
-    if (level_value < 0) {
-      NOTIFY_ERROR(kInvalidArgumentError);
-      return false;
+    uint8_t h264_level =
+        config.h264_output_level.value_or(H264SPS::kLevelIDC4p0);
+    constexpr size_t kH264MacroblockSizeInPixels = 16;
+    const uint32_t framerate = config.initial_framerate.value_or(
+        VideoEncodeAccelerator::kDefaultFramerate);
+    const uint32_t mb_width =
+        base::bits::Align(config.input_visible_size.width(),
+                          kH264MacroblockSizeInPixels) /
+        kH264MacroblockSizeInPixels;
+    const uint32_t mb_height =
+        base::bits::Align(config.input_visible_size.height(),
+                          kH264MacroblockSizeInPixels) /
+        kH264MacroblockSizeInPixels;
+    const uint32_t framesize_in_mbs = mb_width * mb_height;
+
+    // Check whether the h264 level is valid.
+    if (!CheckH264LevelLimits(config.output_profile, h264_level,
+                              config.initial_bitrate, framerate,
+                              framesize_in_mbs)) {
+      base::Optional<uint8_t> valid_level =
+          FindValidH264Level(config.output_profile, config.initial_bitrate,
+                             framerate, framesize_in_mbs);
+      if (!valid_level) {
+        VLOGF(1) << "Could not find a valid h264 level for"
+                 << " profile=" << config.output_profile
+                 << " bitrate=" << config.initial_bitrate
+                 << " framerate=" << framerate
+                 << " size=" << config.input_visible_size.ToString();
+        NOTIFY_ERROR(kInvalidArgumentError);
+        return false;
+      }
+
+      h264_level = *valid_level;
     }
+
+    int32_t level_value = V4L2Device::H264LevelIdcToV4L2H264Level(h264_level);
     memset(&ctrl, 0, sizeof(ctrl));
     ctrl.id = V4L2_CID_MPEG_VIDEO_H264_LEVEL;
     ctrl.value = level_value;
