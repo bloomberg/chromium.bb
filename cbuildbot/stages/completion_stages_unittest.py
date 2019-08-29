@@ -213,7 +213,8 @@ class MasterSlaveSyncCompletionStageTest(
     self._Prepare()
     self.buildstore = FakeBuildStore()
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(MasterSlaveSyncCompletionStageTest, self)._Prepare(bot_id, **kwargs)
     self._run.config['manifest_version'] = True
 
@@ -536,6 +537,8 @@ class CanaryCompletionStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests how canary master handles failures in CanaryCompletionStage."""
   BOT_ID = 'master-release'
 
+  # We duplicate __init__ to specify a default for bot_id.
+  # pylint: disable=arguments-differ
   def _Prepare(self, bot_id=BOT_ID, **kwargs):
     super(CanaryCompletionStageTest, self)._Prepare(bot_id, **kwargs)
 
@@ -675,9 +678,12 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
   """Tests how CQ master handles changes in CommitQueueCompletionStage."""
   BOT_ID = 'master-paladin'
 
+  # Our API here is not great when it comes to kwargs passing.
+  # pylint: disable=arguments-differ
   def _Prepare(self, bot_id=BOT_ID, **kwargs):
     super(MasterCommitQueueCompletionStageTest, self)._Prepare(bot_id, **kwargs)
     self.assertTrue(self._run.config['master'])
+  # pylint: enable=arguments-differ
 
   def tearDown(self):
     cidb.CIDBConnectionFactory.ClearMock()

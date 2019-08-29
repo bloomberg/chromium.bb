@@ -144,7 +144,8 @@ class WorkspaceStageBaseTest(WorkspaceStageBase):
 class SyncStageTest(WorkspaceStageBase):
   """Test the SyncStage."""
 
-  def ConstructStage(self, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def ConstructStage(self, **kwargs):  # pylint: disable=arguments-differ
     return workspace_stages.SyncStage(
         self._run, self.buildstore, **kwargs)
 

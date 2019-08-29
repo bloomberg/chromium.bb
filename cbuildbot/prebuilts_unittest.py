@@ -147,7 +147,8 @@ class BinhostConfWriterTest(
   RELEASE_TAG = '1234.5.6'
   VERSION = 'R%s-%s' % (DEFAULT_CHROME_BRANCH, RELEASE_TAG)
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(BinhostConfWriterTest, self)._Prepare(bot_id, **kwargs)
     self.cmd = os.path.join(self.build_root, constants.CHROMITE_BIN_SUBDIR,
                             'upload_prebuilts')

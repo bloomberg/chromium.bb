@@ -143,7 +143,8 @@ class ManifestVersionedSyncStageTest(
 
     self._Prepare()
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(ManifestVersionedSyncStageTest, self)._Prepare(bot_id, **kwargs)
 
     self._run.config['manifest_version'] = self.manifest_version_url
@@ -362,7 +363,8 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
   def tearDown(self):
     cidb.CIDBConnectionFactory.ClearMock()
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(BaseCQTestCase, self)._Prepare(bot_id, **kwargs)
     self._run.config.overlays = constants.PUBLIC_OVERLAYS
     self.sync_stage = sync_stages.CommitQueueSyncStage(self._run,
@@ -1638,7 +1640,8 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
 
     self._Prepare()
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(MasterSlaveLKGMSyncTest, self)._Prepare(bot_id, **kwargs)
 
     self._run.config['manifest_version'] = self.manifest_version_url

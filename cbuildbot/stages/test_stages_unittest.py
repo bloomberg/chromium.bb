@@ -146,6 +146,8 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare()
     self.buildstore = FakeBuildStore()
 
+  # Our API here is not great when it comes to kwargs passing.
+  # pylint: disable=arguments-differ
   def _Prepare(self, bot_id=None, version=None, warn_only=False, **kwargs):
     super(HWTestStageTest, self)._Prepare(bot_id, **kwargs)
 
@@ -154,6 +156,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.suite_config = self.GetHWTestSuite()
     self.suite_config.warn_only = warn_only
     self.suite = self.suite_config.suite
+  # pylint: enable=arguments-differ
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
@@ -425,7 +428,8 @@ class ImageTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare()
     self.buildstore = FakeBuildStore()
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(ImageTestStageTest, self)._Prepare(bot_id, **kwargs)
     self._run.GetArchive().SetupArchivePath()
 

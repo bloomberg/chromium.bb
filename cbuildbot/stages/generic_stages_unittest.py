@@ -251,7 +251,7 @@ class AbstractStageTestCase(StageTestCase):
     # it's state afterwards.
     self.stage = None
 
-  def ConstructStage(self, **kwargs):
+  def ConstructStage(self):
     """Returns an instance of the stage to be tested.
 
     Note: Must be implemented in subclasses.
@@ -835,11 +835,6 @@ class RunCommandAbstractStageTestCase(
 
   def _PrepareBin(self, **kwargs):
     self._Prepare(self.BIN_BOT_ID, **kwargs)
-
-  def _Run(self, dir_exists):
-    """Helper for running the build."""
-    with patch(os.path, 'isdir', return_value=dir_exists):
-      self.RunStage()
 
 
 class ArchivingStageMixinMock(partial_mock.PartialMock):

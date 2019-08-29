@@ -42,7 +42,24 @@ from chromite.cbuildbot.stages.generic_stages_unittest import patches
 # pylint: disable=protected-access
 
 
-class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
+class _RunAbstractStageTestCase(
+    generic_stages_unittest.RunCommandAbstractStageTestCase):
+  """Helper with a RunStage wrapper."""
+
+  def _Run(self, dir_exists):
+    """Helper for running the build."""
+    with patch(os.path, 'isdir', return_value=dir_exists):
+      self.RunStage()
+
+  def ConstructStage(self):
+    """Returns an instance of the stage to be tested.
+
+    Note: Must be implemented in subclasses.
+    """
+    raise NotImplementedError(self, 'ConstructStage: Implement in your test')
+
+
+class InitSDKTest(_RunAbstractStageTestCase):
   """Test building the SDK"""
 
   def setUp(self):
@@ -94,7 +111,7 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
     self.assertCommandContains(['./update_chroot'], expected=False)
 
 
-class UpdateSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
+class UpdateSDKTest(_RunAbstractStageTestCase):
   """Test UpdateSDKStage."""
 
   def ConstructStage(self):
@@ -144,7 +161,7 @@ class UpdateSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
     self._RunBin(dir_exists=False)
 
 
-class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
+class SetupBoardTest(_RunAbstractStageTestCase):
   """Test building the board"""
 
   def setUp(self):
