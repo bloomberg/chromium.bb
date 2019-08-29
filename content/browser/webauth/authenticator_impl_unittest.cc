@@ -295,9 +295,8 @@ std::vector<device::PublicKeyCredentialDescriptor> GetTestCredentials(
     base::flat_set<device::FidoTransportProtocol> transports{
         device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
         device::FidoTransportProtocol::kBluetoothLowEnergy};
-    device::PublicKeyCredentialDescriptor credential(
-        device::CredentialType::kPublicKey, id, transports);
-    descriptors.push_back(std::move(credential));
+    descriptors.emplace_back(device::CredentialType::kPublicKey, std::move(id),
+                             std::move(transports));
   }
   return descriptors;
 }
