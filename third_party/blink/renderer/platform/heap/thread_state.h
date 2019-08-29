@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
