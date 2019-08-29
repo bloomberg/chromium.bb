@@ -91,6 +91,10 @@ class AXPosition {
   using AXPositionInstance =
       std::unique_ptr<AXPosition<AXPositionType, AXNodeType>>;
 
+  // When converting an unignored position, determines how to adjust the new
+  // position in order to make it valid.
+  enum class AdjustmentBehavior { kMoveLeft, kMoveRight };
+
   static const int32_t INVALID_ANCHOR_ID = -1;
   static const int BEFORE_TEXT = -1;
   static const int INVALID_INDEX = -2;
@@ -128,6 +132,13 @@ class AXPosition {
   virtual ~AXPosition() = default;
 
   virtual AXPositionInstance Clone() const = 0;
+
+  virtual bool IsIgnoredPosition() const { return false; }
+
+  virtual AXPositionInstance AsUnignoredTextPosition(
+      AdjustmentBehavior adjustment_behavior) const {
+    return Clone();
+  }
 
   std::string ToString() const {
     std::string str;

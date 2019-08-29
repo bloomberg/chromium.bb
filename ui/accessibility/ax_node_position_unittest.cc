@@ -214,11 +214,11 @@ void AXPositionTest::SetUp() {
   AXTreeUpdate update;
   serializer.SerializeChanges(src_tree.root(), &update);
   ASSERT_TRUE(tree_.Unserialize(update));
-  AXNodePosition::SetTreeForTesting(&tree_);
+  AXNodePosition::SetTree(&tree_);
 }
 
 void AXPositionTest::TearDown() {
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 }
 
 }  // namespace
@@ -1484,7 +1484,7 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
   // This test updates the tree structure to test a specific edge case -
   // CreatePositionAtFormatBoundary when text lies at the beginning and end
   // of the AX tree.
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data;
   root_data.id = 0;
@@ -1512,7 +1512,7 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
 
   std::unique_ptr<AXTree> new_tree;
   new_tree.reset(new AXTree(update));
-  AXNodePosition::SetTreeForTesting(new_tree.get());
+  AXNodePosition::SetTree(new_tree.get());
 
   // Test CreatePreviousFormatStartPosition at the start of the document.
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
@@ -1539,7 +1539,7 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
   EXPECT_EQ(more_text_data.id, test_position->anchor_id());
   EXPECT_EQ(9, test_position->text_offset());
 
-  AXNodePosition::SetTreeForTesting(&tree_);
+  AXNodePosition::SetTree(&tree_);
 }
 
 TEST_F(AXPositionTest, CreatePositionAtStartOfDocumentWithNullPosition) {
@@ -2790,7 +2790,7 @@ TEST_F(AXPositionTest, OperatorsLessThanAndGreaterThan) {
 TEST_F(AXPositionTest, CreateNextAnchorPosition) {
   // This test updates the tree structure to test a specific edge case -
   // CreateNextAnchorPosition on an empty text field.
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data;
   root_data.id = 0;
@@ -2829,7 +2829,7 @@ TEST_F(AXPositionTest, CreateNextAnchorPosition) {
 
   std::unique_ptr<AXTree> new_tree;
   new_tree.reset(new AXTree(update));
-  AXNodePosition::SetTreeForTesting(new_tree.get());
+  AXNodePosition::SetTree(new_tree.get());
 
   // Test that CreateNextAnchorPosition will successfully navigate past the
   // empty text field.
@@ -2841,7 +2841,7 @@ TEST_F(AXPositionTest, CreateNextAnchorPosition) {
                    ->CreateNextAnchorPosition()
                    ->IsNullPosition());
 
-  AXNodePosition::SetTreeForTesting(&tree_);
+  AXNodePosition::SetTree(&tree_);
 }
 
 //
