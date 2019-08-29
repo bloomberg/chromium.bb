@@ -70,32 +70,20 @@ class StepText(_NamedAnnotation):
   """STEP_TEXT annotation."""
   ANNOTATION_NAME = 'STEP_TEXT'
 
-  def __init__(self, text):
-    super(StepText, self).__init__(text)
-
 
 class StepWarnings(_NamedAnnotation):
   """STEP_WARNINGS annotation."""
   ANNOTATION_NAME = 'STEP_WARNINGS'
-
-  def __init__(self):
-    super(StepWarnings, self).__init__()
 
 
 class StepFailure(_NamedAnnotation):
   """STEP_FAILURE annotation."""
   ANNOTATION_NAME = 'STEP_FAILURE'
 
-  def __init__(self):
-    super(StepFailure, self).__init__()
-
 
 class BuildStep(_NamedAnnotation):
   """BUILD_STEP annotation."""
   ANNOTATION_NAME = 'BUILD_STEP'
-
-  def __init__(self, name):
-    super(BuildStep, self).__init__(name)
 
 
 class SetBuildProperty(_NamedAnnotation):

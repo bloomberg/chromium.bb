@@ -161,9 +161,6 @@ Note:
   Exit code 2: No matching finished builds were found.
 """
 
-  def __init__(self, options):
-    super(BuildResultCommand, self).__init__(options)
-
   @classmethod
   def AddParser(cls, parser):
     super(cls, BuildResultCommand).AddParser(parser)

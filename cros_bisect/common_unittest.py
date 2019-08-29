@@ -192,15 +192,11 @@ class TestScore(cros_test_lib.TestCase):
 class ClassAOptionsChecker(common.OptionsChecker):
   """Used to test common.OptionsChecker."""
   REQUIRED_ARGS = ('a', )
-  def __init__(self, options):
-    super(ClassAOptionsChecker, self).__init__(options)
 
 
 class ClassBOptionsChecker(ClassAOptionsChecker):
   """Used to test common.OptionsChecker."""
   REQUIRED_ARGS = ClassAOptionsChecker.REQUIRED_ARGS + ('b', )
-  def __init__(self, options):
-    super(ClassBOptionsChecker, self).__init__(options)
 
 
 class TestOptionsChecker(cros_test_lib.TestCase):

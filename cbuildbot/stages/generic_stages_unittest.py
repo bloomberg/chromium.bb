@@ -830,9 +830,6 @@ class RunCommandAbstractStageTestCase(
   FULL_BOT_ID = 'amd64-generic-full'
   BIN_BOT_ID = 'amd64-generic-paladin'
 
-  def _Prepare(self, bot_id, **kwargs):
-    super(RunCommandAbstractStageTestCase, self)._Prepare(bot_id, **kwargs)
-
   def _PrepareFull(self, **kwargs):
     self._Prepare(self.FULL_BOT_ID, **kwargs)
 

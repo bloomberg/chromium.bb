@@ -96,9 +96,6 @@ class UprevChromeCommand(command.CliCommand):
 
   NUM_RESULTS_LIMIT = 100
 
-  def __init__(self, options):
-    super(UprevChromeCommand, self).__init__(options)
-
   @classmethod
   def AddParser(cls, parser):
     super(cls, UprevChromeCommand).AddParser(parser)

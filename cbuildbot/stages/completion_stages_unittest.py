@@ -821,9 +821,6 @@ class PublishUprevChangesStageTest(
   """Tests for the PublishUprevChanges stage."""
   BOT_ID = 'master-chromium-pfq'
 
-  def _Prepare(self, bot_id=None, **kwargs):
-    super(PublishUprevChangesStageTest, self)._Prepare(bot_id, **kwargs)
-
   def setUp(self):
     self.PatchObject(completion_stages.PublishUprevChangesStage,
                      '_GetPortageEnvVar')

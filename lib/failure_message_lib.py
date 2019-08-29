@@ -184,15 +184,6 @@ class StageFailureMessage(object):
 class BuildScriptFailureMessage(StageFailureMessage):
   """Message class contains information of a BuildScriptFailure."""
 
-  def __init__(self, stage_failure, **kwargs):
-    """Construct a BuildScriptFailureMessage instance.
-
-    Args:
-      stage_failure: An instance of StageFailure.
-      kwargs: Extra message information to pass to StageFailureMessage.
-    """
-    super(BuildScriptFailureMessage, self).__init__(stage_failure, **kwargs)
-
   def GetShortname(self):
     """Return the short name (string) of the run command."""
     return self.extra_info.get('shortname')
@@ -200,16 +191,6 @@ class BuildScriptFailureMessage(StageFailureMessage):
 
 class PackageBuildFailureMessage(StageFailureMessage):
   """Message class contains information of a PackagebuildFailure."""
-
-  def __init__(self, stage_failure, **kwargs):
-    """Construct a PackageBuildFailureMessage instance.
-
-    Args:
-      stage_failure: An instance of StageFailure.
-      kwargs: Extra message information to pass to StageFailureMessage.
-    """
-    super(PackageBuildFailureMessage, self).__init__(
-        stage_failure, **kwargs)
 
   def GetShortname(self):
     """Return the short name (string) of the run command."""

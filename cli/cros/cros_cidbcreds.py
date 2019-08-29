@@ -59,9 +59,6 @@ def CheckAndGetCIDBCreds(force_update=False, folder=None):
 class CidbCredsCommand(command.CliCommand):
   """cros cidbcreds: download the prod_replica_cidb_readonly credentials."""
 
-  def __init__(self, options):
-    super(CidbCredsCommand, self).__init__(options)
-
   @classmethod
   def AddParser(cls, parser):
     super(cls, CidbCredsCommand).AddParser(parser)

@@ -371,9 +371,6 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
   # the umount/rmdir bug (see osutils.UmountDir) may take a long time.
   IMAGE_TEST_TIMEOUT = 60 * 60
 
-  def __init__(self, *args, **kwargs):
-    super(ImageTestStage, self).__init__(*args, **kwargs)
-
   def PerformStage(self):
     test_results_dir = commands.CreateTestRoot(self._build_root)
     # CreateTestRoot returns a temp directory inside chroot.
@@ -639,11 +636,6 @@ class DebugInfoTestStage(generic_stages.BoardSpecificBuilderStage,
 
 class TestPlanStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that constructs test plans."""
-
-  def __init__(self, builder_run, buildstore, board, **kwargs):
-
-    super(TestPlanStage, self).__init__(builder_run, buildstore, board,
-                                        **kwargs)
 
   def WaitUntilReady(self):
     config = self._run.config

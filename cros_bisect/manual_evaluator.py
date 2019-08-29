@@ -21,9 +21,6 @@ class ManualEvaluator(evaluator.Evaluator):
   # Binary evaluator.
   THRESHOLD = 0.5
 
-  def __init__(self, options):
-    super(ManualEvaluator, self).__init__(options)
-
   def GetReportPath(self, build_label):
     """Obtains report file path.
 

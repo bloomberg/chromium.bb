@@ -35,14 +35,6 @@ class StepFailure(Exception):
   # different category.
   EXCEPTION_CATEGORY = constants.EXCEPTION_CATEGORY_UNKNOWN
 
-  def __init__(self, message=''):
-    """Constructor.
-
-    Args:
-      message: An error message.
-    """
-    super(StepFailure, self).__init__(message)
-
   def EncodeExtraInfo(self):
     """Encode extra_info into a json string, can be overwritten by subclasses"""
 

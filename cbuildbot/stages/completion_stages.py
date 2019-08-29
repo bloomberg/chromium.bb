@@ -691,10 +691,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         pool=self.sync_stage.pool,
         timeout=timeout)
 
-  def PerformStage(self):
-    """Run CommitQueueCompletionStage."""
-    super(CommitQueueCompletionStage, self).PerformStage()
-
 
 class PreCQCompletionStage(generic_stages.BuilderStage):
   """Reports the status of a trybot run to Google Storage and Gerrit."""
@@ -724,16 +720,6 @@ class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
   """Update the CHROMEOS_LKGM file in the chromium repository."""
 
   category = constants.CI_INFRA_STAGE
-
-  def __init__(self, builder_run, buildstore, **kwargs):
-    """Constructor.
-
-    Args:
-      builder_run: BuilderRun object.
-      buildstore: BuildStore instance to make DB calls with.
-    """
-    super(UpdateChromeosLKGMStage, self).__init__(builder_run, buildstore,
-                                                  **kwargs)
 
   def PerformStage(self):
     if not self._build_threshold_successful():

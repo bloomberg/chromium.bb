@@ -331,9 +331,6 @@ class ForgivenVMTestStage(VMTestStage, generic_stages.ForgivingBuilderStage):
   stage_name = 'ForgivenVMTest'
   category = constants.TEST_INFRA_STAGE
 
-  def __init__(self, *args, **kwargs):
-    super(ForgivenVMTestStage, self).__init__(*args, **kwargs)
-
 
 class GCETestStage(VMTestStage):
   """Run autotests on a GCE VM instance."""

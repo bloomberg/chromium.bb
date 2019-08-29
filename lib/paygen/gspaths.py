@@ -44,9 +44,6 @@ class Build(utils.RestrictedAttrDict):
   _slots = ('board', 'version', 'channel', 'bucket', 'uri')
   _name = 'Build definition'
 
-  def __init__(self, *args, **kwargs):
-    super(Build, self).__init__(*args, **kwargs)
-
   @staticmethod
   def BuildValuesFromUri(uri_re, uri):
     """Builds a dictionary from a URI using a regular expression.
@@ -136,9 +133,6 @@ class DLCImage(Image):
   """
   _name = 'DLC Image definition'
   _slots = Image._slots + ('dlc_id', 'dlc_package', 'dlc_image')
-
-  def __init__(self, *args, **kwargs):
-    super(DLCImage, self).__init__(*args, **kwargs)
 
   def __str__(self):
     if self.uri:
