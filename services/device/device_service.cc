@@ -366,7 +366,7 @@ void DeviceService::BindUsbDeviceManagerTestRequest(
         usb_device_manager_->GetUsbService());
   }
 
-  usb_device_manager_test_->BindRequest(std::move(request));
+  usb_device_manager_test_->BindReceiver(std::move(request));
 }
 
 #if defined(OS_ANDROID)

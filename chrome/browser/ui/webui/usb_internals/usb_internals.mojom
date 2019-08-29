@@ -13,5 +13,6 @@ interface UsbInternalsPageHandler {
       pending_receiver<device.mojom.UsbDeviceManager> receiver);
 
   // Simulate the connection of a new device with the given properties.
-  BindTestInterface(device.mojom.UsbDeviceManagerTest& request);
+  BindTestInterface(
+      pending_receiver<device.mojom.UsbDeviceManagerTest> receiver);
 };
