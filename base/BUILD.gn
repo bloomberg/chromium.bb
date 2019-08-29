@@ -86,10 +86,6 @@ if (is_fuchsia) {
 config("base_flags") {
   if (is_clang) {
     cflags = [
-      # Don't die on dtoa code that uses a char as an array index.
-      # This is required solely for base/third_party/dmg_fp/dtoa_wrapper.cc.
-      "-Wno-char-subscripts",
-
       # Ideally all product code (but no test code) in chrome would have these
       # flags. But this isn't trivial so start with //base as a minimum
       # requirement.
@@ -881,9 +877,6 @@ jumbo_component("base") {
     "test/malloc_wrapper.h",
     "third_party/cityhash/city.cc",
     "third_party/cityhash/city.h",
-    "third_party/dmg_fp/dmg_fp.h",
-    "third_party/dmg_fp/dtoa_wrapper.cc",
-    "third_party/dmg_fp/g_fmt.cc",
     "third_party/icu/icu_utf.cc",
     "third_party/icu/icu_utf.h",
     "third_party/nspr/prtime.cc",
@@ -1249,6 +1242,7 @@ jumbo_component("base") {
   deps = [
     "//base/allocator",
     "//base/allocator:buildflags",
+    "//base/third_party/double_conversion",
     "//base/third_party/dynamic_annotations",
     "//third_party/modp_b64",
   ]
