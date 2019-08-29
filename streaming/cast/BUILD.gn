@@ -4,6 +4,18 @@
 
 import("//build_overrides/build.gni")
 
+declare_args() {
+  # These are only relevant for building the demo apps, which require external
+  # headers/libraries be installed. Set them to true if your local system has
+  # SDL2/FFMPEG installed. On Debian-like systems, the following should install
+  # all the required headers and libraries:
+  #
+  #   sudo apt-get install libsdl2-2.0 libsdl2-dev libavcodec libavcodec-dev \
+  #                        libavformat libavformat-dev libavutil libavutil-dev
+  have_sdl_for_demo_apps = false
+  have_ffmpeg_for_demo_apps = false
+}
+
 source_set("common") {
   sources = [
     "clock_drift_smoother.cc",
@@ -11,6 +23,8 @@ source_set("common") {
     "constants.h",
     "encoded_frame.cc",
     "encoded_frame.h",
+    "environment.cc",
+    "environment.h",
     "expanded_value_base.h",
     "frame_crypto.cc",
     "frame_crypto.h",
@@ -46,6 +60,10 @@ source_set("receiver") {
   sources = [
     "compound_rtcp_builder.cc",
     "compound_rtcp_builder.h",
+    "receiver.cc",
+    "receiver.h",
+    "receiver_packet_router.cc",
+    "receiver_packet_router.h",
     "rtp_packet_parser.cc",
     "rtp_packet_parser.h",
     "sender_report_parser.cc",
@@ -174,4 +192,33 @@ if (build_with_chromium) {
   #     ]
   #   }
   # }
+}
+
+# Define the demo app targets only when the build is configured to use the
+# standalone, non-embedder //platform implementation; since they *are* the whole
+# application.
+if (!build_with_chromium) {
+  executable("receiver_demo") {
+    sources = [
+      "receiver_demo/main.cc",
+    ]
+    deps = [
+      ":receiver",
+      "../../platform",
+    ]
+
+    defines = []
+    include_dirs = []
+    libs = []
+    if (have_sdl_for_demo_apps && have_ffmpeg_for_demo_apps) {
+      defines += [ "CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS" ]
+      include_dirs += [ "/usr/include/SDL2" ]
+      libs += [
+        "-lSDL2",
+        "-lavcodec",
+        "-lavformat",
+        "-lavutil",
+      ]
+    }
+  }
 }
