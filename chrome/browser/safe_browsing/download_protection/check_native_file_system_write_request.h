@@ -68,8 +68,7 @@ class CheckNativeFileSystemWriteRequest
                                   bool upload_requested,
                                   const std::string& request_data,
                                   const std::string& response_body) override;
-  void MaybeUploadBinary(DownloadCheckResult result,
-                         const std::string& token) override;
+  void MaybeUploadBinary(DownloadCheckResultReason reason) override;
   void NotifyRequestFinished(DownloadCheckResult result,
                              DownloadCheckResultReason reason) override;
 

@@ -26,6 +26,7 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -54,7 +55,7 @@ void MaybeReportDownloadDeepScanningVerdict(
     return;
 
   if (!g_browser_process->local_state()->GetBoolean(
-          policy::policy_prefs::kUnsafeEventsReportingEnabled))
+          prefs::kUnsafeEventsReportingEnabled))
     return;
 
   if (response.malware_scan_verdict().verdict() ==
@@ -75,6 +76,7 @@ void MaybeReportDownloadDeepScanningVerdict(
 }
 
 }  // namespace
+
 CheckClientDownloadRequest::CheckClientDownloadRequest(
     download::DownloadItem* item,
     CheckDownloadCallback callback,
@@ -225,34 +227,41 @@ void CheckClientDownloadRequest::MaybeStorePingsForDownload(
       result, upload_requested, item_, request_data, response_body);
 }
 
-void CheckClientDownloadRequest::MaybeUploadBinary(DownloadCheckResult result,
-                                                   const std::string& token) {
-  if (ShouldUploadBinary(result)) {
-    content::BrowserContext* browser_context = GetBrowserContext();
-    if (browser_context) {
-      Profile* profile = Profile::FromBrowserContext(browser_context);
-      auto request = std::make_unique<DownloadItemRequest>(
-          item_, base::BindOnce(&MaybeReportDownloadDeepScanningVerdict,
-                                profile, item_->GetURL(),
-                                item_->GetTargetFilePath().AsUTF8Unsafe(),
-                                item_->GetHash()));
+void CheckClientDownloadRequest::MaybeUploadBinary(
+    DownloadCheckResultReason reason) {
+  bool upload_for_dlp = ShouldUploadForDlpScan();
+  bool upload_for_malware = ShouldUploadForMalwareScan(reason);
+  if (upload_for_dlp || upload_for_malware) {
+    Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
+    if (!profile)
+      return;
 
+    auto request = std::make_unique<DownloadItemRequest>(
+        item_, base::BindOnce(&MaybeReportDownloadDeepScanningVerdict, profile,
+                              item_->GetURL(),
+                              item_->GetTargetFilePath().AsUTF8Unsafe(),
+                              item_->GetHash()));
+
+    if (upload_for_dlp) {
       DlpDeepScanningClientRequest dlp_request;
       dlp_request.set_content_source(
           DlpDeepScanningClientRequest::FILE_DOWNLOAD);
       request->set_request_dlp_scan(std::move(dlp_request));
+    }
 
+    if (upload_for_malware) {
       MalwareDeepScanningClientRequest malware_request;
       malware_request.set_population(
           MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE);
-      malware_request.set_download_token(token);
+      malware_request.set_download_token(
+          DownloadProtectionService::GetDownloadPingToken(item_));
       request->set_request_malware_scan(std::move(malware_request));
-
-      request->set_dm_token(
-          policy::BrowserDMTokenStorage::Get()->RetrieveDMToken());
-
-      service()->UploadForDeepScanning(profile, std::move(request));
     }
+
+    request->set_dm_token(
+        policy::BrowserDMTokenStorage::Get()->RetrieveDMToken());
+
+    service()->UploadForDeepScanning(profile, std::move(request));
   }
 }
 
@@ -268,21 +277,61 @@ void CheckClientDownloadRequest::NotifyRequestFinished(
   item_->RemoveObserver(this);
 }
 
-bool CheckClientDownloadRequest::ShouldUploadBinary(
-    DownloadCheckResult result) {
-  if (!base::FeatureList::IsEnabled(kUploadForMalwareCheck))
+bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
+  int check_content_compliance = g_browser_process->local_state()->GetInteger(
+      prefs::kCheckContentCompliance);
+  if (check_content_compliance !=
+          CheckContentComplianceValues::CHECK_DOWNLOADS &&
+      check_content_compliance !=
+          CheckContentComplianceValues::CHECK_UPLOADS_AND_DOWNLOADS)
     return false;
 
+  // If there's no DM token, the upload will fail, so we can skip uploading now.
   if (policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty())
     return false;
 
-  if (result != DownloadCheckResult::SAFE &&
-      result != DownloadCheckResult::UNCOMMON &&
-      result != DownloadCheckResult::UNKNOWN)
+  const base::ListValue* domains = g_browser_process->local_state()->GetList(
+      prefs::kDomainsToCheckComplianceOfDownloadedContent);
+  bool host_in_list =
+      std::any_of(domains->GetList().begin(), domains->GetList().end(),
+                  [this](const base::Value& domain) {
+                    return domain.is_string() &&
+                           domain.GetString() == item_->GetURL().host();
+                  });
+
+  return host_in_list;
+}
+
+bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(
+    DownloadCheckResultReason reason) {
+  // If we know the file is malicious, we don't need to upload it.
+  if (reason != DownloadCheckResultReason::REASON_DOWNLOAD_SAFE &&
+      reason != DownloadCheckResultReason::REASON_DOWNLOAD_UNCOMMON &&
+      reason != DownloadCheckResultReason::REASON_VERDICT_UNKNOWN)
     return false;
 
-  // TODO(drubery): Add the appropriate checks against the enterprise policy
-  // here.
+  // This feature can be used to force uploads.
+  if (base::FeatureList::IsEnabled(kUploadForMalwareCheck))
+    return true;
+
+  content::BrowserContext* browser_context =
+      content::DownloadItemUtils::GetBrowserContext(item_);
+  if (!browser_context)
+    return false;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile)
+    return false;
+
+  int send_files_for_malware_check = profile->GetPrefs()->GetInteger(
+      prefs::kSafeBrowsingSendFilesForMalwareCheck);
+  if (send_files_for_malware_check !=
+      SendFilesForMalwareCheckValues::SEND_DOWNLOADS)
+    return false;
+
+  // If there's no DM token, the upload will fail, so we can skip uploading now.
+  if (policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty())
+    return false;
 
   return true;
 }

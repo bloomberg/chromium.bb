@@ -122,8 +122,7 @@ class CheckClientDownloadRequestBase {
                                           const std::string& response_body) = 0;
 
   // Called after receiving, or failing to receive a response from the server.
-  virtual void MaybeUploadBinary(DownloadCheckResult result,
-                                 const std::string& token) = 0;
+  virtual void MaybeUploadBinary(DownloadCheckResultReason reason) = 0;
 
   // Called whenever a request has completed.
   virtual void NotifyRequestFinished(DownloadCheckResult result,

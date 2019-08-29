@@ -140,8 +140,7 @@ void CheckNativeFileSystemWriteRequest::MaybeStorePingsForDownload(
 }
 
 void CheckNativeFileSystemWriteRequest::MaybeUploadBinary(
-    DownloadCheckResult result,
-    const std::string& token) {}
+    DownloadCheckResultReason reason) {}
 
 void CheckNativeFileSystemWriteRequest::NotifyRequestFinished(
     DownloadCheckResult result,

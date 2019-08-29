@@ -198,6 +198,8 @@ void CheckClientDownloadRequestBase::FinishRequest(
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                             REASON_MAX);
 
+  MaybeUploadBinary(reason);
+
   std::move(callback_).Run(result);
   NotifyRequestFinished(result, reason);
   service()->RequestFinished(this);
@@ -693,8 +695,6 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
                                client_download_request_data_,
                                *response_body.get());
   }
-
-  MaybeUploadBinary(result, token);
 
   // We don't need the loader anymore.
   loader_.reset();

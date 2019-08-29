@@ -30,6 +30,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -50,6 +51,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/history/core/browser/history_service.h"
@@ -214,7 +216,8 @@ ACTION_P(CheckDownloadUrlDone, threat_type) {
 
 class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
  protected:
-  DownloadProtectionServiceTest() {}
+  DownloadProtectionServiceTest()
+      : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
@@ -593,7 +596,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   void CheckClientDownloadReportCorruptArchive(ArchiveType type);
 
  protected:
-  // This will effectivly mask the global Singleton while this is in scope.
+  // This will effectively mask the global Singleton while this is in scope.
   FileTypePoliciesTestOverlay policies_;
 
   scoped_refptr<FakeSafeBrowsingService> sb_service_;
@@ -619,6 +622,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   std::string hash_;
   base::ScopedTempDir temp_dir_;
   extensions::TestEventRouter* test_event_router_;
+  TestingProfileManager testing_profile_manager_;
 };
 
 void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
