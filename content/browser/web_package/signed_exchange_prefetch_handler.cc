@@ -39,10 +39,16 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
   loader_client_binding_.Bind(mojo::MakeRequest(&client));
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       std::move(network_loader_factory);
+
+  // We need the SSLInfo as the prefetched signed exchange may be used as a main
+  // frame main resource. Users can inspect the certificate for the main frame
+  // using the info bubble in Omnibox.
+  const uint32_t url_loader_options =
+      network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
+
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       resource_request, response_head, std::move(response_body),
-      std::move(client), std::move(endpoints),
-      network::mojom::kURLLoadOptionNone,
+      std::move(client), std::move(endpoints), url_loader_options,
       false /* should_redirect_to_fallback */,
       std::make_unique<SignedExchangeDevToolsProxy>(
           resource_request.url, response_head, frame_tree_node_id_getter,
