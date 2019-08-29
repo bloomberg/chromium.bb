@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -33,12 +32,25 @@
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "third_party/blink/public/platform/modules/peerconnection/web_rtc_video_encoder_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/modules/video_coding/include/video_error_codes.h"
 #include "third_party/webrtc/rtc_base/time_utils.h"
+
+namespace WTF {
+
+template <>
+struct CrossThreadCopier<webrtc::VideoEncoder::RateControlParameters>
+    : public CrossThreadCopierPassThrough<
+          webrtc::VideoEncoder::RateControlParameters> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+}  // namespace WTF
 
 namespace blink {
 
@@ -732,10 +744,9 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
       return;
     }
   }
-  // TODO(crbug.com/787254): Replace the use of base::Bind by WTF::Bind here
-  // and where else possible in this file.
-  frame->AddDestructionObserver(media::BindToCurrentLoop(base::BindOnce(
-      &RTCVideoEncoder::Impl::EncodeFrameFinished, this, index)));
+  frame->AddDestructionObserver(media::BindToCurrentLoop(
+      WTF::Bind(&RTCVideoEncoder::Impl::EncodeFrameFinished,
+                scoped_refptr<RTCVideoEncoder::Impl>(this), index)));
   if (!failed_timestamp_match_) {
     DCHECK(std::find_if(pending_timestamps_.begin(), pending_timestamps_.end(),
                         [&frame](const RTCTimestamps& entry) {
@@ -941,12 +952,15 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   int32_t initialization_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
-  gpu_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RTCVideoEncoder::Impl::CreateAndInitializeVEA, impl_,
-                     gfx::Size(codec_settings->width, codec_settings->height),
-                     codec_settings->startBitrate, profile_,
-                     &initialization_waiter, &initialization_retval));
+  PostCrossThreadTask(
+      *gpu_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(
+          &RTCVideoEncoder::Impl::CreateAndInitializeVEA,
+          scoped_refptr<Impl>(impl_),
+          gfx::Size(codec_settings->width, codec_settings->height),
+          codec_settings->startBitrate, profile_,
+          CrossThreadUnretained(&initialization_waiter),
+          CrossThreadUnretained(&initialization_retval)));
 
   // webrtc::VideoEncoder expects this call to be synchronous.
   initialization_waiter.Wait();
@@ -971,10 +985,13 @@ int32_t RTCVideoEncoder::Encode(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   int32_t encode_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
-  gpu_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RTCVideoEncoder::Impl::Enqueue, impl_, &input_image,
-                     want_key_frame, &encode_waiter, &encode_retval));
+  PostCrossThreadTask(
+      *gpu_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&RTCVideoEncoder::Impl::Enqueue,
+                          scoped_refptr<Impl>(impl_),
+                          CrossThreadUnretained(&input_image), want_key_frame,
+                          CrossThreadUnretained(&encode_waiter),
+                          CrossThreadUnretained(&encode_retval)));
 
   // webrtc::VideoEncoder expects this call to be synchronous.
   encode_waiter.Wait();
@@ -995,10 +1012,13 @@ int32_t RTCVideoEncoder::RegisterEncodeCompleteCallback(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   int32_t register_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
-  gpu_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback,
-                     impl_, &register_waiter, &register_retval, callback));
+  PostCrossThreadTask(
+      *gpu_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(
+          &RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback,
+          scoped_refptr<Impl>(impl_), CrossThreadUnretained(&register_waiter),
+          CrossThreadUnretained(&register_retval),
+          CrossThreadUnretained(callback)));
   register_waiter.Wait();
   return register_retval;
 }
@@ -1012,9 +1032,11 @@ int32_t RTCVideoEncoder::Release() {
   base::WaitableEvent release_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  gpu_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RTCVideoEncoder::Impl::Destroy, impl_, &release_waiter));
+  PostCrossThreadTask(
+      *gpu_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&RTCVideoEncoder::Impl::Destroy,
+                          scoped_refptr<Impl>(impl_),
+                          CrossThreadUnretained(&release_waiter)));
   release_waiter.Wait();
   impl_ = nullptr;
   return WEBRTC_VIDEO_CODEC_OK;
@@ -1035,10 +1057,11 @@ void RTCVideoEncoder::SetRates(
     return;
   }
 
-  gpu_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RTCVideoEncoder::Impl::RequestEncodingParametersChange,
-                     impl_, parameters));
+  PostCrossThreadTask(
+      *gpu_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(
+          &RTCVideoEncoder::Impl::RequestEncodingParametersChange,
+          scoped_refptr<Impl>(impl_), parameters));
   return;
 }
 
