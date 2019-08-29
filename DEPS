@@ -127,7 +127,9 @@ recursedeps = [
 
 include_rules = [
     '+util',
-    '+platform',
+    '+platform/api',
+    '+platform/base',
+    '+platform/test',
     '+third_party',
 
     # Don't include abseil from the root so the path can change via include_dirs

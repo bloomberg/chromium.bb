@@ -10,7 +10,9 @@
 fail=0
 
 function check_clang_format() {
-  if ! cmp -s <(./clang-format -style=file "$1") "$1"; then
+  if ! which clang-format &>/dev/null; then
+    echo "Please add clang-format to your PATH or manually check $1 for format errors."
+  elif ! cmp -s <(clang-format -style=file "$1") "$1"; then
     echo "Needs format: $1"
     fail=1
   fi
@@ -55,10 +57,6 @@ invoker=$(ps -o pid,comm | awk -F ' ' "{ if (\$1 == $ppid) print \$2 }")
 
 if [[ "$invoker" != 'python' ]]; then
   echo "This shouldn't be invoked directly, please use \`git cl presubmit\`."
-fi
-
-if [[ ! -e ./clang-format ]]; then
-  tools/install-build-tools.sh
 fi
 
 for f in $(git diff --name-only --diff-filter=d origin/master); do

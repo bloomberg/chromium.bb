@@ -11,16 +11,27 @@ esac
 
 echo "Assuming we are running in $env..."
 
+ninja_version="v1.9.0"
+ninja_zipfile=""
+case "$env" in
+  linux64)    ninja_zipfile="ninja-linux.zip";;
+  mac)        ninja_zipfile="ninja-mac.zip";;
+esac
+
 BUILDTOOLS_REPO_URL="https://chromium.googlesource.com/chromium/src/buildtools"
 GOOGLE_STORAGE_URL="https://storage.googleapis.com"
+BUILDTOOLS_ROOT=$(git rev-parse --show-toplevel)/buildtools/$env
+if [ ! -d $BUILDTOOLS_ROOT ]; then
+  mkdir -p $BUILDTOOLS_ROOT
+fi
 
-GIT_ROOT=$(git rev-parse --show-toplevel)
-
-pushd $GIT_ROOT
+pushd $BUILDTOOLS_ROOT
 set -x  # echo on
 sha1=$(curl "$BUILDTOOLS_REPO_URL/+/master/$env/clang-format.sha1?format=TEXT" | base64 --decode)
 curl -Lo clang-format "$GOOGLE_STORAGE_URL/chromium-clang-format/$sha1"
 chmod +x clang-format
+curl -L "https://github.com/ninja-build/ninja/releases/download/${ninja_version}/${ninja_zipfile}" | funzip > ninja
+chmod +x ninja
 set +x  # echo off
-
 popd
+

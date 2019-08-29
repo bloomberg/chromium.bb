@@ -1,7 +1,9 @@
 # Open Screen Library
 
-The openscreen library implements the Open Screen Protocol.  Information about
-the protocol and its specification can be found [on
+The openscreen library implements the Open Screen Protocol and the Chromecast
+protocols (both control and streaming).
+
+Information about the protocol and its specification can be found [on
 GitHub](https://github.com/webscreens/openscreenprotocol).
 
 ## Getting the code
@@ -57,11 +59,13 @@ The following tools are required for building:
  - Code formatter (optional): `clang-format`
  - Builder: `ninja` ([GitHub releases](https://github.com/ninja-build/ninja/releases))
 
-`clang-format` is only used for presubmit checks and optionally used on
-generated code from the CDDL tool.  A copy of `clang-format` can be downloaded
-to the repository root by running `./tools/install-build-tools.sh`.
+`clang-format` and `ninja` can be downloaded to `buildtools/<platform>` root by
+running `./tools/install-build-tools.sh`.
 
-`gn` will be installed in `//buildtools/<platform>/` automatically by DEPS.
+`clang-format` is only used for presubmit checks and optionally used on
+generated code from the CDDL tool.
+
+`gn` will be installed in `buildtools/<platform>/` automatically by DEPS.
 
 You also need to ensure that you have the compiler toolchain dependencies.
 Currently, both Linux and Mac OS X build configurations use clang by default.
@@ -80,7 +84,8 @@ instance of it. On Debian flavors, you can run:
 
 ### Mac
 
-On Mac OS X, the build will use the clang provided by XCode, which must be
+On Mac OS X, the build will use the clang provided by
+[XCode](https://apps.apple.com/us/app/xcode/id497799835?mt=12), which must be
 installed.
 
 ### gcc support
