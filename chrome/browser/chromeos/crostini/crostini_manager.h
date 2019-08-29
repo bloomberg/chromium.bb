@@ -690,6 +690,10 @@ class CrostiniManager : public KeyedService,
       ListUsbDevicesCallback callback,
       base::Optional<vm_tools::concierge::ListUsbDeviceResponse> response);
 
+  // Callback for
+  // CrostiniAnsibleManagementService::InstallAnsibleInDefaultContainer
+  void OnAnsibleInDefaultContainerInstalled(bool success);
+
   // Helper for CrostiniManager::MaybeUpgradeCrostini. Makes blocking calls to
   // check for file paths and registered components.
   static void CheckPathsAndComponents();

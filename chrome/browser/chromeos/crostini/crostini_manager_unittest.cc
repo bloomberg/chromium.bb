@@ -159,7 +159,7 @@ class CrostiniManagerTest : public testing::Test {
         {features::kCrostini, features::kCrostiniAdvancedAccessControls}, {});
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
-    crostini_manager_ = std::make_unique<CrostiniManager>(profile_.get());
+    crostini_manager_ = CrostiniManager::GetForProfile(profile_.get());
 
     // Login user for crostini, link gaia for DriveFS.
     auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
@@ -176,16 +176,27 @@ class CrostiniManagerTest : public testing::Test {
   }
 
   void TearDown() override {
-    crostini_manager_.reset();
     scoped_user_manager_.reset();
+    crostini_manager_->Shutdown();
     profile_.reset();
     run_loop_.reset();
   }
 
  protected:
+  void SendSucceededInstallSignal() {
+    vm_tools::cicerone::InstallLinuxPackageProgressSignal signal;
+    signal.set_owner_id(CryptohomeIdForProfile(profile()));
+    signal.set_vm_name(kCrostiniDefaultVmName);
+    signal.set_container_name(kCrostiniDefaultContainerName);
+    signal.set_status(
+        vm_tools::cicerone::InstallLinuxPackageProgressSignal::SUCCEEDED);
+
+    fake_cicerone_client_->InstallLinuxPackageProgress(signal);
+  }
+
   base::RunLoop* run_loop() { return run_loop_.get(); }
   Profile* profile() { return profile_.get(); }
-  CrostiniManager* crostini_manager() { return crostini_manager_.get(); }
+  CrostiniManager* crostini_manager() { return crostini_manager_; }
 
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeCiceroneClient* fake_cicerone_client_;
@@ -194,13 +205,13 @@ class CrostiniManagerTest : public testing::Test {
   std::unique_ptr<base::RunLoop>
       run_loop_;  // run_loop_ must be created on the UI thread.
   std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<CrostiniManager> crostini_manager_;
+  CrostiniManager* crostini_manager_;
   device::FakeUsbDeviceManager fake_usb_manager_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(CrostiniManagerTest);
 };
 
@@ -1206,7 +1217,7 @@ TEST_F(CrostiniManagerTest, ExportContainerFailOnVmStop) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniManagerTest, ImortContainerSuccess) {
+TEST_F(CrostiniManagerTest, ImportContainerSuccess) {
   crostini_manager()->ImportLxdContainer(
       kVmName, kContainerName, base::FilePath("import_path"),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
@@ -1358,6 +1369,56 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalOperationBlocked) {
 
 TEST_F(CrostiniManagerTest, InstallerStatusInitiallyFalse) {
   EXPECT_FALSE(crostini_manager()->GetInstallerViewStatus());
+}
+
+TEST_F(CrostiniManagerTest, StartContainerSuccess) {
+  crostini_manager()->StartLxdContainer(
+      kVmName, kContainerName,
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfrastructureFailure) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kCrostiniAnsibleInfrastructure);
+
+  // Response for failed Ansible installation.
+  vm_tools::cicerone::InstallLinuxPackageResponse response;
+  response.set_status(vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
+  fake_cicerone_client_->set_install_linux_package_response(response);
+
+  crostini_manager()->StartLxdContainer(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::CONTAINER_START_FAILED));
+
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfrastructureSuccess) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kCrostiniAnsibleInfrastructure);
+
+  // Response for successful Ansible installation.
+  vm_tools::cicerone::InstallLinuxPackageResponse response;
+  response.set_status(vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+  fake_cicerone_client_->set_install_linux_package_response(response);
+
+  crostini_manager()->StartLxdContainer(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Finish successful Ansible installation.
+  SendSucceededInstallSignal();
+
+  run_loop()->Run();
 }
 
 }  // namespace crostini
