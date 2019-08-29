@@ -2608,6 +2608,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/preferences/PrefServiceBridge.java",
     "java/src/org/chromium/chrome/browser/preferences/PreferencesLauncher.java",
     "java/src/org/chromium/chrome/browser/preferences/autofill/AutofillProfileBridge.java",
+    "java/src/org/chromium/chrome/browser/preferences/password/PasswordEditingBridge.java",
     "java/src/org/chromium/chrome/browser/preferences/password/PasswordUIView.java",
     "java/src/org/chromium/chrome/browser/preferences/privacy/BrowsingDataBridge.java",
     "java/src/org/chromium/chrome/browser/preferences/privacy/BrowsingDataCounterBridge.java",
