@@ -33,8 +33,9 @@ class FakeBlobRegistry : public mojom::blink::BlobRegistry {
                        const String& uuid,
                        GetBlobFromUUIDCallback) override;
 
-  void URLStoreForOrigin(const scoped_refptr<const SecurityOrigin>&,
-                         mojom::blink::BlobURLStoreAssociatedRequest) override;
+  void URLStoreForOrigin(
+      const scoped_refptr<const SecurityOrigin>&,
+      mojo::PendingAssociatedReceiver<mojom::blink::BlobURLStore>) override;
 
   struct Registration {
     String uuid;
@@ -44,10 +45,10 @@ class FakeBlobRegistry : public mojom::blink::BlobRegistry {
   };
   Vector<Registration> registrations;
 
-  struct BindingRequest {
+  struct OwnedReceiver {
     String uuid;
   };
-  Vector<BindingRequest> binding_requests;
+  Vector<OwnedReceiver> owned_receivers;
 };
 
 }  // namespace blink

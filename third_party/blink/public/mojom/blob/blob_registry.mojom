@@ -53,5 +53,5 @@ interface BlobRegistry {
 
   // Returns a BlobURLStore for a specific origin.
   URLStoreForOrigin(url.mojom.Origin origin,
-                    associated blink.mojom.BlobURLStore& url_store);
+                    pending_associated_receiver<blink.mojom.BlobURLStore> url_store);
 };
