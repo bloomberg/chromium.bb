@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/rtc_video_encoder.h"
-
-#include <string.h>
+#include "third_party/blink/renderer/platform/peerconnection/rtc_video_encoder.h"
 
 #include <algorithm>
 #include <memory>
@@ -25,8 +23,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_bitrate_allocation.h"
@@ -36,13 +32,15 @@
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
+#include "third_party/blink/public/platform/modules/peerconnection/web_rtc_video_encoder_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/modules/video_coding/include/video_error_codes.h"
 #include "third_party/webrtc/rtc_base/time_utils.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -76,7 +74,8 @@ webrtc::VideoCodecType ProfileToWebRtcVideoCodecType(
 // Each entry specifies the offset and length (excluding start code) of a NALU.
 // Returns true if successful.
 bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
-                                   const uint8_t* data, uint32_t length) {
+                                   const uint8_t* data,
+                                   uint32_t length) {
   std::vector<media::H264NALU> nalu_vector;
   if (!media::H264Parser::ParseNALUs(data, length, &nalu_vector)) {
     // H264Parser::ParseNALUs() has logged the errors already.
@@ -104,6 +103,15 @@ void RecordInitEncodeUMA(int32_t init_retval,
 }
 
 }  // namespace
+
+namespace features {
+
+// Fallback from hardware encoder (if available) to software, for WebRTC
+// screensharing that uses temporal scalability.
+const base::Feature kWebRtcScreenshareSwEncoding{
+    "WebRtcScreenshareSwEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace features
 
 // This private class of RTCVideoEncoder does the actual work of communicating
 // with a media::VideoEncodeAccelerator for handling video encoding.  It can
@@ -186,7 +194,7 @@ class RTCVideoEncoder::Impl
 
   // Logs the |error| and |str| sent from |location| and NotifyError()s forward.
   void LogAndNotifyError(const base::Location& location,
-                         const std::string& str,
+                         const String& str,
                          media::VideoEncodeAccelerator::Error error);
 
   // Perform encoding on an input frame from the input queue.
@@ -255,6 +263,9 @@ class RTCVideoEncoder::Impl
   // Shared memory buffers for input/output with the VEA. The input buffers may
   // be referred to by a VideoFrame, so they are wrapped in a unique_ptr to have
   // a stable memory location. That is not necessary for the output buffers.
+  //
+  // TODO(crbug.com/787254): Replace the use of std::vector by WTF::Vector here
+  // and where else possible in this file.
   std::vector<std::unique_ptr<std::pair<base::UnsafeSharedMemoryRegion,
                                         base::WritableSharedMemoryMapping>>>
       input_buffers_;
@@ -468,7 +479,7 @@ void RTCVideoEncoder::Impl::SetStatus(int32_t status) {
 
 void RTCVideoEncoder::Impl::RecordTimestampMatchUMA() const {
   UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoEncoderTimestampMatchSuccess",
-                        failed_timestamp_match_ == false);
+                        !failed_timestamp_match_);
 }
 
 void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
@@ -628,11 +639,13 @@ void RTCVideoEncoder::Impl::NotifyError(
     SignalAsyncWaiter(retval);
 }
 
-RTCVideoEncoder::Impl::~Impl() { DCHECK(!video_encoder_); }
+RTCVideoEncoder::Impl::~Impl() {
+  DCHECK(!video_encoder_);
+}
 
 void RTCVideoEncoder::Impl::LogAndNotifyError(
     const base::Location& location,
-    const std::string& str,
+    const String& str,
     media::VideoEncodeAccelerator::Error error) {
   static const char* const kErrorNames[] = {
       "kIllegalStateError", "kInvalidArgumentError", "kPlatformFailureError"};
@@ -719,6 +732,8 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
       return;
     }
   }
+  // TODO(crbug.com/787254): Replace the use of base::Bind by WTF::Bind here
+  // and where else possible in this file.
   frame->AddDestructionObserver(media::BindToCurrentLoop(base::BindOnce(
       &RTCVideoEncoder::Impl::EncodeFrameFinished, this, index)));
   if (!failed_timestamp_match_) {
@@ -859,6 +874,12 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
   }
 
   UseOutputBitstreamBufferId(bitstream_buffer_id);
+}
+
+std::unique_ptr<webrtc::VideoEncoder> CreateRTCVideoEncoder(
+    media::VideoCodecProfile profile,
+    media::GpuVideoAcceleratorFactories* gpu_factories) {
+  return std::make_unique<RTCVideoEncoder>(profile, gpu_factories);
 }
 
 RTCVideoEncoder::RTCVideoEncoder(
@@ -1030,4 +1051,4 @@ webrtc::VideoEncoder::EncoderInfo RTCVideoEncoder::GetEncoderInfo() const {
   return info;
 }
 
-}  // namespace content
+}  // namespace blink

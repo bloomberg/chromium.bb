@@ -8,10 +8,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "content/renderer/media/webrtc/rtc_video_encoder.h"
 #include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "media/video/mock_video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_video_encoder.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder.h"
@@ -26,16 +26,16 @@ using ::testing::SaveArg;
 using ::testing::Values;
 using ::testing::WithArgs;
 
-namespace content {
+namespace blink {
 
 namespace {
 
 const int kInputFrameFillY = 12;
 const int kInputFrameFillU = 23;
 const int kInputFrameFillV = 34;
-const unsigned short kInputFrameHeight = 234;
-const unsigned short kInputFrameWidth = 345;
-const unsigned short kStartBitrate = 100;
+const uint16_t kInputFrameHeight = 234;
+const uint16_t kInputFrameWidth = 345;
+const uint16_t kStartBitrate = 100;
 
 class EncodedImageCallbackWrapper : public webrtc::EncodedImageCallback {
  public:
@@ -344,4 +344,4 @@ TEST_F(RTCVideoEncoderTest, PreserveTimestamps) {
             rtc_encoder_->Encode(rtc_frame, &frame_types));
 }
 
-}  // namespace content
+}  // namespace blink

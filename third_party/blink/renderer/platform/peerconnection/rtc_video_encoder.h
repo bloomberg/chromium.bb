@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_RTC_VIDEO_ENCODER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_VIDEO_ENCODER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_ENCODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_ENCODER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -11,13 +11,14 @@
 #include <memory>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "media/base/video_decoder_config.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/video/video_bitrate_allocation.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
@@ -30,7 +31,11 @@ namespace media {
 class GpuVideoAcceleratorFactories;
 }  // namespace media
 
-namespace content {
+namespace blink {
+
+namespace features {
+PLATFORM_EXPORT extern const base::Feature kWebRtcScreenshareSwEncoding;
+}
 
 // RTCVideoEncoder uses a media::VideoEncodeAccelerator to implement a
 // webrtc::VideoEncoder class for WebRTC.  Internally, VEA methods are
@@ -39,7 +44,7 @@ namespace content {
 // the media thread.  RTCVideoEncoder is sychronized by webrtc::VideoSender.
 // webrtc::VideoEncoder methods do not run concurrently. RtcVideoEncoder needs
 // to synchronize RegisterEncodeCompleteCallback and encode complete callback.
-class CONTENT_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
+class PLATFORM_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
  public:
   RTCVideoEncoder(media::VideoCodecProfile profile,
                   media::GpuVideoAcceleratorFactories* gpu_factories);
@@ -78,6 +83,6 @@ class CONTENT_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
   DISALLOW_COPY_AND_ASSIGN(RTCVideoEncoder);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_RTC_VIDEO_ENCODER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_ENCODER_H_
