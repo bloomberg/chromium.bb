@@ -8,6 +8,18 @@
 from __future__ import print_function
 
 
+def _CollectionExec(expr, classname):
+  """Hack to workaround <=Python-2.7.8 exec bug.
+
+  See https://bugs.python.org/issue21591 for details.
+
+  TODO(crbug.com/998624): Drop this in Jan 2020.
+  """
+  namespace = {}
+  exec(expr, {}, namespace)  # pylint: disable=exec-used
+  return namespace[classname]
+
+
 # We have nested kwargs below, so disable the |kwargs| naming here.
 # pylint: disable=docstring-misnamed-args
 def Collection(classname, **default_kwargs):
@@ -55,9 +67,7 @@ def Collection(classname, **default_kwargs):
   }
 
   # Create the class in a local namespace as exec requires.
-  namespace = {}
-  exec(expr, {}, namespace)  # pylint: disable=exec-used
-  new_class = namespace[classname]
+  new_class = _CollectionExec(expr, classname)
 
   # Bind the helpers.
   new_class.__init__ = sn_init
