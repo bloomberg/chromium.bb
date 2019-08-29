@@ -560,7 +560,7 @@ void BlobRegistryImpl::RegisterFromStream(
     const std::string& content_disposition,
     uint64_t expected_length,
     mojo::ScopedDataPipeConsumerHandle data,
-    blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+    mojo::PendingAssociatedRemote<blink::mojom::ProgressClient> progress_client,
     RegisterFromStreamCallback callback) {
   if (!context_) {
     std::move(callback).Run(nullptr);

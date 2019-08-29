@@ -28,7 +28,7 @@ void FakeBlobRegistry::RegisterFromStream(
     const String& content_disposition,
     uint64_t expected_length,
     mojo::ScopedDataPipeConsumerHandle data,
-    mojom::blink::ProgressClientAssociatedPtrInfo,
+    mojo::PendingAssociatedRemote<mojom::blink::ProgressClient>,
     RegisterFromStreamCallback) {
   NOTREACHED();
 }

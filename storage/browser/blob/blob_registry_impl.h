@@ -53,7 +53,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
       const std::string& content_disposition,
       uint64_t expected_length,
       mojo::ScopedDataPipeConsumerHandle data,
-      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      mojo::PendingAssociatedRemote<blink::mojom::ProgressClient>
+          progress_client,
       RegisterFromStreamCallback callback) override;
   void GetBlobFromUUID(mojo::PendingReceiver<blink::mojom::Blob> blob,
                        const std::string& uuid,

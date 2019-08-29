@@ -21,12 +21,13 @@ class FakeBlobRegistry : public mojom::blink::BlobRegistry {
                 Vector<mojom::blink::DataElementPtr> elements,
                 RegisterCallback) override;
 
-  void RegisterFromStream(const String& content_type,
-                          const String& content_disposition,
-                          uint64_t expected_length,
-                          mojo::ScopedDataPipeConsumerHandle,
-                          mojom::blink::ProgressClientAssociatedPtrInfo,
-                          RegisterFromStreamCallback) override;
+  void RegisterFromStream(
+      const String& content_type,
+      const String& content_disposition,
+      uint64_t expected_length,
+      mojo::ScopedDataPipeConsumerHandle,
+      mojo::PendingAssociatedRemote<mojom::blink::ProgressClient>,
+      RegisterFromStreamCallback) override;
 
   void GetBlobFromUUID(mojo::PendingReceiver<mojom::blink::Blob>,
                        const String& uuid,
