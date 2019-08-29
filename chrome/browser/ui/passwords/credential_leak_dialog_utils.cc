@@ -70,8 +70,8 @@ LeakDialogType GetLeakDialogType(CredentialLeakType leak_type) {
     return LeakDialogType::kChange;
 
   return password_manager::IsPasswordSaved(leak_type)
-             ? LeakDialogType::kCheckupAndChange
-             : LeakDialogType::kCheckup;
+             ? LeakDialogType::kCheckup
+             : LeakDialogType::kCheckupAndChange;
 }
 
 GURL GetPasswordCheckupURL() {
