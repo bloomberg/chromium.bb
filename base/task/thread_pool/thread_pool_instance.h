@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_THREAD_POOL_H_
-#define BASE_TASK_THREAD_POOL_THREAD_POOL_H_
+#ifndef BASE_TASK_THREAD_POOL_THREAD_POOL_INSTANCE_H_
+#define BASE_TASK_THREAD_POOL_THREAD_POOL_INSTANCE_H_
 
 #include <memory>
 #include <vector>
@@ -252,4 +252,4 @@ class BASE_EXPORT ThreadPoolInstance {
 
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_THREAD_POOL_H_
+#endif  // BASE_TASK_THREAD_POOL_THREAD_POOL_INSTANCE_H_
