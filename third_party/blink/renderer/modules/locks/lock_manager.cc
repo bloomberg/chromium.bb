@@ -6,8 +6,7 @@
 
 #include <algorithm>
 
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -60,28 +59,29 @@ class LockManager::LockRequestImpl final
   USING_PRE_FINALIZER(LockManager::LockRequestImpl, Dispose);
 
  public:
-  LockRequestImpl(V8LockGrantedCallback* callback,
-                  ScriptPromiseResolver* resolver,
-                  const String& name,
-                  mojom::blink::LockMode mode,
-                  mojom::blink::LockRequestAssociatedRequest request,
-                  LockManager* manager)
+  LockRequestImpl(
+      V8LockGrantedCallback* callback,
+      ScriptPromiseResolver* resolver,
+      const String& name,
+      mojom::blink::LockMode mode,
+      mojo::PendingAssociatedReceiver<mojom::blink::LockRequest> receiver,
+      LockManager* manager)
       : callback_(callback),
         resolver_(resolver),
         name_(name),
         mode_(mode),
-        binding_(
+        receiver_(
             this,
-            std::move(request),
+            std::move(receiver),
             manager->GetExecutionContext()->GetTaskRunner(TaskType::kWebLocks)),
         manager_(manager) {}
 
   ~LockRequestImpl() override = default;
 
   void Dispose() {
-    // This Impl might still be bound to a LockRequest, so we close
-    // the binding before destroying the object.
-    binding_.Close();
+    // This Impl might still be bound to a LockRequest, so we reset
+    // the receiver before destroying the object.
+    receiver_.reset();
   }
 
   void Trace(blink::Visitor* visitor) {
@@ -96,7 +96,7 @@ class LockManager::LockRequestImpl final
 
   // Called to immediately close the pipe which signals the back-end,
   // unblocking further requests, without waiting for GC finalize the object.
-  void Cancel() { binding_.Close(); }
+  void Cancel() { receiver_.reset(); }
 
   void Abort(const String& reason) override {
     // Abort signal after acquisition should be ignored.
@@ -104,7 +104,7 @@ class LockManager::LockRequestImpl final
       return;
 
     manager_->RemovePendingRequest(this);
-    binding_.Close();
+    receiver_.reset();
 
     if (!resolver_->GetScriptState()->ContextIsValid())
       return;
@@ -117,7 +117,7 @@ class LockManager::LockRequestImpl final
     auto* callback = callback_.Release();
 
     manager_->RemovePendingRequest(this);
-    binding_.Close();
+    receiver_.reset();
 
     ScriptState* script_state = resolver_->GetScriptState();
     if (!script_state->ContextIsValid())
@@ -136,7 +136,7 @@ class LockManager::LockRequestImpl final
   }
 
   void Granted(mojom::blink::LockHandleAssociatedPtrInfo handle_info) override {
-    DCHECK(binding_.is_bound());
+    DCHECK(receiver_.is_bound());
 
     mojom::blink::LockHandleAssociatedPtr handle;
     handle.Bind(std::move(handle_info));
@@ -144,7 +144,7 @@ class LockManager::LockRequestImpl final
     auto* callback = callback_.Release();
 
     manager_->RemovePendingRequest(this);
-    binding_.Close();
+    receiver_.reset();
 
     ScriptState* script_state = resolver_->GetScriptState();
     if (!script_state->ContextIsValid()) {
@@ -183,7 +183,7 @@ class LockManager::LockRequestImpl final
   // Held to stamp the Lock object's |mode| property.
   mojom::blink::LockMode mode_;
 
-  mojo::AssociatedBinding<mojom::blink::LockRequest> binding_;
+  mojo::AssociatedReceiver<mojom::blink::LockRequest> receiver_;
 
   // The |manager_| keeps |this| alive until a response comes in and this is
   // registered. If the context is destroyed then |manager_| will dispose of
@@ -302,13 +302,14 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  mojom::blink::LockRequestAssociatedPtrInfo request_info;
+  mojo::PendingAssociatedRemote<mojom::blink::LockRequest> request_remote;
   // 11.1. Let request be the result of running the steps to request a lock with
   // promise, the current agent, environment’s id, origin, callback, name,
   // options’ mode dictionary member, options’ ifAvailable dictionary member,
   // and options’ steal dictionary member.
   LockRequestImpl* request = MakeGarbageCollected<LockRequestImpl>(
-      callback, resolver, name, mode, mojo::MakeRequest(&request_info), this);
+      callback, resolver, name, mode,
+      request_remote.InitWithNewEndpointAndPassReceiver(), this);
   AddPendingRequest(request);
 
   // 11.2. If options’ signal dictionary member is present, then add the
@@ -322,7 +323,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
                                               String(kRequestAbortedMessage)));
   }
 
-  service_->RequestLock(name, mode, wait, std::move(request_info));
+  service_->RequestLock(name, mode, wait, std::move(request_remote));
 
   // 12. Return promise.
   return promise;

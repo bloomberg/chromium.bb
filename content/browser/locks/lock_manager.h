@@ -34,7 +34,8 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   void RequestLock(const std::string& name,
                    blink::mojom::LockMode mode,
                    WaitMode wait,
-                   blink::mojom::LockRequestAssociatedPtrInfo request) override;
+                   mojo::PendingAssociatedRemote<blink::mojom::LockRequest>
+                       request) override;
 
   // Called by a LockHandle's implementation when destructed.
   void ReleaseLock(const url::Origin& origin, int64_t lock_id);

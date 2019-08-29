@@ -69,7 +69,7 @@ interface LockManager {
   RequestLock(string name,
               LockMode mode,
               WaitMode wait,
-              associated LockRequest request);
+              pending_associated_remote<LockRequest> request);
 
   // Produces a snapshot of the lock manager's state. Web applications
   // can use this for diagnostic purposes.

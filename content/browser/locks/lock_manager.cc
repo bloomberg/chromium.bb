@@ -14,6 +14,7 @@
 #include "base/guid.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 
 using blink::mojom::LockMode;
@@ -74,7 +75,7 @@ class LockManager::Lock {
        LockMode mode,
        int64_t lock_id,
        const std::string& client_id,
-       blink::mojom::LockRequestAssociatedPtr request)
+       mojo::AssociatedRemote<blink::mojom::LockRequest> request)
       : name_(name),
         mode_(mode),
         client_id_(client_id),
@@ -89,7 +90,7 @@ class LockManager::Lock {
     DCHECK(!handle_);
 
     request_->Abort(message);
-    request_ = nullptr;
+    request_.reset();
   }
 
   // Grant a lock request. This mints a LockHandle and returns it over the
@@ -103,7 +104,7 @@ class LockManager::Lock {
     handle_ =
         LockHandleImpl::Create(std::move(context), origin, lock_id_, &ptr);
     request_->Granted(ptr.PassInterface());
-    request_ = nullptr;
+    request_.reset();
   }
 
   // Break a granted lock. This terminates the connection, signaling an error
@@ -135,7 +136,7 @@ class LockManager::Lock {
   // Exactly one of the following is non-null at any given time.
 
   // |request_| is valid until the lock is granted (or failure).
-  blink::mojom::LockRequestAssociatedPtr request_;
+  mojo::AssociatedRemote<blink::mojom::LockRequest> request_;
 
   // Once granted, |handle_| holds this end of the pipe that lets us monitor
   // for the other end going away.
@@ -170,7 +171,7 @@ class LockManager::OriginState {
                    const std::string& name,
                    LockMode mode,
                    const std::string& client_id,
-                   blink::mojom::LockRequestAssociatedPtr request,
+                   mojo::AssociatedRemote<blink::mojom::LockRequest> request,
                    const url::Origin origin) {
     // Preempting shared locks is not supported.
     DCHECK_EQ(mode, LockMode::EXCLUSIVE);
@@ -188,7 +189,7 @@ class LockManager::OriginState {
                   const std::string& name,
                   LockMode mode,
                   const std::string& client_id,
-                  blink::mojom::LockRequestAssociatedPtr request,
+                  mojo::AssociatedRemote<blink::mojom::LockRequest> request,
                   WaitMode wait,
                   const url::Origin origin) {
     DCHECK(wait != WaitMode::PREEMPT);
@@ -321,7 +322,7 @@ void LockManager::RequestLock(
     const std::string& name,
     LockMode mode,
     WaitMode wait,
-    blink::mojom::LockRequestAssociatedPtrInfo request_info) {
+    mojo::PendingAssociatedRemote<blink::mojom::LockRequest> request_remote) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (wait == WaitMode::PREEMPT && mode != LockMode::EXCLUSIVE) {
@@ -341,11 +342,11 @@ void LockManager::RequestLock(
 
   int64_t lock_id = NextLockId();
 
-  blink::mojom::LockRequestAssociatedPtr request;
-  request.Bind(std::move(request_info));
-  request.set_connection_error_handler(base::BindOnce(&LockManager::ReleaseLock,
-                                                      base::Unretained(this),
-                                                      context.origin, lock_id));
+  mojo::AssociatedRemote<blink::mojom::LockRequest> request(
+      std::move(request_remote));
+  request.set_disconnect_handler(base::BindOnce(&LockManager::ReleaseLock,
+                                                base::Unretained(this),
+                                                context.origin, lock_id));
 
   OriginState& origin_state = origins_.find(context.origin)->second;
   if (wait == WaitMode::PREEMPT) {
