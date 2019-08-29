@@ -1272,6 +1272,9 @@
       origin_trial_feature_name: "PNaCl",
     },
     {
+      name: "PointerLockOptions",
+    },
+    {
       name: "PointerRawUpdate",
       status: "stable",
     },
