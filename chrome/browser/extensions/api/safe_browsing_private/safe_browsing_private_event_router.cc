@@ -60,6 +60,8 @@ const char SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent[] =
     "interstitialEvent";
 const char SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent[] =
     "sensitiveDataEvent";
+const char SafeBrowsingPrivateEventRouter::kKeyLargeUnscannedFileEvent[] =
+    "largeUnscannedFileEvent";
 
 SafeBrowsingPrivateEventRouter::SafeBrowsingPrivateEventRouter(
     content::BrowserContext* context)
@@ -292,6 +294,21 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
     }
     event.SetKey(kKeyTriggeredRules, std::move(triggered_rules));
     ReportRealtimeEvent(kKeySensitiveDataEvent, std::move(event));
+  }
+}
+
+void SafeBrowsingPrivateEventRouter::OnLargeUnscannedFileEvent(
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256) {
+  if (client_) {
+    // Create a real-time event dictionary from the arguments and report it.
+    base::Value event(base::Value::Type::DICTIONARY);
+    event.SetStringKey(kKeyUrl, url.spec());
+    event.SetStringKey(kKeyFileName, file_name);
+    event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
+    event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+    ReportRealtimeEvent(kKeyLargeUnscannedFileEvent, std::move(event));
   }
 }
 

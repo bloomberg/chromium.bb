@@ -63,6 +63,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyDangerousDownloadEvent[];
   static const char kKeyInterstitialEvent[];
   static const char kKeySensitiveDataEvent[];
+  static const char kKeyLargeUnscannedFileEvent[];
 
   explicit SafeBrowsingPrivateEventRouter(content::BrowserContext* context);
 
@@ -103,6 +104,11 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
       const GURL& url,
       const std::string& file_name,
       const std::string& download_digest_sha256);
+
+  // Notifies listeners that deep scanning failed, since the file was too large.
+  void OnLargeUnscannedFileEvent(const GURL& url,
+                                 const std::string& file_name,
+                                 const std::string& download_digest_sha256);
 
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);

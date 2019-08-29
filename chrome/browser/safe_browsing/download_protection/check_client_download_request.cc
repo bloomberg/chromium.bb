@@ -45,6 +45,11 @@ void MaybeReportDownloadDeepScanningVerdict(
     const std::string& download_digest_sha256,
     BinaryUploadService::Result result,
     DeepScanningClientResponse response) {
+  if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnLargeUnscannedFileEvent(url, file_name, download_digest_sha256);
+  }
+
   if (result != BinaryUploadService::Result::SUCCESS)
     return;
 
