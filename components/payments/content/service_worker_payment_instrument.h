@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_SERVICE_WORKER_PAYMENT_INSTRUMENT_H_
 #define COMPONENTS_PAYMENTS_CONTENT_SERVICE_WORKER_PAYMENT_INSTRUMENT_H_
 
+#include <stdint.h>
+
+#include "base/memory/weak_ptr.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/web_app_manifest.h"
 #include "components/payments/core/payment_instrument.h"
@@ -79,8 +82,10 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
                           bool supported_types_specified,
                           const std::set<autofill::CreditCard::CardType>&
                               supported_types) const override;
-  bool IsValidForPaymentMethodIdentifier(
-      const std::string& payment_method_identifier) const override;
+  void IsValidForPaymentMethodIdentifier(
+      const std::string& payment_method_identifier,
+      bool* is_valid) const override;
+  base::WeakPtr<PaymentInstrument> AsWeakPtr() override;
   gfx::ImageSkia icon_image_skia() const override;
 
   void set_payment_handler_host(

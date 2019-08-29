@@ -52,6 +52,10 @@ void PaymentHandlerHost::Disconnect() {
   binding_.Close();
 }
 
+base::WeakPtr<PaymentHandlerHost> PaymentHandlerHost::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void PaymentHandlerHost::ChangePaymentMethod(
     mojom::PaymentHandlerMethodDataPtr method_data,
     mojom::PaymentHandlerHost::ChangePaymentMethodCallback callback) {

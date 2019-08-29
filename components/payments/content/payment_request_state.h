@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/payments/content/initialization_task.h"
@@ -260,6 +261,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   // Selects the default shipping address.
   void SelectDefaultShippingAddressAndNotifyObservers();
+
+  base::WeakPtr<PaymentRequestState> AsWeakPtr();
 
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,

@@ -323,7 +323,7 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
         PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
             details, base::BindRepeating(
                          &PaymentInstrument::IsValidForPaymentMethodIdentifier,
-                         base::Unretained(state()->selected_instrument()))));
+                         state()->selected_instrument()->AsWeakPtr())));
   }
 
   bool is_resolving_promise_passed_into_show_method = !spec_->IsInitialized();

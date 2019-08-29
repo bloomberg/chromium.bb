@@ -56,6 +56,8 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // Disconnects from the payment handler.
   void Disconnect();
 
+  base::WeakPtr<PaymentHandlerHost> AsWeakPtr();
+
  private:
   // mojom::PaymentHandlerHost
   void ChangePaymentMethod(

@@ -526,6 +526,10 @@ void PaymentRequestState::SelectDefaultShippingAddressAndNotifyObservers() {
   UpdateIsReadyToPayAndNotifyObservers();
 }
 
+base::WeakPtr<PaymentRequestState> PaymentRequestState::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void PaymentRequestState::PopulateProfileCache() {
   std::vector<autofill::AutofillProfile*> profiles =
       personal_data_manager_->GetProfilesToSuggest();

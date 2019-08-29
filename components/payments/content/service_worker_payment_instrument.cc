@@ -379,7 +379,9 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
   if (needs_installation_)
     return installable_enabled_method_ == method;
 
-  if (!IsValidForPaymentMethodIdentifier(method))
+  bool is_valid = false;
+  IsValidForPaymentMethodIdentifier(method, &is_valid);
+  if (!is_valid)
     return false;
 
   // Return true if 'basic-card' is not the only matched payment method. This
@@ -437,11 +439,16 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
   return i < stored_payment_app_info_->capabilities.size();
 }
 
-bool ServiceWorkerPaymentInstrument::IsValidForPaymentMethodIdentifier(
-    const std::string& payment_method_identifier) const {
+void ServiceWorkerPaymentInstrument::IsValidForPaymentMethodIdentifier(
+    const std::string& payment_method_identifier,
+    bool* is_valid) const {
   DCHECK(!needs_installation_);
-  return base::Contains(stored_payment_app_info_->enabled_methods,
-                        payment_method_identifier);
+  *is_valid = base::Contains(stored_payment_app_info_->enabled_methods,
+                             payment_method_identifier);
+}
+
+base::WeakPtr<PaymentInstrument> ServiceWorkerPaymentInstrument::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 gfx::ImageSkia ServiceWorkerPaymentInstrument::icon_image_skia() const {
