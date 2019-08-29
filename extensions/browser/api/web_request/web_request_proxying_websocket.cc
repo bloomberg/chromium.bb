@@ -190,7 +190,7 @@ void WebRequestProxyingWebSocket::ContinueToHeadersReceived() {
 }
 
 void WebRequestProxyingWebSocket::OnConnectionEstablished(
-    mojo::PendingRemote<network::mojom::WebSocket> websocket,
+    network::mojom::WebSocketPtr websocket,
     mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
     const std::string& selected_protocol,
     const std::string& extensions,

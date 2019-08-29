@@ -148,7 +148,7 @@ void WebSocketHandleImpl::OnResponseReceived(
 }
 
 void WebSocketHandleImpl::OnConnectionEstablished(
-    mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
+    network::mojom::blink::WebSocketPtr websocket,
     mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
         client_receiver,
     const String& protocol,
@@ -168,7 +168,7 @@ void WebSocketHandleImpl::OnConnectionEstablished(
                 FROM_HERE));
 
   DCHECK(!websocket_);
-  websocket_.Bind(std::move(websocket));
+  websocket_ = std::move(websocket);
   readable_ = std::move(readable);
   const MojoResult mojo_result = readable_watcher_.Watch(
       readable_.get(), MOJO_HANDLE_SIGNAL_READABLE,
