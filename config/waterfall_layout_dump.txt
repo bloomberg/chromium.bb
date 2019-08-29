@@ -455,6 +455,7 @@
     kalista-release
     kefka-kernelnext-release
     kefka-release
+    kevin-arc64-release
     kevin-arcnext-release
     kevin-release
     kevin64-release
@@ -2535,6 +2536,7 @@
     kalista-release-tryjob
     kefka-kernelnext-release-tryjob
     kefka-release-tryjob
+    kevin-arc64-release-tryjob
     kevin-arcnext-release-tryjob
     kevin-release-tryjob
     kevin64-release-tryjob
