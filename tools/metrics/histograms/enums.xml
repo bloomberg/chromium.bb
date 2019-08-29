@@ -65479,6 +65479,26 @@ Full version information for the fingerprint enum values:
   </int>
 </enum>
 
+<enum name="ZeroSuggestEligibleOnFocusForRemoteNoUrlOnNTP">
+  <int value="0" label="Eligible"/>
+  <int value="1" label="Ineligible: Off the Record">
+    The user is in incognito mode.
+  </int>
+  <int value="2" label="Ineligible: Suggestions disabled">
+    Suggestion mechanism is disabled by user.
+  </int>
+  <int value="3" label="Ineligible: User not authenticated">
+    User is not signed in.
+  </int>
+  <int value="4" label="Ineligible: Unsupported suggestion server">
+    User is using an unsupported search engine.
+  </int>
+  <int value="5" label="Ineligible: Not participating">
+    User is not participating in an experiment that enables RemoteNoURL
+    suggestions on the NTP.
+  </int>
+</enum>
+
 </enums>
 
 </histogram-configuration>
