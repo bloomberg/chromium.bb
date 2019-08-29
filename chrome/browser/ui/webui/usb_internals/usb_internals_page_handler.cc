@@ -24,8 +24,8 @@ void UsbInternalsPageHandler::BindTestInterface(
 }
 
 void UsbInternalsPageHandler::BindUsbDeviceManagerInterface(
-    device::mojom::UsbDeviceManagerRequest request) {
+    mojo::PendingReceiver<device::mojom::UsbDeviceManager> receiver) {
   // Forward the request to the DeviceService.
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               std::move(request));
+  content::GetSystemConnector()->Connect(device::mojom::kServiceName,
+                                         std::move(receiver));
 }

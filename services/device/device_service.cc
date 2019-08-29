@@ -353,7 +353,7 @@ void DeviceService::BindUsbDeviceManagerRequest(
   if (!usb_device_manager_)
     usb_device_manager_ = std::make_unique<usb::DeviceManagerImpl>();
 
-  usb_device_manager_->AddBinding(std::move(request));
+  usb_device_manager_->AddReceiver(std::move(request));
 }
 
 void DeviceService::BindUsbDeviceManagerTestRequest(

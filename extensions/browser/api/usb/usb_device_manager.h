@@ -15,6 +15,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/usb.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
 
@@ -73,7 +75,7 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
   void EnsureConnectionWithDeviceManager();
 
   void SetDeviceManagerForTesting(
-      device::mojom::UsbDeviceManagerPtr fake_device_manager);
+      mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_device_manager);
 
  private:
   friend class BrowserContextKeyedAPIFactory<UsbDeviceManager>;
@@ -116,7 +118,7 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
   std::map<std::string, device::mojom::UsbDeviceInfoPtr> devices_;
 
   // Connection to |device_manager_instance_|.
-  device::mojom::UsbDeviceManagerPtr device_manager_;
+  mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
   mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
       client_binding_;
 

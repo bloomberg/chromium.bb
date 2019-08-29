@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
@@ -67,10 +68,12 @@ class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
     // Set fake device manager for UsbChooserContext.
     if (!device_manager()->IsBound()) {
-      device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-      device_manager()->AddBinding(mojo::MakeRequest(&device_manager_ptr));
+      mojo::PendingRemote<device::mojom::UsbDeviceManager>
+          pending_device_manager;
+      device_manager()->AddReceiver(
+          pending_device_manager.InitWithNewPipeAndPassReceiver());
       GetChooserContext()->SetDeviceManagerForTesting(
-          std::move(device_manager_ptr));
+          std::move(pending_device_manager));
     }
 
     if (!web_usb_service_)

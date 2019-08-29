@@ -40,9 +40,10 @@ DeviceManagerImpl::DeviceManagerImpl(std::unique_ptr<UsbService> usb_service)
 
 DeviceManagerImpl::~DeviceManagerImpl() = default;
 
-void DeviceManagerImpl::AddBinding(mojom::UsbDeviceManagerRequest request) {
+void DeviceManagerImpl::AddReceiver(
+    mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) {
   if (usb_service_)
-    bindings_.AddBinding(this, std::move(request));
+    receivers_.Add(this, std::move(receiver));
 }
 
 void DeviceManagerImpl::EnumerateDevicesAndSetClient(
@@ -201,7 +202,7 @@ void DeviceManagerImpl::WillDestroyUsbService() {
   usb_service_ = nullptr;
 
   // Close all the connections.
-  bindings_.CloseAllBindings();
+  receivers_.Clear();
   clients_.CloseAll();
 }
 

@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
 #include "services/device/usb/mock_usb_device.h"
@@ -33,8 +34,8 @@ using ::testing::Invoke;
 namespace device {
 
 using mojom::UsbDeviceInfoPtr;
+using mojom::UsbDeviceManager;
 using mojom::UsbDeviceManagerClientPtr;
-using mojom::UsbDeviceManagerPtr;
 using mojom::UsbDevicePtr;
 using mojom::UsbEnumerationOptionsPtr;
 
@@ -117,8 +118,9 @@ TEST_F(USBDeviceManagerImplTest, GetDevices) {
   mock_usb_service_->AddDevice(device1);
   mock_usb_service_->AddDevice(device2);
 
-  UsbDeviceManagerPtr device_manager;
-  device_manager_instance_->AddBinding(mojo::MakeRequest(&device_manager));
+  mojo::Remote<UsbDeviceManager> device_manager;
+  device_manager_instance_->AddReceiver(
+      device_manager.BindNewPipeAndPassReceiver());
 
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_vendor_id = true;
@@ -145,8 +147,9 @@ TEST_F(USBDeviceManagerImplTest, GetDevice) {
 
   mock_usb_service_->AddDevice(mock_device);
 
-  UsbDeviceManagerPtr device_manager;
-  device_manager_instance_->AddBinding(mojo::MakeRequest(&device_manager));
+  mojo::Remote<UsbDeviceManager> device_manager;
+  device_manager_instance_->AddReceiver(
+      device_manager.BindNewPipeAndPassReceiver());
 
   {
     base::RunLoop loop;
@@ -183,8 +186,9 @@ TEST_F(USBDeviceManagerImplTest, Client) {
 
   mock_usb_service_->AddDevice(device0);
 
-  UsbDeviceManagerPtr device_manager;
-  device_manager_instance_->AddBinding(mojo::MakeRequest(&device_manager));
+  mojo::Remote<UsbDeviceManager> device_manager;
+  device_manager_instance_->AddReceiver(
+      device_manager.BindNewPipeAndPassReceiver());
 
   MockDeviceManagerClient mock_client;
   device_manager->SetClient(mock_client.CreateInterfacePtrAndBind());

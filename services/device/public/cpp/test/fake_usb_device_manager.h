@@ -12,8 +12,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
@@ -32,7 +33,7 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
   FakeUsbDeviceManager();
   ~FakeUsbDeviceManager() override;
 
-  void AddBinding(mojom::UsbDeviceManagerRequest request);
+  void AddReceiver(mojo::PendingReceiver<mojom::UsbDeviceManager> receiver);
 
   // Create a device and add it to added_devices_.
   template <typename... Args>
@@ -51,9 +52,9 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
   bool SetMockForDevice(const std::string& guid,
                         MockUsbMojoDevice* mock_device);
 
-  bool IsBound() { return !bindings_.empty(); }
+  bool IsBound() { return !receivers_.empty(); }
 
-  void CloseAllBindings() { bindings_.CloseAllBindings(); }
+  void CloseAllBindings() { receivers_.Clear(); }
 
   void RemoveAllDevices();
 
@@ -87,7 +88,7 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
   void SetClient(
       mojom::UsbDeviceManagerClientAssociatedPtrInfo client) override;
 
-  mojo::BindingSet<mojom::UsbDeviceManager> bindings_;
+  mojo::ReceiverSet<mojom::UsbDeviceManager> receivers_;
   mojo::AssociatedInterfacePtrSet<mojom::UsbDeviceManagerClient> clients_;
 
   DeviceMap devices_;

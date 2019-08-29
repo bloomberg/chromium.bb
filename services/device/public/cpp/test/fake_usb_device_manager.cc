@@ -95,8 +95,9 @@ void FakeUsbDeviceManager::SetClient(
   clients_.AddPtr(std::move(client_ptr));
 }
 
-void FakeUsbDeviceManager::AddBinding(mojom::UsbDeviceManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void FakeUsbDeviceManager::AddReceiver(
+    mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 mojom::UsbDeviceInfoPtr FakeUsbDeviceManager::AddDevice(

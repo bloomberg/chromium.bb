@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
@@ -510,9 +511,9 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
     // Set a fake USB device manager for AndroidUsbDevice.
     usb_manager_ = CreateFakeUsbManager();
     DCHECK(usb_manager_);
-    device::mojom::UsbDeviceManagerPtrInfo manager_ptr_info;
-    usb_manager_->AddBinding(mojo::MakeRequest(&manager_ptr_info));
-    adb_bridge_->set_usb_device_manager_for_test(std::move(manager_ptr_info));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> manager;
+    usb_manager_->AddReceiver(manager.InitWithNewPipeAndPassReceiver());
+    adb_bridge_->set_usb_device_manager_for_test(std::move(manager));
   }
 
   void ScheduleDeviceCountRequest(const base::Closure& request) {

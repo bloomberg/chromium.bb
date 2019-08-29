@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 
@@ -49,7 +51,7 @@ class UsbDeviceManagerHelper {
   static UsbDeviceManagerHelper* GetInstance();
   static void CountDevices(base::OnceCallback<void(int)> callback);
   static void SetUsbManagerForTesting(
-      device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager);
+      mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_usb_manager);
 
   // Please do not create UsbDeviceManagerHelper instance from this constructor
   // directly, use static method GetInstance() instead.
@@ -64,13 +66,13 @@ class UsbDeviceManagerHelper {
  private:
   void CountDevicesInternal(base::OnceCallback<void(int)> callback);
   void SetUsbManagerForTestingInternal(
-      device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager);
+      mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_usb_manager);
   void EnsureUsbDeviceManagerConnection();
   void OnDeviceManagerConnectionError();
 
-  device::mojom::UsbDeviceManagerPtr device_manager_;
+  mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
   // Just for test.
-  device::mojom::UsbDeviceManagerPtrInfo testing_device_manager_info_;
+  mojo::PendingRemote<device::mojom::UsbDeviceManager> testing_device_manager_;
 
   THREAD_CHECKER(thread_checker_);
 
