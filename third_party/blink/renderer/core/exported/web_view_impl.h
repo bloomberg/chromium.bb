@@ -409,6 +409,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // WebWidget overrides
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
+  void Resize(const WebSize&) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
@@ -431,7 +432,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // WebWidget methods:
   void SetAnimationHost(cc::AnimationHost*) override;
   WebSize Size() override;
-  void Resize(const WebSize&) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
   void BeginFrame(base::TimeTicks last_frame_time,
                   bool record_main_frame_metrics) override;
