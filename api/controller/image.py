@@ -13,6 +13,7 @@ from __future__ import print_function
 import os
 
 from chromite.api import controller
+from chromite.api import faux
 from chromite.api import validate
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import cros_build_lib
@@ -52,6 +53,7 @@ _VM_IMAGE_MAPPING = {
 }
 
 
+@faux.all_empty
 @validate.require('build_target.name')
 @validate.validation_complete
 def Create(input_proto, output_proto, _config):
@@ -172,6 +174,7 @@ def _PopulateBuiltImages(board, image_types, output_proto):
     new_image.build_target.name = board
 
 
+@faux.all_empty
 @validate.exists('image.path')
 @validate.validation_complete
 def SignerTest(input_proto, output_proto, _config):
@@ -191,6 +194,8 @@ def SignerTest(input_proto, output_proto, _config):
   else:
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
+
+@faux.all_empty
 @validate.require('build_target.name', 'result.directory')
 @validate.exists('image.path')
 def Test(input_proto, output_proto, config):

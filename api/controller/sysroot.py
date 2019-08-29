@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 from chromite.api import controller
+from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.metrics import deserialize_metrics_log
@@ -22,6 +23,7 @@ from chromite.utils import metrics
 _ACCEPTED_LICENSES = '@CHROMEOS'
 
 
+@faux.all_empty
 @validate.require('build_target.name')
 @validate.validation_complete
 def Create(input_proto, output_proto, _config):
@@ -46,7 +48,24 @@ def Create(input_proto, output_proto, _config):
   output_proto.sysroot.path = created.path
   output_proto.sysroot.build_target.name = build_target_name
 
+  return controller.RETURN_CODE_SUCCESS
 
+
+def _MockFailedPackagesResponse(_input_proto, output_proto, _config):
+  """Mock error response that populates failed packages."""
+  pkg = output_proto.failed_packages.add()
+  pkg.package_name = 'package'
+  pkg.category = 'category'
+  pkg.version = '1.0.0_rc-r1'
+
+  pkg2 = output_proto.failed_packages.add()
+  pkg2.package_name = 'bar'
+  pkg2.category = 'foo'
+  pkg2.version = '3.7-r99'
+
+
+@faux.empty_success
+@faux.error(_MockFailedPackagesResponse)
 @validate.require('sysroot.path', 'sysroot.build_target.name')
 @validate.exists('sysroot.path')
 @validate.validation_complete
@@ -73,7 +92,11 @@ def InstallToolchain(input_proto, output_proto, _config):
 
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
 
+  return controller.RETURN_CODE_SUCCESS
 
+
+@faux.empty_success
+@faux.error(_MockFailedPackagesResponse)
 @validate.require('sysroot.path', 'sysroot.build_target.name')
 @validate.validation_complete
 @metrics.collect_metrics

@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import binhost_pb2
@@ -25,6 +26,7 @@ _OVERLAY_TYPE_TO_NAME = {
 }
 
 
+@faux.all_empty
 @validate.require('overlay_type')
 @validate.is_in('overlay_type', _OVERLAY_TYPE_TO_NAME)
 @validate.validation_complete
@@ -47,6 +49,7 @@ def Uprev(input_proto, output_proto, _config):
     output_proto.modified_ebuilds.add().path = path
 
 
+@faux.all_empty
 @validate.require('versions')
 @validate.require('package_info.package_name', 'package_info.category')
 @validate.validation_complete
@@ -78,7 +81,7 @@ def UprevVersionedPackage(input_proto, output_proto, _config):
     output_proto.modified_ebuilds.add().path = path
 
 
-
+@faux.all_empty
 @validate.require('atom')
 @validate.validation_complete
 def GetBestVisible(input_proto, output_proto, _config):
@@ -93,6 +96,7 @@ def GetBestVisible(input_proto, output_proto, _config):
   output_proto.package_info.CopyFrom(package_info)
 
 
+@faux.all_empty
 @validate.require('build_target.name')
 @validate.validation_complete
 def GetChromeVersion(input_proto, output_proto, _config):

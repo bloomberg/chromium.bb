@@ -13,6 +13,7 @@ import shutil
 from six.moves import urllib
 
 from chromite.api import controller
+from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import binhost_pb2
@@ -31,6 +32,7 @@ _OVERLAY_TYPE_TO_NAME = {
 }
 
 
+@faux.all_empty
 @validate.require('build_target.name')
 @validate.validation_complete
 def GetBinhosts(input_proto, output_proto, _config):
@@ -45,6 +47,7 @@ def GetBinhosts(input_proto, output_proto, _config):
     new_binhost.package_index = 'Packages'
 
 
+@faux.all_empty
 @validate.require('build_target.name')
 @validate.validation_complete
 def GetPrivatePrebuiltAclArgs(input_proto, output_proto, _config):
@@ -62,6 +65,7 @@ def GetPrivatePrebuiltAclArgs(input_proto, output_proto, _config):
     new_arg.value = value
 
 
+@faux.all_empty
 @validate.require('uri')
 def PrepareBinhostUploads(input_proto, output_proto, config):
   """Return a list of files to uplooad to the binhost.
@@ -114,6 +118,8 @@ def PrepareBinhostUploads(input_proto, output_proto, config):
   for upload_target in upload_targets:
     output_proto.upload_targets.add().path = upload_target.strip('/')
 
+
+@faux.all_empty
 @validate.require('uri', 'sysroot.path')
 @validate.exists('uploads_dir')
 def PrepareDevInstallBinhostUploads(input_proto, output_proto, config):
@@ -166,6 +172,8 @@ def PrepareDevInstallBinhostUploads(input_proto, output_proto, config):
     output_proto.upload_targets.add().path = upload_target
   output_proto.upload_targets.add().path = 'Packages'
 
+
+@faux.all_empty
 @validate.require('build_target.name', 'key', 'uri')
 @validate.validation_complete
 def SetBinhost(input_proto, output_proto, _config):
@@ -197,6 +205,7 @@ def SetBinhost(input_proto, output_proto, _config):
                                                 private=private)
 
 
+@faux.all_empty
 @validate.require('overlay_type')
 @validate.is_in('overlay_type', _OVERLAY_TYPE_TO_NAME)
 @validate.validation_complete

@@ -10,11 +10,19 @@ from __future__ import print_function
 import os
 
 from chromite.api import controller
+from chromite.api import faux
 from chromite.api import validate
 from chromite.lib import cros_build_lib
 from chromite.service import sdk
 
 
+def _ChrootVersionResponse(_input_proto, output_proto, _config):
+  """Add a fake chroot version to a successful response."""
+  output_proto.version.version = 168
+
+
+@faux.success(_ChrootVersionResponse)
+@faux.empty_error
 def Create(input_proto, output_proto, config):
   """Chroot creation, includes support for replacing an existing chroot.
 
@@ -50,6 +58,8 @@ def Create(input_proto, output_proto, config):
                        'error creating the chroot that was not detected.')
 
 
+@faux.success(_ChrootVersionResponse)
+@faux.empty_error
 @validate.validation_complete
 def Update(input_proto, output_proto, _config):
   """Update the chroot.

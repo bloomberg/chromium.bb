@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+from chromite.api import faux
 from chromite.api import validate
 from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.lib import toolchain_util
@@ -27,6 +28,7 @@ def _GetMethodForUpdatingArtifacts(artifact_type):
   }[artifact_type]
 
 
+@faux.all_empty
 @validate.require('build_target.name')
 @validate.is_in('artifact_type', _NAMES_FOR_ARTIFACTS.keys())
 @validate.validation_complete
@@ -44,6 +46,7 @@ def UpdateEbuildWithAFDOArtifacts(input_proto, output_proto, _config):
   output_proto.status = update_method(board)
 
 
+@faux.all_empty
 @validate.require('build_target.name')
 @validate.is_in('artifact_type', _NAMES_FOR_ARTIFACTS.keys())
 @validate.validation_complete

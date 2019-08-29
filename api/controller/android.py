@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import android_pb2
@@ -24,6 +25,7 @@ ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
                                     'package.mask', 'androidpin')
 
 
+@faux.all_empty
 @validate.require('tracking_branch', 'package_name', 'android_build_branch')
 @validate.validation_complete
 def MarkStable(input_proto, output_proto, _config):
@@ -74,6 +76,7 @@ def MarkStable(input_proto, output_proto, _config):
     output_proto.status = android_pb2.MARK_STABLE_STATUS_EARLY_EXIT
 
 
+@faux.all_empty
 @validate.validation_complete
 def UnpinVersion(_input_proto, _output_proto, _config):
   """Unpin the Android version.

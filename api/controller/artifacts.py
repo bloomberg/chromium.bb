@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 
 from chromite.api import controller
+from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import toolchain_pb2
@@ -45,6 +46,7 @@ def _GetImageDir(build_root, target):
   return image_dir
 
 
+@faux.all_empty
 @validate.require('build_target.name', 'output_dir')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -64,6 +66,7 @@ def BundleImageZip(input_proto, output_proto, _config):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
+@faux.all_empty
 @validate.require('build_target.name', 'output_dir')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -98,6 +101,7 @@ def BundleTestUpdatePayloads(input_proto, output_proto, _config):
     output_proto.artifacts.add().path = payload
 
 
+@faux.all_empty
 @validate.require('output_dir')
 @validate.exists('output_dir')
 def BundleAutotestFiles(input_proto, output_proto, config):
@@ -140,6 +144,7 @@ def BundleAutotestFiles(input_proto, output_proto, config):
     output_proto.artifacts.add().path = archive
 
 
+@faux.all_empty
 @validate.require('output_dir')
 @validate.exists('output_dir')
 def BundleTastFiles(input_proto, output_proto, config):
@@ -187,6 +192,7 @@ def BundleTastFiles(input_proto, output_proto, config):
   output_proto.artifacts.add().path = archive
 
 
+@faux.all_empty
 @validate.require('build_target.name', 'output_dir')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -213,6 +219,7 @@ def BundlePinnedGuestImages(input_proto, output_proto, _config):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
+@faux.all_empty
 @validate.require('sysroot.path')
 @validate.validation_complete
 def FetchPinnedGuestImages(input_proto, output_proto, _config):
@@ -236,6 +243,7 @@ def FetchPinnedGuestImages(input_proto, output_proto, _config):
     pinned_image.uri = pin.uri
 
 
+@faux.all_empty
 @validate.require('output_dir', 'sysroot.path')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -268,6 +276,7 @@ def BundleFirmware(input_proto, output_proto, _config):
   output_proto.artifacts.add().path = archive
 
 
+@faux.all_empty
 @validate.exists('output_dir')
 def BundleEbuildLogs(input_proto, output_proto, config):
   """Tar the ebuild logs for a build target.
@@ -303,6 +312,7 @@ def BundleEbuildLogs(input_proto, output_proto, config):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
+@faux.all_empty
 @validate.exists('output_dir')
 @validate.validation_complete
 def BundleChromeOSConfig(input_proto, output_proto, _config):
@@ -334,6 +344,7 @@ def BundleChromeOSConfig(input_proto, output_proto, _config):
   output_proto.artifacts.add().path = os.path.join(output_dir, chromeos_config)
 
 
+@faux.all_empty
 @validate.require('output_dir', 'sysroot.build_target.name', 'sysroot.path')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -370,6 +381,7 @@ def BundleSimpleChromeArtifacts(input_proto, output_proto, _config):
     output_proto.artifacts.add().path = file_name
 
 
+@faux.all_empty
 @validate.require('chroot.path', 'test_results_dir', 'output_dir')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -393,6 +405,7 @@ def BundleVmFiles(input_proto, output_proto, _config):
 
 _VALID_ARTIFACT_TYPES = [toolchain_pb2.BENCHMARK_AFDO,
                          toolchain_pb2.ORDERFILE]
+@faux.all_empty
 @validate.require('build_target.name', 'output_dir')
 @validate.is_in('artifact_type', _VALID_ARTIFACT_TYPES)
 @validate.exists('output_dir')
@@ -426,6 +439,7 @@ def BundleAFDOGenerationArtifacts(input_proto, output_proto, _config):
     output_proto.artifacts.add().path = file_name
 
 
+@faux.all_empty
 @validate.exists('output_dir')
 def ExportCpeReport(input_proto, output_proto, config):
   """Export a CPE report.

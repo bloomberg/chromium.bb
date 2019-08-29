@@ -13,6 +13,7 @@ from __future__ import print_function
 import os
 
 from chromite.api import controller
+from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import test_pb2
@@ -27,6 +28,7 @@ from chromite.service import test
 from chromite.utils import key_value_store
 
 
+@faux.all_empty
 def DebugInfoTest(input_proto, _output_proto, config):
   """Run the debug info tests."""
   sysroot_path = input_proto.sysroot.path
@@ -53,6 +55,7 @@ def DebugInfoTest(input_proto, _output_proto, config):
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
+@faux.all_empty
 @validate.require('build_target.name', 'result_path')
 @validate.exists('result_path')
 @validate.validation_complete
@@ -96,6 +99,7 @@ def BuildTargetUnitTest(input_proto, output_proto, _config):
     output_proto.tarball_path = tarball
 
 
+@faux.all_empty
 @validate.validation_complete
 def ChromiteUnitTest(_input_proto, _output_proto, _config):
   """Run the chromite unit tests."""
@@ -107,6 +111,7 @@ def ChromiteUnitTest(_input_proto, _output_proto, _config):
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
+@faux.all_empty
 @validate.require('build_target.name', 'vm_path.path', 'test_harness',
                   'vm_tests')
 @validate.validation_complete
@@ -140,6 +145,7 @@ def VmTest(input_proto, _output_proto, _config):
     cros_build_lib.RunCommand(cmd, kill_timeout=10 * 60)
 
 
+@faux.all_empty
 @validate.require('image_payload.path.path', 'cache_payloads')
 @validate.validation_complete
 def MoblabVmTest(input_proto, _output_proto, _config):
@@ -177,6 +183,7 @@ def MoblabVmTest(input_proto, _output_proto, _config):
     test.ValidateMoblabVmTest(results_dir)
 
 
+@faux.all_empty
 @validate.validation_complete
 def CrosSigningTest(_input_proto, _output_proto, _config):
   """Run the cros-signing unit tests."""
