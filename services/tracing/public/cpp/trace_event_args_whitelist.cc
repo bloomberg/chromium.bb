@@ -50,6 +50,8 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
     {"base", "ScopedBlockingCall*", kScopedBlockingCallAllowedArgs},
+    {"base", "ScopedThreadMayLoadLibraryOnBackgroundThread",
+     kScopedBlockingCallAllowedArgs},
     {"benchmark", "TestWhitelist*", nullptr},
     {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
     {"fonts", "CachedFontLinkSettings::GetLinkedFonts", nullptr},
