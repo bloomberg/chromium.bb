@@ -6,7 +6,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.Chromium.TabbedMode" parent="Base.Theme.Chromium.TabbedMode">
         <item name="android:statusBarColor">@color/modern_primary_color</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightStatusBar">@bool/window_light_status_bar</item>
+    </style>
+
+    <style name="Theme.Chromium.Preferences" parent="Base.Theme.Chromium.Preferences">
+        <item name="android:statusBarColor">@color/modern_primary_color</item>
+        <item name="android:windowLightStatusBar">@bool/window_light_status_bar</item>
     </style>
 </resources>
 
