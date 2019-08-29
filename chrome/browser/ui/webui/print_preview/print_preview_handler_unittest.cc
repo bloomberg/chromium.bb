@@ -285,7 +285,7 @@ class PrintPreviewHandlerTest : public testing::Test {
   }
 
   void Initialize() {
-    // Set locale since the delimeters we check in VerifyInitialSettings()
+    // Set locale since the delimiters we check in VerifyInitialSettings()
     // depend on it.
     base::test::ScopedRestoreICUDefaultLocale scoped_locale("en");
 
@@ -327,7 +327,7 @@ class PrintPreviewHandlerTest : public testing::Test {
   //   - |default_printer_name| is the printer name returned
   //   - |initiator_title| is the initiator title returned
   //   - |expected_header_footer| is the header/footer state returned, if any
-  // Also validates that delimeters are correct for "en" locale (set in
+  // Also validates that delimiters are correct for "en" locale (set in
   // Initialize()).  Assumes "test-callback-id-0" was used as the callback id.
   void ValidateInitialSettings(const content::TestWebUI::CallData& data,
                                const std::string& default_printer_name,
@@ -344,14 +344,14 @@ class PrintPreviewHandlerTest : public testing::Test {
         settings->FindKeyOfType("uiLocale", base::Value::Type::STRING);
     ASSERT_TRUE(locale);
     EXPECT_EQ("en", locale->GetString());
-    const base::Value* thousands_delimeter = settings->FindKeyOfType(
-        "thousandsDelimeter", base::Value::Type::STRING);
-    ASSERT_TRUE(thousands_delimeter);
-    EXPECT_EQ(",", thousands_delimeter->GetString());
-    const base::Value* decimal_delimeter =
-        settings->FindKeyOfType("decimalDelimeter", base::Value::Type::STRING);
-    ASSERT_TRUE(decimal_delimeter);
-    EXPECT_EQ(".", decimal_delimeter->GetString());
+    const base::Value* thousands_delimiter = settings->FindKeyOfType(
+        "thousandsDelimiter", base::Value::Type::STRING);
+    ASSERT_TRUE(thousands_delimiter);
+    EXPECT_EQ(",", thousands_delimiter->GetString());
+    const base::Value* decimal_delimiter =
+        settings->FindKeyOfType("decimalDelimiter", base::Value::Type::STRING);
+    ASSERT_TRUE(decimal_delimiter);
+    EXPECT_EQ(".", decimal_delimiter->GetString());
 
     ASSERT_TRUE(
         settings->FindKeyOfType("unitType", base::Value::Type::INTEGER));
