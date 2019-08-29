@@ -2017,7 +2017,7 @@
   {
     "name": "extension-content-verification",
     "owners": [ "//extensions/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "extensions-on-chrome-urls",
