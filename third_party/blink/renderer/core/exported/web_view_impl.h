@@ -567,6 +567,12 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   Persistent<ChromeClient> chrome_client_;
 
+  // This is the size of the page that the web contents will render into. This
+  // is usually, but not necessarily the same as the VisualViewport size. The
+  // VisualViewport is the 'inner' viewport, and can be smaller than the size of
+  // the page. This allows the browser to shrink the size of the displayed
+  // contents [e.g. to accomodate a keyboard] without forcing the web page to
+  // relayout. For more details, see the header for the VisualViewport class.
   WebSize size_;
   // If true, automatically resize the layout view around its content.
   bool should_auto_resize_ = false;
