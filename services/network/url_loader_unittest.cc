@@ -2597,7 +2597,7 @@ class MockNetworkContextClient : public TestNetworkContextClient {
       const GURL& url,
       bool first_auth_attempt,
       const net::AuthChallengeInfo& auth_info,
-      const base::Optional<network::ResourceResponseHead>& head,
+      network::mojom::URLResponseHeadPtr head,
       mojom::AuthChallengeResponderPtr auth_challenge_responder) override {
     if (head)
       EXPECT_TRUE(head->auth_challenge_info.has_value());

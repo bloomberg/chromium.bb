@@ -89,14 +89,14 @@ base::Time SignedExchangePrefetchHandler::GetSignatureExpireTime() const {
 }
 
 void SignedExchangePrefetchHandler::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   NOTREACHED();
 }
 
 void SignedExchangePrefetchHandler::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
-  forwarding_client_->OnReceiveRedirect(redirect_info, head);
+    network::mojom::URLResponseHeadPtr head) {
+  forwarding_client_->OnReceiveRedirect(redirect_info, std::move(head));
 }
 
 void SignedExchangePrefetchHandler::OnUploadProgress(

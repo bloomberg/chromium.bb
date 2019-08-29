@@ -238,7 +238,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void Shutdown();
 
   std::unique_ptr<InterceptedRequestInfo> BuildRequestInfo(
-      const network::ResourceResponseHead* head);
+      const network::mojom::URLResponseHeadPtr& head);
   void NotifyClient(std::unique_ptr<InterceptedRequestInfo> request_info);
   void FetchCookies(
       network::mojom::CookieManager::GetCookieListCallback callback);
@@ -267,9 +267,9 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void ResumeReadingBodyFromNet() override;
 
   // network::mojom::URLLoaderClient methods
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override;
+                         network::mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
@@ -1179,7 +1179,7 @@ void InterceptionJob::CancelRequest() {
 }
 
 std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
-    const network::ResourceResponseHead* head) {
+    const network::mojom::URLResponseHeadPtr& head) {
   auto result = std::make_unique<InterceptedRequestInfo>();
   result->interception_id = current_id_;
   if (renderer_request_id_.has_value())
@@ -1319,11 +1319,11 @@ void InterceptionJob::ResumeReadingBodyFromNet() {
 
 // URLLoaderClient methods
 void InterceptionJob::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   state_ = State::kResponseReceived;
   DCHECK(!response_metadata_);
   if (!(stage_ & InterceptionStage::RESPONSE)) {
-    client_->OnReceiveResponse(head);
+    client_->OnReceiveResponse(std::move(head));
     return;
   }
   loader_->PauseReadingBodyFromNet();
@@ -1331,18 +1331,18 @@ void InterceptionJob::OnReceiveResponse(
 
   response_metadata_ = std::make_unique<ResponseMetadata>(head);
 
-  auto request_info = BuildRequestInfo(&head);
+  auto request_info = BuildRequestInfo(head);
   const network::ResourceRequest& request = create_loader_params_->request;
   request_info->is_download =
       request_info->is_navigation &&
       (is_download_ || download_utils::IsDownload(
-                           request.url, head.headers.get(), head.mime_type));
+                           request.url, head->headers.get(), head->mime_type));
   NotifyClient(std::move(request_info));
 }
 
 void InterceptionJob::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   DCHECK_EQ(State::kRequestSent, state_);
   state_ = State::kRedirectReceived;
   response_metadata_ = std::make_unique<ResponseMetadata>(head);
@@ -1350,12 +1350,11 @@ void InterceptionJob::OnReceiveRedirect(
       std::make_unique<net::RedirectInfo>(redirect_info);
 
   if (!(stage_ & InterceptionStage::RESPONSE)) {
-    client_->OnReceiveRedirect(redirect_info, head);
+    client_->OnReceiveRedirect(redirect_info, std::move(head));
     return;
   }
 
-  std::unique_ptr<InterceptedRequestInfo> request_info =
-      BuildRequestInfo(&head);
+  std::unique_ptr<InterceptedRequestInfo> request_info = BuildRequestInfo(head);
   request_info->redirect_url = redirect_info.new_url.spec();
   NotifyClient(std::move(request_info));
 }

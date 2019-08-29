@@ -629,7 +629,7 @@ void OnAuthRequiredContinuation(
     bool is_request_for_main_frame,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
-    const base::Optional<network::ResourceResponseHead>& head,
+    network::mojom::URLResponseHeadPtr head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
     base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
   if (!web_contents_getter) {
@@ -667,7 +667,7 @@ void OnAuthRequiredContinuationForWindowId(
     const GURL& url,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
-    const base::Optional<network::ResourceResponseHead>& head,
+    network::mojom::URLResponseHeadPtr head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
     FrameTreeNodeIdRegistry::IsMainFrameGetter is_main_frame_getter) {
   if (!is_main_frame_getter) {
@@ -686,7 +686,7 @@ void OnAuthRequiredContinuationForWindowId(
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     OnAuthRequiredContinuation(process_id, routing_id, request_id, url,
                                *is_main_frame_opt, first_auth_attempt,
-                               auth_info, head,
+                               auth_info, std::move(head),
                                std::move(auth_challenge_responder),
                                GetWebContentsFromRegistry(window_id));
   } else {
@@ -695,7 +695,8 @@ void OnAuthRequiredContinuationForWindowId(
         base::BindOnce(&GetWebContentsFromRegistry, window_id),
         base::BindOnce(&OnAuthRequiredContinuation, process_id, routing_id,
                        request_id, url, *is_main_frame_opt, first_auth_attempt,
-                       auth_info, head, std::move(auth_challenge_responder)));
+                       auth_info, std::move(head),
+                       std::move(auth_challenge_responder)));
   }
 }
 
@@ -1592,13 +1593,13 @@ void StoragePartitionImpl::OnAuthRequired(
     const GURL& url,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
-    const base::Optional<network::ResourceResponseHead>& head,
+    network::mojom::URLResponseHeadPtr head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
   if (window_id) {
     if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       OnAuthRequiredContinuationForWindowId(
           *window_id, process_id, routing_id, request_id, url,
-          first_auth_attempt, auth_info, head,
+          first_auth_attempt, auth_info, std::move(head),
           std::move(auth_challenge_responder),
           GetIsMainFrameFromRegistry(*window_id));
     } else {
@@ -1607,14 +1608,14 @@ void StoragePartitionImpl::OnAuthRequired(
           base::BindOnce(&GetIsMainFrameFromRegistry, *window_id),
           base::BindOnce(&OnAuthRequiredContinuationForWindowId, *window_id,
                          process_id, routing_id, request_id, url,
-                         first_auth_attempt, auth_info, head,
+                         first_auth_attempt, auth_info, std::move(head),
                          std::move(auth_challenge_responder)));
     }
     return;
   }
   OnAuthRequiredContinuation(process_id, routing_id, request_id, url,
                              IsMainFrameRequest(process_id, routing_id),
-                             first_auth_attempt, auth_info, head,
+                             first_auth_attempt, auth_info, std::move(head),
                              std::move(auth_challenge_responder), {});
 }
 

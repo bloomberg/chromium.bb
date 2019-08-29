@@ -1408,7 +1408,7 @@ std::unique_ptr<protocol::Object> BuildResponseHeaders(
 
 std::unique_ptr<Network::Response> BuildResponse(
     const GURL& url,
-    const network::ResourceResponseInfo& info) {
+    const network::ResourceResponseHead& info) {
   int status = 0;
   std::string status_text;
   if (info.headers) {
