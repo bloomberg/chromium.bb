@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SCOPED_VISIBILITY_TRACKER_H_
-#define CHROME_BROWSER_SCOPED_VISIBILITY_TRACKER_H_
+#ifndef UI_BASE_SCOPED_VISIBILITY_TRACKER_H_
+#define UI_BASE_SCOPED_VISIBILITY_TRACKER_H_
 
 #include <memory>
 
 #include "base/time/time.h"
+#include "ui/base/ui_base_export.h"
 
 namespace base {
 class TickClock;
 }  // namespace base
 
+namespace ui {
+
 // This class tracks the total time it is visible, based on receiving
 // OnShown/OnHidden notifications, which are logically idempotent.
-class ScopedVisibilityTracker {
+class UI_BASE_EXPORT ScopedVisibilityTracker {
  public:
   // |tick_clock| must outlive this object.
   ScopedVisibilityTracker(const base::TickClock* tick_clock, bool is_shown);
@@ -38,4 +41,6 @@ class ScopedVisibilityTracker {
   bool currently_in_foreground_ = false;
 };
 
-#endif  // CHROME_BROWSER_SCOPED_VISIBILITY_TRACKER_H_
+}  // namespace ui
+
+#endif  // UI_BASE_SCOPED_VISIBILITY_TRACKER_H_

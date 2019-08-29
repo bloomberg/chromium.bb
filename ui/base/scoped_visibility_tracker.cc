@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/scoped_visibility_tracker.h"
+#include "ui/base/scoped_visibility_tracker.h"
 
 #include <utility>
 
 #include "base/time/tick_clock.h"
+
+namespace ui {
 
 ScopedVisibilityTracker::ScopedVisibilityTracker(
     const base::TickClock* tick_clock,
@@ -43,3 +45,5 @@ void ScopedVisibilityTracker::Update(bool in_foreground) {
 
   currently_in_foreground_ = in_foreground;
 }
+
+}  // namespace ui

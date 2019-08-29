@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/scoped_visibility_tracker.h"
+#include "ui/base/scoped_visibility_tracker.h"
 
 #include <utility>
 
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace ui {
 
 class ScopedVisibilityTrackerTest : public testing::Test {};
 
@@ -76,3 +78,5 @@ TEST_F(ScopedVisibilityTrackerTest, DoubleNotifications) {
   tick_clock->Advance(base::TimeDelta::FromMinutes(2));
   EXPECT_EQ(base::TimeDelta::FromMinutes(4), tracker.GetForegroundDuration());
 }
+
+}  // namespace ui
