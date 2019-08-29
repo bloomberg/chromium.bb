@@ -4457,6 +4457,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAggregatedMlAppRankingName,
      flag_descriptions::kAggregatedMlAppRankingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAggregatedMlAppRanking)},
+
+    {"scalable-app-list", flag_descriptions::kScalableAppListName,
+     flag_descriptions::kScalableAppListDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kScalableAppList)},
 #endif  // defined(OS_CHROMEOS)
 
     {"passwords-account-storage",

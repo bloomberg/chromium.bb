@@ -995,6 +995,9 @@ extern const char kSameSiteByDefaultCookiesDescription[];
 extern const char kSaveasMenuLabelExperimentName[];
 extern const char kSaveasMenuLabelExperimentDescription[];
 
+extern const char kScalableAppListName[];
+extern const char kScalableAppListDescription[];
+
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
 

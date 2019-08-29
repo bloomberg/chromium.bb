@@ -2896,6 +2896,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "scalable-app-list",
+    "owners": [ "tbarzic" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "scheduler-configuration",
     "owners": [ "kerrnel", "mnissler" ],
     "expiry_milestone": 77
