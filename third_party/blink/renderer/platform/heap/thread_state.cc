@@ -1724,7 +1724,7 @@ bool ThreadState::MarkPhaseAdvanceMarking(base::TimeTicks deadline) {
       deadline);
 }
 
-bool ThreadState::VerifyMarkingEnabled() const {
+bool ThreadState::IsVerifyMarkingEnabled() const {
   bool should_verify_marking = base::FeatureList::IsEnabled(
       blink::features::kBlinkHeapIncrementalMarkingStress);
 #if BUILDFLAG(BLINK_HEAP_VERIFICATION)
@@ -1770,7 +1770,7 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
 void ThreadState::VerifyMarking(BlinkGC::MarkingType marking_type) {
   DCHECK_NE(BlinkGC::kTakeSnapshot, marking_type);
 
-  if (VerifyMarkingEnabled())
+  if (IsVerifyMarkingEnabled())
     Heap().VerifyMarking();
 }
 
