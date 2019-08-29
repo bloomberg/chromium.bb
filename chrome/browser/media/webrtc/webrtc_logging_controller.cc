@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
+#include "chrome/browser/media/webrtc/webrtc_logging_controller.h"
 
 #include <string>
 #include <utility>
@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/supports_user_data.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -33,29 +34,29 @@ using webrtc_event_logging::WebRtcEventLogManager;
 namespace {
 
 // Key used to attach the handler to the RenderProcessHost.
-constexpr char kRenderProcessHostKey[] = "kWebRtcLoggingHandlerHostKey";
+constexpr char kRenderProcessHostKey[] = "kWebRtcLoggingControllerKey";
 
 }  // namespace
 
 // static
-void WebRtcLoggingHandlerHost::AttachToRenderProcessHost(
+void WebRtcLoggingController::AttachToRenderProcessHost(
     content::RenderProcessHost* host,
     WebRtcLogUploader* log_uploader) {
   host->SetUserData(
       kRenderProcessHostKey,
-      base::WrapUnique<base::SupportsUserData::Data>(
-          new WebRtcLoggingHandlerHost(host->GetID(), host->GetBrowserContext(),
-                                       log_uploader)));
+      std::make_unique<base::UserDataAdapter<WebRtcLoggingController>>(
+          new WebRtcLoggingController(host->GetID(), host->GetBrowserContext(),
+                                      log_uploader)));
 }
 
 // static
-WebRtcLoggingHandlerHost* WebRtcLoggingHandlerHost::FromRenderProcessHost(
+WebRtcLoggingController* WebRtcLoggingController::FromRenderProcessHost(
     content::RenderProcessHost* host) {
-  return static_cast<WebRtcLoggingHandlerHost*>(
-      host->GetUserData(kRenderProcessHostKey));
+  return base::UserDataAdapter<WebRtcLoggingController>::Get(
+      host, kRenderProcessHostKey);
 }
 
-void WebRtcLoggingHandlerHost::SetMetaData(
+void WebRtcLoggingController::SetMetaData(
     std::unique_ptr<WebRtcLogMetaDataMap> meta_data,
     const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -73,7 +74,7 @@ void WebRtcLoggingHandlerHost::SetMetaData(
   text_log_handler_->SetMetaData(std::move(meta_data), callback);
 }
 
-void WebRtcLoggingHandlerHost::StartLogging(
+void WebRtcLoggingController::StartLogging(
     const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
@@ -88,14 +89,12 @@ void WebRtcLoggingHandlerHost::StartLogging(
     // OK for this to replace an existing logging_agent_ connection.
     host->BindReceiver(logging_agent_.BindNewPipeAndPassReceiver());
     logging_agent_.set_disconnect_handler(
-        base::BindOnce(&WebRtcLoggingHandlerHost::OnAgentDisconnected,
-                       weak_factory_.GetWeakPtr()));
+        base::BindOnce(&WebRtcLoggingController::OnAgentDisconnected, this));
     logging_agent_->Start(receiver_.BindNewPipeAndPassRemote());
   }
 }
 
-void WebRtcLoggingHandlerHost::StopLogging(
-    const GenericDoneCallback& callback) {
+void WebRtcLoggingController::StopLogging(const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
 
@@ -107,7 +106,7 @@ void WebRtcLoggingHandlerHost::StopLogging(
   }
 }
 
-void WebRtcLoggingHandlerHost::UploadLog(const UploadDoneCallback& callback) {
+void WebRtcLoggingController::UploadLog(const UploadDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
 
@@ -123,11 +122,10 @@ void WebRtcLoggingHandlerHost::UploadLog(const UploadDoneCallback& callback) {
   base::PostTaskAndReplyWithResult(
       log_uploader_->background_task_runner().get(), FROM_HERE,
       base::BindOnce(log_directory_getter_),
-      base::BindOnce(&WebRtcLoggingHandlerHost::TriggerUpload,
-                     weak_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&WebRtcLoggingController::TriggerUpload, this, callback));
 }
 
-void WebRtcLoggingHandlerHost::UploadStoredLog(
+void WebRtcLoggingController::UploadStoredLog(
     const std::string& log_id,
     const UploadDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -155,7 +153,7 @@ void WebRtcLoggingHandlerHost::UploadStoredLog(
                      log_uploader_, upload_data, log_directory_getter_));
 }
 
-void WebRtcLoggingHandlerHost::DiscardLog(const GenericDoneCallback& callback) {
+void WebRtcLoggingController::DiscardLog(const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
 
@@ -171,9 +169,8 @@ void WebRtcLoggingHandlerHost::DiscardLog(const GenericDoneCallback& callback) {
 }
 
 // Stores the log locally using a hash of log_id + security origin.
-void WebRtcLoggingHandlerHost::StoreLog(
-    const std::string& log_id,
-    const GenericDoneCallback& callback) {
+void WebRtcLoggingController::StoreLog(const std::string& log_id,
+                                       const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
 
@@ -186,16 +183,15 @@ void WebRtcLoggingHandlerHost::StoreLog(
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(stop_rtp_dump_callback_, true, true));
 
-    rtp_dump_handler_->StopOngoingDumps(
-        base::Bind(&WebRtcLoggingHandlerHost::StoreLogContinue,
-                   weak_factory_.GetWeakPtr(), log_id, callback));
+    rtp_dump_handler_->StopOngoingDumps(base::Bind(
+        &WebRtcLoggingController::StoreLogContinue, this, log_id, callback));
     return;
   }
 
   StoreLogContinue(log_id, callback);
 }
 
-void WebRtcLoggingHandlerHost::StoreLogContinue(
+void WebRtcLoggingController::StoreLogContinue(
     const std::string& log_id,
     const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -207,12 +203,11 @@ void WebRtcLoggingHandlerHost::StoreLogContinue(
   base::PostTaskAndReplyWithResult(
       log_uploader_->background_task_runner().get(), FROM_HERE,
       base::BindOnce(log_directory_getter_),
-      base::BindOnce(&WebRtcLoggingHandlerHost::StoreLogInDirectory,
-                     weak_factory_.GetWeakPtr(), log_id,
-                     base::Passed(&log_paths), callback));
+      base::BindOnce(&WebRtcLoggingController::StoreLogInDirectory, this,
+                     log_id, base::Passed(&log_paths), callback));
 }
 
-void WebRtcLoggingHandlerHost::StartRtpDump(
+void WebRtcLoggingController::StartRtpDump(
     RtpDumpType type,
     const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -222,27 +217,25 @@ void WebRtcLoggingHandlerHost::StartRtpDump(
       content::RenderProcessHost::FromID(render_process_id_);
 
   // This call cannot fail.
-  stop_rtp_dump_callback_ =
-      host->StartRtpDump(type == RTP_DUMP_INCOMING || type == RTP_DUMP_BOTH,
-                         type == RTP_DUMP_OUTGOING || type == RTP_DUMP_BOTH,
-                         base::Bind(&WebRtcLoggingHandlerHost::OnRtpPacket,
-                                    weak_factory_.GetWeakPtr()));
+  stop_rtp_dump_callback_ = host->StartRtpDump(
+      type == RTP_DUMP_INCOMING || type == RTP_DUMP_BOTH,
+      type == RTP_DUMP_OUTGOING || type == RTP_DUMP_BOTH,
+      base::Bind(&WebRtcLoggingController::OnRtpPacket, this));
 
   if (!rtp_dump_handler_) {
     base::PostTaskAndReplyWithResult(
         log_uploader_->background_task_runner().get(), FROM_HERE,
         base::BindOnce(log_directory_getter_),
-        base::BindOnce(&WebRtcLoggingHandlerHost::CreateRtpDumpHandlerAndStart,
-                       weak_factory_.GetWeakPtr(), type, callback));
+        base::BindOnce(&WebRtcLoggingController::CreateRtpDumpHandlerAndStart,
+                       this, type, callback));
     return;
   }
 
   DoStartRtpDump(type, callback);
 }
 
-void WebRtcLoggingHandlerHost::StopRtpDump(
-    RtpDumpType type,
-    const GenericDoneCallback& callback) {
+void WebRtcLoggingController::StopRtpDump(RtpDumpType type,
+                                          const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
 
@@ -262,7 +255,7 @@ void WebRtcLoggingHandlerHost::StopRtpDump(
   rtp_dump_handler_->StopDump(type, callback);
 }
 
-void WebRtcLoggingHandlerHost::StartEventLogging(
+void WebRtcLoggingController::StartEventLogging(
     const std::string& session_id,
     size_t max_log_size_bytes,
     int output_period_ms,
@@ -275,7 +268,7 @@ void WebRtcLoggingHandlerHost::StartEventLogging(
 }
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
-void WebRtcLoggingHandlerHost::GetLogsDirectory(
+void WebRtcLoggingController::GetLogsDirectory(
     const LogsDirectoryCallback& callback,
     const LogsDirectoryErrorCallback& error_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -283,11 +276,11 @@ void WebRtcLoggingHandlerHost::GetLogsDirectory(
   base::PostTaskAndReplyWithResult(
       log_uploader_->background_task_runner().get(), FROM_HERE,
       base::BindOnce(log_directory_getter_),
-      base::BindOnce(&WebRtcLoggingHandlerHost::GrantLogsDirectoryAccess,
-                     weak_factory_.GetWeakPtr(), callback, error_callback));
+      base::BindOnce(&WebRtcLoggingController::GrantLogsDirectoryAccess, this,
+                     callback, error_callback));
 }
 
-void WebRtcLoggingHandlerHost::GrantLogsDirectoryAccess(
+void WebRtcLoggingController::GrantLogsDirectoryAccess(
     const LogsDirectoryCallback& callback,
     const LogsDirectoryErrorCallback& error_callback,
     const base::FilePath& logs_path) {
@@ -321,22 +314,22 @@ void WebRtcLoggingHandlerHost::GrantLogsDirectoryAccess(
 }
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-void WebRtcLoggingHandlerHost::OnRtpPacket(
+void WebRtcLoggingController::OnRtpPacket(
     std::unique_ptr<uint8_t[]> packet_header,
     size_t header_length,
     size_t packet_length,
     bool incoming) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // |rtp_dump_handler_| could be NULL if we are waiting for the FILE thread to
+  // |rtp_dump_handler_| could be null if we are waiting for the FILE thread to
   // create/ensure the log directory.
   if (rtp_dump_handler_) {
-    rtp_dump_handler_->OnRtpPacket(
-        packet_header.get(), header_length, packet_length, incoming);
+    rtp_dump_handler_->OnRtpPacket(packet_header.get(), header_length,
+                                   packet_length, incoming);
   }
 }
 
-void WebRtcLoggingHandlerHost::OnAddMessages(
+void WebRtcLoggingController::OnAddMessages(
     std::vector<chrome::mojom::WebRtcLoggingMessagePtr> messages) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -347,7 +340,7 @@ void WebRtcLoggingHandlerHost::OnAddMessages(
   }
 }
 
-void WebRtcLoggingHandlerHost::OnStopped() {
+void WebRtcLoggingController::OnStopped() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (text_log_handler_->GetState() != WebRtcTextLogHandler::STOPPING) {
@@ -361,14 +354,14 @@ void WebRtcLoggingHandlerHost::OnStopped() {
   text_log_handler_->StopDone();
 }
 
-WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(
+WebRtcLoggingController::WebRtcLoggingController(
     int render_process_id,
     content::BrowserContext* browser_context,
     WebRtcLogUploader* log_uploader)
     : receiver_(this),
       render_process_id_(render_process_id),
       log_directory_getter_(base::BindRepeating(
-          &WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists,
+          &WebRtcLoggingController::GetLogDirectoryAndEnsureExists,
           browser_context->GetPath())),
       upload_log_on_render_close_(false),
       text_log_handler_(
@@ -379,13 +372,13 @@ WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(
   DCHECK(log_uploader_);
 }
 
-WebRtcLoggingHandlerHost::~WebRtcLoggingHandlerHost() {
+WebRtcLoggingController::~WebRtcLoggingController() {
   // If we hit this, then we might be leaking a log reference count (see
   // ApplyForStartLogging).
   DCHECK_EQ(WebRtcTextLogHandler::CLOSED, text_log_handler_->GetState());
 }
 
-void WebRtcLoggingHandlerHost::OnAgentDisconnected() {
+void WebRtcLoggingController::OnAgentDisconnected() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (text_log_handler_->GetChannelIsClosing())
@@ -401,8 +394,8 @@ void WebRtcLoggingHandlerHost::OnAgentDisconnected() {
         base::PostTaskAndReplyWithResult(
             log_uploader_->background_task_runner().get(), FROM_HERE,
             base::BindOnce(log_directory_getter_),
-            base::BindOnce(&WebRtcLoggingHandlerHost::TriggerUpload,
-                           weak_factory_.GetWeakPtr(), UploadDoneCallback()));
+            base::BindOnce(&WebRtcLoggingController::TriggerUpload, this,
+                           UploadDoneCallback()));
       } else {
         log_uploader_->LoggingStoppedDontUpload();
         text_log_handler_->DiscardLog();
@@ -416,7 +409,7 @@ void WebRtcLoggingHandlerHost::OnAgentDisconnected() {
   }
 }
 
-void WebRtcLoggingHandlerHost::TriggerUpload(
+void WebRtcLoggingController::TriggerUpload(
     const UploadDoneCallback& callback,
     const base::FilePath& log_directory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -426,15 +419,15 @@ void WebRtcLoggingHandlerHost::TriggerUpload(
         FROM_HERE, base::BindOnce(stop_rtp_dump_callback_, true, true));
 
     rtp_dump_handler_->StopOngoingDumps(
-        base::Bind(&WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps,
-                   weak_factory_.GetWeakPtr(), log_directory, callback));
+        base::Bind(&WebRtcLoggingController::DoUploadLogAndRtpDumps, this,
+                   log_directory, callback));
     return;
   }
 
   DoUploadLogAndRtpDumps(log_directory, callback);
 }
 
-void WebRtcLoggingHandlerHost::StoreLogInDirectory(
+void WebRtcLoggingController::StoreLogInDirectory(
     const std::string& log_id,
     std::unique_ptr<WebRtcLogPaths> log_paths,
     const GenericDoneCallback& done_callback,
@@ -471,7 +464,7 @@ void WebRtcLoggingHandlerHost::StoreLogInDirectory(
                                 std::move(meta_data), done_callback));
 }
 
-void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
+void WebRtcLoggingController::DoUploadLogAndRtpDumps(
     const base::FilePath& log_directory,
     const UploadDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -520,13 +513,13 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
                      std::move(meta_data), upload_done_data));
 }
 
-void WebRtcLoggingHandlerHost::CreateRtpDumpHandlerAndStart(
+void WebRtcLoggingController::CreateRtpDumpHandlerAndStart(
     RtpDumpType type,
     const GenericDoneCallback& callback,
     const base::FilePath& dump_dir) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // |rtp_dump_handler_| may be non-NULL if StartRtpDump is called again before
+  // |rtp_dump_handler_| may be non-null if StartRtpDump is called again before
   // GetLogDirectoryAndEnsureExists returns on the FILE thread for a previous
   // StartRtpDump.
   if (!rtp_dump_handler_)
@@ -535,8 +528,9 @@ void WebRtcLoggingHandlerHost::CreateRtpDumpHandlerAndStart(
   DoStartRtpDump(type, callback);
 }
 
-void WebRtcLoggingHandlerHost::DoStartRtpDump(
-    RtpDumpType type, const GenericDoneCallback& callback) {
+void WebRtcLoggingController::DoStartRtpDump(
+    RtpDumpType type,
+    const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(rtp_dump_handler_);
 
@@ -545,7 +539,7 @@ void WebRtcLoggingHandlerHost::DoStartRtpDump(
   FireGenericDoneCallback(callback, result, error);
 }
 
-bool WebRtcLoggingHandlerHost::ReleaseRtpDumps(WebRtcLogPaths* log_paths) {
+bool WebRtcLoggingController::ReleaseRtpDumps(WebRtcLogPaths* log_paths) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(log_paths);
 
@@ -563,7 +557,7 @@ bool WebRtcLoggingHandlerHost::ReleaseRtpDumps(WebRtcLogPaths* log_paths) {
   return true;
 }
 
-void WebRtcLoggingHandlerHost::FireGenericDoneCallback(
+void WebRtcLoggingController::FireGenericDoneCallback(
     const GenericDoneCallback& callback,
     bool success,
     const std::string& error_message) {
@@ -576,7 +570,7 @@ void WebRtcLoggingHandlerHost::FireGenericDoneCallback(
 }
 
 // static
-base::FilePath WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists(
+base::FilePath WebRtcLoggingController::GetLogDirectoryAndEnsureExists(
     const base::FilePath& browser_context_directory_path) {
   DCHECK(!browser_context_directory_path.empty());
   // Since we can be alive after the RenderProcessHost and the BrowserContext

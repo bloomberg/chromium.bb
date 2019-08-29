@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOGGING_HANDLER_HOST_H_
-#define CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOGGING_HANDLER_HOST_H_
+#ifndef CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOGGING_CONTROLLER_H_
+#define CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOGGING_CONTROLLER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,8 +15,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/supports_user_data.h"
+#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/rtp_dump_type.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
@@ -32,7 +31,7 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-// WebRtcLoggingHandlerHost handles operations regarding the WebRTC logging:
+// WebRtcLoggingController handles operations regarding the WebRTC logging:
 // - Opens a connection to a WebRtcLoggingAgent that runs in the render process
 //   and generates log messages.
 // - Writes basic machine info to the log.
@@ -41,8 +40,9 @@ class BrowserContext;
 //   or triggers uploading of the log.
 // - Detects when the agent (e.g., because of a tab closure or crash) is going
 //   away and possibly triggers uploading the log.
-class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
-                                 public chrome::mojom::WebRtcLoggingClient {
+class WebRtcLoggingController
+    : public base::RefCounted<WebRtcLoggingController>,
+      public chrome::mojom::WebRtcLoggingClient {
  public:
   typedef WebRtcLogUploader::GenericDoneCallback GenericDoneCallback;
   typedef WebRtcLogUploader::UploadDoneCallback UploadDoneCallback;
@@ -59,7 +59,7 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
 
   static void AttachToRenderProcessHost(content::RenderProcessHost* host,
                                         WebRtcLogUploader* log_uploader);
-  static WebRtcLoggingHandlerHost* FromRenderProcessHost(
+  static WebRtcLoggingController* FromRenderProcessHost(
       content::RenderProcessHost* host);
 
   // Sets meta data that will be uploaded along with the log and also written
@@ -143,16 +143,18 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
   void OnStopped() override;
 
  private:
-  WebRtcLoggingHandlerHost(int render_process_id,
-                           content::BrowserContext* browser_context,
-                           WebRtcLogUploader* log_uploader);
-  ~WebRtcLoggingHandlerHost() override;
+  friend class base::RefCounted<WebRtcLoggingController>;
+
+  WebRtcLoggingController(int render_process_id,
+                          content::BrowserContext* browser_context,
+                          WebRtcLogUploader* log_uploader);
+  ~WebRtcLoggingController() override;
 
   void OnAgentDisconnected();
 
   // Called after stopping RTP dumps.
   void StoreLogContinue(const std::string& log_id,
-      const GenericDoneCallback& callback);
+                        const GenericDoneCallback& callback);
 
   // Writes a formatted log |message| to the |circular_buffer_|.
   void LogToCircularBuffer(const std::string& message);
@@ -182,7 +184,7 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
   bool ReleaseRtpDumps(WebRtcLogPaths* log_paths);
 
   void FireGenericDoneCallback(
-      const WebRtcLoggingHandlerHost::GenericDoneCallback& callback,
+      const WebRtcLoggingController::GenericDoneCallback& callback,
       bool success,
       const std::string& error_message);
 
@@ -234,9 +236,7 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
   // the empty string.
   int web_app_id_ = 0;
 
-  base::WeakPtrFactory<WebRtcLoggingHandlerHost> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingHandlerHost);
+  DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingController);
 };
 
-#endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOGGING_HANDLER_HOST_H_
+#endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOGGING_CONTROLLER_H_
