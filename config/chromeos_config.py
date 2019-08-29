@@ -4479,17 +4479,21 @@ def BranchScheduleConfig():
       ('release-R78-12499.B',
        ['gandof-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
-       'chell-chrome-pre-flight-branch'),
+       'chell-chrome-pre-flight-branch',
+       ['orderfile-generate-toolchain',
+        'orderfile-verify-toolchain']),
 
       ('release-R77-12371.B',
        ['gandof-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
-       'samus-chrome-pre-flight-branch'),
+       'samus-chrome-pre-flight-branch',
+       None),
 
       ('release-R76-12239.B',
        ['reef-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
-       'samus-chrome-pre-flight-branch'),
+       'samus-chrome-pre-flight-branch',
+       None),
   ]
 
   RELEASE_SCHEDULES = [
@@ -4505,8 +4509,14 @@ def BranchScheduleConfig():
       '0 3,7,11,15,19,23 * * *',
   ]
 
-  for (branch, android_pfq, chrome_pfq), schedule, android_schedule in zip(
-      RELEASES, RELEASE_SCHEDULES, PFQ_SCHEDULE):
+  ORDERFILE_SCHEDULES = [
+      '0 8/12 * * *',
+      '0 0/12 * * *',
+  ]
+
+  for ((branch, android_pfq, chrome_pfq, orderfile),
+       schedule, android_schedule) in zip(
+           RELEASES, RELEASE_SCHEDULES, PFQ_SCHEDULE):
     branch_builds.append([branch, 'master-release',
                           config_lib.DISPLAY_LABEL_RELEASE,
                           schedule, None])
@@ -4523,6 +4533,12 @@ def BranchScheduleConfig():
         [branch, chrome_pfq, config_lib.DISPLAY_LABEL_RELEASE, 'triggered',
          [['https://chromium.googlesource.com/chromium/src',
            [r'regexp:refs/tags/%s\\..*' % release_num]]]])
+
+    if orderfile:
+      for b, s in zip(orderfile, ORDERFILE_SCHEDULES):
+        branch_builds.append([branch, b,
+                              config_lib.DISPLAY_LABEL_RELEASE,
+                              s, None])
 
   # Convert all branch builds into scheduler config entries.
   default_config = config_lib.GetConfig().GetDefault()
