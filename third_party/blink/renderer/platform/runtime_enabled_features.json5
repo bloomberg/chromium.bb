@@ -370,6 +370,12 @@
       status: "test",
     },
     {
+      // Support for CSS content-size property.
+      // http://tabatkins.github.io/specs/css-content-size/
+      name: "CSSContentSize",
+      status: "experimental",
+    },
+    {
       name: "CSSFocusVisible",
       status: "experimental",
     },
