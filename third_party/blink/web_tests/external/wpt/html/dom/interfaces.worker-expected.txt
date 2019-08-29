@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 662 tests; 636 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 673 tests; 647 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin DocumentOrShadowRoot: original interface mixin defined
@@ -644,6 +644,17 @@ PASS WorkerLocation interface: attribute port
 PASS WorkerLocation interface: attribute pathname
 PASS WorkerLocation interface: attribute search
 PASS WorkerLocation interface: attribute hash
+PASS WorkerLocation must be primary interface of self.location
+PASS Stringification of self.location
+PASS WorkerLocation interface: self.location must inherit property "href" with the proper type
+PASS WorkerLocation interface: self.location must inherit property "origin" with the proper type
+PASS WorkerLocation interface: self.location must inherit property "protocol" with the proper type
+PASS WorkerLocation interface: self.location must inherit property "host" with the proper type
+PASS WorkerLocation interface: self.location must inherit property "hostname" with the proper type
+PASS WorkerLocation interface: self.location must inherit property "port" with the proper type
+PASS WorkerLocation interface: self.location must inherit property "pathname" with the proper type
+PASS WorkerLocation interface: self.location must inherit property "search" with the proper type
+PASS WorkerLocation interface: self.location must inherit property "hash" with the proper type
 PASS Storage interface: existence and properties of interface object
 PASS StorageEvent interface: existence and properties of interface object
 PASS HTMLMarqueeElement interface: existence and properties of interface object
