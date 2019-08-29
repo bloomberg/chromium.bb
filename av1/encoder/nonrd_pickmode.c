@@ -1154,6 +1154,7 @@ static INLINE int get_force_skip_low_temp_var(uint8_t *variance_low, int mi_row,
   return force_skip_low_temp_var;
 }
 
+#define FILTER_SEARCH_SIZE 2
 static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
                               int mi_row, int mi_col, BLOCK_SIZE bsize,
                               unsigned int *var_y, unsigned int *sse_y,
@@ -1162,21 +1163,22 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mi = xd->mi[0];
 
-  int pf_rate[2] = { 0 };
-  int64_t pf_dist[2] = { 0 };
-  int curr_rate[2] = { 0 };
-  unsigned int pf_var[2] = { 0 };
-  unsigned int pf_sse[2] = { 0 };
-  TX_SIZE pf_tx_size[2] = { 0 };
-  int skip_txfm[2] = { 0 };
+  int pf_rate[FILTER_SEARCH_SIZE] = { 0 };
+  int64_t pf_dist[FILTER_SEARCH_SIZE] = { 0 };
+  int curr_rate[FILTER_SEARCH_SIZE] = { 0 };
+  unsigned int pf_var[FILTER_SEARCH_SIZE] = { 0 };
+  unsigned int pf_sse[FILTER_SEARCH_SIZE] = { 0 };
+  TX_SIZE pf_tx_size[FILTER_SEARCH_SIZE] = { 0 };
+  int skip_txfm[FILTER_SEARCH_SIZE] = { 0 };
   int best_skip = 0;
   int best_early_term = 0;
   int64_t best_cost = INT64_MAX;
 
   int best_filter_index = -1;
-  InterpFilter filters[2] = { EIGHTTAP_REGULAR, EIGHTTAP_SMOOTH };
+  InterpFilter filters[FILTER_SEARCH_SIZE] = { EIGHTTAP_REGULAR,
+                                               EIGHTTAP_SMOOTH };
   int i;
-  for (i = 0; i < 2; ++i) {
+  for (i = 0; i < FILTER_SEARCH_SIZE; ++i) {
     int64_t cost;
     InterpFilter filter = filters[i];
     mi->interp_filters = av1_broadcast_interp_filter(filter);
@@ -1199,7 +1201,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
       best_early_term = *this_early_term;
     }
   }
-  assert(best_filter_index >= 0 && best_filter_index < 2);
+  assert(best_filter_index >= 0 && best_filter_index < FILTER_SEARCH_SIZE);
 
   mi->interp_filters = av1_broadcast_interp_filter(filters[best_filter_index]);
   mi->tx_size = pf_tx_size[best_filter_index];
