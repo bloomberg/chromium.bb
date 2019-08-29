@@ -2148,7 +2148,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebXrHitTest)},
     {"webxr-anchors", flag_descriptions::kWebXrAnchorsName,
      flag_descriptions::kWebXrAnchorsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebXrPlaneDetection)},
+     FEATURE_VALUE_TYPE(features::kWebXrAnchors)},
     {"webxr-plane-detection", flag_descriptions::kWebXrPlaneDetectionName,
      flag_descriptions::kWebXrPlaneDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrPlaneDetection)},
