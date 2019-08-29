@@ -309,7 +309,7 @@ NativeFileSystemManagerImpl::CreateDirectoryHandle(
   return result;
 }
 
-blink::mojom::NativeFileSystemFileWriterPtr
+mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter>
 NativeFileSystemManagerImpl::CreateFileWriter(
     const BindingContext& binding_context,
     const storage::FileSystemURL& url,
@@ -317,11 +317,10 @@ NativeFileSystemManagerImpl::CreateFileWriter(
     const SharedHandleState& handle_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  blink::mojom::NativeFileSystemFileWriterPtr result;
-  writer_bindings_.AddBinding(
-      std::make_unique<NativeFileSystemFileWriterImpl>(
-          this, binding_context, url, swap_url, handle_state),
-      mojo::MakeRequest(&result));
+  mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter> result;
+  writer_receivers_.Add(std::make_unique<NativeFileSystemFileWriterImpl>(
+                            this, binding_context, url, swap_url, handle_state),
+                        result.InitWithNewPipeAndPassReceiver());
 
   return result;
 }

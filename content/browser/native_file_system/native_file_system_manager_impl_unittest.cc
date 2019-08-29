@@ -206,18 +206,18 @@ TEST_F(NativeFileSystemManagerImplTest,
             AsyncFileTestHelper::CreateFile(file_system_context_.get(),
                                             test_swap_url));
 
-  auto writer_ptr =
+  mojo::Remote<blink::mojom::NativeFileSystemFileWriter> writer_remote(
       manager_->CreateFileWriter(kBindingContext, test_file_url, test_swap_url,
                                  NativeFileSystemManagerImpl::SharedHandleState(
-                                     allow_grant_, allow_grant_, {}));
+                                     allow_grant_, allow_grant_, {})));
 
-  ASSERT_TRUE(writer_ptr.is_bound());
+  ASSERT_TRUE(writer_remote.is_bound());
   ASSERT_TRUE(
       AsyncFileTestHelper::FileExists(file_system_context_.get(), test_swap_url,
                                       AsyncFileTestHelper::kDontCheckSize));
 
   // Severs the mojo pipe, causing the writer to be destroyed.
-  writer_ptr.reset();
+  writer_remote.reset();
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(
@@ -239,19 +239,19 @@ TEST_F(NativeFileSystemManagerImplTest,
             AsyncFileTestHelper::CreateFileWithData(file_system_context_.get(),
                                                     test_swap_url, "foo", 3));
 
-  auto writer_ptr =
+  mojo::Remote<blink::mojom::NativeFileSystemFileWriter> writer_remote(
       manager_->CreateFileWriter(kBindingContext, test_file_url, test_swap_url,
                                  NativeFileSystemManagerImpl::SharedHandleState(
-                                     allow_grant_, allow_grant_, {}));
+                                     allow_grant_, allow_grant_, {})));
 
-  ASSERT_TRUE(writer_ptr.is_bound());
+  ASSERT_TRUE(writer_remote.is_bound());
   ASSERT_FALSE(
       AsyncFileTestHelper::FileExists(file_system_context_.get(), test_file_url,
                                       AsyncFileTestHelper::kDontCheckSize));
-  writer_ptr->Close(base::DoNothing());
+  writer_remote->Close(base::DoNothing());
 
   // Severs the mojo pipe, causing the writer to be destroyed.
-  writer_ptr.reset();
+  writer_remote.reset();
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(
