@@ -775,8 +775,12 @@ public class BottomSheet
                 mSheetContent != null ? mSheetContent.getContentView() : null,
                 mBottomSheetContentContainer);
 
-        swapViews(content != null ? content.getToolbarView() : null,
-                mSheetContent != null ? mSheetContent.getToolbarView() : null, mToolbarHolder);
+        View newToolbar = content != null ? content.getToolbarView() : null;
+        swapViews(newToolbar, mSheetContent != null ? mSheetContent.getToolbarView() : null,
+                mToolbarHolder);
+
+        // We hide the default toolbar if the new content has its own.
+        mDefaultToolbarView.setVisibility(newToolbar != null ? GONE : VISIBLE);
 
         onSheetContentChanged(content);
     }
