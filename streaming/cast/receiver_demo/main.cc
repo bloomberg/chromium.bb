@@ -3,6 +3,7 @@
 
 #include "platform/api/logging.h"
 #include "platform/api/time.h"
+#include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "platform/impl/task_runner.h"
