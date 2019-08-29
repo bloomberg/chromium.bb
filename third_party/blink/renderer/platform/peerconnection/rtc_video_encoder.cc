@@ -19,7 +19,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
@@ -36,6 +35,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/modules/video_coding/include/video_error_codes.h"
@@ -275,19 +275,16 @@ class RTCVideoEncoder::Impl
   // Shared memory buffers for input/output with the VEA. The input buffers may
   // be referred to by a VideoFrame, so they are wrapped in a unique_ptr to have
   // a stable memory location. That is not necessary for the output buffers.
-  //
-  // TODO(crbug.com/787254): Replace the use of std::vector by WTF::Vector here
-  // and where else possible in this file.
-  std::vector<std::unique_ptr<std::pair<base::UnsafeSharedMemoryRegion,
-                                        base::WritableSharedMemoryMapping>>>
+  Vector<std::unique_ptr<std::pair<base::UnsafeSharedMemoryRegion,
+                                   base::WritableSharedMemoryMapping>>>
       input_buffers_;
-  std::vector<std::pair<base::UnsafeSharedMemoryRegion,
-                        base::WritableSharedMemoryMapping>>
+  Vector<std::pair<base::UnsafeSharedMemoryRegion,
+                   base::WritableSharedMemoryMapping>>
       output_buffers_;
 
   // Input buffers ready to be filled with input from Encode().  As a LIFO since
   // we don't care about ordering.
-  std::vector<int> input_buffers_free_;
+  Vector<int> input_buffers_free_;
 
   // The number of output buffers ready to be filled with output from the
   // encoder.
@@ -403,7 +400,7 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
   // buffers. Returning an error in Encode() is not fatal and WebRTC will just
   // continue. If this is a key frame, WebRTC will request a key frame again.
   // Besides, webrtc will drop a frame if Encode() blocks too long.
-  if (input_buffers_free_.empty() && output_buffers_free_count_ == 0) {
+  if (input_buffers_free_.IsEmpty() && output_buffers_free_count_ == 0) {
     DVLOG(2) << "Run out of input and output buffers. Drop the frame.";
     SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_ERROR);
     return;
@@ -411,7 +408,7 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
   input_next_frame_ = input_frame;
   input_next_frame_keyframe_ = force_keyframe;
 
-  if (!input_buffers_free_.empty())
+  if (!input_buffers_free_.IsEmpty())
     EncodeOneFrame();
 }
 
@@ -586,7 +583,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
   base::Optional<int64_t> capture_timestamp_ms;
   if (!failed_timestamp_match_) {
     // Pop timestamps until we have a match.
-    while (!pending_timestamps_.empty()) {
+    while (!pending_timestamps_.IsEmpty()) {
       const auto& front_timestamps = pending_timestamps_.front();
       if (front_timestamps.media_timestamp_ == metadata.timestamp) {
         rtp_timestamp = front_timestamps.rtp_timestamp;
@@ -672,7 +669,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   DVLOG(3) << "Impl::EncodeOneFrame()";
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(input_next_frame_);
-  DCHECK(!input_buffers_free_.empty());
+  DCHECK(!input_buffers_free_.IsEmpty());
 
   // EncodeOneFrame() may re-enter EncodeFrameFinished() if VEA::Encode() fails,
   // we receive a VEA::NotifyError(), and the media::VideoFrame we pass to
