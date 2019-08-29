@@ -603,7 +603,7 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
   @staticmethod
   def mockFindChromeAFDO(url, _pattern):
     """Mock toolchain_util._FindLatestAFDOArtifact for Chrome AFDO."""
-    if 'benchmark' in url:
+    if 'llvm' in url:
       return AFDOUpdateEbuildTests.mock_benchmark_afdo
 
     for arch in AFDOUpdateEbuildTests.mock_cwp_afdo:
@@ -899,7 +899,8 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
         self.test_obj, '_CreateAFDOFromPerfData', return_value=afdo_name)
     mock_compress = self.PatchObject(toolchain_util, '_CompressAFDOFiles')
     mock_upload = self.PatchObject(self.test_obj, '_UploadArtifacts')
-    self.test_obj._GenerateAFDOData()
+    ret = self.test_obj._GenerateAFDOData()
+    self.assertEqual(ret, afdo_name)
     mock_create.assert_called_once_with()
     calls = [
         mock.call(

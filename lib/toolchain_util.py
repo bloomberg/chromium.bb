@@ -13,6 +13,7 @@ import json
 import os
 import re
 
+from chromite.cbuildbot import afdo
 from chromite.lib import alerts
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -35,7 +36,7 @@ ORDERFILE_GS_URL_UNVETTED = \
 ORDERFILE_GS_URL_VETTED = \
     'gs://chromeos-prebuilt/afdo-job/orderfiles/vetted'
 BENCHMARK_AFDO_GS_URL = \
-    'gs://chromeos-throw-away-bucket/afdo-job/llvm/benchmarks/'
+    'gs://chromeos-prebuilt/afdo-job/llvm/'
 CWP_AFDO_GS_URL = \
     'gs://chromeos-prebuilt/afdo-job/cwp/chrome/'
 KERNEL_PROFILE_URL = \
@@ -324,7 +325,7 @@ def _GetBenchmarkAFDOName(buildroot, board):
   afdo_spec = {
       'package': cpv.package,
       'arch': arch,
-      'version': cpv.version_no_rev.split('_')[0]
+      'version': cpv.version
   }
   afdo_file = CHROME_BENCHMARK_AFDO_FILE % afdo_spec
   return afdo_file
@@ -1058,7 +1059,7 @@ class GenerateBenchmarkAFDOProfile(object):
         debug_bin_full_path,
         rename=debug_bin_name_with_version)
 
-    # Upload Benchmark AFDO profile as-is
+    # Upload Benchmark AFDO profile as is
     _UploadAFDOArtifactToGSBucket(
         BENCHMARK_AFDO_GS_URL,
         os.path.join(self.output_dir, afdo_name + AFDO_COMPRESSION_SUFFIX))
@@ -1068,6 +1069,9 @@ class GenerateBenchmarkAFDOProfile(object):
 
     Given the 'perf' profile, generate an AFDO profile using
     create_llvm_prof. It also compresses Chrome debug binary to upload.
+
+    Returns:
+      The name created AFDO artifact.
     """
     debug_bin = self.CHROME_DEBUG_BIN % {
         'root': self.chroot_path,
@@ -1090,6 +1094,7 @@ class GenerateBenchmarkAFDOProfile(object):
         suffix=AFDO_COMPRESSION_SUFFIX)
 
     self._UploadArtifacts(debug_bin, afdo_name)
+    return afdo_name
 
   def Perform(self):
     """Main function to generate benchmark AFDO profiles.
@@ -1099,7 +1104,15 @@ class GenerateBenchmarkAFDOProfile(object):
       file uploaded to GS bucket.
     """
     if self._WaitForAFDOPerfData():
-      self._GenerateAFDOData()
+      afdo_file = self._GenerateAFDOData()
+      # FIXME(tcwang): reuse the CreateAndUploadMergedAFDOProfile from afdo.py
+      # as a temporary solution to keep Android/Linux AFDO running.
+      # Need to move the logic to this file, and run it either at generating
+      # benchmark profiles, or at verifying Chrome profiles.
+      gs_context = gs.GSContext()
+      afdo.CreateAndUploadMergedAFDOProfile(gs_context,
+                                            self.buildroot,
+                                            afdo_file)
     else:
       raise GenerateBenchmarkAFDOProfilesError(
           'Could not find current "perf" profile.')

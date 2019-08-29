@@ -1182,12 +1182,15 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
                                   priority=constants.HWTEST_BUILD_PRIORITY,
                                   file_bugs=True)],
       afdo_generate_async=True,
-      # FIXME(tcwang): Might need to revisit this later. For now, use the
-      # same useflags as release config, except for the two here.
-      # In other words, it turns on afdo_use, thinlto, cfi compared to
-      # chell-chrome-pfq.
+      # FIXME(tcwang): Might need to revisit this later.
+      # For now, use the same useflags as PFQ AFDO generator:
+      # In other words, it turns off afdo_use, thinlto, cfi compared to
+      # release images.
+      afdo_use=False,
       useflags=config_lib.append_useflags(['-transparent_hugepage',
-                                           '-debug_fission']),
+                                           '-debug_fission',
+                                           '-thinlto',
+                                           '-cfi']),
       description='Generate AFDO profile based on benchmarks.'
   )
 
@@ -1319,13 +1322,11 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'benchmark-afdo-generate',
       site_config.templates.benchmark_afdo_generate,
-      # FIXME(tcwang): use chell once deployed
-      boards=['samus'],
+      boards=['chell'],
       # 10 AM UTC is 2 AM PST (no daylight savings)
       # Repeat every 12 hours
       schedule='0 10/12 * * *',
-      # FIXME(tcwang): Enable health alert once deployed
-      #health_alert_recipients=['c-compiler-chrome@google.com'],
+      health_alert_recipients=['c-compiler-chrome@google.com'],
   )
 
   site_config.Add(
@@ -3994,19 +3995,6 @@ def ApplyCustomOverrides(site_config):
       # For crbug.com/961920.
       'scarlet-pre-cq': {
           'useflags': config_lib.append_useflags(['-chrome_internal']),
-      },
-
-      'chell-chrome-pfq': {
-          'afdo_generate': True,
-          'archive_build_debug': True,
-          # Disable hugepages before collecting AFDO profile.
-          # Disable debug fission before collecting AFDO profile.
-          # Disable thinlto before collecting AFDO profile.
-          # Disable cfi before collecting AFDO profile.
-          'useflags': config_lib.append_useflags(['-transparent_hugepage',
-                                                  '-debug_fission',
-                                                  '-thinlto',
-                                                  '-cfi']),
       },
 
       # Run TestSimpleChromeWorkflow only on kevin64-release instead of
