@@ -54,7 +54,8 @@ class ProofVerifierChromiumWithOwnership : public net::ProofVerifierChromium {
   net::MultiLogCTVerifier ct_verifier_;
 };
 
-std::unique_ptr<ProofVerifier> CreateDefaultProofVerifierImpl() {
+std::unique_ptr<ProofVerifier> CreateDefaultProofVerifierImpl(
+    const std::string& /*host*/) {
   std::unique_ptr<net::CertVerifier> cert_verifier =
       net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
   return QuicMakeUnique<ProofVerifierChromiumWithOwnership>(
