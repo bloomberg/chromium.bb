@@ -64,7 +64,7 @@ class CORE_EXPORT PublicURLManager final
   // BlobURLToken. This token can be used by the browser process to securely
   // lookup what blob a URL used to refer to, even after the URL is revoked.
   // If the URL fails to resolve the request will simply be disconnected.
-  void Resolve(const KURL&, mojom::blink::BlobURLTokenRequest);
+  void Resolve(const KURL&, mojo::PendingReceiver<mojom::blink::BlobURLToken>);
 
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;

@@ -175,7 +175,7 @@ void PublicURLManager::Resolve(
 
 void PublicURLManager::Resolve(
     const KURL& url,
-    mojom::blink::BlobURLTokenRequest token_request) {
+    mojo::PendingReceiver<mojom::blink::BlobURLToken> token_receiver) {
   if (is_stopped_)
     return;
 
@@ -185,7 +185,7 @@ void PublicURLManager::Resolve(
         GetExecutionContext()->GetSecurityOrigin(),
         url_store_.BindNewEndpointAndPassReceiver());
   }
-  url_store_->ResolveForNavigation(url, std::move(token_request));
+  url_store_->ResolveForNavigation(url, std::move(token_receiver));
 }
 
 void PublicURLManager::ContextDestroyed(ExecutionContext*) {
