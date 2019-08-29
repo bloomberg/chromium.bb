@@ -3689,14 +3689,12 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, RevocationHardFailNoCrls) {
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  // "Hard fail" handling varies for certificates that have no revocation
-  // mechanisms at all. Some implementations consider it okay, some consider it
-  // a failure.
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN ||
-      verify_proc_type() == CERT_VERIFY_PROC_WIN) {
-    EXPECT_THAT(error, IsOk());
-  } else {
+  if (verify_proc_type() == CERT_VERIFY_PROC_NSS) {
+    // NSS doesn't have an error code for lack of revocation methods, it just
+    // gets mapped to REVOKED.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+  } else {
+    EXPECT_THAT(error, IsError(ERR_CERT_NO_REVOCATION_MECHANISM));
   }
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
@@ -3899,11 +3897,11 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
              CertificateList(), &verify_result);
 
   // Should fail since no revocation information was available for the leaf.
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
-    // TODO(https://crbug.com/964416): This should probably be ERR_CERT_REVOKED.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
+  if (verify_proc_type() == CERT_VERIFY_PROC_NSS) {
+    // NSS just returns REVOKED for hard-fail checking errors.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+  } else {
+    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
   }
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
@@ -3946,11 +3944,11 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Should fail since no revocation information was available for the
   // intermediate.
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
-    // TODO(https://crbug.com/964416): This should probably be ERR_CERT_REVOKED.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
+  if (verify_proc_type() == CERT_VERIFY_PROC_NSS) {
+    // NSS just returns REVOKED for hard-fail checking errors.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+  } else {
+    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
   }
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
@@ -3981,15 +3979,10 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, RevocationSoftFailNoCrls) {
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
-    // Soft-fail revocation checking should succeed when no revocation mechanism
-    // is available.
-    EXPECT_THAT(error, IsOk());
-  }
+  EXPECT_THAT(error, IsOk());
+  EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_NO_REVOCATION_MECHANISM);
+  EXPECT_FALSE(verify_result.cert_status &
+               CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -4028,15 +4021,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
-    // Should pass, leaf and intermediate were covered by CRLs and were not
-    // revoked.
-    EXPECT_THAT(error, IsOk());
-  }
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -4078,15 +4063,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
-    // Should pass, leaf and intermediate were covered by CRLs and were not
-    // revoked.
-    EXPECT_THAT(error, IsOk());
-  }
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -4126,7 +4103,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
     // CRL handling seems broken on macOS >= 10.12.
     // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
+    EXPECT_THAT(error, IsOk());
   } else {
     // Should fail, leaf is revoked.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
@@ -4170,7 +4147,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
     // CRL handling seems broken on macOS >= 10.12.
     // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
+    EXPECT_THAT(error, IsOk());
   } else {
     // Should fail, intermediate is revoked.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
@@ -4215,7 +4192,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
     // CRL handling seems broken on macOS >= 10.12.
     // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
+    EXPECT_THAT(error, IsOk());
   } else {
     // Should fail, leaf is revoked.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
@@ -4257,16 +4234,8 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
-    // TODO(https://crbug.com/964416): This should be OK?
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
-             IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else if (verify_proc_type() == CERT_VERIFY_PROC_WIN ||
-             verify_proc_type() == CERT_VERIFY_PROC_MAC) {
+  if (verify_proc_type() == CERT_VERIFY_PROC_WIN ||
+      (verify_proc_type() == CERT_VERIFY_PROC_MAC && !IsMacAtLeastOS10_12())) {
     // Windows and Mac <= 10.11 honor MD5 CRLs. ¯\_(ツ)_/¯
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
   } else {
@@ -4314,19 +4283,8 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
-    // Win gives ERR_CERT_UNABLE_TO_CHECK_REVOCATION if the revocation checking
-    // network requests failed. TODO(https://crbug.com/964416): should be OK?
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
-             IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
-    // Should succeed due to soft-fail revocation checking.
-    EXPECT_THAT(error, IsOk());
-  }
+  // Should succeed due to soft-fail revocation checking.
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -4366,19 +4324,8 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
-    // Win gives ERR_CERT_UNABLE_TO_CHECK_REVOCATION if the revocation checking
-    // network requests failed. TODO(https://crbug.com/964416): should be OK?
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
-             IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
-    // Should succeed due to soft-fail revocation checking.
-    EXPECT_THAT(error, IsOk());
-  }
+  // Should succeed due to soft-fail revocation checking.
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 

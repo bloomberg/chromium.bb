@@ -164,6 +164,7 @@
 
 using net::test::IsError;
 using net::test::IsOk;
+using testing::AnyOf;
 
 using base::ASCIIToUTF16;
 using base::Time;
@@ -11320,20 +11321,6 @@ static bool UsingBuiltinCertVerifier() {
   return false;
 }
 
-static CertStatus ExpectedCertStatusForFailedOnlineRevocationCheck() {
-  if (UsingBuiltinCertVerifier())
-    return 0;
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // Windows can return CERT_STATUS_UNABLE_TO_CHECK_REVOCATION but we don't
-  // have that ability on other platforms.
-  // TODO(eroman): Should this also be the return value for
-  //               CertVerifyProcBuiltin?
-  return CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-#else
-  return 0;
-#endif
-}
-
 // SystemSupportsHardFailRevocationChecking returns true iff the current
 // operating system supports revocation checking and can distinguish between
 // situations where a given certificate lacks any revocation information (eg:
@@ -11363,19 +11350,6 @@ static bool SystemUsesChromiumEVMetadata() {
 #else
   return false;
 #endif
-}
-
-// Returns the expected CertStatus for tests that expect an online revocation
-// check failure as a result of checking a test EV cert, which will not
-// actually trigger an online revocation check on some platforms.
-static CertStatus ExpectedCertStatusForFailedOnlineEVRevocationCheck() {
-  if (SystemUsesChromiumEVMetadata()) {
-    return ExpectedCertStatusForFailedOnlineRevocationCheck();
-  } else {
-    // If SystemUsesChromiumEVMetadata is false, revocation checking will not
-    // be enabled, and thus there will not be a revocation check to fail.
-    return 0u;
-  }
 }
 
 static bool SystemSupportsOCSP() {
@@ -11456,20 +11430,10 @@ TEST_F(HTTPSOCSPTest, Invalid) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-  if (UsingBuiltinCertVerifier()) {
-    // TODO(649017): This test uses soft-fail revocation checking, but returns
-    // an invalid OCSP response (can't parse). CertVerifyProcBuiltin currently
-    // doesn't consider this a candidate for soft-fail (only considers
-    // network-level failures as skippable).
-    EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
-              cert_status & CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
-  } else {
-    EXPECT_EQ(ExpectedCertStatusForFailedOnlineRevocationCheck(),
-              cert_status & CERT_STATUS_ALL_ERRORS);
-  }
-
-  // Without a positive OCSP response, we shouldn't show the EV status.
+  // Without a positive OCSP response, we shouldn't show the EV status, but also
+  // should not show any revocation checking errors.
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
+  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -11539,9 +11503,8 @@ TEST_F(HTTPSOCSPTest, IntermediateResponseTooOld) {
 
   if (UsingBuiltinCertVerifier()) {
     // The builtin verifier enforces the baseline requirements for max age of an
-    // intermediate's OCSP response.
-    EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
-              cert_status & CERT_STATUS_ALL_ERRORS);
+    // intermediate's OCSP response, so the connection is considered non-EV.
+    EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
     EXPECT_EQ(0u, cert_status & CERT_STATUS_IS_EV);
   } else {
     // The platform verifiers are more lenient.
@@ -11568,8 +11531,11 @@ TEST_F(HTTPSOCSPTest, IntermediateRevoked) {
   DoConnection(ssl_options, &cert_status);
 
 #if defined(OS_WIN)
-  // TODO(mattm): why does CertVerifyProcWin accept this?
-  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+  // TODO(mattm): Seems to be flaky on Windows. Either returns
+  // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION (which gets masked off due to
+  // soft-fail), or CERT_STATUS_REVOKED.
+  EXPECT_THAT(cert_status & CERT_STATUS_ALL_ERRORS,
+              AnyOf(0u, CERT_STATUS_REVOKED));
 #else
   EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
 #endif
@@ -11998,12 +11964,15 @@ TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
   DoConnection(ssl_options, &cert_status);
 
   if (UsingBuiltinCertVerifier()) {
-    // TODO(crbug.com/649017): Should we consider invalid response as
-    //                         affirmatively revoked?
     EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
-              cert_status & CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
+              cert_status & CERT_STATUS_ALL_ERRORS);
   } else {
-    EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_REVOKED);
+#if defined(USE_NSS_CERTS)
+    EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
+#else
+    EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
+              cert_status & CERT_STATUS_ALL_ERRORS);
+#endif
   }
 
   // Without a positive OCSP response, we shouldn't show the EV status.
@@ -12033,9 +12002,7 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndInvalidOCSP) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-  EXPECT_EQ(ExpectedCertStatusForFailedOnlineEVRevocationCheck(),
-            cert_status & CERT_STATUS_ALL_ERRORS);
-
+  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
   EXPECT_EQ(SystemUsesChromiumEVMetadata(),
             static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
@@ -12054,14 +12021,28 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndRevokedOCSP) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-  // Currently only works for Windows and OS X. When using NSS, it's not
-  // possible to determine whether the check failed because of actual
-  // revocation or because there was an OCSP failure.
+  // The CertVerifyProc implementations handle revocation on the EV
+  // verification differently. Some will return a revoked error, others will
+  // return the non-EV verification result. For example on NSS it's not
+  // possible to determine whether the EV verification attempt failed because
+  // of actual revocation or because there was an OCSP failure.
   if (UsingBuiltinCertVerifier()) {
     // TODO(https://crbug.com/410574): Handle this in builtin verifier too?
     EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   } else {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+    if (!base::mac::IsAtLeastOS10_12()) {
+      // On older macOS versions, revocation failures might also end up with
+      // CERT_STATUS_NO_REVOCATION_MECHANISM status added. (See comment for
+      // CSSMERR_APPLETP_INCOMPLETE_REVOCATION_CHECK in CertStatusFromOSStatus.)
+      EXPECT_THAT(
+          cert_status & CERT_STATUS_ALL_ERRORS,
+          AnyOf(CERT_STATUS_REVOKED,
+                CERT_STATUS_NO_REVOCATION_MECHANISM | CERT_STATUS_REVOKED));
+    } else {
+      EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
+    }
+#elif defined(OS_WIN)
     EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
 #else
     EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
@@ -12111,9 +12092,7 @@ TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSet) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-  EXPECT_EQ(ExpectedCertStatusForFailedOnlineEVRevocationCheck(),
-            cert_status & CERT_STATUS_ALL_ERRORS);
-
+  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
   EXPECT_EQ(SystemUsesChromiumEVMetadata(),
             static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
@@ -12165,10 +12144,10 @@ TEST_F(HTTPSEVCRLSetTest, FreshCRLSetNotCovered) {
 
   // Even with a fresh CRLSet, we should still do online revocation checks when
   // the certificate chain isn't covered by the CRLSet, which it isn't in this
-  // test.
-  EXPECT_EQ(ExpectedCertStatusForFailedOnlineEVRevocationCheck(),
-            cert_status & CERT_STATUS_ALL_ERRORS);
-
+  // test. Since the online revocation check returns an invalid OCSP response,
+  // the result should be non-EV but with REV_CHECKING_ENABLED status set to
+  // indicate online revocation checking was attempted.
+  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
   EXPECT_EQ(SystemUsesChromiumEVMetadata(),
             static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
