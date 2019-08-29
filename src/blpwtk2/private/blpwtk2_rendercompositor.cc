@@ -41,7 +41,7 @@
 #include <components/viz/host/host_frame_sink_manager.h>
 #include <components/viz/host/renderer_settings_creation.h>
 #include <components/viz/service/display/display.h>
-#include <components/viz/service/display_embedder/compositor_overlay_candidate_validator.h>
+#include <components/viz/service/display/overlay_candidate_validator.h>
 #include <components/viz/service/display_embedder/output_device_backing.h>
 #include <components/viz/service/display_embedder/server_shared_bitmap_manager.h>
 #include <components/viz/service/display_embedder/software_output_device_win.h>
@@ -57,7 +57,6 @@
 #include <services/service_manager/public/cpp/connector.h>
 #include <services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h>
 #include <services/ws/public/cpp/gpu/context_provider_command_buffer.h>
-#include <ui/compositor/compositor_vsync_manager.h>
 
 namespace blpwtk2 {
 
@@ -178,7 +177,6 @@ class RenderCompositorFrameSinkImpl : public viz::mojom::CompositorFrameSink,
     viz::FrameSinkId d_frame_sink_id;
 
     std::unique_ptr<viz::SyntheticBeginFrameSource> d_begin_frame_source;
-    scoped_refptr<ui::CompositorVSyncManager> d_vsync_manager;
     std::unique_ptr<viz::Display> d_display;
     std::unique_ptr<cc::LayerTreeFrameSink> d_layer_tree_frame_sink;
 
@@ -736,31 +734,18 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
         }
     }
 
-    // The viz::OutputSurface for the viz::Display:
-    d_vsync_manager = new ui::CompositorVSyncManager();
-
-    content::BrowserCompositorOutputSurface::UpdateVSyncParametersCallback
-        update_vsync_parameters_callback =
-            base::Bind(
-                &RenderCompositorFrameSinkImpl::UpdateVSyncParameters,
-                base::Unretained(this));
-
     std::unique_ptr<viz::OutputSurface> display_output_surface;
 
     if (context_provider && worker_context_provider) {
         display_output_surface =
             std::make_unique<content::GpuBrowserCompositorOutputSurface>(
                 context_provider,
-                update_vsync_parameters_callback,
                 nullptr);
     }
     else {
         display_output_surface =
             std::make_unique<content::SoftwareBrowserCompositorOutputSurface>(
-                viz::CreateSoftwareOutputDeviceWinBrowser(
-                    gpu_surface_handle,
-                    d_context.software_output_device_backing()),
-                update_vsync_parameters_callback);
+                std::unique_ptr<viz::SoftwareOutputDevice>());
     }
 
     // The viz::DisplayScheduler:
@@ -859,8 +844,6 @@ void RenderCompositorFrameSinkImpl::UpdateVSyncParameters(base::TimeTicks timeba
     if (d_begin_frame_source) {
         d_begin_frame_source->OnUpdateVSyncParameters(timebase, interval);
     }
-
-    d_vsync_manager->UpdateVSyncParameters(timebase, interval);
 }
 
 // viz::mojom::CompositorFrameSink overrides:

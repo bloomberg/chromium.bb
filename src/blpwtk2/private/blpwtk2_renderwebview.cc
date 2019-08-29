@@ -41,8 +41,8 @@
 #include <content/renderer/render_view_impl.h>
 #include <third_party/blink/public/web/web_local_frame.h>
 #include <third_party/blink/public/web/web_view.h>
+#include <ui/base/ime/init/input_method_factory.h>
 #include <ui/base/ime/input_method.h>
-#include <ui/base/ime/input_method_factory.h>
 #include <ui/base/win/lock_state.h>
 #include <ui/base/win/mouse_wheel_util.h>
 #include <ui/display/display.h>
@@ -754,7 +754,7 @@ void RenderWebView::updateVisibility()
     if (d_visible) {
         dispatchToRenderWidget(
             WidgetMsg_WasShown(d_renderWidgetRoutingId,
-                base::TimeTicks::Now(), false));
+                base::TimeTicks::Now(), false, base::nullopt));
     }
     else {
         dispatchToRenderWidget(
@@ -1966,6 +1966,12 @@ bool RenderWebView::ShouldDoLearning()
     return false;
 }
 
+bool RenderWebView::SetCompositionFromExistingText(const gfx::Range& range,
+                                    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans)
+{
+    return false;
+}
+
 // DragDropDelegate overrides:
 void RenderWebView::DragTargetEnter(
     const std::vector<content::DropData::Metadata>& drag_data_metadata,
@@ -2077,12 +2083,12 @@ void RenderWebView::OnUnlockMouse()
 
 void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
 {
-    if (!d_currentCursor.IsEqual(cursor)) {
+    if (!(d_currentCursor == cursor)) {
         d_currentCursor = cursor;
 
         HCURSOR platformCursor = NULL;
 
-        if (!d_currentCursor.IsCustom()) {
+        if (d_currentCursor.info().type != blink::WebCursorInfo::kTypeCustom) {
             auto native_cursor = d_currentCursor.GetNativeCursor();
             d_cursorLoader->SetPlatformCursor(&native_cursor);
 
