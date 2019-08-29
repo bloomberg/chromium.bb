@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.payment;
+package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -19,15 +19,15 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 /**
  * Coordinator for the Payment Request.
  */
-public class AssistantPaymentRequestCoordinator {
+public class AssistantCollectUserDataCoordinator {
     public static final String DIVIDER_TAG = "divider";
     private final Activity mActivity;
     private final LinearLayout mPaymentRequestUI;
-    private final AssistantPaymentRequestModel mModel;
-    private AssistantPaymentRequestBinder.ViewHolder mViewHolder;
+    private final AssistantCollectUserDataModel mModel;
+    private AssistantCollectUserDataBinder.ViewHolder mViewHolder;
 
-    public AssistantPaymentRequestCoordinator(
-            Activity activity, AssistantPaymentRequestModel model) {
+    public AssistantCollectUserDataCoordinator(
+            Activity activity, AssistantCollectUserDataModel model) {
         mActivity = activity;
         mModel = model;
         int sectionToSectionPadding = activity.getResources().getDimensionPixelSize(
@@ -46,53 +46,50 @@ public class AssistantPaymentRequestCoordinator {
                 new LinearLayout.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
                         /* height= */ 0, /* weight= */ 1));
         paymentRequestExpanderAccordion.setOnExpandedViewChangedListener(
-                expander -> mModel.set(AssistantPaymentRequestModel.EXPANDED_SECTION, expander));
+                expander -> mModel.set(AssistantCollectUserDataModel.EXPANDED_SECTION, expander));
 
         mPaymentRequestUI.addView(paymentRequestExpanderAccordion,
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        AssistantPaymentRequestLoginSection loginSection =
-                new AssistantPaymentRequestLoginSection(mActivity, paymentRequestExpanderAccordion);
+        AssistantLoginSection loginSection =
+                new AssistantLoginSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
-        AssistantPaymentRequestContactDetailsSection contactDetailsSection =
-                new AssistantPaymentRequestContactDetailsSection(
-                        mActivity, paymentRequestExpanderAccordion);
+        AssistantContactDetailsSection contactDetailsSection =
+                new AssistantContactDetailsSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
-        AssistantPaymentRequestPaymentMethodSection paymentMethodSection =
-                new AssistantPaymentRequestPaymentMethodSection(
-                        mActivity, paymentRequestExpanderAccordion);
+        AssistantPaymentMethodSection paymentMethodSection =
+                new AssistantPaymentMethodSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
-        AssistantPaymentRequestShippingAddressSection shippingAddressSection =
-                new AssistantPaymentRequestShippingAddressSection(
-                        mActivity, paymentRequestExpanderAccordion);
+        AssistantShippingAddressSection shippingAddressSection =
+                new AssistantShippingAddressSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
-        AssistantPaymentRequestTermsSection termsSection = new AssistantPaymentRequestTermsSection(
+        AssistantTermsSection termsSection = new AssistantTermsSection(
                 mActivity, paymentRequestExpanderAccordion, /* showAsSingleCheckbox= */ false);
-        AssistantPaymentRequestTermsSection termsAsCheckboxSection =
-                new AssistantPaymentRequestTermsSection(mActivity, paymentRequestExpanderAccordion,
+        AssistantTermsSection termsAsCheckboxSection =
+                new AssistantTermsSection(mActivity, paymentRequestExpanderAccordion,
                         /* showAsSingleCheckbox= */ true);
 
         paymentRequestExpanderAccordion.setTag(
-                AssistantTagsForTesting.PAYMENT_REQUEST_ACCORDION_TAG);
-        loginSection.getView().setTag(AssistantTagsForTesting.PAYMENT_REQUEST_LOGIN_SECTION_TAG);
+                AssistantTagsForTesting.COLLECT_USER_DATA_ACCORDION_TAG);
+        loginSection.getView().setTag(AssistantTagsForTesting.COLLECT_USER_DATA_LOGIN_SECTION_TAG);
         contactDetailsSection.getView().setTag(
-                AssistantTagsForTesting.PAYMENT_REQUEST_CONTACT_DETAILS_SECTION_TAG);
+                AssistantTagsForTesting.COLLECT_USER_DATA_CONTACT_DETAILS_SECTION_TAG);
         paymentMethodSection.getView().setTag(
-                AssistantTagsForTesting.PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_TAG);
+                AssistantTagsForTesting.COLLECT_USER_DATA_PAYMENT_METHOD_SECTION_TAG);
         shippingAddressSection.getView().setTag(
-                AssistantTagsForTesting.PAYMENT_REQUEST_SHIPPING_ADDRESS_SECTION_TAG);
+                AssistantTagsForTesting.COLLECT_USER_DATA_SHIPPING_ADDRESS_SECTION_TAG);
 
         // Bind view and mediator through the model.
-        mViewHolder = new AssistantPaymentRequestBinder.ViewHolder(mPaymentRequestUI,
+        mViewHolder = new AssistantCollectUserDataBinder.ViewHolder(mPaymentRequestUI,
                 paymentRequestExpanderAccordion, sectionToSectionPadding, loginSection,
                 contactDetailsSection, paymentMethodSection, shippingAddressSection, termsSection,
                 termsAsCheckboxSection, DIVIDER_TAG, activity);
-        AssistantPaymentRequestBinder binder = new AssistantPaymentRequestBinder();
+        AssistantCollectUserDataBinder binder = new AssistantCollectUserDataBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);
 
         // View is initially invisible.
-        model.set(AssistantPaymentRequestModel.VISIBLE, false);
+        model.set(AssistantCollectUserDataModel.VISIBLE, false);
     }
 
     public View getView() {

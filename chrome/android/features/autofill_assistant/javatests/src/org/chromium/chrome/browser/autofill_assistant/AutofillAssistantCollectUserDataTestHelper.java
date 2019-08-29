@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.PAYMENT_REQUEST_CHOICE_LIST;
+import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_CHOICE_LIST;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.findViewsWithTag;
-import static org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator.DIVIDER_TAG;
+import static org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator.DIVIDER_TAG;
 
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -16,13 +16,13 @@ import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantChoiceList;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestDelegate;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestLoginChoice;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantTermsAndConditionsState;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantVerticalExpander;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantVerticalExpanderAccordion;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataDelegate;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsAndConditionsState;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpanderAccordion;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
@@ -35,7 +35,7 @@ import java.util.concurrent.TimeoutException;
  * Helper class for testing autofill assistant payment request. Code adapted from
  * https://cs.chromium.org/chromium/src/chrome/android/javatests/src/org/chromium/chrome/browser/autofill/AutofillTestHelper.java
  */
-public class AutofillAssistantPaymentRequestTestHelper {
+public class AutofillAssistantCollectUserDataTestHelper {
     private final CallbackHelper mOnPersonalDataChangedHelper = new CallbackHelper();
 
     /** Extracts the views from a coordinator. */
@@ -51,29 +51,29 @@ public class AutofillAssistantPaymentRequestTestHelper {
         final AssistantChoiceList mLoginList;
         final List<View> mDividers;
 
-        ViewHolder(AssistantPaymentRequestCoordinator coordinator) {
+        ViewHolder(AssistantCollectUserDataCoordinator coordinator) {
             mAccordion = coordinator.getView().findViewWithTag(
-                    AssistantTagsForTesting.PAYMENT_REQUEST_ACCORDION_TAG);
+                    AssistantTagsForTesting.COLLECT_USER_DATA_ACCORDION_TAG);
             mContactSection = coordinator.getView().findViewWithTag(
-                    AssistantTagsForTesting.PAYMENT_REQUEST_CONTACT_DETAILS_SECTION_TAG);
+                    AssistantTagsForTesting.COLLECT_USER_DATA_CONTACT_DETAILS_SECTION_TAG);
             mPaymentSection = coordinator.getView().findViewWithTag(
-                    AssistantTagsForTesting.PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_TAG);
+                    AssistantTagsForTesting.COLLECT_USER_DATA_PAYMENT_METHOD_SECTION_TAG);
             mShippingSection = coordinator.getView().findViewWithTag(
-                    AssistantTagsForTesting.PAYMENT_REQUEST_SHIPPING_ADDRESS_SECTION_TAG);
+                    AssistantTagsForTesting.COLLECT_USER_DATA_SHIPPING_ADDRESS_SECTION_TAG);
             mLoginsSection = coordinator.getView().findViewWithTag(
-                    AssistantTagsForTesting.PAYMENT_REQUEST_LOGIN_SECTION_TAG);
+                    AssistantTagsForTesting.COLLECT_USER_DATA_LOGIN_SECTION_TAG);
             mDividers = findViewsWithTag(coordinator.getView(), DIVIDER_TAG);
             mContactList = (AssistantChoiceList) (findViewsWithTag(
-                    mContactSection, PAYMENT_REQUEST_CHOICE_LIST)
+                    mContactSection, COLLECT_USER_DATA_CHOICE_LIST)
                                                           .get(0));
             mPaymentMethodList = (AssistantChoiceList) (findViewsWithTag(
-                    mPaymentSection, PAYMENT_REQUEST_CHOICE_LIST)
+                    mPaymentSection, COLLECT_USER_DATA_CHOICE_LIST)
                                                                 .get(0));
             mShippingAddressList = (AssistantChoiceList) (findViewsWithTag(
-                    mShippingSection, PAYMENT_REQUEST_CHOICE_LIST)
+                    mShippingSection, COLLECT_USER_DATA_CHOICE_LIST)
                                                                   .get(0));
             mLoginList = (AssistantChoiceList) (findViewsWithTag(
-                    mLoginsSection, PAYMENT_REQUEST_CHOICE_LIST)
+                    mLoginsSection, COLLECT_USER_DATA_CHOICE_LIST)
                                                         .get(0));
         }
     }
@@ -83,11 +83,11 @@ public class AutofillAssistantPaymentRequestTestHelper {
      *  TODO(crbug.com/860868): Remove this once PR is fully a MVC component, in which case one
      *  should be able to get the currently selected items by asking the model.
      */
-    static class MockDelegate implements AssistantPaymentRequestDelegate {
+    static class MockDelegate implements AssistantCollectUserDataDelegate {
         AutofillContact mContact;
         AutofillAddress mAddress;
         AutofillPaymentInstrument mPaymentMethod;
-        AssistantPaymentRequestLoginChoice mLoginChoice;
+        AssistantLoginChoice mLoginChoice;
         @AssistantTermsAndConditionsState
         int mTermsStatus;
         @Nullable
@@ -114,7 +114,7 @@ public class AutofillAssistantPaymentRequestTestHelper {
         }
 
         @Override
-        public void onLoginChoiceChanged(@Nullable AssistantPaymentRequestLoginChoice loginChoice) {
+        public void onLoginChoiceChanged(@Nullable AssistantLoginChoice loginChoice) {
             mLoginChoice = loginChoice;
         }
 
@@ -124,7 +124,7 @@ public class AutofillAssistantPaymentRequestTestHelper {
         }
     }
 
-    public AutofillAssistantPaymentRequestTestHelper()
+    public AutofillAssistantCollectUserDataTestHelper()
             throws TimeoutException, InterruptedException {
         registerDataObserver();
         setRequestTimeoutForTesting();

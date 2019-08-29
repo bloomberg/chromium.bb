@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.payment;
+package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 /**
  * The third party terms and conditions section of the Autofill Assistant payment request.
  */
-public class AssistantPaymentRequestTermsSection {
+public class AssistantTermsSection {
     interface Delegate {
         void onStateChanged(@AssistantTermsAndConditionsState int state);
 
@@ -40,8 +40,7 @@ public class AssistantPaymentRequestTermsSection {
     private String mOrigin = "";
     private String mAcceptTermsText = "";
 
-    AssistantPaymentRequestTermsSection(
-            Context context, ViewGroup parent, boolean showAsSingleCheckbox) {
+    AssistantTermsSection(Context context, ViewGroup parent, boolean showAsSingleCheckbox) {
         mView = LayoutInflater.from(context).inflate(
                 R.layout.autofill_assistant_payment_request_terms_and_conditions, parent, false);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -73,7 +72,7 @@ public class AssistantPaymentRequestTermsSection {
                     mTermsRequiresReview, R.style.TextAppearance_BlackCaption);
             mTermsRequiresReview.setGravity(Gravity.CENTER_VERTICAL);
             mTermsRequiresReview.setTag(
-                    AssistantTagsForTesting.PAYMENT_REQUEST_TERMS_REQUIRE_REVIEW);
+                    AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW);
             mTermsList.addItem(mTermsRequiresReview, /*hasEditButton=*/false, selected -> {
                 if (selected && mDelegate != null) {
                     mDelegate.onStateChanged(AssistantTermsAndConditionsState.REQUIRES_REVIEW);

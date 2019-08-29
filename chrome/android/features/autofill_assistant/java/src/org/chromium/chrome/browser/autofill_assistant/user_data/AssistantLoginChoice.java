@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.payment;
+package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 
@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
  *
  * <p>Note: currently, login choices are always considered 'complete'.</p>
  */
-public class AssistantPaymentRequestLoginChoice extends EditableOption {
+public class AssistantLoginChoice extends EditableOption {
     private final int mPriority;
     /**
      * @param identifier The unique identifier of this login choice.
@@ -19,7 +19,7 @@ public class AssistantPaymentRequestLoginChoice extends EditableOption {
      * @param priority The priority of this login choice (lower value == higher priority). Can be -1
      * to indicate default/auto.
      */
-    public AssistantPaymentRequestLoginChoice(String identifier, String label, int priority) {
+    public AssistantLoginChoice(String identifier, String label, int priority) {
         super(identifier, label, null, null);
         mPriority = priority;
     }

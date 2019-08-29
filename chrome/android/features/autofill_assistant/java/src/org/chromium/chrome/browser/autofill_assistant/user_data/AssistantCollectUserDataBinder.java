@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.payment;
+package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.app.Activity;
 import android.text.TextUtils;
@@ -10,7 +10,7 @@ import android.view.View;
 
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestTermsSection.Delegate;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsSection.Delegate;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillPaymentApp;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
@@ -33,28 +33,28 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class is responsible for pushing updates to the Autofill Assistant payment request. These
- * updates are pulled from the {@link AssistantPaymentRequestModel} when a notification of an update
- * is received.
+ * This class is responsible for pushing updates to the Autofill Assistant UI for requesting user
+ * data. These updates are pulled from the {@link AssistantCollectUserDataModel} when a notification
+ * of an update is received.
  */
-class AssistantPaymentRequestBinder
-        implements PropertyModelChangeProcessor.ViewBinder<AssistantPaymentRequestModel,
-                AssistantPaymentRequestBinder.ViewHolder, PropertyKey> {
+class AssistantCollectUserDataBinder
+        implements PropertyModelChangeProcessor.ViewBinder<AssistantCollectUserDataModel,
+                AssistantCollectUserDataBinder.ViewHolder, PropertyKey> {
     /**
      * Helper class that compares instances of {@link PersonalDataManager.AutofillProfile} by
      * completeness in regards to the current state of the given {@link
-     * AssistantPaymentRequestModel}.
+     * AssistantCollectUserDataModel}.
      */
     class CompletenessComparator implements Comparator<PersonalDataManager.AutofillProfile> {
         final boolean mRequestName;
         final boolean mRequestShipping;
         final boolean mRequestEmail;
         final boolean mRequestPhone;
-        CompletenessComparator(AssistantPaymentRequestModel model) {
-            mRequestName = model.get(AssistantPaymentRequestModel.REQUEST_NAME);
-            mRequestShipping = model.get(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS);
-            mRequestEmail = model.get(AssistantPaymentRequestModel.REQUEST_EMAIL);
-            mRequestPhone = model.get(AssistantPaymentRequestModel.REQUEST_PHONE);
+        CompletenessComparator(AssistantCollectUserDataModel model) {
+            mRequestName = model.get(AssistantCollectUserDataModel.REQUEST_NAME);
+            mRequestShipping = model.get(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS);
+            mRequestEmail = model.get(AssistantCollectUserDataModel.REQUEST_EMAIL);
+            mRequestPhone = model.get(AssistantCollectUserDataModel.REQUEST_PHONE);
         }
 
         @Override
@@ -87,30 +87,29 @@ class AssistantPaymentRequestBinder
     }
 
     /**
-     * A wrapper class that holds the different views of the payment request.
+     * A wrapper class that holds the different views of the CollectUserData request.
      */
     static class ViewHolder {
         private final View mRootView;
         private final AssistantVerticalExpanderAccordion mPaymentRequestExpanderAccordion;
         private final int mSectionToSectionPadding;
-        private final AssistantPaymentRequestLoginSection mLoginSection;
-        private final AssistantPaymentRequestContactDetailsSection mContactDetailsSection;
-        private final AssistantPaymentRequestPaymentMethodSection mPaymentMethodSection;
-        private final AssistantPaymentRequestShippingAddressSection mShippingAddressSection;
-        private final AssistantPaymentRequestTermsSection mTermsSection;
-        private final AssistantPaymentRequestTermsSection mTermsAsCheckboxSection;
+        private final AssistantLoginSection mLoginSection;
+        private final AssistantContactDetailsSection mContactDetailsSection;
+        private final AssistantPaymentMethodSection mPaymentMethodSection;
+        private final AssistantShippingAddressSection mShippingAddressSection;
+        private final AssistantTermsSection mTermsSection;
+        private final AssistantTermsSection mTermsAsCheckboxSection;
         private final Object mDividerTag;
         private final Activity mActivity;
         private PersonalDataManager.PersonalDataManagerObserver mPersonalDataManagerObserver;
 
         public ViewHolder(View rootView, AssistantVerticalExpanderAccordion accordion,
-                int sectionPadding, AssistantPaymentRequestLoginSection loginSection,
-                AssistantPaymentRequestContactDetailsSection contactDetailsSection,
-                AssistantPaymentRequestPaymentMethodSection paymentMethodSection,
-                AssistantPaymentRequestShippingAddressSection shippingAddressSection,
-                AssistantPaymentRequestTermsSection termsSection,
-                AssistantPaymentRequestTermsSection termsAsCheckboxSection, Object dividerTag,
-                Activity activity) {
+                int sectionPadding, AssistantLoginSection loginSection,
+                AssistantContactDetailsSection contactDetailsSection,
+                AssistantPaymentMethodSection paymentMethodSection,
+                AssistantShippingAddressSection shippingAddressSection,
+                AssistantTermsSection termsSection, AssistantTermsSection termsAsCheckboxSection,
+                Object dividerTag, Activity activity) {
             mRootView = rootView;
             mPaymentRequestExpanderAccordion = accordion;
             mSectionToSectionPadding = sectionPadding;
@@ -150,7 +149,8 @@ class AssistantPaymentRequestBinder
     }
 
     @Override
-    public void bind(AssistantPaymentRequestModel model, ViewHolder view, PropertyKey propertyKey) {
+    public void bind(
+            AssistantCollectUserDataModel model, ViewHolder view, PropertyKey propertyKey) {
         boolean handled = updateEditors(model, propertyKey, view);
         handled = updateRootVisibility(model, propertyKey, view) || handled;
         handled = updateSectionVisibility(model, propertyKey, view) || handled;
@@ -160,9 +160,9 @@ class AssistantPaymentRequestBinder
         /* Update section paddings *after* updating section visibility. */
         handled = updateSectionPaddings(model, propertyKey, view) || handled;
 
-        if (propertyKey == AssistantPaymentRequestModel.DELEGATE) {
-            AssistantPaymentRequestDelegate delegate =
-                    model.get(AssistantPaymentRequestModel.DELEGATE);
+        if (propertyKey == AssistantCollectUserDataModel.DELEGATE) {
+            AssistantCollectUserDataDelegate delegate =
+                    model.get(AssistantCollectUserDataModel.DELEGATE);
 
             Delegate termsDelegate = delegate == null ? null : new Delegate() {
                 @Override
@@ -185,26 +185,26 @@ class AssistantPaymentRequestBinder
                     delegate != null ? delegate::onShippingAddressChanged : null);
             view.mLoginSection.setListener(
                     delegate != null ? delegate::onLoginChoiceChanged : null);
-        } else if (propertyKey == AssistantPaymentRequestModel.SUPPORTED_BASIC_CARD_NETWORKS) {
+        } else if (propertyKey == AssistantCollectUserDataModel.SUPPORTED_BASIC_CARD_NETWORKS) {
             updateAvailablePaymentMethods(model);
-        } else if (propertyKey == AssistantPaymentRequestModel.SUPPORTED_PAYMENT_METHODS) {
+        } else if (propertyKey == AssistantCollectUserDataModel.SUPPORTED_PAYMENT_METHODS) {
             updateAvailableAutofillPaymentMethods(model);
         } else {
-            assert handled : "Unhandled property detected in AssistantPaymentRequestBinder!";
+            assert handled : "Unhandled property detected in AssistantCollectUserDataBinder!";
         }
     }
 
-    private boolean shouldShowContactDetails(AssistantPaymentRequestModel model) {
-        return model.get(AssistantPaymentRequestModel.REQUEST_NAME)
-                || model.get(AssistantPaymentRequestModel.REQUEST_PHONE)
-                || model.get(AssistantPaymentRequestModel.REQUEST_EMAIL);
+    private boolean shouldShowContactDetails(AssistantCollectUserDataModel model) {
+        return model.get(AssistantCollectUserDataModel.REQUEST_NAME)
+                || model.get(AssistantCollectUserDataModel.REQUEST_PHONE)
+                || model.get(AssistantCollectUserDataModel.REQUEST_EMAIL);
     }
 
     private boolean updateSectionTitles(
-            AssistantPaymentRequestModel model, PropertyKey propertyKey, ViewHolder view) {
-        if (propertyKey == AssistantPaymentRequestModel.LOGIN_SECTION_TITLE) {
+            AssistantCollectUserDataModel model, PropertyKey propertyKey, ViewHolder view) {
+        if (propertyKey == AssistantCollectUserDataModel.LOGIN_SECTION_TITLE) {
             view.mLoginSection.setTitle(
-                    model.get(AssistantPaymentRequestModel.LOGIN_SECTION_TITLE));
+                    model.get(AssistantCollectUserDataModel.LOGIN_SECTION_TITLE));
             return true;
         }
         return false;
@@ -215,43 +215,43 @@ class AssistantPaymentRequestBinder
      * @return whether the property key was handled.
      */
     private boolean updateSectionContents(
-            AssistantPaymentRequestModel model, PropertyKey propertyKey, ViewHolder view) {
-        if (propertyKey == AssistantPaymentRequestModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS) {
+            AssistantCollectUserDataModel model, PropertyKey propertyKey, ViewHolder view) {
+        if (propertyKey == AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS) {
             List<AutofillPaymentInstrument> availablePaymentMethods =
-                    model.get(AssistantPaymentRequestModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS);
+                    model.get(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS);
             if (availablePaymentMethods == null) availablePaymentMethods = Collections.emptyList();
             view.mPaymentMethodSection.onAvailablePaymentMethodsChanged(availablePaymentMethods);
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.AVAILABLE_PROFILES) {
+        } else if (propertyKey == AssistantCollectUserDataModel.AVAILABLE_PROFILES) {
             List<PersonalDataManager.AutofillProfile> autofillProfiles =
-                    model.get(AssistantPaymentRequestModel.AVAILABLE_PROFILES);
+                    model.get(AssistantCollectUserDataModel.AVAILABLE_PROFILES);
             if (autofillProfiles == null) {
                 autofillProfiles = Collections.emptyList();
             }
             if (shouldShowContactDetails(model)) {
                 view.mContactDetailsSection.onProfilesChanged(autofillProfiles,
-                        model.get(AssistantPaymentRequestModel.REQUEST_EMAIL),
-                        model.get(AssistantPaymentRequestModel.REQUEST_NAME),
-                        model.get(AssistantPaymentRequestModel.REQUEST_PHONE));
+                        model.get(AssistantCollectUserDataModel.REQUEST_EMAIL),
+                        model.get(AssistantCollectUserDataModel.REQUEST_NAME),
+                        model.get(AssistantCollectUserDataModel.REQUEST_PHONE));
             }
-            if (model.get(AssistantPaymentRequestModel.REQUEST_PAYMENT)) {
+            if (model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)) {
                 view.mPaymentMethodSection.onProfilesChanged(autofillProfiles);
             }
-            if (model.get(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS)) {
+            if (model.get(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS)) {
                 view.mShippingAddressSection.onProfilesChanged(autofillProfiles);
             }
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.REQUIRE_BILLING_POSTAL_CODE
-                || propertyKey == AssistantPaymentRequestModel.BILLING_POSTAL_CODE_MISSING_TEXT) {
+        } else if (propertyKey == AssistantCollectUserDataModel.REQUIRE_BILLING_POSTAL_CODE
+                || propertyKey == AssistantCollectUserDataModel.BILLING_POSTAL_CODE_MISSING_TEXT) {
             view.mPaymentMethodSection.setRequiresBillingPostalCode(
-                    model.get(AssistantPaymentRequestModel.REQUIRE_BILLING_POSTAL_CODE));
+                    model.get(AssistantCollectUserDataModel.REQUIRE_BILLING_POSTAL_CODE));
             view.mPaymentMethodSection.setBillingPostalCodeMissingText(
-                    model.get(AssistantPaymentRequestModel.BILLING_POSTAL_CODE_MISSING_TEXT));
+                    model.get(AssistantCollectUserDataModel.BILLING_POSTAL_CODE_MISSING_TEXT));
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.AVAILABLE_LOGINS) {
-            if (model.get(AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE)) {
+        } else if (propertyKey == AssistantCollectUserDataModel.AVAILABLE_LOGINS) {
+            if (model.get(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE)) {
                 view.mLoginSection.onLoginsChanged(
-                        model.get(AssistantPaymentRequestModel.AVAILABLE_LOGINS));
+                        model.get(AssistantCollectUserDataModel.AVAILABLE_LOGINS));
             }
             return true;
         }
@@ -264,28 +264,28 @@ class AssistantPaymentRequestBinder
      * @return whether the property key was handled.
      */
     private boolean updateSectionVisibility(
-            AssistantPaymentRequestModel model, PropertyKey propertyKey, ViewHolder view) {
-        if ((propertyKey == AssistantPaymentRequestModel.REQUEST_NAME)
-                || (propertyKey == AssistantPaymentRequestModel.REQUEST_EMAIL)
-                || (propertyKey == AssistantPaymentRequestModel.REQUEST_PHONE)) {
+            AssistantCollectUserDataModel model, PropertyKey propertyKey, ViewHolder view) {
+        if ((propertyKey == AssistantCollectUserDataModel.REQUEST_NAME)
+                || (propertyKey == AssistantCollectUserDataModel.REQUEST_EMAIL)
+                || (propertyKey == AssistantCollectUserDataModel.REQUEST_PHONE)) {
             view.mContactDetailsSection.setVisible(shouldShowContactDetails(model));
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS) {
+        } else if (propertyKey == AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS) {
             view.mShippingAddressSection.setVisible(
-                    model.get(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS));
+                    model.get(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS));
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.REQUEST_PAYMENT) {
+        } else if (propertyKey == AssistantCollectUserDataModel.REQUEST_PAYMENT) {
             view.mPaymentMethodSection.setVisible(
-                    (model.get(AssistantPaymentRequestModel.REQUEST_PAYMENT)));
+                    (model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)));
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT) {
+        } else if (propertyKey == AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT) {
             view.mTermsSection.setAcceptTermsAndConditionsText(
-                    model.get(AssistantPaymentRequestModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT));
+                    model.get(AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT));
             view.mTermsAsCheckboxSection.setAcceptTermsAndConditionsText(
-                    model.get(AssistantPaymentRequestModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT));
+                    model.get(AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT));
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.SHOW_TERMS_AS_CHECKBOX) {
-            if (model.get(AssistantPaymentRequestModel.SHOW_TERMS_AS_CHECKBOX)) {
+        } else if (propertyKey == AssistantCollectUserDataModel.SHOW_TERMS_AS_CHECKBOX) {
+            if (model.get(AssistantCollectUserDataModel.SHOW_TERMS_AS_CHECKBOX)) {
                 view.mTermsSection.getView().setVisibility(View.GONE);
                 view.mTermsAsCheckboxSection.getView().setVisibility(View.VISIBLE);
             } else {
@@ -293,9 +293,9 @@ class AssistantPaymentRequestBinder
                 view.mTermsAsCheckboxSection.getView().setVisibility(View.GONE);
             }
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE) {
+        } else if (propertyKey == AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE) {
             view.mLoginSection.setVisible(
-                    model.get(AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE));
+                    model.get(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE));
             return true;
         }
         return false;
@@ -306,17 +306,18 @@ class AssistantPaymentRequestBinder
      * @return whether the property key was handled.
      */
     private boolean updateRootVisibility(
-            AssistantPaymentRequestModel model, PropertyKey propertyKey, ViewHolder view) {
-        if (propertyKey != AssistantPaymentRequestModel.VISIBLE) {
+            AssistantCollectUserDataModel model, PropertyKey propertyKey, ViewHolder view) {
+        if (propertyKey != AssistantCollectUserDataModel.VISIBLE) {
             return false;
         }
-        int visibility = model.get(AssistantPaymentRequestModel.VISIBLE) ? View.VISIBLE : View.GONE;
+        int visibility =
+                model.get(AssistantCollectUserDataModel.VISIBLE) ? View.VISIBLE : View.GONE;
         if (view.mRootView.getVisibility() != visibility) {
             if (visibility == View.VISIBLE) {
                 // Update available profiles and credit cards before PR is made visible.
                 updateAvailableProfiles(model, view);
                 updateAvailablePaymentMethods(model);
-                WebContents webContents = model.get(AssistantPaymentRequestModel.WEB_CONTENTS);
+                WebContents webContents = model.get(AssistantCollectUserDataModel.WEB_CONTENTS);
                 if (webContents != null) {
                     String origin = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
                             webContents.getLastCommittedUrl());
@@ -324,8 +325,8 @@ class AssistantPaymentRequestBinder
                     view.mTermsAsCheckboxSection.setOrigin(origin);
                 }
                 view.startListenToPersonalDataManager(() -> {
-                    AssistantPaymentRequestBinder.this.updateAvailableProfiles(model, view);
-                    AssistantPaymentRequestBinder.this.updateAvailablePaymentMethods(model);
+                    AssistantCollectUserDataBinder.this.updateAvailableProfiles(model, view);
+                    AssistantCollectUserDataBinder.this.updateAvailablePaymentMethods(model);
                 });
             } else {
                 view.stopListenToPersonalDataManager();
@@ -340,41 +341,41 @@ class AssistantPaymentRequestBinder
      * @return whether the property key was handled.
      */
     private boolean updateSectionSelectedItem(
-            AssistantPaymentRequestModel model, PropertyKey propertyKey, ViewHolder view) {
-        if (propertyKey == AssistantPaymentRequestModel.SHIPPING_ADDRESS) {
+            AssistantCollectUserDataModel model, PropertyKey propertyKey, ViewHolder view) {
+        if (propertyKey == AssistantCollectUserDataModel.SHIPPING_ADDRESS) {
             view.mShippingAddressSection.addOrUpdateItem(
-                    model.get(AssistantPaymentRequestModel.SHIPPING_ADDRESS), true);
+                    model.get(AssistantCollectUserDataModel.SHIPPING_ADDRESS), true);
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.PAYMENT_METHOD) {
+        } else if (propertyKey == AssistantCollectUserDataModel.PAYMENT_METHOD) {
             view.mPaymentMethodSection.addOrUpdateItem(
-                    model.get(AssistantPaymentRequestModel.PAYMENT_METHOD), true);
+                    model.get(AssistantCollectUserDataModel.PAYMENT_METHOD), true);
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.CONTACT_DETAILS) {
+        } else if (propertyKey == AssistantCollectUserDataModel.CONTACT_DETAILS) {
             view.mContactDetailsSection.addOrUpdateItem(
-                    model.get(AssistantPaymentRequestModel.CONTACT_DETAILS), true);
+                    model.get(AssistantCollectUserDataModel.CONTACT_DETAILS), true);
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.TERMS_STATUS) {
-            int termsStatus = model.get(AssistantPaymentRequestModel.TERMS_STATUS);
+        } else if (propertyKey == AssistantCollectUserDataModel.TERMS_STATUS) {
+            int termsStatus = model.get(AssistantCollectUserDataModel.TERMS_STATUS);
             view.mTermsSection.setTermsStatus(termsStatus);
             view.mTermsAsCheckboxSection.setTermsStatus(termsStatus);
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.SELECTED_LOGIN) {
+        } else if (propertyKey == AssistantCollectUserDataModel.SELECTED_LOGIN) {
             view.mLoginSection.addOrUpdateItem(
-                    model.get(AssistantPaymentRequestModel.SELECTED_LOGIN), true);
+                    model.get(AssistantCollectUserDataModel.SELECTED_LOGIN), true);
             return true;
         }
         return false;
     }
 
     // TODO(crbug.com/806868): Move this logic to native.
-    private void updateAvailableProfiles(AssistantPaymentRequestModel model, ViewHolder view) {
+    private void updateAvailableProfiles(AssistantCollectUserDataModel model, ViewHolder view) {
         List<PersonalDataManager.AutofillProfile> autofillProfiles =
                 PersonalDataManager.getInstance().getProfilesToSuggest(
                         /* includeNameInLabel= */ false);
 
         // Suggest complete profiles first.
         Collections.sort(autofillProfiles, new CompletenessComparator(model));
-        model.set(AssistantPaymentRequestModel.AVAILABLE_PROFILES, autofillProfiles);
+        model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES, autofillProfiles);
     }
 
     /**
@@ -382,20 +383,20 @@ class AssistantPaymentRequestBinder
      * @return whether the property key was handled.
      */
     private boolean updateSectionPaddings(
-            AssistantPaymentRequestModel model, PropertyKey propertyKey, ViewHolder view) {
-        if ((propertyKey != AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS)
-                && (propertyKey != AssistantPaymentRequestModel.REQUEST_NAME)
-                && (propertyKey != AssistantPaymentRequestModel.REQUEST_EMAIL)
-                && (propertyKey != AssistantPaymentRequestModel.REQUEST_PHONE)
-                && (propertyKey != AssistantPaymentRequestModel.REQUEST_PAYMENT)
-                && (propertyKey != AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE)
-                && (propertyKey != AssistantPaymentRequestModel.EXPANDED_SECTION)) {
+            AssistantCollectUserDataModel model, PropertyKey propertyKey, ViewHolder view) {
+        if ((propertyKey != AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS)
+                && (propertyKey != AssistantCollectUserDataModel.REQUEST_NAME)
+                && (propertyKey != AssistantCollectUserDataModel.REQUEST_EMAIL)
+                && (propertyKey != AssistantCollectUserDataModel.REQUEST_PHONE)
+                && (propertyKey != AssistantCollectUserDataModel.REQUEST_PAYMENT)
+                && (propertyKey != AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE)
+                && (propertyKey != AssistantCollectUserDataModel.EXPANDED_SECTION)) {
             return false;
         }
 
         // Update section paddings such that the first and last section are flush to the top/bottom,
         // and all other sections have the same amount of padding in-between them.
-        if (model.get(AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE)) {
+        if (model.get(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE)) {
             view.mLoginSection.setPaddings(0, view.mSectionToSectionPadding);
             view.mContactDetailsSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
@@ -409,11 +410,11 @@ class AssistantPaymentRequestBinder
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
             view.mShippingAddressSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
-        } else if (model.get(AssistantPaymentRequestModel.REQUEST_PAYMENT)) {
+        } else if (model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)) {
             view.mPaymentMethodSection.setPaddings(0, view.mSectionToSectionPadding);
             view.mShippingAddressSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
-        } else if (model.get(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS)) {
+        } else if (model.get(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS)) {
             view.mShippingAddressSection.setPaddings(0, view.mSectionToSectionPadding);
         }
         view.mTermsSection.setPaddings(view.mSectionToSectionPadding, 0);
@@ -438,17 +439,17 @@ class AssistantPaymentRequestBinder
      * @return whether the property key was handled.
      */
     private boolean updateEditors(
-            AssistantPaymentRequestModel model, PropertyKey propertyKey, ViewHolder view) {
-        if ((propertyKey != AssistantPaymentRequestModel.WEB_CONTENTS)
-                && (propertyKey != AssistantPaymentRequestModel.REQUEST_NAME)
-                && (propertyKey != AssistantPaymentRequestModel.REQUEST_EMAIL)
-                && (propertyKey != AssistantPaymentRequestModel.REQUEST_PHONE)
+            AssistantCollectUserDataModel model, PropertyKey propertyKey, ViewHolder view) {
+        if ((propertyKey != AssistantCollectUserDataModel.WEB_CONTENTS)
+                && (propertyKey != AssistantCollectUserDataModel.REQUEST_NAME)
+                && (propertyKey != AssistantCollectUserDataModel.REQUEST_EMAIL)
+                && (propertyKey != AssistantCollectUserDataModel.REQUEST_PHONE)
                 && (propertyKey
-                        != AssistantPaymentRequestModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS)) {
+                        != AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS)) {
             return false;
         }
 
-        WebContents webContents = model.get(AssistantPaymentRequestModel.WEB_CONTENTS);
+        WebContents webContents = model.get(AssistantCollectUserDataModel.WEB_CONTENTS);
         if (webContents == null) {
             view.mContactDetailsSection.setEditor(null);
             view.mPaymentMethodSection.setEditor(null);
@@ -458,9 +459,9 @@ class AssistantPaymentRequestBinder
 
         if (shouldShowContactDetails(model)) {
             ContactEditor contactEditor =
-                    new ContactEditor(model.get(AssistantPaymentRequestModel.REQUEST_NAME),
-                            model.get(AssistantPaymentRequestModel.REQUEST_PHONE),
-                            model.get(AssistantPaymentRequestModel.REQUEST_EMAIL),
+                    new ContactEditor(model.get(AssistantCollectUserDataModel.REQUEST_NAME),
+                            model.get(AssistantCollectUserDataModel.REQUEST_PHONE),
+                            model.get(AssistantCollectUserDataModel.REQUEST_EMAIL),
                             !webContents.isIncognito());
             contactEditor.setEditorDialog(new EditorDialog(view.mActivity, null,
                     /*deleteRunnable =*/null));
@@ -475,7 +476,7 @@ class AssistantPaymentRequestBinder
         CardEditor cardEditor = new CardEditor(webContents, addressEditor,
                 /* includeOrgLabel= */ false, /* observerForTest= */ null);
         Map<String, PaymentMethodData> paymentMethods =
-                model.get(AssistantPaymentRequestModel.SUPPORTED_PAYMENT_METHODS);
+                model.get(AssistantCollectUserDataModel.SUPPORTED_PAYMENT_METHODS);
         if (paymentMethods != null) {
             for (Map.Entry<String, PaymentMethodData> entry : paymentMethods.entrySet()) {
                 cardEditor.addAcceptedPaymentMethodIfRecognized(entry.getValue());
@@ -499,14 +500,14 @@ class AssistantPaymentRequestBinder
      * |SUPPORTED_BASIC_CARD_NETWORKS|.
      */
     // TODO(crbug.com/806868): Move the logic to retrieve and filter payment methods to native.
-    private void updateAvailablePaymentMethods(AssistantPaymentRequestModel model) {
+    private void updateAvailablePaymentMethods(AssistantCollectUserDataModel model) {
         // Only enable 'basic-card' payment method.
         PaymentMethodData methodData = new PaymentMethodData();
         methodData.supportedMethod = BasicCardUtils.BASIC_CARD_METHOD_NAME;
 
         // Apply basic-card filter if specified
         List<String> supportedBasicCardNetworks =
-                model.get(AssistantPaymentRequestModel.SUPPORTED_BASIC_CARD_NETWORKS);
+                model.get(AssistantCollectUserDataModel.SUPPORTED_BASIC_CARD_NETWORKS);
         if (supportedBasicCardNetworks != null && supportedBasicCardNetworks.size() > 0) {
             ArrayList<Integer> filteredNetworks = new ArrayList<>();
             Map<String, Integer> networks = BasicCardUtils.getNetworkIdentifiers();
@@ -523,7 +524,7 @@ class AssistantPaymentRequestBinder
 
         Map<String, PaymentMethodData> supportedPaymentMethods = new HashMap<>();
         supportedPaymentMethods.put(BasicCardUtils.BASIC_CARD_METHOD_NAME, methodData);
-        model.set(AssistantPaymentRequestModel.SUPPORTED_PAYMENT_METHODS, supportedPaymentMethods);
+        model.set(AssistantCollectUserDataModel.SUPPORTED_PAYMENT_METHODS, supportedPaymentMethods);
     }
 
     /**
@@ -531,12 +532,12 @@ class AssistantPaymentRequestBinder
      * methods available to the user as items in the UI).
      */
     // TODO(crbug.com/806868): Move this logic to native.
-    private void updateAvailableAutofillPaymentMethods(AssistantPaymentRequestModel model) {
-        WebContents webContents = model.get(AssistantPaymentRequestModel.WEB_CONTENTS);
+    private void updateAvailableAutofillPaymentMethods(AssistantCollectUserDataModel model) {
+        WebContents webContents = model.get(AssistantCollectUserDataModel.WEB_CONTENTS);
 
         AutofillPaymentApp autofillPaymentApp = new AutofillPaymentApp(webContents);
         Map<String, PaymentMethodData> supportedPaymentMethods =
-                model.get(AssistantPaymentRequestModel.SUPPORTED_PAYMENT_METHODS);
+                model.get(AssistantCollectUserDataModel.SUPPORTED_PAYMENT_METHODS);
         List<PaymentInstrument> paymentMethods = autofillPaymentApp.getInstruments(
                 supportedPaymentMethods != null ? supportedPaymentMethods : Collections.emptyMap(),
                 /*forceReturnServerCards=*/true);
@@ -547,7 +548,7 @@ class AssistantPaymentRequestBinder
                 availablePaymentMethods.add(((AutofillPaymentInstrument) method));
             }
         }
-        model.set(AssistantPaymentRequestModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
+        model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
                 availablePaymentMethods);
     }
 }

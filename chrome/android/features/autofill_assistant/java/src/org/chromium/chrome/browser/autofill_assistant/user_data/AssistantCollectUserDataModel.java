@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.payment;
+package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -23,11 +23,11 @@ import java.util.Map;
  * State for the header of the Autofill Assistant.
  */
 @JNINamespace("autofill_assistant")
-public class AssistantPaymentRequestModel extends PropertyModel {
+public class AssistantCollectUserDataModel extends PropertyModel {
     // TODO(crbug.com/806868): add |setAvailableProfiles| and |setAvailablePaymentMethods| from
     // native. Implement |setShippingAddress|, |setContactDetails| and |setPaymentMethod|.
 
-    public static final WritableObjectPropertyKey<AssistantPaymentRequestDelegate> DELEGATE =
+    public static final WritableObjectPropertyKey<AssistantCollectUserDataDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
 
     /** The web contents the payment request is associated with. */
@@ -53,8 +53,8 @@ public class AssistantPaymentRequestModel extends PropertyModel {
             new WritableObjectPropertyKey<>();
 
     /** The chosen login option. */
-    public static final WritableObjectPropertyKey<AssistantPaymentRequestLoginChoice>
-            SELECTED_LOGIN = new WritableObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<AssistantLoginChoice> SELECTED_LOGIN =
+            new WritableObjectPropertyKey<>();
 
     /** The status of the third party terms & conditions. */
     public static final WritableIntPropertyKey TERMS_STATUS = new WritableIntPropertyKey();
@@ -87,8 +87,8 @@ public class AssistantPaymentRequestModel extends PropertyModel {
             SUPPORTED_PAYMENT_METHODS = new WritableObjectPropertyKey<>();
 
     /** The available login choices. */
-    public static final WritableObjectPropertyKey<List<AssistantPaymentRequestLoginChoice>>
-            AVAILABLE_LOGINS = new WritableObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<List<AssistantLoginChoice>> AVAILABLE_LOGINS =
+            new WritableObjectPropertyKey<>();
 
     /** The currently expanded section (may be null). */
     public static final WritableObjectPropertyKey<AssistantVerticalExpander> EXPANDED_SECTION =
@@ -100,7 +100,7 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> BILLING_POSTAL_CODE_MISSING_TEXT =
             new WritableObjectPropertyKey<>();
 
-    public AssistantPaymentRequestModel() {
+    public AssistantCollectUserDataModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
                 LOGIN_SECTION_TITLE, SELECTED_LOGIN, TERMS_STATUS, REQUEST_NAME, REQUEST_EMAIL,
                 REQUEST_PHONE, REQUEST_SHIPPING_ADDRESS, REQUEST_PAYMENT,
@@ -200,26 +200,26 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setDelegate(AssistantPaymentRequestDelegate delegate) {
+    private void setDelegate(AssistantCollectUserDataDelegate delegate) {
         set(DELEGATE, delegate);
     }
 
     /** Creates an empty list of login options. */
     @CalledByNative
-    private static List<AssistantPaymentRequestLoginChoice> createLoginChoiceList() {
+    private static List<AssistantLoginChoice> createLoginChoiceList() {
         return new ArrayList<>();
     }
 
     /** Appends a login choice to {@code logins}. */
     @CalledByNative
-    private void addLoginChoice(List<AssistantPaymentRequestLoginChoice> loginChoices,
-            String identifier, String label, int priority) {
-        loginChoices.add(new AssistantPaymentRequestLoginChoice(identifier, label, priority));
+    private void addLoginChoice(List<AssistantLoginChoice> loginChoices, String identifier,
+            String label, int priority) {
+        loginChoices.add(new AssistantLoginChoice(identifier, label, priority));
     }
 
     /** Sets the list of available login choices. */
     @CalledByNative
-    private void setLoginChoices(List<AssistantPaymentRequestLoginChoice> loginChoices) {
+    private void setLoginChoices(List<AssistantLoginChoice> loginChoices) {
         set(AVAILABLE_LOGINS, loginChoices);
     }
 }

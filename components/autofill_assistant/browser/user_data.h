@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_PAYMENT_REQUEST_H_
-#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_PAYMENT_REQUEST_H_
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_USER_DATA_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_USER_DATA_H_
 
 #include <memory>
 #include <string>
@@ -21,7 +21,7 @@ class CreditCard;
 namespace autofill_assistant {
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant.payment)
+// org.chromium.chrome.browser.autofill_assistant.user_data)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantTermsAndConditionsState
 enum TermsAndConditionsState {
   NOT_SELECTED = 0,
@@ -43,10 +43,10 @@ struct LoginChoice {
   int preselect_priority = -1;
 };
 
-// Struct for holding the payment information data.
-struct PaymentInformation {
-  PaymentInformation();
-  ~PaymentInformation();
+// Struct for holding the user data.
+struct UserData {
+  UserData();
+  ~UserData();
 
   bool succeed = false;
   std::unique_ptr<autofill::CreditCard> card;
@@ -60,9 +60,9 @@ struct PaymentInformation {
 };
 
 // Struct for holding the payment request options.
-struct PaymentRequestOptions {
-  PaymentRequestOptions();
-  ~PaymentRequestOptions();
+struct CollectUserDataOptions {
+  CollectUserDataOptions();
+  ~CollectUserDataOptions();
 
   bool request_payer_name = false;
   bool request_payer_email = false;
@@ -86,11 +86,10 @@ struct PaymentRequestOptions {
   std::vector<UserActionProto> additional_actions;
   TermsAndConditionsState initial_terms_and_conditions = NOT_SELECTED;
 
-  base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
-      confirm_callback;
+  base::OnceCallback<void(std::unique_ptr<UserData>)> confirm_callback;
   base::OnceCallback<void(int)> additional_actions_callback;
   base::OnceCallback<void(int)> terms_link_callback;
 };
 
 }  // namespace autofill_assistant
-#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_PAYMENT_REQUEST_H_
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_USER_DATA_H_

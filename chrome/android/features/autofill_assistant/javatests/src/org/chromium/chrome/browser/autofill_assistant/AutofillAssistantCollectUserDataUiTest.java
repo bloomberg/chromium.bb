@@ -21,8 +21,8 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertThat;
 
-import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.PAYMENT_REQUEST_CHOICE_LIST;
-import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.PAYMENT_REQUEST_TERMS_REQUIRE_REVIEW;
+import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_CHOICE_LIST;
+import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW;
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
 import android.support.test.filters.MediumTest;
@@ -39,11 +39,11 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantPaymentRequestTestHelper.ViewHolder;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestLoginChoice;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantTermsAndConditionsState;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantCollectUserDataTestHelper.ViewHolder;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsAndConditionsState;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -51,27 +51,27 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import java.util.Collections;
 
 /**
- * Tests for the Autofill Assistant payment request UI.
+ * Tests for the Autofill Assistant collect user data UI.
  */
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class AutofillAssistantPaymentRequestUiTest {
+public class AutofillAssistantCollectUserDataUiTest {
     @Rule
     public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
 
-    private AutofillAssistantPaymentRequestTestHelper mHelper;
+    private AutofillAssistantCollectUserDataTestHelper mHelper;
 
     @Before
     public void setUp() throws Exception {
         AutofillAssistantUiTestUtil.startOnBlankPage(mTestRule);
-        mHelper = new AutofillAssistantPaymentRequestTestHelper();
+        mHelper = new AutofillAssistantCollectUserDataTestHelper();
     }
 
     /** Creates a coordinator for use in UI tests, and adds it to the global view hierarchy. */
-    private AssistantPaymentRequestCoordinator createPaymentRequestCoordinator(
-            AssistantPaymentRequestModel model) throws Exception {
-        AssistantPaymentRequestCoordinator coordinator = TestThreadUtils.runOnUiThreadBlocking(
-                () -> new AssistantPaymentRequestCoordinator(mTestRule.getActivity(), model));
+    private AssistantCollectUserDataCoordinator createCollectUserDataCoordinator(
+            AssistantCollectUserDataModel model) throws Exception {
+        AssistantCollectUserDataCoordinator coordinator = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AssistantCollectUserDataCoordinator(mTestRule.getActivity(), model));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
@@ -81,48 +81,48 @@ public class AutofillAssistantPaymentRequestUiTest {
     }
 
     /**
-     * Test assumptions about the initial state of the payment request.
+     * Test assumptions about the initial state of the UI.
      */
     @Test
     @MediumTest
     public void testInitialState() throws Exception {
-        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
 
         /* Test initial model state. */
-        assertThat(model.get(AssistantPaymentRequestModel.VISIBLE), is(false));
-        assertThat(model.get(AssistantPaymentRequestModel.AVAILABLE_PROFILES), nullValue());
-        assertThat(model.get(AssistantPaymentRequestModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS),
+        assertThat(model.get(AssistantCollectUserDataModel.VISIBLE), is(false));
+        assertThat(model.get(AssistantCollectUserDataModel.AVAILABLE_PROFILES), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS),
                 nullValue());
-        assertThat(model.get(AssistantPaymentRequestModel.SUPPORTED_PAYMENT_METHODS), nullValue());
-        assertThat(
-                model.get(AssistantPaymentRequestModel.SUPPORTED_BASIC_CARD_NETWORKS), nullValue());
-        assertThat(model.get(AssistantPaymentRequestModel.EXPANDED_SECTION), nullValue());
-        assertThat(model.get(AssistantPaymentRequestModel.DELEGATE), nullValue());
-        assertThat(model.get(AssistantPaymentRequestModel.WEB_CONTENTS), nullValue());
-        assertThat(model.get(AssistantPaymentRequestModel.SHIPPING_ADDRESS), nullValue());
-        assertThat(model.get(AssistantPaymentRequestModel.PAYMENT_METHOD), nullValue());
-        assertThat(model.get(AssistantPaymentRequestModel.CONTACT_DETAILS), nullValue());
-        assertThat(model.get(AssistantPaymentRequestModel.TERMS_STATUS),
+        assertThat(model.get(AssistantCollectUserDataModel.SUPPORTED_PAYMENT_METHODS), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.SUPPORTED_BASIC_CARD_NETWORKS),
+                nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.EXPANDED_SECTION), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.DELEGATE), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.WEB_CONTENTS), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.SHIPPING_ADDRESS), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.PAYMENT_METHOD), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.CONTACT_DETAILS), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.TERMS_STATUS),
                 is(AssistantTermsAndConditionsState.NOT_SELECTED));
-        assertThat(model.get(AssistantPaymentRequestModel.SELECTED_LOGIN), nullValue());
+        assertThat(model.get(AssistantCollectUserDataModel.SELECTED_LOGIN), nullValue());
 
         /* Test initial UI state. */
-        AutofillAssistantPaymentRequestTestHelper
+        AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
-                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
         onView(is(coordinator.getView())).check(matches(not(isDisplayed())));
-        onView(allOf(withTagValue(is(PAYMENT_REQUEST_CHOICE_LIST)),
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_CHOICE_LIST)),
                        isDescendantOfA(is(viewHolder.mContactSection))))
                 .check(matches(not(isDisplayed())));
-        onView(allOf(withTagValue(is(PAYMENT_REQUEST_CHOICE_LIST)),
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_CHOICE_LIST)),
                        isDescendantOfA(is(viewHolder.mPaymentSection))))
                 .check(matches(not(isDisplayed())));
-        onView(allOf(withTagValue(is(PAYMENT_REQUEST_CHOICE_LIST)),
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_CHOICE_LIST)),
                        isDescendantOfA(is(viewHolder.mShippingSection))))
                 .check(matches(not(isDisplayed())));
-        onView(allOf(withTagValue(is(PAYMENT_REQUEST_CHOICE_LIST)),
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_CHOICE_LIST)),
                        isDescendantOfA(is(viewHolder.mLoginsSection))))
                 .check(matches(not(isDisplayed())));
 
@@ -138,18 +138,18 @@ public class AutofillAssistantPaymentRequestUiTest {
     @Test
     @MediumTest
     public void testSectionVisibility() throws Exception {
-        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
-        AutofillAssistantPaymentRequestTestHelper
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
-                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
         /* Initially, everything is invisible. */
         onView(is(coordinator.getView())).check(matches(not(isDisplayed())));
 
         /* PR is visible, but no section was requested: all sections should be invisible. */
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(AssistantPaymentRequestModel.VISIBLE, true));
+                () -> model.set(AssistantCollectUserDataModel.VISIBLE, true));
         onView(is(coordinator.getView())).check(matches(isDisplayed()));
         onView(is(viewHolder.mContactSection)).check(matches(not(isDisplayed())));
         onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
@@ -157,31 +157,31 @@ public class AutofillAssistantPaymentRequestUiTest {
 
         /* Contact details should be visible if either name, phone, or email is requested. */
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(AssistantPaymentRequestModel.REQUEST_NAME, true));
+                () -> model.set(AssistantCollectUserDataModel.REQUEST_NAME, true));
         onView(is(viewHolder.mContactSection)).check(matches(isDisplayed()));
         onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
         onView(is(viewHolder.mShippingSection)).check(matches(not(isDisplayed())));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantPaymentRequestModel.REQUEST_NAME, false);
-            model.set(AssistantPaymentRequestModel.REQUEST_PHONE, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_NAME, false);
+            model.set(AssistantCollectUserDataModel.REQUEST_PHONE, true);
         });
         onView(is(viewHolder.mContactSection)).check(matches(isDisplayed()));
         onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
         onView(is(viewHolder.mShippingSection)).check(matches(not(isDisplayed())));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantPaymentRequestModel.REQUEST_PHONE, false);
-            model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PHONE, false);
+            model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
         });
         onView(is(viewHolder.mContactSection)).check(matches(isDisplayed()));
         onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
         onView(is(viewHolder.mShippingSection)).check(matches(not(isDisplayed())));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_PHONE, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PHONE, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
         });
         onView(is(viewHolder.mContactSection)).check(matches(isDisplayed()));
         onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
@@ -189,17 +189,17 @@ public class AutofillAssistantPaymentRequestUiTest {
 
         /* Payment method section visibility test. */
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true));
+                () -> model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true));
         onView(is(viewHolder.mPaymentSection)).check(matches(isDisplayed()));
 
         /* Shipping address visibility test. */
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true));
+                () -> model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true));
         onView(is(viewHolder.mShippingSection)).check(matches(isDisplayed()));
 
         /* Login section visibility test. */
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE, true));
+                () -> model.set(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE, true));
         onView(is(viewHolder.mLoginsSection)).check(matches(isDisplayed()));
     }
 
@@ -210,24 +210,24 @@ public class AutofillAssistantPaymentRequestUiTest {
     @Test
     @MediumTest
     public void testEmptyPaymentRequest() throws Exception {
-        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
-        AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
-                new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
-        AutofillAssistantPaymentRequestTestHelper
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
+        AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
-                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
         /* Request all PR sections. */
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_PHONE, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE, true);
-            model.set(AssistantPaymentRequestModel.DELEGATE, delegate);
-            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PHONE, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE, true);
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
         /* Empty sections should display the 'add' button in their title. */
@@ -257,13 +257,13 @@ public class AutofillAssistantPaymentRequestUiTest {
                 .check(matches(not(isDisplayed())));
 
         /* Empty sections are collapsed. */
-        onView(allOf(withTagValue(is(PAYMENT_REQUEST_CHOICE_LIST)),
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_CHOICE_LIST)),
                        isDescendantOfA(is(viewHolder.mContactSection))))
                 .check(matches(not(isDisplayed())));
-        onView(allOf(withTagValue(is(PAYMENT_REQUEST_CHOICE_LIST)),
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_CHOICE_LIST)),
                        isDescendantOfA(is(viewHolder.mPaymentSection))))
                 .check(matches(not(isDisplayed())));
-        onView(allOf(withTagValue(is(PAYMENT_REQUEST_CHOICE_LIST)),
+        onView(allOf(withTagValue(is(COLLECT_USER_DATA_CHOICE_LIST)),
                        isDescendantOfA(is(viewHolder.mShippingSection))))
                 .check(matches(not(isDisplayed())));
 
@@ -290,18 +290,18 @@ public class AutofillAssistantPaymentRequestUiTest {
     @Test
     @MediumTest
     public void testContactDetailsLiveUpdate() throws Exception {
-        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
-        AutofillAssistantPaymentRequestTestHelper
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
-                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // WEB_CONTENTS are necessary for the creation of the editors.
-            model.set(AssistantPaymentRequestModel.WEB_CONTENTS, mTestRule.getWebContents());
-            model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
-            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+            model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
+            model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
         /* Contact details section should be empty. */
@@ -343,17 +343,17 @@ public class AutofillAssistantPaymentRequestUiTest {
     @Test
     @MediumTest
     public void testPaymentMethodsLiveUpdate() throws Exception {
-        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
-        AutofillAssistantPaymentRequestTestHelper
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
-                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // WEB_CONTENTS are necessary for the creation of the editors.
-            model.set(AssistantPaymentRequestModel.WEB_CONTENTS, mTestRule.getWebContents());
-            model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
-            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+            model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
+            model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
         /* Payment method section should be empty and show the 'add' button in the title. */
@@ -408,27 +408,26 @@ public class AutofillAssistantPaymentRequestUiTest {
                         CardType.UNKNOWN, billingAddressId, "" /* serverId */);
         mHelper.setCreditCard(creditCard);
 
-        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
-        AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
-                new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
-        AutofillAssistantPaymentRequestTestHelper
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
+        AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
-                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
         /* Request all PR sections. */
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_PHONE, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true);
-            model.set(AssistantPaymentRequestModel.DELEGATE, delegate);
-            model.set(AssistantPaymentRequestModel.VISIBLE, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE, true);
-            model.set(AssistantPaymentRequestModel.AVAILABLE_LOGINS,
-                    Collections.singletonList(
-                            new AssistantPaymentRequestLoginChoice("id", "Guest", 0)));
+            model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PHONE, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true);
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE, true);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_LOGINS,
+                    Collections.singletonList(new AssistantLoginChoice("id", "Guest", 0)));
         });
 
         /* Non-empty sections should not display the 'add' button in their title. */
@@ -505,13 +504,13 @@ public class AutofillAssistantPaymentRequestUiTest {
     @Test
     @MediumTest
     public void testRemoveLastItemImplicitSelection() throws Exception {
-        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
-        AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
-                new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
-        AutofillAssistantPaymentRequestTestHelper
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
+        AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
-                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
         /* Add complete profile and credit card to the personal data manager. */
         String profileId = mHelper.addDummyProfile("John Doe", "john@gmail.com");
@@ -519,13 +518,13 @@ public class AutofillAssistantPaymentRequestUiTest {
 
         /* Request all PR sections. */
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_PHONE, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
-            model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true);
-            model.set(AssistantPaymentRequestModel.DELEGATE, delegate);
-            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PHONE, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true);
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
         /* Profile and payment method should be automatically selected. */
@@ -549,23 +548,23 @@ public class AutofillAssistantPaymentRequestUiTest {
     @Test
     @MediumTest
     public void testTermsAndConditions() throws Exception {
-        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        createPaymentRequestCoordinator(model);
-        AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
-                new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
 
         String acceptTermsText = "I accept";
 
         // Display terms as 2 radio buttons "I accept" vs "I don't".
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(
-                    AssistantPaymentRequestModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT, acceptTermsText);
-            model.set(AssistantPaymentRequestModel.SHOW_TERMS_AS_CHECKBOX, false);
-            model.set(AssistantPaymentRequestModel.DELEGATE, delegate);
+            model.set(AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT,
+                    acceptTermsText);
+            model.set(AssistantCollectUserDataModel.SHOW_TERMS_AS_CHECKBOX, false);
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
 
             // Setting web contents will set the origin and the decline terms text.
-            model.set(AssistantPaymentRequestModel.WEB_CONTENTS, mTestRule.getWebContents());
-            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+            model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
         assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.NOT_SELECTED));
@@ -573,7 +572,7 @@ public class AutofillAssistantPaymentRequestUiTest {
         // Adding #isDisplayed as a requirement makes sure only one of the accept terms text is
         // shown (plus #onView requires the matcher to match exactly one view).
         Matcher<View> acceptMatcher = allOf(withText(acceptTermsText), isDisplayed());
-        Matcher<View> declineMatcher = withTagValue(is(PAYMENT_REQUEST_TERMS_REQUIRE_REVIEW));
+        Matcher<View> declineMatcher = withTagValue(is(COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW));
 
         onView(acceptMatcher).perform(click());
         assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.ACCEPTED));
@@ -587,7 +586,7 @@ public class AutofillAssistantPaymentRequestUiTest {
 
         // Display the terms as a single checbox.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(AssistantPaymentRequestModel.SHOW_TERMS_AS_CHECKBOX, true));
+                () -> model.set(AssistantCollectUserDataModel.SHOW_TERMS_AS_CHECKBOX, true));
 
         // The decline choice is not shown.
         onView(declineMatcher).check(matches(not(isDisplayed())));
@@ -605,7 +604,7 @@ public class AutofillAssistantPaymentRequestUiTest {
                 "<link42>I accept</link42>"; // second variable is necessary because used in lambda
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> model.set(AssistantPaymentRequestModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT,
+                        -> model.set(AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT,
                                 acceptTermsText2));
         acceptMatcher = allOf(withText(acceptTermsText), isDisplayed());
 
@@ -626,7 +625,7 @@ public class AutofillAssistantPaymentRequestUiTest {
         mHelper.addDummyCreditCard(profileId);
 
         // setup the view to require a billing postcode.
-        AutofillAssistantPaymentRequestTestHelper.ViewHolder viewHolder =
+        AutofillAssistantCollectUserDataTestHelper.ViewHolder viewHolder =
                 setupCreditCardPostalCodeTest(/* requireBillingPostalCode: */ true);
 
         // check that the card is not accepted (i.e. an error message is shown).
@@ -654,31 +653,31 @@ public class AutofillAssistantPaymentRequestUiTest {
         mHelper.addDummyCreditCard(profileId);
 
         // setup the view to require a billing postcode.
-        AutofillAssistantPaymentRequestTestHelper.ViewHolder viewHolder =
+        AutofillAssistantCollectUserDataTestHelper.ViewHolder viewHolder =
                 setupCreditCardPostalCodeTest(/* requireBillingPostalCode: */ true);
 
         // check that the card is accepted.
         onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(not(isDisplayed())));
     }
 
-    private AutofillAssistantPaymentRequestTestHelper.ViewHolder setupCreditCardPostalCodeTest(
+    private AutofillAssistantCollectUserDataTestHelper.ViewHolder setupCreditCardPostalCodeTest(
             boolean requireBillingPostalCode) throws Exception {
-        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
-        AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
-                new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
-        AutofillAssistantPaymentRequestTestHelper
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
+        AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
-                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantPaymentRequestModel.REQUIRE_BILLING_POSTAL_CODE,
+            model.set(AssistantCollectUserDataModel.REQUIRE_BILLING_POSTAL_CODE,
                     requireBillingPostalCode);
-            model.set(AssistantPaymentRequestModel.BILLING_POSTAL_CODE_MISSING_TEXT,
+            model.set(AssistantCollectUserDataModel.BILLING_POSTAL_CODE_MISSING_TEXT,
                     "Billing postcode missing");
-            model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
-            model.set(AssistantPaymentRequestModel.DELEGATE, delegate);
-            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
         return viewHolder;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_GET_PAYMENT_INFORMATION_ACTION_H_
-#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_GET_PAYMENT_INFORMATION_ACTION_H_
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_COLLECT_USER_DATA_ACTION_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_COLLECT_USER_DATA_ACTION_H_
 
 #include <memory>
 #include <string>
@@ -16,19 +16,18 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill_assistant/browser/actions/action.h"
-#include "components/autofill_assistant/browser/payment_request.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/website_login_fetcher.h"
 
 namespace autofill_assistant {
 
-// Triggers PaymentRequest to collect user data.
-class GetPaymentInformationAction
-    : public Action,
-      public autofill::PersonalDataManagerObserver {
+// Shows a UI to collect user data required for subsequent actions.
+class CollectUserDataAction : public Action,
+                              public autofill::PersonalDataManagerObserver {
  public:
-  explicit GetPaymentInformationAction(ActionDelegate* delegate,
-                                       const ActionProto& proto);
-  ~GetPaymentInformationAction() override;
+  explicit CollectUserDataAction(ActionDelegate* delegate,
+                                 const ActionProto& proto);
+  ~CollectUserDataAction() override;
 
   // From autofill::PersonalDataManagerObserver.
   void OnPersonalDataChanged() override;
@@ -50,30 +49,33 @@ class GetPaymentInformationAction
   void InternalProcessAction(ProcessActionCallback callback) override;
   void EndAction(const ClientStatus& status);
 
-  void OnGetPaymentInformation(
-      const GetPaymentInformationProto& get_payment_information,
-      std::unique_ptr<PaymentInformation> payment_information);
+  void OnGetUserData(const CollectUserDataProto& collect_user_data,
+                     std::unique_ptr<UserData> user_data);
   void OnAdditionalActionTriggered(int index);
   void OnTermsAndConditionsLinkClicked(int link);
 
-  void OnGetLogins(const LoginDetailsProto::LoginOptionProto& login_option,
-                   std::unique_ptr<PaymentRequestOptions> payment_options,
-                   std::vector<WebsiteLoginFetcher::Login> logins);
-  void ShowToUser(std::unique_ptr<PaymentRequestOptions> payment_options);
+  void OnGetLogins(
+      const LoginDetailsProto::LoginOptionProto& login_option,
+      std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+      std::vector<WebsiteLoginFetcher::Login> logins);
+  void ShowToUser(
+      std::unique_ptr<CollectUserDataOptions> collect_user_data_options);
 
-  // Creates a new instance of |PaymentRequestOptions| from |proto_|.
-  std::unique_ptr<PaymentRequestOptions> CreateOptionsFromProto();
+  // Creates a new instance of |CollectUserDataOptions| from |proto_|.
+  std::unique_ptr<CollectUserDataOptions> CreateOptionsFromProto();
 
   bool IsInitialAutofillDataComplete(
       autofill::PersonalDataManager* personal_data_manager,
-      const PaymentRequestOptions& payment_options) const;
-  static bool IsCompleteContact(const autofill::AutofillProfile& profile,
-                                const PaymentRequestOptions& payment_options);
-  static bool IsCompleteAddress(const autofill::AutofillProfile& profile,
-                                const PaymentRequestOptions& payment_options);
+      const CollectUserDataOptions& collect_user_data_options) const;
+  static bool IsCompleteContact(
+      const autofill::AutofillProfile& profile,
+      const CollectUserDataOptions& collect_user_data_options);
+  static bool IsCompleteAddress(
+      const autofill::AutofillProfile& profile,
+      const CollectUserDataOptions& collect_user_data_options);
   static bool IsCompleteCreditCard(
       const autofill::CreditCard& credit_card,
-      const PaymentRequestOptions& payment_options);
+      const CollectUserDataOptions& collect_user_data_options);
 
   bool shown_to_user_ = false;
   bool initially_prefilled = false;
@@ -84,10 +86,10 @@ class GetPaymentInformationAction
   // Maps login choice identifiers to the corresponding login details.
   std::map<std::string, std::unique_ptr<LoginDetails>> login_details_map_;
 
-  base::WeakPtrFactory<GetPaymentInformationAction> weak_ptr_factory_{this};
+  base::WeakPtrFactory<CollectUserDataAction> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(GetPaymentInformationAction);
+  DISALLOW_COPY_AND_ASSIGN(CollectUserDataAction);
 };
 
 }  // namespace autofill_assistant
-#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_GET_PAYMENT_INFORMATION_ACTION_H_
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_COLLECT_USER_DATA_ACTION_H_

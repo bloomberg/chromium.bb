@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/payment_request.h"
+#include "components/autofill_assistant/browser/user_data.h"
 
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -16,10 +16,10 @@ LoginChoice::LoginChoice(const std::string& id,
     : identifier(id), label(text), preselect_priority(priority) {}
 LoginChoice::~LoginChoice() = default;
 
-PaymentInformation::PaymentInformation() = default;
-PaymentInformation::~PaymentInformation() = default;
+UserData::UserData() = default;
+UserData::~UserData() = default;
 
-PaymentRequestOptions::PaymentRequestOptions() = default;
-PaymentRequestOptions::~PaymentRequestOptions() = default;
+CollectUserDataOptions::CollectUserDataOptions() = default;
+CollectUserDataOptions::~CollectUserDataOptions() = default;
 
 }  // namespace autofill_assistant

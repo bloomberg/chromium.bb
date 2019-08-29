@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.payment;
+package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.support.annotation.Nullable;
 
@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
  * Methods in this delegate are automatically invoked by the PR UI as the user interacts with the
  * UI.
  */
-public interface AssistantPaymentRequestDelegate {
+public interface AssistantCollectUserDataDelegate {
     /** The currently selected contact has changed. */
     void onContactInfoChanged(@Nullable AutofillContact contact);
 
@@ -33,5 +33,5 @@ public interface AssistantPaymentRequestDelegate {
     void onTermsAndConditionsLinkClicked(int link);
 
     /** The currently selected login choice has changed. */
-    void onLoginChoiceChanged(@Nullable AssistantPaymentRequestLoginChoice loginChoice);
+    void onLoginChoiceChanged(@Nullable AssistantLoginChoice loginChoice);
 }

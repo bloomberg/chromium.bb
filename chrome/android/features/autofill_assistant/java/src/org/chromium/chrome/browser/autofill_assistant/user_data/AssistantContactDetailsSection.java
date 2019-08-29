@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.payment;
+package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -23,12 +23,12 @@ import java.util.List;
 /**
  * The contact details section of the Autofill Assistant payment request.
  */
-public class AssistantPaymentRequestContactDetailsSection
-        extends AssistantPaymentRequestSection<AutofillContact> {
+public class AssistantContactDetailsSection
+        extends AssistantCollectUserDataSection<AutofillContact> {
     private ContactEditor mEditor;
     private boolean mIgnoreProfileChangeNotifications;
 
-    AssistantPaymentRequestContactDetailsSection(Context context, ViewGroup parent) {
+    AssistantContactDetailsSection(Context context, ViewGroup parent) {
         super(context, parent, R.layout.autofill_assistant_contact_summary,
                 R.layout.autofill_assistant_contact_full,
                 context.getResources().getDimensionPixelSize(

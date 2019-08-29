@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.payment;
+package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -16,9 +16,8 @@ import java.util.List;
 /**
  * The login details section of the Autofill Assistant payment request.
  */
-public class AssistantPaymentRequestLoginSection
-        extends AssistantPaymentRequestSection<AssistantPaymentRequestLoginChoice> {
-    AssistantPaymentRequestLoginSection(Context context, ViewGroup parent) {
+public class AssistantLoginSection extends AssistantCollectUserDataSection<AssistantLoginChoice> {
+    AssistantLoginSection(Context context, ViewGroup parent) {
         super(context, parent,
                 org.chromium.chrome.autofill_assistant.R.layout.autofill_assistant_login,
                 org.chromium.chrome.autofill_assistant.R.layout.autofill_assistant_login,
@@ -29,17 +28,17 @@ public class AssistantPaymentRequestLoginSection
     }
 
     @Override
-    protected void createOrEditItem(@Nullable AssistantPaymentRequestLoginChoice oldItem) {
+    protected void createOrEditItem(@Nullable AssistantLoginChoice oldItem) {
         // Nothing to do, this section currently does not support adding or creating items.
     }
 
     @Override
-    protected void updateFullView(View fullView, AssistantPaymentRequestLoginChoice option) {
+    protected void updateFullView(View fullView, AssistantLoginChoice option) {
         updateSummaryView(fullView, option);
     }
 
     @Override
-    protected void updateSummaryView(View summaryView, AssistantPaymentRequestLoginChoice option) {
+    protected void updateSummaryView(View summaryView, AssistantLoginChoice option) {
         TextView usernameView =
                 summaryView.findViewById(org.chromium.chrome.autofill_assistant.R.id.username);
         usernameView.setText(option.getLabel());
@@ -49,7 +48,7 @@ public class AssistantPaymentRequestLoginSection
      * The login options have changed externally. This will rebuild the UI with the new/changed
      * set of login options, while keeping the selected item if possible.
      */
-    void onLoginsChanged(List<AssistantPaymentRequestLoginChoice> options) {
+    void onLoginsChanged(List<AssistantLoginChoice> options) {
         int indexToSelect = -1;
         if (mSelectedOption != null) {
             for (int i = 0; i < getItems().size(); i++) {

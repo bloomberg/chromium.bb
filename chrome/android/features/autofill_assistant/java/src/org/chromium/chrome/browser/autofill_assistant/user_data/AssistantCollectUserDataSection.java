@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.payment;
+package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -30,7 +30,7 @@ import java.util.List;
  * @param <T> The type of |EditableOption| that a concrete instance of this class is created for,
  * such as |AutofillContact|, |AutofillPaymentMethod|, etc.
  */
-public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
+public abstract class AssistantCollectUserDataSection<T extends EditableOption> {
     private final @Nullable View mTitleAddButton;
     protected final AssistantVerticalExpander mSectionExpander;
     protected final AssistantChoiceList mItemsView;
@@ -70,7 +70,7 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
      *         be null if no add button should be created.
      * @param canEditItems Whether items can be edited (i.e., show an edit button) or not.
      */
-    public AssistantPaymentRequestSection(Context context, ViewGroup parent, int summaryViewResId,
+    public AssistantCollectUserDataSection(Context context, ViewGroup parent, int summaryViewResId,
             int fullViewResId, int titleToContentPadding, @Nullable String titleAddButton,
             @Nullable String listAddButton, boolean canEditItems) {
         mContext = context;
@@ -251,7 +251,7 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
                 verticalPadding);
         list.setBackgroundColor(ApiCompatibilityUtils.getColor(
                 mContext.getResources(), R.color.payments_section_edit_background));
-        list.setTag(AssistantTagsForTesting.PAYMENT_REQUEST_CHOICE_LIST);
+        list.setTag(AssistantTagsForTesting.COLLECT_USER_DATA_CHOICE_LIST);
         if (addButtonText != null) {
             list.setOnAddButtonClickedListener(() -> createOrEditItem(null));
         }

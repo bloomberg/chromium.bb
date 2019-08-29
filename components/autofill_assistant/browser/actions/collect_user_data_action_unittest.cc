@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/actions/get_payment_information_action.h"
+#include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 
 #include <utility>
 
@@ -40,8 +40,7 @@ using ::testing::Invoke;
 using ::testing::Property;
 using ::testing::Return;
 
-class GetPaymentInformationActionTest
-    : public content::RenderViewHostTestHarness {
+class CollectUserDataActionTest : public content::RenderViewHostTestHarness {
  public:
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
@@ -52,12 +51,13 @@ class GetPaymentInformationActionTest
         .WillByDefault(Return(&mock_personal_data_manager_));
     ON_CALL(mock_action_delegate_, GetWebsiteLoginFetcher)
         .WillByDefault(Return(&mock_website_login_fetcher_));
-    ON_CALL(mock_action_delegate_, GetPaymentInformation(_, _))
-        .WillByDefault(
-            Invoke([](std::unique_ptr<PaymentRequestOptions> options,
-                      std::unique_ptr<PaymentInformation> information) {
-              std::move(options->confirm_callback).Run(std::move(information));
-            }));
+    ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+        .WillByDefault(Invoke([](std::unique_ptr<CollectUserDataOptions>
+                                     collect_user_data_options,
+                                 std::unique_ptr<UserData> user_data) {
+          std::move(collect_user_data_options->confirm_callback)
+              .Run(std::move(user_data));
+        }));
 
     ON_CALL(mock_website_login_fetcher_, OnGetLoginsForUrl(_, _))
         .WillByDefault(
@@ -80,22 +80,22 @@ class GetPaymentInformationActionTest
   ClientMemory client_memory_;
 };
 
-TEST_F(GetPaymentInformationActionTest, PromptIsShown) {
+TEST_F(CollectUserDataActionTest, PromptIsShown) {
   const char kPrompt[] = "Some message.";
 
   ActionProto action_proto;
-  action_proto.mutable_get_payment_information()->set_prompt(kPrompt);
-  GetPaymentInformationAction action(&mock_action_delegate_, action_proto);
+  action_proto.mutable_collect_user_data()->set_prompt(kPrompt);
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
 
   EXPECT_CALL(mock_action_delegate_, SetStatusMessage(kPrompt));
   EXPECT_CALL(callback_, Run(_));
   action.ProcessAction(callback_.Get());
 }
 
-TEST_F(GetPaymentInformationActionTest, SelectLogin) {
+TEST_F(CollectUserDataActionTest, SelectLogin) {
   ActionProto action_proto;
   auto* login_details =
-      action_proto.mutable_get_payment_information()->mutable_login_details();
+      action_proto.mutable_collect_user_data()->mutable_login_details();
   auto* login_option = login_details->add_login_options();
   login_option->mutable_password_manager();
   login_option->set_payload("payload");
@@ -106,58 +106,59 @@ TEST_F(GetPaymentInformationActionTest, SelectLogin) {
   EXPECT_CALL(mock_website_login_fetcher_, OnGetPasswordForLogin(_, _))
       .Times(0);
 
-  ON_CALL(mock_action_delegate_, GetPaymentInformation(_, _))
-      .WillByDefault(
-          Invoke([](std::unique_ptr<PaymentRequestOptions> options,
-                    std::unique_ptr<PaymentInformation> information) {
-            information->succeed = true;
-            information->login_choice_identifier.assign(
-                options->login_choices[0].identifier);
-            std::move(options->confirm_callback).Run(std::move(information));
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+             std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+            user_data->login_choice_identifier.assign(
+                collect_user_data_options->login_choices[0].identifier);
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
           }));
 
-  EXPECT_CALL(
-      callback_,
-      Run(Pointee(AllOf(
-          Property(&ProcessedActionProto::status, ACTION_APPLIED),
-          Property(&ProcessedActionProto::payment_details,
-                   Property(&PaymentDetails::login_payload, "payload"))))));
-  GetPaymentInformationAction action(&mock_action_delegate_, action_proto);
+  EXPECT_CALL(callback_,
+              Run(Pointee(AllOf(
+                  Property(&ProcessedActionProto::status, ACTION_APPLIED),
+                  Property(&ProcessedActionProto::collect_user_data_result,
+                           Property(&CollectUserDataResultProto::login_payload,
+                                    "payload"))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }
 
-TEST_F(GetPaymentInformationActionTest, LoginChoiceAutomaticIfNoOtherOptions) {
+TEST_F(CollectUserDataActionTest, LoginChoiceAutomaticIfNoOtherOptions) {
   ActionProto action_proto;
-  auto* payment_information = action_proto.mutable_get_payment_information();
-  payment_information->set_request_terms_and_conditions(false);
-  auto* login_details = payment_information->mutable_login_details();
-  auto* guest_login_option = login_details->add_login_options();
-  guest_login_option->mutable_custom()->set_label("Guest Checkout");
-  guest_login_option->set_payload("guest");
-  guest_login_option->set_choose_automatically_if_no_other_options(true);
-  auto* password_login_option = login_details->add_login_options();
-  password_login_option->mutable_password_manager();
-  password_login_option->set_payload("password_manager");
+  auto* collect_user_data = action_proto.mutable_collect_user_data();
+  collect_user_data->set_request_terms_and_conditions(false);
+  auto* login_details = collect_user_data->mutable_login_details();
+  auto* login_option = login_details->add_login_options();
+  login_option->mutable_custom()->set_label("Guest Checkout");
+  login_option->set_payload("guest");
+  login_option->set_choose_automatically_if_no_other_options(true);
+  login_option = login_details->add_login_options();
+  login_option->mutable_password_manager();
+  login_option->set_payload("password_manager");
 
   ON_CALL(mock_website_login_fetcher_, OnGetLoginsForUrl(_, _))
       .WillByDefault(
           RunOnceCallback<1>(std::vector<WebsiteLoginFetcher::Login>{}));
 
-  EXPECT_CALL(mock_action_delegate_, GetPaymentInformation(_, _)).Times(0);
-  EXPECT_CALL(
-      callback_,
-      Run(Pointee(
-          AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),
-                Property(&ProcessedActionProto::payment_details,
-                         Property(&PaymentDetails::login_payload, "guest"))))));
-  GetPaymentInformationAction action(&mock_action_delegate_, action_proto);
+  EXPECT_CALL(mock_action_delegate_, CollectUserData(_, _)).Times(0);
+  EXPECT_CALL(callback_,
+              Run(Pointee(AllOf(
+                  Property(&ProcessedActionProto::status, ACTION_APPLIED),
+                  Property(&ProcessedActionProto::collect_user_data_result,
+                           Property(&CollectUserDataResultProto::login_payload,
+                                    "guest"))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }
 
-TEST_F(GetPaymentInformationActionTest, SelectLoginFailsIfNoOptionAvailable) {
+TEST_F(CollectUserDataActionTest, SelectLoginFailsIfNoOptionAvailable) {
   ActionProto action_proto;
-  auto* payment_information = action_proto.mutable_get_payment_information();
-  auto* login_details = payment_information->mutable_login_details();
+  auto* collect_user_data = action_proto.mutable_collect_user_data();
+  auto* login_details = collect_user_data->mutable_login_details();
   auto* login_option = login_details->add_login_options();
   login_option->mutable_password_manager();
   login_option->set_payload("password_manager");
@@ -167,40 +168,41 @@ TEST_F(GetPaymentInformationActionTest, SelectLoginFailsIfNoOptionAvailable) {
           RunOnceCallback<1>(std::vector<WebsiteLoginFetcher::Login>{}));
 
   EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
-                                              PAYMENT_REQUEST_ERROR))));
-  GetPaymentInformationAction action(&mock_action_delegate_, action_proto);
+                                              COLLECT_USER_DATA_ERROR))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }
 
-TEST_F(GetPaymentInformationActionTest, SelectContactDetails) {
+TEST_F(CollectUserDataActionTest, SelectContactDetails) {
   ActionProto action_proto;
-  auto* payment_information_proto =
-      action_proto.mutable_get_payment_information();
-  payment_information_proto->set_request_terms_and_conditions(false);
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
   auto* contact_details_proto =
-      payment_information_proto->mutable_contact_details();
+      collect_user_data_proto->mutable_contact_details();
   contact_details_proto->set_contact_details_name(kMemoryLocation);
   contact_details_proto->set_request_payer_name(true);
   contact_details_proto->set_request_payer_email(true);
   contact_details_proto->set_request_payer_phone(true);
 
-  ON_CALL(mock_action_delegate_, GetPaymentInformation(_, _))
-      .WillByDefault(
-          Invoke([](std::unique_ptr<PaymentRequestOptions> options,
-                    std::unique_ptr<PaymentInformation> information) {
-            information->succeed = true;
-            information->payer_name.assign(kName);
-            information->payer_phone.assign(kPhone);
-            information->payer_email.assign(kEmail);
-            std::move(options->confirm_callback).Run(std::move(information));
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+             std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+            user_data->payer_name.assign(kName);
+            user_data->payer_phone.assign(kPhone);
+            user_data->payer_email.assign(kEmail);
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
           }));
 
   EXPECT_CALL(callback_,
               Run(Pointee(AllOf(
                   Property(&ProcessedActionProto::status, ACTION_APPLIED),
-                  Property(&ProcessedActionProto::payment_details,
-                           Property(&PaymentDetails::payer_email, kEmail))))));
-  GetPaymentInformationAction action(&mock_action_delegate_, action_proto);
+                  Property(&ProcessedActionProto::collect_user_data_result,
+                           Property(&CollectUserDataResultProto::payer_email,
+                                    kEmail))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 
   EXPECT_EQ(client_memory_.has_selected_address(kMemoryLocation), true);
@@ -212,11 +214,11 @@ TEST_F(GetPaymentInformationActionTest, SelectContactDetails) {
             base::UTF8ToUTF16(kEmail));
 }
 
-TEST_F(GetPaymentInformationActionTest, SelectPaymentMethod) {
+TEST_F(CollectUserDataActionTest, SelectPaymentMethod) {
   ActionProto action_proto;
-  action_proto.mutable_get_payment_information()->set_ask_for_payment(true);
-  action_proto.mutable_get_payment_information()
-      ->set_request_terms_and_conditions(false);
+  action_proto.mutable_collect_user_data()->set_request_payment_method(true);
+  action_proto.mutable_collect_user_data()->set_request_terms_and_conditions(
+      false);
 
   autofill::AutofillProfile billing_profile(base::GenerateGUID(), kFakeUrl);
   autofill::test::SetProfileInfo(&billing_profile, "Marion", "Mitchell",
@@ -231,40 +233,41 @@ TEST_F(GetPaymentInformationActionTest, SelectPaymentMethod) {
                                     "4111 1111 1111 1111", "01", "2020",
                                     billing_profile.guid());
 
-  ON_CALL(mock_action_delegate_, GetPaymentInformation(_, _))
-      .WillByDefault(
-          Invoke([=](std::unique_ptr<PaymentRequestOptions> options,
-                     std::unique_ptr<PaymentInformation> information) {
-            information->card =
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [=](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+              std::unique_ptr<UserData> user_data) {
+            user_data->card =
                 std::make_unique<autofill::CreditCard>(credit_card);
-            information->succeed = true;
-            std::move(options->confirm_callback).Run(std::move(information));
+            user_data->succeed = true;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
           }));
 
   EXPECT_CALL(
       callback_,
       Run(Pointee(AllOf(
           Property(&ProcessedActionProto::status, ACTION_APPLIED),
-          Property(&ProcessedActionProto::payment_details,
-                   Property(&PaymentDetails::card_issuer_network, "visa"))))));
-  GetPaymentInformationAction action(&mock_action_delegate_, action_proto);
+          Property(&ProcessedActionProto::collect_user_data_result,
+                   Property(&CollectUserDataResultProto::card_issuer_network,
+                            "visa"))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 
   EXPECT_EQ(client_memory_.has_selected_card(), true);
   EXPECT_THAT(client_memory_.selected_card()->Compare(credit_card), Eq(0));
 }
 
-TEST_F(GetPaymentInformationActionTest,
-       MandatoryPostalCodeWithoutErrorMessageFails) {
+TEST_F(CollectUserDataActionTest, MandatoryPostalCodeWithoutErrorMessageFails) {
   ActionProto action_proto;
-  action_proto.mutable_get_payment_information()->set_ask_for_payment(true);
-  action_proto.mutable_get_payment_information()
-      ->set_require_billing_postal_code(true);
+  action_proto.mutable_collect_user_data()->set_request_payment_method(true);
+  action_proto.mutable_collect_user_data()->set_require_billing_postal_code(
+      true);
 
   EXPECT_CALL(
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
-  GetPaymentInformationAction action(&mock_action_delegate_, action_proto);
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }
 

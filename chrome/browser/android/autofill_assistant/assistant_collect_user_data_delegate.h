@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_ASSISTANT_PAYMENT_REQUEST_DELEGATE_H_
-#define CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_ASSISTANT_PAYMENT_REQUEST_DELEGATE_H_
+#ifndef CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_ASSISTANT_COLLECT_USER_DATA_DELEGATE_H_
+#define CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_ASSISTANT_COLLECT_USER_DATA_DELEGATE_H_
 
 #include "base/android/scoped_java_ref.h"
 
 namespace autofill_assistant {
 class UiControllerAndroid;
-// Delegate class for the payment_request, to react on clicks on its chips.
-class AssistantPaymentRequestDelegate {
+// Delegate class for CollectUserDataAction, to react on clicks on its chips.
+class AssistantCollectUserDataDelegate {
  public:
-  explicit AssistantPaymentRequestDelegate(UiControllerAndroid* ui_controller);
-  ~AssistantPaymentRequestDelegate();
+  explicit AssistantCollectUserDataDelegate(UiControllerAndroid* ui_controller);
+  ~AssistantCollectUserDataDelegate();
 
   void OnContactInfoChanged(
       JNIEnv* env,
@@ -51,10 +51,10 @@ class AssistantPaymentRequestDelegate {
  private:
   UiControllerAndroid* ui_controller_;
 
-  // Java-side AssistantPaymentRequestDelegate object.
+  // Java-side AssistantCollectUserDataDelegate object.
   base::android::ScopedJavaGlobalRef<jobject>
-      java_assistant_payment_request_delegate_;
+      java_assistant_collect_user_data_delegate_;
 };
 }  // namespace autofill_assistant
 
-#endif  // CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_ASSISTANT_PAYMENT_REQUEST_DELEGATE_H_
+#endif  // CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_ASSISTANT_COLLECT_USER_DATA_DELEGATE_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
+#include "chrome/browser/android/autofill_assistant/assistant_collect_user_data_delegate.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/android/jni_string.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AssistantPaymentRequestNativeDelegate_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantCollectUserDataNativeDelegate_jni.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -19,20 +19,20 @@ using base::android::JavaParamRef;
 
 namespace autofill_assistant {
 
-AssistantPaymentRequestDelegate::AssistantPaymentRequestDelegate(
+AssistantCollectUserDataDelegate::AssistantCollectUserDataDelegate(
     UiControllerAndroid* ui_controller)
     : ui_controller_(ui_controller) {
-  java_assistant_payment_request_delegate_ =
-      Java_AssistantPaymentRequestNativeDelegate_create(
+  java_assistant_collect_user_data_delegate_ =
+      Java_AssistantCollectUserDataNativeDelegate_create(
           AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
 }
 
-AssistantPaymentRequestDelegate::~AssistantPaymentRequestDelegate() {
-  Java_AssistantPaymentRequestNativeDelegate_clearNativePtr(
-      AttachCurrentThread(), java_assistant_payment_request_delegate_);
+AssistantCollectUserDataDelegate::~AssistantCollectUserDataDelegate() {
+  Java_AssistantCollectUserDataNativeDelegate_clearNativePtr(
+      AttachCurrentThread(), java_assistant_collect_user_data_delegate_);
 }
 
-void AssistantPaymentRequestDelegate::OnContactInfoChanged(
+void AssistantCollectUserDataDelegate::OnContactInfoChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jpayer_name,
@@ -57,7 +57,7 @@ void AssistantPaymentRequestDelegate::OnContactInfoChanged(
   ui_controller_->OnContactInfoChanged(name, phone, email);
 }
 
-void AssistantPaymentRequestDelegate::OnShippingAddressChanged(
+void AssistantCollectUserDataDelegate::OnShippingAddressChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jobject>& jaddress) {
@@ -72,7 +72,7 @@ void AssistantPaymentRequestDelegate::OnShippingAddressChanged(
   ui_controller_->OnShippingAddressChanged(std::move(shipping_address));
 }
 
-void AssistantPaymentRequestDelegate::OnCreditCardChanged(
+void AssistantCollectUserDataDelegate::OnCreditCardChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jobject>& jcard) {
@@ -101,7 +101,7 @@ void AssistantPaymentRequestDelegate::OnCreditCardChanged(
   ui_controller_->OnCreditCardChanged(std::move(card));
 }
 
-void AssistantPaymentRequestDelegate::OnTermsAndConditionsChanged(
+void AssistantCollectUserDataDelegate::OnTermsAndConditionsChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jint state) {
@@ -109,14 +109,14 @@ void AssistantPaymentRequestDelegate::OnTermsAndConditionsChanged(
       static_cast<TermsAndConditionsState>(state));
 }
 
-void AssistantPaymentRequestDelegate::OnTermsAndConditionsLinkClicked(
+void AssistantCollectUserDataDelegate::OnTermsAndConditionsLinkClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jint link) {
   ui_controller_->OnTermsAndConditionsLinkClicked(link);
 }
 
-void AssistantPaymentRequestDelegate::OnLoginChoiceChanged(
+void AssistantCollectUserDataDelegate::OnLoginChoiceChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jidentifier) {
@@ -128,8 +128,8 @@ void AssistantPaymentRequestDelegate::OnLoginChoiceChanged(
 }
 
 base::android::ScopedJavaGlobalRef<jobject>
-AssistantPaymentRequestDelegate::GetJavaObject() {
-  return java_assistant_payment_request_delegate_;
+AssistantCollectUserDataDelegate::GetJavaObject() {
+  return java_assistant_collect_user_data_delegate_;
 }
 
 }  // namespace autofill_assistant

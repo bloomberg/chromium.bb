@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.payment;
+package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -24,14 +24,14 @@ import java.util.List;
 /**
  * The payment method section of the Autofill Assistant payment request.
  */
-public class AssistantPaymentRequestPaymentMethodSection
-        extends AssistantPaymentRequestSection<AutofillPaymentInstrument> {
+public class AssistantPaymentMethodSection
+        extends AssistantCollectUserDataSection<AutofillPaymentInstrument> {
     private CardEditor mEditor;
     private boolean mIgnorePaymentMethodsChangeNotifications;
     private boolean mRequiresBillingPostalCode;
     private String mBillingPostalCodeMissingText;
 
-    AssistantPaymentRequestPaymentMethodSection(Context context, ViewGroup parent) {
+    AssistantPaymentMethodSection(Context context, ViewGroup parent) {
         super(context, parent, R.layout.autofill_assistant_payment_method_summary,
                 R.layout.autofill_assistant_payment_method_full,
                 context.getResources().getDimensionPixelSize(
