@@ -153,6 +153,23 @@ void FinishStaticNode(ui::AXNodeData** static_text_node,
   *previous_on_line_node = nullptr;
 }
 
+bool BreakParagraph(
+    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    uint32_t text_run_index,
+    double paragraph_spacing_threshold) {
+  // Check to see if its also a new paragraph, i.e., if the distance between
+  // lines is greater than the threshold.  If there's no threshold, that
+  // means there weren't enough lines to compute an accurate median, so
+  // we compare against the line size instead.
+  double line_spacing = fabs(text_runs[text_run_index + 1].bounds.point.y -
+                             text_runs[text_run_index].bounds.point.y);
+  return ((paragraph_spacing_threshold > 0 &&
+           line_spacing > paragraph_spacing_threshold) ||
+          (paragraph_spacing_threshold == 0 &&
+           line_spacing > kParagraphLineSpacingRatio *
+                              text_runs[text_run_index].bounds.size.height));
+}
+
 ui::AXNode* GetStaticTextNodeFromNode(ui::AXNode* node) {
   // Returns the appropriate static text node given |node|'s type.
   // Returns nullptr if there is no appropriate static text node.
@@ -448,17 +465,8 @@ void PdfAccessibilityTree::AddPageContent(
       // The next run is on a new line.
       previous_on_line_node = nullptr;
 
-      // Check to see if its also a new paragraph, i.e., if the distance between
-      // lines is greater than the threshold.  If there's no threshold, that
-      // means there weren't enough lines to compute an accurate median, so
-      // we compare against the line size instead.
-      double line_spacing = fabs(text_runs[text_run_index + 1].bounds.point.y -
-                                 text_runs[text_run_index].bounds.point.y);
-      if ((paragraph_spacing_threshold > 0 &&
-           line_spacing > paragraph_spacing_threshold) ||
-          (paragraph_spacing_threshold == 0 &&
-           line_spacing > kParagraphLineSpacingRatio *
-                              text_runs[text_run_index].bounds.size.height)) {
+      if (BreakParagraph(text_runs, text_run_index,
+                         paragraph_spacing_threshold)) {
         if (static_text_node) {
           static_text_node->AddStringAttribute(
               ax::mojom::StringAttribute::kName, static_text);
