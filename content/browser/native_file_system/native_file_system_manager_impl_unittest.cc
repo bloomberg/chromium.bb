@@ -126,7 +126,7 @@ TEST_F(NativeFileSystemManagerImplTest, CreateFileEntryFromPath_Permissions) {
 
   blink::mojom::NativeFileSystemEntryPtr entry =
       manager_->CreateFileEntryFromPath(kBindingContext, kTestPath);
-  blink::mojom::NativeFileSystemFileHandlePtr handle(
+  mojo::Remote<blink::mojom::NativeFileSystemFileHandle> handle(
       std::move(entry->entry_handle->get_file()));
 
   EXPECT_EQ(PermissionStatus::GRANTED,
@@ -153,7 +153,7 @@ TEST_F(NativeFileSystemManagerImplTest,
 
   blink::mojom::NativeFileSystemEntryPtr entry =
       manager_->CreateWritableFileEntryFromPath(kBindingContext, kTestPath);
-  blink::mojom::NativeFileSystemFileHandlePtr handle(
+  mojo::Remote<blink::mojom::NativeFileSystemFileHandle> handle(
       std::move(entry->entry_handle->get_file()));
 
   EXPECT_EQ(PermissionStatus::GRANTED,

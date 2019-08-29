@@ -122,10 +122,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
 
   // Creates a new NativeFileSystemFileHandleImpl for a given url. Assumes the
   // passed in URL is valid and represents a file.
-  blink::mojom::NativeFileSystemFileHandlePtr CreateFileHandle(
-      const BindingContext& binding_context,
-      const storage::FileSystemURL& url,
-      const SharedHandleState& handle_state);
+  mojo::PendingRemote<blink::mojom::NativeFileSystemFileHandle>
+  CreateFileHandle(const BindingContext& binding_context,
+                   const storage::FileSystemURL& url,
+                   const SharedHandleState& handle_state);
 
   // Creates a new NativeFileSystemDirectoryHandleImpl for a given url. Assumes
   // the passed in URL is valid and represents a directory.
@@ -241,8 +241,8 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
 
   // All the bindings and receivers for file and directory handles that have
   // references to them.
-  mojo::StrongBindingSet<blink::mojom::NativeFileSystemFileHandle>
-      file_bindings_;
+  mojo::UniqueReceiverSet<blink::mojom::NativeFileSystemFileHandle>
+      file_receivers_;
   mojo::StrongBindingSet<blink::mojom::NativeFileSystemDirectoryHandle>
       directory_bindings_;
   mojo::UniqueReceiverSet<blink::mojom::NativeFileSystemFileWriter>
