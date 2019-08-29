@@ -887,6 +887,46 @@ class CertVerifyProcInternalTest
     return false;
   }
 
+  int GetMinimumRsaDsaKeySize() const {
+#if defined(OS_IOS)
+    // Beginning with iOS 13, the minimum key size for RSA/DSA algorithms is
+    // 2048 bits. See https://support.apple.com/en-us/HT210176
+    if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
+        base::ios::IsRunningOnIOS13OrLater()) {
+      return 2048;
+    }
+#elif defined(OS_MACOSX)
+    // Beginning with macOS 10.15, the minimum key size for RSA/DSA algorithms
+    // is 2048 bits. See https://support.apple.com/en-us/HT210176
+    if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
+        base::mac::IsAtLeastOS10_15()) {
+      return 2048;
+    }
+#endif
+
+    return 1024;
+  }
+
+  // Currently, only RSA and DSA keys are checked for weakness, and our example
+  // weak size is 768. These could change in the future.
+  //
+  // Note that this means there may be false negatives: keys for other
+  // algorithms and which are weak will pass this test.
+  bool IsWeakKeyType(const std::string& key_type) const {
+    size_t pos = key_type.find("-");
+    std::string size_str = key_type.substr(0, pos);
+    std::string type = key_type.substr(pos + 1);
+    int size = 0;
+
+    if (!base::StringToInt(size_str, &size))
+      return false;
+
+    if (type == "rsa" || type == "dsa")
+      return size < GetMinimumRsaDsaKeySize();
+
+    return false;
+  }
+
   bool SupportsCRLSet() const {
     return verify_proc_type() == CERT_VERIFY_PROC_NSS ||
            verify_proc_type() == CERT_VERIFY_PROC_WIN ||
@@ -1310,42 +1350,6 @@ TEST_P(CertVerifyProcInternalTest, RejectExpiredCert) {
              CertificateList(), &verify_result);
   EXPECT_THAT(error, IsError(ERR_CERT_DATE_INVALID));
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_DATE_INVALID);
-}
-
-static int GetMinimumRsaDsaKeySize() {
-#if defined(OS_IOS)
-  // Beginning with iOS 13, the minimum key size for RSA/DSA algorithms is
-  // 2048 bits. See https://support.apple.com/en-us/HT210176
-  if (base::ios::IsRunningOnIOS13OrLater())
-    return 2048;
-#elif defined(OS_MACOSX)
-  // Beginning with macOS 10.15, the minimum key size for RSA/DSA algorithms
-  // is 2048 bits. See https://support.apple.com/en-us/HT210176
-  if (base::mac::IsAtLeastOS10_15())
-    return 2048;
-#endif
-
-  return 1024;
-}
-
-// Currently, only RSA and DSA keys are checked for weakness, and our example
-// weak size is 768. These could change in the future.
-//
-// Note that this means there may be false negatives: keys for other
-// algorithms and which are weak will pass this test.
-static bool IsWeakKeyType(const std::string& key_type) {
-  size_t pos = key_type.find("-");
-  std::string size_str = key_type.substr(0, pos);
-  std::string type = key_type.substr(pos + 1);
-  int size = 0;
-
-  if (!base::StringToInt(size_str, &size))
-    return false;
-
-  if (type == "rsa" || type == "dsa")
-    return size < GetMinimumRsaDsaKeySize();
-
-  return false;
 }
 
 TEST_P(CertVerifyProcInternalTest, RejectWeakKeys) {
