@@ -4,8 +4,12 @@
 
 #include "streaming/cast/rtcp_common.h"
 
+#include <chrono>
+#include <limits>
+
 #include "absl/types/span.h"
 #include "gtest/gtest.h"
+#include "platform/api/time.h"
 
 namespace openscreen {
 namespace cast_streaming {
@@ -191,6 +195,115 @@ TEST(RtcpCommonTest, ParsesOneReportBlockFromMultipleBlocks) {
   EXPECT_EQ(expected.jitter, parsed->jitter);
   EXPECT_EQ(expected.last_status_report_id, parsed->last_status_report_id);
   EXPECT_EQ(expected.delay_since_last_report, parsed->delay_since_last_report);
+}
+
+// Tests the helper for computing the packet fraction loss numerator, a value
+// that should always be between 0 and 255, in terms of absolute packet counts.
+TEST(RtcpCommonTest, ComputesPacketLossFractionForReportBlocks) {
+  const auto ComputeFractionLost = [](int64_t num_apparently_sent,
+                                      int64_t num_received) {
+    RtcpReportBlock report;
+    report.SetPacketFractionLostNumerator(num_apparently_sent, num_received);
+    return report.packet_fraction_lost_numerator;
+  };
+
+  // If no non-duplicate packets were sent to the Receiver, the packet loss
+  // fraction should be zero.
+  EXPECT_EQ(0, ComputeFractionLost(0, 0));
+  EXPECT_EQ(0, ComputeFractionLost(0, 1));
+  EXPECT_EQ(0, ComputeFractionLost(0, 999));
+
+  // If the same number or more packets were received than those apparently
+  // sent, the packet loss fraction should be zero.
+  EXPECT_EQ(0, ComputeFractionLost(1, 1));
+  EXPECT_EQ(0, ComputeFractionLost(1, 2));
+  EXPECT_EQ(0, ComputeFractionLost(1, 4));
+  EXPECT_EQ(0, ComputeFractionLost(4, 5));
+  EXPECT_EQ(0, ComputeFractionLost(42, 42));
+  EXPECT_EQ(0, ComputeFractionLost(60, 999));
+
+  // Test various partial loss scenarios.
+  EXPECT_EQ(85, ComputeFractionLost(3, 2));
+  EXPECT_EQ(128, ComputeFractionLost(10, 5));
+  EXPECT_EQ(174, ComputeFractionLost(22, 7));
+
+  // Test various total-loss/near-total-loss scenarios.
+  EXPECT_EQ(255, ComputeFractionLost(17, 0));
+  EXPECT_EQ(255, ComputeFractionLost(100, 0));
+  EXPECT_EQ(255, ComputeFractionLost(9876, 1));
+}
+
+// Tests the helper for computing the cumulative packet loss total, a value that
+// should always be between 0 and 2^24 - 1, in terms of absolute packet counts.
+TEST(RtcpCommonTest, ComputesCumulativePacketLossForReportBlocks) {
+  const auto ComputeLoss = [](int64_t num_apparently_sent,
+                              int64_t num_received) {
+    RtcpReportBlock report;
+    report.SetCumulativePacketsLost(num_apparently_sent, num_received);
+    return report.cumulative_packets_lost;
+  };
+
+  // Test various no-loss scenarios (including duplicate packets).
+  EXPECT_EQ(0, ComputeLoss(0, 0));
+  EXPECT_EQ(0, ComputeLoss(0, 1));
+  EXPECT_EQ(0, ComputeLoss(3, 3));
+  EXPECT_EQ(0, ComputeLoss(56, 56));
+  EXPECT_EQ(0, ComputeLoss(std::numeric_limits<int64_t>::max() - 12,
+                           std::numeric_limits<int64_t>::max()));
+  EXPECT_EQ(0, ComputeLoss(std::numeric_limits<int64_t>::max(),
+                           std::numeric_limits<int64_t>::max()));
+
+  // Test various partial loss scenarios.
+  EXPECT_EQ(1, ComputeLoss(2, 1));
+  EXPECT_EQ(2, ComputeLoss(42, 40));
+  EXPECT_EQ(1025, ComputeLoss(999999, 999999 - 1025));
+  EXPECT_EQ(1, ComputeLoss(std::numeric_limits<int64_t>::max(),
+                           std::numeric_limits<int64_t>::max() - 1));
+
+  // Test that a huge cumulative loss saturates to the maximum valid value for
+  // the field.
+  EXPECT_EQ((1 << 24) - 1, ComputeLoss(999999999, 1));
+}
+
+// Tests the helper that converts platform::Clock::durations to the report
+// blocks timebase (1/65536 sconds), and also that it saturates to to the valid
+// range of values (0 to 2^32 - 1 ticks).
+TEST(RtcpCommonTest, ComputesDelayForReportBlocks) {
+  RtcpReportBlock report;
+  using Delay = RtcpReportBlock::Delay;
+
+  const auto ComputeDelay =
+      [](platform::Clock::duration delay_in_wrong_timebase) {
+        RtcpReportBlock report;
+        report.SetDelaySinceLastReport(delay_in_wrong_timebase);
+        return report.delay_since_last_report;
+      };
+
+  // A duration less than or equal to zero should clamp to zero.
+  EXPECT_EQ(Delay::zero(), ComputeDelay(platform::Clock::duration::min()));
+  EXPECT_EQ(Delay::zero(), ComputeDelay(std::chrono::milliseconds(-1234)));
+  EXPECT_EQ(Delay::zero(), ComputeDelay(platform::Clock::duration::zero()));
+
+  // Test conversion of various durations that should not clamp.
+  EXPECT_EQ(Delay(32768 /* 1/2 second worth of ticks */),
+            ComputeDelay(std::chrono::milliseconds(500)));
+  EXPECT_EQ(Delay(65536 /* 1 second worth of ticks */),
+            ComputeDelay(std::chrono::seconds(1)));
+  EXPECT_EQ(Delay(655360 /* 10 seconds worth of ticks */),
+            ComputeDelay(std::chrono::seconds(10)));
+  EXPECT_EQ(Delay(4294967294),
+            ComputeDelay(std::chrono::microseconds(65535999983)));
+  EXPECT_EQ(Delay(4294967294),
+            ComputeDelay(std::chrono::microseconds(65535999984)));
+
+  // A too-large duration should clamp to the maximum-possible Delay value.
+  EXPECT_EQ(Delay(4294967295),
+            ComputeDelay(std::chrono::microseconds(65535999985)));
+  EXPECT_EQ(Delay(4294967295),
+            ComputeDelay(std::chrono::microseconds(65535999986)));
+  EXPECT_EQ(Delay(4294967295),
+            ComputeDelay(std::chrono::microseconds(999999000000)));
+  EXPECT_EQ(Delay(4294967295), ComputeDelay(platform::Clock::duration::max()));
 }
 
 }  // namespace

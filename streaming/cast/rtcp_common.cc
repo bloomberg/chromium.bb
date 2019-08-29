@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "streaming/cast/packet_util.h"
+#include "util/saturate_cast.h"
 
 namespace openscreen {
 namespace cast_streaming {
@@ -140,6 +141,64 @@ void RtcpReportBlock::AppendFields(absl::Span<uint8_t>* buffer) const {
   OSP_DCHECK_GE(delay_ticks, 0);
   OSP_DCHECK_LE(delay_ticks, int64_t{std::numeric_limits<uint32_t>::max()});
   AppendField<uint32_t>(delay_ticks, buffer);
+}
+
+void RtcpReportBlock::SetPacketFractionLostNumerator(
+    int64_t num_apparently_sent,
+    int64_t num_received) {
+  if (num_apparently_sent <= 0) {
+    packet_fraction_lost_numerator = 0;
+    return;
+  }
+  // The following computes the fraction of packets lost as "one minus
+  // |num_received| divided by |num_apparently_sent|" and scales by 256 (the
+  // kPacketFractionLostDenominator). It's valid for |num_received| to be
+  // greater than |num_apparently_sent| in some cases (e.g., if duplicate
+  // packets were received from the network).
+  const int64_t numerator =
+      ((num_apparently_sent - num_received) * kPacketFractionLostDenominator) /
+      num_apparently_sent;
+  // Since the value must be in the range [0,255], just do a saturate_cast
+  // to the uint8_t type to clamp.
+  packet_fraction_lost_numerator = saturate_cast<uint8_t>(numerator);
+}
+
+void RtcpReportBlock::SetCumulativePacketsLost(int64_t num_apparently_sent,
+                                               int64_t num_received) {
+  const int64_t num_lost = num_apparently_sent - num_received;
+  // Clamp to valid range supported by the wire format (and RTP spec).
+  //
+  // Note that |num_lost| can be negative if duplicate packets were received.
+  // The RFC spec (https://tools.ietf.org/html/rfc3550#section-6.4.1) states
+  // this should result in a clamped, "zero loss" value.
+  cumulative_packets_lost = static_cast<int>(
+      std::min(std::max<int64_t>(num_lost, 0),
+               FieldBitmask<int64_t>(kRtcpCumulativePacketsFieldNumBits)));
+}
+
+void RtcpReportBlock::SetDelaySinceLastReport(
+    platform::Clock::duration local_clock_delay) {
+  // Clamp to valid range supported by the wire format (and RTP spec). The
+  // bounds checking is done in terms of platform::Clock::duration, since doing
+  // the checks after the duration_cast may allow overflow to occur in the
+  // duration_cast math (well, only for unusually large inputs).
+  constexpr Delay kMaxValidReportedDelay{std::numeric_limits<uint32_t>::max()};
+  constexpr auto kMaxValidLocalClockDelay =
+      std::chrono::duration_cast<platform::Clock::duration>(
+          kMaxValidReportedDelay);
+  if (local_clock_delay > kMaxValidLocalClockDelay) {
+    delay_since_last_report = kMaxValidReportedDelay;
+    return;
+  }
+  if (local_clock_delay <= platform::Clock::duration::zero()) {
+    delay_since_last_report = Delay::zero();
+    return;
+  }
+
+  // If this point is reached, then the |local_clock_delay| is representable as
+  // a Delay within the valid range.
+  delay_since_last_report =
+      std::chrono::duration_cast<Delay>(local_clock_delay);
 }
 
 // static

@@ -60,6 +60,8 @@ source_set("receiver") {
   sources = [
     "compound_rtcp_builder.cc",
     "compound_rtcp_builder.h",
+    "packet_receive_stats_tracker.cc",
+    "packet_receive_stats_tracker.h",
     "receiver.cc",
     "receiver.h",
     "receiver_packet_router.cc",
@@ -100,6 +102,7 @@ source_set("cast_unittests") {
     "frame_crypto_unittest.cc",
     "mock_compound_rtcp_parser_client.h",
     "ntp_time_unittest.cc",
+    "packet_receive_stats_tracker_unittest.cc",
     "packet_util_unittest.cc",
     "rtcp_common_unittest.cc",
     "rtp_packet_parser_unittest.cc",
