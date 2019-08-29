@@ -307,15 +307,16 @@ class LockManager::OriginState {
   LockManager* lock_manager_;
 };
 
-void LockManager::CreateService(blink::mojom::LockManagerRequest request,
-                                const url::Origin& origin) {
+void LockManager::CreateService(
+    mojo::PendingReceiver<blink::mojom::LockManager> receiver,
+    const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(jsbell): This should reflect the 'environment id' from HTML,
   // and be the same opaque string seen in Service Worker client ids.
   const std::string client_id = base::GenerateGUID();
 
-  bindings_.AddBinding(this, std::move(request), {origin, client_id});
+  receivers_.Add(this, std::move(receiver), {origin, client_id});
 }
 
 void LockManager::RequestLock(
@@ -335,7 +336,7 @@ void LockManager::RequestLock(
     return;
   }
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
 
   if (!base::Contains(origins_, context.origin))
     origins_.emplace(context.origin, this);
@@ -373,7 +374,7 @@ void LockManager::ReleaseLock(const url::Origin& origin, int64_t lock_id) {
 void LockManager::QueryState(QueryStateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const url::Origin& origin = bindings_.dispatch_context().origin;
+  const url::Origin& origin = receivers_.current_context().origin;
   auto origin_it = origins_.find(origin);
   if (origin_it == origins_.end()) {
     std::move(callback).Run(std::vector<blink::mojom::LockInfoPtr>(),

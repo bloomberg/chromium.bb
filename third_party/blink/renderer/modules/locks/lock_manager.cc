@@ -227,12 +227,12 @@ ScriptPromise LockManager::request(ScriptState* script_state,
     UseCounter::Count(context, WebFeature::kFileAccessedLocks);
   }
 
-  if (!service_.get()) {
+  if (!service_.is_bound()) {
     if (auto* provider = context->GetInterfaceProvider()) {
-      provider->GetInterface(mojo::MakeRequest(
-          &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+      provider->GetInterface(service_.BindNewPipeAndPassReceiver(
+          context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     }
-    if (!service_.get()) {
+    if (!service_.is_bound()) {
       exception_state.ThrowTypeError("Service not available.");
       return ScriptPromise();
     }
@@ -347,12 +347,12 @@ ScriptPromise LockManager::query(ScriptState* script_state,
     UseCounter::Count(context, WebFeature::kFileAccessedLocks);
   }
 
-  if (!service_.get()) {
+  if (!service_.is_bound()) {
     if (auto* provider = context->GetInterfaceProvider()) {
-      provider->GetInterface(mojo::MakeRequest(
-          &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+      provider->GetInterface(service_.BindNewPipeAndPassReceiver(
+          context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     }
-    if (!service_.get()) {
+    if (!service_.is_bound()) {
       exception_state.ThrowTypeError("Service not available.");
       return ScriptPromise();
     }
