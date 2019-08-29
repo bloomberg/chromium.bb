@@ -104,7 +104,7 @@ class CertVerificationContext {
 //     properties from the device certificate (Common Name).
 //   * |policy| is filled with an indication of the device certificate's policy
 //     (i.e. is it for audio-only devices or is it unrestricted?)
-MAYBE_NODISCARD openscreen::Error VerifyDeviceCert(
+[[nodiscard]] openscreen::Error VerifyDeviceCert(
     const std::vector<std::string>& der_certs,
     const DateTime& time,
     std::unique_ptr<CertVerificationContext>* context,

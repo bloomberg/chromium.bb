@@ -105,7 +105,7 @@ deps = {
 
     'third_party/chromium_quic/src': {
         'url': Var('chromium_git') + '/openscreen/quic.git' +
-            '@' + 'd60d1b9e6f24553900f79043ff127a9a649281c4',
+            '@' + '9a1c004d7930e1a4c4f9d4af51b6c5f88c619415',
         'condition': 'not build_with_chromium',
     },
 

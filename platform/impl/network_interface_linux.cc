@@ -59,7 +59,8 @@ InterfaceInfo::Type GetInterfaceType(const std::string& ifname) {
   static_assert(sizeof(wr.ifr_name) == IFNAMSIZ,
                 "expected size of interface name fields");
   OSP_CHECK_LT(ifname.size(), IFNAMSIZ);
-  strncpy(wr.ifr_name, ifname.c_str(), IFNAMSIZ);
+  wr.ifr_name[IFNAMSIZ - 1] = 0;
+  strncpy(wr.ifr_name, ifname.c_str(), IFNAMSIZ - 1);
   if (ioctl(s.get(), SIOCGIWNAME, &wr) != -1)
     return InterfaceInfo::Type::kWifi;
 
@@ -69,7 +70,8 @@ InterfaceInfo::Type GetInterfaceType(const std::string& ifname) {
   static_assert(sizeof(ifr.ifr_name) == IFNAMSIZ,
                 "expected size of interface name fields");
   OSP_CHECK_LT(ifname.size(), IFNAMSIZ);
-  strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ);
+  wr.ifr_name[IFNAMSIZ - 1] = 0;
+  strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ - 1);
   ifr.ifr_data = &ecmd;
   if (ioctl(s.get(), SIOCETHTOOL, &ifr) != -1)
     return InterfaceInfo::Type::kEthernet;

@@ -6,7 +6,10 @@ config("base_config") {
   cflags_cc = []
   cflags_objcc = []
   if (is_gcc) {
-    cflags_cc += [ "-Wno-format-truncation" ]
+    cflags_cc += [
+      "-Wno-format-truncation",
+      "-Wno-class-memaccess",
+    ]
   }
   if (is_clang) {
     cflags_cc += [ "-Wno-c++11-narrowing" ]

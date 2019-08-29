@@ -37,6 +37,9 @@ struct sockaddr* SocketAddressPosix::address() {
       return reinterpret_cast<struct sockaddr*>(&internal_address_.v4);
     case IPAddress::Version::kV6:
       return reinterpret_cast<struct sockaddr*>(&internal_address_.v6);
+    default:
+      OSP_NOTREACHED();
+      return nullptr;
   };
 }
 
@@ -46,6 +49,9 @@ const struct sockaddr* SocketAddressPosix::address() const {
       return reinterpret_cast<const struct sockaddr*>(&internal_address_.v4);
     case IPAddress::Version::kV6:
       return reinterpret_cast<const struct sockaddr*>(&internal_address_.v6);
+    default:
+      OSP_NOTREACHED();
+      return nullptr;
   }
 }
 
@@ -55,6 +61,9 @@ socklen_t SocketAddressPosix::size() const {
       return sizeof(struct sockaddr_in);
     case IPAddress::Version::kV6:
       return sizeof(struct sockaddr_in6);
+    default:
+      OSP_NOTREACHED();
+      return 0;
   }
 }
 }  // namespace platform

@@ -17,7 +17,10 @@ if (build_with_chromium) {
   # Config for us and everybody else depending on BoringSSL.
   config("external_config") {
     include_dirs = [ "src/include" ]
-    cflags = [ "-Wno-extra-semi" ]
+    cflags = []
+    if (is_clang) {
+      cflags += [ "-Wno-extra-semi" ]
+    }
   }
 
   # Config internal to this build file, shared by boringssl and boringssl_fuzzer.
@@ -29,12 +32,13 @@ if (build_with_chromium) {
       "BORINGSSL_NO_STATIC_INITIALIZER",
       "OPENSSL_SMALL",
     ]
+    cflags = []
     cflags_c = [ "-std=c99" ]
-
-    cflags = [
-      "-Wno-c++98-compat-extra-semi",
-      "-Wno-extra-semi",
-    ]
+    cflags_cc = []
+    if (is_clang) {
+      cflags += [ "-Wno-extra-semi" ]
+      cflags_cc += [ "-Wno-c++98-compat-extra-semi" ]
+    }
 
     if (is_mac) {
       # Necessary since trybots have an old version of clang.
