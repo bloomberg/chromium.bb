@@ -6190,7 +6190,9 @@ if (!is_ios) {
 
 # This has a global (InitGlobals) that must always be linked in, so
 # must be a source set instead of a static library.
-if (!is_ios) {
+if (use_fuzzing_engine) {
+  # fuzzer_test targets are no-op when |use_fuzzing_engine| is false. Fuzzer
+  # support targets should be disabled too.
   source_set("net_fuzzer_test_support") {
     testonly = true
 
