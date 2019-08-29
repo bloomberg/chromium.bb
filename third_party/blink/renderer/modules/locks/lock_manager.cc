@@ -135,11 +135,9 @@ class LockManager::LockRequestImpl final
     }
   }
 
-  void Granted(mojom::blink::LockHandleAssociatedPtrInfo handle_info) override {
+  void Granted(mojo::PendingAssociatedRemote<mojom::blink::LockHandle>
+                   handle_remote) override {
     DCHECK(receiver_.is_bound());
-
-    mojom::blink::LockHandleAssociatedPtr handle;
-    handle.Bind(std::move(handle_info));
 
     auto* callback = callback_.Release();
 
@@ -152,8 +150,8 @@ class LockManager::LockRequestImpl final
       return;
     }
 
-    Lock* lock =
-        Lock::Create(script_state, name_, mode_, std::move(handle), manager_);
+    Lock* lock = Lock::Create(script_state, name_, mode_,
+                              std::move(handle_remote), manager_);
     manager_->held_locks_.insert(lock);
 
     ScriptState::Scope scope(script_state);

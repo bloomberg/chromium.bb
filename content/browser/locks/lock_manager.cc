@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 
 using blink::mojom::LockMode;
 
@@ -32,14 +32,14 @@ constexpr int64_t kPreemptiveLockId = 0;
 // connection can also be closed here when a lock is stolen.
 class LockHandleImpl final : public blink::mojom::LockHandle {
  public:
-  static mojo::StrongAssociatedBindingPtr<blink::mojom::LockHandle> Create(
+  static mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::LockHandle> Create(
       base::WeakPtr<LockManager> context,
       const url::Origin& origin,
       int64_t lock_id,
-      blink::mojom::LockHandleAssociatedPtr* ptr) {
-    return mojo::MakeStrongAssociatedBinding(
+      mojo::PendingAssociatedRemote<blink::mojom::LockHandle>* remote) {
+    return mojo::MakeSelfOwnedAssociatedReceiver(
         std::make_unique<LockHandleImpl>(std::move(context), origin, lock_id),
-        mojo::MakeRequest(ptr));
+        remote->InitWithNewEndpointAndPassReceiver());
   }
 
   LockHandleImpl(base::WeakPtr<LockManager> context,
@@ -100,10 +100,10 @@ class LockManager::Lock {
     DCHECK(request_);
     DCHECK(!handle_);
 
-    blink::mojom::LockHandleAssociatedPtr ptr;
+    mojo::PendingAssociatedRemote<blink::mojom::LockHandle> remote;
     handle_ =
-        LockHandleImpl::Create(std::move(context), origin, lock_id_, &ptr);
-    request_->Granted(ptr.PassInterface());
+        LockHandleImpl::Create(std::move(context), origin, lock_id_, &remote);
+    request_->Granted(std::move(remote));
     request_.reset();
   }
 
@@ -140,7 +140,7 @@ class LockManager::Lock {
 
   // Once granted, |handle_| holds this end of the pipe that lets us monitor
   // for the other end going away.
-  mojo::StrongAssociatedBindingPtr<blink::mojom::LockHandle> handle_;
+  mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::LockHandle> handle_;
 };
 
 LockManager::LockManager() {}
