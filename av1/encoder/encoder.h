@@ -724,11 +724,9 @@ typedef struct ThreadData {
   MACROBLOCK mb;
   RD_COUNTS rd_counts;
   FRAME_COUNTS *counts;
-  PC_TREE *pc_tree;
-  PC_TREE *pc_root;
-  tran_low_t *tree_coeff_buf[MAX_MB_PLANE];
-  tran_low_t *tree_qcoeff_buf[MAX_MB_PLANE];
-  tran_low_t *tree_dqcoeff_buf[MAX_MB_PLANE];
+  PC_TREE_SHARED_BUFFERS shared_coeff_buf;
+  SIMPLE_MOTION_DATA_TREE *sms_tree;
+  SIMPLE_MOTION_DATA_TREE *sms_root;
   InterModesInfo *inter_modes_info;
   uint32_t *hash_value_buffer[2][2];
   int32_t *wsrc_buf;

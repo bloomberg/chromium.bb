@@ -1449,6 +1449,8 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
   MB_MODE_INFO **mi = mi_params->mi_grid_base + offset;
   const BLOCK_SIZE subsize = mi[0]->sb_type;
 
+  assert(bsize < BLOCK_SIZES_ALL);
+
   if (subsize == bsize) return PARTITION_NONE;
 
   const int bhigh = mi_size_high[bsize];

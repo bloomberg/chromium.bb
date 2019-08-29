@@ -804,7 +804,6 @@ static void update_film_grain_parameters(struct AV1_COMP *cpi,
 
 static void dealloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
 
   dealloc_context_buffers_ext(&cpi->mbmi_ext_info);
 
@@ -884,7 +883,8 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->tplist[0][0]);
   cpi->tplist[0][0] = NULL;
 
-  av1_free_pc_tree(cpi, &cpi->td, num_planes, cm->seq_params.sb_size);
+  av1_free_shared_coeff_buffer(&cpi->td.shared_coeff_buf);
+  av1_free_sms_tree(&cpi->td);
 
   aom_free(cpi->td.mb.palette_buffer);
   av1_release_compound_type_rd_buffers(&cpi->td.mb.comp_rd_buffer);
@@ -1140,7 +1140,8 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
                                sizeof(*cpi->tplist[0][0])));
   }
 
-  av1_setup_pc_tree(cpi, &cpi->td);
+  av1_setup_shared_coeff_buffer(&cpi->common, &cpi->td.shared_coeff_buf);
+  av1_setup_sms_tree(cpi, &cpi->td);
 }
 
 void av1_new_framerate(AV1_COMP *cpi, double framerate) {
@@ -2781,7 +2782,6 @@ static void config_target_level(AV1_COMP *const cpi, AV1_LEVEL target_level,
 void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
   SequenceHeader *const seq_params = &cm->seq_params;
-  const int num_planes = av1_num_planes(cm);
   RATE_CONTROL *const rc = &cpi->rc;
   MACROBLOCK *const x = &cpi->td.mb;
   AV1LevelParams *const level_params = &cpi->level_params;
@@ -2939,7 +2939,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     if (cm->width > cpi->initial_width || cm->height > cpi->initial_height ||
         seq_params->sb_size != sb_size) {
       av1_free_context_buffers(cm);
-      av1_free_pc_tree(cpi, &cpi->td, num_planes, (BLOCK_SIZE)sb_size);
+      av1_free_shared_coeff_buffer(&cpi->td.shared_coeff_buf);
+      av1_free_sms_tree(&cpi->td);
       alloc_compressor_data(cpi);
       realloc_segmentation_maps(cpi);
       cpi->initial_width = cpi->initial_height = 0;
@@ -3500,7 +3501,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
   if (!cpi) return;
 
   cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
 
   if (cm->current_frame.frame_number > 0) {
 #if CONFIG_ENTROPY_STATS
@@ -3632,9 +3632,9 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       }
       aom_free(thread_data->td->mask_buf);
       aom_free(thread_data->td->counts);
-      av1_free_pc_tree(cpi, thread_data->td, num_planes,
-                       cm->seq_params.sb_size);
       aom_free(thread_data->td->mbmi_ext);
+      av1_free_shared_coeff_buffer(&thread_data->td->shared_coeff_buf);
+      av1_free_sms_tree(thread_data->td);
       aom_free(thread_data->td);
     }
   }
@@ -4336,7 +4336,6 @@ void av1_check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
 // Returns 1 if the assigned width or height was <= 0.
 int av1_set_size_literal(AV1_COMP *cpi, int width, int height) {
   AV1_COMMON *cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
   av1_check_initial_width(cpi, cm->seq_params.use_highbitdepth,
                           cm->seq_params.subsampling_x,
                           cm->seq_params.subsampling_y);
@@ -4349,7 +4348,8 @@ int av1_set_size_literal(AV1_COMP *cpi, int width, int height) {
   if (cpi->initial_width && cpi->initial_height &&
       (cm->width > cpi->initial_width || cm->height > cpi->initial_height)) {
     av1_free_context_buffers(cm);
-    av1_free_pc_tree(cpi, &cpi->td, num_planes, cm->seq_params.sb_size);
+    av1_free_shared_coeff_buffer(&cpi->td.shared_coeff_buf);
+    av1_free_sms_tree(&cpi->td);
     alloc_compressor_data(cpi);
     realloc_segmentation_maps(cpi);
     cpi->initial_width = cpi->initial_height = 0;

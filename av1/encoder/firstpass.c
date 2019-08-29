@@ -854,7 +854,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   const SequenceHeader *const seq_params = &cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
-  const PICK_MODE_CONTEXT *ctx = &cpi->td.pc_root->none;
+  PICK_MODE_CONTEXT *ctx =
+      av1_alloc_pmc(cm, BLOCK_16X16, &cpi->td.shared_coeff_buf);
   MV last_mv = kZeroMv;
   const int qindex = find_fp_qindex(seq_params->bit_depth);
   // Detect if the key frame is screen content type.
@@ -1000,6 +1001,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     x->plane[2].src.buf += uv_mb_height * x->plane[1].src.stride -
                            uv_mb_height * mi_params->mb_cols;
   }
+  av1_free_pmc(ctx, num_planes);
   const double raw_err_stdev =
       raw_motion_error_stdev(raw_motion_err_list, raw_motion_err_counts);
   aom_free(raw_motion_err_list);
