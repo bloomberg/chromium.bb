@@ -50,8 +50,9 @@ base::string16 WebauthnOfferDialogController::GetAcceptButtonLabel() const {
 
 const gfx::VectorIcon& WebauthnOfferDialogController::GetStepIllustration(
     ImageColorScheme color_scheme) const {
-  return color_scheme == ImageColorScheme::kDark ? kWebauthnPermissionDarkIcon
-                                                 : kWebauthnPermissionIcon;
+  return color_scheme == ImageColorScheme::kDark
+             ? kWebauthnOfferDialogHeaderDarkIcon
+             : kWebauthnOfferDialogHeaderIcon;
 }
 
 base::string16 WebauthnOfferDialogController::GetStepTitle() const {
