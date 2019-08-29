@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -236,7 +237,9 @@ void CrostiniExportImport::OnExportComplete(
     const base::Time& start,
     const ContainerId& container_id,
     CrostiniManager::CrostiniResultCallback callback,
-    CrostiniResult result) {
+    CrostiniResult result,
+    uint64_t container_size,
+    uint64_t compressed_size) {
   auto it = notifications_.find(container_id);
   DCHECK(it != notifications_.end())
       << ContainerIdToString(container_id) << " has no notification to update";
@@ -259,6 +262,18 @@ void CrostiniExportImport::OnExportComplete(
       case CrostiniExportImportNotification::Status::RUNNING:
         UMA_HISTOGRAM_LONG_TIMES("Crostini.BackupTimeSuccess",
                                  base::Time::Now() - start);
+        // Log backup size statistics.
+        if (container_size && compressed_size) {
+          base::UmaHistogramCustomCounts("Crostini.BackupContainerSizeLog2",
+                                         std::round(std::log2(container_size)),
+                                         0, 50, 50);
+          base::UmaHistogramCustomCounts("Crostini.BackupCompressedSizeLog2",
+                                         std::round(std::log2(compressed_size)),
+                                         0, 50, 50);
+          base::UmaHistogramPercentage(
+              "Crostini.BackupSizeRatio",
+              std::round(compressed_size * 100.0 / container_size));
+        }
         RemoveNotification(it).SetStatusDone();
         break;
       default:
