@@ -33,10 +33,10 @@ constexpr char kOtherOrigin[] = "https://www.other_origin.de/login";
 
 // Creates a |PasswordForm| with the supplied |origin| and |username|. The
 // password is always set to |kLeakedPassword|.
-PasswordForm CreateForm(const char* origin, const char* username) {
+PasswordForm CreateForm(base::StringPiece origin, base::StringPiece username) {
   PasswordForm form;
   form.origin = GURL(ASCIIToUTF16(origin));
-  form.username_value = std::move(ASCIIToUTF16(username));
+  form.username_value = ASCIIToUTF16(username);
   form.password_value = ASCIIToUTF16(kLeakedPassword);
   form.signon_realm = form.origin.GetOrigin().spec();
   return form;
@@ -83,8 +83,8 @@ class LeakDetectionDelegateHelperTest : public testing::Test {
   void SetGetLoginByPasswordConsumerInvocation(
       std::vector<PasswordForm> password_forms) {
     EXPECT_CALL(*store_.get(), GetLoginsByPassword(_, _))
-        .WillRepeatedly(WithArg<1>(
-            InvokeConsumerWithPasswordForms(std::move(password_forms))));
+        .WillRepeatedly(
+            WithArg<1>(InvokeConsumerWithPasswordForms(password_forms)));
   }
 
   // Set the expectation for the |CredentialLeakType| in the callback_.
