@@ -443,6 +443,7 @@ android_library("chrome_java") {
     "//components/security_state/core:security_state_enums_java",
     "//components/signin/core/browser:signin_enums_javagen",
     "//components/ui_metrics:ui_metrics_enums_java",
+    "//content/public/browser:contacts_picker_properties_requested_javagen",
     "//net:effective_connection_type_java",
     ":vr_build_config",
   ]
