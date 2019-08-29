@@ -304,6 +304,11 @@ class RenderWebView final : public WebView
     bool IsWheelScrollInProgress() override;
     bool IsAutoscrollInProgress() override;
     void SetMouseCapture(bool capture) override {}
+    void FallbackCursorModeLockCursor(bool left,
+                                      bool right,
+                                      bool up,
+                                      bool down) override {}
+    void FallbackCursorModeSetCursorVisibility(bool visible) override {}
 
     // content::InputRouterImplClient overrides:
     content::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
@@ -325,7 +330,6 @@ class RenderWebView final : public WebView
         const content::GestureEventWithLatencyInfo& event,
         content::InputEventAckSource ack_source,
         content::InputEventAckState ack_result) override {}
-    void OnUnexpectedEventAck(UnexpectedEventAckType type) override {}
 
     // content::FlingControllerSchedulerClient overrides:
     void ScheduleFlingProgress(
@@ -371,10 +375,13 @@ class RenderWebView final : public WebView
     void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
     ukm::SourceId GetClientSourceForMetrics() const override;
     bool ShouldDoLearning() override;
-    void SetCompositionFromExistingText(
-      const gfx::Range& range,
-      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override {}
-
+    bool SetCompositionFromExistingText(
+        const gfx::Range& range,
+        const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+    void SetActiveCompositionForAccessibility(
+        const gfx::Range& range,
+        const base::string16& active_composition_text,
+        bool is_composition_committed) override {}
     // DragDropDelegate overrides:
     void DragTargetEnter(
         const std::vector<content::DropData::Metadata>& drop_data,
