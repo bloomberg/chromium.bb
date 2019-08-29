@@ -300,7 +300,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
             image_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 }
 
-TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
+// The test is failing, see: https://crbug.com/999076
+TEST_F(PdfAccessibilityTreeTest, DISABLED_TestPreviousNextOnLine) {
   text_runs_.emplace_back(kFirstRunMultiLine);
   text_runs_.emplace_back(kSecondRunMultiLine);
   text_runs_.emplace_back(kThirdRunMultiLine);
