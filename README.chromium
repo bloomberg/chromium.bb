@@ -325,3 +325,10 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-20729
   - upstream PR:
     https://github.com/unicode-org/icu/pull/712
+
+18. Do not override clang compiler internal builtins
+  - patches/clang_builtins.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20784
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/770
