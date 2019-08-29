@@ -281,7 +281,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // views::AccessiblePaneView:
   void Layout() override;
-  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
@@ -638,10 +637,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Number of mouse moves.
   int mouse_move_count_ = 0;
-
-  // Accumulatated offsets from thumb wheel. Used to throttle horizontal
-  // scroll from thumb wheel.
-  int accumulated_horizontal_scroll_ = 0;
 
   // Timer used when a tab is closed and we need to relayout. Only used when a
   // tab close comes from a touch device.
