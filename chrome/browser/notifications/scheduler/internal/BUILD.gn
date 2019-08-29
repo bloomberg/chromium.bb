@@ -90,7 +90,6 @@ source_set("unit_tests") {
     "proto_conversion_unittest.cc",
     "scheduled_notification_manager_unittest.cc",
     "scheduler_utils_unittest.cc",
-    "stats_unittest.cc",
   ]
 
   deps = [
