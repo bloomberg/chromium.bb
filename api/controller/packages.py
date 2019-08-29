@@ -91,3 +91,15 @@ def GetBestVisible(input_proto, output_proto, _config):
   package_info = common_pb2.PackageInfo()
   controller_util.CPVToPackageInfo(cpv, package_info)
   output_proto.package_info.CopyFrom(package_info)
+
+
+@validate.require('build_target.name')
+@validate.validation_complete
+def GetChromeVersion(input_proto, output_proto, _config):
+  """Returns the chrome version."""
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+  cpv = packages.get_best_visible(
+      constants.CHROME_CP, build_target=build_target)
+
+  # Something like 1.2.3.4_rc -> 1.2.3.4.
+  output_proto.version = cpv.version_no_rev.split('_')[0]
