@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -34,6 +33,7 @@
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "third_party/blink/public/platform/modules/peerconnection/web_rtc_video_encoder_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
@@ -243,7 +243,7 @@ class RTCVideoEncoder::Impl
 
   // Used to match the encoded frame timestamp with WebRTC's given RTP
   // timestamp.
-  base::circular_deque<RTCTimestamps> pending_timestamps_;
+  WTF::Deque<RTCTimestamps> pending_timestamps_;
 
   // Indicates that timestamp match failed and we should no longer attempt
   // matching.
