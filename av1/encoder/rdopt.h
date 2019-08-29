@@ -250,6 +250,21 @@ static INLINE void set_tx_size_search_method(
   x->tx_mode = select_tx_mode(cpi, x->tx_size_search_method);
 }
 
+static INLINE void set_tx_domain_dist_type(
+    const struct AV1_COMP *cpi, MACROBLOCK *x,
+    int enable_winner_mode_for_tx_domain_dist, int is_winner_mode) {
+  if (!enable_winner_mode_for_tx_domain_dist) {
+    x->use_transform_domain_distortion =
+        cpi->sf.use_transform_domain_distortion;
+    return;
+  }
+
+  if (is_winner_mode)
+    x->use_transform_domain_distortion = 0;
+  else
+    x->use_transform_domain_distortion = 2;
+}
+
 // Checks the conditions to enable winner mode processing
 static INLINE int is_winner_mode_processing_enabled(
     const struct AV1_COMP *cpi, MB_MODE_INFO *const mbmi,
@@ -288,6 +303,8 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
     case DEFAULT_EVAL:
       x->use_default_inter_tx_type = 0;
       x->use_default_intra_tx_type = 0;
+      // Set default transform domain distortion type
+      set_tx_domain_dist_type(cpi, x, 0, 0);
 
       // Get default threshold for R-D optimization of coefficients
       x->coeff_opt_dist_threshold =
@@ -302,6 +319,10 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
       x->use_default_inter_tx_type =
           cpi->sf.tx_type_search.fast_inter_tx_type_search;
 
+      // Set transform domain distortion type for mode evaluation
+      set_tx_domain_dist_type(cpi, x,
+                              sf->enable_winner_mode_for_use_tx_domain_dist, 0);
+
       // Get threshold for R-D optimization of coefficients during mode
       // evaluation
       x->coeff_opt_dist_threshold =
@@ -314,6 +335,10 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
     case WINNER_MODE_EVAL:
       x->use_default_inter_tx_type = 0;
       x->use_default_intra_tx_type = 0;
+
+      // Set transform domain distortion type for winner mode evaluation
+      set_tx_domain_dist_type(cpi, x,
+                              sf->enable_winner_mode_for_use_tx_domain_dist, 1);
 
       // Get threshold for R-D optimization of coefficients for winner mode
       // evaluation

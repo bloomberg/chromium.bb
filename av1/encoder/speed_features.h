@@ -681,6 +681,10 @@ typedef struct SPEED_FEATURES {
   // search method
   int enable_winner_mode_for_tx_size_srch;
 
+  // Flag used to control the winner mode processing for use transform
+  // domain distortion
+  int enable_winner_mode_for_use_tx_domain_dist;
+
   // Flag used to control the speed of the eob selection in trellis.
   int trellis_eob_fast;
 
