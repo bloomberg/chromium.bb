@@ -131,6 +131,11 @@ void UpdateLegacyMultiColumnFlowThread(
 
   // Stitch the columns together.
   for (const auto& child : fragment.Children()) {
+    // Skip column spanners, as they are not part of the flow thread (and
+    // besides, otherwise we'd hit a DCHECK below, because the inline-size of a
+    // spanner is typically different from that of the columns).
+    if (child->GetLayoutObject() && child->GetLayoutObject()->IsColumnSpanAll())
+      continue;
     NGFragment child_fragment(writing_mode, *child);
     flow_end += child_fragment.BlockSize();
     // Non-uniform fragmentainer widths not supported by legacy layout.
@@ -849,8 +854,13 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     const NGPhysicalBoxFragment& physical_fragment) {
   LayoutUnit flowthread_offset;
   for (const auto& child : physical_fragment.Children()) {
+    if (child->GetLayoutObject() != box_) {
+      DCHECK(child->GetLayoutObject()->IsColumnSpanAll());
+      // TODO(mstensho): Write back the spanner offset to the associated
+      // LayoutMultiColumnSpannerPlaceholder (if we bother)
+      continue;
+    }
     // Each anonymous child of a multicol container constitutes one column.
-    DCHECK(child->GetLayoutObject() == box_);
 
     // TODO(mstensho): writing modes
     PhysicalOffset offset(LayoutUnit(), flowthread_offset);
