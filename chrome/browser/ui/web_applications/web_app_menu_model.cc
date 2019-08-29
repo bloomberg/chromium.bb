@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
+#include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,15 +17,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-constexpr int HostedAppMenuModel::kUninstallAppCommandId;
+constexpr int WebAppMenuModel::kUninstallAppCommandId;
 
-HostedAppMenuModel::HostedAppMenuModel(ui::AcceleratorProvider* provider,
-                                       Browser* browser)
+WebAppMenuModel::WebAppMenuModel(ui::AcceleratorProvider* provider,
+                                 Browser* browser)
     : AppMenuModel(provider, browser) {}
 
-HostedAppMenuModel::~HostedAppMenuModel() {}
+WebAppMenuModel::~WebAppMenuModel() {}
 
-void HostedAppMenuModel::Build() {
+void WebAppMenuModel::Build() {
   if (CreateActionToolbarOverflowMenu())
     AddSeparator(ui::UPPER_SEPARATOR);
   AddItemWithStringId(IDC_HOSTED_APP_MENU_APP_INFO,
@@ -68,13 +68,13 @@ void HostedAppMenuModel::Build() {
   CreateCutCopyPasteMenu();
 }
 
-bool HostedAppMenuModel::IsCommandIdEnabled(int command_id) const {
+bool WebAppMenuModel::IsCommandIdEnabled(int command_id) const {
   return command_id == kUninstallAppCommandId
              ? browser()->app_controller()->CanUninstall()
              : AppMenuModel::IsCommandIdEnabled(command_id);
 }
 
-void HostedAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
+void WebAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == kUninstallAppCommandId) {
     browser()->app_controller()->Uninstall();
   } else {
@@ -82,7 +82,7 @@ void HostedAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
-void HostedAppMenuModel::LogMenuAction(AppMenuAction action_id) {
+void WebAppMenuModel::LogMenuAction(AppMenuAction action_id) {
   UMA_HISTOGRAM_ENUMERATION("HostedAppFrame.WrenchMenu.MenuAction", action_id,
                             LIMIT_MENU_ACTION);
 }
