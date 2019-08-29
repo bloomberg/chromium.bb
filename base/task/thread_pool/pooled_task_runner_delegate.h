@@ -30,7 +30,7 @@ class BASE_EXPORT PooledTaskRunnerDelegate {
   // Returns true if |task_source| currently running must return ASAP.
   // Thread-safe but may return an outdated result (if a task unnecessarily
   // yields due to this, it will simply be re-scheduled).
-  virtual bool ShouldYield(TaskSource* task_source) const = 0;
+  virtual bool ShouldYield(const TaskSource* task_source) const = 0;
 
   // Invoked when a |task| is posted to the PooledParallelTaskRunner or
   // PooledSequencedTaskRunner. The implementation must post |task| to

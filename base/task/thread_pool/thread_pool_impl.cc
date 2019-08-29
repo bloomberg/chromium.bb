@@ -397,7 +397,7 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
   return true;
 }
 
-bool ThreadPoolImpl::ShouldYield(TaskSource* task_source) const {
+bool ThreadPoolImpl::ShouldYield(const TaskSource* task_source) const {
   const TaskPriority priority = task_source->priority_racy();
   auto* const thread_group = GetThreadGroupForTraits(
       {ThreadPool(), priority, task_source->thread_policy()});
