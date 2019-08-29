@@ -4280,6 +4280,24 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
+      'chell-chrome-pre-flight-branch',
+      site_config.templates.pre_flight_branch,
+      display_label=config_lib.DISPLAY_LABEL_CHROME_PFQ,
+      boards=['chell'],
+      afdo_generate=True,
+      afdo_update_ebuild=True,
+      sync_chrome=True,
+      chrome_rev=constants.CHROME_REV_STICKY,
+      hw_tests=[hw_test_list.AFDORecordTest()],
+      useflags=config_lib.append_useflags(['-transparent_hugepage',
+                                           '-debug_fission',
+                                           '-thinlto',
+                                           '-cfi']),
+      prebuilts=False,
+      archive_build_debug=True,
+  )
+
+  site_config.Add(
       'gandof-android-nyc-pre-flight-branch',
       site_config.templates.pre_flight_branch,
       display_label=config_lib.DISPLAY_LABEL_NYC_ANDROID_PFQ,
@@ -4456,11 +4474,12 @@ def BranchScheduleConfig():
 
   # The three active release branches.
   # (<branch>, [<android PFQs>], <chrome PFQ>)
+
   RELEASES = [
       ('release-R78-12499.B',
        ['gandof-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
-       'samus-chrome-pre-flight-branch'),
+       'chell-chrome-pre-flight-branch'),
 
       ('release-R77-12371.B',
        ['gandof-android-nyc-pre-flight-branch',
