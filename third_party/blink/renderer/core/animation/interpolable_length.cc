@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 
 #include "third_party/blink/renderer/core/animation/underlying_value.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
@@ -23,11 +23,6 @@ std::unique_ptr<InterpolableLength> InterpolableLength::CreatePixels(
   return std::make_unique<InterpolableLength>(std::move(length_array));
 }
 
-std::unique_ptr<InterpolableValue>
-LengthInterpolationFunctions::CreateInterpolablePixels(double pixels) {
-  return InterpolableLength::CreatePixels(pixels);
-}
-
 // static
 std::unique_ptr<InterpolableLength> InterpolableLength::CreatePercent(
     double percent) {
@@ -37,19 +32,9 @@ std::unique_ptr<InterpolableLength> InterpolableLength::CreatePercent(
   return std::make_unique<InterpolableLength>(std::move(length_array));
 }
 
-std::unique_ptr<InterpolableValue>
-LengthInterpolationFunctions::CreateInterpolablePercent(double percent) {
-  return InterpolableLength::CreatePercent(percent);
-}
-
 // static
 std::unique_ptr<InterpolableLength> InterpolableLength::CreateNeutral() {
   return std::make_unique<InterpolableLength>(CSSLengthArray());
-}
-
-std::unique_ptr<InterpolableValue>
-LengthInterpolationFunctions::CreateNeutralInterpolableValue() {
-  return InterpolableLength::CreateNeutral();
 }
 
 // static
@@ -71,11 +56,6 @@ std::unique_ptr<InterpolableLength> InterpolableLength::MaybeConvertCSSValue(
   }
 
   return std::make_unique<InterpolableLength>(std::move(length_array));
-}
-
-InterpolationValue LengthInterpolationFunctions::MaybeConvertCSSValue(
-    const CSSValue& value) {
-  return InterpolationValue(InterpolableLength::MaybeConvertCSSValue(value));
 }
 
 // static
@@ -105,13 +85,6 @@ std::unique_ptr<InterpolableLength> InterpolableLength::MaybeConvertLength(
   return std::make_unique<InterpolableLength>(std::move(length_array));
 }
 
-InterpolationValue LengthInterpolationFunctions::MaybeConvertLength(
-    const Length& length,
-    float zoom) {
-  return InterpolationValue(
-      InterpolableLength::MaybeConvertLength(length, zoom));
-}
-
 // static
 PairwiseInterpolationValue InterpolableLength::MergeSingles(
     std::unique_ptr<InterpolableValue> start,
@@ -126,43 +99,11 @@ PairwiseInterpolationValue InterpolableLength::MergeSingles(
   return PairwiseInterpolationValue(std::move(start), std::move(end));
 }
 
-PairwiseInterpolationValue LengthInterpolationFunctions::MergeSingles(
-    InterpolationValue&& start,
-    InterpolationValue&& end) {
-  return InterpolableLength::MergeSingles(std::move(start.interpolable_value),
-                                          std::move(end.interpolable_value));
-}
-
-bool LengthInterpolationFunctions::NonInterpolableValuesAreCompatible(
-    const NonInterpolableValue* a,
-    const NonInterpolableValue* b) {
-  return true;
-}
-
-bool LengthInterpolationFunctions::HasPercentage(
-    const InterpolableValue& interpolable_value) {
-  return To<InterpolableLength>(interpolable_value).HasPercentage();
-}
-
-void LengthInterpolationFunctions::Composite(
-    UnderlyingValue& underlying_value,
-    double underlying_fraction,
-    const InterpolableValue& interpolable_value,
-    const NonInterpolableValue* non_interpolable_value) {
-  underlying_value.MutableInterpolableValue().ScaleAndAdd(underlying_fraction,
-                                                          interpolable_value);
-}
-
 void InterpolableLength::SubtractFromOneHundredPercent() {
   for (double& value : length_array_.values)
     value *= -1;
   length_array_.values[CSSPrimitiveValue::kUnitTypePercentage] += 100;
   length_array_.type_flags.set(CSSPrimitiveValue::kUnitTypePercentage);
-}
-
-void LengthInterpolationFunctions::SubtractFromOneHundredPercent(
-    InterpolableValue& result) {
-  To<InterpolableLength>(result).SubtractFromOneHundredPercent();
 }
 
 static double ClampToRange(double x, ValueRange range) {
@@ -204,15 +145,6 @@ Length InterpolableLength::CreateLength(
       CSSPrimitiveValue::ClampToCSSLengthRange(ClampToRange(pixels, range)));
 }
 
-Length LengthInterpolationFunctions::CreateLength(
-    const InterpolableValue& interpolable_value,
-    const NonInterpolableValue*,
-    const CSSToLengthConversionData& conversion_data,
-    ValueRange range) {
-  return To<InterpolableLength>(interpolable_value)
-      .CreateLength(conversion_data, range);
-}
-
 const CSSPrimitiveValue* InterpolableLength::CreateCSSValue(
     ValueRange range) const {
   bool has_percentage = HasPercentage();
@@ -251,13 +183,6 @@ const CSSPrimitiveValue* InterpolableLength::CreateCSSValue(
   }
   return CSSNumericLiteralValue::Create(0,
                                         CSSPrimitiveValue::UnitType::kPixels);
-}
-
-const CSSValue* LengthInterpolationFunctions::CreateCSSValue(
-    const InterpolableValue& interpolable_value,
-    const NonInterpolableValue*,
-    ValueRange range) {
-  return To<InterpolableLength>(interpolable_value).CreateCSSValue(range);
 }
 
 void InterpolableLength::ScaleAndAdd(double scale,

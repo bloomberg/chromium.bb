@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(crbug.com/991672): Rename to |interpolable_length.h|
-
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_LENGTH_INTERPOLATION_FUNCTIONS_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_LENGTH_INTERPOLATION_FUNCTIONS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLABLE_LENGTH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLABLE_LENGTH_H_
 
 #include <memory>
 #include "third_party/blink/renderer/core/animation/interpolation_value.h"
@@ -17,7 +15,6 @@
 namespace blink {
 
 class CSSToLengthConversionData;
-class UnderlyingValue;
 
 class CORE_EXPORT InterpolableLength final : public InterpolableValue {
  public:
@@ -43,6 +40,9 @@ class CORE_EXPORT InterpolableLength final : public InterpolableValue {
 
   Length CreateLength(const CSSToLengthConversionData& conversion_data,
                       ValueRange range) const;
+
+  // Unlike CreateLength() this preserves all specified unit types via calc()
+  // expressions.
   const CSSPrimitiveValue* CreateCSSValue(ValueRange range) const;
 
   bool HasPercentage() const {
@@ -87,42 +87,6 @@ struct DowncastTraits<InterpolableLength> {
   }
 };
 
-// TODO(crbug.com/991672): Remove this trivial wrapper class.
-class LengthInterpolationFunctions {
-  STATIC_ONLY(LengthInterpolationFunctions);
-
- public:
-  static std::unique_ptr<InterpolableValue> CreateInterpolablePixels(
-      double pixels);
-  static std::unique_ptr<InterpolableValue> CreateInterpolablePercent(
-      double percent);
-  static std::unique_ptr<InterpolableValue> CreateNeutralInterpolableValue();
-
-  static InterpolationValue MaybeConvertCSSValue(const CSSValue&);
-  static InterpolationValue MaybeConvertLength(const Length&, float zoom);
-  static PairwiseInterpolationValue MergeSingles(InterpolationValue&& start,
-                                                 InterpolationValue&& end);
-  static bool NonInterpolableValuesAreCompatible(const NonInterpolableValue*,
-                                                 const NonInterpolableValue*);
-  static bool HasPercentage(const InterpolableValue&);
-  static void Composite(UnderlyingValue&,
-                        double underlying_fraction,
-                        const InterpolableValue&,
-                        const NonInterpolableValue*);
-  static Length CreateLength(const InterpolableValue&,
-                             const NonInterpolableValue*,
-                             const CSSToLengthConversionData&,
-                             ValueRange);
-
-  // Unlike createLength() this preserves all specificed unit types via calc()
-  // expressions.
-  static const CSSValue* CreateCSSValue(const InterpolableValue&,
-                                        const NonInterpolableValue*,
-                                        ValueRange);
-
-  static void SubtractFromOneHundredPercent(InterpolableValue& result);
-};
-
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_LENGTH_INTERPOLATION_FUNCTIONS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLABLE_LENGTH_H_
