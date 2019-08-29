@@ -32,6 +32,7 @@ source_set("mdns_unittests") {
   testonly = true
 
   sources = [
+    "mdns/mdns_random_unittest.cc",
     "mdns/mdns_reader_unittest.cc",
     "mdns/mdns_receiver_unittest.cc",
     "mdns/mdns_records_unittest.cc",
