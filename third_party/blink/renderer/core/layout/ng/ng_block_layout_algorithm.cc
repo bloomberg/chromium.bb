@@ -507,7 +507,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   // If this layout is blocked by a display-lock, then we pretend this node has
   // no children and that there are no break tokens. Due to this, we skip layout
   // on these children.
-  if (Node().LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (Node().LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     child_iterator = NGBlockChildIterator(NGBlockNode(nullptr), nullptr);
 
   for (auto entry = child_iterator.NextChild();
