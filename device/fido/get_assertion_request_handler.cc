@@ -147,14 +147,6 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
   return transports;
 }
 
-base::flat_set<FidoTransportProtocol> GetTransportsAllowedAndConfiguredByRP(
-    const CtapGetAssertionRequest& request) {
-  auto transports = GetTransportsAllowedByRP(request);
-  if (!request.cable_extension)
-    transports.erase(FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
-  return transports;
-}
-
 void ReportGetAssertionRequestTransport(FidoAuthenticator* authenticator) {
   if (authenticator->AuthenticatorTransport()) {
     base::UmaHistogramEnumeration(
@@ -184,7 +176,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
           fido_discovery_factory,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,
-              GetTransportsAllowedAndConfiguredByRP(request)),
+              GetTransportsAllowedByRP(request)),
           std::move(completion_callback)),
       request_(std::move(request)) {
   transport_availability_info().request_type =
@@ -193,15 +185,6 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
       request_.allow_list.empty();
   transport_availability_info().cable_pairing_data_supplied =
       static_cast<bool>(request_.cable_extension);
-
-  if (base::Contains(transport_availability_info().available_transports,
-                     FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
-    DCHECK(request_.cable_extension);
-    auto discovery =
-        fido_discovery_factory_->CreateCable(*request_.cable_extension);
-    discovery->set_observer(this);
-    discoveries().push_back(std::move(discovery));
-  }
 
   if (request_.allow_list.empty()) {
     // Resident credential requests always involve user verification.

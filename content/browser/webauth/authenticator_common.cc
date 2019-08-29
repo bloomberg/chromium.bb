@@ -589,6 +589,11 @@ void AuthenticatorCommon::StartGetAssertionRequest() {
   if (!discovery_factory)
     discovery_factory = request_delegate_->GetDiscoveryFactory();
 
+  if (ctap_get_assertion_request_->cable_extension) {
+    discovery_factory->set_cable_data(
+        *ctap_get_assertion_request_->cable_extension);
+  }
+
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
       connector_, discovery_factory, GetTransports(caller_origin_, transports_),
       *ctap_get_assertion_request_,

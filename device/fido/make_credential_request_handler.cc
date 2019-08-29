@@ -115,16 +115,16 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
     case AuthenticatorAttachment::kPlatform:
       return {FidoTransportProtocol::kInternal};
     case AuthenticatorAttachment::kCrossPlatform:
-      // Cloud-assisted BLE is not yet supported for MakeCredential requests.
       return {FidoTransportProtocol::kUsbHumanInterfaceDevice,
               FidoTransportProtocol::kBluetoothLowEnergy,
-              FidoTransportProtocol::kNearFieldCommunication};
+              FidoTransportProtocol::kNearFieldCommunication,
+              FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
     case AuthenticatorAttachment::kAny:
-      // Cloud-assisted BLE is not yet supported for MakeCredential requests.
       return {FidoTransportProtocol::kInternal,
               FidoTransportProtocol::kNearFieldCommunication,
               FidoTransportProtocol::kUsbHumanInterfaceDevice,
-              FidoTransportProtocol::kBluetoothLowEnergy};
+              FidoTransportProtocol::kBluetoothLowEnergy,
+              FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
   }
 
   NOTREACHED();
