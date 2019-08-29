@@ -22,11 +22,10 @@ import java.util.List;
  * Utility class that provides convesion between Android NdefMessage
  * and mojo NdefMessage data structures.
  */
-public final class NfcTypeConverter {
-    private static final String TAG = "NfcTypeConverter";
-    private static final String DOMAIN = "w3.org";
-    private static final String TYPE = "webnfc";
-    private static final String WEBNFC_URN = DOMAIN + ":" + TYPE;
+public final class NdefMessageUtils {
+    private static final String TAG = "NdefMessageUtils";
+    private static final String AUTHOR_RECORD_DOMAIN = "w3.org";
+    private static final String AUTHOR_RECORD_TYPE = "A";
     private static final String TEXT_MIME = "text/plain";
     private static final String JSON_MIME = "application/json";
     private static final String CHARSET_UTF8 = ";charset=UTF-8";
@@ -42,8 +41,10 @@ public final class NfcTypeConverter {
             for (int i = 0; i < message.data.length; ++i) {
                 records.add(toNdefRecord(message.data[i]));
             }
-            records.add(android.nfc.NdefRecord.createExternal(
-                    DOMAIN, TYPE, ApiCompatibilityUtils.getBytesUtf8(message.url)));
+            // NdefRecord.createExternal() will internally convert both the domain and type to
+            // lower-case. Details: https://github.com/w3c/web-nfc/issues/308
+            records.add(android.nfc.NdefRecord.createExternal(AUTHOR_RECORD_DOMAIN,
+                    AUTHOR_RECORD_TYPE, ApiCompatibilityUtils.getBytesUtf8(message.url)));
             android.nfc.NdefRecord[] ndefRecords = new android.nfc.NdefRecord[records.size()];
             records.toArray(ndefRecords);
             return new android.nfc.NdefMessage(ndefRecords);
@@ -63,9 +64,13 @@ public final class NfcTypeConverter {
         List<NdefRecord> nfcRecords = new ArrayList<NdefRecord>();
 
         for (int i = 0; i < ndefRecords.length; i++) {
+            // NFC Forum requires that the domain and type used in an external record are treated as
+            // case insensitive, so we compare while ignoring the case.
             if ((ndefRecords[i].getTnf() == android.nfc.NdefRecord.TNF_EXTERNAL_TYPE)
-                    && (Arrays.equals(ndefRecords[i].getType(),
-                            ApiCompatibilityUtils.getBytesUtf8(WEBNFC_URN)))) {
+                    && new String(ndefRecords[i].getType(), "UTF-8")
+                                    .compareToIgnoreCase(
+                                            AUTHOR_RECORD_DOMAIN + ":" + AUTHOR_RECORD_TYPE)
+                            == 0) {
                 webNdefMessage.url = new String(ndefRecords[i].getPayload(), "UTF-8");
                 continue;
             }
