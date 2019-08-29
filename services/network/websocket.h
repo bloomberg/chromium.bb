@@ -151,7 +151,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   mojo::Binding<mojom::WebSocket> binding_;
 
   mojo::Remote<mojom::WebSocketHandshakeClient> handshake_client_;
-  mojom::WebSocketClientPtr client_;
+  mojo::Remote<mojom::WebSocketClient> client_;
   mojom::AuthenticationHandlerPtr auth_handler_;
   mojo::Remote<mojom::TrustedHeaderClient> header_client_;
 

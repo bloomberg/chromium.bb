@@ -185,12 +185,12 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
 
   impl_->handshake_client_->OnConnectionEstablished(
-      std::move(websocket_to_pass), mojo::MakeRequest(&impl_->client_),
+      std::move(websocket_to_pass), impl_->client_.BindNewPipeAndPassReceiver(),
       selected_protocol, extensions, std::move(readable));
   impl_->handshake_client_.reset();
   impl_->auth_handler_ = nullptr;
   impl_->header_client_.reset();
-  impl_->client_.set_connection_error_handler(base::BindOnce(
+  impl_->client_.set_disconnect_handler(base::BindOnce(
       &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
 }
 
@@ -690,7 +690,7 @@ void WebSocket::OnHeadersReceivedComplete(
 
 void WebSocket::Reset() {
   handshake_client_.reset();
-  client_ = nullptr;
+  client_.reset();
   auth_handler_ = nullptr;
   header_client_.reset();
   binding_.Close();
