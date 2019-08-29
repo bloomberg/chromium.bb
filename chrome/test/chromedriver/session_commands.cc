@@ -731,7 +731,11 @@ Status ExecuteSwitchToWindow(Session* session,
   if (!found)
     return Status(kNoSuchWindow);
 
-  if (session->overridden_geoposition) {
+  if (session->overridden_geoposition ||
+      session->overridden_network_conditions ||
+      session->headless_download_directory ||
+      session->chrome->IsMobileEmulationEnabled()) {
+    // Connect to new window to apply session configuration
     WebView* web_view;
     Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
     if (status.IsError())
@@ -739,46 +743,25 @@ Status ExecuteSwitchToWindow(Session* session,
     status = web_view->ConnectIfNecessary();
     if (status.IsError())
       return status;
-    status = web_view->OverrideGeolocation(*session->overridden_geoposition);
-    if (status.IsError())
-      return status;
-  }
 
-  if (session->overridden_network_conditions) {
-    WebView* web_view;
-    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
-    if (status.IsError())
-      return status;
-    status = web_view->ConnectIfNecessary();
-    if (status.IsError())
-      return status;
-    status = web_view->OverrideNetworkConditions(
-        *session->overridden_network_conditions);
-    if (status.IsError())
-      return status;
-  }
-  if (session->headless_download_directory) {
-    WebView* web_view;
-    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
-    if (status.IsError())
-      return status;
-    status = web_view->ConnectIfNecessary();
-    if (status.IsError())
-      return status;
-    status = web_view->OverrideDownloadDirectoryIfNeeded(
-        *session->headless_download_directory);
-    if (status.IsError())
-      return status;
-  }
-
-  if (session->chrome->IsMobileEmulationEnabled()) {
-    WebView* web_view;
-    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
-    if (status.IsError())
-      return status;
-    status = web_view->ConnectIfNecessary();
-    if (status.IsError())
-      return status;
+    // apply type specific configurations:
+    if (session->overridden_geoposition) {
+      status = web_view->OverrideGeolocation(*session->overridden_geoposition);
+      if (status.IsError())
+        return status;
+    }
+    if (session->overridden_network_conditions) {
+      status = web_view->OverrideNetworkConditions(
+          *session->overridden_network_conditions);
+      if (status.IsError())
+        return status;
+    }
+    if (session->headless_download_directory) {
+      status = web_view->OverrideDownloadDirectoryIfNeeded(
+          *session->headless_download_directory);
+      if (status.IsError())
+        return status;
+    }
   }
 
   status = session->chrome->ActivateWebView(web_view_id);
