@@ -88,12 +88,11 @@ class LeakDetectionDelegateHelperTest : public testing::Test {
   }
 
   // Set the expectation for the |CredentialLeakType| in the callback_.
-  void SetOnShowLeakDetectionNotificationExpectation(bool is_saved,
-                                                     bool is_reused) {
-    EXPECT_CALL(
-        callback_,
-        Run(CreateLeakTypeFromBools(is_saved, is_reused, /*is_synced=*/true),
-            GURL(kLeakedOrigin), ASCIIToUTF16(kLeakedUsername)))
+  void SetOnShowLeakDetectionNotificationExpectation(IsSaved is_saved,
+                                                     IsReused is_reused) {
+    EXPECT_CALL(callback_,
+                Run(CreateLeakType(is_saved, is_reused, IsSyncing(true)),
+                    GURL(kLeakedOrigin), ASCIIToUTF16(kLeakedUsername)))
         .Times(1);
   }
 
@@ -107,8 +106,8 @@ TEST_F(LeakDetectionDelegateHelperTest, NeitherSaveNotReused) {
   std::vector<PasswordForm> password_forms;
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/false,
-                                                /*is_reused=*/false);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false),
+                                                IsReused(false));
   InitiateGetCredentialLeakType();
 }
 
@@ -118,8 +117,7 @@ TEST_F(LeakDetectionDelegateHelperTest, SavedLeakedCredentials) {
       CreateForm(kLeakedOrigin, kLeakedUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/true,
-                                                /*is_reused=*/false);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(false));
   InitiateGetCredentialLeakType();
 }
 
@@ -131,8 +129,7 @@ TEST_F(LeakDetectionDelegateHelperTest,
       CreateForm(kOtherOrigin, kLeakedUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/true,
-                                                /*is_reused=*/true);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true));
   InitiateGetCredentialLeakType();
 }
 
@@ -145,8 +142,7 @@ TEST_F(LeakDetectionDelegateHelperTest,
       CreateForm(kLeakedOrigin, kOtherUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/true,
-                                                /*is_reused=*/true);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true));
   InitiateGetCredentialLeakType();
 }
 
@@ -156,8 +152,7 @@ TEST_F(LeakDetectionDelegateHelperTest, ReusedPasswordWithOtherUsername) {
       CreateForm(kLeakedOrigin, kOtherUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/false,
-                                                /*is_reused=*/true);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
   InitiateGetCredentialLeakType();
 }
 
@@ -167,8 +162,7 @@ TEST_F(LeakDetectionDelegateHelperTest, ReusedPasswordOnOtherOrigin) {
       CreateForm(kOtherOrigin, kLeakedUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/false,
-                                                /*is_reused=*/true);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
   InitiateGetCredentialLeakType();
 }
 
@@ -179,8 +173,7 @@ TEST_F(LeakDetectionDelegateHelperTest, ReusedPassword) {
       CreateForm(kOtherOrigin, kOtherUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/false,
-                                                /*is_reused=*/true);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
   InitiateGetCredentialLeakType();
 }
 
