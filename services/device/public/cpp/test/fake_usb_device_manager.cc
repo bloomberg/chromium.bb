@@ -47,14 +47,15 @@ void FakeUsbDeviceManager::GetDevices(mojom::UsbEnumerationOptionsPtr options,
   std::move(callback).Run(std::move(device_infos));
 }
 
-void FakeUsbDeviceManager::GetDevice(const std::string& guid,
-                                     mojom::UsbDeviceRequest device_request,
-                                     mojom::UsbDeviceClientPtr device_client) {
+void FakeUsbDeviceManager::GetDevice(
+    const std::string& guid,
+    mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
+    mojom::UsbDeviceClientPtr device_client) {
   auto it = devices_.find(guid);
   if (it == devices_.end())
     return;
 
-  FakeUsbDevice::Create(it->second, std::move(device_request),
+  FakeUsbDevice::Create(it->second, std::move(device_receiver),
                         std::move(device_client));
 }
 

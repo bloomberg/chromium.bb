@@ -20,6 +20,7 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/usb/usb_policy_allowed_devices.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
@@ -71,9 +72,10 @@ class UsbChooserContext : public ChooserContextBase,
 
   // Forward UsbDeviceManager methods.
   void GetDevices(device::mojom::UsbDeviceManager::GetDevicesCallback callback);
-  void GetDevice(const std::string& guid,
-                 device::mojom::UsbDeviceRequest device_request,
-                 device::mojom::UsbDeviceClientPtr device_client);
+  void GetDevice(
+      const std::string& guid,
+      mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
+      device::mojom::UsbDeviceClientPtr device_client);
 #if defined(OS_ANDROID)
   void RefreshDeviceInfo(
       const std::string& guid,

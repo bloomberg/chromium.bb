@@ -15,6 +15,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/usb.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
@@ -60,8 +61,9 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
 
   // Forward UsbDeviceManager methods.
   void GetDevices(device::mojom::UsbDeviceManager::GetDevicesCallback callback);
-  void GetDevice(const std::string& guid,
-                 device::mojom::UsbDeviceRequest device_request);
+  void GetDevice(
+      const std::string& guid,
+      mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver);
 
   const device::mojom::UsbDeviceInfo* GetDeviceInfo(const std::string& guid);
   bool UpdateActiveConfig(const std::string& guid, uint8_t config_value);

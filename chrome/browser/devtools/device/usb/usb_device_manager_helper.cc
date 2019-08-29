@@ -172,11 +172,11 @@ void UsbDeviceManagerHelper::GetAndroidDevices(
 
 void UsbDeviceManagerHelper::GetDevice(
     const std::string& guid,
-    device::mojom::UsbDeviceRequest device_request) {
+    mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver) {
   EnsureUsbDeviceManagerConnection();
 
   DCHECK(device_manager_);
-  device_manager_->GetDevice(guid, std::move(device_request),
+  device_manager_->GetDevice(guid, std::move(device_receiver),
                              /*device_client=*/nullptr);
 }
 

@@ -68,9 +68,10 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
       EnumerateDevicesAndSetClientCallback callback) override;
   void GetDevices(mojom::UsbEnumerationOptionsPtr options,
                   GetDevicesCallback callback) override;
-  void GetDevice(const std::string& guid,
-                 mojom::UsbDeviceRequest device_request,
-                 mojom::UsbDeviceClientPtr device_client) override;
+  void GetDevice(
+      const std::string& guid,
+      mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
+      mojom::UsbDeviceClientPtr device_client) override;
 
 #if defined(OS_ANDROID)
   void RefreshDeviceInfo(const std::string& guid,

@@ -61,14 +61,15 @@ void DeviceManagerImpl::GetDevices(mojom::UsbEnumerationOptionsPtr options,
       base::Passed(&options), /*client=*/nullptr, base::Passed(&callback)));
 }
 
-void DeviceManagerImpl::GetDevice(const std::string& guid,
-                                  mojom::UsbDeviceRequest device_request,
-                                  mojom::UsbDeviceClientPtr device_client) {
+void DeviceManagerImpl::GetDevice(
+    const std::string& guid,
+    mojo::PendingReceiver<mojom::UsbDevice> device_receiver,
+    mojom::UsbDeviceClientPtr device_client) {
   scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
   if (!device)
     return;
 
-  DeviceImpl::Create(std::move(device), std::move(device_request),
+  DeviceImpl::Create(std::move(device), std::move(device_receiver),
                      std::move(device_client));
 }
 

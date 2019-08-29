@@ -51,7 +51,7 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
   void GetDevices(mojom::UsbEnumerationOptionsPtr options,
                   GetDevicesCallback callback) override;
   void GetDevice(const std::string& guid,
-                 mojom::UsbDeviceRequest device_request,
+                 mojo::PendingReceiver<mojom::UsbDevice> device_receiver,
                  mojom::UsbDeviceClientPtr device_client) override;
 
 #if defined(OS_ANDROID)

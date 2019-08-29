@@ -134,10 +134,11 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
         PrinterSearchData::PrinterDiscoveryType::kUsb;
 
     // Query printer for an IEEE Device ID.
-    device::mojom::UsbDevicePtr device_ptr;
-    device_manager_->GetDevice(device_info.guid, mojo::MakeRequest(&device_ptr),
+    mojo::Remote<device::mojom::UsbDevice> device;
+    device_manager_->GetDevice(device_info.guid,
+                               device.BindNewPipeAndPassReceiver(),
                                nullptr /* device_client */);
-    GetDeviceId(std::move(device_ptr),
+    GetDeviceId(std::move(device),
                 base::BindOnce(&UsbPrinterDetectorImpl::OnGetDeviceId,
                                weak_factory_.GetWeakPtr(), std::move(entry),
                                device_info.guid));

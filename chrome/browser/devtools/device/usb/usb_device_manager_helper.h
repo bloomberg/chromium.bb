@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -60,8 +61,9 @@ class UsbDeviceManagerHelper {
 
   void GetAndroidDevices(AndroidDeviceInfoListCallback callback);
 
-  void GetDevice(const std::string& guid,
-                 device::mojom::UsbDeviceRequest device_request);
+  void GetDevice(
+      const std::string& guid,
+      mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver);
 
  private:
   void CountDevicesInternal(base::OnceCallback<void(int)> callback);

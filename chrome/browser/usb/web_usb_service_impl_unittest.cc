@@ -313,17 +313,18 @@ TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
 
   context->GrantDevicePermission(origin, origin, *device_info);
 
-  device::mojom::UsbDevicePtr device_ptr;
-  web_usb_service->GetDevice(device_info->guid, mojo::MakeRequest(&device_ptr));
+  mojo::Remote<device::mojom::UsbDevice> device;
+  web_usb_service->GetDevice(device_info->guid,
+                             device.BindNewPipeAndPassReceiver());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(device_ptr);
-  device_ptr.set_connection_error_handler(
-      base::BindLambdaForTesting([&]() { device_ptr.reset(); }));
+  EXPECT_TRUE(device);
+  device.set_disconnect_handler(
+      base::BindLambdaForTesting([&]() { device.reset(); }));
 
   auto objects = context->GetGrantedObjects(origin, origin);
   context->RevokeObjectPermission(origin, origin, objects[0]->value);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(device_ptr);
+  EXPECT_FALSE(device);
 }

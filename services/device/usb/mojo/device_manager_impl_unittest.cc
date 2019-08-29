@@ -36,7 +36,6 @@ namespace device {
 using mojom::UsbDeviceInfoPtr;
 using mojom::UsbDeviceManager;
 using mojom::UsbDeviceManagerClientPtr;
-using mojom::UsbDevicePtr;
 using mojom::UsbEnumerationOptionsPtr;
 
 namespace usb {
@@ -153,8 +152,9 @@ TEST_F(USBDeviceManagerImplTest, GetDevice) {
 
   {
     base::RunLoop loop;
-    UsbDevicePtr device;
-    device_manager->GetDevice(mock_device->guid(), mojo::MakeRequest(&device),
+    mojo::Remote<mojom::UsbDevice> device;
+    device_manager->GetDevice(mock_device->guid(),
+                              device.BindNewPipeAndPassReceiver(),
                               /*device_client=*/nullptr);
     // Close is a no-op if the device hasn't been opened but ensures that the
     // pipe was successfully connected.
@@ -162,13 +162,14 @@ TEST_F(USBDeviceManagerImplTest, GetDevice) {
     loop.Run();
   }
 
-  UsbDevicePtr bad_device;
-  device_manager->GetDevice("not a real guid", mojo::MakeRequest(&bad_device),
+  mojo::Remote<mojom::UsbDevice> bad_device;
+  device_manager->GetDevice("not a real guid",
+                            bad_device.BindNewPipeAndPassReceiver(),
                             /*device_client=*/nullptr);
 
   {
     base::RunLoop loop;
-    bad_device.set_connection_error_handler(loop.QuitClosure());
+    bad_device.set_disconnect_handler(loop.QuitClosure());
     loop.Run();
   }
 }
