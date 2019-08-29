@@ -2189,12 +2189,11 @@ void NavigationRequest::CommitErrorPage(
   UpdateCommitNavigationParamsHistory();
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
   // Error pages commit in an opaque origin in the renderer process. If this
-  // NavigationRequest resulted in committing an error page, just clear the
-  // |origin_to_commit| and let the renderer process calculate the origin.
-  // TODO(nasko): Create an opque origin here and pass it for the renderer
-  // to commit into it. Potentially also make it an opaque origin derived from
-  // the error page URL, so it can be checked at DidCommit processing.
-  commit_params_->origin_to_commit.reset();
+  // NavigationRequest resulted in committing an error page, set
+  // |origin_to_commit| to an opaque origin that has precursor information
+  // consistent with the URL being requested.
+  commit_params_->origin_to_commit =
+      url::Origin::Create(common_params_->url).DeriveNewOpaqueOrigin();
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
       request_navigation_client_.is_bound()) {
     if (associated_site_instance_id_ ==
