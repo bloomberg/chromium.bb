@@ -513,7 +513,8 @@ void ContentVerifier::OnExtensionLoaded(
   if (shutdown_on_ui_)
     return;
 
-  if (delegate_->ShouldBeVerified(*extension)) {
+  if (delegate_->GetVerifierSourceType(*extension) ==
+      ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES) {
     base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&ContentVerifier::OnExtensionLoadedOnIO, this,
