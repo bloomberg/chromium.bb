@@ -626,6 +626,11 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_AD_PASSWORD_CHANGE_NEW_PASSWORD_REJECTED_SHORT_ERROR);
   builder->Add("adPassChangePasswordsMismatch",
                IDS_AD_PASSWORD_CHANGE_PASSWORDS_MISMATCH_ERROR);
+
+  builder->Add("securityTokenPinDialogTitle",
+               IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_TITLE);
+  builder->Add("securityTokenPinDialogSubtitle",
+               IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_SUBTITLE);
 }
 
 void GaiaScreenHandler::Initialize() {
