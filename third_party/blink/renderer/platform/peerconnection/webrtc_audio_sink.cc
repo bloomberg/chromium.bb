@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_audio_sink.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_audio_sink.h"
 
 #include <algorithm>
 #include <limits>
@@ -12,10 +12,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
-namespace content {
+namespace blink {
 
 WebRtcAudioSink::WebRtcAudioSink(
     const std::string& label,
@@ -45,7 +44,7 @@ void WebRtcAudioSink::SetAudioProcessor(
 }
 
 void WebRtcAudioSink::SetLevel(
-    scoped_refptr<blink::MediaStreamAudioLevelCalculator::Level> level) {
+    scoped_refptr<MediaStreamAudioLevelCalculator::Level> level) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(level.get());
   adapter_->set_level(std::move(level));
@@ -93,8 +92,7 @@ void WebRtcAudioSink::DeliverRebufferedAudio(const media::AudioBus& audio_bus,
   audio_bus.ToInterleaved<media::SignedInt16SampleTypeTraits>(
       audio_bus.frames(), interleaved_data_.get());
   adapter_->DeliverPCMToWebRtcSinks(interleaved_data_.get(),
-                                    params_.sample_rate(),
-                                    audio_bus.channels(),
+                                    params_.sample_rate(), audio_bus.channels(),
                                     audio_bus.frames());
 }
 
@@ -144,8 +142,8 @@ std::string WebRtcAudioSink::Adapter::kind() const {
 bool WebRtcAudioSink::Adapter::set_enabled(bool enable) {
   DCHECK(!signaling_task_runner_ ||
          signaling_task_runner_->RunsTasksInCurrentSequence());
-  return webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>::
-      set_enabled(enable);
+  return webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>::set_enabled(
+      enable);
 }
 
 void WebRtcAudioSink::Adapter::AddSink(webrtc::AudioTrackSinkInterface* sink) {
@@ -197,4 +195,4 @@ webrtc::AudioSourceInterface* WebRtcAudioSink::Adapter::GetSource() const {
   return source_.get();
 }
 
-}  // namespace content
+}  // namespace blink

@@ -1,3 +1,5 @@
 include_rules = [
     "+media/base/video_codecs.h",
+    "+media/base/audio_parameters.h",
+    "+media/base/audio_push_fifo.h",
 ]
