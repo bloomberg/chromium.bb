@@ -182,6 +182,8 @@ static const size_t kMaximumDepth = 1000;
 // returned but with an 'Invalid' entry; this is used for "multi-entry"
 // indexes where an array with invalid members is permitted will later be
 // sanitized.
+// A V8 exception may be thrown on bad data or by script's getters; if so,
+// callers should not make further V8 calls.
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
@@ -245,6 +247,10 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
       }
       std::unique_ptr<IDBKey> subkey =
           CreateIDBKeyFromValue(isolate, item, stack, exception_state);
+      if (exception_state.HadException()) {
+        exception_state.RethrowV8Exception(block.Exception());
+        return nullptr;
+      }
       if (!subkey)
         subkeys.emplace_back(IDBKey::CreateInvalid());
       else
@@ -265,6 +271,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
 // sanitized. This is used to implement both of the following spec algorithms:
 // https://w3c.github.io/IndexedDB/#convert-value-to-key
 // https://w3c.github.io/IndexedDB/#convert-a-value-to-a-multientry-key
+// A V8 exception may be thrown on bad data or by script's getters; if so,
+// callers should not make further V8 calls.
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
@@ -310,6 +318,8 @@ static Vector<String> ParseKeyPath(const String& key_path) {
 // to a key is representing by returning an 'Invalid' key. (An array with
 // invalid members will be returned if needed.)
 // https://w3c.github.io/IndexedDB/#evaluate-a-key-path-on-a-value
+// A V8 exception may be thrown on bad data or by script's getters; if so,
+// callers should not make further V8 calls.
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     v8::Isolate* isolate,
     v8::Local<v8::Value> v8_value,
@@ -397,6 +407,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
 // paths, nullptr is returned if evaluation of any sub-path fails, otherwise
 // an array key is returned (with potentially 'Invalid' members).
 // https://w3c.github.io/IndexedDB/#evaluate-a-key-path-on-a-value
+// A V8 exception may be thrown on bad data or by script's getters; if so,
+// callers should not make further V8 calls.
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
@@ -411,6 +423,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     for (const String& path : array) {
       auto key = CreateIDBKeyFromValueAndKeyPath(isolate, value, path,
                                                  exception_state);
+      if (exception_state.HadException())
+        return nullptr;
       // Evaluation of path failed - overall failure.
       if (!key)
         return nullptr;

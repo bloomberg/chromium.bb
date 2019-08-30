@@ -60,9 +60,8 @@ struct NativeValueTraits<std::unique_ptr<IDBKey>> {
   // Note that an Array key may contain Invalid members, as the "multi-entry"
   // index case allows these, and will filter them out later. Use IsValid() to
   // recursively check.
-  static std::unique_ptr<IDBKey> NativeValue(v8::Isolate*,
-                                             v8::Local<v8::Value>,
-                                             ExceptionState&);
+  MODULES_EXPORT static std::unique_ptr<IDBKey>
+  NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 
   // Implementation for ScriptValue::To<std::unique_ptr<IDBKey>>().
   //

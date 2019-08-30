@@ -48,6 +48,15 @@ namespace blink {
 
 namespace {
 
+v8::Local<v8::Object> EvaluateScriptAsObject(V8TestingScope& scope,
+                                             const char* source) {
+  v8::Local<v8::Script> script =
+      v8::Script::Compile(scope.GetContext(),
+                          V8String(scope.GetIsolate(), source))
+          .ToLocalChecked();
+  return script->Run(scope.GetContext()).ToLocalChecked().As<v8::Object>();
+}
+
 std::unique_ptr<IDBKey> CheckKeyFromValueAndKeyPathInternal(
     v8::Isolate* isolate,
     const ScriptValue& value,
@@ -225,6 +234,71 @@ TEST(IDBKeyFromValueAndKeyPathTest, SubProperty) {
           .GetScriptValue();
   CheckKeyPathStringValue(isolate, script_value, "foo.bar", "zee");
   CheckKeyPathNullValue(isolate, script_value, "bar");
+}
+
+TEST(IDBKeyFromValue, Exceptions) {
+  V8TestingScope scope;
+  {
+    // Value is an array with a getter that throws.
+    ScriptValue script_value(
+        scope.GetScriptState(),
+        EvaluateScriptAsObject(
+            scope,
+            "(()=>{"
+            "  const a = [0, 1, 2];"
+            "  Object.defineProperty(a, 1, {get: () => { throw Error(); }});"
+            "  return a;"
+            "})()"));
+
+    DummyExceptionStateForTesting exception_state;
+    auto key = ScriptValue::To<std::unique_ptr<IDBKey>>(
+        scope.GetIsolate(), script_value, exception_state);
+    EXPECT_FALSE(key->IsValid());
+    EXPECT_TRUE(exception_state.HadException());
+  }
+  {
+    // Value is an array containing an array with a getter that throws.
+    ScriptValue script_value(
+        scope.GetScriptState(),
+        EvaluateScriptAsObject(
+            scope,
+            "(()=>{"
+            "  const a = [0, 1, 2];"
+            "  Object.defineProperty(a, 1, {get: () => { throw Error(); }});"
+            "  return ['x', a, 'z'];"
+            "})()"));
+
+    DummyExceptionStateForTesting exception_state;
+    auto key = ScriptValue::To<std::unique_ptr<IDBKey>>(
+        scope.GetIsolate(), script_value, exception_state);
+    EXPECT_FALSE(key->IsValid());
+    EXPECT_TRUE(exception_state.HadException());
+  }
+}
+
+TEST(IDBKeyFromValueAndKeyPathTest, Exceptions) {
+  V8TestingScope scope;
+  ScriptValue script_value(
+      scope.GetScriptState(),
+      EvaluateScriptAsObject(scope,
+                             "({id:1, get throws() { throw Error(); }})"));
+  {
+    // Key path references a property that throws.
+    DummyExceptionStateForTesting exception_state;
+    EXPECT_FALSE(ScriptValue::To<std::unique_ptr<IDBKey>>(
+        scope.GetIsolate(), script_value, exception_state,
+        IDBKeyPath("throws")));
+    EXPECT_TRUE(exception_state.HadException());
+  }
+
+  {
+    // Compound key path references a property that throws.
+    DummyExceptionStateForTesting exception_state;
+    EXPECT_FALSE(ScriptValue::To<std::unique_ptr<IDBKey>>(
+        scope.GetIsolate(), script_value, exception_state,
+        IDBKeyPath(Vector<String>{"id", "throws"})));
+    EXPECT_TRUE(exception_state.HadException());
+  }
 }
 
 TEST(InjectIDBKeyTest, ImplicitValues) {
