@@ -435,38 +435,11 @@ def _get_bucket_map(changelist, options, option_parser):
   if options.bucket:
     return {options.bucket: {b: [] for b in options.bot}}
   if options.master:
+    print(
+        'WARNING: "-m <master>" option is deprecated. Use -B <bucket> instead.')
     return {_prefix_master(options.master): {b: [] for b in options.bot}}
-
-  # If bots are listed but no master or bucket, then we need to find out
-  # the corresponding master for each bot.
-  bucket_map, error_message = _get_bucket_map_for_builders(options.bot)
-  if error_message:
-    option_parser.error(
-        'Tryserver master cannot be found because: %s\n'
-        'Please manually specify the tryserver master, e.g. '
-        '"-m tryserver.chromium.linux".' % error_message)
-  return bucket_map
-
-
-def _get_bucket_map_for_builders(builders):
-  """Returns a map of buckets to builders for the given builders."""
-  map_url = 'https://builders-map.appspot.com/'
-  try:
-    builders_map = json.load(urllib2.urlopen(map_url))
-  except urllib2.URLError as e:
-    return None, ('Failed to fetch builder-to-master map from %s. Error: %s.' %
-                  (map_url, e))
-  except ValueError as e:
-    return None, ('Invalid json string from %s. Error: %s.' % (map_url, e))
-  if not builders_map:
-    return None, 'Failed to build master map.'
-
-  bucket_map = {}
-  for builder in builders:
-    bucket = builders_map.get(builder, {}).get('bucket')
-    if bucket:
-      bucket_map.setdefault(bucket, {})[builder] = []
-  return bucket_map, None
+  option_parser.error(
+      'Please specify the bucket, e.g. "-B luci.chromium.try".')
 
 
 def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
