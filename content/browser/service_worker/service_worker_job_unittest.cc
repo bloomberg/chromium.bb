@@ -125,7 +125,8 @@ void RequestTermination(
 class ServiceWorkerJobTest : public testing::Test {
  public:
   ServiceWorkerJobTest()
-      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+                          BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
@@ -2013,6 +2014,87 @@ TEST_P(ServiceWorkerUpdateJobTest, ActivateCancelsOnShutdown) {
   // Dispatch Mojo messages for those Mojo interfaces bound on |runner| to
   // avoid possible memory leak.
   runner->RunUntilIdle();
+}
+
+class WaitForeverInstallWorker : public FakeServiceWorker {
+ public:
+  WaitForeverInstallWorker(EmbeddedWorkerTestHelper* helper)
+      : FakeServiceWorker(helper) {}
+  ~WaitForeverInstallWorker() override = default;
+
+  void DispatchInstallEvent(
+      blink::mojom::ServiceWorker::DispatchInstallEventCallback callback)
+      override {
+    callback_ = std::move(callback);
+  }
+
+ private:
+  blink::mojom::ServiceWorker::DispatchInstallEventCallback callback_;
+};
+
+// Test that the job queue doesn't get stuck by bad workers.
+TEST_F(ServiceWorkerJobTest, TimeoutBadJobs) {
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = GURL("https://www.example.com/");
+
+  // Make a job that gets stuck due to a worker stalled in starting.
+  base::RunLoop loop1;
+  scoped_refptr<ServiceWorkerRegistration> registration1;
+  helper_->AddPendingInstanceClient(
+      std::make_unique<DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get()));
+  job_coordinator()->Register(
+      GURL("https://www.example.com/service_worker1.js"), options,
+      SaveRegistration(blink::ServiceWorkerStatusCode::kErrorTimeout,
+                       &registration1, loop1.QuitClosure()));
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(1));
+
+  // Make a job that gets stuck due to a worker that doesn't finish the install
+  // event. The callback is called with kOk, but the job will be stuck until
+  // the install event times out.
+  base::RunLoop loop2;
+  helper_->AddPendingServiceWorker(
+      std::make_unique<WaitForeverInstallWorker>(helper_.get()));
+  scoped_refptr<ServiceWorkerRegistration> registration2;
+  job_coordinator()->Register(
+      GURL("https://www.example.com/service_worker2.js"), options,
+      SaveRegistration(blink::ServiceWorkerStatusCode::kOk, &registration2,
+                       loop2.QuitClosure()));
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(1));
+
+  // Make a normal job.
+  base::RunLoop loop3;
+  scoped_refptr<ServiceWorkerRegistration> registration3;
+  job_coordinator()->Register(
+      GURL("https://www.example.com/service_worker3.js"), options,
+      SaveRegistration(blink::ServiceWorkerStatusCode::kOk, &registration3,
+                       loop3.QuitClosure()));
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(1));
+
+  // Timeout the first job.
+  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(2));
+  loop1.Run();
+
+  // Let the second job run until the install event is dispatched, then
+  // time out the event.
+  loop2.Run();
+  scoped_refptr<ServiceWorkerVersion> version =
+      registration2->installing_version();
+  ASSERT_TRUE(version);
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLING, version->status());
+  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5));
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version->status());
+
+  // Let the third job finish successfully. It might have already been
+  // progressing so we don't know what state its worker is in, but it will
+  // eventually reach ACTIVATED.
+  loop3.Run();
+  version = registration3->GetNewestVersion();
+  ASSERT_TRUE(version);
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilStatusChange(version.get(), ServiceWorkerVersion::ACTIVATED);
 }
 
 }  // namespace content
