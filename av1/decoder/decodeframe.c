@@ -4540,36 +4540,6 @@ static void reset_ref_frame_map(AV1_COMMON *const cm) {
   }
 }
 
-// Generate next_ref_frame_map.
-static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
-  AV1_COMMON *const cm = &pbi->common;
-  BufferPool *const pool = cm->buffer_pool;
-
-  lock_buffer_pool(pool);
-  // cm->next_ref_frame_map holds references to frame buffers. After storing a
-  // frame buffer index in cm->next_ref_frame_map, we need to increase the
-  // frame buffer's ref_count.
-  int ref_index = 0;
-  for (int mask = cm->current_frame.refresh_frame_flags; mask; mask >>= 1) {
-    if (mask & 1) {
-      cm->next_ref_frame_map[ref_index] = cm->cur_frame;
-    } else {
-      cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
-    }
-    if (cm->next_ref_frame_map[ref_index] != NULL)
-      ++cm->next_ref_frame_map[ref_index]->ref_count;
-    ++ref_index;
-  }
-
-  for (; ref_index < REF_FRAMES; ++ref_index) {
-    cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
-    if (cm->next_ref_frame_map[ref_index] != NULL)
-      ++cm->next_ref_frame_map[ref_index]->ref_count;
-  }
-  unlock_buffer_pool(pool);
-  pbi->hold_ref_buf = 1;
-}
-
 // If the refresh_frame_flags bitmask is set, update reference frame id values
 // and mark frames as valid for reference.
 static void update_ref_frame_id(AV1_COMMON *const cm, int frame_id) {
@@ -4607,22 +4577,11 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   update_ref_frame_id(cm, cm->current_frame_id);
 
   cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
-
-  generate_next_ref_frame_map(pbi);
-
-  // Reload the adapted CDFs from when we originally coded this keyframe
-  *cm->fc = cm->next_ref_frame_map[existing_frame_idx]->frame_context;
 }
 
 static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
   int i;
-
-  // We have not stored any references to frame buffers in
-  // cm->next_ref_frame_map, so we can directly reset it to all NULL.
-  for (i = 0; i < REF_FRAMES; ++i) {
-    cm->next_ref_frame_map[i] = NULL;
-  }
 
   lock_buffer_pool(cm->buffer_pool);
   reset_ref_frame_map(cm);
@@ -4703,9 +4662,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       lock_buffer_pool(pool);
       assert(frame_to_show->ref_count > 0);
       // cm->cur_frame should be the buffer referenced by the return value
-      // of the get_free_fb() call in av1_receive_compressed_data(), and
-      // generate_next_ref_frame_map() has not been called, so ref_count
-      // should still be 1.
+      // of the get_free_fb() call in assign_cur_frame_new_fb() (called by
+      // av1_receive_compressed_data()), so the ref_count should be 1.
       assert(cm->cur_frame->ref_count == 1);
       // assign_frame_buffer_p() decrements ref_count directly rather than
       // call decrease_ref_count(). If cm->cur_frame->raw_frame_buffer has
@@ -5134,8 +5092,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        "Keyframe / intra-only frame required to reset decoder"
                        " state");
   }
-
-  generate_next_ref_frame_map(pbi);
 
   if (cm->allow_intrabc) {
     // Set parameters corresponding to no filtering.

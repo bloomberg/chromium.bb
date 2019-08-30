@@ -115,7 +115,6 @@ typedef struct RefCntBuffer {
   // - cm->ref_frame_map[]
   // - cm->cur_frame
   // - cm->scaled_ref_buf[] (encoder only)
-  // - cm->next_ref_frame_map[] (decoder only)
   // - pbi->output_frame_index[] (decoder only)
   // With that definition, 'ref_count' is the number of reference-holding
   // variables that are currently referencing this buffer.
@@ -362,9 +361,6 @@ typedef struct AV1Common {
   // a pointer to the buffer in the buffer pool 'cm->buffer_pool.frame_bufs'.
   RefCntBuffer *ref_frame_map[REF_FRAMES];
 
-  // Prepare ref_frame_map for the next frame.
-  // Only used in frame parallel decode.
-  RefCntBuffer *next_ref_frame_map[REF_FRAMES];
   FRAME_TYPE last_frame_type; /* last frame's frame type for motion search.*/
 
   int show_frame;
