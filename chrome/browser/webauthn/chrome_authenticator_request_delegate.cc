@@ -232,6 +232,19 @@ bool ChromeAuthenticatorRequestDelegate::SupportsResidentKeys() {
   return true;
 }
 
+bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
+    const url::Origin& origin) {
+  return true;
+}
+
+bool ChromeAuthenticatorRequestDelegate::SetCableTransportInfo(
+    bool cable_extension_provided,
+    base::Optional<device::QRGeneratorKey> qr_generator_key) {
+  weak_dialog_model_->set_cable_transport_info(cable_extension_provided,
+                                               std::move(qr_generator_key));
+  return true;
+}
+
 void ChromeAuthenticatorRequestDelegate::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,
     base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>

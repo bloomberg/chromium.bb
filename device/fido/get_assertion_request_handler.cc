@@ -186,8 +186,6 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
       FidoRequestHandlerBase::RequestType::kGetAssertion;
   transport_availability_info().has_empty_allow_list =
       request_.allow_list.empty();
-  transport_availability_info().cable_pairing_data_supplied =
-      static_cast<bool>(request_.cable_extension);
 
   if (request_.allow_list.empty()) {
     // Resident credential requests always involve user verification.

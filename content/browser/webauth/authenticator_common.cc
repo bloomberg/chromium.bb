@@ -493,7 +493,8 @@ base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags() {
   }
 
   // caBLE is independent of the BLE transport.
-  if (base::FeatureList::IsEnabled(features::kWebAuthCable)) {
+  if (base::FeatureList::IsEnabled(features::kWebAuthCable) ||
+      base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
     transports.insert(
         device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
@@ -555,6 +556,15 @@ void AuthenticatorCommon::StartMakeCredentialRequest() {
   if (!discovery_factory)
     discovery_factory = request_delegate_->GetDiscoveryFactory();
 
+  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    device::QRGeneratorKey qr_generator_key(
+        device::CableDiscoveryData::NewQRKey());
+    if (request_delegate_->SetCableTransportInfo(
+            /*cable_extension_provided=*/false, qr_generator_key)) {
+      discovery_factory->set_cable_data({}, std::move(qr_generator_key));
+    }
+  }
+
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
       connector_, discovery_factory, GetTransports(caller_origin_, transports_),
       *ctap_make_credential_request_, *authenticator_selection_criteria_,
@@ -589,9 +599,22 @@ void AuthenticatorCommon::StartGetAssertionRequest() {
   if (!discovery_factory)
     discovery_factory = request_delegate_->GetDiscoveryFactory();
 
-  if (ctap_get_assertion_request_->cable_extension) {
-    discovery_factory->set_cable_data(
-        *ctap_get_assertion_request_->cable_extension);
+  std::vector<device::CableDiscoveryData> cable_extension;
+  if (ctap_get_assertion_request_->cable_extension &&
+      request_delegate_->ShouldPermitCableExtension(caller_origin_)) {
+    cable_extension = *ctap_get_assertion_request_->cable_extension;
+  }
+
+  base::Optional<device::QRGeneratorKey> qr_generator_key;
+  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    qr_generator_key.emplace(device::CableDiscoveryData::NewQRKey());
+  }
+
+  if ((!cable_extension.empty() || qr_generator_key.has_value()) &&
+      request_delegate_->SetCableTransportInfo(!cable_extension.empty(),
+                                               qr_generator_key)) {
+    discovery_factory->set_cable_data(std::move(cable_extension),
+                                      std::move(qr_generator_key));
   }
 
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
