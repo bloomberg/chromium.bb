@@ -131,10 +131,14 @@ RootCompositorFrameSinkImpl::Create(
       std::move(synthetic_begin_frame_source),
       std::move(external_begin_frame_source), std::move(display)));
 
-  // TODO(kylechar): For the cases where we expect browser to providing vsync
-  // parameter updates over mojo we shouldn't create |update_vsync_callback|.
-  // I think this is always the case on mac.
-  if (impl->synthetic_begin_frame_source_) {
+#if defined(OS_MACOSX)
+  // On Mac vsync parameter updates come from the browser process. We don't need
+  // to provide a callback to the OutputSurface since it should never use it.
+  constexpr bool wants_vsync_updates = false;
+#else
+  constexpr bool wants_vsync_updates = true;
+#endif
+  if (wants_vsync_updates && impl->synthetic_begin_frame_source_) {
     // |impl| owns and outlives display, and display owns the output surface so
     // unretained is safe.
     output_surface_ptr->SetUpdateVSyncParametersCallback(base::BindRepeating(
