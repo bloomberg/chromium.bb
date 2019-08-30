@@ -8,25 +8,30 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.annotation.IntDef;
+import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 
 /**
- * A {@link TabGridViewHolder} with a close button. This is used in the Grid Tab Switcher.
+ * A view used in the grid tab switcher recycler view that caches commonly used views and handles
+ * button setup and animation.
  */
-class ClosableTabGridViewHolder extends TabGridViewHolder {
-    public static final long RESTORE_ANIMATION_DURATION_MS = 50;
-    public static final float ZOOM_IN_SCALE = 0.8f;
+public class ClosableTabGridView extends ViewLookupCachingFrameLayout {
+    private static final long RESTORE_ANIMATION_DURATION_MS = 50;
+    private static final float ZOOM_IN_SCALE = 0.8f;
     @IntDef({AnimationStatus.SELECTED_CARD_ZOOM_IN, AnimationStatus.SELECTED_CARD_ZOOM_OUT,
             AnimationStatus.HOVERED_CARD_ZOOM_IN, AnimationStatus.HOVERED_CARD_ZOOM_OUT,
             AnimationStatus.CARD_RESTORE})
@@ -43,18 +48,25 @@ class ClosableTabGridViewHolder extends TabGridViewHolder {
     private static WeakReference<Bitmap> sCloseButtonBitmapWeakRef;
     private boolean mIsAnimating;
 
-    ClosableTabGridViewHolder(View itemView) {
-        super(itemView);
+    /** Default XML constructor. */
+    public ClosableTabGridView(Context context, AttributeSet atts) {
+        super(context, atts);
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+
+        ImageView actionButton = (ImageView) fastFindViewById(R.id.action_button);
+
         if (sCloseButtonBitmapWeakRef == null || sCloseButtonBitmapWeakRef.get() == null) {
             int closeButtonSize =
-                    (int) itemView.getResources().getDimension(R.dimen.tab_grid_close_button_size);
-            Bitmap bitmap =
-                    BitmapFactory.decodeResource(itemView.getResources(), R.drawable.btn_close);
+                    (int) getResources().getDimension(R.dimen.tab_grid_close_button_size);
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.btn_close);
             sCloseButtonBitmapWeakRef = new WeakReference<>(
                     Bitmap.createScaledBitmap(bitmap, closeButtonSize, closeButtonSize, true));
             bitmap.recycle();
         }
-
         actionButton.setImageBitmap(sCloseButtonBitmapWeakRef.get());
     }
 
@@ -66,10 +78,9 @@ class ClosableTabGridViewHolder extends TabGridViewHolder {
     void scaleTabGridCardView(@AnimationStatus int status, boolean isSelected) {
         assert status < AnimationStatus.NUM_ENTRIES;
 
-        View view = itemView;
-        final View backgroundView = view.findViewById(R.id.background_view);
-        final View contentView = view.findViewById(R.id.content_view);
-        final View selectedViewBelowLollipop = view.findViewById(R.id.selected_view_below_lollipop);
+        final View backgroundView = fastFindViewById(R.id.background_view);
+        final View contentView = fastFindViewById(R.id.content_view);
+        final View selectedViewBelowLollipop = fastFindViewById(R.id.selected_view_below_lollipop);
         boolean isZoomIn = status == AnimationStatus.SELECTED_CARD_ZOOM_IN
                 || status == AnimationStatus.HOVERED_CARD_ZOOM_IN;
         boolean isHovered = status == AnimationStatus.HOVERED_CARD_ZOOM_IN
@@ -78,7 +89,7 @@ class ClosableTabGridViewHolder extends TabGridViewHolder {
         long duration = isRestore ? RESTORE_ANIMATION_DURATION_MS
                                   : TabListRecyclerView.BASE_ANIMATION_DURATION_MS;
         float scale = isZoomIn ? ZOOM_IN_SCALE : 1f;
-        View animateView = isHovered ? contentView : view;
+        View animateView = isHovered ? contentView : this;
 
         if (status == AnimationStatus.HOVERED_CARD_ZOOM_IN) {
             backgroundView.setVisibility(View.VISIBLE);
@@ -99,8 +110,8 @@ class ClosableTabGridViewHolder extends TabGridViewHolder {
             }
         });
 
-        ObjectAnimator scaleX = ObjectAnimator.ofFloat(animateView, "scaleX", scale);
-        ObjectAnimator scaleY = ObjectAnimator.ofFloat(animateView, "scaleY", scale);
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(animateView, View.SCALE_X, scale);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(animateView, View.SCALE_Y, scale);
         scaleX.setDuration(duration);
         scaleY.setDuration(duration);
         scaleAnimator.play(scaleX).with(scaleY);

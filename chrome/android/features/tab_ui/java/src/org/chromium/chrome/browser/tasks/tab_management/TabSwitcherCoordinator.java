@@ -110,10 +110,11 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                     R.plurals.bottom_tab_grid_title_placeholder, numRelatedTabs, numRelatedTabs);
         };
 
-        mTabListCoordinator = new TabListCoordinator(mode, context, tabModelSelector,
-                mMultiThumbnailCardProvider, titleProvider, true,
-                mMediator::getCreateGroupButtonOnClickListener, mMediator, null, null, null,
-                container, dynamicResourceLoader, true, COMPONENT_NAME);
+        mTabListCoordinator =
+                new TabListCoordinator(mode, context, tabModelSelector, mMultiThumbnailCardProvider,
+                        titleProvider, true, mMediator::getCreateGroupButtonOnClickListener,
+                        mMediator, null, TabProperties.UiType.CLOSABLE, null, container,
+                        dynamicResourceLoader, true, COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 

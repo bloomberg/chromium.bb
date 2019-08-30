@@ -58,8 +58,8 @@ class TabSelectionEditorCoordinator {
         mTabModelSelector = tabModelSelector;
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 mTabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false,
-                null, null, null, this::getItemViewType, this::getSelectionDelegate, null, null,
-                false, COMPONENT_NAME);
+                null, null, null, TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, null,
+                null, false, COMPONENT_NAME);
 
         mTabSelectionEditorLayout = LayoutInflater.from(context)
                 .inflate(R.layout.tab_selection_editor_layout, null)
@@ -80,13 +80,6 @@ class TabSelectionEditorCoordinator {
      */
     SelectionDelegate<Integer> getSelectionDelegate() {
         return mSelectionDelegate;
-    }
-
-    /**
-     * Gets the view type for each item in the list.
-     */
-    int getItemViewType(PropertyModel item) {
-        return TabGridViewHolder.TabGridViewItemType.SELECTABLE_TAB;
     }
 
     /**
