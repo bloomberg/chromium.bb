@@ -210,14 +210,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setCreditCardNumber:(NSString*)cardNumber
             expirationMonth:(NSString*)expirationMonth
              expirationYear:(NSString*)expirationYear {
-  self.cardNumber = cardNumber;
-  self.expirationMonth = expirationMonth;
-  self.expirationYear = expirationYear;
+  if (cardNumber) {
+    [self updateCellForItemType:ItemTypeCardNumber
+            inSectionIdentifier:SectionIdentifierCreditCardDetails
+                       withText:cardNumber];
+  }
 
-  // TODO(crbug.com/984545): Update each tableview cell independently.
-  // Reload the model.
-  [self loadModel];
-  [self.tableView reloadData];
+  if (expirationMonth) {
+    [self updateCellForItemType:ItemTypeExpirationMonth
+            inSectionIdentifier:SectionIdentifierCreditCardDetails
+                       withText:expirationMonth];
+  }
+
+  if (expirationYear) {
+    [self updateCellForItemType:ItemTypeExpirationYear
+            inSectionIdentifier:SectionIdentifierCreditCardDetails
+                       withText:expirationYear];
+  }
 }
 
 #pragma mark - Private
@@ -262,6 +271,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.tableViewModel itemAtIndexPath:path]);
   NSString* text = item.textFieldValue;
   return text;
+}
+
+// Updates TableView cell of |itemType| in |sectionIdentifier| textfieldValue
+// with |text|.
+- (void)updateCellForItemType:(NSInteger)itemType
+          inSectionIdentifier:(NSInteger)sectionIdentifier
+                     withText:(NSString*)text {
+  NSIndexPath* path =
+      [self.tableViewModel indexPathForItemType:itemType
+                              sectionIdentifier:sectionIdentifier];
+  AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
+      [self.tableViewModel itemAtIndexPath:path]);
+  item.textFieldValue = text;
+  [self reconfigureCellsForItems:@[ item ]];
 }
 
 // Dimisses this view controller when Cancel button is tapped.
