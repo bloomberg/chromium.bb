@@ -2089,8 +2089,7 @@ TEST_F(NetworkContextTest, ClearEmptyNetworkErrorLoggingWithNoService) {
 void SetCookieCallback(base::RunLoop* run_loop,
                        bool* result_out,
                        net::CanonicalCookie::CookieInclusionStatus result) {
-  *result_out =
-      (result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  *result_out = result.IsInclude();
   run_loop->Quit();
 }
 

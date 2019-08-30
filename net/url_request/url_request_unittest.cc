@@ -8430,15 +8430,14 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     ASSERT_EQ(3u, req->maybe_stored_cookies().size());
     EXPECT_EQ("not_stored_cookie",
               req->maybe_stored_cookies()[0].cookie->Name());
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        req->maybe_stored_cookies()[0].status);
+    EXPECT_TRUE(req->maybe_stored_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
     EXPECT_EQ("stored_cookie", req->maybe_stored_cookies()[1].cookie->Name());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              req->maybe_stored_cookies()[1].status);
+    EXPECT_TRUE(req->maybe_stored_cookies()[1].status.IsInclude());
     EXPECT_EQ("stored_cookie", req->maybe_stored_cookies()[1].cookie->Name());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              req->maybe_stored_cookies()[2].status);
+    EXPECT_TRUE(req->maybe_stored_cookies()[2].status.IsInclude());
     EXPECT_EQ("path_cookie", req->maybe_stored_cookies()[2].cookie->Name());
   }
   {
@@ -8456,12 +8455,17 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
 
     ASSERT_EQ(2u, req->maybe_sent_cookies().size());
     EXPECT_EQ("path_cookie", req->maybe_sent_cookies()[0].cookie.Name());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
-              req->maybe_sent_cookies()[0].status);
+    EXPECT_TRUE(req->maybe_sent_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_NOT_ON_PATH,
+                         net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
     EXPECT_EQ("stored_cookie", req->maybe_sent_cookies()[1].cookie.Name());
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        req->maybe_sent_cookies()[1].status);
+    EXPECT_TRUE(req->maybe_sent_cookies()[1]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
   }
 
   network_delegate.unset_block_get_cookies();
@@ -8480,11 +8484,12 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
 
     ASSERT_EQ(2u, req->maybe_sent_cookies().size());
     EXPECT_EQ("path_cookie", req->maybe_sent_cookies()[0].cookie.Name());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
-              req->maybe_sent_cookies()[0].status);
+    EXPECT_TRUE(req->maybe_sent_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_NOT_ON_PATH}));
     EXPECT_EQ("stored_cookie", req->maybe_sent_cookies()[1].cookie.Name());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              req->maybe_sent_cookies()[1].status);
+    EXPECT_TRUE(req->maybe_sent_cookies()[1].status.IsInclude());
   }
 }
 
@@ -8510,9 +8515,10 @@ TEST_F(URLRequestTestHTTP, AuthChallengeCancelCookieCollect) {
 
   delegate.RunUntilAuthRequired();
   ASSERT_EQ(1u, request->maybe_stored_cookies().size());
-  EXPECT_EQ(
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-      request->maybe_stored_cookies()[0].status);
+  EXPECT_TRUE(request->maybe_stored_cookies()[0]
+                  .status.HasExactlyExclusionReasonsForTesting(
+                      {net::CanonicalCookie::CookieInclusionStatus::
+                           EXCLUDE_USER_PREFERENCES}));
   EXPECT_EQ("got_challenged=true",
             request->maybe_stored_cookies()[0].cookie_string);
 
@@ -8552,9 +8558,11 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
 
     // The number of cookies blocked from the most recent round trip.
     ASSERT_EQ(1u, request->maybe_stored_cookies().size());
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        request->maybe_stored_cookies().front().status);
+    EXPECT_TRUE(request->maybe_stored_cookies()
+                    .front()
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
 
     // Now check the second round trip
     request->SetAuth(AuthCredentials(kUser, kSecret));
@@ -8605,9 +8613,11 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     EXPECT_EQ("another_cookie",
               request->maybe_sent_cookies().front().cookie.Name());
     EXPECT_EQ("true", request->maybe_sent_cookies().front().cookie.Value());
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        request->maybe_sent_cookies().front().status);
+    EXPECT_TRUE(request->maybe_sent_cookies()
+                    .front()
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
 
     // Check maybe_sent_cookies on second roundtrip.
     request->set_maybe_sent_cookies({});
@@ -8637,9 +8647,11 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     ASSERT_EQ(1u, request->maybe_sent_cookies().size());
     EXPECT_EQ("one_more_cookie",
               request->maybe_sent_cookies().front().cookie.Name());
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        request->maybe_sent_cookies().front().status);
+    EXPECT_TRUE(request->maybe_sent_cookies()
+                    .front()
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
   }
 }
 
@@ -8951,9 +8963,11 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     EXPECT_EQ("server-redirect",
               request->maybe_stored_cookies().front().cookie->Name());
     EXPECT_EQ("true", request->maybe_stored_cookies().front().cookie->Value());
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        request->maybe_stored_cookies().front().status);
+    EXPECT_TRUE(request->maybe_stored_cookies()
+                    .front()
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
 
     // Check maybe_stored_cookies on second round trip (and clearing from the
     // first).
@@ -8972,9 +8986,11 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     EXPECT_EQ("server-redirect",
               request->maybe_stored_cookies().front().cookie->Name());
     EXPECT_EQ("other", request->maybe_stored_cookies().front().cookie->Value());
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        request->maybe_stored_cookies().front().status);
+    EXPECT_TRUE(request->maybe_stored_cookies()
+                    .front()
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
   }
 
   // Check maybe_sent_cookies on first round trip.
@@ -9008,9 +9024,11 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     ASSERT_EQ(1u, request->maybe_sent_cookies().size());
     EXPECT_EQ("another_cookie",
               request->maybe_sent_cookies().front().cookie.Name());
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        request->maybe_sent_cookies().front().status);
+    EXPECT_TRUE(request->maybe_sent_cookies()
+                    .front()
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
 
     // Check maybe_sent_cookies on second round trip
     request->set_maybe_sent_cookies({});
@@ -9036,9 +9054,11 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     EXPECT_EQ("one_more_cookie",
               request->maybe_sent_cookies().front().cookie.Name());
     EXPECT_EQ("true", request->maybe_sent_cookies().front().cookie.Value());
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        request->maybe_sent_cookies().front().status);
+    EXPECT_TRUE(request->maybe_sent_cookies()
+                    .front()
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
   }
 }
 
