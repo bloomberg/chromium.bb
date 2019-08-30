@@ -236,6 +236,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
         entry->type, entry->guid, entry->schedule_params.impression_mapping,
         updated_notification_data->custom_data);
 
+    stats::LogNotificationShow(*updated_notification_data, entry->type);
+
     // Show the notification in UI.
     auto system_data = std::make_unique<DisplayAgent::SystemData>();
     system_data->type = entry->type;
