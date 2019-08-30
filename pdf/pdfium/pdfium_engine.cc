@@ -699,7 +699,7 @@ void PDFiumEngine::FinishLoadingDocument() {
     if (pages_[i]->available())
       continue;
 
-    pages_[i]->set_available(true);
+    pages_[i]->MarkAvailable();
     // We still need to call IsPageAvail() even if the whole document is
     // already downloaded.
     FPDFAvail_IsPageAvail(fpdf_availability(), i, &download_hints);
@@ -2255,8 +2255,8 @@ void PDFiumEngine::AppendBlankPages(size_t num_pages) {
                                             page_0_height_in_points));
     }
 
-    auto page =
-        std::make_unique<PDFiumPage>(this, i, pp::Rect(), /*available=*/true);
+    auto page = std::make_unique<PDFiumPage>(this, i);
+    page->MarkAvailable();
     pages_.push_back(std::move(page));
   }
 
@@ -2367,16 +2367,20 @@ void PDFiumEngine::ApplyCurrentLayoutToPages(bool reload) {
   for (size_t i = 0; i < layout_.page_count(); ++i) {
     const pp::Rect& page_rect = layout_.page_bounds_rect(i);
     if (!reload) {
-      // The page is marked as not being available even if |doc_complete| is
+      // The page is not marked as being available even if |doc_complete| is
       // true because FPDFAvail_IsPageAvail() still has to be called for this
       // page, which will be done in FinishLoadingDocument().
-      pages_.push_back(std::make_unique<PDFiumPage>(this, i, page_rect, false));
+      auto page = std::make_unique<PDFiumPage>(this, i);
+      page->set_rect(page_rect);
+      pages_.push_back(std::move(page));
     } else if (i < pages_.size()) {
       pages_[i]->set_rect(page_rect);
     } else {
-      bool available = FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr);
-      pages_.push_back(
-          std::make_unique<PDFiumPage>(this, i, page_rect, available));
+      auto page = std::make_unique<PDFiumPage>(this, i);
+      page->set_rect(page_rect);
+      if (FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr))
+        page->MarkAvailable();
+      pages_.push_back(std::move(page));
     }
   }
 }
@@ -2578,7 +2582,7 @@ bool PDFiumEngine::CheckPageAvailable(int index, std::vector<int>* pending) {
   }
 
   if (index < num_pages)
-    pages_[index]->set_available(true);
+    pages_[index]->MarkAvailable();
   if (default_page_size_.IsEmpty())
     default_page_size_ = GetPageSize(index);
   return true;
