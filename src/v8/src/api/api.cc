@@ -10270,6 +10270,16 @@ void EmbedderHeapTracer::IterateTracedGlobalHandles(
   isolate->global_handles()->IterateTracedNodes(visitor);
 }
 
+#if defined(COMPONENT_BUILD)
+void EmbedderHeapTracer::TracePrologue() {}
+
+void EmbedderHeapTracer::TraceEpilogue() {}
+
+void EmbedderHeapTracer::TraceEpilogue(TraceSummary* trace_summary) {
+  TraceEpilogue();
+}
+#endif
+
 namespace internal {
 
 const size_t HandleScopeImplementer::kEnteredContextsOffset =
