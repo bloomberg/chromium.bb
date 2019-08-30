@@ -105,7 +105,7 @@ set_aom_config_var(CONFIG_INSPECTION 0 NUMBER "Enables bitstream inspection.")
 set_aom_config_var(CONFIG_INTERNAL_STATS 0 NUMBER
                    "Enables internal encoder stats.")
 set_aom_config_var(FORCE_HIGHBITDEPTH_DECODING 0 NUMBER
-                   "Force high bitdepth pipeline decoding on 8-bit input.")
+                   "Force high bitdepth decoding pipeline on 8-bit input.")
 mark_as_advanced(FORCE_HIGHBITDEPTH_DECODING)
 set_aom_config_var(CONFIG_MAX_DECODE_PROFILE 2 NUMBER
                    "Max profile to support decoding.")
