@@ -843,8 +843,7 @@
         "args": [
           "--disable-field-trials",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_nougat.filter"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
