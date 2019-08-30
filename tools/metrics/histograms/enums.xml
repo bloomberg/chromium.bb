@@ -60071,9 +60071,9 @@ Full version information for the fingerprint enum values:
 
 <enum name="UpdateEngineDownloadErrorCode">
   <int value="0" label="Download Error"/>
-  <int value="97" label="libcurl recovered from unresolved host error"/>
-  <int value="98" label="libcurl unresolved host error"/>
-  <int value="99" label="libcurl HTTP request internal error"/>
+  <int value="97" label="libcurl Recovered From Unresolved Host Error"/>
+  <int value="98" label="libcurl Unresolved Host Error"/>
+  <int value="99" label="libcurl HTTP Request Internal Error"/>
   <int value="100" label="Input Malformed (Internal Error)"/>
   <int value="101" label="Unknown HTTP Status (not 200-599)"/>
   <int value="400" label="Bad Request (HTTP Status 400)"/>
@@ -60168,6 +60168,10 @@ Full version information for the fingerprint enum values:
   <int value="53" label="kErrorCodeNoUpdate"/>
   <int value="54" label="kErrorCodeRollbackNotPossible"/>
   <int value="55" label="kErrorCodeFirstActiveOmahaPingSentPersistenceError"/>
+  <int value="56" label="kErrorCodeVerityCalculationError"/>
+  <int value="57" label="kErrorCodeInternalLibCurlError"/>
+  <int value="58" label="kErrorCodeUnresolvedHostError"/>
+  <int value="59" label="kErrorCodeUnresolvedHostRecovered"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource">
