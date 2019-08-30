@@ -191,17 +191,29 @@ bool IsSmallScreen(const gfx::Size& size) {
 
 class WebWidgetLockTarget : public content::MouseLockDispatcher::LockTarget {
  public:
-  explicit WebWidgetLockTarget(blink::WebWidget* webwidget)
-      : webwidget_(webwidget) {}
+  explicit WebWidgetLockTarget(RenderWidget* render_widget)
+      : render_widget_(render_widget) {}
 
   void OnLockMouseACK(bool succeeded) override {
+    // TODO(https://crbug.com/995981): Once RenderWidget and WebWidget lifetimes
+    // are synchronized, we should remove these conditionals.
+    WebWidget* web_widget = render_widget_->GetWebWidget();
+    if (!web_widget)
+      return;
+
     if (succeeded)
-      webwidget_->DidAcquirePointerLock();
+      web_widget->DidAcquirePointerLock();
     else
-      webwidget_->DidNotAcquirePointerLock();
+      web_widget->DidNotAcquirePointerLock();
   }
 
-  void OnMouseLockLost() override { webwidget_->DidLosePointerLock(); }
+  void OnMouseLockLost() override {
+    WebWidget* web_widget = render_widget_->GetWebWidget();
+    if (!web_widget)
+      return;
+
+    web_widget->DidLosePointerLock();
+  }
 
   bool HandleMouseLockedInputEvent(const blink::WebMouseEvent& event) override {
     // The WebWidget handles mouse lock in Blink's handleInputEvent().
@@ -209,7 +221,8 @@ class WebWidgetLockTarget : public content::MouseLockDispatcher::LockTarget {
   }
 
  private:
-  blink::WebWidget* webwidget_;
+  // The RenderWidget owns this instance and is guaranteed to outlive it.
+  RenderWidget* render_widget_;
 };
 
 class ScopedUkmRafAlignedInputTimer {
@@ -559,8 +572,7 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   show_callback_ = std::move(show_callback);
 
   webwidget_internal_ = web_widget;
-  webwidget_mouse_lock_target_.reset(
-      new WebWidgetLockTarget(webwidget_internal_));
+  webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(this));
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
   RenderThread::Get()->AddRoute(routing_id_, this);
