@@ -315,6 +315,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAreaCrash) {
   RunHtmlTest(FILE_PATH_LITERAL("area-crash.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAreaSerializationCrash) {
+  RunHtmlTest(FILE_PATH_LITERAL("area-serialization-crash.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAName) {
   RunHtmlTest(FILE_PATH_LITERAL("a-name.html"));
 }
