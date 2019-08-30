@@ -17,10 +17,10 @@
 namespace blink {
 
 WebIDBDatabaseImpl::WebIDBDatabaseImpl(
-    mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
+    mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)) {
-  database_.Bind(std::move(database_info), task_runner_);
+  database_.Bind(std::move(pending_database), task_runner_);
 }
 
 WebIDBDatabaseImpl::~WebIDBDatabaseImpl() = default;

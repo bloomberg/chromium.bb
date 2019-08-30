@@ -30,7 +30,7 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   IndexedDBDatabaseCallbacks(
       scoped_refptr<IndexedDBContextImpl> context,
       mojo::PendingAssociatedRemote<blink::mojom::IDBDatabaseCallbacks>
-          pending_callbacks,
+          callbacks_remote,
       base::SequencedTaskRunner* idb_runner);
 
   virtual void OnForcedClose();

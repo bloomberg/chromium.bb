@@ -89,9 +89,10 @@ void IndexedDBDispatcherHost::AddBinding(
 
 void IndexedDBDispatcherHost::AddDatabaseBinding(
     std::unique_ptr<blink::mojom::IDBDatabase> database,
-    blink::mojom::IDBDatabaseAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<blink::mojom::IDBDatabase>
+        pending_receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  database_bindings_.AddBinding(std::move(database), std::move(request));
+  database_receivers_.Add(std::move(database), std::move(pending_receiver));
 }
 
 mojo::PendingAssociatedRemote<blink::mojom::IDBCursor>
@@ -166,7 +167,7 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
 void IndexedDBDispatcherHost::Open(
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
     mojo::PendingAssociatedRemote<blink::mojom::IDBDatabaseCallbacks>
-        pending_database_callbacks,
+        database_callbacks_remote,
     const base::string16& name,
     int64_t version,
     mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
@@ -180,7 +181,7 @@ void IndexedDBDispatcherHost::Open(
                              std::move(callbacks_info), IDBTaskRunner()));
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks(
       new IndexedDBDatabaseCallbacks(indexed_db_context_,
-                                     std::move(pending_database_callbacks),
+                                     std::move(database_callbacks_remote),
                                      IDBTaskRunner()));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
@@ -250,7 +251,7 @@ void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   weak_factory_.InvalidateWeakPtrs();
   cursor_receivers_.Clear();
-  database_bindings_.CloseAllBindings();
+  database_receivers_.Clear();
   transaction_receivers_.Clear();
 }
 

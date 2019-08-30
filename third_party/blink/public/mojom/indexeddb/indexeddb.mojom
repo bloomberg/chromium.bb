@@ -231,10 +231,12 @@ interface IDBCallbacks {
   Blocked(int64 existing_version);
 
   // Factory::Open
-  UpgradeNeeded(associated IDBDatabase database, int64 old_version,
-                IDBDataLoss data_loss, string data_loss_message,
-                IDBDatabaseMetadata db_metadata);
-  SuccessDatabase(associated IDBDatabase? database,
+  UpgradeNeeded(pending_associated_remote<IDBDatabase> pending_database,
+                int64 old_version, IDBDataLoss data_loss,
+                string data_loss_message, IDBDatabaseMetadata db_metadata);
+
+  // Factory::Open
+  SuccessDatabase(pending_associated_remote<IDBDatabase>? pending_database,
                   IDBDatabaseMetadata metadata);
 
   // Database::Count / DeleteRange
@@ -417,7 +419,7 @@ interface IDBFactory {
   GetDatabaseInfo(associated IDBCallbacks callbacks);
   GetDatabaseNames(associated IDBCallbacks callbacks);
   Open(associated IDBCallbacks callbacks,
-       pending_associated_remote<IDBDatabaseCallbacks> pending_database_callbacks,
+       pending_associated_remote<IDBDatabaseCallbacks> database_callbacks,
        mojo_base.mojom.String16 name,
        int64 version,
        pending_associated_receiver<IDBTransaction> version_change_transaction_receiver,

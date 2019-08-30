@@ -74,14 +74,12 @@ WebIDBFactoryImpl::GetCallbacksProxy(
 
 mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks>
 WebIDBFactoryImpl::GetDatabaseCallbacksProxy(
-    std::unique_ptr<IndexedDBDatabaseCallbacksImpl> database_callbacks_impl) {
-  mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks>
-      pending_database_callbacks;
+    std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks) {
+  mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks> remote;
   mojo::MakeSelfOwnedAssociatedReceiver(
-      std::move(database_callbacks_impl),
-      pending_database_callbacks.InitWithNewEndpointAndPassReceiver(),
+      std::move(callbacks), remote.InitWithNewEndpointAndPassReceiver(),
       task_runner_);
-  return pending_database_callbacks;
+  return remote;
 }
 
 }  // namespace blink

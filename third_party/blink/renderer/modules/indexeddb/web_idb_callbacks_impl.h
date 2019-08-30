@@ -75,8 +75,9 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
   void SuccessCursorPrefetch(Vector<std::unique_ptr<IDBKey>> keys,
                              Vector<std::unique_ptr<IDBKey>> primary_keys,
                              Vector<std::unique_ptr<IDBValue>> values) override;
-  void SuccessDatabase(mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
-                       const IDBDatabaseMetadata& metadata) override;
+  void SuccessDatabase(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,
+      const IDBDatabaseMetadata& metadata) override;
   void SuccessKey(std::unique_ptr<IDBKey>) override;
   void SuccessValue(mojom::blink::IDBReturnValuePtr) override;
   void SuccessArray(Vector<mojom::blink::IDBReturnValuePtr>) override;
@@ -87,11 +88,12 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
       std::unique_ptr<IDBKey> primary_key,
       base::Optional<std::unique_ptr<IDBValue>>) override;
   void Blocked(int64_t old_version) override;
-  void UpgradeNeeded(mojom::blink::IDBDatabaseAssociatedPtrInfo,
-                     int64_t old_version,
-                     mojom::IDBDataLoss data_loss,
-                     const String& data_loss_message,
-                     const IDBDatabaseMetadata&) override;
+  void UpgradeNeeded(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,
+      int64_t old_version,
+      mojom::IDBDataLoss data_loss,
+      const String& data_loss_message,
+      const IDBDatabaseMetadata&) override;
   void DetachRequestFromCallback() override;
 
  private:

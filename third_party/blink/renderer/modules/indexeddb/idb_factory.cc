@@ -149,8 +149,9 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     NOTREACHED();
   }
 
-  void SuccessDatabase(mojom::blink::IDBDatabaseAssociatedPtrInfo backend,
-                       const IDBDatabaseMetadata& metadata) override {
+  void SuccessDatabase(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_backend,
+      const IDBDatabaseMetadata& metadata) override {
     NOTREACHED();
   }
 
@@ -177,11 +178,12 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
 
   void Blocked(int64_t old_version) override { NOTREACHED(); }
 
-  void UpgradeNeeded(mojom::blink::IDBDatabaseAssociatedPtrInfo database,
-                     int64_t old_version,
-                     mojom::IDBDataLoss data_loss,
-                     const String& data_loss_message,
-                     const IDBDatabaseMetadata& metadata) override {
+  void UpgradeNeeded(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,
+      int64_t old_version,
+      mojom::IDBDataLoss data_loss,
+      const String& data_loss_message,
+      const IDBDatabaseMetadata& metadata) override {
     NOTREACHED();
   }
 

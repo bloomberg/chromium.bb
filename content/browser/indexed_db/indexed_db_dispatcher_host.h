@@ -21,9 +21,9 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 #include "mojo/public/cpp/bindings/unique_associated_receiver_set.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -55,8 +55,10 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   void AddBinding(blink::mojom::IDBFactoryRequest request,
                   const url::Origin& origin);
 
-  void AddDatabaseBinding(std::unique_ptr<blink::mojom::IDBDatabase> database,
-                          blink::mojom::IDBDatabaseAssociatedRequest request);
+  void AddDatabaseBinding(
+      std::unique_ptr<blink::mojom::IDBDatabase> database,
+      mojo::PendingAssociatedReceiver<blink::mojom::IDBDatabase>
+          pending_receiver);
 
   mojo::PendingAssociatedRemote<blink::mojom::IDBCursor> CreateCursorBinding(
       const url::Origin& origin,
@@ -106,7 +108,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
       blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) override;
   void Open(blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
             mojo::PendingAssociatedRemote<blink::mojom::IDBDatabaseCallbacks>
-                pending_database_callbacks,
+                database_callbacks_remote,
             const base::string16& name,
             int64_t version,
             mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
@@ -137,8 +139,8 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   };
 
   mojo::BindingSet<blink::mojom::IDBFactory, BindingState> bindings_;
-  mojo::StrongAssociatedBindingSet<blink::mojom::IDBDatabase>
-      database_bindings_;
+  mojo::UniqueAssociatedReceiverSet<blink::mojom::IDBDatabase>
+      database_receivers_;
   mojo::UniqueAssociatedReceiverSet<blink::mojom::IDBCursor> cursor_receivers_;
   mojo::UniqueAssociatedReceiverSet<blink::mojom::IDBTransaction>
       transaction_receivers_;
