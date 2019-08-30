@@ -47,6 +47,15 @@ void av1_compute_feature_segmentation_map(uint8_t *segment_map, int width,
                                           int height, int *inliers,
                                           int num_inliers);
 
+// Returns the error between the result of applying motion 'wm' to the frame
+// described by 'ref' and the frame described by 'dst'.
+int64_t av1_warp_error(WarpedMotionParams *wm, int use_hbd, int bd,
+                       const uint8_t *ref, int width, int height, int stride,
+                       uint8_t *dst, int p_col, int p_row, int p_width,
+                       int p_height, int p_stride, int subsampling_x,
+                       int subsampling_y, int64_t best_error,
+                       uint8_t *segment_map, int segment_map_stride);
+
 // Returns the av1_warp_error between "dst" and the result of applying the
 // motion params that result from fine-tuning "wm" to "ref". Note that "wm" is
 // modified in place.
