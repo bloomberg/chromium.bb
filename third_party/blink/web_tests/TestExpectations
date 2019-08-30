@@ -3251,6 +3251,12 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
 crbug.com/626703 [ Win10 ] virtual/cascade/external/wpt/css/css-paint-api/color-custom-property-animation.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] virtual/omt-service-worker-startup/external/wpt/shape-detection/shapedetection-cross-origin.sub.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] virtual/omt-service-worker-startup/external/wpt/shape-detection/detection-security-test.https.html [ Timeout ]
