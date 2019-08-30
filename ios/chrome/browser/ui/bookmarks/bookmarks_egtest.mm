@@ -4054,6 +4054,10 @@ id<GREYMatcher> SearchIconButton() {
 // Tests the new folder name is committed when name editing is interrupted by
 // navigating away.
 - (void)testNewFolderNameCommittedOnNavigatingAway {
+  // TODO(crbug.com/999079): Reenable for iPhone SE.
+  if (UIScreen.mainScreen.bounds.size.height == 568) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone SE.");
+  }
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -4411,6 +4415,10 @@ id<GREYMatcher> SearchIconButton() {
 // Tests that long press on scrim while search box is enabled dismisses the
 // search controller.
 - (void)testSearchLongPressOnScrimCancelsSearchController {
+  // TODO(crbug.com/999080): Reenable for iPhone SE.
+  if (UIScreen.mainScreen.bounds.size.height == 568) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone SE.");
+  }
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
