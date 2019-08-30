@@ -329,19 +329,20 @@ static inline double CalculateOffsetActiveTime(double active_duration,
 // the time until the next iteration to optimize scheduling.
 //
 // [0] https://drafts.csswg.org/web-animations-1/#iteration-time-space
-static inline double CalculateIterationTime(double iteration_duration,
-                                            double active_duration,
-                                            double offset_active_time,
-                                            double start_offset,
-                                            Timing::Phase phase,
-                                            const Timing& specified) {
+static inline base::Optional<double> CalculateIterationTime(
+    double iteration_duration,
+    double active_duration,
+    double offset_active_time,
+    double start_offset,
+    Timing::Phase phase,
+    const Timing& specified) {
   DCHECK_GT(iteration_duration, 0);
   DCHECK_EQ(active_duration,
             MultiplyZeroAlwaysGivesZero(iteration_duration,
                                         specified.iteration_count));
 
   if (IsNull(offset_active_time))
-    return NullValue();
+    return base::nullopt;
 
   DCHECK_GE(offset_active_time, 0);
   DCHECK(LessThanOrEqualToWithinEpsilon(offset_active_time,

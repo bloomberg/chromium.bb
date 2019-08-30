@@ -105,8 +105,8 @@ TEST(AnimationTimingCalculationsTest, IterationTime) {
   //     phase, timing)
 
   // if the scaled active time is null
-  EXPECT_TRUE(IsNull(CalculateIterationTime(1, 1, NullValue(), 1,
-                                            Timing::kPhaseActive, timing)));
+  EXPECT_FALSE(CalculateIterationTime(1, 1, NullValue(), 1,
+                                      Timing::kPhaseActive, timing));
 
   // if (complex-conditions)...
   EXPECT_EQ(
@@ -131,7 +131,8 @@ TEST(AnimationTimingCalculationsTest, IterationTime) {
   EXPECT_NEAR(2.22045e-16,
               CalculateIterationTime(iteration_duration, active_duration,
                                      offset_active_time, 0,
-                                     Timing::kPhaseActive, timing),
+                                     Timing::kPhaseActive, timing)
+                  .value(),
               std::numeric_limits<float>::epsilon());
 }
 
