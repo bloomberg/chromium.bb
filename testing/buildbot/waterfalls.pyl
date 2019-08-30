@@ -1019,13 +1019,9 @@
         },
       },
       'linux-win_cross-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-10',
-            },
-          ],
-        },
+        'mixins': [
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
         },
