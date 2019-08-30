@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -49,11 +48,6 @@ void PageWidgetDelegate::Animate(Page& page,
                                  base::TimeTicks monotonic_frame_begin_time) {
   page.GetAutoscrollController().Animate();
   page.Animator().ServiceScriptedAnimations(monotonic_frame_begin_time);
-  // The ValidationMessage overlay manages its own internal Page that isn't
-  // hooked up the normal BeginMainFrame flow, so we manually tick its
-  // animations here.
-  page.GetValidationMessageClient().ServiceScriptedAnimations(
-      monotonic_frame_begin_time);
 }
 
 void PageWidgetDelegate::PostAnimate(Page& page) {

@@ -195,12 +195,6 @@ void ValidationMessageClientImpl::WillOpenPopup() {
     HideValidationMessage(*current_anchor_);
 }
 
-void ValidationMessageClientImpl::ServiceScriptedAnimations(
-    base::TimeTicks monotonic_frame_begin_time) {
-  if (overlay_)
-    overlay_->ServiceScriptedAnimations(monotonic_frame_begin_time);
-}
-
 void ValidationMessageClientImpl::LayoutOverlay() {
   if (overlay_)
     CheckAnchorStatus(nullptr);

@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -340,15 +339,8 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
     const Element& target_element) {
   FailureReasons reasons = kNoFailure;
 
-  // Both of these checks are required. It is legal to enable the compositor
-  // thread but disable threaded animations, and there are situations where
-  // threaded animations are enabled globally but this particular LocalFrame
-  // does not have a compositor (e.g. for overlays).
-  const Settings& settings = *target_element.GetDocument().GetSettings();
-  if (!settings.GetAcceleratedCompositingEnabled() ||
-      !Platform::Current()->IsThreadedAnimationEnabled()) {
+  if (!Platform::Current()->IsThreadedAnimationEnabled())
     reasons |= kAcceleratedAnimationsDisabled;
-  }
 
   if (const auto* layout_object = target_element.GetLayoutObject()) {
     // We query paint property tree state below to determine whether the

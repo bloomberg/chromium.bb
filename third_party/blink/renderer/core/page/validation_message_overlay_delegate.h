@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_OVERLAY_DELEGATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_OVERLAY_DELEGATE_H_
 
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_overlay.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -24,8 +23,7 @@ class Page;
 // bubble is shown, and deleted when the bubble is closed.
 //
 // Ownership: A FrameOverlay instance owns a ValidationMessageOverlayDelegate.
-class CORE_EXPORT ValidationMessageOverlayDelegate
-    : public FrameOverlay::Delegate {
+class ValidationMessageOverlayDelegate : public FrameOverlay::Delegate {
  public:
   ValidationMessageOverlayDelegate(Page& main_page,
                                    const Element& anchor,
@@ -36,17 +34,11 @@ class CORE_EXPORT ValidationMessageOverlayDelegate
   ~ValidationMessageOverlayDelegate() override;
 
   void CreatePage(const FrameOverlay&);
-
-  // FrameOverlay::Delegate implementation.
   void PaintFrameOverlay(const FrameOverlay&,
                          GraphicsContext&,
                          const IntSize& view_size) const override;
-  void ServiceScriptedAnimations(base::TimeTicks) override;
-
   void StartToHide();
   bool IsHiding() const;
-
-  Page* GetPageForTesting() const { return page_; }
 
  private:
   LocalFrameView& FrameView() const;

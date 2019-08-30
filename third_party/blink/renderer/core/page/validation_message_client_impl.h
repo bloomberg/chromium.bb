@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_CLIENT_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_CLIENT_IMPL_H_
 
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/popup_opening_observer.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
@@ -41,7 +40,7 @@ class LocalFrameView;
 class FrameOverlay;
 class ValidationMessageOverlayDelegate;
 
-class CORE_EXPORT ValidationMessageClientImpl final
+class ValidationMessageClientImpl final
     : public GarbageCollectedFinalized<ValidationMessageClientImpl>,
       public ValidationMessageClient,
       private PopupOpeningObserver {
@@ -51,17 +50,7 @@ class CORE_EXPORT ValidationMessageClientImpl final
   explicit ValidationMessageClientImpl(Page&);
   ~ValidationMessageClientImpl() override;
 
-  void ShowValidationMessage(const Element& anchor,
-                             const String& message,
-                             TextDirection message_dir,
-                             const String& sub_message,
-                             TextDirection sub_message_dir) override;
-
   void Trace(blink::Visitor*) override;
-
-  ValidationMessageOverlayDelegate* GetDelegateForTesting() const {
-    return overlay_delegate_;
-  }
 
  private:
   void CheckAnchorStatus(TimerBase*);
@@ -70,12 +59,16 @@ class CORE_EXPORT ValidationMessageClientImpl final
   void Reset(TimerBase*);
   void ValidationMessageVisibilityChanged(const Element& anchor);
 
+  void ShowValidationMessage(const Element& anchor,
+                             const String& message,
+                             TextDirection message_dir,
+                             const String& sub_message,
+                             TextDirection sub_message_dir) override;
   void HideValidationMessage(const Element& anchor) override;
   bool IsValidationMessageVisible(const Element& anchor) override;
   void DocumentDetached(const Document&) override;
   void DidChangeFocusTo(const Element* new_element) override;
   void WillBeDestroyed() override;
-  void ServiceScriptedAnimations(base::TimeTicks) override;
   void LayoutOverlay() override;
   void UpdatePrePaint() override;
   void PaintOverlay(GraphicsContext&) override;
