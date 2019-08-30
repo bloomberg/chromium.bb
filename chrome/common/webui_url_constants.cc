@@ -569,6 +569,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUINetworkHost,
     kChromeUIOobeHost,
     kChromeUIOSCreditsHost,
+    kChromeUIOSSettingsHost,
     kChromeUIPowerHost,
     kChromeUIInternetConfigDialogHost,
     kChromeUIInternetDetailDialogHost,
