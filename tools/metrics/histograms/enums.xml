@@ -45956,6 +45956,22 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Unknown range support from the response header."/>
 </enum>
 
+<enum name="ParentAccessCodeAction">
+  <summary>Action resulting from parent access code dialog</summary>
+  <int value="0" label="Validation success"/>
+  <int value="1" label="Validation error"/>
+  <int value="2" label="Validation canceled by user"/>
+  <int value="3" label="Get help user action"/>
+</enum>
+
+<enum name="ParentAccessCodeUsage">
+  <summary>Context in which parent access code was used</summary>
+  <int value="0" label="Time limits"/>
+  <int value="1" label="Time change on login screen"/>
+  <int value="2" label="Time change user session"/>
+  <int value="3" label="Timezone change"/>
+</enum>
+
 <enum name="ParentFrameKnown">
   <int value="0" label="Parent Frame Not Known"/>
   <int value="1" label="Parent Frame Known"/>
