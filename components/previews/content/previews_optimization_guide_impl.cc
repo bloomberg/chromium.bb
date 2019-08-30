@@ -117,11 +117,11 @@ bool PreviewsOptimizationGuideImpl::CanApplyPreview(
   // Check if LITE_PAGE_REDIRECT is blacklisted or not.
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
     if (current_effective_connection_type_ >
-        params::GetECTThresholdForPreview(type))
+        params::GetECTThresholdForPreview(type)) {
       return false;
+    }
 
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
+    if (params::LitePageRedirectPreviewIgnoresOptimizationGuideFilter()) {
       return true;
     }
 

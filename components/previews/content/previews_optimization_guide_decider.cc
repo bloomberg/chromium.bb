@@ -109,8 +109,7 @@ bool PreviewsOptimizationGuideDecider::CanApplyPreview(
     PreviewsType type) {
   // See if we need to bypass the lite page redirect blacklist.
   if (type == PreviewsType::LITE_PAGE_REDIRECT &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
+      params::LitePageRedirectPreviewIgnoresOptimizationGuideFilter()) {
     return true;
   }
 
