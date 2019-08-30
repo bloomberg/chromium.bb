@@ -221,9 +221,12 @@ void CrostiniExportImport::ExportAfterSharing(
     LOG(ERROR) << "Error sharing for export " << container_path.value() << ": "
                << failure_reason;
     auto it = notifications_.find(container_id);
-    DCHECK(it != notifications_.end()) << ContainerIdToString(container_id)
-                                       << " has no notification to update";
-    RemoveNotification(it).SetStatusFailed();
+    if (it != notifications_.end()) {
+      RemoveNotification(it).SetStatusFailed();
+    } else {
+      NOTREACHED() << ContainerIdToString(container_id)
+                   << " has no notification to update";
+    }
     return;
   }
   CrostiniManager::GetForProfile(profile_)->ExportLxdContainer(
@@ -241,8 +244,11 @@ void CrostiniExportImport::OnExportComplete(
     uint64_t container_size,
     uint64_t compressed_size) {
   auto it = notifications_.find(container_id);
-  DCHECK(it != notifications_.end())
-      << ContainerIdToString(container_id) << " has no notification to update";
+  if (it == notifications_.end()) {
+    NOTREACHED() << ContainerIdToString(container_id)
+                 << " has no notification to update";
+    return;
+  }
 
   ExportContainerResult enum_hist_result = ExportContainerResult::kSuccess;
   if (result == CrostiniResult::SUCCESS) {
@@ -334,8 +340,11 @@ void CrostiniExportImport::OnExportContainerProgress(
     uint64_t progress_speed) {
   ContainerId container_id(vm_name, container_name);
   auto it = notifications_.find(container_id);
-  DCHECK(it != notifications_.end())
-      << ContainerIdToString(container_id) << " has no notification to update";
+  if (it == notifications_.end()) {
+    NOTREACHED() << ContainerIdToString(container_id)
+                 << " has no notification to update";
+    return;
+  }
 
   switch (status) {
     // Rescale PACK:1-100 => 0-50.
@@ -357,8 +366,11 @@ void CrostiniExportImport::OnExportContainerProgress(
     const StreamingExportStatus& status) {
   ContainerId container_id(vm_name, container_name);
   auto it = notifications_.find(container_id);
-  DCHECK(it != notifications_.end())
-      << ContainerIdToString(container_id) << " has no notification to update";
+  if (it == notifications_.end()) {
+    NOTREACHED() << ContainerIdToString(container_id)
+                 << " has no notification to update";
+    return;
+  }
 
   const auto files_percent = 100.0 * status.exported_files / status.total_files;
   const auto bytes_percent = 100.0 * status.exported_bytes / status.total_bytes;
@@ -380,9 +392,12 @@ void CrostiniExportImport::ImportAfterSharing(
     LOG(ERROR) << "Error sharing for import " << container_path.value() << ": "
                << failure_reason;
     auto it = notifications_.find(container_id);
-    DCHECK(it != notifications_.end()) << ContainerIdToString(container_id)
-                                       << " has no notification to update";
-    RemoveNotification(it).SetStatusFailed();
+    if (it != notifications_.end()) {
+      RemoveNotification(it).SetStatusFailed();
+    } else {
+      NOTREACHED() << ContainerIdToString(container_id)
+                   << " has no notification to update";
+    }
     return;
   }
   CrostiniManager::GetForProfile(profile_)->ImportLxdContainer(
@@ -403,31 +418,38 @@ void CrostiniExportImport::OnImportComplete(
   if (result == CrostiniResult::SUCCESS) {
     UMA_HISTOGRAM_LONG_TIMES("Crostini.RestoreTimeSuccess",
                              base::Time::Now() - start);
-    DCHECK(it != notifications_.end()) << ContainerIdToString(container_id)
-                                       << " has no notification to update";
-    switch (it->second->status()) {
-      case CrostiniExportImportNotification::Status::RUNNING:
-        // If a user requests to cancel, but the import completes before the
-        // cancel can happen, then the container will have been imported over
-        // and the cancel will have failed. However the period of time in which
-        // this can happen is very small (<5s), so it feels quite natural to
-        // pretend the cancel did not happen, and instead display success.
-      case CrostiniExportImportNotification::Status::CANCELLING:
-        RemoveNotification(it).SetStatusDone();
-        break;
-      default:
-        NOTREACHED();
+    if (it != notifications_.end()) {
+      switch (it->second->status()) {
+        case CrostiniExportImportNotification::Status::RUNNING:
+          // If a user requests to cancel, but the import completes before the
+          // cancel can happen, then the container will have been imported over
+          // and the cancel will have failed. However the period of time in
+          // which this can happen is very small (<5s), so it feels quite
+          // natural to pretend the cancel did not happen, and instead display
+          // success.
+        case CrostiniExportImportNotification::Status::CANCELLING:
+          RemoveNotification(it).SetStatusDone();
+          break;
+        default:
+          NOTREACHED();
+      }
+    } else {
+      NOTREACHED() << ContainerIdToString(container_id)
+                   << " has no notification to update";
     }
   } else if (result ==
              crostini::CrostiniResult::CONTAINER_EXPORT_IMPORT_CANCELLED) {
-    DCHECK(it != notifications_.end()) << ContainerIdToString(container_id)
-                                       << " has no notification to update";
-    switch (it->second->status()) {
-      case CrostiniExportImportNotification::Status::CANCELLING:
-        RemoveNotification(it).SetStatusCancelled();
-        break;
-      default:
-        NOTREACHED();
+    if (it != notifications_.end()) {
+      switch (it->second->status()) {
+        case CrostiniExportImportNotification::Status::CANCELLING:
+          RemoveNotification(it).SetStatusCancelled();
+          break;
+        default:
+          NOTREACHED();
+      }
+    } else {
+      NOTREACHED() << ContainerIdToString(container_id)
+                   << " has no notification to update";
     }
   } else {
     LOG(ERROR) << "Error importing " << int(result);
@@ -454,11 +476,14 @@ void CrostiniExportImport::OnImportComplete(
     if (result == CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED ||
         result == CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED ||
         result == CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED) {
-      DCHECK(it != notifications_.end()) << ContainerIdToString(container_id)
-                                         << " has no notification to update";
-      DCHECK(it->second->status() ==
-             CrostiniExportImportNotification::Status::RUNNING);
-      RemoveNotification(it).SetStatusFailed();
+      if (it != notifications_.end()) {
+        DCHECK(it->second->status() ==
+               CrostiniExportImportNotification::Status::RUNNING);
+        RemoveNotification(it).SetStatusFailed();
+      } else {
+        NOTREACHED() << ContainerIdToString(container_id)
+                     << " has no notification to update";
+      }
     } else {
       DCHECK(it == notifications_.end()) << ContainerIdToString(container_id)
                                          << " has unexpected notification";
@@ -485,8 +510,11 @@ void CrostiniExportImport::OnImportContainerProgress(
     uint64_t minimum_required_space) {
   ContainerId container_id(vm_name, container_name);
   auto it = notifications_.find(container_id);
-  DCHECK(it != notifications_.end())
-      << ContainerIdToString(container_id) << " has no notification to update";
+  if (it == notifications_.end()) {
+    NOTREACHED() << ContainerIdToString(container_id)
+                 << " has no notification to update";
+    return;
+  }
 
   switch (status) {
     // Rescale UPLOAD:1-100 => 0-50.
