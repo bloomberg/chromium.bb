@@ -8,7 +8,7 @@ issues]].
 ** New features
 - Enable ~always~ rules with a single character and a single braille
   cell for back-translation. Thanks to Bue Vester-Andersen.
-- Implement noUndefined mode for forward translation, thanks to Dave
+- Implement ~noUndefined~ mode for forward translation, thanks to Dave
   Mielke.
 - Use fallback braille representations (NABCC) for rendering undefined
   characters in hexadecimal notation, thanks to Dave Mielke.
@@ -21,13 +21,13 @@ issues]].
 - Handle word resets in the last word of an caps or emphasis passage
   if the end indicator was placed before the word. Thanks to Bert
   Frees.
-- Never convert to lowercase if capsletter is not defined. Thanks to
+- Never convert to lowercase if ~capsletter~ is not defined. Thanks to
   Bert Frees.
-- Fix position mapping for back-translation when noUndefined mode is
+- Fix position mapping for back-translation when ~noUndefined~ mode is
   active. Thanks to Dave Mielke.
 - Fix bug where a translation would hang on words that match both a
   ~nocont~ and a ~repeated~ rule. Thanks to Dave Mielke.
-- Fix bug where the effect of capsnocont would leak to the next word
+- Fix bug where the effect of ~capsnocont~ would leak to the next word
   if that word starts with a capital. Thanks to Bue Vester-Andersen.
 
 ** Braille table improvements
@@ -43,16 +43,17 @@ issues]].
 - Various improvements to modern Greek thanks to Dave Mielke.
 - Improvements and fixes to Spanish contracted braille. Details in
   #741. Thanks to Juan Pablo Bello.
-- Improvements and fixes to the Danish tables. Thanks to Bue Vester-Andersen.
+- Improvements and fixes to the Danish tables. Thanks to Bue
+  Vester-Andersen.
 - Add a display table to match Word CX which is used in Norway and
   Sweden, and maybe also in other countries thanks to Lars Bjørndal.
 - Fix handling of colon within number in Dutch braille, thanks to Jake
   Kyle.
 - Fix translation of bullet and dot operators in Dutch braille, thanks
   to Paul Rambags
-- Added North American Braille Computer Code table (en-nabcc.utb)
-  which is the counterpart of the text_nabcc.dis display table. Thanks
-  to Dave Mielke.
+- Added North American Braille Computer Code table (~en-nabcc.utb~)
+  which is the counterpart of the ~text_nabcc.dis~ display table.
+  Thanks to Dave Mielke.
 - Add support for the International Phonetic Alphabet (IPA) to the
   Chinese braille table, thanks to Hurt Huang and Sponge Jhan.
 - Unified English Braille no longer displays a single underscore when
@@ -88,9 +89,10 @@ issues]].
   letters), e.g compound words, thanks to Bert Frees.
 
 ** Deprecation notice
-- The noUndefinedDots mode has been renamed to noUndefined. For
-  backwards compatibility noUndefinedDots is still available in the
-  header file and in the Python bindings, as an alias for noUndefined.
+- The ~noUndefinedDots~ mode has been renamed to ~noUndefined~. For
+  backwards compatibility ~noUndefinedDots~ is still available in the
+  header file and in the Python bindings, as an alias for
+  ~noUndefined~.
 
 ** Backwards incompatible changes
 None
