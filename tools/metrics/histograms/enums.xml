@@ -29575,12 +29575,28 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HeavyAdStatus">
+  <obsolete>
+    Deprected 09/2019 in favor of HeavyAdStatus2.
+  </obsolete>
   <int value="0" label="Not heavy"/>
   <int value="1" label="Network">
     The ad exceeded the network threshold for the Heavy Ad Intervention.
   </int>
   <int value="2" label="CPU">
     The ad exceeded the CPU threshold for the Heavy Ad Intervention.
+  </int>
+</enum>
+
+<enum name="HeavyAdStatus2">
+  <int value="0" label="Not heavy"/>
+  <int value="1" label="Network">
+    The ad exceeded the network threshold for the Heavy Ad Intervention.
+  </int>
+  <int value="2" label="Total CPU">
+    The ad exceeded the total CPU usage threshold for the Heavy Ad Intervention.
+  </int>
+  <int value="3" label="Peak CPU">
+    The ad exceeded the peak CPU usage threshold for the Heavy Ad Intervention.
   </int>
 </enum>
 
