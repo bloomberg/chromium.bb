@@ -6,26 +6,13 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
 namespace {
 
-class TraceWrapperV8ReferenceTest : public testing::Test {
- public:
-  void SetIsolate(v8::Isolate* isolate) { isolate_ = isolate; }
-  v8::Isolate* GetIsolate() const { return isolate_; }
-
-  void CollectGarbage() {
-    V8GCController::CollectAllGarbageForTesting(
-        isolate_, v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-  }
-
- private:
-  v8::Isolate* isolate_;
-};
+using TraceWrapperV8ReferenceTest = BindingTestSupportingGC;
 
 class TraceWrapperV8ReferenceHolder
     : public GarbageCollected<TraceWrapperV8ReferenceHolder> {
@@ -78,11 +65,11 @@ TEST_F(TraceWrapperV8ReferenceTest, CtorWithValue) {
 
   CHECK(!holder1->ref()->IsEmpty());
   CHECK(!observer.IsEmpty());
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(!holder1->ref()->IsEmpty());
   CHECK(!observer.IsEmpty());
   holder1->ref()->Clear();
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(holder1->ref()->IsEmpty());
   CHECK(observer.IsEmpty());
 }
@@ -103,16 +90,16 @@ TEST_F(TraceWrapperV8ReferenceTest, CopyOverEmpty) {
   CHECK(!holder1->ref()->IsEmpty());
   CHECK(*holder1->ref() == *holder2->ref());
   CHECK(!observer1.IsEmpty());
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(!holder1->ref()->IsEmpty());
   CHECK(*holder1->ref() == *holder2->ref());
   CHECK(!observer1.IsEmpty());
   holder1.Clear();
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(!holder2->ref()->IsEmpty());
   CHECK(!observer1.IsEmpty());
   holder2.Clear();
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(observer1.IsEmpty());
 }
 
@@ -136,18 +123,18 @@ TEST_F(TraceWrapperV8ReferenceTest, CopyOverNonEmpty) {
   CHECK(*holder1->ref() == *holder2->ref());
   CHECK(!observer1.IsEmpty());
   CHECK(!observer2.IsEmpty());
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(!holder1->ref()->IsEmpty());
   CHECK(*holder1->ref() == *holder2->ref());
   CHECK(!observer1.IsEmpty());
   // Old object in holder2 already gone.
   CHECK(observer2.IsEmpty());
   holder1.Clear();
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(!holder2->ref()->IsEmpty());
   CHECK(!observer1.IsEmpty());
   holder2.Clear();
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(observer1.IsEmpty());
 }
 
@@ -168,13 +155,13 @@ TEST_F(TraceWrapperV8ReferenceTest, MoveOverEmpty) {
   CHECK(holder1->ref()->IsEmpty());
   CHECK(!holder2->ref()->IsEmpty());
   CHECK(!observer1.IsEmpty());
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(holder1->ref()->IsEmpty());
   CHECK(!holder2->ref()->IsEmpty());
   CHECK(!observer1.IsEmpty());
   holder1.Clear();
   holder2.Clear();
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(observer1.IsEmpty());
 }
 
@@ -199,14 +186,14 @@ TEST_F(TraceWrapperV8ReferenceTest, MoveOverNonEmpty) {
   CHECK(!holder2->ref()->IsEmpty());
   CHECK(!observer1.IsEmpty());
   CHECK(!observer2.IsEmpty());
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(holder1->ref()->IsEmpty());
   CHECK(!holder2->ref()->IsEmpty());
   CHECK(!observer1.IsEmpty());
   CHECK(observer2.IsEmpty());
   holder1.Clear();
   holder2.Clear();
-  CollectGarbage();
+  RunV8FullGC();
   CHECK(observer1.IsEmpty());
 }
 
