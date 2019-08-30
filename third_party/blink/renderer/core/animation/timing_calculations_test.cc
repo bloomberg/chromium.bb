@@ -78,7 +78,7 @@ TEST(AnimationTimingCalculationsTest, ActiveTime) {
 
 TEST(AnimationTimingCalculationsTest, OffsetActiveTime) {
   // if the active time is null
-  EXPECT_TRUE(IsNull(CalculateOffsetActiveTime(4, NullValue(), 5)));
+  EXPECT_FALSE(CalculateOffsetActiveTime(4, NullValue(), 5));
 
   // normal case
   EXPECT_EQ(15, CalculateOffsetActiveTime(40, 10, 5));
@@ -105,7 +105,7 @@ TEST(AnimationTimingCalculationsTest, IterationTime) {
   //     phase, timing)
 
   // if the scaled active time is null
-  EXPECT_FALSE(CalculateIterationTime(1, 1, NullValue(), 1,
+  EXPECT_FALSE(CalculateIterationTime(1, 1, base::nullopt, 1,
                                       Timing::kPhaseActive, timing));
 
   // if (complex-conditions)...

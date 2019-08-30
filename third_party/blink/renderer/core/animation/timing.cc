@@ -189,7 +189,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
     const double start_offset =
         MultiplyZeroAlwaysGivesZero(iteration_start, iteration_duration);
     DCHECK_GE(start_offset, 0);
-    const double offset_active_time =
+    const base::Optional<double> offset_active_time =
         CalculateOffsetActiveTime(active_duration, active_time, start_offset);
     const base::Optional<double> iteration_time = CalculateIterationTime(
         iteration_duration, active_duration, offset_active_time, start_offset,
