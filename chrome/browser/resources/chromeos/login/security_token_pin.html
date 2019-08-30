@@ -2,6 +2,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+
 <dom-module id="security-token-pin">
   <link rel="stylesheet" href="oobe_dialog_host.css">
   <link rel="stylesheet" href="oobe_flex_layout.css">
@@ -23,7 +25,15 @@
       </div>
       <div slot="footer">
         <div id="pinKeyboardContainer">
-          <pin-keyboard id="pinKeyboard"></pin-keyboard>
+          <pin-keyboard id="pinKeyboard"
+              has-error="[[hasError_(parameters, userEdited_)]]"
+              on-pin-change="onPinChange_">
+            <div id="errorContainer" problem
+                hidden="[[!hasError_(parameters, userEdited_)]]">
+              <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
+              [[getErrorText_(parameters, userEdited_)]]
+            </div>
+          </pin-keyboard>
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal justified">
