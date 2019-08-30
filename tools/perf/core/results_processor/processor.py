@@ -10,6 +10,7 @@ entry point to start the processing of results.
 
 import argparse
 import datetime
+import json
 import os
 import re
 import sys
@@ -17,6 +18,7 @@ import sys
 from py_utils import cloud_storage
 
 
+TELEMETRY_RESULTS = '_telemetry_results.jsonl'
 SUPPORTED_FORMATS = {
     'none': NotImplemented,
 }
@@ -138,7 +140,15 @@ def ProcessResults(options):
   if not getattr(options, 'output_formats', None):
     return 0
 
-  raise NotImplementedError(options.output_formats)
+  intermediate_results = _LoadIntermediateResults(
+      os.path.join(options.intermediate_dir, TELEMETRY_RESULTS))
+
+  for output_format in options.output_formats:
+    if output_format not in SUPPORTED_FORMATS:
+      raise NotImplementedError(output_format)
+
+    formatter = SUPPORTED_FORMATS[output_format]
+    formatter.Process(intermediate_results, options.output_dir)
 
 
 def _CreateTopLevelParser(standalone):
@@ -152,6 +162,19 @@ def _CreateTopLevelParser(standalone):
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group(title='Result processor options')
     return parser, group
+
+
+def _LoadIntermediateResults(intermediate_file):
+  """Load intermediate results from a file into a single dict."""
+  results = {'benchmarkRun': {}, 'testResults': []}
+  with open(intermediate_file) as f:
+    for line in f:
+      record = json.loads(line)
+      if 'benchmarkRun' in record:
+        results['benchmarkRun'].update(record['benchmarkRun'])
+      if 'testResult' in record:
+        results['testResults'].append(record['testResult'])
+  return results
 
 
 def _DefaultOutputDir():

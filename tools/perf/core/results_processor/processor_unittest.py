@@ -2,6 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unit tests for results_processor.
+
+These tests mostly test that argument parsing and processing work as expected.
+They mock out accesses to the operating system, so no files are actually read
+nor written.
+"""
+
 import datetime
 import posixpath
 import re
