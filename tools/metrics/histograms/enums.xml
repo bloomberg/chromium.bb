@@ -24490,6 +24490,9 @@ Called by update_net_error_codes.py.-->
   <int value="3012" label="FetchRedirectError"/>
   <int value="3013" label="FetchRedirectManual"/>
   <int value="3014" label="FetchCacheReload"/>
+  <int value="3015" label="V8Window_ChooseFileSystemEntries_Method"/>
+  <int value="3016"
+      label="V8FileSystemDirectoryHandle_GetSystemDirectory_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40959,6 +40962,16 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Hit"/>
 </enum>
 
+<enum name="NativeFileSystemPermissionRequestOutcome">
+  <int value="0" label="Blocked by Content Setting"/>
+  <int value="1" label="Blocked from invalid frame"/>
+  <int value="2" label="Blocked for lack of user activation"/>
+  <int value="3" label="Blocked from third-party context"/>
+  <int value="4" label="Granted"/>
+  <int value="5" label="Denied by user"/>
+  <int value="6" label="Dismissed by user"/>
+</enum>
+
 <enum name="NativeLibraryPreloaderResult">
   <obsolete>
     Removed in July 2019. See https://crbug.com/975556.
@@ -53663,6 +53676,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="VAPID key is invalid"/>
   <int value="7" label="Device is no longer registered"/>
   <int value="8" label="Payload is too large"/>
+</enum>
+
+<enum name="SensitiveDirectoryAccessResult">
+  <int value="0" label="Allowed"/>
+  <int value="1" label="Blocked, try again"/>
+  <int value="2" label="Blocked"/>
 </enum>
 
 <enum name="ServiceProcessEventType">
