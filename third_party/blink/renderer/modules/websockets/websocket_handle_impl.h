@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_HANDLE_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_HANDLE_IMPL_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
@@ -121,7 +120,7 @@ class WebSocketHandleImpl
   mojo::Remote<network::mojom::blink::WebSocket> websocket_;
   mojo::Receiver<network::mojom::blink::WebSocketHandshakeClient>
       handshake_client_receiver_{this};
-  mojo::Binding<network::mojom::blink::WebSocketClient> client_binding_;
+  mojo::Receiver<network::mojom::blink::WebSocketClient> client_receiver_{this};
 
   // Datapipe fields to receive.
   mojo::ScopedDataPipeConsumerHandle readable_;

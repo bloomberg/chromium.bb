@@ -27,7 +27,6 @@ WebSocketHandleImpl::WebSocketHandleImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)),
       channel_(nullptr),
-      client_binding_(this),
       readable_watcher_(FROM_HERE,
                         mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                         task_runner_) {
@@ -160,10 +159,10 @@ void WebSocketHandleImpl::OnConnectionEstablished(
   if (!channel_)
     return;
 
-  // From now on, we will detect mojo errors via |client_binding_|.
+  // From now on, we will detect mojo errors via |client_receiver_|.
   handshake_client_receiver_.reset();
-  client_binding_.Bind(std::move(client_receiver), task_runner_);
-  client_binding_.set_connection_error_with_reason_handler(
+  client_receiver_.Bind(std::move(client_receiver), task_runner_);
+  client_receiver_.set_disconnect_with_reason_handler(
       WTF::Bind(&WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this),
                 FROM_HERE));
 
@@ -233,7 +232,7 @@ void WebSocketHandleImpl::ConsumePendingDataFrames() {
       return;
     }
     if (begin_result == MOJO_RESULT_FAILED_PRECONDITION) {
-      // |client_binding_| will catch the connection error.
+      // |client_receiver_| will catch the connection error.
       return;
     }
     DCHECK_EQ(begin_result, MOJO_RESULT_OK);
