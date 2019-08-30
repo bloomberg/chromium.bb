@@ -4054,10 +4054,6 @@ id<GREYMatcher> SearchIconButton() {
 // Tests the new folder name is committed when name editing is interrupted by
 // navigating away.
 - (void)testNewFolderNameCommittedOnNavigatingAway {
-  // TODO(crbug.com/999079): Reenable for iPhone SE.
-  if (UIScreen.mainScreen.bounds.size.height == 568) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone SE.");
-  }
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -4116,7 +4112,7 @@ id<GREYMatcher> SearchIconButton() {
   // Interrupt the folder name editing by tapping on First URL.
   [BookmarksTestCase scrollToTop];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
       performAction:grey_tap()];
   // Reopen bookmarks.
   [BookmarksTestCase openBookmarks];
@@ -4415,10 +4411,6 @@ id<GREYMatcher> SearchIconButton() {
 // Tests that long press on scrim while search box is enabled dismisses the
 // search controller.
 - (void)testSearchLongPressOnScrimCancelsSearchController {
-  // TODO(crbug.com/999080): Reenable for iPhone SE.
-  if (UIScreen.mainScreen.bounds.size.height == 568) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone SE.");
-  }
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -4428,7 +4420,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Try long press.
   [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"French URL")]
       performAction:grey_longPress()];
 
   // Verify context menu is not visible.
