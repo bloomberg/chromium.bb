@@ -17,10 +17,8 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/web_usb_chooser.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "url/origin.h"
@@ -60,8 +58,7 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
       std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
       GetPermissionCallback callback) override;
   void SetClient(
-      mojo::PendingAssociatedRemote<device::mojom::UsbDeviceManagerClient>
-          client) override;
+      device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client) override;
 
   void OnGetDevices(
       GetDevicesCallback callback,
@@ -91,7 +88,8 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
 
   // Used to bind with Blink.
   mojo::ReceiverSet<blink::mojom::WebUsbService> receivers_;
-  mojo::AssociatedRemoteSet<device::mojom::UsbDeviceManagerClient> clients_;
+  mojo::AssociatedInterfacePtrSet<device::mojom::UsbDeviceManagerClient>
+      clients_;
 
   // Tracks DeviceClient receivers for each device (by GUID).
   std::unordered_map<std::string,

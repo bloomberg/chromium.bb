@@ -178,9 +178,9 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
 
 }  // namespace
 
-WebUsbDetector::WebUsbDetector() = default;
+WebUsbDetector::WebUsbDetector() : client_binding_(this) {}
 
-WebUsbDetector::~WebUsbDetector() = default;
+WebUsbDetector::~WebUsbDetector() {}
 
 void WebUsbDetector::Initialize() {
 #if defined(OS_WIN)
@@ -204,8 +204,10 @@ void WebUsbDetector::Initialize() {
       &WebUsbDetector::OnDeviceManagerConnectionError, base::Unretained(this)));
 
   // Listen for added/removed device events.
-  DCHECK(!client_receiver_.is_bound());
-  device_manager_->SetClient(client_receiver_.BindNewEndpointAndPassRemote());
+  DCHECK(!client_binding_);
+  device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
+  client_binding_.Bind(mojo::MakeRequest(&client));
+  device_manager_->SetClient(std::move(client));
 }
 
 void WebUsbDetector::OnDeviceAdded(
@@ -274,7 +276,7 @@ void WebUsbDetector::OnDeviceRemoved(
 
 void WebUsbDetector::OnDeviceManagerConnectionError() {
   device_manager_.reset();
-  client_receiver_.reset();
+  client_binding_.Close();
 
   // Try to reconnect the device manager.
   Initialize();
@@ -283,7 +285,7 @@ void WebUsbDetector::OnDeviceManagerConnectionError() {
 void WebUsbDetector::SetDeviceManagerForTesting(
     mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_device_manager) {
   DCHECK(!device_manager_);
-  DCHECK(!client_receiver_.is_bound());
+  DCHECK(!client_binding_);
   DCHECK(fake_device_manager);
   device_manager_.Bind(std::move(fake_device_manager));
 }

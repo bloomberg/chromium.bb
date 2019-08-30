@@ -91,7 +91,8 @@ UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter* filter,
 
 }  // namespace
 
-USB::USB(ExecutionContext& context) : ContextLifecycleObserver(&context) {}
+USB::USB(ExecutionContext& context)
+    : ContextLifecycleObserver(&context), client_binding_(this) {}
 
 USB::~USB() {
   // |service_| may still be valid but there should be no more outstanding
@@ -103,7 +104,7 @@ USB::~USB() {
 void USB::Dispose() {
   // The pipe to this object must be closed when is marked unreachable to
   // prevent messages from being dispatched before lazy sweeping.
-  client_receiver_.reset();
+  client_binding_.Close();
 }
 
 ScriptPromise USB::getDevices(ScriptState* script_state) {
@@ -263,7 +264,7 @@ void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
 
 void USB::OnServiceConnectionError() {
   service_.reset();
-  client_receiver_.reset();
+  client_binding_.Close();
   for (ScriptPromiseResolver* resolver : get_devices_requests_)
     resolver->Resolve(HeapVector<Member<USBDevice>>(0));
   get_devices_requests_.clear();
@@ -304,9 +305,11 @@ void USB::EnsureServiceConnection() {
   service_.set_disconnect_handler(
       WTF::Bind(&USB::OnServiceConnectionError, WrapWeakPersistent(this)));
 
-  DCHECK(!client_receiver_.is_bound());
+  DCHECK(!client_binding_.is_bound());
 
-  service_->SetClient(client_receiver_.BindNewEndpointAndPassRemote());
+  device::mojom::blink::UsbDeviceManagerClientAssociatedPtrInfo client;
+  client_binding_.Bind(mojo::MakeRequest(&client), task_runner);
+  service_->SetClient(std::move(client));
 }
 
 bool USB::IsContextSupported() const {

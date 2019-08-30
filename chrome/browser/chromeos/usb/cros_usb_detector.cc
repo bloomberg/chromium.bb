@@ -221,7 +221,7 @@ CrosUsbDetector* CrosUsbDetector::Get() {
   return g_cros_usb_detector;
 }
 
-CrosUsbDetector::CrosUsbDetector() {
+CrosUsbDetector::CrosUsbDetector() : client_binding_(this) {
   DCHECK(!g_cros_usb_detector);
   g_cros_usb_detector = this;
   guest_os_classes_blocked_.emplace_back(
@@ -310,11 +310,13 @@ void CrosUsbDetector::ConnectToDeviceManager() {
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Listen for added/removed device events.
-  DCHECK(!client_receiver_.is_bound());
+  DCHECK(!client_binding_);
+  device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
+  client_binding_.Bind(mojo::MakeRequest(&client));
+
   device_manager_->EnumerateDevicesAndSetClient(
-      client_receiver_.BindNewEndpointAndPassRemote(),
-      base::BindOnce(&CrosUsbDetector::OnListAttachedDevices,
-                     weak_ptr_factory_.GetWeakPtr()));
+      std::move(client), base::BindOnce(&CrosUsbDetector::OnListAttachedDevices,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool CrosUsbDetector::ShouldShowNotification(
@@ -414,7 +416,7 @@ void CrosUsbDetector::OnDeviceRemoved(
 
 void CrosUsbDetector::OnDeviceManagerConnectionError() {
   device_manager_.reset();
-  client_receiver_.reset();
+  client_binding_.Close();
   ConnectToDeviceManager();
 }
 

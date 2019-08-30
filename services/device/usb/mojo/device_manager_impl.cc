@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
@@ -48,7 +47,7 @@ void DeviceManagerImpl::AddReceiver(
 }
 
 void DeviceManagerImpl::EnumerateDevicesAndSetClient(
-    mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client,
+    mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
     EnumerateDevicesAndSetClientCallback callback) {
   usb_service_->GetDevices(base::Bind(
       &DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
@@ -57,10 +56,9 @@ void DeviceManagerImpl::EnumerateDevicesAndSetClient(
 
 void DeviceManagerImpl::GetDevices(mojom::UsbEnumerationOptionsPtr options,
                                    GetDevicesCallback callback) {
-  usb_service_->GetDevices(
-      base::Bind(&DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
-                 base::Passed(&options), mojo::NullAssociatedRemote(),
-                 base::Passed(&callback)));
+  usb_service_->GetDevices(base::Bind(
+      &DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
+      base::Passed(&options), /*client=*/nullptr, base::Passed(&callback)));
 }
 
 void DeviceManagerImpl::GetDevice(
@@ -159,14 +157,16 @@ void DeviceManagerImpl::OnOpenFileDescriptorError(
 #endif  // defined(OS_CHROMEOS)
 
 void DeviceManagerImpl::SetClient(
-    mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client) {
+    mojom::UsbDeviceManagerClientAssociatedPtrInfo client) {
   DCHECK(client);
-  clients_.Add(std::move(client));
+  mojom::UsbDeviceManagerClientAssociatedPtr client_ptr;
+  client_ptr.Bind(std::move(client));
+  clients_.AddPtr(std::move(client_ptr));
 }
 
 void DeviceManagerImpl::OnGetDevices(
     mojom::UsbEnumerationOptionsPtr options,
-    mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client,
+    mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
     GetDevicesCallback callback,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
   std::vector<mojom::UsbDeviceFilterPtr> filters;
@@ -187,13 +187,15 @@ void DeviceManagerImpl::OnGetDevices(
 }
 
 void DeviceManagerImpl::OnDeviceAdded(scoped_refptr<UsbDevice> device) {
-  for (auto& client : clients_)
+  clients_.ForAllPtrs([&device](mojom::UsbDeviceManagerClient* client) {
     client->OnDeviceAdded(device->device_info().Clone());
+  });
 }
 
 void DeviceManagerImpl::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
-  for (auto& client : clients_)
+  clients_.ForAllPtrs([&device](mojom::UsbDeviceManagerClient* client) {
     client->OnDeviceRemoved(device->device_info().Clone());
+  });
 }
 
 void DeviceManagerImpl::WillDestroyUsbService() {
@@ -202,7 +204,7 @@ void DeviceManagerImpl::WillDestroyUsbService() {
 
   // Close all the connections.
   receivers_.Clear();
-  clients_.Clear();
+  clients_.CloseAll();
 }
 
 }  // namespace usb

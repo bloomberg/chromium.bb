@@ -15,7 +15,7 @@
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/mojo/mojom/remoting_common.mojom.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 
 WebUsbServiceImpl::WebUsbServiceImpl(
@@ -120,10 +120,12 @@ void WebUsbServiceImpl::GetPermission(
 }
 
 void WebUsbServiceImpl::SetClient(
-    mojo::PendingAssociatedRemote<device::mojom::UsbDeviceManagerClient>
-        client) {
+    device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client) {
   DCHECK(client);
-  clients_.Add(std::move(client));
+
+  device::mojom::UsbDeviceManagerClientAssociatedPtr client_ptr;
+  client_ptr.Bind(std::move(client));
+  clients_.AddPtr(std::move(client_ptr));
 }
 
 void WebUsbServiceImpl::OnPermissionRevoked(
@@ -150,8 +152,10 @@ void WebUsbServiceImpl::OnDeviceAdded(
   if (!HasDevicePermission(device_info))
     return;
 
-  for (auto& client : clients_)
-    client->OnDeviceAdded(device_info.Clone());
+  clients_.ForAllPtrs(
+      [&device_info](device::mojom::UsbDeviceManagerClient* client) {
+        client->OnDeviceAdded(device_info.Clone());
+      });
 }
 
 void WebUsbServiceImpl::OnDeviceRemoved(
@@ -160,13 +164,15 @@ void WebUsbServiceImpl::OnDeviceRemoved(
   if (!HasDevicePermission(device_info))
     return;
 
-  for (auto& client : clients_)
-    client->OnDeviceRemoved(device_info.Clone());
+  clients_.ForAllPtrs(
+      [&device_info](device::mojom::UsbDeviceManagerClient* client) {
+        client->OnDeviceRemoved(device_info.Clone());
+      });
 }
 
 void WebUsbServiceImpl::OnDeviceManagerConnectionError() {
   // Close the connection with blink.
-  clients_.Clear();
+  clients_.CloseAll();
   receivers_.Clear();
 
   // Remove itself from UsbChooserContext's ObserverList.

@@ -10,7 +10,6 @@
 
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device.h"
 #include "services/device/public/cpp/test/mock_usb_mojo_device.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
@@ -24,7 +23,7 @@ FakeUsbDeviceManager::FakeUsbDeviceManager() {}
 FakeUsbDeviceManager::~FakeUsbDeviceManager() {}
 
 void FakeUsbDeviceManager::EnumerateDevicesAndSetClient(
-    mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client,
+    mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
     EnumerateDevicesAndSetClientCallback callback) {
   GetDevices(nullptr, std::move(callback));
   SetClient(std::move(client));
@@ -90,9 +89,11 @@ void FakeUsbDeviceManager::OpenFileDescriptor(
 #endif  // defined(OS_CHROMEOS)
 
 void FakeUsbDeviceManager::SetClient(
-    mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client) {
+    mojom::UsbDeviceManagerClientAssociatedPtrInfo client) {
   DCHECK(client);
-  clients_.Add(std::move(client));
+  mojom::UsbDeviceManagerClientAssociatedPtr client_ptr;
+  client_ptr.Bind(std::move(client));
+  clients_.AddPtr(std::move(client_ptr));
 }
 
 void FakeUsbDeviceManager::AddReceiver(
@@ -108,8 +109,10 @@ mojom::UsbDeviceInfoPtr FakeUsbDeviceManager::AddDevice(
   auto device_info = device->GetDeviceInfo().Clone();
 
   // Notify all the clients.
-  for (auto& client : clients_)
-    client->OnDeviceAdded(device_info->Clone());
+  clients_.ForAllPtrs(
+      [&device_info](device::mojom::UsbDeviceManagerClient* client) {
+        client->OnDeviceAdded(device_info->Clone());
+      });
   return device_info;
 }
 
@@ -122,8 +125,10 @@ void FakeUsbDeviceManager::RemoveDevice(
   devices_.erase(device->guid());
 
   // Notify all the clients
-  for (auto& client : clients_)
-    client->OnDeviceRemoved(device_info->Clone());
+  clients_.ForAllPtrs(
+      [&device_info](device::mojom::UsbDeviceManagerClient* client) {
+        client->OnDeviceRemoved(device_info->Clone());
+      });
 
   device->NotifyDeviceRemoved();
 }
