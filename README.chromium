@@ -318,3 +318,10 @@ D. Local Modifications
    https://unicode-org.atlassian.net/browse/CLDR-13256
  - upstream PR:
    https://github.com/unicode-org/cldr/pull/142
+
+17. Remove obsolete U_HAVE_STD_ATOMICS and similar @internal macros.
+  - patches/remove_atomic_macros.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20729
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/712
