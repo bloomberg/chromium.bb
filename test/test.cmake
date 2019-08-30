@@ -134,6 +134,10 @@ if(NOT BUILD_SHARED_LIBS)
       list(REMOVE_ITEM AOM_UNIT_TEST_COMMON_SOURCES
                        "${AOM_ROOT}/test/yuv_temporal_filter_test.cc")
     endif()
+    if(NOT CONFIG_AV1_HIGHBITDEPTH)
+      list(REMOVE_ITEM AOM_UNIT_TEST_COMMON_SOURCES
+                       "${AOM_ROOT}/test/coding_path_sync.cc")
+    endif()
   endif()
 
   list(APPEND AOM_UNIT_TEST_COMMON_INTRIN_NEON

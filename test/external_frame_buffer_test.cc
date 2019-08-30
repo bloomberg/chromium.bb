@@ -315,6 +315,7 @@ class ExternalFrameBufferTest : public ::testing::Test {
     video_->Begin();
 
     aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
+    cfg.allow_lowbitdepth = !FORCE_HIGHBITDEPTH_DECODING;
     decoder_ = new libaom_test::AV1Decoder(cfg, 0);
     ASSERT_TRUE(decoder_ != NULL);
   }
@@ -382,6 +383,7 @@ class ExternalFrameBufferNonRefTest : public ExternalFrameBufferTest {
     video_->Begin();
 
     aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
+    cfg.allow_lowbitdepth = !FORCE_HIGHBITDEPTH_DECODING;
     decoder_ = new libaom_test::AV1Decoder(cfg, 0);
     ASSERT_TRUE(decoder_ != NULL);
   }
