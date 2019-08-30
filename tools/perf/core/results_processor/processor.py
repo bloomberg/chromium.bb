@@ -89,7 +89,7 @@ def ProcessOptions(options):
     return
 
   def resolve_dir(path):
-    return os.path.abspath(os.path.expanduser(path))
+    return os.path.realpath(os.path.expanduser(path))
 
   options.output_dir = resolve_dir(options.output_dir)
 
@@ -162,7 +162,7 @@ def _DefaultOutputDir():
   """
   main_module = sys.modules['__main__']
   if hasattr(main_module, '__file__'):
-    return os.path.abspath(os.path.dirname(main_module.__file__))
+    return os.path.realpath(os.path.dirname(main_module.__file__))
   else:
     return os.getcwd()
 
