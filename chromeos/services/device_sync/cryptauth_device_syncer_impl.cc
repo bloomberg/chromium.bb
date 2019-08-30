@@ -346,7 +346,7 @@ void CryptAuthDeviceSyncerImpl::GetFeatureStatuses() {
 void CryptAuthDeviceSyncerImpl::OnGetFeatureStatusesFinished(
     const CryptAuthFeatureStatusGetter::IdToFeatureStatusMap&
         id_to_feature_status_map,
-    const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+    CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK_EQ(State::kWaitingForFeatureStatuses, state_);
 
   // We require that the local device feature statuses are returned; the local
@@ -597,7 +597,7 @@ void CryptAuthDeviceSyncerImpl::ShareGroupPrivateKey() {
 }
 
 void CryptAuthDeviceSyncerImpl::OnShareGroupPrivateKeyFinished(
-    const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+    CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK_EQ(State::kWaitingForGroupPrivateKeySharing, state_);
 
   switch (CryptAuthDeviceSyncResult::GetResultType(device_sync_result_code)) {
@@ -614,7 +614,7 @@ void CryptAuthDeviceSyncerImpl::OnShareGroupPrivateKeyFinished(
 }
 
 void CryptAuthDeviceSyncerImpl::FinishAttempt(
-    const CryptAuthDeviceSyncResult::ResultCode& result_code) {
+    CryptAuthDeviceSyncResult::ResultCode result_code) {
   SetState(State::kFinished);
 
   metadata_syncer_.reset();

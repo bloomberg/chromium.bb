@@ -511,7 +511,7 @@ void CryptAuthMetadataSyncerImpl::FilterMetadataAndFinishAttempt() {
 }
 
 void CryptAuthMetadataSyncerImpl::FinishAttempt(
-    const CryptAuthDeviceSyncResult::ResultCode& result_code) {
+    CryptAuthDeviceSyncResult::ResultCode result_code) {
   cryptauth_client_.reset();
   key_creator_.reset();
   encryptor_.reset();
