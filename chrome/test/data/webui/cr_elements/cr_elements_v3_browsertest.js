@@ -78,6 +78,18 @@ TEST_F('CrElementsRadioButtonV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsRadioGroupV3Test = class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_radio_group_test.m.js';
+  }
+};
+
+TEST_F('CrElementsRadioGroupV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsToastV3Test = class extends CrElementsV3BrowserTest {
   /** @override */
   get browsePreload() {

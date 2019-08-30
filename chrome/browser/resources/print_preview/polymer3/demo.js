@@ -7,6 +7,7 @@ import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
+import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
@@ -51,8 +52,13 @@ class HelloPolymer3Element extends PolymerElement {
 
       <iron-icon icon="cr:error"></iron-icon>
 
-      <cr-radio-button>one</cr-radio-button>
-      <cr-radio-button>two</cr-radio-button>
+      <div>
+        <cr-radio-group id="radioGroup" selected="cr">
+          <cr-radio-button name="cr">cr</cr-radio-button>
+          <cr-radio-button name="radio">radio</cr-radio-button>
+          <cr-radio-button name="buttons">buttons</cr-radio-button>
+        </cr-radio-group>
+      </div>
     `;
   }
 
