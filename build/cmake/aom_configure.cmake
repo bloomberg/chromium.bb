@@ -24,10 +24,15 @@ include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
 include("${AOM_ROOT}/build/cmake/util.cmake")
 
-if(CONFIG_LOWBITDEPTH)
-  message(WARNING "CONFIG_LOWBITDEPTH has been removed, \
-    enabling FORCE_HIGHBITDEPTH_DECODING")
-  set(FORCE_HIGHBITDEPTH_DECODING 1 CACHE NUMBER "${cmake_cmdline_helpstring}")
+if(DEFINED CONFIG_LOWBITDEPTH)
+  message(WARNING "CONFIG_LOWBITDEPTH has been removed. \
+    Use -DFORCE_HIGHBITDEPTH_DECODING=1 instead of -DCONFIG_LOWBITDEPTH=0 \
+    and -DFORCE_HIGHBITDEPTH_DECODING=0 instead of -DCONFIG_LOWBITDEPTH=1.")
+  if(NOT CONFIG_LOWBITDEPTH)
+    set(FORCE_HIGHBITDEPTH_DECODING
+        1
+        CACHE NUMBER "${cmake_cmdline_helpstring}" FORCE)
+  endif()
 endif()
 
 if(FORCE_HIGHBITDEPTH_DECODING AND NOT CONFIG_AV1_HIGHBITDEPTH)
