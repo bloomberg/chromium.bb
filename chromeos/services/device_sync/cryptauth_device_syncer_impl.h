@@ -119,7 +119,8 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
       std::unique_ptr<CryptAuthKey> new_group_key,
       const base::Optional<cryptauthv2::EncryptedGroupPrivateKey>&
           encrypted_group_private_key,
-      const CryptAuthDeviceSyncResult& device_sync_result);
+      const base::Optional<cryptauthv2::ClientDirective>& new_client_directive,
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
   void SetGroupKey(const CryptAuthKey& new_group_key);
 

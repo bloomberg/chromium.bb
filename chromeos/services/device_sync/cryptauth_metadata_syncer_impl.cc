@@ -533,9 +533,7 @@ void CryptAuthMetadataSyncerImpl::FinishAttempt(
 
   OnAttemptFinished(id_to_device_metadata_packet_map_,
                     std::move(new_group_key_), encrypted_group_private_key,
-                    CryptAuthDeviceSyncResult(
-                        result_code, false /* did_device_registry_change */,
-                        new_client_directive));
+                    new_client_directive, result_code);
 }
 
 std::ostream& operator<<(std::ostream& stream,

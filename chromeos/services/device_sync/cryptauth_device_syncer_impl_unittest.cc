@@ -239,10 +239,7 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
                       : nullptr;
     metadata_syncer()->FinishAttempt(
         id_to_device_metadata_packet_map, std::move(new_group_key_ptr),
-        private_key,
-        CryptAuthDeviceSyncResult(device_sync_result_code,
-                                  false /* did_device_registry_change */,
-                                  new_client_directive));
+        private_key, new_client_directive, device_sync_result_code);
   }
 
   void VerifyFeatureStatusGetterInput(
