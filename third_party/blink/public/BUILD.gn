@@ -175,7 +175,6 @@ source_set("blink_headers") {
     "platform/modules/webrtc/track_observer.h",
     "platform/modules/webrtc/webrtc_logging.h",
     "platform/modules/webrtc/webrtc_source.h",
-    "platform/modules/webrtc/webrtc_video_frame_adapter.h",
     "platform/platform.h",
     "platform/pointer_id.h",
     "platform/pointer_properties.h",
