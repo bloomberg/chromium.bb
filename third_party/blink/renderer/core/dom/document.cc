@@ -2439,6 +2439,7 @@ void Document::PropagateStyleToViewport() {
   scoped_refptr<ComputedStyle> new_viewport_style =
       ComputedStyle::Clone(viewport_style);
   bool changed = false;
+  bool update_scrollbar_style = false;
 
   // Writing mode and direction
   {
@@ -2581,6 +2582,9 @@ void Document::PropagateStyleToViewport() {
                                    static_cast<OverscrollBehaviorType>(
                                        overflow_style->OverscrollBehaviorY())));
       }
+
+      if (overflow_style->HasPseudoStyle(kPseudoIdScrollbar))
+        update_scrollbar_style = true;
     }
 
     PROPAGATE_VALUE(overflow_x, OverflowX, SetOverflowX)
@@ -2605,7 +2609,9 @@ void Document::PropagateStyleToViewport() {
     new_viewport_style->UpdateFontOrientation();
     GetLayoutView()->SetStyle(new_viewport_style);
     SetupFontBuilder(*new_viewport_style);
+  }
 
+  if (changed || update_scrollbar_style) {
     if (PaintLayerScrollableArea* scrollable_area =
             GetLayoutView()->GetScrollableArea()) {
       if (scrollable_area->HorizontalScrollbar() &&
