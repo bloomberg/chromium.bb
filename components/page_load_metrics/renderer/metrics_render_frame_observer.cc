@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/page_load_metrics/metrics_render_frame_observer.h"
+#include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 
 #include <string>
 #include <utility>
@@ -10,8 +10,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/renderer/page_load_metrics/page_timing_metrics_sender.h"
-#include "chrome/renderer/page_load_metrics/page_timing_sender.h"
+#include "components/page_load_metrics/renderer/page_timing_metrics_sender.h"
+#include "components/page_load_metrics/renderer/page_timing_sender.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_document.h"

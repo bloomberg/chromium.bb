@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/page_load_metrics/page_resource_data_use.h"
+#include "components/page_load_metrics/renderer/page_resource_data_use.h"
 
 #include "base/stl_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"

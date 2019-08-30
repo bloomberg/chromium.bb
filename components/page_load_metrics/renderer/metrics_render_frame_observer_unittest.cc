@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/page_load_metrics/metrics_render_frame_observer.h"
+#include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 
 #include <memory>
 #include <utility>
@@ -10,9 +10,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
-#include "chrome/renderer/page_load_metrics/fake_page_timing_sender.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/page_load_metrics/common/test/weak_mock_timer.h"
+#include "components/page_load_metrics/renderer/fake_page_timing_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

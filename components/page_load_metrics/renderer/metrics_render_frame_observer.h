@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_PAGE_LOAD_METRICS_METRICS_RENDER_FRAME_OBSERVER_H_
-#define CHROME_RENDERER_PAGE_LOAD_METRICS_METRICS_RENDER_FRAME_OBSERVER_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_RENDERER_METRICS_RENDER_FRAME_OBSERVER_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_RENDERER_METRICS_RENDER_FRAME_OBSERVER_H_
 
 #include <memory>
 #include <set>
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/renderer/page_load_metrics/page_resource_data_use.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
+#include "components/page_load_metrics/renderer/page_resource_data_use.h"
 #include "components/subresource_filter/content/renderer/ad_resource_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
@@ -122,4 +122,4 @@ class MetricsRenderFrameObserver
 
 }  // namespace page_load_metrics
 
-#endif  // CHROME_RENDERER_PAGE_LOAD_METRICS_METRICS_RENDER_FRAME_OBSERVER_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_RENDERER_METRICS_RENDER_FRAME_OBSERVER_H_
