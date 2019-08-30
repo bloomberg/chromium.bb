@@ -241,50 +241,60 @@ def disable_buffering():
     os.environ['PYTHONUNBUFFERED'] = 'x'
 
 
-def fix_python_cmd(cmd, env=None):
-  """Returns a fixed command line to explicitly invoke python if cmd is running
-  'python' or a '.py' script.
+def add_python_cmd(cmd):
+  """Adds a Python executable to the front of the command if running a .py file.
 
-  This will probe $PATH in `env` to see if there's an available python in the
-  current $PATH (allowing tasks to bring their own python). If there's no python
-  (or python.exe) in $PATH, this will fall back to sys.executable.
+  No-op if arg0 is anything besides a .py file.
 
-  NOTE: This should only be used for python2. If tasks want to include python3,
-  they should make sure that their task explicitly invokes python3.
+  Args:
+    cmd: A list containing the command to be run.
+
+  Returns:
+    |cmd| with a Python executable appended to the front if necessary.
   """
-  if cmd[0] == 'python':
-    cmd = cmd[1:]
-  elif cmd[0].endswith('.py'):
-    pass
-  else:
-    return cmd
+  if cmd[0].endswith('.py'):
+    if sys.platform == 'win32':
+      return ['python.exe'] + cmd
+    return ['python'] + cmd
+  return cmd
 
-  # At this point we need to prepend some resolved python to cmd.
+
+def find_executable(cmd, env=None):
+  """Finds the executable to run the given command via $PATH.
+
+  Automatically appends an appropriate Python executable to the front if arg0 is
+  a .py file before searching.
+
+  Args:
+    cmd: A list containing the command to be run.
+    env: The environment to use instead of os.environ.
+
+  Returns:
+    |cmd| with its arg0 executable changed to the absolute path for the
+    executable found via $PATH. arg0 is left unchanged if it is not found in
+    $PATH
+  """
+  cmd = add_python_cmd(cmd)
 
   if sys.platform == 'win32':
-    python_exe = 'python.exe'
     check = os.path.isfile
   else:
-    python_exe = 'python'
     def check(candidate):
       try:
         return bool(os.stat(candidate).st_mode | os.path.stat.S_IEXEC)
       except OSError:
         return False
 
-  found_python = sys.executable
-
   paths = (os.environ if env is None else env).get('PATH', '').split(os.pathsep)
   for path in paths:
     if path == '':
       continue
-
-    candidate = os.path.join(path, python_exe)
+    candidate = os.path.join(path, cmd[0])
     if check(candidate):
-      found_python = candidate
+      cmd[0] = candidate
       break
 
-  return [found_python] + cmd
+  return cmd
 
 
 def read_json(filepath):

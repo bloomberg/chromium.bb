@@ -755,7 +755,7 @@ def map_and_run(data, constant_run_path):
             env = get_command_env(
                 tmp_dir, cipd_info, run_dir, data.env, data.env_prefix, out_dir,
                 data.bot_file)
-            command = tools.fix_python_cmd(command, env)
+            command = tools.find_executable(command, env)
             command = process_command(command, out_dir, data.bot_file)
             file_path.ensure_command_has_abs_path(command, cwd)
 
