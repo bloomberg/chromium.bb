@@ -7778,11 +7778,23 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Send message
       </message>
       <if expr="is_android">
+        <message name="IDS_NOTIFICATION_BUTTON_MANAGE" desc="Text of a button shown on notification permission requests, that opens the Chrome notifications settings page. This allows users to edit notification settings when a site asks them to allow notifications.">
+          Manage
+        </message>
+        <message name="IDS_NOTIFICATION_QUIET_PERMISSION_MINI_INFOBAR_DETAILS_LINK" desc="Blue text on a notification infobar that when clicked expands the infobar to show more details.">
+          Details
+        </message>
+        <message name="IDS_NOTIFICATION_QUIET_PERMISSION_MINI_INFOBAR_MESSAGE" desc="Text on an infobar that informs the user that notifications are blocked, in a very short form. [CHAR_LIMIT=20]">
+          Notifications blocked.
+        </message>
+        <message name="IDS_NOTIFICATION_QUIET_PERMISSION_INFOBAR_TITLE" desc="Title of an infobar that informs the user that notifications are blocked. [CHAR_LIMIT=32]">
+          Notifications blocked
+        </message>
         <message name="IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_TITLE" desc="Text used as notification title when requesting permission for Web Notifications via a notification.">
-          Show notifications for <ph name="ORIGIN">$1<ex>example.com</ex></ph>?
+          Notifications for <ph name="ORIGIN">$1<ex>example.com</ex></ph> are blocked
         </message>
         <message name="IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_MESSAGE" desc="Text used as notification message when requesting permission for Web Notifications via a notification.">
-          Notifications are currently blocked for all sites except for sites you individually allow.
+          Notifications are automatically blocked for all sites except ones you allow
         </message>
       </if>
 
