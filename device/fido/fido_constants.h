@@ -43,6 +43,10 @@ enum class FidoReturnCode : uint8_t {
   // because the authenticator has insufficient storage.
   kStorageFull,
   kAuthenticatorMissingBioEnrollment,
+
+  // The following correspond to errors returned by the Windows WebAuthn API.
+  kWinInvalidStateError,
+  kWinNotAllowedError,
 };
 
 // Length of the U2F challenge parameter:

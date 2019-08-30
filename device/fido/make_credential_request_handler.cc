@@ -23,6 +23,7 @@
 
 #if defined(OS_WIN)
 #include "device/fido/win/authenticator.h"
+#include "device/fido/win/type_conversions.h"
 #include "third_party/microsoft_webauthn/webauthn.h"
 #endif
 
@@ -295,6 +296,17 @@ void MakeCredentialRequestHandler::HandleResponse(
       state_ != State::kWaitingForSecondTouch) {
     return;
   }
+
+#if defined(OS_WIN)
+  if (authenticator->IsWinNativeApiAuthenticator()) {
+    state_ = State::kFinished;
+    CancelActiveAuthenticators(authenticator->GetId());
+    OnAuthenticatorResponse(authenticator,
+                            WinCtapDeviceResponseCodeToFidoReturnCode(status),
+                            std::move(response));
+    return;
+  }
+#endif
 
   // Requests that require a PIN should follow the |GetTouch| path initially.
   DCHECK(state_ == State::kWaitingForSecondTouch ||

@@ -1102,6 +1102,18 @@ void AuthenticatorCommon::OnRegisterResponse(
               kStorageFull,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
+    case device::FidoReturnCode::kWinInvalidStateError:
+      InvokeCallbackAndCleanup(
+          std::move(make_credential_response_callback_),
+          blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr,
+          Focus::kDoCheck);
+      return;
+    case device::FidoReturnCode::kWinNotAllowedError:
+      InvokeCallbackAndCleanup(
+          std::move(make_credential_response_callback_),
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
+          Focus::kDoCheck);
+      return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
       DCHECK(authenticator);
@@ -1327,6 +1339,17 @@ void AuthenticatorCommon::OnSignResponse(
               kStorageFull,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
+    case device::FidoReturnCode::kWinInvalidStateError:
+      NOTREACHED() << "Should not be possible for assertions.";
+      InvokeCallbackAndCleanup(
+          std::move(get_assertion_response_callback_),
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      return;
+    case device::FidoReturnCode::kWinNotAllowedError:
+      InvokeCallbackAndCleanup(
+          std::move(get_assertion_response_callback_),
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
       DCHECK(authenticator);
@@ -1380,7 +1403,7 @@ void AuthenticatorCommon::SignalFailureToRequestDelegate(
 
   // If WebAuthnUi is enabled, this error blocks until after receiving user
   // acknowledgement. Otherwise, the error is returned right away.
-  if (request_delegate_->DoesBlockRequestOnFailure(authenticator, reason)) {
+  if (request_delegate_->DoesBlockRequestOnFailure(reason)) {
     // Cancel pending authenticator requests before the error dialog is shown.
     request_->CancelActiveAuthenticators();
     return;

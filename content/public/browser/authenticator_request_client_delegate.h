@@ -54,9 +54,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   AuthenticatorRequestClientDelegate();
   ~AuthenticatorRequestClientDelegate() override;
 
-  // Called when the request fails for the given |reason|.  |authenticator|
-  // points to the FidoAuthenticator used in the request that resulted in the
-  // error. It may be nullptr if |reason| is kTimeout.
+  // Called when the request fails for the given |reason|.
   //
   // Embedders may return true if they want AuthenticatorImpl to hold off from
   // resolving the WebAuthn request with an error, e.g. because they want the
@@ -64,9 +62,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // eventually invoke the FidoRequestHandlerBase::CancelCallback in order to
   // resolve the request. Returning false causes AuthenticatorImpl to resolve
   // the request with the error right away.
-  virtual bool DoesBlockRequestOnFailure(
-      const ::device::FidoAuthenticator* authenticator,
-      InterestingFailureReason reason);
+  virtual bool DoesBlockRequestOnFailure(InterestingFailureReason reason);
 
   // Supplies callbacks that the embedder can invoke to initiate certain
   // actions, namely: cancel the request, start the request over, initiate BLE

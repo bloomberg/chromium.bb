@@ -27,6 +27,11 @@
 #include "device/fido/mac/authenticator.h"
 #endif  // defined(OS_MACOSX)
 
+#if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
+#include "device/fido/win/type_conversions.h"
+#endif
+
 namespace device {
 
 namespace {
@@ -302,6 +307,25 @@ void GetAssertionRequestHandler::HandleResponse(
                     << " because no longer waiting for touch";
     return;
   }
+
+#if defined(OS_WIN)
+  if (authenticator->IsWinNativeApiAuthenticator()) {
+    state_ = State::kFinished;
+    CancelActiveAuthenticators(authenticator->GetId());
+    if (status != CtapDeviceResponseCode::kSuccess) {
+      OnAuthenticatorResponse(authenticator,
+                              WinCtapDeviceResponseCodeToFidoReturnCode(status),
+                              base::nullopt);
+      return;
+    }
+    DCHECK(responses_.empty());
+    responses_.emplace_back(std::move(*response));
+    OnAuthenticatorResponse(authenticator,
+                            WinCtapDeviceResponseCodeToFidoReturnCode(status),
+                            std::move(responses_));
+    return;
+  }
+#endif
 
   // Requests that require a PIN should follow the |GetTouch| path initially.
   DCHECK(state_ == State::kWaitingForSecondTouch ||

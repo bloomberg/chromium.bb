@@ -61,9 +61,7 @@ class ChromeAuthenticatorRequestDelegate
   AuthenticatorRequestDialogModel* WeakDialogModelForTesting() const;
 
   // content::AuthenticatorRequestClientDelegate:
-  bool DoesBlockRequestOnFailure(
-      const ::device::FidoAuthenticator* authenticator,
-      InterestingFailureReason reason) override;
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override;
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
       base::Closure start_over_callback,

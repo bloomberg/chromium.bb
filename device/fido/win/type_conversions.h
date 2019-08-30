@@ -43,9 +43,25 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 std::vector<WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
     const std::vector<PublicKeyCredentialDescriptor>* credentials);
 
+// WinErrorNameToCtapDeviceResponseCode maps a string returned by
+// WebAuthNGetErrorName() to a CtapDeviceResponseCode.
+//
+// The Windows WebAuthn API returns errors as defined by the WebAuthn spec,
+// whereas FidoAuthenticator callbacks generally resolve with a
+// CtapDeviceResponseCode. This method hence yields a "synthetic"
+// CtapDeviceResponseCode that can then be mapped to the corresponding
+// FidoReturnCode by calling WinCtapDeviceResponseCodeToFidoReturnCode().
 COMPONENT_EXPORT(DEVICE_FIDO)
 CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
     const base::string16& error_name);
+
+// WinCtapDeviceResponseCodeToFidoReturnCode returns the FidoReturnCode that
+// corresponds to a synthetic CtapDeviceResponseCode obtained from
+// WinErrorNameToCtapDeviceResponseCode(). Return values are one of
+// {kSuccess, kWinInvalidStateError, kWinNotAllowedError}.
+COMPONENT_EXPORT(DEVICE_FIDO)
+FidoReturnCode WinCtapDeviceResponseCodeToFidoReturnCode(
+    CtapDeviceResponseCode status);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 uint32_t ToWinAttestationConveyancePreference(

@@ -123,19 +123,11 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
 }
 
 bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
-    const ::device::FidoAuthenticator* authenticator,
     InterestingFailureReason reason) {
   if (!IsWebAuthnUIEnabled())
     return false;
   if (!weak_dialog_model_)
     return false;
-
-#if defined(OS_WIN)
-  // Errors from the Windows API should not result in a Chrome error dialog.
-  if (authenticator && authenticator->IsWinNativeApiAuthenticator()) {
-    return false;
-  }
-#endif  // defined(OS_WIN)
 
   switch (reason) {
     case InterestingFailureReason::kTimeout:
