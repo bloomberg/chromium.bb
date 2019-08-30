@@ -4,6 +4,7 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
@@ -59,6 +60,13 @@ class HelloPolymer3Element extends PolymerElement {
           <cr-radio-button name="buttons">buttons</cr-radio-button>
         </cr-radio-group>
       </div>
+
+      <div>
+        <cr-button on-click="showDrawer_">Show drawer</cr-button>
+        <cr-drawer heading="Drawer">
+          <div class="drawer-content">Content of drawer</div>
+        </cr-drawer>
+      </div>
     `;
   }
 
@@ -75,6 +83,11 @@ class HelloPolymer3Element extends PolymerElement {
   /** @private */
   onClick_() {
     this.shadowRoot.querySelector('cr-toast').show(2000);
+  }
+
+  /** @private */
+  showDrawer_() {
+    this.shadowRoot.querySelector('cr-drawer').openDrawer();
   }
 }  // class HelloPolymer3
 

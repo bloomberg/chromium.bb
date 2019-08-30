@@ -31,6 +31,7 @@ group("closure_compile") {
     # Targets for auto-generated Polymer 3 JS Modules
     "cr_button:closure_compile_module",
     "cr_checkbox:closure_compile_module",
+    "cr_drawer:closure_compile_module",
     "cr_icon_button:closure_compile_module",
     "cr_input:closure_compile_module",
     "cr_radio_button:closure_compile_module",
@@ -118,6 +119,7 @@ group("polymer3_elements") {
     ":shared_vars_css_module",
     "cr_button:cr_button_module",
     "cr_checkbox:cr_checkbox_module",
+    "cr_drawer:cr_drawer_module",
     "cr_icon_button:cr_icon_button_module",
     "cr_input:cr_input_module",
     "cr_input:cr_input_style_css_module",
