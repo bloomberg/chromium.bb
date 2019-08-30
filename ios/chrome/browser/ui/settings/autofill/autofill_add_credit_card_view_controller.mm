@@ -203,6 +203,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
   return nil;
 }
+
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+
+  // Use |ObjCCast| because |cell| might not be |TableViewTextEditCell|.
+  // Set the delegate and style for only |TableViewTextEditCell| type of cell
+  // not other types.
+  TableViewTextEditCell* editCell =
+      base::mac::ObjCCast<TableViewTextEditCell>(cell);
+  editCell.textField.delegate = self;
+  editCell.selectionStyle = UITableViewCellSelectionStyleNone;
+
+  return cell;
+}
+
 #pragma mark - CreditCardConsumer
 
 // TODO(crbug.com/984545): This method will be called from
