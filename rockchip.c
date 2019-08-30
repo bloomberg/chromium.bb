@@ -171,9 +171,10 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 		uint32_t h_mbs = DIV_ROUND_UP(height, 16);
 
 		uint32_t aligned_width = w_mbs * 16;
-		uint32_t aligned_height = h_mbs * 16;
 
-		drv_bo_from_format(bo, aligned_width, aligned_height, format);
+		// TODO(b/140152839): Align height by 16 once camera HAL
+		// supports multi planar format.
+		drv_bo_from_format(bo, aligned_width, height, format);
 		/*
 		 * drv_bo_from_format updates total_size. Add an extra data space for rockchip video
 		 * driver to store motion vectors.
