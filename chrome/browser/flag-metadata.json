@@ -2417,17 +2417,7 @@
     "name": "new-overview-tablet-layout",
     "owners": [ "sammiequon" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "new-password-form-parsing",
-    "owners": [ "dvadym" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "new-password-form-parsing-for-saving",
-    "owners": [ "dvadym" ],
-    "expiry_milestone": 76
-  },
+  }, 
   {
     "name": "new-tabstrip-animation",
     "owners": [ "tbergquist" ],
@@ -2706,11 +2696,6 @@
   {
     "name": "on-the-fly-mhtml-hash-computation",
     "owners": [ "mtlieuu", "offline-dev@chromium.org" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "only-new-password-form-parsing",
-    "owners": [ "dvadym" ],
     "expiry_milestone": 76
   },
   {
