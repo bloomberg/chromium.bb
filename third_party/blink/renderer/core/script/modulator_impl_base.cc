@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/modulator_impl_base.h"
 
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"

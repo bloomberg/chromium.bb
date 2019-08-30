@@ -36,6 +36,7 @@
 #include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/common/loader/request_destination.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
