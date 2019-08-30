@@ -38,15 +38,12 @@ class V4L2DecodeSurface;
 class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
                                                public V4L2DecodeSurfaceHandler {
  public:
-  using GetFramePoolCB = base::RepeatingCallback<DmabufVideoFramePool*()>;
-
   // Create V4L2SliceVideoDecoder instance. The success of the creation doesn't
   // ensure V4L2SliceVideoDecoder is available on the device. It will be
   // determined in Initialize().
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-      GetFramePoolCB get_pool_cb);
+      std::unique_ptr<DmabufVideoFramePool> frame_pool);
 
   static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
@@ -83,9 +80,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
 
   V4L2SliceVideoDecoder(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       scoped_refptr<V4L2Device> device,
-      GetFramePoolCB get_pool_cb);
+      std::unique_ptr<DmabufVideoFramePool> frame_pool);
   ~V4L2SliceVideoDecoder() override;
   void Destroy() override;
 
@@ -222,8 +218,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
   // VideoFrame manager used to allocate and recycle video frame.
-  GetFramePoolCB get_pool_cb_;
-  DmabufVideoFramePool* frame_pool_ = nullptr;
+  std::unique_ptr<DmabufVideoFramePool> frame_pool_;
   // Video decoder used to parse stream headers by software.
   std::unique_ptr<AcceleratedVideoDecoder> avd_;
 
