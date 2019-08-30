@@ -2849,6 +2849,7 @@ test("unit_tests") {
     "../browser/chrome_content_browser_client_unittest.cc",
     "../browser/chrome_process_singleton_win_unittest.cc",
     "../browser/command_updater_impl_unittest.cc",
+    "../browser/complex_tasks/endpoint_fetcher/endpoint_fetcher_unittest.cc",
     "../browser/complex_tasks/task_tab_helper_unittest.cc",
     "../browser/component_updater/chrome_component_updater_configurator_unittest.cc",
     "../browser/component_updater/optimization_hints_component_installer_unittest.cc",
