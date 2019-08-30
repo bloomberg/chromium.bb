@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/two_keys_adapter_map.h"
+#include "third_party/blink/public/platform/modules/peerconnection/two_keys_adapter_map.h"
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace blink {
 
 class TwoKeysAdapterMapTest : public ::testing::Test {
  public:
@@ -75,4 +75,4 @@ TEST_F(TwoKeysAdapterMapTest, EraseInvalidElementShouldReturnFalse) {
   EXPECT_FALSE(map_.EraseBySecondary("invalid"));
 }
 
-}  // namespace content
+}  // namespace blink

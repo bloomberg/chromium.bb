@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_TWO_KEYS_MAP_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_TWO_KEYS_MAP_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_TWO_KEYS_ADAPTER_MAP_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_TWO_KEYS_ADAPTER_MAP_H_
 
 #include <map>
 #include <memory>
@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 
-namespace content {
+namespace blink {
 
 // A map with up to two keys per entry. An element is inserted with a key, this
 // is the primary key. A secondary key can optionally be set to the same entry
@@ -27,6 +27,10 @@ namespace content {
 // webrtc/blink object that was used to create the adapter and the secondary key
 // is based on the resulting blink/webrtc object after the adapter has been
 // initialized.
+//
+// TODO(crbug.com/787254): Move this class out of the Blink exposed API when
+// its clients get Onion souped, and change the use of std::map below to
+// WTF::HashMap.
 template <typename PrimaryKey, typename SecondaryKey, typename Value>
 class TwoKeysAdapterMap {
  public:
@@ -116,6 +120,8 @@ class TwoKeysAdapterMap {
   bool empty() const { return entries_by_primary_.empty(); }
 
  private:
+  // TODO(crbug.com/787254): Move this class out of the Blink exposed API when
+  // its clients get Onion souped.
   struct Entry {
     Entry(Value value) : value(std::move(value)) {}
 
@@ -128,6 +134,6 @@ class TwoKeysAdapterMap {
   typename std::map<SecondaryKey, Entry*> entries_by_secondary_;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_TWO_KEYS_MAP_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_TWO_KEYS_ADAPTER_MAP_H_
