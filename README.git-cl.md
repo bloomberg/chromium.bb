@@ -6,20 +6,6 @@ git but unfamiliar with the code review process supported by Rietveld and
 Gerrit.
 
 
-## Rietveld concepts and terms
-
-A Rietveld review is for discussion of a single change or patch. You upload a
-proposed change, the reviewer comments on your change, and then you can upload a
-revised version of your change. Rietveld stores the history of uploaded patches
-as well as the comments, and can compute diffs in between these patches. The
-history of a patch is very much like a small branch in git, but since Rietveld
-is VCS-agnostic, the concepts don't map perfectly. The identifier for a single
-review thread including patches and comments in Rietveld is called an **issue**.
-
-Rietveld provides a basic uploader that understands git. This program is used by
-git-cl, and is included in the git-cl repo as upload.py.
-
-
 ## Basic interaction with git
 
 The fundamental problem you encounter when you try to mix git and code review is
