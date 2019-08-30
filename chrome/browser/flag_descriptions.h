@@ -986,6 +986,9 @@ extern const char kResourceLoadSchedulerDescription[];
 extern const char kPrefetchRedirectErrorName[];
 extern const char kPrefetchRedirectErrorDescription[];
 
+extern const char kPrefetchMainResourceNetworkIsolationKeyName[];
+extern const char kPrefetchMainResourceNetworkIsolationKeyDescription[];
+
 extern const char kSafeBrowsingUseAPDownloadVerdictsName[];
 extern const char kSafeBrowsingUseAPDownloadVerdictsDescription[];
 

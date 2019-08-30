@@ -2938,6 +2938,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPrefetchRedirectErrorDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPrefetchRedirectError)},
 
+    {"prefetch-main-resource-network-isolation-key",
+     flag_descriptions::kPrefetchMainResourceNetworkIsolationKeyName,
+     flag_descriptions::kPrefetchMainResourceNetworkIsolationKeyDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         network::features::kPrefetchMainResourceNetworkIsolationKey)},
+
 #if defined(OS_ANDROID)
     {"omnibox-spare-renderer", flag_descriptions::kOmniboxSpareRendererName,
      flag_descriptions::kOmniboxSpareRendererDescription, kOsAndroid,

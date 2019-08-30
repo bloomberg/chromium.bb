@@ -1639,6 +1639,13 @@ const char kPrefetchRedirectErrorDescription[] =
     "Prefetch requests will not follow redirect responses, and instead be "
     "logged as errors. Redirect responses are still stored in the cache.";
 
+const char kPrefetchMainResourceNetworkIsolationKeyName[] =
+    "Prefetch requests for cross-origin main resources are fetched with a "
+    "special NetworkIsolationKey";
+const char kPrefetchMainResourceNetworkIsolationKeyDescription[] =
+    "Prefetch requests for cross-origin main resources can be reused by next "
+    "top-level navigations when HTTP cache is double-keyed.";
+
 const char kSafeBrowsingUseAPDownloadVerdictsName[] =
     "Request Advanced Protection verdicts when inspecting downloads";
 const char kSafeBrowsingUseAPDownloadVerdictsDescription[] =

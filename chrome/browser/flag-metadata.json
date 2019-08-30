@@ -2831,9 +2831,14 @@
     "expiry_milestone": 76
   },
   {
+    "name": "prefetch-main-resource-network-isolation-key",
+    "owners": [ "dom", "yhirano" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "prefetch-redirect-error",
     "owners": [ "dom", "yhirano" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 85
   },
   {
     "name": "proactive-tab-freeze-and-discard",
