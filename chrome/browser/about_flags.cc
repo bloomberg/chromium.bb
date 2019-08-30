@@ -87,6 +87,7 @@
 #include "components/ntp_tiles/features.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
@@ -854,6 +855,13 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
     {"server and client scores", kOmniboxDocumentProviderServerAndClientScoring,
      base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+
+const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPRealbox[] = {
+    {"ZeroSuggestVariant:15:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
+const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
+    {"NTP Realbox - Remote", kOmniboxOnFocusSuggestionsParamNTPRealbox,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPRealbox),
+     "t3316133" /* variation_id */}};
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
@@ -2694,6 +2702,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProvider)},
+
+    {"omnibox-on-focus-suggestions",
+     flag_descriptions::kOmniboxOnFocusSuggestionsName,
+     flag_descriptions::kOmniboxOnFocusSuggestionsDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOnFocusSuggestions,
+                                    kOmniboxOnFocusSuggestionsVariations,
+                                    "OmniboxBundledExperimentV1")},
 
     {"omnibox-rich-entity-suggestions",
      flag_descriptions::kOmniboxRichEntitySuggestionsName,
