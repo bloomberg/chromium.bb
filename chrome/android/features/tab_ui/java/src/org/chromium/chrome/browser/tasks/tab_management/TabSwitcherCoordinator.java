@@ -232,6 +232,8 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
 
     private TabGridDialogParent.AnimationParams getTabGridDialogAnimationParams(int tabId) {
         int index = mTabListCoordinator.indexOfTab(tabId);
+        assert mTabListCoordinator.getContainerView().findViewHolderForAdapterPosition(index)
+                != null;
         View itemView = mTabListCoordinator.getContainerView()
                                 .findViewHolderForAdapterPosition(index)
                                 .itemView;
@@ -261,6 +263,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
             mTabGridIphItemCoordinator.destroy();
         }
         mMultiThumbnailCardProvider.destroy();
+        mTabSelectionEditorCoordinator.destroy();
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
     }

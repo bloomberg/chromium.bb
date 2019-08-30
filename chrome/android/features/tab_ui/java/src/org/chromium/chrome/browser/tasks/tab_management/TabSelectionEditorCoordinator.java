@@ -96,4 +96,13 @@ class TabSelectionEditorCoordinator {
     TabSelectionEditorController getController() {
         return mTabSelectionEditorMediator;
     }
+
+    /**
+     * Destroy any members that needs clean up.
+     */
+    public void destroy() {
+        mTabListCoordinator.destroy();
+        mTabSelectionEditorMediator.destroy();
+        mTabSelectionEditorLayoutChangeProcessor.destroy();
+    }
 }

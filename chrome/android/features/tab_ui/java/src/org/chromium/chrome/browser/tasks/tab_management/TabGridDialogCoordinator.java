@@ -68,6 +68,9 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
         mMediator.destroy();
         mToolbarCoordinator.destroy();
         mParentLayout.destroy();
+        if (mToolbarCoordinator != null) {
+            mToolbarCoordinator.destroy();
+        }
     }
 
     boolean isVisible() {
