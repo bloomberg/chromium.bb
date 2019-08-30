@@ -238,7 +238,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/webrtc_media_stream_track_adapter_map.h",
     "media/webrtc/webrtc_set_description_observer.cc",
     "media/webrtc/webrtc_set_description_observer.h",
-    "media/webrtc/webrtc_util.h",
     "media/webrtc/webrtc_video_track_source.cc",
     "media/webrtc/webrtc_video_track_source.h",
     "menu_item_builder.cc",

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_UTIL_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_UTIL_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_WEBRTC_UTIL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_WEBRTC_UTIL_H_
 
 #include "base/optional.h"
 
-namespace content {
+namespace blink {
 
+// TODO(crbug.com/787254): Move these template definitions out of the Blink
+// exposed API when all their clients get Onion souped.
 template <typename OptionalT>
 base::Optional<typename OptionalT::value_type> ToBaseOptional(
     const OptionalT& optional) {
@@ -42,6 +44,6 @@ bool OptionalEquals(const OptionalT1& lhs, const OptionalT2& rhs) {
   return *lhs == *rhs;
 }
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_UTIL_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_WEBRTC_UTIL_H_
