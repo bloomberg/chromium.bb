@@ -2804,12 +2804,6 @@ const char kNtpRealboxDescription[] =
     "directly (i.e. not be a \"fake\" box). Search results will show below the "
     "non-fake input (\"realbox\").";
 
-const char kNtpZeroSuggestName[] =
-    "Suggest New Tab Page search results without input";
-const char kNtpZeroSuggestDescription[] =
-    "If enabled, forces on \"Real search box in New Tab Page\" and suggests "
-    "results without any typed input (i.e. on focus).";
-
 const char kEnableImprovedCookieControlsName[] =
     "Enable improved cookie controls UI";
 const char kEnableImprovedCookieControlsDescription[] =
