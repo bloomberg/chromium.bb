@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_IMPL_H_
 
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
@@ -31,7 +32,8 @@ class WebIDBFactoryImpl : public WebIDBFactory {
   void Open(
       const WTF::String& name,
       int64_t version,
-      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+      mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+          pending_receiver,
       int64_t transaction_id,
       std::unique_ptr<WebIDBCallbacks> callbacks,
       std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks) override;

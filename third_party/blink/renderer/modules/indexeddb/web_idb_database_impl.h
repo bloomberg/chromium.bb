@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
@@ -27,11 +28,11 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
   void RenameObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const String& new_name) override;
-  void CreateTransaction(
-      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
-      int64_t transaction_id,
-      const Vector<int64_t>& scope,
-      mojom::IDBTransactionMode mode) override;
+  void CreateTransaction(mojo::PendingAssociatedReceiver<
+                             mojom::blink::IDBTransaction> pending_receiver,
+                         int64_t transaction_id,
+                         const Vector<int64_t>& scope,
+                         mojom::IDBTransactionMode mode) override;
 
   void Close() override;
   void VersionChangeIgnored() override;

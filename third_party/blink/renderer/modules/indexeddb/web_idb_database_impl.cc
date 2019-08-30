@@ -32,11 +32,12 @@ void WebIDBDatabaseImpl::RenameObjectStore(int64_t transaction_id,
 }
 
 void WebIDBDatabaseImpl::CreateTransaction(
-    mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+    mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+        pending_receiver,
     int64_t transaction_id,
     const Vector<int64_t>& object_store_ids,
     mojom::IDBTransactionMode mode) {
-  database_->CreateTransaction(std::move(transaction_request), transaction_id,
+  database_->CreateTransaction(std::move(pending_receiver), transaction_id,
                                object_store_ids, mode);
 }
 

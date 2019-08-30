@@ -31,6 +31,7 @@
 #include <memory>
 #include <utility>
 
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -339,8 +340,8 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
       ExecutionContext::From(script_state)
           ->GetTaskRunner(TaskType::kDatabaseAccess),
       transaction_id);
-  mojom::blink::IDBTransactionAssociatedRequest transaction_request =
-      transaction_backend->CreateRequest();
+  mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+      transaction_receiver = transaction_backend->CreateReceiver();
   auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
       script_state, database_callbacks, std::move(transaction_backend),
       transaction_id, version, std::move(metrics));
@@ -357,7 +358,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
     exception_state.ThrowSecurityError("An internal error occurred.");
     return nullptr;
   }
-  factory->Open(name, version, std::move(transaction_request), transaction_id,
+  factory->Open(name, version, std::move(transaction_receiver), transaction_id,
                 request->CreateWebCallbacks(),
                 database_callbacks->CreateWebCallbacks());
   return request;

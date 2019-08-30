@@ -337,7 +337,7 @@ interface IDBDatabase {
   RenameObjectStore(int64 transaction_id,
                     int64 object_store_id,
                     mojo_base.mojom.String16 new_name);
-  CreateTransaction(associated IDBTransaction& transaction_request,
+  CreateTransaction(pending_associated_receiver<IDBTransaction> transaction_receiver,
                     int64 transaction_id,
                     array<int64> object_store_ids,
                     IDBTransactionMode mode);
@@ -420,7 +420,7 @@ interface IDBFactory {
        associated IDBDatabaseCallbacks database_callbacks,
        mojo_base.mojom.String16 name,
        int64 version,
-       associated IDBTransaction& version_change_transaction_request,
+       pending_associated_receiver<IDBTransaction> version_change_transaction_receiver,
        int64 transaction_id);
   DeleteDatabase(associated IDBCallbacks callbacks,
                  mojo_base.mojom.String16 name, bool force_close);

@@ -31,7 +31,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
@@ -126,11 +126,11 @@ struct TestDatabaseConnection {
   ~TestDatabaseConnection() {}
 
   void Open(IDBFactory* factory) {
-    factory->Open(open_callbacks->CreateInterfacePtrAndBind(),
-                  connection_callbacks->CreateInterfacePtrAndBind(), db_name,
-                  version,
-                  mojo::MakeRequest(&version_change_transaction, task_runner),
-                  upgrade_txn_id);
+    factory->Open(
+        open_callbacks->CreateInterfacePtrAndBind(),
+        connection_callbacks->CreateInterfacePtrAndBind(), db_name, version,
+        version_change_transaction.BindNewEndpointAndPassReceiver(task_runner),
+        upgrade_txn_id);
   }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner;
@@ -140,7 +140,8 @@ struct TestDatabaseConnection {
   int64_t upgrade_txn_id;
 
   IDBDatabaseAssociatedPtr database;
-  blink::mojom::IDBTransactionAssociatedPtr version_change_transaction;
+  mojo::AssociatedRemote<blink::mojom::IDBTransaction>
+      version_change_transaction;
 
   std::unique_ptr<MockMojoIndexedDBCallbacks> open_callbacks;
   std::unique_ptr<MockMojoIndexedDBDatabaseCallbacks> connection_callbacks;

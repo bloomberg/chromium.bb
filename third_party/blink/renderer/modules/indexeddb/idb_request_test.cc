@@ -31,6 +31,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
@@ -83,7 +84,8 @@ class BackendDatabaseWithMockedClose
                          int64_t object_store_id,
                          const WTF::String& new_name) override {}
   void CreateTransaction(
-      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+      mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+          transaction_pending_receiver,
       int64_t transaction_id,
       const WTF::Vector<int64_t>& object_store_ids,
       mojom::blink::IDBTransactionMode mode) override {}

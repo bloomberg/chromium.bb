@@ -21,8 +21,9 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_associated_receiver_set.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace base {
@@ -63,7 +64,8 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
 
   void AddTransactionBinding(
       std::unique_ptr<blink::mojom::IDBTransaction> transaction,
-      blink::mojom::IDBTransactionAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
+          pending_receiver);
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* context() const { return indexed_db_context_.get(); }
@@ -78,7 +80,8 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   }
 
   void CreateAndBindTransactionImpl(
-      blink::mojom::IDBTransactionAssociatedRequest transaction_request,
+      mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
+          transaction_pending_receiver,
       const url::Origin& origin,
       base::WeakPtr<IndexedDBTransaction> transaction);
 
@@ -106,7 +109,8 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
                 database_callbacks_info,
             const base::string16& name,
             int64_t version,
-            blink::mojom::IDBTransactionAssociatedRequest transaction_request,
+            mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
+                transaction_pending_receiver,
             int64_t transaction_id) override;
   void DeleteDatabase(
       blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
@@ -136,8 +140,8 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   mojo::StrongAssociatedBindingSet<blink::mojom::IDBDatabase>
       database_bindings_;
   mojo::StrongAssociatedBindingSet<blink::mojom::IDBCursor> cursor_bindings_;
-  mojo::StrongAssociatedBindingSet<blink::mojom::IDBTransaction>
-      transaction_bindings_;
+  mojo::UniqueAssociatedReceiverSet<blink::mojom::IDBTransaction>
+      transaction_receivers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
