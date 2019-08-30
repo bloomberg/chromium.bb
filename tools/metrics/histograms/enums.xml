@@ -44824,86 +44824,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="forced query"/>
 </enum>
 
-<enum name="OmniboxPageContext">
-  <int value="0" label="invalid spec; shouldn't happen"/>
-  <int value="1"
-      label="extension-replaced new tab page OR obsolete new tab page"/>
-  <int value="2" label="about:blank"/>
-  <int value="3" label="the user's home page"/>
-  <int value="4" label="other (typically an arbitrary URL)"/>
-  <int value="5" label="obsolete: instant new tab page"/>
-  <int value="6" label="search results page with search term replacement"/>
-  <int value="7" label="new tab page with omnibox as starting focus"/>
-  <int value="8" label="new tab page with fakebox as starting focus"/>
-  <int value="9" label="search results page without search term replacement"/>
-  <int value="10" label="home screen"/>
-  <int value="11" label="search app"/>
-  <int value="12" label="maps app"/>
-  <int value="13" label="interaction starting with the search button"/>
-</enum>
-
-<enum name="OmniboxProviderAndResultType">
-  <int value="101" label="URL_WHAT_YOU_TYPED via HistoryURL provider"/>
-  <int value="102" label="HISTORY_URL via HistoryURL provider"/>
-  <int value="302" label="HISTORY_URL via HistoryQuick provider"/>
-  <int value="303" label="HISTORY_TITLE via HistoryQuick provider"/>
-  <int value="406" label="NAVSUGGEST via SearchProvider"/>
-  <int value="407" label="SEARCH_WHAT_YOU_TYPED via SearchProvider"/>
-  <int value="408" label="SEARCH_HISTORY via SearchProvider"/>
-  <int value="409" label="SEARCH_SUGGEST via SearchProvider"/>
-  <int value="410" label="SEARCH_OTHER_ENGINE via SearchProvider"/>
-  <int value="414" label="SEARCH_SUGGEST_ENTITY via SearchProvider"/>
-  <int value="415" label="SEARCH_SUGGEST_TAIL via SearchProvider"/>
-  <int value="416" label="SEARCH_SUGGEST_PERSONALIZED via SearchProvider"/>
-  <int value="422" label="SEARCH_SUGGEST_ANSWER via SearchProvider"/>
-  <int value="423" label="CALCULATOR via SearchProvider"/>
-  <int value="505" label="HISTORY_KEYWORD via KeywordProvider"/>
-  <int value="510" label="SEARCH_OTHER_ENGINE via KeywordProvider"/>
-  <int value="606" label="NAVSUGGEST via BuiltinProvider"/>
-  <int value="700" label="UNKNOWN_RESULT_TYPE via Shortcuts provider"/>
-  <int value="701" label="URL_WHAT_YOU_TYPED via Shortcuts provider"/>
-  <int value="702" label="HISTORY_URL via Shortcuts provider"/>
-  <int value="703" label="HISTORY_TITLE via Shortcuts provider"/>
-  <int value="705" label="HISTORY_KEYWORD via Shortcuts provider"/>
-  <int value="708" label="SEARCH_HISTORY via Shortcuts provider"/>
-  <int value="710" label="SEARCH_OTHER_ENGINE via Shortcuts provider"/>
-  <int value="713" label="BOOKMARK_TITLE via Shortcuts provider"/>
-  <int value="716" label="SEARCH_SUGGEST_PERSONALIZED via Shortcuts provider"/>
-  <int value="717" label="SEARCH_SUGGEST_PROFILE via Shortcuts provider"/>
-  <int value="1013" label="BOOKMARK_TITLE via BookmarkProvider"/>
-  <int value="1106" label="NAVSUGGEST via ZeroSuggest"/>
-  <int value="1109" label="SEARCH_SUGGEST via ZeroSuggest"/>
-  <int value="1116" label="SEARCH_SUGGEST_PERSONALIZED via ZeroSuggest"/>
-  <int value="1202" label="HISTORY_URL from on-device service"/>
-  <int value="1212" label="CONTACT from on-device service"/>
-  <int value="1218" label="APP_RESULT from on-device service"/>
-  <int value="1219" label="APP from on-device service"/>
-  <int value="1220" label="LEGACY_ON_DEVICE from on-device service"/>
-  <int value="1424" label="CLIPBOARD_URL from Clipboard provider"/>
-  <int value="1428" label="CLIPBOARD_TEXT from Clipboard provider"/>
-  <int value="1429" label="CLIPBOARD_IMAGE from Clipboard provider"/>
-  <int value="1627" label="DOCUMENT via DocumentProvider"/>
-</enum>
-
-<enum name="OmniboxProviderType">
-  <int value="1" label="HistoryURL"/>
-  <int value="2" label="deprecated: HistoryContents"/>
-  <int value="3" label="HistoryQuick"/>
-  <int value="4" label="SearchProvider"/>
-  <int value="5" label="KeywordProvider"/>
-  <int value="6" label="BuiltinProvider"/>
-  <int value="7" label="ShortcutsProvider"/>
-  <int value="8" label="deprecated: ExtensionAppProvider"/>
-  <int value="9" label="deprecated: ContactsProvider"/>
-  <int value="10" label="BookmarkProvider"/>
-  <int value="11" label="ZeroSuggest"/>
-  <int value="12" label="on device (only used by Android GSA)"/>
-  <int value="13" label="on device chrome (chrome content provider)"/>
-  <int value="14" label="clipboard provider"/>
-  <int value="15" label="deprecated: Physical Web"/>
-  <int value="16" label="DocumentProvider"/>
-</enum>
-
 <enum name="OmniboxSearchEngine">
   <int value="0" label="Unknown"/>
   <int value="1" label="Google"/>
@@ -45045,15 +44965,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="requests sent"/>
   <int value="2" label="requests invalidated"/>
   <int value="3" label="(non-invalidated) replies received"/>
-</enum>
-
-<enum name="OmniboxSummarizedResultType">
-  <int value="0" label="URL"/>
-  <int value="1" label="search"/>
-  <int value="2" label="app/extension"/>
-  <int value="3" label="contact"/>
-  <int value="4" label="on-device"/>
-  <int value="5" label="unknown"/>
 </enum>
 
 <enum name="OmniboxUserTextCleared">
