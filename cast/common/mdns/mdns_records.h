@@ -450,6 +450,8 @@ class MdnsMessage {
   std::vector<MdnsRecord> additional_records_;
 };
 
+uint16_t CreateMessageId();
+
 }  // namespace mdns
 }  // namespace cast
 

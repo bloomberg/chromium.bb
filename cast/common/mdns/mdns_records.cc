@@ -4,9 +4,10 @@
 
 #include "cast/common/mdns/mdns_records.h"
 
+#include <atomic>
+
 #include "absl/strings/match.h"
 #include "absl/strings/str_join.h"
-
 namespace cast {
 namespace mdns {
 
@@ -296,6 +297,11 @@ void MdnsMessage::AddAdditionalRecord(MdnsRecord record) {
   OSP_DCHECK(additional_records_.size() < std::numeric_limits<uint16_t>::max());
   max_wire_size_ += record.MaxWireSize();
   additional_records_.emplace_back(std::move(record));
+}
+
+uint16_t CreateMessageId() {
+  static std::atomic<uint16_t> id(0);
+  return id++;
 }
 
 }  // namespace mdns
