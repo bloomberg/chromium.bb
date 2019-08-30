@@ -2813,13 +2813,6 @@ if (enable_java_templates) {
         if (defined(invoker.proguard_configs)) {
           proguard_configs += invoker.proguard_configs
         }
-        if (_use_chromium_linker) {
-          proguard_configs +=
-              [ "//base/android/proguard/chromium_linker.flags" ]
-        } else {
-          proguard_configs +=
-              [ "//base/android/proguard/no_chromium_linker.flags" ]
-        }
         if (_enable_main_dex_list) {
           proguard_configs += [ "//build/android/multidex.flags" ]
         }

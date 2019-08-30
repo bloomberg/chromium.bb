@@ -42,6 +42,10 @@
 -keep class com.android.webview.chromium.DrawGLFunctor
 -keep class com.android.webview.chromium.GraphicsUtils
 
+# Linker dynamically casts to $TestRunner when running tests. We don't run these
+# tests in WebView.
+-dontnote org.chromium.base.library_loader.Linker$TestRunner
+
 # Don't note about the API 21 compatibility code which references various
 # hidden APIs via reflection.
 -dontnote com.android.webview.chromium.WebViewDelegateFactory$Api21CompatibilityDelegate
@@ -207,7 +211,7 @@
 -keepclasseswithmembers class ** {
   @org.chromium.base.annotations.UsedByReflection <fields>;
 }
--keepclasseswithmembers,includedescriptorclasses class !org.chromium.base.library_loader.**,** {
+-keepclasseswithmembers,includedescriptorclasses class ** {
   native <methods>;
 }
 
@@ -268,19 +272,6 @@
 # and 53kb memory/process (through shrinking method/string counts).
 -renamesourcefileattribute PG
 -repackageclasses ''
-
-################################################################################
-# ../../base/android/proguard/no_chromium_linker.flags
-################################################################################
-# Copyright 2019 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-# All references to Linker.getInstance() should be guarded by:
-# LibraryLoaderConfig.useCrazyLinker().
--checkdiscard class org.chromium.base.library_loader.Linker {
-  *;
-}
 
 ################################################################################
 # ../../build/android/buildhooks/proguard/build_hooks_android_impl.flags
