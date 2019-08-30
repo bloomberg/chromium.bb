@@ -2368,7 +2368,7 @@ void Document::ScheduleLayoutTreeUpdate() {
 
 bool Document::HasPendingForcedStyleRecalc() const {
   return HasPendingVisualUpdate() && !InStyleRecalc() &&
-         GetStyleChangeType() >= kSubtreeStyleChange;
+         GetStyleChangeType() == kSubtreeStyleChange;
 }
 
 void Document::UpdateStyleInvalidationIfNeeded() {

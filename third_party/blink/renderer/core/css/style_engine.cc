@@ -829,14 +829,14 @@ void StyleEngine::PlatformColorsChanged() {
 bool StyleEngine::ShouldSkipInvalidationFor(const Element& element) const {
   if (!element.InActiveDocument())
     return true;
-  if (GetDocument().GetStyleChangeType() >= kSubtreeStyleChange)
+  if (GetDocument().GetStyleChangeType() == kSubtreeStyleChange)
     return true;
   Element* root = GetDocument().documentElement();
   if (!root || root->GetStyleChangeType() == kSubtreeStyleChange)
     return true;
   if (!element.parentNode())
     return true;
-  return element.parentNode()->GetStyleChangeType() >= kSubtreeStyleChange;
+  return element.parentNode()->GetStyleChangeType() == kSubtreeStyleChange;
 }
 
 void StyleEngine::ClassChangedForElement(
@@ -1199,7 +1199,7 @@ void StyleEngine::ScheduleInvalidationsForRuleSets(
   if (auto* shadow_root = DynamicTo<ShadowRoot>(&tree_scope.RootNode())) {
     Element& host = shadow_root->host();
     ScheduleRuleSetInvalidationsForElement(host, rule_sets);
-    if (host.GetStyleChangeType() >= kSubtreeStyleChange)
+    if (host.GetStyleChangeType() == kSubtreeStyleChange)
       return;
     for (auto rule_set : rule_sets) {
       if (rule_set->HasSlottedRules()) {
@@ -1382,7 +1382,7 @@ void StyleEngine::InvalidateForRuleSetChanges(
 
   Element& invalidation_root =
       ScopedStyleResolver::InvalidationRootForTreeScope(tree_scope);
-  if (invalidation_root.GetStyleChangeType() >= kSubtreeStyleChange)
+  if (invalidation_root.GetStyleChangeType() == kSubtreeStyleChange)
     return;
 
   if (changed_rule_flags & kFullRecalcRules ||
