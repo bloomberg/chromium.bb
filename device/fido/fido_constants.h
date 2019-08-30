@@ -332,7 +332,8 @@ const char* CredentialTypeToString(CredentialType type);
 // Values used to construct/validate handshake messages for Cable handshake
 // protocol.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCableHandshakeKeyInfo[];
-COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCableDeviceEncryptionKeyInfo[];
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const std::array<uint8_t, 24> kCableDeviceEncryptionKeyInfo;
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const char kCableAuthenticatorHelloMessage[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCableClientHelloMessage[];

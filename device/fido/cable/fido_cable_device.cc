@@ -52,7 +52,7 @@ bool EncryptOutgoingMessage(
     return false;
 
   crypto::Aead aes_key(crypto::Aead::AES_256_GCM);
-  aes_key.Init(&encryption_data->session_key);
+  aes_key.Init(encryption_data->session_key);
   DCHECK_EQ(nonce->size(), aes_key.NonceLength());
 
   const uint8_t additional_data[1] = {
@@ -76,7 +76,7 @@ bool DecryptIncomingMessage(
     return false;
 
   crypto::Aead aes_key(crypto::Aead::AES_256_GCM);
-  aes_key.Init(&encryption_data->session_key);
+  aes_key.Init(encryption_data->session_key);
   DCHECK_EQ(nonce->size(), aes_key.NonceLength());
 
   const uint8_t additional_data[1] = {
@@ -97,9 +97,9 @@ bool DecryptIncomingMessage(
 // FidoCableDevice::EncryptionData ----------------------------------------
 
 FidoCableDevice::EncryptionData::EncryptionData(
-    std::string encryption_key,
+    base::span<const uint8_t, 32> encryption_key,
     base::span<const uint8_t, 8> nonce)
-    : session_key(std::move(encryption_key)),
+    : session_key(fido_parsing_utils::Materialize(encryption_key)),
       nonce(fido_parsing_utils::Materialize(nonce)) {}
 
 FidoCableDevice::EncryptionData::EncryptionData(EncryptionData&& data) =
@@ -172,11 +172,12 @@ void FidoCableDevice::SendHandshakeMessage(
                      std::move(handshake_message), std::move(callback));
 }
 
-void FidoCableDevice::SetEncryptionData(std::string session_key,
-                                        base::span<const uint8_t, 8> nonce) {
+void FidoCableDevice::SetEncryptionData(
+    base::span<const uint8_t, 32> session_key,
+    base::span<const uint8_t, 8> nonce) {
   // Encryption data must be set at most once during Cable handshake protocol.
   DCHECK(!encryption_data_);
-  encryption_data_.emplace(std::move(session_key), nonce);
+  encryption_data_.emplace(session_key, nonce);
 }
 
 FidoTransportProtocol FidoCableDevice::DeviceTransport() const {

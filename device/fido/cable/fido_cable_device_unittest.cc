@@ -41,7 +41,7 @@ using NiceMockBluetoothAdapter = ::testing::NiceMock<MockBluetoothAdapter>;
 constexpr auto kControlPointLength = std::numeric_limits<uint16_t>::max();
 // Counter value that is larger than FidoCableDevice::kMaxCounter.
 constexpr uint32_t kInvalidCounter = 1 << 24;
-constexpr char kTestSessionKey[] = "00000000000000000000000000000000";
+constexpr std::array<uint8_t, 32> kTestSessionKey = {0};
 constexpr std::array<uint8_t, 8> kTestEncryptionNonce = {
     {1, 1, 1, 1, 1, 1, 1, 1}};
 constexpr uint8_t kTestData[] = {'T', 'E', 'S', 'T'};
@@ -120,7 +120,9 @@ class FakeCableAuthenticator {
   }
 
   std::array<uint8_t, 8> nonce_ = kTestEncryptionNonce;
-  std::string session_key_ = kTestSessionKey;
+  std::string session_key_{
+      reinterpret_cast<const char*>(kTestSessionKey.data()),
+      kTestSessionKey.size()};
   uint32_t expected_client_counter_ = 0;
   uint32_t authenticator_counter_ = 0;
 };

@@ -29,12 +29,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
   // Encapsulates state FidoCableDevice maintains to encrypt and decrypt
   // data within FidoBleFrame.
   struct COMPONENT_EXPORT(DEVICE_FIDO) EncryptionData {
-    EncryptionData(std::string session_key, base::span<const uint8_t, 8> nonce);
+    EncryptionData(base::span<const uint8_t, 32> session_key,
+                   base::span<const uint8_t, 8> nonce);
     EncryptionData(EncryptionData&& data);
     EncryptionData& operator=(EncryptionData&& other);
     ~EncryptionData();
 
-    std::string session_key;
+    std::array<uint8_t, 32> session_key;
     std::array<uint8_t, 8> nonce;
     uint32_t write_sequence_num = 0;
     uint32_t read_sequence_num = 0;
@@ -59,7 +60,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
   void SendHandshakeMessage(std::vector<uint8_t> handshake_message,
                             DeviceCallback callback);
 
-  void SetEncryptionData(std::string session_key,
+  void SetEncryptionData(base::span<const uint8_t, 32> session_key,
                          base::span<const uint8_t, 8> nonce);
   FidoTransportProtocol DeviceTransport() const override;
 
