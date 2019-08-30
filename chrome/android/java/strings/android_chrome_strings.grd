@@ -3870,6 +3870,23 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Active today
       </message>
 
+      <!-- Sharing -->
+      <message name="IDS_SHARING_SENDING_NOTIFICATION_TITLE" desc="Title text displayed in a sharing sending notification.">
+        Sharing to <ph name="DEVICE_NAME">%1$s<ex>Pixel 3</ex></ph>
+      </message>
+      <message name="IDS_SHARING_INTERNAL_ERROR_NOTIFICATION_TITLE" desc="Title text displayed in a sharing sending error notification for internal error.">
+        Can't share <ph name="CONTENT_NAME">%1$s<ex>text</ex></ph>
+      </message>
+      <message name="IDS_SHARING_INTERNAL_ERROR_NOTIFICATION_TEXT" desc="Content text displayed in a sharing sending error notification for internal error.">
+        Something went wrong. Try again later
+      </message>
+      <message name="IDS_SHARING_DISMISS_ACTION" desc="Text for action that dismiss a sharing sending notification.">
+        Dismiss
+      </message>
+      <message name="IDS_SHARING_DEVICE_LIST_EMPTY" desc="Text to shown when no device targets are available for sharing.">
+        No devices available.
+      </message>
+
       <!-- ClickToCall -->
       <message name="IDS_CLICK_TO_CALL_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification.">
         Tap to make call
@@ -3884,6 +3901,12 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
       <message name="IDS_SHARED_CLIPBOARD_NOTIFICATION_TEXT" desc="Content text displayed in a shared clipboard notification.">
         Copied to your clipboard
+      </message>
+      <message name="IDS_SHARED_CLIPBOARD_SHARE_ACTIVITY_TITLE" desc="Title of the Shared Clipboard Share activity that will appear in the Android share dialog.">
+        Send text to Your Devices
+      </message>
+      <message name="IDS_SHARED_CLIPBOARD_CONTENT_NAME" desc="Name of shared clipboard content in a shared clipboard notification.">
+        text
       </message>
 
       <!-- Chrome Duet -->
