@@ -180,9 +180,10 @@ void ContentsView::OnAppListViewTargetStateChanged(
     ash::AppListViewState target_state) {
   if (target_state == ash::AppListViewState::kClosed) {
     CancelDrag();
+    expand_arrow_view_->MaybeEnableHintingAnimation(false);
     return;
   }
-  UpdateExpandArrowFocusBehavior(target_state);
+  UpdateExpandArrowBehavior(target_state);
 }
 
 void ContentsView::SetActiveState(ash::AppListState state) {
@@ -411,7 +412,7 @@ void ContentsView::UpdateExpandArrowOpacity(double progress,
   }
 }
 
-void ContentsView::UpdateExpandArrowFocusBehavior(
+void ContentsView::UpdateExpandArrowBehavior(
     ash::AppListViewState target_state) {
   const bool expand_arrow_enabled =
       target_state == ash::AppListViewState::kPeeking;
@@ -428,6 +429,8 @@ void ContentsView::UpdateExpandArrowFocusBehavior(
       !expand_arrow_enabled);
   expand_arrow_view_->GetViewAccessibility().NotifyAccessibilityEvent(
       ax::mojom::Event::kTreeChanged);
+
+  expand_arrow_view_->MaybeEnableHintingAnimation(expand_arrow_enabled);
 }
 
 void ContentsView::UpdateSearchBoxVisibility(ash::AppListState current_state) {

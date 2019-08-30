@@ -245,8 +245,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
                                 ash::AppListState current_state,
                                 ash::AppListState target_state);
 
-  // Updates the expand arrow's focus behavior based on AppListViewState.
-  void UpdateExpandArrowFocusBehavior(ash::AppListViewState target_state);
+  // Updates the expand arrow's behavior based on AppListViewState.
+  void UpdateExpandArrowBehavior(ash::AppListViewState target_state);
 
   // Updates search box visibility based on the current state.
   void UpdateSearchBoxVisibility(ash::AppListState current_state);
