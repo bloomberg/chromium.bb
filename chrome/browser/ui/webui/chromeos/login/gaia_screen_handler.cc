@@ -1239,7 +1239,11 @@ void GaiaScreenHandler::CloseSecurityTokenPinDialog() {
 
   security_token_pin_entered_callback_.Reset();
   security_token_pin_dialog_closed_callback_.Reset();
-  CallJS("login.GaiaSigninScreen.closePinDialog");
+
+  // Notify the page, unless it's already being shut down (which may happen if
+  // we're called from the destructor).
+  if (IsJavascriptAllowed())
+    CallJS("login.GaiaSigninScreen.closePinDialog");
 }
 
 bool GaiaScreenHandler::IsOfflineLoginActive() const {
