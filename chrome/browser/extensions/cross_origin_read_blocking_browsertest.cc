@@ -34,7 +34,9 @@
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "services/network/cross_origin_read_blocking.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1205,6 +1207,56 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // Regression test against https://crbug.com/944704.
   EXPECT_THAT(fetch_result,
               ::testing::Not(::testing::HasSubstr("Origin: chrome-extension")));
+}
+
+IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
+                       RequestHeaders_InSameOriginXhr_FromContentScript) {
+  // Sec-Fetch-Site only works on secure origins - setting up a https test
+  // server to help with this.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  net::test_server::ControllableHttpResponse subresource_request(
+      &https_server, "/subresource");
+  ASSERT_TRUE(https_server.Start());
+
+  // Load the test extension.
+  ASSERT_TRUE(InstallExtension());
+
+  // Navigate to https test page.
+  GURL page_url = https_server.GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Inject a content script that performs a same-origin GET XHR.
+  GURL same_origin_resource(https_server.GetURL("/subresource"));
+  EXPECT_EQ(url::Origin::Create(page_url),
+            url::Origin::Create(same_origin_resource));
+  const char* kScriptTemplate = R"(
+      fetch($1, {method: 'GET', mode: 'no-cors'}) )";
+  ExecuteContentScript(
+      active_web_contents(),
+      content::JsReplace(kScriptTemplate, same_origin_resource));
+
+  // Verify the Referrer and Sec-Fetch-* header values.
+  subresource_request.WaitForRequest();
+  const char* expected_sec_fetch_site = "same-origin";
+  if (IsExtensionAllowlisted()) {
+    expected_sec_fetch_site = "cross-site";
+  } else {
+    // TODO(lukasza): https://crbug.com/998247: Once the default factory uses
+    // request_initiator=website, we should get the desired behavior below -
+    // 'same-origin'.
+    expected_sec_fetch_site = "cross-site";
+  }
+  EXPECT_THAT(subresource_request.http_request()->headers,
+              testing::IsSupersetOf(
+                  {testing::Pair("Referer", page_url.spec().c_str()),
+                   testing::Pair("Sec-Fetch-Mode", "no-cors"),
+                   testing::Pair("Sec-Fetch-Site", expected_sec_fetch_site)}));
 }
 
 INSTANTIATE_TEST_SUITE_P(Allowlisted,
