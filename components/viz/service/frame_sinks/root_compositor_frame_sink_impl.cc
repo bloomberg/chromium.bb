@@ -318,8 +318,7 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
   DCHECK(begin_frame_source());
   frame_sink_manager->RegisterBeginFrameSource(begin_frame_source(),
                                                support_->frame_sink_id());
-  display_->Initialize(this, support_->frame_sink_manager()->surface_manager(),
-                       true /* enable_shared_images */);
+  display_->Initialize(this, support_->frame_sink_manager()->surface_manager());
   support_->SetUpHitTest(display_.get());
 }
 
