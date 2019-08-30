@@ -29,7 +29,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
                          int64_t object_store_id,
                          const String& new_name) override;
   void CreateTransaction(mojo::PendingAssociatedReceiver<
-                             mojom::blink::IDBTransaction> pending_receiver,
+                             mojom::blink::IDBTransaction> transaction_receiver,
                          int64_t transaction_id,
                          const Vector<int64_t>& scope,
                          mojom::IDBTransactionMode mode) override;

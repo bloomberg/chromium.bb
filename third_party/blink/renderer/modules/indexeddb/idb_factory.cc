@@ -32,6 +32,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -134,7 +135,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   void SuccessStringList(const Vector<String>&) override { NOTREACHED(); }
 
   void SuccessCursor(
-      mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> pending_cursor,
       std::unique_ptr<IDBKey> key,
       std::unique_ptr<IDBKey> primary_key,
       base::Optional<std::unique_ptr<IDBValue>> optional_value) override {

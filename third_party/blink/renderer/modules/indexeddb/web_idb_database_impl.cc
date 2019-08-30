@@ -33,11 +33,11 @@ void WebIDBDatabaseImpl::RenameObjectStore(int64_t transaction_id,
 
 void WebIDBDatabaseImpl::CreateTransaction(
     mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
-        pending_receiver,
+        transaction_receiver,
     int64_t transaction_id,
     const Vector<int64_t>& object_store_ids,
     mojom::IDBTransactionMode mode) {
-  database_->CreateTransaction(std::move(pending_receiver), transaction_id,
+  database_->CreateTransaction(std::move(transaction_receiver), transaction_id,
                                object_store_ids, mode);
 }
 
@@ -210,7 +210,7 @@ void WebIDBDatabaseImpl::OpenCursorCallback(
   }
 
   CHECK(result->is_value());
-  callbacks->SuccessCursor(std::move(result->get_value()->cursor),
+  callbacks->SuccessCursor(std::move(result->get_value()->pending_cursor),
                            std::move(result->get_value()->key),
                            std::move(result->get_value()->primary_key),
                            std::move(result->get_value()->value));

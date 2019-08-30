@@ -94,7 +94,7 @@ void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
 
 void DatabaseImpl::CreateTransaction(
     mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
-        pending_receiver,
+        transaction_receiver,
     int64_t transaction_id,
     const std::vector<int64_t>& object_store_ids,
     blink::mojom::IDBTransactionMode mode) {
@@ -121,7 +121,7 @@ void DatabaseImpl::CreateTransaction(
   connection_->database()->RegisterAndScheduleTransaction(transaction);
 
   dispatcher_host_->CreateAndBindTransactionImpl(
-      std::move(pending_receiver), origin_, transaction->AsWeakPtr());
+      std::move(transaction_receiver), origin_, transaction->AsWeakPtr());
 }
 
 void DatabaseImpl::Close() {

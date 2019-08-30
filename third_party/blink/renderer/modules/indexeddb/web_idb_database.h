@@ -49,7 +49,7 @@ class MODULES_EXPORT WebIDBDatabase {
                                  const String& name) = 0;
   virtual void CreateTransaction(
       mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
-          pending_receiver,
+          transaction_receiver,
       int64_t id,
       const Vector<int64_t>& scope,
       mojom::IDBTransactionMode) = 0;

@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
@@ -67,7 +68,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
       Vector<mojom::blink::IDBNameAndVersionPtr>) override;
   void SuccessStringList(const Vector<String>&) override;
   void SuccessCursor(
-      mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> pending_cursor,
       std::unique_ptr<IDBKey> key,
       std::unique_ptr<IDBKey> primary_key,
       base::Optional<std::unique_ptr<IDBValue>> optional_value) override;

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
@@ -42,13 +43,14 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
   MOCK_METHOD1(SuccessStringList, void(const Vector<String>&));
 
   void SuccessCursor(
-      mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> pending_cursor,
       std::unique_ptr<IDBKey> key,
       std::unique_ptr<IDBKey> primary_key,
       base::Optional<std::unique_ptr<IDBValue>> optional_value) override;
   MOCK_METHOD4(
       DoSuccessCursor,
-      void(const mojom::blink::IDBCursorAssociatedPtrInfo& cursor_info,
+      void(const mojo::PendingAssociatedRemote<mojom::blink::IDBCursor>&
+               pending_cursor,
            const std::unique_ptr<IDBKey>& key,
            const std::unique_ptr<IDBKey>& primary_key,
            const base::Optional<std::unique_ptr<IDBValue>>& optional_value));

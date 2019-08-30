@@ -25,7 +25,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     const String& new_name));
   MOCK_METHOD4(CreateTransaction,
                void(mojo::PendingAssociatedReceiver<
-                        mojom::blink::IDBTransaction> pending_receiver,
+                        mojom::blink::IDBTransaction> receiver,
                     int64_t id,
                     const Vector<int64_t>& scope,
                     mojom::IDBTransactionMode));

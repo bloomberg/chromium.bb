@@ -146,7 +146,7 @@ void WebIDBCallbacksImpl::SuccessStringList(const Vector<String>& string_list) {
 }
 
 void WebIDBCallbacksImpl::SuccessCursor(
-    mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+    mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> pending_cursor,
     std::unique_ptr<IDBKey> key,
     std::unique_ptr<IDBKey> primary_key,
     base::Optional<std::unique_ptr<IDBValue>> optional_value) {
@@ -154,7 +154,7 @@ void WebIDBCallbacksImpl::SuccessCursor(
     return;
 
   std::unique_ptr<WebIDBCursorImpl> cursor = std::make_unique<WebIDBCursorImpl>(
-      std::move(cursor_info), transaction_id_, task_runner_);
+      std::move(pending_cursor), transaction_id_, task_runner_);
   std::unique_ptr<IDBValue> value;
   if (optional_value.has_value()) {
     value = std::move(optional_value.value());

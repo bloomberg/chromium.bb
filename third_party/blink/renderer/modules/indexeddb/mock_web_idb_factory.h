@@ -32,7 +32,7 @@ class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
       void(const WTF::String& name,
            int64_t version,
            mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
-               transaction_pending_receiver,
+               transaction_receiver,
            int64_t transaction_id,
            std::unique_ptr<WebIDBCallbacks>,
            std::unique_ptr<WebIDBDatabaseCallbacks>));

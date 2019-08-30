@@ -44,7 +44,7 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
                          int64_t object_store_id,
                          const base::string16& new_name) override;
   void CreateTransaction(mojo::PendingAssociatedReceiver<
-                             blink::mojom::IDBTransaction> pending_receiver,
+                             blink::mojom::IDBTransaction> transaction_receiver,
                          int64_t transaction_id,
                          const std::vector<int64_t>& object_store_ids,
                          blink::mojom::IDBTransactionMode mode) override;

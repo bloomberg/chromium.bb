@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 #include "mojo/public/cpp/bindings/unique_associated_receiver_set.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -57,15 +58,14 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   void AddDatabaseBinding(std::unique_ptr<blink::mojom::IDBDatabase> database,
                           blink::mojom::IDBDatabaseAssociatedRequest request);
 
-  blink::mojom::IDBCursorAssociatedPtrInfo CreateCursorBinding(
+  mojo::PendingAssociatedRemote<blink::mojom::IDBCursor> CreateCursorBinding(
       const url::Origin& origin,
       std::unique_ptr<IndexedDBCursor> cursor);
-  void RemoveCursorBinding(mojo::BindingId binding_id);
+  void RemoveCursorBinding(mojo::ReceiverId receiver_id);
 
   void AddTransactionBinding(
       std::unique_ptr<blink::mojom::IDBTransaction> transaction,
-      mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
-          pending_receiver);
+      mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction> receiver);
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* context() const { return indexed_db_context_.get(); }
@@ -81,7 +81,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
 
   void CreateAndBindTransactionImpl(
       mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
-          transaction_pending_receiver,
+          transaction_receiver,
       const url::Origin& origin,
       base::WeakPtr<IndexedDBTransaction> transaction);
 
@@ -110,7 +110,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
             const base::string16& name,
             int64_t version,
             mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
-                transaction_pending_receiver,
+                transaction_receiver,
             int64_t transaction_id) override;
   void DeleteDatabase(
       blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
@@ -139,7 +139,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   mojo::BindingSet<blink::mojom::IDBFactory, BindingState> bindings_;
   mojo::StrongAssociatedBindingSet<blink::mojom::IDBDatabase>
       database_bindings_;
-  mojo::StrongAssociatedBindingSet<blink::mojom::IDBCursor> cursor_bindings_;
+  mojo::UniqueAssociatedReceiverSet<blink::mojom::IDBCursor> cursor_receivers_;
   mojo::UniqueAssociatedReceiverSet<blink::mojom::IDBTransaction>
       transaction_receivers_;
 

@@ -83,12 +83,11 @@ class BackendDatabaseWithMockedClose
   void RenameObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const WTF::String& new_name) override {}
-  void CreateTransaction(
-      mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
-          transaction_pending_receiver,
-      int64_t transaction_id,
-      const WTF::Vector<int64_t>& object_store_ids,
-      mojom::blink::IDBTransactionMode mode) override {}
+  void CreateTransaction(mojo::PendingAssociatedReceiver<
+                             mojom::blink::IDBTransaction> transaction_receiver,
+                         int64_t transaction_id,
+                         const WTF::Vector<int64_t>& object_store_ids,
+                         mojom::blink::IDBTransactionMode mode) override {}
   MOCK_METHOD0(Close, void());
   void VersionChangeIgnored() override {}
   void AddObserver(int64_t transaction_id,
