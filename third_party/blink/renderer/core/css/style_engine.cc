@@ -364,9 +364,8 @@ void StyleEngine::WatchedSelectorsChanged() {
   DCHECK(global_rule_set_);
   global_rule_set_->InitWatchedSelectorsRuleSet(GetDocument());
   // TODO(futhark@chromium.org): Should be able to use RuleSetInvalidation here.
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               style_change_reason::kDeclarativeContent));
+  MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+      style_change_reason::kDeclarativeContent));
 }
 
 bool StyleEngine::ShouldUpdateDocumentStyleSheetCollection() const {
@@ -823,15 +822,17 @@ void StyleEngine::SetFontSelector(CSSFontSelector* font_selector) {
 void StyleEngine::PlatformColorsChanged() {
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               style_change_reason::kPlatformColorChange));
+  MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+      style_change_reason::kPlatformColorChange));
 }
 
 bool StyleEngine::ShouldSkipInvalidationFor(const Element& element) const {
+  if (!element.InActiveDocument())
+    return true;
   if (GetDocument().GetStyleChangeType() >= kSubtreeStyleChange)
     return true;
-  if (!element.InActiveDocument())
+  Element* root = GetDocument().documentElement();
+  if (!root || root->GetStyleChangeType() == kSubtreeStyleChange)
     return true;
   if (!element.parentNode())
     return true;
@@ -1322,10 +1323,8 @@ void StyleEngine::HtmlImportAddedOrRemoved() {
   if (ScopedStyleResolver* resolver = GetDocument().GetScopedStyleResolver()) {
     MarkDocumentDirty();
     resolver->SetNeedsAppendAllSheets();
-    GetDocument().SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
-        StyleChangeReasonForTracing::Create(
-            style_change_reason::kActiveStylesheetsUpdate));
+    MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+        style_change_reason::kActiveStylesheetsUpdate));
   }
 }
 
@@ -1376,11 +1375,12 @@ void StyleEngine::InvalidateForRuleSetChanges(
     InvalidationScope invalidation_scope) {
   if (tree_scope.GetDocument().HasPendingForcedStyleRecalc())
     return;
-
+  if (!tree_scope.GetDocument().documentElement())
+    return;
   if (changed_rule_sets.IsEmpty())
     return;
 
-  Node& invalidation_root =
+  Element& invalidation_root =
       ScopedStyleResolver::InvalidationRootForTreeScope(tree_scope);
   if (invalidation_root.GetStyleChangeType() >= kSubtreeStyleChange)
     return;
@@ -1578,18 +1578,16 @@ bool StyleEngine::UpdateRemUnits(const ComputedStyle* old_root_style,
 
 void StyleEngine::CustomPropertyRegistered() {
   // TODO(timloh): Invalidate only elements with this custom property set
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               style_change_reason::kPropertyRegistration));
+  MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+      style_change_reason::kPropertyRegistration));
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
   InvalidateInitialData();
 }
 
 void StyleEngine::EnvironmentVariableChanged() {
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               style_change_reason::kPropertyRegistration));
+  MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+      style_change_reason::kPropertyRegistration));
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
 }
@@ -1915,6 +1913,12 @@ void StyleEngine::UpdateColorSchemeBackground() {
   }
 
   view->SetUseDarkSchemeBackground(use_dark_background);
+}
+
+void StyleEngine::MarkAllElementsForStyleRecalc(
+    const StyleChangeReasonForTracing& reason) {
+  if (Element* root = GetDocument().documentElement())
+    root->SetNeedsStyleRecalc(kSubtreeStyleChange, reason);
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {

@@ -7909,11 +7909,10 @@ void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
     }
   }
 
-  // For V0 -> V1 upgrade, we need style recalculation for the whole document.
+  // For V0 -> V1 upgrade, we need style recalculation for all elements.
   if (shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascadeV0 &&
       order == ShadowCascadeOrder::kShadowCascadeV1) {
-    SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
+    GetStyleEngine().MarkAllElementsForStyleRecalc(
         StyleChangeReasonForTracing::Create(style_change_reason::kShadow));
     UseCounter::Count(*this, WebFeature::kMixedShadowRootV0AndV1);
   }
