@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_video_track_source.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_video_track_source.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -27,7 +27,7 @@ gfx::Rect CropRectangle(const gfx::Rect& input_rect,
 
 }  // anonymous namespace
 
-namespace content {
+namespace blink {
 
 WebRtcVideoTrackSource::WebRtcVideoTrackSource(
     bool is_screencast,
@@ -98,9 +98,9 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
     previous_capture_counter_ = capture_counter;
   if (has_valid_update_rect)
     accumulated_update_rect_.Union(update_rect);
-  else {
+  else
     accumulated_update_rect_.Union(gfx::Rect(frame->coded_size()));
-  }
+
   DVLOG(3) << "accumulated_update_rect_ = [" << accumulated_update_rect_.x()
            << ", " << accumulated_update_rect_.y() << ", "
            << accumulated_update_rect_.width() << ", "
@@ -260,16 +260,15 @@ void WebRtcVideoTrackSource::DeliverFrame(
   // Clear accumulated_update_rect_.
   accumulated_update_rect_ = gfx::Rect();
 
-  OnFrame(
-      webrtc::VideoFrame::Builder()
-          .set_video_frame_buffer(
-              new rtc::RefCountedObject<blink::WebRtcVideoFrameAdapter>(frame))
-          .set_rotation(webrtc::kVideoRotation_0)
-          .set_timestamp_us(timestamp_us)
-          .set_update_rect(webrtc::VideoFrame::UpdateRect{
-              update_rect.x(), update_rect.y(), update_rect.width(),
-              update_rect.height()})
-          .build());
+  OnFrame(webrtc::VideoFrame::Builder()
+              .set_video_frame_buffer(
+                  new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame))
+              .set_rotation(webrtc::kVideoRotation_0)
+              .set_timestamp_us(timestamp_us)
+              .set_update_rect(webrtc::VideoFrame::UpdateRect{
+                  update_rect.x(), update_rect.y(), update_rect.width(),
+                  update_rect.height()})
+              .build());
 }
 
-}  // namespace content
+}  // namespace blink

@@ -6,10 +6,10 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
-#include "content/renderer/media/webrtc/webrtc_video_track_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_video_track_source.h"
 #include "third_party/webrtc/api/video/video_frame.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
@@ -17,7 +17,7 @@ using testing::_;
 using testing::Invoke;
 using testing::Mock;
 
-namespace content {
+namespace blink {
 
 void ExpectUpdateRectEquals(const gfx::Rect& expected,
                             const webrtc::VideoFrame::UpdateRect actual) {
@@ -393,4 +393,4 @@ TEST_F(WebRtcVideoTrackSourceTest, UpdateRectWithScaling) {
   Mock::VerifyAndClearExpectations(&mock_sink_);
 }
 
-}  // namespace content
+}  // namespace blink
