@@ -398,10 +398,12 @@ class QuicNetworkTransactionTest
       uint64_t smallest_received,
       uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
-      const std::string& quic_error_details) {
+      const std::string& quic_error_details,
+      uint64_t frame_type) {
     return client_maker_.MakeAckAndConnectionClosePacket(
         num, false, delta_time_largest_observed, largest_received,
-        smallest_received, least_unacked, quic_error, quic_error_details);
+        smallest_received, least_unacked, quic_error, quic_error_details,
+        frame_type);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructServerRstPacket(
@@ -3051,7 +3053,8 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
   quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(
                        packet_number++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
-                       quic::QUIC_INVALID_STREAM_ID, quic_error_details));
+                       quic::QUIC_INVALID_STREAM_ID, quic_error_details,
+                       quic::IETF_RST_STREAM));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // In order for a new QUIC session to be established via alternate-protocol
@@ -3434,7 +3437,7 @@ TEST_P(QuicNetworkTransactionTest,
         SYNCHRONOUS,
         client_maker_.MakeAckAndConnectionClosePacket(
             12, false, quic::QuicTime::Delta::FromMilliseconds(4000), 1, 1, 1,
-            quic::QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
+            quic::QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity.", 0));
   } else {
     // Settings were sent in the request packet so there is only 1 packet to
     // retransmit.
@@ -3468,7 +3471,7 @@ TEST_P(QuicNetworkTransactionTest,
         SYNCHRONOUS,
         client_maker_.MakeAckAndConnectionClosePacket(
             8, false, quic::QuicTime::Delta::FromMilliseconds(4000), 1, 1, 1,
-            quic::QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
+            quic::QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity.", 0));
   }
 
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
@@ -3847,7 +3850,8 @@ TEST_P(QuicNetworkTransactionTest,
   quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(
                        packet_number++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
-                       quic::QUIC_INVALID_STREAM_ID, quic_error_details));
+                       quic::QUIC_INVALID_STREAM_ID, quic_error_details,
+                       quic::IETF_RST_STREAM));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // After that fails, it will be resent via TCP.
@@ -5271,10 +5275,11 @@ TEST_P(QuicNetworkTransactionTest,
                  1, false, GetNthClientInitiatedBidirectionalStreamId(47),
                  quic::QUIC_STREAM_LAST_ERROR));
   std::string quic_error_details = "Data for nonexistent stream";
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(
-                       3, quic::QuicTime::Delta::Zero(), 1, 1, 1,
-                       quic::QUIC_INVALID_STREAM_ID, quic_error_details));
+  mock_quic_data.AddWrite(SYNCHRONOUS,
+                          ConstructClientAckAndConnectionClosePacket(
+                              3, quic::QuicTime::Delta::Zero(), 1, 1, 1,
+                              quic::QUIC_INVALID_STREAM_ID, quic_error_details,
+                              quic::IETF_RST_STREAM));
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // The non-alternate protocol job needs to hang in order to guarantee that
@@ -6027,7 +6032,7 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterAsyncNoBufferSpace) {
   socket_data.AddWrite(
       SYNCHRONOUS, client_maker_.MakeAckAndConnectionClosePacket(
                        4, false, quic::QuicTime::Delta::FromMilliseconds(0), 2,
-                       1, 1, quic::QUIC_CONNECTION_CANCELLED, "net error"));
+                       1, 1, quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
 
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -6062,7 +6067,7 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterSynchronousNoBufferSpace) {
   socket_data.AddWrite(
       SYNCHRONOUS, client_maker_.MakeAckAndConnectionClosePacket(
                        4, false, quic::QuicTime::Delta::FromMilliseconds(0), 2,
-                       1, 1, quic::QUIC_CONNECTION_CANCELLED, "net error"));
+                       1, 1, quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
 
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
