@@ -573,6 +573,7 @@
         ],
         'additional_compile_targets': [
           'monochrome_static_initializers',
+          'weblayer_shell',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
