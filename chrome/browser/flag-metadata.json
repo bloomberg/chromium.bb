@@ -255,8 +255,8 @@
   },
   {
     "name": "autofill-keyboard-accessory-view",
-    "owners": [ "ftirelo" ],
-    "expiry_milestone": 74
+    "owners": [ "fhorschig@chromium.org" ],
+    "expiry_milestone": 79
   },
   {
     "name": "autofill-no-local-save-on-unmask-success",
@@ -946,8 +946,8 @@
   },
   {
     "name": "enable-autofill-manual-fallback",
-    "owners": [ "tmartino@chromium.org" ],
-    "expiry_milestone": 78
+    "owners": [ "fhorschig@chromium.org" ],
+    "expiry_milestone": 79
   },
   {
     "name": "enable-autofill-refresh-style",
