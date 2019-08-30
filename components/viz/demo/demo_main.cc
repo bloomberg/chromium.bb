@@ -31,7 +31,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/platform_window/x11/x11_window.h"  // nogncheck
+#include "ui/platform_window/x11/x11_window.h"
 #endif
 
 namespace {
@@ -119,9 +119,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 #elif defined(OS_WIN)
     return std::make_unique<ui::WinWindow>(this, props.bounds);
 #elif defined(USE_X11)
-    auto x11_window = std::make_unique<ui::X11Window>(this, nullptr);
-    x11_window->Initialize(std::move(props));
-    return x11_window;
+    return std::make_unique<ui::X11Window>(this, props.bounds);
 #else
     NOTIMPLEMENTED();
     return nullptr;

@@ -16,7 +16,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
 #include "ui/platform_window/platform_window.h"
-#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
@@ -26,6 +25,7 @@ class DrmOverlayManager;
 class DrmWindowHostManager;
 class EventFactoryEvdev;
 class GpuThreadAdapter;
+class PlatformWindowDelegate;
 
 // Implementation of the platform window. This object and its handle |widget_|
 // uniquely identify a window. Since the DRI/GBM platform is split into 2

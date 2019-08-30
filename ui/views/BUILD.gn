@@ -707,7 +707,6 @@ jumbo_component("views") {
         "widget/desktop_aura/desktop_window_tree_host.cc",
       ]
       if (use_x11) {
-        deps += [ "//ui/platform_window/x11" ]
         public += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.h",
           "widget/desktop_aura/desktop_screen_x11.h",
@@ -763,7 +762,7 @@ jumbo_component("views") {
         ]
         deps += [ "//ui/base:hit_test" ]
       }
-      if (is_linux || is_fuchsia) {
+      if ((is_linux && !use_x11) || is_fuchsia) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_platform.h" ]
         sources +=
             [ "widget/desktop_aura/desktop_window_tree_host_platform.cc" ]

@@ -166,10 +166,6 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
       is_tooltip_ = true;
       break;
     case ui::PlatformWindowType::kWindow:
-    case ui::PlatformWindowType::kBubble:
-    case ui::PlatformWindowType::kDrag:
-      // TODO(msisov): Figure out what kind of surface we need to create for
-      // bubble and drag windows.
       CreateXdgSurface();
       break;
   }

@@ -18,6 +18,7 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 

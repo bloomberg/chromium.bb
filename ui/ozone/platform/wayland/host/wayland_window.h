@@ -31,6 +31,7 @@ namespace ui {
 
 class BitmapCursorOzone;
 class OSExchangeData;
+class PlatformWindowDelegate;
 class WaylandConnection;
 class XDGPopupWrapper;
 class XDGSurfaceWrapper;

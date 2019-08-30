@@ -34,7 +34,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/platform_window/x11/x11_window.h"  // nogncheck
+#include "ui/platform_window/x11/x11_window.h"
 #endif
 
 namespace aura {
@@ -72,11 +72,9 @@ void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
   platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
       this, std::move(properties));
 #elif defined(OS_WIN)
-  platform_window_.reset(new ui::WinWindow(this, properties.bounds));
+  platform_window_ = std::make_unique<ui::WinWindow>(this, properties.bounds);
 #elif defined(USE_X11)
-  auto x11_window = std::make_unique<ui::X11Window>(this, nullptr);
-  x11_window->Initialize(std::move(properties));
-  SetPlatformWindow(std::move(x11_window));
+  platform_window_ = std::make_unique<ui::X11Window>(this, properties.bounds);
 #else
   NOTIMPLEMENTED();
 #endif
@@ -271,6 +269,7 @@ void WindowTreeHostPlatform::OnAcceleratedWidgetDestroyed() {
   widget_ = gfx::kNullAcceleratedWidget;
 }
 
-void WindowTreeHostPlatform::OnActivationChanged(bool active) {}
+void WindowTreeHostPlatform::OnActivationChanged(bool active) {
+}
 
 }  // namespace aura

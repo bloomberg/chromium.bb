@@ -11,6 +11,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/win/msg_util.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 #include <windows.h>
 

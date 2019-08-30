@@ -88,7 +88,7 @@ bool LocalProcessWindowFinder::MatchWindow(X11WindowOzone* window) const {
   if (!window_bounds.Contains(screen_point_in_pixels_))
     return false;
 
-  ::Region shape = window->shape();
+  ::Region shape = window->GetShape();
   if (!shape)
     return true;
 
