@@ -5,14 +5,12 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
@@ -33,12 +31,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/browsertest_util.h"
-#include "extensions/common/extension_features.h"
+#include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/cross_origin_read_blocking.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -344,13 +341,9 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CrossOriginReadBlockingExtensionTest);
 };
 
-struct AllowlistingParam {
-  AllowlistingParam(bool feature_enabled, bool test_extension_allowlisted)
-      : feature_enabled(feature_enabled),
-        test_extension_allowlisted(test_extension_allowlisted) {}
-
-  bool feature_enabled;
-  bool test_extension_allowlisted;
+enum class AllowlistingParam {
+  kAllowlisted,
+  kNotAllowlisted,
 };
 
 class CrossOriginReadBlockingExtensionAllowlistingTest
@@ -361,9 +354,8 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
 
   CrossOriginReadBlockingExtensionAllowlistingTest() {}
 
-  bool IsAllowlistFeatureEnabled() { return GetParam().feature_enabled; }
   bool IsExtensionAllowlisted() {
-    return GetParam().test_extension_allowlisted;
+    return GetParam() == AllowlistingParam::kAllowlisted;
   }
 
   const Extension* InstallExtension(
@@ -371,30 +363,22 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
     const Extension* extension = Base::InstallExtension(
         resource_to_fetch_from_declarative_content_script);
 
-    if (IsAllowlistFeatureEnabled()) {
-      if (IsExtensionAllowlisted()) {
-        scoped_feature_list_.InitAndEnableFeatureWithParameters(
-            extensions_features::kBypassCorbOnlyForExtensionsAllowlist,
-            {{extensions_features::kBypassCorbAllowlistParamName,
-              extension->hashed_id().value()}});
-      } else {
-        scoped_feature_list_.InitAndEnableFeature(
-            extensions_features::kBypassCorbOnlyForExtensionsAllowlist);
-      }
+    if (IsExtensionAllowlisted()) {
+      URLLoaderFactoryManager::AddExtensionToAllowlistForTesting(*extension);
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          extensions_features::kBypassCorbOnlyForExtensionsAllowlist);
+      URLLoaderFactoryManager::RemoveExtensionFromAllowlistForTesting(
+          *extension);
     }
 
     return extension;
   }
 
   bool AreContentScriptFetchesExpectedToBeBlocked() {
-    return IsAllowlistFeatureEnabled() && !IsExtensionAllowlisted();
+    return !IsExtensionAllowlisted();
   }
 
   bool IsCorbExpectedToBeTurnedOffAltogether() {
-    return (IsExtensionAllowlisted() || !IsAllowlistFeatureEnabled());
+    return IsExtensionAllowlisted();
   }
 
   void VerifyFetchFromContentScriptWasBlocked(
@@ -454,8 +438,6 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(CrossOriginReadBlockingExtensionAllowlistingTest);
 };
 
@@ -1225,14 +1207,11 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
               ::testing::Not(::testing::HasSubstr("Origin: chrome-extension")));
 }
 
-INSTANTIATE_TEST_SUITE_P(AllowlistingDisabled,
-                         CrossOriginReadBlockingExtensionAllowlistingTest,
-                         ::testing::Values(AllowlistingParam(false, false)));
 INSTANTIATE_TEST_SUITE_P(Allowlisted,
                          CrossOriginReadBlockingExtensionAllowlistingTest,
-                         ::testing::Values(AllowlistingParam(true, true)));
+                         ::testing::Values(AllowlistingParam::kAllowlisted));
 INSTANTIATE_TEST_SUITE_P(NotAllowlisted,
                          CrossOriginReadBlockingExtensionAllowlistingTest,
-                         ::testing::Values(AllowlistingParam(true, false)));
+                         ::testing::Values(AllowlistingParam::kNotAllowlisted));
 
 }  // namespace extensions
