@@ -6118,6 +6118,9 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_REMOVE_TAB_FROM_GROUP" desc="The label of the tab context menu item for removing one or more tabs from the groups that contain them.">
           Remove from group
         </message>
+        <message name="IDS_TAB_CXMENU_PLACEHOLDER_GROUP_TITLE" desc="The descriptive placeholder title of a group used when the user has not explicitly named a group. The plural value refers to the number of tabs in the group other than the one explicitly named. [ICU Syntax]">
+          {NUM_OTHER_TABS, plural, =0 {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>"} =1 {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>" and 1 other tab} other {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>" and # other tabs}}
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_TAB_CXMENU_RELOAD" desc="In Title Case: The label of the 'Reload' Tab context menu item.">
@@ -6155,6 +6158,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_TAB_CXMENU_REMOVE_TAB_FROM_GROUP" desc="In Title Case: The label of the tab context menu item for removing one or more tabs from the groups that contain them.">
           Remove From Group
+        </message>
+        <message name="IDS_TAB_CXMENU_PLACEHOLDER_GROUP_TITLE" desc="The descriptive placeholder title of a group used when the user has not explicitly named a group. The plural value refers to the number of tabs in the group other than the one explicitly named. [ICU Syntax]">
+          {NUM_OTHER_TABS, plural, =0 {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>"} =1 {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>" and 1 Other Tab} other {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>" and # Other Tabs}}
         </message>
       </if>
 
