@@ -17,6 +17,8 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "device/fido/get_assertion_request_handler.h"
+#include "device/fido/make_credential_request_handler.h"
 #include "device/fido/opaque_attestation_statement.h"
 
 namespace device {
@@ -223,21 +225,43 @@ CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
 }
 
 COMPONENT_EXPORT(DEVICE_FIDO)
-FidoReturnCode WinCtapDeviceResponseCodeToFidoReturnCode(
+MakeCredentialStatus WinCtapDeviceResponseCodeToMakeCredentialStatus(
     CtapDeviceResponseCode status) {
   switch (status) {
     case CtapDeviceResponseCode::kSuccess:
-      return FidoReturnCode::kSuccess;
+      return MakeCredentialStatus::kSuccess;
     case CtapDeviceResponseCode::kCtap2ErrCredentialExcluded:
-      return FidoReturnCode::kWinInvalidStateError;
+      return MakeCredentialStatus::kWinInvalidStateError;
     case CtapDeviceResponseCode::kCtap2ErrOperationDenied:
-      return FidoReturnCode::kWinNotAllowedError;
+      return MakeCredentialStatus::kWinNotAllowedError;
     default:
       NOTREACHED() << "Must only be called with a status returned from "
                       "WinErrorNameToCtapDeviceResponseCode().";
-      FIDO_LOG(ERROR) << "Unexpected FidoReturnCode: "
+      FIDO_LOG(ERROR) << "Unexpected CtapDeviceResponseCode: "
                       << static_cast<int>(status);
-      return FidoReturnCode::kWinNotAllowedError;
+      return MakeCredentialStatus::kWinNotAllowedError;
+  }
+}
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+GetAssertionStatus WinCtapDeviceResponseCodeToGetAssertionStatus(
+    CtapDeviceResponseCode status) {
+  switch (status) {
+    case CtapDeviceResponseCode::kSuccess:
+      return GetAssertionStatus::kSuccess;
+    case CtapDeviceResponseCode::kCtap2ErrOperationDenied:
+      return GetAssertionStatus::kWinNotAllowedError;
+    case CtapDeviceResponseCode::kCtap2ErrCredentialExcluded:
+      // The API should never return InvalidStateError for GetAssertion.
+      FIDO_LOG(ERROR) << "Unexpected CtapDeviceResponseCode: "
+                      << static_cast<int>(status);
+      return GetAssertionStatus::kWinNotAllowedError;
+    default:
+      NOTREACHED() << "Must only be called with a status returned from "
+                      "WinErrorNameToCtapDeviceResponseCode().";
+      FIDO_LOG(ERROR) << "Unexpected CtapDeviceResponseCode: "
+                      << static_cast<int>(status);
+      return GetAssertionStatus::kWinNotAllowedError;
   }
 }
 

@@ -17,6 +17,9 @@
 
 namespace device {
 
+enum class GetAssertionStatus;
+enum class MakeCredentialStatus;
+
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorMakeCredentialResponse>
 ToAuthenticatorMakeCredentialResponse(
@@ -50,17 +53,26 @@ std::vector<WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
 // whereas FidoAuthenticator callbacks generally resolve with a
 // CtapDeviceResponseCode. This method hence yields a "synthetic"
 // CtapDeviceResponseCode that can then be mapped to the corresponding
-// FidoReturnCode by calling WinCtapDeviceResponseCodeToFidoReturnCode().
+// {MakeCredential,GetAssertion}Status by calling
+// WinCtapDeviceResponseCodeTo{MakeCredential,GetAssertion}Status().
 COMPONENT_EXPORT(DEVICE_FIDO)
 CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
     const base::string16& error_name);
 
-// WinCtapDeviceResponseCodeToFidoReturnCode returns the FidoReturnCode that
-// corresponds to a synthetic CtapDeviceResponseCode obtained from
-// WinErrorNameToCtapDeviceResponseCode(). Return values are one of
-// {kSuccess, kWinInvalidStateError, kWinNotAllowedError}.
+// WinCtapDeviceResponseCodeToMakeCredentialStatus returns the
+// MakeCredentialStatus that corresponds to a synthetic CtapDeviceResponseCode
+// obtained from WinErrorNameToCtapDeviceResponseCode(). Return values are one
+// of {kSuccess, kWinInvalidStateError, kWinNotAllowedError}.
 COMPONENT_EXPORT(DEVICE_FIDO)
-FidoReturnCode WinCtapDeviceResponseCodeToFidoReturnCode(
+MakeCredentialStatus WinCtapDeviceResponseCodeToMakeCredentialStatus(
+    CtapDeviceResponseCode status);
+
+// WinCtapDeviceResponseCodeToGetAssertionStatus returns the GetAssertionStatus
+// that corresponds to a synthetic CtapDeviceResponseCode obtained from
+// WinErrorNameToCtapDeviceResponseCode(). Return values are one of {kSuccess,
+// kWinNotAllowedError}.
+COMPONENT_EXPORT(DEVICE_FIDO)
+GetAssertionStatus WinCtapDeviceResponseCodeToGetAssertionStatus(
     CtapDeviceResponseCode status);
 
 COMPONENT_EXPORT(DEVICE_FIDO)

@@ -16,39 +16,6 @@
 
 namespace device {
 
-enum class FidoReturnCode : uint8_t {
-  kSuccess,
-  // Response received but didn't parse/serialize properly.
-  kAuthenticatorResponseInvalid,
-  // The user consented to the registration operation (e.g. by touching the
-  // authenticator), but the authenticator recognized one of the credentials
-  // that were already registered at the relying party.
-  kUserConsentButCredentialExcluded,
-  // The user consented to the assertion operation (e.g. by touching the
-  // authenticator), but none of the provided credentials were recognized by
-  // the authenticator.
-  kUserConsentButCredentialNotRecognized,
-  // The user explicitly refused to provide consent.
-  kUserConsentDenied,
-  kAuthenticatorRemovedDuringPINEntry,
-  kSoftPINBlock,
-  kHardPINBlock,
-  kAuthenticatorMissingResidentKeys,
-  kAuthenticatorMissingCredentialManagement,
-  // TODO(agl): kAuthenticatorMissingUserVerification can also be returned when
-  // the authenticator supports UV, but there's no UI support for collecting
-  // a PIN. This could be clearer.
-  kAuthenticatorMissingUserVerification,
-  // kStorageFull indicates that a resident credential could not be created
-  // because the authenticator has insufficient storage.
-  kStorageFull,
-  kAuthenticatorMissingBioEnrollment,
-
-  // The following correspond to errors returned by the Windows WebAuthn API.
-  kWinInvalidStateError,
-  kWinNotAllowedError,
-};
-
 // Length of the U2F challenge parameter:
 // https://goo.gl/y75WrX#registration-request-message---u2f_register
 constexpr size_t kU2fChallengeParamLength = 32;
