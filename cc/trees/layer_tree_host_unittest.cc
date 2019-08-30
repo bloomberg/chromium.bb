@@ -2155,7 +2155,7 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
     child_layer_->SetBounds(gfx::Size(10, 10));
     mask_layer_ = base::MakeRefCounted<UpdateCountingLayer>(&client_);
     mask_layer_->SetBounds(gfx::Size(10, 10));
-    child_layer_->SetMaskLayer(mask_layer_.get());
+    child_layer_->SetMaskLayer(mask_layer_);
     root->AddChild(child_layer_);
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();
@@ -2176,7 +2176,7 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
         EXPECT_EQ(child_layer_->update_count(), 0);
 
         layer_tree_host()->root_layer()->RemoveAllChildren();
-        layer_tree_host()->root_layer()->SetMaskLayer(mask_layer_.get());
+        layer_tree_host()->root_layer()->SetMaskLayer(mask_layer_);
         break;
     }
   }
@@ -8560,7 +8560,7 @@ class DontUpdateLayersWithEmptyBounds : public LayerTreeTest {
     mask_client_.set_bounds(gfx::Size(9, 9));
     mask_->SetBounds(gfx::Size(9, 9));
 
-    child_->SetMaskLayer(mask_.get());
+    child_->SetMaskLayer(mask_);
     root->AddChild(child_);
     layer_tree_host()->SetRootLayer(std::move(root));
     LayerTreeTest::SetupTree();
