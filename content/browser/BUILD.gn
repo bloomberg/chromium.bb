@@ -2670,7 +2670,6 @@ jumbo_source_set("browser") {
       "gpu/viz_devtools_connector.cc",
       "gpu/viz_devtools_connector.h",
     ]
-    defines += [ "USE_VIZ_DEVTOOLS" ]
   }
 
   if (use_mpris) {
