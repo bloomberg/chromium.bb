@@ -87,6 +87,8 @@ jumbo_static_library("test_support") {
     "../browser/web_package/mock_signed_exchange_handler.cc",
     "../browser/web_package/mock_signed_exchange_handler.h",
     "../browser/web_package/signed_exchange_test_utils.h",
+    "../browser/worker_host/test_shared_worker_service_impl.cc",
+    "../browser/worker_host/test_shared_worker_service_impl.h",
     "../public/test/accessibility_notification_waiter.cc",
     "../public/test/accessibility_notification_waiter.h",
     "../public/test/audio_service_test_helper.cc",

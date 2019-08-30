@@ -2238,6 +2238,12 @@ void StoragePartitionImpl::OverrideBackgroundSyncContextForTesting(
   background_sync_context_ = background_sync_context;
 }
 
+void StoragePartitionImpl::OverrideSharedWorkerServiceForTesting(
+    std::unique_ptr<SharedWorkerServiceImpl> shared_worker_service) {
+  DCHECK(initialized_);
+  shared_worker_service_ = std::move(shared_worker_service);
+}
+
 void StoragePartitionImpl::GetQuotaSettings(
     storage::OptionalQuotaSettingsCallback callback) {
   GetContentClient()->browser()->GetQuotaSettings(browser_context_, this,

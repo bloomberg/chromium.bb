@@ -94,6 +94,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   void ShutdownBackgroundSyncContextForTesting();
   void OverrideBackgroundSyncContextForTesting(
       BackgroundSyncContextImpl* background_sync_context);
+  void OverrideSharedWorkerServiceForTesting(
+      std::unique_ptr<SharedWorkerServiceImpl> shared_worker_service);
 
   // StoragePartition interface.
   base::FilePath GetPath() override;
