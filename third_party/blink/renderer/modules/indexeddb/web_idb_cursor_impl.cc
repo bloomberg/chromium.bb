@@ -18,7 +18,7 @@ using blink::mojom::blink::IDBCallbacksAssociatedPtrInfo;
 namespace blink {
 
 WebIDBCursorImpl::WebIDBCursorImpl(
-    mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> pending_cursor,
+    mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,
     int64_t transaction_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : transaction_id_(transaction_id),
@@ -27,7 +27,7 @@ WebIDBCursorImpl::WebIDBCursorImpl(
       pending_onsuccess_callbacks_(0),
       prefetch_amount_(kMinPrefetchAmount),
       task_runner_(task_runner) {
-  cursor_.Bind(std::move(pending_cursor), std::move(task_runner));
+  cursor_.Bind(std::move(cursor_info), std::move(task_runner));
   IndexedDBDispatcher::RegisterCursor(this);
 }
 

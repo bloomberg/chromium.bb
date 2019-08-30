@@ -321,7 +321,7 @@ union IDBDatabaseGetAllResult {
 };
 
 struct IDBDatabaseOpenCursorValue {
-  pending_associated_remote<IDBCursor> pending_cursor;
+  pending_associated_remote<IDBCursor> cursor;
   IDBKey key;
   IDBKey primary_key;
   IDBValue? value;
@@ -417,7 +417,7 @@ interface IDBFactory {
   GetDatabaseInfo(associated IDBCallbacks callbacks);
   GetDatabaseNames(associated IDBCallbacks callbacks);
   Open(associated IDBCallbacks callbacks,
-       associated IDBDatabaseCallbacks database_callbacks,
+       pending_associated_remote<IDBDatabaseCallbacks> pending_database_callbacks,
        mojo_base.mojom.String16 name,
        int64 version,
        pending_associated_receiver<IDBTransaction> version_change_transaction_receiver,

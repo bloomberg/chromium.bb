@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -72,14 +72,16 @@ WebIDBFactoryImpl::GetCallbacksProxy(
   return ptr_info;
 }
 
-mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo
+mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks>
 WebIDBFactoryImpl::GetDatabaseCallbacksProxy(
-    std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks) {
-  mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
-  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
-                                    task_runner_);
-  return ptr_info;
+    std::unique_ptr<IndexedDBDatabaseCallbacksImpl> database_callbacks_impl) {
+  mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks>
+      pending_database_callbacks;
+  mojo::MakeSelfOwnedAssociatedReceiver(
+      std::move(database_callbacks_impl),
+      pending_database_callbacks.InitWithNewEndpointAndPassReceiver(),
+      task_runner_);
+  return pending_database_callbacks;
 }
 
 }  // namespace blink

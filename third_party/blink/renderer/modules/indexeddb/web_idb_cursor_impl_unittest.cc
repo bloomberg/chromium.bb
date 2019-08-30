@@ -28,8 +28,8 @@ namespace {
 class MockCursorImpl : public mojom::blink::IDBCursor {
  public:
   explicit MockCursorImpl(
-      mojo::PendingAssociatedReceiver<mojom::blink::IDBCursor> pending_receiver)
-      : receiver_(this, std::move(pending_receiver)) {
+      mojo::PendingAssociatedReceiver<mojom::blink::IDBCursor> receiver)
+      : receiver_(this, std::move(receiver)) {
     receiver_.set_disconnect_handler(base::BindOnce(
         &MockCursorImpl::CursorDestroyed, base::Unretained(this)));
   }

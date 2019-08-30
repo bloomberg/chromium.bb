@@ -47,7 +47,7 @@ class WebIDBCallbacks : public mojom::blink::IDBCallbacks {
   virtual void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
                         int64_t transaction_id) = 0;
   virtual void SuccessCursor(
-      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> pending_cursor,
+      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,
       std::unique_ptr<IDBKey> key,
       std::unique_ptr<IDBKey> primary_key,
       base::Optional<std::unique_ptr<IDBValue>> optional_value) = 0;

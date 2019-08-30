@@ -102,14 +102,13 @@ IndexedDBDispatcherHost::CreateCursorBinding(
   auto cursor_impl = std::make_unique<CursorImpl>(std::move(cursor), origin,
                                                   this, IDBTaskRunner());
   auto* cursor_impl_ptr = cursor_impl.get();
-  mojo::PendingAssociatedRemote<blink::mojom::IDBCursor> pending_remote;
+  mojo::PendingAssociatedRemote<blink::mojom::IDBCursor> remote;
   mojo::ReceiverId receiver_id = cursor_receivers_.Add(
-      std::move(cursor_impl),
-      pending_remote.InitWithNewEndpointAndPassReceiver());
+      std::move(cursor_impl), remote.InitWithNewEndpointAndPassReceiver());
   cursor_impl_ptr->OnRemoveBinding(
       base::BindOnce(&IndexedDBDispatcherHost::RemoveCursorBinding,
                      weak_factory_.GetWeakPtr(), receiver_id));
-  return pending_remote;
+  return remote;
 }
 
 void IndexedDBDispatcherHost::RemoveCursorBinding(
@@ -166,7 +165,8 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
 
 void IndexedDBDispatcherHost::Open(
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
-    blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo database_callbacks_info,
+    mojo::PendingAssociatedRemote<blink::mojom::IDBDatabaseCallbacks>
+        pending_database_callbacks,
     const base::string16& name,
     int64_t version,
     mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
@@ -180,7 +180,7 @@ void IndexedDBDispatcherHost::Open(
                              std::move(callbacks_info), IDBTaskRunner()));
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks(
       new IndexedDBDatabaseCallbacks(indexed_db_context_,
-                                     std::move(database_callbacks_info),
+                                     std::move(pending_database_callbacks),
                                      IDBTaskRunner()));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 

@@ -210,7 +210,7 @@ void WebIDBDatabaseImpl::OpenCursorCallback(
   }
 
   CHECK(result->is_value());
-  callbacks->SuccessCursor(std::move(result->get_value()->pending_cursor),
+  callbacks->SuccessCursor(std::move(result->get_value()->cursor),
                            std::move(result->get_value()->key),
                            std::move(result->get_value()->primary_key),
                            std::move(result->get_value()->value));

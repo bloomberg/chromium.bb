@@ -135,7 +135,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   void SuccessStringList(const Vector<String>&) override { NOTREACHED(); }
 
   void SuccessCursor(
-      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> pending_cursor,
+      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,
       std::unique_ptr<IDBKey> key,
       std::unique_ptr<IDBKey> primary_key,
       base::Optional<std::unique_ptr<IDBValue>> optional_value) override {

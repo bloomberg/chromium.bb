@@ -50,8 +50,6 @@ using blink::mojom::IDBCallbacksAssociatedPtrInfo;
 using blink::mojom::IDBDatabaseAssociatedPtr;
 using blink::mojom::IDBDatabaseAssociatedPtrInfo;
 using blink::mojom::IDBDatabaseAssociatedRequest;
-using blink::mojom::IDBDatabaseCallbacks;
-using blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo;
 using blink::mojom::IDBFactory;
 using blink::mojom::IDBFactoryPtr;
 using blink::mojom::IDBValue;

@@ -105,8 +105,8 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   void GetDatabaseNames(
       blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) override;
   void Open(blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
-            blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo
-                database_callbacks_info,
+            mojo::PendingAssociatedRemote<blink::mojom::IDBDatabaseCallbacks>
+                pending_database_callbacks,
             const base::string16& name,
             int64_t version,
             mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
