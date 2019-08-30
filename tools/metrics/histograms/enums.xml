@@ -24486,6 +24486,9 @@ Called by update_net_error_codes.py.-->
   <int value="3009" label="HTMLFrameSetElement"/>
   <int value="3010" label="MediaCapabilitiesFramerateRatio"/>
   <int value="3011" label="MediaCapabilitiesFramerateNumber"/>
+  <int value="3012" label="FetchRedirectError"/>
+  <int value="3013" label="FetchRedirectManual"/>
+  <int value="3014" label="FetchCacheReload"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
