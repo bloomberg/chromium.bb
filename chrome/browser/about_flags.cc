@@ -2682,11 +2682,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)
-    {"omnibox-on-device-head-suggestions",
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProvider)},
-
     {"omnibox-search-engine-logo",
      flag_descriptions::kOmniboxSearchEngineLogoName,
      flag_descriptions::kOmniboxSearchEngineLogoDescription, kOsAndroid,
@@ -2694,6 +2689,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kOmniboxSearchEngineLogoFeatureVariations,
                                     "OmniboxSearchEngineLogo")},
 #endif  // defined(OS_ANDROID)
+
+    {"omnibox-on-device-head-suggestions",
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProvider)},
 
     {"omnibox-rich-entity-suggestions",
      flag_descriptions::kOmniboxRichEntitySuggestionsName,
