@@ -697,11 +697,14 @@ bool RenderWidget::ShouldHandleImeEvents() const {
 void RenderWidget::OnClose() {
   DCHECK(popup_ || pepper_fullscreen_);
 
-  // It is always safe to synchronously destroy this object from an IPC message.
-  // That's because the IPC message is asynchronous, which means it can never be
-  // called from a nested context.
   PrepareForClose();
-  Close(base::WrapUnique(this));
+
+  // IPCs can be invoked from nested message loops. We must dispatch this
+  // task non-nested to avoid re-entrancy issues.
+  GetCleanupTaskRunner()->PostNonNestableTask(
+      FROM_HERE,
+      base::BindOnce(&RenderWidget::Close, close_weak_ptr_factory_.GetWeakPtr(),
+                     base::WrapUnique(this)));
 }
 
 void RenderWidget::PrepareForClose() {
