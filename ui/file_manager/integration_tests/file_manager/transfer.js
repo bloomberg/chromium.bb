@@ -600,12 +600,13 @@ testcase.transferDeletedFile = async () => {
   chrome.test.assertTrue(
       await remoteCall.callRemoteTestUtil('execCommand', appId, ['paste']));
 
-  // Wait for the progress center to display.
-  await remoteCall.waitForElement(appId, '#progress-center:not([hidden])');
-
-  // Check that the error appears in the progress center.
-  const element =
-      await remoteCall.waitForElement(appId, '.progress-frame label');
+  // Check that the error appears in the feedback panel.
+  const element = await remoteCall.waitForElement(
+      appId, ['#progress-panel', 'xf-panel-item']);
   chrome.test.assertEq(
-      `Whoops, ${entry.nameText} no longer exists.`, element.text);
+      `Whoops, ${entry.nameText} no longer exists.`,
+      element.attributes['primary-text']);
+
+  // Check that only one line of text is shown.
+  chrome.test.assertFalse(!!element.attributes['secondary-text']);
 };
