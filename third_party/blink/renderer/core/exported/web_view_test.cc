@@ -514,8 +514,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   {
     // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
     // the appropriate pointers!
-    web_view->MainFrameWidget()->SetAnimationHost(
-        web_widget_client.animation_host());
+    web_view->SetAnimationHost(web_widget_client.animation_host());
     blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
     web_view->DidAttachLocalMainFrame();
   }

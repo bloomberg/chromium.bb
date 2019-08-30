@@ -8710,7 +8710,7 @@ TEST_F(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
   MainFrame()->Swap(remote_frame);
 
-  remote_frame->View()->MainFrameWidget()->Resize(size);
+  remote_frame->View()->Resize(size);
 
   WebLocalFrame* local_frame =
       frame_test_helpers::CreateProvisional(*remote_frame);
@@ -9507,7 +9507,7 @@ TEST_F(WebFrameTest, FrameWidgetTest) {
       *helper.RemoteMainFrame(), WebString(), WebFrameOwnerProperties(),
       nullptr, nullptr, &child_widget_client);
 
-  helper.GetWebView()->MainFrameWidget()->Resize(WebSize(1000, 1000));
+  helper.GetWebView()->Resize(WebSize(1000, 1000));
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
