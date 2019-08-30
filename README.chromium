@@ -311,3 +311,10 @@ D. Local Modifications
    https://unicode-org.atlassian.net/browse/ICU-20799
  - upstream PR:
    https://github.com/unicode-org/icu/pull/790
+
+16. Fix minimumGroupingDigits in Hungarian locale (hu) from 4 to 1.
+ - patches/hu_minimumGroupingDigits.patch
+ - upstream bug:
+   https://unicode-org.atlassian.net/browse/CLDR-13256
+ - upstream PR:
+   https://github.com/unicode-org/cldr/pull/142
