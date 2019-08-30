@@ -30,6 +30,18 @@ IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
       // different sentinel value.
       last_threshold_index_(kMaxThresholdIndex - 1) {}
 
+void IntersectionObservation::ComputeIntersection(
+    const IntersectionGeometry::RootGeometry& root_geometry,
+    unsigned compute_flags) {
+  if (!ShouldCompute(compute_flags))
+    return;
+  DCHECK(observer_->root());
+  unsigned geometry_flags = GetIntersectionGeometryFlags(compute_flags);
+  IntersectionGeometry geometry(root_geometry, *observer_->root(), *Target(),
+                                observer_->thresholds(), geometry_flags);
+  ProcessIntersectionGeometry(geometry);
+}
+
 void IntersectionObservation::ComputeIntersection(unsigned compute_flags) {
   if (!ShouldCompute(compute_flags))
     return;

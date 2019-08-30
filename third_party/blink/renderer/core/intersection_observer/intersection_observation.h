@@ -21,7 +21,7 @@ class IntersectionObserver;
 class IntersectionObservation final
     : public GarbageCollected<IntersectionObservation> {
  public:
-  // Flags that drive the behavior of the ComputeIntersection() method. For an
+  // Flags that drive the behavior of the ComputeIntersections() method. For an
   // explanation of implicit vs. explicit root, see intersection_observer.h.
   enum ComputeFlags {
     // If this bit is set, and observer_->RootIsImplicit() is true, then the
@@ -46,6 +46,9 @@ class IntersectionObservation final
   Element* Target() const { return target_; }
   unsigned LastThresholdIndex() const { return last_threshold_index_; }
   void ComputeIntersection(unsigned flags);
+  void ComputeIntersection(
+      const IntersectionGeometry::RootGeometry& root_geometry,
+      unsigned flags);
   void TakeRecords(HeapVector<Member<IntersectionObserverEntry>>&);
   void Disconnect();
 

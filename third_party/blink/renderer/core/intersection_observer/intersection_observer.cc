@@ -387,11 +387,13 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
   DCHECK(!RootIsImplicit());
   if (!RootIsValid() || !GetExecutionContext() || observations_.IsEmpty())
     return false;
+  IntersectionGeometry::RootGeometry root_geometry(root()->GetLayoutObject(),
+                                                   root_margin_);
   HeapVector<Member<IntersectionObservation>> observations_to_process;
   // TODO(szager): Is this copy necessary?
   CopyToVector(observations_, observations_to_process);
   for (auto& observation : observations_to_process) {
-    observation->ComputeIntersection(flags);
+    observation->ComputeIntersection(root_geometry, flags);
   }
   return trackVisibility();
 }
