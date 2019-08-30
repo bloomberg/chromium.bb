@@ -7,14 +7,14 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
-#include "platform/test/mock_udp_socket.h"
+#include "platform/test/fake_udp_socket.h"
 
 namespace cast {
 namespace mdns {
 
 using ::testing::_;
 using ::testing::Return;
-using MockUdpSocket = openscreen::platform::MockUdpSocket;
+using FakeUdpSocket = openscreen::platform::FakeUdpSocket;
 
 class MockMdnsReceiverDelegate : public MdnsReceiver::Delegate {
  public:
@@ -40,8 +40,8 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
   };
   // clang-format on
 
-  std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
-      MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
+  std::unique_ptr<openscreen::platform::FakeUdpSocket> socket_info =
+      FakeUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
   MockMdnsReceiverDelegate delegate;
   MdnsReceiver receiver(socket_info.get(), &delegate);
   receiver.Start();
@@ -92,8 +92,8 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
   };
   // clang-format on
 
-  std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
-      MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
+  std::unique_ptr<openscreen::platform::FakeUdpSocket> socket_info =
+      FakeUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
   MockMdnsReceiverDelegate delegate;
   MdnsReceiver receiver(socket_info.get(), &delegate);
   receiver.Start();

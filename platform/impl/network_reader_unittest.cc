@@ -10,7 +10,7 @@
 #include "platform/impl/udp_socket_posix.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
-#include "platform/test/mock_udp_socket.h"
+#include "platform/test/fake_udp_socket.h"
 
 namespace openscreen {
 namespace platform {
@@ -97,7 +97,7 @@ TEST(NetworkReaderTest, WatchReadableSucceeds) {
       std::unique_ptr<NetworkWaiter>(new MockNetworkWaiter());
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(new MockTaskRunner());
-  MockUdpSocket::MockClient client;
+  FakeUdpSocket::MockClient client;
   std::unique_ptr<MockUdpSocketPosix> socket =
       std::make_unique<MockUdpSocketPosix>(task_runner.get(), &client,
                                            UdpSocket::Version::kV4);
@@ -117,7 +117,7 @@ TEST(NetworkReaderTest, UnwatchReadableSucceeds) {
       std::unique_ptr<NetworkWaiter>(new MockNetworkWaiter());
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(new MockTaskRunner());
-  MockUdpSocket::MockClient client;
+  FakeUdpSocket::MockClient client;
   std::unique_ptr<MockUdpSocketPosix> socket =
       std::make_unique<MockUdpSocketPosix>(task_runner.get(), &client,
                                            UdpSocket::Version::kV4);
@@ -179,7 +179,7 @@ TEST(NetworkReaderTest, WaitSuccessfullyCalledOnAllWatchedSockets) {
       std::unique_ptr<NetworkWaiter>(mock_waiter_ptr);
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(new MockTaskRunner());
-  MockUdpSocket::MockClient client;
+  FakeUdpSocket::MockClient client;
   std::unique_ptr<MockUdpSocketPosix> socket =
       std::make_unique<MockUdpSocketPosix>(task_runner.get(), &client,
                                            UdpSocket::Version::kV4);
@@ -203,7 +203,7 @@ TEST(NetworkReaderTest, WaitSuccessfulReadAndCallCallback) {
       std::unique_ptr<NetworkWaiter>(mock_waiter_ptr);
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(task_runner_ptr);
-  MockUdpSocket::MockClient client;
+  FakeUdpSocket::MockClient client;
   MockUdpSocketPosix socket(task_runner.get(), &client,
                             UdpSocket::Version::kV4);
   TestingNetworkWaiter network_waiter(std::move(mock_waiter));

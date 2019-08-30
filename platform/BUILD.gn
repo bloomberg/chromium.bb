@@ -100,8 +100,8 @@ source_set("test") {
     "test/fake_clock.h",
     "test/fake_task_runner.cc",
     "test/fake_task_runner.h",
-    "test/mock_udp_socket.cc",
-    "test/mock_udp_socket.h",
+    "test/fake_udp_socket.cc",
+    "test/fake_udp_socket.h",
     "test/trace_logging_helpers.h",
   ]
 

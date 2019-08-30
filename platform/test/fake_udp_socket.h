@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_TEST_MOCK_UDP_SOCKET_H_
-#define PLATFORM_TEST_MOCK_UDP_SOCKET_H_
+#ifndef PLATFORM_TEST_FAKE_UDP_SOCKET_H_
+#define PLATFORM_TEST_FAKE_UDP_SOCKET_H_
 
 #include <algorithm>
 #include <memory>
@@ -19,8 +19,7 @@
 namespace openscreen {
 namespace platform {
 
-// TODO(rwkeane): Rename this class to "FakeUdpSocket".
-class MockUdpSocket : public UdpSocket {
+class FakeUdpSocket : public UdpSocket {
  public:
   class MockClient : public UdpSocket::Client {
    public:
@@ -33,13 +32,13 @@ class MockUdpSocket : public UdpSocket {
     }
   };
 
-  static std::unique_ptr<MockUdpSocket> CreateDefault(
+  static std::unique_ptr<FakeUdpSocket> CreateDefault(
       Version version = Version::kV4);
 
-  MockUdpSocket(TaskRunner* task_runner,
+  FakeUdpSocket(TaskRunner* task_runner,
                 Client* client,
                 Version version = Version::kV4);
-  ~MockUdpSocket() override;
+  ~FakeUdpSocket() override;
 
   bool IsIPv4() const override;
   bool IsIPv6() const override;
@@ -80,7 +79,7 @@ class MockUdpSocket : public UdpSocket {
   // Posts a task to call client_'s OnRead method
   void MockReceivePacket(UdpPacket packet) { OnRead(std::move(packet)); }
 
-  MockUdpSocket::MockClient* client_mock() { return fake_client_.get(); }
+  FakeUdpSocket::MockClient* client_mock() { return fake_client_.get(); }
 
  private:
   void ProcessConfigurationMethod(std::queue<Error>* errors);
@@ -99,11 +98,11 @@ class MockUdpSocket : public UdpSocket {
 
   // Fake implementations to be set by CreateDefault().
   std::unique_ptr<FakeTaskRunner> fake_task_runner_;
-  std::unique_ptr<MockUdpSocket::MockClient> fake_client_;
+  std::unique_ptr<FakeUdpSocket::MockClient> fake_client_;
   std::unique_ptr<FakeClock> fake_clock_;
 };
 
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_TEST_MOCK_UDP_SOCKET_H_
+#endif  // PLATFORM_TEST_FAKE_UDP_SOCKET_H_

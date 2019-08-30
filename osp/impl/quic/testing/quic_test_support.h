@@ -20,7 +20,7 @@
 #include "platform/base/ip_address.h"
 #include "platform/impl/task_runner.h"
 #include "platform/test/fake_clock.h"
-#include "platform/test/mock_udp_socket.h"
+#include "platform/test/fake_udp_socket.h"
 
 namespace openscreen {
 
@@ -80,8 +80,8 @@ class FakeQuicBridge {
   FakeServerQuicConnectionFactory* GetServerFactory();
   platform::FakeTaskRunner* task_runner_;
 
-  std::unique_ptr<platform::MockUdpSocket> client_socket_;
-  std::unique_ptr<platform::MockUdpSocket> server_socket_;
+  std::unique_ptr<platform::FakeUdpSocket> client_socket_;
+  std::unique_ptr<platform::FakeUdpSocket> server_socket_;
 };
 
 }  // namespace openscreen

@@ -6,7 +6,7 @@
 #include "platform/api/time.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
-#include "platform/test/mock_udp_socket.h"
+#include "platform/test/fake_udp_socket.h"
 
 namespace openscreen {
 namespace platform {
@@ -20,7 +20,7 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv4) {
   const uint8_t kIpV4AddrAny[4] = {};
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
-  MockUdpSocket::MockClient client;
+  FakeUdpSocket::MockClient client;
   ErrorOr<UdpSocketUniquePtr> create_result = UdpSocket::Create(
       &task_runner, &client, IPEndpoint{IPAddress(kIpV4AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
@@ -38,7 +38,7 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv6) {
   const uint8_t kIpV6AddrAny[16] = {};
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
-  MockUdpSocket::MockClient client;
+  FakeUdpSocket::MockClient client;
   ErrorOr<UdpSocketUniquePtr> create_result = UdpSocket::Create(
       &task_runner, &client, IPEndpoint{IPAddress(kIpV6AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();

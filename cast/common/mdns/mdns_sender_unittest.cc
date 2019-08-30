@@ -6,7 +6,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "platform/test/mock_udp_socket.h"
+#include "platform/test/fake_udp_socket.h"
 
 namespace cast {
 namespace mdns {
@@ -14,7 +14,7 @@ namespace mdns {
 using ::testing::_;
 using ::testing::Args;
 using ::testing::Return;
-using MockUdpSocket = openscreen::platform::MockUdpSocket;
+using FakeUdpSocket = openscreen::platform::FakeUdpSocket;
 
 namespace {
 
@@ -103,8 +103,8 @@ class MdnsSenderTest : public ::testing::Test {
 };
 
 TEST_F(MdnsSenderTest, SendMulticastIPv4) {
-  std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
-      MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
+  std::unique_ptr<openscreen::platform::FakeUdpSocket> socket_info =
+      FakeUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
   EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
@@ -113,8 +113,8 @@ TEST_F(MdnsSenderTest, SendMulticastIPv4) {
 }
 
 TEST_F(MdnsSenderTest, SendMulticastIPv6) {
-  std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
-      MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
+  std::unique_ptr<openscreen::platform::FakeUdpSocket> socket_info =
+      FakeUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
   EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
@@ -125,8 +125,8 @@ TEST_F(MdnsSenderTest, SendMulticastIPv6) {
 TEST_F(MdnsSenderTest, SendUnicastIPv4) {
   IPEndpoint endpoint{.address = IPAddress{192, 168, 1, 1}, .port = 31337};
 
-  std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
-      MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
+  std::unique_ptr<openscreen::platform::FakeUdpSocket> socket_info =
+      FakeUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
   EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
@@ -142,8 +142,8 @@ TEST_F(MdnsSenderTest, SendUnicastIPv6) {
   };
   IPEndpoint endpoint{.address = IPAddress(kIPv6AddressBytes), .port = 31337};
 
-  std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
-      MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
+  std::unique_ptr<openscreen::platform::FakeUdpSocket> socket_info =
+      FakeUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
   EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
@@ -158,8 +158,8 @@ TEST_F(MdnsSenderTest, MessageTooBig) {
     big_message_.AddQuestion(a_question_);
     big_message_.AddAnswer(a_record_);
   }
-  std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
-      MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
+  std::unique_ptr<openscreen::platform::FakeUdpSocket> socket_info =
+      FakeUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
   EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
@@ -169,8 +169,8 @@ TEST_F(MdnsSenderTest, MessageTooBig) {
 }
 
 TEST_F(MdnsSenderTest, ReturnsErrorOnSocketFailure) {
-  std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
-      MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
+  std::unique_ptr<openscreen::platform::FakeUdpSocket> socket_info =
+      FakeUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
   MdnsSender sender(socket_info.get());
   Error error = Error(Error::Code::kConnectionFailed, "error message");
   socket_info->EnqueueSendResult(error);
