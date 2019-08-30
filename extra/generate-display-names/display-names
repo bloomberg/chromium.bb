@@ -58,7 +58,7 @@
   ../../tables/fr-bfu-comp8.utb                 Unified French 8 dots braille
   ../../tables/fr-bfu-g2.ctb                    Unified French contracted braille
 * ../../tables/ga-g1.utb                        Irish uncontracted braille
-* ../../tables/ga.tbl                           Irish contracted braille
+* ../../tables/ga-g2.ctb                        Irish contracted braille
 * ../../tables/gd.tbl                           Scottish Gaelic computer braille
 * ../../tables/gez.tbl                          Ethiopic braille
 * ../../tables/gon.tbl                          Gondi braille

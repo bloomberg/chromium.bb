@@ -1,14 +1,20 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 3.11.0 (2019-09-02)
+A tremendous amount of work by Dave Mielke and Bert Frees has gone
+into this release. They have improved liblouis for use on note taker
+devices, for backwards translation and a number of languages. Many
+other contributors (listed below) have also helped in fixing bugs and
+improving braille tables, such as Dutch, Mongolian, Polish, Ancient
+Greek, Danish, Irish, Chinese, and American Braille Computer Code.
 
 For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/21?closed=1][the list of closed
 issues]].
 
 ** New features
-- Enable ~always~ rules with a single character and and a single
-  braille cell for back-translation. Thanks to Bue Vester-Andersen.
-- Implement noUndefined mode for forward translation, thanks to Dave
+- Enable ~always~ rules with a single character and a single braille
+  cell for back-translation. Thanks to Bue Vester-Andersen.
+- Implement ~noUndefined~ mode for forward translation, thanks to Dave
   Mielke.
 - Use fallback braille representations (NABCC) for rendering undefined
   characters in hexadecimal notation, thanks to Dave Mielke.
@@ -21,13 +27,13 @@ issues]].
 - Handle word resets in the last word of an caps or emphasis passage
   if the end indicator was placed before the word. Thanks to Bert
   Frees.
-- Never convert to lowercase if capsletter is not defined. Thanks to
+- Never convert to lowercase if ~capsletter~ is not defined. Thanks to
   Bert Frees.
-- Fix position mapping for back-translation when noUndefined mode is
+- Fix position mapping for back-translation when ~noUndefined~ mode is
   active. Thanks to Dave Mielke.
 - Fix bug where a translation would hang on words that match both a
   ~nocont~ and a ~repeated~ rule. Thanks to Dave Mielke.
-- Fix bug where the effect of capsnocont would leak to the next word
+- Fix bug where the effect of ~capsnocont~ would leak to the next word
   if that word starts with a capital. Thanks to Bue Vester-Andersen.
 
 ** Braille table improvements
@@ -40,25 +46,35 @@ issues]].
   international braille". A version with composed accents is made
   available as a .uti table. Thanks to Dave Mielke and Μαρια
   Γεωργακαράκου (Maria Georgakarakou).
+- Various improvements to modern Greek thanks to Dave Mielke.
 - Improvements and fixes to Spanish contracted braille. Details in
   #741. Thanks to Juan Pablo Bello.
+- Improvements and fixes to the Danish tables. Thanks to Bue
+  Vester-Andersen.
 - Add a display table to match Word CX which is used in Norway and
   Sweden, and maybe also in other countries thanks to Lars Bjørndal.
 - Fix handling of colon within number in Dutch braille, thanks to Jake
   Kyle.
 - Fix translation of bullet and dot operators in Dutch braille, thanks
   to Paul Rambags
-- Added North American Braille Computer Code table (en-nabcc.utb)
-  which is the counterpart of the text_nabcc.dis display table. Thanks
-  to Dave Mielke.
+- Added North American Braille Computer Code table (~en-nabcc.utb~)
+  which is the counterpart of the ~text_nabcc.dis~ display table.
+  Thanks to Dave Mielke.
 - Add support for the International Phonetic Alphabet (IPA) to the
   Chinese braille table, thanks to Hurt Huang and Sponge Jhan.
 - Unified English Braille no longer displays a single underscore when
   multiple underscores are in the text, thanks to André-Abush Clause.
 - Update to Afrikaans uncontacted braille and new table for contracted
   braille. Thanks to Christo de Klerk and Greg Kearney.
+- Update Irish braille (contracted and uncontracted) to the May 2019
+  version of the specification, thanks to Ronan McGuirk
 
 ** Other changes
+- The python wrapper now encodes and decodes strings to/from UTF-16
+  and UTF-32 using the surrogatepass error handler. This ensures that
+  single UTF-16 surrogate characters are processed correctly by the
+  wrapper and don't raise an encoding/decoding error. Thanks to
+  Leonard de Ruijter.
 - Metadata keys and values are now case insensitive, thanks to Dave
   Mielke.
 - Remove ~unicodedefs.cti~. It was obsolete and never meant to be
@@ -81,9 +97,10 @@ issues]].
   letters), e.g compound words, thanks to Bert Frees.
 
 ** Deprecation notice
-- The noUndefinedDots mode has been renamed to noUndefined. For
-  backwards compatibility noUndefinedDots is still available in the
-  header file and in the Python bindings, as an alias for noUndefined.
+- The ~noUndefinedDots~ mode has been renamed to ~noUndefined~. For
+  backwards compatibility ~noUndefinedDots~ is still available in the
+  header file and in the Python bindings, as an alias for
+  ~noUndefined~.
 
 ** Backwards incompatible changes
 None
@@ -242,7 +259,7 @@ issues]].
 
 ** Deprecation notice
 - The ~locale~ opcode was never implemented and was just silently
-  ignored. It is now removed from the tables and and a warning will be
+  ignored. It is now removed from the tables and a warning will be
   issued if it is found in a table.
 
 ** Backwards incompatible changes
