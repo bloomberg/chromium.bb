@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/network_service_client.h"
+#include "content/public/browser/network_context_client_base.h"
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -32,7 +32,7 @@ struct UploadResponse {
     this->opened_files = std::move(opened_files);
   }
 
-  network::mojom::NetworkServiceClient::OnFileUploadRequestedCallback callback;
+  network::mojom::NetworkContextClient::OnFileUploadRequestedCallback callback;
   int error_code;
   std::vector<base::File> opened_files;
 };
@@ -65,9 +65,9 @@ const char kFileContent2[] = "test file content two";
 
 }  // namespace
 
-class NetworkServiceClientTest : public testing::Test {
+class NetworkContextClientBaseTest : public testing::Test {
  public:
-  NetworkServiceClientTest() : client_(mojo::MakeRequest(&client_ptr_)) {}
+  NetworkContextClientBaseTest() {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -82,12 +82,11 @@ class NetworkServiceClientTest : public testing::Test {
  protected:
   BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
-  network::mojom::NetworkServiceClientPtr client_ptr_;
-  NetworkServiceClient client_;
+  NetworkContextClientBase client_;
   base::ScopedTempDir temp_dir_;
 };
 
-TEST_F(NetworkServiceClientTest, UploadNoFiles) {
+TEST_F(NetworkContextClientBaseTest, UploadNoFiles) {
   UploadResponse response;
   client_.OnFileUploadRequested(kRendererProcessId, true, {},
                                 std::move(response.callback));
@@ -96,7 +95,7 @@ TEST_F(NetworkServiceClientTest, UploadNoFiles) {
   EXPECT_EQ(0U, response.opened_files.size());
 }
 
-TEST_F(NetworkServiceClientTest, UploadOneValidAsyncFile) {
+TEST_F(NetworkContextClientBaseTest, UploadOneValidAsyncFile) {
   base::FilePath path = temp_dir_.GetPath().AppendASCII("filename");
   CreateFile(path, kFileContent1);
   GrantAccess(path, kRendererProcessId);
@@ -110,7 +109,7 @@ TEST_F(NetworkServiceClientTest, UploadOneValidAsyncFile) {
   EXPECT_TRUE(response.opened_files[0].async());
 }
 
-TEST_F(NetworkServiceClientTest, UploadOneValidFile) {
+TEST_F(NetworkContextClientBaseTest, UploadOneValidFile) {
   base::FilePath path = temp_dir_.GetPath().AppendASCII("filename");
   CreateFile(path, kFileContent1);
   GrantAccess(path, kRendererProcessId);
@@ -126,7 +125,7 @@ TEST_F(NetworkServiceClientTest, UploadOneValidFile) {
 }
 
 #if defined(OS_ANDROID)
-TEST_F(NetworkServiceClientTest, UploadOneValidFileWithContentUri) {
+TEST_F(NetworkContextClientBaseTest, UploadOneValidFileWithContentUri) {
   base::FilePath image_path;
   EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &image_path));
   image_path = image_path.AppendASCII("content")
@@ -152,7 +151,7 @@ TEST_F(NetworkServiceClientTest, UploadOneValidFileWithContentUri) {
 }
 #endif
 
-TEST_F(NetworkServiceClientTest, UploadTwoValidFiles) {
+TEST_F(NetworkContextClientBaseTest, UploadTwoValidFiles) {
   base::FilePath path1 = temp_dir_.GetPath().AppendASCII("filename1");
   base::FilePath path2 = temp_dir_.GetPath().AppendASCII("filename2");
   CreateFile(path1, kFileContent1);
@@ -170,7 +169,7 @@ TEST_F(NetworkServiceClientTest, UploadTwoValidFiles) {
   ValidateFileContents(response.opened_files[1], kFileContent2);
 }
 
-TEST_F(NetworkServiceClientTest, UploadOneUnauthorizedFile) {
+TEST_F(NetworkContextClientBaseTest, UploadOneUnauthorizedFile) {
   base::FilePath path = temp_dir_.GetPath().AppendASCII("filename");
   CreateFile(path, kFileContent1);
 
@@ -182,7 +181,7 @@ TEST_F(NetworkServiceClientTest, UploadOneUnauthorizedFile) {
   EXPECT_EQ(0U, response.opened_files.size());
 }
 
-TEST_F(NetworkServiceClientTest, UploadOneValidFileAndOneUnauthorized) {
+TEST_F(NetworkContextClientBaseTest, UploadOneValidFileAndOneUnauthorized) {
   base::FilePath path1 = temp_dir_.GetPath().AppendASCII("filename1");
   base::FilePath path2 = temp_dir_.GetPath().AppendASCII("filename2");
   CreateFile(path1, kFileContent1);
@@ -197,7 +196,7 @@ TEST_F(NetworkServiceClientTest, UploadOneValidFileAndOneUnauthorized) {
   EXPECT_EQ(0U, response.opened_files.size());
 }
 
-TEST_F(NetworkServiceClientTest, UploadOneValidFileAndOneNotFound) {
+TEST_F(NetworkContextClientBaseTest, UploadOneValidFileAndOneNotFound) {
   base::FilePath path1 = temp_dir_.GetPath().AppendASCII("filename1");
   base::FilePath path2 = temp_dir_.GetPath().AppendASCII("filename2");
   CreateFile(path1, kFileContent1);
@@ -212,7 +211,7 @@ TEST_F(NetworkServiceClientTest, UploadOneValidFileAndOneNotFound) {
   EXPECT_EQ(0U, response.opened_files.size());
 }
 
-TEST_F(NetworkServiceClientTest, UploadFromBrowserProcess) {
+TEST_F(NetworkContextClientBaseTest, UploadFromBrowserProcess) {
   base::FilePath path = temp_dir_.GetPath().AppendASCII("filename");
   CreateFile(path, kFileContent1);
   // No grant necessary for browser process.

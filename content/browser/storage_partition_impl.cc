@@ -42,6 +42,7 @@
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
@@ -1663,6 +1664,15 @@ void StoragePartitionImpl::OnSSLCertificateError(
   SSLManager::OnSSLCertificateError(
       delegate->GetWeakPtr(), is_main_frame_request, url,
       std::move(web_contents_getter), net_error, ssl_info, fatal);
+}
+
+void StoragePartitionImpl::OnFileUploadRequested(
+    uint32_t process_id,
+    bool async,
+    const std::vector<base::FilePath>& file_paths,
+    OnFileUploadRequestedCallback callback) {
+  NetworkContextOnFileUploadRequested(process_id, async, file_paths,
+                                      std::move(callback));
 }
 
 void StoragePartitionImpl::OnCanSendReportingReports(
