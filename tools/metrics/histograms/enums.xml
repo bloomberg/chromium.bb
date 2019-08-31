@@ -13154,7 +13154,8 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Desk-switch keyboard shortcut"/>
   <int value="3" label="Mini_view button press"/>
   <int value="4" label="Window on desk activated"/>
-  <int value="5" label="Desk-switch 4-finger touchpad swipe"/>
+  <int value="5" label="Desk-switch 3-finger touchpad swipe"/>
+  <int value="6" label="User switch in a multi-profile session"/>
 </enum>
 
 <enum name="DesktopCaptureCounters">
