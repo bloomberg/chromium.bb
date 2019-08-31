@@ -34,6 +34,7 @@ AXNode::AXNode(AXNode::OwnerTree* tree,
 AXNode::~AXNode() = default;
 
 size_t AXNode::GetUnignoredChildCount() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   return unignored_child_count_;
 }
 
@@ -42,6 +43,7 @@ AXNodeData&& AXNode::TakeData() {
 }
 
 AXNode* AXNode::GetUnignoredChildAtIndex(size_t index) const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   size_t count = 0;
   for (auto it = UnignoredChildrenBegin(); it != UnignoredChildrenEnd(); ++it) {
     if (count == index)
@@ -52,6 +54,7 @@ AXNode* AXNode::GetUnignoredChildAtIndex(size_t index) const {
 }
 
 AXNode* AXNode::GetUnignoredParent() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   AXNode* result = parent();
   while (result && result->data().HasState(ax::mojom::State::kIgnored))
     result = result->parent();
@@ -59,14 +62,17 @@ AXNode* AXNode::GetUnignoredParent() const {
 }
 
 size_t AXNode::GetUnignoredIndexInParent() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   return unignored_index_in_parent_;
 }
 
 AXNode* AXNode::GetFirstUnignoredChild() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   return ComputeFirstUnignoredChildRecursive();
 }
 
 AXNode* AXNode::GetLastUnignoredChild() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   return ComputeLastUnignoredChildRecursive();
 }
 
@@ -95,6 +101,7 @@ AXNode* AXNode::GetDeepestLastUnignoredChild() const {
 }
 
 AXNode* AXNode::GetNextUnignoredSibling() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   AXNode* parent_node = parent();
   size_t index = index_in_parent() + 1;
   while (parent_node) {
@@ -122,6 +129,7 @@ AXNode* AXNode::GetNextUnignoredSibling() const {
 }
 
 AXNode* AXNode::GetPreviousUnignoredSibling() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   AXNode* parent_node = parent();
   bool before_first_child = index_in_parent() <= 0;
   size_t index = index_in_parent() - 1;
@@ -179,10 +187,12 @@ AXNode* AXNode::GetPreviousUnignoredInTreeOrder() const {
 }
 
 AXNode::UnignoredChildIterator AXNode::UnignoredChildrenBegin() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   return UnignoredChildIterator(this, GetFirstUnignoredChild());
 }
 
 AXNode::UnignoredChildIterator AXNode::UnignoredChildrenEnd() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   return UnignoredChildIterator(this, nullptr);
 }
 
@@ -700,6 +710,10 @@ base::Optional<int> AXNode::GetPosInSet() {
     return base::nullopt;
   }
 
+  if (data().HasState(ax::mojom::State::kIgnored)) {
+    return base::nullopt;
+  }
+
   const AXNode* ordered_set = GetOrderedSet();
   if (!ordered_set) {
     return base::nullopt;
@@ -719,6 +733,10 @@ base::Optional<int> AXNode::GetSetSize() {
   // are defined in the ARIA spec.
   if (!(IsOrderedSetItem() || IsOrderedSet()))
     return base::nullopt;
+
+  if (data().HasState(ax::mojom::State::kIgnored)) {
+    return base::nullopt;
+  }
 
   // If node is item-like, find its outerlying ordered set. Otherwise,
   // this node is the ordered set.
@@ -812,6 +830,7 @@ AXNode* AXNode::GetOrderedSet() const {
 }
 
 AXNode* AXNode::ComputeLastUnignoredChildRecursive() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   if (children().size() == 0)
     return nullptr;
 
@@ -828,6 +847,7 @@ AXNode* AXNode::ComputeLastUnignoredChildRecursive() const {
 }
 
 AXNode* AXNode::ComputeFirstUnignoredChildRecursive() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
   for (size_t i = 0; i < children().size(); i++) {
     AXNode* child = children_[i];
     if (!child->data().HasState(ax::mojom::State::kIgnored))
