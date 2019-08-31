@@ -43,7 +43,6 @@ namespace net {
 
 namespace {
 const char kAlternativeServiceHeader[] = "Alt-Svc";
-
 }  // namespace
 
 HttpStreamFactory::HttpStreamFactory(HttpNetworkSession* session)
