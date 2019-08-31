@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/rtc_video_decoder_factory.h"
+#include "third_party/blink/public/platform/modules/peerconnection/rtc_video_decoder_factory.h"
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/platform/modules/peerconnection/web_rtc_video_frame_adapter_factory.h"
 
-namespace content {
+namespace blink {
 namespace {
 
 // This extra indirection is needed so that we can delete the decoder on the
@@ -87,4 +87,4 @@ RTCVideoDecoderFactory::CreateVideoDecoder(
                  : nullptr;
 }
 
-}  // namespace content
+}  // namespace blink
