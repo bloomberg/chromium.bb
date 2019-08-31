@@ -30,9 +30,9 @@ static const char *exec_name;
 
 void usage_exit(void) { exit(EXIT_FAILURE); }
 
-static int mode_to_num_temporal_layers[6] = { 1, 2, 3, 3, 2, 1 };
-static int mode_to_num_spatial_layers[6] = { 1, 1, 1, 1, 1, 2 };
-static int mode_to_num_layers[6] = { 1, 2, 3, 3, 2, 2 };
+static int mode_to_num_temporal_layers[7] = { 1, 2, 3, 3, 2, 1, 1 };
+static int mode_to_num_spatial_layers[7] = { 1, 1, 1, 1, 1, 2, 3 };
+static int mode_to_num_layers[7] = { 1, 2, 3, 3, 2, 2, 3 };
 
 // For rate control encoding stats.
 struct RateControlMetrics {
@@ -354,19 +354,49 @@ static int set_layer_pattern(int layering_mode, int frame_cnt,
       }
       break;
     case 5:
+      // 2 spatial layers, 1 temporal.
       layer_id->temporal_layer_id = 0;
       if (layer_id->spatial_layer_id == 0) {
-        // Reference LAST, update LAST. Keep LAST and GOLDEN in slots 0 and 3.
-        ref_frame_config->ref_idx[0] = 0;
-        ref_frame_config->ref_idx[3] = 3;
+        // Reference LAST, update LAST.
         ref_frame_config->refresh[0] = 1;
         layer_flags |= AOM_EFLAG_NO_REF_GF;
       } else if (layer_id->spatial_layer_id == 1) {
-        // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 3
-        // and GOLDEN to slot 0. Update slot 3 (LAST).
-        ref_frame_config->ref_idx[0] = 3;
+        // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 1
+        // and GOLDEN to slot 0. Update slot 1 (LAST).
+        ref_frame_config->ref_idx[0] = 1;
         ref_frame_config->ref_idx[3] = 0;
-        ref_frame_config->refresh[3] = 1;
+        ref_frame_config->refresh[1] = 1;
+      }
+      break;
+    case 6:
+      // 3 spatial layers, 1 temporal.
+      // Note for this case, we set the buffer idx for all references to be
+      // either LAST or GOLDEN, which are always valid references, since decoder
+      // will check if any of the 7 references is valid scale in
+      // valid_ref_frame_size().
+      layer_id->temporal_layer_id = 0;
+      if (layer_id->spatial_layer_id == 0) {
+        // Reference LAST, update LAST. Set all buffer_idx to 0.
+        for (i = 0; i < INTER_REFS_PER_FRAME; i++)
+          ref_frame_config->ref_idx[i] = 0;
+        ref_frame_config->refresh[0] = 1;
+        layer_flags |= AOM_EFLAG_NO_REF_GF;
+      } else if (layer_id->spatial_layer_id == 1) {
+        // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 1
+        // and GOLDEN (and all other refs) to slot 0.
+        // Update slot 1 (LAST).
+        for (i = 0; i < INTER_REFS_PER_FRAME; i++)
+          ref_frame_config->ref_idx[i] = 0;
+        ref_frame_config->ref_idx[0] = 1;
+        ref_frame_config->refresh[1] = 1;
+      } else if (layer_id->spatial_layer_id == 2) {
+        // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 2
+        // and GOLDEN (and all other refs) to slot 1.
+        // Update slot 2 (LAST).
+        for (i = 0; i < INTER_REFS_PER_FRAME; i++)
+          ref_frame_config->ref_idx[i] = 1;
+        ref_frame_config->ref_idx[0] = 2;
+        ref_frame_config->refresh[2] = 1;
       }
       break;
     default: assert(0); die("Error: Unsupported temporal layering mode!\n");
