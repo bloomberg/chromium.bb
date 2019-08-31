@@ -174,34 +174,6 @@ TEST_F(FidoCableDeviceTest, TestCaBleDeviceSendData) {
   ConnectWithLength(kControlPointLength);
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
-      .WillOnce(Invoke([this](const auto& data, auto* cb) {
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(std::move(*cb), true));
-
-        const auto authenticator_reply = authenticator()->ReplyWithSameMessage(
-            base::make_span(data).subspan(kCTAPFramingLength));
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(connection()->read_callback(),
-                                      ConstructSerializedOutgoingFragment(
-                                          authenticator_reply)));
-      }));
-
-  TestDeviceCallbackReceiver callback_receiver;
-  device()->DeviceTransact(fido_parsing_utils::Materialize(kTestData),
-                           callback_receiver.callback());
-
-  callback_receiver.WaitForCallback();
-  const auto& value = callback_receiver.value();
-  ASSERT_TRUE(value);
-  EXPECT_THAT(*value, ::testing::ElementsAreArray(kTestData));
-}
-
-// Test that FidoCableDevice properly updates counters when sending/receiving
-// multiple requests.
-TEST_F(FidoCableDeviceTest, TestCableDeviceSendMultipleRequests) {
-  ConnectWithLength(kControlPointLength);
-  EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
-      .Times(2)
       .WillRepeatedly(Invoke([this](const auto& data, auto* cb) {
         base::SequencedTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::BindOnce(std::move(*cb), true));
@@ -214,30 +186,18 @@ TEST_F(FidoCableDeviceTest, TestCableDeviceSendMultipleRequests) {
                                           authenticator_reply)));
       }));
 
-  ASSERT_TRUE(device()->encryption_data_);
-  EXPECT_EQ(0u, device()->encryption_data_->write_sequence_num);
-  EXPECT_EQ(0u, device()->encryption_data_->read_sequence_num);
+  for (size_t i = 0; i < 3; i++) {
+    SCOPED_TRACE(i);
 
-  TestDeviceCallbackReceiver callback_receiver1;
-  device()->DeviceTransact(fido_parsing_utils::Materialize(kTestData),
-                           callback_receiver1.callback());
-  callback_receiver1.WaitForCallback();
-  const auto& value1 = callback_receiver1.value();
-  ASSERT_TRUE(value1);
-  EXPECT_THAT(*value1, ::testing::ElementsAreArray(kTestData));
-  EXPECT_EQ(1u, device()->encryption_data_->write_sequence_num);
-  EXPECT_EQ(1u, device()->encryption_data_->read_sequence_num);
+    TestDeviceCallbackReceiver callback_receiver;
+    device()->DeviceTransact(fido_parsing_utils::Materialize(kTestData),
+                             callback_receiver.callback());
 
-  constexpr uint8_t kTestData2[] = {'T', 'E', 'S', 'T', '2'};
-  TestDeviceCallbackReceiver callback_receiver2;
-  device()->DeviceTransact(fido_parsing_utils::Materialize(kTestData2),
-                           callback_receiver2.callback());
-  callback_receiver2.WaitForCallback();
-  const auto& value2 = callback_receiver2.value();
-  ASSERT_TRUE(value2);
-  EXPECT_THAT(*value2, ::testing::ElementsAreArray(kTestData2));
-  EXPECT_EQ(2u, device()->encryption_data_->write_sequence_num);
-  EXPECT_EQ(2u, device()->encryption_data_->read_sequence_num);
+    callback_receiver.WaitForCallback();
+    const auto& value = callback_receiver.value();
+    ASSERT_TRUE(value);
+    EXPECT_THAT(*value, ::testing::ElementsAreArray(kTestData));
+  }
 }
 
 TEST_F(FidoCableDeviceTest, TestCableDeviceFailOnIncorrectSessionKey) {
@@ -322,8 +282,7 @@ TEST_F(FidoCableDeviceTest, TestCableDeviceErrorOnMaxCounter) {
       }));
 
   TestDeviceCallbackReceiver callback_receiver;
-  ASSERT_TRUE(device()->encryption_data_);
-  device()->encryption_data_->read_sequence_num = kInvalidCounter;
+  device()->SetSequenceNumbersForTesting(kInvalidCounter, 0);
   device()->DeviceTransact(fido_parsing_utils::Materialize(kTestData),
                            callback_receiver.callback());
 
