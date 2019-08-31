@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "third_party/blink/public/platform/modules/peerconnection/web_rtc_video_frame_adapter_factory.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_video_decoder_adapter.h"
 
 namespace blink {
 namespace {
@@ -79,7 +79,7 @@ RTCVideoDecoderFactory::CreateVideoDecoder(
     const webrtc::SdpVideoFormat& format) {
   DVLOG(2) << __func__;
   std::unique_ptr<webrtc::VideoDecoder> decoder =
-      blink::CreateRTCVideoDecoderAdapter(gpu_factories_, format);
+      RTCVideoDecoderAdapter::Create(gpu_factories_, format);
   // ScopedVideoDecoder uses the task runner to make sure the decoder is
   // destructed on the correct thread.
   return decoder ? std::make_unique<ScopedVideoDecoder>(
