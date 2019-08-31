@@ -778,7 +778,7 @@ IN_PROC_BROWSER_TEST_P(
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
   // Set pattern to a string that does not matches https_url() path.
   ASSERT_EQ(std::string::npos, https_url().path().find("mismatched_pattern"));
-  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
+  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_hint_setup_url(),
                                                     "mismatched_pattern");
 
   SetExpectedFooJpgRequest(true);
@@ -811,7 +811,7 @@ IN_PROC_BROWSER_TEST_P(
   if (use_preload_resources_webpage() && !use_render_frame_observer())
     return;
   // Whitelist resource loading hints for https_url()'s' host and pattern.
-  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
+  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_hint_setup_url(),
                                                     https_url().path());
 
   // Hints should be used when loading https_url().
