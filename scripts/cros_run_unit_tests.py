@@ -133,11 +133,11 @@ def main(argv):
                          use_binary=False)
     except cros_build_lib.RunCommandError:
       logging.error('Failed building dependencies for unittests.')
-      raise
+      return 1
 
   try:
     chroot_util.RunUnittests(sysroot, pkg_with_test, extra_env=env,
                              jobs=min(10, multiprocessing.cpu_count()))
   except cros_build_lib.RunCommandError:
     logging.error('Unittests failed.')
-    raise
+    return 1
