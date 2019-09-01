@@ -257,7 +257,6 @@ static void set_good_speed_features_framesize_independent(
   sf->prune_compound_using_single_ref = 1;
 
   sf->prune_mode_search_simple_translation = 1;
-  sf->two_loop_comp_search = 0;
   sf->prune_ref_frame_for_rect_partitions =
       (boosted || (cm->allow_screen_content_tools))
           ? 0
@@ -464,7 +463,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->inter_mode_rd_model_estimation_adaptive = 0;
   sf->prune_compound_using_single_ref = 0;
   sf->prune_mode_search_simple_translation = 1;
-  sf->two_loop_comp_search = 0;
 
   sf->prune_ref_frame_for_rect_partitions = !boosted;
   sf->less_rectangular_check_level = 1;
@@ -788,7 +786,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->use_inter_txb_hash = 1;
   sf->use_mb_rd_hash = 1;
   sf->optimize_b_precheck = 0;
-  sf->two_loop_comp_search = 1;
   sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_ENABLED;
   sf->reuse_inter_intra_mode = 0;
   sf->intra_angle_estimation = 0;
