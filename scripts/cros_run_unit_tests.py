@@ -112,8 +112,8 @@ def main(argv):
   pkg_with_test = portage_util.PackagesWithTest(sysroot, packages)
 
   if packages - pkg_with_test:
-    logging.warning('The following packages do not have tests:')
-    logging.warning('\n'.join(sorted(packages - pkg_with_test)))
+    logging.warning('The following packages do not have tests:\n  %s',
+                    '\n  '.join(sorted(packages - pkg_with_test)))
 
   if opts.pretend:
     print('\n'.join(sorted(pkg_with_test)))
