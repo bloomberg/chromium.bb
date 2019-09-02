@@ -8,6 +8,7 @@
 #import <Vision/Vision.h>
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -96,7 +97,7 @@
 
 // Checks the type of |text| to assign it to appropriate property.
 - (void)extractDataFromText:(NSString*)text {
-  NSDateComponents* components = [self extractExpirationDateFromText:text];
+  NSDateComponents* components = ios::ExtractExpirationDateFromText(text);
 
   if (components) {
     self.expirationMonth = [@([components month]) stringValue];
@@ -107,22 +108,6 @@
   }
 }
 
-// Extracts expiration month and year from |text|.
-- (NSDateComponents*)extractExpirationDateFromText:(NSString*)text {
-  NSDateComponents* components;
-  NSDateFormatter* formatter = [[NSDateFormatter init] alloc];
-  [formatter setDateFormat:@"MM/yy"];
-  NSDate* date = [formatter dateFromString:text];
-
-  if (date) {
-    NSCalendar* gregorian = [[NSCalendar alloc]
-        initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    components = [gregorian components:NSCalendarUnitMonth | NSCalendarUnitYear
-                              fromDate:date];
-  }
-
-  return components;
-}
 
 // Extracts credit card number from |string|.
 - (NSString*)extractCreditCardNumber:(NSString*)string {
