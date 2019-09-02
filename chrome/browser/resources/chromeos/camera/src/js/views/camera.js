@@ -58,8 +58,8 @@ cca.views.Camera = function(
    * @type {cca.views.camera.Options}
    * @private
    */
-  this.options_ = new cca.views.camera.Options(
-      infoUpdater, mojoConnector, this.restart.bind(this));
+  this.options_ =
+      new cca.views.camera.Options(infoUpdater, this.restart.bind(this));
 
   /**
    * @type {HTMLElement}
