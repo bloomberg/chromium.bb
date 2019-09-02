@@ -46751,6 +46751,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="1+ from Android"/>
 </enum>
 
+<enum name="PasswordManagerOnboardingState">
+  <int value="0" label="Not shown"/>
+  <int value="1" label="Should be shown"/>
+  <int value="2" label="Shown"/>
+</enum>
+
+<enum name="PasswordManagerOnboardingUIDismissalReason">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Rejected"/>
+  <int value="2" label="Dismissed"/>
+</enum>
+
 <enum name="PasswordManagerOsPasswordStatus">
   <int value="0" label="Unknown"/>
   <int value="1" label="Unsupported platform"/>

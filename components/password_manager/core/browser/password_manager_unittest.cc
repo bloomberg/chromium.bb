@@ -313,7 +313,7 @@ class PasswordManagerTest : public testing::Test {
     prefs_.reset(new TestingPrefServiceSimple());
     prefs_->registry()->RegisterIntegerPref(
         prefs::kPasswordManagerOnboardingState,
-        static_cast<int>(OnboardingState::kDoNotShow));
+        static_cast<int>(metrics_util::OnboardingState::kDoNotShow));
     prefs_->registry()->RegisterBooleanPref(
         prefs::kPasswordLeakDetectionEnabled, true);
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(prefs_.get()));
@@ -905,8 +905,9 @@ TEST_F(PasswordManagerTest, OnboardingSimple) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPasswordManagerOnboardingAndroid);
-  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
-                     static_cast<int>(OnboardingState::kShouldShow));
+  prefs_->SetInteger(
+      prefs::kPasswordManagerOnboardingState,
+      static_cast<int>(metrics_util::OnboardingState::kShouldShow));
 
   PasswordForm form(MakeSimpleForm());
   std::vector<PasswordForm> observed = {form};
@@ -933,8 +934,9 @@ TEST_F(PasswordManagerTest, OnboardingPasswordUpdate) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPasswordManagerOnboardingAndroid);
-  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
-                     static_cast<int>(OnboardingState::kShouldShow));
+  prefs_->SetInteger(
+      prefs::kPasswordManagerOnboardingState,
+      static_cast<int>(metrics_util::OnboardingState::kShouldShow));
 
   PasswordForm observed_form(MakeSimpleForm());
   std::vector<PasswordForm> observed_forms = {observed_form};

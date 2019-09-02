@@ -217,8 +217,9 @@ void PasswordManager::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterDoublePref(prefs::kLastTimeObsoleteHttpCredentialsRemoved,
                                0.0);
-  registry->RegisterIntegerPref(prefs::kPasswordManagerOnboardingState,
-                                static_cast<int>(OnboardingState::kDoNotShow));
+  registry->RegisterIntegerPref(
+      prefs::kPasswordManagerOnboardingState,
+      static_cast<int>(metrics_util::OnboardingState::kDoNotShow));
 
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
