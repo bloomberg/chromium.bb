@@ -1,6 +1,7 @@
 # liblouis: Irish Braille Code Grade 1 uncontracted
 # Version: INBAF May 2019 
 # -----------
+#-index-name: Irish, uncontracted
 #-display-name: Irish uncontracted braille
 #
 #+locale:ga

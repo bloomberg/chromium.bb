@@ -11,6 +11,7 @@
 #
 # -----------
 #-name: Deutsche Vollschrift
+#-index-name: German, partially contracted
 #-display-name: German partially contracted braille
 #
 #+locale: de

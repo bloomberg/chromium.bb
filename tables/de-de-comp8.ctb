@@ -24,7 +24,8 @@
 
 # -----------
 #-name: Eurobraille
-#-display-name: German 8 dot computer braille
+#-index-name: German, computer
+#-display-name: German computer braille
 #
 #+locale: de
 #+type: computer
