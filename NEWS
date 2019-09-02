@@ -20,6 +20,12 @@ issues]].
   characters in hexadecimal notation, thanks to Dave Mielke.
 - Always render undefined characters, also ASCII characters, in
   hexadecimal notation.
+- Add a new metadata field ~index-name~ for selecting a table from a
+  list fast and efficiently. It has the most important information
+  first and no redundant information. It should look nice when sorted.
+  This in contrast to the existing ~display-name~ field which is for
+  describing a table accurately and should sound good. Thanks to Dave
+  Mielke and Bert Frees.
 
 ** Bug fixes
 - Don't let a caps passage end on a word with no letters. Thanks to
