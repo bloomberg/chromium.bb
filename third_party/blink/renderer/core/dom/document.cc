@@ -8518,7 +8518,7 @@ void Document::ClearUseCounterForTesting(mojom::WebFeature feature) {
 }
 
 void Document::Dispose() {
-  navigation_initiator_bindings_.CloseAllBindings();
+  navigation_initiator_receivers_.Clear();
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
