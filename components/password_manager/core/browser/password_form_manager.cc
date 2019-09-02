@@ -598,9 +598,8 @@ void PasswordFormManager::OnFetchCompleted() {
   received_stored_credentials_time_ = TimeTicks::Now();
   std::vector<const PasswordForm*> matches = GetAllMatches();
 
-  std::vector<const autofill::PasswordForm*> not_best_matches;
   password_manager_util::FindBestMatches(matches, &best_matches_,
-                                         &not_best_matches, &preferred_match_);
+                                         &preferred_match_);
 
   // Copy out blacklisted matches.
   new_blacklisted_.reset();
