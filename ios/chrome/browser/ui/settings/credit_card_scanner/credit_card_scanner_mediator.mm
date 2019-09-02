@@ -36,7 +36,8 @@
 
 #pragma mark - CreditCardScannerImageDelegate
 
-- (void)processOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+- (void)processOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+                         viewport:(CGRect)viewport {
   if (!self.textRecognitionRequest) {
     __weak __typeof(self) weakSelf = self;
 
@@ -49,6 +50,10 @@
     self.textRecognitionRequest = [[VNRecognizeTextRequest alloc]
         initWithCompletionHandler:completionHandler];
 
+    // Sets the region of interest of the request to the scanner viewport to
+    // focus on the scan area. This improves performance by ignoring irrelevant
+    // background text.
+    self.textRecognitionRequest.regionOfInterest = viewport;
     // Fast option doesn't recognise card number correctly.
     self.textRecognitionRequest.recognitionLevel =
         VNRequestTextRecognitionLevelAccurate;
