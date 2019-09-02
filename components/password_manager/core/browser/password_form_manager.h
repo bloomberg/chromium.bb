@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_NEW_PASSWORD_FORM_MANAGER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_NEW_PASSWORD_FORM_MANAGER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_MANAGER_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_MANAGER_H_
 
 #include <map>
 #include <memory>
@@ -38,8 +38,8 @@ class PasswordManagerDriver;
 // stored information about it. It is aimed to replace PasswordFormManager and
 // to be renamed in new Password Manager design. Details
 // go/new-cpm-design-refactoring.
-class NewPasswordFormManager : public PasswordFormManagerInterface,
-                               public FormFetcher::Consumer {
+class PasswordFormManager : public PasswordFormManagerInterface,
+                            public FormFetcher::Consumer {
  public:
   // TODO(crbug.com/621355): So far, |form_fetcher| can be null. In that case
   // |this| creates an instance of it itself (meant for production code). Once
@@ -47,7 +47,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // required that |form_fetcher| is not null. |form_saver| is used to
   // save/update the form. |metrics_recorder| records metrics for |*this|. If
   // null a new instance will be created.
-  NewPasswordFormManager(
+  PasswordFormManager(
       PasswordManagerClient* client,
       const base::WeakPtr<PasswordManagerDriver>& driver,
       const autofill::FormData& observed_form,
@@ -56,12 +56,12 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
       scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder);
 
   // Constructor for http authentication (aka basic authentication).
-  NewPasswordFormManager(PasswordManagerClient* client,
-                         PasswordStore::FormDigest observed_http_auth_digest,
-                         FormFetcher* form_fetcher,
-                         std::unique_ptr<FormSaver> form_saver);
+  PasswordFormManager(PasswordManagerClient* client,
+                      PasswordStore::FormDigest observed_http_auth_digest,
+                      FormFetcher* form_fetcher,
+                      std::unique_ptr<FormSaver> form_saver);
 
-  ~NewPasswordFormManager() override;
+  ~PasswordFormManager() override;
 
   // The upper limit on how many times Chrome will try to autofill the same
   // form.
@@ -196,7 +196,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // the result is not identical to the original.
   // TODO(crbug.com/739366): Replace with translating one appropriate class into
   // another one.
-  std::unique_ptr<NewPasswordFormManager> Clone();
+  std::unique_ptr<PasswordFormManager> Clone();
 
 #if defined(UNIT_TEST)
   static void set_wait_for_server_predictions_for_filling(bool value) {
@@ -214,10 +214,10 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
 
  protected:
   // Constructor for Credentials API.
-  NewPasswordFormManager(PasswordManagerClient* client,
-                         std::unique_ptr<autofill::PasswordForm> saved_form,
-                         std::unique_ptr<FormFetcher> form_fetcher,
-                         std::unique_ptr<FormSaver> form_saver);
+  PasswordFormManager(PasswordManagerClient* client,
+                      std::unique_ptr<autofill::PasswordForm> saved_form,
+                      std::unique_ptr<FormFetcher> form_fetcher,
+                      std::unique_ptr<FormSaver> form_saver);
 
   // FormFetcher::Consumer:
   void OnFetchCompleted() override;
@@ -228,7 +228,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
 
  private:
   // Delegating constructor.
-  NewPasswordFormManager(
+  PasswordFormManager(
       PasswordManagerClient* client,
       FormFetcher* form_fetcher,
       std::unique_ptr<FormSaver> form_saver,
@@ -401,11 +401,11 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Used to transform FormData into PasswordForms.
   FormDataParser parser_;
 
-  base::WeakPtrFactory<NewPasswordFormManager> weak_ptr_factory_{this};
+  base::WeakPtrFactory<PasswordFormManager> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(NewPasswordFormManager);
+  DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_NEW_PASSWORD_FORM_MANAGER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_MANAGER_H_
