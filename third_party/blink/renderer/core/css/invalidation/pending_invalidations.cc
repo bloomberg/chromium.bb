@@ -147,8 +147,7 @@ void PendingInvalidations::RescheduleSiblingInvalidationsAsDescendants(
 }
 
 void PendingInvalidations::ClearInvalidation(ContainerNode& node) {
-  if (!node.NeedsStyleInvalidation())
-    return;
+  DCHECK(node.NeedsStyleInvalidation());
   pending_invalidation_map_.erase(&node);
   node.ClearNeedsStyleInvalidation();
 }
