@@ -3150,6 +3150,12 @@ bool Node::HasMediaControlAncestor() const {
 }
 
 void Node::FlatTreeParentChanged() {
+  // TODO(futhark): Replace with DCHECK(IsSlotable()) when Shadow DOM V0 support
+  // is removed.
+  if (!IsElementNode() && !IsTextNode()) {
+    DCHECK(GetDocument().MayContainV0Shadow());
+    return;
+  }
   // The node changed the flat tree position by being slotted to a new slot or
   // slotted for the first time. We need to recalc style since the inheritance
   // parent may have changed.
