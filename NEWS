@@ -61,7 +61,9 @@ issues]].
   which is the counterpart of the ~text_nabcc.dis~ display table.
   Thanks to Dave Mielke.
 - Add support for the International Phonetic Alphabet (IPA) to the
-  Chinese braille table, thanks to Hurt Huang and Sponge Jhan.
+  Chinese bopomofo braille table, thanks to Hurt Huang and Sponge
+  Jhan. Various improvements, including dot patterns and testcases, to
+  the Chinese bopomofo braille table, thanks to Sponge Jhan.
 - Unified English Braille no longer displays a single underscore when
   multiple underscores are in the text, thanks to André-Abush Clause.
 - Update Irish braille (contracted and uncontracted) to the May 2019
