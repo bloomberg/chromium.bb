@@ -2191,6 +2191,7 @@ if (!is_android) {
         "../browser/chromeos/policy/force_maximize_on_first_run_chromeos_browsertest.cc",
         "../browser/chromeos/policy/login_policy_test_base.cc",
         "../browser/chromeos/policy/login_policy_test_base.h",
+        "../browser/chromeos/policy/login_screen_accessibility_policy_browsertest.cc",
         "../browser/chromeos/policy/login_screen_default_policy_browsertest.cc",
         "../browser/chromeos/policy/network_policy_application_browsertest.cc",
         "../browser/chromeos/policy/policy_certs_browsertest.cc",

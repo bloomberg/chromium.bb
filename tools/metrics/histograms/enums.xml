@@ -17913,6 +17913,7 @@ Called by update_net_error_codes.py.-->
   <int value="596" label="MonoAudioEnabled"/>
   <int value="597" label="AutoclickEnabled"/>
   <int value="598" label="RendererCodeIntegrity"/>
+  <int value="599" label="DeviceLoginScreenLargeCursorEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
