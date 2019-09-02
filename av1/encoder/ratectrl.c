@@ -1016,7 +1016,7 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi, int width,
 
 static const double rate_factor_deltas[RATE_FACTOR_LEVELS] = {
   1.00,  // INTER_NORMAL
-  1.25,  // GF_ARF_LOW
+  1.50,  // GF_ARF_LOW
   2.00,  // GF_ARF_STD
   2.00,  // KF_STD
 };
@@ -1024,8 +1024,14 @@ static const double rate_factor_deltas[RATE_FACTOR_LEVELS] = {
 int av1_frame_type_qdelta(const AV1_COMP *cpi, int q) {
   const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(&cpi->gf_group);
   const FRAME_TYPE frame_type = (rf_lvl == KF_STD) ? KEY_FRAME : INTER_FRAME;
-  return av1_compute_qdelta_by_rate(&cpi->rc, frame_type, q,
-                                    rate_factor_deltas[rf_lvl],
+  double rate_factor;
+
+  rate_factor = rate_factor_deltas[rf_lvl];
+  if (rf_lvl == GF_ARF_LOW) {
+    rate_factor -= (cpi->gf_group.layer_depth[cpi->gf_group.index] - 2) * 0.2;
+    rate_factor = AOMMAX(rate_factor, 1.0);
+  }
+  return av1_compute_qdelta_by_rate(&cpi->rc, frame_type, q, rate_factor,
                                     cpi->common.seq_params.bit_depth);
 }
 
