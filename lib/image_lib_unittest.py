@@ -68,15 +68,13 @@ class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
     (shared with LoopbackPartitions)
     path: Path to the image file.
     destination: destination directory.
-    util_path: path to use for finding losetup and friends.
     (unique to LoopbackPartitionsMock)
     dev: Path for the base loopback device.
     part_count: How many partition device files to make up.  Default: normal
         partition table.
   """
   # pylint: disable=super-init-not-called
-  def __init__(self, path, destination=None, util_path=None,
-               dev=LOOP_DEV, part_count=0):
+  def __init__(self, path, destination=None, dev=LOOP_DEV, part_count=0):
     self.path = path
     self.dev = dev
     if destination:
