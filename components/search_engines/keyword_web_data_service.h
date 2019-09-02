@@ -19,21 +19,21 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-class WDTypedResult;
 class WebDatabaseService;
 struct TemplateURLData;
 
 struct WDKeywordsResult {
   WDKeywordsResult();
-  WDKeywordsResult(const WDKeywordsResult& other);
+  WDKeywordsResult(const WDKeywordsResult&);
+  WDKeywordsResult& operator=(const WDKeywordsResult&);
   ~WDKeywordsResult();
 
   KeywordTable::Keywords keywords;
   // Identifies the ID of the TemplateURL that is the default search. A value of
   // 0 indicates there is no default search provider.
-  int64_t default_search_provider_id;
+  int64_t default_search_provider_id = 0;
   // Version of the built-in keywords. A value of 0 indicates a first run.
-  int builtin_keyword_version;
+  int builtin_keyword_version = 0;
 };
 
 class WebDataServiceConsumer;
@@ -94,20 +94,7 @@ class KeywordWebDataService : public WebDataServiceBase {
   // Called by the BatchModeScoper (see comments there).
   void AdjustBatchModeLevel(bool entering_batch_mode);
 
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // The following methods are only invoked on the DB sequence.
-  //
-  //////////////////////////////////////////////////////////////////////////////
-  WebDatabase::State PerformKeywordOperationsImpl(
-      const KeywordTable::Operations& operations,
-      WebDatabase* db);
-  std::unique_ptr<WDTypedResult> GetKeywordsImpl(WebDatabase* db);
-  WebDatabase::State SetDefaultSearchProviderIDImpl(TemplateURLID id,
-                                                    WebDatabase* db);
-  WebDatabase::State SetBuiltinKeywordVersionImpl(int version, WebDatabase* db);
-
-  size_t batch_mode_level_;
+  size_t batch_mode_level_ = 0;
   KeywordTable::Operations queued_keyword_operations_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordWebDataService);
