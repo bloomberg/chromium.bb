@@ -287,8 +287,7 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   void CalculateFillingAssistanceMetric(
       const autofill::FormData& submitted_form);
 
-  // Returns all the credentials for the origin (essentially, |best_matches_|
-  // and |not_best_matches_|).
+  // Returns all the credentials for the origin.
   std::vector<const autofill::PasswordForm*> GetAllMatches() const;
 
   // Save/update |pending_credentials_| to the password store.
@@ -311,13 +310,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // being managed by |this|, indexed by username. The PasswordForms are owned
   // by |form_fetcher_|.
   std::map<base::string16, const autofill::PasswordForm*> best_matches_;
-
-  // Set of forms from PasswordStore that correspond to the current site and
-  // that are not in |best_matches_|. They are owned by |form_fetcher_|.
-  // It is leftover from the old PasswordFormManager.
-  // TODO(https://crbug.com/831123): update all places where it is used with
-  // saved credentials from |form_fetcher_|.
-  std::vector<const autofill::PasswordForm*> not_best_matches_;
 
   // Set of blacklisted forms from the PasswordStore that best match the current
   // form. They are owned by |form_fetcher_|.

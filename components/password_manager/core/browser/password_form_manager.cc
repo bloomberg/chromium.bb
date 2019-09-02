@@ -596,15 +596,11 @@ PasswordFormManager::PasswordFormManager(
 
 void PasswordFormManager::OnFetchCompleted() {
   received_stored_credentials_time_ = TimeTicks::Now();
-  std::vector<const PasswordForm*> matches;
-  PasswordForm::Scheme observed_form_scheme = GetScheme();
-  for (const auto* match : form_fetcher_->GetNonFederatedMatches()) {
-    if (match->scheme == observed_form_scheme)
-      matches.push_back(match);
-  }
+  std::vector<const PasswordForm*> matches = GetAllMatches();
 
+  std::vector<const autofill::PasswordForm*> not_best_matches;
   password_manager_util::FindBestMatches(matches, &best_matches_,
-                                         &not_best_matches_, &preferred_match_);
+                                         &not_best_matches, &preferred_match_);
 
   // Copy out blacklisted matches.
   new_blacklisted_.reset();
@@ -942,8 +938,7 @@ void PasswordFormManager::CreatePendingCredentials() {
     // Generate username correction votes.
     bool username_correction_found =
         votes_uploader_.FindCorrectedUsernameElement(
-            best_matches_, not_best_matches_,
-            parsed_submitted_form_->username_value,
+            GetAllMatches(), parsed_submitted_form_->username_value,
             parsed_submitted_form_->password_value);
     UMA_HISTOGRAM_BOOLEAN("PasswordManager.UsernameCorrectionFound",
                           username_correction_found);
