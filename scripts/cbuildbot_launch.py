@@ -32,6 +32,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import metrics
 from chromite.lib import osutils
+from chromite.lib import timeout_util
 from chromite.lib import ts_mon_config
 from chromite.scripts import cbuildbot
 
@@ -424,7 +425,17 @@ def CleanupChroot(buildroot):
   chroot_dir = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
   logging.info('Cleaning up chroot at %s', chroot_dir)
   if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
-    cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=False)
+    try:
+      cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=False)
+    except timeout_util.TimeoutError:
+      logging.exception('Cleaning up chroot timed out')
+      # Dump debug info to help https://crbug.com/1000034.
+      cros_build_lib.RunCommand(['mount'], error_code_ok=False)
+      cros_build_lib.SudoRunCommand(['losetup', '-a'], error_code_ok=False)
+      cros_build_lib.RunCommand(['dmesg'], error_code_ok=False)
+      return False
+
+  return True
 
 
 def ConfigureGlobalEnvironment():
@@ -509,7 +520,8 @@ def _main(options, argv):
       SetLastBuildState(root, build_state)
 
       with metrics.SecondsTimer(METRIC_CHROOT_CLEANUP):
-        CleanupChroot(buildroot)
+        if not CleanupChroot(buildroot):
+          result = 1
 
       return result
 

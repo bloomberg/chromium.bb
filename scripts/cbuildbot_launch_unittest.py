@@ -19,6 +19,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_sdk_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import timeout_util
 from chromite.scripts import cbuildbot_launch
 
 EXPECTED_MANIFEST_URL = 'https://chrome-internal-review.googlesource.com/chromeos/manifest-internal'  # pylint: disable=line-too-long
@@ -201,8 +202,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
         mock.call('/root', expected_build_state)])
 
     # Ensure we clean the chroot, as expected.
-    self.assertEqual(mock_cleanup_chroot.mock_calls, [
-        mock.call('/root/repository')])
+    mock_cleanup_chroot.assert_called_once_with('/root/repository')
 
   def testMainMax(self):
     """Test a larger set of command line options."""
@@ -306,8 +306,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
         mock.call('/root', final_state)])
 
     # Ensure we clean the chroot, as expected.
-    self.assertEqual(mock_cleanup_chroot.mock_calls, [
-        mock.call('/root/repository')])
+    mock_cleanup_chroot.assert_called_once_with('/root/repository')
 
 
 class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
@@ -749,3 +748,30 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     new_state.from_json(saved_state)
 
     self.assertEqual(old_state, new_state)
+
+  def testCleanupChrootNoChroot(self):
+    """Check CleanupChroot without a chroot."""
+    self.StartPatcher(cros_test_lib.RunCommandMock())
+    with mock.patch.object(cros_sdk_lib, 'CleanupChrootMount'):
+      ret = cbuildbot_launch.CleanupChroot(self.buildroot)
+      self.assertTrue(ret)
+
+  def testCleanupChrootNormal(self):
+    """Check normal CleanupChroot."""
+    osutils.SafeMakedirs(self.chroot)
+    osutils.Touch(self.chroot + '.img')
+    self.StartPatcher(cros_test_lib.RunCommandMock())
+    with mock.patch.object(cros_sdk_lib, 'CleanupChrootMount'):
+      ret = cbuildbot_launch.CleanupChroot(self.buildroot)
+      self.assertTrue(ret)
+
+  def testCleanupChrootTimeout(self):
+    """Check timeouts in CleanupChroot."""
+    osutils.SafeMakedirs(self.chroot)
+    osutils.Touch(self.chroot + '.img')
+    rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
+    rc_mock.SetDefaultCmdResult()
+    with mock.patch.object(cros_sdk_lib, 'CleanupChrootMount',
+                           side_effect=timeout_util.TimeoutError):
+      ret = cbuildbot_launch.CleanupChroot(self.buildroot)
+      self.assertFalse(ret)
