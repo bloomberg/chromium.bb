@@ -908,14 +908,14 @@ TEST(CreditCardTest,
   b.set_guid(base::GenerateGUID());
   b.set_origin(test::kEmptyOrigin);
   b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
-  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2023"));
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
   EXPECT_EQ("Chrome settings", a.origin());
   EXPECT_EQ(ASCIIToUTF16("John Dillinger"),
             a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
-  EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  EXPECT_EQ(ASCIIToUTF16("2023"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
 TEST(CreditCardTest,
