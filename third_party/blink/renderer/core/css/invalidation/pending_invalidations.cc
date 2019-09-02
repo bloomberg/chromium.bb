@@ -125,7 +125,10 @@ void PendingInvalidations::ScheduleSiblingInvalidationsAsDescendants(
 
 void PendingInvalidations::RescheduleSiblingInvalidationsAsDescendants(
     Element& element) {
-  DCHECK(element.parentNode());
+  auto* parent = element.parentNode();
+  DCHECK(parent);
+  if (parent->IsDocumentNode())
+    return;
   auto pending_invalidations_iterator =
       pending_invalidation_map_.find(&element);
   if (pending_invalidations_iterator == pending_invalidation_map_.end() ||
@@ -143,7 +146,7 @@ void PendingInvalidations::RescheduleSiblingInvalidationsAsDescendants(
       invalidation_lists.descendants.push_back(descendants);
     }
   }
-  ScheduleInvalidationSetsForNode(invalidation_lists, *element.parentNode());
+  ScheduleInvalidationSetsForNode(invalidation_lists, *parent);
 }
 
 void PendingInvalidations::ClearInvalidation(ContainerNode& node) {

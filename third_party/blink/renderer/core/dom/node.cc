@@ -1302,6 +1302,11 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
                                const StyleChangeReasonForTracing& reason) {
   DCHECK(!GetDocument().GetStyleEngine().InRebuildLayoutTree());
   DCHECK(change_type != kNoStyleChange);
+  // TODO(crbug.com/972752): ShadowRoot can be marked kSubtreeStyleChange from
+  // RescheduleSiblingInvalidationsAsDescendants() for WholeSubtreeInvalid(). We
+  // should instead mark the shadow host for subtree recalc when we traverse the
+  // flat tree (and skip non-slotted host children).
+  DCHECK(IsElementNode() || IsTextNode() || IsShadowRoot());
 
   if (!InActiveDocument())
     return;
