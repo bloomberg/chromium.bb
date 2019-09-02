@@ -180,7 +180,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/base/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -3890,7 +3889,7 @@ void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
 RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
   DCHECK(base::FeatureList::IsEnabled(
-      net::features::kSplitCacheByNetworkIsolationKey));
+      network::features::kPrefetchMainResourceNetworkIsolationKey));
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
   bool bypass_redirect_checks = false;
   // Passing a nullopt NetworkIsolationKey ensures the factory is not

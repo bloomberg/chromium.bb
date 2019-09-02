@@ -46,9 +46,13 @@ class PrefetchBrowserTest
     if (split_cache_enabled_) {
       enable_features.push_back(
           net::features::kSplitCacheByNetworkIsolationKey);
+      enable_features.push_back(
+          network::features::kPrefetchMainResourceNetworkIsolationKey);
     } else {
       disabled_features.push_back(
           net::features::kSplitCacheByNetworkIsolationKey);
+      disabled_features.push_back(
+          network::features::kPrefetchMainResourceNetworkIsolationKey);
     }
 
     feature_list_.InitWithFeatures(enable_features, disabled_features);
