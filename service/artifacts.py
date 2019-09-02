@@ -149,8 +149,13 @@ def BundleEBuildLogsTarball(chroot, sysroot, archive_dir):
 
   tarball_paths.append('logs')
   tarball_output = os.path.join(archive_dir, 'ebuild_logs.tar.xz')
-  cros_build_lib.CreateTarball(
-      tarball_output, cwd=logs_path, chroot=chroot.path, inputs=tarball_paths)
+  try:
+    cros_build_lib.CreateTarball(
+        tarball_output, cwd=logs_path, chroot=chroot.path, inputs=tarball_paths)
+  except cros_build_lib.CreateTarballError:
+    logging.warning('Unable to create logs tarball; ignoring until '
+                    'https://crbug.com/999933 is sorted out.')
+    return None
   return os.path.basename(tarball_output)
 
 
