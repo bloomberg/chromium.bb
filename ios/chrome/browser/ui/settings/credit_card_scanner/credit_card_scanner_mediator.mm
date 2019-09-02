@@ -90,13 +90,15 @@
 }
 
 // Checks the type of |text| to assign it to appropriate property.
-// TODO(crbug.com/984545): Add check for credit card number.
 - (void)extractDataFromText:(NSString*)text {
   NSDateComponents* components = [self extractExpirationDateFromText:text];
 
   if (components) {
     self.expirationMonth = [@([components month]) stringValue];
     self.expirationYear = [@([components year]) stringValue];
+  }
+  if (!self.cardNumber) {
+    self.cardNumber = [self extractCreditCardNumber:text];
   }
 }
 
@@ -115,6 +117,36 @@
   }
 
   return components;
+}
+
+// Extracts credit card number from |string|.
+- (NSString*)extractCreditCardNumber:(NSString*)string {
+  NSString* text = [[NSString alloc] initWithString:string];
+  // Strip whitespaces and symbols.
+  NSArray* ignoreSymbols = @[ @" ", @"/", @"-", @".", @":", @"\\" ];
+  for (NSString* symbol in ignoreSymbols) {
+    text = [text stringByReplacingOccurrencesOfString:symbol withString:@""];
+  }
+
+  // Matches strings which have 13-19 numbers between the start(^) and the
+  // end($) of the line.
+  NSString* pattern = @"^([0-9]{13,19})$";
+
+  NSError* error;
+  NSRegularExpression* regex = [[NSRegularExpression alloc]
+      initWithPattern:pattern
+              options:NSRegularExpressionAllowCommentsAndWhitespace
+                error:&error];
+
+  NSRange rangeOfText = NSMakeRange(0, [text length]);
+  NSTextCheckingResult* match = [regex firstMatchInString:text
+                                                  options:0
+                                                    range:rangeOfText];
+  if (!match) {
+    return nil;
+  }
+  NSString* creditCardNumber = [text substringWithRange:match.range];
+  return creditCardNumber;
 }
 
 @end
