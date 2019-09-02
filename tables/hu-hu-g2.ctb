@@ -1,7 +1,8 @@
 # liblouis: Hungarian Grade 2 table
 #
 # -----------
-#-display-name: Hungarian fully contracted braille
+#-index-name: Hungarian, contracted
+#-display-name: Hungarian contracted braille
 #
 #+locale:hu
 #+type:literary

@@ -1,6 +1,7 @@
 #  Copyright (C) 2015 by Harpo Sp. z o. o. <info@harpo.com.pl>
 #
 # -----------
+#-index-name: Polish, computer
 #-display-name: Polish computer braille
 #
 #+locale:pl

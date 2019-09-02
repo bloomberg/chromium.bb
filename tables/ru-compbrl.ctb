@@ -1,6 +1,7 @@
 # liblouis: Russian translation table for program sources
 #
 # -----------
+#-index-name: Russian, computer
 #-display-name: Russian computer braille
 #
 #+locale:ru
