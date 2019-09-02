@@ -68,11 +68,11 @@ issues]].
   Thanks to Dave Mielke.
 - Add support for the International Phonetic Alphabet (IPA) to the
   Chinese bopomofo braille table, thanks to Hurt Huang and Sponge
-  Jhan. Various improvements, including dot patterns and testcases, to
+  Jhan. Various improvements, including dot patterns and test cases, to
   the Chinese bopomofo braille table, thanks to Sponge Jhan.
 - Unified English Braille no longer displays a single underscore when
   multiple underscores are in the text, thanks to André-Abush Clause.
-- Update to Afrikaans uncontacted braille and new table for contracted
+- Update to Afrikaans uncontracted braille and new table for contracted
   braille. Thanks to Christo de Klerk and Greg Kearney.
 - Update Irish braille (contracted and uncontracted) to the May 2019
   version of the specification, thanks to Ronan McGuirk
