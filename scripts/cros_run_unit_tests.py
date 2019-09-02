@@ -115,9 +115,13 @@ def main(argv):
     logging.warning('The following packages do not have tests:\n  %s',
                     '\n  '.join(sorted(packages - pkg_with_test)))
 
+  if not pkg_with_test:
+    logging.error('No testable packages found!')
+    return 1
+
   if opts.pretend:
     print('\n'.join(sorted(pkg_with_test)))
-    return
+    return 0
 
   env = None
   if opts.nowithdebug:
