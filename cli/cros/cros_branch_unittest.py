@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import unittest
 
 import mock
 
@@ -1574,6 +1575,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     self.AssertNoDiff(self.cros_root, self.cros_snapshot)
     self.AssertNoDiff(self.cros_internal_root, self.cros_internal_snapshot)
 
+  @unittest.skip('Flaking in CQ https://crbug.com/999930')
   def testCreate(self):
     """Test create runs without dying."""
     cros_build_lib.RunCommand([
