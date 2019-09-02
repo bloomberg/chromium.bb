@@ -798,6 +798,8 @@ if (!is_android) {
       "../browser/background_fetch/background_fetch_browsertest.cc",
       "../browser/background_sync/background_sync_browsertest.cc",
       "../browser/background_sync/background_sync_metrics_browsertest.cc",
+      "../browser/badging/test_badge_manager_delegate.cc",
+      "../browser/badging/test_badge_manager_delegate.h",
       "../browser/banners/app_banner_manager_browsertest.cc",
       "../browser/banners/app_banner_manager_browsertest_base.cc",
       "../browser/banners/app_banner_manager_browsertest_base.h",
@@ -3594,7 +3596,10 @@ test("unit_tests") {
     # !is_android
     sources += [
       # Badging isn't supported on Android.
+      "../browser/badging/badge_manager_delegate_unittest.cc",
       "../browser/badging/badge_manager_unittest.cc",
+      "../browser/badging/test_badge_manager_delegate.cc",
+      "../browser/badging/test_badge_manager_delegate.h",
 
       # Bookmark export/import are handled via the BookmarkColumns
       # ContentProvider.

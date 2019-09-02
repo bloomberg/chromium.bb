@@ -572,6 +572,7 @@ modules_dictionary_idl_files =
           "background_sync/background_sync_options.idl",
           "background_sync/sync_event_init.idl",
           "background_sync/periodic_sync_event_init.idl",
+          "badging/badge_options.idl",
           "bluetooth/bluetooth_advertising_event_init.idl",
           "bluetooth/bluetooth_le_scan_filter_init.idl",
           "bluetooth/bluetooth_le_scan_options.idl",
