@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/timer/timer.h"
 #include "components/search_engines/keyword_table.h"
 #include "components/search_engines/template_url_id.h"
 #include "components/webdata/common/web_data_service_base.h"
@@ -43,8 +44,8 @@ class KeywordWebDataService : public WebDataServiceBase {
   // Instantiate this to turn on batch mode on the provided |service|
   // until the scoper is destroyed.  When batch mode is on, calls to any of the
   // three keyword table modification functions below will result in locally
-  // queueing the operation; on setting this back to false, all the
-  // modifications will be performed at once.  This is a performance
+  // queueing the operation; on setting this back to false, after a short delay,
+  // all the modifications will be performed at once.  This is a performance
   // optimization; see comments on KeywordTable::PerformOperations().
   //
   // If multiple scopers are in-scope simultaneously, batch mode will only be
@@ -94,8 +95,13 @@ class KeywordWebDataService : public WebDataServiceBase {
   // Called by the BatchModeScoper (see comments there).
   void AdjustBatchModeLevel(bool entering_batch_mode);
 
+  // Schedules a task to commit any |queued_keyword_operations_| immediately.
+  void CommitQueuedOperations();
+
   size_t batch_mode_level_ = 0;
   KeywordTable::Operations queued_keyword_operations_;
+  base::RetainingOneShotTimer timer_;  // Used to commit updates no more often
+                                       // than every five seconds.
 
   DISALLOW_COPY_AND_ASSIGN(KeywordWebDataService);
 };

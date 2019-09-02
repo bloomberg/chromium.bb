@@ -74,7 +74,11 @@ KeywordWebDataService::KeywordWebDataService(
     scoped_refptr<WebDatabaseService> wdbs,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const ProfileErrorCallback& callback)
-    : WebDataServiceBase(wdbs, callback, ui_task_runner) {}
+    : WebDataServiceBase(wdbs, callback, ui_task_runner),
+      timer_(FROM_HERE,
+             base::TimeDelta::FromSeconds(5),
+             base::BindRepeating(&KeywordWebDataService::CommitQueuedOperations,
+                                 base::Unretained(this))) {}
 
 void KeywordWebDataService::AddKeyword(const TemplateURLData& data) {
   if (batch_mode_level_) {
@@ -113,6 +117,10 @@ void KeywordWebDataService::UpdateKeyword(const TemplateURLData& data) {
 
 WebDataServiceBase::Handle KeywordWebDataService::GetKeywords(
     WebDataServiceConsumer* consumer) {
+  // Force pending changes to be visible immediately so the results of this call
+  // won't be out of date.
+  CommitQueuedOperations();
+
   return wdbs_->ScheduleDBTaskWithResult(
       FROM_HERE, base::Bind(&GetKeywordsImpl), consumer);
 }
@@ -129,6 +137,7 @@ void KeywordWebDataService::SetBuiltinKeywordVersion(int version) {
 
 KeywordWebDataService::~KeywordWebDataService() {
   DCHECK(!batch_mode_level_);
+  CommitQueuedOperations();
 }
 
 void KeywordWebDataService::AdjustBatchModeLevel(bool entering_batch_mode) {
@@ -137,11 +146,17 @@ void KeywordWebDataService::AdjustBatchModeLevel(bool entering_batch_mode) {
   } else {
     DCHECK(batch_mode_level_);
     --batch_mode_level_;
-    if (!batch_mode_level_ && !queued_keyword_operations_.empty()) {
-      wdbs_->ScheduleDBTask(FROM_HERE, base::Bind(&PerformKeywordOperationsImpl,
-                                                  queued_keyword_operations_));
-      queued_keyword_operations_.clear();
-    }
+    if (!batch_mode_level_ && !queued_keyword_operations_.empty() &&
+        !timer_.IsRunning())
+      timer_.Reset();
   }
 }
 
+void KeywordWebDataService::CommitQueuedOperations() {
+  if (!queued_keyword_operations_.empty()) {
+    wdbs_->ScheduleDBTask(FROM_HERE, base::Bind(&PerformKeywordOperationsImpl,
+                                                queued_keyword_operations_));
+    queued_keyword_operations_.clear();
+  }
+  timer_.Stop();
+}
