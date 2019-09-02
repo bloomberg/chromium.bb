@@ -1056,6 +1056,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
   CreateCrossOriginPrefetchLoaderFactoryBundle();
 
+  const AppCacheNavigationHandle* GetAppCacheNavigationHandle() const {
+    return appcache_handle_.get();
+  }
+
  protected:
   friend class RenderFrameHostFactory;
 
