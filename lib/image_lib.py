@@ -72,12 +72,18 @@ class LoopbackPartitions(object):
       cmd = ['partx', '-d', self.dev]
       self._au_safe_sudo(cmd, quiet=True, error_code_ok=True)
       cmd = ['partx', '-a', self.dev]
-      self._au_safe_sudo(cmd, print_cmd=False)
+      ret = self._au_safe_sudo(cmd, print_cmd=False, error_code_ok=True)
+      if ret.returncode:
+        logging.warning('Adding partitions failed; dumping log & retrying')
+        cros_build_lib.RunCommand(['sync'])
+        cros_build_lib.RunCommand(['dmesg'])
+        cmd = ['partx', '-u', self.dev]
+        self._au_safe_sudo(cmd, print_cmd=False)
 
       self.parts = {}
       part_devs = glob.glob(self.dev + 'p*')
       if not part_devs:
-        logging.Warning("Didn't find partition devices nodes for %s.",
+        logging.warning("Didn't find partition devices nodes for %s.",
                         self.path)
         return
 
