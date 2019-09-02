@@ -2,6 +2,7 @@
 # $ ls | grep -v Makefile | grep -v README | grep -v maketablelist.sh | grep -v '.*~$' | sort -df | sed -e 's/$/ \\/' -e 's/^/	/' -e '$s/\\$//'
 table_files = \
 	afr-za-g1.ctb \
+	afr-za-g2.ctb \
 	ar-ar-g1.utb \
 	ar-ar-g2.ctb \
 	ar-ar-comp8.utb \
