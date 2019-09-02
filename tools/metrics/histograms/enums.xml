@@ -19012,6 +19012,7 @@ Called by update_net_error_codes.py.-->
   <int value="439" label="ACCESSIBILITY_PRIVATE_ON_SWITCH_ACCESS_COMMAND"/>
   <int value="440"
       label="ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT"/>
+  <int value="441" label="LOGIN_STATE_ON_SESSION_STATE_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -20454,6 +20455,8 @@ Called by update_net_error_codes.py.-->
   <int value="1376" label="AUTOTESTPRIVATE_GETALLINSTALLEDAPPS"/>
   <int value="1377" label="AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW"/>
   <int value="1378" label="AUTOTESTPRIVATE_SETARCAPPWINDOWFOCUS"/>
+  <int value="1379" label="LOGINSTATE_GETPROFILETYPE"/>
+  <int value="1380" label="LOGINSTATE_GETSESSIONSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -20996,6 +20999,7 @@ Called by update_net_error_codes.py.-->
   <int value="219" label="kTransientBackground"/>
   <int value="220" label="kLogin"/>
   <int value="221" label="kLoginScreenStorage"/>
+  <int value="222" label="kLoginState"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
