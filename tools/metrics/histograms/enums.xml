@@ -1979,6 +1979,13 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Disk Cache Error"/>
 </enum>
 
+<enum name="AppCacheManifestInterceptUsage">
+  <summary>Values for appcache.Manifest.InterceptUsage.</summary>
+  <int value="0" label="No usage"/>
+  <int value="1" label="Only exact URLs"/>
+  <int value="2" label="At least one pattern URL"/>
+</enum>
+
 <enum name="AppCacheUpdateJobResult">
   <obsolete>
     Deprecated on 2019-06-17. appcache.UpdateJobResult no longer tracked.
