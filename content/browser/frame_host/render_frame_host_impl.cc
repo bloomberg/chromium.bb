@@ -5491,13 +5491,10 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   associated_registry_->AddInterface(
       base::BindRepeating(make_binding, base::Unretained(this)));
 
-  // TODO(crbug.com/955171): This shim is necessary due to the Mojo change from
-  // AssociatedInterfaceRequest to PendingAssociatedReceiver. It can be
-  // simplified once that is complete.
   associated_registry_->AddInterface(base::BindRepeating(
       [](RenderFrameHostImpl* self,
-         mojo::AssociatedInterfaceRequest<blink::mojom::PortalHost> request) {
-        Portal::BindPortalHostReceiver(self, std::move(request));
+         mojo::PendingAssociatedReceiver<blink::mojom::PortalHost> receiver) {
+        Portal::BindPortalHostReceiver(self, std::move(receiver));
       },
       base::Unretained(this)));
 

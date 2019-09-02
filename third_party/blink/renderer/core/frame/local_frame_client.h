@@ -289,8 +289,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                   HTMLFrameOwnerElement*) = 0;
 
   // Creates a portal for the |HTMLPortalElement| and binds the other end of the
-  // |PortalRequest|. Returns a pair of a RemoteFrame and a token that
-  // identifies the portal.
+  // |mojo::PendingAssociatedReceiver<mojom::blink::Portal>|. Returns a pair of
+  // a RemoteFrame and a token that identifies the portal.
   virtual std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
       mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
