@@ -19,6 +19,7 @@
 #include "content/browser/initiator_csp_context.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/network_service_instance_impl.h"
 #include "content/browser/web_package/bundled_exchanges_factory.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
@@ -688,6 +689,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   bool IsSelfReferentialURL();
 
   // RenderProcessHostObserver implementation.
+  void RenderProcessReady(RenderProcessHost* host) override;
+  void RenderProcessExited(RenderProcessHost* host,
+                           const ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   void RecordNavigationMetrics() const;

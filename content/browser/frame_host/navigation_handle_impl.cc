@@ -450,6 +450,7 @@ void NavigationHandleImpl::InitServiceWorkerHandle(
 }
 
 void NavigationHandleImpl::RenderProcessBlockedStateChanged(bool blocked) {
+  AddNetworkServiceDebugEvent(std::string("B") + (blocked ? "1" : "0"));
   if (blocked)
     StopCommitTimeout();
   else
@@ -484,6 +485,7 @@ void NavigationHandleImpl::RestartCommitTimeout() {
 
 void NavigationHandleImpl::OnCommitTimeout() {
   DCHECK_EQ(NavigationRequest::READY_TO_COMMIT, state());
+  AddNetworkServiceDebugEvent("T");
 #if defined(OS_ANDROID)
   // Rate limit the number of stack dumps so we don't overwhelm our crash
   // reports.
@@ -510,6 +512,12 @@ void NavigationHandleImpl::OnCommitTimeout() {
     base::debug::ScopedCrashKeyString scoped_memory(
         memory_key,
         base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB()));
+
+    static base::debug::CrashKeyString* debug_string_key =
+        base::debug::AllocateCrashKeyString("ns_debug_events",
+                                            base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString scoped_debug_string(
+        debug_string_key, GetNetworkServiceDebugEventsString());
     base::debug::DumpWithoutCrashing();
 
     if (IsOutOfProcessNetworkService())
