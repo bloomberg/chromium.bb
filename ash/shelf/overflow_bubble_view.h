@@ -102,6 +102,9 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   // Creates the animation for scrolling shelf by |scroll_distance|.
   void StartShelfScrollAnimation(float scroll_distance);
 
+  // Update the layout strategy based on the available space.
+  void UpdateLayoutStrategy();
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
