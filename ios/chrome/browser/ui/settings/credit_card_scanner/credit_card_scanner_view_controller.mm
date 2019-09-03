@@ -60,9 +60,7 @@ using base::UserMetricsAction;
       base::RecordAction(UserMetricsAction("MobileCreditCardScannerError"));
       break;
     case scannerViewController::SCAN_COMPLETE:
-      base::RecordAction(
-          UserMetricsAction("MobileCreditCardScannerScannedCard"));
-      break;
+      // Fall through.
     case scannerViewController::IMPOSSIBLY_UNLIKELY_AUTHORIZATION_CHANGE:
       break;
   }

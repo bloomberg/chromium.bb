@@ -6,13 +6,15 @@
 
 #import "ios/chrome/browser/ui/scanner/scanner_presenting.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface CreditCardScannerCoordinator () <ScannerPresenting>
+@interface CreditCardScannerCoordinator () <CreditCardScannerMediatorDelegate,
+                                            ScannerPresenting>
 
 // The view controller attached to this coordinator.
 @property(nonatomic, strong)
@@ -31,7 +33,9 @@
 - (void)start {
   [super start];
 
-  self.creditCardScannerMediator = [[CreditCardScannerMediator alloc] init];
+  self.creditCardScannerMediator =
+      [[CreditCardScannerMediator alloc] initWithDelegate:self];
+
   self.creditCardScannerViewController =
       [[CreditCardScannerViewController alloc]
           initWithPresentationProvider:self
@@ -47,7 +51,6 @@
 
 - (void)stop {
   [super stop];
-
   self.creditCardScannerViewController.cameraController = nil;
   [self.creditCardScannerViewController dismissViewControllerAnimated:YES
                                                            completion:nil];
@@ -59,6 +62,13 @@
 
 - (void)dismissScannerViewController:(UIViewController*)controller
                           completion:(void (^)(void))completion {
+  [self stop];
+}
+
+#pragma mark - CreditCardScannerMediatorDelegate
+
+- (void)creditCardScannerMediatorDidFinishScan:
+    (CreditCardScannerMediator*)mediator {
   [self stop];
 }
 

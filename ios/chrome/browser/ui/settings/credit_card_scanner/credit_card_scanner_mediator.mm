@@ -8,16 +8,25 @@
 #import <Vision/Vision.h>
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using base::UserMetricsAction;
+
 @interface CreditCardScannerMediator ()
 
 // An image analysis request that finds and recognizes text in an image.
 @property(nonatomic, strong) VNRecognizeTextRequest* textRecognitionRequest;
+
+// Delegate notified when a card has been scanned.
+@property(nonatomic, weak) id<CreditCardScannerMediatorDelegate>
+    creditCardScannerMediatorDelegate;
 
 // The card number set after |textRecognitionRequest| from recognised text on
 // the card.
@@ -35,6 +44,17 @@
 
 @implementation CreditCardScannerMediator
 
+#pragma mark - Lifecycle
+
+- (instancetype)initWithDelegate:
+    (id<CreditCardScannerMediatorDelegate>)creditCardScannerMediatorDelegate {
+  self = [super init];
+  if (self) {
+    _creditCardScannerMediatorDelegate = creditCardScannerMediatorDelegate;
+  }
+  return self;
+}
+
 #pragma mark - CreditCardScannerImageDelegate
 
 - (void)processOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
@@ -45,6 +65,9 @@
     auto completionHandler = ^(VNRequest* request, NSError* error) {
       if (request.results.count != 0) {
         [weakSelf searchInRecognizedText:request.results];
+        if (self.cardNumber) {
+          [self dismissScannerOnCardScanned];
+        }
       }
     };
 
@@ -80,6 +103,13 @@
 
 #pragma mark - Helper Methods
 
+// Dismisses the scanner when credit card number is found.
+- (void)dismissScannerOnCardScanned {
+  base::RecordAction(UserMetricsAction("MobileCreditCardScannerScannedCard"));
+  [self.creditCardScannerMediatorDelegate
+      creditCardScannerMediatorDidFinishScan:self];
+}
+
 // Searches in |recognizedText| for credit card number and expiration date.
 - (void)searchInRecognizedText:
     (NSArray<VNRecognizedTextObservation*>*)recognizedText {
@@ -107,7 +137,6 @@
     self.cardNumber = [self extractCreditCardNumber:text];
   }
 }
-
 
 // Extracts credit card number from |string|.
 - (NSString*)extractCreditCardNumber:(NSString*)string {
