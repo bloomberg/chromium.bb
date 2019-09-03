@@ -179,6 +179,30 @@ const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
 const base::Feature kRTCOfferExtmapAllowMixed{
     "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables HW VP8 encoding on Android.
+const base::Feature kWebRtcHWVP8Encoding {
+  "WebRtcHWVP8Encoding",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
+
+// Enables HW VP9 encoding on Android.
+const base::Feature kWebRtcHWVP9Encoding {
+  "WebRtcHWVP9Encoding",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+// Enables HW H264 encoding on Android.
+const base::Feature kWebRtcHWH264Encoding{"WebRtcHWH264Encoding",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 // Run-time feature for the |rtc_use_h264| encoder/decoder.
 const base::Feature kWebRtcH264WithOpenH264FFmpeg{
