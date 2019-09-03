@@ -161,24 +161,6 @@ void AppShimHost::QuitApp() {
   client_->OnShimQuit(this);
 }
 
-void AppShimHost::OnAppHide() {
-  if (uses_remote_views_)
-    return;
-  app_shim_->Hide();
-}
-
-void AppShimHost::OnAppUnhideWithoutActivation() {
-  if (uses_remote_views_)
-    return;
-  app_shim_->UnhideWithoutActivation();
-}
-
-void AppShimHost::OnAppRequestUserAttention(apps::AppShimAttentionType type) {
-  if (uses_remote_views_)
-    return;
-  app_shim_->SetUserAttention(type);
-}
-
 base::FilePath AppShimHost::GetProfilePath() const {
   return profile_path_;
 }

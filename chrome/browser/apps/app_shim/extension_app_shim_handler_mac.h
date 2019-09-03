@@ -112,21 +112,11 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   // bind to the app process when it finishes launching.
   AppShimHost* GetHostForBrowser(Browser* browser);
 
-  void SetHostedAppHidden(Profile* profile,
-                          const std::string& app_id,
-                          bool hidden);
-
   static const extensions::Extension* MaybeGetAppExtension(
       content::BrowserContext* context,
       const std::string& extension_id);
 
   static const extensions::Extension* MaybeGetAppForBrowser(Browser* browser);
-
-  void QuitAppForWindow(extensions::AppWindow* app_window);
-  void QuitHostedAppForWindow(Profile* profile, const std::string& app_id);
-  void HideAppForWindow(extensions::AppWindow* app_window);
-  void HideHostedApp(Profile* profile, const std::string& app_id);
-  void FocusAppForWindow(extensions::AppWindow* app_window);
 
   // Instructs the shim to set it's "Hide/Show" state to not-hidden. Virtual for
   // testing.
@@ -179,7 +169,6 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
 
  protected:
   typedef std::set<Browser*> BrowserSet;
-  typedef std::map<std::pair<Profile*, std::string>, BrowserSet> AppBrowserMap;
 
   // Virtual for tests.
   virtual bool IsAcceptablyCodeSigned(pid_t pid) const;
@@ -200,9 +189,6 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   // Profile will be set in |profile|.
   const extensions::Extension* MaybeGetExtensionOrCloseHost(AppShimHost* host,
                                                             Profile** profile);
-
-  // Closes all browsers associated with an app.
-  void CloseBrowsersForApp(Profile* profile, const std::string& app_id);
 
   // Close all app shims associated with the specified profile.
   void CloseShimsForProfile(Profile* profile);

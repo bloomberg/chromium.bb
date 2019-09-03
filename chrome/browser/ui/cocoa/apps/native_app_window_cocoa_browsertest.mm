@@ -148,29 +148,12 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
 
 namespace {
 
-class MockAppShimHost : public AppShimHost {
- public:
-  MockAppShimHost(AppShimHost::Client* client)
-      : AppShimHost(client,
-                    "app",
-                    base::FilePath("Profile"),
-                    false /* uses_remote_views */) {}
-  ~MockAppShimHost() override {}
-
-  MOCK_METHOD0(OnAppUnhideWithoutActivation, void());
-
- private:
-};
-
 class MockExtensionAppShimHandler : public apps::ExtensionAppShimHandler {
  public:
-  MockExtensionAppShimHandler() {
-    ON_CALL(*this, FindHost(_, _))
-        .WillByDefault(Invoke(this, &apps::ExtensionAppShimHandler::FindHost));
-  }
+  MockExtensionAppShimHandler() {}
   ~MockExtensionAppShimHandler() override {}
 
-  MOCK_METHOD2(FindHost, AppShimHost*(Profile*, const std::string&));
+  MOCK_METHOD1(UnhideWithoutActivationForWindow, void(AppWindow*));
 };
 
 }  // namespace
@@ -184,8 +167,6 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
   test_api.SetExtensionAppShimHandler(
       std::unique_ptr<apps::ExtensionAppShimHandler>(
           mock));  // Takes ownership.
-  std::unique_ptr<MockAppShimHost> mock_host =
-      std::make_unique<MockAppShimHost>(mock);
 
   SetUpAppWithWindows(1);
   extensions::AppWindowRegistry::AppWindowList windows =
@@ -200,26 +181,20 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
   EXPECT_FALSE([ns_window isVisible]);
 
   // Show notifies the shim to unhide.
-  EXPECT_CALL(*mock_host, OnAppUnhideWithoutActivation());
-  EXPECT_CALL(*mock, FindHost(_, _)).WillOnce(Return(mock_host.get()));
+  EXPECT_CALL(*mock, UnhideWithoutActivationForWindow(_));
   app_window->Show(extensions::AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
   testing::Mock::VerifyAndClearExpectations(mock);
-  testing::Mock::VerifyAndClearExpectations(mock_host.get());
 
   // HideWithApp
   native_window->HideWithApp();
   EXPECT_FALSE([ns_window isVisible]);
 
   // Activate does the same.
-  EXPECT_CALL(*mock_host, OnAppUnhideWithoutActivation());
-  EXPECT_CALL(*mock, FindHost(_, _)).WillOnce(Return(mock_host.get()));
+  EXPECT_CALL(*mock, UnhideWithoutActivationForWindow(_));
   native_window->Activate();
   EXPECT_TRUE([ns_window isVisible]);
   testing::Mock::VerifyAndClearExpectations(mock);
-  testing::Mock::VerifyAndClearExpectations(mock_host.get());
-
-  mock_host.reset();
 }
 
 // Test that NativeAppWindow and AppWindow fullscreen state is updated when

@@ -86,18 +86,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   virtual void OnBootstrapConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap);
 
-  // TODO(ccameron): The following three function should directly call the
-  // AppShim mojo interface (they only don't due to tests that could be changed
-  // to mock the AppShim mojo interface).
-  // Invoked when the app should be hidden.
-  void OnAppHide();
-  // Invoked when a window becomes visible while the app is hidden. Ensures
-  // the shim's "Hide/Show" state is updated correctly and the app can be
-  // re-hidden.
-  virtual void OnAppUnhideWithoutActivation();
-  // Invoked when the app is requesting user attention.
-  void OnAppRequestUserAttention(apps::AppShimAttentionType type);
-
   // Functions to allow the handler to determine which app this host corresponds
   // to.
   base::FilePath GetProfilePath() const;

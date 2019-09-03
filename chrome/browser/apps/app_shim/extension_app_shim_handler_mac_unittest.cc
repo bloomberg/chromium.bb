@@ -754,6 +754,7 @@ TEST_F(ExtensionAppShimHandlerTest, ExtensionUninstalled) {
   EXPECT_EQ(nullptr, host_aa_.get());
 
   // Do the same for SetHidden on host_bb.
+  EXPECT_CALL(*delegate_, GetWindows(_, _)).WillOnce(Return(empty_window_list));
   LaunchAndActivate(bootstrap_bb_, std::move(host_bb_unique_), &profile_b_);
   ShimSetHidden(host_bb_.get(), true);
   EXPECT_NE(nullptr, host_bb_.get());
