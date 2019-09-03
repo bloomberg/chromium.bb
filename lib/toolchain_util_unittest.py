@@ -991,8 +991,6 @@ class PublishVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
                '\n\nUpdate %s from %s to %s') % (self.package, self.package,
                                                  'R1234', 'R5678')
     calls = [
-        mock.call(self.tempdir,
-                  ['checkout', '-B', 'auto-afdo-metadata-update', 'HEAD']),
         mock.call(
             self.tempdir, ['status', '--porcelain', '-uno'],
             capture_output=True,
@@ -1002,7 +1000,8 @@ class PublishVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
             self.tempdir, ['commit', '-a', '-m', message], print_cmd=True),
         mock.call(
             self.tempdir,
-            ['push', 'origin', 'auto-afdo-metadata-update:refs/for/master'],
+            ['push', toolchain_util.TOOLCHAIN_UTILS_REPO,
+             'HEAD:refs/for/master%submit'],
             capture_output=True,
             print_cmd=True)
     ]

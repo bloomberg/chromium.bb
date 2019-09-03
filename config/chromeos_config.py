@@ -1351,18 +1351,21 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # TODO: Add a schedule
   )
 
-  def KernelAFDOPublishBuilders(name, board):
+  def KernelAFDOPublishBuilders(name, board, schedule):
     site_config.Add(
         name + '-release-afdo-verify',
         site_config.templates.release_afdo_verify,
         boards=[board],
         kernel_afdo_verify=True,
-        # TODO: Add a schedule
+        schedule=schedule,
+        health_alert_recipients=['c-compiler-chrome@google.com'],
+        # Send emails if this builder fails once
+        health_threshold=1,
     )
 
-  KernelAFDOPublishBuilders('kernel-3_14', 'lulu')
-  KernelAFDOPublishBuilders('kernel-3_18', 'chell')
-  KernelAFDOPublishBuilders('kernel-4_4', 'eve')
+  KernelAFDOPublishBuilders('kernel-3_14', 'lulu', '0 11 * * 1')
+  KernelAFDOPublishBuilders('kernel-3_18', 'chell', '0 17 * * 1')
+  KernelAFDOPublishBuilders('kernel-4_4', 'eve', '0 23 * * 1')
 
   site_config.Add(
       'orderfile-generate-toolchain',

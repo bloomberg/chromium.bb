@@ -50,6 +50,8 @@ KERNEL_AFDO_COMPRESSION_SUFFIX = '.gcov.xz'
 ORDERFILE_LS_PATTERN = '.orderfile'
 KERNEL_PROFILE_LS_PATTERN = '.gcov.xz'
 TOOLCHAIN_UTILS_PATH = '/mnt/host/source/src/third_party/toolchain-utils/'
+TOOLCHAIN_UTILS_REPO = \
+    'https://chromium.googlesource.com/chromiumos/third_party/toolchain-utils'
 
 # How old can the Kernel AFDO data be? (in days).
 KERNEL_ALLOWED_STALE_DAYS = 42
@@ -1101,8 +1103,6 @@ def _PublishVettedAFDOArtifacts(artifact_type, board, artifact):
       package, afdo_versions[package]['name'], artifact)
   afdo_versions[package]['name'] = artifact
 
-  branch = 'auto-afdo-metadata-update'
-  git.CreateBranch(TOOLCHAIN_UTILS_PATH, branch)
   with open(json_file, 'w') as f:
     json.dump(afdo_versions, f, indent=4)
 
@@ -1121,11 +1121,11 @@ def _PublishVettedAFDOArtifacts(artifact_type, board, artifact):
   # Commit the change
   git.RunGit(
       TOOLCHAIN_UTILS_PATH, ['commit', '-a', '-m', message], print_cmd=True)
-  # Push the change
+  # Push the change, this should create a CL, and auto-submit it.
   git.GitPush(
       TOOLCHAIN_UTILS_PATH,
-      branch,
-      git.RemoteRef('origin', 'refs/for/master'),
+      'HEAD',
+      git.RemoteRef(TOOLCHAIN_UTILS_REPO, 'refs/for/master%submit'),
       print_cmd=True)
 
 
