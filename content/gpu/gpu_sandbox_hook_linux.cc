@@ -122,6 +122,10 @@ void AddV4L2GpuWhitelist(
       permissions->push_back(BrokerFilePermission::ReadWrite(name.value()));
   }
 
+  // Image processor used on ARM platforms.
+  static const char kDevImageProc0Path[] = "/dev/image-proc0";
+  permissions->push_back(BrokerFilePermission::ReadWrite(kDevImageProc0Path));
+
   if (options.accelerated_video_encode_enabled) {
     // Device node for V4L2 video encode accelerator drivers.
     static const char kDevVideoEncPath[] = "/dev/video-enc";
@@ -141,11 +145,7 @@ void AddArmMaliGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   // Device file needed by the ARM GPU userspace.
   static const char kMali0Path[] = "/dev/mali0";
 
-  // Image processor used on ARM platforms.
-  static const char kDevImageProc0Path[] = "/dev/image-proc0";
-
   permissions->push_back(BrokerFilePermission::ReadWrite(kMali0Path));
-  permissions->push_back(BrokerFilePermission::ReadWrite(kDevImageProc0Path));
 
   // Non-privileged render nodes for format enumeration.
   // https://dri.freedesktop.org/docs/drm/gpu/drm-uapi.html#render-nodes
