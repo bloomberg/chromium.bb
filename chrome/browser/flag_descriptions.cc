@@ -279,6 +279,11 @@ const char kCloudPrinterHandlerDescription[] =
     "print server, instead of the cloud print interface in the Print "
     "Preview WebUI.";
 
+const char kDecodeJpeg420ImagesToYUVName[] = "YUV decoding for JPEG";
+const char kDecodeJpeg420ImagesToYUVDescription[] =
+    "Decode and render 4:2:0 formatted jpeg images from YUV instead of RGB."
+    "This feature requires GPU or OOP rasterization to also be enabled.";
+
 const char kDecodeLossyWebPImagesToYUVName[] = "YUV Decoding for WebP";
 const char kDecodeLossyWebPImagesToYUVDescription[] =
     "Decode and render lossy WebP images from YUV instead of RGB. "

@@ -34523,6 +34523,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1985452239" label="SmartDim20190221:disabled"/>
   <int value="-1985239289" label="AutofillRichMetadataQueries:enabled"/>
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
+  <int value="-1983891525" label="DecodeJpeg420ImagesToYUV:disabled"/>
   <int value="-1983569861" label="WebXROrientationSensorDevice:disabled"/>
   <int value="-1982700103" label="EnableAppsGridGapFeature:enabled"/>
   <int value="-1980328793" label="trace-upload-url"/>
@@ -36605,6 +36606,7 @@ from previous Chrome versions.
   <int value="821192723" label="show-fps-counter"/>
   <int value="824961931" label="use-simple-cache-backend"/>
   <int value="828092263" label="TemporaryUnexpireFlagsM78:enabled"/>
+  <int value="830282555" label="DecodeJpeg420ImagesToYUV:enabled"/>
   <int value="832142463" label="WebAssemblyStreaming:enabled"/>
   <int value="834033186" label="enable-data-reduction-proxy-dev"/>
   <int value="834326277" label="enable-answers-in-suggest"/>

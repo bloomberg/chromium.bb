@@ -168,6 +168,10 @@ void WebRuntimeFeatures::EnableDatabase(bool enable) {
   RuntimeEnabledFeatures::SetDatabaseEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableDecodeJpeg420ImagesToYUV(bool enable) {
+  RuntimeEnabledFeatures::SetDecodeJpeg420ImagesToYUVEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(bool enable) {
   RuntimeEnabledFeatures::SetDecodeLossyWebPImagesToYUVEnabled(enable);
 }

@@ -4421,6 +4421,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpdatedCardUnmaskPromptUi)},
 
+    {"decode-jpeg-images-to-yuv",
+     flag_descriptions::kDecodeJpeg420ImagesToYUVName,
+     flag_descriptions::kDecodeJpeg420ImagesToYUVDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kDecodeJpeg420ImagesToYUV)},
+
     {"decode-webp-images-to-yuv",
      flag_descriptions::kDecodeLossyWebPImagesToYUVName,
      flag_descriptions::kDecodeLossyWebPImagesToYUVDescription, kOsAll,

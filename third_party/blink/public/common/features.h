@@ -70,6 +70,7 @@ BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeBlockable[];
 BLINK_COMMON_EXPORT extern const char
     kMixedContentAutoupgradeModeOptionallyBlockable[];
 
+BLINK_COMMON_EXPORT extern const base::Feature kDecodeJpeg420ImagesToYUV;
 BLINK_COMMON_EXPORT extern const base::Feature kDecodeLossyWebPImagesToYUV;
 
 BLINK_COMMON_EXPORT extern const base::Feature

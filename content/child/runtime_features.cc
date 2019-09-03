@@ -101,6 +101,12 @@ void SetIndividualRuntimeFeatures(
 
   if (!command_line.HasSwitch(switches::kDisableYUVImageDecoding) &&
       base::FeatureList::IsEnabled(
+          blink::features::kDecodeJpeg420ImagesToYUV)) {
+    WebRuntimeFeatures::EnableDecodeJpeg420ImagesToYUV(true);
+  }
+
+  if (!command_line.HasSwitch(switches::kDisableYUVImageDecoding) &&
+      base::FeatureList::IsEnabled(
           blink::features::kDecodeLossyWebPImagesToYUV)) {
     WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(true);
   }
