@@ -1704,7 +1704,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/SplashController.java",
   "java/src/org/chromium/chrome/browser/webapps/SplashDelegate.java",
   "java/src/org/chromium/chrome/browser/webapps/SplashscreenObserver.java",
-  "java/src/org/chromium/chrome/browser/webapps/TouchlessAddToHomescreenDialog.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity0.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity1.java",
