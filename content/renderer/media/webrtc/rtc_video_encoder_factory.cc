@@ -11,9 +11,9 @@
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/peerconnection/web_rtc_video_encoder_factory.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder.h"
@@ -42,8 +42,8 @@ base::Optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
     // removed when SW implementation is fully enabled.
     bool webrtc_h264_sw_enabled = false;
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-    webrtc_h264_sw_enabled =
-        base::FeatureList::IsEnabled(kWebRtcH264WithOpenH264FFmpeg);
+    webrtc_h264_sw_enabled = base::FeatureList::IsEnabled(
+        blink::features::kWebRtcH264WithOpenH264FFmpeg);
 #endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
     if (webrtc_h264_sw_enabled ||
         base::FeatureList::IsEnabled(features::kWebRtcHWH264Encoding)) {
