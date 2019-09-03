@@ -64,7 +64,6 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
-#include "third_party/blink/renderer/core/frame/use_counter_helper.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -1568,8 +1567,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void CountUse(mojom::WebFeature feature) final;
   void CountDeprecation(mojom::WebFeature feature) final;
   void CountUse(mojom::WebFeature feature) const;
-  void CountUse(CSSPropertyID property_id,
-                UseCounterHelper::CSSPropertyType) const;
+  void CountProperty(CSSPropertyID property_id) const;
+  void CountAnimatedProperty(CSSPropertyID property_id) const;
   // Count |feature| only when this document is associated with a cross-origin
   // iframe.
   void CountUseOnlyInCrossOriginIframe(mojom::WebFeature feature) const;
@@ -1578,8 +1577,11 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsUseCounted(mojom::WebFeature) const;
   // Return whether the property was previously counted for this document.
   // NOTE: only for use in testing.
-  bool IsUseCounted(CSSPropertyID property,
-                    UseCounterHelper::CSSPropertyType) const;
+  bool IsPropertyCounted(CSSPropertyID property) const;
+  // Return whether the animated property was previously counted for this
+  // document.
+  // NOTE: only for use in testing.
+  bool IsAnimatedPropertyCounted(CSSPropertyID property) const;
   void ClearUseCounterForTesting(mojom::WebFeature);
   void SetSecurityOrigin(scoped_refptr<SecurityOrigin>) final;
 

@@ -8467,10 +8467,17 @@ void Document::CountDeprecation(mojom::WebFeature feature) {
   Deprecation::CountDeprecation(Loader(), feature);
 }
 
-void Document::CountUse(CSSPropertyID property,
-                        UseCounterHelper::CSSPropertyType type) const {
+void Document::CountProperty(CSSPropertyID property) const {
   if (DocumentLoader* loader = Loader()) {
-    loader->GetUseCounterHelper().Count(property, type, GetFrame());
+    loader->GetUseCounterHelper().Count(
+        property, UseCounterHelper::CSSPropertyType::kDefault, GetFrame());
+  }
+}
+
+void Document::CountAnimatedProperty(CSSPropertyID property) const {
+  if (DocumentLoader* loader = Loader()) {
+    loader->GetUseCounterHelper().Count(
+        property, UseCounterHelper::CSSPropertyType::kAnimation, GetFrame());
   }
 }
 
@@ -8488,10 +8495,18 @@ bool Document::IsUseCounted(mojom::WebFeature feature) const {
   return false;
 }
 
-bool Document::IsUseCounted(CSSPropertyID property,
-                            UseCounterHelper::CSSPropertyType type) const {
+bool Document::IsPropertyCounted(CSSPropertyID property) const {
   if (DocumentLoader* loader = Loader()) {
-    return loader->GetUseCounterHelper().IsCounted(property, type);
+    return loader->GetUseCounterHelper().IsCounted(
+        property, UseCounterHelper::CSSPropertyType::kDefault);
+  }
+  return false;
+}
+
+bool Document::IsAnimatedPropertyCounted(CSSPropertyID property) const {
+  if (DocumentLoader* loader = Loader()) {
+    return loader->GetUseCounterHelper().IsCounted(
+        property, UseCounterHelper::CSSPropertyType::kAnimation);
   }
   return false;
 }
