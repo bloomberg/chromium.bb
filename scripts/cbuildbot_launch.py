@@ -431,11 +431,18 @@ def CleanupChroot(buildroot):
       logging.exception('Cleaning up chroot timed out')
       # Dump debug info to help https://crbug.com/1000034.
       cros_build_lib.RunCommand(['mount'], error_code_ok=False)
+      cros_build_lib.RunCommand(['uname', '-a'], error_code_ok=False)
       cros_build_lib.SudoRunCommand(['losetup', '-a'], error_code_ok=False)
       cros_build_lib.RunCommand(['dmesg'], error_code_ok=False)
-      return False
+      logging.warning('Assuming the bot is going to reboot, so ignoring this '
+                      'failure; see https://crbug.com/1000034')
 
-  return True
+   # NB: We ignore errors at this point because this stage runs last.  If the
+   # chroot failed to unmount, we're going to reboot the system once we're done,
+   # and that will implicitly take care of cleaning things up.  If the bots stop
+   # rebooting after every run, we'll need to make this fatal all the time.
+   #
+   # TODO(crbug.com/1000034): This should be fatal all the time.
 
 
 def ConfigureGlobalEnvironment():
@@ -520,8 +527,7 @@ def _main(options, argv):
       SetLastBuildState(root, build_state)
 
       with metrics.SecondsTimer(METRIC_CHROOT_CLEANUP):
-        if not CleanupChroot(buildroot):
-          result = 1
+        CleanupChroot(buildroot)
 
       return result
 

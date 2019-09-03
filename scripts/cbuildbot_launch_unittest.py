@@ -753,8 +753,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     """Check CleanupChroot without a chroot."""
     self.StartPatcher(cros_test_lib.RunCommandMock())
     with mock.patch.object(cros_sdk_lib, 'CleanupChrootMount'):
-      ret = cbuildbot_launch.CleanupChroot(self.buildroot)
-      self.assertTrue(ret)
+      cbuildbot_launch.CleanupChroot(self.buildroot)
 
   def testCleanupChrootNormal(self):
     """Check normal CleanupChroot."""
@@ -762,8 +761,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     osutils.Touch(self.chroot + '.img')
     self.StartPatcher(cros_test_lib.RunCommandMock())
     with mock.patch.object(cros_sdk_lib, 'CleanupChrootMount'):
-      ret = cbuildbot_launch.CleanupChroot(self.buildroot)
-      self.assertTrue(ret)
+      cbuildbot_launch.CleanupChroot(self.buildroot)
 
   def testCleanupChrootTimeout(self):
     """Check timeouts in CleanupChroot."""
@@ -773,5 +771,4 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     rc_mock.SetDefaultCmdResult()
     with mock.patch.object(cros_sdk_lib, 'CleanupChrootMount',
                            side_effect=timeout_util.TimeoutError):
-      ret = cbuildbot_launch.CleanupChroot(self.buildroot)
-      self.assertFalse(ret)
+      cbuildbot_launch.CleanupChroot(self.buildroot)
