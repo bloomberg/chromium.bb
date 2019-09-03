@@ -1031,7 +1031,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Disable the BackForwardCache.
-  web_contents()->GetController().back_forward_cache().DisableForTesting();
+  web_contents()->GetController().back_forward_cache().DisableForTesting(
+      BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // Navigate to a page that would normally be cacheable.
   NavigateToURL(shell(),
