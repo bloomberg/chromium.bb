@@ -616,7 +616,7 @@ void MainMessagePump::ScheduleWork()
     ::InterlockedExchange(&d_scheduleTime, ::GetTickCount());
 
     LONG isInsideMainLoop = d_isInsideMainLoop;
-    if (Statics::isInApplicationMainThread() && 0 == isInsideMainLoop) {
+    if (0 == isInsideMainLoop) {
         // We can guage the idleness of the Windows message queue by peeking at
         // it.  Given that the peek operation is not very cheap, we only do it
         // in postHandleMessage().  For all other times, we assume a non-idle
