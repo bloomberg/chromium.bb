@@ -1532,27 +1532,24 @@ def RunSkylabHWTestPlan(test_plan=None,
         [skylab_path, 'create-testplan'] + args,
         redirect_stdout=True,
         input=test_plan)
+
+    task_url = ''
+    try:
+      report = json.loads(result.output)
+      task_url = report.get('task_url')
+
+      logging.info('Launched test plan task %s', task_url)
+      logging.PrintBuildbotLink('Test plan task', task_url)
+
+    except ValueError:
+      logging.warning('Unable to parse output:\n%s', result.output)
+
     return HWTestSuiteResult(None, None)
   except cros_build_lib.RunCommandError as e:
     result = e.result
     to_raise = failures_lib.TestFailure(
         '** HWTest failed (code %d) **' % result.returncode)
     return HWTestSuiteResult(to_raise, None)
-  finally:
-    # This is required to output buildbot annotations, e.g. 'STEP_LINKS'.
-    # output = json.loads(result.output)
-    output = {}
-    # The format of output is:
-    #   {'task_name':'cros_test_platform',
-    #    'task_id': 'XX',
-    #    'task_url': 'YY'}
-    sys.stdout.write('%s \n' % output)
-    sys.stdout.write('######## Output for buildbot annotations ######## \n')
-    sys.stdout.write('%s \n' % str(
-        buildbot_annotations.StepLink('Test run',
-                                      output.get('task_url', ''))))
-    sys.stdout.write('######## END Output for buildbot annotations ######## \n')
-    sys.stdout.flush()
 
 
 # pylint: disable=docstring-missing-args
