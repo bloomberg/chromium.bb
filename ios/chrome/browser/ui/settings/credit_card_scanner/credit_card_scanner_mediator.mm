@@ -161,9 +161,9 @@ using base::UserMetricsAction;
     text = [text stringByReplacingOccurrencesOfString:symbol withString:@""];
   }
 
-  // Matches strings which have 13-19 numbers between the start(^) and the
+  // Matches strings which have 13-19 characters between the start(^) and the
   // end($) of the line.
-  NSString* pattern = @"^([0-9]{13,19})$";
+  NSString* pattern = @"^(\\w{13,19})$";
 
   NSError* error;
   NSRegularExpression* regex = [[NSRegularExpression alloc]
@@ -178,8 +178,49 @@ using base::UserMetricsAction;
   if (!match) {
     return nil;
   }
-  NSString* creditCardNumber = [text substringWithRange:match.range];
-  return creditCardNumber;
+
+  NSString* stringMatchingPattern = [text substringWithRange:match.range];
+
+  NSString* creditCardNumber =
+      [self substituteSimilarCharactersInRecognizedText:stringMatchingPattern];
+  NSCharacterSet* allowedCharacterSet =
+      [NSCharacterSet decimalDigitCharacterSet];
+  NSCharacterSet* creditCardNumberSet =
+      [NSCharacterSet characterSetWithCharactersInString:creditCardNumber];
+  if ([allowedCharacterSet isSupersetOfSet:creditCardNumberSet]) {
+    return creditCardNumber;
+  }
+  return nil;
+}
+
+// Substitutes commonly misrecognized characters, for example: 'S' -> '5' or
+// 'l' -> '1'
+- (NSString*)substituteSimilarCharactersInRecognizedText:
+    (NSString*)recognizedText {
+  NSDictionary* misrecognisedAlphabets = @{
+    @"B" : @"8",
+    @"C" : @"0",
+    @"D" : @"0",
+    @"G" : @"9",
+    @"I" : @"1",
+    @"L" : @"1",
+    @"O" : @"0",
+    @"Q" : @"0",
+    @"S" : @"5",
+    @"T" : @"7",
+    @"U" : @"0",
+    @"Z" : @"7"
+  };
+
+  NSString* substitutedText =
+      [[NSString alloc] initWithString:recognizedText].uppercaseString;
+  for (NSString* alphabet in misrecognisedAlphabets) {
+    NSString* digit = misrecognisedAlphabets[alphabet];
+    substitutedText =
+        [substitutedText stringByReplacingOccurrencesOfString:alphabet
+                                                   withString:digit];
+  }
+  return substitutedText;
 }
 
 @end
