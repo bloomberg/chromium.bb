@@ -146,21 +146,6 @@
     "dependencies": ["permission:declarativeNetRequest"],
     "contexts": ["blessed_extension"]
   },
-  "declarativeNetRequest.addDynamicRules": {
-    "dependencies": ["permission:declarativeNetRequest"],
-    "contexts": ["blessed_extension"],
-    "channel": "trunk"
-  },
-  "declarativeNetRequest.removeDynamicRules": {
-    "dependencies": ["permission:declarativeNetRequest"],
-    "contexts": ["blessed_extension"],
-    "channel": "trunk"
-  },
-  "declarativeNetRequest.getDynamicRules": {
-    "dependencies": ["permission:declarativeNetRequest"],
-    "contexts": ["blessed_extension"],
-    "channel": "trunk"
-  },
   "declarativeNetRequest.getMatchedRules": {
     "dependencies": ["permission:declarativeNetRequest"],
     "contexts": ["blessed_extension"],
