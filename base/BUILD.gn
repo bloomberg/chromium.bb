@@ -3243,6 +3243,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/AccessedByNative.java",
       "android/java/src/org/chromium/base/annotations/CalledByNative.java",
       "android/java/src/org/chromium/base/annotations/CalledByNativeUnchecked.java",
+      "android/java/src/org/chromium/base/annotations/CheckDiscard.java",
       "android/java/src/org/chromium/base/annotations/DoNotInline.java",
       "android/java/src/org/chromium/base/annotations/JNIAdditionalImport.java",
       "android/java/src/org/chromium/base/annotations/JNINamespace.java",
@@ -3309,10 +3310,6 @@ if (is_android) {
       "*/NativeLibraries.class",
       "*/NativeLibraries##*.class",
     ]
-
-    if (!is_java_debug && !dcheck_always_on) {
-      proguard_configs = [ "android/proguard/dcheck_is_off.flags" ]
-    }
   }
 
   android_aidl("base_java_aidl") {
