@@ -5953,16 +5953,6 @@ crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 # Marking them as Failure/Pass to collect data on bots. Once confirmed they are
 # no longer flaky we can re-enable.
 crbug.com/986018 fast/scroll-snap/snaps-for-different-key-granularity.html [ Failure Pass ]
-crbug.com/991565 animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Failure Pass ]
-crbug.com/991565 animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Failure Pass ]
-crbug.com/991565 animations/direction-and-fill/fill-mode-transform.html [ Failure Pass ]
-crbug.com/991565 animations/direction-and-fill/fill-mode.html [ Failure Pass ]
-crbug.com/991565 virtual/threaded/animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Failure Pass ]
-crbug.com/991565 virtual/threaded/animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Failure Pass ]
-crbug.com/991565 virtual/threaded/animations/direction-and-fill/fill-mode.html [ Failure Pass ]
-crbug.com/991565 svg/animations/dynamic-modify-transform-without-baseval.html [ Failure Pass ]
-crbug.com/991565 svg/animations/target-condition-crash.html [ Failure Pass ]
-
 
 # Race: The RTCIceConnectionState can become "connected" before getStats()
 # returns candidate-pair whose state is "succeeded", this sounds like a
