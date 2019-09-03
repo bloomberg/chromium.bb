@@ -99,6 +99,10 @@ gerrit_instances = [
 ]
 
 monorail_projects = {
+  'angleproject': {
+    'shorturl': 'anglebug.com',
+    'short_url_protocol': 'http',
+  },
   'chromium': {
     'shorturl': 'crbug.com',
     'short_url_protocol': 'https',
