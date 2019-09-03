@@ -29,6 +29,7 @@ class NigoriLocalData;
 namespace syncer {
 
 class Encryptor;
+class NigoriStorage;
 
 // USS implementation of SyncEncryptionHandler.
 // This class holds the current Nigori state and processes incoming changes and
@@ -44,6 +45,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
  public:
   // |encryptor| must be not null and must outlive this object.
   NigoriSyncBridgeImpl(std::unique_ptr<NigoriLocalChangeProcessor> processor,
+                       std::unique_ptr<NigoriStorage> storage,
                        const Encryptor* encryptor,
                        const std::string& packed_explicit_passphrase_key);
   ~NigoriSyncBridgeImpl() override;
@@ -110,6 +112,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   const Encryptor* const encryptor_;
 
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
+  const std::unique_ptr<NigoriStorage> storage_;
 
   // Stores serialized sync_pb::NigoriKey derived from explicit passphrase and
   // loaded from the prefs. Empty if prefs doesn't contain this key or in case

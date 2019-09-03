@@ -14,6 +14,7 @@
 #include "components/sync/base/time.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/nigori/nigori.h"
+#include "components/sync/nigori/nigori_storage.h"
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/nigori_local_data.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
@@ -426,10 +427,12 @@ ModelTypeSet GetEncryptedTypes(bool encrypt_everything) {
 
 NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
     std::unique_ptr<NigoriLocalChangeProcessor> processor,
+    std::unique_ptr<NigoriStorage> storage,
     const Encryptor* encryptor,
     const std::string& packed_explicit_passphrase_key)
     : encryptor_(encryptor),
       processor_(std::move(processor)),
+      storage_(std::move(storage)),
       serialized_explicit_passphrase_key_(
           UnpackExplicitPassphraseKey(*encryptor,
                                       packed_explicit_passphrase_key)),
@@ -500,6 +503,7 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
   encrypt_everything_ = true;
   custom_passphrase_time_ = base::Time::Now();
   processor_->Put(GetData());
+  storage_->StoreData(SerializeAsNigoriLocalData());
   for (auto& observer : observers_) {
     observer.OnPassphraseAccepted();
   }
@@ -547,6 +551,7 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
         "Failed to decrypt pending keys with provided explicit passphrase."));
     return;
   }
+  storage_->StoreData(SerializeAsNigoriLocalData());
   for (auto& observer : observers_) {
     observer.OnCryptographerStateChanged(&cryptographer_);
   }
@@ -608,7 +613,9 @@ bool NigoriSyncBridgeImpl::SetKeystoreKeys(
     base::Base64Encode(keys[i], &keystore_keys_[i]);
   }
 
-  // TODO(crbug.com/922900): persist keystore keys.
+  // Note: we don't need to persist keystore keys here, because we will receive
+  // Nigori node right after this method and persist all the data during
+  // UpdateLocalState().
   // TODO(crbug.com/922900): support key rotation.
   // TODO(crbug.com/922900): verify that this method is always called before
   // update or init of Nigori node. If this is the case we don't need to touch
@@ -665,8 +672,9 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::ApplySyncChanges(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(passphrase_type_, NigoriSpecifics::UNKNOWN);
   if (!data) {
-    // TODO(crbug.com/922900): persist SyncMetadata and ModelTypeState.
-    NOTIMPLEMENTED();
+    // Receiving empty |data| means metadata-only change, we need to persist
+    // its state.
+    storage_->StoreData(SerializeAsNigoriLocalData());
     return base::nullopt;
   }
   DCHECK(data->specifics.has_nigori());
@@ -734,6 +742,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
       UpdateCryptographerFromExplicitPassphraseNigori(encryption_keybag);
   }
 
+  storage_->StoreData(SerializeAsNigoriLocalData());
   if (passphrase_type_changed) {
     for (auto& observer : observers_) {
       observer.OnPassphraseTypeChanged(
