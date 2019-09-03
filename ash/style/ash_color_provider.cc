@@ -178,6 +178,10 @@ SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
       light_color = SK_ColorWHITE;
       dark_color = gfx::kGoogleGrey900;
       break;
+    case BaseLayerType::kRed:
+      light_color = gfx::kGoogleRed600;
+      dark_color = gfx::kGoogleRed300;
+      break;
   }
   return color_mode == AshColorMode::kLight ? light_color : dark_color;
 }

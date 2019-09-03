@@ -53,6 +53,9 @@ class ASH_EXPORT AshColorProvider {
 
     // Base layer is opaque.
     kOpaque,
+
+    // Base layer is red. e.g, the "sign out" button inside status area.
+    kRed,
   };
 
   // Types of Controls layer.
