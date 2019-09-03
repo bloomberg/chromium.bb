@@ -1791,6 +1791,18 @@ Unknown properties are collapsed to zero. -->
   </int>
 </enum>
 
+<enum name="AndroidWebViewProxySchemeFilterType">
+  <int value="0" label="HTTP"/>
+  <int value="1" label="HTTPS"/>
+  <int value="2" label="ALL"/>
+</enum>
+
+<enum name="AndroidWebViewProxyUrlType">
+  <int value="0" label="HTTP"/>
+  <int value="1" label="HTTPS"/>
+  <int value="2" label="DIRECT"/>
+</enum>
+
 <enum name="AndroidWebViewSslErrorType">
   <int value="0" label="SSL_NOTYETVALID">The certificate is not yet valid.</int>
   <int value="1" label="SSL_EXPIRED">The certificate has expired.</int>
