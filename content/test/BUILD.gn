@@ -1123,7 +1123,6 @@ test("content_browsertests") {
     "//content/public/browser",
     "//content/public/child",
     "//content/public/common",
-    "//content/public/common:buildflags",
     "//content/public/gpu",
     "//content/public/renderer",
     "//content/renderer:for_content_tests",

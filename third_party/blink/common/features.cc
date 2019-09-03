@@ -179,6 +179,12 @@ const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
 const base::Feature kRTCOfferExtmapAllowMixed{
     "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+// Run-time feature for the |rtc_use_h264| encoder/decoder.
+const base::Feature kWebRtcH264WithOpenH264FFmpeg{
+    "WebRTC-H264WithOpenH264FFmpeg", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+
 const base::Feature kServiceWorkerIsolateInForeground{
     "ServiceWorkerIsolateInForeground", base::FEATURE_ENABLED_BY_DEFAULT};
 
