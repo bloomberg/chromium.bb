@@ -43595,6 +43595,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Suppression expired"/>
 </enum>
 
+<enum name="NotificationSchedulerNotificationLifeCycleEvent">
+  <int value="0" label="Schedule request"/>
+  <int value="1" label="Scheduled"/>
+  <int value="2" label="Invalid input parameters"/>
+  <int value="3" label="Shown"/>
+  <int value="4" label="Client Cancel"/>
+</enum>
+
 <enum name="NotificationSchedulerUserActionType">
   <int value="0" label="Click"/>
   <int value="1" label="Button Click"/>

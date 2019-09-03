@@ -99,6 +99,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     std::string guid = notification_params->guid;
     DCHECK(!guid.empty());
     auto type = notification_params->type;
+    stats::LogNotificationLifeCycleEvent(
+        stats::NotificationLifeCycleEvent::kScheduleRequest, type);
 
     if (!clients_.count(type) ||
         (notifications_.count(type) && notifications_[type].count(guid))) {
@@ -108,8 +110,11 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 
     bool valid = ValidateNotificationParams(*notification_params);
     DCHECK(valid) << "Invalid notification parameters.";
-    if (!valid)
+    if (!valid) {
+      stats::LogNotificationLifeCycleEvent(
+          stats::NotificationLifeCycleEvent::kInvalidInput, type);
       return;
+    }
 
     if (notification_params->enable_ihnr_buttons) {
       CreateInhrButtonsPair(&notification_params->notification_data.buttons);
@@ -292,6 +297,9 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     auto type = entry->type;
     auto guid = entry->guid;
     notifications_[type][guid] = std::move(entry);
+
+    stats::LogNotificationLifeCycleEvent(
+        stats::NotificationLifeCycleEvent::kScheduled, type);
     std::move(schedule_callback).Run(true);
   }
 

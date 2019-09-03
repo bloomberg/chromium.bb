@@ -234,7 +234,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
       std::unique_ptr<NotificationEntry> entry,
       std::unique_ptr<NotificationData> updated_notification_data) {
     if (!updated_notification_data) {
-      // TODO(xingliu): Client has drop the data, track metrics here.
+      stats::LogNotificationLifeCycleEvent(
+          stats::NotificationLifeCycleEvent::kClientCancel, entry->type);
       return;
     }
 
