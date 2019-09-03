@@ -996,24 +996,22 @@ class _CQState(object):
 
 
 class _ParsedIssueNumberArgument(object):
-  def __init__(self, issue=None, patchset=None, hostname=None, codereview=None):
+  def __init__(self, issue=None, patchset=None, hostname=None):
     self.issue = issue
     self.patchset = patchset
     self.hostname = hostname
-    assert codereview in (None, 'gerrit', 'rietveld')
-    self.codereview = codereview
 
   @property
   def valid(self):
     return self.issue is not None
 
 
-def ParseIssueNumberArgument(arg, codereview=None):
+def ParseIssueNumberArgument(arg):
   """Parses the issue argument and returns _ParsedIssueNumberArgument."""
   fail_result = _ParsedIssueNumberArgument()
 
   if arg.isdigit():
-    return _ParsedIssueNumberArgument(issue=int(arg), codereview=codereview)
+    return _ParsedIssueNumberArgument(issue=int(arg))
   if not arg.startswith('http'):
     return fail_result
 
@@ -1022,10 +1020,6 @@ def ParseIssueNumberArgument(arg, codereview=None):
     parsed_url = urlparse.urlparse(url)
   except ValueError:
     return fail_result
-
-  if codereview is not None:
-    parsed = _CODEREVIEW_IMPLEMENTATIONS[codereview].ParseIssueURL(parsed_url)
-    return parsed or fail_result
 
   return _GerritChangelistImpl.ParseIssueURL(parsed_url) or fail_result
 
@@ -1064,35 +1058,22 @@ _CommentSummary = collections.namedtuple(
 class Changelist(object):
   """Changelist works with one changelist in local branch.
 
-  Supports two codereview backends: Rietveld or Gerrit, selected at object
-  creation.
-
   Notes:
     * Not safe for concurrent multi-{thread,process} use.
     * Caches values from current branch. Therefore, re-use after branch change
       with great care.
   """
 
-  def __init__(self, branchref=None, issue=None, codereview=None, **kwargs):
+  def __init__(self, branchref=None, issue=None, **kwargs):
     """Create a new ChangeList instance.
 
-    If issue is given, the codereview must be given too.
-
-    If `codereview` is given, it must be 'rietveld' or 'gerrit'.
-    Otherwise, it's decided based on current configuration of the local branch,
-    with default being 'rietveld' for backwards compatibility.
-    See _load_codereview_impl for more details.
-
-    **kwargs will be passed directly to codereview implementation.
+    **kwargs will be passed directly to Gerrit implementation.
     """
     # Poke settings so we get the "configure your server" message if necessary.
     global settings
     if not settings:
       # Happens when git_cl.py is used as a utility library.
       settings = Settings()
-
-    if issue:
-      assert codereview, 'codereview must be known, if issue is known'
 
     self.branchref = branchref
     if self.branchref:
@@ -1112,44 +1093,7 @@ class Changelist(object):
     self._remote = None
     self._cached_remote_url = (False, None)  # (is_cached, value)
 
-    self._codereview_impl = None
-    self._codereview = None
-    self._load_codereview_impl(codereview, **kwargs)
-    assert self._codereview_impl
-    assert self._codereview in _CODEREVIEW_IMPLEMENTATIONS
-
-  def _load_codereview_impl(self, codereview=None, **kwargs):
-    if codereview:
-      assert codereview in _CODEREVIEW_IMPLEMENTATIONS, (
-          'codereview {} not in {}'.format(codereview,
-                                           _CODEREVIEW_IMPLEMENTATIONS))
-      cls = _CODEREVIEW_IMPLEMENTATIONS[codereview]
-      self._codereview = codereview
-      self._codereview_impl = cls(self, **kwargs)
-      return
-
-    # Automatic selection based on issue number set for a current branch.
-    # Rietveld takes precedence over Gerrit.
-    assert not self.issue
-    # Whether we find issue or not, we are doing the lookup.
-    self.lookedup_issue = True
-    if self.GetBranch():
-      for codereview, cls in _CODEREVIEW_IMPLEMENTATIONS.iteritems():
-        issue = _git_get_branch_config_value(
-            cls.IssueConfigKey(), value_type=int, branch=self.GetBranch())
-        if issue:
-          self._codereview = codereview
-          self._codereview_impl = cls(self, **kwargs)
-          self.issue = int(issue)
-          return
-
-    # No issue is set for this branch, so default to gerrit.
-    return self._load_codereview_impl(
-        codereview='gerrit',
-        **kwargs)
-
-  def IsGerrit(self):
-    return self._codereview == 'gerrit'
+    self._codereview_impl = _GerritChangelistImpl(self, **kwargs)
 
   def GetCCList(self):
     """Returns the users cc'd on this CL.
@@ -1476,6 +1420,7 @@ class Changelist(object):
               'Removing it.')
         RunGit(['commit', '--amend', '-m',
                 git_footers.remove_footer(msg, 'Change-Id')])
+      self.lookedup_issue = True
       self.issue = None
       self.patchset = None
 
@@ -1571,7 +1516,7 @@ class Changelist(object):
     except presubmit_support.PresubmitFailure as e:
       DieWithError('%s\nMaybe your depot_tools is out of date?' % e)
 
-  def CMDPatchIssue(self, issue_arg, reject, nocommit, directory):
+  def CMDPatchIssue(self, issue_arg, nocommit):
     """Fetches and applies the issue patch from codereview to local branch."""
     if isinstance(issue_arg, (int, long)) or issue_arg.isdigit():
       parsed_issue_arg = _ParsedIssueNumberArgument(int(issue_arg))
@@ -1583,11 +1528,10 @@ class Changelist(object):
       DieWithError('Failed to parse issue argument "%s". '
                    'Must be an issue number or a valid URL.' % issue_arg)
     return self._codereview_impl.CMDPatchWithParsedIssue(
-        parsed_issue_arg, reject, nocommit, directory, False)
+        parsed_issue_arg, nocommit, False)
 
   def CMDUpload(self, options, git_diff_args, orig_args):
     """Uploads a change to codereview."""
-    assert self.IsGerrit()
     custom_cl_base = None
     if git_diff_args:
       custom_cl_base = base_branch = git_diff_args[0]
@@ -1803,18 +1747,12 @@ class _ChangelistCodereviewBase(object):
     """Returns the most recent patchset number from the codereview site."""
     raise NotImplementedError()
 
-  def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
-                              directory, force):
+  def CMDPatchWithParsedIssue(self, parsed_issue_arg, nocommit, force):
     """Fetches and applies the issue.
 
     Arguments:
       parsed_issue_arg: instance of _ParsedIssueNumberArgument.
-      reject: if True, reject the failed patch instead of switching to 3-way
-        merge. Rietveld only.
-      nocommit: do not commit the patch, thus leave the tree dirty. Rietveld
-        only.
-      directory: switch to directory before applying the patch. Rietveld only.
-      force: if true, overwrites existing local state.
+      nocommit: do not commit the patch, thus leave the tree dirty.
     """
     raise NotImplementedError()
 
@@ -2379,10 +2317,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         break
     return 0
 
-  def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
-                              directory, force):
-    assert not reject
-    assert not directory
+  def CMDPatchWithParsedIssue(self, parsed_issue_arg, nocommit, force):
     assert parsed_issue_arg.valid
 
     self._changelist.issue = parsed_issue_arg.issue
@@ -2471,8 +2406,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       return _ParsedIssueNumberArgument(
           issue=int(match.group(3)),
           patchset=int(match.group(5)) if match.group(5) else None,
-          hostname=parsed_url.netloc,
-          codereview='gerrit')
+          hostname=parsed_url.netloc)
     return None
 
   def _GerritCommitMsgHookCheck(self, offer_removal):
@@ -3039,28 +2973,17 @@ def _add_codereview_issue_select_options(parser, extra=""):
   parser.add_option('-i', '--issue', type=int, help=text)
 
 
-def _process_codereview_issue_select_options(parser, options):
-  _process_codereview_select_options(parser, options)
-  if options.issue is not None and not options.forced_codereview:
-    parser.error('--issue must be specified with either --rietveld or --gerrit')
-
-
 def _add_codereview_select_options(parser):
-  """Appends --gerrit and --rietveld options to force specific codereview."""
+  """Appends --gerrit option to force specific codereview."""
   parser.codereview_group = optparse.OptionGroup(
-      parser, 'EXPERIMENTAL! Codereview override options')
+      parser, 'DEPRECATED! Codereview override options')
   parser.add_option_group(parser.codereview_group)
   parser.codereview_group.add_option(
       '--gerrit', action='store_true',
-      help='Force the use of Gerrit for codereview')
-  parser.codereview_group.add_option(
-      '--rietveld', action='store_true',
-      help='Force the use of Rietveld for codereview')
+      help='Deprecated. Noop. Do not use.')
 
 
 def _process_codereview_select_options(parser, options):
-  if options.rietveld:
-    parser.error('--rietveld is no longer supported.')
   options.forced_codereview = None
   if options.gerrit:
     options.forced_codereview = 'gerrit'
@@ -4117,7 +4040,7 @@ def CMDstatus(parser, args):
   _add_codereview_issue_select_options(
     parser, 'Must be in conjunction with --field.')
   options, args = parser.parse_args(args)
-  _process_codereview_issue_select_options(parser, options)
+  _process_codereview_select_options(parser, options)
   if args:
     parser.error('Unsupported args: %s' % args)
   auth_config = auth.extract_auth_config_from_options(options)
@@ -4126,8 +4049,7 @@ def CMDstatus(parser, args):
     parser.error('--field must be specified with --issue.')
 
   if options.field:
-    cl = Changelist(auth_config=auth_config, issue=options.issue,
-                    codereview=options.forced_codereview)
+    cl = Changelist(auth_config=auth_config, issue=options.issue)
     if options.field.startswith('desc'):
       print(cl.GetDescription())
     elif options.field == 'id':
@@ -4297,15 +4219,15 @@ def CMDissue(parser, args):
     return 0
 
   if len(args) > 0:
-    issue = ParseIssueNumberArgument(args[0], options.forced_codereview)
+    issue = ParseIssueNumberArgument(args[0])
     if not issue.valid:
       DieWithError('Pass a url or number to set the issue, 0 to unset it, '
                    'or no argument to list it.\n'
                    'Maybe you want to run git cl status?')
-    cl = Changelist(codereview=issue.codereview)
+    cl = Changelist()
     cl.SetIssue(issue.issue)
   else:
-    cl = Changelist(codereview=options.forced_codereview)
+    cl = Changelist()
   print('Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL()))
   if options.json:
     write_json(options.json, {
@@ -4323,8 +4245,7 @@ def CMDcomments(parser, args):
   parser.add_option('-p', '--publish', action='store_true',
                     help='marks CL as ready and sends comment to reviewers')
   parser.add_option('-i', '--issue', dest='issue',
-                    help='review issue id (defaults to current issue). '
-                         'If given, requires --rietveld or --gerrit')
+                    help='review issue id (defaults to current issue).')
   parser.add_option('-m', '--machine-readable', dest='readable',
                     action='store_false', default=True,
                     help='output comments in a format compatible with '
@@ -4344,10 +4265,7 @@ def CMDcomments(parser, args):
     except ValueError:
       DieWithError('A review issue ID is expected to be a number.')
 
-  cl = Changelist(issue=issue, codereview='gerrit', auth_config=auth_config)
-
-  if not cl.IsGerrit():
-    parser.error('Rietveld is not supported.')
+  cl = Changelist(issue=issue, auth_config=auth_config)
 
   if options.comment:
     cl.AddComment(options.comment, options.publish)
@@ -4402,22 +4320,19 @@ def CMDdescription(parser, args):
 
   target_issue_arg = None
   if len(args) > 0:
-    target_issue_arg = ParseIssueNumberArgument(args[0],
-                                                options.forced_codereview)
+    target_issue_arg = ParseIssueNumberArgument(args[0])
     if not target_issue_arg.valid:
       parser.error('Invalid issue ID or URL.')
 
   kwargs = {
     'auth_config': auth.extract_auth_config_from_options(options),
-    'codereview': options.forced_codereview,
   }
   detected_codereview_from_url = False
   if target_issue_arg:
     kwargs['issue'] = target_issue_arg.issue
     kwargs['codereview_host'] = target_issue_arg.hostname
-    if target_issue_arg.codereview and not options.forced_codereview:
+    if not args[0].isdigit() and not options.forced_codereview:
       detected_codereview_from_url = True
-      kwargs['codereview'] = target_issue_arg.codereview
 
   cl = Changelist(**kwargs)
   if not cl.GetIssue():
@@ -4425,8 +4340,7 @@ def CMDdescription(parser, args):
     DieWithError('This branch has no associated changelist.')
 
   if detected_codereview_from_url:
-    logging.info('canonical issue/change URL: %s (type: %s)\n',
-                 cl.GetIssueURL(), target_issue_arg.codereview)
+    logging.info('canonical issue/change URL: %s\n', cl.GetIssueURL())
 
   description = ChangeDescription(cl.GetDescription())
 
@@ -4445,8 +4359,7 @@ def CMDdescription(parser, args):
 
     description.set_description(text)
   else:
-    description.prompt(git_footer=cl.IsGerrit())
-
+    description.prompt()
   if cl.GetDescription().strip() != description.description:
     cl.UpdateDescription(description.description, force=options.force)
   return 0
@@ -4775,17 +4688,7 @@ def CMDupload(parser, args):
   # For sanity of test expectations, do this otherwise lazy-loading *now*.
   settings.GetIsGerrit()
 
-  cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
-  if not cl.IsGerrit():
-    # Error out with instructions for repos not yet configured for Gerrit.
-    print('=====================================')
-    print('NOTICE: Rietveld is no longer supported. '
-          'You can upload changes to Gerrit with')
-    print('  git cl upload --gerrit')
-    print('or set Gerrit to be your default code review tool with')
-    print('  git config gerrit.host true')
-    print('=====================================')
-    return 1
+  cl = Changelist(auth_config=auth_config)
 
   return cl.CMDUpload(options, args, orig_args)
 
@@ -4870,9 +4773,6 @@ def CMDland(parser, args):
 
   cl = Changelist(auth_config=auth_config)
 
-  if not cl.IsGerrit():
-    parser.error('Rietveld is not supported.')
-
   if not cl.GetIssue():
     DieWithError('You must upload the change first to Gerrit.\n'
                  '  If you would rather have `git cl land` upload '
@@ -4889,14 +4789,8 @@ def CMDpatch(parser, args):
                     help='create a new branch off trunk for the patch')
   parser.add_option('-f', '--force', action='store_true',
                     help='overwrite state on the current or chosen branch')
-  parser.add_option('-d', '--directory', action='store', metavar='DIR',
-                    help='change to the directory DIR immediately, '
-                         'before doing anything else. Rietveld only.')
-  parser.add_option('--reject', action='store_true',
-                    help='failed patches spew .rej files rather than '
-                        'attempting a 3-way merge. Rietveld only.')
   parser.add_option('-n', '--no-commit', action='store_true', dest='nocommit',
-                    help='don\'t commit after patch applies. Rietveld only.')
+                    help='don\'t commit after patch applies.')
 
   group = optparse.OptionGroup(
       parser,
@@ -4925,8 +4819,7 @@ def CMDpatch(parser, args):
     if len(args) > 0:
       parser.error('--reapply implies no additional arguments.')
 
-    cl = Changelist(auth_config=auth_config,
-                    codereview=options.forced_codereview)
+    cl = Changelist(auth_config=auth_config)
     if not cl.GetIssue():
       parser.error('Current branch must have an associated issue.')
 
@@ -4938,26 +4831,22 @@ def CMDpatch(parser, args):
     if options.pull:
       RunGit(['pull'])
 
-    return cl.CMDPatchIssue(cl.GetIssue(), options.reject, options.nocommit,
-                            options.directory)
+    return cl.CMDPatchIssue(cl.GetIssue(), options.nocommit)
 
   if len(args) != 1 or not args[0]:
     parser.error('Must specify issue number or URL.')
 
-  target_issue_arg = ParseIssueNumberArgument(args[0],
-                                              options.forced_codereview)
+  target_issue_arg = ParseIssueNumberArgument(args[0])
   if not target_issue_arg.valid:
     parser.error('Invalid issue ID or URL.')
 
   cl_kwargs = {
       'auth_config': auth_config,
       'codereview_host': target_issue_arg.hostname,
-      'codereview': options.forced_codereview,
   }
   detected_codereview_from_url = False
-  if target_issue_arg.codereview and not options.forced_codereview:
+  if not args[0].isdigit() and not options.forced_codereview:
     detected_codereview_from_url = True
-    cl_kwargs['codereview'] = target_issue_arg.codereview
     cl_kwargs['issue'] = target_issue_arg.issue
 
   # We don't want uncommitted changes mixed up with the patch.
@@ -4972,19 +4861,11 @@ def CMDpatch(parser, args):
 
   cl = Changelist(**cl_kwargs)
 
-  if cl.IsGerrit():
-    if options.reject:
-      parser.error('--reject is not supported with Gerrit code review.')
-    if options.directory:
-      parser.error('--directory is not supported with Gerrit codereview.')
-
   if detected_codereview_from_url:
-    print('canonical issue/change URL: %s (type: %s)\n' %
-          (cl.GetIssueURL(), target_issue_arg.codereview))
+    print('canonical issue/change URL: %s\n' % cl.GetIssueURL())
 
-  return cl.CMDPatchWithParsedIssue(target_issue_arg, options.reject,
-                                    options.nocommit, options.directory,
-                                    options.force)
+  return cl.CMDPatchWithParsedIssue(
+      target_issue_arg, options.nocommit, options.force)
 
 
 def GetTreeStatus(url=None):
@@ -5076,7 +4957,7 @@ def CMDtry(parser, args):
   auth.add_auth_options(parser)
   _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_issue_select_options(parser, options)
+  _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
 
   if options.master and options.master.startswith('luci.'):
@@ -5090,14 +4971,12 @@ def CMDtry(parser, args):
   if args:
     parser.error('Unknown arguments: %s' % args)
 
-  cl = Changelist(auth_config=auth_config, issue=options.issue,
-                  codereview=options.forced_codereview)
+  cl = Changelist(auth_config=auth_config, issue=options.issue)
   if not cl.GetIssue():
     parser.error('Need to upload first.')
 
-  if cl.IsGerrit():
-    # HACK: warm up Gerrit change detail cache to save on RPCs.
-    cl._codereview_impl._GetChangeDetail(['DETAILED_ACCOUNTS', 'ALL_REVISIONS'])
+  # HACK: warm up Gerrit change detail cache to save on RPCs.
+  cl._codereview_impl._GetChangeDetail(['DETAILED_ACCOUNTS', 'ALL_REVISIONS'])
 
   error_message = cl.CannotTriggerTryJobReason()
   if error_message:
@@ -5154,14 +5033,12 @@ def CMDtry_results(parser, args):
   auth.add_auth_options(parser)
   _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_issue_select_options(parser, options)
+  _process_codereview_select_options(parser, options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
   auth_config = auth.extract_auth_config_from_options(options)
-  cl = Changelist(
-      issue=options.issue, codereview=options.forced_codereview,
-      auth_config=auth_config)
+  cl = Changelist(issue=options.issue, auth_config=auth_config)
   if not cl.GetIssue():
     parser.error('Need to upload first.')
 
@@ -5247,15 +5124,14 @@ def CMDset_commit(parser, args):
   auth.add_auth_options(parser)
   _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_issue_select_options(parser, options)
+  _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
   if options.dry_run and options.clear:
     parser.error('Only one of --dry-run and --clear are allowed.')
 
-  cl = Changelist(auth_config=auth_config, issue=options.issue,
-                  codereview=options.forced_codereview)
+  cl = Changelist(auth_config=auth_config, issue=options.issue)
   if options.clear:
     state = _CQState.NONE
   elif options.dry_run:
@@ -5274,12 +5150,11 @@ def CMDset_close(parser, args):
   _add_codereview_issue_select_options(parser)
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_issue_select_options(parser, options)
+  _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
-  cl = Changelist(auth_config=auth_config, issue=options.issue,
-                  codereview=options.forced_codereview)
+  cl = Changelist(auth_config=auth_config, issue=options.issue)
   # Ensure there actually is an issue to close.
   if not cl.GetIssue():
     DieWithError('ERROR: No issue to close.')
@@ -5683,7 +5558,7 @@ def GetDirtyMetricsDirs(diff_files):
 @subcommand.usage('<codereview url or issue id>')
 @metrics.collector.collect_metrics('git cl checkout')
 def CMDcheckout(parser, args):
-  """Checks out a branch associated with a given Rietveld or Gerrit issue."""
+  """Checks out a branch associated with a given Gerrit issue."""
   _, args = parser.parse_args(args)
 
   if len(args) != 1:

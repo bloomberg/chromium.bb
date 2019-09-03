@@ -154,8 +154,7 @@ class SystemExitMock(Exception):
 
 class TestGitClBasic(unittest.TestCase):
   def test_get_description(self):
-    cl = git_cl.Changelist(issue=1, codereview='gerrit',
-                           codereview_host='host')
+    cl = git_cl.Changelist(issue=1, codereview_host='host')
     cl.description = 'x'
     cl.has_description = True
     cl._codereview_impl.FetchDescription = lambda *a, **kw: 'y'
@@ -164,8 +163,7 @@ class TestGitClBasic(unittest.TestCase):
     self.assertEquals(cl.GetDescription(), 'y')
 
   def test_description_footers(self):
-    cl = git_cl.Changelist(issue=1, codereview='gerrit',
-                           codereview_host='host')
+    cl = git_cl.Changelist(issue=1, codereview_host='host')
     cl.description = '\n'.join([
       'This is some message',
       '',
@@ -472,7 +470,7 @@ class TestGitClBasic(unittest.TestCase):
 
 class TestParseIssueURL(unittest.TestCase):
   def _validate(self, parsed, issue=None, patchset=None, hostname=None,
-                codereview=None, fail=False):
+                fail=False):
     self.assertIsNotNone(parsed)
     if fail:
       self.assertFalse(parsed.valid)
@@ -481,7 +479,6 @@ class TestParseIssueURL(unittest.TestCase):
     self.assertEqual(parsed.issue, issue)
     self.assertEqual(parsed.patchset, patchset)
     self.assertEqual(parsed.hostname, hostname)
-    self.assertEqual(parsed.codereview, codereview)
 
   def _run_and_validate(self, func, url, *args, **kwargs):
     result = func(urlparse.urlparse(url))
@@ -493,7 +490,7 @@ class TestParseIssueURL(unittest.TestCase):
   def test_gerrit(self):
     def test(url, *args, **kwargs):
       self._run_and_validate(git_cl._GerritChangelistImpl.ParseIssueURL, url,
-                             *args, codereview='gerrit', **kwargs)
+                             *args, **kwargs)
 
     test('http://chrome-review.source.com/c/123',
          123, None, 'chrome-review.source.com')
@@ -516,9 +513,7 @@ class TestParseIssueURL(unittest.TestCase):
 
   def test_ParseIssueNumberArgument(self):
     def test(arg, *args, **kwargs):
-      codereview_hint = kwargs.pop('hint', None)
-      self._validate(git_cl.ParseIssueNumberArgument(arg, codereview_hint),
-                     *args, **kwargs)
+      self._validate(git_cl.ParseIssueNumberArgument(arg), *args, **kwargs)
 
     test('123', 123)
     test('', fail=True)
@@ -527,17 +522,12 @@ class TestParseIssueURL(unittest.TestCase):
     test('123a', fail=True)
     test('ssh://chrome-review.source.com/#/c/123/4/', fail=True)
 
-    # Looks like Rietveld and Gerrit, but we should select Gerrit now
-    # w/ or w/o hint.
     test('https://codereview.source.com/123',
-         123, None, 'codereview.source.com', 'gerrit',
-         hint='gerrit')
-    test('https://codereview.source.com/123',
-         123, None, 'codereview.source.com', 'gerrit')
+         123, None, 'codereview.source.com')
 
     # Gerrrit.
     test('https://chrome-review.source.com/c/123/4',
-         123, 4, 'chrome-review.source.com', 'gerrit')
+         123, 4, 'chrome-review.source.com')
     test('https://chrome-review.source.com/bad/123/4', fail=True)
 
 
@@ -807,18 +797,31 @@ class TestGitCl(TestCase):
 
   @classmethod
   def _gerrit_ensure_auth_calls(
-      cls, issue=None, skip_auth_check=False, short_hostname='chromium'):
+      cls, issue=None, skip_auth_check=False, short_hostname='chromium',
+      custom_cl_base=None):
     cmd = ['git', 'config', '--bool', 'gerrit.skip-ensure-authenticated']
     if skip_auth_check:
       return [((cmd, ), 'true')]
 
     calls = [((cmd, ), CERR1)]
+
+    if custom_cl_base:
+      calls += [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ]
+
     calls.extend([
         ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
         ((['git', 'config', 'remote.origin.url'],),
          'https://%s.googlesource.com/my/repo' % short_hostname),
     ])
+
+    calls += [
+      ((['git', 'config', 'branch.master.gerritissue'],),
+        CERR1 if issue is None else str(issue)),
+    ]
+
     if issue:
       calls.extend([
           ((['git', 'config', 'branch.master.gerritserver'],), CERR1),
@@ -830,11 +833,10 @@ class TestGitCl(TestCase):
                          fetched_status=None, other_cl_owner=None,
                          custom_cl_base=None, short_hostname='chromium'):
     calls = cls._is_gerrit_calls(True)
-    calls += [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', 'branch.master.gerritissue'],),
-        CERR1 if issue is None else str(issue)),
-    ]
+    if not custom_cl_base:
+      calls += [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ]
 
     if custom_cl_base:
       ancestor_revision = custom_cl_base
@@ -850,7 +852,8 @@ class TestGitCl(TestCase):
 
     # Calls to verify branch point is ancestor
     calls += cls._gerrit_ensure_auth_calls(
-        issue=issue, short_hostname=short_hostname)
+        issue=issue, short_hostname=short_hostname,
+        custom_cl_base=custom_cl_base)
 
     if issue:
       calls += [
@@ -1763,7 +1766,6 @@ class TestGitCl(TestCase):
       # These calls detect codereview to use.
       self.calls += [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
       ]
     if detect_gerrit_server:
       self.calls += self._get_gerrit_codereview_server_calls(
@@ -1914,7 +1916,6 @@ class TestGitCl(TestCase):
 
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
       ((['git', 'config', 'branch.master.gerritserver'],), CERR1),
       ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
@@ -1963,10 +1964,9 @@ class TestGitCl(TestCase):
     self.mock(git_cl, 'DieWithError',
               lambda msg, change=None: self._mocked_call(['DieWithError', msg]))
     self.calls = self._gerrit_ensure_auth_calls(skip_auth_check=skip_auth_check)
-    cl = git_cl.Changelist(codereview='gerrit')
+    cl = git_cl.Changelist()
     cl.branch = 'master'
     cl.branchref = 'refs/heads/master'
-    cl.lookedup_issue = True
     return cl
 
   def test_gerrit_ensure_authenticated_missing(self):
@@ -2031,7 +2031,7 @@ class TestGitCl(TestCase):
     ]
     self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
               CookiesAuthenticatorMockFactory(hosts_with_creds={}))
-    cl = git_cl.Changelist(codereview='gerrit')
+    cl = git_cl.Changelist()
     cl.branch = 'master'
     cl.branchref = 'refs/heads/master'
     cl.lookedup_issue = True
@@ -2086,7 +2086,7 @@ class TestGitCl(TestCase):
       self.assertEqual(git_cl.main(['status', '--issue', '1']), 0)
     except SystemExit as ex:
       self.assertEqual(ex.code, 2)
-      self.assertRegexpMatches(out.getvalue(), r'--issue must be specified')
+      self.assertRegexpMatches(out.getvalue(), r'--field must be specified')
 
     out = StringIO.StringIO()
     self.mock(git_cl.sys, 'stderr', out)
@@ -2205,13 +2205,10 @@ class TestGitCl(TestCase):
 
     self.calls = [
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
-         'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
-      ((['git', 'config', 'branch.master.gerritissue'],), '456'),
-      ((['git', 'config', 'branch.foo.gerritissue'],), CERR1),
-      ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
+       'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'tag', 'git-cl-archived-456-foo', 'foo'],), ''),
-      ((['git', 'branch', '-D', 'foo'],), ''),
+      ((['git', 'branch', '-D', 'foo'],), '')
     ]
 
     self.mock(git_cl, 'get_cl_statuses',
@@ -2227,7 +2224,6 @@ class TestGitCl(TestCase):
     self.calls = [
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
          'refs/heads/master'),
-      ((['git', 'config', 'branch.master.gerritissue'],), '1'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
     ]
 
@@ -2243,9 +2239,6 @@ class TestGitCl(TestCase):
     self.calls = [
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
          'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
-      ((['git', 'config', 'branch.master.gerritissue'],), '456'),
-      ((['git', 'config', 'branch.foo.gerritissue'],), CERR1),
-      ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master')
     ]
 
@@ -2263,9 +2256,6 @@ class TestGitCl(TestCase):
     self.calls = [
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
          'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
-      ((['git', 'config', 'branch.master.gerritissue'],), '1'),
-      ((['git', 'config', 'branch.foo.gerritissue'],), '456'),
-      ((['git', 'config', 'branch.bar.gerritissue'],), CERR1),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'branch', '-D', 'foo'],), '')
     ]
@@ -2283,7 +2273,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl.sys, 'stdout', out)
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
         # Let this command raise exception (retcode=1) - it should be ignored.
         ((['git', 'config', '--unset', 'branch.feature.last-upload-hash'],),
          CERR1),
@@ -2303,7 +2292,6 @@ class TestGitCl(TestCase):
               lambda _: 'This is a description\n\nChange-Id: Ideadbeef')
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
         # Let this command raise exception (retcode=1) - it should be ignored.
         ((['git', 'config', '--unset', 'branch.feature.last-upload-hash'],),
          CERR1),
@@ -2484,7 +2472,7 @@ class TestGitCl(TestCase):
         ((['git', 'rev-parse', '--show-cdup'],), '../'),
         ((['abspath', '../'],), '/abs/git_repo_root'),
     ]
-    return git_cl.Changelist(codereview='gerrit', issue=123)
+    return git_cl.Changelist(issue=123)
 
   def test_GerritCommitMsgHookCheck_custom_hook(self):
     cl = self._common_GerritCommitMsgHookCheck()
@@ -2523,7 +2511,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.feature.gerritserver'],),
        'chromium-review.googlesource.com'),
     ]
-    cl = git_cl.Changelist(issue=123, codereview='gerrit')
+    cl = git_cl.Changelist(issue=123)
     cl._codereview_impl._GetChangeDetail = lambda _: {
       'labels': {},
       'current_revision': 'deadbeaf',
@@ -2690,10 +2678,10 @@ class TestGitCl(TestCase):
         (('GetChangeDetail', 'host', 'ab%2Frepo~2', []), 'b'),
         (('GetChangeDetail', 'host', 'ab%2Frepo~2', []), 'b2'),
     ]
-    cl1 = git_cl.Changelist(issue=1, codereview='gerrit')
+    cl1 = git_cl.Changelist(issue=1)
     cl1._cached_remote_url = (
         True, 'https://chromium.googlesource.com/a/my/repo.git/')
-    cl2 = git_cl.Changelist(issue=2, codereview='gerrit')
+    cl2 = git_cl.Changelist(issue=2)
     cl2._cached_remote_url = (
         True, 'https://chromium.googlesource.com/ab/repo')
     self.assertEqual(cl1._GetChangeDetail(), 'a')  # Miss.
@@ -2712,7 +2700,7 @@ class TestGitCl(TestCase):
         # no longer in cache.
         (('GetChangeDetail', 'host', 'repo~1', ['B']), 'b'),
     ]
-    cl = git_cl.Changelist(issue=1, codereview='gerrit')
+    cl = git_cl.Changelist(issue=1)
     cl._cached_remote_url = (True, 'https://chromium.googlesource.com/repo/')
     self.assertEqual(cl._GetChangeDetail(options=['C', 'A', 'B']), 'cab')
     self.assertEqual(cl._GetChangeDetail(options=['A', 'B', 'C']), 'cab')
@@ -2746,7 +2734,7 @@ class TestGitCl(TestCase):
     ]
 
     self._mock_gerrit_changes_for_detail_cache()
-    cl = git_cl.Changelist(issue=1, codereview='gerrit')
+    cl = git_cl.Changelist(issue=1)
     cl._cached_remote_url = (
         True, 'https://chromium.googlesource.com/a/my/repo.git/')
     self.assertEqual(cl.GetDescription(), 'desc1')
@@ -3002,7 +2990,7 @@ class TestGitCl(TestCase):
         disapproval=False, approval=False, sender=u'reviewer@example.com'),
     ]
     cl = git_cl.Changelist(
-        codereview='gerrit', issue=1, branchref='refs/heads/foo')
+        issue=1, branchref='refs/heads/foo')
     self.assertEqual(cl.GetCommentsSummary(), expected_comments_summary)
     self.mock(git_cl.Changelist, 'GetBranch', lambda _: 'foo')
     self.assertEqual(
@@ -3117,7 +3105,7 @@ class TestGitCl(TestCase):
          autogenerated=True, approval=False, disapproval=False)
     ]
     cl = git_cl.Changelist(
-        codereview='gerrit', issue=1, branchref='refs/heads/foo')
+        issue=1, branchref='refs/heads/foo')
     self.assertEqual(cl.GetCommentsSummary(), expected_comments_summary)
 
   def test_get_remote_url_with_mirror(self):
@@ -3143,7 +3131,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'remote.origin.url'],),
        url),
     ]
-    cl = git_cl.Changelist(codereview='gerrit', issue=1)
+    cl = git_cl.Changelist(issue=1)
     self.assertEqual(cl.GetRemoteUrl(), url)
     self.assertEqual(cl.GetRemoteUrl(), url)  # Must be cached.
 
@@ -3171,7 +3159,7 @@ class TestGitCl(TestCase):
         'Remote "origin" for branch "/cache/this-dir-doesnt-exist" points to'
         ' "master", but it doesn\'t exist.'), None),
     ]
-    cl = git_cl.Changelist(codereview='gerrit', issue=1)
+    cl = git_cl.Changelist(issue=1)
     self.assertIsNone(cl.GetRemoteUrl())
 
   def test_get_remote_url_misconfigured_mirror(self):
@@ -3205,7 +3193,7 @@ class TestGitCl(TestCase):
               'branch': 'master'}
         ), None),
     ]
-    cl = git_cl.Changelist(codereview='gerrit', issue=1)
+    cl = git_cl.Changelist(issue=1)
     self.assertIsNone(cl.GetRemoteUrl())
 
   def test_gerrit_change_identifier_with_project(self):
@@ -3216,7 +3204,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'remote.origin.url'],),
        'https://chromium.googlesource.com/a/my/repo.git/'),
     ]
-    cl = git_cl.Changelist(codereview='gerrit', issue=123456)
+    cl = git_cl.Changelist(issue=123456)
     self.assertEqual(cl._GerritChangeIdentifier(), 'my%2Frepo~123456')
 
   def test_gerrit_change_identifier_without_project(self):
@@ -3226,7 +3214,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
       ((['git', 'config', 'remote.origin.url'],), CERR1),
     ]
-    cl = git_cl.Changelist(codereview='gerrit', issue=123456)
+    cl = git_cl.Changelist(issue=123456)
     self.assertEqual(cl._GerritChangeIdentifier(), '123456')
 
 
