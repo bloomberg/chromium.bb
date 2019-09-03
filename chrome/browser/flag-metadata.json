@@ -1461,7 +1461,7 @@
   {
     "name": "enable-ntp-remote-suggestions",
     "owners": [ "fgorski" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-offer-store-unmasked-wallet-cards",
