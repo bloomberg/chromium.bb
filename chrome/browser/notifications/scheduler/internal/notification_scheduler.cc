@@ -121,8 +121,15 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   void Schedule(
       std::unique_ptr<NotificationParams> notification_params) override {
     context_->notification_manager()->ScheduleNotification(
-        std::move(notification_params));
-    ScheduleBackgroundTask();
+        std::move(notification_params),
+        base::BindOnce(&NotificationSchedulerImpl::OnNotificationScheduled,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void OnNotificationScheduled(bool success) {
+    if (success) {
+      ScheduleBackgroundTask();
+    }
   }
 
   void DeleteAllNotifications(SchedulerClientType type) override {

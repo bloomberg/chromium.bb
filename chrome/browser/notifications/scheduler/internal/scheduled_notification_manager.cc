@@ -93,7 +93,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   }
 
   void ScheduleNotification(
-      std::unique_ptr<NotificationParams> notification_params) override {
+      std::unique_ptr<NotificationParams> notification_params,
+      ScheduleCallback callback) override {
     DCHECK(notification_params);
     std::string guid = notification_params->guid;
     DCHECK(!guid.empty());
@@ -123,7 +124,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     icon_store_->AddIcons(
         std::move(icon_bundles),
         base::BindOnce(&ScheduledNotificationManagerImpl::OnIconsAdded,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(entry)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(entry),
+                       std::move(callback)));
   }
 
   void DisplayNotification(const std::string& guid) override {
@@ -252,42 +254,45 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
-  void OnNotificationAdded(SchedulerClientType type,
-                           std::string guid,
-                           bool success) {
-    stats::LogNotificationDbOperation(success);
-    auto* entry = FindNotificationEntry(type, guid);
-    if (!entry)
-      return;
-    // TODO(hesen): More Error handling.
-    if (!success) {
-      notifications_[type].erase(guid);
-      if (notifications_[type].empty())
-        notifications_.erase(type);
-      return;
-    }
-  }
-
   void OnIconsAdded(std::unique_ptr<NotificationEntry> entry,
+                    ScheduleCallback schedule_callback,
                     IconStore::IconTypeUuidMap icons_uuid_map,
                     bool success) {
-    if (!success)
+    if (!success) {
       // TODO(hesen): Log icon stats.
+      std::move(schedule_callback).Run(false);
       return;
+    }
 
     entry->icons_uuid = std::move(icons_uuid_map);
-    SaveNotificationEntry(std::move(entry));
+    const auto* entry_ptr = entry.get();
+    notification_store_->Add(
+        entry_ptr->guid, *entry_ptr,
+        base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationAdded,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(entry),
+                       std::move(schedule_callback)));
   }
 
-  void SaveNotificationEntry(std::unique_ptr<NotificationEntry> entry) {
+  void OnNotificationAdded(std::unique_ptr<NotificationEntry> entry,
+                           ScheduleCallback schedule_callback,
+                           bool success) {
+    stats::LogNotificationDbOperation(success);
+
+    // Delete the icons when failed to add to notification database.
+    if (!success) {
+      std::vector<std::string> icons_to_delete;
+      for (const auto& uuid : entry->icons_uuid) {
+        icons_to_delete.emplace_back(uuid.second);
+      }
+      icon_store_->DeleteIcons(std::move(icons_to_delete), base::DoNothing());
+      std::move(schedule_callback).Run(false);
+      return;
+    }
+
     auto type = entry->type;
     auto guid = entry->guid;
-    auto* entry_ptr = entry.get();
     notifications_[type][guid] = std::move(entry);
-    notification_store_->Add(
-        guid, *entry_ptr,
-        base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationAdded,
-                       weak_ptr_factory_.GetWeakPtr(), type, guid));
+    std::move(schedule_callback).Run(true);
   }
 
   void OnNotificationDeleted(bool success) {
