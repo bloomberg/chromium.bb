@@ -1178,11 +1178,7 @@
   },
 
   "ExtensionAllowInsecureUpdates": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "ExtensionAllowInsecureUpdates": true },
-    "pref_mappings": [
-      { "pref": "extension_updates.insecure_extension_updates_enabled" }
-    ]
+    "note": "Deprecated since Chrome 78."
   },
 
   "ExtensionInstallBlacklist": {
