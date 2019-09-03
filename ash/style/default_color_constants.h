@@ -35,4 +35,12 @@ constexpr SkColor kToastBackgroundColor =
     SkColorSetA(SK_ColorBLACK, 0xCC);  // 80%
 constexpr SkColor kToastLabelColor = SK_ColorWHITE;
 
+// colors for power button menu.
+constexpr SkColor kPowerButtonMenuItemIconColor = gfx::kGoogleGrey900;
+constexpr SkColor kPowerButtonMenuItemTitleColor = gfx::kGoogleGrey700;
+constexpr SkColor kPowerButtonMenuItemFocusColor =
+    SkColorSetA(gfx::kGoogleBlue600, 0x66);  // 40%
+constexpr SkColor kPowerButtonMenuBackgroundColor = SK_ColorWHITE;
+constexpr SkColor kPowerButtonMenuFullscreenShieldColor = SK_ColorBLACK;
+
 #endif  // ASH_STYLE_DEFAULT_COLOR_CONSTANTS_H_
