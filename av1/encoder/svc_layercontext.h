@@ -54,7 +54,7 @@ typedef struct SVC {
   int refresh[REF_FRAMES];
   double base_framerate;
   unsigned int current_superframe;
-  unsigned char buffer_time_index[REF_FRAMES];
+  unsigned int buffer_time_index[REF_FRAMES];
   unsigned char buffer_spatial_layer[REF_FRAMES];
   int skip_nonzeromv_last;
   int skip_nonzeromv_gf;
