@@ -422,8 +422,6 @@ jumbo_source_set("browser") {
     "appcache/appcache_update_url_loader_request.h",
     "appcache/appcache_url_loader_job.cc",
     "appcache/appcache_url_loader_job.h",
-    "appcache/appcache_url_loader_request.cc",
-    "appcache/appcache_url_loader_request.h",
     "appcache/appcache_working_set.cc",
     "appcache/appcache_working_set.h",
     "appcache/chrome_appcache_service.cc",
