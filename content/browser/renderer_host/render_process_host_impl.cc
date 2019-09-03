@@ -2156,7 +2156,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
           base::Unretained(this)));
 
   registry->AddInterface(
-      base::BindRepeating(&BlobRegistryWrapper::BindForRequest,
+      base::BindRepeating(&BlobRegistryWrapper::Bind,
                           storage_partition_impl_->GetBlobRegistry(), GetID()));
 
 #if BUILDFLAG(ENABLE_PLUGINS)

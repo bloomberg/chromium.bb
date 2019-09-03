@@ -170,17 +170,6 @@ void NativeFileSystemManagerImpl::BindReceiverFromUIThread(
                                 std::move(receiver)));
 }
 
-// static
-void NativeFileSystemManagerImpl::BindRequestFromUIThread(
-    StoragePartitionImpl* storage_partition,
-    const BindingContext& binding_context,
-    blink::mojom::NativeFileSystemManagerRequest request) {
-  // Implicit conversion |request| to
-  // mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>.
-  BindReceiverFromUIThread(storage_partition, binding_context,
-                           std::move(request));
-}
-
 void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
     GetSandboxedFileSystemCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

@@ -88,15 +88,6 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const BindingContext& binding_context,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);
 
-  // TODO(https://crbug.com/955171): Remove this method and use
-  // BindReceiverFromUIThread once RendererInterfaceBinders and
-  // RenderFrameHostImpl use service_manager::BinderMap instead of
-  // service_manager::BinderRegistry.
-  static void BindRequestFromUIThread(
-      StoragePartitionImpl* storage_partition,
-      const BindingContext& binding_context,
-      blink::mojom::NativeFileSystemManagerRequest request);
-
   // blink::mojom::NativeFileSystemManager:
   void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
   void ChooseEntries(
