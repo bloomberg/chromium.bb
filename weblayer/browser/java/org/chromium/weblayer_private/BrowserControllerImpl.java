@@ -18,9 +18,13 @@ import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
+import org.chromium.weblayer_private.aidl.IBrowserController;
+import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
+import org.chromium.weblayer_private.aidl.IObjectWrapper;
+import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 @JNINamespace("weblayer")
-public final class BrowserControllerImpl {
+public final class BrowserControllerImpl extends IBrowserController.Stub {
     private long mNativeBrowserController;
 
     private ActivityWindowAndroid mWindowAndroid;
@@ -54,8 +58,7 @@ public final class BrowserControllerImpl {
         public void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix) {}
     }
 
-    public BrowserControllerImpl(
-            Activity activity, ProfileImpl profile, BrowserControllerClient client) {
+    public BrowserControllerImpl(Activity activity, ProfileImpl profile) {
         mProfile = profile;
 
         mLinearLayout = new LinearLayout(activity);
@@ -79,16 +82,23 @@ public final class BrowserControllerImpl {
                 new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1f));
         mWebContents.onShow();
+    }
+
+    @Override
+    public void setClient(IBrowserControllerClient client) {
         mBrowserObserverProxy = new BrowserObserverProxy(mNativeBrowserController, client);
     }
 
+    @Override
     public void destroy() {
-        mBrowserObserverProxy.destroy();
+        if (mBrowserObserverProxy != null) mBrowserObserverProxy.destroy();
         nativeDeleteBrowserController(mNativeBrowserController);
         mNativeBrowserController = 0;
     }
 
-    public void setTopView(View view) {
+    @Override
+    public void setTopView(IObjectWrapper viewWrapper) {
+        View view = ObjectWrapper.unwrap(viewWrapper, View.class);
         if (mTopView == view) return;
         if (mTopView != null) mLinearLayout.removeView(mTopView);
         mTopView = view;
@@ -100,6 +110,7 @@ public final class BrowserControllerImpl {
     }
 
     // TODO: this is temporary, move to NavigationControllerImpl.
+    @Override
     public void navigate(String uri) {
         mWebContents.getNavigationController().loadUrl(new LoadUrlParams(uri));
     }

@@ -28,7 +28,6 @@ import java.io.File;
 public class WebLayerShellActivity extends Activity {
     private static final String TAG = "WebLayerShell";
 
-    private WebLayer mWebLayer;
     private Profile mProfile;
     private BrowserController mBrowserController;
     private EditText mUrlView;
@@ -60,7 +59,7 @@ public class WebLayerShellActivity extends Activity {
         });
 
         mProfile = WebLayer.getInstance().createProfile(new File(""));
-        mBrowserController = new BrowserController(this, mProfile);
+        mBrowserController = mProfile.createBrowserController(this);
         mBrowserController.setTopView(mUrlView);
         loadUrl("http://google.com");
         mBrowserController.addObserver(new BrowserObserver() {
@@ -69,6 +68,13 @@ public class WebLayerShellActivity extends Activity {
                 mUrlView.setText(uri.toString());
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mProfile != null) mProfile.destroy();
+        if (mBrowserController != null) mBrowserController.destroy();
+        super.onDestroy();
     }
 
     @Override
