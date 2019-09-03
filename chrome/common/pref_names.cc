@@ -994,6 +994,10 @@ const char kLastRsuDeviceIdUploaded[] = "rsu.last_rsu_device_id_uploaded";
 // Boolean that determines whether to show a banner in OS Settings that links
 // to Browser settings.
 const char kSettingsShowBrowserBanner[] = "settings.cros.show_browser_banner";
+
+// Boolean user profile pref that determines whether to show a banner in browser
+// settings that links to OS settings.
+const char kSettingsShowOSBanner[] = "settings.cros.show_os_banner";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

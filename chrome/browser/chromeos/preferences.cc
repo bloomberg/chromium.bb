@@ -583,6 +583,7 @@ void Preferences::RegisterProfilePrefs(
                                 false);
 
   registry->RegisterBooleanPref(prefs::kSettingsShowBrowserBanner, true);
+  registry->RegisterBooleanPref(prefs::kSettingsShowOSBanner, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
