@@ -54446,6 +54446,18 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="SharingClickToCallEntryPoint">
+  <int value="0" label="Left click on a phone link"/>
+  <int value="1" label="Right click on a phone link"/>
+  <int value="2" label="Right click on a phone number selection"/>
+</enum>
+
+<enum name="SharingClickToCallSelection">
+  <int value="0" label="None"/>
+  <int value="1" label="Device"/>
+  <int value="2" label="App"/>
+</enum>
+
 <enum name="SharingDeviceRegistrationResult">
   <int value="0" label="Operation is successful"/>
   <int value="1" label="Failed with Sync not ready"/>

@@ -7165,6 +7165,39 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Sharing.ClickToCall">
+  <owner>knollr@chromium.org</owner>
+  <summary>
+    Collected when a user finishes a Click to Call journey.
+  </summary>
+  <metric name="EntryPoint" enum="SharingClickToCallEntryPoint">
+    <summary>
+      Specifies the entry point of the user journey (i.e. left click, right
+      click, text selection).
+    </summary>
+  </metric>
+  <metric name="HasApps" enum="Boolean">
+    <summary>
+      Boolean value indicating whether any (&gt;0) apps are available that the
+      call could be sent to.
+    </summary>
+  </metric>
+  <metric name="HasDevices" enum="Boolean">
+    <summary>
+      Boolean value indicating whether any (&gt;0) devices are available that
+      the call could be sent to. These belong to the same account and are
+      running Android.
+    </summary>
+  </metric>
+  <metric name="Selection" enum="SharingClickToCallSelection">
+    <summary>
+      Whether the user selected a device, an app or nothing (i.e. dismissal) in
+      the user interface. For some entry points this might always be the same
+      value (e.g. right clicks always select devices).
+    </summary>
+  </metric>
+</event>
+
 <event name="SiteIsolation.XSD.Browser.Blocked">
   <obsolete>
     Removed in June 2019 / M77. Some old data has been saved in a
