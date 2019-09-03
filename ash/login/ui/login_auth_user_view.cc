@@ -474,10 +474,9 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
     arrow_button_->SetBackgroundColor(kChallengeResponseArrowBackgroundColor);
     arrow_button_->SetFocusPainter(nullptr);
 
-    auto* arrow_to_icon_spacer =
-        AddChildView(std::make_unique<NonAccessibleView>());
-    arrow_to_icon_spacer->SetPreferredSize(
-        gfx::Size(0, kSpacingBetweenChallengeResponseArrowAndIconDp));
+    arrow_to_icon_spacer_ = AddChildView(std::make_unique<NonAccessibleView>());
+    arrow_to_icon_spacer_->SetPreferredSize(
+        gfx::Size(0, GetArrowToIconSpacerHeight()));
 
     icon_ = AddChildView(std::make_unique<views::ImageView>());
     icon_->SetImage(GetImageForIcon());
@@ -522,7 +521,9 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
                               base::Unretained(this), State::kInitial));
     }
 
-    arrow_button_->SetEnabled(state_ != State::kAuthenticating);
+    arrow_button_->SetVisible(state_ != State::kAuthenticating);
+    arrow_to_icon_spacer_->SetPreferredSize(
+        gfx::Size(0, GetArrowToIconSpacerHeight()));
     icon_->SetImage(GetImageForIcon());
     label_->SetText(GetTextForLabel());
 
@@ -530,6 +531,15 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
   }
 
  private:
+  int GetArrowToIconSpacerHeight() const {
+    int spacer_height = kSpacingBetweenChallengeResponseArrowAndIconDp;
+    // During authentication, the arrow button is hidden, so the spacer should
+    // consume this space to avoid moving controls below it.
+    if (state_ == State::kAuthenticating)
+      spacer_height += kChallengeResponseArrowSizeDp;
+    return spacer_height;
+  }
+
   gfx::ImageSkia GetImageForIcon() const {
     switch (state_) {
       case State::kInitial:
@@ -559,6 +569,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
   base::RepeatingClosure on_start_tap_;
   State state_ = State::kInitial;
   ArrowButtonView* arrow_button_ = nullptr;
+  NonAccessibleView* arrow_to_icon_spacer_ = nullptr;
   views::ImageView* icon_ = nullptr;
   views::Label* label_ = nullptr;
   base::OneShotTimer reset_state_timer_;
