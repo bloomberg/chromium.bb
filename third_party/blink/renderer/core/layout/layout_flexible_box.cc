@@ -1644,6 +1644,8 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
     // https://webkit.org/b/87905.
     bool child_needs_relayout =
         flex_item.cross_axis_size != child.LogicalHeight();
+    child.SetOverrideLogicalHeight(flex_item.cross_axis_size);
+
     auto* child_block = DynamicTo<LayoutBlock>(child);
     if (child_block && child_block->HasPercentHeightDescendants() &&
         !CanAvoidLayoutForNGChild(child)) {
@@ -1651,10 +1653,8 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
       // correctly, because its descendants are not sized correctly yet. Our
       // previous layout of the child was done without an override height set.
       // So, redo it here.
-      child_needs_relayout = relaid_out_children_.Contains(&child);
+      child_needs_relayout |= relaid_out_children_.Contains(&child);
     }
-    if (child_needs_relayout || !child.HasOverrideLogicalHeight())
-      child.SetOverrideLogicalHeight(flex_item.cross_axis_size);
     if (child_needs_relayout)
       child.ForceLayout();
   } else if (!flex_item.MainAxisIsInlineAxis() &&
