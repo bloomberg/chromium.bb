@@ -9,18 +9,19 @@
 <dom-module id="app-management-chrome-app-permission-view">
   <template>
     <style include="app-management-shared-css">
-
-      .permission-text-row:first-of-type {
-        border-top: none;
+      ul {
+        list-style: disc inside;
+        margin: 0;
+        margin-inline-start: 24px;
+        padding: 0;
       }
 
       #app-description {
-        padding-bottom: 12px;
-        padding-top: 24px;
+        padding: 24px;
       }
 
       #no-permissions {
-        border-top: none;
+        padding-inline-start: 24px;
       }
 
       #pin-to-shelf-setting {
@@ -28,8 +29,10 @@
       }
 
     </style>
-    <div>
-      <div id="app-description" class="permission-card-row">
+    <app-management-permission-view-header>
+    </app-management-permission-view-header>
+    <div class="card-container">
+      <div id="app-description" class="permission-card-row secondary-text">
         [[app_.description]]
       </div>
       <div class="permission-list">
@@ -40,36 +43,29 @@
         </app-management-pin-to-shelf-item>
 
         <div id="permissions-card" class="permission-card-row">
-          <div class="permission-section-header">
-            <div class="header-text">$i18n{permissions}</div>
-          </div>
-          <template is="dom-if" if="[[!hasPermissions_(messages_)]]">
-            <div id="no-permissions" class="indented-permission-block">
-              <div class="permission-text-row">
+          <div class="subpermission-list">
+            <div class="subpermission-row separated-row">
+              <div class="header-text">$i18n{thisAppCan}</div>
+            </div>
+            <template is="dom-if" if="[[!hasPermissions_(messages_)]]">
+              <div id="no-permissions">
                 $i18n{appNoPermission}
               </div>
-            </div>
-          </template>
-          <div id="top-level-permissions" class="indented-permission-block">
-            <template is="dom-repeat"
-              items="[[getPermissionMessages_(messages_)]]" as="message">
-              <div class="permission-text-row">
-                [[message]]
-              </div>
-              <div id="second-level-permissions"
-                  class="indented-permission-block">
-                <template is="dom-repeat"
+            </template>
+            <ul>
+              <template is="dom-repeat"
+                items="[[getPermissionMessages_(messages_)]]" as="message">
+                <li>[[message]]</li>
+                <ul>
+                  <template is="dom-repeat"
                     items="[[getPermissionSubmessagesByMessage_(index, messages_)]]"
                     as="submessage">
-                  <div class="permission-text-row">
-                    [[submessage]]
-                  </div>
-                </template>
-              </div>
-            </template>
-          </div>
-        </div>
-        <!-- TODO(crbug.com/906508): For apps which are hosted apps but not
+                    <li>[[submessage]]</li>
+                  </template>
+                </ul>
+              </template>
+            </ul>
+            <!-- TODO(crbug.com/906508): For apps which are hosted apps but not
             bookmark apps, this button will actually open the site settings page
             corresponding to the app, since hosted apps are not listed in
             chrome://extensions.
@@ -77,18 +73,19 @@
             replaced, but in the mean time it might be necessary to change the
             text of the button depending on whether or not it is a hosted
             app. -->
-            <!-- TODO:(crbug.com/958269) Change behaviour of "more settings"
-              based on the app. -->
-        <div id="more-settings"
-          class="permission-card-row separated-row header-text clickable"
-          on-click="onClickExtensionsSettingsButton_">
-          <div class="header-text">$i18n{moreSettings}</div>
-          <div class="permission-row-controls">
+          <!-- TODO:(crbug.com/958269) Change behaviour of "more settings"
+            based on the app. -->
+          <div id="more-settings"
+            class="subpermission-row separated-row clickable"
+            on-click="onClickExtensionsSettingsButton_"
+            hidden$="[[app_.hideMoreSettings]]">
+            <div class="header-text">$i18n{moreSettings}</div>
             <cr-icon-button class="native-settings-icon icon-external"
               tabindex="0">
             </cr-icon-button>
           </div>
         </div>
+      </div>
     </div>
   </template>
   <script src="chrome_app_permission_view.js"></script>

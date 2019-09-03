@@ -20,7 +20,7 @@ GEN('#else');
 GEN('#define MAYBE_AllJsTests AllJsTests');
 GEN('#endif');
 
-// Generic test fixture for CrOS Polymer Settings elements to be overridden by
+// Generic text fixture for CrOS Polymer Settings elements to be overridden by
 // individual element tests.
 const OSSettingsBrowserTest = class extends PolymerTest {
   /** @override */
@@ -143,19 +143,12 @@ TEST_F('OSSettingsAndroidAppsPageTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
-// Generic test fixture for CrOS Polymer App Management elements to be
-// overridden by individual element tests.
-const OSSettingsAppManagementBrowserTest = class extends OSSettingsBrowserTest {
+// Test fixture for the app management settings page.
+// eslint-disable-next-line no-var
+var OSSettingsAppManagementPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'os_apps_page.html';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(['features::kAppManagement'])
-    };
+    return super.browsePreload + 'app_management/app_management_page.html';
   }
 
   /** @override */
@@ -165,7 +158,13 @@ const OSSettingsAppManagementBrowserTest = class extends OSSettingsBrowserTest {
       BROWSER_SETTINGS_PATH + '../test_store.js',
       'app_management/test_util.js',
       'app_management/test_store.js',
+      'app_management/app_management_page_tests.js',
     ]);
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['features::kAppManagement']};
   }
 
   /** @override */
@@ -174,104 +173,7 @@ const OSSettingsAppManagementBrowserTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Test fixture for the app management settings page.
-// eslint-disable-next-line no-var
-var OSSettingsAppManagementPageTest =
-    class extends OSSettingsAppManagementBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return super.browsePreload + 'app_management/app_management_page.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'app_management/app_management_page_tests.js',
-    ]);
-  }
-};
-
 TEST_F('OSSettingsAppManagementPageTest', 'AllJsTests', () => {
-  mocha.run();
-});
-
-// Test fixture for the app management pwa permission view element.
-// eslint-disable-next-line no-var
-var OSSettingsAppManagementPwaPermissionViewTest =
-    class extends OSSettingsAppManagementBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return super.browsePreload + 'app_management/pwa_permission_view.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'app_management/pwa_permission_view_test.js',
-    ]);
-  }
-};
-
-TEST_F('OSSettingsAppManagementPwaPermissionViewTest', 'AllJsTests', () => {
-  mocha.run();
-});
-
-// Test fixture for the app management arc permission view element.
-// eslint-disable-next-line no-var
-var OSSettingsAppManagementArcPermissionViewTest =
-    class extends OSSettingsAppManagementBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return super.browsePreload + 'app_management/arc_permission_view.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'app_management/arc_permission_view_test.js',
-    ]);
-  }
-};
-
-TEST_F('OSSettingsAppManagementArcPermissionViewTest', 'AllJsTests', () => {
-  mocha.run();
-});
-
-// Test fixture for the app management managed app view.
-// eslint-disable-next-line no-var
-var OSSettingsAppManagementManagedAppTest =
-    class extends OSSettingsAppManagementBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return super.browsePreload + 'app_management/pwa_permission_view.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'app_management/managed_apps_test.js',
-    ]);
-  }
-};
-
-TEST_F('OSSettingsAppManagementManagedAppTest', 'AllJsTests', () => {
-  mocha.run();
-});
-
-
-// Test fixture for the app management reducers.
-// eslint-disable-next-line no-var
-var OSSettingsAppManagementReducersTest =
-    class extends OSSettingsAppManagementBrowserTest {
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'app_management/reducers_test.js',
-    ]);
-  }
-};
-
-TEST_F('OSSettingsAppManagementReducersTest', 'AllJsTests', () => {
   mocha.run();
 });
 

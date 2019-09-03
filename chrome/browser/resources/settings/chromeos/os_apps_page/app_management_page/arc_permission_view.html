@@ -2,7 +2,9 @@
 
 <link rel="import" href="browser_proxy.html">
 <link rel="import" href="icons.html">
+<link rel="import" href="metadata_view.html">
 <link rel="import" href="permission_item.html">
+<link rel="import" href="permission_view_header.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
 <link rel="import" href="pin_to_shelf_item.html">
@@ -14,7 +16,10 @@
     <style include="app-management-shared-css">
     </style>
 
-    <div class="permission-list">
+    <app-management-permission-view-header>
+    </app-management-permission-view-header>
+
+    <div class="permission-list card-container">
       <app-management-pin-to-shelf-item
         id="pin-to-shelf-setting"
         class="permission-card-row separated-row header-text"
@@ -28,24 +33,24 @@
       <div id="permissions-card"
         class="permission-card-row"
         hidden$="[[!isArcSupported_]]">
-        <div id="subpermission-expand-row"
-          class="permission-section-header"
-          hidden$="[[!isArcSupported_]]">
-          <div class="header-text">$i18n{permissions}</div>
-        </div>
-        <div class="indented-permission-block">
+        <div class="subpermission-list">
+          <div id="subpermission-expand-row"
+            class="subpermission-row separated-row"
+            hidden$="[[!isArcSupported_]]">
+            <div class="header-text">$i18n{permissions}</div>
+          </div>
           <app-management-permission-item class="subpermission-row"
-            icon="app-management:location"
+            icon="cr:location-on"
             permission-label="$i18n{location}"
             permission-type="LOCATION">
           </app-management-permission-item>
           <app-management-permission-item class="subpermission-row"
-            icon="app-management:camera"
+            icon="cr:videocam"
             permission-label="$i18n{camera}"
             permission-type="CAMERA">
           </app-management-permission-item>
           <app-management-permission-item class="subpermission-row"
-            icon="app-management:microphone"
+            icon="cr:mic"
             permission-label="$i18n{microphone}"
             permission-type="MICROPHONE">
           </app-management-permission-item>
