@@ -2773,6 +2773,8 @@ jumbo_split_static_library("browser") {
       "invalidation/invalidation_service_factory_android.h",
       "lifetime/application_lifetime_android.cc",
       "lifetime/application_lifetime_android.h",
+      "lookalikes/safety_tips/safety_tip_infobar.cc",
+      "lookalikes/safety_tips/safety_tip_infobar.h",
       "lookalikes/safety_tips/safety_tip_infobar_delegate.cc",
       "lookalikes/safety_tips/safety_tip_infobar_delegate.h",
       "media/android/cdm/media_drm_license_manager.cc",

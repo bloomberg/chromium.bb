@@ -2525,6 +2525,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/infobar/PreviewsInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/PreviewsLitePageInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/ReaderModeInfoBar.java",
+    "java/src/org/chromium/chrome/browser/infobar/SafetyTipInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/SearchGeolocationDisclosureInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/SimpleConfirmInfoBarBuilder.java",
