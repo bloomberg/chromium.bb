@@ -1001,6 +1001,8 @@ Document* Document::Create(Document& document) {
   return new_document;
 }
 
+Document::Document() : Document(DocumentInit::Create()) {}
+
 Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)
     : Document(initializer,
