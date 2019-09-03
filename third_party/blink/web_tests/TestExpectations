@@ -6525,3 +6525,5 @@ crbug.com/999473 external/wpt/streams/writable-streams/properties.any.sharedwork
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.serviceworker.html [ Pass Failure ]
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.html [ Pass Failure ]
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.worker.html [ Pass Failure ]
+
+crbug.com/1000051 [ Mac ] virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
