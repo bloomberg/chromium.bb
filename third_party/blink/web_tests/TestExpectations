@@ -6520,3 +6520,14 @@ crbug.com/1000124 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/ove
 
 # Sheriff 2019-09-03
 crbug.com/999799 [ Mac Linux ] external/wpt/html/rendering/dimension-attributes.html [ Pass Timeout ]
+
+# Sheriff 2019-09-04
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/devices-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/elements/event-listeners-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/network/network-condition-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/security/security-origin-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/settings/geolocations-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-filesystem-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-network-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/sources-editor-pane-a11y-test.js [ Pass Failure ]
