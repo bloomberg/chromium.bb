@@ -50,6 +50,7 @@ class AnimationHost;
 namespace blink {
 class ChromeClient;
 class CompositorAnimationTimeline;
+class Document;
 class GraphicsLayer;
 class LayoutBox;
 class LayoutObject;
@@ -469,6 +470,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual void ScrollbarVisibilityChanged() {}
 
   bool HasBeenDisposed() const { return has_been_disposed_; }
+
+  virtual const Document* GetDocument() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
