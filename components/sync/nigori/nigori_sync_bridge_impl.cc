@@ -192,6 +192,8 @@ bool IsValidNigoriSpecifics(const NigoriSpecifics& specifics) {
     DLOG(ERROR) << "Specifics contains empty encryption_keybag.";
     return false;
   }
+  // TODO(mmoskvitin): Revisit this because of IMPLICIT_PASSPHRASE, which also
+  // contradicts a later comment.
   if (!specifics.has_passphrase_type()) {
     DLOG(ERROR) << "Specifics has no passphrase_type.";
     return false;
@@ -227,6 +229,10 @@ bool IsValidNigoriSpecifics(const NigoriSpecifics& specifics) {
                        "enabled encrypt_everything.";
         return false;
       }
+      break;
+    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
+      NOTIMPLEMENTED();
+      return false;
   }
   return true;
 }
@@ -258,6 +264,14 @@ bool IsValidPassphraseTransition(
       // technically it's a valid one and can be implemented in the future.
       return new_passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE;
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
+      return false;
+    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
+      // TODO(crbug.com/984940): The below should be allowed for
+      // CUSTOM_PASSPHRASE and KEYSTORE_PASSPHRASE but it requires carefully
+      // verifying that the client triggering the transition already had access
+      // to the trusted vault passphrase (e.g. the new keybag must be a
+      // superset of the old and the default key must have changed).
+      NOTIMPLEMENTED();
       return false;
   }
   NOTREACHED();
@@ -574,6 +588,7 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
       // OnPassphraseRequired() to prompt for decryption passphrase.
       return;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
+    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       break;
   }
   DCHECK(cryptographer_.is_ready());
@@ -820,7 +835,8 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
           GetKeyDerivationParamsFromSpecifics(specifics);
       FALLTHROUGH;
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
-      UpdateCryptographerFromExplicitPassphraseNigori(encryption_keybag);
+    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
+      UpdateCryptographerFromNonKeystoreNigori(encryption_keybag);
   }
 
   storage_->StoreData(SerializeAsNigoriLocalData());
@@ -882,7 +898,7 @@ NigoriSyncBridgeImpl::UpdateCryptographerFromKeystoreNigori(
   return base::nullopt;
 }
 
-void NigoriSyncBridgeImpl::UpdateCryptographerFromExplicitPassphraseNigori(
+void NigoriSyncBridgeImpl::UpdateCryptographerFromNonKeystoreNigori(
     const sync_pb::EncryptedData& encryption_keybag) {
   // TODO(crbug.com/922900): support the case when client knows passphrase.
   NOTIMPLEMENTED();
@@ -983,6 +999,7 @@ base::Time NigoriSyncBridgeImpl::GetExplicitPassphraseTime() const {
       return base::Time();
     case NigoriSpecifics::UNKNOWN:
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
+    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       return base::Time();
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
       return keystore_migration_time_;
@@ -1002,6 +1019,7 @@ KeyDerivationParams NigoriSyncBridgeImpl::GetKeyDerivationParamsForPendingKeys()
       NOTREACHED();
       return KeyDerivationParams::CreateWithUnsupportedMethod();
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
+    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       return KeyDerivationParams::CreateForPbkdf2();
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
       DCHECK(custom_passphrase_key_derivation_params_);
@@ -1017,6 +1035,9 @@ void NigoriSyncBridgeImpl::MaybeNotifyBootstrapTokenUpdated() const {
       return;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
       // TODO(crbug.com/922900): notify about keystore bootstrap token updates.
+      NOTIMPLEMENTED();
+      return;
+    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       NOTIMPLEMENTED();
       return;
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:

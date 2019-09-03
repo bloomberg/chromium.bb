@@ -58373,6 +58373,7 @@ would be helpful to identify which type is being sent.
   <int value="1" label="KEYSTORE_PASSPHRASE"/>
   <int value="2" label="FROZEN_IMPLICIT_PASSPHRASE"/>
   <int value="3" label="CUSTOM_PASSPHRASE"/>
+  <int value="4" label="TRUSTED_VAULT_PASSPHRASE"/>
 </enum>
 
 <enum name="SyncPositioningScheme">
