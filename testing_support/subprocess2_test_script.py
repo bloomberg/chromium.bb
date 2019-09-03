@@ -48,7 +48,7 @@ do('A')
 do('BB')
 do('CCC')
 if options.read:
-  assert options.return_value is 0
+  assert options.return_value == 0
   try:
     while sys.stdin.read(1):
       options.return_value += 1

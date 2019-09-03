@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -565,8 +565,8 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
     self.assertEqual(['unix'], sorted(obj.enforced_os))
-    self.assertEqual([('unix', 'baz'), ('unix',)],
-                     [dep.target_os for dep in obj.dependencies])
+    self.assertEqual([('unix',), ('unix', 'baz')],
+                     sorted(dep.target_os for dep in obj.dependencies))
     self.assertEqual([('foo', 'svn://example.com/foo'),
                       ('bar', 'svn://example.com/bar')],
                      self._get_processed())

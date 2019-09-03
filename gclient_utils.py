@@ -916,7 +916,7 @@ class ExecutionQueue(object):
     running = self.running
     self.running = []
     for t in running:
-      if t.isAlive():
+      if t.is_alive():
         self.running.append(t)
       else:
         t.join()
