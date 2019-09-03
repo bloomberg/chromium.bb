@@ -1331,8 +1331,7 @@ void URLLoader::NotifyCompleted(int error_code) {
     status.proxy_server = url_request_->proxy_server();
 
     if ((options_ & mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
-        net::IsCertStatusError(url_request_->ssl_info().cert_status) &&
-        !net::IsCertStatusMinorError(url_request_->ssl_info().cert_status)) {
+        net::IsCertStatusError(url_request_->ssl_info().cert_status)) {
       status.ssl_info = url_request_->ssl_info();
     }
 

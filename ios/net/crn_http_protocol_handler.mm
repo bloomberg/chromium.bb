@@ -486,12 +486,9 @@ void HttpProtocolHandlerCore::OnSSLCertificateError(URLRequest* request,
     CancelAfterSSLError();  // High security host do not tolerate any issue.
   } else if (!tracker_) {
     // No tracker, this is a request outside the context of a tab. There is no
-    // way to present anything to the user so only allow trivial errors.
+    // way to present anything to the user so cancel on error.
     // See ssl_cert_error_handler upstream.
-    if (IsCertStatusMinorError(ssl_info.cert_status))
-      ContinueAfterSSLError();
-    else
-      CancelAfterSSLError();
+    CancelAfterSSLError();
   } else {
     // The tracker will decide, eventually asking the user, and will invoke the
     // callback.
