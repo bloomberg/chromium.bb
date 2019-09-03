@@ -345,6 +345,7 @@ void FakeShillManagerClient::ConfigureService(
 
   std::string guid;
   std::string type;
+  std::string name;
   if (!properties.GetString(shill::kGuidProperty, &guid) ||
       !properties.GetString(shill::kTypeProperty, &type)) {
     LOG(ERROR) << "ConfigureService requires GUID and Type to be defined";
@@ -354,6 +355,13 @@ void FakeShillManagerClient::ConfigureService(
         FROM_HERE, base::BindOnce(callback, dbus::ObjectPath()));
     return;
   }
+
+  if (type == shill::kTypeWifi)
+    properties.GetString(shill::kSSIDProperty, &name);
+  if (name.empty())
+    properties.GetString(shill::kNameProperty, &name);
+  if (name.empty())
+    name = guid;
 
   std::string ipconfig_path;
   properties.GetString(shill::kIPConfigProperty, &ipconfig_path);
@@ -368,7 +376,7 @@ void FakeShillManagerClient::ConfigureService(
     // service paths and GUIDs instead of assuming that service path == GUID.
     service_path = "service_path_for_" + guid;
     service_client->AddServiceWithIPConfig(
-        service_path, guid /* guid */, guid /* name */, type, shill::kStateIdle,
+        service_path, guid /* guid */, name /* name */, type, shill::kStateIdle,
         ipconfig_path, true /* visible */);
   }
 
