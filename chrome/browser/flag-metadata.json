@@ -733,7 +733,7 @@
   {
     "name": "download-auto-resumption-native",
     "owners": [ "shaktisahu", "qinmin" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "download-home-v2",
@@ -1425,7 +1425,7 @@
   {
     "name": "enable-new-download-backend",
     "owners": [ "shaktisahu", "dtrainor" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-new-photo-picker",
