@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/rtc_video_encoder_factory.h"
+#include "third_party/blink/public/platform/modules/peerconnection/rtc_video_encoder_factory.h"
 
 #include <memory>
 
-#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "content/public/common/content_switches.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/common/features.h"
@@ -19,7 +17,7 @@
 #include "third_party/webrtc/common_video/h264/profile_level_id.h"
 #include "third_party/webrtc/media/base/codec.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -146,4 +144,4 @@ RTCVideoEncoderFactory::QueryVideoEncoder(
   return info;
 }
 
-}  // namespace content
+}  // namespace blink
