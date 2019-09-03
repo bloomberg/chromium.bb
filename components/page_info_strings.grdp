@@ -33,12 +33,6 @@
   </message>
 
   <!-- Safety Tip summary strings -->
-  <message name="IDS_PAGE_INFO_SAFETY_TIP_NAME" desc="Name of safety tips, displayed in bold as part of the title of the safety tip bubble.">
-    Safety tip:
-  </message>
-  <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE" desc="Title of Safety Tip bubble when triggered.">
-    <ph name="SAFETY_TIP">$1<ex>Safety tip:</ex></ph> suspicious site
-  </message>
   <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION" desc="Body of message to display in the page info bubble when you are viewing a page that triggered a safety tip.">
     This site could be fake or fraudulent. Chrome recommends leaving now.
   </message>
