@@ -49079,6 +49079,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Connected to the preview server"/>
 </enum>
 
+<enum name="PreviewsCoinFlipResult">
+  <int value="0" label="No preview attempted or coinflip disabled"/>
+  <int value="1" label="Preview attempted, allowed by coin flip"/>
+  <int value="2" label="Preview attempted, held back by coin flip"/>
+</enum>
+
 <enum name="PreviewsContextMenuActionLoFi">
   <int value="0" label="'Load image' context menu item shown"/>
   <int value="1" label="'Load image' context menu item clicked"/>

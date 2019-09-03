@@ -6556,6 +6556,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="coin_flip_result">
+    <obsolete>
+      Replaced by the PreviewsCoinFlip event in M78.
+    </obsolete>
     <summary>
       Set to 0 if there was no attempted preview for this page load, or the coin
       flip holdback is disabled in this session. Set to 1 if a preview was
@@ -6687,6 +6690,24 @@ be describing additional metrics about the same event.
     </obsolete>
     <summary>
       Set to 1 when a user is shown a server lo-fi image in a page load.
+    </summary>
+  </metric>
+</event>
+
+<event name="PreviewsCoinFlip" singular="True">
+  <owner>robertogden@chromium.org</owner>
+  <summary>
+    Coin flip experiment metrics associated with a Preview page load. See
+    //components/previews/. This is recorded as a separate event from Previews
+    so that it can be recorded earlier than commit which happens in some cases.
+  </summary>
+  <metric name="coin_flip_result" enum="PreviewsCoinFlipResult">
+    <summary>
+      Set to 0 if there was no attempted preview for this page load, or the coin
+      flip holdback is disabled in this session. Set to 1 if a preview was
+      attempted and was allowed to proceed by the coin flip. Set to 2 if a
+      preview would have been attempted but was held back by the coin flip. Note
+      that a non-zero value in this field implies previews_likely.
     </summary>
   </metric>
 </event>
