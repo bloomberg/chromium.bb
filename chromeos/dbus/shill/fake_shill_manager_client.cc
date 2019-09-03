@@ -340,6 +340,19 @@ void FakeShillManagerClient::ConfigureService(
     const base::DictionaryValue& properties,
     const ObjectPathCallback& callback,
     const ErrorCallback& error_callback) {
+  switch (simulate_configuration_result_) {
+    case FakeShillSimulatedResult::kSuccess:
+      break;
+    case FakeShillSimulatedResult::kFailure:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(error_callback, "Error", "Simulated failure"));
+      return;
+    case FakeShillSimulatedResult::kTimeout:
+      // No callbacks get executed and the caller should eventually timeout.
+      return;
+  }
+
   ShillServiceClient::TestInterface* service_client =
       ShillServiceClient::Get()->GetTestInterface();
 
@@ -674,6 +687,11 @@ bool FakeShillManagerClient::GetFastTransitionStatus() {
   base::Value* fast_transition_status = stub_properties_.FindKey(
       base::StringPiece(shill::kWifiGlobalFTEnabledProperty));
   return fast_transition_status && fast_transition_status->GetBool();
+}
+
+void FakeShillManagerClient::SetSimulateConfigurationResult(
+    FakeShillSimulatedResult configuration_result) {
+  simulate_configuration_result_ = configuration_result;
 }
 
 void FakeShillManagerClient::SetupDefaultEnvironment() {
