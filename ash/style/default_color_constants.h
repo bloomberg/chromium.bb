@@ -25,9 +25,13 @@ constexpr SkColor kUnifiedMenuTextColor = gfx::kGoogleGrey100;
 constexpr SkColor kUnifiedMenuButtonColor =
     SkColorSetA(gfx::kGoogleGrey200, 0x14);
 constexpr SkColor kUnifiedMenuButtonColorActive = gfx::kGoogleBlueDark600;
-
 constexpr SkColor kProminentIconButtonColor = gfx::kGoogleGreen700;
 
 //----------------------------------End----------------------------------------
+
+// Colors for toast.
+constexpr SkColor kToastBackgroundColor =
+    SkColorSetA(SK_ColorBLACK, 0xCC);  // 80%
+constexpr SkColor kToastLabelColor = SK_ColorWHITE;
 
 #endif  // ASH_STYLE_DEFAULT_COLOR_CONSTANTS_H_
