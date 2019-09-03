@@ -3277,6 +3277,13 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
   const gfx::Rect bottom_shelf_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
 
+  const int shelf_size = bottom_shelf_bounds.height();
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  const gfx::Rect left_shelf_bounds =
+      gfx::Rect(display_bounds.x(), display_bounds.y(), shelf_size,
+                display_bounds.height());
+
   // Change alignment during overview enter animation.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   {
@@ -3285,7 +3292,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
     shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
     waiter.Wait();
   }
-  EXPECT_NE(bottom_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
+  ShelfAnimationWaiter(left_shelf_bounds).WaitTillDoneAnimating();
+  EXPECT_EQ(left_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
 
   // Change alignment during overview exit animation.
   {
@@ -3294,6 +3302,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
     shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
     waiter.Wait();
   }
+  ShelfAnimationWaiter(bottom_shelf_bounds).WaitTillDoneAnimating();
   EXPECT_EQ(bottom_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
 }
 

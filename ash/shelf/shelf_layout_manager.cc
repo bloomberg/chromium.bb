@@ -650,9 +650,7 @@ void ShelfLayoutManager::OnOverviewModeStarting() {
 void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
   suspend_visibility_update_ = false;
-  UpdateVisibilityState();
-  LayoutShelf();
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  OnVisibilityUpdateResumed(/*animate=*/true);
 }
 
 void ShelfLayoutManager::OnOverviewModeEnding(
@@ -662,9 +660,7 @@ void ShelfLayoutManager::OnOverviewModeEnding(
 
 void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
   suspend_visibility_update_ = false;
-  UpdateVisibilityState();
-  LayoutShelf();
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  OnVisibilityUpdateResumed(/*animate=*/true);
 }
 
 void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
@@ -782,9 +778,7 @@ void ShelfLayoutManager::OnLocaleChanged() {
 void ShelfLayoutManager::OnScreenCopiedBeforeRotation() {
   if (suspend_visibility_update_) {
     suspend_visibility_update_ = false;
-    UpdateVisibilityState();
-    LayoutShelf();
-    MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
+    OnVisibilityUpdateResumed(/*animate=*/false);
   }
 }
 
@@ -1906,6 +1900,19 @@ void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
         AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED);
   }
   previous_workspace_window_state_ = current_workspace_window_state;
+}
+
+void ShelfLayoutManager::OnVisibilityUpdateResumed(bool animate) {
+  DCHECK(!suspend_visibility_update_);
+
+  UpdateVisibilityState();
+
+  TargetBounds target_bounds;
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
+  UpdateBoundsAndOpacity(target_bounds, animate, nullptr);
+
+  MaybeUpdateShelfBackground(animate ? AnimationChangeType::ANIMATE
+                                     : AnimationChangeType::IMMEDIATE);
 }
 
 }  // namespace ash
