@@ -2192,7 +2192,7 @@
   {
     "name": "google-password-manager",
     "owners": [ "ioanap", "jdoerrie" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "grid-layout-for-ntp-shortcuts",
