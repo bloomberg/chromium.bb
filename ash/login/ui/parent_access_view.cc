@@ -799,6 +799,8 @@ void ParentAccessView::UpdatePreferredSize() {
   pin_keyboard_to_footer_spacer_->SetPreferredSize(
       GetPinKeyboardToFooterSpacerSize());
   SetPreferredSize(CalculatePreferredSize());
+  if (GetWidget())
+    GetWidget()->CenterWindow(GetPreferredSize());
 }
 
 void ParentAccessView::FocusSubmitButton() {
