@@ -5007,6 +5007,17 @@ void RenderFrameHostImpl::CommitNavigation(
       // it is never reached.
       NOTREACHED();
       base::debug::DumpWithoutCrashing();
+    } else {
+      // An about:srcdoc document is always same SiteInstance with its parent.
+      // Otherwise, it won't be able to load. The parent's document contains the
+      // iframe and its srcdoc attribute.
+      //
+      // TODO(arthursonzogni): Replace DumpWithoutCrashing by a CHECK on M80 if
+      // it is never reached.
+      if (GetSiteInstance() != parent_->GetSiteInstance()) {
+        NOTREACHED();
+        base::debug::DumpWithoutCrashing();
+      }
     }
   }
 
