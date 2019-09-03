@@ -756,7 +756,7 @@ static int rc_pick_q_and_bounds_one_pass_cbr(const AV1_COMP *cpi, int width,
       active_best_quality +=
           av1_compute_qdelta(rc, q_val, q_val * q_adj_factor, bit_depth);
     }
-  } else if (!rc->is_src_frame_alt_ref &&
+  } else if (!rc->is_src_frame_alt_ref && !cpi->use_svc &&
              (cpi->refresh_golden_frame || cpi->refresh_alt_ref_frame)) {
     // Use the lower of active_worst_quality and recent
     // average Q as basis for GF/ARF best Q limit unless last frame was
@@ -1491,9 +1491,10 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
     rc->avg_frame_qindex[KEY_FRAME] =
         ROUND_POWER_OF_TWO(3 * rc->avg_frame_qindex[KEY_FRAME] + qindex, 2);
   } else {
-    if (!rc->is_src_frame_alt_ref &&
-        !(cpi->refresh_golden_frame || is_intrnl_arf ||
-          cpi->refresh_alt_ref_frame)) {
+    if ((cpi->use_svc && cpi->oxcf.rc_mode == AOM_CBR) ||
+        (!rc->is_src_frame_alt_ref &&
+         !(cpi->refresh_golden_frame || is_intrnl_arf ||
+           cpi->refresh_alt_ref_frame))) {
       rc->last_q[INTER_FRAME] = qindex;
       rc->avg_frame_qindex[INTER_FRAME] =
           ROUND_POWER_OF_TWO(3 * rc->avg_frame_qindex[INTER_FRAME] + qindex, 2);

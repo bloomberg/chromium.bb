@@ -1406,7 +1406,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (skip_ref_find_pred[ref_frame]) continue;
 
     // Skip non-zero motion for SVC if skip_nonzeromv_ref is set.
-    if (frame_mv[this_mode][ref_frame].as_int != 0) {
+    if (cpi->use_svc && frame_mv[this_mode][ref_frame].as_int != 0) {
       if (ref_frame == LAST_FRAME && cpi->svc.skip_nonzeromv_last)
         continue;
       else if (ref_frame == GOLDEN_FRAME && cpi->svc.skip_nonzeromv_gf)
