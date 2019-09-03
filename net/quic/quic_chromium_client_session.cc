@@ -654,8 +654,8 @@ int QuicChromiumClientSession::StreamRequest::DoWaitForConfirmation() {
   next_state_ = STATE_WAIT_FOR_CONFIRMATION_COMPLETE;
   if (requires_confirmation_) {
     return session_->WaitForHandshakeConfirmation(
-        base::Bind(&QuicChromiumClientSession::StreamRequest::OnIOComplete,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&QuicChromiumClientSession::StreamRequest::OnIOComplete,
+                       weak_factory_.GetWeakPtr()));
   }
 
   return OK;
@@ -2559,7 +2559,7 @@ void QuicChromiumClientSession::StartMigrateBackToDefaultNetworkTimer(
   // Post a task to try migrate back to default network after |delay|.
   migrate_back_to_default_timer_.Start(
       FROM_HERE, delay,
-      base::Bind(
+      base::BindOnce(
           &QuicChromiumClientSession::MaybeRetryMigrateBackToDefaultNetwork,
           weak_factory_.GetWeakPtr()));
 }
@@ -2600,7 +2600,7 @@ void QuicChromiumClientSession::TryMigrateBackToDefaultNetwork(
   retry_migrate_back_count_++;
   migrate_back_to_default_timer_.Start(
       FROM_HERE, timeout,
-      base::Bind(
+      base::BindOnce(
           &QuicChromiumClientSession::MaybeRetryMigrateBackToDefaultNetwork,
           weak_factory_.GetWeakPtr()));
 }

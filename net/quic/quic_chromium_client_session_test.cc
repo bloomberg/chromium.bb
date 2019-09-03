@@ -628,12 +628,13 @@ TEST_P(QuicChromiumClientSessionTest, ClosedWithAsyncStreamRequest) {
   std::unique_ptr<QuicChromiumClientSession::Handle> handle2 =
       session_->CreateHandle(destination_);
 
-  ASSERT_EQ(ERR_IO_PENDING,
-            handle->RequestStream(
-                /*requires_confirmation=*/false,
-                base::Bind(&QuicChromiumClientSessionTest::ResetHandleOnError,
-                           base::Unretained(this), &handle2),
-                TRAFFIC_ANNOTATION_FOR_TESTS));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      handle->RequestStream(
+          /*requires_confirmation=*/false,
+          base::BindOnce(&QuicChromiumClientSessionTest::ResetHandleOnError,
+                         base::Unretained(this), &handle2),
+          TRAFFIC_ANNOTATION_FOR_TESTS));
 
   TestCompletionCallback callback2;
   ASSERT_EQ(ERR_IO_PENDING,

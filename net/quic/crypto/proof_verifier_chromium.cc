@@ -385,8 +385,8 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
       CertVerifier::RequestParams(cert_, hostname_, cert_verify_flags_,
                                   ocsp_response_, cert_sct_),
       &verify_details_->cert_verify_result,
-      base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
-                 base::Unretained(this)),
+      base::BindOnce(&ProofVerifierChromium::Job::OnIOComplete,
+                     base::Unretained(this)),
       &cert_verifier_request_, net_log_);
 }
 
