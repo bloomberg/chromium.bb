@@ -31,6 +31,15 @@ namespace {
 // Opacity of the active tab background painted over inactive selected tabs.
 constexpr float kSelectedTabOpacity = 0.75f;
 
+// How the tab shape path is modified for selected tabs.
+using ShapeModifier = int;
+// No modification should be done.
+constexpr ShapeModifier kNone = 0x00;
+// Exclude the lower left arc.
+constexpr ShapeModifier kNoLowerLeftArc = 0x01;
+// Exclude the lower right arc.
+constexpr ShapeModifier kNoLowerRightArc = 0x02;
+
 // Tab style implementation for the GM2 refresh (Chrome 69).
 class GM2TabStyle : public TabStyleViews {
  public:
@@ -86,6 +95,12 @@ class GM2TabStyle : public TabStyleViews {
                                      bool has_custom_background) const;
 
   SkColor GetTabBackgroundColor(TabActive active) const;
+
+  // When selected, non-active, non-hovered tabs are adjacent to each other,
+  // there are anti-aliasing artifacts in the overlapped lower arc region. This
+  // returns how to modify the tab shape to eliminate the lower arcs on the
+  // right or left based on the state of the adjacent tab(s).
+  ShapeModifier GetShapeModifier(PathType path_type) const;
 
   // Painting helper functions:
   void PaintInactiveTabBackground(gfx::Canvas* canvas,
@@ -223,8 +238,11 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     tab_bottom -= stroke_adjustment;
     bottom_radius -= stroke_adjustment;
   }
+  const ShapeModifier shape_modifier = GetShapeModifier(path_type);
   const bool extend_to_top =
       (path_type == PathType::kHitTest) && ShouldExtendHitTest();
+  const bool extend_left_to_bottom = shape_modifier & kNoLowerLeftArc;
+  const bool extend_right_to_bottom = shape_modifier & kNoLowerRightArc;
 
   // When the radius shrinks, it leaves a gap between the bottom corners and the
   // edge of the tab. Make sure we account for this - and for any adjustment we
@@ -262,14 +280,18 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     // ┏━╯         ╰─┐
     path.moveTo(left, extended_bottom);
     path.lineTo(left, tab_bottom);
-    path.lineTo(left + corner_gap, tab_bottom);
 
-    // Draw the bottom-left arc.
+    // Draw the bottom-left arc if not excluded.
     //   ╭─────────╮
     //   │ Content │
     // ┌─╝         ╰─┐
-    path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-               SkPath::kCCW_Direction, tab_left, tab_bottom - bottom_radius);
+    if (extend_left_to_bottom) {
+      path.lineTo(left + corner_gap + bottom_radius, tab_bottom);
+    } else {
+      path.lineTo(left + corner_gap, tab_bottom);
+      path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+                 SkPath::kCCW_Direction, tab_left, tab_bottom - bottom_radius);
+    }
 
     // Draw the ascender and top arc, if present.
     if (extend_to_top) {
@@ -306,9 +328,13 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     //   ╭─────────╮
     //   │ Content ┃
     // ┌─╯         ╚─┐
-    path.lineTo(tab_right, tab_bottom - bottom_radius);
-    path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-               SkPath::kCCW_Direction, right - corner_gap, tab_bottom);
+    if (extend_right_to_bottom) {
+      path.lineTo(tab_right, tab_bottom);
+    } else {
+      path.lineTo(tab_right, tab_bottom - bottom_radius);
+      path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+                 SkPath::kCCW_Direction, right - corner_gap, tab_bottom);
+    }
 
     // Draw everything right of the bottom-right corner of the tab.
     //   ╭─────────╮
@@ -630,6 +656,24 @@ SkColor GM2TabStyle::GetTabBackgroundColor(TabActive active) const {
   }
 
   return color;
+}
+
+ShapeModifier GM2TabStyle::GetShapeModifier(PathType path_type) const {
+  ShapeModifier shape_modifier = kNone;
+  if (path_type == PathType::kFill && tab_->IsSelected() && !IsHoverActive() &&
+      !tab_->IsActive()) {
+    auto check_adjacent_tab = [](const Tab* tab, int offset,
+                                 ShapeModifier modifier) {
+      const Tab* adjacent_tab = tab->controller()->GetAdjacentTab(tab, offset);
+      if (adjacent_tab && adjacent_tab->IsSelected() &&
+          !adjacent_tab->IsMouseHovered())
+        return modifier;
+      return kNone;
+    };
+    shape_modifier |= check_adjacent_tab(tab_, -1, kNoLowerLeftArc);
+    shape_modifier |= check_adjacent_tab(tab_, 1, kNoLowerRightArc);
+  }
+  return shape_modifier;
 }
 
 void GM2TabStyle::PaintInactiveTabBackground(gfx::Canvas* canvas,
