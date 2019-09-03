@@ -2623,10 +2623,6 @@ extern const char kProcessSharingWithStrictSiteInstancesDescription[] =
     "separated like strict site isolation, but process selection puts multiple "
     "site instances in a single process.";
 
-const char kProgressBarThrottleName[] = "Android progress update throttling.";
-const char kProgressBarThrottleDescription[] =
-    "Limit the maximum progress update to make progress appear smoother.";
-
 const char kQuietNotificationPromptsName[] =
     "Quieter notification permission prompts";
 const char kQuietNotificationPromptsDescription[] =

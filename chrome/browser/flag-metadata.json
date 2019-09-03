@@ -2856,11 +2856,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "progress-bar-throttle",
-    "owners": [ "mdjones" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "pull-to-refresh",
     "owners": [ "afakhry" ],
     "expiry_milestone": 83

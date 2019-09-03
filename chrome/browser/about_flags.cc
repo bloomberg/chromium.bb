@@ -2197,11 +2197,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSystemKeyboardLockDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSystemKeyboardLock)},
 #if defined(OS_ANDROID)
-    {"progress-bar-throttle", flag_descriptions::kProgressBarThrottleName,
-     flag_descriptions::kProgressBarThrottleDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kProgressBarThrottleFeature)},
-#endif  // OS_ANDROID
-#if defined(OS_ANDROID)
     {"offline-pages-load-signal-collecting",
      flag_descriptions::kOfflinePagesLoadSignalCollectingName,
      flag_descriptions::kOfflinePagesLoadSignalCollectingDescription,
