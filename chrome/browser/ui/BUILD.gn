@@ -2658,6 +2658,8 @@ jumbo_split_static_library("ui") {
       "views/desktop_capture/desktop_media_tab_list.h",
       "views/device_chooser_content_view.cc",
       "views/device_chooser_content_view.h",
+      "views/devtools_process_observer.cc",
+      "views/devtools_process_observer.h",
       "views/download/download_danger_prompt_views.cc",
       "views/download/download_in_progress_dialog_view.cc",
       "views/download/download_in_progress_dialog_view.h",
