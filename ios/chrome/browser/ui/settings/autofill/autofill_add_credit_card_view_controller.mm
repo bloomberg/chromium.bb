@@ -98,6 +98,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
               style:UIBarButtonItemStyleDone
              target:self
              action:@selector(didTapAddButton:)];
+  self.navigationItem.rightBarButtonItem.enabled = NO;
+
   [self loadModel];
 }
 
@@ -218,6 +220,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
       base::mac::ObjCCast<TableViewTextEditCell>(cell);
   editCell.textField.delegate = self;
   editCell.selectionStyle = UITableViewCellSelectionStyleNone;
+  // The cell could be reused by TableView.
+  [editCell.textField removeTarget:self
+                            action:@selector(textFieldDidChange:)
+                  forControlEvents:UIControlEventEditingChanged];
+  [editCell.textField addTarget:self
+                         action:@selector(textFieldDidChange:)
+               forControlEvents:UIControlEventEditingChanged];
 
   return cell;
 }
@@ -304,6 +313,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.tableViewModel itemAtIndexPath:path]);
   item.textFieldValue = text;
   [self reconfigureCellsForItems:@[ item ]];
+}
+
+// Updates the status of the "Add" button based on the content of the
+// textfields.
+- (void)textFieldDidChange:(id)sender {
+  self.navigationItem.rightBarButtonItem.enabled = [self tableViewHasUserInput];
 }
 
 // Dimisses this view controller when Cancel button is tapped.
