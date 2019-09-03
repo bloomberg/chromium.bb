@@ -6300,25 +6300,6 @@
             ]
         }
     ],
-    "V8Ignition": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Future",
-                    "enable_features": [
-                        "V8Future"
-                    ]
-                }
-            ]
-        }
-    ],
     "V8LowMemoryModeForSubframes": [
         {
             "platforms": [
