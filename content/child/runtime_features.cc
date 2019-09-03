@@ -577,6 +577,9 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnablePointerLockOptions(
       base::FeatureList::IsEnabled(features::kPointerLockOptions));
+
+  WebRuntimeFeatures::EnableDocumentPolicy(
+      base::FeatureList::IsEnabled(features::kDocumentPolicy));
 }
 
 }  // namespace

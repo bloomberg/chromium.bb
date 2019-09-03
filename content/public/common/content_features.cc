@@ -130,6 +130,10 @@ const base::Feature kDataSaverHoldback{"DataSaverHoldback",
 const base::Feature kDesktopCaptureChangeSource{
     "DesktopCaptureChangeSource", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable document policy for configuring and restricting feature behavior.
+const base::Feature kDocumentPolicy{"DocumentPolicy",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When a screen reader is detected, allow users the option of letting
 // Google provide descriptions for unlabeled images.
 const base::Feature kExperimentalAccessibilityLabels{

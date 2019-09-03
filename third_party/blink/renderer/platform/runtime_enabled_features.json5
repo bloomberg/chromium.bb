@@ -525,6 +525,9 @@
       name: "DocumentDomain",
     },
     {
+      name: "DocumentPolicy",
+    },
+    {
       name: "DocumentWrite",
     },
     {

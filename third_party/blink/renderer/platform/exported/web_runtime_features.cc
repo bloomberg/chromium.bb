@@ -609,6 +609,10 @@ void WebRuntimeFeatures::EnableDisplayCutoutAPI(bool enable) {
   RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableDocumentPolicy(bool enable) {
+  RuntimeEnabledFeatures::SetDocumentPolicyEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableAutoplayIgnoresWebAudio(bool enable) {
   RuntimeEnabledFeatures::SetAutoplayIgnoresWebAudioEnabled(enable);
 }

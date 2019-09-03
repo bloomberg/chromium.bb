@@ -38,6 +38,7 @@ CONTENT_EXPORT extern const base::Feature kCooperativeScheduling;
 CONTENT_EXPORT extern const base::Feature kCrashReporting;
 CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;
 CONTENT_EXPORT extern const base::Feature kDesktopCaptureChangeSource;
+CONTENT_EXPORT extern const base::Feature kDocumentPolicy;
 CONTENT_EXPORT extern const base::Feature kExperimentalAccessibilityLabels;
 CONTENT_EXPORT extern const base::Feature kExperimentalProductivityFeatures;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
