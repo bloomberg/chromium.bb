@@ -23,6 +23,7 @@ group("all") {
     ":system_api-metrics_event-goprotos",
     ":system_api-metrics_event-protos",
     ":system_api-oobe_config-protos",
+    ":system_api-patchpanel-protos",
     ":system_api-plugin_vm_service-protos",
     ":system_api-power_manager-goprotos",
     ":system_api-power_manager-protos",
@@ -399,4 +400,14 @@ proto_library("system_api-chunneld-protos") {
     "${proto_in_dir}/chunneld_service.proto",
   ]
   standalone = true
+}
+
+proto_library("system_api-patchpanel-protos") {
+  proto_in_dir = "dbus/patchpanel"
+  proto_out_dir = "include/patchpanel/proto_bindings"
+  sources = [
+    "${proto_in_dir}/patchpanel-service.proto",
+  ]
+  standalone = true
+  use_pic = true
 }

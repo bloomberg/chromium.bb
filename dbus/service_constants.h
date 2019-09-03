@@ -25,6 +25,7 @@
 #include "login_manager/dbus-constants.h"
 #include "lorgnette/dbus-constants.h"
 #include "oobe_config/dbus-constants.h"
+#include "patchpanel/dbus-constants.h"
 #include "permission_broker/dbus-constants.h"
 #include "power_manager/dbus-constants.h"
 #include "runtime_probe/dbus-constants.h"
