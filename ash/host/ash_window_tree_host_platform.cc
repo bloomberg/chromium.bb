@@ -43,7 +43,7 @@ AshWindowTreeHostPlatform::AshWindowTreeHostPlatform()
       transformer_helper_(this) {
   CreateCompositor(viz::FrameSinkId(),
                    /* force_software_compositor */ false,
-                   /* use_external_begin_frame_control */ false,
+                   /* external_begin_frame_client */ nullptr,
                    /* are_events_in_pixels */ true);
   CommonInit();
 }

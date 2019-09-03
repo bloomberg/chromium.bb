@@ -17,6 +17,7 @@
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
+#include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 #include "ui/compositor/reflector.h"
 
 #if defined(OS_WIN)
@@ -103,9 +104,18 @@ void HostContextFactoryPrivate::ConfigureCompositor(
       compositor_data.display_client->GetBoundPtr(resize_task_runner_)
           .PassInterface();
 
-  if (compositor->use_external_begin_frame_control()) {
+  // Initialize ExternalBeginFrameController client if enabled.
+  compositor_data.external_begin_frame_controller_client.reset();
+  if (compositor->external_begin_frame_client()) {
+    compositor_data.external_begin_frame_controller_client =
+        std::make_unique<ExternalBeginFrameControllerClientImpl>(
+            compositor->external_begin_frame_client());
     root_params->external_begin_frame_controller =
-        mojo::MakeRequest(&compositor_data.external_begin_frame_controller);
+        compositor_data.external_begin_frame_controller_client
+            ->GetControllerRequest();
+    root_params->external_begin_frame_controller_client =
+        compositor_data.external_begin_frame_controller_client->GetBoundPtr()
+            .PassInterface();
   }
 
   root_params->frame_sink_id = compositor->frame_sink_id();
@@ -251,14 +261,14 @@ void HostContextFactoryPrivate::SetDisplayVSyncParameters(
 
 void HostContextFactoryPrivate::IssueExternalBeginFrame(
     Compositor* compositor,
-    const viz::BeginFrameArgs& args,
-    bool force,
-    base::OnceCallback<void(const viz::BeginFrameAck&)> callback) {
+    const viz::BeginFrameArgs& args) {
   auto iter = compositor_data_map_.find(compositor);
-  DCHECK(iter != compositor_data_map_.end() && iter->second.display_private);
+  if (iter == compositor_data_map_.end() || !iter->second.display_private)
+    return;
 
-  iter->second.external_begin_frame_controller->IssueExternalBeginFrame(
-      args, force, std::move(callback));
+  DCHECK(iter->second.external_begin_frame_controller_client);
+  iter->second.external_begin_frame_controller_client->GetController()
+      ->IssueExternalBeginFrame(args);
 }
 
 void HostContextFactoryPrivate::SetOutputIsSecure(Compositor* compositor,

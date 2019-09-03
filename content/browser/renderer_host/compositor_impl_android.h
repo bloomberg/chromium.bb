@@ -37,6 +37,7 @@
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/compositor/compositor_lock.h"
+#include "ui/compositor/external_begin_frame_client.h"
 #include "ui/display/display_observer.h"
 
 struct ANativeWindow;
@@ -45,6 +46,10 @@ namespace cc {
 class AnimationHost;
 class Layer;
 class LayerTreeHost;
+}
+
+namespace ui {
+class ExternalBeginFrameControllerClientImpl;
 }
 
 namespace viz {

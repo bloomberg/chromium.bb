@@ -76,11 +76,8 @@ class TestImageTransportFactory : public ui::ContextFactory,
   void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override {}
-  void IssueExternalBeginFrame(
-      ui::Compositor* compositor,
-      const viz::BeginFrameArgs& args,
-      bool force,
-      base::OnceCallback<void(const viz::BeginFrameAck&)> callback) override {}
+  void IssueExternalBeginFrame(ui::Compositor* compositor,
+                               const viz::BeginFrameArgs& args) override {}
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
   void AddVSyncParameterObserver(
       ui::Compositor* compositor,

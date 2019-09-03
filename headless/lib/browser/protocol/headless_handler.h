@@ -14,6 +14,8 @@ class WebContents;
 
 namespace headless {
 
+class HeadlessWebContentsImpl;
+
 namespace protocol {
 
 class HeadlessHandler : public DomainHandler,
@@ -24,6 +26,9 @@ class HeadlessHandler : public DomainHandler,
   ~HeadlessHandler() override;
 
   void Wire(UberDispatcher* dispatcher) override;
+
+  static void OnNeedsBeginFrames(HeadlessWebContentsImpl* headless_contents,
+                                 bool needs_begin_frames);
 
   // Headless::Backend implementation
   Response Enable() override;
@@ -36,6 +41,7 @@ class HeadlessHandler : public DomainHandler,
 
  private:
   content::WebContents* web_contents_;
+  bool enabled_ = false;
   std::unique_ptr<HeadlessExperimental::Frontend> frontend_;
   DISALLOW_COPY_AND_ASSIGN(HeadlessHandler);
 };

@@ -15,6 +15,7 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/fake_compositor_frame_sink_client.h"
 #include "components/viz/test/fake_display_client.h"
+#include "components/viz/test/fake_external_begin_frame_controller_client.h"
 
 namespace viz {
 
@@ -55,6 +56,8 @@ class FuzzerBrowserProcess {
   FakeDisplayClient display_client_;
   mojom::ExternalBeginFrameControllerAssociatedPtr
       external_begin_frame_controller_ptr_;
+  FakeExternalBeginFrameControllerClient
+      external_begin_frame_controller_client_;
 
   ParentLocalSurfaceIdAllocator lsi_allocator_;
 

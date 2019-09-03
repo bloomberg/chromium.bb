@@ -30,7 +30,9 @@ namespace headless {
 class HeadlessWindowTreeHost : public aura::WindowTreeHost,
                                public ui::PlatformEventDispatcher {
  public:
-  explicit HeadlessWindowTreeHost(bool use_external_begin_frame_control);
+  HeadlessWindowTreeHost(
+      const gfx::Rect& bounds,
+      ui::ExternalBeginFrameClient* external_begin_frame_client);
   ~HeadlessWindowTreeHost() override;
 
   void SetParentWindow(gfx::NativeWindow window);

@@ -61,10 +61,14 @@ RootCompositorFrameSinkImpl::Create(
   std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source;
   ExternalBeginFrameSourceMojo* external_begin_frame_source_mojo = nullptr;
 
-  if (params->external_begin_frame_controller.is_pending()) {
+  if (params->external_begin_frame_controller.is_pending() &&
+      params->external_begin_frame_controller_client) {
     auto owned_external_begin_frame_source_mojo =
         std::make_unique<ExternalBeginFrameSourceMojo>(
-            std::move(params->external_begin_frame_controller), restart_id);
+            std::move(params->external_begin_frame_controller),
+            mojom::ExternalBeginFrameControllerClientPtr(
+                std::move(params->external_begin_frame_controller_client)),
+            restart_id);
     external_begin_frame_source_mojo =
         owned_external_begin_frame_source_mojo.get();
     external_begin_frame_source =

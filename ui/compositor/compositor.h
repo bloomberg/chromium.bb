@@ -31,6 +31,7 @@
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/compositor_lock.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/external_begin_frame_client.h"
 #include "ui/compositor/layer_animator_collection.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
@@ -72,6 +73,7 @@ class RasterContextProvider;
 namespace ui {
 
 class Compositor;
+class ExternalBeginFrameClient;
 class LatencyInfo;
 class Layer;
 class Reflector;
@@ -143,12 +145,8 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   virtual void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                          base::TimeTicks timebase,
                                          base::TimeDelta interval) = 0;
-
-  virtual void IssueExternalBeginFrame(
-      ui::Compositor* compositor,
-      const viz::BeginFrameArgs& args,
-      bool force,
-      base::OnceCallback<void(const viz::BeginFrameAck&)> callback) = 0;
+  virtual void IssueExternalBeginFrame(ui::Compositor* compositor,
+                                       const viz::BeginFrameArgs& args) = 0;
 
   virtual void SetOutputIsSecure(Compositor* compositor, bool secure) = 0;
 
@@ -213,7 +211,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
              ui::ContextFactoryPrivate* context_factory_private,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner,
              bool enable_pixel_canvas,
-             bool use_external_begin_frame_control = false,
+             ExternalBeginFrameClient* external_begin_frame_client = nullptr,
              bool force_software_compositor = false,
              const char* trace_environment_name = nullptr);
   ~Compositor() override;
@@ -427,8 +425,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   int activated_frame_count() const { return activated_frame_count_; }
   float refresh_rate() const { return refresh_rate_; }
 
-  bool use_external_begin_frame_control() const {
-    return use_external_begin_frame_control_;
+  ExternalBeginFrameClient* external_begin_frame_client() {
+    return external_begin_frame_client_;
   }
 
   void SetAllowLocksToExtendTimeout(bool allowed) {
@@ -479,7 +477,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
 
-  const bool use_external_begin_frame_control_;
+  ExternalBeginFrameClient* const external_begin_frame_client_;
+
   const bool force_software_compositor_;
 
   // The device scale factor of the monitor that this compositor is compositing
