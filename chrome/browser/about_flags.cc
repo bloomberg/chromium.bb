@@ -4050,6 +4050,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
 #if defined(OS_CHROMEOS)
+    {"allow-disable-mouse-acceleration",
+     flag_descriptions::kAllowDisableMouseAccelerationName,
+     flag_descriptions::kAllowDisableMouseAccelerationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAllowDisableMouseAcceleration)},
+
     {"enable-streamlined-usb-printer-setup",
      flag_descriptions::kStreamlinedUsbPrinterSetupName,
      flag_descriptions::kStreamlinedUsbPrinterSetupDescription, kOsCrOS,

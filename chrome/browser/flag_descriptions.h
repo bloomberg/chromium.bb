@@ -1820,6 +1820,9 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 extern const char kAggregatedMlAppRankingName[];
 extern const char kAggregatedMlAppRankingDescription[];
 
+extern const char kAllowDisableMouseAccelerationName[];
+extern const char kAllowDisableMouseAccelerationDescription[];
+
 extern const char kAppServiceAshName[];
 extern const char kAppServiceAshDescription[];
 

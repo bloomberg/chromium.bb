@@ -504,6 +504,14 @@ const char kPrimaryMouseButtonRight[] = "settings.mouse.primary_right";
 // result in scrolling up instead of the more common scrolling down.
 const char kMouseReverseScroll[] = "settings.mouse.reverse_scroll";
 
+// A boolean pref set to true if mouse acceleration is enabled. When disabled
+// only simple linear scaling is applied based on sensitivity.
+const char kMouseAcceleration[] = "settings.mouse.acceleration";
+
+// A boolean pref set to true if touchpad acceleration is enabled. When
+// disabled only simple linear scaling is applied based on sensitivity.
+const char kTouchpadAcceleration[] = "settings.touchpad.acceleration";
+
 // A integer pref for the touchpad sensitivity.
 const char kMouseSensitivity[] = "settings.mouse.sensitivity2";
 

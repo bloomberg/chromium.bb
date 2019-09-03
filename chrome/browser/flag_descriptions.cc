@@ -3061,6 +3061,11 @@ const char kAggregatedMlAppRankingName[] = "Rank suggested apps with ML.";
 const char kAggregatedMlAppRankingDescription[] =
     "Use the aggregated ML model to rank the suggested apps.";
 
+const char kAllowDisableMouseAccelerationName[] =
+    "Allow disabling mouse acceleration";
+const char kAllowDisableMouseAccelerationDescription[] =
+    "Shows a setting to disable mouse acceleration.";
+
 const char kAppServiceAshName[] = "App Service Ash";
 const char kAppServiceAshDescription[] =
     "Use the App Service to provide data to the Ash UI, such as the app list.";

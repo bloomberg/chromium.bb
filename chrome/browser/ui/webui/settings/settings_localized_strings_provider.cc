@@ -883,6 +883,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"mouseSpeed", IDS_SETTINGS_MOUSE_SPEED_LABEL},
       {"mouseSwapButtons", IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
       {"mouseReverseScroll", IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL},
+      {"pointerAccelerationLabel", IDS_SETTINGS_POINTER_ACCELERATION_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kPointersStrings,
                           base::size(kPointersStrings));
@@ -1028,6 +1029,10 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("hasExternalTouchDevice",
                           display::HasExternalTouchscreenDevice());
+
+  html_source->AddBoolean(
+      "allowDisableMouseAcceleration",
+      base::FeatureList::IsEnabled(features::kAllowDisableMouseAcceleration));
 
   static constexpr LocalizedString kStorageStrings[] = {
       {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},
