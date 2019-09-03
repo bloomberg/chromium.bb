@@ -22,6 +22,10 @@
 #include "components/sync/nigori/nigori_local_change_processor.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 
+namespace sync_pb {
+class NigoriLocalData;
+}  // namespace sync_pb
+
 namespace syncer {
 
 class Encryptor;
@@ -99,6 +103,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // error occurs during serialization/encryption, corresponding preference
   // just won't be updated.
   void MaybeNotifyBootstrapTokenUpdated() const;
+
+  // Serializes state of the bridge and sync metadata into the proto.
+  sync_pb::NigoriLocalData SerializeAsNigoriLocalData() const;
 
   const Encryptor* const encryptor_;
 

@@ -15,6 +15,7 @@
 #include "components/sync/model/entity_data.h"
 #include "components/sync/nigori/nigori.h"
 #include "components/sync/protocol/encryption.pb.h"
+#include "components/sync/protocol/nigori_local_data.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 
 namespace syncer {
@@ -396,6 +397,31 @@ bool CanDecryptWithSerializedNigoriKey(
   return cryptographer.CanDecrypt(encrypted_data);
 }
 
+std::string ComputePbkdf2KeyName(const std::string& password) {
+  std::string key_name;
+  Nigori::CreateByDerivation(KeyDerivationParams::CreateForPbkdf2(), password)
+      ->Permute(Nigori::Password, kNigoriKeyName, &key_name);
+  return key_name;
+}
+
+sync_pb::CustomPassphraseKeyDerivationParams
+CustomPassphraseKeyDerivationParamsToProto(const KeyDerivationParams& params) {
+  sync_pb::CustomPassphraseKeyDerivationParams output;
+  output.set_custom_passphrase_key_derivation_method(
+      EnumKeyDerivationMethodToProto(params.method()));
+  if (params.method() == KeyDerivationMethod::SCRYPT_8192_8_11) {
+    output.set_custom_passphrase_key_derivation_salt(params.scrypt_salt());
+  }
+  return output;
+}
+
+ModelTypeSet GetEncryptedTypes(bool encrypt_everything) {
+  if (encrypt_everything) {
+    return EncryptableUserTypes();
+  }
+  return SyncEncryptionHandler::SensitiveTypes();
+}
+
 }  // namespace
 
 NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
@@ -434,14 +460,9 @@ bool NigoriSyncBridgeImpl::Init() {
   // TODO(crbug.com/922900): try to avoid double notification. Currently it
   // happens iff we received explicit passphrase Nigori during the first
   // sync cycle, and more complicated once we persist the local state.
-  ModelTypeSet encrypted_types;
-  if (encrypt_everything_) {
-    encrypted_types = EncryptableUserTypes();
-  } else {
-    encrypted_types = SensitiveTypes();
-  }
   for (auto& observer : observers_) {
-    observer.OnEncryptedTypesChanged(encrypted_types, encrypt_everything_);
+    observer.OnEncryptedTypesChanged(GetEncryptedTypes(encrypt_everything_),
+                                     encrypt_everything_);
   }
   NOTIMPLEMENTED();
   // TODO(crbug.com/922900): notify observers about cryptographer change in
@@ -921,6 +942,61 @@ void NigoriSyncBridgeImpl::MaybeNotifyBootstrapTokenUpdated() const {
         }
       }
   }
+}
+
+sync_pb::NigoriLocalData NigoriSyncBridgeImpl::SerializeAsNigoriLocalData()
+    const {
+  sync_pb::NigoriLocalData output;
+
+  // Serialize the metadata.
+  const NigoriMetadataBatch metadata_batch = processor_->GetMetadata();
+  *output.mutable_model_type_state() = metadata_batch.model_type_state;
+  if (metadata_batch.entity_metadata) {
+    *output.mutable_entity_metadata() = *metadata_batch.entity_metadata;
+  }
+
+  // Serialize the data.
+  sync_pb::NigoriModel* nigori_model = output.mutable_nigori_model();
+  CryptographerDataWithPendingKeys serialized_cryptographer =
+      cryptographer_.ToCryptographerDataWithPendingKeys();
+  *nigori_model->mutable_cryptographer_data() =
+      serialized_cryptographer.cryptographer_data;
+  if (serialized_cryptographer.pending_keys.has_value()) {
+    *nigori_model->mutable_pending_keys() =
+        *serialized_cryptographer.pending_keys;
+  }
+  if (!keystore_keys_.empty()) {
+    nigori_model->set_current_keystore_key_name(
+        ComputePbkdf2KeyName(keystore_keys_.back()));
+  }
+  nigori_model->set_passphrase_type(passphrase_type_);
+  if (!keystore_migration_time_.is_null()) {
+    nigori_model->set_keystore_migration_time(
+        TimeToProtoTime(keystore_migration_time_));
+  }
+  if (!custom_passphrase_time_.is_null()) {
+    nigori_model->set_custom_passphrase_time(
+        TimeToProtoTime(custom_passphrase_time_));
+  }
+  if (custom_passphrase_key_derivation_params_) {
+    *nigori_model->mutable_custom_passphrase_key_derivation_params() =
+        CustomPassphraseKeyDerivationParamsToProto(
+            *custom_passphrase_key_derivation_params_);
+  }
+  nigori_model->set_encrypt_everything(encrypt_everything_);
+  for (ModelType model_type : GetEncryptedTypes(encrypt_everything_)) {
+    nigori_model->add_encrypted_types_specifics_field_number(
+        GetSpecificsFieldNumberFromModelType(model_type));
+  }
+  // TODO(crbug.com/970213): we currently store keystore keys in proto only to
+  // allow rollback of USS Nigori. Having keybag with all keystore keys and
+  // |current_keystore_key_name| is enough to support all bridge logic. We
+  // should remove them few milestones after USS migration completed.
+  for (const std::string& keystore_key : keystore_keys_) {
+    nigori_model->add_keystore_key(keystore_key);
+  }
+
+  return output;
 }
 
 }  // namespace syncer
