@@ -94,7 +94,19 @@ static uint32_t use_flags_to_bind(uint64_t use_flags)
 	handle_flag(&use_flags, BO_USE_TEXTURE, &bind, VIRGL_BIND_SAMPLER_VIEW);
 	handle_flag(&use_flags, BO_USE_RENDERING, &bind, VIRGL_BIND_RENDER_TARGET);
 	handle_flag(&use_flags, BO_USE_SCANOUT, &bind, VIRGL_BIND_SCANOUT);
-	// TODO (b/12983436): handle other use flags.
+	handle_flag(&use_flags, BO_USE_CURSOR, &bind, VIRGL_BIND_CURSOR);
+	handle_flag(&use_flags, BO_USE_LINEAR, &bind, VIRGL_BIND_LINEAR);
+
+	handle_flag(&use_flags, BO_USE_SW_READ_OFTEN, &bind, VIRGL_BIND_LINEAR);
+	handle_flag(&use_flags, BO_USE_SW_READ_RARELY, &bind, VIRGL_BIND_LINEAR);
+	handle_flag(&use_flags, BO_USE_SW_WRITE_OFTEN, &bind, VIRGL_BIND_LINEAR);
+	handle_flag(&use_flags, BO_USE_SW_WRITE_RARELY, &bind, VIRGL_BIND_LINEAR);
+
+	// All host drivers only support linear camera buffer formats. If
+	// that changes, this will need to be modified.
+	handle_flag(&use_flags, BO_USE_CAMERA_READ, &bind, VIRGL_BIND_LINEAR);
+	handle_flag(&use_flags, BO_USE_CAMERA_WRITE, &bind, VIRGL_BIND_LINEAR);
+
 	if (use_flags) {
 		drv_log("Unhandled bo use flag: %llx\n", (unsigned long long)use_flags);
 	}

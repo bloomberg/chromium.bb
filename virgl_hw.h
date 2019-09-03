@@ -288,6 +288,8 @@ enum virgl_formats {
 
 #define VIRGL_BIND_PREFER_EMULATED_BGRA  (1 << 21)
 
+#define VIRGL_BIND_LINEAR (1 << 22)
+
 struct virgl_caps_bool_set1 {
         unsigned indep_blend_enable:1;
         unsigned indep_blend_func:1;
