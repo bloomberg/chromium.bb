@@ -6282,25 +6282,6 @@
             ]
         }
     ],
-    "V8AsmJSToWasm": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "AsmJsToWebAssembly",
-                    "enable_features": [
-                        "AsmJsToWebAssembly"
-                    ]
-                }
-            ]
-        }
-    ],
     "V8CacheInlineScriptCode": [
         {
             "platforms": [
