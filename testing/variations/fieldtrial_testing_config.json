@@ -3959,6 +3959,21 @@
             ]
         }
     ],
+    "OutOfProcessQuarantine": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OutOfProcessQuarantine"
+                    ]
+                }
+            ]
+        }
+    ],
     "OverflowIconsForMediaControls": [
         {
             "platforms": [
