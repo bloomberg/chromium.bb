@@ -63,7 +63,7 @@ void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
           kUnifiedMenuButtonColor);
   flags.setColor(GetEnabled()
                      ? button_color
-                     : AshColorProvider::Get()->GetDisabledColor(button_color));
+                     : AshColorProvider::GetDisabledColor(button_color));
   flags.setStyle(cc::PaintFlags::kFill_Style);
 
   canvas->DrawPath(CreateCustomShapePath(GetLocalBounds()), flags);

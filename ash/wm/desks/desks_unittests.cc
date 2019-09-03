@@ -1348,7 +1348,7 @@ TEST_F(DesksTest, NewDeskButtonStateAndColor) {
           AshColorProvider::ControlsLayerType::kInactiveControlBackground,
           AshColorProvider::AshColorMode::kDark);
   const SkColor disabled_background_color =
-      AshColorProvider::Get()->GetDisabledColor(background_color);
+      AshColorProvider::GetDisabledColor(background_color);
   EXPECT_TRUE(new_desk_button->GetEnabled());
   EXPECT_EQ(background_color, new_desk_button->background()->get_color());
 

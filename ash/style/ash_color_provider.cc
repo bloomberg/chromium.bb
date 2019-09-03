@@ -25,6 +25,9 @@ constexpr float kDarkInkRippleOpacity = 0.06f;
 // The disabled color is always 38% opacity of the enabled color.
 constexpr float kDisabledColorOpacity = 0.38f;
 
+// Color of second tone is always 30% opacity of the color of first tone.
+constexpr float kSecondToneOpacity = 0.3f;
+
 // Gets the color mode value from feature flag "--ash-color-mode".
 AshColorProvider::AshColorMode GetColorModeFromCommandLine() {
   const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
@@ -53,6 +56,19 @@ AshColorProvider::~AshColorProvider() = default;
 // static
 AshColorProvider* AshColorProvider::Get() {
   return Shell::Get()->ash_color_provider();
+}
+
+// static
+SkColor AshColorProvider::GetDisabledColor(SkColor enabled_color) {
+  return SkColorSetA(enabled_color, std::round(SkColorGetA(enabled_color) *
+                                               kDisabledColorOpacity));
+}
+
+// static
+SkColor AshColorProvider::GetSecondToneColor(SkColor color_of_first_tone) {
+  return SkColorSetA(
+      color_of_first_tone,
+      std::round(SkColorGetA(color_of_first_tone) * kSecondToneOpacity));
 }
 
 SkColor AshColorProvider::DeprecatedGetShieldLayerColor(
@@ -134,11 +150,6 @@ AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
                             ? kDarkInkRippleOpacity
                             : kLightInkRippleOpacity;
   return RippleAttributes(base_color, opacity, opacity);
-}
-
-SkColor AshColorProvider::GetDisabledColor(SkColor enabled_color) const {
-  return SkColorSetA(enabled_color, std::round(SkColorGetA(enabled_color) *
-                                               kDisabledColorOpacity));
 }
 
 SkColor AshColorProvider::GetShieldLayerColorImpl(
