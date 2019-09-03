@@ -151,16 +151,6 @@ void AppShimHost::FocusApp(apps::AppShimFocusType focus_type,
   client_->OnShimFocus(this, focus_type, files);
 }
 
-void AppShimHost::SetAppHidden(bool hidden) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->OnShimSetHidden(this, hidden);
-}
-
-void AppShimHost::QuitApp() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->OnShimQuit(this);
-}
-
 base::FilePath AppShimHost::GetProfilePath() const {
   return profile_path_;
 }

@@ -65,6 +65,7 @@ using extensions::AppWindow;
 using extensions::AppWindowRegistry;
 using extensions::Extension;
 using extensions::ExtensionRegistry;
+using extensions::NativeAppWindow;
 
 namespace {
 
@@ -447,14 +448,6 @@ const Extension* ExtensionAppShimHandler::MaybeGetAppForBrowser(
       web_app::GetAppIdFromApplicationName(browser->app_name()));
 }
 
-void ExtensionAppShimHandler::UnhideWithoutActivationForWindow(
-    AppWindow* app_window) {
-  Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
-  AppShimHost* host = FindHost(profile, app_window->extension_id());
-  if (host && !host->UsesRemoteViews())
-    host->GetAppShim()->UnhideWithoutActivation();
-}
-
 void ExtensionAppShimHandler::RequestUserAttentionForWindow(
     AppWindow* app_window,
     AppShimAttentionType attention_type) {
@@ -462,20 +455,6 @@ void ExtensionAppShimHandler::RequestUserAttentionForWindow(
   AppShimHost* host = FindHost(profile, app_window->extension_id());
   if (host && !host->UsesRemoteViews())
     host->GetAppShim()->SetUserAttention(attention_type);
-}
-
-void ExtensionAppShimHandler::OnChromeWillHide() {
-  // Send OnAppHide to all the shims so that they go into the hidden state.
-  // This is necessary so that when the shim is next focused, it will know to
-  // unhide.
-  for (auto& iter_app : apps_) {
-    AppState* app_state = iter_app.second.get();
-    for (auto& iter_profile : app_state->profiles) {
-      ProfileState* profile_state = iter_profile.second.get();
-      if (profile_state->host && !profile_state->host->UsesRemoteViews())
-        profile_state->host->GetAppShim()->Hide();
-    }
-  }
 }
 
 void ExtensionAppShimHandler::OnShimLaunchRequested(
@@ -547,22 +526,6 @@ ExtensionAppShimHandler* ExtensionAppShimHandler::Get() {
   if (shim_host_manager)
     return shim_host_manager->extension_app_shim_handler();
   return nullptr;
-}
-
-const Extension* ExtensionAppShimHandler::MaybeGetExtensionOrCloseHost(
-    AppShimHost* host,
-    Profile** profile_out) {
-  DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
-  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
-
-  const Extension* extension =
-      delegate_->MaybeGetAppExtension(profile, host->GetAppId());
-  if (!extension)
-    CloseShimForApp(profile, host->GetAppId());
-
-  if (profile_out)
-    *profile_out = profile;
-  return extension;
 }
 
 void ExtensionAppShimHandler::CloseShimsForProfile(Profile* profile) {
@@ -675,21 +638,25 @@ bool ExtensionAppShimHandler::IsAcceptablyCodeSigned(pid_t pid) const {
 }
 
 void ExtensionAppShimHandler::OnShimProcessDisconnected(AppShimHost* host) {
-  // This might be called when shutting down. Don't try to look up the profile
-  // since profile_manager might not be around.
-  for (auto iter_app = apps_.begin(); iter_app != apps_.end(); ++iter_app) {
-    AppState* app_state = iter_app->second.get();
-    for (auto iter_profile = app_state->profiles.begin();
-         iter_profile != app_state->profiles.end(); ++iter_profile) {
-      ProfileState* profile_state = iter_profile->second.get();
-      if (profile_state->host.get() == host) {
-        // Erase this ProfileState (and the AppState, if this is the last
-        // ProfileState).
-        app_state->profiles.erase(iter_profile);
-        if (app_state->profiles.empty())
-          apps_.erase(iter_app);
-        return;
-      }
+  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
+  const std::string app_id = host->GetAppId();
+  DCHECK_EQ(host, FindHost(profile, app_id));
+
+  // For non-RemoteCocoa apps, close all of the windows only if the the shim
+  // process has successfully connected (if it never connected, then let the
+  // app run as normal).
+  bool close_windows =
+      !host->UsesRemoteViews() && host->HasBootstrapConnected();
+
+  CloseShimForApp(profile, host->GetAppId());
+  // Note that |host| is destroyed by CloseShimForApp.
+  host = nullptr;
+
+  if (close_windows) {
+    AppWindowList windows = delegate_->GetWindows(profile, app_id);
+    for (auto it = windows.begin(); it != windows.end(); ++it) {
+      if (*it)
+        (*it)->GetBaseWindow()->Close();
     }
   }
 }
@@ -701,55 +668,25 @@ void ExtensionAppShimHandler::OnShimFocus(
   if (host->UsesRemoteViews())
     return;
 
-  Profile* profile;
-  const Extension* extension = MaybeGetExtensionOrCloseHost(host, &profile);
-  if (!extension)
+  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
+  const Extension* extension =
+      delegate_->MaybeGetAppExtension(profile, host->GetAppId());
+  if (!extension) {
+    CloseShimForApp(profile, host->GetAppId());
     return;
+  }
 
   AppWindowList windows = delegate_->GetWindows(profile, host->GetAppId());
-  for (auto it = windows.rbegin(); it != windows.rend(); ++it)
-    (*it)->GetBaseWindow()->Show();
+  for (auto it = windows.rbegin(); it != windows.rend(); ++it) {
+    if (*it)
+      (*it)->GetBaseWindow()->Show();
+  }
 
   if (focus_type == APP_SHIM_FOCUS_NORMAL ||
       (focus_type == APP_SHIM_FOCUS_REOPEN && !windows.empty())) {
     return;
   }
   delegate_->LaunchApp(profile, extension, files);
-}
-
-void ExtensionAppShimHandler::OnShimSetHidden(AppShimHost* host, bool hidden) {
-  if (host->UsesRemoteViews())
-    return;
-
-  Profile* profile;
-  const Extension* extension = MaybeGetExtensionOrCloseHost(host, &profile);
-  if (!extension)
-    return;
-
-  AppWindowList windows = delegate_->GetWindows(profile, host->GetAppId());
-  for (auto it = windows.rbegin(); it != windows.rend(); ++it) {
-    if (hidden)
-      (*it)->GetBaseWindow()->Hide();
-    else
-      (*it)->GetBaseWindow()->Show();
-  }
-}
-
-void ExtensionAppShimHandler::OnShimQuit(AppShimHost* host) {
-  if (host->UsesRemoteViews())
-    return;
-
-  Profile* profile;
-  const Extension* extension = MaybeGetExtensionOrCloseHost(host, &profile);
-  if (!extension)
-    return;
-
-  AppWindowList windows = delegate_->GetWindows(profile, host->GetAppId());
-  for (auto it = windows.begin(); it != windows.end(); ++it)
-    (*it)->GetBaseWindow()->Close();
-
-  // Once the last window closes, flow will end up in OnAppDeactivated via
-  // AppLifetimeMonitor.
 }
 
 void ExtensionAppShimHandler::set_delegate(Delegate* delegate) {

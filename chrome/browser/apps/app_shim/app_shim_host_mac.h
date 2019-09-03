@@ -54,15 +54,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
     virtual void OnShimFocus(AppShimHost* host,
                              apps::AppShimFocusType focus_type,
                              const std::vector<base::FilePath>& files) = 0;
-
-    // Invoked by the shim host when the shim process is hidden or shown. This
-    // is used only for non-RemoteCocoa.
-    virtual void OnShimSetHidden(AppShimHost* host, bool hidden) = 0;
-
-    // Invoked by the shim host when the shim process receives a quit event.
-    // This is used only for non-RemoteCocoa and could potentially be merged
-    // with OnShimProcessDisconnected.
-    virtual void OnShimQuit(AppShimHost* host) = 0;
   };
 
   AppShimHost(Client* client,
@@ -114,8 +105,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // chrome::mojom::AppShimHost.
   void FocusApp(apps::AppShimFocusType focus_type,
                 const std::vector<base::FilePath>& files) override;
-  void SetAppHidden(bool hidden) override;
-  void QuitApp() override;
 
   // Weak, owns |this|.
   Client* const client_;
