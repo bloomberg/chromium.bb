@@ -308,7 +308,7 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
     return;
   }
 
-  if (can_skip_quarantine_check()) {
+  if (CanSkipQuarantineCheck()) {
     state_ = State::kClosed;
     std::move(callback).Run(native_file_system_error::Ok());
     return;

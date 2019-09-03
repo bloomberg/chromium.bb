@@ -95,7 +95,7 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
         NativeFileSystemManagerImpl::SharedHandleState(
             permission_grant_, permission_grant_, std::move(fs)),
         /*has_transient_user_activation=*/false);
-    handle_->set_skip_quarantine_service_for_testing();
+    handle_->SetSkipQuarantineCheckForTesting();
   }
 
   void TearDown() override {
