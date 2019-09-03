@@ -1486,7 +1486,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 // │browser│                     │renderer│
 // └───────┘                     └────────┘
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       SchedulerTrackedFeaturesUpdatedWhileStoring) {
+                       DISABLED_SchedulerTrackedFeaturesUpdatedWhileStoring) {
   net::test_server::ControllableHttpResponse send_beacon_request(
       embedded_test_server(), "/beacon");
   ASSERT_TRUE(embedded_test_server()->Start());
