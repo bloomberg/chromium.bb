@@ -33,6 +33,11 @@ enum {
 };
 // clang-format on
 
+// Gralloc0 doesn't define a video decoder flag. However, the IAllocator gralloc0
+// passthrough gives the low 32-bits of the BufferUsage flags to gralloc0 in their
+// entirety, so we can detect the video decoder flag passed by IAllocator clients.
+#define BUFFER_USAGE_VIDEO_DECODER (1 << 22)
+
 static uint64_t gralloc0_convert_usage(int usage)
 {
 	uint64_t use_flags = BO_USE_NONE;
@@ -75,6 +80,8 @@ static uint64_t gralloc0_convert_usage(int usage)
 		use_flags |= BO_USE_CAMERA_READ;
 	if (usage & GRALLOC_USAGE_RENDERSCRIPT)
 		use_flags |= BO_USE_RENDERSCRIPT;
+	if (usage & BUFFER_USAGE_VIDEO_DECODER)
+		use_flags |= BO_USE_HW_VIDEO_DECODER;
 
 	return use_flags;
 }
