@@ -70,7 +70,6 @@
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -198,6 +197,7 @@ class VisitedLinkState;
 class WebComputedAXTree;
 class WebMouseEvent;
 class WorkletAnimationController;
+enum ContentSecurityPolicyDisposition : uint8_t;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
