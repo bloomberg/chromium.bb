@@ -351,27 +351,6 @@ public class BottomSheet
         void onSizeChanged(int width, int height, int oldWidth, int oldHeight);
     }
 
-    /**
-     * Returns whether the provided bottom sheet state is in one of the stable open or closed
-     * states: {@link #SheetState.FULL}, {@link #SheetState.PEEK} or {@link #SheetState.HALF}
-     * @param sheetState A {@link SheetState} to test.
-     */
-    public static boolean isStateStable(@SheetState int sheetState) {
-        switch (sheetState) {
-            case SheetState.HIDDEN:
-            case SheetState.PEEK:
-            case SheetState.HALF:
-            case SheetState.FULL:
-                return true;
-            case SheetState.SCROLLING:
-                return false;
-            case SheetState.NONE: // Should never be tested, internal only value.
-            default:
-                assert false;
-                return false;
-        }
-    }
-
     @Override
     public boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
         // If the sheet is scrolling off-screen or in the process of hiding, gestures should not

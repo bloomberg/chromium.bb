@@ -1492,7 +1492,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsOfflineModelObserver.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsRanker.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsRecyclerView.java",
-  "java/src/org/chromium/chrome/browser/suggestions/SuggestionsSheetVisibilityChangeObserver.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsUiDelegate.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsUiDelegateImpl.java",
   "java/src/org/chromium/chrome/browser/suggestions/ThumbnailGradient.java",
