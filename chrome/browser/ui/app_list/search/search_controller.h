@@ -21,6 +21,10 @@ class AppListModelUpdater;
 class ChromeSearchResult;
 class Profile;
 
+namespace service_manager {
+class Connector;
+}
+
 namespace app_list {
 
 class SearchResultRanker;
@@ -36,6 +40,8 @@ class SearchController {
                    AppListControllerDelegate* list_controller,
                    Profile* profile);
   virtual ~SearchController();
+
+  void InitializeRankers(service_manager::Connector* connector);
 
   void Start(const base::string16& query);
   void ViewClosing();
@@ -74,6 +80,8 @@ class SearchController {
  private:
   // Invoked when the search results are changed.
   void OnResultsChanged();
+
+  Profile* profile_;
 
   bool dispatching_query_ = false;
 

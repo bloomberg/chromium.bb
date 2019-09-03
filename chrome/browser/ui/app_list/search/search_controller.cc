@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
-#include "content/public/browser/system_connector.h"
 #include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
 
 using metrics::ChromeOSAppListLaunchEventProto;
@@ -70,19 +69,23 @@ std::string RemoveAppShortcutLabel(const std::string& id) {
 SearchController::SearchController(AppListModelUpdater* model_updater,
                                    AppListControllerDelegate* list_controller,
                                    Profile* profile)
-    : mixer_(std::make_unique<Mixer>(model_updater)),
-      list_controller_(list_controller) {
+    : profile_(profile),
+      mixer_(std::make_unique<Mixer>(model_updater)),
+      list_controller_(list_controller) {}
+
+SearchController::~SearchController() {}
+
+void SearchController::InitializeRankers(
+    service_manager::Connector* connector) {
   std::unique_ptr<SearchResultRanker> ranker =
       std::make_unique<SearchResultRanker>(
-          profile,
+          profile_,
           HistoryServiceFactory::GetForProfile(
-              profile, ServiceAccessType::EXPLICIT_ACCESS),
-          content::GetSystemConnector());
+              profile_, ServiceAccessType::EXPLICIT_ACCESS),
+          connector);
   ranker->InitializeRankers();
   mixer_->SetNonAppSearchResultRanker(std::move(ranker));
 }
-
-SearchController::~SearchController() {}
 
 void SearchController::Start(const base::string16& query) {
   dispatching_query_ = true;
