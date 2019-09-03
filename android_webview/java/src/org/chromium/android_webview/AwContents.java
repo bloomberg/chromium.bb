@@ -386,7 +386,7 @@ public class AwContents implements SmartClipProvider {
     private final AwContentsClientBridge mContentsClientBridge;
     private final AwWebContentsDelegateAdapter mWebContentsDelegate;
     private final AwContentsBackgroundThreadClient mBackgroundThreadClient;
-    private final AwContentsNetworkClient mNetworkClient;
+    private final AwContentsIoThreadClient mIoThreadClient;
     private final InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private InternalAccessDelegate mInternalAccessAdapter;
     private final NativeDrawFunctorFactory mNativeDrawFunctorFactory;
@@ -395,7 +395,7 @@ public class AwContents implements SmartClipProvider {
     private final AwScrollOffsetManager mScrollOffsetManager;
     private OverScrollGlow mOverScrollGlow;
     private final DisplayAndroidObserver mDisplayObserver;
-    // This can be accessed on any thread after construction. See AwContentsNetworkClient.
+    // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private final ScrollAccessibilityHelper mScrollAccessibilityHelper;
     private WebMessageListener mWebMessageListener;
@@ -602,8 +602,8 @@ public class AwContents implements SmartClipProvider {
     private CleanupReference mCleanupReference;
 
     //--------------------------------------------------------------------------------------------
-    private class NetworkClientImpl extends AwContentsNetworkClient {
-        // All methods are called on any thread.
+    private class IoThreadClientImpl extends AwContentsIoThreadClient {
+        // All methods are called on the IO thread.
 
         @Override
         public int getCacheMode() {
@@ -924,7 +924,7 @@ public class AwContents implements SmartClipProvider {
                     mContext, contentsClient, AwContentsStatics.getClientCertLookupTable());
             mZoomControls = new AwZoomControls(this);
             mBackgroundThreadClient = new BackgroundThreadClientImpl();
-            mNetworkClient = new NetworkClientImpl();
+            mIoThreadClient = new IoThreadClientImpl();
             mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
             mDisplayObserver = new AwDisplayAndroidObserver();
             mUpdateVisibilityRunnable = () -> updateWebContentsVisibility();
@@ -1269,7 +1269,7 @@ public class AwContents implements SmartClipProvider {
         initWebContents(mViewAndroidDelegate, mInternalAccessAdapter, mWebContents,
                 mWindowAndroid.getWindowAndroid(), mWebContentsInternalsHolder);
         AwContentsJni.get().setJavaPeers(mNativeAwContents, AwContents.this, this,
-                mWebContentsDelegate, mContentsClientBridge, mNetworkClient,
+                mWebContentsDelegate, mContentsClientBridge, mIoThreadClient,
                 mInterceptNavigationDelegate, mAutofillProvider);
         GestureListenerManager.fromWebContents(mWebContents)
                 .addListener(new AwGestureStateListener());
@@ -3980,7 +3980,8 @@ public class AwContents implements SmartClipProvider {
                 String script, JavaScriptCallback jsCallback);
         void setJavaPeers(long nativeAwContents, AwContents caller, AwContents awContents,
                 AwWebContentsDelegate webViewWebContentsDelegate,
-                AwContentsClientBridge contentsClientBridge, AwContentsNetworkClient ioThreadClient,
+                AwContentsClientBridge contentsClientBridge,
+                AwContentsIoThreadClient ioThreadClient,
                 InterceptNavigationDelegate navigationInterceptionDelegate,
                 AutofillProvider autofillProvider);
         WebContents getWebContents(long nativeAwContents, AwContents caller);
