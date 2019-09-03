@@ -673,6 +673,11 @@ class CBuildBotTest(ChromeosConfigTestBase):
       if build_name.startswith('betty'):
         continue
 
+      # Jetstream boards currently do not run hwtests in the release builder,
+      # b/140317527.
+      if build_name.startswith(('arkham', 'gale', 'mistral', 'whirlwind')):
+        continue
+
       if (config.build_type == 'canary' and 'test' in config.images and
           config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(

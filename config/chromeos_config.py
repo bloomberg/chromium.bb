@@ -3877,16 +3877,27 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_override': []
       },
 
+      'arkham-release': {
+          'hw_tests': [],
+          'hw_tests_override': [],
+      },
+
       'whirlwind-release': {
           'dev_installer_prebuilts': True,
+          'hw_tests': [],
+          'hw_tests_override': [],
       },
 
       'gale-release': {
           'dev_installer_prebuilts': True,
+          'hw_tests': [],
+          'hw_tests_override': [],
       },
 
       'mistral-release': {
           'dev_installer_prebuilts': True,
+          'hw_tests': [],
+          'hw_tests_override': [],
       },
 
       'lakitu-release': config_lib.BuildConfig().apply(
