@@ -387,7 +387,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                                               const LayoutObject*,
                                               unsigned = 0) const;
 
-  virtual bool IsLocalFrameView() const { return false; }
   virtual bool IsPaintLayerScrollableArea() const { return false; }
   virtual bool IsRootFrameViewport() const { return false; }
 
