@@ -1606,11 +1606,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "enable-search-ready-omnibox",
-    "owners": [ "mdjones" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "enable-send-tab-to-self",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
     "expiry_milestone": 77

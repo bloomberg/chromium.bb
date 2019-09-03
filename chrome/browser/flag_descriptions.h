@@ -1567,9 +1567,6 @@ extern const char kReaderModeInCCTDescription[];
 extern const char kSafeBrowsingUseLocalBlacklistsV2Name[];
 extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];
 
-extern const char kSearchReadyOmniboxName[];
-extern const char kSearchReadyOmniboxDescription[];
-
 extern const char kSetMarketUrlForTestingName[];
 extern const char kSetMarketUrlForTestingDescription[];
 

@@ -2650,11 +2650,6 @@ const char kSafeBrowsingUseLocalBlacklistsV2Description[] =
     "process to check the Safe Browsing reputation of URLs without calling "
     "into GmsCore for every URL.";
 
-const char kSearchReadyOmniboxName[] = "Search Ready Omnibox";
-const char kSearchReadyOmniboxDescription[] =
-    "Clears the omnibox and adds a suggestion item to share, copy, or edit the "
-    "URL.";
-
 const char kSetMarketUrlForTestingName[] = "Set market URL for testing";
 const char kSetMarketUrlForTestingDescription[] =
     "When enabled, sets the market URL for use in testing the update menu "
