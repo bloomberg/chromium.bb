@@ -6528,4 +6528,3 @@ crbug.com/1000124 [ Mac ] compositing/overflow/update-widget-positions-on-nested
 
 # Sheriff 2019-09-03
 crbug.com/999799 [ Mac Linux ] external/wpt/html/rendering/dimension-attributes.html [ Pass Timeout ]
-crbug.com/999814 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_origin.py [ Pass Failure ]
