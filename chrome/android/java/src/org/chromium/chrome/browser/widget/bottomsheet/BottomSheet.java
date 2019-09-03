@@ -192,12 +192,6 @@ public class BottomSheet
     private TouchRestrictingFrameLayout mBottomSheetContentContainer;
 
     /**
-     * The last ratio sent to observers of onTransitionPeekToHalf(). This is used to ensure the
-     * final value sent to these observers is 1.0f.
-     */
-    private float mLastPeekToHalfRatioSent;
-
-    /**
      * The last offset ratio sent to observers of onSheetOffsetChanged(). This is used to ensure the
      * min and max values are provided at least once (0 and 1).
      */
@@ -1062,21 +1056,6 @@ public class BottomSheet
         if (MathUtils.areFloatsEqual(
                     offsetWithBrowserControls, getSheetHeightForState(SheetState.PEEK))) {
             for (BottomSheetObserver o : mObservers) o.onSheetFullyPeeked();
-        }
-
-        // This ratio is relative to the peek and half positions of the sheet.
-        float peekHalfRatio = MathUtils.clamp(
-                (screenRatio - getPeekRatio()) / (getHalfRatio() - getPeekRatio()), 0, 1);
-
-        // If the ratio is close enough to zero, just set it to zero.
-        if (MathUtils.areFloatsEqual(peekHalfRatio, 0f)) peekHalfRatio = 0f;
-
-        if (peekHalfRatio != mLastPeekToHalfRatioSent
-                && (mLastPeekToHalfRatioSent < 1f || peekHalfRatio < 1f)) {
-            mLastPeekToHalfRatioSent = peekHalfRatio;
-            for (BottomSheetObserver o : mObservers) {
-                o.onTransitionPeekToHalf(peekHalfRatio);
-            }
         }
     }
 
