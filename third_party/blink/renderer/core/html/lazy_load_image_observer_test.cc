@@ -907,6 +907,7 @@ class LazyLoadAutomaticImagesTest : public SimTest {
         ScrollOffset(0, kLoadingDistanceThreshold + kViewportHeight),
         kProgrammaticScroll);
     Compositor().BeginFrame();
+    test::RunPendingTasks();
     full_resource.Complete(ReadTestImage());
     ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
         KURL("https://example.com/image.png")));
@@ -1349,6 +1350,7 @@ TEST_F(LazyLoadAutomaticImagesTest, LazyLoadDisabledOnReload) {
                             LazyLoadAutomaticImagesTest::kViewportHeight),
         kProgrammaticScroll);
     Compositor().BeginFrame();
+    test::RunPendingTasks();
     auto_image.Complete(ReadTestImage());
     lazy_image.Complete(ReadTestImage());
     test::RunPendingTasks();
@@ -1376,6 +1378,7 @@ TEST_F(LazyLoadAutomaticImagesTest, LazyLoadDisabledOnReload) {
     SimSubresourceRequest lazy_image("https://example.com/image_lazy.png",
                                      "image/png");
     Compositor().BeginFrame();
+    test::RunPendingTasks();
     lazy_image.Complete(ReadTestImage());
     test::RunPendingTasks();
     histogram_tester.ExpectTotalCount(

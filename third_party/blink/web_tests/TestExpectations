@@ -6361,3 +6361,5 @@ crbug.com/987138 [ Linux Win ] media/controls/doubletap-to-jump-forwards.html [ 
 
 # Sheriff 2019-08-14
 crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
+
+crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
