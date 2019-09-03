@@ -468,11 +468,12 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
 
-    // TODO(crbug.com/983103): Add an accessible name.
     arrow_button_ = AddChildView(std::make_unique<ArrowButtonView>(
         /*listener=*/this, kChallengeResponseArrowSizeDp));
     arrow_button_->SetBackgroundColor(kChallengeResponseArrowBackgroundColor);
     arrow_button_->SetFocusPainter(nullptr);
+    arrow_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_START_SMART_CARD_AUTH_BUTTON_ACCESSIBLE_NAME));
 
     arrow_to_icon_spacer_ = AddChildView(std::make_unique<NonAccessibleView>());
     arrow_to_icon_spacer_->SetPreferredSize(
@@ -747,7 +748,6 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   password_view_ = password_view.get();
   password_view->SetPaintToLayer();  // Needed for opacity animation.
   password_view->layer()->SetFillsBoundsOpaquely(false);
-  password_view->UpdateForUser(user);
 
   auto pin_view = std::make_unique<LoginPinView>(
       LoginPinView::Style::kAlphanumeric,
@@ -993,6 +993,17 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
     password_view_->SetPlaceholderText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PLACEHOLDER));
   }
+  const std::string& user_display_email =
+      current_user().basic_user_info.display_email;
+  if (security_token_pin_request_) {
+    password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_POD_SMART_CARD_PIN_FIELD_ACCESSIBLE_NAME,
+        base::UTF8ToUTF16(user_display_email)));
+  } else {
+    password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME,
+        base::UTF8ToUTF16(user_display_email)));
+  }
 
   // Only the active auth user view has a password displayed. If that is the
   // case, then render the user view as if it was always focused, since clicking
@@ -1152,7 +1163,6 @@ void LoginAuthUserView::UpdateForUser(const LoginUserInfo& user) {
   const bool user_changed = current_user().basic_user_info.account_id !=
                             user.basic_user_info.account_id;
   user_view_->UpdateForUser(user, true /*animate*/);
-  password_view_->UpdateForUser(user);
   if (user_changed)
     password_view_->Clear();
   online_sign_in_message_->SetText(
