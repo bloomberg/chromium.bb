@@ -86,6 +86,7 @@ def temporary_directory(base):
     if os.path.isdir(tmpdir):
       shutil.rmtree(tmpdir)
 
+
 def ensure_gsutil(version, target, clean):
   bin_dir = os.path.join(target, 'gsutil_%s' % version)
   gsutil_bin = os.path.join(bin_dir, 'gsutil', 'gsutil')
@@ -182,6 +183,7 @@ def main():
   args = parse_args()
   return run_gsutil(args.force_version, args.fallback, args.target, args.args,
                     clean=args.clean)
+
 
 if __name__ == '__main__':
   sys.exit(main())

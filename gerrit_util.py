@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 """
-Utilities for requesting information for a gerrit server via https.
+Utilities for requesting information for a Gerrit server via HTTPS.
 
 https://gerrit-review.googlesource.com/Documentation/rest-api.html
 """
@@ -44,7 +44,7 @@ LOGGER = logging.getLogger()
 TRY_LIMIT = 7
 
 
-# Controls the transport protocol used to communicate with gerrit.
+# Controls the transport protocol used to communicate with Gerrit.
 # This is parameterized primarily to enable GerritTestCase.
 GERRIT_PROTOCOL = 'https'
 
@@ -143,7 +143,7 @@ class CookiesAuthenticator(Authenticator):
   @classmethod
   def get_new_password_message(cls, host):
     if host is None:
-      return ('Git host for gerrit upload is unknown. Check your remote '
+      return ('Git host for Gerrit upload is unknown. Check your remote '
               'and the branch your branch is tracking. This tool assumes '
               'that you are using a git server at *.googlesource.com.')
     assert not host.startswith('http')
@@ -321,7 +321,6 @@ class GceAuthenticator(Authenticator):
         time.sleep(next_delay_sec)
         next_delay_sec *= 2
 
-
   @classmethod
   def _get_token_dict(cls):
     if cls._token_cache:
@@ -366,7 +365,7 @@ class LuciContextAuthenticator(Authenticator):
 
 
 def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
-  """Opens an https connection to a gerrit service, and sends a request."""
+  """Opens an HTTPS connection to a Gerrit service, and sends a request."""
   headers = headers or {}
   bare_host = host.partition(':')[0]
 
@@ -407,7 +406,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
 
 
 def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
-  """Reads an http response from a connection into a string buffer.
+  """Reads an HTTP response from a connection into a string buffer.
 
   Args:
     conn: An Http object created by CreateHttpConn above.
@@ -445,8 +444,8 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       LOGGER.debug('got response %d for %s %s', response.status,
                    conn.req_params['method'], conn.req_params['uri'])
       # If 404 was in accept_statuses, then it's expected that the file might
-      # not exist, so don't return the gitiles error page because that's not the
-      # "content" that was actually requested.
+      # not exist, so don't return the gitiles error page because that's not
+      # the "content" that was actually requested.
       if response.status == 404:
         contents = ''
       break
@@ -511,6 +510,7 @@ def QueryChanges(host, params, first_param=None, limit=None, o_params=None,
     start: how many changes to skip (starting with the most recent)
     o_params: A list of additional output specifiers, as documented here:
         https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
+
   Returns:
     A list of json-decoded query results.
   """
@@ -529,11 +529,11 @@ def QueryChanges(host, params, first_param=None, limit=None, o_params=None,
 
 def GenerateAllChanges(host, params, first_param=None, limit=500,
                        o_params=None, start=None):
-  """
-  Queries a gerrit-on-borg server for all the changes matching the query terms.
+  """Queries a gerrit-on-borg server for all the changes matching the query
+  terms.
 
   WARNING: this is unreliable if a change matching the query is modified while
-    this function is being called.
+  this function is being called.
 
   A single query to gerrit-on-borg is limited on the number of results by the
   limit parameter on the request (see QueryChanges) and the server maximum
@@ -549,6 +549,7 @@ def GenerateAllChanges(host, params, first_param=None, limit=500,
     A generator object to the list of returned changes.
   """
   already_returned = set()
+
   def at_most_once(cls):
     for cl in cls:
       if cl['_number'] not in already_returned:
@@ -615,12 +616,12 @@ def MultiQueryChanges(host, params, change_list, limit=None, o_params=None,
 
 
 def GetGerritFetchUrl(host):
-  """Given a gerrit host name returns URL of a gerrit instance to fetch from."""
+  """Given a Gerrit host name returns URL of a Gerrit instance to fetch from."""
   return '%s://%s/' % (GERRIT_PROTOCOL, host)
 
 
 def GetCodeReviewTbrScore(host, project):
-  """Given a gerrit host name and project, return the Code-Review score for TBR.
+  """Given a Gerrit host name and project, return the Code-Review score for TBR.
   """
   conn = CreateHttpConn(host, '/projects/%s' % urllib.quote(project, safe=''))
   project = ReadHttpJsonResponse(conn)
@@ -632,23 +633,23 @@ def GetCodeReviewTbrScore(host, project):
 
 
 def GetChangePageUrl(host, change_number):
-  """Given a gerrit host name and change number, return change page url."""
+  """Given a Gerrit host name and change number, returns change page URL."""
   return '%s://%s/#/c/%d/' % (GERRIT_PROTOCOL, host, change_number)
 
 
 def GetChangeUrl(host, change):
-  """Given a gerrit host name and change id, return an url for the change."""
+  """Given a Gerrit host name and change ID, returns a URL for the change."""
   return '%s://%s/a/changes/%s' % (GERRIT_PROTOCOL, host, change)
 
 
 def GetChange(host, change):
-  """Query a gerrit server for information about a single change."""
+  """Queries a Gerrit server for information about a single change."""
   path = 'changes/%s' % change
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
 def GetChangeDetail(host, change, o_params=None):
-  """Query a gerrit server for extended information about a single change."""
+  """Queries a Gerrit server for extended information about a single change."""
   path = 'changes/%s/detail' % change
   if o_params:
     path += '?%s' % '&'.join(['o=%s' % p for p in o_params])
@@ -656,7 +657,7 @@ def GetChangeDetail(host, change, o_params=None):
 
 
 def GetChangeCommit(host, change, revision='current'):
-  """Query a gerrit server for a revision associated with a change."""
+  """Query a Gerrit server for a revision associated with a change."""
   path = 'changes/%s/revisions/%s/commit?links' % (change, revision)
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
@@ -667,12 +668,12 @@ def GetChangeCurrentRevision(host, change):
 
 
 def GetChangeRevisions(host, change):
-  """Get information about all revisions associated with a change."""
+  """Gets information about all revisions associated with a change."""
   return QueryChanges(host, [], change, o_params=('ALL_REVISIONS',))
 
 
 def GetChangeReview(host, change, revision=None):
-  """Get the current review information for a change."""
+  """Gets the current review information for a change."""
   if not revision:
     jmsg = GetChangeRevisions(host, change)
     if not jmsg:
@@ -691,13 +692,13 @@ def GetChangeComments(host, change):
 
 
 def GetChangeRobotComments(host, change):
-  """Get the line- and file-level robot comments on a change."""
+  """Gets the line- and file-level robot comments on a change."""
   path = 'changes/%s/robotcomments' % change
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
 def AbandonChange(host, change, msg=''):
-  """Abandon a gerrit change."""
+  """Abandons a Gerrit change."""
   path = 'changes/%s/abandon' % change
   body = {'message': msg} if msg else {}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
@@ -705,7 +706,7 @@ def AbandonChange(host, change, msg=''):
 
 
 def RestoreChange(host, change, msg=''):
-  """Restore a previously abandoned change."""
+  """Restores a previously abandoned change."""
   path = 'changes/%s/restore' % change
   body = {'message': msg} if msg else {}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
@@ -713,7 +714,7 @@ def RestoreChange(host, change, msg=''):
 
 
 def SubmitChange(host, change, wait_for_merge=True):
-  """Submits a gerrit change via Gerrit."""
+  """Submits a Gerrit change via Gerrit."""
   path = 'changes/%s/submit' % change
   body = {'wait_for_merge': wait_for_merge}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
@@ -734,7 +735,7 @@ def HasPendingChangeEdit(host, change):
 
 def DeletePendingChangeEdit(host, change):
   conn = CreateHttpConn(host, 'changes/%s/edit' % change, reqtype='DELETE')
-  # On success, gerrit returns status 204; if the edit was already deleted it
+  # On success, Gerrit returns status 204; if the edit was already deleted it
   # returns 404.  Anything else is an error.
   ReadHttpResponse(conn, accept_statuses=[204, 404])
 
@@ -755,13 +756,13 @@ def SetCommitMessage(host, change, description, notify='ALL'):
 
 
 def GetReviewers(host, change):
-  """Get information about all reviewers attached to a change."""
+  """Gets information about all reviewers attached to a change."""
   path = 'changes/%s/reviewers' % change
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
 def GetReview(host, change, revision):
-  """Get review information about a specific revision of a change."""
+  """Gets review information about a specific revision of a change."""
   path = 'changes/%s/revisions/%s/review' % (change, revision)
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
@@ -810,7 +811,7 @@ def AddReviewers(host, change, reviewers=None, ccs=None, notify=True,
 
 
 def RemoveReviewers(host, change, remove=None):
-  """Remove reveiewers from a change."""
+  """Removes reviewers from a change."""
   if not remove:
     return
   if isinstance(remove, basestring):
@@ -828,7 +829,7 @@ def RemoveReviewers(host, change, remove=None):
 
 
 def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
-  """Set labels and/or add a message to a code review."""
+  """Sets labels and/or adds a message to a code review."""
   if not msg and not labels:
     return
   path = 'changes/%s/revisions/current/review' % change
@@ -853,7 +854,7 @@ def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
 
 def ResetReviewLabels(host, change, label, value='0', message=None,
                       notify=None):
-  """Reset the value of a given label for all reviewers on a change."""
+  """Resets the value of a given label for all reviewers on a change."""
   # This is tricky, because we want to work on the "current revision", but
   # there's always the risk that "current revision" will change in between
   # API calls.  So, we check "current revision" at the beginning and end; if
@@ -898,12 +899,12 @@ def ResetReviewLabels(host, change, label, value='0', message=None,
 
 
 def CreateGerritBranch(host, project, branch, commit):
-  """
-  Create a new branch from given project and commit
+  """Creates a new branch from given project and commit
+
   https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#create-branch
 
   Returns:
-    A JSON with 'ref' key
+    A JSON object with 'ref' key.
   """
   path = 'projects/%s/branches/%s' % (project, branch)
   body = {'revision': commit}
@@ -915,12 +916,13 @@ def CreateGerritBranch(host, project, branch, commit):
 
 
 def GetGerritBranch(host, project, branch):
-  """
-  Get a branch from given project and commit
+  """Gets a branch from given project and commit.
+
+  See:
   https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#get-branch
 
   Returns:
-    A JSON object with 'revision' key
+    A JSON object with 'revision' key.
   """
   path = 'projects/%s/branches/%s' % (project, branch)
   conn = CreateHttpConn(host, path, reqtype='GET')
@@ -937,7 +939,7 @@ def GetAccountDetails(host, account_id='self'):
   whichever account user is authenticating as.
 
   Documentation:
-    https://gerrit-review.googlesource.com/Documentation/rest-api-accounts.html#get-account
+  https://gerrit-review.googlesource.com/Documentation/rest-api-accounts.html#get-account
 
   Returns None if account is not found (i.e., Gerrit returned 404).
   """
@@ -955,11 +957,13 @@ def ValidAccounts(host, accounts, max_threads=10):
   accounts = list(set(accounts))
   if not accounts:
     return {}
+
   def get_one(account):
     try:
       return account, GetAccountDetails(host, account)
     except GerritError:
       return None, None
+
   valid = {}
   with contextlib.closing(ThreadPool(min(max_threads, len(accounts)))) as pool:
     for account, details in pool.map(get_one, accounts):
@@ -969,12 +973,11 @@ def ValidAccounts(host, accounts, max_threads=10):
 
 
 def PercentEncodeForGitRef(original):
-  """Apply percent-encoding for strings sent to gerrit via git ref metadata.
+  """Applies percent-encoding for strings sent to Gerrit via git ref metadata.
 
-  The encoding used is based on but stricter than URL encoding (Section 2.1
-  of RFC 3986). The only non-escaped characters are alphanumerics, and
-  'SPACE' (U+0020) can be represented as 'LOW LINE' (U+005F) or
-  'PLUS SIGN' (U+002B).
+  The encoding used is based on but stricter than URL encoding (Section 2.1 of
+  RFC 3986). The only non-escaped characters are alphanumerics, and 'SPACE'
+  (U+0020) can be represented as 'LOW LINE' (U+005F) or 'PLUS SIGN' (U+002B).
 
   For more information, see the Gerrit docs here:
 
@@ -983,7 +986,7 @@ def PercentEncodeForGitRef(original):
   safe = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 '
   encoded = ''.join(c if c in safe else '%%%02X' % ord(c) for c in original)
 
-  # spaces are not allowed in git refs; gerrit will interpret either '_' or
+  # Spaces are not allowed in git refs; gerrit will interpret either '_' or
   # '+' (or '%20') as space. Use '_' since that has been supported the longest.
   return encoded.replace(' ', '_')
 
@@ -1016,12 +1019,12 @@ assert all(3 == len(p) for p in _GERRIT_MIRROR_PREFIXES)
 
 
 def _UseGerritMirror(url, host):
-  """Returns new url which uses randomly selected mirror for a gerrit host.
+  """Returns a new URL which uses randomly selected mirror for a Gerrit host.
 
-  url's host should be for a given host or a result of prior call to this
+  The URL's host should be for a given host or a result of prior call to this
   function.
 
-  Assumes url has a single occurence of the host substring.
+  Assumes that the URL has a single occurence of the host substring.
   """
   assert host in url
   suffix = '-mirror-' + host
@@ -1032,7 +1035,7 @@ def _UseGerritMirror(url, host):
     actual_host = host
   else:
     # Already uses some mirror.
-    assert st >= prefix_len, (uri, host, st, prefix_len)
+    assert st >= prefix_len, (url, host, st, prefix_len)
     prefixes.remove(url[st-prefix_len:st])
     actual_host = url[st-prefix_len:st+len(suffix)]
   return url.replace(actual_host, random.choice(list(prefixes)) + suffix)

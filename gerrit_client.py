@@ -19,14 +19,11 @@ import sys
 import urllib
 import urlparse
 
-from third_party import colorama
 import fix_encoding
 import gerrit_util
 import setup_color
 
 __version__ = '0.1'
-# Shortcut since it quickly becomes redundant.
-Fore = colorama.Fore
 
 
 def write_result(result, opt):
@@ -46,6 +43,7 @@ def CMDbranchinfo(parser, args):
   result = gerrit_util.GetGerritBranch(host, project, branch)
   logging.info(result)
   write_result(result, opt)
+
 
 @subcommand.usage('[args ...]')
 def CMDbranch(parser, args):
@@ -124,7 +122,7 @@ class OptionParser(optparse.OptionParser):
 def main(argv):
   if sys.hexversion < 0x02060000:
     print('\nYour python version %s is unsupported, please upgrade.\n'
-          %(sys.version.split(' ', 1)[0],),
+          % (sys.version.split(' ', 1)[0],),
           file=sys.stderr)
     return 2
   dispatcher = subcommand.CommandDispatcher(__name__)

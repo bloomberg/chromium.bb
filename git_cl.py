@@ -15,7 +15,6 @@ import base64
 import collections
 import contextlib
 import datetime
-import fnmatch
 import httplib
 import itertools
 import json
@@ -42,11 +41,9 @@ from third_party import httplib2
 import auth
 import clang_format
 import dart_format
-import setup_color
 import fix_encoding
 import gclient_utils
 import gerrit_util
-import git_cache
 import git_common
 import git_footers
 import metrics
@@ -55,6 +52,7 @@ import owners
 import owners_finder
 import presubmit_support
 import scm
+import setup_color
 import split_cl
 import subcommand
 import subprocess2
@@ -112,10 +110,10 @@ DEFAULT_LINT_IGNORE_REGEX = r"$^"
 # File name for yapf style config files.
 YAPF_CONFIG_FILENAME = '.style.yapf'
 
-# Buildbucket master name prefix.
+# Buildbucket master name prefix for Buildbot masters.
 MASTER_PREFIX = 'master.'
 
-# Shortcut since it quickly becomes redundant.
+# Shortcut since it quickly becomes repetitive.
 Fore = colorama.Fore
 
 # Initialized in main()
@@ -194,7 +192,7 @@ def IsGitVersionAtLeast(min_version):
   prefix = 'git version '
   version = RunGit(['--version']).strip()
   return (version.startswith(prefix) and
-      LooseVersion(version[len(prefix):]) >= LooseVersion(min_version))
+          LooseVersion(version[len(prefix):]) >= LooseVersion(min_version))
 
 
 def BranchExists(branch):
@@ -276,7 +274,7 @@ def _git_get_branch_config_value(key, default=None, value_type=str,
   args = ['config']
   if value_type == bool:
     args.append('--bool')
-  # git config also has --int, but apparently git config suffers from integer
+  # `git config` also has --int, but apparently git config suffers from integer
   # overflows (http://crbug.com/640115), so don't use it.
   args.append(_git_branch_config_key(branch, key))
   code, out = RunGitWithCode(args)
@@ -307,8 +305,8 @@ def _git_set_branch_config_value(key, value, branch=None, **kwargs):
     args.append('--bool')
     value = str(value).lower()
   else:
-    # git config also has --int, but apparently git config suffers from integer
-    # overflows (http://crbug.com/640115), so don't use it.
+    # `git config` also has --int, but apparently git config suffers from
+    # integer overflows (http://crbug.com/640115), so don't use it.
     value = str(value)
   args.append(_git_branch_config_key(branch, key))
   if value is not None:
@@ -321,7 +319,7 @@ def _get_committer_timestamp(commit):
 
   Commit can be whatever git show would recognize, such as HEAD, sha1 or ref.
   """
-  # Git also stores timezone offset, but it only affects visual display,
+  # Git also stores timezone offset, but it only affects visual display;
   # actual point in time is defined by this timestamp only.
   return int(RunGit(['show', '-s', '--format=%ct', commit]).strip())
 
@@ -395,9 +393,9 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
     if response.status == 200:
       if content_json is None:
         raise BuildbucketResponseException(
-            'Buildbucket returns invalid json content: %s.\n'
+            'Buildbucket returned invalid JSON content: %s.\n'
             'Please file bugs at http://crbug.com, '
-            'component "Infra>Platform>BuildBucket".' %
+            'component "Infra>Platform>Buildbucket".' %
             content)
       return content_json
     if response.status < 500 or try_count >= 2:
@@ -405,14 +403,14 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
 
     # status >= 500 means transient failures.
     logging.debug('Transient errors when %s. Will retry.', operation_name)
-    time_sleep(0.5 + 1.5*try_count)
+    time_sleep(0.5 + (1.5 * try_count))
     try_count += 1
   assert False, 'unreachable'
 
 
 def _get_bucket_map(changelist, options, option_parser):
   """Returns a dict mapping bucket names to builders and tests,
-  for triggering try jobs.
+  for triggering tryjobs.
   """
   # If no bots are listed, we try to get a set of builders and tests based
   # on GetPreferredTryMasters functions in PRESUBMIT.py files.
@@ -443,11 +441,11 @@ def _get_bucket_map(changelist, options, option_parser):
 
 
 def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
-  """Sends a request to Buildbucket to trigger try jobs for a changelist.
+  """Sends a request to Buildbucket to trigger tryjobs for a changelist.
 
   Args:
     auth_config: AuthConfig for Buildbucket.
-    changelist: Changelist that the try jobs are associated with.
+    changelist: Changelist that the tryjobs are associated with.
     buckets: A nested dict mapping bucket names to builders to tests.
     options: Command-line options.
   """
@@ -522,7 +520,7 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
       )
 
   _buildbucket_retry(
-      'triggering try jobs',
+      'triggering tryjobs',
       http,
       buildbucket_put_url,
       'PUT',
@@ -536,7 +534,7 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
 
 def fetch_try_jobs(auth_config, changelist, buildbucket_host,
                    patchset=None):
-  """Fetches try jobs from buildbucket.
+  """Fetches tryjobs from buildbucket.
 
   Returns a map from build id to build info as a dictionary.
   """
@@ -570,7 +568,7 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
     url = 'https://{hostname}/_ah/api/buildbucket/v1/search?{params}'.format(
         hostname=buildbucket_host,
         params=urllib.urlencode(params))
-    content = _buildbucket_retry('fetching try jobs', http, url, 'GET')
+    content = _buildbucket_retry('fetching tryjobs', http, url, 'GET')
     for build in content.get('builds', []):
       builds[build['id']] = build
     if 'next_cursor' in content:
@@ -583,7 +581,7 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
 def print_try_jobs(options, builds):
   """Prints nicely result of fetch_try_jobs."""
   if not builds:
-    print('No try jobs scheduled.')
+    print('No tryjobs scheduled.')
     return
 
   # Make a copy, because we'll be modifying builds dictionary.
@@ -676,7 +674,7 @@ def print_try_jobs(options, builds):
   pop(title='Other:',
       f=lambda b: (get_name(b), 'id=%s' % b['id']))
   assert len(builds) == 0
-  print('Total: %d try jobs' % total)
+  print('Total: %d tryjobs' % total)
 
 
 def _ComputeDiffLineRanges(files, upstream_commit):
@@ -734,8 +732,8 @@ def _FindYapfConfigFile(fpath, yapf_config_cache, top_dir=None):
   """Checks if a yapf file is in any parent directory of fpath until top_dir.
 
   Recursively checks parent directories to find yapf file and if no yapf file
-  is found returns None. Uses yapf_config_cache as a cache for
-  previously found configs.
+  is found returns None. Uses yapf_config_cache as a cache for previously found
+  configs.
   """
   fpath = os.path.abspath(fpath)
   # Return result if we've already computed it.
@@ -873,14 +871,14 @@ class Settings(object):
     return self._GetConfig('rietveld.cc', error_ok=True)
 
   def GetIsGerrit(self):
-    """Return true if this repo is associated with gerrit code review system."""
+    """Returns True if this repo is associated with Gerrit."""
     if self.is_gerrit is None:
       self.is_gerrit = (
           self._GetConfig('gerrit.host', error_ok=True).lower() == 'true')
     return self.is_gerrit
 
   def GetSquashGerritUploads(self):
-    """Return true if uploads to Gerrit should be squashed by default."""
+    """Returns True if uploads to Gerrit should be squashed by default."""
     if self.squash_gerrit_uploads is None:
       self.squash_gerrit_uploads = self.GetSquashGerritUploadsOverride()
       if self.squash_gerrit_uploads is None:
@@ -914,7 +912,7 @@ class Settings(object):
     return self.gerrit_skip_ensure_authenticated
 
   def GetGitEditor(self):
-    """Return the editor specified in the git config, or None if none is."""
+    """Returns the editor specified in the git config, or None if none is."""
     if self.git_editor is None:
       # Git requires single quotes for paths with spaces. We need to replace
       # them with double quotes for Windows to treat such paths as a single
@@ -1357,8 +1355,8 @@ class Changelist(object):
       self._cached_remote_url = (True, url)
       return url
 
-    # If it cannot be parsed as an url, assume it is a local directory, probably
-    # a git cache.
+    # If it cannot be parsed as an url, assume it is a local directory,
+    # probably a git cache.
     logging.warning('"%s" doesn\'t appear to point to a git host. '
                     'Interpreting it as a local directory.', url)
     if not os.path.isdir(url):
@@ -1428,7 +1426,7 @@ class Changelist(object):
     raw_description = self.GetDescription()
     msg_lines, _, footers = git_footers.split_footers(raw_description)
     if footers:
-      msg_lines = msg_lines[:len(msg_lines)-1]
+      msg_lines = msg_lines[:len(msg_lines) - 1]
     return msg_lines, footers
 
   def GetPatchset(self):
@@ -1601,10 +1599,9 @@ class Changelist(object):
       base_branch = self.GetCommonAncestorWithUpstream()
       git_diff_args = [base_branch, 'HEAD']
 
-
-    # Fast best-effort checks to abort before running potentially
-    # expensive hooks if uploading is likely to fail anyway. Passing these
-    # checks does not guarantee that uploading will not fail.
+    # Fast best-effort checks to abort before running potentially expensive
+    # hooks if uploading is likely to fail anyway. Passing these checks does
+    # not guarantee that uploading will not fail.
     self._codereview_impl.EnsureAuthenticated(force=options.force)
     self._codereview_impl.EnsureCanUploadPatchset(force=options.force)
 
@@ -1718,11 +1715,11 @@ class Changelist(object):
     return self._codereview_impl.GetMostRecentPatchset()
 
   def CannotTriggerTryJobReason(self):
-    """Returns reason (str) if unable trigger try jobs on this CL or None."""
+    """Returns reason (str) if unable trigger tryjobs on this CL or None."""
     return self._codereview_impl.CannotTriggerTryJobReason()
 
   def GetTryJobProperties(self, patchset=None):
-    """Returns dictionary of properties to launch try job."""
+    """Returns dictionary of properties to launch tryjob."""
     return self._codereview_impl.GetTryJobProperties(patchset=patchset)
 
   def __getattr__(self, attr):
@@ -1861,7 +1858,7 @@ class _ChangelistCodereviewBase(object):
     raise NotImplementedError()
 
   def CannotTriggerTryJobReason(self):
-    """Returns reason (str) if unable trigger try jobs on this CL or None."""
+    """Returns reason (str) if unable trigger tryjobs on this CL or None."""
     raise NotImplementedError()
 
   def GetIssueOwner(self):
@@ -1899,7 +1896,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       parsed = urlparse.urlparse(self.GetRemoteUrl())
       if parsed.scheme == 'sso':
         print('WARNING: using non-https URLs for remote is likely broken\n'
-              '  Your current remote is: %s'  % self.GetRemoteUrl())
+              '  Your current remote is: %s' % self.GetRemoteUrl())
         self._gerrit_host = '%s.googlesource.com' % self._gerrit_host
         self._gerrit_server = 'https://%s' % self._gerrit_host
     return self._gerrit_host
@@ -2075,7 +2072,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     return presubmit_support.GerritAccessor(self._GetGerritHost())
 
   def GetStatus(self):
-    """Apply a rough heuristic to give a simple summary of an issue's review
+    """Applies a rough heuristic to give a simple summary of an issue's review
     or CQ status, assuming adherence to a common workflow.
 
     Returns None if no issue for this branch, or one of the following keywords:
@@ -2327,7 +2324,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def _IsCqConfigured(self):
     detail = self._GetChangeDetail(['LABELS'])
-    if not u'Commit-Queue' in detail.get('labels', {}):
+    if u'Commit-Queue' not in detail.get('labels', {}):
       return False
     # TODO(crbug/753213): Remove temporary hack
     if ('https://chromium.googlesource.com/chromium/src' ==
@@ -2482,8 +2479,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     hook = os.path.join(settings.GetRoot(), '.git', 'hooks', 'commit-msg')
     if not os.path.exists(hook):
       return
-    # Crude attempt to distinguish Gerrit Codereview hook from potentially
-    # custom developer made one.
+    # Crude attempt to distinguish Gerrit Codereview hook from a potentially
+    # custom developer-made one.
     data = gclient_utils.FileRead(hook)
     if not('From Gerrit Code Review' in data and 'add_ChangeId()' in data):
       return
@@ -2978,9 +2975,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def SetCQState(self, new_state):
     """Sets the Commit-Queue label assuming canonical CQ config for Gerrit."""
     vote_map = {
-        _CQState.NONE:    0,
-        _CQState.DRY_RUN: 1,
-        _CQState.COMMIT:  2,
+      _CQState.NONE: 0,
+      _CQState.DRY_RUN: 1,
+      _CQState.COMMIT: 2,
     }
     labels = {'Commit-Queue': vote_map[new_state]}
     notify = False if new_state == _CQState.DRY_RUN else None
@@ -2998,7 +2995,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       return 'CL %s is closed' % self.GetIssue()
 
   def GetTryJobProperties(self, patchset=None):
-    """Returns dictionary of properties to launch try job."""
+    """Returns dictionary of properties to launch a tryjob."""
     data = self._GetChangeDetail(['ALL_REVISIONS'])
     patchset = int(patchset or self.GetPatchset())
     assert patchset
@@ -3420,7 +3417,7 @@ def FindCodereviewSettingsFile(filename='codereview.settings'):
 
 
 def LoadCodereviewSettingsFromFile(fileobj):
-  """Parse a codereview.settings file and updates hooks."""
+  """Parses a codereview.settings file and updates hooks."""
   keyvals = gclient_utils.ParseCodereviewSettingsContent(fileobj.read())
 
   def SetProperty(name, setting, unset_error_ok=False):
@@ -3463,8 +3460,10 @@ def LoadCodereviewSettingsFromFile(fileobj):
 
 
 def urlretrieve(source, destination):
-  """urllib is broken for SSL connections via a proxy therefore we
-  can't use urllib.urlretrieve()."""
+  """Downloads a network object to a local file, like urllib.urlretrieve.
+
+  This is necessary because urllib is broken for SSL connections via a proxy.
+  """
   with open(destination, 'w') as f:
     f.write(urllib2.urlopen(source).read())
 
@@ -3481,7 +3480,7 @@ def DownloadHooks(*args, **kwargs):
 
 
 def DownloadGerritHook(force):
-  """Download and install Gerrit commit-msg hook.
+  """Downloads and installs a Gerrit commit-msg hook.
 
   Args:
     force: True to update hooks. False to install hooks if not present.
@@ -3769,7 +3768,7 @@ class _GitCookiesChecker(object):
         found = True
         print('\n\n.gitcookies problem report:\n')
       bad_hosts.update(hosts or [])
-      print('  %s%s' % (title , (':' if sublines else '')))
+      print('  %s%s' % (title, (':' if sublines else '')))
       if sublines:
         print()
         print('    %s' % '\n    '.join(sublines))
@@ -3832,6 +3831,7 @@ def CMDbaseurl(parser, args):
     print('Setting base-url to %s' % args[0])
     return RunGit(['config', 'branch.%s.base-url' % branch, args[0]],
                   error_ok=False).strip()
+
 
 def color_for_status(status):
   """Maps a Changelist status to color, for CMDstatus and other tools."""
@@ -3910,18 +3910,19 @@ def upload_branch_deps(cl, args):
   """Uploads CLs of local branches that are dependents of the current branch.
 
   If the local branch dependency tree looks like:
-  test1 -> test2.1 -> test3.1
-                   -> test3.2
-        -> test2.2 -> test3.3
+
+    test1 -> test2.1 -> test3.1
+                     -> test3.2
+          -> test2.2 -> test3.3
 
   and you run "git cl upload --dependencies" from test1 then "git cl upload" is
   run on the dependent branches in this order:
   test2.1, test3.1, test3.2, test2.2, test3.3
 
-  Note: This function does not rebase your local dependent branches. Use it when
-        you make a change to the parent branch that will not conflict with its
-        dependent branches, and you would like their dependencies updated in
-        Rietveld.
+  Note: This function does not rebase your local dependent branches. Use it
+        when you make a change to the parent branch that will not conflict
+        with its dependent branches, and you would like their dependencies
+        updated in Rietveld.
   """
   if git_common.is_dirty_git_tree('upload-branch-deps'):
     return 1
@@ -3941,8 +3942,8 @@ def upload_branch_deps(cl, args):
     print('No local branches found.')
     return 0
 
-  # Create a dictionary of all local branches to the branches that are dependent
-  # on it.
+  # Create a dictionary of all local branches to the branches that are
+  # dependent on it.
   tracked_to_dependents = collections.defaultdict(list)
   for b in branches.splitlines():
     tokens = b.split()
@@ -3953,6 +3954,7 @@ def upload_branch_deps(cl, args):
   print()
   print('The dependent local branches of %s are:' % root_branch)
   dependents = []
+
   def traverse_dependents_preorder(branch, padding=''):
     dependents_to_process = tracked_to_dependents.get(branch, [])
     padding += '  '
@@ -3960,6 +3962,7 @@ def upload_branch_deps(cl, args):
       print('%s%s' % (padding, dependent))
       dependents.append(dependent)
       traverse_dependents_preorder(dependent, padding)
+
   traverse_dependents_preorder(root_branch)
   print()
 
@@ -4557,14 +4560,14 @@ def CMDpresubmit(parser, args):
 
 
 def GenerateGerritChangeId(message):
-  """Returns Ixxxxxx...xxx change id.
+  """Returns the Change ID footer value (Ixxxxxx...xxx).
 
   Works the same way as
   https://gerrit-review.googlesource.com/tools/hooks/commit-msg
   but can be called on demand on all platforms.
 
-  The basic idea is to generate git hash of a state of the tree, original commit
-  message, author/committer info and timestamps.
+  The basic idea is to generate git hash of a state of the tree, original
+  commit message, author/committer info and timestamps.
   """
   lines = []
   tree_hash = RunGitSilent(['write-tree'])
@@ -4656,16 +4659,16 @@ def CMDupload(parser, args):
 
   Can skip dependency patchset uploads for a branch by running:
     git config branch.branch_name.skip-deps-uploads True
-  To unset run:
+  To unset, run:
     git config --unset branch.branch_name.skip-deps-uploads
   Can also set the above globally by using the --global flag.
 
-  If the name of the checked out branch starts with "bug-" or "fix-" followed by
-  a bug number, this bug number is automatically populated in the CL
+  If the name of the checked out branch starts with "bug-" or "fix-" followed
+  by a bug number, this bug number is automatically populated in the CL
   description.
 
   If subject contains text in square brackets or has "<text>: " prefix, such
-  text(s) is treated as Gerrit hashtags. For example, CLs with subjects
+  text(s) is treated as Gerrit hashtags. For example, CLs with subjects:
     [git-cl] add support for hashtags
     Foo bar: implement foo
   will be hashtagged with "git-cl" and "foo-bar" respectively.
@@ -4797,22 +4800,22 @@ def CMDsplit(parser, args):
   comment, the string '$directory', is replaced with the directory containing
   the shared OWNERS file.
   """
-  parser.add_option("-d", "--description", dest="description_file",
-                    help="A text file containing a CL description in which "
-                         "$directory will be replaced by each CL's directory.")
-  parser.add_option("-c", "--comment", dest="comment_file",
-                    help="A text file containing a CL comment.")
-  parser.add_option("-n", "--dry-run", dest="dry_run", action='store_true',
+  parser.add_option('-d', '--description', dest='description_file',
+                    help='A text file containing a CL description in which '
+                         '$directory will be replaced by each CL\'s directory.')
+  parser.add_option('-c', '--comment', dest='comment_file',
+                    help='A text file containing a CL comment.')
+  parser.add_option('-n', '--dry-run', dest='dry_run', action='store_true',
                     default=False,
-                    help="List the files and reviewers for each CL that would "
-                         "be created, but don't create branches or CLs.")
-  parser.add_option("--cq-dry-run", action='store_true',
-                    help="If set, will do a cq dry run for each uploaded CL. "
-                         "Please be careful when doing this; more than ~10 CLs "
-                         "has the potential to overload our build "
-                         "infrastructure. Try to upload these not during high "
-                         "load times (usually 11-3 Mountain View time). Email "
-                         "infra-dev@chromium.org with any questions.")
+                    help='List the files and reviewers for each CL that would '
+                         'be created, but don\'t create branches or CLs.')
+  parser.add_option('--cq-dry-run', action='store_true',
+                    help='If set, will do a cq dry run for each uploaded CL. '
+                         'Please be careful when doing this; more than ~10 CLs '
+                         'has the potential to overload our build '
+                         'infrastructure. Try to upload these not during high '
+                         'load times (usually 11-3 Mountain View time). Email '
+                         'infra-dev@chromium.org with any questions.')
   parser.add_option('-a', '--enable-auto-submit', action='store_true',
                     default=True,
                     help='Sends your change to the CQ after an approval. Only '
@@ -4894,7 +4897,6 @@ def CMDpatch(parser, args):
                         'attempting a 3-way merge. Rietveld only.')
   parser.add_option('-n', '--no-commit', action='store_true', dest='nocommit',
                     help='don\'t commit after patch applies. Rietveld only.')
-
 
   group = optparse.OptionGroup(
       parser,
@@ -5029,8 +5031,8 @@ def CMDtree(parser, args):
 
 @metrics.collector.collect_metrics('git cl try')
 def CMDtry(parser, args):
-  """Triggers tryjobs using either BuildBucket or CQ dry run."""
-  group = optparse.OptionGroup(parser, 'Try job options')
+  """Triggers tryjobs using either Buildbucket or CQ dry run."""
+  group = optparse.OptionGroup(parser, 'Tryjob options')
   group.add_option(
       '-b', '--bot', action='append',
       help=('IMPORTANT: specify ONE builder per --bot flag. Use it multiple '
@@ -5046,7 +5048,7 @@ def CMDtry(parser, args):
       help=('DEPRECATED, use -B. The try master where to run the builds.'))
   group.add_option(
       '-r', '--revision',
-      help='Revision to use for the try job; default: the revision will '
+      help='Revision to use for the tryjob; default: the revision will '
            'be determined by the try recipe that builder runs, which usually '
            'defaults to HEAD of origin/master')
   group.add_option(
@@ -5065,8 +5067,8 @@ def CMDtry(parser, args):
       help='Specify generic properties in the form -p key1=value1 -p '
            'key2=value2 etc. The value will be treated as '
            'json if decodable, or as string otherwise. '
-           'NOTE: using this may make your try job not usable for CQ, '
-           'which will then schedule another try job with default properties')
+           'NOTE: using this may make your tryjob not usable for CQ, '
+           'which will then schedule another tryjob with default properties')
   group.add_option(
       '--buildbucket-host', default='cr-buildbucket.appspot.com',
       help='Host of buildbucket. The default host is %default.')
@@ -5099,7 +5101,7 @@ def CMDtry(parser, args):
 
   error_message = cl.CannotTriggerTryJobReason()
   if error_message:
-    parser.error('Can\'t trigger try jobs: %s' % error_message)
+    parser.error('Can\'t trigger tryjobs: %s' % error_message)
 
   if options.bucket and options.master:
     parser.error('Only one of --bucket and --master may be used.')
@@ -5134,7 +5136,7 @@ def CMDtry(parser, args):
 @metrics.collector.collect_metrics('git cl try-results')
 def CMDtry_results(parser, args):
   """Prints info about results for tryjobs associated with the current CL."""
-  group = optparse.OptionGroup(parser, 'Try job results options')
+  group = optparse.OptionGroup(parser, 'Tryjob results options')
   group.add_option(
       '-p', '--patchset', type=int, help='patchset number if not current.')
   group.add_option(
@@ -5146,7 +5148,7 @@ def CMDtry_results(parser, args):
       '--buildbucket-host', default='cr-buildbucket.appspot.com',
       help='Host of buildbucket. The default host is %default.')
   group.add_option(
-      '--json', help=('Path of JSON output file to write try job results to,'
+      '--json', help=('Path of JSON output file to write tryjob results to,'
                       'or "-" for stdout.'))
   parser.add_option_group(group)
   auth.add_auth_options(parser)
@@ -5220,8 +5222,8 @@ def CMDweb(parser, args):
     return 1
 
   # Redirect I/O before invoking browser to hide its output. For example, this
-  # allows to hide "Created new window in existing browser session." message
-  # from Chrome. Based on https://stackoverflow.com/a/2323563.
+  # allows us to hide the "Created new window in existing browser session."
+  # message from Chrome. Based on https://stackoverflow.com/a/2323563.
   saved_stdout = os.dup(1)
   saved_stderr = os.dup(2)
   os.close(1)
@@ -5638,13 +5640,13 @@ def CMDformat(parser, args):
         return_value = 2  # Not formatted.
       elif opts.diff and gn_ret == 2:
         # TODO this should compute and print the actual diff.
-        print("This change has GN build file diff for " + gn_diff_file)
+        print('This change has GN build file diff for ' + gn_diff_file)
       elif gn_ret != 0:
         # For non-dry run cases (and non-2 return values for dry-run), a
         # nonzero error code indicates a failure, probably because the file
         # doesn't parse.
-        DieWithError("gn format failed on " + gn_diff_file +
-                     "\nTry running 'gn format' on this file manually.")
+        DieWithError('gn format failed on ' + gn_diff_file +
+                     '\nTry running `gn format` on this file manually.')
 
   # Skip the metrics formatting from the global presubmit hook. These files have
   # a separate presubmit hook that issues an error if the files need formatting,
@@ -5664,13 +5666,15 @@ def CMDformat(parser, args):
 
   return return_value
 
+
 def GetDirtyMetricsDirs(diff_files):
   xml_diff_files = [x for x in diff_files if MatchingFileType(x, ['.xml'])]
   metrics_xml_dirs = [
     os.path.join('tools', 'metrics', 'actions'),
     os.path.join('tools', 'metrics', 'histograms'),
     os.path.join('tools', 'metrics', 'rappor'),
-    os.path.join('tools', 'metrics', 'ukm')]
+    os.path.join('tools', 'metrics', 'ukm'),
+  ]
   for xml_dir in metrics_xml_dirs:
     if any(file.startswith(xml_dir) for file in xml_diff_files):
       yield xml_dir
@@ -5782,7 +5786,7 @@ class OptionParser(optparse.OptionParser):
 
 def main(argv):
   if sys.hexversion < 0x02060000:
-    print('\nYour python version %s is unsupported, please upgrade.\n' %
+    print('\nYour Python version %s is unsupported, please upgrade.\n' %
           (sys.version.split(' ', 1)[0],), file=sys.stderr)
     return 2
 
@@ -5796,14 +5800,14 @@ def main(argv):
     if e.code != 500:
       raise
     DieWithError(
-        ('AppEngine is misbehaving and returned HTTP %d, again. Keep faith '
+        ('App Engine is misbehaving and returned HTTP %d, again. Keep faith '
          'and retry or visit go/isgaeup.\n%s') % (e.code, str(e)))
   return 0
 
 
 if __name__ == '__main__':
-  # These affect sys.stdout so do it outside of main() to simplify mocks in
-  # unit testing.
+  # These affect sys.stdout, so do it outside of main() to simplify mocks in
+  # the unit tests.
   fix_encoding.fix_encoding()
   setup_color.init()
   with metrics.collector.print_notice_and_exit():
