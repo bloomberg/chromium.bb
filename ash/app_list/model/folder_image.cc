@@ -26,9 +26,6 @@ namespace app_list {
 
 namespace {
 
-// The margin of item icon in folder icon.
-constexpr int kItemIconMargin = 2;
-
 // The shadow blur of icon.
 constexpr int kIconShadowBlur = 5;
 
@@ -189,10 +186,10 @@ std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
                               icon_center.y() - item_icon_dimension / 2,
                               item_icon_dimension, item_icon_dimension);
 
-  const int origin_offset = (AppListConfig::instance().folder_icon_dimension() -
-                             item_icon_dimension) /
-                                2 -
-                            kItemIconMargin;
+  const int origin_offset =
+      (item_icon_dimension +
+       AppListConfig::instance().item_icon_in_folder_icon_margin()) /
+      2;
 
   const int scaled_folder_unclipped_icon_dimension =
       app_list_config.folder_unclipped_icon_dimension();
