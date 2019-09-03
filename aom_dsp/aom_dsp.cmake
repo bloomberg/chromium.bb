@@ -167,6 +167,7 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/binary_codes_writer.c"
               "${AOM_ROOT}/aom_dsp/binary_codes_writer.h"
               "${AOM_ROOT}/aom_dsp/bitwriter.h"
+              "${AOM_ROOT}/aom_dsp/blk_sse_sum.c"
               "${AOM_ROOT}/aom_dsp/daalaboolwriter.c"
               "${AOM_ROOT}/aom_dsp/daalaboolwriter.h"
               "${AOM_ROOT}/aom_dsp/entenc.c"
@@ -243,6 +244,7 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/variance_impl_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/obmc_sad_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/obmc_variance_avx2.c"
+              "${AOM_ROOT}/aom_dsp/x86/blk_sse_sum_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/sum_squares_avx2.c")
 
   list(APPEND AOM_DSP_ENCODER_AVX_ASM_X86_64

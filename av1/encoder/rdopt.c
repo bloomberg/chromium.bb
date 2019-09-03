@@ -4954,20 +4954,6 @@ static void tx_type_rd(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   }
 }
 
-static void get_blk_sse_sum_c(const int16_t *data, int stride, int bw, int bh,
-                              int *x_sum, int64_t *x2_sum) {
-  *x_sum = 0;
-  *x2_sum = 0;
-  for (int i = 0; i < bh; ++i) {
-    for (int j = 0; j < bw; ++j) {
-      const int val = data[j];
-      *x_sum += val;
-      *x2_sum += val * val;
-    }
-    data += stride;
-  }
-}
-
 static float get_dev(float mean, double x2_sum, int num) {
   const float e_x2 = (float)(x2_sum / num);
   const float diff = e_x2 - mean * mean;
@@ -4996,8 +4982,8 @@ static void get_mean_dev_features(const int16_t *data, int stride, int bw,
       int x_sum;
       int64_t x2_sum;
       // TODO(any): Write a SIMD version. Clear registers.
-      get_blk_sse_sum_c(data_ptr + row * stride + col, stride, subw, subh,
-                        &x_sum, &x2_sum);
+      aom_get_blk_sse_sum(data_ptr + row * stride + col, stride, subw, subh,
+                          &x_sum, &x2_sum);
       total_x_sum += x_sum;
       total_x2_sum += x2_sum;
 
