@@ -17107,7 +17107,7 @@
     {
       'name': 'ExternalPrintServers',
       'owners': ['file://chromeos/printing/OWNERS'],
-      'type': 'dict',
+      'type': 'external',
       'schema': {
         'type': 'object',
         'properties': {
@@ -17123,7 +17123,6 @@
       },
       'id': 572,
       'supported_on': ['chrome_os:78-'],
-      'future': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
