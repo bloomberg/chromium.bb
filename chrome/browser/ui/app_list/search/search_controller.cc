@@ -233,4 +233,9 @@ void SearchController::Train(AppLaunchData&& app_launch_data) {
   mixer_->Train(app_launch_data);
 }
 
+void SearchController::AppListShown() {
+  for (const auto& provider : providers_)
+    provider->AppListShown();
+}
+
 }  // namespace app_list

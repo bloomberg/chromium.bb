@@ -63,6 +63,9 @@ class SearchController {
   // Sends training signal to each |providers_|
   void Train(AppLaunchData&& app_launch_data);
 
+  // Invoked when the app list is shown.
+  void AppListShown();
+
   // Gets the search result ranker owned by the Mixer that is used for all
   // other ranking.
   SearchResultRanker* GetNonAppSearchResultRanker();
