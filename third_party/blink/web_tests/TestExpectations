@@ -6527,3 +6527,4 @@ crbug.com/999473 external/wpt/streams/writable-streams/properties.any.html [ Pas
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.worker.html [ Pass Failure ]
 
 crbug.com/1000051 [ Mac ] virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
+crbug.com/1000124 [ Mac ] compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Crash ]
