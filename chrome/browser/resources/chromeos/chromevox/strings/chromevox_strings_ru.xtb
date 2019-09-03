@@ -335,7 +335,7 @@
 <translation id="3323447499041942178">Текстовое поле</translation>
 <translation id="3324983252691184275">Малиновый</translation>
 <translation id="3338224621010291843">Ползунок <ph name="VALUE" /> <ph name="NAME" /></translation>
-<translation id="335581015389089642">Озвучить</translation>
+<translation id="335581015389089642">Озвучивание</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{знак плюс}one{# знак плюс}few{# знака плюс}many{# знаков плюс}other{# plus signs}}</translation>
 <translation id="338583716107319301">Разделитель</translation>
@@ -410,7 +410,7 @@
 <translation id="3930383913623796990">Весенне-зеленый</translation>
 <translation id="3930498801443296724">Цитата в виде врезки</translation>
 <translation id="3936394396199829062">Розово-лавандовый</translation>
-<translation id="3941269780691800708">Произносить текст под мышью</translation>
+<translation id="3941269780691800708">Произносить текст под указателем мыши</translation>
 <translation id="394953087167197343">Опечатка:</translation>
 <translation id="3962990492275676168">Читать с текущего места</translation>
 <translation id="3970951409746498040">Песочно-коричневый</translation>

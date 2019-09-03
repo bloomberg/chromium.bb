@@ -1041,9 +1041,9 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Jika kebijakan ini digunakan, hanya printer dengan id yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. Id harus sesuai dengan kolom "id" atau "guid" dalam file yang ditentukan di <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2842152347010310843">Mengontrol pola URL yang diizinkan dengan autoplay yang akan selalu diaktifkan.
+<translation id="2842152347010310843">Mengontrol pola URL yang diizinkan dengan putar otomatis yang akan selalu diaktifkan.
 
-      Jika autoplay diaktifkan, video dapat diputar otomatis (tanpa persetujuan pengguna) dengan konten audio di <ph name="PRODUCT_NAME" />.
+      Jika putar otomatis diaktifkan, video dapat diputar otomatis (tanpa persetujuan pengguna) dengan konten audio di <ph name="PRODUCT_NAME" />.
 
       Spesifikasi pola URL yang valid adalah:
 
