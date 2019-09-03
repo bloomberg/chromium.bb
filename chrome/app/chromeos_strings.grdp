@@ -1076,31 +1076,31 @@
     Battery isn't charging
   </message>
   <message name="IDS_WILCO_NOTIFICATION_BATTERY_AUTH_MESSAGE" desc="The message of the notification shown to inform the user that an unauthorized battery is connected to a Chromebook.">
-    To charge this Chromebook, use a battery from the same brand.
+    To charge this Chromebook, use a compatible Dell battery.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_TITLE" desc="The title of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
     Power adapter issue
   </message>
   <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_MESSAGE" desc="The message of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
-    Please use a USB Type-C power adapter or an adapter from the same brand as your Chromebook.
+    To avoid charging and performance issues, use a compatible Dell or USB Type-C power adapter.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_TITLE" desc="The title of the notification shown to inform the user that attached dock is incompatible.">
-    Not all features on this dock are supported
+    Dock isn't fully compatible
   </message>
   <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_MESSAGE" desc="The message of the notification shown to inform the user that attached dock is incompatible.">
-    Use a docking station designed to work with this Chromebook.
+    To get additional features, use a Dell docking station designed to work with this Chromebook.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_TITLE" desc="The title of the notification shown to inform the user that attached dock presents hardware failures.">
-    Dock has an issue
+    Dock fan needs service
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_MESSAGE" desc="The message of the notification shown to inform the user that attached dock presents hardware failures.">
-    Your dock needs to be serviced. Without a working fan your dock will shut down.
+    Contact Dell for service. The dock will shut down if the fan isn't working.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_TITLE" desc="The title of the notification shown to inform the user that HDMI and USB Type-C cannot be used for displays at the same time with the attached dock.">
-    Display connected to the dock has an issue
+    Dock video-port issue
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_MESSAGE" desc="The message of the notification shown to inform the user that HDMI and USB Type-C cannot be used for displays at the same time with the attached dock.">
-    Your dock's HDMI port can't be used when the USB Type-C port is used for video output. Please use a different port for one of the displays.
+    HDMI and USB Type-C ports can't be used for video at the same time. Use a different video port.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_TITLE" desc="The title of the notification shown to inform the user that attached dock will operate in USB Type-C compatible mode.">
     Thunderbolt is not supported
