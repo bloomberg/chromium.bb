@@ -42,7 +42,6 @@
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
@@ -197,6 +196,7 @@ class WebComputedAXTree;
 class WebMouseEvent;
 class WorkletAnimationController;
 enum ContentSecurityPolicyDisposition : uint8_t;
+enum class CSSPropertyID;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
