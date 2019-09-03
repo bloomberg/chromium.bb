@@ -948,6 +948,11 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   if (auth_disabled)
     disabled_auth_message_->RequestFocus();
 
+  // Adjust the PIN keyboard visibility before the password textfield's one, so
+  // that when both are about to be hidden the focus doesn't jump to the "1"
+  // keyboard button, causing unexpected accessibility effects.
+  pin_view_->SetVisible(has_pin);
+
   password_view_->SetEnabled(has_password);
   password_view_->SetEnabledOnEmptyPassword(has_tap);
   password_view_->SetFocusEnabledForChildViews(has_password);
@@ -958,7 +963,6 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   if (!had_password && has_password)
     password_view_->RequestFocus();
 
-  pin_view_->SetVisible(has_pin);
   fingerprint_view_->SetVisible(has_fingerprint);
   challenge_response_view_->SetVisible(has_challenge_response);
   external_binary_auth_button_->SetVisible(has_external_binary);
