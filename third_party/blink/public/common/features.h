@@ -47,9 +47,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kRTCGetDisplayMedia;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCOfferExtmapAllowMixed;
-BLINK_COMMON_EXPORT extern const base::Feature kWebRtcHWH264Encoding;
-BLINK_COMMON_EXPORT extern const base::Feature kWebRtcHWVP8Encoding;
-BLINK_COMMON_EXPORT extern const base::Feature kWebRtcHWVP9Encoding;
 
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcH264WithOpenH264FFmpeg;

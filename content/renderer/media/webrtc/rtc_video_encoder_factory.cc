@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
@@ -31,7 +32,7 @@ base::Optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
 
   if (profile.profile >= media::VP8PROFILE_MIN &&
       profile.profile <= media::VP8PROFILE_MAX) {
-    if (base::FeatureList::IsEnabled(blink::features::kWebRtcHWVP8Encoding)) {
+    if (base::FeatureList::IsEnabled(features::kWebRtcHWVP8Encoding)) {
       return webrtc::SdpVideoFormat("VP8");
     }
   } else if (profile.profile >= media::H264PROFILE_MIN &&
@@ -45,7 +46,7 @@ base::Optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
         blink::features::kWebRtcH264WithOpenH264FFmpeg);
 #endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
     if (webrtc_h264_sw_enabled ||
-        base::FeatureList::IsEnabled(blink::features::kWebRtcHWH264Encoding)) {
+        base::FeatureList::IsEnabled(features::kWebRtcHWH264Encoding)) {
       webrtc::H264::Profile h264_profile;
       switch (profile.profile) {
         case media::H264PROFILE_BASELINE:
@@ -90,7 +91,7 @@ base::Optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
     }
   } else if (profile.profile >= media::VP9PROFILE_MIN &&
              profile.profile <= media::VP9PROFILE_MAX) {
-    if (base::FeatureList::IsEnabled(blink::features::kWebRtcHWVP9Encoding)) {
+    if (base::FeatureList::IsEnabled(features::kWebRtcHWVP9Encoding)) {
       return webrtc::SdpVideoFormat("VP9");
     }
   }
