@@ -670,6 +670,10 @@ const char kEnableURLLoaderLitePageServerPreviewsDescription[] =
     "This requires enable-lite-page-server-previews to be enabled along with "
     "network-service.";
 
+const char kEnablePreviewsCoinFlipName[] = "Enable Previews Coin Flip";
+const char kEnablePreviewsCoinFlipDescription[] =
+    "Enable coin flip experimentation of Previews.";
+
 const char kBuiltInModuleAllName[] = "All experimental built-in modules";
 const char kBuiltInModuleAllDescription[] =
     "Enable all experimental built-in modules, as well as built-in module "
