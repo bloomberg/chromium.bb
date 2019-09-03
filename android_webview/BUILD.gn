@@ -883,6 +883,7 @@ android_library("android_webview_java") {
     ":strings_grd",
     ":system_webview_manifest",
     "//base:base_java",
+    "//base:jni_java",
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
@@ -907,6 +908,7 @@ android_library("android_webview_java") {
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   if (enable_spellcheck) {
     deps += [ "//components/spellcheck/browser/android:java" ]
