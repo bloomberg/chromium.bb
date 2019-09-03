@@ -12,5 +12,5 @@ interface IProfile {
 
   void clearBrowsingData() = 1;
 
-  IBrowserController createBrowserController(in IObjectWrapper activity) = 2;
+  IBrowserController createBrowserController(in IObjectWrapper context) = 2;
 }

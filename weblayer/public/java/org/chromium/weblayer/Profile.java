@@ -4,7 +4,7 @@
 
 package org.chromium.weblayer;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.RemoteException;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
@@ -48,10 +48,10 @@ public final class Profile {
         }
     }
 
-    public BrowserController createBrowserController(Activity activity) {
+    public BrowserController createBrowserController(Context context) {
         try {
             return new BrowserController(
-                    mImpl.createBrowserController(ObjectWrapper.wrap(activity)));
+                    mImpl.createBrowserController(ObjectWrapper.wrap(context)));
         } catch (RemoteException e) {
             Log.e(TAG, "Failed to call createBrowserController.", e);
             throw new AndroidRuntimeException(e);

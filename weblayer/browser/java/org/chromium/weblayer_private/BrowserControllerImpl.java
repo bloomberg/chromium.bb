@@ -4,7 +4,7 @@
 
 package org.chromium.weblayer_private;
 
-import android.app.Activity;
+import android.content.Context;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -58,15 +58,14 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         public void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix) {}
     }
 
-    public BrowserControllerImpl(Activity activity, ProfileImpl profile) {
+    public BrowserControllerImpl(Context context, ProfileImpl profile) {
         mProfile = profile;
 
-        mLinearLayout = new LinearLayout(activity);
+        mLinearLayout = new LinearLayout(context);
         mLinearLayout.setOrientation(LinearLayout.VERTICAL);
 
-        mWindowAndroid = new ActivityWindowAndroid(activity);
-        mContentView = new ContentViewRenderView(activity);
-        activity.setContentView(mLinearLayout);
+        mWindowAndroid = new ActivityWindowAndroid(context);
+        mContentView = new ContentViewRenderView(context);
         mWindowAndroid.setAnimationPlaceholderView(mContentView.getSurfaceView());
 
         mContentView.onNativeLibraryLoaded(mWindowAndroid);
@@ -107,6 +106,11 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                     new LinearLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 0f));
         }
+    }
+
+    @Override
+    public IObjectWrapper onCreateView() {
+        return ObjectWrapper.wrap(mLinearLayout);
     }
 
     // TODO: this is temporary, move to NavigationControllerImpl.

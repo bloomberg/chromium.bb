@@ -15,4 +15,6 @@ interface IBrowserController {
   void setTopView(in IObjectWrapper view) = 2;
 
   void destroy() = 3;
+
+  IObjectWrapper onCreateView() = 4;
 }

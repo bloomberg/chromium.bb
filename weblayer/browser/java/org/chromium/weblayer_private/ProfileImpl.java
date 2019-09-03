@@ -4,7 +4,7 @@
 
 package org.chromium.weblayer_private;
 
-import android.app.Activity;
+import android.content.Context;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.weblayer_private.aidl.IBrowserController;
@@ -32,8 +32,8 @@ public final class ProfileImpl extends IProfile.Stub {
     }
 
     @Override
-    public IBrowserController createBrowserController(IObjectWrapper activity) {
-        return new BrowserControllerImpl(ObjectWrapper.unwrap(activity, Activity.class), this);
+    public IBrowserController createBrowserController(IObjectWrapper context) {
+        return new BrowserControllerImpl(ObjectWrapper.unwrap(context, Context.class), this);
     }
 
     long getNativeProfile() {

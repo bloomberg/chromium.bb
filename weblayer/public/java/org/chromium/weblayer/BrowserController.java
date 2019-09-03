@@ -32,6 +32,7 @@ public final class BrowserController {
             Log.e(TAG, "Failed to call setClient.", e);
             throw new AndroidRuntimeException(e);
         }
+
         mNavigationController = new NavigationController(this);
         mObservers = new CopyOnWriteArrayList<BrowserObserver>();
     }
@@ -67,6 +68,15 @@ public final class BrowserController {
             mImpl.destroy();
         } catch (RemoteException e) {
             Log.e(TAG, "Failed to call destroy.", e);
+            throw new AndroidRuntimeException(e);
+        }
+    }
+
+    public View onCreateView() {
+        try {
+            return ObjectWrapper.unwrap(mImpl.onCreateView(), View.class);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to call onCreateView.", e);
             throw new AndroidRuntimeException(e);
         }
     }
