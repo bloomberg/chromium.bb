@@ -745,7 +745,8 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
     else {
         display_output_surface =
             std::make_unique<content::SoftwareBrowserCompositorOutputSurface>(
-                std::unique_ptr<viz::SoftwareOutputDevice>());
+                viz::CreateSoftwareOutputDeviceWin(gpu_surface_handle,
+                    d_context.software_output_device_backing(), nullptr));
     }
 
     // The viz::DisplayScheduler:
