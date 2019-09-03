@@ -81,7 +81,7 @@ SyncEngineBackend::SyncEngineBackend(const std::string& name,
 }
 
 SyncEngineBackend::~SyncEngineBackend() {
-  DCHECK(!sync_manager_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 bool SyncEngineBackend::OnMemoryDump(
