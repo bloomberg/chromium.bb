@@ -233,8 +233,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - CreditCardConsumer
 
-// TODO(crbug.com/984545): This method will be called from
-// CreditCardScannerMediator after it is implemented.
 - (void)setCreditCardNumber:(NSString*)cardNumber
             expirationMonth:(NSString*)expirationMonth
              expirationYear:(NSString*)expirationYear {

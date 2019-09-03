@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_coordinator.h"
 
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/scanner/scanner_presenting.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_consumer.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_view_controller.h"
@@ -24,17 +26,34 @@
 @property(nonatomic, strong)
     CreditCardScannerMediator* creditCardScannerMediator;
 
+// The consumer for credit card scanner.
+@property(nonatomic, weak) id<CreditCardConsumer> creditCardConsumer;
+
 @end
 
 @implementation CreditCardScannerCoordinator
+
+#pragma mark - Lifecycle
+
+- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
+                        creditCardConsumer:
+                            (id<CreditCardConsumer>)creditCardConsumer {
+  self = [super initWithBaseViewController:baseViewController browserState:nil];
+  if (self) {
+    DCHECK(self);
+    _creditCardConsumer = creditCardConsumer;
+  }
+  return self;
+}
 
 #pragma mark - ChromeCoordinator
 
 - (void)start {
   [super start];
 
-  self.creditCardScannerMediator =
-      [[CreditCardScannerMediator alloc] initWithDelegate:self];
+  self.creditCardScannerMediator = [[CreditCardScannerMediator alloc]
+        initWithDelegate:self
+      creditCardConsumer:self.creditCardConsumer];
 
   self.creditCardScannerViewController =
       [[CreditCardScannerViewController alloc]

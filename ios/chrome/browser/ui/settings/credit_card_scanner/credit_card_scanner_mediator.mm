@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_consumer.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_util.h"
 
@@ -27,6 +28,9 @@ using base::UserMetricsAction;
 // Delegate notified when a card has been scanned.
 @property(nonatomic, weak) id<CreditCardScannerMediatorDelegate>
     creditCardScannerMediatorDelegate;
+
+// This property is for an interface which notfies the credit card consumer.
+@property(nonatomic, weak) id<CreditCardConsumer> creditCardConsumer;
 
 // The card number set after |textRecognitionRequest| from recognised text on
 // the card.
@@ -46,11 +50,13 @@ using base::UserMetricsAction;
 
 #pragma mark - Lifecycle
 
-- (instancetype)initWithDelegate:
-    (id<CreditCardScannerMediatorDelegate>)creditCardScannerMediatorDelegate {
+- (instancetype)initWithDelegate:(id<CreditCardScannerMediatorDelegate>)
+                                     creditCardScannerMediatorDelegate
+              creditCardConsumer:(id<CreditCardConsumer>)creditCardConsumer {
   self = [super init];
   if (self) {
     _creditCardScannerMediatorDelegate = creditCardScannerMediatorDelegate;
+    _creditCardConsumer = creditCardConsumer;
   }
   return self;
 }
@@ -122,6 +128,14 @@ using base::UserMetricsAction;
       continue;
     }
     [self extractDataFromText:candidate.string];
+  }
+
+  if (self.cardNumber) {
+    [self.creditCardConsumer setCreditCardNumber:self.cardNumber
+                                 expirationMonth:self.expirationMonth
+                                  expirationYear:self.expirationYear];
+    [self.creditCardScannerMediatorDelegate
+        creditCardScannerMediatorDidFinishScan:self];
   }
 }
 
