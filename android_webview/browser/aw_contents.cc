@@ -668,8 +668,8 @@ void AwContents::RequestProtectedMediaIdentifierPermission(
     const GURL& origin,
     base::OnceCallback<void(bool)> callback) {
   permission_request_handler_->SendRequest(
-      std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
-          origin, AwPermissionRequest::ProtectedMediaId, std::move(callback))));
+      std::make_unique<SimplePermissionRequest>(
+          origin, AwPermissionRequest::ProtectedMediaId, std::move(callback)));
 }
 
 void AwContents::CancelProtectedMediaIdentifierPermissionRequests(
@@ -691,8 +691,8 @@ void AwContents::RequestGeolocationPermission(
     return;
   }
   permission_request_handler_->SendRequest(
-      std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
-          origin, AwPermissionRequest::Geolocation, std::move(callback))));
+      std::make_unique<SimplePermissionRequest>(
+          origin, AwPermissionRequest::Geolocation, std::move(callback)));
 }
 
 void AwContents::CancelGeolocationPermissionRequests(const GURL& origin) {
@@ -713,8 +713,8 @@ void AwContents::RequestMIDISysexPermission(
     const GURL& origin,
     base::OnceCallback<void(bool)> callback) {
   permission_request_handler_->SendRequest(
-      std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
-          origin, AwPermissionRequest::MIDISysex, std::move(callback))));
+      std::make_unique<SimplePermissionRequest>(
+          origin, AwPermissionRequest::MIDISysex, std::move(callback)));
 }
 
 void AwContents::CancelMIDISysexPermissionRequests(const GURL& origin) {
