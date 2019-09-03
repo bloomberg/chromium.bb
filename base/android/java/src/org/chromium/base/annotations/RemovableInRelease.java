@@ -8,15 +8,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Methods with this annotation will always be removed in release builds.
- * If they cannot be safely removed, then the build will break.
+ * The annotated function can be removed in release builds.
  *
- * "Safely removed" refers to how return values are used. The current
- * ProGuard rules are configured such that:
- *  - methods that return an object will always return null.
- *  - methods that return boolean will always return false.
- *  - methods that return other primitives are removed so long as their return
- *    values are not used.
+ * Calls to this function will be removed if its return value is not used. If all calls are removed,
+ * the function definition itself will be candidate for removal.
+ * It works by indicating to Proguard that the function has no side effects.
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface RemovableInRelease {}

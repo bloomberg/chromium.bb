@@ -40,11 +40,20 @@
     public static **[] values();
 }
 
-# Allows Proguard freedom in removing these log related calls.
+# Allows Proguard freedom in removing these log related calls. We ask for debug
+# and verbose logs to be stripped out in base.Log, so we are just ensuring we
+# get rid of all other debug/verbose logs.
 -assumenosideeffects class android.util.Log {
   static *** d(...);
   static *** v(...);
-  static boolean isLoggable(...);
+  static *** isLoggable(...);
+}
+-checkdiscard class org.chromium.base.Log {
+  public static void d(...);
+  public static void v(...);
+  private static void debug(...);
+  private static void verbose(...);
+  private static String getCallOrigin(...);
 }
 
 # The following chart was created on July 20, 2016, to decide on 3 optimization
@@ -69,8 +78,3 @@
 # Don't warn about those in case this app is linking against an older
 # platform version.  We know about them, and they are safe.
 -dontwarn android.support.**
-
-# Ensure @RemovableInRelease actually works.
--checkdiscard class ** {
-  @org.chromium.base.annotations.RemovableInRelease *;
-}
