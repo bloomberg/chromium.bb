@@ -291,7 +291,8 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
   dns_config_change_manager_ = std::make_unique<DnsConfigChangeManager>();
 
   host_resolver_manager_ = std::make_unique<net::HostResolverManager>(
-      net::HostResolver::ManagerOptions(), net_log_);
+      net::HostResolver::ManagerOptions(),
+      net::NetworkChangeNotifier::GetSystemDnsConfigNotifier(), net_log_);
   host_resolver_factory_ = std::make_unique<net::HostResolver::Factory>();
 
   network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
