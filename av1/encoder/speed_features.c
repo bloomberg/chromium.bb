@@ -608,7 +608,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   if (speed >= 6) {
     sf->optimize_coefficients = NO_TRELLIS_OPT;
     sf->mv.search_method = HEX;
-    sf->disable_filter_search_var_thresh = 500;
     for (int i = 0; i < TX_SIZES; ++i) {
       sf->intra_y_mode_mask[i] = INTRA_DC;
       sf->intra_uv_mode_mask[i] = UV_INTRA_DC_CFL;
@@ -616,6 +615,23 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->partition_search_breakout_rate_thr = 500;
     sf->mv.reduce_first_step_size = 1;
     sf->simple_model_rd_from_var = 1;
+    sf->lpf_pick = LPF_PICK_FROM_Q;
+    sf->mv.subpel_force_stop = QUARTER_PEL;
+    sf->default_max_partition_size = BLOCK_128X128;
+    sf->default_min_partition_size = BLOCK_8X8;
+    sf->frame_parameter_update = 0;
+    sf->mv.search_method = FAST_DIAMOND;
+    sf->partition_search_type = VAR_BASED_PARTITION;
+    sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
+    sf->use_real_time_ref_set = 1;
+    // Can't use LARGEST TX mode with pre-calculated partition
+    // and disabled TX64
+    if (!cpi->oxcf.enable_tx64) sf->tx_size_search_method = USE_FAST_RD;
+    sf->use_nonrd_pick_mode = 1;
+    sf->use_comp_ref_nonrd = 0;
+    sf->inter_mode_rd_model_estimation = 2;
+    sf->cdef_pick_method = CDEF_PICK_FROM_Q;
+    sf->max_intra_bsize = BLOCK_16X16;
   }
   if (speed >= 7) {
     sf->lpf_pick = LPF_PICK_FROM_Q;
