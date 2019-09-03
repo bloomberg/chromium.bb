@@ -12,6 +12,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.embedder_support.view.ContentViewRenderView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.ViewEventSink;
@@ -28,10 +29,12 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     private long mNativeBrowserController;
 
     private ActivityWindowAndroid mWindowAndroid;
-    // This is set as the content view of the activity. It contains mContentView.
+    // This is set as the content view of the activity. It contains mContentViewRenderView.
     private LinearLayout mLinearLayout;
     // This is parented to mLinearLayout.
-    private ContentViewRenderView mContentView;
+    private ContentViewRenderView mContentViewRenderView;
+    // One of these is needed per WebContents.
+    private ContentView mContentView;
     private ProfileImpl mProfile;
     private WebContents mWebContents;
     private BrowserObserverProxy mBrowserObserverProxy;
@@ -65,21 +68,27 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         mLinearLayout.setOrientation(LinearLayout.VERTICAL);
 
         mWindowAndroid = new ActivityWindowAndroid(context);
-        mContentView = new ContentViewRenderView(context);
-        mWindowAndroid.setAnimationPlaceholderView(mContentView.getSurfaceView());
+        mContentViewRenderView = new ContentViewRenderView(context);
+        mWindowAndroid.setAnimationPlaceholderView(mContentViewRenderView.getSurfaceView());
 
-        mContentView.onNativeLibraryLoaded(mWindowAndroid);
+        mContentViewRenderView.onNativeLibraryLoaded(mWindowAndroid);
 
         mNativeBrowserController = nativeCreateBrowserController(profile.getNativeProfile());
         mWebContents = nativeGetWebContents(mNativeBrowserController);
-        mWebContents.initialize("", ViewAndroidDelegate.createBasicDelegate(mContentView),
+        mWebContents.initialize("", ViewAndroidDelegate.createBasicDelegate(mContentViewRenderView),
                 new InternalAccessDelegateImpl(), mWindowAndroid,
                 WebContents.createDefaultInternalsHolder());
 
-        mContentView.setCurrentWebContents(mWebContents);
-        mLinearLayout.addView(mContentView,
+        mContentViewRenderView.setCurrentWebContents(mWebContents);
+        mLinearLayout.addView(mContentViewRenderView,
                 new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1f));
+
+        mContentView = ContentView.createContentView(context, mWebContents);
+        mContentViewRenderView.addView(mContentView,
+                new LinearLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1f));
+
         mWebContents.onShow();
     }
 
