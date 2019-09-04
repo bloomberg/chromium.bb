@@ -2155,6 +2155,14 @@ static void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
 }
 
 #if !CONFIG_REALTIME_ONLY
+static const FIRSTPASS_STATS *read_one_frame_stats(const TWO_PASS *p, int frm) {
+  assert(frm >= 0);
+  if (frm < 0 || p->stats_in_start + frm > p->stats_in_end) {
+    return NULL;
+  }
+
+  return &p->stats_in_start[frm];
+}
 // Checks to see if a super block is on a horizontal image edge.
 // In most cases this is the "real" edge unless there are formatting
 // bars embedded in the stream.
@@ -2165,15 +2173,16 @@ static int active_h_edge(const AV1_COMP *cpi, int mi_row, int mi_step) {
 
   // For two pass account for any formatting bars detected.
   if (cpi->oxcf.pass == 2) {
-    const TWO_PASS *const twopass = &cpi->twopass;
-    const FIRSTPASS_STATS *const this_frame_stats =
-        twopass->frame_stats_arr + twopass->frame_stats_next_idx;
+    const AV1_COMMON *const cm = &cpi->common;
+    const FIRSTPASS_STATS *const this_frame_stats = read_one_frame_stats(
+        &cpi->twopass, cm->current_frame.display_order_hint);
+    if (this_frame_stats == NULL) return AOM_CODEC_ERROR;
 
     // The inactive region is specified in MBs not mi units.
     // The image edge is in the following MB row.
-    top_edge += (int)(this_frame_stats->inactive_zone_rows * 2);
+    top_edge += (int)(this_frame_stats->inactive_zone_rows * 4);
 
-    bottom_edge -= (int)(this_frame_stats->inactive_zone_rows * 2);
+    bottom_edge -= (int)(this_frame_stats->inactive_zone_rows * 4);
     bottom_edge = AOMMAX(top_edge, bottom_edge);
   }
 
@@ -2194,15 +2203,16 @@ static int active_v_edge(const AV1_COMP *cpi, int mi_col, int mi_step) {
 
   // For two pass account for any formatting bars detected.
   if (cpi->oxcf.pass == 2) {
-    const TWO_PASS *const twopass = &cpi->twopass;
-    const FIRSTPASS_STATS *const this_frame_stats =
-        twopass->frame_stats_arr + twopass->frame_stats_next_idx;
+    const AV1_COMMON *const cm = &cpi->common;
+    const FIRSTPASS_STATS *const this_frame_stats = read_one_frame_stats(
+        &cpi->twopass, cm->current_frame.display_order_hint);
+    if (this_frame_stats == NULL) return AOM_CODEC_ERROR;
 
     // The inactive region is specified in MBs not mi units.
     // The image edge is in the following MB row.
-    left_edge += (int)(this_frame_stats->inactive_zone_cols * 2);
+    left_edge += (int)(this_frame_stats->inactive_zone_cols * 4);
 
-    right_edge -= (int)(this_frame_stats->inactive_zone_cols * 2);
+    right_edge -= (int)(this_frame_stats->inactive_zone_cols * 4);
     right_edge = AOMMAX(left_edge, right_edge);
   }
 
