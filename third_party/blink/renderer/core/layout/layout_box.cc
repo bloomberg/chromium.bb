@@ -2900,8 +2900,9 @@ DISABLE_CFI_PERF
 void LayoutBox::ComputeLogicalWidth(
     LogicalExtentComputedValues& computed_values) const {
   if (ShouldApplySizeContainment()) {
-    computed_values.extent_ =
-        BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
+    computed_values.extent_ = ContentLogicalWidthForSizeContainment() +
+                              BorderAndPaddingLogicalWidth() +
+                              ScrollbarLogicalWidth();
   } else if (DisplayLockInducesSizeContainment()) {
     computed_values.extent_ =
         BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth() +
@@ -3406,7 +3407,8 @@ void LayoutBox::ComputeLogicalHeight(
   // out what happens here if IsLayoutGrid() is true and size containment is
   // specified while the box is locked.
   if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
-    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
+    height = ContentLogicalHeightForSizeContainment() +
+             BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
   } else if (DisplayLockInducesSizeContainment()) {
     height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight() +
              GetDisplayLockContext()->GetLockedContentLogicalHeight();
@@ -3547,12 +3549,17 @@ void LayoutBox::ComputeLogicalHeight(
 LayoutUnit LayoutBox::ComputeLogicalHeightWithoutLayout() const {
   LogicalExtentComputedValues computed_values;
 
-  if (!SelfNeedsLayout() && !ShouldApplySizeContainment() &&
-      DisplayLockInducesSizeContainment()) {
-    ComputeLogicalHeight(
-        BorderAndPaddingLogicalHeight() +
-            GetDisplayLockContext()->GetLockedContentLogicalHeight(),
-        LayoutUnit(), computed_values);
+  if (!SelfNeedsLayout()) {
+    if (ShouldApplySizeContainment()) {
+      ComputeLogicalHeight(ContentLogicalHeightForSizeContainment() +
+                               BorderAndPaddingLogicalHeight(),
+                           LayoutUnit(), computed_values);
+    } else if (DisplayLockInducesSizeContainment()) {
+      ComputeLogicalHeight(
+          BorderAndPaddingLogicalHeight() +
+              GetDisplayLockContext()->GetLockedContentLogicalHeight(),
+          LayoutUnit(), computed_values);
+    }
   } else {
     // TODO(cbiesinger): We should probably return something other than just
     // border + padding, but for now we have no good way to do anything else
