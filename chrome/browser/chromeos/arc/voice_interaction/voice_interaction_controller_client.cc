@@ -10,9 +10,9 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/bind.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -20,8 +20,6 @@
 #include "components/arc/arc_util.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -37,17 +35,10 @@ VoiceInteractionControllerClient*
 
 VoiceInteractionControllerClient::VoiceInteractionControllerClient() {
   DCHECK(!g_voice_interaction_controller_client_instance);
-
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::NotificationService::AllSources());
+  g_voice_interaction_controller_client_instance = this;
 
   arc::ArcSessionManager::Get()->AddObserver(this);
-  g_voice_interaction_controller_client_instance = this;
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
   voice_interaction_state_ = ash::mojom::VoiceInteractionState::NOT_READY;
 }
@@ -55,6 +46,8 @@ VoiceInteractionControllerClient::VoiceInteractionControllerClient() {
 VoiceInteractionControllerClient::~VoiceInteractionControllerClient() {
   DCHECK_EQ(g_voice_interaction_controller_client_instance, this);
   g_voice_interaction_controller_client_instance = nullptr;
+
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   arc::ArcSessionManager::Get()->RemoveObserver(this);
 }
 
@@ -117,16 +110,26 @@ void VoiceInteractionControllerClient::NotifyLocaleChanged() {
 }
 
 void VoiceInteractionControllerClient::ActiveUserChanged(
-    const user_manager::User* active_user) {
-  if (active_user && active_user->is_profile_created())
-    SetProfile(ProfileManager::GetActiveUserProfile());
+    user_manager::User* active_user) {
+  if (!active_user)
+    return;
+
+  active_user->AddProfileCreatedObserver(
+      base::BindOnce(&VoiceInteractionControllerClient::SetProfileByUser,
+                     weak_ptr_factory_.GetWeakPtr(), active_user));
+}
+
+void VoiceInteractionControllerClient::OnArcPlayStoreEnabledChanged(
+    bool enabled) {
+  ash::AssistantState::Get()->NotifyArcPlayStoreEnabledChanged(enabled);
+}
+
+void VoiceInteractionControllerClient::SetProfileByUser(
+    const user_manager::User* user) {
+  SetProfile(chromeos::ProfileHelper::Get()->GetProfileByUser(user));
 }
 
 void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
-  // Do nothing if this is called for the current profile. This can happen. For
-  // example, ChromeSessionManager fires both
-  // NOTIFICATION_LOGIN_USER_PROFILE_PREPARED and NOTIFICATION_SESSION_STARTED,
-  // and we are observing both events.
   if (profile_ == profile)
     return;
 
@@ -160,36 +163,6 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
   NotifyLocaleChanged();
   NotifyHotwordEnabled();
   OnArcPlayStoreEnabledChanged(IsArcPlayStoreEnabledForProfile(profile_));
-}
-
-void VoiceInteractionControllerClient::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED:
-      // Update |profile_| when login user profile is prepared.
-      // NOTIFICATION_SESSION_STARTED is not fired from UserSessionManager, but
-      // profile may be changed by UserSessionManager in OOBE flow.
-      SetProfile(ProfileManager::GetActiveUserProfile());
-      break;
-    case chrome::NOTIFICATION_SESSION_STARTED:
-      // Update |profile_| when entering a session.
-      SetProfile(ProfileManager::GetActiveUserProfile());
-
-      // Add a session state observer to be able to monitor session changes.
-      if (!session_state_observer_.get()) {
-        session_state_observer_ =
-            std::make_unique<user_manager::ScopedUserSessionStateObserver>(
-                this);
-      }
-      break;
-  }
-}
-
-void VoiceInteractionControllerClient::OnArcPlayStoreEnabledChanged(
-    bool enabled) {
-  ash::AssistantState::Get()->NotifyArcPlayStoreEnabledChanged(enabled);
 }
 
 }  // namespace arc

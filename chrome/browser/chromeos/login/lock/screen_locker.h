@@ -130,9 +130,9 @@ class ScreenLocker : public AuthStatusConsumer,
   // the same login events that ScreenLocker does.
   void SetLoginStatusConsumer(chromeos::AuthStatusConsumer* consumer);
 
-  // Initialize or uninitialize the ScreenLocker class. It listens to
-  // NOTIFICATION_SESSION_STARTED so that the screen locker accepts lock
-  // requests only after a user has logged in.
+  // Initialize or uninitialize the ScreenLocker class. It observes
+  // SessionManager so that the screen locker accepts lock requests only after a
+  // user has logged in.
   static void InitClass();
   static void ShutDownClass();
 
