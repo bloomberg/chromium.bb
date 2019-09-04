@@ -73,4 +73,10 @@ void MultiSourceMemoryPressureMonitor::ResetSystemEvaluatorForTesting() {
   system_evaluator_.reset();
 }
 
+void MultiSourceMemoryPressureMonitor::SetSystemEvaluator(
+    std::unique_ptr<SystemMemoryPressureEvaluator> evaluator) {
+  DCHECK(!system_evaluator_);
+  system_evaluator_ = std::move(evaluator);
+}
+
 }  // namespace util

@@ -44,6 +44,9 @@ class MultiSourceMemoryPressureMonitor
 
   void ResetSystemEvaluatorForTesting();
 
+  void SetSystemEvaluator(
+      std::unique_ptr<SystemMemoryPressureEvaluator> evaluator);
+
  protected:
   void StartMetricsTimer();
   void StopMetricsTimer();
