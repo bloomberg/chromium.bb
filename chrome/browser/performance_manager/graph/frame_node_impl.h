@@ -77,7 +77,6 @@ class FrameNodeImpl
 
   // Partial FrameNode implementation:
   bool IsMainFrame() const override;
-  bool AreAllInterventionPoliciesSet() const override;
 
   // Getters for const properties. These can be called from any thread.
   FrameNodeImpl* parent_frame_node() const;
@@ -91,6 +90,7 @@ class FrameNodeImpl
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
   LifecycleState lifecycle_state() const;
+  InterventionPolicy origin_trial_freeze_policy() const;
   bool has_nonempty_beforeunload() const;
   const GURL& url() const;
   bool is_current() const;
@@ -112,11 +112,6 @@ class FrameNodeImpl
   // Invoked to set the frame priority, and the reason behind it.
   void SetPriorityAndReason(const PriorityAndReason& priority_and_reason);
 
-  // Sets the same policy for all intervention types in this frame. Causes
-  // Page::OnFrameInterventionPolicyChanged to be invoked.
-  void SetAllInterventionPoliciesForTesting(
-      resource_coordinator::mojom::InterventionPolicy policy);
-
  private:
   friend class PageNodeImpl;
   friend class ProcessNodeImpl;
@@ -132,6 +127,7 @@ class FrameNodeImpl
   int32_t GetSiteInstanceId() const override;
   const base::flat_set<const FrameNode*> GetChildFrameNodes() const override;
   LifecycleState GetLifecycleState() const override;
+  InterventionPolicy GetOriginTrialFreezePolicy() const override;
   bool HasNonemptyBeforeUnload() const override;
   const GURL& GetURL() const override;
   bool IsCurrent() const override;
@@ -159,6 +155,13 @@ class FrameNodeImpl
         bool,
         &FrameNodeObserver::OnNetworkAlmostIdleChanged>
         network_almost_idle{false};
+
+    // Opt-in or opt-out of freezing via origin trial.
+    ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
+        resource_coordinator::mojom::InterventionPolicy,
+        &FrameNodeObserver::OnOriginTrialFreezePolicyChanged>
+        origin_trial_freeze_policy{
+            resource_coordinator::mojom::InterventionPolicy::kUnknown};
   };
 
   // Invoked by subframes on joining/leaving the graph.
@@ -210,17 +213,6 @@ class FrameNodeImpl
   ObservedProperty::
       NotifiesOnlyOnChanges<bool, &FrameNodeObserver::OnIsCurrentChanged>
           is_current_{false};
-
-  // Intervention policy for this frame. These are communicated from the
-  // renderer process and are controlled by origin trials.
-  //
-  // TODO(https://crbug.com/999594): Move this to a decorator, since the only
-  // consumer is the freeze policy.
-  resource_coordinator::mojom::InterventionPolicy
-      intervention_policy_[static_cast<size_t>(
-                               resource_coordinator::mojom::
-                                   PolicyControlledIntervention::kMaxValue) +
-                           1];
 
   // Properties associated with a Document, which are reset when a
   // different-document navigation is committed in the frame.

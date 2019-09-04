@@ -57,6 +57,10 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
   void OnNetworkAlmostIdleChanged(const FrameNode* frame_node) override {}
   // Ignored.
   void OnFrameLifecycleStateChanged(const FrameNode* frame_node) override {}
+  // Ignored.
+  void OnOriginTrialFreezePolicyChanged(
+      const FrameNode* frame_node,
+      InterventionPolicy previous_value) override {}
   void OnURLChanged(const FrameNode* frame_node) override;
   // Ignored.
   void OnIsAdFrameChanged(const FrameNode* frame_node) override {}

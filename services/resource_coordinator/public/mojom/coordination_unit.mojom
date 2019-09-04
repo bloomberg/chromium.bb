@@ -34,20 +34,6 @@ enum InterventionPolicy {
   kDefault,
 };
 
-// A list of interventions for which policy is communicated from individual
-// frames and propagated through the frame tree. As each frame loads it will
-// communicate the policy state to the associated FrameCoordinationUnit, and
-// these will eventually be aggregated to the parent PageCoordinationUnit and
-// applied to an entire frame tree.
-//
-// TODO(https://crbug.com/999594): Remove this enum once it is no longer
-// referenced in C++ code.
-enum PolicyControlledIntervention {
-  // Page lifecycles is a feature that causes pages to transition through
-  // lifecycle states in an attempt to save/reclaim resources.
-  kPageLifecycleTransitions,
-};
-
 // Interface used by a blink::Document to communicate state associated with
 // resource management to the embedder.
 interface DocumentCoordinationUnit {
