@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/network_download_url_loader_factory_getter.h"
+#include "content/browser/download/network_download_url_loader_factory_info.h"
 
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -11,7 +11,7 @@
 
 namespace content {
 
-NetworkDownloadURLLoaderFactoryGetter::NetworkDownloadURLLoaderFactoryGetter(
+NetworkDownloadURLLoaderFactoryInfo::NetworkDownloadURLLoaderFactoryInfo(
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info,
     network::mojom::URLLoaderFactoryRequest proxy_factory_request)
@@ -19,11 +19,11 @@ NetworkDownloadURLLoaderFactoryGetter::NetworkDownloadURLLoaderFactoryGetter(
       proxy_factory_ptr_info_(std::move(proxy_factory_ptr_info)),
       proxy_factory_request_(std::move(proxy_factory_request)) {}
 
-NetworkDownloadURLLoaderFactoryGetter::
-    ~NetworkDownloadURLLoaderFactoryGetter() = default;
+NetworkDownloadURLLoaderFactoryInfo::~NetworkDownloadURLLoaderFactoryInfo() =
+    default;
 
 scoped_refptr<network::SharedURLLoaderFactory>
-NetworkDownloadURLLoaderFactoryGetter::GetURLLoaderFactory() {
+NetworkDownloadURLLoaderFactoryInfo::CreateFactory() {
   DCHECK(download::GetIOTaskRunner());
   DCHECK(download::GetIOTaskRunner()->BelongsToCurrentThread());
   if (lazy_factory_)
