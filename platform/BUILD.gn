@@ -53,8 +53,12 @@ source_set("platform") {
     sources += [
       "impl/network_reader.cc",
       "impl/network_reader.h",
+      "impl/network_reader_thread.cc",
+      "impl/network_reader_thread.h",
       "impl/task_runner.cc",
       "impl/task_runner.h",
+      "impl/task_runner_thread.cc",
+      "impl/task_runner_thread.h",
       "impl/text_trace_logging_platform.cc",
       "impl/text_trace_logging_platform.h",
       "impl/time.cc",

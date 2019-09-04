@@ -16,7 +16,9 @@
 #include "platform/api/time.h"
 #include "platform/base/error.h"
 #include "platform/impl/network_reader.h"
+#include "platform/impl/network_reader_thread.h"
 #include "platform/impl/task_runner.h"
+#include "platform/impl/task_runner_thread.h"
 
 // This file contains a demo of our mDNSResponder wrapper code.  It can both
 // listen for mDNS services and advertise an mDNS service.  The command-line
@@ -356,22 +358,16 @@ int main(int argc, char** argv) {
 
   openscreen::ServiceMap services;
   openscreen::g_services = &services;
-  auto task_runner = std::make_unique<openscreen::platform::TaskRunnerImpl>(
-      openscreen::platform::Clock::now);
-  std::thread task_runner_thread(
-      [&task_runner]() { task_runner->RunUntilStopped(); });
-  auto network_reader = std::make_unique<openscreen::platform::NetworkReader>();
-  openscreen::platform::UdpSocket::SetLifetimeObserver(network_reader.get());
-  std::thread network_reader_thread(
-      [&network_reader]() { network_reader->RunUntilStopped(); });
 
-  openscreen::BrowseDemo(task_runner.get(), labels[0], labels[1],
+  openscreen::platform::TaskRunnerThread task_runner_thread(
+      openscreen::platform::Clock::now);
+  openscreen::platform::NetworkReaderThread network_reader_thread;
+  openscreen::platform::UdpSocket::SetLifetimeObserver(
+      network_reader_thread.network_reader());
+
+  openscreen::BrowseDemo(task_runner_thread.task_runner(), labels[0], labels[1],
                          service_instance);
 
-  network_reader->RequestStopSoon();
-  task_runner->RequestStopSoon();
-  network_reader_thread.join();
-  task_runner_thread.join();
   openscreen::g_services = nullptr;
   return 0;
 }

@@ -31,7 +31,9 @@
 #include "platform/api/time.h"
 #include "platform/api/trace_logging.h"
 #include "platform/impl/network_reader.h"
+#include "platform/impl/network_reader_thread.h"
 #include "platform/impl/task_runner.h"
+#include "platform/impl/task_runner_thread.h"
 #include "platform/impl/text_trace_logging_platform.h"
 #include "third_party/tinycbor/src/src/cbor.h"
 
@@ -422,25 +424,21 @@ void RunControllerPollLoop(presentation::Controller* controller) {
 void ListenerDemo() {
   SignalThings();
 
-  // TODO(rwkeane): Wrap these start/end calls in a class.
-  platform::TaskRunnerImpl task_runner(platform::Clock::now);
-  platform::NetworkReader network_reader;
-  std::thread task_runner_thread(
-      [&task_runner]() { task_runner.RunUntilStopped(); });
-  std::thread network_reader_thread(
-      [&network_reader]() { network_reader.RunUntilStopped(); });
-  platform::UdpSocket::SetLifetimeObserver(&network_reader);
+  platform::TaskRunnerThread task_runner_thread(platform::Clock::now);
+  platform::NetworkReaderThread network_reader_thread;
+  platform::UdpSocket::SetLifetimeObserver(
+      network_reader_thread.network_reader());
 
   ListenerObserver listener_observer;
   MdnsServiceListenerConfig listener_config;
   auto mdns_listener = MdnsServiceListenerFactory::Create(
-      listener_config, &listener_observer, &task_runner);
+      listener_config, &listener_observer, task_runner_thread.task_runner());
 
   MessageDemuxer demuxer(platform::Clock::now,
                          MessageDemuxer::kDefaultBufferLimit);
   ConnectionClientObserver client_observer;
   auto connection_client = ProtocolConnectionClientFactory::Create(
-      &demuxer, &client_observer, &task_runner);
+      &demuxer, &client_observer, task_runner_thread.task_runner());
 
   auto* network_service = NetworkServiceManager::Create(
       std::move(mdns_listener), nullptr, std::move(connection_client), nullptr);
@@ -458,11 +456,6 @@ void ListenerDemo() {
   controller.reset();
 
   NetworkServiceManager::Dispose();
-
-  network_reader.RequestStopSoon();
-  task_runner.RequestStopSoon();
-  network_reader_thread.join();
-  task_runner_thread.join();
 }
 
 void HandleReceiverCommand(absl::string_view command,
@@ -522,14 +515,10 @@ void PublisherDemo(absl::string_view friendly_name) {
 
   constexpr uint16_t server_port = 6667;
 
-  // TODO(rwkeane): Wrap these start/end calls in a class.
-  platform::TaskRunnerImpl task_runner(platform::Clock::now);
-  platform::NetworkReader network_reader;
-  std::thread task_runner_thread(
-      [&task_runner]() { task_runner.RunUntilStopped(); });
-  std::thread network_reader_thread(
-      [&network_reader]() { network_reader.RunUntilStopped(); });
-  platform::UdpSocket::SetLifetimeObserver(&network_reader);
+  platform::TaskRunnerThread task_runner_thread(platform::Clock::now);
+  platform::NetworkReaderThread network_reader_thread;
+  platform::UdpSocket::SetLifetimeObserver(
+      network_reader_thread.network_reader());
 
   PublisherObserver publisher_observer;
   // TODO(btolsch): aggregate initialization probably better?
@@ -540,7 +529,7 @@ void PublisherDemo(absl::string_view friendly_name) {
   publisher_config.connection_server_port = server_port;
 
   auto mdns_publisher = MdnsServicePublisherFactory::Create(
-      publisher_config, &publisher_observer, &task_runner);
+      publisher_config, &publisher_observer, task_runner_thread.task_runner());
 
   ServerConfig server_config;
   std::vector<platform::InterfaceAddresses> interfaces =
@@ -554,7 +543,8 @@ void PublisherDemo(absl::string_view friendly_name) {
                          MessageDemuxer::kDefaultBufferLimit);
   ConnectionServerObserver server_observer;
   auto connection_server = ProtocolConnectionServerFactory::Create(
-      server_config, &demuxer, &server_observer, &task_runner);
+      server_config, &demuxer, &server_observer,
+      task_runner_thread.task_runner());
 
   auto* network_service =
       NetworkServiceManager::Create(nullptr, std::move(mdns_publisher), nullptr,
@@ -572,11 +562,6 @@ void PublisherDemo(absl::string_view friendly_name) {
 
   receiver_delegate.connection.reset();
   CleanupPublisherDemo(network_service);
-
-  network_reader.RequestStopSoon();
-  task_runner.RequestStopSoon();
-  network_reader_thread.join();
-  task_runner_thread.join();
 }
 
 }  // namespace
