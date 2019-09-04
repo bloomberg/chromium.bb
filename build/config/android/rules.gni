@@ -3545,11 +3545,6 @@ if (enable_java_templates) {
       is_bundle_module = true
       generate_buildconfig_java = _is_base_module
       no_build_hooks = !_is_base_module
-
-      # TODO(tiborg): Remove module_name parameter.
-      if (defined(invoker.module_name)) {
-        not_needed(invoker, [ "module_name" ])
-      }
     }
   }
 
