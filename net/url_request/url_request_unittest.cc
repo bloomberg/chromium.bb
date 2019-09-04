@@ -11862,13 +11862,7 @@ class HTTPSOCSPVerifyTest
     : public HTTPSOCSPTest,
       public testing::WithParamInterface<OCSPVerifyTestData> {};
 
-// TODO(crbug.com/949958): The test is flaky on Mac
-#if defined(OS_MACOSX)
-#define MAYBE_VerifyResult DISABLED_VerifyResult
-#else
-#define MAYBE_VerifyResult VerifyResult
-#endif
-TEST_P(HTTPSOCSPVerifyTest, MAYBE_VerifyResult) {
+TEST_P(HTTPSOCSPVerifyTest, VerifyResult) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_AUTO);
   OCSPVerifyTestData test = GetParam();
