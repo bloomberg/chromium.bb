@@ -38,6 +38,7 @@ public final class SharingNotificationUtil {
     private static final String EXTRA_NOTIFICATION_ID = "notification_id";
     private static final String EXTRA_NOTIFICATION_TOKEN = "notification_token";
     private static final int REQUEST_CODE_DISMISS = 100;
+    private static final @DrawableRes int SMALL_ICON_ID = R.drawable.ic_devices_16dp;
 
     private static HashSet<Integer> sDismissedSendingNotifications = new HashSet<>();
     private static int sSendingNotificationCount;
@@ -70,12 +71,11 @@ public final class SharingNotificationUtil {
      * @param contentIntent The notification content intent.
      * @param contentTitle  The notification title text.
      * @param contentText   The notification content text.
-     * @param smallIconId   The small notification icon resource id.
      * @param largeIconId   The large notification icon resource id, 0 if not used.
      */
     public static void showNotification(@SystemNotificationType int type, String group, int id,
             PendingIntentProvider contentIntent, String contentTitle, String contentText,
-            @DrawableRes int smallIconId, @DrawableRes int largeIconId) {
+            @DrawableRes int largeIconId) {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
         ChromeNotificationBuilder builder =
@@ -92,7 +92,7 @@ public final class SharingNotificationUtil {
                         .setGroup(group)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0])
-                        .setSmallIcon(smallIconId)
+                        .setSmallIcon(SMALL_ICON_ID)
                         .setAutoCancel(true)
                         .setDefaults(Notification.DEFAULT_ALL);
         if (largeIconId != 0) {
@@ -149,7 +149,7 @@ public final class SharingNotificationUtil {
                                 context.getResources(), R.color.default_icon_color_blue))
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0])
-                        .setSmallIcon(R.drawable.ic_devices_16dp)
+                        .setSmallIcon(SMALL_ICON_ID)
                         .setProgress(/*max=*/0, /*percentage=*/0, true)
                         .setOngoing(true)
                         .addAction(R.drawable.ic_cancel_circle, dismissTitle, dismissIntent,
