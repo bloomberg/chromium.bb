@@ -182,6 +182,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cookies/cookie_constants.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -7353,6 +7354,23 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
         "can review cookies in developer tools under "
         "Application>Storage>Cookies and see more details at "
         "https://www.chromestatus.com/feature/5633521622188032.";
+  } else if (warning ==
+             net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+                 WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE) {
+    if (!ShouldAddCookieSameSiteDeprecationMessage(
+            cookie_url, &cookie_lax_allow_unsafe_deprecation_url_hashes_)) {
+      return;
+    }
+    deprecation_message =
+        "A cookie associated with a resource at " + cookie_url +
+        " set without a `SameSite` attribute was sent with a non-idempotent "
+        "top-level cross-site request because it was less than " +
+        base::NumberToString(net::kLaxAllowUnsafeMaxAge.InMinutes()) +
+        " minutes old. A future release of Chrome will treat such cookies as "
+        "if they were set with `SameSite=Lax` and will only allow them to be "
+        "sent with top-level cross-site requests if the HTTP method is safe. "
+        "See more details at "
+        "https://www.chromestatus.com/feature/5088147346030592.";
   }
 
   if (deprecation_message.empty())

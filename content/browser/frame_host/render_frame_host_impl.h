@@ -2339,6 +2339,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::circular_deque<size_t> cookie_no_samesite_deprecation_url_hashes_;
   base::circular_deque<size_t>
       cookie_samesite_none_insecure_deprecation_url_hashes_;
+  base::circular_deque<size_t> cookie_lax_allow_unsafe_deprecation_url_hashes_;
 
   // The lifecycle state of the frame.
   blink::mojom::FrameLifecycleState frame_lifecycle_state_ =

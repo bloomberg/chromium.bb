@@ -359,13 +359,14 @@ void DeprecateSameSiteCookies(int process_id,
     switch (warning) {
       case net::CanonicalCookie::CookieInclusionStatus::
           WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT:
+      case net::CanonicalCookie::CookieInclusionStatus::
+          WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE:
         samesite_treated_as_lax_cookies = true;
         break;
       case net::CanonicalCookie::CookieInclusionStatus::
           WARN_SAMESITE_NONE_INSECURE:
         samesite_none_insecure_cookies = true;
         break;
-      // TODO(crbug.com/990439): Add messages for Lax-Allow-Unsafe intervention.
       default:
         break;
     }
@@ -375,6 +376,8 @@ void DeprecateSameSiteCookies(int process_id,
     }
   }
 
+  // TODO(crbug.com/990439): Do we need separate UseCounter metrics for
+  // Lax-allow-unsafe? We already have histograms in CanonicalCookie.
   if (samesite_treated_as_lax_cookies) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         frame, blink::mojom::WebFeature::kCookieNoSameSite);
