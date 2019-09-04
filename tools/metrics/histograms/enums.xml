@@ -8058,6 +8058,11 @@ histogram as enum -->
   <int value="3" label="Chrome primary account is not in Gaia cookies."/>
 </enum>
 
+<enum name="ChromeSignInPageHashSaved">
+  <int value="0" label="A password was typed, a hash is not saved"/>
+  <int value="1" label="A hash is saved"/>
+</enum>
+
 <enum name="ChromiumAndroidLinkerBrowserState">
   <obsolete>
     Deprecated as of 06/2019.
