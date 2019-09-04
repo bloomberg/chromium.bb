@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
+#include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -63,7 +63,7 @@ std::unique_ptr<views::ImageView> CreateDeviceIcon(
 }
 
 std::unique_ptr<views::ImageView> CreateAppIcon(
-    const ClickToCallUiController::App& app) {
+    const SharingUiController::App& app) {
   return app.vector_icon ? CreateVectorIconView(*app.vector_icon)
                          : CreateIconView(app.image.AsImageSkia());
 }
@@ -71,9 +71,11 @@ std::unique_ptr<views::ImageView> CreateAppIcon(
 std::unique_ptr<views::StyledLabel> CreateHelpText(
     views::StyledLabelListener* listener) {
   const base::string16 link = l10n_util::GetStringUTF16(
+      // TODO(yasmo): rename to IDS_BROWSER_SHARING_DIALOG_TROUBLESHOOT_LINK
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK);
   size_t offset;
   const base::string16 text = l10n_util::GetStringFUTF16(
+      // TODO(yasmo): rename to IDS_BROWSER_SHARING_DIALOG_HELP_TEXT_NO_DEVICES
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES, link,
       &offset);
   auto label = std::make_unique<views::StyledLabel>(text, listener);
@@ -94,38 +96,37 @@ base::string16 GetLastUpdatedTimeInDays(base::Time last_updated_timestamp) {
 
 }  // namespace
 
-ClickToCallDialogView::ClickToCallDialogView(
-    views::View* anchor_view,
-    content::WebContents* web_contents,
-    ClickToCallUiController* controller)
+SharingDialogView::SharingDialogView(views::View* anchor_view,
+                                     content::WebContents* web_contents,
+                                     SharingUiController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller),
       send_failed_(controller->HasSendFailed()) {}
 
-ClickToCallDialogView::~ClickToCallDialogView() = default;
+SharingDialogView::~SharingDialogView() = default;
 
-void ClickToCallDialogView::Hide() {
+void SharingDialogView::Hide() {
   CloseBubble();
 }
 
-int ClickToCallDialogView::GetDialogButtons() const {
+int SharingDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-std::unique_ptr<views::View> ClickToCallDialogView::CreateFootnoteView() {
+std::unique_ptr<views::View> SharingDialogView::CreateFootnoteView() {
   if (GetDialogType() != SharingDialogType::kDialogWithoutDevicesWithApp)
     return nullptr;
 
   return CreateHelpText(this);
 }
 
-void ClickToCallDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                   const gfx::Range& range,
-                                                   int event_flags) {
+void SharingDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                               const gfx::Range& range,
+                                               int event_flags) {
   controller_->OnHelpTextClicked();
 }
 
-SharingDialogType ClickToCallDialogView::GetDialogType() const {
+SharingDialogType SharingDialogView::GetDialogType() const {
   if (send_failed_)
     return SharingDialogType::kErrorDialog;
 
@@ -139,14 +140,14 @@ SharingDialogType ClickToCallDialogView::GetDialogType() const {
                   : SharingDialogType::kEducationalDialog;
 }
 
-void ClickToCallDialogView::Init() {
+void SharingDialogView::Init() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   dialog_buttons_.clear();
 
   auto* provider = ChromeLayoutProvider::Get();
   SharingDialogType type = GetDialogType();
-  LogClickToCallDialogShown(type);
+  LogSharingDialogShown(controller_->GetFeatureMetricsPrefix(), type);
 
   switch (type) {
     case SharingDialogType::kErrorDialog:
@@ -177,18 +178,19 @@ void ClickToCallDialogView::Init() {
     SizeToContents();
 }
 
-void ClickToCallDialogView::ButtonPressed(views::Button* sender,
-                                          const ui::Event& event) {
+void SharingDialogView::ButtonPressed(views::Button* sender,
+                                      const ui::Event& event) {
   if (!sender || sender->tag() < 0)
     return;
   size_t index = static_cast<size_t>(sender->tag());
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
       controller_->devices();
-  const std::vector<ClickToCallUiController::App>& apps = controller_->apps();
+  const std::vector<SharingUiController::App>& apps = controller_->apps();
   DCHECK(index < devices.size() + apps.size());
 
   if (index < devices.size()) {
-    LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiDialog, index);
+    LogSharingSelectedDeviceIndex(controller_->GetFeatureMetricsPrefix(),
+                                  kSharingUiDialog, index);
     controller_->OnDeviceChosen(*devices[index]);
     CloseBubble();
     return;
@@ -197,20 +199,22 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
   index -= devices.size();
 
   if (index < apps.size()) {
-    LogClickToCallSelectedAppIndex(kSharingClickToCallUiDialog, index);
+    LogSharingSelectedAppIndex(controller_->GetFeatureMetricsPrefix(),
+                               kSharingUiDialog, index);
     controller_->OnAppChosen(apps[index]);
     CloseBubble();
   }
 }
 
-void ClickToCallDialogView::InitListView() {
+void SharingDialogView::InitListView() {
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
       controller_->devices();
-  const std::vector<ClickToCallUiController::App>& apps = controller_->apps();
+  const std::vector<SharingUiController::App>& apps = controller_->apps();
   int tag = 0;
 
   // Devices:
-  LogClickToCallDevicesToShow(kSharingClickToCallUiDialog, devices.size());
+  LogSharingDevicesToShow(controller_->GetFeatureMetricsPrefix(),
+                          kSharingUiDialog, devices.size());
   for (const auto& device : devices) {
     auto dialog_button = std::make_unique<HoverButton>(
         this, CreateDeviceIcon(device->device_type()),
@@ -222,7 +226,8 @@ void ClickToCallDialogView::InitListView() {
   }
 
   // Apps:
-  LogClickToCallAppsToShow(kSharingClickToCallUiDialog, apps.size());
+  LogSharingAppsToShow(controller_->GetFeatureMetricsPrefix(), kSharingUiDialog,
+                       apps.size());
   for (const auto& app : apps) {
     auto dialog_button =
         std::make_unique<HoverButton>(this, CreateAppIcon(app), app.name,
@@ -233,8 +238,7 @@ void ClickToCallDialogView::InitListView() {
   }
 }
 
-void ClickToCallDialogView::InitEmptyView() {
-
+void SharingDialogView::InitEmptyView() {
   AddChildView(CreateHelpText(this));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -253,7 +257,7 @@ void ClickToCallDialogView::InitEmptyView() {
   AddChildView(std::move(image_view));
 }
 
-void ClickToCallDialogView::InitErrorView() {
+void SharingDialogView::InitErrorView() {
   auto label = std::make_unique<views::Label>(controller_->GetErrorDialogText(),
                                               views::style::CONTEXT_LABEL,
                                               views::style::STYLE_SECONDARY);
@@ -261,35 +265,34 @@ void ClickToCallDialogView::InitErrorView() {
   AddChildView(std::move(label));
 }
 
-gfx::Size ClickToCallDialogView::CalculatePreferredSize() const {
+gfx::Size SharingDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_BUBBLE_PREFERRED_WIDTH);
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-bool ClickToCallDialogView::ShouldShowCloseButton() const {
+bool SharingDialogView::ShouldShowCloseButton() const {
   return true;
 }
 
-base::string16 ClickToCallDialogView::GetWindowTitle() const {
+base::string16 SharingDialogView::GetWindowTitle() const {
   switch (GetDialogType()) {
     case SharingDialogType::kErrorDialog:
       return controller_->GetErrorDialogTitle();
     case SharingDialogType::kEducationalDialog:
-      return l10n_util::GetStringUTF16(
-          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_NO_DEVICES);
+      return controller_->GetEducationWindowTitleText();
     case SharingDialogType::kDialogWithoutDevicesWithApp:
     case SharingDialogType::kDialogWithDevicesMaybeApps:
       return controller_->GetTitle();
   }
 }
 
-void ClickToCallDialogView::WindowClosing() {
+void SharingDialogView::WindowClosing() {
   controller_->OnDialogClosed(this);
 }
 
 // static
-views::BubbleDialogDelegateView* ClickToCallDialogView::GetAsBubble(
+views::BubbleDialogDelegateView* SharingDialogView::GetAsBubble(
     SharingDialog* dialog) {
-  return static_cast<ClickToCallDialogView*>(dialog);
+  return static_cast<SharingDialogView*>(dialog);
 }

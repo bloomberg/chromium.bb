@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_DIALOG_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_DIALOG_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_SHARING_SHARING_DIALOG_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_SHARING_SHARING_DIALOG_VIEW_H_
 
 #include <memory>
 #include <vector>
 
-#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
+#include "chrome/browser/sharing/sharing_ui_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -23,19 +23,19 @@ class Browser;
 class HoverButton;
 enum class SharingDialogType;
 
-class ClickToCallDialogView : public SharingDialog,
-                              public views::ButtonListener,
-                              public views::StyledLabelListener,
-                              public LocationBarBubbleDelegateView {
+class SharingDialogView : public SharingDialog,
+                          public views::ButtonListener,
+                          public views::StyledLabelListener,
+                          public LocationBarBubbleDelegateView {
  public:
   // Bubble will be anchored to |anchor_view|.
-  ClickToCallDialogView(views::View* anchor_view,
-                        content::WebContents* web_contents,
-                        ClickToCallUiController* controller);
+  SharingDialogView(views::View* anchor_view,
+                    content::WebContents* web_contents,
+                    SharingUiController* controller);
 
-  ~ClickToCallDialogView() override;
+  ~SharingDialogView() override;
 
-  // ClickToCallDialogView:
+  // SharingDialogView:
   void Hide() override;
 
   // views::WidgetDelegateView:
@@ -61,10 +61,10 @@ class ClickToCallDialogView : public SharingDialog,
   static views::BubbleDialogDelegateView* GetAsBubble(SharingDialog* dialog);
 
  private:
-  friend class ClickToCallDialogViewTest;
-  FRIEND_TEST_ALL_PREFIXES(ClickToCallDialogViewTest, PopulateDialogView);
-  FRIEND_TEST_ALL_PREFIXES(ClickToCallDialogViewTest, DevicePressed);
-  FRIEND_TEST_ALL_PREFIXES(ClickToCallDialogViewTest, AppPressed);
+  friend class SharingDialogViewTest;
+  FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, PopulateDialogView);
+  FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, DevicePressed);
+  FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, AppPressed);
 
   SharingDialogType GetDialogType() const;
 
@@ -78,14 +78,14 @@ class ClickToCallDialogView : public SharingDialog,
   // Populates the dialog view containing error help text.
   void InitErrorView();
 
-  ClickToCallUiController* controller_ = nullptr;
+  SharingUiController* controller_ = nullptr;
   // Contains references to device and app buttons in
   // the order they appear.
   std::vector<HoverButton*> dialog_buttons_;
   Browser* browser_ = nullptr;
   bool send_failed_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ClickToCallDialogView);
+  DISALLOW_COPY_AND_ASSIGN(SharingDialogView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_DIALOG_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_SHARING_SHARING_DIALOG_VIEW_H_

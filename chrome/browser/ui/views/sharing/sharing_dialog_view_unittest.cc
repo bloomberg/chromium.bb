@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
+#include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 
 #include <map>
 #include <memory>
@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
@@ -36,13 +37,13 @@ class ClickToCallUiControllerMock : public ClickToCallUiController {
   MOCK_METHOD1(OnAppChosen, void(const App& app));
 };
 
-class ClickToCallDialogViewMock : public ClickToCallDialogView {
+class SharingDialogViewMock : public SharingDialogView {
  public:
-  ClickToCallDialogViewMock(views::View* anchor_view,
-                            content::WebContents* web_contents,
-                            ClickToCallUiController* controller)
-      : ClickToCallDialogView(anchor_view, web_contents, controller) {}
-  ~ClickToCallDialogViewMock() override = default;
+  SharingDialogViewMock(views::View* anchor_view,
+                        content::WebContents* web_contents,
+                        ClickToCallUiController* controller)
+      : SharingDialogView(anchor_view, web_contents, controller) {}
+  ~SharingDialogViewMock() override = default;
 
   // The delegate cannot find widget since it is created from a null profile.
   // This method will be called inside ButtonPressed(). Unit tests will
@@ -60,7 +61,7 @@ MATCHER_P(AppEquals, app, "") {
   return app->name == arg.name;
 }
 
-class ClickToCallDialogViewTest : public ChromeViewsTestBase {
+class SharingDialogViewTest : public ChromeViewsTestBase {
  protected:
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
@@ -116,16 +117,16 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
   std::unique_ptr<ClickToCallUiControllerMock> controller_;
 };
 
-TEST_F(ClickToCallDialogViewTest, PopulateDialogView) {
-  std::unique_ptr<ClickToCallDialogView> bubble_view_ =
-      std::make_unique<ClickToCallDialogViewMock>(
-          anchor_widget_->GetContentsView(), nullptr, controller_.get());
+TEST_F(SharingDialogViewTest, PopulateDialogView) {
+  std::unique_ptr<SharingDialogView> bubble_view_ =
+      std::make_unique<SharingDialogViewMock>(anchor_widget_->GetContentsView(),
+                                              nullptr, controller_.get());
 
   bubble_view_->Init();
   EXPECT_EQ(5UL, bubble_view_->dialog_buttons_.size());
 }
 
-TEST_F(ClickToCallDialogViewTest, DevicePressed) {
+TEST_F(SharingDialogViewTest, DevicePressed) {
   syncer::DeviceInfo device_info(
       "device_guid_1", "device1", "chrome_version", "user_agent",
       sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
@@ -133,9 +134,9 @@ TEST_F(ClickToCallDialogViewTest, DevicePressed) {
       /* send_tab_to_self_receiving_enabled= */ false);
   EXPECT_CALL(*controller_.get(), OnDeviceChosen(DeviceEquals(&device_info)));
 
-  std::unique_ptr<ClickToCallDialogView> bubble_view_ =
-      std::make_unique<ClickToCallDialogViewMock>(
-          anchor_widget_->GetContentsView(), nullptr, controller_.get());
+  std::unique_ptr<SharingDialogView> bubble_view_ =
+      std::make_unique<SharingDialogViewMock>(anchor_widget_->GetContentsView(),
+                                              nullptr, controller_.get());
 
   bubble_view_->Init();
 
@@ -146,14 +147,14 @@ TEST_F(ClickToCallDialogViewTest, DevicePressed) {
   bubble_view_->ButtonPressed(bubble_view_->dialog_buttons_[1], event);
 }
 
-TEST_F(ClickToCallDialogViewTest, AppPressed) {
+TEST_F(SharingDialogViewTest, AppPressed) {
   ClickToCallUiController::App app(&vector_icons::kOpenInNewIcon, gfx::Image(),
                                    base::UTF8ToUTF16("app_1"), std::string());
   EXPECT_CALL(*controller_.get(), OnAppChosen(AppEquals(&app)));
 
-  std::unique_ptr<ClickToCallDialogView> bubble_view_ =
-      std::make_unique<ClickToCallDialogViewMock>(
-          anchor_widget_->GetContentsView(), nullptr, controller_.get());
+  std::unique_ptr<SharingDialogView> bubble_view_ =
+      std::make_unique<SharingDialogViewMock>(anchor_widget_->GetContentsView(),
+                                              nullptr, controller_.get());
 
   bubble_view_->Init();
 
