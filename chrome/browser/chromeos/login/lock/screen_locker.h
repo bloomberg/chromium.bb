@@ -187,6 +187,17 @@ class ScreenLocker : public AuthStatusConsumer,
     AUTH_COUNT
   };
 
+  // State associated with a pending authentication attempt.
+  struct AuthState {
+    AuthState(AccountId account_id, base::OnceCallback<void(bool)> callback);
+    ~AuthState();
+
+    // Account that is being authenticated.
+    AccountId account_id;
+    // Callback that should be executed the authentication result is available.
+    base::OnceCallback<void(bool)> callback;
+  };
+
   ~ScreenLocker() override;
 
   void OnFingerprintAuthFailure(const user_manager::User& user);
@@ -269,8 +280,8 @@ class ScreenLocker : public AuthStatusConsumer,
   // Type of the last unlock attempt.
   UnlockType unlock_attempt_type_ = AUTH_PASSWORD;
 
-  // Callback to run, if any, when authentication is done.
-  AuthenticateCallback on_auth_complete_;
+  // State associated with a pending authentication attempt.
+  std::unique_ptr<AuthState> pending_auth_state_;
 
   scoped_refptr<input_method::InputMethodManager::State> saved_ime_state_;
 
