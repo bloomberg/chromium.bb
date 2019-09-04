@@ -15700,8 +15700,10 @@
       {
         "isolate_name": "webdriver_wpt_tests",
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webdriver_tests_suite",
         "swarming": {
@@ -15710,7 +15712,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "shards": 4
         }
       },
       {

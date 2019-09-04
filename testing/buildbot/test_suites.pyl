@@ -4171,8 +4171,14 @@
       },
       'webdriver_tests_suite': {
         'isolate_name': 'webdriver_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
         'swarming': {
-          'shards': 1,
+          'shards': 4,
         },
       },
     },
