@@ -142,12 +142,6 @@ struct DohUpgradeEntry {
 const std::vector<const DohUpgradeEntry>& GetDohUpgradeList() {
   static const base::NoDestructor<std::vector<const DohUpgradeEntry>>
       upgradable_servers({
-          DohUpgradeEntry("Cisco",
-                          {"208.67.222.222", "208.67.220.220",
-                           "2620:119:35::35", "2620:119:53::53"},
-                          {""} /* DoT hostname */,
-                          {"https://doh.opendns.com/dns-query{?dns}",
-                           false /* use_post */}),
           DohUpgradeEntry(
               "CleanBrowsingAdult",
               {"185.228.168.10", "185.228.169.11", "2a0d:2a00:1::1",
@@ -190,6 +184,19 @@ const std::vector<const DohUpgradeEntry>& GetDohUpgradeList() {
               {"dns.google", "dns.google.com",
                "8888.google"} /* DoT hostname */,
               {"https://dns.google/dns-query{?dns}", false /* use_post */}),
+          DohUpgradeEntry("OpenDNS",
+                          {"208.67.222.222", "208.67.220.220",
+                           "2620:119:35::35", "2620:119:53::53"},
+                          {""} /* DoT hostname */,
+                          {"https://doh.opendns.com/dns-query{?dns}",
+                           false /* use_post */}),
+          DohUpgradeEntry(
+              "OpenDNSFamily",
+              {"208.67.222.123", "208.67.220.123", "2620:119:35::123",
+               "2620:119:53::123"},
+              {""} /* DoT hostname */,
+              {"https://doh.familyshield.opendns.com/dns-query{?dns}",
+               false /* use_post */}),
           DohUpgradeEntry(
               "Quad9Cdn",
               {"9.9.9.11", "149.112.112.11", "2620:fe::11", "2620:fe::fe:11"},
