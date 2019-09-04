@@ -541,7 +541,7 @@ def main():
 
     got_new_toolchain = True
   else:
-    print 'Windows toolchain with desired hash %s already exist.' % desired_hash
+    print ('Windows toolchain with desired hash %s already exist.' % desired_hash)
 
   win_sdk = os.path.join(abs_toolchain_target_dir, 'win_sdk')
   try:
