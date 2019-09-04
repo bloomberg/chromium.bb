@@ -235,6 +235,8 @@ ServiceWorkerVersion::ServiceWorkerVersion(
     : version_id_(version_id),
       registration_id_(registration->id()),
       script_url_(script_url),
+      // Safe to convert GURL to Origin because service workers are restricted
+      // to secure contexts.
       script_origin_(url::Origin::Create(script_url_)),
       scope_(registration->scope()),
       script_type_(script_type),
@@ -371,8 +373,8 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   ServiceWorkerVersionInfo info(
       running_status(), status(), fetch_handler_existence(), script_url(),
-      registration_id(), version_id(), embedded_worker()->process_id(),
-      embedded_worker()->thread_id(),
+      script_origin(), registration_id(), version_id(),
+      embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id());
   for (const auto& controllee : controllee_map_) {
     const ServiceWorkerProviderHost* host = controllee.second;
