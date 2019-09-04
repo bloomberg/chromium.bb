@@ -101,10 +101,11 @@ void TaskRunnerImpl::RunCurrentTasksBlocking() {
   }
 
   OSP_DVLOG << "Running " << running_tasks_.size() << " tasks...";
-  for (TaskWithMetadata& task : running_tasks_) {
+  for (TaskWithMetadata& running_task : running_tasks_) {
     // Move the task to the stack so that its bound state is freed immediately
     // after being run.
-    std::move(task)();
+    TaskWithMetadata task = std::move(running_task);
+    task();
   }
   running_tasks_.clear();
 }

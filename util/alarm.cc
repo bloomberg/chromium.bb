@@ -118,7 +118,9 @@ void Alarm::TryInvoke() {
   // Move the client Task to the stack before executing, just in case the task
   // itself: a) calls any Alarm methods re-entrantly, or b) causes the
   // destruction of this Alarm instance.
-  std::move(scheduled_task_)();  // WARNING: |this| is not valid after here!
+  // WARNING: |this| is not valid after here!
+  platform::TaskRunner::Task task = std::move(scheduled_task_);
+  task();
 }
 
 }  // namespace openscreen

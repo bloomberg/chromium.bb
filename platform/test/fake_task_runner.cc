@@ -28,10 +28,11 @@ void FakeTaskRunner::RunTasksUntilIdle() {
 
   std::vector<Task> running_tasks;
   running_tasks.swap(ready_to_run_tasks_);
-  for (Task& task : running_tasks) {
+  for (Task& running_task : running_tasks) {
     // Move the task out of the vector and onto the stack so that it destroys
     // just after being run. This helps catch "dangling reference/pointer" bugs.
-    std::move(task)();
+    Task task = std::move(running_task);
+    task();
   }
 }
 
