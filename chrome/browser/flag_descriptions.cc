@@ -3422,12 +3422,6 @@ const char kFirstRunUiTransitionsName[] =
 const char kFirstRunUiTransitionsDescription[] =
     "Transitions during first-run tutorial are animated.";
 
-const char kForceUseChromeCameraName[] =
-    "Open Chrome camera app when clicking on camera icon";
-const char kForceUseChromeCameraDescription[] =
-    "Open Chrome camera app when clicking on camera icon instead of "
-    "GoogleCamera app, regardless of whether Android runtime is enabled.";
-
 const char kFsNosymfollowName[] =
     "Prevent symlink traversal on user-supplied filesystems.";
 const char kFsNosymfollowDescription[] =
