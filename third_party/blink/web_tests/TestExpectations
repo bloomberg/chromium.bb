@@ -3253,7 +3253,6 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
-crbug.com/626703 [ Linux ] virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Failure Crash ]
 crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
