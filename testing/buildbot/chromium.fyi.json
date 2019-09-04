@@ -23060,10 +23060,10 @@
           "dimension_sets": [
             {
               "gpu": "none",
-              "os": "Mac-10.10"
+              "os": "Mac-10.10.5"
             }
           ],
-          "shards": 12
+          "shards": 20
         }
       }
     ]
@@ -23088,10 +23088,10 @@
           "dimension_sets": [
             {
               "gpu": "none",
-              "os": "Mac-10.11"
+              "os": "Mac-10.11.6"
             }
           ],
-          "shards": 12
+          "shards": 20
         }
       }
     ]
@@ -23120,7 +23120,7 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "shards": 12
+          "shards": 20
         }
       }
     ]
@@ -23150,7 +23150,7 @@
             }
           ],
           "hard_timeout": 900,
-          "shards": 12
+          "shards": 20
         }
       }
     ]
@@ -23180,7 +23180,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 12
+          "shards": 20
         }
       }
     ]
