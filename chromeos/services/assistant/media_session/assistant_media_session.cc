@@ -136,6 +136,7 @@ void AssistantMediaSession::AbandonAudioFocusIfNeeded() {
   request_client_ptr_->AbandonAudioFocus();
   request_client_ptr_.reset();
   audio_focus_ptr_.reset();
+  internal_audio_focus_id_ = base::UnguessableToken::Null();
 }
 
 void AssistantMediaSession::EnsureServiceConnection() {
@@ -161,6 +162,7 @@ void AssistantMediaSession::FinishAudioFocusRequest(
 void AssistantMediaSession::FinishInitialAudioFocusRequest(
     AudioFocusType audio_focus_type,
     const base::UnguessableToken& request_id) {
+  internal_audio_focus_id_ = request_id;
   FinishAudioFocusRequest(audio_focus_type);
 }
 
