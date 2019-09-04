@@ -2154,6 +2154,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "force-use-chrome-camera",
+    "owners": [ "shik", "chromeos-camera-app-eng@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "foreground-notification-manager",
     "owners": [ "//components/download/OWNERS" ],
     "expiry_milestone": 76

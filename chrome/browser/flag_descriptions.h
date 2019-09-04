@@ -2048,6 +2048,9 @@ extern const char kFilesNGDescription[];
 extern const char kFirstRunUiTransitionsName[];
 extern const char kFirstRunUiTransitionsDescription[];
 
+extern const char kForceUseChromeCameraName[];
+extern const char kForceUseChromeCameraDescription[];
+
 extern const char kFsNosymfollowName[];
 extern const char kFsNosymfollowDescription[];
 
