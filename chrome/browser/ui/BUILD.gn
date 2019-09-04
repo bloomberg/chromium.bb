@@ -3549,6 +3549,8 @@ jumbo_split_static_library("ui") {
     if (is_chromeos) {
       sources += [
         "app_icon_loader_delegate.h",
+        "app_list/app_service_app_icon_loader.cc",
+        "app_list/app_service_app_icon_loader.h",
         "app_list/app_service_app_item.cc",
         "app_list/app_service_app_item.h",
         "app_list/app_service_app_model_builder.cc",
