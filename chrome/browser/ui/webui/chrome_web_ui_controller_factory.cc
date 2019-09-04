@@ -947,5 +947,10 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+  if (page_url.host_piece() == chrome::kChromeUIOSSettingsHost)
+    return settings_utils::GetFaviconResourceBytes(scale_factor);
+#endif  // defined(OS_CHROMEOS)
+
   return nullptr;
 }
