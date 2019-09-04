@@ -3231,7 +3231,7 @@
   {
     "name": "unified-consent",
     "owners": [ "msarda", "tangltom" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "unsafely-treat-insecure-origin-as-secure",
