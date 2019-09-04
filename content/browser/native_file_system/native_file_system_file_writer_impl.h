@@ -12,6 +12,7 @@
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_file_system_permission_context.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom.h"
 
@@ -48,7 +49,7 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   const storage::FileSystemURL& swap_url() const { return swap_url_; }
 
   void Write(uint64_t offset,
-             blink::mojom::BlobPtr data,
+             mojo::PendingRemote<blink::mojom::Blob> data,
              WriteCallback callback) override;
   void WriteStream(uint64_t offset,
                    mojo::ScopedDataPipeConsumerHandle stream,
@@ -76,7 +77,7 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   struct WriteState;
 
   void WriteImpl(uint64_t offset,
-                 blink::mojom::BlobPtr data,
+                 mojo::PendingRemote<blink::mojom::Blob> data,
                  WriteCallback callback);
   void DoWriteBlob(WriteCallback callback,
                    uint64_t position,
