@@ -259,6 +259,17 @@
         'use_swarming': True,
         'os_type': 'android',
       },
+      'Android WebView P (dbg)': {
+        'mixins': [
+          'pie_fleet',
+          'walleye',
+        ],
+        'test_suites': {
+          'gtest_tests': 'webview_bot_all_gtests',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
+      },
       'Android arm Builder (dbg)': {
         'additional_compile_targets': [
           'dump_syms',
