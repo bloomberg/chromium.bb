@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -77,20 +76,6 @@ void VoiceInteractionControllerClient::NotifyLockedFullScreenStateChanged(
   ash::AssistantState::Get()->NotifyLockedFullScreenStateChanged(enabled);
 }
 
-void VoiceInteractionControllerClient::NotifySettingsEnabled() {
-  DCHECK(profile_);
-  PrefService* prefs = profile_->GetPrefs();
-  bool enabled = prefs->GetBoolean(prefs::kVoiceInteractionEnabled);
-  ash::AssistantState::Get()->NotifySettingsEnabled(enabled);
-}
-
-void VoiceInteractionControllerClient::NotifyHotwordEnabled() {
-  DCHECK(profile_);
-  PrefService* prefs = profile_->GetPrefs();
-  bool enabled = prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled);
-  ash::AssistantState::Get()->NotifyHotwordEnabled(enabled);
-}
-
 void VoiceInteractionControllerClient::NotifyFeatureAllowed() {
   DCHECK(profile_);
   ash::mojom::AssistantAllowedState state =
@@ -148,20 +133,8 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
       base::BindRepeating(
           &VoiceInteractionControllerClient::NotifyLocaleChanged,
           base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kVoiceInteractionEnabled,
-      base::BindRepeating(
-          &VoiceInteractionControllerClient::NotifySettingsEnabled,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kVoiceInteractionHotwordEnabled,
-      base::BindRepeating(
-          &VoiceInteractionControllerClient::NotifyHotwordEnabled,
-          base::Unretained(this)));
 
-  NotifySettingsEnabled();
   NotifyLocaleChanged();
-  NotifyHotwordEnabled();
   OnArcPlayStoreEnabledChanged(IsArcPlayStoreEnabledForProfile(profile_));
 }
 

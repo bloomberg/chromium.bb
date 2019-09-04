@@ -49,8 +49,6 @@ class VoiceInteractionControllerClient
   friend class VoiceInteractionControllerClientTest;
 
   // Notify the controller about state changes.
-  void NotifySettingsEnabled();
-  void NotifyHotwordEnabled();
   void NotifyFeatureAllowed();
   void NotifyLocaleChanged();
 
