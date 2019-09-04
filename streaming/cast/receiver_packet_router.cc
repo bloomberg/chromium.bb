@@ -31,7 +31,7 @@ void ReceiverPacketRouter::OnReceiverCreated(Ssrc ssrc, Receiver* receiver) {
   // it to the source of the first packet received.
   if (receivers_.size() == 1) {
     environment_->set_remote_endpoint(IPEndpoint{});
-    environment_->ResumeIncomingPackets(this);
+    environment_->ConsumeIncomingPackets(this);
   }
 }
 
@@ -42,7 +42,7 @@ void ReceiverPacketRouter::OnReceiverDestroyed(Ssrc ssrc) {
 
   // If there are no longer any Receivers, suspend receiving packets.
   if (receivers_.empty()) {
-    environment_->SuspendIncomingPackets();
+    environment_->DropIncomingPackets();
   }
 }
 

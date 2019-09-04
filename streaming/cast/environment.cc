@@ -42,13 +42,13 @@ IPEndpoint Environment::GetBoundLocalEndpoint() const {
   return IPEndpoint{};
 }
 
-void Environment::ResumeIncomingPackets(PacketConsumer* packet_consumer) {
+void Environment::ConsumeIncomingPackets(PacketConsumer* packet_consumer) {
   OSP_DCHECK(packet_consumer);
   OSP_DCHECK(!packet_consumer_);
   packet_consumer_ = packet_consumer;
 }
 
-void Environment::SuspendIncomingPackets() {
+void Environment::DropIncomingPackets() {
   packet_consumer_ = nullptr;
 }
 

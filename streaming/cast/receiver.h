@@ -24,7 +24,7 @@ class ReceiverPacketRouter;
 // The Cast Streaming Receiver, a peer corresponding to some Cast Streaming
 // Sender at the other end of a network link.
 //
-// Cast Streaming is a transport protocol which divides-up the frames for one
+// Cast Streaming is a transport protocol which divides up the frames for one
 // media stream (e.g., audio or video) into multiple RTP packets containing an
 // encrypted payload. The Receiver is the peer responsible for collecting the
 // RTP packets, decrypting the payload, and re-assembling a frame that can be
@@ -42,7 +42,7 @@ class ReceiverPacketRouter;
 // decoder, and the resulting decoded media is played out. Also, here is a
 // general usage example:
 //
-//   class MyPlayer : public Receiver::Consumer {
+//   class MyPlayer : public cast_streaming::Receiver::Consumer {
 //    public:
 //     explicit MyPlayer(Receiver* receiver) : receiver_(receiver) {
 //       recevier_->SetPlayerProcessingTime(std::chrono::milliseconds(10));
@@ -59,7 +59,7 @@ class ReceiverPacketRouter;
 //       std::vector<uint8_t> buffer;
 //       for (;;) {
 //         const int buffer_size_needed = receiver_->AdvanceToNextFrame();
-//         if (buffer_size == -1) {
+//         if (buffer_size == Receiver::kNoFramesReady) {
 //           break;  // Consumed all the frames.
 //         }
 //
@@ -100,6 +100,11 @@ class Receiver {
     virtual void OnFramesComplete() = 0;
   };
 
+  // Constructs a Receiver that attaches to the given |environment| and
+  // |packet_router|. The remaining arguments provide the configuration that was
+  // agreed-upon by both sides from the OFFER/ANSWER exchange (i.e., the part of
+  // the overall end-to-end connection process that occurs before Cast Streaming
+  // is started).
   Receiver(Environment* environment,
            ReceiverPacketRouter* packet_router,
            Ssrc sender_ssrc,
@@ -114,10 +119,11 @@ class Receiver {
   Ssrc ssrc() const { return receiver_ssrc_; }
 
   // Set the Consumer receiving notifications when new frames are ready for
-  // consumption.
+  // consumption. Frames received before this method is called will remain in
+  // the queue indefinitely.
   void SetConsumer(Consumer* consumer);
 
-  // Sets how much time the consumer will need to decode, render, buffer; and
+  // Sets how much time the consumer will need to decode/buffer/render/etc., and
   // otherwise fully process a frame for on-time playback. This information is
   // used by the Receiver to decide whether to skip past frames that have
   // arrived too late. This method can be called repeatedly to make adjustments
@@ -138,21 +144,26 @@ class Receiver {
   // completed frames further down the queue that have no dependency
   // relationship with them (e.g., key frames).
   //
-  // This method returns -1 if there is not currently a frame ready for
-  // consumption. Otherwise, the number of bytes of encoded data is returned,
-  // and the caller should use this to ensure the buffer it passes to
-  // ConsumeNextFrame() is large enough.
+  // This method returns kNoFramesReady if there is not currently a frame ready
+  // for consumption. The caller can wait for a Consumer::OnFramesComplete()
+  // notification, or poll this method again later. Otherwise, the number of
+  // bytes of encoded data is returned, and the caller should use this to ensure
+  // the buffer it passes to ConsumeNextFrame() is large enough.
   int AdvanceToNextFrame();
 
   // Populates the given |frame| with the next frame, both metadata and payload
   // data. AdvanceToNextFrame() should have been called just before this method,
-  // and |frame->data| should point to a sufficiently-sized buffer that will be
+  // and |frame->data| must point to a sufficiently-sized buffer that will be
   // populated with the frame's payload data. Upon return |frame->data| will be
   // set to the portion of the buffer that was populated.
   void ConsumeNextFrame(EncodedFrame* frame);
 
   // The default "player processing time" amount. See SetPlayerProcessingTime().
   static constexpr std::chrono::milliseconds kDefaultPlayerProcessingTime{5};
+
+  // Returned by AdvanceToNextFrame() when there are no frames currently ready
+  // for consumption.
+  static constexpr int kNoFramesReady = -1;
 
  protected:
   friend class ReceiverPacketRouter;

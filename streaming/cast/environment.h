@@ -64,14 +64,14 @@ class Environment final : public platform::UdpSocket::Client {
     remote_endpoint_ = endpoint;
   }
 
-  // Resume delivery of incoming packets to the given |packet_consumer|.
-  // Delivery will continue until SuspendIncomingPackets() is called.
-  void ResumeIncomingPackets(PacketConsumer* packet_consumer);
+  // Start/Resume delivery of incoming packets to the given |packet_consumer|.
+  // Delivery will continue until DropIncomingPackets() is called.
+  void ConsumeIncomingPackets(PacketConsumer* packet_consumer);
 
-  // Suspend delivery of incoming packets. All internal references to the
-  // PacketConsumer that was provided in the last call to
-  // ResumeIncomingPackets() are cleared.
-  void SuspendIncomingPackets();
+  // Stop delivery of incoming packets, dropping any that do come in. All
+  // internal references to the PacketConsumer that was provided in the last
+  // call to ConsumeIncomingPackets() are cleared.
+  void DropIncomingPackets();
 
   // Returns the maximum packet size for the network. This will always return a
   // value of at least kRequiredNetworkPacketSize.
