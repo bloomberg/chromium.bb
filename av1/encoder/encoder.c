@@ -3910,7 +3910,7 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
     } else {
       aom_clear_system_state();
       cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
-      if (is_frame_arf_and_tpl_eligible(cpi)) {
+      if (is_frame_arf_and_tpl_eligible(gf_group)) {
         cpi->rd.arf_r0 = cpi->rd.r0;
         const int gfu_boost =
             get_gfu_boost_from_r0(cpi->rd.arf_r0, cpi->rc.frames_to_key);

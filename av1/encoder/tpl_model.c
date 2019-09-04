@@ -1057,7 +1057,9 @@ void av1_tpl_rdmult_setup(AV1_COMP *cpi) {
   assert(IMPLIES(gf_group->size > 0, tpl_idx < gf_group->size));
 
   const TplDepFrame *const tpl_frame = &cpi->tpl_frame[tpl_idx];
+
   if (!tpl_frame->is_valid) return;
+  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return;
 
   const TplDepStats *const tpl_stats = tpl_frame->tpl_stats_ptr;
   const int tpl_stride = tpl_frame->stride;

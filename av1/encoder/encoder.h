@@ -1430,24 +1430,17 @@ static INLINE int is_frame_kf_and_tpl_eligible(AV1_COMP *const cpi) {
     return 0;
 }
 
-static INLINE int is_frame_arf_and_tpl_eligible(AV1_COMP *const cpi) {
-  GF_GROUP *const gf_group = &cpi->gf_group;
-  const int max_pyr_level_fromtop_deltaq = 0;
-  const int pyr_lev_from_top =
-      gf_group->pyramid_height - gf_group->pyramid_level[cpi->gf_group.index];
-  if (pyr_lev_from_top > max_pyr_level_fromtop_deltaq ||
-      gf_group->pyramid_height <= max_pyr_level_fromtop_deltaq + 1)
-    return 0;
-  else
-    return 1;
+static INLINE int is_frame_arf_and_tpl_eligible(const GF_GROUP *gf_group) {
+  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[gf_group->index];
+  return update_type == ARF_UPDATE || update_type == GF_UPDATE;
 }
 
 static INLINE int is_frame_tpl_eligible(AV1_COMP *const cpi) {
 #if ENABLE_KF_TPL
   return is_frame_kf_and_tpl_eligible(cpi) ||
-         is_frame_arf_and_tpl_eligible(cpi);
+         is_frame_arf_and_tpl_eligible(&cpi->gf_group);
 #else
-  return is_frame_arf_and_tpl_eligible(cpi);
+  return is_frame_arf_and_tpl_eligible(&cpi->gf_group);
 #endif  // ENABLE_KF_TPL
 }
 
