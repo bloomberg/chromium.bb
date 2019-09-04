@@ -73,10 +73,11 @@ void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
   document_.has_nonempty_beforeunload = has_nonempty_beforeunload;
 }
 
-void FrameNodeImpl::SetInterventionPolicy(
-    resource_coordinator::mojom::PolicyControlledIntervention intervention,
+void FrameNodeImpl::SetOriginTrialFreezePolicy(
     resource_coordinator::mojom::InterventionPolicy policy) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  constexpr auto intervention = resource_coordinator::mojom::
+      PolicyControlledIntervention::kPageLifecycleTransitions;
   size_t i = static_cast<size_t>(intervention);
   DCHECK_LT(i, base::size(intervention_policy_));
 
@@ -298,12 +299,7 @@ void FrameNodeImpl::SetPriorityAndReason(
 void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
     resource_coordinator::mojom::InterventionPolicy policy) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (size_t i = 0; i < base::size(intervention_policy_); ++i) {
-    SetInterventionPolicy(
-        static_cast<resource_coordinator::mojom::PolicyControlledIntervention>(
-            i),
-        policy);
-  }
+  SetOriginTrialFreezePolicy(policy);
 }
 
 const FrameNode* FrameNodeImpl::GetParentFrameNode() const {

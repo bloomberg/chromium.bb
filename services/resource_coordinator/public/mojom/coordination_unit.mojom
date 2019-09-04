@@ -39,6 +39,9 @@ enum InterventionPolicy {
 // communicate the policy state to the associated FrameCoordinationUnit, and
 // these will eventually be aggregated to the parent PageCoordinationUnit and
 // applied to an entire frame tree.
+//
+// TODO(https://crbug.com/999594): Remove this enum once it is no longer
+// referenced in C++ code.
 enum PolicyControlledIntervention {
   // Page lifecycles is a feature that causes pages to transition through
   // lifecycle states in an attempt to save/reclaim resources.
@@ -52,8 +55,13 @@ interface DocumentCoordinationUnit {
   SetNetworkAlmostIdle();
   SetLifecycleState(LifecycleState state);
   SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
-  SetInterventionPolicy(PolicyControlledIntervention intervention,
-                        InterventionPolicy policy);
+
+  // Sets the freeze policy set via origin trial for the document. Invoked once
+  // after finishing to parse the document. The freeze policies of all frames on
+  // a page are aggregated to determine whether the page as a whole can be
+  // frozen.
+  SetOriginTrialFreezePolicy(InterventionPolicy policy);
+
   SetIsAdFrame();
 
   // Event signals.

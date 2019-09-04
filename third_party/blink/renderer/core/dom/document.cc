@@ -6518,7 +6518,6 @@ LocalDOMWindow* Document::defaultView() const {
 namespace {
 
 using resource_coordinator::mojom::InterventionPolicy;
-using resource_coordinator::mojom::PolicyControlledIntervention;
 
 // A helper function for setting intervention policy values on a frame.
 void SetInitialInterventionPolicies(
@@ -6535,8 +6534,7 @@ void SetInitialInterventionPolicies(
     UseCounter::Count(context, WebFeature::kPageLifecycleTransitionsOptIn);
   }
 
-  document_resource_coordinator->SetInterventionPolicy(
-      PolicyControlledIntervention::kPageLifecycleTransitions, policy);
+  document_resource_coordinator->SetOriginTrialFreezePolicy(policy);
 }
 
 }  // namespace

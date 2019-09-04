@@ -45,9 +45,7 @@ class WorkerNodeImpl;
 // active frame.
 class FrameNodeImpl
     : public PublicNodeImpl<FrameNodeImpl, FrameNode>,
-      public TypedNodeBase<FrameNodeImpl,
-                           FrameNode,
-                           FrameNodeObserver>,
+      public TypedNodeBase<FrameNodeImpl, FrameNode, FrameNodeObserver>,
       public resource_coordinator::mojom::DocumentCoordinationUnit {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kFrame; }
@@ -72,8 +70,7 @@ class FrameNodeImpl
   void SetNetworkAlmostIdle() override;
   void SetLifecycleState(LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
-  void SetInterventionPolicy(
-      resource_coordinator::mojom::PolicyControlledIntervention intervention,
+  void SetOriginTrialFreezePolicy(
       resource_coordinator::mojom::InterventionPolicy policy) override;
   void SetIsAdFrame() override;
   void OnNonPersistentNotificationCreated() override;
@@ -210,16 +207,15 @@ class FrameNodeImpl
       NotifiesOnlyOnChanges<bool, &FrameNodeObserver::OnIsAdFrameChanged>
           is_ad_frame_{false};
 
-  ObservedProperty::NotifiesOnlyOnChanges<
-      bool,
-      &FrameNodeObserver::OnIsCurrentChanged>
-      is_current_{false};
+  ObservedProperty::
+      NotifiesOnlyOnChanges<bool, &FrameNodeObserver::OnIsCurrentChanged>
+          is_current_{false};
 
   // Intervention policy for this frame. These are communicated from the
   // renderer process and are controlled by origin trials.
   //
-  // TODO(fdoray): Adapt aggregation logic in PageNodeImpl to allow moving this
-  // to DocumentProperties.
+  // TODO(https://crbug.com/999594): Move this to a decorator, since the only
+  // consumer is the freeze policy.
   resource_coordinator::mojom::InterventionPolicy
       intervention_policy_[static_cast<size_t>(
                                resource_coordinator::mojom::
