@@ -4614,6 +4614,16 @@ static void set_default_interp_skip_flags(AV1_COMP *cpi) {
                                        : INTERP_SKIP_LUMA_SKIP_CHROMA;
 }
 
+// TODO(Remya): Can include erroradv_prod_tr[] for threshold calculation
+static INLINE int64_t calc_erroradv_threshold(AV1_COMP *cpi,
+                                              int64_t ref_frame_error) {
+  if (!cpi->sf.disable_adaptive_warp_error_thresh)
+    return (int64_t)(ref_frame_error * erroradv_tr[cpi->sf.gm_erroradv_type] +
+                     0.5);
+  else
+    return INT64_MAX;
+}
+
 static void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
   MACROBLOCK *const x = &td->mb;
@@ -4881,7 +4891,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
               ref_buf[frame], cpi->common.seq_params.bit_depth,
               gm_estimation_type, inliers_by_motion, params_by_motion,
               RANSAC_NUM_MOTIONS);
-
+          int64_t ref_frame_error = 0;
           for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
             if (inliers_by_motion[i] == 0) continue;
 
@@ -4893,13 +4903,24 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                   segment_map, segment_map_w, segment_map_h,
                   params_by_motion[i].inliers, params_by_motion[i].num_inliers);
 
+              ref_frame_error = av1_segmented_frame_error(
+                  is_cur_buf_hbd(xd), xd->bd, ref_buf[frame]->y_buffer,
+                  ref_buf[frame]->y_stride, cpi->source->y_buffer,
+                  cpi->source->y_width, cpi->source->y_height,
+                  cpi->source->y_stride, segment_map, segment_map_w);
+
+              int64_t erroradv_threshold =
+                  calc_erroradv_threshold(cpi, ref_frame_error);
+
               const int64_t warp_error = av1_refine_integerized_param(
                   &tmp_wm_params, tmp_wm_params.wmtype, is_cur_buf_hbd(xd),
                   xd->bd, ref_buf[frame]->y_buffer, ref_buf[frame]->y_width,
                   ref_buf[frame]->y_height, ref_buf[frame]->y_stride,
                   cpi->source->y_buffer, cpi->source->y_width,
-                  cpi->source->y_height, cpi->source->y_stride, 5,
-                  best_warp_error, segment_map, segment_map_w);
+                  cpi->source->y_height, cpi->source->y_stride,
+                  GM_REFINEMENT_COUNT, best_warp_error, segment_map,
+                  segment_map_w, erroradv_threshold);
+
               if (warp_error < best_warp_error) {
                 best_warp_error = warp_error;
                 // Save the wm_params modified by
@@ -4926,12 +4947,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           }
 
           if (cm->global_motion[frame].wmtype == IDENTITY) continue;
-
-          const int64_t ref_frame_error = av1_segmented_frame_error(
-              is_cur_buf_hbd(xd), xd->bd, ref_buf[frame]->y_buffer,
-              ref_buf[frame]->y_stride, cpi->source->y_buffer,
-              cpi->source->y_width, cpi->source->y_height,
-              cpi->source->y_stride, segment_map, segment_map_w);
 
           if (ref_frame_error == 0) continue;
 

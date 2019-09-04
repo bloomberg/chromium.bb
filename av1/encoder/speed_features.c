@@ -302,6 +302,7 @@ static void set_good_speed_features_framesize_independent(
     sf->prune_comp_type_by_comp_avg = 1;
     sf->prune_motion_mode_level = 2;
     sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
+    sf->disable_adaptive_warp_error_thresh = 0;
     sf->cb_pred_filter_search = 1;
     sf->use_transform_domain_distortion = boosted ? 1 : 2;
     sf->perform_coeff_opt = boosted ? 1 : 2;
@@ -729,6 +730,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     assert(0 && "Invalid disable_trellis_quant value");
   }
   sf->gm_erroradv_type = GM_ERRORADV_TR_0;
+  sf->disable_adaptive_warp_error_thresh = 1;
   sf->mv.reduce_first_step_size = 0;
   sf->mv.auto_mv_step_size = 0;
   sf->comp_inter_joint_search_thresh = BLOCK_4X4;
