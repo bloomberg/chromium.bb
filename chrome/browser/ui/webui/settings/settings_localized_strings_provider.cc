@@ -577,9 +577,6 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "showCrostiniExportImport",
       crostini::IsCrostiniExportImportUIAllowedForProfile(profile));
-  html_source->AddBoolean(
-      "enableCrostiniUsbDeviceSupport",
-      base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsbSupport));
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,

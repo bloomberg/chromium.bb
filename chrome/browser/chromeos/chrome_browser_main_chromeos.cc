@@ -1072,11 +1072,9 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   auto_screen_brightness_controller_ =
       std::make_unique<power::auto_screen_brightness::Controller>();
 
-  // Enable Chrome OS USB detection only if a USB feature is turned on.
-  if (base::FeatureList::IsEnabled(features::kCrostiniUsbSupport)) {
-    cros_usb_detector_ = std::make_unique<CrosUsbDetector>();
-    cros_usb_detector_->ConnectToDeviceManager();
-  }
+  // Enable Chrome OS USB detection.
+  cros_usb_detector_ = std::make_unique<CrosUsbDetector>();
+  cros_usb_detector_->ConnectToDeviceManager();
 
   crostini_unsupported_action_notifier_ =
       std::make_unique<crostini::CrostiniUnsupportedActionNotifier>();

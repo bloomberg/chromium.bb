@@ -52,12 +52,7 @@ const base::Feature kCrostiniBackup{"CrostiniBackup",
 const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables Crostini support for usb mounting.
-const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables Crostini usb mounting for unsupported devices.
-// To enable, CrostiniUsbSupport must also be enabled.
 const base::Feature kCrostiniUsbAllowUnsupported{
     "CrostiniUsbAllowUnsupported", base::FEATURE_DISABLED_BY_DEFAULT};
 

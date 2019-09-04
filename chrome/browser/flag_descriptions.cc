@@ -3189,12 +3189,7 @@ const char kCrostiniGpuSupportDescription[] = "Enable Crostini GPU support.";
 const char kCrostiniUsbAllowUnsupportedName[] =
     "Crostini Usb Allow Unsupported";
 const char kCrostiniUsbAllowUnsupportedDescription[] =
-    "Allow mounting unsupported Usb devices in Crostini. At your own risk. "
-    "To enable, Crostini Usb Support must also be enabled.";
-
-const char kCrostiniUsbSupportName[] = "Crostini Usb Support";
-const char kCrostiniUsbSupportDescription[] =
-    "Enable mounting Usb devices in Crostini.";
+    "Allow mounting unsupported Usb devices in Crostini. At your own risk. ";
 
 const char kCrostiniWebUIInstallerName[] = "Crostini WebUI Installer";
 const char kCrostiniWebUIInstallerDescription[] =

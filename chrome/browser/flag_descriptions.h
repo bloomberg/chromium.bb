@@ -1904,9 +1904,6 @@ extern const char kCrostiniGpuSupportDescription[];
 extern const char kCrostiniUsbAllowUnsupportedName[];
 extern const char kCrostiniUsbAllowUnsupportedDescription[];
 
-extern const char kCrostiniUsbSupportName[];
-extern const char kCrostiniUsbSupportDescription[];
-
 extern const char kCrostiniWebUIInstallerName[];
 extern const char kCrostiniWebUIInstallerDescription[];
 
