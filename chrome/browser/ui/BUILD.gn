@@ -688,8 +688,6 @@ jumbo_split_static_library("ui") {
       "android/infobars/near_oom_infobar.h",
       "android/infobars/near_oom_reduction_infobar.cc",
       "android/infobars/near_oom_reduction_infobar.h",
-      "android/infobars/permission_infobar.cc",
-      "android/infobars/permission_infobar.h",
       "android/infobars/previews_lite_page_infobar.cc",
       "android/infobars/previews_lite_page_infobar.h",
       "android/infobars/reader_mode_infobar.cc",
