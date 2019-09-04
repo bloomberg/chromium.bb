@@ -1,7 +1,8 @@
-<!doctype html>
+<?php
+  header("Content-Security-Policy: treat-as-public-address");
+?><!doctype html>
 <html>
 <head>
-    <meta http-equiv="Content-Security-Policy" content="treat-as-public-address">
     <script src="/resources/testharness.js"></script>
     <script src="/resources/testharnessreport.js"></script>
     <script src="./resources/preflight.js"></script>

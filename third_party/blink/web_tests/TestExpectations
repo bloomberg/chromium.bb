@@ -2987,9 +2987,11 @@ crbug.com/399507 virtual/threaded/http/tests/devtools/tracing/timeline-paint/lay
 # non-deterministic order.
 crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-out-of-DOM-element.html [ Failure ]
 
-# Skip the non-virtualized CORS-RFC1918 tests:
-crbug.com/763830 http/tests/security/cors-rfc1918/ [ Skip ]
-crbug.com/763830 virtual/blink-cors/http/tests/security/cors-rfc1918/ [ Skip ]
+# Skip the non-virtualized CORS-RFC1918 blocking tests (`.addressSpace` tests are fine):
+crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Skip ]
+crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Skip ]
+crbug.com/763830 virtual/blink-cors/http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Skip ]
+crbug.com/763830 virtual/blink-cors/http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Skip ]
 
 crbug.com/831729 external/wpt/event-timing/crossiframe.html [ Timeout ]
 crbug.com/831729 external/wpt/event-timing/observer-manual.html [ Skip ]
