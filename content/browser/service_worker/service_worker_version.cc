@@ -1182,6 +1182,15 @@ void ServiceWorkerVersion::OpenPaymentHandlerWindow(
     return;
   }
 
+  if (!url.is_valid() ||
+      !url::Origin::Create(url).IsSameOriginWith(script_origin_)) {
+    mojo::ReportBadMessage(
+        "Received PaymentRequestEvent#openWindow() request for a cross-origin "
+        "URL.");
+    receiver_.reset();
+    return;
+  }
+
   PaymentHandlerSupport::ShowPaymentHandlerWindow(
       url, context_.get(),
       base::BindOnce(&DidShowPaymentHandlerWindow, url, context_),
@@ -1642,10 +1651,9 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   params->provider_info = std::move(provider_info);
 
-  embedded_worker_->Start(
-      std::move(params),
-      base::BindOnce(&ServiceWorkerVersion::OnStartSent,
-                     weak_factory_.GetWeakPtr()));
+  embedded_worker_->Start(std::move(params),
+                          base::BindOnce(&ServiceWorkerVersion::OnStartSent,
+                                         weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerVersion::StartTimeoutTimer() {
@@ -1837,8 +1845,7 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
   message.append(".");
   OnReportException(base::UTF8ToUTF16(message), -1, -1, GURL());
   DVLOG(1) << message;
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.TimeoutPhase",
-                            phase,
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.TimeoutPhase", phase,
                             EmbeddedWorkerInstance::STARTING_PHASE_MAX_VALUE);
 }
 
