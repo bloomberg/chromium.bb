@@ -272,7 +272,6 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                                                   fromEmail:lastSignedInEmail
                                                     toEmail:[identity userEmail]
                                                  isSignedIn:isSignedIn];
-  [_navigationController setShouldCommitSyncChangesOnDismissal:NO];
   [[_delegate presentingViewController]
       presentViewController:_navigationController
                    animated:YES
