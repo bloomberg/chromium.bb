@@ -2933,9 +2933,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kResourceLoadScheduler)},
 
-    {"prefetch-redirect-error", flag_descriptions::kPrefetchRedirectErrorName,
-     flag_descriptions::kPrefetchRedirectErrorDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kPrefetchRedirectError)},
+    {"prefetch-privacy-changes", flag_descriptions::kPrefetchPrivacyChangesName,
+     flag_descriptions::kPrefetchPrivacyChangesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kPrefetchPrivacyChanges)},
 
     {"prefetch-main-resource-network-isolation-key",
      flag_descriptions::kPrefetchMainResourceNetworkIsolationKeyName,

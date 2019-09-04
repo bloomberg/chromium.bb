@@ -1647,11 +1647,12 @@ const char kResourceLoadSchedulerDescription[] =
     "Uses the resource load scheduler in blink to throttle resource load "
     "requests.";
 
-const char kPrefetchRedirectErrorName[] =
-    "Prefetch requests use \"error\" redirect mode";
-const char kPrefetchRedirectErrorDescription[] =
-    "Prefetch requests will not follow redirect responses, and instead be "
-    "logged as errors. Redirect responses are still stored in the cache.";
+const char kPrefetchPrivacyChangesName[] =
+    "Prefetch request properties are updated to be privacy-preserving";
+const char kPrefetchPrivacyChangesDescription[] =
+    "Prefetch requests will not follow redirects, not send a Referer header, "
+    "not send credentials for cross-origin requests, and do not pass through "
+    "service workers.";
 
 const char kPrefetchMainResourceNetworkIsolationKeyName[] =
     "Prefetch requests for cross-origin main resources are fetched with a "

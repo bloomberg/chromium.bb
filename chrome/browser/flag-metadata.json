@@ -2831,7 +2831,7 @@
     "expiry_milestone": 85
   },
   {
-    "name": "prefetch-redirect-error",
+    "name": "prefetch-privacy-changes",
     "owners": [ "dom", "yhirano" ],
     "expiry_milestone": 85
   },

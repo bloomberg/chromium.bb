@@ -992,8 +992,8 @@ extern const char kRequestTabletSiteDescription[];
 extern const char kResourceLoadSchedulerName[];
 extern const char kResourceLoadSchedulerDescription[];
 
-extern const char kPrefetchRedirectErrorName[];
-extern const char kPrefetchRedirectErrorDescription[];
+extern const char kPrefetchPrivacyChangesName[];
+extern const char kPrefetchPrivacyChangesDescription[];
 
 extern const char kPrefetchMainResourceNetworkIsolationKeyName[];
 extern const char kPrefetchMainResourceNetworkIsolationKeyDescription[];
