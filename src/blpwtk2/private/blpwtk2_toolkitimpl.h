@@ -156,7 +156,8 @@ class ToolkitImpl : public Toolkit {
     void setWebViewHostObserver(WebViewHostObserver* observer) override;
     void setTraceThreshold(unsigned int timeoutMS) override;
 
-
+    // set the default time zone in ICU using zoneId
+    int setTimeZone(const StringRef& zoneId) override;
 
     // patch section: embedder ipc
 
