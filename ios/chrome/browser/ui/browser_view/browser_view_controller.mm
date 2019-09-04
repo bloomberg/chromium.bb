@@ -2221,9 +2221,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.contentArea]
           .heightAnchor;
 
-  self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
-      initWithBaseViewController:self
-                    browserState:self.browserState];
+  self.popupMenuCoordinator =
+      [[PopupMenuCoordinator alloc] initWithBaseViewController:self
+                                                       browser:self.browser];
   self.popupMenuCoordinator.bubblePresenter = self.bubblePresenter;
   self.popupMenuCoordinator.dispatcher = self.commandDispatcher;
   self.popupMenuCoordinator.webStateList = self.tabModel.webStateList;
