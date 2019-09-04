@@ -56,6 +56,8 @@ class MultiSourceMemoryPressureMonitor
   void OnMemoryPressureLevelChanged(MemoryPressureLevel level) override;
   void OnNotifyListenersRequested() override;
 
+  void RecordCurrentPressureLevel();
+
   MemoryPressureLevel current_pressure_level_;
 
   DispatchCallback dispatch_callback_;
