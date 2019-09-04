@@ -1,18 +1,19 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 Polymer({
-  is: 'app-management-permission-view-header',
+  is: 'app-management-uninstall-button',
 
   behaviors: [
     app_management.StoreClient,
   ],
 
   properties: {
-    /** @type {App} */
-    app_: {
-      type: Object,
-    },
+    /**
+     * @private {App}
+     */
+    app_: Object,
   },
 
   attached: function() {
@@ -21,12 +22,11 @@ Polymer({
   },
 
   /**
-   *
    * Returns True if the uninstall button should be disabled due to app install
    * type.
    *
    * @param {App} app
-   * @return {boolean}
+   * @return {?boolean}
    * @private
    */
   getUninstallButtonDisableState_: function(app) {
@@ -49,11 +49,11 @@ Polymer({
    * Returns string to be shown as a tool tip over the uninstall button.
    *
    * @param {App} app
-   * @return {string}
+   * @return {?string}
    * @private
    */
   getUninstallButtonHoverText_: function(app) {
-    // TODO(crbug.com/957795) Replace strings and add them into i18n.
+    // TODO(crbug.com/957795): Replace strings and add them into i18n.
     switch (app.installSource) {
       case InstallSource.kSystem:
         return app.title + ' cannot be uninstalled as it is part of Chrome OS.';
@@ -75,31 +75,11 @@ Polymer({
    * Returns true if the app was installed by a policy
    *
    * @param {App} app
-   * @returns {boolean}
+   * @returns {?boolean}
    * @private
    */
   isPolicyApp_: function(app) {
     return app.installSource === InstallSource.kPolicy;
-  },
-
-  /**
-   * @param {App} app
-   * @return {string}
-   * @private
-   */
-  iconUrlFromId_: function(app) {
-    return app_management.util.getAppIcon(app);
-  },
-
-  /**
-   * @private
-   */
-  onClickBackButton_: function() {
-    if (!window.history.state) {
-      this.dispatch(app_management.actions.changePage(PageType.MAIN));
-    } else {
-      window.history.back();
-    }
   },
 
   /**
