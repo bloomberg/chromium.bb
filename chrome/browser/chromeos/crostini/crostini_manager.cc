@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -136,6 +137,7 @@ class CrostiniManager::CrostiniRestarter
         restart_id_(next_restart_id_++) {}
 
   void Restart() {
+    is_initial_install_ = crostini_manager_->GetInstallerViewStatus();
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (!IsCrostiniUIAllowedForProfile(profile_)) {
       LOG(ERROR) << "Crostini UI not allowed for profile "
@@ -173,6 +175,7 @@ class CrostiniManager::CrostiniRestarter
     is_aborted_ = true;
     observer_list_.Clear();
     abort_callback_ = std::move(callback);
+    ReportRestarterResult(CrostiniResult::RESTART_ABORTED);
   }
 
   void OnContainerDownloading(int download_percent) {
@@ -198,8 +201,16 @@ class CrostiniManager::CrostiniRestarter
     }
   }
 
+  void ReportRestarterResult(CrostiniResult result) {
+    // Do not record results if this restart was triggered by the installer. The
+    // crostini installer has its own histograms that should be kept separate.
+    if (!is_initial_install_)
+      base::UmaHistogramEnumeration("Crostini.RestarterResult", result);
+  }
+
   void FinishRestart(CrostiniResult result) {
     crostini_manager_->FinishRestart(this, result);
+    ReportRestarterResult(result);
   }
 
   void LoadComponentFinished(CrostiniResult result) {
@@ -447,21 +458,23 @@ class CrostiniManager::CrostiniRestarter
                  << ", mount_path=" << mount_info.mount_path
                  << ", mount_type=" << mount_info.mount_type
                  << ", mount_condition=" << mount_info.mount_condition;
-    } else {
-      crostini_manager_->SetContainerSshfsMounted(vm_name_, container_name_,
+      FinishRestart(CrostiniResult::SSHFS_MOUNT_ERROR);
+      return;
+    }
+
+    crostini_manager_->SetContainerSshfsMounted(vm_name_, container_name_,
                                                   true);
 
-      // Register filesystem and add volume to VolumeManager.
-      base::FilePath mount_path = base::FilePath(mount_info.mount_path);
-      storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-          file_manager::util::GetCrostiniMountPointName(profile_),
-          storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
-          mount_path);
+    // Register filesystem and add volume to VolumeManager.
+    base::FilePath mount_path = base::FilePath(mount_info.mount_path);
+    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+        file_manager::util::GetCrostiniMountPointName(profile_),
+        storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
+        mount_path);
 
-      // VolumeManager is null in unittest.
-      if (auto* vmgr = file_manager::VolumeManager::Get(profile_))
-        vmgr->AddSshfsCrostiniVolume(mount_path);
-    }
+    // VolumeManager is null in unittest.
+    if (auto* vmgr = file_manager::VolumeManager::Get(profile_))
+      vmgr->AddSshfsCrostiniVolume(mount_path);
 
     // Abort not checked until end of function.  On abort, do not continue,
     // but still remove observer and add volume as per above.
@@ -481,6 +494,7 @@ class CrostiniManager::CrostiniRestarter
   std::string vm_name_;
   std::string container_name_;
   std::string source_path_;
+  bool is_initial_install_ = true;
   CrostiniManager::CrostiniResultCallback completed_callback_;
   base::OnceClosure abort_callback_;
   base::ObserverList<CrostiniManager::RestartObserver>::Unchecked
