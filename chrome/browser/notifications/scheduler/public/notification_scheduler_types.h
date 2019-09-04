@@ -148,6 +148,9 @@ struct UserActionData {
 };
 
 // Categorizes type of notification icons.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: (
+//   org.chromium.chrome.browser.notifications.scheduler)
 enum class IconType {
   kUnknownType = 0,
   kSmallIcon = 1,
