@@ -220,11 +220,10 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   }
 
   // Create a new payment manager.
-  payments::mojom::PaymentManagerPtr manager;
-  mojo::InterfaceRequest<payments::mojom::PaymentManager> request =
-      mojo::MakeRequest(&manager);
+  mojo::Remote<payments::mojom::PaymentManager> manager;
+  payment_app_context()->CreatePaymentManager(
+      manager.BindNewPipeAndPassReceiver());
   payment_managers_.push_back(std::move(manager));
-  payment_app_context()->CreatePaymentManager(std::move(request));
   base::RunLoop().RunUntilIdle();
 
   // Find a last registered payment manager.
