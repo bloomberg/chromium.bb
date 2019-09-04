@@ -155,6 +155,8 @@ public abstract class ChromeFeatureList {
             "AllowRemoteContextForNotifications";
     public static final String AUTOFILL_ALLOW_NON_HTTP_ACTIVATION =
             "AutofillAllowNonHttpActivation";
+    public static final String AUTOFILL_CREDIT_CARD_AUTHENTICATION =
+            "AutofillCreditCardAuthentication";
     public static final String AUTOFILL_ENABLE_COMPANY_NAME = "AutofillEnableCompanyName";
     public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";
     public static final String ANDROID_NIGHT_MODE = "AndroidNightMode";

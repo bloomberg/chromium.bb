@@ -376,6 +376,10 @@ class UnmaskCardRequest : public PaymentsRequest {
     if (base::StringToInt(request_details_.user_response.exp_year, &value))
       request_dict.SetKey("expiration_year", base::Value(value));
 
+    request_dict.SetKey(
+        "opt_in_fido_auth",
+        base::Value(request_details_.user_response.enable_fido_auth));
+
     if (request_details_.fido_assertion_info.is_dict()) {
       request_dict.SetKey("fido_assertion_info",
                           std::move(request_details_.fido_assertion_info));
