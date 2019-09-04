@@ -7462,7 +7462,7 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
       &FrameInputHandlerImpl::CreateMojoService, weak_factory_.GetWeakPtr()));
 
   registry_.AddInterface(
-      base::BindRepeating(&InputTargetClientImpl::BindToRequest,
+      base::BindRepeating(&InputTargetClientImpl::BindToReceiver,
                           base::Unretained(&input_target_client_impl_)));
 
   registry_.AddInterface(base::BindRepeating(&RenderFrameImpl::BindWidget,
