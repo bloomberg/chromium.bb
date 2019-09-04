@@ -1083,6 +1083,10 @@ Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
   return Status(kOk);
 }
 
+bool WebViewImpl::IsNonBlocking() {
+  return navigation_tracker_->IsNonBlocking();
+}
+
 bool WebViewImpl::IsOOPIF(const std::string& frame_id) {
   WebView* target = GetTargetForFrame(this, frame_id);
   return target != nullptr && frame_id == target->GetId();

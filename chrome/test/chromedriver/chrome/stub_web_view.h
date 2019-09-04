@@ -115,6 +115,7 @@ class StubWebView : public WebView {
                                  int y,
                                  int xoffset,
                                  int yoffset) override;
+  bool IsNonBlocking() override;
   bool IsOOPIF(const std::string& frame_id) override;
   FrameTracker* GetFrameTracker() const override;
   std::unique_ptr<base::Value> GetCastSinks() override;

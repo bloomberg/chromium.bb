@@ -242,6 +242,8 @@ class WebView {
                                          int xoffset,
                                          int yoffset) = 0;
 
+  virtual bool IsNonBlocking() = 0;
+
   virtual bool IsOOPIF(const std::string& frame_id) = 0;
 
   virtual FrameTracker* GetFrameTracker() const = 0;

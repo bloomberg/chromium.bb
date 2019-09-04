@@ -52,6 +52,9 @@ namespace {
 static const char kUnreachableWebDataURL[] = "chrome-error://chromewebdata/";
 const char kDeprecatedUnreachableWebDataURL[] = "data:text/html,chromewebdata";
 
+// Match to content/browser/devtools/devTools_session const of same name
+const char kTargetClosedMessage[] = "Inspected target navigated or closed";
+
 // TODO(johnchen@chromium.org): Remove when we stop supporting legacy protocol.
 // Defaults to 20 years into the future when adding a cookie.
 const double kDefaultCookieExpiryTime = 20*365*24*60*60;
@@ -479,6 +482,12 @@ Status ExecuteWindowCommand(const WindowCommand& command,
     if (status.code() == kNoSuchExecutionContext || status.code() == kTimeout) {
       // If the command timed out, let WaitForPendingNavigations cancel
       // the navigation if there is one.
+      continue;
+    } else if (status.code() == kUnknownError && web_view->IsNonBlocking() &&
+               status.message().find(kTargetClosedMessage) !=
+                   std::string::npos) {
+      // When pageload strategy is None, new navigation can occur during
+      // execution of a command. Retry the command.
       continue;
     } else if (status.IsError()) {
       // If the command failed while a new page or frame started loading, retry

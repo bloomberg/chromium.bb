@@ -229,6 +229,10 @@ Status StubWebView::SynthesizeScrollGesture(int x,
   return Status(kOk);
 }
 
+bool StubWebView::IsNonBlocking() {
+  return false;
+}
+
 bool StubWebView::IsOOPIF(const std::string& frame_id) {
   return false;
 }
