@@ -63030,6 +63030,11 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Canceled"/>
 </enum>
 
+<enum name="WebShareTargetMethod">
+  <int value="0" label="GET"/>
+  <int value="1" label="POST"/>
+</enum>
+
 <enum name="WebsiteSettingsAction">
   <int value="0" label="Opened"/>
   <int value="1" label="(Deprecated) Selected Permissions tab"/>
