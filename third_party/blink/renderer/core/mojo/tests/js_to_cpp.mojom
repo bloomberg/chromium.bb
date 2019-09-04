@@ -51,7 +51,7 @@ interface CppSide {
 };
 
 interface JsSide {
-  SetCppSide(CppSide cpp);
+  SetCppSide(pending_remote<CppSide> cpp);
 
   Ping();
   Echo(int32 numIterations, EchoArgs arg);
