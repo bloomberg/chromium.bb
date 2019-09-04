@@ -6528,6 +6528,7 @@ crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-nav
 crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-network-a11y-test.js [ Pass Failure ]
 crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/sources-editor-pane-a11y-test.js [ Pass Failure ]
 crbug.com/1000396 [ Win ] virtual/audio-service/media/video-remove-insert-repaints.html [ Pass Failure ]
+crbug.com/1000396 [ Win ] media/video-remove-insert-repaints.html [ Pass Failure ]
 crbug.com/1000768 [ Linux ] external/wpt/web-locks/idlharness.tentative.https.any.html [ Pass Failure ]
 crbug.com/1000768 [ Linux ] external/wpt/geolocation-API/idlharness.window.html [ Pass Failure ]
 crbug.com/1000768 [ Linux ] external/wpt/web-share/idlharness.https.window.html [ Pass Failure ]
