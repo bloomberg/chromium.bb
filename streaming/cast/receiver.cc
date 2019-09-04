@@ -48,13 +48,13 @@ void Receiver::ConsumeNextFrame(EncodedFrame* frame) {
   OSP_UNIMPLEMENTED();
 }
 
-void Receiver::OnReceivedRtpPacket(absl::Span<const uint8_t> packet,
-                                   platform::Clock::time_point arrival_time) {
+void Receiver::OnReceivedRtpPacket(platform::Clock::time_point arrival_time,
+                                   std::vector<uint8_t> packet) {
   OSP_UNIMPLEMENTED();
 }
 
-void Receiver::OnReceivedRtcpPacket(absl::Span<const uint8_t> packet,
-                                    platform::Clock::time_point arrival_time) {
+void Receiver::OnReceivedRtcpPacket(platform::Clock::time_point arrival_time,
+                                    std::vector<uint8_t> packet) {
   OSP_UNIMPLEMENTED();
 }
 

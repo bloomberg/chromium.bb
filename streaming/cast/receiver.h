@@ -159,10 +159,10 @@ class Receiver {
 
   // Called by ReceiverPacketRouter to provide this Receiver with what looks
   // like a RTP/RTCP packet meant for it specifically (among other Receivers).
-  void OnReceivedRtpPacket(absl::Span<const uint8_t> packet,
-                           platform::Clock::time_point arrival_time);
-  void OnReceivedRtcpPacket(absl::Span<const uint8_t> packet,
-                            platform::Clock::time_point arrival_time);
+  void OnReceivedRtpPacket(platform::Clock::time_point arrival_time,
+                           std::vector<uint8_t> packet);
+  void OnReceivedRtcpPacket(platform::Clock::time_point arrival_time,
+                            std::vector<uint8_t> packet);
 
  private:
   Ssrc const receiver_ssrc_;

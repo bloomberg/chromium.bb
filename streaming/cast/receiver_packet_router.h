@@ -45,9 +45,9 @@ class ReceiverPacketRouter final : public Environment::PacketConsumer {
   using ReceiverEntries = std::vector<std::pair<Ssrc, Receiver*>>;
 
   // Environment::PacketConsumer implementation.
-  void OnReceivedPacket(absl::Span<const uint8_t> packet,
-                        const IPEndpoint& source,
-                        platform::Clock::time_point arrival_time) final;
+  void OnReceivedPacket(const IPEndpoint& source,
+                        platform::Clock::time_point arrival_time,
+                        std::vector<uint8_t> packet) final;
 
   // Helper to return an iterator pointing to the entry having the given |ssrc|,
   // or "end" if not found.

@@ -239,6 +239,7 @@ void UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
       if (setsockopt(fd_, IPPROTO_IP, IP_PKTINFO, &enable_pktinfo,
                      sizeof(enable_pktinfo)) == -1) {
         OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
+        return;
       }
       struct ip_mreqn multicast_properties;
       // Appropriate address is set based on |imr_ifindex| when set.
@@ -263,6 +264,7 @@ void UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
       if (setsockopt(fd_, IPPROTO_IPV6, IPV6_RECVPKTINFO, &enable_pktinfo,
                      sizeof(enable_pktinfo)) == -1) {
         OnError(CreateError(Error::Code::kSocketOptionSettingFailure));
+        return;
       }
       struct ipv6_mreq multicast_properties = {
           {/* filled-in below */},

@@ -5,44 +5,60 @@
 #ifndef STREAMING_CAST_ENVIRONMENT_H_
 #define STREAMING_CAST_ENVIRONMENT_H_
 
+#include <stdint.h>
+
+#include <functional>
+#include <memory>
+
 #include "absl/types/span.h"
 #include "platform/api/time.h"
+#include "platform/api/udp_socket.h"
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
 
 namespace platform {
 class TaskRunner;
-class UdpSocket;
 }  // namespace platform
 
 namespace cast_streaming {
 
 // Provides the common environment for operating system resources shared by
 // multiple components.
-class Environment {
+class Environment final : public platform::UdpSocket::Client {
  public:
   class PacketConsumer {
    public:
-    virtual void OnReceivedPacket(absl::Span<const uint8_t> packet,
-                                  const IPEndpoint& source,
-                                  platform::Clock::time_point arrival_time) = 0;
+    virtual void OnReceivedPacket(const IPEndpoint& source,
+                                  platform::Clock::time_point arrival_time,
+                                  std::vector<uint8_t> packet) = 0;
 
    protected:
     virtual ~PacketConsumer();
   };
 
-  // |socket| should be bound to the appropriate interface and port for
-  // receiving packets from the remote endpoint beforehand.
   Environment(platform::ClockNowFunctionPtr now_function,
               platform::TaskRunner* task_runner,
-              platform::UdpSocket* socket);
-  ~Environment();
+              const IPEndpoint& local_endpoint);
+
+  ~Environment() final;
 
   platform::ClockNowFunctionPtr now_function() const { return now_function_; }
   platform::TaskRunner* task_runner() const { return task_runner_; }
 
-  // Get/Set the remote endpoint.
+  // Returns the local endpoint the socket is bound to, or the zero IPEndpoint
+  // if socket creation/binding failed.
+  IPEndpoint GetBoundLocalEndpoint() const;
+
+  // Set a handler function to run whenever non-recoverable socket errors occur.
+  // If never set, the default is to emit log messages at error priority.
+  void set_socket_error_handler(std::function<void(Error)> handler) {
+    socket_error_handler_ = handler;
+  }
+
+  // Get/Set the remote endpoint. This is separate from the constructor because
+  // the remote endpoint is, in some cases, discovered only after receiving a
+  // packet.
   const IPEndpoint& remote_endpoint() const { return remote_endpoint_; }
   void set_remote_endpoint(const IPEndpoint& endpoint) {
     remote_endpoint_ = endpoint;
@@ -66,12 +82,23 @@ class Environment {
   void SendPacket(absl::Span<const uint8_t> packet);
 
  private:
+  // platform::UdpSocket::Client implementation.
+  void OnError(platform::UdpSocket* socket, Error error) final;
+  void OnSendError(platform::UdpSocket* socket, Error error) final;
+  void OnRead(platform::UdpSocket* socket,
+              ErrorOr<platform::UdpPacket> packet_or_error) final;
+
   const platform::ClockNowFunctionPtr now_function_;
   platform::TaskRunner* const task_runner_;
-  platform::UdpSocket* const socket_;
 
+  // The UDP socket bound to the local endpoint that was passed into the
+  // constructor, or null if socket creation failed.
+  const std::unique_ptr<platform::UdpSocket> socket_;
+
+  // These are externally set/cleared. Behaviors are described in getter/setter
+  // method comments above.
+  std::function<void(Error)> socket_error_handler_;
   IPEndpoint remote_endpoint_{};
-
   PacketConsumer* packet_consumer_ = nullptr;
 };
 

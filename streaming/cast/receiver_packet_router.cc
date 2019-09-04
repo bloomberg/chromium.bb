@@ -58,9 +58,9 @@ void ReceiverPacketRouter::SendRtcpPacket(absl::Span<const uint8_t> packet) {
 }
 
 void ReceiverPacketRouter::OnReceivedPacket(
-    absl::Span<const uint8_t> packet,
     const IPEndpoint& source,
-    platform::Clock::time_point arrival_time) {
+    platform::Clock::time_point arrival_time,
+    std::vector<uint8_t> packet) {
   OSP_DCHECK_NE(source.port, uint16_t{0});
 
   // If the sender endpoint is known, ignore any packet that did not come from
@@ -86,9 +86,9 @@ void ReceiverPacketRouter::OnReceivedPacket(
     }
 
     if (seems_like.first == ApparentPacketType::RTP) {
-      it->second->OnReceivedRtpPacket(packet, arrival_time);
+      it->second->OnReceivedRtpPacket(arrival_time, std::move(packet));
     } else if (seems_like.first == ApparentPacketType::RTCP) {
-      it->second->OnReceivedRtcpPacket(packet, arrival_time);
+      it->second->OnReceivedRtcpPacket(arrival_time, std::move(packet));
     }
   }
 }

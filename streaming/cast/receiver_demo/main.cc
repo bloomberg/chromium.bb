@@ -1,11 +1,13 @@
 #include <array>
 #include <chrono>
+#include <thread>
 
 #include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
+#include "platform/impl/network_reader.h"
 #include "platform/impl/task_runner.h"
 #include "streaming/cast/constants.h"
 #include "streaming/cast/environment.h"
@@ -70,31 +72,22 @@ constexpr std::array<uint8_t, 16> kDemoVideoCastIvMask{
 }  // namespace
 
 int main(int argc, const char* argv[]) {
-  // Platform setup.
+  // Platform setup for this standalone demo app.
   openscreen::platform::LogInit(nullptr /* stdout */);
   openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kInfo);
   const auto now_function = &openscreen::platform::Clock::now;
   openscreen::platform::TaskRunnerImpl task_runner(now_function);
+  openscreen::platform::NetworkReader network_reader;
+  std::thread network_reader_thread(
+      &openscreen::platform::NetworkReader::RunUntilStopped, &network_reader);
 
-  // Create a UDP socket that listens for datagrams on the Cast Streaming port
-  // on all network interfaces.
+  // Create the Environment that holds the required injected dependencies
+  // (clock, task runner) used throughout the system, and owns the UDP socket
+  // over which all communication occurs with the Sender.
   const openscreen::IPEndpoint receive_endpoint{openscreen::IPAddress(),
                                                 kCastStreamingPort};
-  auto socket_or_error = openscreen::platform::UdpSocket::Create(
-      &task_runner, nullptr, receive_endpoint);
-  const auto socket = socket_or_error.MoveValue();
-  if (!socket) {
-    OSP_LOG_ERROR << "Failed to create receive UDP socket at "
-                  << receive_endpoint << ": " << socket_or_error.error();
-    return 1;
-  }
-  socket->Bind();
-
-  // Create the platform environment that holds the required injected
-  // dependencies (clock, task runner, and network socket) used throughout the
-  // system.
   openscreen::cast_streaming::Environment env(now_function, &task_runner,
-                                              socket.get());
+                                              receive_endpoint);
 
   // Create the packet router that allows both the Audio Receiver and the Video
   // Receiver to share the same UDP socket.
@@ -110,8 +103,8 @@ int main(int argc, const char* argv[]) {
       kDemoVideoRtpTimebase, kDemoTargetPlayoutDelay, kDemoVideoAesKey,
       kDemoVideoCastIvMask);
 
-  OSP_LOG_INFO << "Awaiting first Cast Streaming packet at " << receive_endpoint
-               << "...";
+  OSP_LOG_INFO << "Awaiting first Cast Streaming packet at "
+               << env.GetBoundLocalEndpoint() << "...";
 
   // Create/Initialize the Audio Player and Video Player, which are responsible
   // for decoding and playing out the received media.
@@ -128,5 +121,8 @@ int main(int argc, const char* argv[]) {
   // user indication that shutdown is requested).
   task_runner.RunUntilStopped();
 
+  // Normal shutdown.
+  network_reader.RequestStopSoon();
+  network_reader_thread.join();
   return 0;
 }
