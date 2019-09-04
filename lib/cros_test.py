@@ -305,8 +305,12 @@ class CrOSTest(object):
     if self.remote_cmd:
       result = self._RunDeviceCmd()
     elif self.host_cmd:
+      extra_env = {}
+      if self.build_dir:
+        extra_env['CHROMIUM_OUTPUT_DIR'] = self.build_dir
       # Don't raise an exception if the command fails.
-      result = self._device.RunCommand(self.args, error_code_ok=True)
+      result = self._device.RunCommand(
+          self.args, error_code_ok=True, extra_env=extra_env)
     elif self.catapult_tests:
       result = self._RunCatapultTests()
     elif self.autotest:

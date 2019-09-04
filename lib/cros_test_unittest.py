@@ -191,11 +191,15 @@ class CrOSTesterMiscTests(CrOSTesterBase):
   def testHostCmd(self):
     """Verify running a host command."""
     self._tester.host_cmd = True
+    self._tester.build_dir = '/some/chromium/dir'
     self._tester.args = ['tast', 'run', 'localhost:9222', 'ui.ChromeLogin']
     self._tester.Run()
-    # Ensure command is run and an exception is not raised if it fails.
-    self.assertCommandCalled(['tast', 'run', 'localhost:9222',
-                              'ui.ChromeLogin'], error_code_ok=True)
+    # Ensure command is run with an env var for the build dir, and ensure an
+    # exception is not raised if it fails.
+    self.assertCommandCalled(
+        ['tast', 'run', 'localhost:9222', 'ui.ChromeLogin'],
+        error_code_ok=True,
+        extra_env={'CHROMIUM_OUTPUT_DIR': '/some/chromium/dir'})
     # Ensure that --host-cmd does not invoke ssh since it runs on the host.
     self.assertCommandContains(['ssh', 'tast'], expected=False)
 
