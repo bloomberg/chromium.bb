@@ -273,6 +273,19 @@
       'chromedriver_replay_unittests': {},
     },
 
+    'chromeos_device_all_chrome_tast_tests_informational': {
+      'chrome_all_tast_tests_informational': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        }
+      },
+      'chrome_login_tast_tests': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        }
+      },
+    },
+
     # Tests that run in Chrome OS VMs.
     # NOTE: We only want a small subset of test suites here, because most
     # suites assume that they stub out the underlying device hardware.

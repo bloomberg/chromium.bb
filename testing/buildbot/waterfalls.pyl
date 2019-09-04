@@ -1652,6 +1652,7 @@
           ],
         },
         'test_suites': {
+          'gtest_tests': 'chromeos_device_all_chrome_tast_tests_informational',
           'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
         },
         'os_type': 'chromeos',
