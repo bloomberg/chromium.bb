@@ -2727,6 +2727,16 @@ group("angle_perftests") {
   }
 }
 
+group("dawn_perf_tests") {
+  testonly = true
+  data_deps = [
+    "//testing:run_perf_test",
+  ]
+  if (is_win || is_linux || is_mac) {
+    data_deps += [ "//third_party/dawn:dawn_perf_tests_temp_group" ]
+  }
+}
+
 if (is_mac) {
   mojom("firefox_importer_interface") {
     sources = [
