@@ -49230,6 +49230,7 @@ Called by update_net_trust_anchors.py.-->
              password."/>
   <int value="17" label="Optimization hints not loaded."/>
   <int value="18" label="The navigation URL had an excluded media suffix."/>
+  <int value="19" label="Not allowed by server rules provided to the client."/>
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
