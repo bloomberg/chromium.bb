@@ -391,6 +391,8 @@ api::autotest_private::WindowStateType ToWindowStateType(
     case ash::WindowStateType::kRightSnapped:
       return api::autotest_private::WindowStateType::
           WINDOW_STATE_TYPE_RIGHTSNAPPED;
+    case ash::WindowStateType::kPip:
+      return api::autotest_private::WindowStateType::WINDOW_STATE_TYPE_PIP;
     default:
       NOTREACHED();
       return api::autotest_private::WindowStateType::WINDOW_STATE_TYPE_NONE;
