@@ -154,6 +154,12 @@ class ChromeNativeFileSystemPermissionContext
       int frame_id,
       base::OnceCallback<void(PermissionStatus)> callback) override;
 
+  void PerformSafeBrowsingChecks(
+      std::unique_ptr<content::NativeFileSystemWriteItem> item,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(SafeBrowsingResult)> callback) override;
+
   struct Grants {
     Grants();
     ~Grants();

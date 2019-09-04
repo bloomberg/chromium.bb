@@ -13,16 +13,20 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -326,6 +330,74 @@ class ReadPermissionGrantImpl
   PermissionStatus status_ = PermissionStatus::GRANTED;
 };
 
+void DoSafeBrowsingCheckOnUIThread(
+    int process_id,
+    int frame_id,
+    std::unique_ptr<content::NativeFileSystemWriteItem> item,
+    safe_browsing::CheckDownloadCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  safe_browsing::SafeBrowsingService* sb_service =
+      g_browser_process->safe_browsing_service();
+
+  if (!sb_service || !sb_service->download_protection_service() ||
+      !sb_service->download_protection_service()->enabled()) {
+    std::move(callback).Run(safe_browsing::DownloadCheckResult::UNKNOWN);
+    return;
+  }
+
+  if (!item->browser_context) {
+    content::RenderProcessHost* rph =
+        content::RenderProcessHost::FromID(process_id);
+    if (!rph) {
+      std::move(callback).Run(safe_browsing::DownloadCheckResult::UNKNOWN);
+      return;
+    }
+    item->browser_context = rph->GetBrowserContext();
+  }
+
+  if (!item->web_contents) {
+    content::RenderFrameHost* rfh =
+        content::RenderFrameHost::FromID(process_id, frame_id);
+    if (rfh)
+      item->web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  }
+
+  sb_service->download_protection_service()->CheckNativeFileSystemWrite(
+      std::move(item), std::move(callback));
+}
+
+ChromeNativeFileSystemPermissionContext::SafeBrowsingResult
+InterpretSafeBrowsingResult(safe_browsing::DownloadCheckResult result) {
+  using Result = safe_browsing::DownloadCheckResult;
+  switch (result) {
+    // Only allow downloads that are marked as SAFE or UNKNOWN by SafeBrowsing.
+    // All other types are going to be blocked. UNKNOWN could be the result of a
+    // failed safe browsing ping.
+    case Result::UNKNOWN:
+    case Result::SAFE:
+    case Result::WHITELISTED_BY_POLICY:
+      return ChromeNativeFileSystemPermissionContext::SafeBrowsingResult::
+          kAllow;
+
+    case Result::DANGEROUS:
+    case Result::UNCOMMON:
+    case Result::DANGEROUS_HOST:
+    case Result::POTENTIALLY_UNWANTED:
+    case Result::BLOCKED_PASSWORD_PROTECTED:
+      return ChromeNativeFileSystemPermissionContext::SafeBrowsingResult::
+          kBlock;
+
+    // This shouldn't be returned for Native File System write checks.
+    case Result::ASYNC_SCANNING:
+      NOTREACHED();
+      return ChromeNativeFileSystemPermissionContext::SafeBrowsingResult::
+          kAllow;
+  }
+  NOTREACHED();
+  return ChromeNativeFileSystemPermissionContext::SafeBrowsingResult::kBlock;
+}
+
 }  // namespace
 
 ChromeNativeFileSystemPermissionContext::Grants::Grants() = default;
@@ -597,6 +669,28 @@ void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
                          DidConfirmSensitiveDirectoryAccess,
                      this, origin, paths, is_directory, process_id, frame_id,
                      std::move(callback)));
+}
+
+void ChromeNativeFileSystemPermissionContext::PerformSafeBrowsingChecks(
+    std::unique_ptr<content::NativeFileSystemWriteItem> item,
+    int process_id,
+    int frame_id,
+    base::OnceCallback<void(SafeBrowsingResult)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(
+          &DoSafeBrowsingCheckOnUIThread, process_id, frame_id, std::move(item),
+          base::BindOnce(
+              [](scoped_refptr<base::TaskRunner> task_runner,
+                 base::OnceCallback<void(SafeBrowsingResult result)> callback,
+                 safe_browsing::DownloadCheckResult result) {
+                task_runner->PostTask(
+                    FROM_HERE,
+                    base::BindOnce(std::move(callback),
+                                   InterpretSafeBrowsingResult(result)));
+              },
+              base::SequencedTaskRunnerHandle::Get(), std::move(callback))));
 }
 
 ChromeNativeFileSystemPermissionContext::Grants
