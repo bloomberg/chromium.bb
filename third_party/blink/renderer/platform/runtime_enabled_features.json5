@@ -268,10 +268,6 @@
       status: "experimental",
     },
     {
-      name: "ClickPointerEvent",
-      status: "experimental",
-    },
-    {
       name: "ClickRetargetting",
       status: "experimental",
     },
