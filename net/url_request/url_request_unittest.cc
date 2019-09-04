@@ -5756,11 +5756,9 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
                           bool* defer_redirect) override {
     *defer_redirect = true;
     AsyncDelegateLogger::Run(
-        request,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        base::Bind(
+        request, LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE, LOAD_STATE_WAITING_FOR_DELEGATE,
+        base::BindOnce(
             &AsyncLoggingUrlRequestDelegate::OnReceivedRedirectLoggingComplete,
             base::Unretained(this), request, redirect_info));
   }
@@ -5769,18 +5767,15 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
     AsyncDelegateLogger::Run(
         request, LOAD_STATE_WAITING_FOR_DELEGATE,
         LOAD_STATE_WAITING_FOR_DELEGATE, LOAD_STATE_WAITING_FOR_DELEGATE,
-        base::Bind(
+        base::BindOnce(
             &AsyncLoggingUrlRequestDelegate::OnResponseStartedLoggingComplete,
             base::Unretained(this), request, net_error));
   }
 
   void OnReadCompleted(URLRequest* request, int bytes_read) override {
     AsyncDelegateLogger::Run(
-        request,
-        LOAD_STATE_IDLE,
-        LOAD_STATE_IDLE,
-        LOAD_STATE_IDLE,
-        base::Bind(
+        request, LOAD_STATE_IDLE, LOAD_STATE_IDLE, LOAD_STATE_IDLE,
+        base::BindOnce(
             &AsyncLoggingUrlRequestDelegate::AfterReadCompletedLoggingComplete,
             base::Unretained(this), request, bytes_read));
   }
@@ -5833,11 +5828,9 @@ TEST_F(URLRequestTestHTTP, DelegateInfoBeforeStart) {
     EXPECT_EQ(base::string16(), load_state.param);
 
     AsyncDelegateLogger::Run(
-        r.get(),
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_IDLE,
-        base::Bind(&URLRequest::Start, base::Unretained(r.get())));
+        r.get(), LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE, LOAD_STATE_IDLE,
+        base::BindOnce(&URLRequest::Start, base::Unretained(r.get())));
 
     request_delegate.RunUntilComplete();
 
