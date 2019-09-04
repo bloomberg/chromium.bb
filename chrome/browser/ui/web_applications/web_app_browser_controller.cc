@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
@@ -83,8 +84,7 @@ bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
 
   std::string scope_path = app_scope->path();
   std::string url_path = url.path();
-  return scope_path.size() <= url_path.size() &&
-         scope_path == url_path.substr(0, scope_path.size());
+  return base::StartsWith(url_path, scope_path, base::CompareCase::SENSITIVE);
 }
 
 std::string WebAppBrowserController::GetAppShortName() const {
