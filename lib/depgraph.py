@@ -343,7 +343,12 @@ class DepGraphGenerator(object):
     deps_info = {}
     for pkg in depgraph.altlist():
       if isinstance(pkg, Package):
-        assert pkg.root == root
+        # This may indicate there is an issue with EAPI 7
+        # support. (crbug.com/998929)
+        if pkg.root != root:
+          raise RuntimeError(
+              'crbug.com/998929: There may be an issue with EAPI=7 support '
+              '(offending package is %s)' % pkg.cpv)
         self.package_db[pkg.cpv] = pkg
 
         # Save off info about the package
