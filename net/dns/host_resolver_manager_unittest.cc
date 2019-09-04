@@ -3359,6 +3359,31 @@ DnsConfig CreateValidDnsConfig() {
   return config;
 }
 
+DnsConfig CreateUpgradableDnsConfig() {
+  DnsConfig config;
+  config.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
+  config.allow_dns_over_https_upgrade = true;
+  // Cloudflare upgradeable IPs
+  IPAddress dns_ip0(1, 0, 0, 1);
+  IPAddress dns_ip1;
+  EXPECT_TRUE(dns_ip1.AssignFromIPLiteral("2606:4700:4700::1111"));
+  // SafeBrowsing family filter upgradeable IP
+  IPAddress dns_ip2;
+  EXPECT_TRUE(dns_ip2.AssignFromIPLiteral("2a0d:2a00:2::"));
+  // SafeBrowsing security filter upgradeable IP
+  IPAddress dns_ip3(185, 228, 169, 9);
+  // Non-upgradeable IP
+  IPAddress dns_ip4(1, 2, 3, 4);
+
+  config.nameservers.push_back(IPEndPoint(dns_ip0, dns_protocol::kDefaultPort));
+  config.nameservers.push_back(IPEndPoint(dns_ip1, dns_protocol::kDefaultPort));
+  config.nameservers.push_back(IPEndPoint(dns_ip2, 54));
+  config.nameservers.push_back(IPEndPoint(dns_ip3, dns_protocol::kDefaultPort));
+  config.nameservers.push_back(IPEndPoint(dns_ip4, dns_protocol::kDefaultPort));
+  EXPECT_TRUE(config.IsValid());
+  return config;
+}
+
 // Specialized fixture for tests of DnsTask.
 class HostResolverManagerDnsTest : public HostResolverManagerTest {
  public:
@@ -6430,6 +6455,9 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   const DnsConfig::SecureDnsMode secure_dns_mode =
       DnsConfig::SecureDnsMode::SECURE;
   overrides.secure_dns_mode = secure_dns_mode;
+  overrides.allow_dns_over_https_upgrade = true;
+  const std::vector<std::string> disabled_upgrade_providers = {"provider_name"};
+  overrides.disabled_upgrade_providers = disabled_upgrade_providers;
 
   // This test is expected to test overriding all fields.
   EXPECT_TRUE(overrides.OverridesEverything());
@@ -6450,6 +6478,9 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   EXPECT_TRUE(overridden_config->use_local_ipv6);
   EXPECT_EQ(dns_over_https_servers, overridden_config->dns_over_https_servers);
   EXPECT_EQ(secure_dns_mode, overridden_config->secure_dns_mode);
+  EXPECT_TRUE(overridden_config->allow_dns_over_https_upgrade);
+  EXPECT_EQ(disabled_upgrade_providers,
+            overridden_config->disabled_upgrade_providers);
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -6583,6 +6614,178 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_ClearOverrides) {
   EXPECT_THAT(client_ptr->GetEffectiveConfig(),
               testing::Pointee(original_config));
 }
+
+TEST_F(HostResolverManagerDnsTest, DohMapping) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {
+      {"https://chrome.cloudflare-dns.com/dns-query", true /* use-post */},
+      {"https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+       false /* use_post */},
+      {"https://doh.cleanbrowsing.org/doh/security-filter{?dns}",
+       false /* use_post */}};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingDisabled) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.allow_dns_over_https_upgrade = false;
+  ChangeDnsConfig(original_config);
+
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingModeIneligibleForUpgrade) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
+  ChangeDnsConfig(original_config);
+
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingWithExclusion) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.disabled_upgrade_providers = {"CleanBrowsingSecure",
+                                                "Cloudflare", "Unexpected"};
+  ChangeDnsConfig(original_config);
+
+  // A DoH upgrade should be attempted on the DNS servers in the config, but
+  // only for permitted providers.
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {
+      {"https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+       false /* use_post */}};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingIgnoredIfTemplateSpecified) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  // If the overrides contains DoH servers, no DoH upgrade should be attempted.
+  DnsConfigOverrides overrides;
+  const std::vector<DnsConfig::DnsOverHttpsServerConfig>
+      dns_over_https_servers_overrides = {
+          DnsConfig::DnsOverHttpsServerConfig("doh.server.override.com", true)};
+  overrides.dns_over_https_servers = dns_over_https_servers_overrides;
+  resolver_->SetDnsConfigOverrides(overrides);
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  EXPECT_EQ(dns_over_https_servers_overrides,
+            fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingWithAutomaticDot) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.dns_over_tls_active = true;
+  ChangeDnsConfig(original_config);
+
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {
+      {"https://chrome.cloudflare-dns.com/dns-query", true /* use-post */},
+      {"https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+       false /* use_post */},
+      {"https://doh.cleanbrowsing.org/doh/security-filter{?dns}",
+       false /* use_post */}};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingWithStrictDot) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
+  original_config.dns_over_tls_active = true;
+
+  // Google DoT hostname
+  original_config.dns_over_tls_hostname = "dns.google";
+  ChangeDnsConfig(original_config);
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {
+      {"https://dns.google/dns-query{?dns}", false /* use_post */}};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
 #endif  // !defined(OS_IOS)
 
 TEST_F(HostResolverManagerDnsTest, FlushCacheOnDnsConfigOverridesChange) {
