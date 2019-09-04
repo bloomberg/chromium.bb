@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/network_config_service.h"
 #include "base/logging.h"
 
 namespace ash {
@@ -18,7 +19,7 @@ VPNProvider VPNProvider::CreateBuiltInVPNProvider() {
   return vpn_provider;
 }
 
-VPNProvider VPNProvider::CreateThirdPartyVPNProvider(
+VPNProvider VPNProvider::CreateExtensionVPNProvider(
     const std::string& extension_id,
     const std::string& third_party_provider_name) {
   DCHECK(!extension_id.empty());
@@ -68,11 +69,18 @@ VpnList::Observer::~Observer() = default;
 
 VpnList::VpnList() {
   AddBuiltInProvider();
+
+  ash::GetNetworkConfigService(
+      cros_network_config_.BindNewPipeAndPassReceiver());
+  chromeos::network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
+  cros_network_config_observer_.Bind(mojo::MakeRequest(&observer_ptr));
+  cros_network_config_->AddObserver(std::move(observer_ptr));
+  OnVpnProvidersChanged();
 }
 
 VpnList::~VpnList() = default;
 
-bool VpnList::HaveThirdPartyOrArcVPNProviders() const {
+bool VpnList::HaveExtensionOrArcVPNProviders() const {
   for (const VPNProvider& extension_provider : extension_vpn_providers_) {
     if (extension_provider.provider_type == VPNProvider::THIRD_PARTY_VPN)
       return true;
@@ -88,66 +96,54 @@ void VpnList::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void VpnList::BindRequest(mojom::VpnListRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void VpnList::OnActiveNetworksChanged(
+    std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+        networks) {}
+
+void VpnList::OnNetworkStateChanged(
+    chromeos::network_config::mojom::NetworkStatePropertiesPtr network) {}
+
+void VpnList::OnNetworkStateListChanged() {}
+
+void VpnList::OnDeviceStateListChanged() {}
+
+void VpnList::OnVpnProvidersChanged() {
+  cros_network_config_->GetVpnProviders(
+      base::BindOnce(&VpnList::OnGetVpnProviders, base::Unretained(this)));
 }
 
-void VpnList::SetThirdPartyVpnProviders(
-    std::vector<mojom::ThirdPartyVpnProviderPtr> providers) {
+void VpnList::SetVpnProvidersForTest(
+    std::vector<chromeos::network_config::mojom::VpnProviderPtr> providers) {
+  OnGetVpnProviders(std::move(providers));
+}
+
+void VpnList::OnGetVpnProviders(
+    std::vector<chromeos::network_config::mojom::VpnProviderPtr> providers) {
   extension_vpn_providers_.clear();
-  extension_vpn_providers_.reserve(providers.size() + 1);
-  // Add the OpenVPN provider.
-  AddBuiltInProvider();
-  // Append the extension-backed providers.
-  for (const auto& provider : providers) {
-    extension_vpn_providers_.push_back(VPNProvider::CreateThirdPartyVPNProvider(
-        provider->extension_id, provider->name));
-  }
-  NotifyObservers();
-}
-
-void VpnList::SetArcVpnProviders(
-    std::vector<mojom::ArcVpnProviderPtr> arc_providers) {
   arc_vpn_providers_.clear();
-  arc_vpn_providers_.reserve(arc_providers.size());
-
-  for (const auto& arc_provider : arc_providers) {
-    arc_vpn_providers_.push_back(VPNProvider::CreateArcVPNProvider(
-        arc_provider->package_name, arc_provider->app_name,
-        arc_provider->app_id, arc_provider->last_launch_time));
-  }
-  NotifyObservers();
-}
-
-void VpnList::AddOrUpdateArcVPNProvider(mojom::ArcVpnProviderPtr arc_provider) {
-  bool provider_found = false;
-  for (auto& arc_vpn_provider : arc_vpn_providers_) {
-    if (arc_vpn_provider.package_name == arc_provider->package_name) {
-      arc_vpn_provider.provider_name = arc_provider->app_name;
-      arc_vpn_provider.app_id = arc_provider->app_id;
-      arc_vpn_provider.last_launch_time = arc_provider->last_launch_time;
-      provider_found = true;
-      break;
+  // Add the OpenVPN/L2TP provider.
+  AddBuiltInProvider();
+  // Add Third Party (Extension and Arc) providers.
+  for (const auto& provider : providers) {
+    switch (provider->type) {
+      case chromeos::network_config::mojom::VpnType::kL2TPIPsec:
+      case chromeos::network_config::mojom::VpnType::kOpenVPN:
+        // Only third party VpnProvider instances should exist.
+        NOTREACHED();
+        break;
+      case chromeos::network_config::mojom::VpnType::kExtension:
+        extension_vpn_providers_.push_back(
+            VPNProvider::CreateExtensionVPNProvider(provider->provider_id,
+                                                    provider->provider_name));
+        break;
+      case chromeos::network_config::mojom::VpnType::kArc:
+        arc_vpn_providers_.push_back(VPNProvider::CreateArcVPNProvider(
+            provider->provider_id, provider->provider_name, provider->app_id,
+            provider->last_launch_time));
+        break;
     }
   }
-  // This is a newly install ArcVPNProvider.
-  if (!provider_found) {
-    arc_vpn_providers_.push_back(VPNProvider::CreateArcVPNProvider(
-        arc_provider->package_name, arc_provider->app_name,
-        arc_provider->app_id, arc_provider->last_launch_time));
-  }
   NotifyObservers();
-}
-
-void VpnList::RemoveArcVPNProvider(const std::string& package_name) {
-  for (auto iter = arc_vpn_providers_.begin(); iter != arc_vpn_providers_.end();
-       iter++) {
-    if (iter->package_name == package_name) {
-      arc_vpn_providers_.erase(iter);
-      NotifyObservers();
-      break;
-    }
-  }
 }
 
 void VpnList::NotifyObservers() {

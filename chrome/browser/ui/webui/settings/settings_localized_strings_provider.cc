@@ -1428,8 +1428,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_ADD_CONNECTION_NOT_ALLOWED},
       {"internetAddThirdPartyVPN", IDS_SETTINGS_INTERNET_ADD_THIRD_PARTY_VPN},
       {"internetAddVPN", IDS_SETTINGS_INTERNET_ADD_VPN},
-      {"internetAddArcVPN", IDS_SETTINGS_INTERNET_ADD_ARC_VPN},
-      {"internetAddArcVPNProvider", IDS_SETTINGS_INTERNET_ADD_ARC_VPN_PROVIDER},
       {"internetAddWiFi", IDS_SETTINGS_INTERNET_ADD_WIFI},
       {"internetConfigName", IDS_SETTINGS_INTERNET_CONFIG_NAME},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},

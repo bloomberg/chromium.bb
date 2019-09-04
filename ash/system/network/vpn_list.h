@@ -9,15 +9,17 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/public/mojom/vpn_list.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace ash {
 
-// Describes a VPN provider.
+// Describes a VPN provider for the UI. TODO(979314): Remove this class and use
+// network_config::mojom::VpnProvider instead.
 struct ASH_EXPORT VPNProvider {
   enum ProviderType {
     BUILT_IN_VPN = 0,
@@ -28,7 +30,7 @@ struct ASH_EXPORT VPNProvider {
   VPNProvider();
 
   static VPNProvider CreateBuiltInVPNProvider();
-  static VPNProvider CreateThirdPartyVPNProvider(
+  static VPNProvider CreateExtensionVPNProvider(
       const std::string& extension_id,
       const std::string& third_party_provider_name);
   static VPNProvider CreateArcVPNProvider(const std::string& package_name,
@@ -68,7 +70,8 @@ struct ASH_EXPORT VPNProvider {
 // list of VPN providers enabled in the primary user's profile. The delegate
 // furthermore allows the UI code to request that a VPN provider show its "add
 // network" dialog and allows UI code to request to launch Arc VPN provider.
-class ASH_EXPORT VpnList : public mojom::VpnList {
+class ASH_EXPORT VpnList
+    : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
   // An observer that is notified whenever the list of VPN providers enabled in
   // the primary user's profile changes.
@@ -96,24 +99,29 @@ class ASH_EXPORT VpnList : public mojom::VpnList {
   // Returns |true| if at least one third-party VPN provider or at least one Arc
   // VPN provider is enabled in the primary user's profile, in addition to the
   // built-in OpenVPN/L2TP provider.
-  bool HaveThirdPartyOrArcVPNProviders() const;
+  bool HaveExtensionOrArcVPNProviders() const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Binds the mojom::VpnList interface to this object.
-  void BindRequest(mojom::VpnListRequest request);
+  // CrosNetworkConfigObserver
+  void OnActiveNetworksChanged(
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+          networks) override;
+  void OnNetworkStateChanged(
+      chromeos::network_config::mojom::NetworkStatePropertiesPtr network)
+      override;
+  void OnNetworkStateListChanged() override;
+  void OnDeviceStateListChanged() override;
+  void OnVpnProvidersChanged() override;
 
-  // mojom::VpnList:
-  void SetThirdPartyVpnProviders(
-      std::vector<mojom::ThirdPartyVpnProviderPtr> providers) override;
-  void SetArcVpnProviders(
-      std::vector<mojom::ArcVpnProviderPtr> arc_providers) override;
-  void AddOrUpdateArcVPNProvider(
-      mojom::ArcVpnProviderPtr arc_provider) override;
-  void RemoveArcVPNProvider(const std::string& package_name) override;
+  void SetVpnProvidersForTest(
+      std::vector<chromeos::network_config::mojom::VpnProviderPtr> providers);
 
  private:
+  void OnGetVpnProviders(
+      std::vector<chromeos::network_config::mojom::VpnProviderPtr> providers);
+
   // Notify observers that the list of VPN providers enabled in the primary
   // user's profile has changed.
   void NotifyObservers();
@@ -121,8 +129,10 @@ class ASH_EXPORT VpnList : public mojom::VpnList {
   // Adds the built-in OpenVPN/L2TP provider to |extension_vpn_providers_|.
   void AddBuiltInProvider();
 
-  // Bindings for the mojom::VpnList interface.
-  mojo::BindingSet<mojom::VpnList> bindings_;
+  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
+      cros_network_config_;
+  mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
+      cros_network_config_observer_{this};
 
   // Cache of VPN providers, including the built-in OpenVPN/L2TP provider and
   // other providers added by extensions in the primary user's profile.
