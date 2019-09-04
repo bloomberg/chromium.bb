@@ -432,10 +432,6 @@ def _get_bucket_map(changelist, options, option_parser):
 
   if options.bucket:
     return {options.bucket: {b: [] for b in options.bot}}
-  if options.master:
-    print(
-        'WARNING: "-m <master>" option is deprecated. Use -B <bucket> instead.')
-    return {_prefix_master(options.master): {b: [] for b in options.bot}}
   option_parser.error(
       'Please specify the bucket, e.g. "-B luci.chromium.try".')
 
@@ -4925,9 +4921,6 @@ def CMDtry(parser, args):
       '-B', '--bucket', default='',
       help=('Buildbucket bucket to send the try requests.'))
   group.add_option(
-      '-m', '--master', default='',
-      help=('DEPRECATED, use -B. The try master where to run the builds.'))
-  group.add_option(
       '-r', '--revision',
       help='Revision to use for the tryjob; default: the revision will '
            'be determined by the try recipe that builder runs, which usually '
@@ -4960,9 +4953,6 @@ def CMDtry(parser, args):
   _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
 
-  if options.master and options.master.startswith('luci.'):
-    parser.error(
-        '-m option does not support LUCI. Please pass -B %s' % options.master)
   # Make sure that all properties are prop=value pairs.
   bad_params = [x for x in options.properties if '=' not in x]
   if bad_params:
@@ -4981,9 +4971,6 @@ def CMDtry(parser, args):
   error_message = cl.CannotTriggerTryJobReason()
   if error_message:
     parser.error('Can\'t trigger tryjobs: %s' % error_message)
-
-  if options.bucket and options.master:
-    parser.error('Only one of --bucket and --master may be used.')
 
   buckets = _get_bucket_map(cl, options, parser)
 
