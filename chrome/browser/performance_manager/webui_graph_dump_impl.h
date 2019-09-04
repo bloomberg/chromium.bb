@@ -79,6 +79,9 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
   // Ignored.
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {}
   // Ignored.
+  void OnPageOriginTrialFreezePolicyChanged(
+      const PageNode* page_node) override {}
+  // Ignored.
   void OnPageAlmostIdleChanged(const PageNode* page_node) override {}
   void OnMainFrameNavigationCommitted(const PageNode* page_node) override;
   void OnTitleUpdated(const PageNode* page_node) override {}  // Ignored.

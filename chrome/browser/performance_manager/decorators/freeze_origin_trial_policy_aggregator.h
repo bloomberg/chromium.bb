@@ -10,8 +10,6 @@
 
 namespace performance_manager {
 
-class PageNodeImpl;
-
 // Computes the freeze origin trial policy of a page by aggregating the freeze
 // origin trial policies of its current frames.
 class FreezeOriginTrialPolicyAggregator : public FrameNode::ObserverDefaultImpl,
@@ -19,10 +17,6 @@ class FreezeOriginTrialPolicyAggregator : public FrameNode::ObserverDefaultImpl,
  public:
   FreezeOriginTrialPolicyAggregator();
   ~FreezeOriginTrialPolicyAggregator() override;
-
-  // Returns the current freeze origin trial policy for |page_node|.
-  static InterventionPolicy GetOriginTrialFreezePolicyForTesting(
-      PageNodeImpl* page_node);
 
  private:
   class Data;

@@ -170,9 +170,8 @@ void RunOriginTrialTestOnPMSequence(
                         performance_manager::GraphImpl* graph) {
                        auto page_nodes = graph->GetAllPageNodeImpls();
                        EXPECT_EQ(1U, page_nodes.size());
-                       auto policy = FreezeOriginTrialPolicyAggregator::
-                           GetOriginTrialFreezePolicyForTesting(page_nodes[0]);
-                       EXPECT_EQ(expected_policy, policy);
+                       EXPECT_EQ(expected_policy,
+                                 page_nodes[0]->origin_trial_freeze_policy());
                        std::move(quit_closure).Run();
                      },
                      run_loop.QuitClosure(), expected_policy));

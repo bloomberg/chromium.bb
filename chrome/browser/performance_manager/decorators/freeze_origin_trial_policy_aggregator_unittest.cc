@@ -26,11 +26,6 @@ class FreezeOriginTrialPolicyAggregatorTest : public GraphTestHarness {
   }
 };
 
-InterventionPolicy GetOriginTrialFreezePolicy(PageNodeImpl* page_node) {
-  return FreezeOriginTrialPolicyAggregator::
-      GetOriginTrialFreezePolicyForTesting(page_node);
-}
-
 void ExpectInitialPolicyWorks(GraphImpl* mock_graph,
                               InterventionPolicy f0_policy,
                               InterventionPolicy f1_policy,
@@ -42,18 +37,16 @@ void ExpectInitialPolicyWorks(GraphImpl* mock_graph,
       TestNodeWrapper<PageNodeImpl>::Create(mock_graph);
 
   // Check the initial values before any frames are added.
-  EXPECT_EQ(InterventionPolicy::kDefault,
-            GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(InterventionPolicy::kDefault, page->origin_trial_freeze_policy());
 
   // Create an initial frame. Expect the page policy to be
   // |f0_policy_aggregated| when it is made current.
   TestNodeWrapper<FrameNodeImpl> f0 = TestNodeWrapper<FrameNodeImpl>::Create(
       mock_graph, process.get(), page.get());
   f0->SetOriginTrialFreezePolicy(f0_policy);
-  EXPECT_EQ(InterventionPolicy::kDefault,
-            GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(InterventionPolicy::kDefault, page->origin_trial_freeze_policy());
   f0->SetIsCurrent(true);
-  EXPECT_EQ(f0_policy_aggregated, GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(f0_policy_aggregated, page->origin_trial_freeze_policy());
 
   // Create a second frame and expect the page policy to be
   // |f0f1_policy_aggregated| when it is made current.
@@ -61,19 +54,19 @@ void ExpectInitialPolicyWorks(GraphImpl* mock_graph,
       mock_graph, process.get(), page.get(), f0.get(), 1);
   f1->SetOriginTrialFreezePolicy(f1_policy);
   f1->SetIsCurrent(true);
-  EXPECT_EQ(f0f1_policy_aggregated, GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(f0f1_policy_aggregated, page->origin_trial_freeze_policy());
 
   // Make the second frame non-current. Expect the page policy to go back to
   // |f0_policy_aggregated|.
   f1->SetIsCurrent(false);
-  EXPECT_EQ(f0_policy_aggregated, GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(f0_policy_aggregated, page->origin_trial_freeze_policy());
   f1->SetIsCurrent(true);
-  EXPECT_EQ(f0f1_policy_aggregated, GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(f0f1_policy_aggregated, page->origin_trial_freeze_policy());
 
   // Remove the second frame. Expect the page policy to go back to
   // |f0_policy_aggregated|.
   f1.reset();
-  EXPECT_EQ(f0_policy_aggregated, GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(f0_policy_aggregated, page->origin_trial_freeze_policy());
 }
 
 }  // namespace
@@ -198,19 +191,15 @@ TEST_F(FreezeOriginTrialPolicyAggregatorTest, PolicyChanges) {
       graph(), process.get(), page.get());
   frame->SetIsCurrent(true);
 
-  EXPECT_EQ(InterventionPolicy::kUnknown,
-            GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(InterventionPolicy::kUnknown, page->origin_trial_freeze_policy());
   frame->SetOriginTrialFreezePolicy(InterventionPolicy::kOptIn);
-  EXPECT_EQ(InterventionPolicy::kOptIn, GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(InterventionPolicy::kOptIn, page->origin_trial_freeze_policy());
   frame->SetOriginTrialFreezePolicy(InterventionPolicy::kOptOut);
-  EXPECT_EQ(InterventionPolicy::kOptOut,
-            GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(InterventionPolicy::kOptOut, page->origin_trial_freeze_policy());
   frame->SetOriginTrialFreezePolicy(InterventionPolicy::kDefault);
-  EXPECT_EQ(InterventionPolicy::kDefault,
-            GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(InterventionPolicy::kDefault, page->origin_trial_freeze_policy());
   frame->SetOriginTrialFreezePolicy(InterventionPolicy::kUnknown);
-  EXPECT_EQ(InterventionPolicy::kUnknown,
-            GetOriginTrialFreezePolicy(page.get()));
+  EXPECT_EQ(InterventionPolicy::kUnknown, page->origin_trial_freeze_policy());
 }
 
 }  // namespace performance_manager

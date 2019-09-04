@@ -40,9 +40,9 @@ class PageNodeImpl
   // dereferenced on the UI thread.
   const WebContentsProxy& contents_proxy() const;
 
-  void SetIsLoading(bool is_loading);
   void SetIsVisible(bool is_visible);
   void SetIsAudible(bool is_audible);
+  void SetIsLoading(bool is_loading);
   void SetUkmSourceId(ukm::SourceId ukm_source_id);
   void OnFaviconUpdated();
   void OnTitleUpdated();
@@ -78,6 +78,7 @@ class PageNodeImpl
   bool is_loading() const;
   ukm::SourceId ukm_source_id() const;
   LifecycleState lifecycle_state() const;
+  InterventionPolicy origin_trial_freeze_policy() const;
   const base::flat_set<FrameNodeImpl*>& main_frame_nodes() const;
   base::TimeTicks usage_estimate_time() const;
   base::TimeDelta cumulative_cpu_usage_estimate() const;
@@ -116,6 +117,7 @@ class PageNodeImpl
   bool IsLoading() const override;
   ukm::SourceId GetUkmSourceID() const override;
   LifecycleState GetLifecycleState() const override;
+  InterventionPolicy GetOriginTrialFreezePolicy() const override;
   int64_t GetNavigationID() const override;
   base::TimeDelta GetTimeSinceLastNavigation() const override;
   const FrameNode* GetMainFrameNode() const override;
@@ -130,6 +132,7 @@ class PageNodeImpl
 
   void SetPageAlmostIdle(bool page_almost_idle);
   void SetLifecycleState(LifecycleState lifecycle_state);
+  void SetOriginTrialFreezePolicy(InterventionPolicy policy);
 
   // The WebContentsProxy associated with this page.
   const WebContentsProxy contents_proxy_;
@@ -210,6 +213,12 @@ class PageNodeImpl
       LifecycleState,
       &PageNodeObserver::OnPageLifecycleStateChanged>
       lifecycle_state_{LifecycleState::kRunning};
+  // The origin trial freeze policy of this page. This is aggregated from the
+  // origin trial freeze policy of each current frame in the frame tree.
+  ObservedProperty::NotifiesOnlyOnChanges<
+      InterventionPolicy,
+      &PageNodeObserver::OnPageOriginTrialFreezePolicyChanged>
+      origin_trial_freeze_policy_{InterventionPolicy::kDefault};
 
   // Storage for PageAlmostIdle user data.
   std::unique_ptr<NodeAttachedData> page_almost_idle_data_;

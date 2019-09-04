@@ -23,6 +23,11 @@ class FreezeOriginTrialPolicyAggregatorAccess {
   static StorageType* GetInternalStorage(PageNodeImpl* page_node) {
     return &page_node->freeze_origin_trial_policy_data_;
   }
+
+  static void SetOriginTrialFreezePolicy(PageNodeImpl* page_node,
+                                         InterventionPolicy policy) {
+    page_node->SetOriginTrialFreezePolicy(policy);
+  }
 };
 
 class FreezeOriginTrialPolicyAggregator::Data
@@ -48,6 +53,13 @@ class FreezeOriginTrialPolicyAggregator::Data
     --num_current_frames_for_policy[static_cast<size_t>(policy)];
   }
 
+  // Updates the page's origin trial freeze policy from current data.
+  void UpdateOriginTrialFreezePolicy(PageNodeImpl* page_node) {
+    FreezeOriginTrialPolicyAggregatorAccess::SetOriginTrialFreezePolicy(
+        page_node, ComputeOriginTrialFreezePolicy());
+  }
+
+ private:
   // Computes the page's origin trial freeze policy from current data.
   InterventionPolicy ComputeOriginTrialFreezePolicy() const {
     if (GetNumCurrentFramesForPolicy(InterventionPolicy::kUnknown))
@@ -63,7 +75,6 @@ class FreezeOriginTrialPolicyAggregator::Data
     return InterventionPolicy::kDefault;
   }
 
- private:
   // Returns the number of current frames with |policy| on the page that owns
   // this Data.
   uint32_t GetNumCurrentFramesForPolicy(InterventionPolicy policy) const {
@@ -84,14 +95,6 @@ FreezeOriginTrialPolicyAggregator::FreezeOriginTrialPolicyAggregator() =
 FreezeOriginTrialPolicyAggregator::~FreezeOriginTrialPolicyAggregator() =
     default;
 
-// static
-InterventionPolicy
-FreezeOriginTrialPolicyAggregator::GetOriginTrialFreezePolicyForTesting(
-    PageNodeImpl* page_node) {
-  Data* data = Data::GetOrCreate(page_node);
-  return data->ComputeOriginTrialFreezePolicy();
-}
-
 void FreezeOriginTrialPolicyAggregator::OnFrameNodeAdded(
     const FrameNode* frame_node) {
   DCHECK(!frame_node->IsCurrent());
@@ -106,6 +109,7 @@ void FreezeOriginTrialPolicyAggregator::OnBeforeFrameNodeRemoved(
     DCHECK(data);
     data->DecrementFrameCountForPolicy(
         frame_node->GetOriginTrialFreezePolicy());
+    data->UpdateOriginTrialFreezePolicy(page_node);
   }
 }
 
@@ -120,6 +124,7 @@ void FreezeOriginTrialPolicyAggregator::OnIsCurrentChanged(
     data->DecrementFrameCountForPolicy(
         frame_node->GetOriginTrialFreezePolicy());
   }
+  data->UpdateOriginTrialFreezePolicy(page_node);
 }
 
 void FreezeOriginTrialPolicyAggregator::OnOriginTrialFreezePolicyChanged(
@@ -133,6 +138,7 @@ void FreezeOriginTrialPolicyAggregator::OnOriginTrialFreezePolicyChanged(
     data->DecrementFrameCountForPolicy(previous_value);
     data->IncrementFrameCountForPolicy(
         frame_node->GetOriginTrialFreezePolicy());
+    data->UpdateOriginTrialFreezePolicy(page_node);
   }
 }
 

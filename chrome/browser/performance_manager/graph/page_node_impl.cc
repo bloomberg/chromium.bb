@@ -178,6 +178,12 @@ PageNodeImpl::LifecycleState PageNodeImpl::lifecycle_state() const {
   return lifecycle_state_.value();
 }
 
+PageNodeImpl::InterventionPolicy PageNodeImpl::origin_trial_freeze_policy()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return origin_trial_freeze_policy_.value();
+}
+
 const base::flat_set<FrameNodeImpl*>& PageNodeImpl::main_frame_nodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return main_frame_nodes_;
@@ -296,6 +302,12 @@ PageNodeImpl::LifecycleState PageNodeImpl::GetLifecycleState() const {
   return lifecycle_state();
 }
 
+PageNodeImpl::InterventionPolicy PageNodeImpl::GetOriginTrialFreezePolicy()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return origin_trial_freeze_policy();
+}
+
 int64_t PageNodeImpl::GetNavigationID() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return navigation_id();
@@ -334,6 +346,11 @@ void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {
 void PageNodeImpl::SetLifecycleState(LifecycleState lifecycle_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   lifecycle_state_.SetAndMaybeNotify(this, lifecycle_state);
+}
+
+void PageNodeImpl::SetOriginTrialFreezePolicy(InterventionPolicy policy) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  origin_trial_freeze_policy_.SetAndMaybeNotify(this, policy);
 }
 
 }  // namespace performance_manager
