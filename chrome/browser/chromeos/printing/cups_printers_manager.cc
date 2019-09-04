@@ -7,7 +7,6 @@
 #include <map>
 #include <utility>
 
-#include "ash/public/cpp/network_config_service.h"
 #include "base/bind.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -28,20 +27,16 @@
 #include "chrome/browser/chromeos/printing/zeroconf_printer_detector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/policy/policy_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 namespace {
 
-class CupsPrintersManagerImpl
-    : public CupsPrintersManager,
-      public SyncedPrintersManager::Observer,
-      public chromeos::network_config::mojom::CrosNetworkConfigObserver {
+class CupsPrintersManagerImpl : public CupsPrintersManager,
+                                public SyncedPrintersManager::Observer {
  public:
   // Identifiers for each of the underlying PrinterDetectors this
   // class observes.
@@ -71,14 +66,6 @@ class CupsPrintersManagerImpl
         event_tracker_(event_tracker) {
     // Add the |auto_usb_printer_configurer_| as an observer.
     AddObserver(&auto_usb_printer_configurer_);
-
-    ash::GetNetworkConfigService(
-        remote_cros_network_config_.BindNewPipeAndPassReceiver());
-
-    chromeos::network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
-    cros_network_config_observer_receiver_.Bind(
-        mojo::MakeRequest(&observer_ptr));
-    remote_cros_network_config_->AddObserver(std::move(observer_ptr));
 
     // Prime the printer cache with the saved and enterprise printers.
     printers_.ReplacePrintersInClass(
@@ -238,27 +225,6 @@ class CupsPrintersManagerImpl
     }
     NotifyObservers({PrinterClass::kEnterprise});
   }
-
-  // mojom::CrosNetworkConfigObserver implementation.
-  void OnActiveNetworksChanged(
-      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
-          networks) override {
-    // Clear the network detected printers when the active network changes.
-    // This ensures that connecting to a new network will give us only newly
-    // detected printers.
-    ClearNetworkDetectedPrinters();
-  }
-
-  // mojom::CrosNetworkConfigObserver implementation.
-  void OnNetworkStateChanged(
-      chromeos::network_config::mojom::NetworkStatePropertiesPtr /* network */)
-      override {}
-
-  // mojom::CrosNetworkConfigObserver implementation.
-  void OnNetworkStateListChanged() override {}
-
-  // mojom::CrosNetworkConfigObserver implementation.
-  void OnDeviceStateListChanged() override {}
 
   // Callback for PrinterDetectors.
   void OnPrintersFound(
@@ -476,13 +442,6 @@ class CupsPrintersManagerImpl
         PrinterConfigurer::SetupFingerprint(printer);
   }
 
-  // Resets all network detected printer lists.
-  void ClearNetworkDetectedPrinters() {
-    zeroconf_detections_.clear();
-
-    ResetNearbyPrintersLists();
-  }
-
   SEQUENCE_CHECKER(sequence_);
 
   // Source lists for detected printers.
@@ -493,10 +452,6 @@ class CupsPrintersManagerImpl
   SyncedPrintersManager* const synced_printers_manager_;
   ScopedObserver<SyncedPrintersManager, SyncedPrintersManager::Observer>
       synced_printers_manager_observer_;
-  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
-      remote_cros_network_config_;
-  mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
-      cros_network_config_observer_receiver_{this};
 
   std::unique_ptr<PrinterDetector> usb_detector_;
 
