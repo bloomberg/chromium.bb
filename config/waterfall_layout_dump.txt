@@ -588,7 +588,6 @@
   amd64-generic-linux-v4_4-pre-cq
   amd64-generic-llvm-next-toolchain-tryjob
   amd64-generic-llvm-toolchain-tryjob
-  amd64-generic-llvm-tot-toolchain-tryjob
   amd64-generic-msan-fuzzer-tryjob
   amd64-generic-no-vmtest-pre-cq
   amd64-generic-nowithdebug-paladin-tryjob
@@ -624,7 +623,6 @@
   arm-generic-linux-v4_4-pre-cq
   arm-generic-llvm-next-toolchain-tryjob
   arm-generic-llvm-toolchain-tryjob
-  arm-generic-llvm-tot-toolchain-tryjob
   arm-generic-no-vmtest-pre-cq
   arm-generic-paladin-tryjob
   arm-generic-pre-cq
@@ -644,7 +642,6 @@
   arm64-generic-linux-v4_4-pre-cq
   arm64-generic-llvm-next-toolchain-tryjob
   arm64-generic-llvm-toolchain-tryjob
-  arm64-generic-llvm-tot-toolchain-tryjob
   arm64-generic-no-vmtest-pre-cq
   arm64-generic-paladin-tryjob
   arm64-generic-pre-cq
@@ -1386,6 +1383,7 @@
   eve-kvm-unittest-stress
   eve-llvm-next-toolchain-tryjob
   eve-llvm-toolchain-tryjob
+  eve-llvm-tot-toolchain-tryjob
   eve-master-factorybranch-tryjob
   eve-no-vmtest-pre-cq
   eve-paladin-tryjob
@@ -2097,6 +2095,7 @@
   kevin-full-tryjob
   kevin-llvm-next-toolchain-tryjob
   kevin-llvm-toolchain-tryjob
+  kevin-llvm-tot-toolchain-tryjob
   kevin-no-vmtest-pre-cq
   kevin-paladin-tryjob
   kevin-payloads-tryjob

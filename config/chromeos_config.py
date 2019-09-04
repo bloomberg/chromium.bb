@@ -1096,22 +1096,13 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       description='Full release build with LLVM (next) toolchain',
       useflags=config_lib.append_useflags(['llvm-next']),
   )
-
-  # This builds everything with ToT LLVM. LLVM is a fast-moving target, so we
-  # may consider dropping expensive things (e.g. ThinLTO) to increase coverage.
-  #
-  # Since the most recent LLVM has a nonzero chance of being broken, it has a
-  # nonzero chance of producing very broken images. Only VMTests are targeted
-  # with this for now, so we don't put hardware in a bad state.
-  #
-  # This should only be used with external configs.
   site_config.AddTemplate(
       'llvm_tot_toolchain',
-      site_config.templates.base_toolchain,
-      site_config.templates.no_hwtest_builder,
-      images=['base', 'test'],
+      site_config.templates.llvm_toolchain,
       useflags=config_lib.append_useflags(['llvm-tot']),
-      description='Builds Chrome OS using top-of-tree LLVM',
+      description='Full release builds with a near-top-of-tree LLVM. Since '
+      'this uses internal sources, it should only be used with LLVM revisions '
+      'that have been reviewed manually somehow',
   )
 
   site_config.AddTemplate(
@@ -1309,27 +1300,20 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
 
   # All *-generic boards are external.
   site_config.Add(
-      'amd64-generic-llvm-tot-toolchain',
+      'eve-llvm-tot-toolchain',
       site_config.templates.llvm_tot_toolchain,
-      display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       vm_tests=[config_lib.VMTestConfig(
           constants.VM_SUITE_TEST_TYPE,
           test_suite='smoke',
           use_ctest=False)],
       vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
-      boards=['amd64-generic'],
+      boards=['eve'],
   )
   site_config.Add(
-      'arm-generic-llvm-tot-toolchain',
+      'kevin-llvm-tot-toolchain',
       site_config.templates.llvm_tot_toolchain,
       site_config.templates.no_vmtest_builder,
-      boards=['arm-generic'],
-  )
-  site_config.Add(
-      'arm64-generic-llvm-tot-toolchain',
-      site_config.templates.llvm_tot_toolchain,
-      site_config.templates.no_vmtest_builder,
-      boards=['arm64-generic'],
+      boards=['kevin'],
   )
 
   site_config.Add(
