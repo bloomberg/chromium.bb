@@ -1026,4 +1026,29 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, CachedPlaceholders) {
   EXPECT_EQ(url2_, manager_->GetNavigationItemImplAtIndex(2)->GetURL());
 }
 
+// Tests that pending item is set to serializable when appropriate.
+TEST_F(WKBasedNavigationManagerDetachedModeTest, NotSerializable) {
+  manager_->AddPendingItem(
+      GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  EXPECT_FALSE(manager_->GetPendingItemInCurrentOrRestoredSession()
+                   ->ShouldSkipSerialization());
+
+  manager_->SetWKWebViewNextPendingUrlNotSerializable(GURL("http://www.1.com"));
+  manager_->AddPendingItem(
+      GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  EXPECT_TRUE(manager_->GetPendingItemInCurrentOrRestoredSession()
+                  ->ShouldSkipSerialization());
+
+  manager_->AddPendingItem(
+      GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  EXPECT_FALSE(manager_->GetPendingItemInCurrentOrRestoredSession()
+                   ->ShouldSkipSerialization());
+}
+
 }  // namespace web

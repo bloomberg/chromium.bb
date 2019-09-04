@@ -170,6 +170,12 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
                                  GetLastCommittedItemWithUserAgentType(),
                                  pending_item_.get());
 
+  if (!next_pending_url_should_skip_serialization_.is_empty() &&
+      url == next_pending_url_should_skip_serialization_) {
+    pending_item_->SetShouldSkipSerialization(true);
+  }
+  next_pending_url_should_skip_serialization_ = GURL::EmptyGURL();
+
   // No need to detect renderer-initiated back/forward navigation in detached
   // mode because there is no renderer.
   if (!web_view_cache_.IsAttachedToWebView())
@@ -634,6 +640,11 @@ void WKBasedNavigationManagerImpl::
   // with the wrong web content. The partial restore effectively forces a fresh
   // load of this item while maintaining forward history.
   UnsafeRestore(/*last_committed_item_index_=*/0, std::move(forward_items));
+}
+
+void WKBasedNavigationManagerImpl::SetWKWebViewNextPendingUrlNotSerializable(
+    const GURL& url) {
+  next_pending_url_should_skip_serialization_ = url;
 }
 
 void WKBasedNavigationManagerImpl::Restore(
