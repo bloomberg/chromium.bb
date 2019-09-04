@@ -24559,6 +24559,7 @@ Called by update_net_error_codes.py.-->
   <int value="3015" label="V8Window_ChooseFileSystemEntries_Method"/>
   <int value="3016"
       label="V8FileSystemDirectoryHandle_GetSystemDirectory_Method"/>
+  <int value="3017" label="NotificationShowTrigger"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
