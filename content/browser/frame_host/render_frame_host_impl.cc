@@ -6337,8 +6337,11 @@ blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {
 
 void RenderFrameHostImpl::BindSmsReceiverReceiver(
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver) {
-  if (GetParent()) {
-    mojo::ReportBadMessage("Must be in top-level browser context.");
+  if (GetParent() && !WebContents::FromRenderFrameHost(this)
+                          ->GetMainFrame()
+                          ->GetLastCommittedOrigin()
+                          .IsSameOriginWith(GetLastCommittedOrigin())) {
+    mojo::ReportBadMessage("Must have the same origin as the top-level frame.");
     return;
   }
   auto* provider = BrowserMainLoop::GetInstance()->GetSmsProvider();
