@@ -216,7 +216,13 @@ struct VRDisplayCapabilities {
 // Information about the optical properties for an eye in a VRDisplay.
 struct VREyeParameters {
   VRFieldOfView field_of_view;
-  gfx.mojom.Vector3dF offset;
+
+  // Describes the relationship between the head and eye space for this device.
+  // It should always include translation that is based on IPD (interpupillary
+  // distance), and will sometimes include rotation if the device has angled
+  // screens.
+  gfx.mojom.Transform head_from_eye;
+
   uint32 render_width;
   uint32 render_height;
 };
