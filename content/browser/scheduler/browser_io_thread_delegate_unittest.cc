@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/scheduler/browser_task_queues.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,8 +19,7 @@ namespace {
 TEST(BrowserIOThreadDelegateTest, CanPostTasksToThread) {
   base::Thread thread("my_thread");
 
-  auto delegate = std::make_unique<BrowserIOThreadDelegate>(
-      BrowserIOThreadDelegate::BrowserTaskExecutorPresent::kNoForTesting);
+  auto delegate = std::make_unique<BrowserIOThreadDelegate>();
   auto handle = delegate->CreateHandle();
   handle->EnableAllQueues();
 
@@ -38,11 +36,10 @@ TEST(BrowserIOThreadDelegateTest, CanPostTasksToThread) {
   event.Wait();
 }
 
-TEST(BrowserIOThreadDelegateTest, DefaultTaskRunnerIsAlwaysActive) {
+TEST(BrowserIOThreadDelegateTest, DefaultTaskRunnerIsAllwaysActive) {
   base::Thread thread("my_thread");
 
-  auto delegate = std::make_unique<BrowserIOThreadDelegate>(
-      BrowserIOThreadDelegate::BrowserTaskExecutorPresent::kNoForTesting);
+  auto delegate = std::make_unique<BrowserIOThreadDelegate>();
   auto task_runner = delegate->GetDefaultTaskRunner();
 
   base::Thread::Options options;

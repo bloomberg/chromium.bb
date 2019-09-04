@@ -11,7 +11,6 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -75,17 +74,13 @@ BrowserTaskExecutor::BrowserTaskExecutor(
       browser_io_thread_delegate_(std::move(browser_io_thread_delegate)),
       browser_io_thread_handle_(browser_io_thread_delegate_->CreateHandle()) {}
 
-BrowserTaskExecutor::~BrowserTaskExecutor() {
-  base::SetTaskExecutorForCurrentThread(nullptr);
-}
+BrowserTaskExecutor::~BrowserTaskExecutor() = default;
 
 // static
 void BrowserTaskExecutor::Create() {
   DCHECK(!base::ThreadTaskRunnerHandle::IsSet());
-  CreateInternal(
-      std::make_unique<BrowserUIThreadScheduler>(),
-      std::make_unique<BrowserIOThreadDelegate>(
-          BrowserIOThreadDelegate::BrowserTaskExecutorPresent::kYes));
+  CreateInternal(std::make_unique<BrowserUIThreadScheduler>(),
+                 std::make_unique<BrowserIOThreadDelegate>());
 }
 
 // static
@@ -109,17 +104,9 @@ void BrowserTaskExecutor::CreateInternal(
   g_browser_task_executor->browser_ui_thread_handle_
       ->EnableAllExceptBestEffortQueues();
 
-  base::SetTaskExecutorForCurrentThread(g_browser_task_executor);
-
 #if defined(OS_ANDROID)
   base::PostTaskAndroid::SignalNativeSchedulerReady();
 #endif
-}
-
-// static
-BrowserTaskExecutor* BrowserTaskExecutor::Get() {
-  DCHECK(g_browser_task_executor);
-  return g_browser_task_executor;
 }
 
 // static
@@ -127,14 +114,11 @@ void BrowserTaskExecutor::ResetForTesting() {
 #if defined(OS_ANDROID)
   base::PostTaskAndroid::SignalNativeSchedulerShutdown();
 #endif
-  base::SetTaskExecutorForCurrentThread(nullptr);
+
   if (g_browser_task_executor) {
     base::UnregisterTaskExecutorForTesting(
         BrowserTaskTraitsExtension::kExtensionId);
     delete g_browser_task_executor;
-    ANNOTATE_BENIGN_RACE(
-        &g_browser_task_executor,
-        "Test-only data race in content/browser/browser_thread_unittest");
     g_browser_task_executor = nullptr;
   }
 }

@@ -93,8 +93,7 @@ void BrowserTaskEnvironment::Init() {
       browser_ui_thread_scheduler->GetHandle()->GetDefaultTaskRunner();
   auto browser_io_thread_delegate =
       real_io_thread_
-          ? std::make_unique<BrowserIOThreadDelegate>(
-                BrowserIOThreadDelegate::BrowserTaskExecutorPresent::kYes)
+          ? std::make_unique<BrowserIOThreadDelegate>()
           : BrowserIOThreadDelegate::CreateForTesting(sequence_manager());
   browser_io_thread_delegate->SetAllowBlockingForTesting();
 
