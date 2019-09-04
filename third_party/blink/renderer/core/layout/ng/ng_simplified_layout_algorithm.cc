@@ -48,6 +48,9 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   DCHECK_EQ(ConstraintSpace().BfcOffset(),
             previous_result_.GetConstraintSpaceForCaching().BfcOffset());
 
+  if (result.SubtreeModifiedMarginStrut())
+    container_builder_.SetSubtreeModifiedMarginStrut();
+
   container_builder_.SetBfcLineOffset(result.BfcLineOffset());
   if (result.BfcBlockOffset())
     container_builder_.SetBfcBlockOffset(*result.BfcBlockOffset());
