@@ -3880,6 +3880,31 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_override': []
       },
 
+      'betty-arcnext-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
+      'betty-arcmaster-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
+      'betty-nyc-arc-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
+      'betty-pi-arc-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
+      'betty-qt-arc-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
       'arkham-release': {
           'hw_tests': [],
           'hw_tests_override': [],
