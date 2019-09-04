@@ -502,8 +502,10 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     update.Get()->AppendString(domain);
   }
 
-  void SetPasswordProtectedAllowedPref(bool value) {
-    profile()->GetPrefs()->SetBoolean(prefs::kPasswordProtectedAllowed, value);
+  void SetPasswordProtectedAllowedPref(
+      AllowPasswordProtectedFilesValues value) {
+    g_browser_process->local_state()->SetInteger(
+        prefs::kAllowPasswordProtectedFiles, value);
   }
 
   // Helper function to simulate a user gesture, then a link click.
@@ -2819,7 +2821,8 @@ TEST_F(DownloadProtectionServiceTest,
   content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
 
   {
-    SetPasswordProtectedAllowedPref(false);
+    SetPasswordProtectedAllowedPref(
+        AllowPasswordProtectedFilesValues::ALLOW_NONE);
 
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -2831,7 +2834,8 @@ TEST_F(DownloadProtectionServiceTest,
   }
 
   {
-    SetPasswordProtectedAllowedPref(true);
+    SetPasswordProtectedAllowedPref(
+        AllowPasswordProtectedFilesValues::ALLOW_DOWNLOADS);
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;

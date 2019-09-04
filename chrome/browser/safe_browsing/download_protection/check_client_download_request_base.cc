@@ -19,6 +19,7 @@
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_context.h"
@@ -153,9 +154,15 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
         profile &&
         AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
             ->RequestsAdvancedProtectionVerdicts();
+
+    int password_protected_allowed_policy =
+        g_browser_process->local_state()->GetInteger(
+            prefs::kAllowPasswordProtectedFiles);
     password_protected_allowed_ =
-        !profile ||
-        profile->GetPrefs()->GetBoolean(prefs::kPasswordProtectedAllowed);
+        (password_protected_allowed_policy ==
+             AllowPasswordProtectedFilesValues::ALLOW_DOWNLOADS ||
+         password_protected_allowed_policy ==
+             AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
   }
 }
 
