@@ -55353,6 +55353,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SigninTokenStateTransition">
+  <obsolete>
+    Deprecated as of 09/2019.
+  </obsolete>
   <int value="0" label="None to Invalid"/>
   <int value="1" label="None to Regular"/>
   <int value="2" label="Invalid to Regular"/>
