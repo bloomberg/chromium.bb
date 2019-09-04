@@ -220,7 +220,7 @@
 #endif  // defined(TOOLKIT_VIEWS)
 
 using flags_ui::FeatureEntry;
-using flags_ui::kEnterprise;
+using flags_ui::kDeprecated;
 using flags_ui::kOsAndroid;
 using flags_ui::kOsCrOS;
 using flags_ui::kOsCrOSOwnerOnly;
@@ -4169,7 +4169,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"allow-popups-during-page-unload",
      flag_descriptions::kAllowPopupsDuringPageUnloadName,
      flag_descriptions::kAllowPopupsDuringPageUnloadDescription,
-     kOsAll | kEnterprise,
+     kOsAll | kDeprecated,
      SINGLE_VALUE_TYPE(switches::kAllowPopupsDuringPageUnload)},
 #if defined(OS_CHROMEOS)
     {"enable-advanced-ppd-attributes",
@@ -4525,8 +4525,8 @@ class FlagsStateSingleton {
   DISALLOW_COPY_AND_ASSIGN(FlagsStateSingleton);
 };
 
-bool ShouldSkipNonEnterpriseFeatureEntry(const FeatureEntry& entry) {
-  return ~entry.supported_platforms & kEnterprise;
+bool ShouldSkipNonDeprecatedFeatureEntry(const FeatureEntry& entry) {
+  return ~entry.supported_platforms & kDeprecated;
 }
 
 bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
@@ -4659,13 +4659,14 @@ void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
       base::Bind(&SkipConditionalFeatureEntry));
 }
 
-void GetFlagFeatureEntriesForEnterprises(flags_ui::FlagsStorage* flags_storage,
-                                         flags_ui::FlagAccess access,
-                                         base::ListValue* supported_entries,
-                                         base::ListValue* unsupported_entries) {
+void GetFlagFeatureEntriesForDeprecatedPage(
+    flags_ui::FlagsStorage* flags_storage,
+    flags_ui::FlagAccess access,
+    base::ListValue* supported_entries,
+    base::ListValue* unsupported_entries) {
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
-      base::Bind(&ShouldSkipNonEnterpriseFeatureEntry));
+      base::Bind(&ShouldSkipNonDeprecatedFeatureEntry));
 }
 
 bool IsRestartNeededToCommitChanges() {
