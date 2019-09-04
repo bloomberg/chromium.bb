@@ -4,6 +4,7 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
@@ -81,6 +82,13 @@ class HelloPolymer3Element extends PolymerElement {
           </template>
         </div>
       </div>
+
+      <div>
+        <cr-button on-click="showDialog_">Click to open dialog</cr-button>
+        <cr-dialog id="dialog">
+          <div slot="title">I am a dialog</div>
+        </cr-dialog>
+      </div>
     `;
   }
 
@@ -114,6 +122,11 @@ class HelloPolymer3Element extends PolymerElement {
   /** @private */
   showDrawer_() {
     this.shadowRoot.querySelector('cr-drawer').openDrawer();
+  }
+
+  /** @private */
+  showDialog_() {
+    this.shadowRoot.querySelector('cr-dialog').showModal();
   }
 
   /**
