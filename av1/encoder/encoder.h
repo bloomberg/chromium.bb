@@ -395,6 +395,7 @@ typedef struct AV1EncoderConfig {
   int enable_paeth_intra;
   int enable_cfl_intra;
   int enable_superres;
+  int enable_overlay;
   int enable_palette;
   int enable_intrabc;
   int enable_angle_delta;

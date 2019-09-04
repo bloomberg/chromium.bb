@@ -1000,6 +1000,16 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_SUPERRES,
 
+  /*!\brief Codec control function to turn on / off overlay frames for
+   * fitlered ALTREF frames.
+   *
+   * This will enable or disable coding of overlay frames for filtered ALTREF
+   * frames. When set to 0, overlay frames are not used but show existing frame
+   * is used to display the filtered ALTREF frame as is. As a result the decoded
+   * frame rate remains the same as the display frame rate. The default is 1.
+   */
+  AV1E_SET_ENABLE_OVERLAY,
+
   /*!\brief Codec control function to turn on/off palette mode */
   AV1E_SET_ENABLE_PALETTE,
 
@@ -1468,6 +1478,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_CFL_INTRA, int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_SUPERRES, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_SUPERRES
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_OVERLAY, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_OVERLAY
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_PALETTE, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_PALETTE

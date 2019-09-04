@@ -124,6 +124,7 @@ struct av1_extracfg {
   int enable_paeth_intra;            // enable Paeth intra mode for sequence
   int enable_cfl_intra;              // enable CFL uv intra mode for sequence
   int enable_superres;
+  int enable_overlay;  // enable overlay for filtered arf frames
   int enable_palette;
   int enable_intrabc;
   int enable_angle_delta;
@@ -242,6 +243,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // enable Paeth intra mode usage for sequence
   1,                            // enable CFL uv intra mode usage for sequence
   1,                            // superres
+  1,                            // enable overlay
   1,                            // enable palette
   !CONFIG_SHARP_SETTINGS,       // enable intrabc
   1,                            // enable angle delta
@@ -653,6 +655,7 @@ static aom_codec_err_t set_encoder_config(
       (cfg->g_usage == AOM_USAGE_REALTIME) ? 0 : extra_cfg->enable_restoration;
   oxcf->force_video_mode = extra_cfg->force_video_mode;
   oxcf->enable_obmc = extra_cfg->enable_obmc;
+  oxcf->enable_overlay = extra_cfg->enable_overlay;
   oxcf->enable_palette = extra_cfg->enable_palette;
   oxcf->enable_intrabc = extra_cfg->enable_intrabc;
   oxcf->enable_angle_delta = extra_cfg->enable_angle_delta;
@@ -1420,6 +1423,13 @@ static aom_codec_err_t ctrl_set_enable_superres(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_superres = CAST(AV1E_SET_ENABLE_SUPERRES, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_overlay(aom_codec_alg_priv_t *ctx,
+                                               va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_overlay = CAST(AV1E_SET_ENABLE_OVERLAY, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -2382,6 +2392,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ENABLE_PAETH_INTRA, ctrl_set_enable_paeth_intra },
   { AV1E_SET_ENABLE_CFL_INTRA, ctrl_set_enable_cfl_intra },
   { AV1E_SET_ENABLE_SUPERRES, ctrl_set_enable_superres },
+  { AV1E_SET_ENABLE_OVERLAY, ctrl_set_enable_overlay },
   { AV1E_SET_ENABLE_PALETTE, ctrl_set_enable_palette },
   { AV1E_SET_ENABLE_INTRABC, ctrl_set_enable_intrabc },
   { AV1E_SET_ENABLE_ANGLE_DELTA, ctrl_set_enable_angle_delta },
