@@ -84,6 +84,7 @@
     jacuzzi-paladin
     kalista-paladin
     kefka-kernelnext-paladin
+    kevin-arc64-paladin
     kevin-arcnext-paladin
     kevin-paladin
     kevin64-paladin
@@ -2433,6 +2434,7 @@
     jacuzzi-paladin-tryjob
     kalista-paladin-tryjob
     kefka-kernelnext-paladin-tryjob
+    kevin-arc64-paladin-tryjob
     kevin-arcnext-paladin-tryjob
     kevin-paladin-tryjob
     kevin64-paladin-tryjob

@@ -2333,9 +2333,11 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'betty-kernelnext',
       'bubs',
+      'caroline-arcnext',
       'excelsior',
       'jacuzzi',
       'kefka-kernelnext',
+      'kevin-arc64',
       'kumo',
       'veyron_jerry-kernelnext',
       'veyron_minnie-kernelnext',
@@ -2364,18 +2366,21 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_simple_vmtest_boards = frozenset([
       'betty',
       'betty-arcnext',
+      'betty-kernelnext',
       'betty-pi-arc',
   ])
 
   _paladin_devmode_vmtest_boards = frozenset([
       'betty',
       'betty-arcnext',
+      'betty-kernelnext',
       'betty-pi-arc',
   ])
 
   _paladin_cros_vmtest_boards = frozenset([
       'betty',
       'betty-arcnext',
+      'betty-kernelnext',
       'betty-pi-arc',
   ])
 
@@ -2383,12 +2388,14 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty',
       'betty-arc64',
       'betty-arcnext',
+      'betty-kernelnext',
       'betty-pi-arc',
   ])
 
   _paladin_default_vmtest_boards = frozenset([
       'betty',
       'betty-arcnext',
+      'betty-kernelnext',
       'betty-pi-arc',
   ])
 
