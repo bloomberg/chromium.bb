@@ -37,6 +37,10 @@ extern const base::Feature kApkWebAppInstalls;
 
 #if defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppShimMultiProfile;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppShimRemoteCocoa;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kShow10_9ObsoleteInfobar;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kViewsTaskManager;
 #endif  // defined(OS_MACOSX)
