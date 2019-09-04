@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_RTC_VIDEO_ENCODER_FACTORY_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_RTC_VIDEO_ENCODER_FACTORY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_ENCODER_FACTORY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_ENCODER_FACTORY_H_
 
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/video_codecs.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder_factory.h"
 
 namespace media {
@@ -21,11 +20,7 @@ namespace blink {
 
 // This class creates RTCVideoEncoder instances (each wrapping a
 // media::VideoEncodeAccelerator) on behalf of the WebRTC stack.
-//
-// TODO(crbug.com/787254): Move this class out of the Blink exposed API
-// when all users of it have been Onion souped.
-class BLINK_PLATFORM_EXPORT RTCVideoEncoderFactory
-    : public webrtc::VideoEncoderFactory {
+class RTCVideoEncoderFactory : public webrtc::VideoEncoderFactory {
  public:
   explicit RTCVideoEncoderFactory(
       media::GpuVideoAcceleratorFactories* gpu_factories);
@@ -52,4 +47,4 @@ class BLINK_PLATFORM_EXPORT RTCVideoEncoderFactory
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_RTC_VIDEO_ENCODER_FACTORY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_ENCODER_FACTORY_H_
