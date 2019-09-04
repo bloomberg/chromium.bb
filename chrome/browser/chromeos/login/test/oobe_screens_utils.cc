@@ -72,7 +72,7 @@ void ExitUpdateScreenNoUpdate() {
 
   UpdateScreen* screen = UpdateScreen::Get(
       WizardController::default_controller()->screen_manager());
-  screen->GetVersionUpdaterForTesting()->UpdateStatusChangedForTesting(status);
+  screen->UpdateStatusChanged(status);
 }
 
 void WaitForFingerprintScreen() {
