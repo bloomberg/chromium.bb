@@ -11663,6 +11663,38 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Failed Architecture mismatch"/>
 </enum>
 
+<enum name="CrostiniResult">
+  <int value="0" label="SUCCESS"/>
+  <int value="4" label="CREATE_DISK_IMAGE_FAILED"/>
+  <int value="5" label="VM_START_FAILED"/>
+  <int value="6" label="VM_STOP_FAILED"/>
+  <int value="7" label="DESTROY_DISK_IMAGE_FAILED"/>
+  <int value="8" label="LIST_VM_DISKS_FAILED"/>
+  <int value="9" label="CLIENT_ERROR"/>
+  <int value="11" label="CONTAINER_DOWNLOAD_TIMED_OUT"/>
+  <int value="12" label="CONTAINER_CREATE_CANCELLED"/>
+  <int value="13" label="CONTAINER_CREATE_FAILED"/>
+  <int value="14" label="CONTAINER_START_CANCELLED"/>
+  <int value="15" label="CONTAINER_START_FAILED"/>
+  <int value="17" label="INSTALL_LINUX_PACKAGE_FAILED"/>
+  <int value="18" label="BLOCKING_OPERATION_ALREADY_ACTIVE"/>
+  <int value="19" label="UNINSTALL_PACKAGE_FAILED"/>
+  <int value="20" label="SSHFS_MOUNT_ERROR"/>
+  <int value="21" label="OFFLINE_WHEN_UPGRADE_REQUIRED"/>
+  <int value="22" label="LOAD_COMPONENT_FAILED"/>
+  <int value="27" label="CROSTINI_UNINSTALLER_RUNNING"/>
+  <int value="29" label="UNKNOWN_ERROR"/>
+  <int value="30" label="CONTAINER_EXPORT_IMPORT_FAILED"/>
+  <int value="31" label="CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED"/>
+  <int value="32" label="CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED"/>
+  <int value="33" label="CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE"/>
+  <int value="34" label="NOT_ALLOWED"/>
+  <int value="35" label="CONTAINER_EXPORT_IMPORT_FAILED_SPACE"/>
+  <int value="36" label="GET_CONTAINER_SSH_KEYS_FAILED"/>
+  <int value="37" label="CONTAINER_EXPORT_IMPORT_CANCELLED"/>
+  <int value="38" label="RESTART_ABORTED"/>
+</enum>
+
 <enum name="CrostiniSetupResult">
   <int value="0" label="Not Started"/>
   <int value="1" label="User Cancelled"/>
