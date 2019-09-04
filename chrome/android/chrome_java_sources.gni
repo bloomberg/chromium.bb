@@ -149,6 +149,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/browserservices/SessionDataHolder.java",
   "java/src/org/chromium/chrome/browser/browserservices/SessionHandler.java",
   "java/src/org/chromium/chrome/browser/browserservices/TrustedWebActivityClient.java",
+  "java/src/org/chromium/chrome/browser/browserservices/TrustedWebActivitySettingsLauncher.java",
   "java/src/org/chromium/chrome/browser/browserservices/TrustedWebActivityUmaRecorder.java",
   "java/src/org/chromium/chrome/browser/browserservices/UkmRecorder.java",
   "java/src/org/chromium/chrome/browser/browserservices/VerificationResultStore.java",
