@@ -957,10 +957,19 @@ PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() {}
 PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails() {}
 PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails(
     const UnmaskResponseDetails& other) {
-  real_pan = other.real_pan;
-  fido_creation_options = other.fido_creation_options.Clone();
+  *this = other;
 }
 PaymentsClient::UnmaskResponseDetails::~UnmaskResponseDetails() {}
+PaymentsClient::UnmaskResponseDetails& PaymentsClient::UnmaskResponseDetails::
+operator=(const PaymentsClient::UnmaskResponseDetails& other) {
+  real_pan = other.real_pan;
+  if (other.fido_creation_options.has_value()) {
+    fido_creation_options = other.fido_creation_options->Clone();
+  } else {
+    fido_creation_options.reset();
+  }
+  return *this;
+}
 
 PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails() {}
 PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails(
