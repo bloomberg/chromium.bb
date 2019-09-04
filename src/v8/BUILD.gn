@@ -4104,6 +4104,7 @@ if (is_component_build) {
       #          blpwtk2:blpwtk2_generate_sources
       "//blpwtk2:blpwtk2_public",
     ]
+    remove_dll_export_lines_ = true
   }
 
   v8_component("v8_for_testing") {
