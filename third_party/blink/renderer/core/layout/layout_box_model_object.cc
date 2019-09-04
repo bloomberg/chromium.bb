@@ -1435,7 +1435,7 @@ bool LayoutBoxModelObject::BackgroundTransfersToView(
     return false;
 
   Element* document_element = GetDocument().documentElement();
-  if (!IsHTMLHtmlElement(document_element))
+  if (!IsA<HTMLHtmlElement>(document_element))
     return false;
 
   if (!document_element_style)

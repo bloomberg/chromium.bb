@@ -2159,14 +2159,14 @@ void Document::RemoveTitle(Element* title_element) {
 
 const AtomicString& Document::dir() {
   Element* root_element = documentElement();
-  if (auto* html = ToHTMLHtmlElementOrNull(root_element))
+  if (auto* html = DynamicTo<HTMLHtmlElement>(root_element))
     return html->dir();
   return g_null_atom;
 }
 
 void Document::setDir(const AtomicString& value) {
   Element* root_element = documentElement();
-  if (auto* html = ToHTMLHtmlElementOrNull(root_element))
+  if (auto* html = DynamicTo<HTMLHtmlElement>(root_element))
     html->setDir(value);
 }
 
@@ -2462,7 +2462,7 @@ void Document::PropagateStyleToViewport() {
     // <html> root element with no background steals background from its first
     // <body> child.
     // Also see LayoutBoxModelObject::BackgroundTransfersToView()
-    if (body_style && IsHTMLHtmlElement(documentElement()) &&
+    if (body_style && IsA<HTMLHtmlElement>(documentElement()) &&
         IsA<HTMLBodyElement>(body) && !background_style->HasBackground()) {
       background_style = body_style;
     }
@@ -3737,7 +3737,7 @@ DocumentParser* Document::ImplicitOpen(
 }
 
 HTMLElement* Document::body() const {
-  if (!documentElement() || !IsHTMLHtmlElement(documentElement()))
+  if (!IsA<HTMLHtmlElement>(documentElement()))
     return nullptr;
 
   for (HTMLElement* child =
@@ -3751,7 +3751,7 @@ HTMLElement* Document::body() const {
 }
 
 HTMLBodyElement* Document::FirstBodyElement() const {
-  if (!documentElement() || !IsHTMLHtmlElement(documentElement()))
+  if (!IsA<HTMLHtmlElement>(documentElement()))
     return nullptr;
 
   for (HTMLElement* child =
@@ -3835,7 +3835,7 @@ Element* Document::ViewportDefiningElement() const {
   if (!root_style || root_style->IsEnsuredInDisplayNone())
     return nullptr;
   if (body_element && root_style->IsOverflowVisible() &&
-      IsHTMLHtmlElement(*root_element))
+      IsA<HTMLHtmlElement>(root_element))
     return body_element;
   return root_element;
 }
@@ -4316,7 +4316,7 @@ bool Document::ShouldScheduleLayout() const {
   if (HaveRenderBlockingResourcesLoaded() && body())
     return true;
 
-  if (documentElement() && !IsHTMLHtmlElement(*documentElement()))
+  if (documentElement() && !IsA<HTMLHtmlElement>(documentElement()))
     return true;
 
   return false;
