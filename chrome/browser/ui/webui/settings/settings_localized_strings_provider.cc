@@ -436,6 +436,7 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
     {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
     {"aboutDetailedBuildInfo", IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO},
     {"aboutFirmwareLabel", IDS_SETTINGS_ABOUT_PAGE_FIRMWARE},
+    {"aboutOSBanner", IDS_SETTINGS_ABOUT_OS_BANNER},
     {"aboutPlatformLabel", IDS_SETTINGS_ABOUT_PAGE_PLATFORM},
     {"aboutRelaunchAndPowerwash",
      IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
