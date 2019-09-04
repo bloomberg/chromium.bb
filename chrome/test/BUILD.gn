@@ -4992,7 +4992,8 @@ test("unit_tests") {
       ]
     }
     if ((is_linux && !is_chromeos) || is_win) {
-      sources += [ "../browser/ui/views/message_center/popups_only_ui_delegate_unittest.cc" ]
+      sources +=
+          [ "../browser/notifications/popups_only_ui_controller_unittest.cc" ]
     }
     if (use_aura) {
       sources += [

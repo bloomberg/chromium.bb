@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/message_center/popups_only_ui_delegate.h"
+#include "chrome/browser/notifications/popups_only_ui_controller.h"
 
 #include <stddef.h>
 
@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/notifications/popups_only_ui_controller.h"
 #include "content/public/test/test_utils.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
@@ -31,10 +30,10 @@ using message_center::NotifierId;
 
 namespace {
 
-class PopupsOnlyUiDelegateTest : public views::test::WidgetTest {
+class PopupsOnlyUiControllerTest : public views::test::WidgetTest {
  public:
-  PopupsOnlyUiDelegateTest() = default;
-  ~PopupsOnlyUiDelegateTest() override = default;
+  PopupsOnlyUiControllerTest() = default;
+  ~PopupsOnlyUiControllerTest() override = default;
 
   void SetUp() override {
     set_native_widget_type(NativeWidgetType::kDesktop);
@@ -88,10 +87,10 @@ class PopupsOnlyUiDelegateTest : public views::test::WidgetTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PopupsOnlyUiDelegateTest);
+  DISALLOW_COPY_AND_ASSIGN(PopupsOnlyUiControllerTest);
 };
 
-TEST_F(PopupsOnlyUiDelegateTest, WebNotificationPopupBubble) {
+TEST_F(PopupsOnlyUiControllerTest, WebNotificationPopupBubble) {
   auto ui_controller = std::make_unique<PopupsOnlyUiController>();
 
   // Adding a notification should show the popup bubble.
@@ -110,11 +109,9 @@ TEST_F(PopupsOnlyUiDelegateTest, WebNotificationPopupBubble) {
   // Removing the visible notification should hide the popup bubble.
   RemoveNotification("id2");
   EXPECT_FALSE(ui_controller->popups_visible());
-
-  ui_controller->delegate()->HidePopups();
 }
 
-TEST_F(PopupsOnlyUiDelegateTest, ManyPopupNotifications) {
+TEST_F(PopupsOnlyUiControllerTest, ManyPopupNotifications) {
   auto ui_controller = std::make_unique<PopupsOnlyUiController>();
 
   // Add the max visible popup notifications +1, ensure the correct num visible.

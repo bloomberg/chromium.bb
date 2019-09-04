@@ -2027,8 +2027,6 @@ jumbo_split_static_library("ui") {
       "user_manager.h",
       "views/external_protocol_dialog.cc",
       "views/external_protocol_dialog.h",
-      "views/message_center/popups_only_ui_delegate.cc",
-      "views/message_center/popups_only_ui_delegate.h",
       "views/profiles/badged_profile_photo.cc",
       "views/profiles/badged_profile_photo.h",
       "views/profiles/profile_menu_view.cc",
