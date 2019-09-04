@@ -8050,6 +8050,9 @@ histogram as enum -->
 </enum>
 
 <enum name="ChromePrimaryAccountStateInGaiaCookies">
+  <obsolete>
+    Deprecated as of 09/2019.
+  </obsolete>
   <int value="0" label="No Chrome primary account."/>
   <int value="1"
       label="Chrome primary account is the first account in Gaia cookies."/>
