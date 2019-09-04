@@ -2580,6 +2580,7 @@ source_set("unit_tests") {
     "input_method/input_method_engine_unittest.cc",
     "input_method/input_method_manager_impl_unittest.cc",
     "input_method/input_method_persistence_unittest.cc",
+    "kerberos/kerberos_credentials_manager_test.cc",
     "kerberos/kerberos_ticket_expiry_notification_test.cc",
     "locale_change_guard_unittest.cc",
     "lock_screen_apps/app_manager_impl_unittest.cc",
