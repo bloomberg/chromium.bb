@@ -191,7 +191,7 @@ public class LibraryLoader {
      */
     public void preloadNowOverrideApplicationContext(Context appContext) {
         synchronized (mLock) {
-            if (LibraryLoaderConfig.useChromiumLinker()) return;
+            if (useChromiumLinker()) return;
             preloadAlreadyLocked(appContext.getApplicationInfo());
         }
     }
@@ -199,7 +199,7 @@ public class LibraryLoader {
     private void preloadAlreadyLocked(ApplicationInfo appInfo) {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.preloadAlreadyLocked")) {
             // Preloader uses system linker, we shouldn't preload if Chromium linker is used.
-            assert !LibraryLoaderConfig.useChromiumLinker();
+            assert !useChromiumLinker();
             if (mLibraryPreloader != null && !mLibraryPreloaderCalled) {
                 mLibraryPreloader.loadLibrary(appInfo);
                 mLibraryPreloaderCalled = true;
@@ -340,7 +340,7 @@ public class LibraryLoader {
 
             long startTime = SystemClock.uptimeMillis();
 
-            if (LibraryLoaderConfig.useChromiumLinker() && !inZygote) {
+            if (useChromiumLinker() && !inZygote) {
                 Linker linker = Linker.getInstance();
 
                 // See base/android/linker/config.gni, the chromium linker is only enabled when we
@@ -559,7 +559,7 @@ public class LibraryLoader {
     // Called after all native initializations are complete.
     public void onBrowserNativeInitializationComplete() {
         synchronized (mLock) {
-            if (LibraryLoaderConfig.useChromiumLinker()) {
+            if (useChromiumLinker()) {
                 RecordHistogram.recordTimesHistogram(
                         "ChromiumAndroidLinker.BrowserLoadTime", mLibraryLoadTimeMs);
             }
@@ -572,10 +572,19 @@ public class LibraryLoader {
     // RecordChromiumAndroidLinkerRendererHistogram() will record it correctly.
     public void registerRendererProcessHistogram() {
         synchronized (mLock) {
-            if (LibraryLoaderConfig.useChromiumLinker()) {
+            if (useChromiumLinker()) {
                 LibraryLoaderJni.get().recordRendererLibraryLoadTime(mLibraryLoadTimeMs);
             }
         }
+    }
+
+    /**
+     * Call this method to determine if this chromium project must
+     * use this linker. If not, System.loadLibrary() should be used to load
+     * libraries instead.
+     */
+    public static boolean useChromiumLinker() {
+        return NativeLibraries.sUseLinker;
     }
 
     /**
@@ -630,9 +639,8 @@ public class LibraryLoader {
             try {
                 zipFile = new ZipFile(apkPath);
                 ZipEntry zipEntry = zipFile.getEntry(pathWithinApk);
-                if (zipEntry == null) {
+                if (zipEntry == null)
                     throw new RuntimeException("Cannot find ZipEntry" + pathWithinApk);
-                }
                 InputStream inputStream = zipFile.getInputStream(zipEntry);
 
                 FileUtils.copyStreamToFile(inputStream, libraryFile);
