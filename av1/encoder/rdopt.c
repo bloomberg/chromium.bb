@@ -3082,7 +3082,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     assert(plane == 0);
     allowed_tx_mask = ext_tx_used_flag;
     int num_allowed = 0;
-    const FRAME_UPDATE_TYPE update_type = get_frame_update_type(cpi);
+    const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
     const int *tx_type_probs = cpi->tx_type_probs[update_type][tx_size];
     int i;
 

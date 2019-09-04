@@ -4979,7 +4979,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   }
 
   if (cpi->sf.tx_type_search.prune_tx_type_using_stats) {
-    const FRAME_UPDATE_TYPE update_type = get_frame_update_type(cpi);
+    const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
 
     for (i = 0; i < TX_SIZES_ALL; i++) {
       int sum = 0;
