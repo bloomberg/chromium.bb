@@ -21,6 +21,7 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/scoped_canvas.h"
 
 namespace app_list {
 
@@ -75,17 +76,27 @@ void FolderImageSource::DrawIcon(gfx::Canvas* canvas,
       icon, skia::ImageOperations::RESIZE_BEST, icon_size));
 
   // Draw a shadowed icon on the specified location.
+  const gfx::ShadowValues shadow = {
+      gfx::ShadowValue(gfx::Vector2d(), kIconShadowBlur, kIconShadowColor)};
   const gfx::ImageSkia shadowed(
-      gfx::ImageSkiaOperations::CreateImageWithDropShadow(
-          resized, gfx::ShadowValues(
-                       1, gfx::ShadowValue(gfx::Vector2d(), kIconShadowBlur,
-                                           kIconShadowColor))));
-  const gfx::Size shadow_size = shadowed.size();
-  x -= (shadow_size.width() - icon_size.width()) / 2;
-  y -= (shadow_size.height() - icon_size.height()) / 2;
-  canvas->DrawImageInt(shadowed, 0, 0, shadow_size.width(),
-                       shadow_size.height(), x, y, shadow_size.width(),
-                       shadow_size.height(), true);
+      gfx::ImageSkiaOperations::CreateImageWithDropShadow(resized, shadow));
+
+  // Offset the shadowed image so the actual image position matches its original
+  // bounds. The offset has to be calculated in pixels, as the shadow margin
+  // might not match the 1x margin scaled to the target scale factor (when the
+  // drawing the shadow, the shadow margin is first scaled then rounded, which
+  // might introduce different rounding error depending on the scale factor).
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  const float scale = canvas->UndoDeviceScaleFactor();
+
+  gfx::Insets shadow_margin =
+      gfx::ShadowValue::GetMargin({shadow[0].Scale(scale)});
+  const gfx::ImageSkiaRep& shadowed_rep = shadowed.GetRepresentation(scale);
+
+  canvas->DrawImageIntInPixel(
+      shadowed_rep, x * scale + shadow_margin.left(),
+      y * scale + shadow_margin.top(), shadowed_rep.pixel_width(),
+      shadowed_rep.pixel_height(), true, cc::PaintFlags());
 }
 
 void FolderImageSource::Draw(gfx::Canvas* canvas) {
