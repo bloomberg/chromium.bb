@@ -2391,10 +2391,6 @@ const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =
     "Enables direct actions (Android Q and more).";
 
-const char kDownloadProgressInfoBarName[] = "Enable download progress infobar";
-const char kDownloadProgressInfoBarDescription[] =
-    "Enables an infobar notifying users about status of current downloads.";
-
 const char kDownloadHomeV2Name[] = "Enable download home v2";
 const char kDownloadHomeV2Description[] =
     "Enables the new UI for download home";

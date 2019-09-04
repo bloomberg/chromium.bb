@@ -746,11 +746,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "download-progress-infobar",
-    "owners": [ "shaktisahu", "dtrainor" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "download-rename",
     "owners": [ "hesen", "dtrainor" ],
     "expiry_milestone": 76

@@ -3050,13 +3050,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-    {"download-progress-infobar",
-     flag_descriptions::kDownloadProgressInfoBarName,
-     flag_descriptions::kDownloadProgressInfoBarDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDownloadProgressInfoBar)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
     {"download-home-v2", flag_descriptions::kDownloadHomeV2Name,
      flag_descriptions::kDownloadHomeV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDownloadHomeV2)},
