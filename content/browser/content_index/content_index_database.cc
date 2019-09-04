@@ -174,6 +174,15 @@ void ContentIndexDatabase::AddEntryOnCoreThread(
     return;
   }
 
+  auto* service_worker_registration =
+      service_worker_context_->GetLiveRegistration(
+          service_worker_registration_id);
+  if (!service_worker_registration ||
+      !service_worker_registration->active_version()) {
+    std::move(callback).Run(blink::mojom::ContentIndexError::NO_SERVICE_WORKER);
+    return;
+  }
+
   auto serialized_icons = std::make_unique<proto::SerializedIcons>();
   proto::SerializedIcons* serialized_icons_ptr = serialized_icons.get();
 
