@@ -434,6 +434,23 @@ void OverflowBubbleView::UpdateLayoutStrategy() {
   }
 }
 
+void OverflowBubbleView::ScrollToNewPage(bool forward) {
+  // Implement the arrow button handler in the same way with scrolling the
+  // bubble view. The key is to calculate the suitable scroll distance.
+  int offset = (GetShelf()->IsHorizontalAlignment() ? bounds().width()
+                                                    : bounds().height()) -
+               2 * GetUnit();
+  DCHECK_GT(offset, 0);
+
+  if (!forward)
+    offset = -offset;
+
+  if (GetShelf()->IsHorizontalAlignment())
+    ScrollByXOffset(offset, true);
+  else
+    ScrollByYOffset(offset, true);
+}
+
 gfx::Size OverflowBubbleView::CalculatePreferredSize() const {
   gfx::Rect monitor_rect =
       display::Screen::GetScreen()
@@ -576,22 +593,7 @@ void OverflowBubbleView::ButtonPressed(views::Button* sender,
   views::View* sender_view = sender;
   DCHECK((sender_view == left_arrow_) || (sender_view == right_arrow_));
 
-  // Implement the arrow button handler in the same way with scrolling the
-  // bubble view. The key is to calculate the suitable scroll distance.
-  int offset = (GetShelf()->IsHorizontalAlignment() ? bounds().width()
-                                                    : bounds().height()) -
-               2 * GetUnit();
-  DCHECK_GT(offset, 0);
-
-  // If |forward| is true, scroll the overflow bubble view rightward.
-  bool forward = sender_view == right_arrow_;
-  if (!forward)
-    offset = -offset;
-
-  if (GetShelf()->IsHorizontalAlignment())
-    ScrollByXOffset(offset, true);
-  else
-    ScrollByYOffset(offset, true);
+  ScrollToNewPage(sender_view == right_arrow_);
 }
 
 void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {

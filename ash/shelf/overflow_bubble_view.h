@@ -105,6 +105,10 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   // Update the layout strategy based on the available space.
   void UpdateLayoutStrategy();
 
+  // Scrolls to a new page of shelf icons. |forward| indicates whether the next
+  // page or previous page is shown.
+  void ScrollToNewPage(bool forward);
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
