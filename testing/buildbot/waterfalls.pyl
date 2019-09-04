@@ -1521,6 +1521,17 @@
           'libANGLE',
         ],
       },
+      'Win10 Tests x64 1803': {
+        'mixins': [
+          'x86-64',
+          'win10-1803',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
+          'scripts': 'chromium_scripts',
+        },
+      },
       'Win7 Builder (dbg) Goma Canary': {
         'additional_compile_targets': [
           'all',
