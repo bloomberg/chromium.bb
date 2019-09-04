@@ -27,6 +27,7 @@ jumbo_source_set("browser") {
     "//content/app:*",
     "//content/public/browser:browser_sources",
     "//content/test/fuzzer:appcache_fuzzer",
+    "//content/test/fuzzer:browser_accessibility_fuzzer",
   ]
 
   configs += [
