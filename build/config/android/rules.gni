@@ -785,6 +785,9 @@ if (enable_java_templates) {
             invoker.enable_chromium_linker_tests) {
           args += [ "--enable-chromium-linker-tests" ]
         }
+        if (defined(invoker.use_modern_linker) && invoker.use_modern_linker) {
+          args += [ "--use-modern-linker" ]
+        }
       }
     }
   }
@@ -2252,11 +2255,14 @@ if (enable_java_templates) {
 
     _use_chromium_linker =
         defined(invoker.use_chromium_linker) && invoker.use_chromium_linker
+    _use_modern_linker =
+        defined(invoker.use_modern_linker) && invoker.use_modern_linker
 
     _load_library_from_apk =
         defined(invoker.load_library_from_apk) && invoker.load_library_from_apk
 
     assert(_use_chromium_linker || true)  # Mark as used.
+    assert(_use_modern_linker || true)  # Mark as used.
     assert(!_load_library_from_apk || _use_chromium_linker,
            "load_library_from_apk requires use_chromium_linker")
 
@@ -2660,6 +2666,7 @@ if (enable_java_templates) {
         }
         enable_chromium_linker = _use_chromium_linker
         load_library_from_apk = _load_library_from_apk
+        use_modern_linker = _use_modern_linker
         use_final_fields = true
       }
       _srcjar_deps += [ ":${_template_name}__native_libraries" ]
@@ -3367,6 +3374,7 @@ if (enable_java_templates) {
                                "generate_buildconfig_java",
                                "generate_final_jni",
                                "input_jars_paths",
+                               "use_modern_linker",
                                "jacoco_never_instrument",
                                "java_files",
                                "javac_args",
