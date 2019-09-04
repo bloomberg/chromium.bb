@@ -3270,6 +3270,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "use-fake-device-for-media-stream",
+    "owners": [ "mcasas", "chromeos-gfx@google.com" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "use_messages_google_com_domain",
     "owners": [ "azeemarshad", "khorimoto" ],
     "expiry_milestone": 76

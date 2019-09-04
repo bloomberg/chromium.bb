@@ -2135,6 +2135,9 @@ extern const char kUiSlowAnimationsDescription[];
 extern const char kUsbguardName[];
 extern const char kUsbguardDescription[];
 
+extern const char kUseFakeDeviceForMediaStreamName[];
+extern const char kUseFakeDeviceForMediaStreamDescription[];
+
 extern const char kUseMonitorColorSpaceName[];
 extern const char kUseMonitorColorSpaceDescription[];
 

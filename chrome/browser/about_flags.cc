@@ -3879,6 +3879,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableOverviewRoundedCornersName,
      flag_descriptions::kAshEnableOverviewRoundedCornersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableOverviewRoundedCorners)},
+
+    {"use-fake-device-for-media-stream",
+     flag_descriptions::kUseFakeDeviceForMediaStreamName,
+     flag_descriptions::kUseFakeDeviceForMediaStreamDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(media::kUseFakeDeviceForMediaStream)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
