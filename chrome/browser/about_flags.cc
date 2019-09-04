@@ -30,6 +30,7 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/flag_descriptions.h"
+#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/permissions/permission_features.h"
@@ -4427,7 +4428,8 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kDecodeLossyWebPImagesToYUV)},
 
     {"dns-over-https", flag_descriptions::kDnsOverHttpsName,
-     flag_descriptions::kDnsOverHttpsDescription, kOsAll,
+     flag_descriptions::kDnsOverHttpsDescription,
+     kOsMac | kOsWin | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kDnsOverHttps)},
 
 #if defined(OS_ANDROID)
@@ -4565,9 +4567,8 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   }
 #endif  // OS_WIN
 
-  // TODO(crbug.com/988078): Make the DoH entry visible for non-enterprise
-  // users.
-  if (!strcmp("dns-over-https", entry.internal_name)) {
+  if (!strcmp("dns-over-https", entry.internal_name) &&
+      chrome_browser_net::ShouldDisableDohForManaged()) {
     return true;
   }
 
