@@ -829,7 +829,7 @@
       // Modifies LayoutShiftTracker to use O(n log n) sweep line algorithm for
       // computing the area of the layout shift region.
       name: "JankTrackingSweepLine",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "JSONModules",
