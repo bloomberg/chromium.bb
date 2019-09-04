@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
@@ -142,6 +143,7 @@ void BinaryUploadService::OnGetFileContents(Request* request,
 
   std::string metadata;
   request->deep_scanning_request().SerializeToString(&metadata);
+  base::Base64Encode(metadata, &metadata);
 
   auto upload_request = MultipartUploadRequest::Create(
       url_loader_factory_, GURL(kSbBinaryUploadUrl), metadata, file_contents,
