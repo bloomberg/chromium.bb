@@ -14,6 +14,8 @@
 
 namespace ui {
 
+class PlatformWindowDelegateLinux;
+
 // Delegate interface used to communicate the X11PlatformWindow API client about
 // XEvents of interest.
 class X11_WINDOW_EXPORT XEventDelegate {
@@ -36,12 +38,11 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
                                     public XWindow,
                                     public PlatformEventDispatcher {
  public:
-  explicit X11Window(PlatformWindowDelegateLinux* platform_window_delegate);
+  X11Window(PlatformWindowDelegateLinux* platform_window_delegate,
+            XEventDelegate* x_event_delegate);
   ~X11Window() override;
 
   void Initialize(PlatformWindowInitProperties properties);
-
-  void SetXEventDelegate(XEventDelegate* delegate);
 
   // PlatformWindow:
   void Show() override;
@@ -109,7 +110,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
 
   PlatformWindowDelegateLinux* const platform_window_delegate_;
 
-  XEventDelegate* x_event_delegate_ = nullptr;
+  XEventDelegate* const x_event_delegate_;
 
   // Tells if the window got a ::Close call.
   bool is_shutting_down_ = false;
