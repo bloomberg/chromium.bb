@@ -1112,7 +1112,6 @@ StoragePartitionImpl::StoragePartitionImpl(
       relative_partition_path_(relative_partition_path),
       partition_domain_(partition_domain),
       special_storage_policy_(special_storage_policy),
-      network_context_client_binding_(this),
       deletion_helpers_running_(0) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
@@ -2282,10 +2281,9 @@ void StoragePartitionImpl::InitNetworkContext() {
       browser_context_, is_in_memory_, relative_partition_path_);
   DCHECK(network_context_);
 
-  network::mojom::NetworkContextClientPtr client_ptr;
-  network_context_client_binding_.Close();
-  network_context_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-  network_context_->SetClient(std::move(client_ptr));
+  network_context_client_receiver_.reset();
+  network_context_->SetClient(
+      network_context_client_receiver_.BindNewPipeAndPassRemote());
   network_context_.set_connection_error_handler(base::BindOnce(
       &StoragePartitionImpl::InitNetworkContext, weak_factory_.GetWeakPtr()));
 }
