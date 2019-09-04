@@ -65,6 +65,7 @@
     elm-paladin
     eve-arcnext-paladin
     eve-paladin
+    excelsior-paladin
     fizz-accelerator-paladin
     fizz-moblab-paladin
     fizz-paladin
@@ -1431,6 +1432,23 @@
   eve-userdebug-release-tryjob
   eve-userdebug-tot-chromium-pfq-informational-tryjob
   eve-userdebug-unittest-stress
+  excelsior-chrome-pfq-tryjob
+  excelsior-chromium-pfq-tryjob
+  excelsior-compile-only-pre-cq
+  excelsior-full-tryjob
+  excelsior-llvm-next-toolchain-tryjob
+  excelsior-llvm-toolchain-tryjob
+  excelsior-no-vmtest-pre-cq
+  excelsior-paladin-tryjob
+  excelsior-payloads-tryjob
+  excelsior-pre-cq
+  excelsior-release-afdo-generate-tryjob
+  excelsior-release-afdo-tryjob
+  excelsior-release-afdo-use-tryjob
+  excelsior-release-tryjob
+  excelsior-tot-chrome-pfq-informational-tryjob
+  excelsior-tot-chromium-pfq-informational-tryjob
+  excelsior-unittest-stress
   expresso-chrome-pfq-tryjob
   expresso-chromium-pfq-tryjob
   expresso-compile-only-pre-cq
@@ -2394,6 +2412,7 @@
     elm-paladin-tryjob
     eve-arcnext-paladin-tryjob
     eve-paladin-tryjob
+    excelsior-paladin-tryjob
     fizz-accelerator-paladin-tryjob
     fizz-moblab-paladin-tryjob
     fizz-paladin-tryjob

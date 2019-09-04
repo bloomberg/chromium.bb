@@ -2329,6 +2329,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'betty-kernelnext',
       'bubs',
+      'excelsior',
       'jacuzzi',
       'kefka-kernelnext',
       'kumo',
