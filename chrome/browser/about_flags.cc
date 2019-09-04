@@ -856,12 +856,18 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
      base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
+const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPOmnibox[] = {
+    {"ZeroSuggestVariant:7:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPRealbox[] = {
     {"ZeroSuggestVariant:15:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
 const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
+    {"NTP Omnibox - Remote", kOmniboxOnFocusSuggestionsParamNTPOmnibox,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPOmnibox),
+     "t3316133" /* variation_id */},
     {"NTP Realbox - Remote", kOmniboxOnFocusSuggestionsParamNTPRealbox,
      base::size(kOmniboxOnFocusSuggestionsParamNTPRealbox),
-     "t3316133" /* variation_id */}};
+     "t3316133" /* variation_id */},
+};
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
