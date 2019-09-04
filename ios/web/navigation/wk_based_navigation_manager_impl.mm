@@ -189,7 +189,19 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
   // between the URLs.
   id<CRWWebViewNavigationProxy> proxy = delegate_->GetWebViewNavigationProxy();
   WKBackForwardListItem* current_wk_item = proxy.backForwardList.currentItem;
-  const GURL current_item_url = net::GURLWithNSURL(current_wk_item.URL);
+  GURL current_item_url = net::GURLWithNSURL(current_wk_item.URL);
+
+  // When reloading an target url redirect page, re-use the target url as the
+  // current item url.
+  GURL target_url;
+  if (ui::PageTransitionCoreTypeIs(navigation_type,
+                                   ui::PAGE_TRANSITION_RELOAD) &&
+      web::wk_navigation_util::IsRestoreSessionUrl(current_item_url) &&
+      web::wk_navigation_util::ExtractTargetURL(current_item_url,
+                                                &target_url)) {
+    current_item_url = target_url;
+  }
+
   if (proxy.backForwardList.currentItem &&
       IsSameOrPlaceholderOf(current_item_url, pending_item_->GetURL()) &&
       IsSameOrPlaceholderOf(current_item_url, net::GURLWithNSURL(proxy.URL))) {
