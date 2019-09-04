@@ -3888,8 +3888,14 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
 
       <!-- ClickToCall -->
-      <message name="IDS_CLICK_TO_CALL_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification.">
+      <message name="IDS_CLICK_TO_CALL_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification to call on a number.">
         Tap to make call
+      </message>
+      <message name="IDS_CLICK_TO_CALL_DIALER_ABSENT_NOTIFICATION_TITLE" desc="Title of click to call notification when there is no dialer on device.">
+        Can't make calls
+      </message>
+      <message name="IDS_CLICK_TO_CALL_DIALER_ABSENT_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification when there is no dialer on device.">
+        Make sure a phone app is enabled on this device
       </message>
 
       <!-- Shared Clipboard -->

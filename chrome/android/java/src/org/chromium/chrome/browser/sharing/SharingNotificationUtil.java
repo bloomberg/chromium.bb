@@ -38,7 +38,9 @@ public final class SharingNotificationUtil {
     private static final String EXTRA_NOTIFICATION_ID = "notification_id";
     private static final String EXTRA_NOTIFICATION_TOKEN = "notification_token";
     private static final int REQUEST_CODE_DISMISS = 100;
-    private static final @DrawableRes int SMALL_ICON_ID = R.drawable.ic_devices_16dp;
+
+    // TODO(himanshujaju) - We have only two small icons, one for error and one for non error. We
+    // could avoid passing them around.
 
     private static HashSet<Integer> sDismissedSendingNotifications = new HashSet<>();
     private static int sSendingNotificationCount;
@@ -72,10 +74,11 @@ public final class SharingNotificationUtil {
      * @param contentTitle  The notification title text.
      * @param contentText   The notification content text.
      * @param largeIconId   The large notification icon resource id, 0 if not used.
+     * @param color         The color to be used for the notification.
      */
     public static void showNotification(@SystemNotificationType int type, String group, int id,
             PendingIntentProvider contentIntent, String contentTitle, String contentText,
-            @DrawableRes int largeIconId) {
+            @DrawableRes int smallIconId, @DrawableRes int largeIconId, int color) {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
         ChromeNotificationBuilder builder =
@@ -87,12 +90,11 @@ public final class SharingNotificationUtil {
                         .setContentIntent(contentIntent)
                         .setContentTitle(contentTitle)
                         .setContentText(contentText)
-                        .setColor(ApiCompatibilityUtils.getColor(
-                                context.getResources(), R.color.default_icon_color_blue))
+                        .setColor(ApiCompatibilityUtils.getColor(context.getResources(), color))
                         .setGroup(group)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0])
-                        .setSmallIcon(SMALL_ICON_ID)
+                        .setSmallIcon(smallIconId)
                         .setAutoCancel(true)
                         .setDefaults(Notification.DEFAULT_ALL);
         if (largeIconId != 0) {
@@ -149,7 +151,7 @@ public final class SharingNotificationUtil {
                                 context.getResources(), R.color.default_icon_color_blue))
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0])
-                        .setSmallIcon(SMALL_ICON_ID)
+                        .setSmallIcon(R.drawable.ic_devices_16dp)
                         .setProgress(/*max=*/0, /*percentage=*/0, true)
                         .setOngoing(true)
                         .addAction(R.drawable.ic_cancel_circle, dismissTitle, dismissIntent,
