@@ -112,14 +112,9 @@ typedef struct {
   unsigned char index;
   FRAME_UPDATE_TYPE update_type[MAX_STATIC_GF_GROUP_LENGTH];
   unsigned char arf_src_offset[MAX_STATIC_GF_GROUP_LENGTH];
-  unsigned char arf_update_idx[MAX_STATIC_GF_GROUP_LENGTH];
-  unsigned char arf_pos_in_gf[MAX_STATIC_GF_GROUP_LENGTH];
   unsigned char frame_disp_idx[MAX_STATIC_GF_GROUP_LENGTH];
-  unsigned char pyramid_level[MAX_STATIC_GF_GROUP_LENGTH];
   int ref_frame_disp_idx[MAX_STATIC_GF_GROUP_LENGTH][REF_FRAMES];
   int ref_frame_gop_idx[MAX_STATIC_GF_GROUP_LENGTH][REF_FRAMES];
-  unsigned char pyramid_height;
-  unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
 
   // TODO(jingning): Unify the data structure used here after the new control
   // mechanism is in place.
