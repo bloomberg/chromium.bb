@@ -2617,9 +2617,9 @@ if (is_linux || is_mac || is_win) {
       ":browser_tests",
     ]
     data = [
-      "//third_party/webrtc/rtc_tools/testing/webrtc_apprtc_browsertest/apprtc/out/app_engine/",
-      "//third_party/webrtc/rtc_tools/testing/webrtc_apprtc_browsertest/apprtc/temp/google-cloud-sdk/",
-      "//third_party/webrtc/rtc_tools/testing/webrtc_apprtc_browsertest/collider/",
+      "//third_party/webrtc/rtc_tools/testing/browsertest/apprtc/out/app_engine/",
+      "//third_party/webrtc/rtc_tools/testing/browsertest/apprtc/temp/google-cloud-sdk/",
+      "//third_party/webrtc/rtc_tools/testing/browsertest/collider/",
     ]
     if (is_win) {
       write_runtime_deps = "$root_out_dir/$target_name.exe.runtime_deps"
