@@ -66,6 +66,11 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_TABS_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_tabs/cr_tabs.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_TOAST_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_toast/cr_toast.m.js"
          use_base_dir="false"
