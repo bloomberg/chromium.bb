@@ -2614,9 +2614,9 @@ if (is_linux || is_mac || is_win) {
       ":browser_tests",
     ]
     data = [
-      "//out/apprtc/out/app_engine/",
-      "//out/apprtc/temp/google-cloud-sdk/",
-      "//out/collider/",
+      "//third_party/webrtc/rtc_tools/testing/webrtc_apprtc_browsertest/apprtc/out/app_engine/",
+      "//third_party/webrtc/rtc_tools/testing/webrtc_apprtc_browsertest/apprtc/temp/google-cloud-sdk/",
+      "//third_party/webrtc/rtc_tools/testing/webrtc_apprtc_browsertest/collider/",
     ]
     if (is_win) {
       write_runtime_deps = "$root_out_dir/$target_name.exe.runtime_deps"
