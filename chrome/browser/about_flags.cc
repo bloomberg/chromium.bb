@@ -4499,6 +4499,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+    {"sync-clipboard-service", flag_descriptions::kSyncClipboardServiceName,
+     flag_descriptions::kSyncClipboardServiceDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSyncClipboardServiceFeature)},
+#endif  // OS_WIN || OS_MACOSX || OS_LINUX
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

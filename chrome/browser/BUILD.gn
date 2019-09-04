@@ -4151,6 +4151,10 @@ jumbo_split_static_library("browser") {
       "payments/payment_request_display_manager_factory.h",
       "payments/payment_request_factory.cc",
       "payments/payment_request_factory.h",
+      "sync/sync_clipboard_service.cc",
+      "sync/sync_clipboard_service.h",
+      "sync/sync_clipboard_service_factory.cc",
+      "sync/sync_clipboard_service_factory.h",
     ]
     deps += [ "//components/payments/content" ]
   }

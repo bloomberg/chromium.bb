@@ -3076,6 +3076,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "sync-clipboard-service",
+    "owners": [ "joaodasilva" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "sync-support-secondary-account",
     "owners": [ "treib", "//components/sync/OWNERS" ],
     "expiry_milestone": 80

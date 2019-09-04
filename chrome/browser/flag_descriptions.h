@@ -2215,6 +2215,9 @@ extern const char kClickToCallUIDescription[];
 extern const char kProfileMenuRevampName[];
 extern const char kProfileMenuRevampDescription[];
 
+extern const char kSyncClipboardServiceName[];
+extern const char kSyncClipboardServiceDescription[];
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
