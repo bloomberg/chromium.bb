@@ -337,7 +337,7 @@ Status ExecuteTouchEvent(
   std::list<TouchEvent> events;
   events.push_back(
       TouchEvent(type, relative_x, relative_y));
-  return web_view->DispatchTouchEvents(events);
+  return web_view->DispatchTouchEvents(events, false);
 }
 
 Status WindowViewportSize(Session* session,
@@ -859,8 +859,8 @@ Status ExecuteMouseMoveTo(Session* session,
   events.push_back(MouseEvent(kMovedMouseEventType,
                               session->pressed_mouse_button, location.x,
                               location.y, session->sticky_modifiers, 0, 0));
-  Status status =
-      web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
+  Status status = web_view->DispatchMouseEvents(
+      events, session->GetCurrentFrameId(), false);
   if (status.IsOk())
     session->mouse_position = location;
   return status;
@@ -884,7 +884,8 @@ Status ExecuteMouseClick(Session* session,
                  session->mouse_position.y, session->sticky_modifiers,
                  MouseButtonToButtons(button), 1));
   session->pressed_mouse_button = kNoneMouseButton;
-  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
+  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId(),
+                                       false);
 }
 
 Status ExecuteMouseButtonDown(Session* session,
@@ -901,7 +902,8 @@ Status ExecuteMouseButtonDown(Session* session,
       MouseEvent(kPressedMouseEventType, button, session->mouse_position.x,
                  session->mouse_position.y, session->sticky_modifiers, 0, 1));
   session->pressed_mouse_button = button;
-  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
+  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId(),
+                                       false);
 }
 
 Status ExecuteMouseButtonUp(Session* session,
@@ -919,7 +921,8 @@ Status ExecuteMouseButtonUp(Session* session,
                  session->mouse_position.y, session->sticky_modifiers,
                  MouseButtonToButtons(button), 1));
   session->pressed_mouse_button = kNoneMouseButton;
-  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
+  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId(),
+                                       false);
 }
 
 Status ExecuteMouseDoubleClick(Session* session,
@@ -947,7 +950,8 @@ Status ExecuteMouseDoubleClick(Session* session,
                  session->mouse_position.y, session->sticky_modifiers,
                  MouseButtonToButtons(button), 2));
   session->pressed_mouse_button = kNoneMouseButton;
-  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
+  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId(),
+                                       false);
 }
 
 Status ExecuteTouchDown(Session* session,
@@ -1340,7 +1344,8 @@ Status ExecutePerformActions(Session* session,
                 session->sticky_modifiers &= ~KeyToKeyModifiers(event.key);
               }
 
-              Status status = web_view->DispatchKeyEvents(dispatch_key_events);
+              Status status =
+                  web_view->DispatchKeyEvents(dispatch_key_events, true);
               if (status.IsError())
                 return status;
             }
@@ -1432,7 +1437,7 @@ Status ExecutePerformActions(Session* session,
               }
               dispatch_mouse_events.push_back(event);
               Status status = web_view->DispatchMouseEvents(
-                  dispatch_mouse_events, session->GetCurrentFrameId());
+                  dispatch_mouse_events, session->GetCurrentFrameId(), true);
               if (status.IsError())
                 return status;
             } else if (pointer_type == "touch") {
@@ -1449,7 +1454,7 @@ Status ExecutePerformActions(Session* session,
                 action_input_states[j]->SetInteger("pressed", 0);
               }
               if (has_touch_start[id]) {
-                Status status = web_view->DispatchTouchEvent(event);
+                Status status = web_view->DispatchTouchEvent(event, true);
                 if (status.IsError())
                   return status;
               }
@@ -1484,7 +1489,7 @@ Status ExecuteReleaseActions(Session* session,
       it->input_state->GetDictionary("pressed", &pressed);
       if (!pressed->HasKey(it->key_event->key))
         continue;
-      web_view->DispatchKeyEvents({*it->key_event});
+      web_view->DispatchKeyEvents({*it->key_event}, false);
       pressed->Remove(it->key_event->key, nullptr);
     } else if (it->mouse_event) {
       int pressed = it->input_state->FindKey("pressed")->GetInt();
@@ -1492,13 +1497,13 @@ Status ExecuteReleaseActions(Session* session,
       if ((pressed & button_mask) == 0)
         continue;
       web_view->DispatchMouseEvents({*it->mouse_event},
-                                    session->GetCurrentFrameId());
+                                    session->GetCurrentFrameId(), false);
       it->input_state->SetInteger("pressed", pressed & ~button_mask);
     } else if (it->touch_event) {
       int pressed = it->input_state->FindKey("pressed")->GetInt();
       if (pressed == 0)
         continue;
-      web_view->DispatchTouchEvents({*it->touch_event});
+      web_view->DispatchTouchEvents({*it->touch_event}, false);
       it->input_state->SetInteger("pressed", 0);
     }
   }
