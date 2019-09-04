@@ -113,35 +113,15 @@ signin::LoadCredentialsState LoadCredentialsStateFromTokenResult(
 // Returns whether the token service should be migrated to Dice.
 // Migration can happen if the following conditions are met:
 // - Token service Dice migration is not already done,
-// - AccountTrackerService migration is done,
-// - All accounts in the AccountTrackerService are valid,
 // - Account consistency is DiceMigration or greater.
 // TODO(droger): Remove this code once Dice is fully enabled.
 bool ShouldMigrateToDice(signin::AccountConsistencyMethod account_consistency,
-                         PrefService* prefs,
-                         AccountTrackerService* account_tracker,
-                         const std::map<std::string, std::string>& db_tokens) {
-  AccountTrackerService::AccountIdMigrationState migration_state =
-      account_tracker->GetMigrationState();
-  if ((account_consistency == signin::AccountConsistencyMethod::kMirror) ||
-      !signin::DiceMethodGreaterOrEqual(
-          account_consistency,
-          signin::AccountConsistencyMethod::kDiceMigration) ||
-      (migration_state != AccountTrackerService::MIGRATION_DONE) ||
-      prefs->GetBoolean(prefs::kTokenServiceDiceCompatible)) {
-    return false;
-  }
-
-  // Do not migrate if some accounts are not valid.
-  for (auto iter = db_tokens.begin(); iter != db_tokens.end(); ++iter) {
-    const std::string& prefixed_account_id = iter->first;
-    CoreAccountId account_id = RemoveAccountIdPrefix(prefixed_account_id);
-    AccountInfo account_info = account_tracker->GetAccountInfo(account_id);
-    if (!account_info.IsValid()) {
-      return false;
-    }
-  }
-  return true;
+                         PrefService* prefs) {
+  return (account_consistency != signin::AccountConsistencyMethod::kMirror) &&
+         signin::DiceMethodGreaterOrEqual(
+             account_consistency,
+             signin::AccountConsistencyMethod::kDiceMigration) &&
+         !prefs->GetBoolean(prefs::kTokenServiceDiceCompatible);
 }
 
 }  // namespace
@@ -532,8 +512,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
     const std::map<std::string, std::string>& db_tokens) {
   std::string old_login_token;
   bool migrate_to_dice =
-      ShouldMigrateToDice(account_consistency_, client_->GetPrefs(),
-                          account_tracker_service_, db_tokens);
+      ShouldMigrateToDice(account_consistency_, client_->GetPrefs());
 
   {
     ScopedBatchChange batch(this);
@@ -624,8 +603,16 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
           // Revoke old hosted domain accounts as part of Dice migration.
           AccountInfo account_info =
               account_tracker_service_->GetAccountInfo(account_id);
-          DCHECK(account_info.IsValid());
-          if (account_info.hosted_domain != kNoHostedDomainFound) {
+          bool is_hosted_domain = false;
+          if (account_info.hosted_domain.empty()) {
+            // The AccountInfo is incomplete. Use a conservative approximation.
+            is_hosted_domain =
+                !client_->IsNonEnterpriseUser(account_info.email);
+          } else {
+            is_hosted_domain =
+                (account_info.hosted_domain != kNoHostedDomainFound);
+          }
+          if (is_hosted_domain) {
             load_account = false;
             load_token_status =
                 LoadTokenFromDBStatus::TOKEN_REVOKED_DICE_MIGRATION;
