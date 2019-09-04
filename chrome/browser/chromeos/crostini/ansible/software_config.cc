@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/crostini/crostini_ansible_software_config.h"
+#include "chrome/browser/chromeos/crostini/ansible/software_config.h"
 
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "chrome/browser/chromeos/crostini/crostini_ansible_management_util.h"
+#include "chrome/browser/chromeos/crostini/ansible/ansible_management_util.h"
 
 namespace crostini {
 
@@ -50,15 +50,15 @@ base::Optional<std::vector<std::string>> CopyListFieldValues(
 
 }  // namespace
 
-AnsibleSoftwareConfig::AnsibleSoftwareConfig() = default;
-AnsibleSoftwareConfig::AnsibleSoftwareConfig(AnsibleSoftwareConfig&&) = default;
-AnsibleSoftwareConfig::~AnsibleSoftwareConfig() = default;
+SoftwareConfig::SoftwareConfig() = default;
+SoftwareConfig::SoftwareConfig(SoftwareConfig&&) = default;
+SoftwareConfig::~SoftwareConfig() = default;
 
-base::Optional<AnsibleSoftwareConfig> AnsibleSoftwareConfig::FromJson(
+base::Optional<SoftwareConfig> SoftwareConfig::FromJson(
     const std::string& config_json) {
   // Empty config is considered valid (initial value, "empty state").
   if (config_json.empty())
-    return AnsibleSoftwareConfig();
+    return SoftwareConfig();
 
   // If not empty, ensure config is a valid JSON representing a dictionary.
   const auto parse_result = base::JSONReader::ReadAndReturnValueWithError(
@@ -104,24 +104,23 @@ base::Optional<AnsibleSoftwareConfig> AnsibleSoftwareConfig::FromJson(
     return base::nullopt;
   }
 
-  AnsibleSoftwareConfig config;
+  SoftwareConfig config;
   config.key_urls_ = std::move(parsed_key_urls.value());
   config.source_lines_ = std::move(parsed_source_lines.value());
   config.package_names_ = std::move(parsed_package_names.value());
   return config;
 }
 
-void AnsibleSoftwareConfig::SetKeysForTesting(
-    std::vector<std::string> key_urls) {
+void SoftwareConfig::SetKeysForTesting(std::vector<std::string> key_urls) {
   key_urls_ = std::move(key_urls);
 }
 
-void AnsibleSoftwareConfig::SetSourcesForTesting(
+void SoftwareConfig::SetSourcesForTesting(
     std::vector<std::string> source_lines) {
   source_lines_ = std::move(source_lines);
 }
 
-void AnsibleSoftwareConfig::SetPackagesForTesting(
+void SoftwareConfig::SetPackagesForTesting(
     std::vector<std::string> package_names) {
   package_names_ = std::move(package_names);
 }

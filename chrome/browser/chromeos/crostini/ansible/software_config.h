@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_H_
-#define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_H_
+#define CHROME_BROWSER_CHROMEOS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_H_
 
 #include <string>
 #include <vector>
@@ -25,12 +25,12 @@ namespace crostini {
 //
 // This schema is versioned 1; version number might be increased in the future
 // if incompatible changes are introduced to the format.
-class AnsibleSoftwareConfig {
+class SoftwareConfig {
  public:
-  AnsibleSoftwareConfig(AnsibleSoftwareConfig&&);
-  ~AnsibleSoftwareConfig();
+  SoftwareConfig(SoftwareConfig&&);
+  ~SoftwareConfig();
 
-  static base::Optional<AnsibleSoftwareConfig> FromJson(
+  static base::Optional<SoftwareConfig> FromJson(
       const std::string& config_json);
 
   void SetKeysForTesting(std::vector<std::string> key_urls);
@@ -44,7 +44,7 @@ class AnsibleSoftwareConfig {
   }
 
  private:
-  AnsibleSoftwareConfig();
+  SoftwareConfig();
 
   std::vector<std::string> key_urls_;
   std::vector<std::string> source_lines_;
@@ -53,4 +53,4 @@ class AnsibleSoftwareConfig {
 
 }  // namespace crostini
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_H_
+#endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_H_

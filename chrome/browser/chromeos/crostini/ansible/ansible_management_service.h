@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_ANSIBLE_MANAGEMENT_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_ANSIBLE_MANAGEMENT_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_ANSIBLE_ANSIBLE_MANAGEMENT_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_CROSTINI_ANSIBLE_ANSIBLE_MANAGEMENT_SERVICE_H_
 
 #include <string>
 
@@ -19,16 +19,15 @@ namespace crostini {
 constexpr char kCrostiniDefaultAnsibleVersion[] =
     "ansible;2.2.1.0-2+deb9u1;all;debian-stable-main";
 
-// CrostiniAnsibleManagementService is responsible for Crostini default
+// AnsibleManagementService is responsible for Crostini default
 // container management using Ansible.
-class CrostiniAnsibleManagementService
-    : public KeyedService,
-      public LinuxPackageOperationProgressObserver {
+class AnsibleManagementService : public KeyedService,
+                                 public LinuxPackageOperationProgressObserver {
  public:
-  static CrostiniAnsibleManagementService* GetForProfile(Profile* profile);
+  static AnsibleManagementService* GetForProfile(Profile* profile);
 
-  explicit CrostiniAnsibleManagementService(Profile* profile);
-  ~CrostiniAnsibleManagementService() override;
+  explicit AnsibleManagementService(Profile* profile);
+  ~AnsibleManagementService() override;
 
   void InstallAnsibleInDefaultContainer(
       base::OnceCallback<void(bool success)> callback);
@@ -51,11 +50,11 @@ class CrostiniAnsibleManagementService
   Profile* profile_;
   base::OnceCallback<void(bool success)>
       ansible_installation_finished_callback_;
-  base::WeakPtrFactory<CrostiniAnsibleManagementService> weak_ptr_factory_;
+  base::WeakPtrFactory<AnsibleManagementService> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(CrostiniAnsibleManagementService);
+  DISALLOW_COPY_AND_ASSIGN(AnsibleManagementService);
 };
 
 }  // namespace crostini
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_ANSIBLE_MANAGEMENT_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_ANSIBLE_ANSIBLE_MANAGEMENT_SERVICE_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_ANSIBLE_PENDING_CHANGES_H_
-#define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_ANSIBLE_PENDING_CHANGES_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_ANSIBLE_PENDING_SOFTWARE_CHANGES_H_
+#define CHROME_BROWSER_CHROMEOS_CROSTINI_ANSIBLE_PENDING_SOFTWARE_CHANGES_H_
 
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/crostini/crostini_ansible_software_config.h"
+#include "chrome/browser/chromeos/crostini/ansible/software_config.h"
 
 namespace crostini {
 
@@ -20,14 +20,14 @@ namespace crostini {
 //
 // In the current implementation, we assume ownership of managedcrostini sources
 // list and keychain, so other entries from these files can be removed.
-class AnsiblePendingChanges {
+class PendingSoftwareChanges {
  public:
   // Calculate changes based on 2 state configurations. Current state
   // (|old_config|) can be empty, which means that no keys, sources and packages
   // were selected previously.
-  AnsiblePendingChanges(const AnsibleSoftwareConfig& new_config,
-                        const AnsibleSoftwareConfig& old_config);
-  ~AnsiblePendingChanges();
+  PendingSoftwareChanges(const SoftwareConfig& new_config,
+                         const SoftwareConfig& old_config);
+  ~PendingSoftwareChanges();
 
   const std::vector<std::string>& key_urls() const { return key_urls_; }
   const std::vector<std::string>& source_lines() const { return source_lines_; }
@@ -49,4 +49,4 @@ class AnsiblePendingChanges {
 
 }  // namespace crostini
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_ANSIBLE_PENDING_CHANGES_H_
+#endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_ANSIBLE_PENDING_SOFTWARE_CHANGES_H_

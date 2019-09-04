@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/crostini/crostini_ansible_pending_changes.h"
+#include "chrome/browser/chromeos/crostini/ansible/pending_software_changes.h"
 
 #include "base/strings/string_split.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace crostini {
 
-TEST(AnsiblePendingChangesTest, ChangeCalculationWorks) {
-  auto old_config = AnsibleSoftwareConfig::FromJson("").value();
+TEST(PendingSoftwareChangesTest, ChangeCalculationWorks) {
+  auto old_config = SoftwareConfig::FromJson("").value();
   old_config.SetKeysForTesting({"oldkey1", "oldkey2"});
   old_config.SetSourcesForTesting({"oldsrc"});
   old_config.SetPackagesForTesting({"oldpackage", "relevantpackage"});
 
-  auto new_config = AnsibleSoftwareConfig::FromJson("").value();
+  auto new_config = SoftwareConfig::FromJson("").value();
   new_config.SetKeysForTesting({"newkey"});
   new_config.SetSourcesForTesting({"newsrc1", "newsrc2"});
   new_config.SetPackagesForTesting({"relevantpackage", "newpackage"});
 
-  const AnsiblePendingChanges changes(new_config, old_config);
+  const PendingSoftwareChanges changes(new_config, old_config);
 
   EXPECT_THAT(changes.key_urls(), testing::ElementsAre("newkey"));
   EXPECT_THAT(changes.source_lines(),
@@ -31,11 +31,11 @@ TEST(AnsiblePendingChangesTest, ChangeCalculationWorks) {
               testing::ElementsAre("newpackage"));
 }
 
-TEST(AnsiblePendingChangesTest, GeneratedOutputIsCorrect) {
-  auto old_config = AnsibleSoftwareConfig::FromJson("").value();
+TEST(PendingSoftwareChangesTest, GeneratedOutputIsCorrect) {
+  auto old_config = SoftwareConfig::FromJson("").value();
   old_config.SetPackagesForTesting({"qbar", "libbaz-demo", "relevantpackage"});
 
-  auto new_config = AnsibleSoftwareConfig::FromJson("").value();
+  auto new_config = SoftwareConfig::FromJson("").value();
   new_config.SetKeysForTesting(
       {"https://example.com/apt/gpgkey", "https://foobar.de/key.asc"});
   new_config.SetSourcesForTesting(
@@ -44,7 +44,7 @@ TEST(AnsiblePendingChangesTest, GeneratedOutputIsCorrect) {
   new_config.SetPackagesForTesting(
       {"foo", "foo-tools", "libbf5bazserver5", "relevantpackage"});
 
-  const AnsiblePendingChanges changes(new_config, old_config);
+  const PendingSoftwareChanges changes(new_config, old_config);
   const std::string generated = changes.ToAnsiblePlaybook();
 
   // clang-format off

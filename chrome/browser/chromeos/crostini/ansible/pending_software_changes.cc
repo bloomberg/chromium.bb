@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/crostini/crostini_ansible_pending_changes.h"
+#include "chrome/browser/chromeos/crostini/ansible/pending_software_changes.h"
 
 #include <algorithm>
 
@@ -111,9 +111,9 @@ std::string GeneratePackagesSection(
 
 }  // namespace
 
-AnsiblePendingChanges::AnsiblePendingChanges(
-    const AnsibleSoftwareConfig& new_config,
-    const AnsibleSoftwareConfig& old_config) {
+PendingSoftwareChanges::PendingSoftwareChanges(
+    const SoftwareConfig& new_config,
+    const SoftwareConfig& old_config) {
   // We only need keys and sources from the target state, as old can be safely
   // removed from the container.
   key_urls_ = new_config.key_urls();
@@ -135,9 +135,9 @@ AnsiblePendingChanges::AnsiblePendingChanges(
                       std::back_inserter(install_package_names_));
 }
 
-AnsiblePendingChanges::~AnsiblePendingChanges() = default;
+PendingSoftwareChanges::~PendingSoftwareChanges() = default;
 
-std::string AnsiblePendingChanges::ToAnsiblePlaybook() const {
+std::string PendingSoftwareChanges::ToAnsiblePlaybook() const {
   // Generate playbook sections for keys, sources and packages.
   // These sections are not part of the playbook format, but our separation
   // to make generation more modular.

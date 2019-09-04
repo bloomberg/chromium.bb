@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/crostini/crostini_ansible_management_service.h"
+#include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
 
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -15,52 +15,51 @@ namespace crostini {
 
 namespace {
 
-class CrostiniAnsibleManagementServiceFactory
+class AnsibleManagementServiceFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static CrostiniAnsibleManagementService* GetForProfile(Profile* profile) {
-    return static_cast<CrostiniAnsibleManagementService*>(
+  static AnsibleManagementService* GetForProfile(Profile* profile) {
+    return static_cast<AnsibleManagementService*>(
         GetInstance()->GetServiceForBrowserContext(profile, true));
   }
 
-  static CrostiniAnsibleManagementServiceFactory* GetInstance() {
-    static base::NoDestructor<CrostiniAnsibleManagementServiceFactory> factory;
+  static AnsibleManagementServiceFactory* GetInstance() {
+    static base::NoDestructor<AnsibleManagementServiceFactory> factory;
     return factory.get();
   }
 
  private:
-  friend class base::NoDestructor<CrostiniAnsibleManagementServiceFactory>;
+  friend class base::NoDestructor<AnsibleManagementServiceFactory>;
 
-  CrostiniAnsibleManagementServiceFactory()
+  AnsibleManagementServiceFactory()
       : BrowserContextKeyedServiceFactory(
-            "CrostiniAnsibleManagementService",
+            "AnsibleManagementService",
             BrowserContextDependencyManager::GetInstance()) {
     DependsOn(CrostiniManagerFactory::GetInstance());
   }
 
-  ~CrostiniAnsibleManagementServiceFactory() override = default;
+  ~AnsibleManagementServiceFactory() override = default;
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override {
     Profile* profile = Profile::FromBrowserContext(context);
-    return new CrostiniAnsibleManagementService(profile);
+    return new AnsibleManagementService(profile);
   }
 };
 
 }  // namespace
 
-CrostiniAnsibleManagementService*
-CrostiniAnsibleManagementService::GetForProfile(Profile* profile) {
-  return CrostiniAnsibleManagementServiceFactory::GetForProfile(profile);
+AnsibleManagementService* AnsibleManagementService::GetForProfile(
+    Profile* profile) {
+  return AnsibleManagementServiceFactory::GetForProfile(profile);
 }
 
-CrostiniAnsibleManagementService::CrostiniAnsibleManagementService(
-    Profile* profile)
+AnsibleManagementService::AnsibleManagementService(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {}
-CrostiniAnsibleManagementService::~CrostiniAnsibleManagementService() = default;
+AnsibleManagementService::~AnsibleManagementService() = default;
 
-void CrostiniAnsibleManagementService::InstallAnsibleInDefaultContainer(
+void AnsibleManagementService::InstallAnsibleInDefaultContainer(
     base::OnceCallback<void(bool success)> callback) {
   DCHECK(ansible_installation_finished_callback_.is_null());
   ansible_installation_finished_callback_ = std::move(callback);
@@ -69,11 +68,11 @@ void CrostiniAnsibleManagementService::InstallAnsibleInDefaultContainer(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       kCrostiniDefaultAnsibleVersion,
       base::BindOnce(
-          &CrostiniAnsibleManagementService::OnInstallAnsibleInDefaultContainer,
+          &AnsibleManagementService::OnInstallAnsibleInDefaultContainer,
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void CrostiniAnsibleManagementService::OnInstallAnsibleInDefaultContainer(
+void AnsibleManagementService::OnInstallAnsibleInDefaultContainer(
     CrostiniResult result) {
   if (result == CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED) {
     LOG(ERROR) << "Ansible installation failed";
@@ -88,7 +87,7 @@ void CrostiniAnsibleManagementService::OnInstallAnsibleInDefaultContainer(
   // Waiting for Ansible installation progress being reported.
 }
 
-void CrostiniAnsibleManagementService::OnInstallLinuxPackageProgress(
+void AnsibleManagementService::OnInstallLinuxPackageProgress(
     const std::string& vm_name,
     const std::string& container_name,
     InstallLinuxPackageProgressStatus status,
@@ -115,7 +114,7 @@ void CrostiniAnsibleManagementService::OnInstallLinuxPackageProgress(
   }
 }
 
-void CrostiniAnsibleManagementService::OnUninstallPackageProgress(
+void AnsibleManagementService::OnUninstallPackageProgress(
     const std::string& vm_name,
     const std::string& container_name,
     UninstallPackageProgressStatus status,
@@ -123,7 +122,7 @@ void CrostiniAnsibleManagementService::OnUninstallPackageProgress(
   NOTIMPLEMENTED();
 }
 
-void CrostiniAnsibleManagementService::ApplyAnsiblePlaybookToDefaultContainer(
+void AnsibleManagementService::ApplyAnsiblePlaybookToDefaultContainer(
     const std::string& playbook) {
   NOTIMPLEMENTED();
 }

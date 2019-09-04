@@ -21,7 +21,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/crostini/crostini_ansible_management_service.h"
+#include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
@@ -1968,9 +1968,9 @@ void CrostiniManager::OnContainerStarted(
       signal.container_name() == kCrostiniDefaultContainerName &&
       IsCrostiniAnsibleInfrastructureEnabled()) {
     AddLinuxPackageOperationProgressObserver(
-        CrostiniAnsibleManagementService::GetForProfile(profile_));
+        AnsibleManagementService::GetForProfile(profile_));
 
-    CrostiniAnsibleManagementService::GetForProfile(profile_)
+    AnsibleManagementService::GetForProfile(profile_)
         ->InstallAnsibleInDefaultContainer(base::BindOnce(
             &CrostiniManager::OnAnsibleInDefaultContainerInstalled,
             weak_ptr_factory_.GetWeakPtr()));
@@ -1984,7 +1984,7 @@ void CrostiniManager::OnContainerStarted(
 
 void CrostiniManager::OnAnsibleInDefaultContainerInstalled(bool success) {
   RemoveLinuxPackageOperationProgressObserver(
-      CrostiniAnsibleManagementService::GetForProfile(profile_));
+      AnsibleManagementService::GetForProfile(profile_));
 
   CrostiniResult result = CrostiniResult::SUCCESS;
   if (!success) {
