@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/worker_host/shared_worker_instance.h"
+#include "content/public/browser/shared_worker_instance.h"
+
+#include <tuple>
 
 #include "base/logging.h"
 
@@ -26,6 +28,15 @@ SharedWorkerInstance::SharedWorkerInstance(
 
 SharedWorkerInstance::SharedWorkerInstance(const SharedWorkerInstance& other) =
     default;
+
+SharedWorkerInstance::SharedWorkerInstance(SharedWorkerInstance&& other) =
+    default;
+
+SharedWorkerInstance& SharedWorkerInstance::operator=(
+    const SharedWorkerInstance& other) = default;
+
+SharedWorkerInstance& SharedWorkerInstance::operator=(
+    SharedWorkerInstance&& other) = default;
 
 SharedWorkerInstance::~SharedWorkerInstance() = default;
 
@@ -57,6 +68,15 @@ bool SharedWorkerInstance::Matches(
 
 bool SharedWorkerInstance::Matches(const SharedWorkerInstance& other) const {
   return Matches(other.url(), other.name(), other.constructor_origin());
+}
+
+bool operator<(const SharedWorkerInstance& lhs,
+               const SharedWorkerInstance& rhs) {
+  if (lhs.Matches(rhs))
+    return false;
+
+  return std::tie(lhs.url(), lhs.name(), lhs.constructor_origin()) <
+         std::tie(rhs.url(), rhs.name(), rhs.constructor_origin());
 }
 
 }  // namespace content
