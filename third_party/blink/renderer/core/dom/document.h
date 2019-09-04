@@ -2080,9 +2080,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Tracks which features have already been potentially violated in this
   // document. This helps to count them only once per page load.
-  mutable std::bitset<
-      static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
-      potentially_violated_features_;
+  // We don't use std::bitset to avoid to include feature_policy.mojom-blink.h.
+  mutable Vector<bool> potentially_violated_features_;
 
   // Pending parsed headers to send to browser after DidCommitNavigation
   // IPC.
