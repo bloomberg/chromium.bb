@@ -772,6 +772,10 @@
       status: "experimental",
     },
     {
+      name: "IDBRelaxedDurability",
+      status: "experimental",
+    },
+    {
       name: "IDBTransactionCommit",
       status: "stable",
     },
