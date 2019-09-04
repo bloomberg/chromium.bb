@@ -770,7 +770,8 @@ int ToolkitImpl::setTimeZone(const StringRef& zoneId)
     auto *timeZone = icu::TimeZone::createTimeZone(
         icu::UnicodeString(zoneId.data(), static_cast<int>(zoneId.length())));
     icu::TimeZone::adoptDefault(timeZone);
-    v8::Date::DateTimeConfigurationChangeNotification(v8::Isolate::GetCurrent());
+    v8::Isolate::GetCurrent()->DateTimeConfigurationChangeNotification(
+                                        v8::Isolate::TimeZoneDetection::kSkip);
     if (*timeZone == icu::TimeZone::getUnknown()) {
         LOG(ERROR) << "Specified timezone '" << zoneId.toStdString()
                    << "' can't be recognized. UTC+0 is used.";
