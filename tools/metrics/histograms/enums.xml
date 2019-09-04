@@ -25871,6 +25871,32 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Not found"/>
 </enum>
 
+<enum name="FingerprintUpdaterReason">
+  <int value="0" label="None"/>
+  <int value="1" label="Mismatched RW Version"/>
+  <int value="2" label="Mismatched RO Version"/>
+  <int value="3" label="Mismatched RW and RO Version"/>
+  <int value="4" label="Active Image RO"/>
+  <int value="5" label="Mismatched RW Version + Active Image RO"/>
+  <int value="6" label="Mismatched RO Version + Active Image RO"/>
+  <int value="7" label="Mismatched RW and RO Version + Active Image RO"/>
+</enum>
+
+<enum name="FingerprintUpdaterStatus">
+  <int value="0" label="Update was unnecessary"/>
+  <int value="1" label="Update was successful"/>
+  <int value="2" label="Failed - Found more than one viable firmware file"/>
+  <int value="3" label="Failed - Firmware file disappeared before decoding"/>
+  <int value="4" label="Failed - Error opening firmware file"/>
+  <int value="5" label="Failed - Error decoding fmap"/>
+  <int value="6" label="Failed - Error checking MCU version before update"/>
+  <int value="7" label="Failed - Error checking MCU version after update"/>
+  <int value="8" label="Failed - Error checking MCU version during update"/>
+  <int value="9" label="Failed - Error checking MCU flash protect status"/>
+  <int value="10" label="Failed - Error flashing RO"/>
+  <int value="11" label="Failed - Error flashing RW"/>
+</enum>
+
 <enum name="FirebaseConfiguredState">
   <int value="0" label="Disabled"/>
   <int value="1" label="Enabled, at First Run"/>
