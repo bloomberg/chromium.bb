@@ -195,6 +195,22 @@ message StartVmResponse {
   VmStatus status = 4;
 }
 
+// Message used in the signal for when a VM has started.
+message VmStartedSignal {
+  // The name of the VM which has started.
+  string name = 1;
+
+  // The owner of the vm.
+  string owner_id = 2;
+
+  // Information about the VM that was started, if successful.
+  VmInfo vm_info = 3;
+
+  // Status of the VM. If VM_STATUS_RUNNING, it is not necessary to wait for a
+  // TremplinStartedSignal before starting a container in the VM.
+  VmStatus status = 4;
+}
+
 // Information that must be included with every StopVm dbus message.
 message StopVmRequest {
   // The name of the VM to be stopped.
@@ -211,6 +227,15 @@ message StopVmResponse {
 
   // The failure_reason if the requested VM could not be stopped.
   string failure_reason = 2;
+}
+
+// Message used in the signal for when a VM has stopped.
+message VmStoppedSignal {
+  // The name of the VM which has stopped.
+  string name = 1;
+
+  // The owner of the vm.
+  string owner_id = 2;
 }
 
 // Response to a SyncTimes RPC.
