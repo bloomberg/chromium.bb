@@ -187,6 +187,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       ChooseEntriesCallback callback,
       std::vector<base::FilePath> entries,
       NativeFileSystemPermissionContext::SensitiveDirectoryResult result);
+  void DidCreateOrTruncateSaveFile(const BindingContext& binding_context,
+                                   const base::FilePath& path,
+                                   ChooseEntriesCallback callback,
+                                   bool success);
   void DidChooseDirectory(
       const BindingContext& binding_context,
       const base::FilePath& path,
