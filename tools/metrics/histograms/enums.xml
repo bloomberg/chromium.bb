@@ -55859,6 +55859,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Authenticated channel dropped"/>
 </enum>
 
+<enum name="SMSReceiverInfobarAction">
+  <int value="0" label="Baseline: InfobarShown"/>
+  <int value="1" label="KeyboardDismissed"/>
+</enum>
+
 <enum name="SMSReceiverOutcome">
   <int value="0" label="Success"/>
   <int value="1" label="Timed out"/>
