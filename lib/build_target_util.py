@@ -14,7 +14,7 @@ class Error(Exception):
   """Base module error class."""
 
 
-class InvalidNameError(Exception):
+class InvalidNameError(Error):
   """Error for invalid target name argument."""
 
 

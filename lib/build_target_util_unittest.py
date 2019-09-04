@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 
 from chromite.lib.build_target_util import BuildTarget
+from chromite.lib.build_target_util import InvalidNameError
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
@@ -30,6 +31,11 @@ class BuildTargetTest(cros_test_lib.TempDirTestCase):
     bt3 = BuildTarget('different', profile='base')
     self.assertEqual(bt1, bt2)
     self.assertNotEqual(bt1, bt3)
+
+  def testInvalidName(self):
+    """Test invalid name check."""
+    with self.assertRaises(InvalidNameError):
+      BuildTarget('')
 
   def testNormalRoot(self):
     """Test normalized sysroot path."""
