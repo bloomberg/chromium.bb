@@ -33,7 +33,7 @@ const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
 // Enables or disables more aggressive filtering out of Bluetooth devices with
 // "appearances" that are less likely to be pairable or useful.
 const base::Feature kBluetoothAggressiveAppearanceFilter{
-    "BluetoothAggressiveAppearanceFilter", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BluetoothAggressiveAppearanceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature containing param to block provided long term keys.
 const base::Feature kBlueZLongTermKeyBlocklist{
