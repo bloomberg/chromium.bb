@@ -303,6 +303,7 @@ void SharingDialogView::InitErrorView() {
                                               views::style::CONTEXT_LABEL,
                                               views::style::STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetMultiLine(true);
   AddChildView(std::move(label));
 }
 
