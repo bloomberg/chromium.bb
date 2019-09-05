@@ -7,7 +7,7 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.chromium.weblayer.shell">
+    package="org.chromium.weblayer.support">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -19,18 +19,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-    <application android:name="WebLayerShellApplication"
-            android:label="WebLayer shell">
-        <activity android:name="WebLayerShellActivity"
-                  android:launchMode="singleTask"
-                  android:theme="@android:style/Theme.Holo.Light.NoActionBar"
-                  android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
-                  android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
+    <application android:label="WebLayer support">
         <!-- The following service entries exist in order to allow us to
              start more than one sandboxed process. -->
 
@@ -43,7 +32,8 @@
         <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
                  android:process=":sandboxed_process{{ i }}"
                  android:isolatedProcess="true"
-                 android:exported="false" />
+                 android:externalService="true"
+                 android:exported="true" />
         {% endfor %}
 
         {% set num_privileged_services = 5 %}
@@ -53,7 +43,7 @@
         <service android:name="org.chromium.content.app.PrivilegedProcessService{{ i }}"
                  android:process=":privileged_process{{ i }}"
                  android:isolatedProcess="false"
-                 android:exported="false" />
+                 android:exported="true" />
         {% endfor %}
     </application>
 </manifest>

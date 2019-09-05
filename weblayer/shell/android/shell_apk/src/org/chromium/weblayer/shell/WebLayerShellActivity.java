@@ -20,7 +20,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-import org.chromium.base.CommandLine;
 import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.Profile;
@@ -54,13 +53,10 @@ public class WebLayerShellActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        // Only call init for main process.
+        WebLayer.getInstance().init(getApplication());
 
-        // TODO: move this to WebLayer.
-        // Initializing the command line must occur before loading the library.
-        if (!CommandLine.isInitialized()) {
-            ((WebLayerShellApplication) getApplication()).initCommandLine();
-        }
+        super.onCreate(savedInstanceState);
 
         LinearLayout mainView = new LinearLayout(this);
         int viewId = View.generateViewId();
