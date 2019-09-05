@@ -2801,11 +2801,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "pdf-isolation",
-    "owners": [ "tsepez" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "per-method-can-make-payment-quota",
     "owners": [ "rouslan" ],
     "expiry_milestone": 78
