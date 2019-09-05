@@ -235,7 +235,17 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     // of the bottom of the tab bar (when strokes are enabled).
     tab_bottom -= stroke_adjustment;
     bottom_radius -= stroke_adjustment;
-    extend_to_top = ShouldExtendHitTest();
+    if (ShouldExtendHitTest()) {
+      extend_to_top = true;
+      if (tab_->controller()->IsFirstVisibleTab(tab_)) {
+        // The path is not mirrored in RTL and thus we must manually choose the
+        // correct "leading" edge.
+        if (base::i18n::IsRTL())
+          tab_right = right;
+        else
+          tab_left = left;
+      }
+    }
   }
   const ShapeModifier shape_modifier = GetShapeModifier(path_type);
   const bool extend_left_to_bottom = shape_modifier & kNoLowerLeftArc;
@@ -267,23 +277,26 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     // Start with the left side of the shape.
     path.moveTo(left, extended_bottom);
 
-    // Draw the left edge of the extension.
-    //   ╭─────────╮
-    //   │ Content │
-    // ┏─╯         ╰─┐
-    if (tab_bottom != extended_bottom)
-      path.lineTo(left, tab_bottom);
+    if (tab_left != left) {
+      // Draw the left edge of the extension.
+      //   ╭─────────╮
+      //   │ Content │
+      // ┏─╯         ╰─┐
+      if (tab_bottom != extended_bottom)
+        path.lineTo(left, tab_bottom);
 
-    // Draw the bottom-left corner.
-    //   ╭─────────╮
-    //   │ Content │
-    // ┌━╝         ╰─┐
-    if (extend_left_to_bottom) {
-      path.lineTo(tab_left, tab_bottom);
-    } else {
-      path.lineTo(tab_left - bottom_radius, tab_bottom);
-      path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-                 SkPath::kCCW_Direction, tab_left, tab_bottom - bottom_radius);
+      // Draw the bottom-left corner.
+      //   ╭─────────╮
+      //   │ Content │
+      // ┌━╝         ╰─┐
+      if (extend_left_to_bottom) {
+        path.lineTo(tab_left, tab_bottom);
+      } else {
+        path.lineTo(tab_left - bottom_radius, tab_bottom);
+        path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+                   SkPath::kCCW_Direction, tab_left,
+                   tab_bottom - bottom_radius);
+      }
     }
 
     // Draw the ascender and top-left curve, if present.
@@ -316,22 +329,26 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
                  SkPath::kCW_Direction, tab_right, tab_top + top_radius);
     }
 
-    // Draw the descender and bottom-right corner.
-    //   ╭─────────╮
-    //   │ Content ┃
-    // ┌─╯         ╚━┐
-    if (extend_right_to_bottom) {
-      path.lineTo(tab_right, tab_bottom);
-    } else {
-      path.lineTo(tab_right, tab_bottom - bottom_radius);
-      path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-                 SkPath::kCCW_Direction, tab_right + bottom_radius, tab_bottom);
+    if (tab_right != right) {
+      // Draw the descender and bottom-right corner.
+      //   ╭─────────╮
+      //   │ Content ┃
+      // ┌─╯         ╚━┐
+      if (extend_right_to_bottom) {
+        path.lineTo(tab_right, tab_bottom);
+      } else {
+        path.lineTo(tab_right, tab_bottom - bottom_radius);
+        path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+                   SkPath::kCCW_Direction, tab_right + bottom_radius,
+                   tab_bottom);
+      }
+      if (tab_bottom != extended_bottom)
+        path.lineTo(right, tab_bottom);
     }
-    if (tab_bottom != extended_bottom)
-      path.lineTo(right, tab_bottom);
 
-    // Draw anything remaining: the bottom right horizontal stroke, or the right
-    // edge of the extension, depending on which condition fired above.
+    // Draw anything remaining: the descender, the bottom right horizontal
+    // stroke, or the right edge of the extension, depending on which
+    // conditions fired above.
     //   ╭─────────╮
     //   │ Content │
     // ┌─╯         ╰─┓
