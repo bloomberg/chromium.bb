@@ -569,6 +569,9 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   network_context_params->use_builtin_cert_verifier =
       using_builtin_cert_verifier_;
 
+  bool profile_supports_policy_certs = false;
+  if (chromeos::ProfileHelper::IsSigninProfile(profile_))
+    profile_supports_policy_certs = true;
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager) {
     const user_manager::User* user =
@@ -580,15 +583,17 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     if (user && !user->username_hash().empty()) {
       network_context_params->username_hash = user->username_hash();
       network_context_params->nss_path = profile_->GetPath();
-      if (policy::PolicyCertServiceFactory::CreateAndStartObservingForProfile(
-              profile_)) {
-        const policy::PolicyCertService* policy_cert_service =
-            policy::PolicyCertServiceFactory::GetForProfile(profile_);
-        network_context_params->initial_additional_certificates =
-            GetAdditionalCertificates(
-                policy_cert_service, GetPartitionPath(relative_partition_path));
-      }
+      profile_supports_policy_certs = true;
     }
+  }
+  if (profile_supports_policy_certs &&
+      policy::PolicyCertServiceFactory::CreateAndStartObservingForProfile(
+          profile_)) {
+    const policy::PolicyCertService* policy_cert_service =
+        policy::PolicyCertServiceFactory::GetForProfile(profile_);
+    network_context_params->initial_additional_certificates =
+        GetAdditionalCertificates(policy_cert_service,
+                                  GetPartitionPath(relative_partition_path));
   }
 #endif
 
