@@ -1092,7 +1092,7 @@ class MetaBuildWrapper(object):
       # Skip a few configs that need extra cleanup for now.
       # TODO(https://crbug.com/912946): Fix everything on all platforms and
       # enable check everywhere.
-      if is_android or is_cros:
+      if is_android or is_cros or is_mac:
         break
 
       # Skip a few existing violations that need to be cleaned up. Each of
@@ -1103,19 +1103,7 @@ class MetaBuildWrapper(object):
           f == 'mr_extension/' or # https://crbug.com/997947
           f == 'locales/' or
           f.startswith('nacl_test_data/') or
-          f.startswith('ppapi_nacl_tests_libs/') or
-          (is_mac and f in (  # https://crbug.com/1000667
-              'Chromium Framework.framework/',
-              'Chromium Helper.app/',
-              'Chromium.app/',
-              'Content Shell.app/',
-              'blink_deprecated_test_plugin.plugin/',
-              'blink_test_plugin.plugin/',
-              'corb_test_plugin.plugin/',
-              'power_saver_test_plugin.plugin/',
-              'ppapi_tests.plugin/',
-              'ui_unittests Framework.framework/',
-          ))):
+          f.startswith('ppapi_nacl_tests_libs/')):
         continue
 
       # This runs before the build, so we can't use isdir(f). But
