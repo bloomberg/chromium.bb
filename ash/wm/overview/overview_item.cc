@@ -260,6 +260,7 @@ void OverviewItem::EnsureVisible() {
 
 void OverviewItem::Shutdown() {
   item_widget_.reset();
+  caption_container_view_ = nullptr;
 }
 
 void OverviewItem::PrepareForOverview() {

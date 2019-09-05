@@ -590,7 +590,9 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
   window_observer_.Remove(window);
   window_state_observer_.Remove(WindowState::Get(window));
 
-  if (overview_session_) {
+  // This can also be called when shutting down |this|, at which the item will
+  // be cleaning up and its associated view may be nullptr.
+  if (overview_session_ && (*iter)->caption_container_view()) {
     overview_session_->highlight_controller()->OnViewDestroyingOrDisabling(
         (*iter)->caption_container_view());
   }
