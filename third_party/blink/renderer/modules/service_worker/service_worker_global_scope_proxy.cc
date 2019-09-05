@@ -160,10 +160,6 @@ void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
   Client().WorkerContextStarted(this, std::move(worker_task_runner));
 }
 
-void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-}
-
 void ServiceWorkerGlobalScopeProxy::DidLoadClassicScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   Client().WorkerScriptLoadedOnWorkerThread();
