@@ -1215,12 +1215,13 @@ void RenderFrameHostImpl::GetCanonicalUrlForSharing(
   }
 }
 
-blink::mojom::PauseSubresourceLoadingHandlePtr
+mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>
 RenderFrameHostImpl::PauseSubresourceLoading() {
   DCHECK(frame_);
-  blink::mojom::PauseSubresourceLoadingHandlePtr
+  mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>
       pause_subresource_loading_handle;
-  GetRemoteInterfaces()->GetInterface(&pause_subresource_loading_handle);
+  GetRemoteInterfaces()->GetInterface(
+      pause_subresource_loading_handle.BindNewPipeAndPassReceiver());
 
   return pause_subresource_loading_handle;
 }
