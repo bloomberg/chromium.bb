@@ -1202,9 +1202,9 @@ LocalFrame::GetDocumentInterfaceBroker() {
   return *Client()->GetDocumentInterfaceBroker();
 }
 
-BrowserInterfaceBrokerProxy* LocalFrame::GetBrowserInterfaceBrokerProxy() {
+BrowserInterfaceBrokerProxy& LocalFrame::GetBrowserInterfaceBroker() {
   DCHECK(Client());
-  return Client()->GetBrowserInterfaceBrokerProxy();
+  return Client()->GetBrowserInterfaceBroker();
 }
 
 mojo::ScopedMessagePipeHandle LocalFrame::SetDocumentInterfaceBrokerForTesting(

@@ -7968,11 +7968,11 @@ mojom::blink::DocumentInterfaceBroker* Document::GetDocumentInterfaceBroker() {
   return &GetFrame()->GetDocumentInterfaceBroker();
 }
 
-BrowserInterfaceBrokerProxy* Document::GetBrowserInterfaceBrokerProxy() {
+BrowserInterfaceBrokerProxy& Document::GetBrowserInterfaceBroker() {
   if (!GetFrame())
-    return nullptr;
+    return GetEmptyBrowserInterfaceBroker();
 
-  return GetFrame()->GetBrowserInterfaceBrokerProxy();
+  return GetFrame()->GetBrowserInterfaceBroker();
 }
 
 DocumentResourceCoordinator* Document::GetResourceCoordinator() {
