@@ -327,7 +327,7 @@ NativeFileSystemManagerImpl::CreateFileWriter(
   mojo::PendingReceiver<blink::mojom::NativeFileSystemFileWriter>
       writer_receiver = result.InitWithNewPipeAndPassReceiver();
 
-  base::PostTaskAndReplyWithResult(
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&HasTransientUserActivation, binding_context.process_id,
                      binding_context.frame_id),
