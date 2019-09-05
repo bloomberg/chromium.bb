@@ -1263,6 +1263,10 @@ void StyleResolver::ApplyAnimatedStandardProperties(
             : entry.key.PresentationAttribute().PropertyID();
     if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property))
       continue;
+    if (IsForcedColorsModeEnabled() && entry.key.IsCSSProperty() &&
+        entry.key.GetCSSProperty().IsAffectedByForcedColors() &&
+        state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone)
+      continue;
     const Interpolation& interpolation = *entry.value.front();
     if (interpolation.IsInvalidatableInterpolation()) {
       CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
