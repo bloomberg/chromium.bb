@@ -229,6 +229,20 @@ public class CallbackHelper {
     }
 
     /**
+     * @deprecated Use waitForAnyCallback() instead.
+     */
+    public void waitForCallback(String msg) throws InterruptedException, TimeoutException {
+        waitForCallback(msg, getCallCount());
+    }
+
+    /**
+     * @deprecated Use waitForAnyCallback() instead.
+     */
+    public void waitForCallback() throws InterruptedException, TimeoutException {
+        waitForCallback(getCallCount());
+    }
+
+    /**
      * Wait until the callback has been called once.
      */
     public void waitForFirst(String msg) throws InterruptedException, TimeoutException {
