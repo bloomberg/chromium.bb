@@ -84,6 +84,12 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   // We need the previous physical container size to calculate the position of
   // any child fragments.
   previous_physical_container_size_ = physical_fragment.Size();
+
+  // The static-position needs to account for any intrinsic-padding.
+  if (ConstraintSpace().IsTableCell()) {
+    border_scrollbar_padding_ += ComputeIntrinsicPadding(
+        ConstraintSpace(), Style(), container_builder_.Scrollbar());
+  }
 }
 
 scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
