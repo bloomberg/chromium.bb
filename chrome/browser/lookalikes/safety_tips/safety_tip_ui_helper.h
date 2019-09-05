@@ -14,18 +14,6 @@ class WebContents;
 
 namespace safety_tips {
 
-// Represents the different user interactions with a Safety Tip dialog.
-//
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class SafetyTipInteraction {
-  // The user dismissed the safety tip.
-  kDismiss = 0,
-  // The user followed the safety tip's call to action to leave the site.
-  kLeaveSite = 1,
-  kMaxValue = kLeaveSite,
-};
-
 // Records a histogram for a user's interaction with a Safety Tip in the given
 // |web_contents|.
 void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
