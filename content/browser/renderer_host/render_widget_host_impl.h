@@ -869,7 +869,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnTextInputStateChanged(const TextInputState& params);
 
   void OnLockMouse(bool user_gesture,
-                   bool privileged);
+                   bool privileged,
+                   bool request_unadjusted_movement);
   void OnUnlockMouse();
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
@@ -1128,7 +1129,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool pending_mouse_lock_request_ = false;
   bool allow_privileged_mouse_lock_ = false;
-
+  bool mouse_lock_raw_movement_ = false;
   // Stores the keyboard keys to lock while waiting for a pending lock request.
   base::Optional<base::flat_set<ui::DomCode>> keyboard_keys_to_lock_;
   bool keyboard_lock_requested_ = false;

@@ -5476,7 +5476,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   EXPECT_EQ("0 1 0", delegate.GetMouseMotionCountsAndReset());
 
   // Lock the mouse, simulate, and ensure they are forwarded.
-  view_->LockMouse();
+  view_->LockMouse(false /* request_unadjusted_movement */);
 
   mouse_event =
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),

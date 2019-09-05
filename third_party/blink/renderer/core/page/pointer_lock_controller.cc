@@ -76,7 +76,8 @@ void PointerLockController::RequestPointerLock(
     EnqueueEvent(event_type_names::kPointerlockchange, target);
     element_ = target;
   } else if (page_->GetChromeClient().RequestPointerLock(
-                 target->GetDocument().GetFrame())) {
+                 target->GetDocument().GetFrame(),
+                 (options ? options->unadjustedMovement() : false))) {
     lock_pending_ = true;
     element_ = target;
   } else {

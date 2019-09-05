@@ -1942,6 +1942,7 @@ void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {
   DCHECK(!pending_mouse_lock_request_ || !IsMouseLocked());
   if (pending_mouse_lock_request_) {
     pending_mouse_lock_request_ = false;
+    mouse_lock_raw_movement_ = false;
     Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
   } else if (IsMouseLocked()) {
     view_->UnlockMouse();
@@ -2469,7 +2470,8 @@ void RenderWidgetHostImpl::OnProcessSwapMessage(const IPC::Message& message) {
 }
 
 void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
-                                       bool privileged) {
+                                       bool privileged,
+                                       bool request_unadjusted_movement) {
   if (delegate_ && delegate_->GetInputEventShim()) {
     delegate_->GetInputEventShim()->DidLockMouse(user_gesture, privileged);
     return;
@@ -2481,6 +2483,7 @@ void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
   }
 
   pending_mouse_lock_request_ = true;
+  mouse_lock_raw_movement_ = request_unadjusted_movement;
   if (delegate_) {
     delegate_->RequestToLockMouse(this, user_gesture,
                                   is_last_unlocked_by_target_,
@@ -2769,7 +2772,8 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
   }
 
   pending_mouse_lock_request_ = false;
-  if (!view_ || !view_->HasFocus()|| !view_->LockMouse()) {
+  if (!view_ || !view_->HasFocus() ||
+      !view_->LockMouse(mouse_lock_raw_movement_)) {
     Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
     return false;
   }

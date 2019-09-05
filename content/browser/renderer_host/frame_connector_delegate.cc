@@ -75,7 +75,7 @@ bool FrameConnectorDelegate::HasFocus() {
   return false;
 }
 
-bool FrameConnectorDelegate::LockMouse() {
+bool FrameConnectorDelegate::LockMouse(bool request_unadjusted_movement) {
   return false;
 }
 

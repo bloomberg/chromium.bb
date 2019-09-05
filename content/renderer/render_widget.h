@@ -445,7 +445,8 @@ class CONTENT_EXPORT RenderWidget
   void ConvertViewportToWindow(blink::WebRect* rect) override;
   void ConvertViewportToWindow(blink::WebFloatRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
-  bool RequestPointerLock(blink::WebLocalFrame* requester_frame) override;
+  bool RequestPointerLock(blink::WebLocalFrame* requester_frame,
+                          bool request_unadjusted_movement) override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
   void StartDragging(network::mojom::ReferrerPolicy policy,
