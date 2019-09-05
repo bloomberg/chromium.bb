@@ -115,6 +115,10 @@
     "message": "Preview metadata",
     "description": "Label for expert mode option: preview metadata."
   },
+  "EXPERT_SAVE_METADATA": {
+    "message": "Save metadata",
+    "description": "Label for expert mode option: save metadata."
+  },
   "FEEDBACK_BUTTON": {
     "message": "Send feedback",
     "description": "Label for the feedback button."
