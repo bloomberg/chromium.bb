@@ -77,7 +77,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
                          views::style::CONTEXT_BUTTON),
       listener_(button_listener) {
   SetButtonController(std::make_unique<HoverButtonController>(
-      this, listener_, CreateButtonControllerDelegate()));
+      this, listener_,
+      std::make_unique<views::Button::DefaultButtonControllerDelegate>(this)));
 
   SetInstallFocusRingOnFocus(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
