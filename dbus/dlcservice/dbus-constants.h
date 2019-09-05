@@ -14,6 +14,7 @@ constexpr char kDlcServiceServiceName[] = "org.chromium.DlcService";
 constexpr char kGetInstalledMethod[] = "GetInstalled";
 constexpr char kInstallMethod[] = "Install";
 constexpr char kUninstallMethod[] = "Uninstall";
+constexpr char kOnInstallStatusSignal[] = "OnInstallStatus";
 
 // Error Codes from dlcservice.
 constexpr char kErrorNone[] = "NONE";
