@@ -360,8 +360,9 @@ service_manager::InterfaceProvider* WorkerGlobalScope::GetInterfaceProvider() {
   return &interface_provider_;
 }
 
-BrowserInterfaceBrokerProxy& WorkerGlobalScope::GetBrowserInterfaceBroker() {
-  return browser_interface_broker_proxy_;
+BrowserInterfaceBrokerProxy*
+WorkerGlobalScope::GetBrowserInterfaceBrokerProxy() {
+  return &browser_interface_broker_proxy_;
 }
 
 ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {

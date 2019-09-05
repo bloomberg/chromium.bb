@@ -300,7 +300,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
       mojo::ScopedMessagePipeHandle blink_handle);
 
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
+  BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy();
 
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
 

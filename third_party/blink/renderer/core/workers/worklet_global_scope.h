@@ -137,8 +137,6 @@ class CORE_EXPORT WorkletGlobalScope
                      WorkerReportingProxy&,
                      WorkerThread*);
 
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
-
  private:
   enum class ThreadType {
     // Indicates this global scope lives on the main thread.

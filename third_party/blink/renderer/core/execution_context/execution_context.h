@@ -281,7 +281,9 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     return nullptr;
   }
 
-  virtual BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() = 0;
+  virtual BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy() {
+    return nullptr;
+  }
 
   virtual FrameOrWorkerScheduler* GetScheduler() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(

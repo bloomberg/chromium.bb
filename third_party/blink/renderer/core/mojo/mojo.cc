@@ -115,10 +115,12 @@ void Mojo::bindInterface(ScriptState* script_state,
   // InterfaceProvider clients are converted to use BrowserInterfaceBroker. See
   // crbug.com/936482.
   if (use_browser_interface_broker) {
-    ExecutionContext::From(script_state)
-        ->GetBrowserInterfaceBroker()
-        .GetInterface(name, std::move(handle));
-    return;
+    if (auto* browser_interface_broker_proxy =
+            ExecutionContext::From(script_state)
+                ->GetBrowserInterfaceBrokerProxy()) {
+      browser_interface_broker_proxy->GetInterface(name, std::move(handle));
+      return;
+    }
   }
 
   // TODO(crbug.com/995556): remove when no longer used.

@@ -43,7 +43,7 @@ base::Optional<PageAnnotator::ImageMetadata> ProduceMetadata(
 mojo::PendingRemote<ia_mojom::Annotator> RequestAnnotator(
     content::RenderFrame* const render_frame) {
   mojo::PendingRemote<ia_mojom::Annotator> annotator;
-  render_frame->GetBrowserInterfaceBroker()->GetInterface(
+  render_frame->GetBrowserInterfaceBrokerProxy()->GetInterface(
       annotator.InitWithNewPipeAndPassReceiver());
   return annotator;
 }

@@ -97,10 +97,12 @@ mojom::blink::BackgroundFetchService* BackgroundFetchBridge::GetService() {
     auto receiver = background_fetch_service_.BindNewPipeAndPassReceiver(
         GetSupplementable()->GetExecutionContext()->GetTaskRunner(
             TaskType::kBackgroundFetch));
-    GetSupplementable()
-        ->GetExecutionContext()
-        ->GetBrowserInterfaceBroker()
-        .GetInterface(std::move(receiver));
+    if (auto* browser_interface_broker_proxy =
+            GetSupplementable()
+                ->GetExecutionContext()
+                ->GetBrowserInterfaceBrokerProxy()) {
+      browser_interface_broker_proxy->GetInterface(std::move(receiver));
+    }
   }
   return background_fetch_service_.get();
 }

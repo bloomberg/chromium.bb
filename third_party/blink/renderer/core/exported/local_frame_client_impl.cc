@@ -1121,9 +1121,9 @@ LocalFrameClientImpl::GetDocumentInterfaceBroker() {
   return document_interface_broker_.get();
 }
 
-blink::BrowserInterfaceBrokerProxy&
-LocalFrameClientImpl::GetBrowserInterfaceBroker() {
-  return *web_frame_->Client()->GetBrowserInterfaceBroker();
+blink::BrowserInterfaceBrokerProxy*
+LocalFrameClientImpl::GetBrowserInterfaceBrokerProxy() const {
+  return web_frame_->Client()->GetBrowserInterfaceBrokerProxy();
 }
 
 void LocalFrameClientImpl::BindDocumentInterfaceBroker(

@@ -175,7 +175,8 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns the BrowserInterfaceBrokerProxy that this process can use to bind
   // interfaces exposed to it by the application running in this frame.
-  virtual blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker() = 0;
+  virtual const blink::BrowserInterfaceBrokerProxy*
+  GetBrowserInterfaceBrokerProxy() = 0;
 
   // Returns the AssociatedInterfaceRegistry this frame can use to expose
   // frame-specific Channel-associated interfaces to the remote RenderFrameHost.
