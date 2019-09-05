@@ -58,11 +58,6 @@ const base::Feature kFreezePurgeMemoryAllPagesFrozen{
 const base::Feature kFreezeUserAgent{"FreezeUserAgent",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the experimental sweep-line algorithm for tracking "jank" from
-// layout objects changing their visual location between animation frames.
-const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable a new CSS property called backdrop-filter.
 const base::Feature kCSSBackdropFilter {
   "CSSBackdropFilter",

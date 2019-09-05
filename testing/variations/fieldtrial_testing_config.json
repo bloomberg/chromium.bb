@@ -3038,25 +3038,6 @@
             ]
         }
     ],
-    "JankTrackingSweepLine": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "JankTrackingSweepLine"
-                    ]
-                }
-            ]
-        }
-    ],
     "KeyboardAccessoryAddressIPH": [
         {
             "platforms": [
