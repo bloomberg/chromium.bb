@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/sync/base/encryptor.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
@@ -559,13 +560,27 @@ bool NigoriSyncBridgeImpl::Init() {
   if (passphrase_type_ != NigoriSpecifics::UNKNOWN) {
     // if |passphrase_type_| is unknown, it is not yet initialized and we
     // shouldn't expose it.
+    PassphraseType enum_passphrase_type =
+        *ProtoPassphraseInt32ToEnum(passphrase_type_);
     for (auto& observer : observers_) {
-      observer.OnPassphraseTypeChanged(
-          *ProtoPassphraseInt32ToEnum(passphrase_type_),
-          GetExplicitPassphraseTime());
+      observer.OnPassphraseTypeChanged(enum_passphrase_type,
+                                       GetExplicitPassphraseTime());
     }
+    UMA_HISTOGRAM_ENUMERATION("Sync.PassphraseType", enum_passphrase_type,
+                              PassphraseType::PASSPHRASE_TYPE_SIZE);
   }
-
+  UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerReady", cryptographer_.is_ready());
+  UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerPendingKeys",
+                        cryptographer_.has_pending_keys());
+  if (cryptographer_.has_pending_keys() &&
+      passphrase_type_ == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
+    // If this is happening, it means the keystore decryptor is either
+    // undecryptable with the available keystore keys or does not match the
+    // nigori keybag's encryption key. Otherwise we're simply missing the
+    // keystore key.
+    UMA_HISTOGRAM_BOOLEAN("Sync.KeystoreDecryptionFailed",
+                          !keystore_keys_.empty());
+  }
   return true;
 }
 
@@ -615,6 +630,7 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
                                      encrypt_everything_);
   }
   MaybeNotifyBootstrapTokenUpdated();
+  UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
   // OnLocalSetPassphraseEncryption() is intentionally not called here, because
   // it's needed only for the Directory implementation unit tests.
   // TODO(crbug.com/922900): support SCRYPT key derivation method.
