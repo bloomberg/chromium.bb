@@ -406,9 +406,9 @@ class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
   ~UkmRecorderFactoryImpl() override = default;
 
   std::unique_ptr<ukm::UkmRecorder> CreateRecorder() override {
-    ukm::mojom::UkmRecorderInterfacePtr recorder_ptr;
-    process_host_->BindHostReceiver(mojo::MakeRequest(&recorder_ptr));
-    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder_ptr));
+    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+    process_host_->BindHostReceiver(recorder.InitWithNewPipeAndPassReceiver());
+    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
   }
 
  private:
