@@ -20496,7 +20496,7 @@ Called by update_net_error_codes.py.-->
   <int value="1345" label="BLUETOOTHPRIVATE_RECORDDEVICESELECTION"/>
   <int value="1346" label="LOGIN_LAUNCHMANAGEDGUESTSESSION"/>
   <int value="1347" label="LOGIN_EXITCURRENTSESSION"/>
-  <int value="1348" label="LOGIN_ISRUNNINGINLOGINPROFILE"/>
+  <int value="1348" label="DELETED_LOGIN_ISRUNNINGINLOGINPROFILE"/>
   <int value="1349" label="LOGIN_FETCHDATAFORNEXTLOGINATTEMPT"/>
   <int value="1350" label="ACTION_SETICON"/>
   <int value="1351" label="AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES"/>
