@@ -71,6 +71,7 @@ class CORE_EXPORT WorkerReportingProxy {
   // Invoked when the WorkerGlobalScope is initialized on
   // WorkerThread::InitializeOnWorkerThread. This is synchronously called after
   // WillInitializeWorkerContext().
+  // TODO(bashi): Remove this.
   virtual void DidInitializeWorkerContext() {}
 
   // Invoked when the worker's main script is loaded on
