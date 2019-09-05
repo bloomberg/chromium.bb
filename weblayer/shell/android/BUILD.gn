@@ -107,3 +107,20 @@ android_apk("weblayer_support_apk") {
   android_manifest_dep = ":weblayer_support_manifest"
   shared_libraries = [ "//weblayer:libweblayer" ]
 }
+
+generate_wrapper("run_weblayer_shell") {
+  testonly = true
+  wrapper_script = "$root_out_dir/bin/run_weblayer_shell"
+  executable = "//weblayer/tools/run_weblayer_shell.py"
+  executable_args = [
+    "--shell-apk-path",
+    "@WrappedPath(apks/WebLayerShell.apk)",
+    "--support-apk-path",
+    "@WrappedPath(apks/WebLayerSupport.apk)",
+  ]
+
+  deps = [
+    ":weblayer_shell_apk",
+    ":weblayer_support_apk",
+  ]
+}
