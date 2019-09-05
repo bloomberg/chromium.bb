@@ -48,9 +48,8 @@ class TestMediaPerceptionAPIDelegate : public MediaPerceptionAPIDelegate {
         base::BindOnce(std::move(load_callback), false, base::FilePath()));
   }
 
-  void BindVideoSourceProvider(
-      mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver)
-      override {
+  void BindDeviceFactoryProviderToVideoCaptureService(
+      video_capture::mojom::DeviceFactoryProviderPtr* provider) override {
     NOTIMPLEMENTED();
   }
 

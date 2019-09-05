@@ -13,9 +13,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/chromeos/delegate_to_browser_gpu_service_accelerator_factory.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/video_capture_service.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 
 namespace extensions {
 
@@ -65,18 +68,22 @@ void MediaPerceptionAPIDelegateChromeOS::LoadCrOSComponent(
       base::BindOnce(OnLoadComponent, std::move(load_callback)));
 }
 
-void MediaPerceptionAPIDelegateChromeOS::BindVideoSourceProvider(
-    mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver) {
+void MediaPerceptionAPIDelegateChromeOS::
+    BindDeviceFactoryProviderToVideoCaptureService(
+        video_capture::mojom::DeviceFactoryProviderPtr* provider) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // In unit test environments, there may not be any connector.
+  service_manager::Connector* connector = content::GetSystemConnector();
+  if (!connector)
+    return;
+  connector->BindInterface(video_capture::mojom::kServiceName, provider);
+
   video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
   mojo::MakeStrongBinding(
       std::make_unique<
           content::DelegateToBrowserGpuServiceAcceleratorFactory>(),
       mojo::MakeRequest(&accelerator_factory));
-
-  auto& service = content::GetVideoCaptureService();
-  service.InjectGpuDependencies(std::move(accelerator_factory));
-  service.ConnectToVideoSourceProvider(std::move(receiver));
+  (*provider)->InjectGpuDependencies(std::move(accelerator_factory));
 }
 
 void MediaPerceptionAPIDelegateChromeOS::SetMediaPerceptionRequestHandler(

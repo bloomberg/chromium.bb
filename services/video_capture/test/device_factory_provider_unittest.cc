@@ -11,8 +11,8 @@
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/public/mojom/virtual_device.mojom.h"
+#include "services/video_capture/test/device_factory_provider_test.h"
 #include "services/video_capture/test/mock_devices_changed_observer.h"
-#include "services/video_capture/test/video_capture_service_test.h"
 
 using testing::_;
 using testing::Exactly;
@@ -21,9 +21,14 @@ using testing::InvokeWithoutArgs;
 
 namespace video_capture {
 
+// This alias ensures test output is easily attributed to this service's tests.
+// TODO(rockot/chfremer): Consider just renaming the type.
+using VideoCaptureServiceDeviceFactoryProviderTest = DeviceFactoryProviderTest;
+
 // Tests that an answer arrives from the service when calling
 // GetDeviceInfos().
-TEST_F(VideoCaptureServiceTest, GetDeviceInfosCallbackArrives) {
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
+       GetDeviceInfosCallbackArrives) {
   base::RunLoop wait_loop;
   EXPECT_CALL(device_info_receiver_, Run(_))
       .Times(Exactly(1))
@@ -33,7 +38,8 @@ TEST_F(VideoCaptureServiceTest, GetDeviceInfosCallbackArrives) {
   wait_loop.Run();
 }
 
-TEST_F(VideoCaptureServiceTest, FakeDeviceFactoryEnumeratesThreeDevices) {
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
+       FakeDeviceFactoryEnumeratesThreeDevices) {
   base::RunLoop wait_loop;
   size_t num_devices_enumerated = 0;
   EXPECT_CALL(device_info_receiver_, Run(_))
@@ -52,7 +58,8 @@ TEST_F(VideoCaptureServiceTest, FakeDeviceFactoryEnumeratesThreeDevices) {
 
 // Tests that an added virtual device will be returned in the callback
 // when calling GetDeviceInfos.
-TEST_F(VideoCaptureServiceTest, VirtualDeviceEnumeratedAfterAdd) {
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
+       VirtualDeviceEnumeratedAfterAdd) {
   const std::string virtual_device_id = "/virtual/device";
   auto device_context = AddSharedMemoryVirtualDevice(virtual_device_id);
 
@@ -76,7 +83,7 @@ TEST_F(VideoCaptureServiceTest, VirtualDeviceEnumeratedAfterAdd) {
   wait_loop.Run();
 }
 
-TEST_F(VideoCaptureServiceTest,
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
        AddingAndRemovingVirtualDevicesRaisesDevicesChangedEvent) {
   mojom::DevicesChangedObserverPtr observer;
   MockDevicesChangedObserver mock_observer;
@@ -123,7 +130,7 @@ TEST_F(VideoCaptureServiceTest,
 
 // Tests that disconnecting a devices changed observer does not lead to any
 // crash or bad state.
-TEST_F(VideoCaptureServiceTest,
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
        AddAndRemoveVirtualDeviceAfterObserverHasDisconnected) {
   mojom::DevicesChangedObserverPtr observer;
   MockDevicesChangedObserver mock_observer;
@@ -142,7 +149,8 @@ TEST_F(VideoCaptureServiceTest,
 
 // Tests that VideoCaptureDeviceFactory::CreateDevice() returns an error
 // code when trying to create a device for an invalid descriptor.
-TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
+       ErrorCodeOnCreateDeviceForInvalidDescriptor) {
   const std::string invalid_device_id = "invalid";
   base::RunLoop wait_loop;
   mojom::DevicePtr fake_device_proxy;
@@ -161,7 +169,8 @@ TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
 
 // Test that CreateDevice() will succeed when trying to create a device
 // for an added virtual device.
-TEST_F(VideoCaptureServiceTest, CreateDeviceSuccessForVirtualDevice) {
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
+       CreateDeviceSuccessForVirtualDevice) {
   base::RunLoop wait_loop;
   const std::string virtual_device_id = "/virtual/device";
   auto device_context = AddSharedMemoryVirtualDevice(virtual_device_id);

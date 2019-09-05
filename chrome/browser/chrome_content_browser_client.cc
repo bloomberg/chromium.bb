@@ -385,6 +385,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "services/audio/public/mojom/constants.mojom.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
 #elif defined(OS_CHROMEOS)
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/ash_service_registry.h"
@@ -2306,9 +2307,11 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {
 #if defined(OS_MACOSX)
-  // On Mac, the audio service requires a CFRunLoop, provided by a UI message
-  // loop, to run AVFoundation and CoreAudio code. See https://crbug.com/834581.
-  if (identity.name() == audio::mojom::kServiceName)
+  // On Mac, the video-capture and audio services require a CFRunLoop, provided
+  // by a UI message loop, to run AVFoundation and CoreAudio code.
+  // See https://crbug.com/834581
+  if (identity.name() == video_capture::mojom::kServiceName ||
+      identity.name() == audio::mojom::kServiceName)
     command_line->AppendSwitch(switches::kMessageLoopTypeUi);
 #endif
 }

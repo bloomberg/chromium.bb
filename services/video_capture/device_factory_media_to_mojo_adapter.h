@@ -10,6 +10,7 @@
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_system.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 
@@ -40,6 +41,8 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
   ~DeviceFactoryMediaToMojoAdapter() override;
 
   // DeviceFactory implementation.
+  void SetServiceRef(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref) override;
   void GetDeviceInfos(GetDeviceInfosCallback callback) override;
   void CreateDevice(const std::string& device_id,
                     mojom::DeviceRequest device_request,
@@ -80,6 +83,7 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
                              CreateDeviceCallback callback);
   void OnClientConnectionErrorOrClose(const std::string& device_id);
 
+  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   const std::unique_ptr<media::VideoCaptureSystem> capture_system_;
   std::map<std::string, ActiveDeviceEntry> active_devices_by_id_;
 

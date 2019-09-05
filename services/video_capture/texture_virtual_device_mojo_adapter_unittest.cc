@@ -17,14 +17,16 @@ namespace video_capture {
 
 class TextureVirtualDeviceMojoAdapterTest : public ::testing::Test {
  public:
-  TextureVirtualDeviceMojoAdapterTest() = default;
+  TextureVirtualDeviceMojoAdapterTest()
+      : service_keepalive_(nullptr, base::nullopt) {}
 
   void SetUp() override {
     mock_receiver_1_ =
         std::make_unique<MockReceiver>(mojo::MakeRequest(&receiver_1_));
     mock_receiver_2_ =
         std::make_unique<MockReceiver>(mojo::MakeRequest(&receiver_2_));
-    adapter_ = std::make_unique<TextureVirtualDeviceMojoAdapter>();
+    adapter_ = std::make_unique<TextureVirtualDeviceMojoAdapter>(
+        service_keepalive_.CreateRef());
   }
 
  protected:
@@ -61,6 +63,7 @@ class TextureVirtualDeviceMojoAdapterTest : public ::testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::ServiceKeepalive service_keepalive_;
   std::unique_ptr<TextureVirtualDeviceMojoAdapter> adapter_;
   mojom::ReceiverPtr receiver_1_;
   mojom::ReceiverPtr receiver_2_;

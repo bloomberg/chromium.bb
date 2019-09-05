@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/video_capture_service_impl.h"
+#include "services/video_capture/device_factory_provider_impl.h"
 
 #include <utility>
 
@@ -15,9 +15,7 @@
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video/video_capture_buffer_tracker.h"
 #include "media/capture/video/video_capture_system_impl.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
-#include "services/video_capture/testing_controls_impl.h"
 #include "services/video_capture/video_source_provider_impl.h"
 #include "services/video_capture/virtual_device_enabled_device_factory.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
@@ -33,7 +31,7 @@ namespace video_capture {
 // GetTaskRunner() via WeakPtrs provided via GetWeakPtr(). To this end,
 // GetTaskRunner() and GetWeakPtr() can be called from any sequence, typically
 // the same as the one calling the constructor.
-class VideoCaptureServiceImpl::GpuDependenciesContext {
+class DeviceFactoryProviderImpl::GpuDependenciesContext {
  public:
   GpuDependenciesContext() : weak_factory_for_gpu_io_thread_(this) {
     gpu_io_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
@@ -84,13 +82,19 @@ class VideoCaptureServiceImpl::GpuDependenciesContext {
   base::WeakPtrFactory<GpuDependenciesContext> weak_factory_for_gpu_io_thread_;
 };
 
-VideoCaptureServiceImpl::VideoCaptureServiceImpl(
-    mojo::PendingReceiver<mojom::VideoCaptureService> receiver,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : receiver_(this, std::move(receiver)),
-      ui_task_runner_(std::move(ui_task_runner)) {}
+DeviceFactoryProviderImpl::DeviceFactoryProviderImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::OnceClosure request_service_quit_asap_cb)
+    : ui_task_runner_(std::move(ui_task_runner)),
+      request_service_quit_asap_cb_(std::move(request_service_quit_asap_cb)) {
+  // Unretained |this| is safe because |factory_bindings_| is owned by
+  // |this|.
+  factory_bindings_.set_connection_error_handler(base::BindRepeating(
+      &DeviceFactoryProviderImpl::OnFactoryOrSourceProviderClientDisconnected,
+      base::Unretained(this)));
+}
 
-VideoCaptureServiceImpl::~VideoCaptureServiceImpl() {
+DeviceFactoryProviderImpl::~DeviceFactoryProviderImpl() {
   factory_bindings_.CloseAllBindings();
   device_factory_.reset();
   if (gpu_dependencies_context_) {
@@ -99,8 +103,13 @@ VideoCaptureServiceImpl::~VideoCaptureServiceImpl() {
   }
 }
 
+void DeviceFactoryProviderImpl::SetServiceRef(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+  service_ref_ = std::move(service_ref);
+}
+
 #if defined(OS_CHROMEOS)
-void VideoCaptureServiceImpl::InjectGpuDependencies(
+void DeviceFactoryProviderImpl::InjectGpuDependencies(
     mojom::AcceleratorFactoryPtr accelerator_factory) {
   LazyInitializeGpuDependenciesContext();
   gpu_dependencies_context_->GetTaskRunner()->PostTask(
@@ -108,46 +117,47 @@ void VideoCaptureServiceImpl::InjectGpuDependencies(
                                 gpu_dependencies_context_->GetWeakPtr(),
                                 accelerator_factory.PassInterface()));
 }
-
-void VideoCaptureServiceImpl::BindCrosImageCapture(
-    mojo::PendingReceiver<cros::mojom::CrosImageCapture> receiver) {
-  CHECK(device_factory_);
-  device_factory_->BindCrosImageCaptureRequest(std::move(receiver));
-}
 #endif  // defined(OS_CHROMEOS)
 
-void VideoCaptureServiceImpl::ConnectToDeviceFactory(
+void DeviceFactoryProviderImpl::ConnectToDeviceFactory(
     mojom::DeviceFactoryRequest request) {
+  DCHECK(service_ref_);
   LazyInitializeDeviceFactory();
   factory_bindings_.AddBinding(device_factory_.get(), std::move(request));
 }
 
-void VideoCaptureServiceImpl::ConnectToVideoSourceProvider(
+void DeviceFactoryProviderImpl::ConnectToVideoSourceProvider(
     mojom::VideoSourceProviderRequest request) {
   LazyInitializeVideoSourceProvider();
   video_source_provider_->AddClient(std::move(request));
 }
 
-void VideoCaptureServiceImpl::SetRetryCount(int32_t count) {
+void DeviceFactoryProviderImpl::ShutdownServiceAsap() {
+  if (request_service_quit_asap_cb_)
+    std::move(request_service_quit_asap_cb_).Run();
+}
+
+void DeviceFactoryProviderImpl::SetRetryCount(int32_t count) {
 #if defined(OS_MACOSX)
   media::VideoCaptureDeviceFactoryMac::SetGetDeviceDescriptorsRetryCount(count);
 #endif
 }
 
-void VideoCaptureServiceImpl::BindControlsForTesting(
-    mojo::PendingReceiver<mojom::TestingControls> receiver) {
-  mojo::MakeSelfOwnedReceiver(std::make_unique<TestingControlsImpl>(),
-                              std::move(receiver));
-}
-
-void VideoCaptureServiceImpl::LazyInitializeGpuDependenciesContext() {
+void DeviceFactoryProviderImpl::LazyInitializeGpuDependenciesContext() {
   if (!gpu_dependencies_context_)
     gpu_dependencies_context_ = std::make_unique<GpuDependenciesContext>();
 }
 
-void VideoCaptureServiceImpl::LazyInitializeDeviceFactory() {
-  if (device_factory_)
+void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
+  DCHECK(service_ref_);
+
+  // Factory may already exist but if no client was connected it will not have a
+  // ServiceRef.
+  if (device_factory_) {
+    if (factory_bindings_.empty())
+      device_factory_->SetServiceRef(service_ref_->Clone());
     return;
+  }
 
   LazyInitializeGpuDependenciesContext();
 
@@ -175,9 +185,11 @@ void VideoCaptureServiceImpl::LazyInitializeDeviceFactory() {
       std::make_unique<DeviceFactoryMediaToMojoAdapter>(
           std::move(video_capture_system)));
 #endif  // defined(OS_CHROMEOS)
+
+  device_factory_->SetServiceRef(service_ref_->Clone());
 }
 
-void VideoCaptureServiceImpl::LazyInitializeVideoSourceProvider() {
+void DeviceFactoryProviderImpl::LazyInitializeVideoSourceProvider() {
   if (video_source_provider_)
     return;
   LazyInitializeDeviceFactory();
@@ -185,12 +197,39 @@ void VideoCaptureServiceImpl::LazyInitializeVideoSourceProvider() {
       device_factory_.get(),
       // Unretained(this) is safe, because |this| owns |video_source_provider_|.
       base::BindRepeating(
-          &VideoCaptureServiceImpl::OnLastSourceProviderClientDisconnected,
+          &DeviceFactoryProviderImpl::OnLastSourceProviderClientDisconnected,
           base::Unretained(this)));
 }
 
-void VideoCaptureServiceImpl::OnLastSourceProviderClientDisconnected() {
+void DeviceFactoryProviderImpl::OnLastSourceProviderClientDisconnected() {
   video_source_provider_.reset();
+  OnFactoryOrSourceProviderClientDisconnected();
 }
+
+void DeviceFactoryProviderImpl::OnFactoryOrSourceProviderClientDisconnected() {
+  // If |video_source_provider_| still exists, it means there is still a client
+  // connected to it, in which case we also still need |device_factory_| to
+  // stay operational.
+  if (video_source_provider_)
+    return;
+
+  // If neither |device_factory_| nor |video_source_provider_| have clients
+  // connected, release service ref so that service shutdown timeout can start
+  // if no other references are still alive. We keep the |device_factory_|
+  // instance alive in order to avoid losing state that would be expensive to
+  // reinitialize, e.g. having already enumerated the available devices.
+  if (factory_bindings_.empty()) {
+    device_factory_->SetServiceRef(nullptr);
+  }
+}
+
+#if defined(OS_CHROMEOS)
+void DeviceFactoryProviderImpl::BindCrosImageCaptureRequest(
+    cros::mojom::CrosImageCaptureRequest request) {
+  CHECK(device_factory_);
+
+  device_factory_->BindCrosImageCaptureRequest(std::move(request));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace video_capture

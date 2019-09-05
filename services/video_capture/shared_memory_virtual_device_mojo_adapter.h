@@ -8,6 +8,7 @@
 #include "base/sequence_checker.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video_capture_types.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
@@ -20,6 +21,7 @@ class SharedMemoryVirtualDeviceMojoAdapter
       public mojom::Device {
  public:
   SharedMemoryVirtualDeviceMojoAdapter(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref,
       mojom::ProducerPtr producer,
       bool send_buffer_handles_to_producer_as_raw_file_descriptors = false);
   ~SharedMemoryVirtualDeviceMojoAdapter() override;
@@ -52,6 +54,7 @@ class SharedMemoryVirtualDeviceMojoAdapter
  private:
   void OnReceiverConnectionErrorOrClose();
 
+  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   mojom::ReceiverPtr receiver_;
   mojom::ProducerPtr producer_;
   const bool send_buffer_handles_to_producer_as_raw_file_descriptors_;

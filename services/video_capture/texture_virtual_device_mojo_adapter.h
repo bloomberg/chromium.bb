@@ -8,6 +8,7 @@
 #include "base/sequence_checker.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video_capture_types.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
@@ -18,7 +19,8 @@ namespace video_capture {
 class TextureVirtualDeviceMojoAdapter : public mojom::TextureVirtualDevice,
                                         public mojom::Device {
  public:
-  TextureVirtualDeviceMojoAdapter();
+  explicit TextureVirtualDeviceMojoAdapter(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~TextureVirtualDeviceMojoAdapter() override;
 
   void SetReceiverDisconnectedCallback(base::OnceClosure callback);
@@ -48,6 +50,7 @@ class TextureVirtualDeviceMojoAdapter : public mojom::TextureVirtualDevice,
  private:
   void OnReceiverConnectionErrorOrClose();
 
+  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   base::OnceClosure optional_receiver_disconnected_callback_;
   mojom::ReceiverPtr receiver_;
   std::unordered_map<int32_t, media::mojom::MailboxBufferHandleSetPtr>

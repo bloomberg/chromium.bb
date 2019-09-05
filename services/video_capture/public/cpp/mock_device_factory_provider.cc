@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/public/cpp/mock_video_capture_service.h"
+#include "services/video_capture/public/cpp/mock_device_factory_provider.h"
 
 namespace video_capture {
 
-MockVideoCaptureService::MockVideoCaptureService() {}
+MockDeviceFactoryProvider::MockDeviceFactoryProvider() {}
 
-MockVideoCaptureService::~MockVideoCaptureService() = default;
+MockDeviceFactoryProvider::~MockDeviceFactoryProvider() = default;
 
-void MockVideoCaptureService::ConnectToDeviceFactory(
+void MockDeviceFactoryProvider::ConnectToDeviceFactory(
     video_capture::mojom::DeviceFactoryRequest request) {
   DoConnectToDeviceFactory(request);
 }
 
-void MockVideoCaptureService::ConnectToVideoSourceProvider(
+void MockDeviceFactoryProvider::ConnectToVideoSourceProvider(
     video_capture::mojom::VideoSourceProviderRequest request) {
   DoConnectToVideoSourceProvider(request);
 }
 
 #if defined(OS_CHROMEOS)
-void MockVideoCaptureService::InjectGpuDependencies(
+void MockDeviceFactoryProvider::InjectGpuDependencies(
     video_capture::mojom::AcceleratorFactoryPtr accelerator_factory) {
   DoInjectGpuDependencies(accelerator_factory);
 }

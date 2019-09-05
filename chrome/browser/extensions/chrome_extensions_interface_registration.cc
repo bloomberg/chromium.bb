@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/video_capture_service.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -33,12 +32,15 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/media_device_id.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "media/capture/video/chromeos/renderer_facing_cros_image_capture.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
@@ -94,9 +96,9 @@ void BindRendererFacingCrosImageCapture(
   cros::mojom::CrosImageCapturePtr proxy_ptr;
   auto proxy_request = mojo::MakeRequest(&proxy_ptr);
 
-  // Bind the interface through the Video Capture service.
-  content::GetVideoCaptureService().BindCrosImageCapture(
-      std::move(proxy_request));
+  // Bind proxy request to video_capture service.
+  content::GetSystemConnector()->BindInterface(
+      video_capture::mojom::kServiceName, std::move(proxy_request));
 
   auto security_origin = source->GetLastCommittedOrigin();
   auto media_device_id_salt =

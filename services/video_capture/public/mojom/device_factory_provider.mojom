@@ -7,11 +7,7 @@ module video_capture.mojom;
 [EnableIf=is_chromeos]
 import "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom";
 import "services/video_capture/public/mojom/device_factory.mojom";
-import "services/video_capture/public/mojom/testing_controls.mojom";
 import "services/video_capture/public/mojom/video_source_provider.mojom";
-
-[EnableIf=is_chromeos]
-import "media/capture/video/chromeos/mojo/cros_image_capture.mojom";
 
 [EnableIf=is_chromeos]
 interface AcceleratorFactory {
@@ -29,13 +25,10 @@ interface AcceleratorFactory {
 // to be called once before any call to ConnectToDeviceFactory() is made.
 // Calling InjectGpuDependencies() is optional. If it is not called, MJPEG
 // decoding will be performed without gpu acceleration.
-interface VideoCaptureService  {
+// TODO(chfremer): Consider renaming this to VideoCaptureService.
+interface DeviceFactoryProvider  {
   [EnableIf=is_chromeos]
   InjectGpuDependencies(AcceleratorFactory accelerator_factory);
-
-  // Binds a Chrome OS camera capture interface.
-  [EnableIf=is_chromeos]
-  BindCrosImageCapture(pending_receiver<cros.mojom.CrosImageCapture> receiver);
 
   // Legacy API. Supports one client per device.
   ConnectToDeviceFactory(DeviceFactory& request);
@@ -43,10 +36,11 @@ interface VideoCaptureService  {
   // Current API. Supports multiple clients per source.
   ConnectToVideoSourceProvider(VideoSourceProvider& request);
 
+  // Lets the service to close all connections and ask the service_manager to be
+  // shut down.
+  ShutdownServiceAsap();
+
   // Sets a retry count that is used by the service for logging UMA events in
   // the context of investigation for https://crbug.com/643068.
   SetRetryCount(int32 count);
-
-  // Binds a test-only interface for use by unit tests.
-  BindControlsForTesting(pending_receiver<TestingControls> receiver);
 };

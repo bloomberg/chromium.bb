@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_SERVICE_IMPL_H_
-#define SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_SERVICE_IMPL_H_
+#ifndef SERVICES_VIDEO_CAPTURE_DEVICE_FACTORY_PROVIDER_H_
+#define SERVICES_VIDEO_CAPTURE_DEVICE_FACTORY_PROVIDER_H_
 
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
-#include "services/video_capture/public/mojom/video_capture_service.mojom.h"
+#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
@@ -24,26 +25,31 @@ namespace video_capture {
 class VirtualDeviceEnabledDeviceFactory;
 class VideoSourceProviderImpl;
 
-class VideoCaptureServiceImpl : public mojom::VideoCaptureService {
+class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
  public:
-  explicit VideoCaptureServiceImpl(
-      mojo::PendingReceiver<mojom::VideoCaptureService> receiver,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  ~VideoCaptureServiceImpl() override;
+  explicit DeviceFactoryProviderImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      base::OnceClosure request_service_quit_asap_cb);
+  ~DeviceFactoryProviderImpl() override;
 
-  // mojom::VideoCaptureService implementation.
+  void SetServiceRef(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+
+  // mojom::DeviceFactoryProvider implementation.
 #if defined(OS_CHROMEOS)
   void InjectGpuDependencies(
       mojom::AcceleratorFactoryPtr accelerator_factory) override;
-  void BindCrosImageCapture(
-      mojo::PendingReceiver<cros::mojom::CrosImageCapture> receiver) override;
 #endif  // defined(OS_CHROMEOS)
   void ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) override;
   void ConnectToVideoSourceProvider(
       mojom::VideoSourceProviderRequest request) override;
+  void ShutdownServiceAsap() override;
   void SetRetryCount(int32_t count) override;
-  void BindControlsForTesting(
-      mojo::PendingReceiver<mojom::TestingControls> receiver) override;
+
+#if defined(OS_CHROMEOS)
+  void BindCrosImageCaptureRequest(
+      cros::mojom::CrosImageCaptureRequest request);
+#endif  // defined(OS_CHROMEOS)
 
  private:
   class GpuDependenciesContext;
@@ -52,18 +58,20 @@ class VideoCaptureServiceImpl : public mojom::VideoCaptureService {
   void LazyInitializeDeviceFactory();
   void LazyInitializeVideoSourceProvider();
   void OnLastSourceProviderClientDisconnected();
+  void OnFactoryOrSourceProviderClientDisconnected();
 
-  mojo::Receiver<mojom::VideoCaptureService> receiver_;
   mojo::BindingSet<mojom::DeviceFactory> factory_bindings_;
   std::unique_ptr<VirtualDeviceEnabledDeviceFactory> device_factory_;
   std::unique_ptr<VideoSourceProviderImpl> video_source_provider_;
+  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   std::unique_ptr<GpuDependenciesContext> gpu_dependencies_context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  base::OnceClosure request_service_quit_asap_cb_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(DeviceFactoryProviderImpl);
 };
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_SERVICE_IMPL_H_
+#endif  // SERVICES_VIDEO_CAPTURE_DEVICE_FACTORY_PROVIDER_H_

@@ -92,6 +92,15 @@ VirtualDeviceEnabledDeviceFactory::VirtualDeviceEnabledDeviceFactory(
 VirtualDeviceEnabledDeviceFactory::~VirtualDeviceEnabledDeviceFactory() =
     default;
 
+void VirtualDeviceEnabledDeviceFactory::SetServiceRef(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+  if (service_ref)
+    device_factory_->SetServiceRef(service_ref->Clone());
+  else
+    device_factory_->SetServiceRef(nullptr);
+  service_ref_ = std::move(service_ref);
+}
+
 void VirtualDeviceEnabledDeviceFactory::GetDeviceInfos(
     GetDeviceInfosCallback callback) {
   device_factory_->GetDeviceInfos(
@@ -143,7 +152,7 @@ void VirtualDeviceEnabledDeviceFactory::AddSharedMemoryVirtualDevice(
                      OnVirtualDeviceProducerConnectionErrorOrClose,
                  base::Unretained(this), device_id));
   auto device = std::make_unique<SharedMemoryVirtualDeviceMojoAdapter>(
-      std::move(producer),
+      service_ref_->Clone(), std::move(producer),
       send_buffer_handles_to_producer_as_raw_file_descriptors);
   auto producer_binding =
       std::make_unique<mojo::Binding<mojom::SharedMemoryVirtualDevice>>(
@@ -170,7 +179,8 @@ void VirtualDeviceEnabledDeviceFactory::AddTextureVirtualDevice(
     virtual_devices_by_id_.erase(virtual_device_iter);
   }
 
-  auto device = std::make_unique<TextureVirtualDeviceMojoAdapter>();
+  auto device =
+      std::make_unique<TextureVirtualDeviceMojoAdapter>(service_ref_->Clone());
   auto producer_binding =
       std::make_unique<mojo::Binding<mojom::TextureVirtualDevice>>(
           device.get(), std::move(virtual_device_request));
