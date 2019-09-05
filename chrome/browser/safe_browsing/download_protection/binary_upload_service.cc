@@ -13,8 +13,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/download_protection/multipart_uploader.h"
+#include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_status_code.h"
@@ -288,6 +291,19 @@ void BinaryUploadService::Request::FinishRequest(
 
 bool BinaryUploadService::IsActive(Request* request) {
   return (active_requests_.find(request) != active_requests_.end());
+}
+
+// static
+bool BinaryUploadService::ShouldBlockFileSize(size_t file_size) {
+  int block_large_file_transfer = g_browser_process->local_state()->GetInteger(
+      prefs::kBlockLargeFileTransfer);
+  if (block_large_file_transfer !=
+          BlockLargeFileTransferValues::BLOCK_LARGE_DOWNLOADS &&
+      block_large_file_transfer !=
+          BlockLargeFileTransferValues::BLOCK_LARGE_UPLOADS_AND_DOWNLOADS)
+    return false;
+
+  return (file_size > kMaxUploadSizeBytes);
 }
 
 }  // namespace safe_browsing

@@ -188,6 +188,15 @@ enum AllowPasswordProtectedFilesValues {
   ALLOW_UPLOADS_AND_DOWNLOADS = 3,
 };
 
+// Enum representing possible values of the BlockLargeFileTransfer policy. This
+// must be kept in sync with policy_templates.json
+enum BlockLargeFileTransferValues {
+  BLOCK_NONE = 0,
+  BLOCK_LARGE_DOWNLOADS = 1,
+  BLOCK_LARGE_UPLOADS = 2,
+  BLOCK_LARGE_UPLOADS_AND_DOWNLOADS = 3,
+};
+
 // Returns whether the currently active Safe Browsing Extended Reporting
 // preference exists (eg: has been set before).
 bool ExtendedReportingPrefExists(const PrefService& prefs);
