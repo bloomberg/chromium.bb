@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_OVERVIEW_GRID_PRE_EVENT_HANDLER_H_
-#define ASH_WM_OVERVIEW_OVERVIEW_GRID_PRE_EVENT_HANDLER_H_
+#ifndef ASH_WM_OVERVIEW_OVERVIEW_GRID_EVENT_HANDLER_H_
+#define ASH_WM_OVERVIEW_OVERVIEW_GRID_EVENT_HANDLER_H_
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -28,11 +28,11 @@ class OverviewGrid;
 //   - Disabling overview mode on mouse release.
 //   - Scrolling through tablet overview mode on scrolling.
 //   - Scrolling through tablet overview mode on flinging.
-class OverviewGridPreEventHandler : public ui::EventHandler,
-                                    public ui::CompositorAnimationObserver {
+class OverviewGridEventHandler : public ui::EventHandler,
+                                 public ui::CompositorAnimationObserver {
  public:
-  explicit OverviewGridPreEventHandler(OverviewGrid* grid);
-  ~OverviewGridPreEventHandler() override;
+  explicit OverviewGridEventHandler(OverviewGrid* grid);
+  ~OverviewGridEventHandler() override;
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -67,9 +67,9 @@ class OverviewGridPreEventHandler : public ui::EventHandler,
   // The compositor we are observing when a fling is underway.
   ui::Compositor* observed_compositor_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(OverviewGridPreEventHandler);
+  DISALLOW_COPY_AND_ASSIGN(OverviewGridEventHandler);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_OVERVIEW_GRID_PRE_EVENT_HANDLER_H_
+#endif  // ASH_WM_OVERVIEW_OVERVIEW_GRID_EVENT_HANDLER_H_

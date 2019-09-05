@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/overview_grid_pre_event_handler.h"
+#include "ash/wm/overview/overview_grid_event_handler.h"
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -30,14 +30,14 @@ WallpaperView* GetWallpaperViewForRoot(const aura::Window* root_window) {
 
 }  // namespace
 
-OverviewGridPreEventHandler::OverviewGridPreEventHandler(OverviewGrid* grid)
+OverviewGridEventHandler::OverviewGridEventHandler(OverviewGrid* grid)
     : grid_(grid) {
   auto* wallpaper_view = GetWallpaperViewForRoot(grid_->root_window());
   if (wallpaper_view)
     wallpaper_view->AddPreTargetHandler(this);
 }
 
-OverviewGridPreEventHandler::~OverviewGridPreEventHandler() {
+OverviewGridEventHandler::~OverviewGridEventHandler() {
   EndFling();
   grid_->EndScroll();
 
@@ -46,12 +46,12 @@ OverviewGridPreEventHandler::~OverviewGridPreEventHandler() {
     wallpaper_view->RemovePreTargetHandler(this);
 }
 
-void OverviewGridPreEventHandler::OnMouseEvent(ui::MouseEvent* event) {
+void OverviewGridEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_RELEASED)
     HandleClickOrTap(event);
 }
 
-void OverviewGridPreEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+void OverviewGridEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP: {
       HandleClickOrTap(event);
@@ -91,7 +91,7 @@ void OverviewGridPreEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void OverviewGridPreEventHandler::OnAnimationStep(base::TimeTicks timestamp) {
+void OverviewGridEventHandler::OnAnimationStep(base::TimeTicks timestamp) {
   // Updates |grid_| based on |offset| when |observed_compositor_| begins a new
   // frame.
   DCHECK(observed_compositor_);
@@ -113,13 +113,13 @@ void OverviewGridPreEventHandler::OnAnimationStep(base::TimeTicks timestamp) {
     EndFling();
 }
 
-void OverviewGridPreEventHandler::OnCompositingShuttingDown(
+void OverviewGridEventHandler::OnCompositingShuttingDown(
     ui::Compositor* compositor) {
   DCHECK_EQ(compositor, observed_compositor_);
   EndFling();
 }
 
-void OverviewGridPreEventHandler::HandleClickOrTap(ui::Event* event) {
+void OverviewGridEventHandler::HandleClickOrTap(ui::Event* event) {
   CHECK_EQ(ui::EP_PRETARGET, event->phase());
   // Events that happen while app list is sliding out during overview should
   // be ignored to prevent overview from disappearing out from under the user.
@@ -128,7 +128,7 @@ void OverviewGridPreEventHandler::HandleClickOrTap(ui::Event* event) {
   event->StopPropagation();
 }
 
-void OverviewGridPreEventHandler::HandleFlingScroll(ui::GestureEvent* event) {
+void OverviewGridEventHandler::HandleFlingScroll(ui::GestureEvent* event) {
   fling_velocity_ = gfx::Vector2dF(event->details().velocity_x(),
                                    event->details().velocity_y());
   fling_curve_ =
@@ -138,7 +138,7 @@ void OverviewGridPreEventHandler::HandleFlingScroll(ui::GestureEvent* event) {
   observed_compositor_->AddAnimationObserver(this);
 }
 
-void OverviewGridPreEventHandler::EndFling() {
+void OverviewGridEventHandler::EndFling() {
   if (!observed_compositor_)
     return;
   observed_compositor_->RemoveAnimationObserver(this);

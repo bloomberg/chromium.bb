@@ -30,7 +30,7 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
-#include "ash/wm/overview/overview_grid_pre_event_handler.h"
+#include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
@@ -75,6 +75,13 @@ constexpr float kOverviewVerticalInset = 0.1f;
 constexpr int kTabletLayoutRow = 2;
 
 constexpr int kMinimumItemsForNewLayout = 6;
+
+// The minimum distance that is needed to process a scroll event.
+constexpr float kMinimumScrollDistanceDp = 5.f;
+
+// Wait a while before unpausing the occlusion tracker after a scroll has
+// completed as the user may start another scroll.
+constexpr int kOcclusionUnpauseDurationForScrollMs = 500;
 
 // Histogram names for overview enter/exit smoothness in clamshell,
 // tablet mode and splitview.
@@ -402,7 +409,7 @@ OverviewGrid::~OverviewGrid() = default;
 void OverviewGrid::Shutdown() {
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
-  grid_pre_event_handler_.reset();
+  grid_event_handler_.reset();
 
   bool has_non_cover_animating = false;
   int animate_count = 0;
@@ -445,7 +452,7 @@ void OverviewGrid::PrepareForOverview() {
     ScreenRotationAnimator::GetForRootWindow(root_window_)->AddObserver(this);
   }
 
-  grid_pre_event_handler_ = std::make_unique<OverviewGridPreEventHandler>(this);
+  grid_event_handler_ = std::make_unique<OverviewGridEventHandler>(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
 }
 
@@ -922,11 +929,11 @@ void OverviewGrid::OnScreenRotationAnimationFinished(
 }
 
 void OverviewGrid::OnWallpaperChanging() {
-  grid_pre_event_handler_.reset();
+  grid_event_handler_.reset();
 }
 
 void OverviewGrid::OnWallpaperChanged() {
-  grid_pre_event_handler_ = std::make_unique<OverviewGridPreEventHandler>(this);
+  grid_event_handler_ = std::make_unique<OverviewGridEventHandler>(this);
 }
 
 void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
@@ -1344,17 +1351,25 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
 }
 
 void OverviewGrid::StartScroll() {
+  Shell::Get()->overview_controller()->PauseOcclusionTracker();
+
   // Users are not allowed to scroll past the leftmost or rightmost bounds of
   // the items on screen in the grid. |scroll_offset_min_| is the amount needed
   // to fit the rightmost window into |total_bounds|. The max is zero which is
   // default because windows are aligned to the left from the beginning.
   gfx::Rect total_bounds = GetGridEffectiveBounds();
   total_bounds.Inset(GetGridInsets(total_bounds));
+
   float rightmost_window_right = 0;
-  for (const auto& window : window_list_) {
-    if (rightmost_window_right < window->target_bounds().right())
-      rightmost_window_right = window->target_bounds().right();
+  items_scrolling_bounds_.resize(window_list_.size());
+  for (size_t i = 0; i < items_scrolling_bounds_.size(); ++i) {
+    const gfx::RectF bounds = window_list_[i]->target_bounds();
+    if (rightmost_window_right < bounds.right())
+      rightmost_window_right = bounds.right();
+
+    items_scrolling_bounds_[i] = bounds;
   }
+
   // |rightmost_window_right| may have been modified by an earlier scroll.
   // |scroll_offset_| is added to adjust for that.
   rightmost_window_right -= scroll_offset_;
@@ -1366,13 +1381,33 @@ void OverviewGrid::StartScroll() {
 }
 
 bool OverviewGrid::UpdateScrollOffset(float delta) {
-  const float previous_scroll_offset = scroll_offset_;
-  scroll_offset_ += delta;
-  scroll_offset_ = base::ClampToRange(scroll_offset_, scroll_offset_min_, 0.f);
-  if (scroll_offset_ == previous_scroll_offset)
+  float new_scroll_offset = scroll_offset_;
+  new_scroll_offset += delta;
+  new_scroll_offset =
+      base::ClampToRange(new_scroll_offset, scroll_offset_min_, 0.f);
+  if (new_scroll_offset == scroll_offset_)
     return false;
 
-  PositionWindows(/*animate=*/false);
+  // Do not process scrolls that haven't moved much, unless we are at the
+  // edges.
+  if (std::abs(scroll_offset_ - new_scroll_offset) < kMinimumScrollDistanceDp &&
+      scroll_offset_ > scroll_offset_min_ && scroll_offset_ < 0) {
+    return false;
+  }
+
+  // Update the bounds of the items which are currently visible on screen.
+  DCHECK_EQ(items_scrolling_bounds_.size(), window_list_.size());
+  for (size_t i = 0; i < items_scrolling_bounds_.size(); ++i) {
+    const gfx::RectF previous_bounds = items_scrolling_bounds_[i];
+    items_scrolling_bounds_[i].Offset(new_scroll_offset - scroll_offset_, 0.f);
+    const gfx::RectF new_bounds = items_scrolling_bounds_[i];
+    if (gfx::RectF(GetGridEffectiveBounds()).Intersects(new_bounds) ||
+        gfx::RectF(GetGridEffectiveBounds()).Intersects(previous_bounds)) {
+      window_list_[i]->SetBounds(new_bounds, OVERVIEW_ANIMATION_NONE);
+    }
+  }
+
+  scroll_offset_ = new_scroll_offset;
 
   DCHECK(presentation_time_recorder_);
   presentation_time_recorder_->RequestNext();
@@ -1380,7 +1415,12 @@ bool OverviewGrid::UpdateScrollOffset(float delta) {
 }
 
 void OverviewGrid::EndScroll() {
+  Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
+      kOcclusionUnpauseDurationForScrollMs);
+  items_scrolling_bounds_.clear();
   presentation_time_recorder_.reset();
+
+  PositionWindows(/*animate=*/false);
 }
 
 void OverviewGrid::MaybeInitDesksWidget() {
