@@ -24592,6 +24592,8 @@ Called by update_net_error_codes.py.-->
   <int value="3022" label="CacheStorageWrite"/>
   <int value="3023" label="IndexedDBRead"/>
   <int value="3024" label="IndexedDBWrite"/>
+  <int value="3025" label="DeprecatedFileSystemRead"/>
+  <int value="3026" label="DeprecatedFileSystemWrite"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
