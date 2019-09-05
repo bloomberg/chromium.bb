@@ -977,9 +977,17 @@ ConflictResolution NigoriSyncBridgeImpl::ResolveConflict(
 
 void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // The user intended to disable sync, so we need to clear all the data.
+  // The user intended to disable sync, so we need to clear all the data,
+  // except |serialized_explicit_passphrase_key_| in memory, because this
+  // function can be called due to BackendMigrator. It's safe even if this
+  // function called due to actual disabling sync, since we remove the
+  // persisted key by clearing sync prefs explicitly, and don't reuse current
+  // instance of the bridge after that.
+  // TODO(crbug.com/922900): idea with keeping
+  // |serialized_explicit_passphrase_key_| will become not working, once we
+  // clean up storing explicit passphrase key in prefs, we need to find better
+  // solution.
   storage_->ClearData();
-  serialized_explicit_passphrase_key_ = "";
   keystore_keys_.clear();
   cryptographer_.CopyFrom(Cryptographer());
   passphrase_type_ = NigoriSpecifics::UNKNOWN;

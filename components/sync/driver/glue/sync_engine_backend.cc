@@ -139,21 +139,7 @@ void SyncEngineBackend::OnInitializationComplete(
   if (nigori_controller_) {
     // Having non-null |nigori_controller_| means that USS implementation of
     // Nigori is enabled.
-    // The controller for Nigori is not exposed to the UI thread or the
-    // DataTypeManager, so we need to start it here manually.
-    ConfigureContext configure_context;
-    configure_context.authenticated_account_id = authenticated_account_id_;
-    configure_context.cache_guid = sync_manager_->cache_guid();
-    // TODO(crbug.com/922900): investigate whether we want to use
-    // STORAGE_IN_MEMORY in Butter mode.
-    configure_context.storage_option = STORAGE_ON_DISK;
-    configure_context.configuration_start_time = base::Time::Now();
-    nigori_controller_->LoadModels(configure_context, base::DoNothing());
-    DCHECK_EQ(nigori_controller_->state(), DataTypeController::MODEL_LOADED);
-    // TODO(crbug.com/922900): Do we need to call RegisterNonBlockingType() for
-    // Nigori?
-    model_type_connector->ConnectNonBlockingType(
-        NIGORI, nigori_controller_->ActivateManuallyForNigori());
+    LoadAndConnectNigoriController();
   } else {
     // Control types don't have DataTypeControllers, but they need to have
     // update handlers registered in ModelTypeRegistry.
@@ -552,6 +538,16 @@ void SyncEngineBackend::DoPurgeDisabledTypes(const ModelTypeSet& to_purge,
                                              const ModelTypeSet& to_unapply) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_manager_->PurgeDisabledTypes(to_purge, to_journal, to_unapply);
+  if (to_purge.Has(NIGORI) && nigori_controller_) {
+    // We are using USS implementation of Nigori and someone asked us to purge
+    // it's data. For regular datatypes it's controlled DataTypeManager, but
+    // for Nigori we need to do it here.
+    // TODO(crbug.com/922900): try to find better way to implement this logic,
+    // it's likely happen only due to BackendMigrator.
+    sync_manager_->GetModelTypeConnector()->DisconnectNonBlockingType(NIGORI);
+    nigori_controller_->Stop(ShutdownReason::DISABLE_SYNC, base::DoNothing());
+    LoadAndConnectNigoriController();
+  }
 }
 
 void SyncEngineBackend::DoConfigureSyncer(
@@ -678,6 +674,24 @@ bool SyncEngineBackend::HasUnsyncedItemsForTest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_manager_);
   return sync_manager_->HasUnsyncedItemsForTest();
+}
+
+void SyncEngineBackend::LoadAndConnectNigoriController() {
+  // The controller for Nigori is not exposed to the UI thread or the
+  // DataTypeManager, so we need to start it here manually.
+  ConfigureContext configure_context;
+  configure_context.authenticated_account_id = authenticated_account_id_;
+  configure_context.cache_guid = sync_manager_->cache_guid();
+  // TODO(crbug.com/922900): investigate whether we want to use
+  // STORAGE_IN_MEMORY in Butter mode.
+  configure_context.storage_option = STORAGE_ON_DISK;
+  configure_context.configuration_start_time = base::Time::Now();
+  nigori_controller_->LoadModels(configure_context, base::DoNothing());
+  DCHECK_EQ(nigori_controller_->state(), DataTypeController::MODEL_LOADED);
+  // TODO(crbug.com/922900): Do we need to call RegisterNonBlockingType() for
+  // Nigori?
+  sync_manager_->GetModelTypeConnector()->ConnectNonBlockingType(
+      NIGORI, nigori_controller_->ActivateManuallyForNigori());
 }
 
 }  // namespace syncer
