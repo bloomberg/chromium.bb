@@ -24587,6 +24587,8 @@ Called by update_net_error_codes.py.-->
   <int value="3018" label="WebSocketStreamConstructor"/>
   <int value="3019" label="DOMStorageRead"/>
   <int value="3020" label="DOMStorageWrite"/>
+  <int value="3021" label="CacheStorageRead"/>
+  <int value="3022" label="CacheStorageWrite"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
