@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/login_button.h"
@@ -35,6 +36,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -629,6 +631,35 @@ TEST_F(ParentAccessWidgetTest, WidgetResizingInTabletMode) {
   EXPECT_EQ(kClamshellModeSize, view->size());
   EXPECT_EQ(kClamshellModeSize, widget_size());
   EXPECT_EQ(user_work_area_center(), widget_center());
+  widget->Destroy();
+}
+
+TEST_F(ParentAccessViewTest, VirtualKeyboardHidden) {
+  // Enable and show virtual keyboard.
+  auto* keyboard_controller = Shell::Get()->keyboard_controller();
+  ASSERT_NE(keyboard_controller, nullptr);
+  keyboard_controller->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kCommandLineEnabled);
+
+  // Show widget.
+  ShowWidget(ParentAccessRequestReason::kUnlockTimeLimits);
+  auto* view = ParentAccessWidget::TestApi(ParentAccessWidget::Get())
+                   .parent_access_view();
+  ParentAccessView::TestApi test_api(view);
+
+  views::Textfield* text_field = test_api.GetInputTextField(0);
+
+  ui::GestureEvent event(
+      text_field->x(), text_field->y(), 0, base::TimeTicks::Now(),
+      ui::GestureEventDetails(ui::EventType::ET_GESTURE_TAP_DOWN));
+  text_field->OnGestureEvent(&event);
+  base::RunLoop().RunUntilIdle();
+
+  // Even if we have pressed the text input field, virtual keyboard shouldn't
+  // show.
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+
+  DismissWidget();
 }
 
 }  // namespace ash
