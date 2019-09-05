@@ -228,7 +228,6 @@ NavigationPredictor::NavigationPredictor(
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
-  DCHECK_LE(0, prefetch_url_score_threshold_);
 
   if (!IsMainFrame(render_frame_host))
     return;
