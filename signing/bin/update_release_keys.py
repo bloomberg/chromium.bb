@@ -44,21 +44,21 @@ class KeyringData(object):
     self.public = os.path.join(base_dir, 'public')
     self.private = '../private'
     self.configs = '../config'
-    self.repo_yaml = os.path.join(self.base_dir, 'repo.yaml')
+    self.contents_yaml = os.path.join(self.base_dir, 'contents.yaml')
     self.keysets = self._ReadRepoYaml()
 
   def _ReadRepoYaml(self):
     """Read the directory of active keysets in the repo."""
     default = {'metadata-version': METADATA_VERSION}
-    if os.path.exists(self.repo_yaml):
-      with open(self.repo_yaml) as fp:
+    if os.path.exists(self.contents_yaml):
+      with open(self.contents_yaml) as fp:
         ret = yaml.load(fp)
       if not ret or 'metadata-version' not in ret:
-        logging.error('%s: no metadata-version.', self.repo_yaml)
+        logging.error('%s: no metadata-version.', self.contents_yaml)
         raise KeyimportError('metadata-version missing.')
       if ret['metadata-version'] != METADATA_VERSION:
-        logging.error('%s: metadata-version %s', self.repo_yaml,
-                      str(ret['metadata-version']))
+        logging.error('%s: metadata-version %s', self.contents_yaml,
+                      ret['metadata-version'])
         raise KeyimportError('metadata-version bad.')
       return ret
     else:
@@ -66,7 +66,7 @@ class KeyringData(object):
 
   def WriteRepoYaml(self):
     """Write repo.yaml."""
-    self._WriteConfig(self.repo_yaml, self.keysets)
+    self._WriteConfig(self.contents_yaml, self.keysets)
 
   def _WriteConfig(self, filename, config):
     """Write the config
