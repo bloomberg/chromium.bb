@@ -88,6 +88,12 @@ CdmPromise::Exception ToCdmPromiseException(fuchsia::media::drm::Error error) {
       return CdmPromise::Exception::INVALID_STATE_ERROR;
     case fuchsia::media::drm::Error::QUOTA_EXCEEDED:
       return CdmPromise::Exception::QUOTA_EXCEEDED_ERROR;
+
+    case fuchsia::media::drm::Error::NOT_PROVISIONED:
+    case fuchsia::media::drm::Error::INTERNAL:
+      // TODO(crbug.com/1001167): Figure out the right value to return for these
+      // errors.
+      return CdmPromise::Exception::INVALID_STATE_ERROR;
   }
 }
 
