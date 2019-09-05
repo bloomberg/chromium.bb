@@ -729,7 +729,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   if (LIKELY(IsLastFragment(physical_fragment)))
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
-  if (!constraint_space.IsFixedBlockSize()) {
+  if (!constraint_space.IsFixedSizeBlock()) {
     // If we had a fixed block size, our children will have sized themselves
     // relative to the fixed size, which would make our intrinsic size
     // incorrect (too big).
