@@ -1754,8 +1754,6 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     // then only need to apply the inherited properties, if any, as their values
     // can depend on the element context. This is fast and saves memory by
     // reusing the style data structures.
-    state.Style()->CopyNonInheritedFromCached(
-        *cached_matched_properties->computed_style);
     if (state.ParentStyle()->InheritedDataShared(
             *cached_matched_properties->parent_computed_style) &&
         !IsAtShadowBoundary(&element) &&
@@ -1774,11 +1772,14 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
       // need to explicitly restore it.
       state.Style()->SetInsideLink(link_status);
 
-      UpdateFont(state);
       is_inherited_cache_hit = true;
     }
-
-    is_non_inherited_cache_hit = true;
+    if (!IsForcedColorsModeEnabled() || is_inherited_cache_hit) {
+      state.Style()->CopyNonInheritedFromCached(
+          *cached_matched_properties->computed_style);
+      is_non_inherited_cache_hit = true;
+    }
+    UpdateFont(state);
   }
 
   return CacheSuccess(is_inherited_cache_hit, is_non_inherited_cache_hit,
