@@ -341,10 +341,16 @@ static void set_good_speed_features_framesize_independent(
     sf->adaptive_interp_filter_search = 1;
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 3;
     sf->model_based_prune_tx_search_level = 0;
+
+    sf->reduce_inter_modes = boosted ? 1 : 2;
+    sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
+    sf->prune_warp_using_wmtype = 1;
+    sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
+    sf->disable_smooth_intra =
+        !frame_is_intra_only(&cpi->common) || (cpi->rc.frames_to_key != 1);
   }
 
   if (speed >= 3) {
-    sf->reduce_inter_modes = boosted ? 1 : 2;
     sf->less_rectangular_check_level = 2;
     // adaptive_motion_search breaks encoder multi-thread tests.
     // The values in x->pred_mv[] differ for single and multi-thread cases.
@@ -354,20 +360,15 @@ static void set_good_speed_features_framesize_independent(
     sf->use_accurate_subpel_search = USE_2_TAPS;
     if (cpi->oxcf.enable_smooth_interintra)
       sf->disable_smooth_interintra = boosted ? 0 : 1;
-    sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
     sf->gm_search_type = GM_DISABLE_SEARCH;
     sf->prune_comp_search_by_single_result = 2;
     sf->prune_motion_mode_level = boosted ? 2 : 3;
-    sf->prune_warp_using_wmtype = 1;
     // TODO(yunqing): evaluate this speed feature for speed 1 & 2, and combine
     // it with cpi->sf.disable_wedge_search_var_thresh.
     sf->disable_wedge_interintra_search = 1;
     // TODO(any): Experiment with the early exit mechanism for speeds 0, 1 and 2
     // and clean-up the speed feature
     sf->perform_best_rd_based_gating_for_chroma = 1;
-    sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
-    sf->disable_smooth_intra =
-        !frame_is_intra_only(&cpi->common) || (cpi->rc.frames_to_key != 1);
     // TODO(any): Experiment on the dependency of this speed feature with
     // use_intra_txb_hash, use_inter_txb_hash and use_mb_rd_hash speed features
     // TODO(any): Refactor the code related to following winner mode speed
