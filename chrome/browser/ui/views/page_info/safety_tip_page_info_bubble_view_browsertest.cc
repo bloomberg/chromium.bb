@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -314,6 +315,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // After the user closes the warning, they should still be on the same domain.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreWarningStaysOnPage) {
+  if (ui_status() == UIStatus::kDisabled) {
+    return;
+  }
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
@@ -329,6 +333,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // re-visits the page.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreWarningStopsWarning) {
+  if (ui_status() == UIStatus::kDisabled) {
+    return;
+  }
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
