@@ -20530,6 +20530,7 @@ Called by update_net_error_codes.py.-->
   <int value="1378" label="AUTOTESTPRIVATE_SETARCAPPWINDOWFOCUS"/>
   <int value="1379" label="LOGINSTATE_GETPROFILETYPE"/>
   <int value="1380" label="LOGINSTATE_GETSESSIONSTATE"/>
+  <int value="1381" label="AUTOTESTPRIVATE_GETARCSTARTTIME"/>
 </enum>
 
 <enum name="ExtensionIconState">
