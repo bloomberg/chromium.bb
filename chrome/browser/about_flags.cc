@@ -2939,6 +2939,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrossOriginEmbedderPolicyDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kCrossOriginEmbedderPolicy)},
 
+    {"disable-keepalive-fetch", flag_descriptions::kDisableKeepaliveFetchName,
+     flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,
+     FEATURE_VALUE_TYPE(network::features::kDisableKeepaliveFetch)},
+
     {"enable-resource-load-scheduler",
      flag_descriptions::kResourceLoadSchedulerName,
      flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,

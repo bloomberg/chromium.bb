@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -630,10 +632,13 @@ void FetchManager::Loader::Dispose() {
   // Prevent notification
   fetch_manager_ = nullptr;
   if (threadable_loader_) {
-    if (fetch_request_data_->Keepalive())
+    if (fetch_request_data_->Keepalive() &&
+        !base::FeatureList::IsEnabled(
+            network::features::kDisableKeepaliveFetch)) {
       threadable_loader_->Detach();
-    else
+    } else {
       threadable_loader_->Cancel();
+    }
     threadable_loader_ = nullptr;
   }
   if (integrity_verifier_)

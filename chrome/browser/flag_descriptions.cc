@@ -782,6 +782,11 @@ const char kCrossOriginEmbedderPolicyName[] = "Cross Origin Embedder Policy";
 const char kCrossOriginEmbedderPolicyDescription[] =
     "Enable Cross Origin Embedder Policy (https://mikewest.github.io/corpp/).";
 
+const char kDisableKeepaliveFetchName[] = "Disable fetch with keepalive set";
+const char kDisableKeepaliveFetchDescription[] =
+    "Disable fetch with keepalive set "
+    "(https://fetch.spec.whatwg.org/#request-keepalive-flag).";
+
 const char kExperimentalAccessibilityFeaturesName[] =
     "Experimental accessibility features";
 const char kExperimentalAccessibilityFeaturesDescription[] =

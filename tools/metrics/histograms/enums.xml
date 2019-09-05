@@ -35685,6 +35685,7 @@ from previous Chrome versions.
   <int value="-621044227" label="OmniboxReverseTabSwitchLogic:enabled"/>
   <int value="-620030047" label="CrosCompUpdates:disabled"/>
   <int value="-619740638" label="ListAllDisplayModes:enabled"/>
+  <int value="-619665653" label="DisableKeepaliveFetch:disabled"/>
   <int value="-619178844" label="NewOverviewLayout:disabled"/>
   <int value="-617452890" label="media-router"/>
   <int value="-616818899" label="SameSiteByDefaultCookies:enabled"/>
@@ -37377,6 +37378,7 @@ from previous Chrome versions.
   <int value="1766676896" label="affiliation-based-matching:disabled"/>
   <int value="1767411597" label="DisallowUnsafeHttpDownloads:enabled"/>
   <int value="1768759000" label="AutofillProfileServerValidation:disabled"/>
+  <int value="1771548551" label="DisableKeepaliveFetch:enabled"/>
   <int value="1772454319" label="enable-storage-manager"/>
   <int value="1775475563" label="malware-interstitial-v3"/>
   <int value="1776475705" label="show-composited-layer-borders"/>

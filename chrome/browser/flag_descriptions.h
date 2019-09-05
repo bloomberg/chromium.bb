@@ -464,6 +464,9 @@ extern const char kEnableOutOfBlinkCorsDescription[];
 extern const char kCrossOriginEmbedderPolicyName[];
 extern const char kCrossOriginEmbedderPolicyDescription[];
 
+extern const char kDisableKeepaliveFetchName[];
+extern const char kDisableKeepaliveFetchDescription[];
+
 extern const char kVizDisplayCompositorName[];
 extern const char kVizDisplayCompositorDescription[];
 
