@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CONTENT_DELEGATE_H_
-#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CONTENT_DELEGATE_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CONTENT_INJECTOR_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CONTENT_INJECTOR_H_
 
 #import <Foundation/Foundation.h>
 
 // Protocol to send Manual Fill user selections to be filled in the active web
 // state.
-@protocol ManualFillContentDelegate<NSObject>
+@protocol ManualFillContentInjector <NSObject>
 
 // Must be called before |userDidPickContent| to validate if a value type can be
 // injected, if either flag is true. If not, an alert is given to the user and
@@ -35,4 +35,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CONTENT_DELEGATE_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CONTENT_INJECTOR_H_
