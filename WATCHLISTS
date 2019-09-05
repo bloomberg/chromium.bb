@@ -1743,6 +1743,9 @@
                   '|components/tracing/'\
                   '|services/tracing/'
     },
+    'traffic_annotation': {
+      'filepath': 'tools/traffic_annotation/'
+    },
     'ui_compositor': {
       'filepath': 'ui/compositor/layer\.|'\
                   'ui/compositor/layer_unittest|'\
@@ -2635,6 +2638,7 @@
     'tracing': ['tracing+reviews@chromium.org',
                 'wfh+watch@chromium.org',
                 'spang+watch@chromium.org'],
+    'traffic_annotation': ['nicolaso+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
     'ui_display_win': ['robliao+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
