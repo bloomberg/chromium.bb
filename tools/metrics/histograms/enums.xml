@@ -24583,6 +24583,8 @@ Called by update_net_error_codes.py.-->
       label="V8FileSystemDirectoryHandle_GetSystemDirectory_Method"/>
   <int value="3017" label="NotificationShowTrigger"/>
   <int value="3018" label="WebSocketStreamConstructor"/>
+  <int value="3019" label="DOMStorageRead"/>
+  <int value="3020" label="DOMStorageWrite"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
