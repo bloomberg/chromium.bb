@@ -5,13 +5,14 @@
 package org.chromium.chrome.browser.contacts_picker;
 
 import android.content.Context;
+import android.support.v4.widget.ImageViewCompat;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
-import android.widget.Button;
-import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
+import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.List;
 
@@ -41,16 +42,6 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
     }
 
     @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-
-        TextView up = (TextView) mNumberRollView.findViewById(R.id.up);
-        TextView down = (TextView) mNumberRollView.findViewById(R.id.down);
-        ApiCompatibilityUtils.setTextAppearance(up, R.style.TextAppearance_BlackHeadline);
-        ApiCompatibilityUtils.setTextAppearance(down, R.style.TextAppearance_BlackHeadline);
-    }
-
-    @Override
     public void onNavigationBack() {
         if (isSearching()) {
             super.onNavigationBack();
@@ -60,18 +51,24 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
     }
 
     @Override
-    protected void showSelectionView(
-            List<ContactDetails> selectedItems, boolean wasSelectionEnabled) {
-        switchToNumberRollView(selectedItems, wasSelectionEnabled);
-    }
-
-    @Override
     public void onSelectionStateChange(List<ContactDetails> selectedItems) {
         super.onSelectionStateChange(selectedItems);
 
-        Button done = (Button) findViewById(R.id.done);
-        done.setEnabled(selectedItems.size() > 0);
+        int selectCount = selectedItems.size();
+        ButtonCompat done = findViewById(R.id.done);
+        done.setEnabled(selectCount > 0);
 
-        showBackArrow();
+        AppCompatImageView search = findViewById(R.id.search);
+        ImageViewCompat.setImageTintList(search,
+                useDarkIcons() ? getDarkIconColorStateList() : getLightIconColorStateList());
+
+        if (selectCount > 0) {
+            ApiCompatibilityUtils.setTextAppearance(done, R.style.TextAppearance_Body_Inverse);
+        } else {
+            ApiCompatibilityUtils.setTextAppearance(
+                    done, R.style.TextAppearance_BlackDisabledText3);
+
+            showBackArrow();
+        }
     }
 }
