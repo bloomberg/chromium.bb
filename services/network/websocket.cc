@@ -88,7 +88,8 @@ class WebSocket::WebSocketEventHandler final
                             const std::string& extensions) override;
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
-                   base::span<const char> payload) override;
+                   scoped_refptr<net::IOBuffer> buffer,
+                   size_t buffer_size) override;
   bool HasPendingDataFrames() override;
   void OnClosingHandshake() override;
   void OnSendFlowControlQuotaAdded(int64_t quota) override;
@@ -191,17 +192,27 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
       &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
 }
 
+struct WebSocket::DataFrame {
+  DataFrame(scoped_refptr<net::IOBuffer> buffer, size_t size)
+      : buffer(std::move(buffer)), size(size) {}
+
+  scoped_refptr<net::IOBuffer> buffer;
+  size_t offset = 0;
+  size_t size;
+};
+
 void WebSocket::WebSocketEventHandler::OnDataFrame(
     bool fin,
     net::WebSocketFrameHeader::OpCode type,
-    base::span<const char> payload) {
+    scoped_refptr<net::IOBuffer> buffer,
+    size_t buffer_size) {
   DVLOG(3) << "WebSocketEventHandler::OnDataFrame @"
            << reinterpret_cast<void*>(this) << " fin=" << fin
-           << " type=" << type << " data is " << payload.size() << " bytes";
+           << " type=" << type << " data is " << buffer_size << " bytes";
   // TODO(yoichio): Merge OnDataFrame mojo channel into data pipe.
-  impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type), payload.size());
-  if (payload.size() > 0) {
-    impl_->pending_data_frames_.push(payload);
+  impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type), buffer_size);
+  if (buffer_size > 0) {
+    impl_->pending_data_frames_.push(DataFrame(std::move(buffer), buffer_size));
   }
   impl_->SendPendingDataFrames();
 }
@@ -574,9 +585,9 @@ void WebSocket::SendPendingDataFrames() {
     return;
   }
   while (!pending_data_frames_.empty()) {
-    base::span<const char>& data_frame = pending_data_frames_.front();
+    WebSocket::DataFrame& data_frame = pending_data_frames_.front();
     SendDataFrame(&data_frame);
-    if (data_frame.size() > 0) {
+    if (data_frame.size > 0) {
       // Mojo doesn't have any write buffer so far.
       writable_watcher_.ArmOrNotify();
       wait_for_writable_ = true;
@@ -586,21 +597,23 @@ void WebSocket::SendPendingDataFrames() {
   }
 }
 
-void WebSocket::SendDataFrame(base::span<const char>* payload) {
-  DCHECK_GT(payload->size(), 0u);
+void WebSocket::SendDataFrame(DataFrame* data_frame) {
+  DCHECK_GT(data_frame->size, 0u);
   MojoResult begin_result;
   void* buffer;
   uint32_t writable_size = 0;
-  while (payload->size() > 0 &&
+  while (data_frame->size > 0 &&
          (begin_result = writable_->BeginWriteData(
               &buffer, &writable_size, MOJO_WRITE_DATA_FLAG_NONE)) ==
              MOJO_RESULT_OK) {
     const uint32_t size_to_write =
-        std::min(writable_size, static_cast<uint32_t>(payload->size()));
+        std::min(writable_size, static_cast<uint32_t>(data_frame->size));
     DCHECK_GT(size_to_write, 0u);
 
-    memcpy(buffer, payload->data(), size_to_write);
-    *payload = payload->subspan(size_to_write);
+    memcpy(buffer, data_frame->buffer->data() + data_frame->offset,
+           size_to_write);
+    data_frame->offset += size_to_write;
+    data_frame->size -= size_to_write;
 
     const MojoResult end_result = writable_->EndWriteData(size_to_write);
     DCHECK_EQ(end_result, MOJO_RESULT_OK);

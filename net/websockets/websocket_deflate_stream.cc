@@ -64,7 +64,6 @@ int WebSocketDeflateStream::ReadFrames(
     std::vector<std::unique_ptr<WebSocketFrame>>* frames,
     CompletionOnceCallback callback) {
   read_callback_ = std::move(callback);
-  inflater_outputs_.clear();
   int result = stream_->ReadFrames(
       frames, base::BindOnce(&WebSocketDeflateStream::OnReadComplete,
                              base::Unretained(this), base::Unretained(frames)));
@@ -79,7 +78,6 @@ int WebSocketDeflateStream::ReadFrames(
 int WebSocketDeflateStream::WriteFrames(
     std::vector<std::unique_ptr<WebSocketFrame>>* frames,
     CompletionOnceCallback callback) {
-  deflater_outputs_.clear();
   int result = Deflate(frames);
   if (result != OK)
     return result;
@@ -137,9 +135,10 @@ int WebSocketDeflateStream::Deflate(
       frames_to_write.push_back(std::move(frame));
       current_writing_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
     } else {
-      if (frame->data &&
+      if (frame->data.get() &&
           !deflater_.AddBytes(
-              frame->data, static_cast<size_t>(frame->header.payload_length))) {
+              frame->data->data(),
+              static_cast<size_t>(frame->header.payload_length))) {
         DVLOG(1) << "WebSocket protocol error. "
                  << "deflater_.AddBytes() returns an error.";
         return ERR_WS_PROTOCOL_ERROR;
@@ -214,14 +213,13 @@ int WebSocketDeflateStream::AppendCompressedFrame(
              << "deflater_.GetOutput() returns an error.";
     return ERR_WS_PROTOCOL_ERROR;
   }
-  deflater_outputs_.push_back(compressed_payload);
   auto compressed = std::make_unique<WebSocketFrame>(opcode);
   compressed->header.CopyFrom(header);
   compressed->header.opcode = opcode;
   compressed->header.final = header.final;
   compressed->header.reserved1 =
       (opcode != WebSocketFrameHeader::kOpCodeContinuation);
-  compressed->data = compressed_payload->data();
+  compressed->data = compressed_payload;
   compressed->header.payload_length = compressed_payload->size();
 
   current_writing_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
@@ -243,7 +241,6 @@ int WebSocketDeflateStream::AppendPossiblyCompressedMessage(
              << "deflater_.GetOutput() returns an error.";
     return ERR_WS_PROTOCOL_ERROR;
   }
-  deflater_outputs_.push_back(compressed_payload);
 
   uint64_t original_payload_length = 0;
   for (size_t i = 0; i < frames->size(); ++i) {
@@ -272,7 +269,7 @@ int WebSocketDeflateStream::AppendPossiblyCompressedMessage(
   compressed->header.opcode = opcode;
   compressed->header.final = true;
   compressed->header.reserved1 = true;
-  compressed->data = compressed_payload->data();
+  compressed->data = compressed_payload;
   compressed->header.payload_length = compressed_payload->size();
 
   predictor_->RecordWrittenDataFrame(compressed.get());
@@ -319,9 +316,10 @@ int WebSocketDeflateStream::Inflate(
       frames_to_output.push_back(std::move(frame));
     } else {
       DCHECK_EQ(reading_state_, READING_COMPRESSED_MESSAGE);
-      if (frame->data &&
+      if (frame->data.get() &&
           !inflater_.AddBytes(
-              frame->data, static_cast<size_t>(frame->header.payload_length))) {
+              frame->data->data(),
+              static_cast<size_t>(frame->header.payload_length))) {
         DVLOG(1) << "WebSocket protocol error. "
                  << "inflater_.AddBytes() returns an error.";
         return ERR_WS_PROTOCOL_ERROR;
@@ -343,7 +341,6 @@ int WebSocketDeflateStream::Inflate(
         auto inflated =
             std::make_unique<WebSocketFrame>(WebSocketFrameHeader::kOpCodeText);
         scoped_refptr<IOBufferWithSize> data = inflater_.GetOutput(size);
-        inflater_outputs_.push_back(data);
         bool is_final = !inflater_.CurrentOutputSize() && frame->header.final;
         if (!data.get()) {
           DVLOG(1) << "WebSocket protocol error. "
@@ -354,7 +351,7 @@ int WebSocketDeflateStream::Inflate(
         inflated->header.opcode = current_reading_opcode_;
         inflated->header.final = is_final;
         inflated->header.reserved1 = false;
-        inflated->data = data->data();
+        inflated->data = data;
         inflated->header.payload_length = data->size();
         DVLOG(3) << "Inflated frame: opcode=" << inflated->header.opcode
                  << " final=" << inflated->header.final

@@ -101,7 +101,8 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
 
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
-                   base::span<const char> payload) override;
+                   scoped_refptr<IOBuffer> data,
+                   size_t data_size) override;
 
   bool HasPendingDataFrames() override { return false; }
 
@@ -176,8 +177,8 @@ void ConnectTestingEventInterface::OnAddChannelResponse(
 
 void ConnectTestingEventInterface::OnDataFrame(bool fin,
                                                WebSocketMessageType type,
-                                               base::span<const char> payload) {
-}
+                                               scoped_refptr<IOBuffer> data,
+                                               size_t data_size) {}
 
 void ConnectTestingEventInterface::OnSendFlowControlQuotaAdded(int64_t quota) {}
 

@@ -72,9 +72,9 @@ std::ostream& operator<<(std::ostream& os, const WebSocketFrameHeader& header) {
 
 std::ostream& operator<<(std::ostream& os, const WebSocketFrame& frame) {
   os << "{" << frame.header << ", ";
-  if (frame.data) {
-    return os << "\""
-              << base::StringPiece(frame.data, frame.header.payload_length)
+  if (frame.data.get()) {
+    return os << "\"" << base::StringPiece(frame.data->data(),
+                                           frame.header.payload_length)
               << "\"}";
   }
   return os << "NULL}";
@@ -161,9 +161,11 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
 
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
-                   base::span<const char> payload) override {
+                   scoped_refptr<IOBuffer> buffer,
+                   size_t buffer_size) override {
+    const char* data = buffer ? buffer->data() : nullptr;
     return OnDataFrameVector(fin, type,
-                             std::vector<char>(payload.begin(), payload.end()));
+                             std::vector<char>(data, data + buffer_size));
   }
 
   MOCK_METHOD1(OnCreateURLRequest, void(URLRequest*));
@@ -229,7 +231,8 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
                             const std::string& extensions) override {}
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
-                   base::span<const char> data_span) override {}
+                   scoped_refptr<IOBuffer> data,
+                   size_t data_size) override {}
   bool HasPendingDataFrames() override { return false; }
   void OnSendFlowControlQuotaAdded(int64_t quota) override {}
   void OnClosingHandshake() override {}
@@ -346,8 +349,7 @@ std::ostream& operator<<(std::ostream& os, const InitFrame (&frames)[N]) {
 // runtime. Templated on the size of the array to save typing.
 template <size_t N>
 std::vector<std::unique_ptr<WebSocketFrame>> CreateFrameVector(
-    const InitFrame (&source_frames)[N],
-    std::vector<scoped_refptr<IOBuffer>>* result_frame_data) {
+    const InitFrame (&source_frames)[N]) {
   std::vector<std::unique_ptr<WebSocketFrame>> result_frames;
   result_frames.reserve(N);
   for (size_t i = 0; i < N; ++i) {
@@ -359,10 +361,8 @@ std::vector<std::unique_ptr<WebSocketFrame>> CreateFrameVector(
     result_header.masked = (source_frame.masked == MASKED);
     result_header.payload_length = frame_length;
     if (source_frame.data) {
-      auto buffer = base::MakeRefCounted<IOBuffer>(frame_length);
-      result_frame_data->push_back(buffer);
-      memcpy(buffer->data(), source_frame.data, frame_length);
-      result_frame->data = buffer->data();
+      result_frame->data = base::MakeRefCounted<IOBuffer>(frame_length);
+      memcpy(result_frame->data->data(), source_frame.data, frame_length);
     }
     result_frames.push_back(std::move(result_frame));
   }
@@ -370,12 +370,12 @@ std::vector<std::unique_ptr<WebSocketFrame>> CreateFrameVector(
 }
 
 // A GoogleMock action which can be used to respond to call to ReadFrames with
-// some frames. Use like ReadFrames(_, _).WillOnce(ReturnFrames(&frames,
-// &result_frame_data_)); |frames| is an array of InitFrame. |frames| needs to
-// be passed by pointer because otherwise it will be treated as a pointer and
-// the array size information will be lost.
-ACTION_P2(ReturnFrames, source_frames, result_frame_data) {
-  *arg0 = CreateFrameVector(*source_frames, result_frame_data);
+// some frames. Use like ReadFrames(_, _).WillOnce(ReturnFrames(&frames));
+// |frames| is an array of InitFrame. |frames| needs to be passed by pointer
+// because otherwise it will be treated as a pointer and the array size
+// information will be lost.
+ACTION_P(ReturnFrames, source_frames) {
+  *arg0 = CreateFrameVector(*source_frames);
   return OK;
 }
 
@@ -424,7 +424,8 @@ class EqualsFramesMatcher : public ::testing::MatcherInterface<
         return false;
       }
       if (expected_length != 0 &&
-          memcmp(actual_frame.data, expected_frame.data,
+          memcmp(actual_frame.data->data(),
+                 expected_frame.data,
                  actual_frame.header.payload_length) != 0) {
         *listener << "the data content differs";
         return false;
@@ -486,8 +487,8 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
   void PrepareReadFrames(IsSync async,
                          int error,
                          const InitFrame (&frames)[N]) {
-    responses_.push_back(std::make_unique<Response>(
-        async, error, CreateFrameVector(frames, &result_frame_data_)));
+    responses_.push_back(
+        std::make_unique<Response>(async, error, CreateFrameVector(frames)));
   }
 
   // An alternate version of PrepareReadFrames for when we need to construct
@@ -557,8 +558,6 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
   // returned, ReadFrames() returns ERR_IO_PENDING but read_frames_pending_ is
   // not set to true.
   bool read_frames_pending_;
-
-  std::vector<scoped_refptr<IOBuffer>> result_frame_data_;
 };
 
 // A FakeWebSocketStream where writes always complete successfully and
@@ -592,13 +591,6 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
 
   int WriteFrames(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
                   CompletionOnceCallback callback) override {
-    for (const auto& frame : *frames) {
-      auto buffer = base::MakeRefCounted<IOBuffer>(
-          static_cast<size_t>(frame->header.payload_length));
-      memcpy(buffer->data(), frame->data, frame->header.payload_length);
-      frame->data = buffer->data();
-      buffers_.push_back(buffer);
-    }
     stored_frames_.insert(stored_frames_.end(),
                           std::make_move_iterator(frames->begin()),
                           std::make_move_iterator(frames->end()));
@@ -654,7 +646,6 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
   CompletionOnceCallback read_callback_;
   // Owned by the caller of ReadFrames().
   std::vector<std::unique_ptr<WebSocketFrame>>* read_frames_;
-  std::vector<scoped_refptr<IOBuffer>> buffers_;
   // True if we should close the connection.
   bool done_;
 };
@@ -866,8 +857,6 @@ class WebSocketChannelTest : public TestWithTaskEnvironment {
 
   // A mock or fake stream for tests that need one.
   std::unique_ptr<WebSocketStream> stream_;
-
-  std::vector<scoped_refptr<IOBuffer>> result_frame_data_;
 };
 
 // enum of WebSocketEventInterface calls. These are intended to be or'd together
@@ -1790,7 +1779,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ReservedBitsMustNotBeSet) {
   // It is not worth adding support for reserved bits to InitFrame just for this
   // one test, so set the bit manually.
   std::vector<std::unique_ptr<WebSocketFrame>> raw_frames =
-      CreateFrameVector(frames, &result_frame_data_);
+      CreateFrameVector(frames);
   raw_frames[0]->header.reserved1 = true;
   stream->PrepareRawReadFrames(ReadableFakeWebSocketStream::SYNC, OK,
                                std::move(raw_frames));
@@ -1882,7 +1871,7 @@ TEST_F(WebSocketChannelStreamTest, PendingDataFrameStopsReadFrames) {
     EXPECT_CALL(*event_interface_, HasPendingDataFrames())
         .WillOnce(Return(false));
     EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-        .WillOnce(ReturnFrames(&frames, &result_frame_data_));
+        .WillOnce(ReturnFrames(&frames));
     EXPECT_CALL(*event_interface_, HasPendingDataFrames())
         .WillOnce(Return(true));
     EXPECT_CALL(checkpoint, Call(1));
@@ -2034,7 +2023,7 @@ TEST_F(WebSocketChannelStreamTest, CloseIsEchoedBack) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
        MASKED,      CLOSE_DATA(NORMAL_CLOSURE, "Close")}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
       .WillOnce(Return(OK));
@@ -2080,7 +2069,8 @@ TEST_F(WebSocketChannelStreamTest, CloseOnlySentOnce) {
   ASSERT_EQ(CHANNEL_ALIVE,
             channel_->StartClosingHandshake(kWebSocketNormalClosure, "Close"));
   checkpoint.Call(2);
-  *frames = CreateFrameVector(frames_init, &result_frame_data_);
+
+  *frames = CreateFrameVector(frames_init);
   std::move(read_callback).Run(OK);
   checkpoint.Call(3);
 }
@@ -2128,7 +2118,7 @@ TEST_F(WebSocketChannelStreamTest, Code1005IsNotEchoed) {
   static const InitFrame expected[] = {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED, ""}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
       .WillOnce(Return(OK));
@@ -2142,7 +2132,7 @@ TEST_F(WebSocketChannelStreamTest, Code1005IsNotEchoedNull) {
   static const InitFrame expected[] = {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED, ""}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
       .WillOnce(Return(OK));
@@ -2161,7 +2151,7 @@ TEST_F(WebSocketChannelStreamTest, CloseFrameInvalidUtf8) {
        MASKED, CLOSE_DATA(PROTOCOL_ERROR, "Invalid UTF-8 in Close frame")}};
 
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
       .WillOnce(Return(OK));
@@ -2183,7 +2173,7 @@ TEST_F(WebSocketChannelStreamTest, PingRepliedWithPong) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodePong,
        MASKED,      "Application data"}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
       .WillOnce(Return(OK));
@@ -2199,7 +2189,7 @@ TEST_F(WebSocketChannelStreamTest, NullPingRepliedWithNullPong) {
   static const InitFrame expected[] = {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodePong, MASKED, nullptr}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
       .WillOnce(Return(OK));
@@ -2239,7 +2229,7 @@ TEST_F(WebSocketChannelStreamTest, PongInTheMiddleOfDataMessage) {
   CreateChannelAndConnectSuccessfully();
   channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
                       AsIOBuffer("Hello "), 6U);
-  *read_frames = CreateFrameVector(frames, &result_frame_data_);
+  *read_frames = CreateFrameVector(frames);
   std::move(read_callback).Run(OK);
   channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
                       AsIOBuffer("World"), 5U);
@@ -2349,8 +2339,8 @@ TEST_F(WebSocketChannelStreamTest, WrittenBinaryFramesAre8BitClean) {
   ASSERT_EQ(1U, frames->size());
   const WebSocketFrame* out_frame = (*frames)[0].get();
   EXPECT_EQ(kBinaryBlobSize, out_frame->header.payload_length);
-  ASSERT_TRUE(out_frame->data);
-  EXPECT_EQ(0, memcmp(kBinaryBlob, out_frame->data, kBinaryBlobSize));
+  ASSERT_TRUE(out_frame->data.get());
+  EXPECT_EQ(0, memcmp(kBinaryBlob, out_frame->data->data(), kBinaryBlobSize));
 }
 
 // Test the read path for 8-bit cleanliness as well.
@@ -2360,9 +2350,8 @@ TEST_F(WebSocketChannelEventInterfaceTest, ReadBinaryFramesAre8BitClean) {
   WebSocketFrameHeader& frame_header = frame->header;
   frame_header.final = true;
   frame_header.payload_length = kBinaryBlobSize;
-  auto buffer = base::MakeRefCounted<IOBuffer>(kBinaryBlobSize);
-  memcpy(buffer->data(), kBinaryBlob, kBinaryBlobSize);
-  frame->data = buffer->data();
+  frame->data = base::MakeRefCounted<IOBuffer>(kBinaryBlobSize);
+  memcpy(frame->data->data(), kBinaryBlob, kBinaryBlobSize);
   std::vector<std::unique_ptr<WebSocketFrame>> frames;
   frames.push_back(std::move(frame));
   auto stream = std::make_unique<ReadableFakeWebSocketStream>();
@@ -2526,7 +2515,7 @@ TEST_F(WebSocketChannelReceiveUtf8Test, InvalidTextFrameRejected) {
   {
     InSequence s;
     EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-        .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+        .WillOnce(ReturnFrames(&frames))
         .WillRepeatedly(Return(ERR_IO_PENDING));
     EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
         .WillOnce(Return(OK));
@@ -2545,7 +2534,7 @@ TEST_F(WebSocketChannelReceiveUtf8Test, IncompleteCharacterReceived) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED,
        CLOSE_DATA(PROTOCOL_ERROR, "Invalid UTF-8 in text frame")}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
       .WillOnce(Return(OK));
@@ -2559,7 +2548,7 @@ TEST_F(WebSocketChannelReceiveUtf8Test, IncompleteCharacterIncompleteMessage) {
   static const InitFrame frames[] = {
       {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "\xc2"}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
 
   CreateChannelAndConnectSuccessfully();
@@ -2574,7 +2563,7 @@ TEST_F(WebSocketChannelReceiveUtf8Test, TricksyIncompleteCharacter) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED,
        CLOSE_DATA(PROTOCOL_ERROR, "Invalid UTF-8 in text frame")}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
       .WillOnce(Return(OK));
@@ -2591,7 +2580,7 @@ TEST_F(WebSocketChannelReceiveUtf8Test, ReceivedParsingContextRetained) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation,
        NOT_MASKED,  "\x80\xa0\xbf"}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
 
   CreateChannelAndConnectSuccessfully();
@@ -2607,7 +2596,7 @@ TEST_F(WebSocketChannelReceiveUtf8Test, SplitInvalidCharacterReceived) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED,
        CLOSE_DATA(PROTOCOL_ERROR, "Invalid UTF-8 in text frame")}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
       .WillOnce(Return(OK));
@@ -2628,7 +2617,7 @@ TEST_F(WebSocketChannelReceiveUtf8Test, InvalidReceivedIncontinuation) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, MASKED,
        CLOSE_DATA(PROTOCOL_ERROR, "Invalid UTF-8 in text frame")}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
       .WillOnce(Return(OK));
@@ -2646,7 +2635,7 @@ TEST_F(WebSocketChannelReceiveUtf8Test, ReceivedBinaryNotUtf8Tested) {
       {FINAL_FRAME,     WebSocketFrameHeader::kOpCodeContinuation,
        NOT_MASKED,      "\xff"}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
 
   CreateChannelAndConnectSuccessfully();
@@ -2658,7 +2647,7 @@ TEST_F(WebSocketChannelReceiveUtf8Test, ValidateMultipleReceived) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "foo"},
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "bar"}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
 
   CreateChannelAndConnectSuccessfully();
@@ -2779,7 +2768,7 @@ TEST_F(WebSocketChannelStreamTest, PingAfterCloseIsRejected) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose,
        MASKED,      CLOSE_DATA(NORMAL_CLOSURE, "OK")}};
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   {
     // We only need to verify the relative order of WriteFrames() and
@@ -2843,7 +2832,7 @@ TEST_F(WebSocketChannelStreamTimeoutTest, ServerInitiatedCloseTimesOut) {
   EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
   EXPECT_CALL(*mock_stream_, GetExtensions()).Times(AnyNumber());
   EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-      .WillOnce(ReturnFrames(&frames, &result_frame_data_))
+      .WillOnce(ReturnFrames(&frames))
       .WillRepeatedly(Return(ERR_IO_PENDING));
   Checkpoint checkpoint;
   TestClosure completion;
@@ -2930,7 +2919,7 @@ TEST_F(WebSocketChannelStreamTimeoutTest, ConnectionCloseTimesOut) {
             channel_->StartClosingHandshake(kWebSocketNormalClosure, "OK"));
   ASSERT_TRUE(read_frames);
   // Provide the "Close" message from the server.
-  *read_frames = CreateFrameVector(frames, &result_frame_data_);
+  *read_frames = CreateFrameVector(frames);
   std::move(read_callback).Run(OK);
   completion.WaitForResult();
 }
