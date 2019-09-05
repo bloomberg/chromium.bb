@@ -364,7 +364,7 @@ void AssistantInteractionController::OnCommittedQueryChanged(
   assistant::util::RecordAssistantQuerySource(assistant_query.source());
 }
 
-// TODO(dmblack): Set pending query from |metadata| and remove calls to set
+// TODO(b/140565663): Set pending query from |metadata| and remove calls to set
 // pending query that occur outside of this method.
 void AssistantInteractionController::OnInteractionStarted(
     AssistantInteractionMetadataPtr metadata) {
@@ -401,15 +401,13 @@ void AssistantInteractionController::OnInteractionStarted(
       model_.SetPendingQuery(std::make_unique<AssistantVoiceQuery>());
     }
   } else {
-    // TODO(b/112000321): It should not be possible to reach this code without
-    // having previously pended a query. It does currently happen, however, in
-    // the case of notifications and device action queries which bypass the
-    // AssistantInteractionController when beginning an interaction. To address
-    // this, we temporarily pend an empty text query to commit until we can do
-    // development to expose something more meaningful.
-    if (model_.pending_query().type() == AssistantQueryType::kNull)
-      model_.SetPendingQuery(std::make_unique<AssistantTextQuery>());
-
+    // Once b/140565663 has been addressed to remove all calls which currently
+    // set the pending query from outside of the interaction lifecycle, the
+    // pending query type will always be |kNull| here.
+    if (model_.pending_query().type() == AssistantQueryType::kNull) {
+      model_.SetPendingQuery(
+          std::make_unique<AssistantTextQuery>(metadata->query));
+    }
     model_.CommitPendingQuery();
     model_.SetMicState(MicState::kClosed);
   }
