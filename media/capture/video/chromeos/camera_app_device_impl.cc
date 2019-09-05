@@ -66,6 +66,7 @@ CameraAppDeviceImpl::CameraAppDeviceImpl(const std::string& device_id,
     : device_id_(device_id),
       camera_info_(std::move(camera_info)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      capture_intent_(cros::mojom::CaptureIntent::DEFAULT),
       next_observer_id_(0),
       weak_ptr_factory_(
           std::make_unique<base::WeakPtrFactory<CameraAppDeviceImpl>>(this)) {}
