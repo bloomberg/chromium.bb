@@ -304,7 +304,7 @@ typedef enum {
 	LOU_LOG_OFF = 60000
 } logLevels;
 
-typedef void (*logcallback)(logLevels level, const char *message);
+typedef void EXPORT_CALL (*logcallback)(logLevels level, const char *message);
 
 /**
  * Register logging callbacks
