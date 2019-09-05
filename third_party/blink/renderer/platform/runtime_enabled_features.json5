@@ -1787,6 +1787,7 @@
     },
     {
       name: "WebSocketStream",
+      origin_trial_feature_name: "WebSocketStream",
       status: "experimental",
     },
     {
