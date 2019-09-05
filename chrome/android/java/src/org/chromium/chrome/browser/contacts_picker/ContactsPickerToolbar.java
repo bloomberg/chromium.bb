@@ -20,18 +20,27 @@ import java.util.List;
  * Handles toolbar functionality for the {@ContactsPickerDialog}.
  */
 public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails> {
-    // Our parent dialog.
-    ContactsPickerDialog mDialog;
+    /**
+     * A delegate that handles dialog actions.
+     */
+    public interface ContactsToolbarDelegate {
+        /**
+         * Called when the back arrow is clicked in the toolbar.
+         */
+        void onNavigationBackCallback();
+    }
 
+    // A delegate to notify when the dialog should close.
+    ContactsToolbarDelegate mDelegate;
     public ContactsPickerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     /**
-     * Set the parent dialog for this toolbar.
+     * Set the {@ContactToolbarDelegate} for this toolbar.
      */
-    public void setParentDialog(ContactsPickerDialog dialog) {
-        mDialog = dialog;
+    public void setDelegate(ContactsToolbarDelegate delegate) {
+        mDelegate = delegate;
     }
 
     /**
@@ -46,7 +55,7 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
         if (isSearching()) {
             super.onNavigationBack();
         } else {
-            mDialog.cancel();
+            mDelegate.onNavigationBackCallback();
         }
     }
 
