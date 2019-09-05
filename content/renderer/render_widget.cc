@@ -571,6 +571,11 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
 
   show_callback_ = std::move(show_callback);
 
+#if defined(OS_MACOSX)
+  text_input_client_observer_ =
+      std::make_unique<TextInputClientObserver>(for_frame() ? this : nullptr);
+#endif
+
   webwidget_internal_ = web_widget;
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(this));
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
@@ -3749,10 +3754,6 @@ void RenderWidget::DidNavigate() {
   widget_input_handler_manager_->DidNavigate();
 
   layer_tree_view_->ClearCachesOnNextCommit();
-}
-
-blink::WebWidget* RenderWidget::GetWebWidget() const {
-  return webwidget_internal_;
 }
 
 blink::WebInputMethodController* RenderWidget::GetInputMethodController()

@@ -258,8 +258,11 @@ class CONTENT_EXPORT RenderWidget
 
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
 
-  // This can return nullptr while the RenderWidget is closing.
-  blink::WebWidget* GetWebWidget() const;
+  // This can return nullptr while the RenderWidget is closing. When for_frame()
+  // is true, the widget returned is a blink::WebFrameWidget.
+  // TODO(crbug.com/419087): The main frame RenderWidget will also return
+  // nullptr while the main frame is remote.
+  blink::WebWidget* GetWebWidget() const { return webwidget_internal_; }
 
   // Returns the current instance of WebInputMethodController which is to be
   // used for IME related tasks. This instance corresponds to the one from
@@ -1162,8 +1165,7 @@ class CONTENT_EXPORT RenderWidget
 #if defined(OS_MACOSX)
   // Responds to IPCs from TextInputClientMac regarding getting string at given
   // position or range as well as finding character index at a given position.
-  std::unique_ptr<TextInputClientObserver> text_input_client_observer_ =
-      std::make_unique<TextInputClientObserver>(this);
+  std::unique_ptr<TextInputClientObserver> text_input_client_observer_;
 #endif
 
   // Stores edit commands associated to the next key event.
