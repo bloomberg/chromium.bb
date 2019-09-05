@@ -323,8 +323,7 @@ check_targets = [
   #"//third_party/*",  # May not ever want this.
   "//third_party:freetype_harfbuzz",
   "//third_party/Python-Markdown/*",
-
-  # "//third_party/SPIRV-Tools/*",  # 30ish errors
+  "//third_party/SPIRV-Tools/*",
   "//third_party/abseil-cpp/*",
   "//third_party/accessibility-audit/*",
   "//third_party/accessibility_test_framework/*",
