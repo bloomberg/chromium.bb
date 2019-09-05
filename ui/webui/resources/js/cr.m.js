@@ -90,10 +90,6 @@ export function webUIResponse(id, isSuccess, response) {
   }
 }
 
-// Expose |cr.webUIResponse| globally, since this is called directly from C++.
-window.cr = window.cr || {};
-window.cr.webUIResponse = webUIResponse;
-
 /**
  * A variation of chrome.send, suitable for messages that expect a single
  * response from C++.
@@ -173,6 +169,11 @@ export function removeWebUIListener(listener) {
   }
   return false;
 }
+
+// Globally expose functions that must be called from C++.
+window.cr = window.cr || {};
+window.cr.webUIResponse = webUIResponse;
+window.cr.webUIListenerCallback = webUIListenerCallback;
 
 /** Whether we are using a Mac or not. */
 export const isMac = /Mac/.test(navigator.platform);

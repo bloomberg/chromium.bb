@@ -5150,6 +5150,10 @@ test("unit_tests") {
       "../browser/media/router/providers/openscreen/network_service_quic_packet_writer_unittest.cc",
     ]
   }
+
+  if (enable_webui_tab_strip) {
+    sources += [ "../browser/ui/webui/tab_strip/thumbnail_tracker_unittest.cc" ]
+  }
 }
 
 static_library("test_support_unit") {
