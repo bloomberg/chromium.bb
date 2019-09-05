@@ -435,7 +435,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
 
   if (delayed) {
     base::PostDelayedTask(FROM_HERE, {BrowserThread::IO}, std::move(task),
-                          base::TimeDelta::FromMilliseconds(15000));
+                          base::TimeDelta::FromSeconds(120));
   } else {
     gpu_info_dx12_vulkan_requested_ = true;
     gpu_info_dx12_vulkan_request_failed_ = false;
