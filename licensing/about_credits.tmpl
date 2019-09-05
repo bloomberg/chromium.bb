@@ -21,7 +21,7 @@ body {
   background-color:#c3d9ff;
   overflow:auto;
   padding:2px;
-  margin-top:16px;
+  margin-top:3px;
   border-radius:5px;
 }
 .product .title {
@@ -46,7 +46,7 @@ body {
 .licence {
   clear:both;
   background-color:#e8eef7;
-  padding:16px;
+  padding:3px;
   border-radius:3px;
   display:none;
 }
@@ -64,6 +64,21 @@ body {
 }
 .dialog .homepage {
   display: none;
+}
+
+@media print {
+  div.licence {
+    display: block;
+  }
+  a.show {
+    display: none;
+  }
+  .homepage {
+    display: none;
+  }
+  a.print-link {
+    display: none;
+  }
 }
 </style>
 <script>
@@ -88,32 +103,22 @@ function toggleblock(licence, o) {
   }
   return false;
 }
-
-function toggleall() {
-  var a = window.document.getElementsByClassName('licence');
-  for (var i = 0; i < a.length; i++) {
-    toggleblock(a[i], a[i].previousSibling.previousSibling.previousSibling.previousSibling);
-  }
-  return false;
-}
 //]]>
 </script>
 </head>
 <body>
 <span class="page-title" style="float:left;">Credits</span>
 <span style="float:right">
-<a href="javascript:toggleall()">Toggle All</a>
 <a id="print-link" href="javascript:window.print();">Print</a>
 </span>
 <div style="clear:both; overflow:auto;">
-<h2>List of Packages used in Google Chrome OS:</h2>
+<h2>List of Packages used in Google Chrome OS</h2>
 <!-- Chromium <3s the following projects -->
 {{entries}}
 </div>
 
-<h2>List of Shared Licenses used in Google Chrome OS:</h2>
+<h2>List of Shared Licenses used in Google Chrome OS</h2>
 {{licenses}}
 
-<script src="chrome://os-credits/keyboard_utils.js"></script>
 </body>
 </html>
