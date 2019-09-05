@@ -602,6 +602,7 @@ cca.views.camera.Photo.prototype = {
  * @override
  */
 cca.views.camera.Photo.prototype.start_ = async function() {
+  cca.sound.play('#sound-shutter');
   if (this.imageCapture_ == null) {
     try {
       this.imageCapture_ = new ImageCapture(this.stream_.getVideoTracks()[0]);
@@ -617,7 +618,6 @@ cca.views.camera.Photo.prototype.start_ = async function() {
     cca.toast.show('error_msg_take_photo_failed');
     throw e;
   }
-  cca.sound.play('#sound-shutter');
   await this.doSavePhoto_(result, (new cca.models.Filenamer()).newImageName());
 };
 
@@ -736,6 +736,7 @@ cca.views.camera.Portrait.prototype = {
  * @override
  */
 cca.views.camera.Portrait.prototype.start_ = async function() {
+  cca.sound.play('#sound-shutter');
   if (this.crosImageCapture_ == null) {
     try {
       this.crosImageCapture_ = new cca.mojo.ImageCapture(
@@ -765,7 +766,6 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
     throw e;
   }
   let filenamer = new cca.models.Filenamer();
-  let playSound = false;
   const [refSave, portraitSave] = [reference, portrait].map(async (p) => {
     const isPortrait = Object.is(p, portrait);
     try {
@@ -775,10 +775,6 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
           isPortrait ? 'error_msg_take_portrait_photo_failed' :
                        'error_msg_take_photo_failed');
       throw e;
-    }
-    if (!playSound) {
-      playSound = true;
-      cca.sound.play('#sound-shutter');
     }
     const {width, height} = await cca.util.blobToImage(blob);
     await this.doSavePhoto_(
