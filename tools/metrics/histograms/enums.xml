@@ -5952,6 +5952,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Deleted"/>
 </enum>
 
+<enum name="BooleanDelivered">
+  <int value="0" label="Not delivered"/>
+  <int value="1" label="Delivered"/>
+</enum>
+
 <enum name="BooleanDeprecatedCiphers">
   <int value="0" label="Deprecated ciphers disabled"/>
   <int value="1" label="Deprecated ciphers enabled"/>
