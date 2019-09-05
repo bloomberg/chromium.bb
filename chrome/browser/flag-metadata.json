@@ -1504,6 +1504,11 @@
     "expiry_milestone": 78
   },
   {
+    "name" : "enable-pointer-lock-options",
+    "owners" : [ "eirage", "nzolghadr", "input-dev" ],
+    "expiry_milestone" : 85
+  },
+  {
     "name": "enable-portals",
     "owners": [ "adithyas", "jbroman", "lfg" ],
     "expiry_milestone": 80

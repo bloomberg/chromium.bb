@@ -2407,6 +2407,7 @@ enum WebFeature {
   kIndexedDBWrite = 3024,
   kDeprecatedFileSystemRead = 3025,
   kDeprecatedFileSystemWrite = 3026,
+  kPointerLockUnadjustedMovement = 3027,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

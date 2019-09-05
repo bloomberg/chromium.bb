@@ -55,6 +55,10 @@ void PointerLockController::RequestPointerLock(
     UseCounter::Count(target->GetDocument(),
                       WebFeature::kElementRequestPointerLockInShadow);
   }
+  if (options && options->unadjustedMovement()) {
+    UseCounter::Count(target->GetDocument(),
+                      WebFeature::kPointerLockUnadjustedMovement);
+  }
 
   if (target->GetDocument().IsSandboxed(WebSandboxFlags::kPointerLock)) {
     // FIXME: This message should be moved off the console once a solution to

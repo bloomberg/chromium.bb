@@ -1577,6 +1577,12 @@ const char kPerMethodCanMakePaymentQuotaDescription[] =
     "Allow calling canMakePayment() for different payment methods, as long as "
     "method-specific parameters remain unchanged.";
 
+const char kPointerLockOptionsName[] = "Enables pointer lock options";
+const char kPointerLockOptionsDescription[] =
+    "Enables pointer lock unadjustedMovement. When unadjustedMovement is set "
+    "to true, pointer movements wil not be affected by the underlying platform "
+    "modications such as mouse accelaration.";
+
 const char kPolicyAtomicGroupsEnabledName[] = "Policy Atomic Groups Enabled";
 const char kPolicyAtomicGroupsEnabledDescription[] =
     "Enables the concept of policy atomic groups that makes policies of an "
