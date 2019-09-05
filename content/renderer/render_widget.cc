@@ -632,8 +632,10 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
 
   // TODO(https://crbug.com/1000502): Don't process IPC messages on frozen
   // RenderWidgets. We would like to eventually remove them altogether, so they
-  // won't be able to process IPC messages.
-  if (is_frozen())
+  // won't be able to process IPC messages. A frozen widget may become
+  // provisional again, so we must check for that too. Provisional frames don't
+  // receive messages until swapped in.
+  if (IsFrozenOrProvisional())
     return false;
 #if defined(OS_MACOSX)
   if (IPC_MESSAGE_CLASS(message) == TextInputClientMsgStart)
@@ -675,8 +677,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool RenderWidget::Send(IPC::Message* message) {
-  // Don't send any messages after the browser has told us to close, and filter
-  // most outgoing messages when frozen.
   if (closing_) {
     delete message;
     return false;
@@ -688,7 +688,7 @@ bool RenderWidget::Send(IPC::Message* message) {
   // RenderWidget and sending messages through it.
   // We should CHECK() that the RenderWidget is not frozen and that the frame
   // attached to it is not provisional, instead of dropping messages.
-  if (is_frozen_) {
+  if (is_frozen_ || IsForProvisionalFrame()) {
     delete message;
     return false;
   }
@@ -941,9 +941,11 @@ void RenderWidget::OnDisableDeviceEmulation() {
 }
 
 void RenderWidget::OnWasHidden() {
-  // A frozen main frame widget will never be hidden since that would require it
-  // to be shown first. It must be thawed before changing visibility.
+  // A frozen or provisional main frame widget will never be hidden since that
+  // would require it to be shown first. The main frame must be attached to the
+  // frame tree before changing visibility.
   DCHECK(!is_frozen_);
+  DCHECK(!IsForProvisionalFrame());
 
   TRACE_EVENT0("renderer", "RenderWidget::OnWasHidden");
 
@@ -960,9 +962,11 @@ void RenderWidget::OnWasShown(
     bool was_evicted,
     const base::Optional<content::RecordTabSwitchTimeRequest>&
         record_tab_switch_time_request) {
-  // A frozen main frame widget does not become shown, since it has no frame
-  // associated with it. It must be thawed before changing visibility.
+  // A frozen or provisional main frame widget will never be hidden since that
+  // would require it to be shown first. The main frame must be attached to the
+  // frame tree before changing visibility.
   DCHECK(!is_frozen_);
+  DCHECK(!IsForProvisionalFrame());
 
   TRACE_EVENT_WITH_FLOW0("renderer", "RenderWidget::OnWasShown", routing_id(),
                          TRACE_EVENT_FLAG_FLOW_IN);
@@ -1021,7 +1025,7 @@ bool RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
-  if (is_frozen_)
+  if (is_frozen_ || IsForProvisionalFrame())
     return false;
   input_handler_->HandleInputEvent(input_event, latency_info,
                                    std::move(callback));
@@ -1117,6 +1121,7 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
     return;
 
   DCHECK(!is_frozen_);
+  DCHECK(!IsForProvisionalFrame());
 
   // We record metrics only when running in multi-threaded mode, not
   // single-thread mode for testing.
@@ -1159,7 +1164,8 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
   // For widgets that are never visible, we don't start the compositor, so we
   // never get a request for a cc::LayerTreeFrameSink.
   DCHECK(!compositor_never_visible_);
-  // Frozen RenderWidgets should not be doing any compositing.
+  // Frozen RenderWidgets should not be doing any compositing. However note that
+  // widgets for provisional frames do start their compositor.
   DCHECK(!is_frozen_);
 
   if (is_closing()) {
@@ -1168,23 +1174,6 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
     return;
   }
 
-  // If we have a warmup in progress, wait for that and store the callback
-  // to be run when the warmup completes.
-  if (warmup_frame_sink_request_pending_) {
-    after_warmup_callback_ = std::move(callback);
-    return;
-  }
-  // If a warmup previously completed, use the result.
-  if (warmup_frame_sink_) {
-    std::move(callback).Run(std::move(warmup_frame_sink_));
-    return;
-  }
-
-  DoRequestNewLayerTreeFrameSink(std::move(callback));
-}
-
-void RenderWidget::DoRequestNewLayerTreeFrameSink(
-    LayerTreeFrameSinkCallback callback) {
   // TODO:(https://crbug.com/995981): If there is no WebWidget, then the
   // RenderWidget should also be destroyed, and this DCHECK should not be
   // necessary.
@@ -1328,6 +1317,7 @@ void RenderWidget::UpdateVisualState() {
     return;
 
   DCHECK(!is_frozen_);
+  DCHECK(!IsForProvisionalFrame());
 
   // We record metrics only when running in multi-threaded mode, not
   // single-thread mode for testing.
@@ -1844,8 +1834,8 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
   // If the widget is hidden, delay starting the compositor until the user shows
   // it. Also if the RenderWidget is frozen, we delay starting the compositor
   // until we expect to use the widget, which will be signaled through
-  // WarmupCompositor().
-  if (!is_frozen_ && !is_hidden_)
+  // thawing the RenderWidget.
+  if (!is_hidden_ && !is_frozen_)
     StartStopCompositor();
 
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
@@ -1891,53 +1881,6 @@ void RenderWidget::SetIsFrozen(bool is_frozen) {
   // compositor since when hidden the compositor is always stopped.
   if (!is_hidden_)
     StartStopCompositor();
-}
-
-void RenderWidget::WarmupCompositor() {
-  DCHECK(is_frozen_);
-  if (compositor_never_visible_)
-    return;
-
-  // Keeping things simple. This would cancel any outstanding warmup if we
-  // happened to have one (this should be basically impossible). This avoids any
-  // extra book keeping about the outstanding reqeust.
-  warmup_weak_ptr_factory_.InvalidateWeakPtrs();
-  // And if we already did a warmup then we're done.
-  if (warmup_frame_sink_)
-    return;
-
-  // Mark us pending the warmup frame sink *before* calling
-  // DoRequestNewLayerTreeFrameSink() as it may run the reply callback
-  // synchronously. So we don't want to change any state after the call
-  // to DoRequestNewLayerTreeFrameSink() here.
-  warmup_frame_sink_request_pending_ = true;
-
-  auto cb = base::BindOnce(&RenderWidget::OnReplyForWarmupCompositor,
-                           warmup_weak_ptr_factory_.GetWeakPtr());
-  DoRequestNewLayerTreeFrameSink(std::move(cb));
-}
-
-void RenderWidget::OnReplyForWarmupCompositor(
-    std::unique_ptr<cc::LayerTreeFrameSink> sink) {
-  warmup_frame_sink_request_pending_ = false;
-
-  if (after_warmup_callback_)
-    std::move(after_warmup_callback_).Run(std::move(sink));
-  else
-    warmup_frame_sink_ = std::move(sink);
-}
-
-void RenderWidget::AbortWarmupCompositor() {
-  warmup_frame_sink_request_pending_ = false;
-  // Drop any pending warmup.
-  warmup_weak_ptr_factory_.InvalidateWeakPtrs();
-  // And drop any completed one.
-  warmup_frame_sink_.reset();
-
-  // If we had saved a callback to run after warmup, just do so now indicating
-  // failure.
-  if (after_warmup_callback_)
-    std::move(after_warmup_callback_).Run(nullptr);
 }
 
 // static
@@ -2052,6 +1995,17 @@ blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
     return nullptr;
 
   return static_cast<blink::WebFrameWidget*>(webwidget_internal_);
+}
+
+bool RenderWidget::IsForProvisionalFrame() const {
+  if (!for_frame())
+    return false;
+  // No widget here means the main frame is remote and there is no
+  // provisional frame at the moment.
+  if (!webwidget_internal_)
+    return false;
+  auto* frame_widget = static_cast<blink::WebFrameWidget*>(webwidget_internal_);
+  return frame_widget->LocalRoot()->IsProvisional();
 }
 
 void RenderWidget::ScreenRectToEmulatedIfNeeded(WebRect* window_rect) const {
@@ -2574,9 +2528,11 @@ void RenderWidget::OnOrientationChange() {
 }
 
 void RenderWidget::SetHidden(bool hidden) {
-  // A frozen main frame widget does not become shown or hidden, since it has
-  // no frame associated with it. It must be thawed before changing visibility.
+  // A frozen or provisional main frame widget will never be hidden since that
+  // would require it to be shown first. The main frame must be attached to the
+  // frame tree before changing visibility.
   DCHECK(!is_frozen_);
+  DCHECK(!IsForProvisionalFrame());
 
   if (is_hidden_ == hidden)
     return;
@@ -3403,14 +3359,15 @@ void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
     return;
   }
 
+  DCHECK(!is_frozen_);
+  DCHECK(!IsForProvisionalFrame());
+
   // The page scale is controlled by the WebView for the local main frame of
   // the Page. So this is called from blink by for the RenderWidget of that
   // local main frame. We forward the value on to each child RenderWidget (each
   // of which will be via proxy child frame). These will each in turn forward
   // the message to their child RenderWidgets (through their proxy child
   // frames).
-  DCHECK(!is_frozen_);
-
   for (auto& observer : render_frame_proxies_) {
     observer.OnPageScaleFactorChanged(page_scale_factor,
                                       is_pinch_gesture_active);
