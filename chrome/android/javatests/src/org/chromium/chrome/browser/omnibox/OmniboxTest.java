@@ -24,7 +24,6 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.parameter.CommandLineParameter;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.chrome.R;
@@ -125,7 +124,7 @@ public class OmniboxTest {
                         KeyUtils.singleKeyEventView(InstrumentationRegistry.getInstrumentation(),
                                 urlBar, KeyEvent.KEYCODE_ENTER);
                     }
-                }, ScalableTimeout.scaleTimeout(20));
+                }, 20L);
     }
 
     /**
