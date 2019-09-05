@@ -1183,6 +1183,15 @@ void ServiceWorkerVersion::OpenPaymentHandlerWindow(
     return;
   }
 
+  if (!url.is_valid() ||
+      !url::Origin::Create(url).IsSameOriginWith(script_origin_)) {
+    mojo::ReportBadMessage(
+        "Received PaymentRequestEvent#openWindow() request for a cross-origin "
+        "URL.");
+    binding_.Close();
+    return;
+  }
+
   PaymentHandlerSupport::ShowPaymentHandlerWindow(
       url, context_.get(),
       base::BindOnce(&DidShowPaymentHandlerWindow, url, context_),
