@@ -1210,9 +1210,9 @@ TEST_P(PasswordProtectionServiceTest, TestRequestCancelNotOnTimeout) {
 TEST_P(PasswordProtectionServiceTest, TestWebContentsDestroyed) {
   content::WebContents* web_contents = GetWebContents();
   InitializeAndStartPasswordOnFocusRequest(
-      true /* match whitelist */, 10000 /* timeout in ms */, web_contents);
+      false /* match whitelist */, 10000 /* timeout in ms */, web_contents);
   delete web_contents;
-  task_environment_.FastForwardUntilNoTasksRemain();
+  base::RunLoop().RunUntilIdle();
 }
 
 INSTANTIATE_TEST_SUITE_P(Regular,
