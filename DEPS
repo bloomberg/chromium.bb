@@ -622,7 +622,7 @@ deps = {
   },
 
   'src/third_party/android_ndk': {
-      'url': Var('chromium_git') + '/android_ndk.git' + '@' + '62582753e869484bf0cc7f7e8d184ce0077033c2',
+      'url': Var('chromium_git') + '/android_ndk.git' + '@' + '89e8db0cdf323af8bc24de875d7d2a43a66bf10e',
       'condition': 'checkout_android_native_support',
   },
 
