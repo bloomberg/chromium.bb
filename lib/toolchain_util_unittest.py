@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import collections
+import io
 import json
 import os
 import re
@@ -1086,6 +1087,140 @@ class PublishVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
     self.mock_git.assert_has_calls(calls)
 
 
+class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
+  """Test _UploadReleaseChromeAFDO() and related functions."""
+
+  # pylint: disable=protected-access
+  def setUp(self):
+    self.cwp_name = 'R77-3809.38-1562580965.afdo'
+    self.cwp_full = self.cwp_name + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX
+    self.arch = 'silvermont'
+    self.benchmark_name = 'chromeos-chrome-amd64-77.0.3849.0_rc-r1.afdo'
+    self.benchmark_full = \
+        self.benchmark_name + toolchain_util.AFDO_COMPRESSION_SUFFIX
+    cwp_string = '%s-77-3809.38-1562580965' % self.arch
+    benchmark_string = 'benchmark-77.0.3849.0-r1'
+    self.merged_name = 'chromeos-chrome-amd64-%s-%s' % (cwp_string,
+                                                        benchmark_string)
+    self.redacted_name = self.merged_name + '-redacted.afdo'
+    self.output = os.path.join(
+        self.tempdir,
+        self.redacted_name + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX)
+    self.decompress = self.PatchObject(cros_build_lib, 'UncompressFile')
+    self.compress = self.PatchObject(
+        toolchain_util, '_CompressAFDOFiles', return_value=[self.output])
+    self.upload = self.PatchObject(toolchain_util,
+                                   '_UploadAFDOArtifactToGSBucket')
+    self.run_command = self.PatchObject(cros_build_lib, 'RunCommand')
+    self.gs_copy = self.PatchObject(gs.GSContext, 'Copy')
+    self.PatchObject(osutils.TempDir, '__enter__', return_value=self.tempdir)
+
+  @mock.patch('__builtin__.open')
+  def testRedactAFDOProfile(self, mock_open):
+    """Test _RedactAFDOProfile() handles calls correctly."""
+    input_name = os.path.join(self.tempdir, self.merged_name)
+    input_to_text = input_name + '.text.temp'
+    redacted_temp = input_name + '.redacted.temp'
+    output_name = os.path.join(self.tempdir, self.redacted_name)
+
+    mock_file_obj = io.StringIO()
+    mock_open.return_value = mock_file_obj
+
+    toolchain_util._RedactAFDOProfile(input_name, output_name)
+
+    redact_calls = [
+        mock.call([
+            'llvm-profdata',
+            'merge',
+            '-sample',
+            '-text',
+            input_name,
+            '-output',
+            input_to_text,
+        ],
+                  enter_chroot=True,
+                  print_cmd=True),
+        mock.call(['redact_textual_afdo_profile'],
+                  input=mock_file_obj,
+                  log_stdout_to_file=redacted_temp,
+                  enter_chroot=True,
+                  print_cmd=True),
+        mock.call([
+            'llvm-profdata',
+            'merge',
+            '-sample',
+            '-compbinary',
+            redacted_temp,
+            '-output',
+            output_name,
+        ],
+                  enter_chroot=True,
+                  print_cmd=True)
+    ]
+    self.run_command.assert_has_calls(redact_calls)
+
+  def testUploadReleaseChromeAFDOPass(self):
+    """Test _UploadReleaseChromeAFDO() handles naming and calls correctly."""
+    redact_call = self.PatchObject(toolchain_util, '_RedactAFDOProfile')
+
+    toolchain_util._UploadReleaseChromeAFDO(self.cwp_name, self.arch,
+                                            self.benchmark_name)
+
+    # Check downloading files.
+    gs_copy_calls = [
+        mock.call(
+            os.path.join(toolchain_util.CWP_AFDO_GS_URL, self.arch,
+                         self.cwp_full),
+            os.path.join(self.tempdir, self.cwp_full)),
+        mock.call(
+            os.path.join(toolchain_util.BENCHMARK_AFDO_GS_URL,
+                         self.benchmark_full),
+            os.path.join(self.tempdir, self.benchmark_full))
+    ]
+    self.gs_copy.assert_has_calls(gs_copy_calls)
+
+    # Check decompress files.
+    decompress_calls = [
+        mock.call(
+            os.path.join(self.tempdir, self.cwp_full),
+            os.path.join(self.tempdir, self.cwp_name)),
+        mock.call(
+            os.path.join(self.tempdir, self.benchmark_full),
+            os.path.join(self.tempdir, self.benchmark_name))
+    ]
+    self.decompress.assert_has_calls(decompress_calls)
+
+    # Check call to merge.
+    merge_command = [
+        'llvm-profdata',
+        'merge',
+        '-sample',
+        '-output=' + os.path.join(self.tempdir, self.merged_name),
+        '-weighted-input=%d,%s' % (toolchain_util.RELEASE_CWP_MERGE_WEIGHT,
+                                   os.path.join(self.tempdir, self.cwp_name)),
+        '-weighted-input=%d,%s' %
+        (toolchain_util.RELEASE_BENCHMARK_MERGE_WEIGHT,
+         os.path.join(self.tempdir, self.benchmark_name)),
+    ]
+    self.run_command.assert_called_once_with(
+        merge_command, enter_chroot=True, print_cmd=True)
+
+    # Check calls to redact.
+    redact_call.assert_called_once_with(
+        os.path.join(self.tempdir, self.merged_name),
+        os.path.join(self.tempdir, self.redacted_name))
+
+    # Check compress and upload.
+    self.compress.assert_called_once_with(
+        [os.path.join(self.tempdir, self.redacted_name)], None, self.tempdir,
+        toolchain_util.ORDERFILE_COMPRESSION_SUFFIX)
+    self.upload.assert_called_once_with(
+        toolchain_util.RELEASE_AFDO_GS_URL_VETTED,
+        os.path.join(
+            self.tempdir,
+            self.redacted_name + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX))
+
+
 class UploadAndPublishVettedAFDOArtifactsTest(
     cros_test_lib.MockTempDirTestCase):
   """Test UploadAndPublishVettedAFDOArtifacts()."""
@@ -1114,6 +1249,8 @@ class UploadAndPublishVettedAFDOArtifactsTest(
         side_effect=self.mockUploadVettedAFDOArtifacts)
     self.mock_publish = self.PatchObject(toolchain_util,
                                          '_PublishVettedAFDOArtifacts')
+    self.mock_merge = self.PatchObject(toolchain_util,
+                                       '_UploadReleaseChromeAFDO')
     self.board = 'chell'  # Chose chell to test kernel
     self.kver = '3.18'
     self.kernel_json = os.path.join(toolchain_util.TOOLCHAIN_UTILS_PATH,
@@ -1137,11 +1274,14 @@ class UploadAndPublishVettedAFDOArtifactsTest(
         'chrome_afdo', self.board)
     self.assertTrue(ret)
     uploaded = {'benchmark': self.benchmark_afdo}
-    calls = [mock.call('benchmark_afdo')]
+    upload_calls = [mock.call('benchmark_afdo')]
+    merge_calls = []
     for arch in toolchain_util.CWP_PROFILE_SUPPORTED_ARCHS:
-      calls.append(mock.call('cwp_afdo', arch))
+      upload_calls.append(mock.call('cwp_afdo', arch))
       uploaded[arch] = self.cwp_afdo
-    self.mock_upload.assert_has_calls(calls)
+      merge_calls.append(mock.call(self.cwp_afdo, arch, self.benchmark_afdo))
+    self.mock_upload.assert_has_calls(upload_calls)
+    self.mock_merge.assert_has_calls(merge_calls)
     self.mock_publish.assert_called_once_with(
         self.chrome_json, uploaded,
         'afdo_metadata: Publish new profiles for Chrome.')
