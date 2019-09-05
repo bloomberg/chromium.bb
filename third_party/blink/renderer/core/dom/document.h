@@ -64,7 +64,6 @@
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
-#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -197,6 +196,7 @@ class WebMouseEvent;
 class WorkletAnimationController;
 enum ContentSecurityPolicyDisposition : uint8_t;
 enum class CSSPropertyID;
+enum class ScrollbarMode;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;

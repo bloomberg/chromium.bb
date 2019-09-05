@@ -210,9 +210,10 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
       owner->SetEmbeddedContentView(frame_view);
   }
 
-  if (Owner())
+  if (Owner()) {
     View()->SetCanHaveScrollbars(Owner()->ScrollingMode() !=
-                                 kScrollbarAlwaysOff);
+                                 ScrollbarMode::kAlwaysOff);
+  }
 }
 
 LocalFrame::~LocalFrame() {
