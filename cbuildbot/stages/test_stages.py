@@ -314,54 +314,15 @@ class SkylabHWTestStage(HWTestStage):
   def _SetBranchedSuiteConfig(self, suite_config):
     suite_config.SetBranchedValuesForSkylab()
 
-  # Temporary hack during skylab and quotascheduler migration, to override
-  # certain builders' pool config values.
-  def _PoolHack(self, pool):
-    # Override the pool for all pfqs (except those also running release in
-    # Skylab) to use the quotascheduler pool. See crbug.com/950017
-    blacklist = ('asuka', 'coral', 'nyan_blaze', 'reef')
-    build_type = self._run.config.build_type
-    if config_lib.IsPFQType(build_type) and self._board_name not in blacklist:
-      pool = constants.HWTEST_QUOTA_POOL
-
-    # Retain all moblab boards on cq pool, until it is able
-    # to migrate to Skylab. See crbug.com/949217
-    if self._IsMoblabCQ():
-      pool = constants.HWTEST_PALADIN_POOL
-
-    return pool
-
-  # Temporary measure during skylab and quotascheduler migration, because
-  # quota_account is not yet correctly specified in most HWTestConfig entries.
-  def _InferQuotaAccount(self):
-    """Attempt to infer quota account to use for this test, if applicable."""
-    build_type = self._run.config.build_type
-    # The order of checks matters here.
-    # CQ builds are considered to be PFQ type as well.
-    if self._IsMoblabCQ():
-      return None
-    if config_lib.IsCQType(build_type):
-      return 'cq'
-    if config_lib.IsPFQType(build_type):
-      return 'pfq'
-    return None
-
-  def _IsMoblabCQ(self):
-    return ('moblab' in self._board_name
-            and config_lib.IsCQType(self._run.config.build_type))
-
   def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
-
-    pool = self._PoolHack(self.suite_config.pool)
-    quota_account = self.suite_config.quota_account or self._InferQuotaAccount()
 
     cmd_result = commands.RunSkylabHWTestSuite(
         build,
         self.suite_config.suite,
         self._board_name,
         model=self._model,
-        pool=pool,
+        pool=self.suite_config.pool,
         wait_for_results=self.wait_for_results,
         priority=self.suite_config.priority,
         timeout_mins=self.suite_config.timeout_mins,
@@ -369,7 +330,7 @@ class SkylabHWTestStage(HWTestStage):
         max_retries=self.suite_config.max_retries,
         suite_args=self.suite_config.suite_args,
         job_keyvals=self.GetJobKeyvals(),
-        quota_account=quota_account)
+        quota_account=self.suite_config.quota_account)
 
     if cmd_result.to_raise:
       raise cmd_result.to_raise
