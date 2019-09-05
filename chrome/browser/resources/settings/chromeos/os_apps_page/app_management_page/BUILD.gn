@@ -215,7 +215,8 @@ js_library("uninstall_button") {
   deps = [
     ":store_client",
     ":util",
-    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button",
+    "//ui/webui/resources/cr_elements/policy:cr_tooltip_icon",
   ]
 }
 
