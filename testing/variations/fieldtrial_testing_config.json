@@ -1684,14 +1684,14 @@
             ]
         }
     ],
-    "D3D11VideoDecoderWin": [
+    "D3D11VideoDecoder": [
         {
             "platforms": [
                 "windows"
             ],
             "experiments": [
                 {
-                    "name": "D3D11VideoDecoderEnabled",
+                    "name": "V1Enabled",
                     "enable_features": [
                         "D3D11VideoDecoder"
                     ]
