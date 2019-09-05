@@ -4,26 +4,33 @@
 
 #include "third_party/blink/renderer/platform/fonts/opentype/open_type_caps_support.h"
 
-#include "build/build_config.h"
+#import <Cocoa/Cocoa.h>
+
+#include "base/mac/mac_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
-
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 namespace blink {
 
-void ensureHasNativeSmallCaps(const char* font_family_name) {
+void ensureHasNativeSmallCaps(const String& font_family_name) {
   sk_sp<SkTypeface> test_typeface =
-      SkTypeface::MakeFromName(font_family_name, SkFontStyle());
-  FontPlatformData font_platform_data(test_typeface, font_family_name, 16,
-                                      false, false);
-  ASSERT_EQ(font_platform_data.FontFamilyName(), font_family_name);
+      SkTypeface::MakeFromName(font_family_name.Utf8().c_str(), SkFontStyle());
+  FontPlatformData font_platform_data(test_typeface, font_family_name.Utf8(),
+                                      16, false, false);
+  // System font names are magical. The family name of the system font in the
+  // test below yields ".AppleSystemUIFont", which seems to be a generic role
+  // name, because when it's actually instantiated with SkTypeface it ends up as
+  // ".SF NS Text" or ".SF NS", depending on the system version. So if we try to
+  // instantiate a magical system font, at least ensure that the resulting font
+  // is magical as well.
+  if (font_family_name[0] == '.')
+    ASSERT_TRUE(font_platform_data.FontFamilyName()[0] == '.');
+  else
+    ASSERT_EQ(font_platform_data.FontFamilyName(), font_family_name);
 
   OpenTypeCapsSupport caps_support(font_platform_data.GetHarfBuzzFace(),
                                    FontDescription::FontVariantCaps::kSmallCaps,
@@ -35,24 +42,18 @@ void ensureHasNativeSmallCaps(const char* font_family_name) {
   ASSERT_FALSE(caps_support.NeedsRunCaseSplitting());
 }
 
-// The AAT fonts for testing are only available on Mac OS X 10.13.
-#if defined(OS_MACOSX)
-#define MAYBE_SmallCapsForSFNSText SmallCapsForSFNSText
-#else
-#define MAYBE_SmallCapsForSFNSText DISABLED_SmallCapsForSFNSText
-#endif
-TEST(OpenTypeCapsSupportTest, MAYBE_SmallCapsForSFNSText) {
-#if defined(OS_MACOSX)
+TEST(OpenTypeCapsSupportTest, SmallCapsForMacAATFonts) {
+  // The AAT fonts for testing are only available on macOS 10.13.
   if (!base::mac::IsAtLeastOS10_13())
     return;
-#endif
-  Vector<const char*> test_fonts = {
-      ".SF NS Text",     // has OpenType small-caps
+
+  Vector<String> test_fonts = {
+      [[NSFont systemFontOfSize:12] familyName],  // has OpenType small-caps
       "Apple Chancery",  // has old-style (feature id 3,"Letter Case")
                          // small-caps
       "Baskerville"};    // has new-style (feature id 38, "Upper Case")
                          // small-case.
-  for (auto* test_font : test_fonts)
+  for (const auto& test_font : test_fonts)
     ensureHasNativeSmallCaps(test_font);
 }
 
