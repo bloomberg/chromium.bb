@@ -133,6 +133,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void RearrangeDuringDrag(aura::Window* dragged_window,
                            IndicatorState indicator_state);
 
+  // Updates the desks bar widget bounds if necessary.
+  void MaybeUpdateDesksWidgetBounds();
+
   // Updates the appearance of the drop target to visually indicate when the
   // dragged window is being dragged over it. For dragging from the top, pass
   // null for |dragged_item|.

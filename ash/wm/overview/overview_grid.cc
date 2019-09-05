@@ -37,6 +37,7 @@
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
@@ -266,11 +267,35 @@ gfx::Insets GetGridInsets(const gfx::Rect& grid_bounds) {
 // Returns the desks widget bounds in root, given the screen bounds of the
 // overview grid.
 gfx::Rect GetDesksWidgetBounds(aura::Window* root,
+                               OverviewSession* overview_session,
                                const gfx::Rect& overview_grid_screen_bounds) {
   gfx::Rect desks_widget_root_bounds = overview_grid_screen_bounds;
   ::wm::ConvertRectFromScreen(root, &desks_widget_root_bounds);
   desks_widget_root_bounds.set_height(DesksBarView::GetBarHeight());
+
+  // Shift the widget down to make room for the splitview indicator guidance
+  // when it's shown at the top of the screen when in portrait mode and no other
+  // windows are snapped.
+  auto* split_view_drag_indicators =
+      overview_session->split_view_drag_indicators();
+  if (split_view_drag_indicators &&
+      split_view_drag_indicators->current_indicator_state() ==
+          IndicatorState::kDragArea &&
+      !IsCurrentScreenOrientationLandscape() &&
+      !Shell::Get()->split_view_controller()->InSplitViewMode()) {
+    desks_widget_root_bounds.Offset(0,
+                                    overview_grid_screen_bounds.height() *
+                                            kHighlightScreenPrimaryAxisRatio +
+                                        2 * kHighlightScreenEdgePaddingDp);
+  }
+
   return screen_util::SnapBoundsToDisplayEdge(desks_widget_root_bounds, root);
+}
+
+// Returns the given |widget|'s bounds in its native window's root coordinates.
+gfx::Rect GetWidgetBoundsInRoot(views::Widget* widget) {
+  auto* window = widget->GetNativeWindow();
+  return window->GetBoundsInRootWindow();
 }
 
 }  // namespace
@@ -599,8 +624,7 @@ void OverviewGrid::SetBoundsAndUpdatePositions(
     const gfx::Rect& bounds_in_screen,
     const base::flat_set<OverviewItem*>& ignored_items) {
   bounds_ = bounds_in_screen;
-  if (desks_widget_)
-    desks_widget_->SetBounds(GetDesksWidgetBounds(root_window_, bounds_));
+  MaybeUpdateDesksWidgetBounds();
   PositionWindows(/*animate=*/true, ignored_items);
 }
 
@@ -632,6 +656,16 @@ void OverviewGrid::RearrangeDuringDrag(aura::Window* dragged_window,
       ignored_items.insert(drop_target);
     SetBoundsAndUpdatePositions(wanted_grid_bounds, ignored_items);
   }
+}
+
+void OverviewGrid::MaybeUpdateDesksWidgetBounds() {
+  if (!desks_widget_)
+    return;
+
+  const gfx::Rect desks_widget_bounds =
+      GetDesksWidgetBounds(root_window_, overview_session_, bounds_);
+  if (desks_widget_bounds != GetWidgetBoundsInRoot(desks_widget_.get()))
+    desks_widget_->SetBounds(desks_widget_bounds);
 }
 
 void OverviewGrid::UpdateDropTargetBackgroundVisibility(
@@ -1354,7 +1388,8 @@ void OverviewGrid::MaybeInitDesksWidget() {
     return;
 
   desks_widget_ = DesksBarView::CreateDesksWidget(
-      root_window_, GetDesksWidgetBounds(root_window_, bounds_));
+      root_window_,
+      GetDesksWidgetBounds(root_window_, overview_session_, bounds_));
   desks_bar_view_ = new DesksBarView;
 
   // The following order of function calls is significant: SetContentsView()
