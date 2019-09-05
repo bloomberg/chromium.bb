@@ -1204,7 +1204,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool monitoring_composition_info_ = false;
 
 #if defined(OS_MACOSX)
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 
   mojo::Binding<viz::mojom::CompositorFrameSink> compositor_frame_sink_binding_;

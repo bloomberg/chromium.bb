@@ -95,7 +95,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/filename_util.h"
 #include "skia/ext/image_operations.h"
@@ -3029,7 +3029,8 @@ void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {
 device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
-    device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
+    mojo::PendingReceiver<device::mojom::WakeLock> receiver =
+        wake_lock_.BindNewPipeAndPassReceiver();
     // In some testing contexts, the system Connector isn't3 initialized.
     if (GetSystemConnector()) {
       mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
@@ -3039,7 +3040,7 @@ device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
       wake_lock_provider->GetWakeLockWithoutContext(
           device::mojom::WakeLockType::kPreventDisplaySleep,
           device::mojom::WakeLockReason::kOther, "GetSnapshot",
-          std::move(request));
+          std::move(receiver));
     }
   }
   return wake_lock_.get();
