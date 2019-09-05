@@ -1889,4 +1889,30 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       NavigateToTwoPagesOnSameSite) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL url_b1(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+
+  // 2) Navigate to A2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+  RenderFrameHostImpl* rfh_a2 = current_frame_host();
+
+  // 3) Navigate to B1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b1));
+  EXPECT_TRUE(rfh_a2->is_in_back_forward_cache());
+
+  // 4) Do a history navigation back to A1.
+  // TODO(https://crbug.com/993337): This causes "Check failed: !frame_widget_".
+  RenderProcessHost* process = rfh_a2->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  web_contents()->GetController().GoToIndex(0);
+  crash_observer.Wait();
+}
 }  // namespace content
