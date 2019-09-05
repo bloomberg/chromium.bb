@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_FETCHER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_FETCHER_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -75,6 +77,13 @@ class FormFetcher {
   // returns NOT_WAITING.
   virtual std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
       const = 0;
+
+  // Nonblacklisted matches obtained from the backend.
+  virtual const std::map<base::string16, const autofill::PasswordForm*>&
+  GetBestMatches() const = 0;
+
+  // Pointer to an preferred entry in the map returned by GetBestMatches().
+  virtual const autofill::PasswordForm* GetPreferredMatch() const = 0;
 
   // Fetches stored matching logins. In addition the statistics is fetched on
   // platforms with the password bubble. This is called automatically during

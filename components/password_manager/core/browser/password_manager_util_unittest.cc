@@ -200,7 +200,8 @@ TEST(PasswordManagerUtil, FindBestMatches) {
     std::map<base::string16, const PasswordForm*> best_matches;
     const PasswordForm* preferred_match = nullptr;
 
-    FindBestMatches(matches, &best_matches, &preferred_match);
+    FindBestMatches(matches, PasswordForm::Scheme::kHtml, &best_matches,
+                    &preferred_match);
 
     if (test_case.expected_preferred_match_index == kNotFound) {
       // Case of empty |matches|.
