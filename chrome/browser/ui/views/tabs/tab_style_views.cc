@@ -635,7 +635,8 @@ bool GM2TabStyle::ShouldPaintTabBackgroundColor(
 }
 
 SkColor GM2TabStyle::GetTabBackgroundColor(TabActive active) const {
-  SkColor color = tab_->controller()->GetTabBackgroundColor(active);
+  SkColor color = tab_->controller()->GetTabBackgroundColor(
+      active, BrowserNonClientFrameView::kUseCurrent);
 
   base::Optional<SkColor> group_color = tab_->GetGroupColor();
   if (group_color.has_value()) {
@@ -674,7 +675,9 @@ ShapeModifier GM2TabStyle::GetShapeModifier(PathType path_type) const {
 
 void GM2TabStyle::PaintInactiveTabBackground(gfx::Canvas* canvas) const {
   PaintTabBackground(canvas, TabActive::kInactive,
-                     tab_->controller()->GetCustomBackgroundId(), 0);
+                     tab_->controller()->GetCustomBackgroundId(
+                         BrowserNonClientFrameView::kUseCurrent),
+                     0);
 }
 
 void GM2TabStyle::PaintTabBackground(gfx::Canvas* canvas,

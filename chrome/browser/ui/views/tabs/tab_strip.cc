@@ -2549,13 +2549,15 @@ void TabStrip::UpdateContrastRatioValues() {
   if (!controller_)
     return;
 
-  const SkColor inactive_bg = GetTabBackgroundColor(TabActive::kInactive);
+  const SkColor inactive_bg = GetTabBackgroundColor(
+      TabActive::kInactive, BrowserNonClientFrameView::kUseCurrent);
   const auto get_blend = [inactive_bg](SkColor target, float contrast) {
     return color_utils::BlendForMinContrast(inactive_bg, inactive_bg, target,
                                             contrast);
   };
 
-  const SkColor active_bg = GetTabBackgroundColor(TabActive::kActive);
+  const SkColor active_bg = GetTabBackgroundColor(
+      TabActive::kActive, BrowserNonClientFrameView::kUseCurrent);
   const auto get_hover_opacity = [active_bg, &get_blend](float contrast) {
     return get_blend(active_bg, contrast).alpha / 255.0f;
   };
