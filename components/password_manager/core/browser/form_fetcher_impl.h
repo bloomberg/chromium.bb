@@ -47,6 +47,9 @@ class FormFetcherImpl : public FormFetcher,
   std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
       const override;
 
+  const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
+      const override;
+
   const std::map<base::string16, const autofill::PasswordForm*>&
   GetBestMatches() const override;
 
@@ -82,6 +85,9 @@ class FormFetcherImpl : public FormFetcher,
 
   // List of blacklisted credentials obtained form the password store.
   std::vector<std::unique_ptr<autofill::PasswordForm>> blacklisted_;
+
+  // Non-federated credentials of the same scheme as the observed form.
+  std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
 
   // Set of nonblacklisted PasswordForms from the password store that best match
   // the form being managed by |this|, indexed by username.

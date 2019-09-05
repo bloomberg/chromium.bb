@@ -78,6 +78,11 @@ class FormFetcher {
   virtual std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
       const = 0;
 
+  // Non-federated matches obtained from the backend that have the same scheme
+  // of this form.
+  virtual const std::vector<const autofill::PasswordForm*>&
+  GetAllRelevantMatches() const = 0;
+
   // Nonblacklisted matches obtained from the backend.
   virtual const std::map<base::string16, const autofill::PasswordForm*>&
   GetBestMatches() const = 0;
