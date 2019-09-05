@@ -1278,11 +1278,18 @@ const FeatureEntry::Choice kNotificationSchedulerChoices[] = {
 const FeatureEntry::FeatureParam
     kOmniboxSearchEngineLogoRoundedEdgesVariationConstant[] = {
         {"rounded_edges", "true"}};
+const FeatureEntry::FeatureParam
+    kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant[] = {
+        {"loupe_everywhere", "true"}};
 const FeatureEntry::FeatureVariation
     kOmniboxSearchEngineLogoFeatureVariations[] = {
         {"(rounded edges)",
          kOmniboxSearchEngineLogoRoundedEdgesVariationConstant,
          base::size(kOmniboxSearchEngineLogoRoundedEdgesVariationConstant),
+         nullptr},
+        {"(loupe everywhere)",
+         kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant,
+         base::size(kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant),
          nullptr}};
 #endif  // OS_ANDROID
 
