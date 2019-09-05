@@ -1687,6 +1687,8 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
   // https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
   if (priority == kHighPropertyPriority) {
     ApplyProperty(GetCSSPropertyColor(), state, *unset, apply_mask);
+    ApplyUaForcedColors<priority>(state, match_result, apply_inherited_only,
+                                  needs_apply_pass);
   } else {
     DCHECK(priority == kLowPropertyPriority);
     ApplyProperty(GetCSSPropertyBorderBottomColor(), state, *unset, apply_mask);
@@ -1708,18 +1710,31 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
 
     // Background colors compute to the Window system color for all values
     // except for the alpha channel.
+    RGBA32 prev_bg_color = state.Style()->BackgroundColor().GetColor().Rgb();
     RGBA32 sys_bg_color =
         LayoutTheme::GetTheme()
             .SystemColor(CSSValueID::kWindow, WebColorScheme::kLight)
             .Rgb();
+    ApplyProperty(GetCSSPropertyBackgroundColor(), state,
+                  *cssvalue::CSSColorValue::Create(sys_bg_color), apply_mask);
+
+    ApplyUaForcedColors<priority>(state, match_result, apply_inherited_only,
+                                  needs_apply_pass);
+
     RGBA32 current_bg_color = state.Style()->BackgroundColor().GetColor().Rgb();
     RGBA32 bg_color =
-        MakeRGBA(RedChannel(sys_bg_color), GreenChannel(sys_bg_color),
-                 BlueChannel(sys_bg_color), AlphaChannel(current_bg_color));
+        MakeRGBA(RedChannel(current_bg_color), GreenChannel(current_bg_color),
+                 BlueChannel(current_bg_color), AlphaChannel(prev_bg_color));
     ApplyProperty(GetCSSPropertyBackgroundColor(), state,
                   *cssvalue::CSSColorValue::Create(bg_color), apply_mask);
   }
+}
 
+template <CSSPropertyPriority priority>
+void StyleResolver::ApplyUaForcedColors(StyleResolverState& state,
+                                        const MatchResult& match_result,
+                                        bool apply_inherited_only,
+                                        NeedsApplyPass& needs_apply_pass) {
   auto force_colors = ForcedColorFilter::kEnabled;
   ApplyMatchedProperties<priority, kCheckNeedsApplyPass>(
       state, match_result.UaRules(), false, apply_inherited_only,
