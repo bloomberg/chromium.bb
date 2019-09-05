@@ -667,7 +667,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'bfcache_gtests',
+          'gtest_tests': 'bfcache_android_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         }
       },
@@ -1770,7 +1770,7 @@
           'linux-xenial',
         ],
         'test_suites': {
-          'gtest_tests': 'bfcache_gtests',
+          'gtest_tests': 'bfcache_linux_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
