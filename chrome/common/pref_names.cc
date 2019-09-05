@@ -978,11 +978,6 @@ const char kAppReinstallRecommendationEnabled[] =
 const char kStartupBrowserWindowLaunchSuppressed[] =
     "startup_browser_window_launch_suppressed";
 
-// A JSON pref for controlling which devices are whitelisted for certain urls to
-// be used via the WebUSB API.
-const char kDeviceWebUsbAllowDevicesForUrls[] =
-    "device_webusb_allow_devices_for_urls";
-
 // A string pref stored in local state. Set and read by extensions using the
 // chrome.login API.
 const char kLoginExtensionApiDataForNextLoginAttempt[] =

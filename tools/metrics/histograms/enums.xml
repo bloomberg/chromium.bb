@@ -17964,7 +17964,6 @@ Called by update_net_error_codes.py.-->
   <int value="566" label="CommandLineFlagSecurityWarningsEnabled"/>
   <int value="567" label="RelaunchHeadsUpPeriod"/>
   <int value="568" label="StartupBrowserWindowLaunchSuppressed"/>
-  <int value="569" label="DeviceWebUsbAllowDevicesForUrls"/>
   <int value="570" label="UserFeedbackAllowed"/>
   <int value="571" label="DevicePowerwashAllowed"/>
   <int value="572" label="ExternalPrintServers"/>
