@@ -676,7 +676,7 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
        this_box->HasOverridePercentageResolutionBlockSize()))
     return false;
 
-  if (logical_height_length.IsAuto() &&
+  if (logical_height_length.IsIntrinsicOrAuto() &&
       !IsOutOfFlowPositionedWithImplicitHeight(this))
     return true;
 
