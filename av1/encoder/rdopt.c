@@ -4955,7 +4955,7 @@ static void tx_type_rd(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 }
 
 static void get_blk_sse_sum_c(const int16_t *data, int stride, int bw, int bh,
-                              int *x_sum, int *x2_sum) {
+                              int *x_sum, int64_t *x2_sum) {
   *x_sum = 0;
   *x2_sum = 0;
   for (int i = 0; i < bh; ++i) {
@@ -4968,8 +4968,8 @@ static void get_blk_sse_sum_c(const int16_t *data, int stride, int bw, int bh,
   }
 }
 
-static float get_dev(float mean, float x2_sum, int num) {
-  const float e_x2 = (float)((double)x2_sum / num);
+static float get_dev(float mean, double x2_sum, int num) {
+  const float e_x2 = (float)(x2_sum / num);
   const float diff = e_x2 - mean * mean;
   const float dev = (diff > 0) ? sqrtf(diff) : 0;
   return dev;
@@ -4986,14 +4986,15 @@ static void get_mean_dev_features(const int16_t *data, int stride, int bw,
   const int sub_num = subw * subh;
   int feature_idx = 2;
   int total_x_sum = 0;
-  int total_x2_sum = 0;
+  int64_t total_x2_sum = 0;
   int blk_idx = 0;
-  float mean2_sum = 0.0f;
+  double mean2_sum = 0.0f;
   float dev_sum = 0.0f;
 
   for (int row = 0; row < bh; row += subh) {
     for (int col = 0; col < bw; col += subw) {
-      int x_sum, x2_sum;
+      int x_sum;
+      int64_t x2_sum;
       // TODO(any): Write a SIMD version. Clear registers.
       get_blk_sse_sum_c(data_ptr + row * stride + col, stride, subw, subh,
                         &x_sum, &x2_sum);
@@ -5001,10 +5002,10 @@ static void get_mean_dev_features(const int16_t *data, int stride, int bw,
       total_x2_sum += x2_sum;
 
       const float mean = (float)x_sum / sub_num;
-      const float dev = get_dev(mean, (float)x2_sum, sub_num);
+      const float dev = get_dev(mean, (double)x2_sum, sub_num);
       feature[feature_idx++] = mean;
       feature[feature_idx++] = dev;
-      mean2_sum += mean * mean;
+      mean2_sum += (double)(mean * mean);
       dev_sum += dev;
       blk_idx++;
     }
@@ -5012,7 +5013,7 @@ static void get_mean_dev_features(const int16_t *data, int stride, int bw,
 
   const float lvl0_mean = (float)total_x_sum / num;
   feature[0] = lvl0_mean;
-  feature[1] = get_dev(lvl0_mean, (float)total_x2_sum, num);
+  feature[1] = get_dev(lvl0_mean, (double)total_x2_sum, num);
 
   if (blk_idx > 1) {
     // Deviation of means.
