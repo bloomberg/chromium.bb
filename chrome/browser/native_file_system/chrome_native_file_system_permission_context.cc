@@ -31,31 +31,8 @@
 
 namespace {
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class PermissionRequestOutcome {
-  kBlockedByContentSetting = 0,
-  kInvalidFrame = 1,
-  kNoUserActivation = 2,
-  kThirdPartyContext = 3,
-  kUserGranted = 4,
-  kUserDenied = 5,
-  kUserDismissed = 6,
-  kMaxValue = kUserDismissed
-};
-
-void RecordPermissionRequestOutcome(bool is_directory,
-                                    PermissionRequestOutcome outcome) {
-  base::UmaHistogramEnumeration(
-      "NativeFileSystemAPI.WritePermissionRequestOutcome", outcome);
-  if (is_directory) {
-    base::UmaHistogramEnumeration(
-        "NativeFileSystemAPI.WritePermissionRequestOutcome.Directory", outcome);
-  } else {
-    base::UmaHistogramEnumeration(
-        "NativeFileSystemAPI.WritePermissionRequestOutcome.File", outcome);
-  }
-}
+using PermissionRequestOutcome =
+    content::NativeFileSystemPermissionGrant::PermissionRequestOutcome;
 
 void ShowWritePermissionPromptOnUIThread(
     int process_id,
@@ -63,23 +40,22 @@ void ShowWritePermissionPromptOnUIThread(
     const url::Origin& origin,
     const base::FilePath& path,
     bool is_directory,
-    base::OnceCallback<void(PermissionAction result)> callback) {
+    base::OnceCallback<void(PermissionRequestOutcome outcome,
+                            PermissionAction result)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(process_id, frame_id);
   if (!rfh || !rfh->IsCurrent()) {
     // Requested from a no longer valid render frame host.
-    RecordPermissionRequestOutcome(is_directory,
-                                   PermissionRequestOutcome::kInvalidFrame);
-    std::move(callback).Run(PermissionAction::DISMISSED);
+    std::move(callback).Run(PermissionRequestOutcome::kInvalidFrame,
+                            PermissionAction::DISMISSED);
     return;
   }
 
   if (!rfh->HasTransientUserActivation()) {
     // No permission prompts without user activation.
-    RecordPermissionRequestOutcome(is_directory,
-                                   PermissionRequestOutcome::kNoUserActivation);
-    std::move(callback).Run(PermissionAction::DISMISSED);
+    std::move(callback).Run(PermissionRequestOutcome::kNoUserActivation,
+                            PermissionAction::DISMISSED);
     return;
   }
 
@@ -87,9 +63,8 @@ void ShowWritePermissionPromptOnUIThread(
       content::WebContents::FromRenderFrameHost(rfh);
   if (!web_contents) {
     // Requested from a worker, or a no longer existing tab.
-    RecordPermissionRequestOutcome(is_directory,
-                                   PermissionRequestOutcome::kInvalidFrame);
-    std::move(callback).Run(PermissionAction::DISMISSED);
+    std::move(callback).Run(PermissionRequestOutcome::kInvalidFrame,
+                            PermissionAction::DISMISSED);
     return;
   }
 
@@ -97,31 +72,46 @@ void ShowWritePermissionPromptOnUIThread(
       url::Origin::Create(web_contents->GetLastCommittedURL());
   if (embedding_origin != origin) {
     // Third party iframes are not allowed to request more permissions.
-    RecordPermissionRequestOutcome(
-        is_directory, PermissionRequestOutcome::kThirdPartyContext);
-    std::move(callback).Run(PermissionAction::DISMISSED);
+    std::move(callback).Run(PermissionRequestOutcome::kThirdPartyContext,
+                            PermissionAction::DISMISSED);
     return;
   }
 
   auto* request_manager =
       NativeFileSystemPermissionRequestManager::FromWebContents(web_contents);
   if (!request_manager) {
-    std::move(callback).Run(PermissionAction::DISMISSED);
+    std::move(callback).Run(PermissionRequestOutcome::kRequestAborted,
+                            PermissionAction::DISMISSED);
     return;
   }
 
   request_manager->AddRequest(
       {origin, path, is_directory},
       base::BindOnce(
-          [](bool is_directory,
-             base::OnceCallback<void(PermissionAction result)> callback,
+          [](base::OnceCallback<void(PermissionRequestOutcome outcome,
+                                     PermissionAction result)> callback,
              PermissionAction result) {
-            if (result == PermissionAction::DISMISSED)
-              RecordPermissionRequestOutcome(
-                  is_directory, PermissionRequestOutcome::kUserDismissed);
-            std::move(callback).Run(result);
+            switch (result) {
+              case PermissionAction::GRANTED:
+                std::move(callback).Run(PermissionRequestOutcome::kUserGranted,
+                                        result);
+                break;
+              case PermissionAction::DENIED:
+                std::move(callback).Run(PermissionRequestOutcome::kUserDenied,
+                                        result);
+                break;
+              case PermissionAction::DISMISSED:
+              case PermissionAction::IGNORED:
+                std::move(callback).Run(
+                    PermissionRequestOutcome::kUserDismissed, result);
+                break;
+              case PermissionAction::REVOKED:
+              case PermissionAction::NUM:
+                NOTREACHED();
+                break;
+            }
           },
-          is_directory, std::move(callback)));
+          std::move(callback)));
 }
 
 void ShowDirectoryAccessConfirmationPromptOnUIThread(
@@ -285,15 +275,16 @@ bool ShouldBlockAccessToPath(const base::FilePath& check_path) {
 
 // Returns a callback that calls the passed in |callback| by posting a task to
 // the current sequenced task runner.
-template <typename ResultType>
-base::OnceCallback<void(ResultType result)> BindResultCallbackToCurrentSequence(
-    base::OnceCallback<void(ResultType result)> callback) {
+template <typename... ResultTypes>
+base::OnceCallback<void(ResultTypes... results)>
+BindResultCallbackToCurrentSequence(
+    base::OnceCallback<void(ResultTypes... results)> callback) {
   return base::BindOnce(
       [](scoped_refptr<base::TaskRunner> task_runner,
-         base::OnceCallback<void(ResultType result)> callback,
-         ResultType result) {
+         base::OnceCallback<void(ResultTypes... results)> callback,
+         ResultTypes... results) {
         task_runner->PostTask(FROM_HERE,
-                              base::BindOnce(std::move(callback), result));
+                              base::BindOnce(std::move(callback), results...));
       },
       base::SequencedTaskRunnerHandle::Get(), std::move(callback));
 }
@@ -308,12 +299,13 @@ class ReadPermissionGrantImpl
 
   // NativeFileSystemPermissionGrant:
   PermissionStatus GetStatus() override { return status_; }
-  void RequestPermission(int process_id,
-                         int frame_id,
-                         base::OnceClosure callback) override {
+  void RequestPermission(
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(PermissionRequestOutcome)> callback) override {
     // Requesting read permission is not currently supported, so just call the
     // callback right away.
-    std::move(callback).Run();
+    std::move(callback).Run(PermissionRequestOutcome::kRequestAborted);
   }
 
   void RevokePermission() {
@@ -437,25 +429,25 @@ ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::GetStatus() {
 }
 
 void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
-    RequestPermission(int process_id,
-                      int frame_id,
-                      base::OnceClosure callback) {
+    RequestPermission(
+        int process_id,
+        int frame_id,
+        base::OnceCallback<void(PermissionRequestOutcome)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Check if a permission request has already been processed previously. This
   // check is done first because we don't want to reset the status of a write
   // permission if it has already been granted.
   if (GetStatus() != PermissionStatus::ASK) {
-    std::move(callback).Run();
+    std::move(callback).Run(PermissionRequestOutcome::kRequestAborted);
     return;
   }
 
   // Check if |write_guard_content_setting_type_| is blocked by the user and
   // update the status if it is.
   if (!CanRequestPermission()) {
-    RecordPermissionRequestOutcome(
-        is_directory_, PermissionRequestOutcome::kBlockedByContentSetting);
-    SetStatus(PermissionStatus::DENIED);
-    std::move(callback).Run();
+    OnPermissionRequestComplete(
+        std::move(callback), PermissionRequestOutcome::kBlockedByContentSetting,
+        PermissionAction::DENIED);
     return;
   }
 
@@ -495,24 +487,20 @@ ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
 }
 
 void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
-    OnPermissionRequestComplete(base::OnceClosure callback,
-                                PermissionAction result) {
+    OnPermissionRequestComplete(
+        base::OnceCallback<void(PermissionRequestOutcome)> callback,
+        PermissionRequestOutcome outcome,
+        PermissionAction result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (result) {
     case PermissionAction::GRANTED:
-      RecordPermissionRequestOutcome(is_directory_,
-                                     PermissionRequestOutcome::kUserGranted);
       SetStatus(PermissionStatus::GRANTED);
       break;
     case PermissionAction::DENIED:
-      RecordPermissionRequestOutcome(is_directory_,
-                                     PermissionRequestOutcome::kUserDenied);
       SetStatus(PermissionStatus::DENIED);
       break;
     case PermissionAction::DISMISSED:
     case PermissionAction::IGNORED:
-      // No histogram recorded here, the caller would have already recorded this
-      // outcome.
       break;
     case PermissionAction::REVOKED:
     case PermissionAction::NUM:
@@ -520,7 +508,17 @@ void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
       break;
   }
 
-  std::move(callback).Run();
+  base::UmaHistogramEnumeration(
+      "NativeFileSystemAPI.WritePermissionRequestOutcome", outcome);
+  if (is_directory_) {
+    base::UmaHistogramEnumeration(
+        "NativeFileSystemAPI.WritePermissionRequestOutcome.Directory", outcome);
+  } else {
+    base::UmaHistogramEnumeration(
+        "NativeFileSystemAPI.WritePermissionRequestOutcome.File", outcome);
+  }
+
+  std::move(callback).Run(outcome);
 }
 
 struct ChromeNativeFileSystemPermissionContext::OriginState {

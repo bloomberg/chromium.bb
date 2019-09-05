@@ -73,9 +73,10 @@ class ChromeNativeFileSystemPermissionContext
 
     // content::NativeFileSystemPermissionGrant implementation:
     PermissionStatus GetStatus() override;
-    void RequestPermission(int process_id,
-                           int frame_id,
-                           base::OnceClosure callback) override;
+    void RequestPermission(
+        int process_id,
+        int frame_id,
+        base::OnceCallback<void(PermissionRequestOutcome)> callback) override;
 
     const url::Origin& origin() const {
       DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -106,8 +107,10 @@ class ChromeNativeFileSystemPermissionContext
     ~WritePermissionGrantImpl() override;
 
    private:
-    void OnPermissionRequestComplete(base::OnceClosure callback,
-                                     PermissionAction result);
+    void OnPermissionRequestComplete(
+        base::OnceCallback<void(PermissionRequestOutcome)> callback,
+        PermissionRequestOutcome outcome,
+        PermissionAction result);
 
     SEQUENCE_CHECKER(sequence_checker_);
 
