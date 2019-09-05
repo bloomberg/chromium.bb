@@ -1295,6 +1295,73 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
       EvalJs(shell(), "window.testObservedEvents"));
 }
 
+// Tests the events are fired when going back from the cache.
+// Same as: BackForwardCacheBrowserTest.Events, but with a document-initiated
+// navigation. This is a regression test for https://crbug.com/1000324
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       EventsAfterDocumentInitiatedNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    window.testObservedEvents = [];
+    let event_list = [
+      'visibilitychange',
+      'pagehide',
+      'pageshow',
+      'freeze',
+      'resume',
+    ];
+    for (event_name of event_list) {
+      let result = event_name;
+      window.addEventListener(event_name, event => {
+        if (event.persisted)
+          result +='.persisted';
+        window.testObservedEvents.push(result);
+      });
+      document.addEventListener(event_name,
+          () => window.testObservedEvents.push(result));
+    }
+  )"));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("location = $1;", url_b.spec())));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  // TODO(https://crbug.com/1000324): This shouldn't be deleted. Fix this bug
+  // and re-enable the rest of this test.
+  delete_observer_rfh_a.WaitUntilDeleted();
+  return;
+
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  // TODO(yuzus): Post message to the frozen page, and make sure that the
+  // messages arrive after the page visibility events, not before them.
+
+  // 3) Go back to A. Confirm that expected events are fired.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
+  // visibilitychange events are added twice per each because it is fired for
+  // both window and document.
+  EXPECT_EQ(
+      ListValueOf("visibilitychange", "visibilitychange", "pagehide.persisted",
+                  "freeze", "resume", "pageshow.persisted", "visibilitychange",
+                  "visibilitychange"),
+      EvalJs(shell(), "window.testObservedEvents"));
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        NavigationCancelledAtWillStartRequest) {
   ASSERT_TRUE(embedded_test_server()->Start());
