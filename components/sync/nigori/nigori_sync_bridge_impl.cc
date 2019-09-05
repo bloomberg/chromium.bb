@@ -13,6 +13,7 @@
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/nigori/nigori.h"
 #include "components/sync/nigori/nigori_storage.h"
@@ -100,6 +101,36 @@ base::Optional<NigoriSpecifics> MakeDefaultKeystoreNigori(
   specifics.set_keybag_is_frozen(true);
   specifics.set_keystore_migration_time(TimeToProtoTime(base::Time::Now()));
   return specifics;
+}
+
+// Returns the key derivation method to be used when a user sets a new
+// custom passphrase.
+KeyDerivationMethod GetDefaultKeyDerivationMethodForCustomPassphrase() {
+  if (base::FeatureList::IsEnabled(
+          switches::kSyncUseScryptForNewCustomPassphrases) &&
+      !base::FeatureList::IsEnabled(
+          switches::kSyncForceDisableScryptForCustomPassphrase)) {
+    return KeyDerivationMethod::SCRYPT_8192_8_11;
+  }
+
+  return KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003;
+}
+
+KeyDerivationParams CreateKeyDerivationParamsForCustomPassphrase(
+    const base::RepeatingCallback<std::string()>& random_salt_generator) {
+  KeyDerivationMethod method =
+      GetDefaultKeyDerivationMethodForCustomPassphrase();
+  switch (method) {
+    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
+      return KeyDerivationParams::CreateForPbkdf2();
+    case KeyDerivationMethod::SCRYPT_8192_8_11:
+      return KeyDerivationParams::CreateForScrypt(random_salt_generator.Run());
+    case KeyDerivationMethod::UNSUPPORTED:
+      break;
+  }
+
+  NOTREACHED();
+  return KeyDerivationParams::CreateWithUnsupportedMethod();
 }
 
 KeyDerivationMethod GetKeyDerivationMethodFromSpecifics(
@@ -459,10 +490,12 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
     std::unique_ptr<NigoriLocalChangeProcessor> processor,
     std::unique_ptr<NigoriStorage> storage,
     const Encryptor* encryptor,
+    const base::RepeatingCallback<std::string()>& random_salt_generator,
     const std::string& packed_explicit_passphrase_key)
     : encryptor_(encryptor),
       processor_(std::move(processor)),
       storage_(std::move(storage)),
+      random_salt_generator_(random_salt_generator),
       serialized_explicit_passphrase_key_(
           UnpackExplicitPassphraseKey(*encryptor,
                                       packed_explicit_passphrase_key)),
@@ -608,9 +641,10 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
   }
   DCHECK(cryptographer_.is_ready());
   passphrase_type_ = NigoriSpecifics::CUSTOM_PASSPHRASE;
-  cryptographer_.AddKey({KeyDerivationParams::CreateForPbkdf2(), passphrase});
   custom_passphrase_key_derivation_params_ =
-      KeyDerivationParams::CreateForPbkdf2();
+      CreateKeyDerivationParamsForCustomPassphrase(random_salt_generator_);
+  cryptographer_.AddKey(
+      {*custom_passphrase_key_derivation_params_, passphrase});
   encrypt_everything_ = true;
   custom_passphrase_time_ = base::Time::Now();
   processor_->Put(GetData());
@@ -633,8 +667,6 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
   UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
   // OnLocalSetPassphraseEncryption() is intentionally not called here, because
   // it's needed only for the Directory implementation unit tests.
-  // TODO(crbug.com/922900): support SCRYPT key derivation method.
-  NOTIMPLEMENTED();
 }
 
 void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
