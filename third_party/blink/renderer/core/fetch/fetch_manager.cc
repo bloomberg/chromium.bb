@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/single_thread_task_runner.h"
+#include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -337,6 +338,8 @@ void FetchManager::Loader::DidReceiveResponse(
         case RequestMode::kCors:
         case RequestMode::kCorsWithForcedPreflight:
         case RequestMode::kNavigate:
+        case RequestMode::kNavigateNestedFrame:
+        case RequestMode::kNavigateNestedObject:
           PerformNetworkError("Fetch API cannot load " +
                               fetch_request_data_->Url().GetString() +
                               ". Redirects to data: URL are allowed only when "
@@ -360,6 +363,8 @@ void FetchManager::Loader::DidReceiveResponse(
         tainting = FetchRequestData::kCorsTainting;
         break;
       case RequestMode::kNavigate:
+      case RequestMode::kNavigateNestedFrame:
+      case RequestMode::kNavigateNestedObject:
         LOG(FATAL);
         break;
     }
@@ -565,7 +570,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
            ->IsSameSchemeHostPort(fetch_request_data_->Origin().get())) ||
       (fetch_request_data_->Url().ProtocolIsData() &&
        fetch_request_data_->SameOriginDataURLFlag()) ||
-      (fetch_request_data_->Mode() == RequestMode::kNavigate)) {
+      network::IsNavigationRequestMode(fetch_request_data_->Mode())) {
     // "The result of performing a scheme fetch using request."
     PerformSchemeFetch(exception_state);
     return;
@@ -699,6 +704,8 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
       request.SetMode(fetch_request_data_->Mode());
       break;
     case RequestMode::kNavigate:
+    case RequestMode::kNavigateNestedFrame:
+    case RequestMode::kNavigateNestedObject:
       // NetworkService (i.e. CorsURLLoaderFactory::IsSane) rejects kNavigate
       // requests coming from renderers, so using kSameOrigin here.
       // TODO(lukasza): Tweak CorsURLLoaderFactory::IsSane to accept kNavigate

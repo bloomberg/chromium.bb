@@ -359,13 +359,10 @@ void SetSecFetchHeaders(
         request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
       }
 
-      request.SetHttpHeaderField(
-          "Sec-Fetch-Mode", network::RequestModeToString(request.GetMode()));
-
       // Note that the `Sec-Fetch-User` header is always false (and therefore
       // omitted) for subresource requests. Likewise, note that we rely on
       // Blink's embedder to set `Sec-Fetch-Site`, as we don't want to trust the
-      // renderer to assert its own origin.
+      // renderer to assert its own origin. Ditto for `Sec-Fetch-Mode`.
     }
   }
 }
