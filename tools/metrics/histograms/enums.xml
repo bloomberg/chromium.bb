@@ -24589,6 +24589,8 @@ Called by update_net_error_codes.py.-->
   <int value="3020" label="DOMStorageWrite"/>
   <int value="3021" label="CacheStorageRead"/>
   <int value="3022" label="CacheStorageWrite"/>
+  <int value="3023" label="IndexedDBRead"/>
+  <int value="3024" label="IndexedDBWrite"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
