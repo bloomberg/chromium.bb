@@ -72,6 +72,9 @@ class SharingUiController {
   // Called by the SharingDialog when it is being closed.
   virtual void OnDialogClosed(SharingDialog* dialog);
 
+  // Closes the current dialog and resets all state.
+  void ClearLastDialog();
+
   void UpdateAndShowDialog();
 
   void UpdateDevices();

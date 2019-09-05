@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -25,6 +26,10 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/intent_picker_bubble_view.h"
+#endif
 
 namespace {
 
@@ -330,5 +335,9 @@ void SharingDialogView::WindowClosing() {
 // static
 views::BubbleDialogDelegateView* SharingDialogView::GetAsBubble(
     SharingDialog* dialog) {
+#if defined(OS_CHROMEOS)
+  if (!dialog)
+    return IntentPickerBubbleView::intent_picker_bubble();
+#endif
   return static_cast<SharingDialogView*>(dialog);
 }

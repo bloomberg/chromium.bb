@@ -128,12 +128,15 @@ void SharingUiController::OnMessageSentToDevice(
   UpdateIcon();
 }
 
-void SharingUiController::UpdateAndShowDialog() {
+void SharingUiController::ClearLastDialog() {
   last_dialog_id_++;
   is_loading_ = false;
   send_result_ = SharingSendMessageResult::kSuccessful;
-
   CloseDialog();
+}
+
+void SharingUiController::UpdateAndShowDialog() {
+  ClearLastDialog();
   DoUpdateApps(base::BindOnce(&SharingUiController::OnAppsReceived,
                               weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }

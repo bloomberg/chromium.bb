@@ -2198,6 +2198,18 @@ extern const char kWebGL2ComputeContextDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+
+extern const char kClickToCallContextMenuForSelectedTextName[];
+extern const char kClickToCallContextMenuForSelectedTextDescription[];
+
+extern const char kClickToCallUIName[];
+extern const char kClickToCallUIDescription[];
+
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 extern const char kDirectManipulationStylusName[];
@@ -2205,12 +2217,6 @@ extern const char kDirectManipulationStylusDescription[];
 
 extern const char kAnimatedAvatarButtonName[];
 extern const char kAnimatedAvatarButtonDescription[];
-
-extern const char kClickToCallContextMenuForSelectedTextName[];
-extern const char kClickToCallContextMenuForSelectedTextDescription[];
-
-extern const char kClickToCallUIName[];
-extern const char kClickToCallUIDescription[];
 
 extern const char kProfileMenuRevampName[];
 extern const char kProfileMenuRevampDescription[];
