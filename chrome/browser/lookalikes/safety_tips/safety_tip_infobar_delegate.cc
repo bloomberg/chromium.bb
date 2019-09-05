@@ -73,7 +73,8 @@ bool SafetyTipInfoBarDelegate::Accept() {
 bool SafetyTipInfoBarDelegate::Cancel() {
   auto* tab = TabAndroid::FromWebContents(web_contents_);
   if (tab) {
-    safety_tips::ReputationService::Get(tab->GetProfile())->SetUserIgnore(url_);
+    safety_tips::ReputationService::Get(tab->GetProfile())
+        ->SetUserIgnore(web_contents_, url_);
   }
 
   return true;

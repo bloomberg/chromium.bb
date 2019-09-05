@@ -127,7 +127,7 @@ void SafetyTipPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
       Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
       if (browser)
         safety_tips::ReputationService::Get(browser->profile())
-            ->SetUserIgnore(url_);
+            ->SetUserIgnore(web_contents(), url_);
       break;
   }
 }

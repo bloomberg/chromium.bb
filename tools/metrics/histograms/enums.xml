@@ -52535,6 +52535,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="NOT_SUPPORTED"/>
 </enum>
 
+<enum name="SafetyTipInteraction">
+  <int value="0" label="User dismissed the Safety Tip"/>
+  <int value="1" label="User left the site with the Safety Tip"/>
+</enum>
+
 <enum name="SafetyTipStatus">
   <int value="0" label="Safety Tip status unknown/not applicable"/>
   <int value="1" label="No Safety Tip"/>
