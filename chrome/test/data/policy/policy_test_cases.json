@@ -5139,5 +5139,13 @@
         "local_state": true
       }
     ]
+  },
+
+  "HSTSPolicyBypassList": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "HSTSPolicyBypassList": ["example"] },
+    "pref_mappings": [
+      { "pref": "hsts.policy.upgrade_bypass_list", "local_state": true }
+    ]
   }
 }

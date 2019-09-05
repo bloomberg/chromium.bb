@@ -595,6 +595,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileAttributesEntry::RegisterLocalStatePrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
+  ProfileNetworkContextService::RegisterLocalStatePrefs(registry);
   profiles::RegisterPrefs(registry);
   rappor::RapporServiceImpl::RegisterPrefs(registry);
   RegisterScreenshotPrefs(registry);

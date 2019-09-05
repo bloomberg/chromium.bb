@@ -35,6 +35,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -278,6 +279,12 @@ void ProfileNetworkContextService::RegisterProfilePrefs(
 #endif
 }
 
+// static
+void ProfileNetworkContextService::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kHSTSPolicyBypassList);
+}
+
 void ProfileNetworkContextService::DisableQuicIfNotAllowed() {
   if (!quic_allowed_.IsManaged())
     return;
@@ -500,6 +507,15 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     }
 
     network_context_params->transport_security_persister_path = path;
+  }
+  const base::ListValue* hsts_policy_bypass_list =
+      g_browser_process->local_state()->GetList(prefs::kHSTSPolicyBypassList);
+  for (const auto& value : *hsts_policy_bypass_list) {
+    std::string string_value;
+    if (!value.GetAsString(&string_value)) {
+      continue;
+    }
+    network_context_params->hsts_policy_bypass_list.push_back(string_value);
   }
 
   // NOTE(mmenke): Keep these protocol handlers and

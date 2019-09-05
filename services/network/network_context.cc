@@ -1885,6 +1885,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     builder.set_transport_security_persister_path(
         *params_->transport_security_persister_path);
   }
+  builder.set_hsts_policy_bypass_list(params_->hsts_policy_bypass_list);
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(params_->enable_ftp_url_support);
