@@ -15,12 +15,8 @@
 namespace blink {
 
 class NFCPushOptions;
-class ExceptionState;
 class ExecutionContext;
 class ScriptPromise;
-class StringOrArrayBufferOrNDEFMessageInit;
-
-using NDEFMessageSource = StringOrArrayBufferOrNDEFMessageInit;
 
 class NFCWriter : public ScriptWrappable, public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
@@ -37,8 +33,7 @@ class NFCWriter : public ScriptWrappable, public ContextClient {
   // Pushes NDEFMessageSource asynchronously to NFC tag / peer.
   ScriptPromise push(ScriptState*,
                      const NDEFMessageSource&,
-                     const NFCPushOptions*,
-                     ExceptionState&);
+                     const NFCPushOptions*);
 
   // Called by NFCProxy for notification about connection error.
   void OnMojoConnectionError();
