@@ -707,7 +707,6 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
   submit_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
   footer->AddChildView(submit_button_);
-
   add_spacer(kSubmitButtonBottomMarginDp);
 
   // Pin keyboard is only shown in tablet mode.
@@ -863,6 +862,12 @@ void ParentAccessView::OnInputChange(bool complete, bool last_field_active) {
   submit_button_->SetEnabled(complete);
 
   if (complete && last_field_active) {
+    if (auto_submit_enabled_) {
+      auto_submit_enabled_ = false;
+      SubmitCode();
+      return;
+    }
+
     // Moving focus is delayed by using PostTask to allow for proper
     // a11y announcements.
     base::ThreadTaskRunnerHandle::Get()->PostTask(

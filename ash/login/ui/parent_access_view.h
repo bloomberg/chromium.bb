@@ -184,6 +184,9 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
 
   State state_ = State::kNormal;
 
+  // Auto submit code when the last input has been inserted.
+  bool auto_submit_enabled_ = true;
+
   views::Label* title_label_ = nullptr;
   views::Label* description_label_ = nullptr;
   AccessCodeInput* access_code_view_ = nullptr;
