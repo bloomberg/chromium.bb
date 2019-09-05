@@ -7767,6 +7767,12 @@ be describing additional metrics about the same event.
       sharing its BrowsingInstance with at least one other tab.
     </summary>
   </metric>
+  <metric name="FailureLiveStateUsingBluetooth">
+    <summary>
+      Boolean indicating that the intervention was disallowed because the tab is
+      currently connnected to at least one bluetooth device.
+    </summary>
+  </metric>
   <metric name="FailureLiveStateUsingWebSockets">
     <summary>
       Boolean indicating that the intervention was disallowed because the tab is
