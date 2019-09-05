@@ -195,6 +195,10 @@ base::string16 SharingUiController::GetErrorDialogText() const {
   }
 }
 
+int SharingUiController::GetHeaderImageId() const {
+  return 0;
+}
+
 void SharingUiController::OnAppsReceived(int dialog_id, std::vector<App> apps) {
   if (dialog_id != last_dialog_id_)
     return;

@@ -87,6 +87,9 @@ class SharingUiController {
   // |send_result_|.
   virtual base::string16 GetErrorDialogText() const;
 
+  // Returns the image id shown as a header in the dialog.
+  virtual int GetHeaderImageId() const;
+
   // Returns the currently open SharingDialog or nullptr if there is no
   // dialog open.
   SharingDialog* dialog() const { return dialog_; }
