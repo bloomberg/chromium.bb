@@ -1282,7 +1282,7 @@ const char kNewUsbBackendDescription[] =
 
 const char kNewblueName[] = "Newblue";
 const char kNewblueDescription[] =
-    "Enables the use of newblue Bluetooth daemon.";
+    "Enables the use of Bluetooth dispatcher daemon.";
 
 const char kNewTabstripAnimationName[] = "New tabstrip animations";
 const char kNewTabstripAnimationDescription[] =
