@@ -2511,12 +2511,12 @@
   {
     "name": "offline-pages-live-page-sharing",
     "owners": [ "petewil", "jianli", "offline-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "offline-pages-load-signal-collecting",
     "owners": [ "petewil", "offline-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "offline-pages-pending-download",
@@ -2531,12 +2531,12 @@
   {
     "name": "offline-pages-renovations",
     "owners": [ "petewil", "offline-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "offline-pages-resource-based-snapshot",
     "owners": [ "petewil", "offline-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "offlining-recent-pages",
