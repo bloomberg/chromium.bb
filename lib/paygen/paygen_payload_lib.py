@@ -65,7 +65,7 @@ class PaygenPayload(object):
   PAYLOAD_SIGNATURE_SIZES_BYTES = (2048 // 8,)  # aka 2048 bits in bytes.
 
   TEST_IMAGE_NAME = 'chromiumos_test_image.bin'
-  RECOVERY_IMAGE_NAME = 'chromiumos_recovery_image.bin'
+  RECOVERY_IMAGE_NAME = 'recovery_image.bin'
   BASE_IMAGE_NAME = 'chromiumos_base_image.bin'
 
   _KERNEL = 'kernel'
