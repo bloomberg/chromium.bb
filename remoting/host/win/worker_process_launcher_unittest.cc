@@ -158,8 +158,8 @@ class WorkerProcessLauncherTest
  protected:
   void DoLaunchProcess();
 
-  base::test::SingleThreadTaskEnvironment task_environment_{
-      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
   // Receives messages sent to the worker process.

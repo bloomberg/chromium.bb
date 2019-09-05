@@ -198,8 +198,8 @@ class IpcDesktopEnvironmentTest : public testing::Test {
 
   void RunMainLoopUntilDone();
 
-  base::test::SingleThreadTaskEnvironment task_environment_{
-      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 
   // Runs until |desktop_session_proxy_| is connected to the desktop.
   std::unique_ptr<base::RunLoop> setup_run_loop_;

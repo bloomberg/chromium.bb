@@ -194,8 +194,8 @@ class HostListFetcherTest : public ::testing::Test {
                        net::URLRequestStatus::Status status);
 
  private:
-  base::test::SingleThreadTaskEnvironment task_environment_{
-      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   net::FakeURLFetcherFactory url_fetcher_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostListFetcherTest);

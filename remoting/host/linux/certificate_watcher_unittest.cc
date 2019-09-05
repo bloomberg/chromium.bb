@@ -93,8 +93,8 @@ class CertificateWatcherTest : public testing::Test {
     }
   }
 
-  base::test::SingleThreadTaskEnvironment task_environment_{
-      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<CertificateWatcher> watcher_;

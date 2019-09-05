@@ -168,8 +168,8 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
   }
 
  protected:
-  base::test::SingleThreadTaskEnvironment task_environment_{
-      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<base::RunLoop> run_loop_;
 
   base::Thread file_thread_;
