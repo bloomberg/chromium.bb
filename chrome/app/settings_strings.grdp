@@ -4324,7 +4324,7 @@
       Remove
     </message>
     <message name="IDS_SETTINGS_USERS_ADD_USERS" desc="Label the dialog for adding users.">
-      Add person
+      Add user
     </message>
     <message name="IDS_SETTINGS_USERS_ADD_USERS_EMAIL" desc="Label for the email input field for adding users.">
       Email address
