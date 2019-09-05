@@ -155,6 +155,8 @@ component("web_engine_core") {
     "renderer/on_load_script_injector.h",
     "renderer/web_engine_content_renderer_client.cc",
     "renderer/web_engine_content_renderer_client.h",
+    "switches.cc",
+    "switches.h",
     "web_engine_content_client.cc",
     "web_engine_content_client.h",
     "web_engine_export.h",
