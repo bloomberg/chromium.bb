@@ -1385,6 +1385,40 @@ class InstalledPackageTest(cros_test_lib.TempDirTestCase):
     self.assertEquals('package-1', pkg.pf)
 
 
+class HasPrebuiltTest(cros_test_lib.RunCommandTestCase):
+  """HasPrebuilt tests."""
+
+  def setUp(self):
+    self.atom = 'chromeos-base/chromeos-chrome'
+    self.r1_cpf = 'chromeos-base/chromeos-chrome-78.0.3900.0_rc-r1'
+    self.r2_cpf = 'chromeos-base/chromeos-chrome-78.0.3900.0_rc-r2'
+    self.r1_cpv = portage_util.SplitCPV(self.r1_cpf)
+    self.r2_cpv = portage_util.SplitCPV(self.r2_cpf)
+
+    def _check_pkg(cmd, *_args, **_kwargs):
+      rc = 0 if '=%s' % self.r1_cpf in cmd else 1
+      return cros_build_lib.CommandResult(cmd=cmd, returncode=rc)
+    self.rc.SetDefaultCmdResult(side_effect=_check_pkg)
+
+  def testHasPrebuilt(self):
+    """Test a package with a matching prebuilt."""
+    self.PatchObject(portage_util, 'PortageqBestVisible',
+                     return_value=self.r1_cpv)
+    self.rc.SetDefaultCmdResult(returncode=0)
+
+    self.assertTrue(portage_util.HasPrebuilt(self.atom))
+    self.rc.assertCommandContains(('=%s' % self.r1_cpf,))
+
+  def testNoPrebuilt(self):
+    """Test a package without a matching prebuilt."""
+    self.PatchObject(portage_util, 'PortageqBestVisible',
+                     return_value=self.r2_cpv)
+    self.rc.SetDefaultCmdResult(returncode=1)
+
+    self.assertFalse(portage_util.HasPrebuilt(self.atom))
+    self.rc.assertCommandContains(('=%s' % self.r2_cpf,))
+
+
 class PortageqBestVisibleTest(cros_test_lib.MockTestCase):
   """PortageqBestVisible tests."""
 
