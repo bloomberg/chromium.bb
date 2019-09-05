@@ -228,9 +228,9 @@ const int kLocationAuthorizationStatusCount = 5;
   FullscreenControllerFactory::GetInstance()
       ->GetForBrowserState(self.browserState)
       ->RemoveObserver(_fullscreenObserver.get());
-    FullscreenControllerFactory::GetInstance()
-        ->GetForBrowserState(self.browserState)
-        ->RemoveObserver(_fullscreenBadgeObserver.get());
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(self.browserState)
+      ->RemoveObserver(_fullscreenBadgeObserver.get());
   self.started = NO;
 }
 
