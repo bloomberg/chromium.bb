@@ -116,6 +116,7 @@ class Panel {
     if (menuId !== this.currentMenuId_) {
       this.clear();
       this.panel_.appendChild(menu);
+      menu.hidden = false;
     }
 
     // Hide menu actions not applicable to the current node.
@@ -136,6 +137,7 @@ class Panel {
     if (this.currentMenuId_) {
       const menu = document.getElementById(this.currentMenuId_);
       document.body.appendChild(menu);
+      menu.hidden = true;
 
       this.currentMenuId_ = null;
     }
