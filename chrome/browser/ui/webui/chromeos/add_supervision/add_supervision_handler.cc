@@ -19,8 +19,10 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -94,6 +96,10 @@ void AddSupervisionHandler::NotifySupervisionEnabled() {
       SupervisedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_));
 
   service->set_signout_required_after_supervision_enabled();
+  identity_manager_->GetAccountsMutator()
+      ->InvalidateRefreshTokenForPrimaryAccount(
+          signin_metrics::SourceForRefreshTokenOperation::
+              kAddSupervision_SupervisionEnabled);
 }
 
 void AddSupervisionHandler::OnAccessTokenFetchComplete(
