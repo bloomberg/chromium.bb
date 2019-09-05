@@ -672,7 +672,8 @@ static void update_arf_stack(int ref_map_index,
         for (int idx = i; idx < ref_buffer_stack->lst_stack_size - 1; ++idx)
           ref_buffer_stack->lst_stack[idx] =
               ref_buffer_stack->lst_stack[idx + 1];
-        ref_buffer_stack->lst_stack[i] = INVALID_IDX;
+        ref_buffer_stack->lst_stack[ref_buffer_stack->lst_stack_size - 1] =
+            INVALID_IDX;
         --ref_buffer_stack->lst_stack_size;
       }
     }
@@ -684,7 +685,8 @@ static void update_arf_stack(int ref_map_index,
         for (int idx = i; idx < ref_buffer_stack->gld_stack_size - 1; ++idx)
           ref_buffer_stack->gld_stack[idx] =
               ref_buffer_stack->gld_stack[idx + 1];
-        ref_buffer_stack->gld_stack[i] = INVALID_IDX;
+        ref_buffer_stack->gld_stack[ref_buffer_stack->gld_stack_size - 1] =
+            INVALID_IDX;
         --ref_buffer_stack->gld_stack_size;
       }
     }
