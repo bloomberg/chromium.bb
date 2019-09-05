@@ -73,6 +73,14 @@ void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
   }
 }
 
+bool ShouldEnableUSSNigori() {
+  // USS implementation of Nigori is not compatible with Directory
+  // implementations of Passwords and Bookmarks.
+  return base::FeatureList::IsEnabled(switches::kSyncUSSNigori) &&
+         base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks) &&
+         base::FeatureList::IsEnabled(switches::kSyncUSSPasswords);
+}
+
 }  // namespace
 
 SyncEngineBackend::SyncEngineBackend(const std::string& name,
@@ -326,7 +334,7 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   registrar_ = std::move(params.registrar);
 
   syncable::NigoriHandler* nigori_handler = nullptr;
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
+  if (ShouldEnableUSSNigori()) {
     auto nigori_processor = std::make_unique<NigoriModelTypeProcessor>();
     nigori_controller_ = std::make_unique<ModelTypeController>(
         NIGORI, std::make_unique<ForwardingModelTypeControllerDelegate>(
