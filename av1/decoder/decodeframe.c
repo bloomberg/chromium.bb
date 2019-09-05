@@ -4010,6 +4010,12 @@ static void read_bitdepth(struct aom_read_bit_buffer *rb,
     aom_internal_error(error_info, AOM_CODEC_UNSUP_BITSTREAM,
                        "Unsupported profile/bit-depth combination");
   }
+#if !CONFIG_AV1_HIGHBITDEPTH
+  if (seq_params->bit_depth > AOM_BITS_8) {
+    aom_internal_error(error_info, AOM_CODEC_UNSUP_BITSTREAM,
+                       "Bit-depth %d not supported", seq_params->bit_depth);
+  }
+#endif
 }
 
 void av1_read_film_grain_params(AV1_COMMON *cm,
