@@ -43,7 +43,9 @@ class XR final : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange)
 
-  ScriptPromise supportsSession(ScriptState*, const String&);
+  ScriptPromise supportsSession(ScriptState*,
+                                const String&,
+                                ExceptionState& exception_state);
   ScriptPromise requestSession(ScriptState*,
                                const String&,
                                XRSessionInit*,
@@ -178,11 +180,27 @@ class XR final : public EventTargetWithInlineData,
 
     // Resolves underlying promise.
     void Resolve();
-    // Rejects underlying promise with passed in DOM exception.
-    void Reject(DOMException* exception);
-    // Rejects underlying promise with passed in v8 value. Used to raise
-    // TypeError which is not a DOM exception.
-    void Reject(v8::Local<v8::Value> value);
+
+    // Rejects underlying promise with a DOMException.
+    // Do not call this with |DOMExceptionCode::kSecurityError|, use
+    // |RejectWithSecurityError| for that. If the exception is thrown
+    // synchronously, an ExceptionState must be passed in. Otherwise it may be
+    // null.
+    void RejectWithDOMException(DOMExceptionCode exception_code,
+                                const String& message,
+                                ExceptionState* exception_state);
+
+    // Rejects underlying promise with a SecurityError.
+    // If the exception is thrown synchronously, an ExceptionState must
+    // be passed in. Otherwise it may be null.
+    void RejectWithSecurityError(const String& sanitized_message,
+                                 ExceptionState* exception_state);
+
+    // Rejects underlying promise with a TypeError.
+    // If the exception is thrown synchronously, an ExceptionState must
+    // be passed in. Otherwise it may be null.
+    void RejectWithTypeError(const String& message,
+                             ExceptionState* exception_state);
 
     XRSession::SessionMode mode() const;
 

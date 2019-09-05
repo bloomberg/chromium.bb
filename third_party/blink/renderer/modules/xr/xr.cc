@@ -241,12 +241,40 @@ void XR::PendingSupportsSessionQuery::Resolve() {
   resolver_->Resolve();
 }
 
-void XR::PendingSupportsSessionQuery::Reject(DOMException* exception) {
-  resolver_->Reject(exception);
+void XR::PendingSupportsSessionQuery::RejectWithDOMException(
+    DOMExceptionCode exception_code,
+    const String& message,
+    ExceptionState* exception_state) {
+  DCHECK_NE(exception_code, DOMExceptionCode::kSecurityError);
+
+  if (exception_state) {
+    exception_state->ThrowDOMException(exception_code, message);
+  } else {
+    resolver_->Reject(
+        MakeGarbageCollected<DOMException>(exception_code, message));
+  }
 }
 
-void XR::PendingSupportsSessionQuery::Reject(v8::Local<v8::Value> value) {
-  resolver_->Reject(value);
+void XR::PendingSupportsSessionQuery::RejectWithSecurityError(
+    const String& sanitized_message,
+    ExceptionState* exception_state) {
+  if (exception_state) {
+    exception_state->ThrowSecurityError(sanitized_message);
+  } else {
+    resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kSecurityError, sanitized_message));
+  }
+}
+
+void XR::PendingSupportsSessionQuery::RejectWithTypeError(
+    const String& message,
+    ExceptionState* exception_state) {
+  if (exception_state) {
+    exception_state->ThrowTypeError(message);
+  } else {
+    resolver_->Reject(V8ThrowException::CreateTypeError(
+        resolver_->GetScriptState()->GetIsolate(), message));
+  }
 }
 
 XRSession::SessionMode XR::PendingSupportsSessionQuery::mode() const {
@@ -440,30 +468,29 @@ void XR::ExitPresent() {
 }
 
 ScriptPromise XR::supportsSession(ScriptState* script_state,
-                                  const String& mode) {
-  LocalFrame* frame = GetFrame();
-  if (!frame || !frame->GetDocument()) {
-    // Reject if the frame is inaccessible.
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           kNavigatorDetachedError));
-  }
-
-  Document* doc = frame->GetDocument();
-  XRSession::SessionMode session_mode = stringToSessionMode(mode);
-
+                                  const String& mode,
+                                  ExceptionState& exception_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  LocalFrame* frame = GetFrame();
+  Document* doc = frame ? frame->GetDocument() : nullptr;
+  if (!doc) {
+    // Reject if the frame or document is inaccessible.
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kNavigatorDetachedError);
+    return promise;
+  }
+
+  XRSession::SessionMode session_mode = stringToSessionMode(mode);
   PendingSupportsSessionQuery* query =
       MakeGarbageCollected<PendingSupportsSessionQuery>(resolver, session_mode);
 
   if (session_mode == XRSession::kModeImmersiveAR &&
       !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
-    query->Reject(V8ThrowException::CreateTypeError(
-        script_state->GetIsolate(),
-        String::Format(kImmersiveArModeNotValid, "supportsSession")));
+    query->RejectWithTypeError(
+        String::Format(kImmersiveArModeNotValid, "supportsSession"),
+        &exception_state);
     return promise;
   }
 
@@ -471,8 +498,7 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
                              ReportOptions::kReportOnFailure)) {
     // Only allow the call to be made if the appropriate feature policy is in
     // place.
-    query->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kSecurityError, kFeaturePolicyBlocked));
+    query->RejectWithSecurityError(kFeaturePolicyBlocked, &exception_state);
     return promise;
   }
 
@@ -483,8 +509,8 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
     if (!service_) {
       // If we don't have a service at the time we reach this call it indicates
       // that there's no WebXR hardware. Reject as not supported.
-      query->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
+      query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
+                                    kSessionNotSupported, &exception_state);
       return promise;
     }
 
@@ -706,8 +732,8 @@ void XR::OnSupportsSessionReturned(PendingSupportsSessionQuery* query,
   if (supports_session) {
     query->Resolve();
   } else {
-    query->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
+    query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
+                                  kSessionNotSupported, nullptr);
   }
 }
 
