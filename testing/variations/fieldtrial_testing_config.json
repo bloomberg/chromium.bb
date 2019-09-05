@@ -3883,12 +3883,16 @@
             "experiments": [
                 {
                     "name": "DesktopExperiments",
+                    "params": {
+                        "OmniboxMaxURLMatches": "7",
+                        "UIMaxAutocompleteMatches": "8"
+                    },
                     "enable_features": [
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
                         "OmniboxLocalEntitySuggestions",
+                        "OmniboxMaxURLMatches",
                         "OmniboxRichEntitySuggestions",
-                        "OmniboxTailSuggestions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
                         "QueryInOmnibox"
                     ]
