@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
