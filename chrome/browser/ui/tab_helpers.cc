@@ -84,7 +84,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
-#include "components/dom_distiller/core/dom_distiller_switches.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
 #include "components/download/content/public/download_navigation_observer.h"
 #include "components/history/content/browser/web_contents_top_sites_observer.h"
@@ -353,9 +353,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   printing::InitializePrinting(web_contents);
 #endif
 
-  bool enabled_distiller = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDomDistiller);
-  if (enabled_distiller) {
+  if (dom_distiller::IsDomDistillerEnabled()) {
     dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
         web_contents);
   }
