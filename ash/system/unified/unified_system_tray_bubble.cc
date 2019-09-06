@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
@@ -277,6 +278,21 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
       (lost_active && ::wm::HasTransientAncestor(
                           lost_active, bubble_widget_->GetNativeWindow()))) {
     return;
+  }
+
+  // Don't close the bubble if the message center is gaining or losing
+  // activation.
+  if (features::IsUnifiedMessageCenterRefactorEnabled() &&
+      tray_->IsMessageCenterBubbleShown()) {
+    views::Widget* message_center_widget =
+        tray_->message_center_bubble()->GetBubbleWidget();
+    if (message_center_widget ==
+            views::Widget::GetWidgetForNativeView(gained_active) ||
+        (lost_active &&
+         message_center_widget ==
+             views::Widget::GetWidgetForNativeView(lost_active))) {
+      return;
+    }
   }
 
   tray_->CloseBubble();
