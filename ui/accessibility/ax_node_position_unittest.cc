@@ -78,7 +78,7 @@ class AXPositionTest : public testing::Test {
     tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
     update.tree_data = tree_data;
     std::unique_ptr<AXTree> tree = std::make_unique<AXTree>(update);
-    AXNodePosition::SetTreeForTesting(tree.get());
+    AXNodePosition::SetTree(tree.get());
     return tree;
   }
 
@@ -503,7 +503,7 @@ TEST_F(AXPositionTest, GetMaxTextOffsetFromLineBreak) {
 }
 
 TEST_F(AXPositionTest, GetMaxTextOffsetUpdate) {
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   ui::AXNodeData root_data;
   root_data.id = 1;
