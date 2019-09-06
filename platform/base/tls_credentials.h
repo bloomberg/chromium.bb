@@ -6,6 +6,7 @@
 #define PLATFORM_BASE_TLS_CREDENTIALS_H_
 
 #include <openssl/crypto.h>
+#include <openssl/rsa.h>
 #include <openssl/ssl.h>
 
 #include <chrono>
@@ -14,6 +15,8 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
+#include "platform/api/time.h"
+#include "platform/base/error.h"
 #include "platform/base/macros.h"
 
 namespace openscreen {
@@ -21,49 +24,61 @@ namespace platform {
 
 class TlsCredentials {
  public:
+  // TODO(issue/72): remove when no longer required by ErrorOr.
+  TlsCredentials() = default;
+
+  // We are move only due to unique pointers.
+  TlsCredentials(TlsCredentials&&) = default;
+  TlsCredentials& operator=(TlsCredentials&&) = default;
+
   // TlsCredentials generates a self signed certificate given (1) the name
   // to use for the certificate, (2) the length of time the certificate will
-  // be valid, and (3) a private key used to generate the certificate.
-  TlsCredentials(absl::string_view name,
-                 std::chrono::seconds certificate_duration,
-                 bssl::UniquePtr<EVP_PKEY> private_public_keypair);
-
-  // The raw, generated self signed certficate.
-  const std::vector<uint8_t>& raw_der_certificate() {
-    return raw_der_certificate_;
-  }
+  // be valid, and (3) a private/public key pair.
+  static ErrorOr<TlsCredentials> Create(
+      absl::string_view name,
+      std::chrono::seconds certificate_duration,
+      ClockNowFunctionPtr now_function,
+      bssl::UniquePtr<EVP_PKEY> key_pair);
 
   // The OpenSSL encoded self signed certificate.
-  const CRYPTO_BUFFER& certificate() const { return *certificate_; }
+  const X509& certificate() const { return *certificate_; }
 
-  // The original private key provided on construction.
-  const EVP_PKEY& private_key() const { return *private_key_; }
+  // The original key pair provided on construction.
+  const EVP_PKEY& key_pair() const { return *key_pair_; }
 
-  // A base64 encoded version of the private/public keypair's private key
-  // provided on construction.
+  // A base64 encoded version of the private key provided on construction.
   const std::vector<uint8_t>& private_key_base64() const {
     return private_key_base64_;
   }
 
-  // A base64 encoded version of the private/public keypair's associated public
-  // key.
+  // A base64 encoded version of the public key provided on construction.
   const std::vector<uint8_t>& public_key_base64() const {
     return public_key_base64_;
   }
 
-  // A SHA-256 digest of the private/public keypair's associated public key.
+  // A SHA-256 digest of the public key provided on construction.
   const std::vector<uint8_t>& public_key_hash() const {
     return public_key_hash_;
   }
 
- private:
-  bssl::UniquePtr<CRYPTO_BUFFER> certificate_;
+  // The DER-encoded raw bytes of the generated self signed certficate.
+  const std::vector<uint8_t>& raw_der_certificate() const {
+    return raw_der_certificate_;
+  }
 
-  bssl::UniquePtr<EVP_PKEY> private_key_;
+ private:
+  TlsCredentials(bssl::UniquePtr<X509> certificate,
+                 bssl::UniquePtr<EVP_PKEY> key_pair,
+                 std::vector<uint8_t> private_key_base64,
+                 std::vector<uint8_t> public_key_base64,
+                 std::vector<uint8_t> public_key_hash,
+                 std::vector<uint8_t> raw_der_certificate);
+
+  bssl::UniquePtr<X509> certificate_;
+  bssl::UniquePtr<EVP_PKEY> key_pair_;
   std::vector<uint8_t> private_key_base64_;
   std::vector<uint8_t> public_key_base64_;
   std::vector<uint8_t> public_key_hash_;
-
   std::vector<uint8_t> raw_der_certificate_;
 };
 

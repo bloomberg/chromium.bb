@@ -160,6 +160,7 @@ source_set("platform_unittests") {
     "base/error_unittest.cc",
     "base/ip_address_unittest.cc",
     "base/location_unittest.cc",
+    "base/tls_credentials_unittest.cc",
   ]
 
   # The unit tests in impl/ assume the standalone implementation is being used.

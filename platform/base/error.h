@@ -77,6 +77,16 @@ class Error {
     kJsonWriteError,
 
     // OpenSSL errors.
+
+    // Was unable to generate a certificate.
+    kCertificateCreationError,
+
+    // Certificate failed validation.
+    kCertificateValidationError,
+
+    // Failed to produce a hashing digest.
+    kSha256HashFailure,
+
     // A non-recoverable SSL library error has occurred.
     kFatalSSLError,
     kFileLoadFailure,
