@@ -4115,10 +4115,10 @@
     'gpu_win_specific_gtests': {
       'gl_tests_passthrough': {
         'test': 'gl_tests',
-        'desktop_args': [
+        'args': [
           '--use-gpu-in-tests',
           '--use-cmd-decoder=passthrough',
-        ]
+        ],
       },
       'video_decode_accelerator_d3d11_unittest': {
         'args': [
@@ -4903,11 +4903,12 @@
     },
 
     'webview_bot_instrumentation_test_apk_no_field_trial_gtest': {
-      'webview_instrumentation_test_apk': {
+      'webview_instrumentation_test_apk_no_field_trial': {
         'args': ['--disable-field-trials'],
         'swarming': {
           'shards': 12,
         },
+        'test': 'webview_instrumentation_test_apk',
       },
     },
 
