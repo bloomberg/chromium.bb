@@ -36,7 +36,7 @@ class TlsConnectionFactory {
     virtual void OnConnectionFailed(TlsConnectionFactory* factory,
                                     const IPEndpoint& remote_address) = 0;
 
-    // It means it's so bad that you might as well delete the factory.
+    // Called when a non-recoverable error occurs.
     virtual void OnError(TlsConnectionFactory* factory, Error error) = 0;
   };
 
@@ -64,9 +64,15 @@ class TlsConnectionFactory {
   TlsConnectionFactory(Client* client, TaskRunner* task_runner)
       : client_(client), task_runner_(task_runner) {}
 
-  // TODO(jophba, rwkeane): Hide access to these behind local methods.
-  Client* client() const { return client_; }
-  TaskRunner* task_runner() const { return task_runner_; }
+  // The below methods proxy calls to this TlsConnectionFactory's Client.
+  void OnAccepted(std::unique_ptr<TlsConnection> connection);
+
+  void OnConnected(std::unique_ptr<TlsConnection> connection);
+
+  void OnConnectionFailed(const IPEndpoint& remote_address);
+
+  // Called when a non-recoverable error occurs.
+  void OnError(Error error);
 
  private:
   Client* client_;

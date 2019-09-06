@@ -55,12 +55,23 @@ class TlsConnection {
   // Sets the client for this instance.
   void set_client(Client* client) { client_ = client; }
 
+  virtual ~TlsConnection() = default;
+
  protected:
   explicit TlsConnection(TaskRunner* task_runner) : task_runner_(task_runner) {}
 
-  // TODO(jophba, rwkeane): Hide access to these behind local methods.
-  Client* client() const { return client_; }
-  TaskRunner* task_runner() const { return task_runner_; }
+  // Called when |connection| writing is blocked and unblocked, respectively.
+  // This call will be proxied to the Client set for this TlsConnection.
+  void OnWriteBlocked();
+  void OnWriteUnblocked();
+
+  // Called when |connection| experiences an error, such as a read error. This
+  // call will be proxied to the Client set for this TlsConnection.
+  void OnError(Error error);
+
+  // Called when a |packet| arrives on |socket|. This call will be proxied to
+  // the Client set for this TlsConnection.
+  void OnRead(std::vector<uint8_t> message);
 
  private:
   Client* client_;
