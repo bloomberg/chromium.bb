@@ -7,10 +7,9 @@
 
 from __future__ import print_function
 
-import cStringIO
-import sys
 import tempfile
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import table
 
@@ -169,10 +168,9 @@ class TableTest(cros_test_lib.TempDirTestCase):
   def testMergeRows(self):
     # This merge should fail without a merge rule.  Capture stderr to avoid
     # scary error message in test output.
-    stderr = sys.stderr
-    sys.stderr = cStringIO.StringIO()
-    self.assertRaises(ValueError, self._table._MergeRow, self.ROW0a, self.COL0)
-    sys.stderr = stderr
+    with cros_build_lib.OutputCapturer():
+      self.assertRaises(ValueError, self._table._MergeRow, self.ROW0a,
+                        self.COL0)
 
     # Merge but stick with current row where different.
     self._table._MergeRow(self.ROW0a, self.COL0,
