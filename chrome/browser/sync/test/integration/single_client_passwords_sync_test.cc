@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
                        ReencryptsDataWhenPassphraseIsSet) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), fake_server_.get(),
-                                  syncer::PassphraseType::KEYSTORE_PASSPHRASE)
+                                  syncer::PassphraseType::kKeystorePassphrase)
                   .Wait());
 
   PasswordForm form = CreateTestPasswordForm(0);
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
 
   GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase("hunter2");
   ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), fake_server_.get(),
-                                  syncer::PassphraseType::CUSTOM_PASSPHRASE)
+                                  syncer::PassphraseType::kCustomPassphrase)
                   .Wait());
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
