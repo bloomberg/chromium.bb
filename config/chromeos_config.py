@@ -1333,7 +1333,11 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.release_afdo_verify,
       boards=['eve'],
       chrome_afdo_verify=True,
-      # TODO: Add a schedule
+      # Start at 7 hours after benchmark-afdo-generate, to
+      # give the builder enough time to finish
+      schedule='0 5/12 * * *',
+      # FIXME(tcwang): Enable health alert once deployed
+      #health_alert_recipients=['c-compiler-chrome@google.com'],
   )
 
   def KernelAFDOPublishBuilders(name, board, schedule):

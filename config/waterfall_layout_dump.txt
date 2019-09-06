@@ -534,6 +534,7 @@
   arm-pgo-generate-llvm-next-toolchain
   arm64-pgo-generate-llvm-next-toolchain
   benchmark-afdo-generate
+  chrome-release-afdo-verify
   kernel-3_14-release-afdo-verify
   kernel-3_18-release-afdo-verify
   kernel-4_4-release-afdo-verify

@@ -41,7 +41,7 @@ CWP_AFDO_GS_URL = \
 KERNEL_PROFILE_URL = \
     'gs://chromeos-prebuilt/afdo-job/cwp/kernel/'
 AFDO_GS_URL_VETTED = \
-    'gs://chromeos-throw-away-bucket/afdo-job/llvm/vetted/'
+    'gs://chromeos-prebuilt/afdo-job/vetted/'
 KERNEL_AFDO_GS_URL_VETTED = \
     os.path.join(AFDO_GS_URL_VETTED, 'kernel')
 BENCHMARK_AFDO_GS_URL_VETTED = \
