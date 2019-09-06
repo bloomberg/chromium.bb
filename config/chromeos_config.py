@@ -2343,7 +2343,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gale', # http://b/140523449
       'fizz-moblab', # crbug.com/995170
       'guado', # crbug.com/950812
-      'mistral', # crbug.com/996758
+      'mistral', # b/140536001
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'grunt', # crbug.com/984614
       'wizpig', # crbug.com/996944
