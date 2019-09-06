@@ -91,9 +91,12 @@ CdmPromise::Exception ToCdmPromiseException(fuchsia::media::drm::Error error) {
       return CdmPromise::Exception::QUOTA_EXCEEDED_ERROR;
 
     case fuchsia::media::drm::Error::NOT_PROVISIONED:
+      // FuchsiaCdmManager is supposed to provision CDM.
+      NOTREACHED();
+      return CdmPromise::Exception::INVALID_STATE_ERROR;
+
     case fuchsia::media::drm::Error::INTERNAL:
-      // TODO(crbug.com/1001167): Figure out the right value to return for these
-      // errors.
+      DLOG(ERROR) << "CDM failed due to an internal error.";
       return CdmPromise::Exception::INVALID_STATE_ERROR;
   }
 }
