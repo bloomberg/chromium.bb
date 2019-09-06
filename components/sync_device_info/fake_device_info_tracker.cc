@@ -49,11 +49,11 @@ FakeDeviceInfoTracker::GetAllDeviceInfo() const {
 }
 
 void FakeDeviceInfoTracker::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
+  NOTREACHED();
 }
 
 void FakeDeviceInfoTracker::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
+  NOTREACHED();
 }
 
 int FakeDeviceInfoTracker::CountActiveDevices() const {
@@ -76,14 +76,10 @@ bool FakeDeviceInfoTracker::IsRecentLocalCacheGuid(
 
 void FakeDeviceInfoTracker::Add(const DeviceInfo* device) {
   devices_.push_back(device);
-  for (auto& observer : observers_)
-    observer.OnDeviceInfoChange();
 }
 
 void FakeDeviceInfoTracker::OverrideActiveDeviceCount(int count) {
   active_device_count_ = count;
-  for (auto& observer : observers_)
-    observer.OnDeviceInfoChange();
 }
 
 }  // namespace syncer

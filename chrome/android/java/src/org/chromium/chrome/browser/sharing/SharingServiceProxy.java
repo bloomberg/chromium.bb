@@ -95,7 +95,7 @@ public class SharingServiceProxy {
 
     /**
      * Returns a list of devices for with given capabilities.
-     * @param capabilities A bitmask of capabilities created from.
+     * @param capability A bitmask of capabilities created from.
      *         org.chromium.chrome.browser.sharing.SharingDeviceCapability enum values.
      */
     public ArrayList<DeviceInfo> getDeviceCandidates(int capabilities) {
@@ -109,16 +109,6 @@ public class SharingServiceProxy {
         return deviceInfo;
     }
 
-    public void addDeviceCandidatesInitializedObserver(Runnable callback) {
-        if (sNativeSharingServiceProxyAndroid == 0) {
-            callback.run();
-            return;
-        }
-
-        Natives jni = SharingServiceProxyJni.get();
-        jni.addDeviceCandidatesInitializedObserver(sNativeSharingServiceProxyAndroid, callback);
-    }
-
     @NativeMethods
     interface Natives {
         void initSharingService(Profile profile);
@@ -126,7 +116,5 @@ public class SharingServiceProxy {
                 String text, Callback<Integer> callback);
         void getDeviceCandidates(long nativeSharingServiceProxyAndroid,
                 ArrayList<DeviceInfo> deviceInfo, int capabilities);
-        void addDeviceCandidatesInitializedObserver(
-                long nativeSharingServiceProxyAndroid, Runnable runnable);
     }
 }

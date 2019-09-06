@@ -94,6 +94,7 @@ public final class SharingNotificationUtil {
                         .setColor(ApiCompatibilityUtils.getColor(context.getResources(), color))
                         .setGroup(group)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
+                        .setVibrate(new long[0])
                         .setSmallIcon(smallIconId)
                         .setAutoCancel(true)
                         .setDefaults(Notification.DEFAULT_ALL);
@@ -150,6 +151,7 @@ public final class SharingNotificationUtil {
                         .setColor(ApiCompatibilityUtils.getColor(
                                 context.getResources(), R.color.default_icon_color_blue))
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
+                        .setVibrate(new long[0])
                         .setSmallIcon(R.drawable.ic_devices_16dp)
                         .setProgress(/*max=*/0, /*percentage=*/0, true)
                         .setOngoing(true)
@@ -195,6 +197,7 @@ public final class SharingNotificationUtil {
                         .setGroup(group)
                         .setColor(ApiCompatibilityUtils.getColor(resources, R.color.google_red_600))
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
+                        .setVibrate(new long[0])
                         .setSmallIcon(R.drawable.ic_error_outline_red_24dp)
                         .setContentText(contentText)
                         .setDefaults(Notification.DEFAULT_ALL)
