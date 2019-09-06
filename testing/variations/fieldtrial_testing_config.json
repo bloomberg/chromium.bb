@@ -5260,26 +5260,6 @@
             ]
         }
     ],
-    "SendTabToSelfShowSendingUI": [
-        {
-            "platforms": [
-                "android",
-                "ios",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SendTabToSelfShowSendingUI"
-                    ]
-                }
-            ]
-        }
-    ],
     "ServiceManagerForBackgroundPrefetch": [
         {
             "platforms": [
