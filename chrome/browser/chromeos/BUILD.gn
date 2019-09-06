@@ -1280,6 +1280,8 @@ source_set("chromeos") {
     "login/login_client_cert_usage_observer.h",
     "login/login_screen_extensions_lifetime_manager.cc",
     "login/login_screen_extensions_lifetime_manager.h",
+    "login/login_screen_extensions_storage_cleaner.cc",
+    "login/login_screen_extensions_storage_cleaner.h",
     "login/login_wizard.h",
     "login/mojo_system_info_dispatcher.cc",
     "login/mojo_system_info_dispatcher.h",
