@@ -1607,6 +1607,8 @@ source_set("chromeos") {
     "policy/app_install_event_log_manager_wrapper.h",
     "policy/app_install_event_log_uploader.cc",
     "policy/app_install_event_log_uploader.h",
+    "policy/app_install_event_log_util.cc",
+    "policy/app_install_event_log_util.h",
     "policy/app_install_event_logger.cc",
     "policy/app_install_event_logger.h",
     "policy/auto_enrollment_client.h",

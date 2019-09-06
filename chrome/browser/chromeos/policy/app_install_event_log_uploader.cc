@@ -13,7 +13,14 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
+#include "chrome/browser/chromeos/policy/app_install_event_log_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/reporting_util.h"
+#include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+
+namespace em = enterprise_management;
 
 namespace policy {
 
@@ -31,8 +38,12 @@ const int kMaxRetryBackoffMs = 24 * 60 * 60 * 1000;  // 24 hours
 AppInstallEventLogUploader::Delegate::~Delegate() {}
 
 AppInstallEventLogUploader::AppInstallEventLogUploader(
-    CloudPolicyClient* client)
-    : client_(client), retry_backoff_ms_(kMinRetryBackoffMs) {
+    CloudPolicyClient* client,
+    Profile* profile)
+    : client_(client),
+      profile_(profile),
+      retry_backoff_ms_(kMinRetryBackoffMs) {
+  DCHECK(client_);
   client_->AddObserver(this);
 }
 
@@ -87,11 +98,14 @@ void AppInstallEventLogUploader::StartSerialization() {
 }
 
 void AppInstallEventLogUploader::OnSerialized(
-    const enterprise_management::AppInstallReportRequest* report) {
+    const em::AppInstallReportRequest* report) {
+  base::Value value_report = RealtimeReportingJobConfiguration::BuildReport(
+      ConvertProtoToValue(report, profile_), reporting::GetContext(profile_));
+
   // base::Unretained() is safe here as the destructor cancels any pending
   // upload, after which the |client_| is guaranteed to not call the callback.
-  client_->UploadAppInstallReport(
-      report,
+  client_->UploadRealtimeReport(
+      std::move(value_report),
       base::AdaptCallbackForRepeating(base::BindOnce(
           &AppInstallEventLogUploader::OnUploadDone, base::Unretained(this))));
 }

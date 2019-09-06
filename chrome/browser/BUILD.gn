@@ -1483,6 +1483,8 @@ jumbo_split_static_library("browser") {
     "profiles/renderer_updater.h",
     "profiles/renderer_updater_factory.cc",
     "profiles/renderer_updater_factory.h",
+    "profiles/reporting_util.cc",
+    "profiles/reporting_util.h",
     "profiles/sql_init_error_message_ids.cc",
     "profiles/sql_init_error_message_ids.h",
     "profiles/storage_partition_descriptor.h",
