@@ -65,6 +65,7 @@ following changes which are not merged to upstream:
   - Add Arm NEON implementation of h2v1_merged_upsample
   - Add Arm NEON implementation of h2v2_merged_upsample
   - Implement 2x2 IDCT using Arm NEON intrinsics
+  - Implement 4x4 IDCT using Arm NEON intrinsics
 
 Refer to working-with-nested-repos [1] for details of how to setup your git
 svn client to update the code (for making local changes, cherry picking from
