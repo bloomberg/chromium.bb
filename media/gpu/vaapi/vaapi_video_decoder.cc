@@ -33,6 +33,9 @@ namespace {
 // Maximum number of parallel decode requests.
 constexpr int kMaxDecodeRequests = 4;
 
+// Size of the timestamp cache, needs to be large enough for frame-reordering.
+constexpr size_t kTimestampCacheSize = 128;
+
 // Returns the preferred VA_RT_FORMAT for the given |profile|.
 unsigned int GetVaFormatForVideoCodecProfile(VideoCodecProfile profile) {
   switch (profile) {
@@ -86,6 +89,7 @@ VaapiVideoDecoder::VaapiVideoDecoder(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     GetFramePoolCB get_pool_cb)
     : get_pool_cb_(std::move(get_pool_cb)),
+      buffer_id_to_timestamp_(kTimestampCacheSize),
       client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(std::move(decoder_task_runner)),
       weak_this_factory_(this) {
@@ -283,7 +287,7 @@ void VaapiVideoDecoder::QueueDecodeTask(scoped_refptr<DecoderBuffer> buffer,
   }
 
   if (!buffer->end_of_stream())
-    buffer_id_to_timestamp_.emplace(next_buffer_id_, buffer->timestamp());
+    buffer_id_to_timestamp_.Put(next_buffer_id_, buffer->timestamp());
 
   decode_task_queue_.emplace(std::move(buffer), next_buffer_id_,
                              std::move(decode_cb));
@@ -464,10 +468,18 @@ void VaapiVideoDecoder::SurfaceReady(const scoped_refptr<VASurface>& va_surface,
                                       natural_size);
   }
 
-  auto it = buffer_id_to_timestamp_.find(buffer_id);
+  // Find the timestamp associated with |buffer_id|. It's possible that a
+  // surface is output multiple times for different |buffer_id|s (e.g. VP9 use
+  // existing frame feature). This means we need to output the same frame again
+  // with a different timestamp than the one recorded in CreateSurface(). We
+  // can't overwrite the timestamp directly as the original frame might still be
+  // in use. Instead we wrap the frame in another frame with a different
+  // timestamp in OutputFrameTask(). On some rare occasions it's also possible
+  // that a single DecoderBuffer produces multiple surfaces with the same
+  // |bitstream_id|, so we shouldn't remove the timestamp from the cache.
+  const auto it = buffer_id_to_timestamp_.Peek(buffer_id);
   DCHECK(it != buffer_id_to_timestamp_.end());
   base::TimeDelta timestamp = it->second;
-  buffer_id_to_timestamp_.erase(it);
 
   // Find the frame associated with the surface. We won't erase it from
   // |output_frames_| yet, as the decoder might still be using it for reference.
