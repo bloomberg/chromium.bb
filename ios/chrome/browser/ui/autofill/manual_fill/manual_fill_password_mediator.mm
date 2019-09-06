@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/autofill/manual_fill/password_mediator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
 
 #include <vector>
 
@@ -64,10 +64,6 @@ BOOL AreCredentialsAtIndexesConnected(
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> _passwordStore;
 }
-
-// The |WebStateList| containing the active web state. Used to filter the list
-// of credentials based on the active web state.
-@property(nonatomic, assign) WebStateList* webStateList;
 
 // The password fetcher to query the user profile.
 @property(nonatomic, strong) PasswordFetcher* passwordFetcher;
@@ -248,7 +244,7 @@ BOOL AreCredentialsAtIndexesConnected(
 - (void)userDidPickContent:(NSString*)content
              passwordField:(BOOL)passwordField
              requiresHTTPS:(BOOL)requiresHTTPS {
-  [self.navigator dismissPresentedViewController];
+  [self.delegate manualFillPasswordMediatorWillInjectContent:self];
   [self.contentInjector userDidPickContent:content
                              passwordField:passwordField
                              requiresHTTPS:requiresHTTPS];
