@@ -1107,7 +1107,7 @@
 
     'android_release_bot_minimal_symbols_x86_resource_whitelisting': [
       'android', 'release_bot', 'minimal_symbols', 'x86',
-      'strip_debug_info', 'resource_whitelisting',
+      'resource_whitelisting',
     ],
 
     'android_release_thumb_bot': [
@@ -1136,8 +1136,7 @@
     ],
 
     'android_release_trybot_x86_resource_whitelisting': [
-      'android', 'release_trybot', 'strip_debug_info', 'x86',
-      'resource_whitelisting',
+      'android', 'release_trybot', 'x86', 'resource_whitelisting',
     ],
 
     'android_webview_google_debug_static_bot': [
