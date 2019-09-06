@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PROFILER_THREAD_DELEGATE_WIN_H_
-#define BASE_PROFILER_THREAD_DELEGATE_WIN_H_
+#ifndef BASE_PROFILER_SUSPENDABLE_THREAD_DELEGATE_WIN_H_
+#define BASE_PROFILER_SUSPENDABLE_THREAD_DELEGATE_WIN_H_
 
 #include <windows.h>
 
 #include "base/base_export.h"
-#include "base/profiler/thread_delegate.h"
+#include "base/profiler/suspendable_thread_delegate.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
 
@@ -16,9 +16,11 @@ namespace base {
 
 // Platform- and thread-specific implementation in support of stack sampling on
 // Windows.
-class BASE_EXPORT ThreadDelegateWin : public ThreadDelegate {
+class BASE_EXPORT SuspendableThreadDelegateWin
+    : public SuspendableThreadDelegate {
  public:
-  class ScopedSuspendThread : public ThreadDelegate::ScopedSuspendThread {
+  class ScopedSuspendThread
+      : public SuspendableThreadDelegate::ScopedSuspendThread {
    public:
     explicit ScopedSuspendThread(HANDLE thread_handle);
     ~ScopedSuspendThread() override;
@@ -32,14 +34,15 @@ class BASE_EXPORT ThreadDelegateWin : public ThreadDelegate {
     DISALLOW_COPY_AND_ASSIGN(ScopedSuspendThread);
   };
 
-  explicit ThreadDelegateWin(PlatformThreadId thread_id);
-  ~ThreadDelegateWin() override;
+  explicit SuspendableThreadDelegateWin(PlatformThreadId thread_id);
+  ~SuspendableThreadDelegateWin() override;
 
-  ThreadDelegateWin(const ThreadDelegateWin&) = delete;
-  ThreadDelegateWin& operator=(const ThreadDelegateWin&) = delete;
+  SuspendableThreadDelegateWin(const SuspendableThreadDelegateWin&) = delete;
+  SuspendableThreadDelegateWin& operator=(const SuspendableThreadDelegateWin&) =
+      delete;
 
-  // ThreadDelegate
-  std::unique_ptr<ThreadDelegate::ScopedSuspendThread>
+  // SuspendableThreadDelegate
+  std::unique_ptr<SuspendableThreadDelegate::ScopedSuspendThread>
   CreateScopedSuspendThread() override;
   bool GetThreadContext(CONTEXT* thread_context) override;
   uintptr_t GetStackBaseAddress() const override;
@@ -54,4 +57,4 @@ class BASE_EXPORT ThreadDelegateWin : public ThreadDelegate {
 
 }  // namespace base
 
-#endif  // BASE_PROFILER_THREAD_DELEGATE_WIN_H_
+#endif  // BASE_PROFILER_SUSPENDABLE_THREAD_DELEGATE_WIN_H_

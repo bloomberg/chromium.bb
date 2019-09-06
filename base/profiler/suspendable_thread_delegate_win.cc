@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/profiler/thread_delegate_win.h"
+#include "base/profiler/suspendable_thread_delegate_win.h"
 
 #include <windows.h>
 #include <winternl.h>
@@ -136,7 +136,7 @@ ScopedDisablePriorityBoost::~ScopedDisablePriorityBoost() {
 // ScopedSuspendThread --------------------------------------------------------
 
 // NO HEAP ALLOCATIONS after ::SuspendThread.
-ThreadDelegateWin::ScopedSuspendThread::ScopedSuspendThread(
+SuspendableThreadDelegateWin::ScopedSuspendThread::ScopedSuspendThread(
     HANDLE thread_handle)
     : thread_handle_(thread_handle),
       was_successful_(::SuspendThread(thread_handle) !=
@@ -144,7 +144,7 @@ ThreadDelegateWin::ScopedSuspendThread::ScopedSuspendThread(
 
 // NO HEAP ALLOCATIONS. The CHECK is OK because it provides a more noisy failure
 // mode than deadlocking.
-ThreadDelegateWin::ScopedSuspendThread::~ScopedSuspendThread() {
+SuspendableThreadDelegateWin::ScopedSuspendThread::~ScopedSuspendThread() {
   if (!was_successful_)
     return;
 
@@ -164,46 +164,48 @@ ThreadDelegateWin::ScopedSuspendThread::~ScopedSuspendThread() {
   CHECK(resume_thread_succeeded) << "ResumeThread failed: " << GetLastError();
 }
 
-bool ThreadDelegateWin::ScopedSuspendThread::WasSuccessful() const {
+bool SuspendableThreadDelegateWin::ScopedSuspendThread::WasSuccessful() const {
   return was_successful_;
 }
 
-// ThreadDelegateWin ----------------------------------------------------------
+// SuspendableThreadDelegateWin
+// ----------------------------------------------------------
 
-ThreadDelegateWin::ThreadDelegateWin(PlatformThreadId thread_id)
+SuspendableThreadDelegateWin::SuspendableThreadDelegateWin(
+    PlatformThreadId thread_id)
     : thread_handle_(GetThreadHandle(thread_id)),
       thread_stack_base_address_(reinterpret_cast<uintptr_t>(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase)) {}
 
-ThreadDelegateWin::~ThreadDelegateWin() = default;
+SuspendableThreadDelegateWin::~SuspendableThreadDelegateWin() = default;
 
-std::unique_ptr<ThreadDelegate::ScopedSuspendThread>
-ThreadDelegateWin::CreateScopedSuspendThread() {
+std::unique_ptr<SuspendableThreadDelegate::ScopedSuspendThread>
+SuspendableThreadDelegateWin::CreateScopedSuspendThread() {
   return std::make_unique<ScopedSuspendThread>(thread_handle_.Get());
 }
 
 // NO HEAP ALLOCATIONS.
-bool ThreadDelegateWin::GetThreadContext(CONTEXT* thread_context) {
+bool SuspendableThreadDelegateWin::GetThreadContext(CONTEXT* thread_context) {
   *thread_context = {0};
   thread_context->ContextFlags = CONTEXT_FULL;
   return ::GetThreadContext(thread_handle_.Get(), thread_context) != 0;
 }
 
 // NO HEAP ALLOCATIONS.
-uintptr_t ThreadDelegateWin::GetStackBaseAddress() const {
+uintptr_t SuspendableThreadDelegateWin::GetStackBaseAddress() const {
   return thread_stack_base_address_;
 }
 
 // Tests whether |stack_pointer| points to a location in the guard page. NO HEAP
 // ALLOCATIONS.
-bool ThreadDelegateWin::CanCopyStack(uintptr_t stack_pointer) {
+bool SuspendableThreadDelegateWin::CanCopyStack(uintptr_t stack_pointer) {
   // Dereferencing a pointer in the guard page in a thread that doesn't own the
   // stack results in a STATUS_GUARD_PAGE_VIOLATION exception and a crash. This
   // occurs very rarely, but reliably over the population.
   return !PointsToGuardPage(stack_pointer);
 }
 
-std::vector<uintptr_t*> ThreadDelegateWin::GetRegistersToRewrite(
+std::vector<uintptr_t*> SuspendableThreadDelegateWin::GetRegistersToRewrite(
     CONTEXT* thread_context) {
   // Return the set of non-volatile registers.
   return {

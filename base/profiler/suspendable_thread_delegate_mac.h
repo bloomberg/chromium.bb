@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PROFILER_THREAD_DELEGATE_MAC_H_
-#define BASE_PROFILER_THREAD_DELEGATE_MAC_H_
+#ifndef BASE_PROFILER_SUSPENDABLE_THREAD_DELEGATE_MAC_H_
+#define BASE_PROFILER_SUSPENDABLE_THREAD_DELEGATE_MAC_H_
 
 #include <mach/mach.h>
 
 #include "base/base_export.h"
 #include "base/profiler/native_unwinder_mac.h"
-#include "base/profiler/thread_delegate.h"
+#include "base/profiler/suspendable_thread_delegate.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/threading/platform_thread.h"
 
@@ -17,9 +17,11 @@ namespace base {
 
 // Platform- and thread-specific implementation in support of stack sampling on
 // Mac.
-class BASE_EXPORT ThreadDelegateMac : public ThreadDelegate {
+class BASE_EXPORT SuspendableThreadDelegateMac
+    : public SuspendableThreadDelegate {
  public:
-  class ScopedSuspendThread : public ThreadDelegate::ScopedSuspendThread {
+  class ScopedSuspendThread
+      : public SuspendableThreadDelegate::ScopedSuspendThread {
    public:
     explicit ScopedSuspendThread(mach_port_t thread_port);
     ~ScopedSuspendThread() override;
@@ -33,14 +35,15 @@ class BASE_EXPORT ThreadDelegateMac : public ThreadDelegate {
     mach_port_t thread_port_;
   };
 
-  ThreadDelegateMac(mach_port_t thread_port);
-  ~ThreadDelegateMac() override;
+  SuspendableThreadDelegateMac(mach_port_t thread_port);
+  ~SuspendableThreadDelegateMac() override;
 
-  ThreadDelegateMac(const ThreadDelegateMac&) = delete;
-  ThreadDelegateMac& operator=(const ThreadDelegateMac&) = delete;
+  SuspendableThreadDelegateMac(const SuspendableThreadDelegateMac&) = delete;
+  SuspendableThreadDelegateMac& operator=(const SuspendableThreadDelegateMac&) =
+      delete;
 
-  // ThreadDelegate
-  std::unique_ptr<ThreadDelegate::ScopedSuspendThread>
+  // SuspendableThreadDelegate
+  std::unique_ptr<SuspendableThreadDelegate::ScopedSuspendThread>
   CreateScopedSuspendThread() override;
   bool GetThreadContext(x86_thread_state64_t* thread_context) override;
   uintptr_t GetStackBaseAddress() const override;
@@ -58,4 +61,4 @@ class BASE_EXPORT ThreadDelegateMac : public ThreadDelegate {
 
 }  // namespace base
 
-#endif  // BASE_PROFILER_THREAD_DELEGATE_MAC_H_
+#endif  // BASE_PROFILER_SUSPENDABLE_THREAD_DELEGATE_MAC_H_

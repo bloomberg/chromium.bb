@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/profiler/thread_delegate_mac.h"
+#include "base/profiler/suspendable_thread_delegate_mac.h"
 
 #include <mach/mach.h>
 #include <mach/thread_act.h>
@@ -36,7 +36,7 @@ bool GetThreadState(thread_act_t target_thread, x86_thread_state64_t* state) {
 // ScopedSuspendThread --------------------------------------------------------
 
 // NO HEAP ALLOCATIONS after thread_suspend.
-ThreadDelegateMac::ScopedSuspendThread::ScopedSuspendThread(
+SuspendableThreadDelegateMac::ScopedSuspendThread::ScopedSuspendThread(
     mach_port_t thread_port)
     : thread_port_(thread_suspend(thread_port) == KERN_SUCCESS
                        ? thread_port
@@ -44,7 +44,7 @@ ThreadDelegateMac::ScopedSuspendThread::ScopedSuspendThread(
 
 // NO HEAP ALLOCATIONS. The MACH_CHECK is OK because it provides a more noisy
 // failure mode than deadlocking.
-ThreadDelegateMac::ScopedSuspendThread::~ScopedSuspendThread() {
+SuspendableThreadDelegateMac::ScopedSuspendThread::~ScopedSuspendThread() {
   if (!WasSuccessful())
     return;
 
@@ -52,13 +52,14 @@ ThreadDelegateMac::ScopedSuspendThread::~ScopedSuspendThread() {
   MACH_CHECK(kr == KERN_SUCCESS, kr) << "thread_resume";
 }
 
-bool ThreadDelegateMac::ScopedSuspendThread::WasSuccessful() const {
+bool SuspendableThreadDelegateMac::ScopedSuspendThread::WasSuccessful() const {
   return thread_port_ != MACH_PORT_NULL;
 }
 
-// ThreadDelegateMac ----------------------------------------------------------
+// SuspendableThreadDelegateMac -----------------------------------------------
 
-ThreadDelegateMac::ThreadDelegateMac(mach_port_t thread_port)
+SuspendableThreadDelegateMac::SuspendableThreadDelegateMac(
+    mach_port_t thread_port)
     : thread_port_(thread_port),
       thread_stack_base_address_(reinterpret_cast<uintptr_t>(
           pthread_get_stackaddr_np(pthread_from_mach_thread_np(thread_port)))) {
@@ -70,29 +71,30 @@ ThreadDelegateMac::ThreadDelegateMac(mach_port_t thread_port)
   GetThreadState(thread_port_, &thread_state);
 }
 
-ThreadDelegateMac::~ThreadDelegateMac() = default;
+SuspendableThreadDelegateMac::~SuspendableThreadDelegateMac() = default;
 
-std::unique_ptr<ThreadDelegate::ScopedSuspendThread>
-ThreadDelegateMac::CreateScopedSuspendThread() {
+std::unique_ptr<SuspendableThreadDelegate::ScopedSuspendThread>
+SuspendableThreadDelegateMac::CreateScopedSuspendThread() {
   return std::make_unique<ScopedSuspendThread>(thread_port_);
 }
 
 // NO HEAP ALLOCATIONS.
-bool ThreadDelegateMac::GetThreadContext(x86_thread_state64_t* thread_context) {
+bool SuspendableThreadDelegateMac::GetThreadContext(
+    x86_thread_state64_t* thread_context) {
   return GetThreadState(thread_port_, thread_context);
 }
 
 // NO HEAP ALLOCATIONS.
-uintptr_t ThreadDelegateMac::GetStackBaseAddress() const {
+uintptr_t SuspendableThreadDelegateMac::GetStackBaseAddress() const {
   return thread_stack_base_address_;
 }
 
 // NO HEAP ALLOCATIONS.
-bool ThreadDelegateMac::CanCopyStack(uintptr_t stack_pointer) {
+bool SuspendableThreadDelegateMac::CanCopyStack(uintptr_t stack_pointer) {
   return true;
 }
 
-std::vector<uintptr_t*> ThreadDelegateMac::GetRegistersToRewrite(
+std::vector<uintptr_t*> SuspendableThreadDelegateMac::GetRegistersToRewrite(
     x86_thread_state64_t* thread_context) {
   return {
       &AsUintPtr(&thread_context->__rbx), &AsUintPtr(&thread_context->__rbp),

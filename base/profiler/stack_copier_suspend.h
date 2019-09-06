@@ -12,14 +12,15 @@
 
 namespace base {
 
-class ThreadDelegate;
+class SuspendableThreadDelegate;
 
 // Supports stack copying on platforms where the profiled thread must be
 // explicitly suspended from the profiler thread and the stack is copied from
 // the profiler thread.
 class BASE_EXPORT StackCopierSuspend : public StackCopier {
  public:
-  StackCopierSuspend(std::unique_ptr<ThreadDelegate> thread_delegate);
+  StackCopierSuspend(
+      std::unique_ptr<SuspendableThreadDelegate> thread_delegate);
   ~StackCopierSuspend() override;
 
   // StackCopier:
@@ -29,7 +30,7 @@ class BASE_EXPORT StackCopierSuspend : public StackCopier {
                  RegisterContext* thread_context) override;
 
  private:
-  std::unique_ptr<ThreadDelegate> thread_delegate_;
+  std::unique_ptr<SuspendableThreadDelegate> thread_delegate_;
 };
 
 }  // namespace base

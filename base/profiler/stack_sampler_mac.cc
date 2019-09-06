@@ -7,7 +7,7 @@
 #include "base/profiler/native_unwinder_mac.h"
 #include "base/profiler/stack_copier_suspend.h"
 #include "base/profiler/stack_sampler_impl.h"
-#include "base/profiler/thread_delegate_mac.h"
+#include "base/profiler/suspendable_thread_delegate_mac.h"
 
 namespace base {
 
@@ -18,7 +18,7 @@ std::unique_ptr<StackSampler> StackSampler::Create(
     StackSamplerTestDelegate* test_delegate) {
   return std::make_unique<StackSamplerImpl>(
       std::make_unique<StackCopierSuspend>(
-          std::make_unique<ThreadDelegateMac>(thread_id)),
+          std::make_unique<SuspendableThreadDelegateMac>(thread_id)),
       std::make_unique<NativeUnwinderMac>(module_cache), module_cache,
       test_delegate);
 }

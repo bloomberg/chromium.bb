@@ -7,7 +7,7 @@
 #include "base/profiler/metadata_recorder.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_buffer.h"
-#include "base/profiler/thread_delegate.h"
+#include "base/profiler/suspendable_thread_delegate.h"
 
 namespace base {
 

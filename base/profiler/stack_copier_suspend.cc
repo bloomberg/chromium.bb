@@ -7,12 +7,12 @@
 #include "base/profiler/metadata_recorder.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_buffer.h"
-#include "base/profiler/thread_delegate.h"
+#include "base/profiler/suspendable_thread_delegate.h"
 
 namespace base {
 
 StackCopierSuspend::StackCopierSuspend(
-    std::unique_ptr<ThreadDelegate> thread_delegate)
+    std::unique_ptr<SuspendableThreadDelegate> thread_delegate)
     : thread_delegate_(std::move(thread_delegate)) {}
 
 StackCopierSuspend::~StackCopierSuspend() = default;
@@ -39,8 +39,8 @@ bool StackCopierSuspend::CopyStack(StackBuffer* stack_buffer,
 
     // Allocation of the ScopedSuspendThread object itself is OK since it
     // necessarily occurs before the thread is suspended by the object.
-    std::unique_ptr<ThreadDelegate::ScopedSuspendThread> suspend_thread =
-        thread_delegate_->CreateScopedSuspendThread();
+    std::unique_ptr<SuspendableThreadDelegate::ScopedSuspendThread>
+        suspend_thread = thread_delegate_->CreateScopedSuspendThread();
 
     if (!suspend_thread->WasSuccessful())
       return false;

@@ -11,7 +11,7 @@
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_copier_suspend.h"
-#include "base/profiler/thread_delegate.h"
+#include "base/profiler/suspendable_thread_delegate.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,9 +25,10 @@ using ::testing::ElementsAre;
 
 // A thread delegate for use in tests that provides the expected behavior when
 // operating on the supplied fake stack.
-class TestThreadDelegate : public ThreadDelegate {
+class TestSuspendableThreadDelegate : public SuspendableThreadDelegate {
  public:
-  class TestScopedSuspendThread : public ThreadDelegate::ScopedSuspendThread {
+  class TestScopedSuspendThread
+      : public SuspendableThreadDelegate::ScopedSuspendThread {
    public:
     TestScopedSuspendThread() = default;
 
@@ -37,14 +38,15 @@ class TestThreadDelegate : public ThreadDelegate {
     bool WasSuccessful() const override { return true; }
   };
 
-  TestThreadDelegate(const std::vector<uintptr_t>& fake_stack,
-                     // The register context will be initialized to
-                     // *|thread_context| if non-null.
-                     RegisterContext* thread_context = nullptr)
+  TestSuspendableThreadDelegate(const std::vector<uintptr_t>& fake_stack,
+                                // The register context will be initialized to
+                                // *|thread_context| if non-null.
+                                RegisterContext* thread_context = nullptr)
       : fake_stack_(fake_stack), thread_context_(thread_context) {}
 
-  TestThreadDelegate(const TestThreadDelegate&) = delete;
-  TestThreadDelegate& operator=(const TestThreadDelegate&) = delete;
+  TestSuspendableThreadDelegate(const TestSuspendableThreadDelegate&) = delete;
+  TestSuspendableThreadDelegate& operator=(
+      const TestSuspendableThreadDelegate&) = delete;
 
   std::unique_ptr<ScopedSuspendThread> CreateScopedSuspendThread() override {
     return std::make_unique<TestScopedSuspendThread>();
@@ -107,7 +109,7 @@ class TestProfileBuilder : public ProfileBuilder {
 TEST(StackCopierSuspendTest, CopyStack) {
   const std::vector<uintptr_t> stack = {0, 1, 2, 3, 4};
   StackCopierSuspend stack_copier_suspend(
-      std::make_unique<TestThreadDelegate>(stack));
+      std::make_unique<TestSuspendableThreadDelegate>(stack));
 
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
@@ -127,7 +129,7 @@ TEST(StackCopierSuspendTest, CopyStack) {
 TEST(StackCopierSuspendTest, CopyStackBufferTooSmall) {
   std::vector<uintptr_t> stack = {0, 1, 2, 3, 4};
   StackCopierSuspend stack_copier_suspend(
-      std::make_unique<TestThreadDelegate>(stack));
+      std::make_unique<TestSuspendableThreadDelegate>(stack));
 
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>((stack.size() - 1) * sizeof(uintptr_t));
@@ -154,7 +156,7 @@ TEST(StackCopierSuspendTest, CopyStackAndRewritePointers) {
   stack[0] = reinterpret_cast<uintptr_t>(&stack[0]);
   stack[1] = reinterpret_cast<uintptr_t>(&stack[1]);
   StackCopierSuspend stack_copier_suspend(
-      std::make_unique<TestThreadDelegate>(stack));
+      std::make_unique<TestSuspendableThreadDelegate>(stack));
 
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
@@ -180,7 +182,8 @@ TEST(StackCopierSuspendTest, RewriteRegisters) {
   RegisterContextFramePointer(&register_context) =
       reinterpret_cast<uintptr_t>(&stack[1]);
   StackCopierSuspend stack_copier_suspend(
-      std::make_unique<TestThreadDelegate>(stack, &register_context));
+      std::make_unique<TestSuspendableThreadDelegate>(stack,
+                                                      &register_context));
 
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));

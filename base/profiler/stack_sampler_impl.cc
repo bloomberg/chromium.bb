@@ -11,7 +11,7 @@
 #include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_copier.h"
-#include "base/profiler/thread_delegate.h"
+#include "base/profiler/suspendable_thread_delegate.h"
 #include "base/profiler/unwinder.h"
 
 // IMPORTANT NOTE: Some functions within this implementation are invoked while

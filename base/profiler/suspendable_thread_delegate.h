@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PROFILER_THREAD_DELEGATE_H_
-#define BASE_PROFILER_THREAD_DELEGATE_H_
+#ifndef BASE_PROFILER_SUSPENDABLE_THREAD_DELEGATE_H_
+#define BASE_PROFILER_SUSPENDABLE_THREAD_DELEGATE_H_
 
 #include <vector>
 
@@ -23,7 +23,7 @@ namespace base {
 // implementation can deadlock on heap locks acquired by the target thread
 // before it was suspended. These functions are commented with "NO HEAP
 // ALLOCATIONS".
-class BASE_EXPORT ThreadDelegate {
+class BASE_EXPORT SuspendableThreadDelegate {
  public:
   // Implementations of this interface should suspend the thread for the
   // object's lifetime. NO HEAP ALLOCATIONS between the time the thread is
@@ -39,11 +39,12 @@ class BASE_EXPORT ThreadDelegate {
     virtual bool WasSuccessful() const = 0;
   };
 
-  ThreadDelegate() = default;
-  virtual ~ThreadDelegate() = default;
+  SuspendableThreadDelegate() = default;
+  virtual ~SuspendableThreadDelegate() = default;
 
-  ThreadDelegate(const ThreadDelegate&) = delete;
-  ThreadDelegate& operator=(const ThreadDelegate&) = delete;
+  SuspendableThreadDelegate(const SuspendableThreadDelegate&) = delete;
+  SuspendableThreadDelegate& operator=(const SuspendableThreadDelegate&) =
+      delete;
 
   // Creates an object that holds the thread suspended for its lifetime.
   virtual std::unique_ptr<ScopedSuspendThread> CreateScopedSuspendThread() = 0;
@@ -69,4 +70,4 @@ class BASE_EXPORT ThreadDelegate {
 
 }  // namespace base
 
-#endif  // BASE_PROFILER_THREAD_DELEGATE_H_
+#endif  // BASE_PROFILER_SUSPENDABLE_THREAD_DELEGATE_H_
