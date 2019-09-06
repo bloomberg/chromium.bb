@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/assistant/proactive_suggestions_loader.h"
 
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
+#include "ash/public/cpp/assistant/util/histogram_util.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -65,6 +66,7 @@ GURL CreateProactiveSuggestionsUrl(const GURL& url) {
 
 // Parses proactive suggestions metadata from the specified |headers|.
 void ParseProactiveSuggestionsMetadata(const net::HttpResponseHeaders& headers,
+                                       int* category,
                                        std::string* description,
                                        bool* has_content) {
   constexpr char kDescriptionHeaderName[] =
@@ -72,6 +74,7 @@ void ParseProactiveSuggestionsMetadata(const net::HttpResponseHeaders& headers,
   constexpr char kHasContentHeaderName[] =
       "x-assistant-proactive-suggestions-has-ui-content";
 
+  DCHECK_EQ(ash::ProactiveSuggestions::kCategoryUnknown, *category);
   DCHECK(description->empty());
   DCHECK(!(*has_content));
 
@@ -79,6 +82,7 @@ void ParseProactiveSuggestionsMetadata(const net::HttpResponseHeaders& headers,
   std::string name;
   std::string value;
 
+  // TODO(dmblack): Add parsing for |category| once its header is defined.
   while (headers.EnumerateHeaderLines(&it, &name, &value)) {
     if (name == kDescriptionHeaderName) {
       DCHECK(description->empty());
@@ -130,31 +134,40 @@ void ProactiveSuggestionsLoader::Start(CompleteCallback complete_callback) {
 
 void ProactiveSuggestionsLoader::OnSimpleURLLoaderComplete(
     std::unique_ptr<std::string> response_body) {
-  // When the request fails to return a valid response we return a null set of
-  // proactive suggestions.
+  using ash::assistant::metrics::ProactiveSuggestionsRequestResult;
+
+  // When the request fails to return a valid response we record the event and
+  // return a null set of proactive suggestions.
   if (!response_body || loader_->NetError() != net::OK ||
       !loader_->ResponseInfo() || !loader_->ResponseInfo()->headers) {
+    ash::assistant::metrics::RecordProactiveSuggestionsRequestResult(
+        ash::ProactiveSuggestions::kCategoryUnknown,
+        ProactiveSuggestionsRequestResult::kError);
     std::move(complete_callback_).Run(/*proactive_suggestions=*/nullptr);
     return;
   }
 
-  // The proactive suggestions server will return metadata in the HTTP headers
-  // of the response.
+  // The proactive suggestions server will return metadata in the HTTP headers.
+  int category = ash::ProactiveSuggestions::kCategoryUnknown;
   std::string description;
   bool has_content = false;
   ParseProactiveSuggestionsMetadata(*loader_->ResponseInfo()->headers,
-                                    &description, &has_content);
+                                    &category, &description, &has_content);
 
-  // When the server indicates that there is no content we return a null set of
-  // proactive suggestions.
+  // When the server indicates that there is no content we record the event and
+  // return a null set of proactive suggestions.
   if (!has_content) {
+    ash::assistant::metrics::RecordProactiveSuggestionsRequestResult(
+        category, ProactiveSuggestionsRequestResult::kSuccessWithoutContent);
     std::move(complete_callback_).Run(/*proactive_suggestions=*/nullptr);
     return;
   }
 
-  // Otherwise we have a populated proactive suggestions response and can return
-  // a fully constructed set of proactive suggestions.
+  // Otherwise we have a populated proactive suggestions response so we record
+  // the event and return a fully constructed set of proactive suggestions.
+  ash::assistant::metrics::RecordProactiveSuggestionsRequestResult(
+      category, ProactiveSuggestionsRequestResult::kSuccessWithContent);
   std::move(complete_callback_)
       .Run(base::MakeRefCounted<ash::ProactiveSuggestions>(
-          /*description=*/description, /*html=*/std::move(*response_body)));
+          category, std::move(description), std::move(*response_body)));
 }
