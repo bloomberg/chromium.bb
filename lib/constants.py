@@ -658,10 +658,9 @@ VALID_BUILD_TYPES = (
 # The default list of pre-cq configs to use.
 PRE_CQ_DEFAULT_CONFIGS = [
     # Betty is the designated board to run vmtest on N.
-    # betty-arcnext is disabled pending https://crbug.com/977232
+    # betty-arcnext is disabled pending decreasing its runtime
     # 'betty-arcnext-pre-cq',           # vm board    arcnext
-    # betty is disabled due to https://crbug.com/984316
-    # 'betty-pre-cq',                   # vm board    vmtest
+    'betty-pre-cq',                   # vm board    vmtest
     'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
     'fizz-no-vmtest-pre-cq',          # kabylake
     'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
