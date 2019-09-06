@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_WEBUI_GRAPH_DUMP_IMPL_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_WEBUI_GRAPH_DUMP_IMPL_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_DISCARDS_WEBUI_GRAPH_DUMP_IMPL_H_
+#define CHROME_BROWSER_UI_WEBUI_DISCARDS_WEBUI_GRAPH_DUMP_IMPL_H_
 
 #include <memory>
 
@@ -14,7 +14,7 @@
 #include "chrome/browser/performance_manager/public/graph/graph.h"
 #include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "chrome/browser/performance_manager/public/graph/process_node.h"
-#include "chrome/browser/performance_manager/webui_graph_dump.mojom.h"
+#include "chrome/browser/ui/webui/discards/webui_graph_dump.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace performance_manager {
@@ -139,4 +139,4 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_WEBUI_GRAPH_DUMP_IMPL_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_DISCARDS_WEBUI_GRAPH_DUMP_IMPL_H_

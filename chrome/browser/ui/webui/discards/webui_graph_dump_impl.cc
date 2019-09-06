@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
+#include "chrome/browser/ui/webui/discards/webui_graph_dump_impl.h"
 
 #include <memory>
 #include <utility>
