@@ -2468,7 +2468,8 @@
                 "android_webview",
                 "chromeos",
                 "linux",
-                "mac"
+                "mac",
+                "windows"
             ],
             "experiments": [
                 {
