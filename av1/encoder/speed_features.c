@@ -795,6 +795,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->adaptive_interp_filter_search = 0;
   sf->interp_filter_search_mask = ALLOW_ALL_INTERP_FILT_MASK;
   sf->src_var_thresh_intra_skip = 1;
+  sf->reduce_high_precision_mv_usage = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

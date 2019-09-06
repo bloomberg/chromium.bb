@@ -745,6 +745,12 @@ typedef struct SPEED_FEATURES {
 
   // Use interpolation filter search in non-RD mode decision.
   int use_nonrd_filter_search;
+
+  // Use reduced 1/8th pel mv usage, in the range 0 - 2, where
+  // 0: maximizes quality and does not reduce mv precision
+  // 1: more aggressive reduced usage of high precision MV
+  // 2: use only quarter pel motion
+  int reduce_high_precision_mv_usage;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

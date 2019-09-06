@@ -84,12 +84,8 @@ FRAME_COUNTS aggregate_fc;
 #define AM_SEGMENT_ID_INACTIVE 7
 #define AM_SEGMENT_ID_ACTIVE 0
 
-// Whether to use high precision mv for altref computation.
-#define ALTREF_HIGH_PRECISION_MV 1
-
-// Q threshold for high precision mv. Choose a very high value for now so that
-// HIGH_PRECISION is always chosen.
-#define HIGH_PRECISION_MV_QTHRESH 200
+// Q threshold for high precision mv.
+#define HIGH_PRECISION_MV_QTHRESH 128
 
 // #define OUTPUT_YUV_REC
 #ifdef OUTPUT_YUV_SKINMAP
@@ -3946,6 +3942,16 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
   }
 }
 
+static int determine_frame_high_precision_mv(const AV1_COMP *cpi, int qindex) {
+  (void)cpi;
+  if (cpi->sf.reduce_high_precision_mv_usage == 2)
+    return 0;
+  else if (cpi->sf.reduce_high_precision_mv_usage == 1)
+    return qindex < HIGH_PRECISION_MV_QTHRESH / 2;
+  else
+    return qindex < HIGH_PRECISION_MV_QTHRESH;
+}
+
 static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
                                     int *top_index) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3965,8 +3971,10 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
                                 bottom_index, top_index);
 
   if (!frame_is_intra_only(cm)) {
-    set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH,
-                          cpi->common.cur_frame_force_integer_mv);
+    const int use_hp = cpi->common.cur_frame_force_integer_mv
+                           ? 0
+                           : determine_frame_high_precision_mv(cpi, *q);
+    set_high_precision_mv(cpi, use_hp, cpi->common.cur_frame_force_integer_mv);
   }
 
   // Configure experimental use of segmentation for enhanced coding of
@@ -6304,7 +6312,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   struct aom_usec_timer cmptimer;
   aom_usec_timer_start(&cmptimer);
 #endif
-  set_high_precision_mv(cpi, ALTREF_HIGH_PRECISION_MV, 0);
+  set_high_precision_mv(cpi, 1, 0);
 
   // Normal defaults
   cm->refresh_frame_context = oxcf->frame_parallel_decoding_mode
