@@ -63,10 +63,6 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, OptSharedQuadState> {
   static int32_t sorting_context_id(const OptSharedQuadState& input) {
     return input.sqs->sorting_context_id;
   }
-
-  static bool is_fast_rounded_corner(const OptSharedQuadState& input) {
-    return input.sqs->is_fast_rounded_corner;
-  }
 };
 
 template <>
@@ -112,10 +108,6 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, viz::SharedQuadState> {
     return sqs.sorting_context_id;
   }
 
-  static bool is_fast_rounded_corner(const viz::SharedQuadState& sqs) {
-    return sqs.is_fast_rounded_corner;
-  }
-
   static bool Read(viz::mojom::SharedQuadStateDataView data,
                    viz::SharedQuadState* out) {
     if (!data.ReadQuadToTargetTransform(&out->quad_to_target_transform) ||
@@ -133,7 +125,6 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, viz::SharedQuadState> {
       return false;
     out->blend_mode = static_cast<SkBlendMode>(data.blend_mode());
     out->sorting_context_id = data.sorting_context_id();
-    out->is_fast_rounded_corner = data.is_fast_rounded_corner();
     return true;
   }
 };

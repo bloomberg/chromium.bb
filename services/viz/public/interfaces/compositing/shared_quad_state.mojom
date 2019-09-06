@@ -8,7 +8,6 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/rrect_f.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
-// See viz::SharedQuadState.
 struct SharedQuadState {
   // gfx.mojom.Transforms quad rects into the target content space.
   gfx.mojom.Transform quad_to_target_transform;
@@ -37,6 +36,4 @@ struct SharedQuadState {
   // supported.
   uint32 blend_mode;
   int32 sorting_context_id;
-
-  bool is_fast_rounded_corner;
 };
