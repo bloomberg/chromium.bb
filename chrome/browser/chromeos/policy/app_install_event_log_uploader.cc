@@ -99,8 +99,12 @@ void AppInstallEventLogUploader::StartSerialization() {
 
 void AppInstallEventLogUploader::OnSerialized(
     const em::AppInstallReportRequest* report) {
+  base::Value event_list = ConvertProtoToValue(report, profile_);
+  base::Value context = reporting::GetContext(profile_);
+  AppendEventId(&event_list, context);
+
   base::Value value_report = RealtimeReportingJobConfiguration::BuildReport(
-      ConvertProtoToValue(report, profile_), reporting::GetContext(profile_));
+      std::move(event_list), std::move(context));
 
   // base::Unretained() is safe here as the destructor cancels any pending
   // upload, after which the |client_| is guaranteed to not call the callback.

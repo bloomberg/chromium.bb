@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/app_install_event_log_util.h"
 
+#include "base/hash/md5.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -31,6 +33,35 @@ constexpr char kSerialNumber[] = "serialNumber";
 constexpr char kGaiaId[] = "gaiaId";
 constexpr char kAndroidAppInstallEvent[] = "androidAppInstallEvent";
 constexpr char kTime[] = "time";
+constexpr char kEventId[] = "eventId";
+
+// Calculates hash for the given |event| and |context|, and stores the hash in
+// |hash|. Returns true if |event| and |context| are json serializable and
+// |hash| is not nullptr, otherwise return false.
+bool GetHash(const base::Value& event,
+             const base::Value& context,
+             std::string* hash) {
+  if (hash == nullptr)
+    return false;
+
+  std::string serialized_string;
+  JSONStringValueSerializer serializer(&serialized_string);
+  if (!serializer.Serialize(event))
+    return false;
+
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
+  base::MD5Update(&ctx, serialized_string);
+
+  if (!serializer.Serialize(context))
+    return false;
+  base::MD5Update(&ctx, serialized_string);
+
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &ctx);
+  *hash = base::MD5DigestToBase16(digest);
+  return true;
+}
 
 }  // namespace
 
@@ -134,6 +165,17 @@ base::Value ConvertEventToValue(
   }
 
   return wrapper;
+}
+
+void AppendEventId(base::Value* event_list, const base::Value& context) {
+  DCHECK(event_list);
+
+  DCHECK(event_list->is_list());
+  for (auto& event : event_list->GetList()) {
+    std::string event_id;
+    if (GetHash(event, context, &event_id))
+      event.SetStringKey(kEventId, event_id);
+  }
 }
 
 }  // namespace policy

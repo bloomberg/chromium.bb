@@ -226,11 +226,19 @@ class AppInstallEventLogManagerTest : public testing::Test {
       NOTREACHED();
   }
 
+  void BuildReport() {
+    base::Value event_list = ConvertEventsToValue(events_, nullptr);
+    base::Value context = reporting::GetContext(nullptr);
+
+    AppendEventId(&event_list, context);
+    events_value_ = RealtimeReportingJobConfiguration::BuildReport(
+        std::move(event_list), std::move(context));
+  }
+
   void ExpectUploadAndCaptureCallback(
       CloudPolicyClient::StatusCallback* callback) {
     ClearEventsDict();
-    events_value_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertEventsToValue(events_, nullptr), reporting::GetContext(nullptr));
+    BuildReport();
 
     EXPECT_CALL(cloud_policy_client_,
                 UploadRealtimeReport(MatchEvents(&events_value_), _))
@@ -244,8 +252,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
 
   void ExpectAndCompleteUpload() {
     ClearEventsDict();
-    events_value_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertEventsToValue(events_, nullptr), reporting::GetContext(nullptr));
+    BuildReport();
 
     EXPECT_CALL(cloud_policy_client_,
                 UploadRealtimeReport(MatchEvents(&events_value_), _))

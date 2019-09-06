@@ -45,6 +45,12 @@ base::Value ConvertEventToValue(
     const em::AppInstallReportLogEvent& app_install_report_log_event,
     Profile* profile);
 
+// Appends event_id to events in |event_list| by calculating hash of the (event,
+// |context|) pair. If calculating hash is not possible for an event in
+// |event_list|, event_id for that event will not be populated. event_id is used
+// by "Chrome Reporting API" to deduplicate events.
+void AppendEventId(base::Value* event_list, const base::Value& context);
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_CHROMEOS_POLICY_APP_INSTALL_EVENT_LOG_UTIL_H_
