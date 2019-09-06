@@ -66,6 +66,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         mUrlView = new EditText(this);
         mUrlView.setSelectAllOnFocus(true);
         mUrlView.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
+        mUrlView.setImeOptions(EditorInfo.IME_ACTION_GO);
         mUrlView.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
