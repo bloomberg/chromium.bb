@@ -8,12 +8,14 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_transmission_encoding_info_handler.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
+struct WebMediaConfiguration;
 struct WebVideoConfiguration;
 }  // namespace blink
 
@@ -24,8 +26,7 @@ class VideoEncoderFactory;
 namespace blink {
 
 // blink::WebTransmissionEncodingInfoHandler implementation.
-class PLATFORM_EXPORT TransmissionEncodingInfoHandler final
-    : public blink::WebTransmissionEncodingInfoHandler {
+class PLATFORM_EXPORT TransmissionEncodingInfoHandler {
  public:
   static TransmissionEncodingInfoHandler* Instance();
 
@@ -35,11 +36,17 @@ class PLATFORM_EXPORT TransmissionEncodingInfoHandler final
   explicit TransmissionEncodingInfoHandler(
       std::unique_ptr<webrtc::VideoEncoderFactory> video_encoder_factory,
       bool cpu_hd_smooth);
-  ~TransmissionEncodingInfoHandler() override;
+  ~TransmissionEncodingInfoHandler();
 
-  // blink::WebTransmissionEncodingInfoHandler implementation.
+  // Queries the capabilities of the given encoding configuration and passes
+  // WebMediaCapabilitiesInfo result via callbacks.
+  // It implements WICG Media Capabilities encodingInfo() call for transmission
+  // encoding.
+  // https://wicg.github.io/media-capabilities/#media-capabilities-interface
+  using OnMediaCapabilitiesEncodingInfoCallback =
+      base::OnceCallback<void(std::unique_ptr<WebMediaCapabilitiesInfo>)>;
   void EncodingInfo(const blink::WebMediaConfiguration& configuration,
-                    OnMediaCapabilitiesEncodingInfoCallback cb) const override;
+                    OnMediaCapabilitiesEncodingInfoCallback cb) const;
 
  private:
   // Extracts supported video/audio codec name from |mime_type|. Returns "" if
