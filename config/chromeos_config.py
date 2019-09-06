@@ -1373,7 +1373,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # 2 PM UTC is 6 AM PST (no daylight savings)
       # Start this builder 4 hours after orderfile-generate-toolchain
       # Repeat every 12 hours
-      schedule='0 14/12 * * *',
+      schedule='0 2/12 * * *',
       health_alert_recipients=['c-compiler-chrome@google.com'],
       # Send emails if this builder fails once
       health_threshold=1,
