@@ -35,9 +35,11 @@ bool PatchGooglePayContactRequestV1(const PaymentOptions& options,
                                     JSONObject* output,
                                     bool* phone_requested,
                                     bool* name_requested) {
-  if (options.requestPayerName()) {
+  if (options.requestPayerName() || options.requestPayerPhone()) {
     const JSONObject* card_requirements =
         output->GetJSONObject("cardRequirements");
+    // Phone number is returned as part of billing address, so
+    // |billingAddressRequired| must be set even if name is not requested.
     if (!card_requirements ||
         !card_requirements->BooleanProperty("billingAddressRequired", false)) {
       GetJSONObjectOrInsert(output, "cardRequirements")

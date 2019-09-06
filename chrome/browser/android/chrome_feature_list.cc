@@ -193,6 +193,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kVrBrowsingFeedback,
     &kOfferWipeDataOnSignout,
     &payments::features::kAlwaysAllowJustInTimePaymentApp,
+    &payments::features::kPaymentRequestSkipToGPay,
     &payments::features::kReturnGooglePayInBasicCard,
     &payments::features::kStrictHasEnrolledAutofillInstrument,
     &payments::features::kWebPaymentsExperimentalFeatures,
