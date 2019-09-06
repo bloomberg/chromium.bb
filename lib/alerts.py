@@ -9,8 +9,8 @@ from __future__ import print_function
 
 import base64
 import collections
-import cStringIO
 import gzip
+import io
 import json
 import os
 import smtplib
@@ -22,6 +22,7 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+import six
 from six.moves import http_client as httplib
 from six.moves import urllib
 
@@ -265,8 +266,10 @@ def CreateEmail(subject, recipients, message='', attachment=None,
 
   msg.attach(MIMEText(message))
   if attachment:
-    s = cStringIO.StringIO()
-    with gzip.GzipFile(fileobj=s, mode='w') as f:
+    if isinstance(attachment, six.string_types):
+      attachment = attachment.encode()
+    s = io.BytesIO()
+    with gzip.GzipFile(fileobj=s, mode='wb') as f:
       f.write(attachment)
     part = MIMEApplication(s.getvalue(), _subtype='x-gzip')
     s.close()
