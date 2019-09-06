@@ -510,7 +510,7 @@ void RenderViewImpl::Initialize(
         params->main_frame_widget_routing_id, compositor_deps,
         params->visual_properties.screen_info,
         params->visual_properties.display_mode,
-        /*is_frozen=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
+        /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
         params->never_visible);
     GetWidget()->set_delegate(this);
     // Note: The GetWidget->Init() call causes an AddRef() to itself meaning
@@ -1451,7 +1451,6 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, view_render_widget->compositor_deps(),
       view_render_widget->screen_info(), blink::kWebDisplayModeUndefined,
-      /*is_frozen=*/false,
       /*hidden=*/false,
       /*never_visible=*/false, std::move(widget_channel_request));
 
@@ -1486,11 +1485,11 @@ void RenderViewImpl::DoDeferredClose() {
 
 void RenderViewImpl::CloseWindowSoon() {
   DCHECK(RenderThread::IsMainThread());
-  if (render_widget_->IsFrozenOrProvisional()) {
+  if (render_widget_->IsUndeadOrProvisional()) {
     // Ask the RenderViewHost with a local main frame to initiate close.  We
     // could be called from deep in Javascript.  If we ask the RenderViewHost to
     // close now, the window could be closed before the JS finishes executing,
-    // thanks to nested message loops running and handling the resuliting Close
+    // thanks to nested message loops running and handling the resulting Close
     // IPC. So instead, post a message back to the message loop, which won't run
     // until the JS is complete, and then the Close request can be sent.
     GetCleanupTaskRunner()->PostTask(
@@ -1499,7 +1498,7 @@ void RenderViewImpl::CloseWindowSoon() {
     return;
   }
 
-  // If the main widget is not frozen then the Close request goes directly
+  // If the main widget is not undead then the Close request goes directly
   // through it, because the RenderWidget ultimately owns the RenderViewImpl.
   render_widget_->CloseWidgetSoon();
 }
@@ -1530,10 +1529,10 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
 }
 
 void RenderViewImpl::DetachWebFrameWidget() {
-  // We should detach when freezing the RenderWidget so we don't expect it to be
-  // frozen already. But when it is recycled for a provisional frame, then we
-  // can detach when closing the provisional frame.
-  DCHECK(GetWidget()->IsFrozenOrProvisional() || GetWidget()->is_closing());
+  // We should detach when making the RenderWidget undead so we don't expect it
+  // to be undead already. But when it is recycled for a provisional frame, then
+  // we can detach when closing the provisional frame.
+  DCHECK(GetWidget()->IsUndeadOrProvisional() || GetWidget()->is_closing());
   DCHECK(frame_widget_);
   frame_widget_->Close();
   frame_widget_ = nullptr;
