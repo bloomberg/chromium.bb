@@ -65,10 +65,10 @@ class ELFParsingTest(cros_test_lib.TempDirTestCase):
                             parse_symbols=True)
     self.assertTrue('imp_sym' in elf)
     self.assertTrue('exp_sym' in elf)
-    self.assertEquals(elf['imp_sym'], set(['fa', 'fb', 'fc']))
-    self.assertIn('fx', elf['exp_sym'])
-    self.assertIn('fy', elf['exp_sym'])
-    self.assertIn('fz', elf['exp_sym'])
+    self.assertEquals(elf['imp_sym'], set([b'fa', b'fb', b'fc']))
+    self.assertIn(b'fx', elf['exp_sym'])
+    self.assertIn(b'fy', elf['exp_sym'])
+    self.assertIn(b'fz', elf['exp_sym'])
 
   def testLibDependencies(self):
     """Tests the list direct dependencies."""

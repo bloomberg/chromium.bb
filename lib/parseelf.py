@@ -7,7 +7,7 @@
 
 from __future__ import print_function
 
-import cStringIO
+import io
 import os
 import struct
 
@@ -120,12 +120,12 @@ def ParseELF(root, rel_path, ldpaths=None, parse_symbols=False):
   root = root.rstrip('/') + '/'
 
   with open(os.path.join(root, rel_path), 'rb') as f:
-    if f.read(4) != '\x7fELF':
+    if f.read(4) != b'\x7fELF':
       # Ignore non-ELF files. This check is done to speedup the process.
       return
     f.seek(0)
     # Continue reading and cache the whole file to speedup seeks.
-    stream = cStringIO.StringIO(f.read())
+    stream = io.BytesIO(f.read())
 
   try:
     elf = elffile.ELFFile(stream)
