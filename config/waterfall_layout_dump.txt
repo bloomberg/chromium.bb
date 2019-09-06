@@ -412,7 +412,6 @@
     cave-release
     celes-release
     chell-release
-    cheza-freedreno-release
     cheza-release
     cheza64-release
     cobblepot-release
@@ -1136,17 +1135,6 @@
   cheza-chrome-pfq-tryjob
   cheza-chromium-pfq-tryjob
   cheza-compile-only-pre-cq
-  cheza-freedreno-chromium-pfq-tryjob
-  cheza-freedreno-compile-only-pre-cq
-  cheza-freedreno-full-tryjob
-  cheza-freedreno-llvm-next-toolchain-tryjob
-  cheza-freedreno-llvm-toolchain-tryjob
-  cheza-freedreno-no-vmtest-pre-cq
-  cheza-freedreno-paladin-tryjob
-  cheza-freedreno-pre-cq
-  cheza-freedreno-release-tryjob
-  cheza-freedreno-tot-chromium-pfq-informational-tryjob
-  cheza-freedreno-unittest-stress
   cheza-full-tryjob
   cheza-llvm-next-toolchain-tryjob
   cheza-llvm-toolchain-tryjob
@@ -2495,7 +2483,6 @@
     cave-release-tryjob
     celes-release-tryjob
     chell-release-tryjob
-    cheza-freedreno-release-tryjob
     cheza-release-tryjob
     cheza64-release-tryjob
     cobblepot-release-tryjob

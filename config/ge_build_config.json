@@ -1450,23 +1450,6 @@
       ]
     },
     {
-      "name": "cheza-freedreno",
-      "reference_board_name": "cheza-freedreno",
-      "arch": "ARM_INTERNAL",
-      "builder": "RELEASE",
-      "experimental": true,
-      "models": [
-        {
-          "board_name": "cheza-freedreno",
-          "name": "cheza",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 371,
-          "is_active": true
-        }
-      ]
-    },
-    {
       "name": "cheza64",
       "reference_board_name": "cheza64",
       "arch": "ARM_INTERNAL",
