@@ -6339,13 +6339,5 @@ crbug.com/1000768 [ Linux ] external/wpt/storage/idlharness.https.any.html [ Pas
 # Partial fix to avoid a regression on eval(string) with Trusted Types enabled in Chrome 77.
 crbug.com/992424 external/wpt/trusted-types/block-eval.tentative.html [ Failure ]
 
-# Sheriff 2019-09-05
-crbug.com/1000964 media/track/track-css-user-settings-override-internal-settings.html [ Pass Failure ]
-crbug.com/1000964 virtual/audio-service/media/track/track-css-user-settings-override-internal-settings.html [ Pass Failure ]
-crbug.com/1001041 media/track/track-css-important-user-settings-override-author-settings.html [ Pass Failure ]
-crbug.com/1001041 virtual/audio-service/media/track/track-css-important-user-settings-override-author-settings.html [ Pass Failure ]
-crbug.com/1001041 media/track/track-css-author-settings-override-user-settings.html [ Pass Failure ]
-crbug.com/1001041 virtual/audio-service/media/track/track-css-author-settings-override-user-settings.html [ Pass Failure ]
-
 # Sheriff 2019-09-06
 crbug.com/998399 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass Timeout ]
