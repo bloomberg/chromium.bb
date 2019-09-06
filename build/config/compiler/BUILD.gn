@@ -104,6 +104,9 @@ declare_args() {
   clang_use_default_sample_profile = build_with_chromium && is_official_build &&
                                      (is_android || is_desktop_linux)
 
+  # Emit debug information for profiling wile building with clang.
+  clang_emit_debug_info_for_profiling = false
+
   # Turn this on to have the compiler output extra timing information.
   compiler_timing = false
 
@@ -2185,10 +2188,18 @@ config("afdo_optimize_size") {
 # config to allow AFDO to be disabled per-target.
 config("afdo") {
   if (is_clang) {
+    cflags = []
+    if (clang_emit_debug_info_for_profiling) {
+      # Add the following flags to generate debug info for profiling.
+      cflags += [
+        "-fdebug-info-for-profiling",
+        "-gline-tables-only",
+      ]
+    }
     if (_clang_sample_profile != "") {
       rebased_clang_sample_profile =
           rebase_path(_clang_sample_profile, root_build_dir)
-      cflags = [ "-fprofile-sample-use=${rebased_clang_sample_profile}" ]
+      cflags += [ "-fprofile-sample-use=${rebased_clang_sample_profile}" ]
       inputs = [
         _clang_sample_profile,
       ]
