@@ -454,6 +454,36 @@ class ChromeDriverTestWithCustomCapability(ChromeDriverBaseTestWithWebServer):
     self.assertTrue(eager_time < 9)
     thread.join()
 
+  def testDoesntWaitWhenPageLoadStrategyIsNone(self):
+    class HandleRequest(object):
+      def __init__(self):
+        self.sent_hello = threading.Event()
+
+      def slowPage(self, request):
+        self.sent_hello.wait(2)
+        return {}, """
+        <html>
+        <body>hello</body>
+        </html>"""
+
+    handler = HandleRequest()
+    self._http_server.SetCallbackForPath('/slow', handler.slowPage)
+
+    driver = self.CreateDriver(page_load_strategy='none')
+    self.assertEquals('none', driver.capabilities['pageLoadStrategy'])
+
+    driver.Load(self._http_server.GetUrl() + '/chromedriver/empty.html')
+    start = time.time()
+    driver.Load(self._http_server.GetUrl() + '/slow')
+    self.assertTrue(time.time() - start < 2)
+    handler.sent_hello.set()
+    self.WaitForCondition(lambda: 'hello' in driver.GetPageSource())
+    self.assertTrue('hello' in driver.GetPageSource())
+
+  def testUnsupportedPageLoadStrategyRaisesException(self):
+    self.assertRaises(chromedriver.InvalidArgument,
+                      self.CreateDriver, page_load_strategy="unsupported")
+
 
 class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   """End to end tests for ChromeDriver."""
@@ -3501,36 +3531,6 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTestWithWebServer):
         'return div;')
     div.SingleTap()
     self.assertEquals(1, len(driver.FindElements('tag name', 'br')))
-
-  def testDoesntWaitWhenPageLoadStrategyIsNone(self):
-    class HandleRequest(object):
-      def __init__(self):
-        self.sent_hello = threading.Event()
-
-      def slowPage(self, request):
-        self.sent_hello.wait(2)
-        return {}, """
-        <html>
-        <body>hello</body>
-        </html>"""
-
-    handler = HandleRequest()
-    self._http_server.SetCallbackForPath('/slow', handler.slowPage)
-
-    driver = self.CreateDriver(page_load_strategy='none')
-    self.assertEquals('none', driver.capabilities['pageLoadStrategy'])
-
-    driver.Load(self._http_server.GetUrl() + '/chromedriver/empty.html')
-    start = time.time()
-    driver.Load(self._http_server.GetUrl() + '/slow')
-    self.assertTrue(time.time() - start < 2)
-    handler.sent_hello.set()
-    self.WaitForCondition(lambda: 'hello' in driver.GetPageSource())
-    self.assertTrue('hello' in driver.GetPageSource())
-
-  def testUnsupportedPageLoadStrategyRaisesException(self):
-    self.assertRaises(chromedriver.InvalidArgument,
-                      self.CreateDriver, page_load_strategy="unsupported")
 
   def testNetworkConnectionDisabledByDefault(self):
     driver = self.CreateDriver()
