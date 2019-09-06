@@ -3720,8 +3720,6 @@ jumbo_split_static_library("browser") {
     deps += [
       "//ash/public/cpp",
       "//chrome/browser/chromeos",
-      "//chrome/services/cups_proxy",
-      "//chrome/services/cups_proxy/public/mojom",
       "//chromeos/components/account_manager",
       "//chromeos/components/sync_wifi",
       "//chromeos/services/assistant/public:feature_flags",
@@ -5171,6 +5169,12 @@ jumbo_split_static_library("browser") {
 
   if (use_cups) {
     configs += [ "//printing:cups" ]
+    if (is_chromeos) {
+      deps += [
+        "//chrome/services/cups_proxy",
+        "//chrome/services/cups_proxy/public/mojom",
+      ]
+    }
   }
 
   if (use_nss_certs) {

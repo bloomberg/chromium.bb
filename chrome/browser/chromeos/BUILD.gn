@@ -74,8 +74,6 @@ source_set("chromeos") {
     "//chrome/common/extensions/api",
     "//chrome/services/app_service:lib",
     "//chrome/services/app_service/public/cpp:app_update",
-    "//chrome/services/cups_proxy",
-    "//chrome/services/cups_proxy/public/mojom",
     "//chrome/services/file_util/public/cpp",
     "//chrome/services/wilco_dtc_supportd/public/mojom",
     "//chromeos",
@@ -1920,12 +1918,6 @@ source_set("chromeos") {
     "printing/cups_printers_manager.h",
     "printing/cups_printers_manager_factory.cc",
     "printing/cups_printers_manager_factory.h",
-    "printing/cups_proxy_service_delegate_impl.cc",
-    "printing/cups_proxy_service_delegate_impl.h",
-    "printing/cups_proxy_service_manager.cc",
-    "printing/cups_proxy_service_manager.h",
-    "printing/cups_proxy_service_manager_factory.cc",
-    "printing/cups_proxy_service_manager_factory.h",
     "printing/enterprise_printers_provider.cc",
     "printing/enterprise_printers_provider.h",
     "printing/ppd_provider_factory.cc",
@@ -2227,8 +2219,18 @@ source_set("chromeos") {
   ]
 
   if (use_cups) {
+    deps += [
+      "//chrome/services/cups_proxy",
+      "//chrome/services/cups_proxy/public/mojom",
+    ]
     sources += [
       "printing/cups_print_job_manager_impl.cc",
+      "printing/cups_proxy_service_delegate_impl.cc",
+      "printing/cups_proxy_service_delegate_impl.h",
+      "printing/cups_proxy_service_manager.cc",
+      "printing/cups_proxy_service_manager.h",
+      "printing/cups_proxy_service_manager_factory.cc",
+      "printing/cups_proxy_service_manager_factory.h",
       "printing/printer_info_cups.cc",
     ]
   } else {
