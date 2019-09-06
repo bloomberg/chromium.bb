@@ -66,12 +66,13 @@ TEST(SkipToGPayUtilsTest, NothingRequested) {
   }
 }
 
-TEST(SkipToGPayUtilsTest, InvalidInputData_MissingApiVersion) {
+TEST(SkipToGPayUtilsTest, MissingApiVersionConsideredV1) {
   auto* options = PaymentOptions::Create();
   PaymentMethodDataPtr output = MakeTestPaymentMethodData();
+  output->stringified_data = "{}";
 
-  ASSERT_FALSE(SkipToGPayUtils::PatchPaymentMethodData(*options, output));
-  EXPECT_TRUE(output->gpay_bridge_data.is_null());
+  ASSERT_TRUE(SkipToGPayUtils::PatchPaymentMethodData(*options, output));
+  EXPECT_EQ("{}", output->gpay_bridge_data->stringified_data);
 }
 
 TEST(SkipToGPayUtilsTest, InvalidInputData_NotJSON) {

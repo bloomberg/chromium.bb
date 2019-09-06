@@ -171,8 +171,10 @@ bool SkipToGPayUtils::PatchPaymentMethodData(
     return false;
 
   int api_version;
-  if (!object->GetInteger("apiVersion", &api_version))
-    return false;
+  if (!object->GetInteger("apiVersion", &api_version)) {
+    // Some API v1 clients don't explicitly specify "apiVersion".
+    api_version = 1;
+  }
 
   bool success = true;
 
