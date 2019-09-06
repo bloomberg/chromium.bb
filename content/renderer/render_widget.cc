@@ -676,18 +676,13 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool RenderWidget::Send(IPC::Message* message) {
+  // Undead RenderWidgets should not be used.
+  CHECK(!is_undead_);
+  // Provisional frames don't send IPCs until they are swapped in/committed.
+  CHECK(!IsForProvisionalFrame());
+
+  // Don't send any messages after the browser has told us to close.
   if (closing_) {
-    delete message;
-    return false;
-  }
-  // TODO(danakj): We believe that we should be able to not block IPC sending.
-  // When there's a provisional main frame using this widget, we should not be
-  // sending messages with the RenderWidget yet. And when the widget is undead
-  // because there is no local main frame, there should be no code using
-  // RenderWidget and sending messages through it.
-  // We should CHECK() that the RenderWidget is not undead and that the frame
-  // attached to it is not provisional, instead of dropping messages.
-  if (IsUndeadOrProvisional()) {
     delete message;
     return false;
   }
