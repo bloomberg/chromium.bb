@@ -335,7 +335,9 @@ static void hardcoded_blur_test_aux(const bool high_bd) {
 
 TEST(EdgeDetectImageTest, HardcodedBlurTest) {
   hardcoded_blur_test_aux(false);
+#if CONFIG_AV1_HIGHBITDEPTH
   hardcoded_blur_test_aux(true);
+#endif
 }
 
 TEST(EdgeDetectImageTest, SobelTest) {
