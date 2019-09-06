@@ -37,7 +37,7 @@ generate_jni("common_jni_headers") {
   ]
 }
 
-generate_jni("native_jni") {
+generate_jni("browser_jni_headers") {
   sources = [
     "apk/java/src/com/android/webview/chromium/WebViewApkApplication.java",
     "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
@@ -640,10 +640,10 @@ source_set("common") {
   ]
 
   deps = [
+    ":browser_jni_headers",
     ":generate_aw_resources",
     ":generate_aw_strings",
     ":generate_components_strings",
-    ":native_jni",
     "//android_webview/browser/gfx:gfx",
     "//android_webview/common",
     "//android_webview/common:common_mojom",
