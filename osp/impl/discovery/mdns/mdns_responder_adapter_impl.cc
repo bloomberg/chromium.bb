@@ -307,7 +307,7 @@ void MdnsResponderAdapterImpl::OnRead(
     return;
   }
 
-  platform::UdpPacket packet = packet_or_error.MoveValue();
+  platform::UdpPacket packet = std::move(packet_or_error.value());
   TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::OnRead");
   mDNSAddr src;
   if (packet.source().address.IsV4()) {

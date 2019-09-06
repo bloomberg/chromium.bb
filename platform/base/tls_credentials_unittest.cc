@@ -51,7 +51,7 @@ TEST(TlsCredentialsTest, CredentialsAreGeneratedAppropriately) {
   ErrorOr<TlsCredentials> creds_or_error = TlsCredentials::Create(
       "test.com", seconds(31556952), platform::FakeClock::now, std::move(pkey));
   EXPECT_TRUE(creds_or_error.is_value());
-  TlsCredentials credentials = creds_or_error.MoveValue();
+  TlsCredentials credentials = std::move(creds_or_error.value());
 
   // Validate the generated certificate. A const cast is necessary because
   // openssl is not const correct for this method.

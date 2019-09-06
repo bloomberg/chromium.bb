@@ -24,7 +24,7 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv4) {
   ErrorOr<UdpSocketUniquePtr> create_result = UdpSocket::Create(
       &task_runner, &client, IPEndpoint{IPAddress(kIpV4AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
-  const auto socket = create_result.MoveValue();
+  const auto socket = std::move(create_result.value());
   EXPECT_CALL(client, OnError(_, _)).Times(0);
   socket->Bind();
   const IPEndpoint local_endpoint = socket->GetLocalEndpoint();
@@ -42,7 +42,7 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv6) {
   ErrorOr<UdpSocketUniquePtr> create_result = UdpSocket::Create(
       &task_runner, &client, IPEndpoint{IPAddress(kIpV6AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
-  const auto socket = create_result.MoveValue();
+  const auto socket = std::move(create_result.value());
   EXPECT_CALL(client, OnError(_, _)).Times(0);
   socket->Bind();
   const IPEndpoint local_endpoint = socket->GetLocalEndpoint();

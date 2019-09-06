@@ -137,7 +137,7 @@ std::vector<platform::UdpSocketUniquePtr> SetUpMulticastSockets(
                     << ": " << create_result.error().message();
       continue;
     }
-    platform::UdpSocketUniquePtr socket = create_result.MoveValue();
+    platform::UdpSocketUniquePtr socket = std::move(create_result.value());
 
     socket->JoinMulticastGroup(IPAddress{224, 0, 0, 251}, ifindex);
     socket->SetMulticastOutboundInterface(ifindex);

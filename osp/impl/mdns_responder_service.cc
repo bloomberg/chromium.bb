@@ -381,7 +381,7 @@ void MdnsResponderService::StartService() {
   ErrorOr<mdns::DomainName> domain_name =
       mdns::DomainName::FromLabels(&service_hostname_, &service_hostname_ + 1);
   OSP_CHECK(domain_name) << "bad hostname configured: " << service_hostname_;
-  mdns::DomainName name = domain_name.MoveValue();
+  mdns::DomainName name = std::move(domain_name.value());
 
   Error error = name.Append(mdns::DomainName::GetLocalDomain());
   OSP_CHECK(error.ok());

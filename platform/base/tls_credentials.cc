@@ -164,10 +164,11 @@ ErrorOr<TlsCredentials> TlsCredentials::Create(
     return public_key_hash_or_error.error();
   }
 
-  return TlsCredentials(
-      std::move(certificate), std::move(key_pair),
-      private_key_or_error.MoveValue(), public_key_or_error.MoveValue(),
-      public_key_hash_or_error.MoveValue(), std::move(raw_der_certificate));
+  return TlsCredentials(std::move(certificate), std::move(key_pair),
+                        std::move(private_key_or_error.value()),
+                        std::move(public_key_or_error.value()),
+                        std::move(public_key_hash_or_error.value()),
+                        std::move(raw_der_certificate));
 }
 
 TlsCredentials::TlsCredentials(bssl::UniquePtr<X509> certificate,

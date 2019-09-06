@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "absl/types/variant.h"
 #include "platform/base/macros.h"
 
 namespace openscreen {
@@ -154,7 +155,7 @@ class Error {
   Error(const Error& error);
   Error(Error&& error) noexcept;
 
-  Error(Code code);
+  Error(Code code);  // NOLINT
   Error(Code code, const std::string& message);
   Error(Code code, std::string&& message);
   ~Error();
@@ -180,7 +181,7 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code);
 std::ostream& operator<<(std::ostream& out, const Error& error);
 
 // A convenience function to return a single value from a function that can
-// return a value or an error.  For normal results, construct with a Value*
+// return a value or an error.  For normal results, construct with a ValueType*
 // (ErrorOr takes ownership) and the Error will be kNone with an empty message.
 // For Error results, construct with an error code and value.
 //
@@ -195,43 +196,43 @@ std::ostream& operator<<(std::ostream& out, const Error& error);
 // }
 //
 // TODO(mfoltz): Add support for type conversions.
-template <typename Value>
+template <typename ValueType>
 class ErrorOr {
  public:
-  static ErrorOr<Value> None() {
-    static ErrorOr<Value> error(Error::Code::kNone);
+  static ErrorOr<ValueType> None() {
+    static ErrorOr<ValueType> error(Error::Code::kNone);
     return error;
   }
 
   ErrorOr(ErrorOr&& other) = default;
-  ErrorOr(const Value& value) : value_(value) {}
-  ErrorOr(Value&& value) noexcept : value_(std::move(value)) {}
-  ErrorOr(Error error) : error_(std::move(error)) {}
-  ErrorOr(Error::Code code) : error_(code) {}
-  ErrorOr(Error::Code code, std::string message)
-      : error_(code, std::move(message)) {}
-  ~ErrorOr() = default;
-
   ErrorOr& operator=(ErrorOr&& other) = default;
 
-  bool is_error() const { return error_.code() != Error::Code::kNone; }
+  ErrorOr(const ValueType& value) : variant_{value} {}  // NOLINT
+  ErrorOr(ValueType&& value) noexcept                   // NOLINT
+      : variant_{std::move(value)} {}
+
+  ErrorOr(Error error) : variant_{std::move(error)} {}  // NOLINT
+  ErrorOr(Error::Code code) : variant_{code} {}         // NOLINT
+  ErrorOr(Error::Code code, std::string message)
+      : variant_{Error{code, std::move(message)}} {}
+
+  ~ErrorOr() = default;
+
+  bool is_error() const { return absl::holds_alternative<Error>(variant_); }
   bool is_value() const { return !is_error(); }
 
   // Unlike Error, we CAN provide an operator bool here, since it is
   // more obvious to callers that ErrorOr<Foo> will be true if it's Foo.
   operator bool() const { return is_value(); }
 
-  const Error& error() const { return error_; }
+  const Error& error() const { return absl::get<Error>(variant_); }
+  Error& error() { return absl::get<Error>(variant_); }
 
-  Error&& MoveError() { return std::move(error_); }
-
-  const Value& value() const { return value_; }
-
-  Value&& MoveValue() { return std::move(value_); }
+  const ValueType& value() const { return absl::get<ValueType>(variant_); }
+  ValueType& value() { return absl::get<ValueType>(variant_); }
 
  private:
-  Error error_;
-  Value value_;
+  absl::variant<Error, ValueType> variant_;
 };
 
 }  // namespace openscreen

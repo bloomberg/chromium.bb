@@ -138,7 +138,7 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
                     << create_result.error().message();
       continue;
     }
-    platform::UdpSocketUniquePtr socket = create_result.MoveValue();
+    platform::UdpSocketUniquePtr socket = std::move(create_result.value());
     if (!SetUpMulticastSocket(socket.get(), index).ok()) {
       continue;
     }

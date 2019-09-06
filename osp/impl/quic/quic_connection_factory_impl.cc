@@ -94,7 +94,8 @@ void QuicConnectionFactoryImpl::SetServerDelegate(
                     << "): " << create_result.error().message();
       continue;
     }
-    platform::UdpSocketUniquePtr server_socket = create_result.MoveValue();
+    platform::UdpSocketUniquePtr server_socket =
+        std::move(create_result.value());
     server_socket->Bind();
     sockets_.emplace_back(std::move(server_socket));
   }
@@ -108,7 +109,7 @@ void QuicConnectionFactoryImpl::OnRead(
     return;
   }
 
-  platform::UdpPacket packet = packet_or_error.MoveValue();
+  platform::UdpPacket packet = std::move(packet_or_error.value());
   // Ensure that |packet.socket| is one of the instances owned by
   // QuicConnectionFactoryImpl.
   auto packet_ptr = &packet;
@@ -157,7 +158,7 @@ std::unique_ptr<QuicConnection> QuicConnectionFactoryImpl::Connect(
     // TODO(mfoltz): This method should return ErrorOr<uni_ptr<QuicConnection>>.
     return nullptr;
   }
-  platform::UdpSocketUniquePtr socket = create_result.MoveValue();
+  platform::UdpSocketUniquePtr socket = std::move(create_result.value());
   auto transport = std::make_unique<UdpTransport>(socket.get(), endpoint);
 
   ::quic::QuartcSessionConfig session_config;

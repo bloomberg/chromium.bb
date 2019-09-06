@@ -21,7 +21,7 @@ ErrorOr<DomainName> FromLabels(const std::vector<std::string>& labels) {
 template <typename T>
 T UnpackErrorOr(ErrorOr<T> error_or) {
   EXPECT_TRUE(error_or);
-  return error_or.MoveValue();
+  return std::move(error_or.value());
 }
 
 }  // namespace

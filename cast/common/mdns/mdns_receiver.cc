@@ -36,7 +36,7 @@ void MdnsReceiver::OnRead(UdpSocket* socket,
     return;
   }
 
-  UdpPacket packet = packet_or_error.MoveValue();
+  UdpPacket packet = std::move(packet_or_error.value());
 
   TRACE_SCOPED(TraceCategory::mDNS, "MdnsReceiver::OnRead");
   MdnsReader reader(packet.data(), packet.size());

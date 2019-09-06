@@ -24,7 +24,7 @@ Environment::Environment(platform::ClockNowFunctionPtr now_function,
 
   ErrorOr<std::unique_ptr<UdpSocket>> result =
       UdpSocket::Create(task_runner_, this, local_endpoint);
-  const_cast<std::unique_ptr<UdpSocket>&>(socket_) = result.MoveValue();
+  const_cast<std::unique_ptr<UdpSocket>&>(socket_) = std::move(result.value());
   if (socket_) {
     socket_->Bind();
   } else {
@@ -120,7 +120,7 @@ void Environment::OnRead(UdpSocket* socket,
   // receive event and the when this code here is executing.
   const platform::Clock::time_point arrival_time = now_function_();
 
-  UdpPacket packet = packet_or_error.MoveValue();
+  UdpPacket packet = std::move(packet_or_error.value());
   packet_consumer_->OnReceivedPacket(
       packet.source(), arrival_time,
       std::move(static_cast<std::vector<uint8_t>&>(packet)));

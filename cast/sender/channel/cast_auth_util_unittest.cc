@@ -242,9 +242,9 @@ TEST_F(CastAuthUtilTest, VerifyBadPeerCert) {
 
 TEST_F(CastAuthUtilTest, VerifySenderNonceMatch) {
   AuthContext context = AuthContext::Create();
-  ErrorOr<CastDeviceCertPolicy> result =
+  const openscreen::Error result =
       context.VerifySenderNonce(context.nonce(), true);
-  EXPECT_TRUE(result);
+  EXPECT_TRUE(result.ok());
 }
 
 TEST_F(CastAuthUtilTest, VerifySenderNonceMismatch) {
@@ -282,9 +282,8 @@ TEST_F(CastAuthUtilTest, VerifyTLSCertificateSuccess) {
   ASSERT_TRUE(ConvertTimeSeconds(not_before, &x));
   std::chrono::seconds s(x);
 
-  ErrorOr<CastDeviceCertPolicy> result =
-      VerifyTLSCertificateValidity(tls_cert, s);
-  EXPECT_TRUE(result);
+  const openscreen::Error result = VerifyTLSCertificateValidity(tls_cert, s);
+  EXPECT_TRUE(result.ok());
   X509_free(tls_cert);
 }
 
