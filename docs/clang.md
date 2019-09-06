@@ -60,7 +60,7 @@ to have Visual Studio with C++ support installed.
 ## Using a custom clang binary
 
 Set `clang_base_path` in your args.gn to the llvm build directory containing
-`bin/clang` (i.e. the directory you ran cmake). This [must][1] be an absolute
+`bin/clang` (i.e. the directory you ran cmake). This must be an absolute
 path. You also need to disable chromium's clang plugin.
 
 Here's an example that also disables debug info and enables the component build
