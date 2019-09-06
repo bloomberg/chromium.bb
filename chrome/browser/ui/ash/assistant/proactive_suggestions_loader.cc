@@ -68,22 +68,33 @@ GURL CreateProactiveSuggestionsUrl(const GURL& url) {
 void ParseProactiveSuggestionsMetadata(const net::HttpResponseHeaders& headers,
                                        int* category,
                                        std::string* description,
+                                       std::string* search_query,
                                        bool* has_content) {
+  constexpr char kCategoryHeaderName[] =
+      "x-assistant-proactive-suggestions-page-category";
   constexpr char kDescriptionHeaderName[] =
       "x-assistant-proactive-suggestions-description";
   constexpr char kHasContentHeaderName[] =
       "x-assistant-proactive-suggestions-has-ui-content";
+  constexpr char kSearchQueryHeaderName[] =
+      "x-assistant-proactive-suggestions-search-query";
 
   DCHECK_EQ(ash::ProactiveSuggestions::kCategoryUnknown, *category);
   DCHECK(description->empty());
+  DCHECK(search_query->empty());
   DCHECK(!(*has_content));
 
   size_t it = 0;
   std::string name;
   std::string value;
 
-  // TODO(dmblack): Add parsing for |category| once its header is defined.
   while (headers.EnumerateHeaderLines(&it, &name, &value)) {
+    if (name == kCategoryHeaderName) {
+      DCHECK_EQ(ash::ProactiveSuggestions::kCategoryUnknown, *category);
+      if (!base::StringToInt(value, category))
+        NOTREACHED();
+      continue;
+    }
     if (name == kDescriptionHeaderName) {
       DCHECK(description->empty());
       *description = value;
@@ -92,6 +103,11 @@ void ParseProactiveSuggestionsMetadata(const net::HttpResponseHeaders& headers,
     if (name == kHasContentHeaderName) {
       DCHECK(!(*has_content));
       *has_content = (value == "1");
+      continue;
+    }
+    if (name == kSearchQueryHeaderName) {
+      DCHECK(search_query->empty());
+      *search_query = value;
     }
   }
 }
@@ -150,9 +166,11 @@ void ProactiveSuggestionsLoader::OnSimpleURLLoaderComplete(
   // The proactive suggestions server will return metadata in the HTTP headers.
   int category = ash::ProactiveSuggestions::kCategoryUnknown;
   std::string description;
+  std::string search_query;
   bool has_content = false;
   ParseProactiveSuggestionsMetadata(*loader_->ResponseInfo()->headers,
-                                    &category, &description, &has_content);
+                                    &category, &description, &search_query,
+                                    &has_content);
 
   // When the server indicates that there is no content we record the event and
   // return a null set of proactive suggestions.
@@ -169,5 +187,6 @@ void ProactiveSuggestionsLoader::OnSimpleURLLoaderComplete(
       category, ProactiveSuggestionsRequestResult::kSuccessWithContent);
   std::move(complete_callback_)
       .Run(base::MakeRefCounted<ash::ProactiveSuggestions>(
-          category, std::move(description), std::move(*response_body)));
+          category, std::move(description), std::move(search_query),
+          std::move(*response_body)));
 }
