@@ -54,6 +54,9 @@ android_apk("weblayer_shell_apk") {
   min_sdk_version = 21
   target_sdk_version = 28
   android_manifest_dep = ":weblayer_shell_manifest"
+
+  # Add a native lib so the ABI is compatible with the implementation APK.
+  native_lib_placeholders = [ "libdummy.so" ]
 }
 
 weblayer_support_manifest =
