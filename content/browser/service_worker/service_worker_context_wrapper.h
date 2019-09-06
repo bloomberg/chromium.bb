@@ -445,21 +445,19 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void SetUpLoaderFactoryForUpdateCheckOnUI(
       const GURL& scope,
-      base::OnceCallback<
-          void(mojo::PendingRemote<network::mojom::URLLoaderFactory>,
-               mojo::PendingReceiver<network::mojom::URLLoaderFactory>,
-               bool)> setup_complete_callback);
+      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
+          callback);
 
   // This method completes the remaining work of
   // SetUpLoaderFactoryForUpdateCheckOnUI() on Core thread: Binds the pending
   // network factory receiver and creates the loader factory bundle for update
   // check.
   void DidSetUpLoaderFactoryForUpdateCheck(
-      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
-          callback,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> remote,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
-      bool bypass_redirect_checks);
+      bool bypass_redirect_checks,
+      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
+          callback);
 
   // Called when the stored registrations are loaded, and each time a new
   // service worker is registered.

@@ -1931,19 +1931,24 @@ void ServiceWorkerContextWrapper::GetLoaderFactoryForUpdateCheck(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(
           &ServiceWorkerContextWrapper::SetUpLoaderFactoryForUpdateCheckOnUI,
-          this, scope,
-          base::BindOnce(
-              &ServiceWorkerContextWrapper::DidSetUpLoaderFactoryForUpdateCheck,
-              this, std::move(callback))));
+          this, scope, std::move(callback)));
 }
 
 void ServiceWorkerContextWrapper::SetUpLoaderFactoryForUpdateCheckOnUI(
     const GURL& scope,
-    base::OnceCallback<
-        void(mojo::PendingRemote<network::mojom::URLLoaderFactory>,
-             mojo::PendingReceiver<network::mojom::URLLoaderFactory>,
-             bool)> setup_complete_callback) {
+    base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
+        callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!storage_partition()) {
+    RunOrPostTaskOnThread(
+        FROM_HERE, GetCoreThreadId(),
+        base::BindOnce(
+            &ServiceWorkerContextWrapper::DidSetUpLoaderFactoryForUpdateCheck,
+            this, mojo::NullRemote(), mojo::NullReceiver(),
+            /* bypass_redirect_checks=*/false, std::move(callback)));
+    return;
+  }
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> remote;
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver =
@@ -1951,43 +1956,45 @@ void ServiceWorkerContextWrapper::SetUpLoaderFactoryForUpdateCheckOnUI(
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       header_client;
   bool bypass_redirect_checks = false;
-
-  if (storage_partition()) {
-    GetContentClient()->browser()->WillCreateURLLoaderFactory(
-        storage_partition_->browser_context(), /*frame=*/nullptr,
-        ChildProcessHost::kInvalidUniqueID,
-        ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript,
-        url::Origin::Create(scope), &pending_receiver, &header_client,
-        &bypass_redirect_checks);
-    if (header_client) {
-      NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
-          std::move(header_client), std::move(pending_receiver),
-          storage_partition());
-    }
+  GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      storage_partition_->browser_context(), /*frame=*/nullptr,
+      ChildProcessHost::kInvalidUniqueID,
+      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript,
+      url::Origin::Create(scope), &pending_receiver, &header_client,
+      &bypass_redirect_checks);
+  if (header_client) {
+    NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
+        std::move(header_client), std::move(pending_receiver),
+        storage_partition());
   }
 
   RunOrPostTaskOnThread(
       FROM_HERE, GetCoreThreadId(),
-      base::BindOnce(std::move(setup_complete_callback), std::move(remote),
-                     std::move(pending_receiver), bypass_redirect_checks));
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::DidSetUpLoaderFactoryForUpdateCheck,
+          this, std::move(remote), std::move(pending_receiver),
+          bypass_redirect_checks, std::move(callback)));
 }
 
 void ServiceWorkerContextWrapper::DidSetUpLoaderFactoryForUpdateCheck(
-    base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
-        callback,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> remote,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
-    bool bypass_redirect_checks) {
+    bool bypass_redirect_checks,
+    base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
+        callback) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
+
+  // Return nullptr if preparation on the UI thread failed.
+  if (!remote) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
 
   // Set up a Mojo connection to the network loader factory if it's not been
   // created yet.
   if (pending_receiver) {
     if (IsServiceWorkerOnUIEnabled()) {
-      if (!storage_partition_) {
-        std::move(callback).Run(nullptr);
-        return;
-      }
+      DCHECK(storage_partition());
       scoped_refptr<network::SharedURLLoaderFactory> network_factory =
           storage_partition_->GetURLLoaderFactoryForBrowserProcess();
       network_factory->Clone(std::move(pending_receiver));
