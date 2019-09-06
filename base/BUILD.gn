@@ -638,6 +638,7 @@ jumbo_component("base") {
     "profiler/suspendable_thread_delegate_mac.h",
     "profiler/suspendable_thread_delegate_win.cc",
     "profiler/suspendable_thread_delegate_win.h",
+    "profiler/thread_delegate.h",
     "profiler/unwinder.h",
     "rand_util.cc",
     "rand_util.h",
