@@ -6,13 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_TRANSMISSION_ENCODING_INFO_HANDLER_H_
 
 #include <memory>
-#include <string>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 struct WebMediaConfiguration;
@@ -51,21 +51,18 @@ class PLATFORM_EXPORT TransmissionEncodingInfoHandler {
  private:
   // Extracts supported video/audio codec name from |mime_type|. Returns "" if
   // it is not supported.
-  std::string ExtractSupportedCodecFromMimeType(
-      const std::string& mime_type) const;
+  String ExtractSupportedCodecFromMimeType(const String& mime_type) const;
 
   // True if it can encode |configuration| smoothly via CPU.
   bool CanCpuEncodeSmoothly(
       const blink::WebVideoConfiguration& configuration) const;
 
-  // TODO(crbug.com/787254): Replace the use of std::string.
-  //
   // List of supported video codecs.
-  base::flat_set<std::string> supported_video_codecs_;
+  HashSet<String> supported_video_codecs_;
   // List of hardware accelerated codecs.
-  base::flat_set<std::string> hardware_accelerated_video_codecs_;
+  HashSet<String> hardware_accelerated_video_codecs_;
   // List of supported audio codecs.
-  base::flat_set<std::string> supported_audio_codecs_;
+  HashSet<String> supported_audio_codecs_;
 
   // True if CPU is capable to encode 720p video smoothly.
   bool cpu_hd_smooth_;
