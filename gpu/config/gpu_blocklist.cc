@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/config/gpu_blacklist.h"
+#include "gpu/config/gpu_blocklist.h"
 
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/software_rendering_list_autogen.h"
 
 namespace gpu {
 
-GpuBlacklist::GpuBlacklist(const GpuControlListData& data)
+GpuBlocklist::GpuBlocklist(const GpuControlListData& data)
     : GpuControlList(data) {}
 
-GpuBlacklist::~GpuBlacklist() = default;
+GpuBlocklist::~GpuBlocklist() = default;
 
 // static
-std::unique_ptr<GpuBlacklist> GpuBlacklist::Create() {
+std::unique_ptr<GpuBlocklist> GpuBlocklist::Create() {
   GpuControlListData data(kSoftwareRenderingListEntryCount,
                           kSoftwareRenderingListEntries);
   return Create(data);
 }
 
 // static
-std::unique_ptr<GpuBlacklist> GpuBlacklist::Create(
+std::unique_ptr<GpuBlocklist> GpuBlocklist::Create(
     const GpuControlListData& data) {
-  std::unique_ptr<GpuBlacklist> list(new GpuBlacklist(data));
+  std::unique_ptr<GpuBlocklist> list(new GpuBlocklist(data));
   list->AddSupportedFeature("accelerated_2d_canvas",
                             GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
   list->AddSupportedFeature("gpu_compositing",
@@ -52,7 +52,7 @@ std::unique_ptr<GpuBlacklist> GpuBlacklist::Create(
 }
 
 // static
-bool GpuBlacklist::AreEntryIndicesValid(
+bool GpuBlocklist::AreEntryIndicesValid(
     const std::vector<uint32_t>& entry_indices) {
   return GpuControlList::AreEntryIndicesValid(entry_indices,
                                               kSoftwareRenderingListEntryCount);

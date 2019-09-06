@@ -35,7 +35,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/config/gpu_blacklist.h"
+#include "gpu/config/gpu_blocklist.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -93,7 +93,7 @@ int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
 // Send UMA histograms about the enabled features and GPU properties.
 void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
   // Update applied entry stats.
-  std::unique_ptr<gpu::GpuBlacklist> blacklist(gpu::GpuBlacklist::Create());
+  std::unique_ptr<gpu::GpuBlocklist> blacklist(gpu::GpuBlocklist::Create());
   DCHECK(blacklist.get() && blacklist->max_entry_id() > 0);
   uint32_t max_entry_id = blacklist->max_entry_id();
   // Use entry 0 to capture the total number of times that data

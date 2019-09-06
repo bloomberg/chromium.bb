@@ -4,21 +4,19 @@
 
 #include <vector>
 
-#include "gpu/config/gpu_blacklist.h"
+#include "gpu/config/gpu_blocklist.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
 
-class GpuBlacklistTest : public testing::Test {
+class GpuBlocklistTest : public testing::Test {
  public:
-  GpuBlacklistTest() = default;
-  ~GpuBlacklistTest() override = default;
+  GpuBlocklistTest() = default;
+  ~GpuBlocklistTest() override = default;
 
-  const GPUInfo& gpu_info() const {
-    return gpu_info_;
-  }
+  const GPUInfo& gpu_info() const { return gpu_info_; }
 
   void RunFeatureTest(GpuFeatureType feature_type) {
     const int kFeatureListForEntry1[1] = {feature_type};
@@ -49,16 +47,16 @@ class GpuBlacklistTest : public testing::Test {
             0,                                     // gpu_series size
             nullptr,                               // gpu_series
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-             nullptr, nullptr},                    // intel_gpu_generation
-            nullptr,                               // more conditions
+             nullptr, nullptr},  // intel_gpu_generation
+            nullptr,             // more conditions
         },
         0,        // exceptions count
         nullptr,  // exceptions
     }};
     GpuControlListData data(1, kTestEntries);
-    std::unique_ptr<GpuBlacklist> blacklist = GpuBlacklist::Create(data);
+    std::unique_ptr<GpuBlocklist> blacklist = GpuBlocklist::Create(data);
     std::set<int> type =
-        blacklist->MakeDecision(GpuBlacklist::kOsMacosx, "10.12.3", gpu_info());
+        blacklist->MakeDecision(GpuBlocklist::kOsMacosx, "10.12.3", gpu_info());
     EXPECT_EQ(1u, type.size());
     EXPECT_EQ(1u, type.count(feature_type));
   }
@@ -79,45 +77,40 @@ class GpuBlacklistTest : public testing::Test {
   GPUInfo gpu_info_;
 };
 
-#define GPU_BLACKLIST_FEATURE_TEST(test_name, feature_type) \
-  TEST_F(GpuBlacklistTest, test_name) { RunFeatureTest(feature_type); }
+#define GPU_BLOCKLIST_FEATURE_TEST(test_name, feature_type) \
+  TEST_F(GpuBlocklistTest, test_name) { RunFeatureTest(feature_type); }
 
-GPU_BLACKLIST_FEATURE_TEST(Accelerated2DCanvas,
+GPU_BLOCKLIST_FEATURE_TEST(Accelerated2DCanvas,
                            GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
 
-GPU_BLACKLIST_FEATURE_TEST(GpuCompositing,
-                           GPU_FEATURE_TYPE_GPU_COMPOSITING)
+GPU_BLOCKLIST_FEATURE_TEST(GpuCompositing, GPU_FEATURE_TYPE_GPU_COMPOSITING)
 
-GPU_BLACKLIST_FEATURE_TEST(AcceleratedWebGL, GPU_FEATURE_TYPE_ACCELERATED_WEBGL)
+GPU_BLOCKLIST_FEATURE_TEST(AcceleratedWebGL, GPU_FEATURE_TYPE_ACCELERATED_WEBGL)
 
-GPU_BLACKLIST_FEATURE_TEST(Flash3D,
-                           GPU_FEATURE_TYPE_FLASH3D)
+GPU_BLOCKLIST_FEATURE_TEST(Flash3D, GPU_FEATURE_TYPE_FLASH3D)
 
-GPU_BLACKLIST_FEATURE_TEST(FlashStage3D,
-                           GPU_FEATURE_TYPE_FLASH_STAGE3D)
+GPU_BLOCKLIST_FEATURE_TEST(FlashStage3D, GPU_FEATURE_TYPE_FLASH_STAGE3D)
 
-GPU_BLACKLIST_FEATURE_TEST(FlashStage3DBaseline,
+GPU_BLOCKLIST_FEATURE_TEST(FlashStage3DBaseline,
                            GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE)
 
-GPU_BLACKLIST_FEATURE_TEST(AcceleratedVideoDecode,
+GPU_BLOCKLIST_FEATURE_TEST(AcceleratedVideoDecode,
                            GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE)
 
-GPU_BLACKLIST_FEATURE_TEST(GpuRasterization,
-                           GPU_FEATURE_TYPE_GPU_RASTERIZATION)
+GPU_BLOCKLIST_FEATURE_TEST(GpuRasterization, GPU_FEATURE_TYPE_GPU_RASTERIZATION)
 
-GPU_BLACKLIST_FEATURE_TEST(OOPRasterization, GPU_FEATURE_TYPE_OOP_RASTERIZATION)
+GPU_BLOCKLIST_FEATURE_TEST(OOPRasterization, GPU_FEATURE_TYPE_OOP_RASTERIZATION)
 
-GPU_BLACKLIST_FEATURE_TEST(WebGL2,
-                           GPU_FEATURE_TYPE_ACCELERATED_WEBGL2)
+GPU_BLOCKLIST_FEATURE_TEST(WebGL2, GPU_FEATURE_TYPE_ACCELERATED_WEBGL2)
 
-GPU_BLACKLIST_FEATURE_TEST(ProtectedVideoDecode,
+GPU_BLOCKLIST_FEATURE_TEST(ProtectedVideoDecode,
                            GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE)
 
 // Test for invariant "Assume the newly last added entry has the largest ID".
 // See GpuControlList::GpuControlList.
 // It checks software_rendering_list.json
-TEST_F(GpuBlacklistTest, TestBlacklistIsValid) {
-  std::unique_ptr<GpuBlacklist> list(GpuBlacklist::Create());
+TEST_F(GpuBlocklistTest, TestBlocklistIsValid) {
+  std::unique_ptr<GpuBlocklist> list(GpuBlocklist::Create());
   uint32_t max_entry_id = list->max_entry_id();
 
   std::vector<uint32_t> indices(list->num_entries());
