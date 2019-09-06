@@ -39,6 +39,7 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/gurl.h"
 
 // The NSApplication for app shims is a vanilla NSApplication, but sub-class it
 // so that we can DCHECK that we know precisely when it is initialized.
@@ -155,8 +156,9 @@ int APP_SHIM_ENTRY_POINT_NAME(const app_mode::ChromeAppModeInfo* info) {
   controller_params.user_data_dir =
       base::FilePath(info->user_data_dir).DirName().DirName().DirName();
   controller_params.profile_dir = base::FilePath(info->profile_dir);
-  controller_params.app_mode_id = info->app_mode_id;
-  controller_params.app_mode_name = base::UTF8ToUTF16(info->app_mode_name);
+  controller_params.app_id = info->app_mode_id;
+  controller_params.app_name = base::UTF8ToUTF16(info->app_mode_name);
+  controller_params.app_url = GURL(info->app_mode_url);
 
   AppShimController controller(controller_params);
   base::RunLoop().Run();
