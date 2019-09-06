@@ -208,6 +208,10 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void NavigateBackForwardSoon(int offset, bool has_user_gesture);
   void DidCommitProvisionalHistoryLoad();
 
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate);
+
   // Registers a watcher to observe changes in the
   // blink::mojom::RendererPreferences.
   void RegisterRendererPreferenceWatcher(
@@ -275,9 +279,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
                                      const std::string& value) override;
   void ClearEditCommands() override;
   const std::string& GetAcceptLanguages() override;
-  void UpdateBrowserControlsState(BrowserControlsState constraints,
-                                  BrowserControlsState current,
-                                  bool animate) override;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif

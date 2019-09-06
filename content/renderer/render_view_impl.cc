@@ -1691,6 +1691,27 @@ void RenderViewImpl::DidCommitProvisionalHistoryLoad() {
   history_navigation_virtual_time_pauser_.UnpauseVirtualTime();
 }
 
+void RenderViewImpl::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
+  TRACE_EVENT2("renderer", "RenderViewImpl::UpdateBrowserControlsState",
+               "Constraint", static_cast<int>(constraints), "Current",
+               static_cast<int>(current));
+  TRACE_EVENT_INSTANT1("renderer", "is_animated", TRACE_EVENT_SCOPE_THREAD,
+                       "animated", animate);
+
+  if (GetWidget() && GetWidget()->layer_tree_view()) {
+    GetWidget()
+        ->layer_tree_view()
+        ->layer_tree_host()
+        ->UpdateBrowserControlsState(ContentToCc(constraints),
+                                     ContentToCc(current), animate);
+  }
+
+  top_controls_constraints_ = constraints;
+}
+
 void RenderViewImpl::RegisterRendererPreferenceWatcher(
     mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher) {
   renderer_preference_watchers_.Add(std::move(watcher));
@@ -1735,27 +1756,6 @@ void RenderViewImpl::ClearEditCommands() {
 
 const std::string& RenderViewImpl::GetAcceptLanguages() {
   return renderer_preferences_.accept_languages;
-}
-
-void RenderViewImpl::UpdateBrowserControlsState(
-    BrowserControlsState constraints,
-    BrowserControlsState current,
-    bool animate) {
-  TRACE_EVENT2("renderer", "RenderViewImpl::UpdateBrowserControlsState",
-               "Constraint", static_cast<int>(constraints), "Current",
-               static_cast<int>(current));
-  TRACE_EVENT_INSTANT1("renderer", "is_animated", TRACE_EVENT_SCOPE_THREAD,
-                       "animated", animate);
-
-  if (GetWidget() && GetWidget()->layer_tree_view()) {
-    GetWidget()
-        ->layer_tree_view()
-        ->layer_tree_host()
-        ->UpdateBrowserControlsState(ContentToCc(constraints),
-                                     ContentToCc(current), animate);
-  }
-
-  top_controls_constraints_ = constraints;
 }
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)

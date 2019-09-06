@@ -511,13 +511,3 @@ void ChromeRenderFrameObserver::SetWindowFeatures(
   render_frame()->GetRenderView()->GetWebView()->SetWindowFeatures(
       content::ConvertMojoWindowFeaturesToWebWindowFeatures(*window_features));
 }
-
-void ChromeRenderFrameObserver::UpdateBrowserControlsState(
-    content::BrowserControlsState constraints,
-    content::BrowserControlsState current,
-    bool animate) {
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  render_frame()->GetRenderView()->UpdateBrowserControlsState(constraints,
-                                                              current, animate);
-#endif
-}

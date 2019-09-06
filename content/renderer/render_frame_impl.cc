@@ -2826,6 +2826,13 @@ void RenderFrameImpl::SetLifecycleState(
   frame_->SetLifecycleState(state);
 }
 
+void RenderFrameImpl::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
+  render_view_->UpdateBrowserControlsState(constraints, current, animate);
+}
+
 void RenderFrameImpl::VisibilityChanged(
     blink::mojom::FrameVisibility visibility) {
   GetFrameHost()->VisibilityChanged(visibility);
