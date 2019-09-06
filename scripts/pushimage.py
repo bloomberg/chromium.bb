@@ -15,7 +15,6 @@ import cStringIO
 import getpass
 import os
 import re
-import tempfile
 import textwrap
 
 from six.moves import configparser
@@ -541,8 +540,8 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
 
           # Generate the insn file for this artifact that the signer will use,
           # and flag it for signing.
-          with tempfile.NamedTemporaryFile(
-              bufsize=0, prefix='pushimage.insns.') as insns_path:
+          with cros_build_lib.UnbufferedNamedTemporaryFile(
+              prefix='pushimage.insns.') as insns_path:
             input_insns.OutputInsns(insns_path.name, sect_insns, sect_general,
                                     insns_merge=alt_insn_set)
 

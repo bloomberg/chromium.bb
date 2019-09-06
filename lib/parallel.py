@@ -17,7 +17,6 @@ from multiprocessing.managers import SyncManager
 import os
 import signal
 import sys
-import tempfile
 import time
 import traceback
 
@@ -385,9 +384,8 @@ class _BackgroundTask(multiprocessing.Process):
     sys.stderr.flush()
     tmp_dir = '/tmp/chromite.parallel'
     osutils.SafeMakedirs(tmp_dir)
-    self._output = tempfile.NamedTemporaryFile(delete=False, bufsize=0,
-                                               dir=tmp_dir,
-                                               prefix='chromite-parallel-')
+    self._output = cros_build_lib.UnbufferedNamedTemporaryFile(
+        delete=False, dir=tmp_dir, prefix='chromite-parallel-')
     self._parent_pid = os.getpid()
     return multiprocessing.Process.start(self)
 

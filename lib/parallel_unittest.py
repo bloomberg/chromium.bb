@@ -13,7 +13,6 @@ import numbers
 import os
 import signal
 import sys
-import tempfile
 import time
 import unittest
 
@@ -21,6 +20,7 @@ import mock
 from six.moves import cPickle as pickle
 from six.moves import queue as Queue
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -191,7 +191,7 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
     # Set _PRINT_INTERVAL to a smaller number to make it easier to
     # reproduce bugs.
     with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
-      with tempfile.NamedTemporaryFile(bufsize=0) as output:
+      with cros_build_lib.UnbufferedNamedTemporaryFile() as output:
         with mock.patch.multiple(sys, stdout=output):
           func()
         with open(output.name, 'r', 0) as tmp:

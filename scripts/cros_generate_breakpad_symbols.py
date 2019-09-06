@@ -23,7 +23,6 @@ import collections
 import ctypes
 import multiprocessing
 import os
-import tempfile
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -105,7 +104,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
                       signals.StrSignal(-ret), msg)
 
   osutils.SafeMakedirs(breakpad_dir)
-  with tempfile.NamedTemporaryFile(dir=breakpad_dir, bufsize=0) as temp:
+  with cros_build_lib.UnbufferedNamedTemporaryFile(dir=breakpad_dir) as temp:
     if debug_file:
       # Try to dump the symbols using the debug file like normal.
       cmd_args = [elf_file, os.path.dirname(debug_file)]

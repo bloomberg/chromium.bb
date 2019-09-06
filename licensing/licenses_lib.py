@@ -15,7 +15,6 @@ import cgi
 import codecs
 import os
 import re
-import tempfile
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -239,7 +238,7 @@ inherit() {
       'overlay_list': ' '.join(overlays),
   }
 
-  with tempfile.NamedTemporaryFile(bufsize=0) as f:
+  with cros_build_lib.UnbufferedNamedTemporaryFile() as f:
     osutils.WriteFile(f.name, ebuild_env_tmpl % tmpl_env)
     env = osutils.SourceEnvironment(
         f.name, whitelist=['LICENSE'], ifs=' ', multiline=True)

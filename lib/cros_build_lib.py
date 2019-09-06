@@ -510,7 +510,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
 
   def _get_tempfile():
     try:
-      return tempfile.TemporaryFile(bufsize=0)
+      return UnbufferedTemporaryFile()
     except EnvironmentError as e:
       if e.errno != errno.ENOENT:
         raise
@@ -518,7 +518,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       # TMP, but that location has since been deleted.  Suppress that issue
       # in this particular case since our usage gurantees deletion,
       # and since this is primarily triggered during hard cgroups shutdown.
-      return tempfile.TemporaryFile(bufsize=0, dir='/tmp')
+      return UnbufferedTemporaryFile(dir='/tmp')
 
   # Modify defaults based on parameters.
   # Note that tempfiles must be unbuffered else attempts to read
@@ -2241,3 +2241,25 @@ class OutputCapturer(object):
     If |include_empties| is false filter out all empty lines.
     """
     return self._GetOutputLines(self.GetStderr(), include_empties)
+
+
+def UnbufferedTemporaryFile(**kwargs):
+  """Handle buffering changes in tempfile.TemporaryFile."""
+  assert 'bufsize' not in kwargs
+  assert 'buffering' not in kwargs
+  if sys.version_info.major < 3:
+    kwargs['bufsize'] = 0
+  else:
+    kwargs['buffering'] = 0
+  return tempfile.TemporaryFile(**kwargs)
+
+
+def UnbufferedNamedTemporaryFile(**kwargs):
+  """Handle buffering changes in tempfile.NamedTemporaryFile."""
+  assert 'bufsize' not in kwargs
+  assert 'buffering' not in kwargs
+  if sys.version_info.major < 3:
+    kwargs['bufsize'] = 0
+  else:
+    kwargs['buffering'] = 0
+  return tempfile.NamedTemporaryFile(**kwargs)

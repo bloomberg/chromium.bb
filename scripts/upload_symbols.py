@@ -281,8 +281,8 @@ def AdjustSymbolFileSize(symbol, tempdir, file_limit):
   file_size = symbol.FileSize()
 
   if file_limit and symbol.FileSize() > file_limit:
-    with tempfile.NamedTemporaryFile(
-        prefix='upload_symbols', bufsize=0,
+    with cros_build_lib.UnbufferedNamedTemporaryFile(
+        prefix='upload_symbols',
         dir=tempdir, delete=False) as temp_sym_file:
 
       temp_sym_file.writelines(
