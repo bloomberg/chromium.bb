@@ -811,8 +811,16 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
     visual_properties.new_size = view_->GetRequestedRendererSize();
     visual_properties.capture_sequence_number =
         view_->GetCaptureSequenceNumber();
-    visual_properties.compositor_viewport_pixel_size =
-        view_->GetCompositorViewportPixelSize();
+    // For OOPIFs, use the compositor viewport received from the FrameConnector.
+    visual_properties.compositor_viewport_pixel_rect =
+        view_->IsRenderWidgetHostViewChildFrame() &&
+                !view_->IsRenderWidgetHostViewGuest()
+            ? gfx::ScaleToEnclosingRect(
+                  compositor_viewport_,
+                  IsUseZoomForDSFEnabled()
+                      ? 1.f
+                      : visual_properties.screen_info.device_scale_factor)
+            : gfx::Rect(view_->GetCompositorViewportPixelSize());
     visual_properties.visible_viewport_size = view_->GetVisibleViewportSize();
     // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
     // scale factor of the surface. Fix this.
@@ -1991,6 +1999,11 @@ void RenderWidgetHostImpl::SetPageScaleState(float page_scale_factor,
   is_pinch_gesture_active_ = is_pinch_gesture_active;
 }
 
+void RenderWidgetHostImpl::SetCompositorViewport(
+    const gfx::Rect& compositor_viewport) {
+  compositor_viewport_ = compositor_viewport;
+}
+
 void RenderWidgetHostImpl::Destroy(bool also_delete) {
   DCHECK(!destroyed_);
   destroyed_ = true;
@@ -2247,8 +2260,8 @@ bool RenderWidgetHostImpl::DidVisualPropertiesSizeChange(
                new_visual_properties.max_size_for_auto_resize)) ||
          (!old_visual_properties.auto_resize_enabled &&
           (old_visual_properties.new_size != new_visual_properties.new_size ||
-           (old_visual_properties.compositor_viewport_pixel_size.IsEmpty() &&
-            !new_visual_properties.compositor_viewport_pixel_size.IsEmpty())));
+           (old_visual_properties.compositor_viewport_pixel_rect.IsEmpty() &&
+            !new_visual_properties.compositor_viewport_pixel_rect.IsEmpty())));
 }
 
 // static
@@ -2263,7 +2276,7 @@ bool RenderWidgetHostImpl::DoesVisualPropertiesNeedAck(
       g_check_for_pending_visual_properties_ack &&
       !new_visual_properties.auto_resize_enabled &&
       !new_visual_properties.new_size.IsEmpty() &&
-      !new_visual_properties.compositor_viewport_pixel_size.IsEmpty() &&
+      !new_visual_properties.compositor_viewport_pixel_rect.IsEmpty() &&
       new_visual_properties.local_surface_id_allocation;
 
   // If acking is applicable, then check if there has been an
@@ -2311,8 +2324,10 @@ bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
   return zoom_changed || size_changed || parent_local_surface_id_changed ||
          old_visual_properties->screen_info !=
              new_visual_properties.screen_info ||
-         old_visual_properties->compositor_viewport_pixel_size !=
-             new_visual_properties.compositor_viewport_pixel_size ||
+         old_visual_properties->compositor_viewport_pixel_rect !=
+             new_visual_properties.compositor_viewport_pixel_rect ||
+         old_visual_properties->compositor_viewport_pixel_rect !=
+             new_visual_properties.compositor_viewport_pixel_rect ||
          old_visual_properties->is_fullscreen_granted !=
              new_visual_properties.is_fullscreen_granted ||
          old_visual_properties->display_mode !=
