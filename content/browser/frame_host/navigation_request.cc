@@ -1916,13 +1916,9 @@ void NavigationRequest::OnStartChecksComplete(
     const base::FilePath specified_path =
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kTrustableBundledExchangesFile);
-    base::FilePath url_path;
-    if (net::FileURLToFilePath(common_params_->url, &url_path) &&
-        url_path == specified_path) {
-      BundledExchangesSource source(specified_path);
-      source.is_trusted = true;
-      bundled_exchanges_handle_ =
-          std::make_unique<BundledExchangesHandle>(source);
+    if (net::FilePathToFileURL(specified_path) == common_params_->url) {
+      bundled_exchanges_handle_ = std::make_unique<BundledExchangesHandle>(
+          BundledExchangesSource::CreateFromTrustedFile(specified_path));
     }
   } else if (base::FeatureList::IsEnabled(features::kBundledHTTPExchanges)) {
     // Production path behind the feature flag.

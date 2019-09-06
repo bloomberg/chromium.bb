@@ -158,8 +158,9 @@ class MockBundledExchangesReaderFactoryImpl final
       return nullptr;
     }
 
-    BundledExchangesSource source(temp_file_path_);
-    auto reader = std::make_unique<BundledExchangesReader>(source);
+    auto source =
+        BundledExchangesSource::CreateFromTrustedFile(temp_file_path_);
+    auto reader = std::make_unique<BundledExchangesReader>(*source);
 
     std::unique_ptr<MockParserFactory> factory =
         std::make_unique<MockParserFactory>();
