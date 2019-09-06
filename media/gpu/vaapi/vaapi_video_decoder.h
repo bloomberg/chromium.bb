@@ -125,6 +125,7 @@ class VaapiVideoDecoder : public media::VideoDecoder,
 
   // Output a single |video_frame| on the decoder thread.
   void OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
+                       const gfx::Rect& visible_rect,
                        base::TimeDelta timestamp);
   // Called when a different output frame resolution is requested on the decoder
   // thread. This happens when either decoding just started or a resolution
@@ -172,7 +173,6 @@ class VaapiVideoDecoder : public media::VideoDecoder,
 
   // Output frame properties.
   base::Optional<VideoFrameLayout> frame_layout_;
-  gfx::Rect visible_rect_;
   // Ratio of natural size to |visible_rect_| of the output frames.
   double pixel_aspect_ratio_ = 0.0;
 
