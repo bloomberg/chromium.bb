@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/video_codec_factory.h"
+#include "third_party/blink/public/platform/modules/peerconnection/video_codec_factory.h"
 
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "content/public/common/content_switches.h"
-#include "media/base/media_switches.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/platform/modules/peerconnection/rtc_video_decoder_factory_util.h"
 #include "third_party/blink/public/platform/modules/peerconnection/rtc_video_encoder_factory_util.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/webrtc/api/video_codecs/video_decoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/media/base/codec.h"
@@ -24,7 +22,7 @@
 #include "media/base/android/media_codec_util.h"
 #endif
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -178,9 +176,8 @@ std::unique_ptr<webrtc::VideoEncoderFactory> CreateWebrtcVideoEncoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   std::unique_ptr<webrtc::VideoEncoderFactory> encoder_factory;
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (gpu_factories && gpu_factories->IsGpuVideoAcceleratorEnabled() &&
-      !cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding)) {
+      Platform::Current()->IsWebRtcHWEncodingEnabled()) {
     encoder_factory = blink::CreateRTCVideoEncoderFactory(gpu_factories);
   }
 
@@ -196,13 +193,12 @@ std::unique_ptr<webrtc::VideoDecoderFactory> CreateWebrtcVideoDecoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   std::unique_ptr<webrtc::VideoDecoderFactory> decoder_factory;
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (gpu_factories && gpu_factories->IsGpuVideoAcceleratorEnabled() &&
-      !cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding)) {
+      Platform::Current()->IsWebRtcHWDecodingEnabled()) {
     decoder_factory = blink::CreateRTCVideoDecoderFactory(gpu_factories);
   }
 
   return std::make_unique<DecoderAdapter>(std::move(decoder_factory));
 }
 
-}  // namespace content
+}  // namespace blink
