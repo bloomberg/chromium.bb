@@ -6,7 +6,7 @@
 
 [
     RuntimeEnabled=WebGPU
-] interface GPUDevice {
+] interface GPUDevice : EventTarget {
     readonly attribute GPUAdapter adapter;
 
     GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
@@ -26,6 +26,8 @@
     GPUCommandEncoder createCommandEncoder(optional GPUCommandEncoderDescriptor descriptor);
     GPURenderBundleEncoder createRenderBundleEncoder(GPURenderBundleEncoderDescriptor descriptor);
     GPUQueue getQueue();
+
+    attribute EventHandler onuncapturederror;
 };
 
 typedef sequence<any> GPUMappedBuffer;  // [GPUBuffer, ArrayBuffer]
