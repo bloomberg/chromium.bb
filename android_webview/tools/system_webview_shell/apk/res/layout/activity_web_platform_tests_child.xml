@@ -37,6 +37,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textStyle="bold"
+        android:textColor="@android:color/white"
         />
   </LinearLayout>
 </LinearLayout>
