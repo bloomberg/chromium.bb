@@ -192,7 +192,7 @@ static inline base::Optional<double> CalculateSimpleIterationProgress(
 }
 
 // https://drafts.csswg.org/web-animations/#calculating-the-current-iteration
-static inline double CalculateCurrentIteration(
+static inline base::Optional<double> CalculateCurrentIteration(
     Timing::Phase phase,
     double active_time,
     double iteration_count,
@@ -200,7 +200,7 @@ static inline double CalculateCurrentIteration(
     base::Optional<double> simple_iteration_progress) {
   // 1. If the active time is unresolved, return unresolved.
   if (IsNull(active_time))
-    return NullValue();
+    return base::nullopt;
 
   // 2. If the animation effect is in the after phase and the iteration count
   // is infinity, return infinity.
@@ -209,7 +209,7 @@ static inline double CalculateCurrentIteration(
   }
 
   if (!overall_progress)
-    return NullValue();
+    return base::nullopt;
 
   // simple iteration progress can only be null if overall progress is null.
   DCHECK(simple_iteration_progress);
@@ -227,12 +227,14 @@ static inline double CalculateCurrentIteration(
 
 // https://drafts.csswg.org/web-animations/#calculating-the-directed-progress
 static inline bool IsCurrentDirectionForwards(
-    double current_iteration,
+    base::Optional<double> current_iteration,
     Timing::PlaybackDirection direction) {
   const bool current_iteration_is_even =
-      std::isinf(current_iteration)
-          ? true
-          : IsWithinEpsilon(fmod(current_iteration, 2), 0);
+      !current_iteration
+          ? false
+          : (std::isinf(current_iteration.value())
+                 ? true
+                 : IsWithinEpsilon(fmod(current_iteration.value(), 2), 0));
 
   switch (direction) {
     case Timing::PlaybackDirection::NORMAL:
@@ -252,7 +254,7 @@ static inline bool IsCurrentDirectionForwards(
 // https://drafts.csswg.org/web-animations/#calculating-the-directed-progress
 static inline base::Optional<double> CalculateDirectedProgress(
     base::Optional<double> simple_iteration_progress,
-    double current_iteration,
+    base::Optional<double> current_iteration,
     Timing::PlaybackDirection direction) {
   // 1. If the simple progress is unresolved, return unresolved.
   if (!simple_iteration_progress)

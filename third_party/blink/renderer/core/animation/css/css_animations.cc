@@ -1123,7 +1123,8 @@ bool CSSAnimations::AnimationEventDelegate::RequiresIterationEvents(
 void CSSAnimations::AnimationEventDelegate::OnEventCondition(
     const AnimationEffect& animation_node) {
   const Timing::Phase current_phase = animation_node.GetPhase();
-  const double current_iteration = animation_node.CurrentIteration();
+  const base::Optional<double> current_iteration =
+      animation_node.CurrentIteration();
 
   if (previous_phase_ != current_phase &&
       (current_phase == Timing::kPhaseActive ||
@@ -1143,9 +1144,10 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
     // between a single pair of samples. See http://crbug.com/275263. For
     // compatibility with the existing implementation, this event uses
     // the elapsedTime for the first iteration in question.
+    DCHECK(previous_iteration_);
     const AnimationTimeDelta elapsed_time =
         animation_node.SpecifiedTiming().iteration_duration.value() *
-        (previous_iteration_ + 1);
+        (previous_iteration_.value() + 1);
     MaybeDispatch(Document::kAnimationIterationListener,
                   event_type_names::kAnimationiteration,
                   elapsed_time.InSecondsF());
