@@ -110,6 +110,17 @@ public class WebLayerShellActivity extends FragmentActivity {
     }
 
     private void loadUrl(String url) {
-        mBrowserController.getNavigationController().navigate(Uri.parse(url));
+        mBrowserController.getNavigationController().navigate(Uri.parse(sanitizeUrl(url)));
+    }
+
+    /**
+     * Given an URL, this performs minimal sanitizing to ensure it will be valid.
+     * @param url The url to be sanitized.
+     * @return The sanitized URL.
+     */
+    public static String sanitizeUrl(String url) {
+        if (url == null) return null;
+        if (url.startsWith("www.") || url.indexOf(":") == -1) url = "http://" + url;
+        return url;
     }
 }
