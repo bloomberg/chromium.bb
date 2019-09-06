@@ -14,7 +14,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.Log;
@@ -46,8 +46,7 @@ public class WebPlatformTestsActivity extends Activity {
 
     private WebView mWebView;
     private WebView mChildWebView;
-    private RelativeLayout mChildLayout;
-    private RelativeLayout mBrowserLayout;
+    private LinearLayout mChildLayout;
     private Button mChildCloseButton;
     private TextView mChildTitleText;
     private TestCallback mTestCallback;
@@ -76,14 +75,15 @@ public class WebPlatformTestsActivity extends Activity {
                 }
             });
             // Add the new WebView to the layout
-            mChildWebView.setLayoutParams(new RelativeLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            mChildWebView.setLayoutParams(
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT));
             // Tell the transport about the new view
             WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
             transport.setWebView(mChildWebView);
             resultMsg.sendToTarget();
 
-            mBrowserLayout.addView(mChildWebView);
+            mChildLayout.addView(mChildWebView);
             // Make the child webview's layout visible
             mChildLayout.setVisibility(View.VISIBLE);
             if (mTestCallback != null) mTestCallback.onChildLayoutVisible();
@@ -129,7 +129,6 @@ public class WebPlatformTestsActivity extends Activity {
     }
 
     private void setUpWidgets() {
-        mBrowserLayout = findViewById(R.id.mainBrowserLayout);
         mChildLayout = findViewById(R.id.childLayout);
         mChildTitleText = findViewById(R.id.childTitleText);
         mChildCloseButton = findViewById(R.id.childCloseButton);
