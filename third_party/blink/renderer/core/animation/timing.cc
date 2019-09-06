@@ -160,7 +160,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
 
   const Timing::Phase current_phase =
       CalculatePhase(active_duration, local_time, animation_direction, *this);
-  const double active_time =
+  const base::Optional<double> active_time =
       CalculateActiveTime(active_duration, ResolvedFillMode(is_keyframe_effect),
                           local_time, current_phase, *this);
 
@@ -199,8 +199,10 @@ Timing::CalculatedTiming Timing::CalculateTimings(
         iteration_duration, active_duration, offset_active_time, start_offset,
         current_phase, *this);
     if (iteration_time) {
+      // active_time cannot be null if iteration_time is not null.
+      DCHECK(active_time);
       time_to_next_iteration = iteration_duration - iteration_time.value();
-      if (active_duration - active_time < time_to_next_iteration)
+      if (active_duration - active_time.value() < time_to_next_iteration)
         time_to_next_iteration = std::numeric_limits<double>::infinity();
     }
   }
@@ -209,7 +211,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   calculated.phase = current_phase;
   calculated.current_iteration = current_iteration;
   calculated.progress = progress;
-  calculated.is_in_effect = !IsNull(active_time);
+  calculated.is_in_effect = active_time.has_value();
   // If active_time is not null then current_iteration and (transformed)
   // progress are also non-null).
   DCHECK(!calculated.is_in_effect ||
