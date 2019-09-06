@@ -4258,6 +4258,7 @@
 
     'mac_specific_chromium_gtests': {
       'sandbox_mac_unittests': {},
+      'updater_tests': {},
     },
 
     'mac_specific_isolated_scripts': {
@@ -5020,6 +5021,7 @@
           ],
         },
       },
+      'updater_tests': {},
       'zucchini_unittests': {},
     },
 
