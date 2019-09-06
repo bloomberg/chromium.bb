@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/transmission_encoding_info_handler.h"
 
 #include <utility>
 #include <vector>
@@ -15,12 +15,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_video_configuration.h"
 #include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
 #include "third_party/blink/public/platform/modules/peerconnection/video_codec_factory.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/webrtc/api/audio_codecs/audio_encoder_factory.h"
 #include "third_party/webrtc/api/audio_codecs/audio_format.h"
@@ -28,7 +27,7 @@
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder_factory.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -56,10 +55,7 @@ std::string ToString(const blink::WebMediaCapabilitiesInfo& info) {
 // Gets GpuVideoAcceleratorFactories instance pointer.
 // Returns nullptr if RenderThreadImpl instance is not available.
 media::GpuVideoAcceleratorFactories* GetGpuFactories() {
-  auto* const render_thread_impl = content::RenderThreadImpl::current();
-  if (render_thread_impl)
-    return render_thread_impl->GetGpuFactories();
-  return nullptr;
+  return Platform::Current()->GetGpuFactories();
 }
 
 // Returns true if CPU can encode HD video smoothly.
@@ -76,6 +72,11 @@ bool CanCpuEncodeHdSmoothly() {
 const unsigned int kHdVideoAreaSize = 1280 * 720;
 
 }  // namespace
+
+TransmissionEncodingInfoHandler* TransmissionEncodingInfoHandler::Instance() {
+  DEFINE_STATIC_LOCAL(TransmissionEncodingInfoHandler, instance, ());
+  return &instance;
+}
 
 // If GetGpuFactories() returns null, CreateWebrtcVideoEncoderFactory()
 // returns software encoder factory only.
@@ -193,4 +194,4 @@ void TransmissionEncodingInfoHandler::EncodingInfo(
   std::move(callback).Run(std::move(info));
 }
 
-}  // namespace content
+}  // namespace blink

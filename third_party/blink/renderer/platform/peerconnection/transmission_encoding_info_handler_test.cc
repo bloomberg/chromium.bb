@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/transmission_encoding_info_handler.h"
 
 #include <utility>
 #include <vector>
@@ -20,7 +20,7 @@
 #include "third_party/webrtc/api/video_codecs/video_encoder_factory.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -320,4 +320,4 @@ TEST_F(TransmissionEncodingInfoHandlerTest, AudioAndVideoCodecWithPowerfulCpu) {
   VerifyEncodingInfo(handler, config, true, true, false);
 }
 
-}  // namespace content
+}  // namespace blink

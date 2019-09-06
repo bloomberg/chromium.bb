@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_TRANSMISSION_ENCODING_INFO_HANDLER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_TRANSMISSION_ENCODING_INFO_HANDLER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_TRANSMISSION_ENCODING_INFO_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_TRANSMISSION_ENCODING_INFO_HANDLER_H_
 
 #include <memory>
 #include <string>
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_transmission_encoding_info_handler.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 struct WebVideoConfiguration;
@@ -21,12 +21,14 @@ namespace webrtc {
 class VideoEncoderFactory;
 }  // namespace webrtc
 
-namespace content {
+namespace blink {
 
 // blink::WebTransmissionEncodingInfoHandler implementation.
-class CONTENT_EXPORT TransmissionEncodingInfoHandler final
+class PLATFORM_EXPORT TransmissionEncodingInfoHandler final
     : public blink::WebTransmissionEncodingInfoHandler {
  public:
+  static TransmissionEncodingInfoHandler* Instance();
+
   TransmissionEncodingInfoHandler();
   // Constructor for unittest to inject VideoEncodeFactory instance and
   // |cpu_hd_smooth|.
@@ -49,6 +51,8 @@ class CONTENT_EXPORT TransmissionEncodingInfoHandler final
   bool CanCpuEncodeSmoothly(
       const blink::WebVideoConfiguration& configuration) const;
 
+  // TODO(crbug.com/787254): Replace the use of std::string.
+  //
   // List of supported video codecs.
   base::flat_set<std::string> supported_video_codecs_;
   // List of hardware accelerated codecs.
@@ -62,5 +66,6 @@ class CONTENT_EXPORT TransmissionEncodingInfoHandler final
   DISALLOW_COPY_AND_ASSIGN(TransmissionEncodingInfoHandler);
 };
 
-}  // namespace content
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_TRANSMISSION_ENCODING_INFO_HANDLER_H_
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_TRANSMISSION_ENCODING_INFO_HANDLER_H_
