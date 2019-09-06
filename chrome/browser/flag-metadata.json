@@ -2821,11 +2821,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "postscript-printing",
-    "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "prefetch-main-resource-network-isolation-key",
     "owners": [ "dom", "yhirano" ],
     "expiry_milestone": 85

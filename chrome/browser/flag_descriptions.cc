@@ -2972,11 +2972,6 @@ const char kD3D11VideoDecoderName[] = "D3D11 Video Decoder";
 const char kD3D11VideoDecoderDescription[] =
     "Enables D3D11VideoDecoder for hardware accelerated video decoding.";
 
-const char kDisablePostscriptPrinting[] = "Disable PostScript Printing";
-const char kDisablePostscriptPrintingDescription[] =
-    "Disables PostScript generation when printing to PostScript capable "
-    "printers, and uses EMF generation in its place.";
-
 const char kEnableAuraTooltipsOnWindowsName[] =
     "Enable aura tooltips on Windows";
 const char kEnableAuraTooltipsOnWindowsDescription[] =

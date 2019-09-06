@@ -2681,9 +2681,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"gdi-text-printing", flag_descriptions::kGdiTextPrinting,
      flag_descriptions::kGdiTextPrintingDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kGdiTextPrinting)},
-    {"postscript-printing", flag_descriptions::kDisablePostscriptPrinting,
-     flag_descriptions::kDisablePostscriptPrintingDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kDisablePostScriptPrinting)},
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN)
