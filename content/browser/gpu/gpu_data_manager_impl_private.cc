@@ -251,36 +251,6 @@ void RequestVideoMemoryUsageStats(
       base::BindOnce(&OnVideoMemoryUsageStats, std::move(callback)));
 }
 
-#if defined(OS_WIN)
-void UpdateDxDiagNodeOnIO(const gpu::DxDiagNode& dx_diagnostics) {
-  // This function is called on the IO thread, but GPUInfo on GpuDataManagerImpl
-  // should be updated on the UI thread since it can call into functions that
-  // expect to run in the UI thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          [](const gpu::DxDiagNode& dx_diagnostics) {
-            GpuDataManagerImpl::GetInstance()->UpdateDxDiagNode(dx_diagnostics);
-          },
-          dx_diagnostics));
-}
-
-void UpdateDx12VulkanInfoOnIO(
-    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
-  // This function is called on the IO thread, but GPUInfo on GpuDataManagerImpl
-  // should be updated on the UI thread since it can call into functions that
-  // expect to run in the UI thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          [](const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
-            GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanInfo(
-                dx12_vulkan_version_info);
-          },
-          dx12_vulkan_version_info));
-}
-#endif
-
 // Determines if SwiftShader is available as a fallback for WebGL.
 bool SwiftShaderAllowed() {
 #if !BUILDFLAG(ENABLE_SWIFTSHADER)
@@ -404,7 +374,11 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
                              if (!host)
                                return;
                              host->gpu_service()->RequestCompleteGpuInfo(
-                                 base::BindOnce(&UpdateDxDiagNodeOnIO));
+                                 base::BindOnce(
+                                     [](const gpu::DxDiagNode& dx_diagnostics) {
+                                       GpuDataManagerImpl::GetInstance()
+                                           ->UpdateDxDiagNode(dx_diagnostics);
+                                     }));
                            }));
 #else
   // NeedsCompleteGpuInfoCollection() always returns false on platforms other
@@ -430,7 +404,9 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
     }
     GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanRequestStatus(true);
     host->gpu_service()->GetGpuSupportedRuntimeVersion(
-        base::BindOnce(&UpdateDx12VulkanInfoOnIO));
+        base::BindOnce([](const gpu::Dx12VulkanVersionInfo& info) {
+          GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanInfo(info);
+        }));
   });
 
   if (delayed) {
