@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -30,6 +31,8 @@ import org.chromium.base.VisibleForTesting;
  *                         children, which is not supported for now.
  */
 public class WebPlatformTestsActivity extends Activity {
+    private static final String TAG = "WPTActivity";
+
     /**
      * A callback for testing.
      */
@@ -102,14 +105,27 @@ public class WebPlatformTestsActivity extends Activity {
         mChildWebView = null;
     }
 
+    private String getUrlFromIntent() {
+        if (getIntent() == null) return null;
+        return getIntent().getDataString();
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         WebView.setWebContentsDebuggingEnabled(true);
         setContentView(R.layout.activity_web_platform_tests);
         setUpWidgets();
-        // This is equivalent to Chrome's WPT setup.
-        setUpWebView("about:blank");
+        String url = getUrlFromIntent();
+        if (url == null) {
+            // This is equivalent to Chrome's WPT setup.
+            setUpWebView("about:blank");
+        } else {
+            Log.w(TAG,
+                    "Handling a non-empty intent. This should only be used for testing. URL: "
+                            + url);
+            setUpWebView(url);
+        }
     }
 
     private void setUpWidgets() {
