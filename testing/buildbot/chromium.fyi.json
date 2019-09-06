@@ -23418,6 +23418,7 @@
           "--build-revision=${got_revision}",
           "--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter",
           "--browser-ui-tests-verify-pixels",
+          "--test-launcher-jobs=1",
           "--enable-pixel-output-in-tests"
         ],
         "experiment_percentage": 100,
