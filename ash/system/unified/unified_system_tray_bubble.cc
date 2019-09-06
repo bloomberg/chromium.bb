@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
-#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -113,7 +113,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
 
-  if (app_list_features::IsBackgroundBlurEnabled()) {
+  if (features::IsBackgroundBlurEnabled()) {
     bubble_widget_->client_view()->layer()->SetBackgroundBlur(
         kUnifiedMenuBackgroundBlur);
   }
@@ -315,7 +315,7 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
 }
 
 void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
-  if (!app_list_features::IsBackgroundBlurEnabled())
+  if (!features::IsBackgroundBlurEnabled())
     return;
 
   if (blur_layer_)
@@ -342,7 +342,7 @@ void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
 }
 
 void UnifiedSystemTrayBubble::DestroyBlurLayerForAnimation() {
-  if (!app_list_features::IsBackgroundBlurEnabled())
+  if (!features::IsBackgroundBlurEnabled())
     return;
 
   if (!blur_layer_)

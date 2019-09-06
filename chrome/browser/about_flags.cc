@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -1660,7 +1661,7 @@ const FeatureEntry kFeatureEntries[] = {
         flag_descriptions::kEnableBackgroundBlurName,
         flag_descriptions::kEnableBackgroundBlurDescription,
         kOsCrOS,
-        FEATURE_VALUE_TYPE(app_list_features::kEnableBackgroundBlur),
+        FEATURE_VALUE_TYPE(ash::features::kEnableBackgroundBlur),
     },
     {"enable-notification-indicator",
      flag_descriptions::kNotificationIndicatorName,
