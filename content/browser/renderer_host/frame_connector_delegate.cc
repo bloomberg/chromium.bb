@@ -48,6 +48,8 @@ void FrameConnectorDelegate::SynchronizeVisualProperties(
   render_widget_host->SetPageScaleState(
       visual_properties.page_scale_factor,
       visual_properties.is_pinch_gesture_active);
+  render_widget_host->SetCompositorViewport(
+      visual_properties.compositor_viewport);
 
   render_widget_host->SynchronizeVisualProperties();
 }
