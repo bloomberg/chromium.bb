@@ -18195,8 +18195,8 @@ Called by update_net_error_codes.py.-->
   <summary>Result of system log upload attempt.</summary>
   <int value="0" label="Log upload succeeded"/>
   <int value="1" label="Zipped log upload succeeded"/>
-  <int value="3" label="Log upload failed"/>
-  <int value="4" label="Zipped log upload failed"/>
+  <int value="2" label="Log upload failed"/>
+  <int value="3" label="Zipped log upload failed"/>
 </enum>
 
 <enum name="EnterpriseUploadJobSuccess">
