@@ -15,8 +15,8 @@ namespace content {
 // A class to abstract required information to access a BundledExchanges.
 class CONTENT_EXPORT BundledExchangesSource {
  public:
-  static std::unique_ptr<BundledExchangesSource> CreateFromTrustedFile(
-      const base::FilePath& file_path);
+  static std::unique_ptr<BundledExchangesSource> CreateFromTrustedFileUrl(
+      const GURL& url);
 
   std::unique_ptr<BundledExchangesSource> Clone() const;
 

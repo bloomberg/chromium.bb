@@ -1911,14 +1911,15 @@ void NavigationRequest::OnStartChecksComplete(
   if (GetContentClient()->browser()->CanAcceptUntrustedExchangesIfNeeded() &&
       common_params_->url.SchemeIsFile() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTrustableBundledExchangesFile)) {
+          switches::kTrustableBundledExchangesFileUrl)) {
     // Fast path for testing navigation to a trustable BundledExchanges source.
-    const base::FilePath specified_path =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            switches::kTrustableBundledExchangesFile);
-    if (net::FilePathToFileURL(specified_path) == common_params_->url) {
+    const std::string specified_trustable_wbn_url =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kTrustableBundledExchangesFileUrl);
+    if (specified_trustable_wbn_url == common_params_->url.spec()) {
       bundled_exchanges_handle_ = std::make_unique<BundledExchangesHandle>(
-          BundledExchangesSource::CreateFromTrustedFile(specified_path));
+          BundledExchangesSource::CreateFromTrustedFileUrl(
+              GURL(specified_trustable_wbn_url)));
     }
   } else if (base::FeatureList::IsEnabled(features::kBundledHTTPExchanges)) {
     // Production path behind the feature flag.

@@ -12,9 +12,12 @@ namespace content {
 
 // static
 std::unique_ptr<BundledExchangesSource>
-BundledExchangesSource::CreateFromTrustedFile(const base::FilePath& file_path) {
-  return base::WrapUnique(new BundledExchangesSource(
-      true, file_path, net::FilePathToFileURL(file_path)));
+BundledExchangesSource::CreateFromTrustedFileUrl(const GURL& url) {
+  DCHECK(url.SchemeIsFile());
+  base::FilePath file_path;
+  if (!net::FileURLToFilePath(url, &file_path))
+    return nullptr;
+  return base::WrapUnique(new BundledExchangesSource(true, file_path, url));
 }
 
 std::unique_ptr<BundledExchangesSource> BundledExchangesSource::Clone() const {

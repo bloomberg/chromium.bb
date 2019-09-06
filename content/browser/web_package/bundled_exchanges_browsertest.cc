@@ -80,8 +80,9 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchPath(switches::kTrustableBundledExchangesFile,
-                                   test_data_path());
+    command_line->AppendSwitchASCII(
+        switches::kTrustableBundledExchangesFileUrl,
+        net::FilePathToFileURL(test_data_path()).spec());
   }
 
   void TearDownOnMainThread() override {
