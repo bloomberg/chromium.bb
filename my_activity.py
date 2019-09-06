@@ -380,8 +380,9 @@ class MyActivity(object):
 
   def monorail_issue_search(self, project):
     epoch = datetime.utcfromtimestamp(0)
-    # TODO(tandrii): support non-chromium email, too.
-    user_str = '%s@chromium.org' % self.user
+    # Defaults to @chromium.org email if one wasn't provided on -u option.
+    user_str = (self.options.email if self.options.email.find('@') >= 0
+                else '%s@chromium.org' % self.user)
 
     issues = self.monorail_query_issues(project, {
       'maxResults': 10000,
@@ -850,7 +851,9 @@ def main():
     parser.error('Args unsupported')
   if not options.user:
     parser.error('USER/USERNAME is not set, please use -u')
-  options.user = username(options.user)
+  # Retains the original -u option as the email address.
+  options.email = options.user
+  options.user = username(options.email)
 
   logging.basicConfig(level=options.verbosity)
 
