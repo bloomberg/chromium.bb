@@ -777,22 +777,18 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
-  base::Optional<web_app::AppId> app_id =
-      web_app::GetPwaForSecureActiveTab(browser());
-  if (app_id) {
-    auto* provider = web_app::WebAppProvider::Get(browser()->profile());
+  if (base::Optional<base::string16> name =
+          GetInstallPWAAppMenuItemName(browser_)) {
+    AddItem(IDC_INSTALL_PWA, *name);
+  } else if (base::Optional<web_app::AppId> app_id =
+                 web_app::GetPwaForSecureActiveTab(browser_)) {
+    auto* provider = web_app::WebAppProvider::Get(browser_->profile());
+    const base::string16 short_name =
+        base::UTF8ToUTF16(provider->registrar().GetAppShortName(*app_id));
+    const base::string16 truncated_name = gfx::TruncateString(
+        short_name, kMaxAppNameLength, gfx::CHARACTER_BREAK);
     AddItem(IDC_OPEN_IN_PWA_WINDOW,
-            l10n_util::GetStringFUTF16(
-                IDS_OPEN_IN_APP_WINDOW,
-                gfx::TruncateString(
-                    base::UTF8ToUTF16(
-                        provider->registrar().GetAppShortName(*app_id)),
-                    kMaxAppNameLength, gfx::CHARACTER_BREAK)));
-  } else {
-    base::Optional<base::string16> install_pwa_item_name =
-        GetInstallPWAAppMenuItemName(browser_);
-    if (install_pwa_item_name)
-      AddItem(IDC_INSTALL_PWA, *install_pwa_item_name);
+            l10n_util::GetStringFUTF16(IDS_OPEN_IN_APP_WINDOW, truncated_name));
   }
 
   if (dom_distiller::IsDomDistillerEnabled())
