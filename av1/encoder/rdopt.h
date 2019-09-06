@@ -229,7 +229,13 @@ static TX_MODE select_tx_mode(
 
 static INLINE TX_MODE get_eval_tx_mode(const AV1_COMP *cpi,
                                        MODE_EVAL_TYPE eval_type) {
-  return select_tx_mode(cpi, cpi->tx_size_search_methods[eval_type]);
+  TX_MODE tx_mode;
+  if (cpi->sf.enable_winner_mode_for_tx_size_srch)
+    tx_mode = select_tx_mode(cpi, cpi->tx_size_search_methods[eval_type]);
+  else
+    tx_mode = select_tx_mode(cpi, cpi->tx_size_search_methods[DEFAULT_EVAL]);
+
+  return tx_mode;
 }
 
 static INLINE void set_tx_size_search_method(
