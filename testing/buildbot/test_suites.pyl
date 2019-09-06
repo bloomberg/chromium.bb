@@ -4489,6 +4489,9 @@
         'args': [
           '--enable-features=OutOfBlinkCors'
         ],
+        'swarming': {
+          'shards': 10,
+        },
         'test': 'browser_tests'
       },
       'oor_cors_content_browsertests': {

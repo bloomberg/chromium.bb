@@ -21336,7 +21336,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "shards": 10
         },
         "test": "browser_tests"
       },
