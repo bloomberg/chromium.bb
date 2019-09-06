@@ -2160,7 +2160,16 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
   if (!IsFullscreen() && frame_->ShouldSaveWindowPlacement() &&
       chrome::ShouldSaveWindowPlacement(browser_.get())) {
     WidgetDelegate::SaveWindowPlacement(bounds, show_state);
-    chrome::SaveWindowPlacement(browser_.get(), bounds, show_state);
+    gfx::Rect saved_bounds = bounds;
+    if (chrome::SavedBoundsAreContentBounds(browser_.get())) {
+      // Invert the transformation done in GetSavedWindowPlacement().
+      gfx::Size client_size =
+          frame_->GetFrameView()->GetBoundsForClientView().size();
+      if (IsToolbarVisible())
+        client_size.Enlarge(0, -toolbar_->GetPreferredSize().height());
+      saved_bounds.set_size(client_size);
+    }
+    chrome::SaveWindowPlacement(browser_.get(), saved_bounds, show_state);
   }
 }
 
