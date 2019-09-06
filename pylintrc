@@ -361,6 +361,7 @@ max-parents=10
 # cookielib: Use the 'six.moves.http_cookiejar' module instead
 #   (or 'http.cookiejar' in Python 3).
 # cPickle: Use the 'pickle' module instead.
+# cStringIO: Use 'io.StringIO' or 'io.BytesIO' instead.
 # exceptions: Dropped in Python 3.
 # HTMLParser: Use the 'six.moves.html_parser' module instead
 #   (or 'html.parser' in Python 3).
@@ -372,6 +373,7 @@ max-parents=10
 # Queue: Use the 'six.moves.queue' module instead (or 'queue' in Python 3).
 # regsub: Use the 're' module instead.
 # rexec: Dropped in Python 3.
+# StringIO: Use 'io.StringIO' or 'io.BytesIO' instead.
 # TERMIOS: Use the 'termios' module instead.
 # urllib2: Use the 'six.moves.urllib' module instead
 #   (or 'urllib.request' in Python 3).
@@ -383,6 +385,7 @@ deprecated-modules=
     ConfigParser,
     cookielib,
     cPickle,
+    cStringIO,
     exceptions,
     HTMLParser,
     httplib,
@@ -392,6 +395,7 @@ deprecated-modules=
     Queue,
     regsub,
     rexec,
+    StringIO,
     TERMIOS,
     urllib2,
     urlparse,

@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import collections
-import cStringIO
 import datetime
 import getpass
 import hashlib
@@ -23,6 +22,7 @@ import mock
 import six
 from six.moves import http_client as httplib
 from six.moves import http_cookiejar as cookielib
+from six.moves import StringIO
 from six.moves import urllib
 
 from chromite.lib import config_lib
@@ -233,7 +233,7 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
     response = conn.getresponse()
     self.assertEqual(201, response.status,
                      'Expected 201, got %s' % response.status)
-    s = cStringIO.StringIO(response.read())
+    s = StringIO(response.read())
     self.assertEqual(")]}'", s.readline().rstrip())
     jmsg = json.load(s)
     self.assertEqual(name, jmsg['name'])
@@ -383,7 +383,7 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
         self.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
     response = conn.getresponse()
     self.assertEqual(201, response.status)
-    s = cStringIO.StringIO(response.read())
+    s = StringIO(response.read())
     self.assertEqual(")]}'", s.readline().rstrip())
     jmsg = json.load(s)
     self.assertEqual(email, jmsg['email'])

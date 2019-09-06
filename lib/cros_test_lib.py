@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import collections
 import contextlib
-import cStringIO
 import functools
 import os
 import re
@@ -19,6 +18,7 @@ import unittest
 
 import mock
 import six
+from six.moves import StringIO
 
 from chromite.lib import cache
 from chromite.lib import constants
@@ -462,7 +462,7 @@ class LogFilter(logging.Filter):
 
   def __init__(self):
     logging.Filter.__init__(self)
-    self.messages = cStringIO.StringIO()
+    self.messages = StringIO()
 
   def filter(self, record):
     self.messages.write(record.getMessage() + '\n')

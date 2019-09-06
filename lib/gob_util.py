@@ -19,7 +19,6 @@ import re
 import socket
 import sys
 import warnings
-from cStringIO import StringIO
 
 import httplib2
 try:
@@ -31,6 +30,7 @@ import six
 from six.moves import html_parser as HTMLParser
 from six.moves import http_client as httplib
 from six.moves import http_cookiejar as cookielib
+from six.moves import StringIO
 from six.moves import urllib
 
 from chromite.lib import constants

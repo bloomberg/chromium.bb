@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-from StringIO import StringIO
 import json
+
+from six.moves import StringIO
 
 from chromite.lib import cros_event as ce
 from chromite.lib import cros_test_lib

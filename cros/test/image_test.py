@@ -11,7 +11,6 @@ This module should only be imported inside the chroot.
 from __future__ import division
 from __future__ import print_function
 
-import cStringIO
 import collections
 import errno
 import fnmatch
@@ -26,6 +25,7 @@ from elftools.elf import elffile
 from elftools.common import exceptions
 import lddtree
 import magic  # pylint: disable=import-error
+from six.moves import StringIO
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -351,8 +351,8 @@ class SymbolsTest(image_test_lib.ImageTestCase):
     if file_name in self._known_symtabs:
       return self._known_symtabs[file_name]
 
-    # We use cstringio here to obviate fseek/fread time in pyelftools.
-    stream = cStringIO.StringIO(osutils.ReadFile(file_name))
+    # We use StringIO here to obviate fseek/fread time in pyelftools.
+    stream = StringIO(osutils.ReadFile(file_name))
 
     try:
       elf = elffile.ELFFile(stream)

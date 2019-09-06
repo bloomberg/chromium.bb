@@ -7,7 +7,7 @@
 
 from __future__ import print_function
 
-import StringIO
+from six.moves import StringIO
 
 from chromite.lib import cros_test_lib
 from chromite.lib import retry_stats
@@ -63,7 +63,7 @@ class TestRetryStats(cros_test_lib.TestCase):
   def testReportCategoryStatsEmpty(self):
     retry_stats.SetupStats()
 
-    out = StringIO.StringIO()
+    out = StringIO()
 
     retry_stats.ReportCategoryStats(out, self.CAT)
 
@@ -82,7 +82,7 @@ class TestRetryStats(cros_test_lib.TestCase):
   def testReportStatsEmpty(self):
     retry_stats.SetupStats()
 
-    out = StringIO.StringIO()
+    out = StringIO()
     retry_stats.ReportStats(out)
 
     # No data collected means no categories are known, nothing to report.
@@ -100,7 +100,7 @@ class TestRetryStats(cros_test_lib.TestCase):
                       retry_stats.RetryWithStats,
                       self.CAT, self.handlerRetry, 3, self.callFailure)
 
-    out = StringIO.StringIO()
+    out = StringIO()
     retry_stats.ReportStats(out)
 
     # Expecting reports for both CAT and CAT_B used above.

@@ -9,9 +9,9 @@ from __future__ import print_function
 
 import ctypes
 import os
-import StringIO
 
 import mock
+from six.moves import StringIO
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -348,7 +348,7 @@ class UtilsTest(cros_test_lib.TestCase):
   def testReadSymsHeaderGoodBuffer(self):
     """Make sure ReadSymsHeader can parse sym file handles"""
     result = cros_generate_breakpad_symbols.ReadSymsHeader(
-        StringIO.StringIO('MODULE Linux arm MY-ID-HERE blkid'))
+        StringIO('MODULE Linux arm MY-ID-HERE blkid'))
     self.assertEqual(result.cpu, 'arm')
     self.assertEqual(result.id, 'MY-ID-HERE')
     self.assertEqual(result.name, 'blkid')
@@ -357,7 +357,7 @@ class UtilsTest(cros_test_lib.TestCase):
   def testReadSymsHeaderBadd(self):
     """Make sure ReadSymsHeader throws on bad sym files"""
     self.assertRaises(ValueError, cros_generate_breakpad_symbols.ReadSymsHeader,
-                      StringIO.StringIO('asdf'))
+                      StringIO('asdf'))
 
   def testBreakpadDir(self):
     """Make sure board->breakpad path expansion works"""

@@ -9,7 +9,8 @@ from __future__ import print_function
 
 import collections
 import os
-import StringIO
+
+from six.moves import StringIO
 
 from chromite.cli.cros import lint
 from chromite.lib import cros_test_lib
@@ -573,7 +574,7 @@ class SourceCheckerTest(CheckerTestCase):
     for shebang in shebangs:
       self.results = []
       node = TestNode()
-      stream = StringIO.StringIO(shebang)
+      stream = StringIO(shebang)
       st = StatStub(size=len(shebang), mode=mode)
       self.checker._check_shebang(node, stream, st)
       msg = 'processing shebang failed: %r' % shebang
@@ -614,7 +615,7 @@ class SourceCheckerTest(CheckerTestCase):
     """_check_encoding should ignore 0 byte files"""
     node = TestNode()
     self.results = []
-    stream = StringIO.StringIO('')
+    stream = StringIO('')
     self.checker._check_encoding(node, stream, StatStub())
     self.assertLintPassed()
 
@@ -635,7 +636,7 @@ class SourceCheckerTest(CheckerTestCase):
     node = TestNode()
     for header in headers:
       self.results = []
-      stream = StringIO.StringIO(header)
+      stream = StringIO(header)
       self.checker._check_encoding(node, stream, StatStub(size=len(header)))
       self.assertLintFailed(expected=('R9204',))
 
@@ -648,7 +649,7 @@ class SourceCheckerTest(CheckerTestCase):
     for encoding in encodings:
       self.results = []
       header = '# -*- coding: %s -*-\n' % (encoding,)
-      stream = StringIO.StringIO(header)
+      stream = StringIO(header)
       self.checker._check_encoding(node, stream, StatStub(size=len(header)))
       self.assertLintFailed(expected=('R9205',))
 
@@ -663,7 +664,7 @@ class SourceCheckerTest(CheckerTestCase):
     for first in ('', shebang):
       for encoding in encodings:
         data = first + encoding + '\n'
-        stream = StringIO.StringIO(data)
+        stream = StringIO(data)
         self.checker._check_encoding(node, stream, StatStub(size=len(data)))
         self.assertLintPassed()
 

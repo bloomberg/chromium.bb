@@ -12,13 +12,13 @@
 from __future__ import print_function
 
 import collections
-import cStringIO
 import math
 import operator
 import os
 import tempfile
 import time
 
+from six.moves import StringIO
 from six.moves import urllib
 
 from chromite.lib import cros_build_lib
@@ -378,7 +378,7 @@ def GrabRemotePackageIndex(binhost_url):
       logging.PrintBuildbotStepWarnings()
       logging.error('Cannot GET %s: %s', url, e)
       return None
-    f = cStringIO.StringIO(output)
+    f = StringIO(output)
   else:
     return None
   pkgindex.Read(f)

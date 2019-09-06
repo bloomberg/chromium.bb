@@ -14,9 +14,9 @@ import json
 import hashlib
 import os
 import struct
-from StringIO import StringIO
 
 import mock
+from six.moves import StringIO
 
 from chromite.cbuildbot import commands
 from chromite.lib import config_lib

@@ -11,13 +11,13 @@ artifacts for signing (which a signing process will look for).
 
 from __future__ import print_function
 
-import cStringIO
 import getpass
 import os
 import re
 import textwrap
 
 from six.moves import configparser
+from six.moves import StringIO
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -195,7 +195,7 @@ class InputInsns(object):
     https://bugs.python.org/issue16058
     """
     # Write the current config to a string io object.
-    data = cStringIO.StringIO()
+    data = StringIO()
     config.write(data)
     data.seek(0)
 
@@ -246,7 +246,7 @@ class InputInsns(object):
     for alt in self.GetAltInsnSets():
       config.remove_section(alt)
 
-    output = cStringIO.StringIO()
+    output = StringIO()
     config.write(output)
     data = output.getvalue()
     osutils.WriteFile(output_file, data)

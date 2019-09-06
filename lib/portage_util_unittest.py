@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import cStringIO
 import os
+
+from six.moves import StringIO
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -483,7 +484,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     ebuild_path = package_name + '-r1.ebuild'
     self.m_ebuild = StubEBuild(ebuild_path, False)
     self.revved_ebuild_path = package_name + '-r2.ebuild'
-    self._m_file = cStringIO.StringIO()
+    self._m_file = StringIO()
     self.git_files_changed = []
 
   def createRevWorkOnMocks(self, ebuild_content, rev, multi=False):
@@ -554,7 +555,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
       (result, revved_ebuild) where result is the result from the called
       function, and revved_ebuild is the content of the revved ebuild.
     """
-    m_file = cStringIO.StringIO()
+    m_file = StringIO()
     kwargs['redirect_file'] = m_file
     result = self.m_ebuild.RevWorkOnEBuild(*args, **kwargs)
     return result, m_file.getvalue()
