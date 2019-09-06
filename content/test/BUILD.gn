@@ -1227,7 +1227,6 @@ test("content_browsertests") {
       "$root_out_dir/content_shell.pak",
       "data/",
       "//media/test/data/",
-      "//services/test/data/",
     ]
   }
 
