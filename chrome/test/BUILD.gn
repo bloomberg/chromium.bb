@@ -1942,6 +1942,16 @@ if (!is_android) {
           [ "//chrome/browser/internal/resources/signin/test_accounts.json" ]
     }
 
+    # For pixel tests. Because this links to a CIPD
+    # dependency, which is a symlink on Unix platforms, refer to the
+    # actual executable rather than the whole directory; copying the
+    # whole directory doesn't work, at least with "mb.py zip".
+    if (is_win) {
+      data += [ "//tools/skia_goldctl/goldctl.exe" ]
+    } else {
+      data += [ "//tools/skia_goldctl/goldctl" ]
+    }
+
     if (is_chromeos) {
       assert(enable_app_list)
       sources += [
