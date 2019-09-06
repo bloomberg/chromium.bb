@@ -2254,7 +2254,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'fizz-accelerator',
       'flapjack',
-      'gale',
       'gandof',
       'glados',
       'gonzo',
@@ -2341,6 +2340,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'coral', # crbug.com/995386
+      'gale', # http://b/140523449
       'fizz-moblab', # crbug.com/995170
       'guado', # crbug.com/950812
       'mistral', # crbug.com/996758
