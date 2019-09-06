@@ -35299,7 +35299,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1166745977"
       label="BluetoothAggressiveAppearanceFilter:disabled"/>
   <int value="-1166715563" label="ChromeOSAssistant:disabled"/>
-  <int value="-1165191758" label="ForegroundNotificationManager:disabled"/>
   <int value="-1164858657" label="CrostiniUsbAllowUnsupported:disabled"/>
   <int value="-1163777157" label="ContextualSearchSimplifiedServer:disabled"/>
   <int value="-1162944097" label="enable-color-correct-rendering"/>
@@ -35742,7 +35741,6 @@ from previous Chrome versions.
   <int value="-595819071"
       label="OmniboxUIExperimentBlueTitlesOnPageSuggestions:disabled"/>
   <int value="-593536514" label="ExperimentalTabController:enabled"/>
-  <int value="-592331266" label="ForegroundNotificationManager:enabled"/>
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>

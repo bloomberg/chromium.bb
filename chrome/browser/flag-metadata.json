@@ -2159,11 +2159,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "foreground-notification-manager",
-    "owners": [ "//components/download/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "form-controls-refresh",
     "owners": [ "iopopesc@microsoft.com", "//third_party/blink/renderer/core/OWNERS" ],
     "expiry_milestone": 78

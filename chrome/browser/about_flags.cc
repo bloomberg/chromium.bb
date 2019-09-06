@@ -3867,13 +3867,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kHardwareMediaKeyHandling)},
 #endif
 
-#if defined(OS_ANDROID)
-    {"foreground-notification-manager",
-     flag_descriptions::kForegroundNotificationManagerName,
-     flag_descriptions::kForegroundNotificationManagerDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kForegroundNotificationManager)},
-#endif  // defined(OS_ANDROID)
-
     {"enable-avoid-flash-between-navigation",
      flag_descriptions::kAvoidFlashBetweenNavigationName,
      flag_descriptions::kAvoidFlahsBetweenNavigationDescription, kOsAll,

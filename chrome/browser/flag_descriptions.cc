@@ -2463,12 +2463,6 @@ const char kInterestFeedNotificationsDescription[] =
     "Show notifications for some suggested content from the interest feed. "
     "#interest-feed-content-suggestions should also be enabled.";
 
-const char kForegroundNotificationManagerName[] =
-    "Foreground notification manager";
-const char kForegroundNotificationManagerDescription[] =
-    "Enable foreground notification manager to handle foreground service and "
-    "notification.";
-
 const char kHomePageButtonName[] = "Force Enable Home Page Button";
 const char kHomePageButtonDescription[] = "Displays a home button if enabled.";
 
