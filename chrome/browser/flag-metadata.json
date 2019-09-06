@@ -753,7 +753,7 @@
   {
     "name": "download-rename",
     "owners": [ "hesen", "dtrainor" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "download-resumption-without-strong-validators",
