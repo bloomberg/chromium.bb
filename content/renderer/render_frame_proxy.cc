@@ -617,9 +617,6 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
       sent_visual_properties_->capture_sequence_number !=
           pending_visual_properties_.capture_sequence_number;
 
-  pending_visual_properties_.compositor_viewport =
-      web_frame_->GetCompositingRect();
-
   bool synchronized_props_changed =
       !sent_visual_properties_ ||
       sent_visual_properties_->auto_resize_enabled !=
@@ -640,8 +637,6 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
           pending_visual_properties_.page_scale_factor ||
       sent_visual_properties_->is_pinch_gesture_active !=
           pending_visual_properties_.is_pinch_gesture_active ||
-      sent_visual_properties_->compositor_viewport !=
-          pending_visual_properties_.compositor_viewport ||
       capture_sequence_number_changed;
 
   if (synchronized_props_changed) {
@@ -657,9 +652,7 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
                                     ? cc::DeadlinePolicy::UseInfiniteDeadline()
                                     : cc::DeadlinePolicy::UseDefaultDeadline();
   viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
-  compositing_helper_->SetSurfaceId(
-      surface_id, pending_visual_properties_.compositor_viewport.size(),
-      deadline);
+  compositing_helper_->SetSurfaceId(surface_id, local_frame_size(), deadline);
 
   bool rect_changed = !sent_visual_properties_ ||
                       sent_visual_properties_->screen_space_rect !=
@@ -684,6 +677,14 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
       "FrameHostMsg_SynchronizeVisualProperties", "local_surface_id",
       pending_visual_properties_.local_surface_id_allocation.local_surface_id()
           .ToString());
+
+  // The visible rect that the OOPIF needs to raster depends partially on
+  // parameters that might have changed. If they affect the raster area, resend
+  // the intersection rects.
+  gfx::Rect new_compositor_visible_rect = web_frame_->GetCompositingRect();
+  if (new_compositor_visible_rect != last_compositor_visible_rect_)
+    UpdateRemoteViewportIntersection(last_intersection_rect_,
+                                     last_occlusion_state_);
 }
 
 void RenderFrameProxy::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {
@@ -821,22 +822,12 @@ void RenderFrameProxy::FrameRectsChanged(
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
     const blink::WebRect& viewport_intersection,
     blink::FrameOcclusionState occlusion_state) {
-  // If the remote viewport intersection has changed, then we should check if
-  // the compositing rect has also changed: if it has, then we should update the
-  // visible properties.
-  // TODO(wjmaclean): Maybe we should always call SynchronizeVisualProperties()
-  // here? If nothing has changed, it will early out, and it avoids duplicate
-  // checks here.
-  gfx::Rect compositor_visible_rect = web_frame_->GetCompositingRect();
-  bool compositor_visible_rect_changed =
-      compositor_visible_rect != pending_visual_properties_.compositor_viewport;
-
-  if (compositor_visible_rect_changed)
-    SynchronizeVisualProperties();
-
+  last_intersection_rect_ = viewport_intersection;
+  last_compositor_visible_rect_ = web_frame_->GetCompositingRect();
+  last_occlusion_state_ = occlusion_state;
   Send(new FrameHostMsg_UpdateViewportIntersection(
-      routing_id_, gfx::Rect(viewport_intersection), compositor_visible_rect,
-      occlusion_state));
+      routing_id_, gfx::Rect(viewport_intersection),
+      last_compositor_visible_rect_, last_occlusion_state_));
 }
 
 void RenderFrameProxy::VisibilityChanged(

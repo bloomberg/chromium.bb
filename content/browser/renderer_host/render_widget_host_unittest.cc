@@ -1572,15 +1572,14 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsIsHidden) {
 
 TEST_F(RenderWidgetHostTest, VisualProperties) {
   gfx::Rect bounds(0, 0, 100, 100);
-  gfx::Rect compositor_viewport_pixel_rect(40, 50);
+  gfx::Size compositor_viewport_pixel_size(40, 50);
   view_->SetBounds(bounds);
-  view_->SetMockCompositorViewportPixelSize(
-      compositor_viewport_pixel_rect.size());
+  view_->SetMockCompositorViewportPixelSize(compositor_viewport_pixel_size);
 
   VisualProperties visual_properties = host_->GetVisualProperties();
   EXPECT_EQ(bounds.size(), visual_properties.new_size);
-  EXPECT_EQ(compositor_viewport_pixel_rect,
-            visual_properties.compositor_viewport_pixel_rect);
+  EXPECT_EQ(compositor_viewport_pixel_size,
+            visual_properties.compositor_viewport_pixel_size);
 }
 
 // Make sure no dragging occurs after renderer exited. See crbug.com/704832.
