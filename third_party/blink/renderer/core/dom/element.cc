@@ -3131,14 +3131,6 @@ void Element::SetAnimationStyleChange(bool animation_style_change) {
     element_animations->SetAnimationStyleChange(animation_style_change);
 }
 
-void Element::ClearAnimationStyleChange() {
-  if (!HasRareData())
-    return;
-  if (ElementAnimations* element_animations =
-          GetElementRareData()->GetElementAnimations())
-    element_animations->SetAnimationStyleChange(false);
-}
-
 void Element::SetNeedsAnimationStyleRecalc() {
   if (GetDocument().InStyleRecalc())
     return;
