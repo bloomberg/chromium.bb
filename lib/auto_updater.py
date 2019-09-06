@@ -359,7 +359,6 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       error_msg = e.result.error.splitlines()[-1]
       raise DevserverCannotStartError(error_msg)
 
-  # pylint: disable=unbalanced-tuple-unpacking
   @classmethod
   def GetUpdateStatus(cls, device, keys=None):
     """Returns the status of the update engine on the |device|.
@@ -464,11 +463,11 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     """Makes sure |device| is ready for rootfs update."""
     logging.info('Checking if update engine is idle...')
     self._StartUpdateEngineIfNotRunning(self.device)
-    status, = self.GetUpdateStatus(self.device)
+    status = self.GetUpdateStatus(self.device)[0]
     if status == UPDATE_STATUS_UPDATED_NEED_REBOOT:
       logging.info('Device needs to reboot before updating...')
       self._Reboot('setup of Rootfs Update')
-      status, = self.GetUpdateStatus(self.device)
+      status = self.GetUpdateStatus(self.device)[0]
 
     if status != UPDATE_STATUS_IDLE:
       raise RootfsUpdateError('Update engine is not idle. Status: %s' % status)
