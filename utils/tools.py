@@ -265,33 +265,72 @@ def find_executable(cmd, env=None):
   Automatically appends an appropriate Python executable to the front if arg0 is
   a .py file before searching.
 
+  Slashes in cmd[0] are normalized to the current platform's default.
+
+  On Windows if cmd[0] has no extension, this will try an .exe and .bat
+  extension. If you want some more-esoteric extension (like .cmd), you need to
+  explicitly include it.
+
+  On POSIX, only files which are accessible to the current uid (as determined by
+  os.access(..., X_OK)) are considered.
+
+  If cmd[0] is an absolute path, $PATH will not be consulted.
+  If cmd[0] is a relative path (i.e. contains a slash), it will be converted to
+    an absolute path (i.e. against $CWD), and $PATH will not be consulted.
+  Otherwise, cmd[0] will be evaluated against $PATH.
+
+  NOTE: due to historical Swarming semantics, this prepends "." to PATH when
+  searching. If we could do this over, it would be better to have the caller
+  specify './executable' when they want something relative to the current
+  directory.
+
   Args:
     cmd: A list containing the command to be run.
     env: The environment to use instead of os.environ.
 
   Returns:
-    |cmd| with its arg0 executable changed to the absolute path for the
-    executable found via $PATH. arg0 is left unchanged if it is not found in
-    $PATH
+    A copy of |cmd| with its arg0 executable changed to the absolute path for
+    the executable found via $PATH. arg0 is left unchanged if it is not found in
+    $PATH. Will not modify the original |cmd| list.
   """
   cmd = add_python_cmd(cmd)
 
-  if sys.platform == 'win32':
-    check = os.path.isfile
-  else:
-    def check(candidate):
-      try:
-        return bool(os.stat(candidate).st_mode | os.path.stat.S_IEXEC)
-      except OSError:
-        return False
+  def _is_executable(candidate):
+    return os.path.isfile(candidate) and os.access(candidate, os.X_OK)
 
+  # anti_sep is like os.path.altsep, but it's always defined
+  anti_sep = '/' if os.path.sep == '\\' else '\\'
+  cmd = [cmd[0].replace(anti_sep, os.path.sep)] + cmd[1:]
+
+  # exts are the file extensions to try. If the command already has an extension
+  # or we're not on windows, then we don't try any extensions.
+  has_ext = bool(os.path.splitext(cmd[0])[1])
+  exts = ('',) if sys.platform != 'win32' or has_ext else ('.exe', '.bat')
+
+  def _resolve_extension(candidate):
+    for ext in exts:
+      resolved = candidate + ext
+      if _is_executable(resolved):
+        return resolved
+    return None
+
+  # If the command is absolute or relative to cwd, check it directly and do not
+  # consult $PATH.
+  if os.path.sep in cmd[0]:
+    # abspath is a noop on an already-absolute path
+    resolved = _resolve_extension(os.path.abspath(cmd[0]))
+    if resolved:
+      cmd = [resolved] + cmd[1:]
+    return cmd
+
+  # We have a non-absolute, non-relative executable, so walk PATH.
   paths = (os.environ if env is None else env).get('PATH', '').split(os.pathsep)
-  for path in paths:
+  for path in ['.'] + paths:
     if path == '':
       continue
-    candidate = os.path.join(path, cmd[0])
-    if check(candidate):
-      cmd[0] = candidate
+    resolved = _resolve_extension(os.path.join(os.path.abspath(path), cmd[0]))
+    if resolved:
+      cmd = [resolved] + cmd[1:]
       break
 
   return cmd
