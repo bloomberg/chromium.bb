@@ -671,6 +671,21 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         }
       },
+      'android-marshmallow-x86-fyi-rel': {
+        'mixins': [
+          'marshmallow-x86-emulator',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'additional_compile_targets': [
+          'monochrome_static_initializers',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+          'isolated_scripts': 'marshmallow_isolated_scripts',
+        }
+      },
       'android-pie-x86-fyi-rel': {
         'mixins': [
           'pie-x86-emulator',

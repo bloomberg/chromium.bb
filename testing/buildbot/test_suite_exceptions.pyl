@@ -334,6 +334,7 @@
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       # chromium.android.fyi
+      'android-marshmallow-x86-fyi-rel',
       'android-pie-x86-fyi-rel',
       # chromium.clang
       'ToTAndroid',
@@ -1630,18 +1631,21 @@
   'vr_android_unittests': {
     'remove_from': [
       # chromium.android.fyi
+      'android-marshmallow-x86-fyi-rel',
       'android-pie-x86-fyi-rel',
     ],
   },
   'vr_common_unittests': {
     'remove_from': [
       # chromium.android.fyi
+      'android-marshmallow-x86-fyi-rel',
       'android-pie-x86-fyi-rel',
     ],
   },
   'vr_pixeltests': {
     'remove_from': [
       # chromium.android.fyi
+      'android-marshmallow-x86-fyi-rel',
       'android-pie-x86-fyi-rel',
       # chromium.fyi
       'VR Linux',
