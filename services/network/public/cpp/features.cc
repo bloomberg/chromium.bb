@@ -99,6 +99,13 @@ const base::Feature kProactivelyThrottleLowPriorityRequests{
 const base::Feature kCrossOriginEmbedderPolicy{
     "CrossOriginEmbedderPolicy", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If this feature is enabled, the mDNS responder service responds to queries
+// for TXT records associated with
+// "Generated-Names._mdns_name_generator._udp.local" with a list of generated
+// mDNS names (random UUIDs) in the TXT record data.
+const base::Feature kMdnsResponderGeneratedNameListing{
+    "MdnsResponderGeneratedNameListing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCors() {
   // OOR-CORS requires NetworkService.
   if (!base::FeatureList::IsEnabled(features::kNetworkService))
