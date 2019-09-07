@@ -29,6 +29,7 @@ namespace notifications {
 namespace {
 
 const char kGuid[] = "test_guid_1234";
+const char kNonExistentGuid[] = "guid_non_existent";
 const char kTitle[] = "test_title";
 const char kSmallIconUuid[] = "test_small_icon_uuid";
 const char kLargeIconUuid[] = "test_large_icon_uuid";
@@ -42,6 +43,28 @@ NotificationEntry CreateNotificationEntry(SchedulerClientType type) {
   return entry;
 }
 
+// Verifies notification entry is same as expected.
+void VerifyNotificationEntry(const NotificationEntry* entry,
+                             const NotificationEntry* expected) {
+  if (expected == nullptr) {
+    EXPECT_FALSE(entry);
+    return;
+  }
+
+  EXPECT_TRUE(entry);
+  EXPECT_EQ(*entry, *expected);
+  const auto& entry_icons = entry->notification_data.icons;
+  const auto& expected_icons = expected->notification_data.icons;
+  for (const auto& icon : entry_icons) {
+    auto icon_type = icon.first;
+    EXPECT_TRUE(base::Contains(expected_icons, icon_type));
+    EXPECT_EQ(entry_icons.at(icon_type).bitmap.width(),
+              expected_icons.at(icon_type).bitmap.width());
+    EXPECT_EQ(entry_icons.at(icon_type).bitmap.height(),
+              expected_icons.at(icon_type).bitmap.height());
+  }
+}
+
 IconStore::IconTypeBundleMap CreateIcons() {
   IconStore::IconTypeBundleMap result;
   SkBitmap large_icon;
@@ -52,15 +75,6 @@ IconStore::IconTypeBundleMap CreateIcons() {
   result.emplace(IconType::kSmallIcon, IconBundle(std::move(small_icon)));
   return result;
 }
-
-class MockDelegate : public ScheduledNotificationManager::Delegate {
- public:
-  MockDelegate() = default;
-  MOCK_METHOD1(DisplayNotification, void(std::unique_ptr<NotificationEntry>));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
-};
 
 class MockNotificationStore : public CollectionStore<NotificationEntry> {
  public:
@@ -108,7 +122,6 @@ class ScheduledNotificationManagerTest : public testing::Test {
   ~ScheduledNotificationManagerTest() override = default;
 
   void SetUp() override {
-    delegate_ = std::make_unique<MockDelegate>();
     auto notification_store = std::make_unique<MockNotificationStore>();
     auto icon_store = std::make_unique<MockIconStore>();
     notification_store_ = notification_store.get();
@@ -123,7 +136,6 @@ class ScheduledNotificationManagerTest : public testing::Test {
   ScheduledNotificationManager* manager() { return manager_.get(); }
   MockNotificationStore* notification_store() { return notification_store_; }
   MockIconStore* icon_store() { return icon_store_; }
-  MockDelegate* delegate() { return delegate_.get(); }
   const SchedulerConfig& config() const { return config_; }
 
   // Initializes the manager with predefined data in the store.
@@ -154,13 +166,12 @@ class ScheduledNotificationManagerTest : public testing::Test {
     EXPECT_CALL(*icon_store(), DeleteIcons(_, _)).RetiresOnSaturation();
 
     base::RunLoop loop;
-    manager()->Init(delegate(),
-                    base::BindOnce(
-                        [](base::RepeatingClosure closure, bool success) {
-                          EXPECT_TRUE(success);
-                          std::move(closure).Run();
-                        },
-                        loop.QuitClosure()));
+    manager()->Init(base::BindOnce(
+        [](base::RepeatingClosure closure, bool success) {
+          EXPECT_TRUE(success);
+          std::move(closure).Run();
+        },
+        loop.QuitClosure()));
     loop.Run();
   }
 
@@ -180,9 +191,23 @@ class ScheduledNotificationManagerTest : public testing::Test {
     loop.Run();
   }
 
+  void DisplayNotification(const std::string& guid,
+                           const NotificationEntry* expected_entry) {
+    base::RunLoop loop;
+    auto display_callback = base::BindOnce(
+        [](base::RepeatingClosure quit_closure,
+           const NotificationEntry* expected_entry,
+           std::unique_ptr<NotificationEntry> entry) {
+          VerifyNotificationEntry(entry.get(), expected_entry);
+          quit_closure.Run();
+        },
+        loop.QuitClosure(), expected_entry);
+    manager()->DisplayNotification(guid, std::move(display_callback));
+    loop.Run();
+  }
+
  private:
   base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<MockDelegate> delegate_;
   MockNotificationStore* notification_store_;
   MockIconStore* icon_store_;
   std::vector<SchedulerClientType> clients_;
@@ -191,24 +216,6 @@ class ScheduledNotificationManagerTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerTest);
 };
-
-MATCHER_P(NotificationEntryIs, expected, "") {
-  if (*arg.get() != expected)
-    return false;
-  const auto& arg_icons = arg->notification_data.icons;
-  const auto& expected_icons = expected.notification_data.icons;
-  for (const auto& icon : arg_icons) {
-    auto icon_type = icon.first;
-    if (!base::Contains(expected_icons, icon_type))
-      return false;
-    if (arg_icons.at(icon_type).bitmap.width() !=
-            expected_icons.at(icon_type).bitmap.width() ||
-        arg_icons.at(icon_type).bitmap.height() !=
-            expected_icons.at(icon_type).bitmap.height())
-      return false;
-  }
-  return true;
-}
 
 // Verify that error is received when notification database failed to
 // initialize.
@@ -224,14 +231,13 @@ TEST_F(ScheduledNotificationManagerTest, NotificationDbInitFailed) {
             std::move(cb).Run(true, nullptr);
           }));
   base::RunLoop loop;
-  manager()->Init(delegate(),
-                  base::BindOnce(
-                      [](base::RepeatingClosure closure, bool success) {
-                        // Expected to receive error.
-                        EXPECT_FALSE(success);
-                        std::move(closure).Run();
-                      },
-                      loop.QuitClosure()));
+  manager()->Init(base::BindOnce(
+      [](base::RepeatingClosure closure, bool success) {
+        // Expected to receive error.
+        EXPECT_FALSE(success);
+        std::move(closure).Run();
+      },
+      loop.QuitClosure()));
   loop.Run();
 }
 
@@ -249,14 +255,13 @@ TEST_F(ScheduledNotificationManagerTest, IconDbInitFailed) {
             std::move(cb).Run(false, nullptr);
           }));
   base::RunLoop loop;
-  manager()->Init(delegate(),
-                  base::BindOnce(
-                      [](base::RepeatingClosure closure, bool success) {
-                        // Expected to receive error.
-                        EXPECT_FALSE(success);
-                        std::move(closure).Run();
-                      },
-                      loop.QuitClosure()));
+  manager()->Init(base::BindOnce(
+      [](base::RepeatingClosure closure, bool success) {
+        // Expected to receive error.
+        EXPECT_FALSE(success);
+        std::move(closure).Run();
+      },
+      loop.QuitClosure()));
   loop.Run();
 }
 
@@ -280,13 +285,12 @@ TEST_F(ScheduledNotificationManagerTest, IconDbInitAndLoadKeys) {
           }));
   EXPECT_CALL(*icon_store(), DeleteIcons(*icon_keys_ptr, _));
   base::RunLoop loop;
-  manager()->Init(delegate(),
-                  base::BindOnce(
-                      [](base::RepeatingClosure closure, bool success) {
-                        EXPECT_TRUE(success);
-                        std::move(closure).Run();
-                      },
-                      loop.QuitClosure()));
+  manager()->Init(base::BindOnce(
+      [](base::RepeatingClosure closure, bool success) {
+        EXPECT_TRUE(success);
+        std::move(closure).Run();
+      },
+      loop.QuitClosure()));
   loop.Run();
 }
 
@@ -378,21 +382,37 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotification) {
   entry.guid = kGuid;
   InitWithData(std::vector<NotificationEntry>({entry}));
 
-  // Verify delegate and dependency call contract.
   EXPECT_CALL(*icon_store(), LoadIcons(_, _))
       .WillOnce(Invoke([](std::vector<std::string> keys,
                           IconStore::LoadIconsCallback callback) {
-        std::move(callback).Run(true, {});
+        std::move(callback).Run(true, IconStore::LoadedIconsMap());
       }));
   EXPECT_CALL(*notification_store(), Delete(kGuid, _));
   EXPECT_CALL(*icon_store(), DeleteIcons(_, _));
-  EXPECT_CALL(*delegate(), DisplayNotification(NotificationEntryIs(entry)));
-  manager()->DisplayNotification(kGuid);
 
-  // Verify in-memory data.
+  DisplayNotification(kGuid, &entry);
+
+  // Before display, the notification is removed from the store.
   ScheduledNotificationManager::Notifications notifications;
   manager()->GetAllNotifications(&notifications);
   EXPECT_TRUE(notifications.empty());
+}
+
+// Test to display non-existing notification.
+TEST_F(ScheduledNotificationManagerTest, DisplayNotificationWithoutEntry) {
+  auto entry = CreateNotificationEntry(SchedulerClientType::kTest1);
+  entry.guid = kGuid;
+  InitWithData(std::vector<NotificationEntry>({entry}));
+
+  EXPECT_CALL(*icon_store(), LoadIcons(_, _)).Times(0);
+  EXPECT_CALL(*notification_store(), Delete(_, _)).Times(0);
+  EXPECT_CALL(*icon_store(), DeleteIcons(_, _)).Times(0);
+
+  DisplayNotification(kNonExistentGuid, nullptr);
+
+  ScheduledNotificationManager::Notifications notifications;
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_EQ(*notifications.at(SchedulerClientType::kTest1).back(), entry);
 }
 
 // Verify GetAllNotifications API, the notification should be sorted based on
@@ -645,7 +665,6 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotificationWithIcons) {
   InitWithData(std::vector<NotificationEntry>({entry}));
 
   auto icons = CreateIcons();
-  // Verify delegate and dependency call contract.
   EXPECT_CALL(*icon_store(), LoadIcons(_, _))
       .WillOnce(Invoke([&icons](std::vector<std::string> keys,
                                 IconStore::LoadIconsCallback callback) {
@@ -659,9 +678,7 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotificationWithIcons) {
 
   auto expected_entry(entry);
   expected_entry.notification_data.icons = icons;
-  EXPECT_CALL(*delegate(),
-              DisplayNotification(NotificationEntryIs(expected_entry)));
-  manager()->DisplayNotification(kGuid);
+  DisplayNotification(kGuid, &expected_entry);
   // Verify in-memory data.
   ScheduledNotificationManager::Notifications notifications;
   manager()->GetAllNotifications(&notifications);
@@ -676,13 +693,13 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotificationWithIconsFailed) {
   entry.icons_uuid[IconType::kSmallIcon] = kSmallIconUuid;
   InitWithData(std::vector<NotificationEntry>({entry}));
 
-  // Verify delegate and dependency call contract.
   EXPECT_CALL(*icon_store(), LoadIcons(_, _))
       .WillOnce(Invoke([](std::vector<std::string> keys,
                           IconStore::LoadIconsCallback callback) {
         std::move(callback).Run(false, {});
       }));
-  manager()->DisplayNotification(kGuid);
+
+  DisplayNotification(kGuid, nullptr /*expected_entry*/);
 
   // Verify in-memory data.
   ScheduledNotificationManager::Notifications notifications;

@@ -78,15 +78,11 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       : notification_store_(std::move(notification_store)),
         icon_store_(std::move(icon_store)),
         clients_(clients.begin(), clients.end()),
-        delegate_(nullptr),
         config_(config) {}
 
  private:
   // NotificationManager implementation.
-  void Init(Delegate* delegate, InitCallback callback) override {
-    DCHECK(!delegate_);
-    delegate_ = delegate;
-
+  void Init(InitCallback callback) override {
     icon_store_->InitAndLoadKeys(base::BindOnce(
         &ScheduledNotificationManagerImpl::OnIconStoreInitialized,
         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -133,7 +129,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
                        std::move(callback)));
   }
 
-  void DisplayNotification(const std::string& guid) override {
+  void DisplayNotification(const std::string& guid,
+                           DisplayCallback callback) override {
     NotificationEntry* entry = nullptr;
     for (auto it = notifications_.begin(); it != notifications_.end(); it++) {
       if (it->second.count(guid)) {
@@ -142,8 +139,10 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       }
     }
 
-    if (!entry)
+    if (!entry) {
+      std::move(callback).Run(nullptr);
       return;
+    }
 
     std::vector<std::string> keys;
     for (const auto& pair : entry->icons_uuid) {
@@ -152,8 +151,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     icon_store_->LoadIcons(
         std::move(keys),
         base::BindOnce(&ScheduledNotificationManagerImpl::OnIconsLoaded,
-                       weak_ptr_factory_.GetWeakPtr(), entry->type,
-                       entry->guid));
+                       weak_ptr_factory_.GetWeakPtr(), entry->type, entry->guid,
+                       std::move(callback)));
   }
 
   void GetAllNotifications(Notifications* notifications) const override {
@@ -351,13 +350,16 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 
   void OnIconsLoaded(SchedulerClientType client_type,
                      const std::string& guid,
+                     DisplayCallback display_callback,
                      bool success,
                      IconStore::LoadedIconsMap loaded_icons_map) {
     stats::LogDbOperation(stats::DatabaseType::kIconDb, success);
 
     // TODO(hesen): delete notification entry if icons failed to load.
-    if (!success)
+    if (!success) {
+      std::move(display_callback).Run(nullptr);
       return;
+    }
 
     // Delete icons from database.
     std::vector<std::string> icons_to_delete;
@@ -371,6 +373,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 
     // Can't find the entry.
     if (!FindNotificationEntry(client_type, guid)) {
+      std::move(display_callback).Run(nullptr);
       return;
     }
 
@@ -393,8 +396,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
         base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationDeleted,
                        weak_ptr_factory_.GetWeakPtr()));
 
-    if (delegate_)
-      delegate_->DisplayNotification(std::move(entry));
+    std::move(display_callback).Run(std::move(entry));
   }
 
   NotificationEntry* FindNotificationEntry(SchedulerClientType type,
@@ -425,7 +427,6 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   NotificationStore notification_store_;
   std::unique_ptr<IconStore> icon_store_;
   const std::unordered_set<SchedulerClientType> clients_;
-  Delegate* delegate_;
   std::map<SchedulerClientType,
            std::map<std::string, std::unique_ptr<NotificationEntry>>>
       notifications_;
