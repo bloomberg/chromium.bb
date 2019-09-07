@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import io
@@ -33,7 +34,15 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
 
   def setUp(self):
     super(CheckCallAndFilterTestCase, self).setUp()
-    mock.patch('sys.stdout', io.StringIO()).start()
+    self.printfn = io.StringIO()
+    self.stdout = io.BytesIO()
+    if sys.version_info.major == 2:
+      mock.patch('sys.stdout', self.stdout).start()
+      mock.patch('__builtin__.print', self.printfn.write).start()
+    else:
+      mock.patch('sys.stdout', mock.Mock()).start()
+      mock.patch('sys.stdout.buffer', self.stdout).start()
+      mock.patch('builtins.print', self.printfn.write).start()
     mock.patch('sys.stdout.flush', lambda: None).start()
     self.addCleanup(mock.patch.stopall)
 
@@ -58,6 +67,7 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
         'allo',
         'addb',
         '✔'])
+    self.assertEqual(self.stdout.getvalue(), b'')
 
     mockPopen.assert_called_with(
         args, cwd=cwd, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
@@ -110,10 +120,35 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
                 stderr=subprocess2.STDOUT, bufsize=0),
         ])
 
+    self.assertEqual(self.stdout.getvalue(), b'')
     self.assertEqual(
-        sys.stdout.getvalue(),
+        self.printfn.getvalue(),
         'WARNING: subprocess \'"boo" "foo" "bar"\' in bleh failed; will retry '
-        'after a short nap...\n')
+        'after a short nap...')
+
+  @mock.patch('subprocess2.Popen')
+  def testCHeckCallAndFilter_PrintStdout(self, mockPopen):
+    cwd = 'bleh'
+    args = ['boo', 'foo', 'bar']
+    test_string = 'ahah\naccb\nallo\naddb\n✔'
+
+    mockPopen.return_value = self.ProcessIdMock(test_string)
+
+    result = gclient_utils.CheckCallAndFilter(
+        args, cwd=cwd, show_header=True, always_show_header=True,
+        print_stdout=True)
+
+    self.assertEqual(result, test_string.encode('utf-8'))
+    self.assertEqual(
+        self.stdout.getvalue().splitlines(),
+        [
+            b'________ running \'boo foo bar\' in \'bleh\'',
+            b'ahah',
+            b'accb',
+            b'allo',
+            b'addb',
+            b'\xe2\x9c\x94',
+        ])
 
 
 class SplitUrlRevisionTestCase(unittest.TestCase):

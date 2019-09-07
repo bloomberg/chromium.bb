@@ -527,7 +527,8 @@ def CheckCallAndFilter(args, print_stdout=False, filter_fn=None,
     header += '\n'
 
     if print_stdout:
-      sys.stdout.write(header)
+      stdout_write = getattr(sys.stdout, 'buffer', sys.stdout).write
+      stdout_write(header.encode())
     if filter_fn:
       filter_fn(header)
 
