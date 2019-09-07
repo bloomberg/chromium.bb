@@ -20553,6 +20553,7 @@ Called by update_net_error_codes.py.-->
   <int value="1380" label="LOGINSTATE_GETSESSIONSTATE"/>
   <int value="1381" label="AUTOTESTPRIVATE_GETARCSTARTTIME"/>
   <int value="1382" label="AUTOTESTPRIVATE_SETOVERVIEWMODESTATE"/>
+  <int value="1383" label="AUTOTESTPRIVATE_TAKESCREENSHOTFORDISPLAY"/>
 </enum>
 
 <enum name="ExtensionIconState">
