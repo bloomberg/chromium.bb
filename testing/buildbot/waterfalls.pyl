@@ -592,17 +592,6 @@
         },
         'os_type': 'android',
       },
-      'android-oreo-arm64-rel': {
-        'mixins': [
-          'oreo_fleet',
-          'walleye',
-        ],
-        'test_suites': {
-          'gtest_tests': 'android_oreo_rel_gtests',
-        },
-        'use_swarming': True,
-        'os_type': 'android',
-      },
       'android-pie-arm64-dbg': {
         'swarming': {
           'dimension_sets': [
@@ -617,6 +606,17 @@
         'test_suites': {
           'gtest_tests': 'android_pie_gtests',
         }
+      },
+      'android-pie-arm64-rel': {
+        'mixins': [
+          'pie_fleet',
+          'walleye',
+        ],
+        'test_suites': {
+          'gtest_tests': 'android_pie_rel_gtests',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
       },
     },
   },
