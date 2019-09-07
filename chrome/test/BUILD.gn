@@ -719,6 +719,7 @@ if (!is_android) {
       "//ui/compositor:test_support",
       "//ui/native_theme:test_support",
       "//ui/resources",
+      "//ui/shell_dialogs:test_support",
       "//ui/web_dialogs:test_support",
       "//v8",
     ]
