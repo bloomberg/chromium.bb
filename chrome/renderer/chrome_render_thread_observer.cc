@@ -275,8 +275,9 @@ void ChromeRenderThreadObserver::SetFieldTrialGroup(
 }
 
 void ChromeRenderThreadObserver::OnRendererConfigurationAssociatedRequest(
-    chrome::mojom::RendererConfigurationAssociatedRequest request) {
-  renderer_configuration_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingAssociatedReceiver<chrome::mojom::RendererConfiguration>
+        receiver) {
+  renderer_configuration_receivers_.Add(this, std::move(receiver));
 }
 
 const RendererContentSettingRules*
