@@ -16,7 +16,6 @@ import itertools
 import os
 import signal
 import socket
-import StringIO
 import sys
 
 import mock
@@ -1198,92 +1197,6 @@ class Test_iflatten_instance(cros_test_lib.TestCase):
     self.assertEqual([1, 2, 'f', 'd', 'a', 's'],
                      f([1, 2, ('fdas',)], terminate_on_kls=int))
     self.assertEqual([''], f(''))
-
-
-class TestKeyValueFiles(cros_test_lib.TempDirTestCase):
-  """Tests handling of key/value files."""
-
-  def setUp(self):
-    self.contents = """# A comment !@
-A = 1
-AA= 2
-AAA =3
-AAAA\t=\t4
-AAAAA\t   \t=\t   5
-AAAAAA = 6     \t\t# Another comment
-\t
-\t# Aerith lives!
-C = 'D'
-CC= 'D'
-CCC ='D'
-\x20
- \t# monsters go boom #
-E \t= "Fxxxxx" # Blargl
-EE= "Faaa\taaaa"\x20
-EEE ="Fk  \t  kkkk"\t
-Q = "'q"
-\tQQ ="q'"\x20
- QQQ='"q"'\t
-R = "r
-"
-RR = "rr
-rrr"
-RRR = 'rrr
- RRRR
- rrr
-'
-SSS=" ss
-'ssss'
-ss"
-T="
-ttt"
-"""
-    self.expected = {
-        'A': '1',
-        'AA': '2',
-        'AAA': '3',
-        'AAAA': '4',
-        'AAAAA': '5',
-        'AAAAAA': '6',
-        'C': 'D',
-        'CC': 'D',
-        'CCC': 'D',
-        'E': 'Fxxxxx',
-        'EE': 'Faaa\taaaa',
-        'EEE': 'Fk  \t  kkkk',
-        'Q': "'q",
-        'QQ': "q'",
-        'QQQ': '"q"',
-        'R': 'r\n',
-        'RR': 'rr\nrrr',
-        'RRR': 'rrr\n RRRR\n rrr\n',
-        'SSS': " ss\n'ssss'\nss",
-        'T': '\nttt'
-    }
-
-    self.conf_file = os.path.join(self.tempdir, 'file.conf')
-    osutils.WriteFile(self.conf_file, self.contents)
-
-  def _RunAndCompare(self, test_input, multiline):
-    result = cros_build_lib.LoadKeyValueFile(test_input, multiline=multiline)
-    self.assertEqual(self.expected, result)
-
-  def testLoadFilePath(self):
-    """Verify reading a simple file works"""
-    self._RunAndCompare(self.conf_file, True)
-
-  def testLoadStringIO(self):
-    """Verify passing in StringIO object works."""
-    self._RunAndCompare(StringIO.StringIO(self.contents), True)
-
-  def testLoadFileObject(self):
-    """Verify passing in open file object works."""
-    with open(self.conf_file) as f:
-      self._RunAndCompare(f, True)
-
-  def testNoMultlineValues(self):
-    """Verify exception is thrown when multiline is disabled."""
-    self.assertRaises(ValueError, self._RunAndCompare, self.conf_file, False)
 
 
 class SafeRunTest(cros_test_lib.TestCase):

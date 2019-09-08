@@ -28,6 +28,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.utils import key_value_store
 
 
 # The parsed output of running `ebuild <ebuild path> info`.
@@ -140,7 +141,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
                            (name, overlays[name]['path'], overlay))
 
       try:
-        masters = cros_build_lib.LoadKeyValueFile(
+        masters = key_value_store.LoadFile(
             os.path.join(GetOverlayRoot(overlay), 'metadata',
                          'layout.conf'))['masters'].split()
       except (KeyError, IOError):
@@ -317,7 +318,7 @@ def ReadOverlayFile(filename, overlay_type='both', board=None,
 def GetOverlayName(overlay):
   """Get the self-declared repo name for the |overlay| path."""
   try:
-    return cros_build_lib.LoadKeyValueFile(
+    return key_value_store.LoadFile(
         os.path.join(GetOverlayRoot(overlay), 'metadata',
                      'layout.conf'))['repo-name']
   except (KeyError, IOError):
@@ -1499,7 +1500,7 @@ def RegenCache(overlay, commit_changes=True, chroot=None):
   if not repo_name:
     return
 
-  layout = cros_build_lib.LoadKeyValueFile(
+  layout = key_value_store.LoadFile(
       os.path.join(GetOverlayRoot(overlay), 'metadata', 'layout.conf'),
       ignore_missing=True)
   if layout.get('cache-format') != 'md5-dict':
@@ -2210,8 +2211,8 @@ def PortageqEnvvars(variables, board=None, allow_undefined=False):
       # Undefined variable but letting it slide.
       result = e.result
 
-  return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(result.output),
-                                         ignore_missing=True, multiline=True)
+  return key_value_store.LoadFile(cStringIO.StringIO(result.output),
+                                  ignore_missing=True, multiline=True)
 
 
 def PortageqHasVersion(category_package, root='/', board=None):

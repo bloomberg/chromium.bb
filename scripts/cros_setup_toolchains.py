@@ -22,6 +22,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import toolchain
+from chromite.utils import key_value_store
 
 # Needs to be after chromite imports.
 import lddtree
@@ -1071,7 +1072,7 @@ def _EnvdGetVar(envd, var):
   envds = glob.glob(envd)
   assert len(envds) == 1, '%s: should have exactly 1 env.d file' % envd
   envd = envds[0]
-  return cros_build_lib.LoadKeyValueFile(envd)[var]
+  return key_value_store.LoadFile(envd)[var]
 
 
 def _ProcessBinutilsConfig(target, output_dir):

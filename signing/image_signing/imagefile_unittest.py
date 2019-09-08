@@ -26,6 +26,7 @@ from chromite.lib import partial_mock
 from chromite.signing.lib import firmware
 from chromite.signing.lib import keys
 from chromite.signing.image_signing import imagefile
+from chromite.utils import key_value_store
 
 
 # pylint: disable=protected-access
@@ -260,7 +261,7 @@ class TestSignAndroidImage(cros_test_lib.RunCommandTempDirTestCase):
   def testNoVersion(self):
     """Test: have Android image, but no ARC_VERSION info."""
     exists_mock = self.PatchObject(os.path, 'exists', return_value=True)
-    self.PatchObject(cros_build_lib, 'LoadKeyValueFile', return_value={})
+    self.PatchObject(key_value_store, 'LoadFile', return_value={})
     imagefile.SignAndroidImage(self.tempdir, self.keyset)
     exists_mock.assert_called_once_with(
         os.path.join(self.tempdir,
@@ -274,7 +275,7 @@ class TestSignAndroidImage(cros_test_lib.RunCommandTempDirTestCase):
   def testTriesToSign(self):
     """Test: have Android image, and Android version."""
     exists_mock = self.PatchObject(os.path, 'exists', return_value=True)
-    self.PatchObject(cros_build_lib, 'LoadKeyValueFile',
+    self.PatchObject(key_value_store, 'LoadFile',
                      return_value={'CHROMEOS_ARC_VERSION': '9'})
     imagefile.SignAndroidImage(self.tempdir, self.keyset)
     exists_mock.assert_called_once_with(

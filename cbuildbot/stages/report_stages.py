@@ -40,6 +40,7 @@ from chromite.lib import retry_stats
 from chromite.lib import toolchain
 from chromite.lib import triage_lib
 from chromite.lib import uri_lib
+from chromite.utils import key_value_store
 
 
 def WriteBasicMetadata(builder_run):
@@ -422,7 +423,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     child_configs = GetChildConfigListMetadata(
         child_configs=config['child_configs'], config_status_map=None)
 
-    sdk_verinfo = cros_build_lib.LoadKeyValueFile(
+    sdk_verinfo = key_value_store.LoadFile(
         os.path.join(build_root, constants.SDK_VERSION_FILE),
         ignore_missing=True)
 

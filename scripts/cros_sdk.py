@@ -38,6 +38,8 @@ from chromite.lib import path_util
 from chromite.lib import process_util
 from chromite.lib import retry_util
 from chromite.lib import toolchain
+from chromite.utils import key_value_store
+
 
 cros_build_lib.STRICT_SUDO = True
 
@@ -847,7 +849,7 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
 
 
 def main(argv):
-  conf = cros_build_lib.LoadKeyValueFile(
+  conf = key_value_store.LoadFile(
       os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
       ignore_missing=True)
   sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')

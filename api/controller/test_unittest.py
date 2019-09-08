@@ -23,6 +23,7 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.scripts import cros_set_lsb_release
 from chromite.service import test as test_service
+from chromite.utils import key_value_store
 
 
 class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase,
@@ -271,7 +272,7 @@ class MoblabVmTestTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     response = self._Output()
 
     self.PatchObject(
-        cros_build_lib, 'LoadKeyValueFile',
+        key_value_store, 'LoadFile',
         return_value={cros_set_lsb_release.LSB_KEY_BUILDER_PATH: self.builder})
 
     test_controller.MoblabVmTest(request, response, self.api_config)
@@ -295,7 +296,7 @@ class MoblabVmTestTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     request = self._Input()
     response = self._Output()
 
-    self.PatchObject(cros_build_lib, 'LoadKeyValueFile', return_value={})
+    self.PatchObject(key_value_store, 'LoadFile', return_value={})
 
     with self.assertRaises(cros_build_lib.DieSystemExit):
       test_controller.MoblabVmTest(request, response, self.api_config)

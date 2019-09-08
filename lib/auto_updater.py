@@ -61,6 +61,8 @@ from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+from chromite.utils import key_value_store
+
 
 # Naming conventions for global variables:
 #   File on remote host without slash: REMOTE_XXX_FILENAME
@@ -382,7 +384,7 @@ class ChromiumOSUpdater(BaseUpdater):
       raise Exception('Cannot get update status')
 
     try:
-      status = cros_build_lib.LoadKeyValueFile(
+      status = key_value_store.LoadFile(
           cStringIO.StringIO(result.output))
     except ValueError:
       raise ValueError('Cannot parse update status')

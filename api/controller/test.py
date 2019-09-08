@@ -24,6 +24,7 @@ from chromite.lib import osutils
 from chromite.lib import sysroot_lib
 from chromite.scripts import cros_set_lsb_release
 from chromite.service import test
+from chromite.utils import key_value_store
 
 
 def DebugInfoTest(input_proto, _output_proto, config):
@@ -160,7 +161,7 @@ def MoblabVmTest(input_proto, _output_proto, _config):
       partition_path = partition_paths[0]
       lsb_release_file = os.path.join(partition_path,
                                       constants.LSB_RELEASE_PATH.strip('/'))
-      lsb_release_kvs = cros_build_lib.LoadKeyValueFile(lsb_release_file)
+      lsb_release_kvs = key_value_store.LoadFile(lsb_release_file)
       builder = lsb_release_kvs.get(cros_set_lsb_release.LSB_KEY_BUILDER_PATH)
 
   if not builder:

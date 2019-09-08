@@ -20,6 +20,7 @@ from chromite.lib import kernel_cmdline
 from chromite.lib import osutils
 from chromite.signing.lib import firmware
 from chromite.signing.lib import keys
+from chromite.utils import key_value_store
 
 
 class Error(Exception):
@@ -156,7 +157,7 @@ def SignAndroidImage(rootfs_dir, keyset, vboot_path=None):
     logging.info('ARC image not found.  Not signing Android APKs.')
     return
 
-  arc_version = cros_build_lib.LoadKeyValueFile(os.path.join(
+  arc_version = key_value_store.LoadFile(os.path.join(
       rootfs_dir, 'etc/lsb-release')).get('CHROMEOS_ARC_VERSION', '')
   if not arc_version:
     logging.warning('CHROMEOS_ARC_VERSION not found in lsb-release. '

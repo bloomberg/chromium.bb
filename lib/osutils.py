@@ -24,6 +24,7 @@ import tempfile
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
+from chromite.utils import key_value_store
 
 
 # Env vars that tempdir can be gotten from; minimally, this
@@ -953,8 +954,8 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None, multiline=False):
   output = cros_build_lib.RunCommand(['bash'], env=env, redirect_stdout=True,
                                      redirect_stderr=True, print_cmd=False,
                                      input='\n'.join(dump_script)).output
-  return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(output),
-                                         multiline=multiline)
+  return key_value_store.LoadFile(cStringIO.StringIO(output),
+                                  multiline=multiline)
 
 
 def ListBlockDevices(device_path=None, in_bytes=False):
