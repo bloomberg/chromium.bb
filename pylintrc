@@ -422,6 +422,27 @@ deprecated-modules=
 # not be disabled)
 #int-import-graph=
 
+# Force import order to recognize a module as part of the standard
+# compatibility libraries.
+known-standard-library=
+
+# Force import order to recognize a module as part of a third party library.
+known-third-party=
+    _emerge,
+    apiclient,
+    elftools,
+    gcloud,
+    google,
+    googleapiclient,
+    httplib2,
+    mock,
+    oauth2client,
+    portage,
+    pylint,
+    requests,
+    six,
+    sqlalchemy,
+
 
 [LOGGING]
 
