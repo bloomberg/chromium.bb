@@ -41,7 +41,6 @@ ChromiumOSUpdater includes:
 
 from __future__ import print_function
 
-import cStringIO
 import json
 import os
 import re
@@ -384,8 +383,7 @@ class ChromiumOSUpdater(BaseUpdater):
       raise Exception('Cannot get update status')
 
     try:
-      status = key_value_store.LoadFile(
-          cStringIO.StringIO(result.output))
+      status = key_value_store.LoadData(result.output)
     except ValueError:
       raise ValueError('Cannot parse update status')
 

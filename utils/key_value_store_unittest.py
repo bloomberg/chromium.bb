@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import os
-import StringIO
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -87,9 +86,10 @@ ttt"
     """Verify reading a simple file works"""
     self._RunAndCompare(self.conf_file, True)
 
-  def testLoadStringIO(self):
-    """Verify passing in StringIO object works."""
-    self._RunAndCompare(StringIO.StringIO(self.contents), True)
+  def testLoadData(self):
+    """Verify passing in a string works."""
+    result = key_value_store.LoadData(self.contents, multiline=True)
+    self.assertEqual(self.expected, result)
 
   def testLoadFileObject(self):
     """Verify passing in open file object works."""

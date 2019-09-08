@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import collections
-import cStringIO
 import errno
 import fileinput
 import glob
@@ -2211,8 +2210,7 @@ def PortageqEnvvars(variables, board=None, allow_undefined=False):
       # Undefined variable but letting it slide.
       result = e.result
 
-  return key_value_store.LoadFile(cStringIO.StringIO(result.output),
-                                  ignore_missing=True, multiline=True)
+  return key_value_store.LoadData(result.output, multiline=True)
 
 
 def PortageqHasVersion(category_package, root='/', board=None):

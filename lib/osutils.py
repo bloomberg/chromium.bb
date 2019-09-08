@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import collections
 import contextlib
-import cStringIO
 import ctypes
 import ctypes.util
 import datetime
@@ -954,8 +953,7 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None, multiline=False):
   output = cros_build_lib.RunCommand(['bash'], env=env, redirect_stdout=True,
                                      redirect_stderr=True, print_cmd=False,
                                      input='\n'.join(dump_script)).output
-  return key_value_store.LoadFile(cStringIO.StringIO(output),
-                                  multiline=multiline)
+  return key_value_store.LoadData(output, multiline=multiline)
 
 
 def ListBlockDevices(device_path=None, in_bytes=False):

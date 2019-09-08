@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import cStringIO
 import os
 
 from chromite.lib import constants
@@ -143,7 +142,7 @@ def GetArchForTarget(target):
   """
   info = cros_build_lib.RunCommand(['crossdev', '--show-target-cfg', target],
                                    capture_output=True, quiet=True).output
-  return key_value_store.LoadFile(cStringIO.StringIO(info)).get('arch')
+  return key_value_store.LoadData(info).get('arch')
 
 
 def InstallToolchain(sysroot, toolchain=None, force=False, configure=True):
