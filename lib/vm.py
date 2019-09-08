@@ -506,7 +506,7 @@ class VM(device.Device):
     # utility-process, 3 renderers.
     _WaitForProc('chrome', 8)
 
-  def WaitForBoot(self):
+  def WaitForBoot(self, sleep=5):
     """Wait for the VM to boot up.
 
     Wait for ssh connection to become active, and wait for all expected chrome
@@ -515,7 +515,7 @@ class VM(device.Device):
     if not os.path.exists(self.vm_dir):
       self.Start()
 
-    super(VM, self).WaitForBoot()
+    super(VM, self).WaitForBoot(sleep=sleep)
 
     # Chrome can take a while to start with software emulation.
     if not self.enable_kvm:
