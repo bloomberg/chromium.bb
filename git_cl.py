@@ -1806,8 +1806,7 @@ class _ChangelistCodereviewBase(object):
 
 
 class _GerritChangelistImpl(_ChangelistCodereviewBase):
-  def __init__(self, changelist, auth_config=None, codereview_host=None):
-    # auth_config is Rietveld thing, kept here to preserve interface only.
+  def __init__(self, changelist, codereview_host=None):
     super(_GerritChangelistImpl, self).__init__(changelist)
     self._change_id = None
     # Lazily cached values.
@@ -3940,19 +3939,17 @@ def CMDarchive(parser, args):
       help='Do not tag archived branches. '
            'Note: local commit history may be lost.')
 
-  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported args: %s' % ' '.join(args))
-  auth_config = auth.extract_auth_config_from_options(options)
 
   branches = RunGit(['for-each-ref', '--format=%(refname)', 'refs/heads'])
   if not branches:
     return 0
 
   print('Finding all branches associated with closed issues...')
-  changes = [Changelist(branchref=b, auth_config=auth_config)
-              for b in branches.splitlines()]
+  changes = [Changelist(branchref=b)
+             for b in branches.splitlines()]
   alignment = max(5, max(len(c.GetBranch()) for c in changes))
   statuses = get_cl_statuses(changes,
                              fine_grained=True,
@@ -4032,20 +4029,18 @@ def CMDstatus(parser, args):
       '-j', '--maxjobs', action='store', type=int,
       help='The maximum number of jobs to use when retrieving review status')
 
-  auth.add_auth_options(parser)
   _add_codereview_issue_select_options(
     parser, 'Must be in conjunction with --field.')
   options, args = parser.parse_args(args)
   _process_codereview_select_options(parser, options)
   if args:
     parser.error('Unsupported args: %s' % args)
-  auth_config = auth.extract_auth_config_from_options(options)
 
   if options.issue is not None and not options.field:
     parser.error('--field must be specified with --issue.')
 
   if options.field:
-    cl = Changelist(auth_config=auth_config, issue=options.issue)
+    cl = Changelist(issue=options.issue)
     if options.field.startswith('desc'):
       print(cl.GetDescription())
     elif options.field == 'id':
@@ -4070,7 +4065,7 @@ def CMDstatus(parser, args):
     return 0
 
   changes = [
-      Changelist(branchref=b, auth_config=auth_config)
+      Changelist(branchref=b)
       for b in branches.splitlines()]
   print('Branches associated with reviews:')
   output = get_cl_statuses(changes,
@@ -4248,11 +4243,9 @@ def CMDcomments(parser, args):
                          'editor parsing')
   parser.add_option('-j', '--json-file',
                     help='File to write JSON summary to, or "-" for stdout')
-  auth.add_auth_options(parser)
   _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
   _process_codereview_select_options(parser, options)
-  auth_config = auth.extract_auth_config_from_options(options)
 
   issue = None
   if options.issue:
@@ -4261,7 +4254,7 @@ def CMDcomments(parser, args):
     except ValueError:
       DieWithError('A review issue ID is expected to be a number.')
 
-  cl = Changelist(issue=issue, auth_config=auth_config)
+  cl = Changelist(issue=issue)
 
   if options.comment:
     cl.AddComment(options.comment, options.publish)
@@ -4310,7 +4303,6 @@ def CMDdescription(parser, args):
                          'without prompting')
 
   _add_codereview_select_options(parser)
-  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   _process_codereview_select_options(parser, options)
 
@@ -4320,9 +4312,7 @@ def CMDdescription(parser, args):
     if not target_issue_arg.valid:
       parser.error('Invalid issue ID or URL.')
 
-  kwargs = {
-    'auth_config': auth.extract_auth_config_from_options(options),
-  }
+  kwargs = {}
   detected_codereview_from_url = False
   if target_issue_arg:
     kwargs['issue'] = target_issue_arg.issue
@@ -4366,9 +4356,7 @@ def CMDlint(parser, args):
   """Runs cpplint on the current changelist."""
   parser.add_option('--filter', action='append', metavar='-x,+y',
                     help='Comma-separated list of cpplint\'s category-filters')
-  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
-  auth_config = auth.extract_auth_config_from_options(options)
 
   # Access to a protected member _XX of a client class
   # pylint: disable=protected-access
@@ -4384,7 +4372,7 @@ def CMDlint(parser, args):
   previous_cwd = os.getcwd()
   os.chdir(settings.GetRoot())
   try:
-    cl = Changelist(auth_config=auth_config)
+    cl = Changelist()
     change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
     files = [f.LocalPath() for f in change.AffectedFiles()]
     if not files:
@@ -4429,15 +4417,13 @@ def CMDpresubmit(parser, args):
   parser.add_option('--parallel', action='store_true',
                     help='Run all tests specified by input_api.RunTests in all '
                          'PRESUBMIT files in parallel.')
-  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
-  auth_config = auth.extract_auth_config_from_options(options)
 
   if not options.force and git_common.is_dirty_git_tree('presubmit'):
     print('use --force to check even if tree is dirty.')
     return 1
 
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist()
   if args:
     base_branch = args[0]
   else:
@@ -4656,11 +4642,9 @@ def CMDupload(parser, args):
                     help='Set the review private. This implies --no-autocc.')
 
   orig_args = args
-  auth.add_auth_options(parser)
   _add_codereview_select_options(parser)
   (options, args) = parser.parse_args(args)
   _process_codereview_select_options(parser, options)
-  auth_config = auth.extract_auth_config_from_options(options)
 
   if git_common.is_dirty_git_tree('upload'):
     return 1
@@ -4684,7 +4668,7 @@ def CMDupload(parser, args):
   # For sanity of test expectations, do this otherwise lazy-loading *now*.
   settings.GetIsGerrit()
 
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist()
 
   return cl.CMDUpload(options, args, orig_args)
 
@@ -4763,11 +4747,9 @@ def CMDland(parser, args):
   parser.add_option('--parallel', action='store_true',
                     help='Run all tests specified by input_api.RunTests in all '
                          'PRESUBMIT files in parallel.')
-  auth.add_auth_options(parser)
   (options, args) = parser.parse_args(args)
-  auth_config = auth.extract_auth_config_from_options(options)
 
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist()
 
   if not cl.GetIssue():
     DieWithError('You must upload the change first to Gerrit.\n'
@@ -4803,11 +4785,9 @@ def CMDpatch(parser, args):
                     help='Performs a pull before reapplying.')
   parser.add_option_group(group)
 
-  auth.add_auth_options(parser)
   _add_codereview_select_options(parser)
   (options, args) = parser.parse_args(args)
   _process_codereview_select_options(parser, options)
-  auth_config = auth.extract_auth_config_from_options(options)
 
   if options.reapply:
     if options.newbranch:
@@ -4815,7 +4795,7 @@ def CMDpatch(parser, args):
     if len(args) > 0:
       parser.error('--reapply implies no additional arguments.')
 
-    cl = Changelist(auth_config=auth_config)
+    cl = Changelist()
     if not cl.GetIssue():
       parser.error('Current branch must have an associated issue.')
 
@@ -4837,7 +4817,6 @@ def CMDpatch(parser, args):
     parser.error('Invalid issue ID or URL.')
 
   cl_kwargs = {
-      'auth_config': auth_config,
       'codereview_host': target_issue_arg.hostname,
   }
   detected_codereview_from_url = False
@@ -4961,7 +4940,7 @@ def CMDtry(parser, args):
   if args:
     parser.error('Unknown arguments: %s' % args)
 
-  cl = Changelist(auth_config=auth_config, issue=options.issue)
+  cl = Changelist(issue=options.issue)
   if not cl.GetIssue():
     parser.error('Need to upload first.')
 
@@ -5025,7 +5004,7 @@ def CMDtry_results(parser, args):
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
   auth_config = auth.extract_auth_config_from_options(options)
-  cl = Changelist(issue=options.issue, auth_config=auth_config)
+  cl = Changelist(issue=options.issue)
   if not cl.GetIssue():
     parser.error('Need to upload first.')
 
@@ -5108,17 +5087,15 @@ def CMDset_commit(parser, args):
                     help='trigger in dry run mode')
   parser.add_option('-c', '--clear', action='store_true',
                     help='stop CQ run, if any')
-  auth.add_auth_options(parser)
   _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
   _process_codereview_select_options(parser, options)
-  auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
   if options.dry_run and options.clear:
     parser.error('Only one of --dry-run and --clear are allowed.')
 
-  cl = Changelist(auth_config=auth_config, issue=options.issue)
+  cl = Changelist(issue=options.issue)
   if options.clear:
     state = _CQState.NONE
   elif options.dry_run:
@@ -5135,13 +5112,11 @@ def CMDset_commit(parser, args):
 def CMDset_close(parser, args):
   """Closes the issue."""
   _add_codereview_issue_select_options(parser)
-  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   _process_codereview_select_options(parser, options)
-  auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
-  cl = Changelist(auth_config=auth_config, issue=options.issue)
+  cl = Changelist(issue=options.issue)
   # Ensure there actually is an issue to close.
   if not cl.GetIssue():
     DieWithError('ERROR: No issue to close.')
@@ -5157,13 +5132,11 @@ def CMDdiff(parser, args):
       action='store_true',
       dest='stat',
       help='Generate a diffstat')
-  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
-  auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist()
   issue = cl.GetIssue()
   branch = cl.GetBranch()
   if not issue:
@@ -5213,13 +5186,11 @@ def CMDowners(parser, args):
       '--show-all',
       action='store_true',
       help='Show all owners for a particular file')
-  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
-  auth_config = auth.extract_auth_config_from_options(options)
 
   author = RunGit(['config', 'user.email']).strip() or None
 
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist()
 
   if options.show_all:
     for arg in args:
