@@ -3816,11 +3816,15 @@ static void dr_prediction_z1_64xN_avx2(int N, uint8_t *dst, ptrdiff_t stride,
             res, _mm256_castsi128_si256(
                      _mm256_extracti128_si256(res, 1)));  // 16 8bit values
 
-        base_inc128 = _mm_setr_epi8(
-            base + j, base + j + 1, base + j + 2, base + j + 3, base + j + 4,
-            base + j + 5, base + j + 6, base + j + 7, base + j + 8,
-            base + j + 9, base + j + 10, base + j + 11, base + j + 12,
-            base + j + 13, base + j + 14, base + j + 15);
+        base_inc128 =
+            _mm_setr_epi8((uint8_t)(base + j), (uint8_t)(base + j + 1),
+                          (uint8_t)(base + j + 2), (uint8_t)(base + j + 3),
+                          (uint8_t)(base + j + 4), (uint8_t)(base + j + 5),
+                          (uint8_t)(base + j + 6), (uint8_t)(base + j + 7),
+                          (uint8_t)(base + j + 8), (uint8_t)(base + j + 9),
+                          (uint8_t)(base + j + 10), (uint8_t)(base + j + 11),
+                          (uint8_t)(base + j + 12), (uint8_t)(base + j + 13),
+                          (uint8_t)(base + j + 14), (uint8_t)(base + j + 15));
 
         mask128 = _mm_cmpgt_epi8(_mm_subs_epu8(max_base_x128, base_inc128),
                                  _mm_setzero_si128());
@@ -4139,7 +4143,7 @@ static void dr_prediction_z2_HxW_avx2(int H, int W, uint8_t *dst,
     __m128i resx, resy;
     __m128i resxy;
     int y = r + 1;
-    ydx = _mm256_set1_epi16(y * dx);
+    ydx = _mm256_set1_epi16((uint16_t)(y * dx));
 
     int base_x = (-y * dx) >> frac_bits_x;
     for (int j = 0; j < W; j += 16) {
