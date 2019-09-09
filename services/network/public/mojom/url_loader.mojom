@@ -145,6 +145,10 @@ struct URLRequest {
   // for cookie checks like 'First-Party-Only'.
   url.mojom.Origin? request_initiator;
 
+  // The origin of the isolated world - set if this is a fetch/XHR initiated by
+  // an isolated world.
+  url.mojom.Origin? isolated_world_origin;
+
   // The referrer to use (may be empty).
   url.mojom.Url referrer;
 

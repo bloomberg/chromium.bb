@@ -91,6 +91,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.request_initiator;
   }
+  static const base::Optional<url::Origin>& isolated_world_origin(
+      const network::ResourceRequest& request) {
+    return request.isolated_world_origin;
+  }
   static const GURL& referrer(const network::ResourceRequest& request) {
     return request.referrer;
   }

@@ -170,6 +170,7 @@ bool StructTraits<
       !data.ReadTopFrameOrigin(&out->top_frame_origin) ||
       !data.ReadTrustedParams(&out->trusted_params) ||
       !data.ReadRequestInitiator(&out->request_initiator) ||
+      !data.ReadIsolatedWorldOrigin(&out->isolated_world_origin) ||
       !data.ReadReferrer(&out->referrer) ||
       !data.ReadReferrerPolicy(&out->referrer_policy) ||
       !data.ReadHeaders(&out->headers) ||

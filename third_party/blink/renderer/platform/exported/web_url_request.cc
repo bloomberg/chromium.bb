@@ -120,6 +120,10 @@ WebSecurityOrigin WebURLRequest::RequestorOrigin() const {
   return resource_request_->RequestorOrigin();
 }
 
+WebSecurityOrigin WebURLRequest::IsolatedWorldOrigin() const {
+  return resource_request_->IsolatedWorldOrigin();
+}
+
 void WebURLRequest::SetRequestorOrigin(
     const WebSecurityOrigin& requestor_origin) {
   resource_request_->SetRequestorOrigin(requestor_origin);

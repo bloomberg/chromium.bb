@@ -659,6 +659,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       resource_request->request_initiator = request.RequestorOrigin();
     }
   }
+  if (!request.IsolatedWorldOrigin().IsNull())
+    resource_request->isolated_world_origin = request.IsolatedWorldOrigin();
   resource_request->referrer = referrer_url;
 
   resource_request->referrer_policy =

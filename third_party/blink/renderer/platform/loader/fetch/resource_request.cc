@@ -354,6 +354,16 @@ void ResourceRequest::SetHasUserGesture(bool has_user_gesture) {
   has_user_gesture_ |= has_user_gesture;
 }
 
+bool ResourceRequest::CanDisplay(const KURL& url) const {
+  if (RequestorOrigin()->CanDisplay(url))
+    return true;
+
+  if (IsolatedWorldOrigin() && IsolatedWorldOrigin()->CanDisplay(url))
+    return true;
+
+  return false;
+}
+
 const CacheControlHeader& ResourceRequest::GetCacheControlHeader() const {
   if (!cache_control_header_cache_.parsed) {
     cache_control_header_cache_ = ParseCacheControlDirectives(
