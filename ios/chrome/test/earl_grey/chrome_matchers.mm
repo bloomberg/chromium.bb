@@ -161,10 +161,6 @@ id<GREYMatcher> BookmarksNavigationBarDoneButton() {
   return [ChromeMatchersAppInterface bookmarksNavigationBarDoneButton];
 }
 
-id<GREYMatcher> AccountConsistencySetupSigninButton() {
-  return [ChromeMatchersAppInterface accountConsistencySetupSigninButton];
-}
-
 id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
   return [ChromeMatchersAppInterface accountConsistencyConfirmationOKButton];
 }

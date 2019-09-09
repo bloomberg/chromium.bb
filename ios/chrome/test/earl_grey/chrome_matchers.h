@@ -125,9 +125,6 @@ id<GREYMatcher> NavigationBarDoneButton();
 // Matcher for the done button on the Bookmarks navigation bar.
 id<GREYMatcher> BookmarksNavigationBarDoneButton();
 
-// Returns matcher for the account consistency setup signin button.
-id<GREYMatcher> AccountConsistencySetupSigninButton();
-
 // Returns matcher for the account consistency confirmation button.
 id<GREYMatcher> AccountConsistencyConfirmationOkButton();
 

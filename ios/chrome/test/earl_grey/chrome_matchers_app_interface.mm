@@ -361,12 +361,6 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kBookmarkHomeNavigationBarDoneButtonIdentifier);
 }
 
-+ (id<GREYMatcher>)accountConsistencySetupSigninButton {
-  return [ChromeMatchersAppInterface
-      buttonWithAccessibilityLabelID:
-          (IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_BUTTON)];
-}
-
 + (id<GREYMatcher>)accountConsistencyConfirmationOKButton {
   int labelID = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
   return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:labelID];
