@@ -1483,16 +1483,19 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
   MoveToNextOf(item);
 
   // If the line can break after the previous item, prohibit it and allow break
-  // after this close tag instead.
-  if (was_auto_wrap) {
-    const NGInlineItemResults& item_results = line_info->Results();
-    if (item_results.size() >= 2) {
-      NGInlineItemResult* last = std::prev(item_result);
+  // after this close tag instead. Even when the close tag has "nowrap", break
+  // after it is allowed if the line is breakable after the previous item.
+  const NGInlineItemResults& item_results = line_info->Results();
+  if (item_results.size() >= 2) {
+    NGInlineItemResult* last = std::prev(item_result);
+    if (was_auto_wrap || last->can_break_after) {
       item_result->can_break_after = last->can_break_after;
       last->can_break_after = false;
+      return;
     }
-    return;
   }
+  if (was_auto_wrap)
+    return;
 
   DCHECK(!item_result->can_break_after);
   if (!auto_wrap_)
