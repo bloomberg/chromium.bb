@@ -20,12 +20,18 @@ namespace {
 constexpr int kDefaultMaxBacklogSize = 64;
 }  // namespace
 
-StreamSocketPosix::StreamSocketPosix(const IPEndpoint& local_endpoint)
-    : local_address_(local_endpoint) {}
+StreamSocketPosix::StreamSocketPosix(IPAddress::Version version)
+    : version_(version) {}
 
-StreamSocketPosix::StreamSocketPosix(SocketAddressPosix address,
+StreamSocketPosix::StreamSocketPosix(const IPEndpoint& local_endpoint)
+    : version_(local_endpoint.address.version()),
+      local_address_(local_endpoint) {}
+
+StreamSocketPosix::StreamSocketPosix(SocketAddressPosix local_address,
                                      int file_descriptor)
-    : file_descriptor_(file_descriptor), local_address_(address) {}
+    : file_descriptor_(file_descriptor),
+      version_(local_address.version()),
+      local_address_(local_address) {}
 
 StreamSocketPosix::~StreamSocketPosix() {
   if (state_ == SocketState::kConnected) {
@@ -38,9 +44,13 @@ ErrorOr<std::unique_ptr<StreamSocket>> StreamSocketPosix::Accept() {
     return ReportSocketClosedError();
   }
 
+  if (!is_bound_) {
+    return CloseOnError(Error::Code::kSocketInvalidState);
+  }
+
   // We copy our address to new_remote_address since it should be in the same
   // family. The accept call will overwrite it.
-  SocketAddressPosix new_remote_address = local_address_;
+  SocketAddressPosix new_remote_address = local_address_.value();
   socklen_t remote_address_size = new_remote_address.size();
   const int new_file_descriptor =
       accept(file_descriptor_.load(), new_remote_address.address(),
@@ -55,16 +65,20 @@ ErrorOr<std::unique_ptr<StreamSocket>> StreamSocketPosix::Accept() {
 }
 
 Error StreamSocketPosix::Bind() {
+  if (!local_address_.has_value()) {
+    return CloseOnError(Error::Code::kSocketInvalidState);
+  }
+
   if (!EnsureInitialized()) {
     return ReportSocketClosedError();
   }
 
-  if (!is_bound_) {
+  if (is_bound_) {
     return CloseOnError(Error::Code::kSocketInvalidState);
   }
 
-  if (bind(file_descriptor_.load(), local_address_.address(),
-           local_address_.size()) != 0) {
+  if (bind(file_descriptor_.load(), local_address_.value().address(),
+           local_address_.value().size()) != 0) {
     return CloseOnError(Error::Code::kSocketBindFailure);
   }
 
@@ -106,6 +120,21 @@ Error StreamSocketPosix::Connect(const IPEndpoint& remote_endpoint) {
     return CloseOnError(Error::Code::kSocketConnectFailure);
   }
 
+  if (!is_bound_) {
+    if (local_address_.has_value()) {
+      return CloseOnError(Error::Code::kSocketInvalidState);
+    }
+
+    struct sockaddr address;
+    socklen_t size = sizeof(address);
+    if (getsockname(file_descriptor_.load(), &address, &size) != 0) {
+      return CloseOnError(Error::Code::kSocketConnectFailure);
+    }
+
+    local_address_.emplace(address);
+    is_bound_ = true;
+  }
+
   remote_address_ = remote_endpoint;
   state_ = SocketState::kConnected;
   return Error::None();
@@ -143,7 +172,7 @@ SocketState StreamSocketPosix::state() const {
 }
 
 IPAddress::Version StreamSocketPosix::version() const {
-  return local_address_.version();
+  return version_;
 }
 
 bool StreamSocketPosix::EnsureInitialized() {
@@ -160,7 +189,7 @@ Error StreamSocketPosix::Initialize() {
   }
 
   int domain;
-  switch (local_address_.version()) {
+  switch (version_) {
     case IPAddress::Version::kV4:
       domain = AF_INET;
       break;

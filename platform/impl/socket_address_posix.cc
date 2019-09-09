@@ -9,6 +9,18 @@
 namespace openscreen {
 namespace platform {
 
+SocketAddressPosix::SocketAddressPosix(const struct sockaddr& address) {
+  if (address.sa_family == AF_INET) {
+    version_ = IPAddress::Version::kV4;
+    memcpy(&internal_address_, &address, sizeof(struct sockaddr_in));
+  } else if (address.sa_family == AF_INET6) {
+    version_ = IPAddress::Version::kV6;
+    memcpy(&internal_address_, &address, sizeof(struct sockaddr_in6));
+  } else {
+    OSP_NOTREACHED() << "Unknown address type";
+  }
+}
+
 SocketAddressPosix::SocketAddressPosix(const IPEndpoint& endpoint) {
   if (endpoint.address.IsV4()) {
     internal_address_.v4.sin_family = AF_INET;

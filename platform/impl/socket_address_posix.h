@@ -21,7 +21,8 @@ namespace platform {
 
 class SocketAddressPosix {
  public:
-  SocketAddressPosix(const IPEndpoint& endpoint);
+  explicit SocketAddressPosix(const struct sockaddr& address);
+  explicit SocketAddressPosix(const IPEndpoint& endpoint);
 
   SocketAddressPosix(const SocketAddressPosix&) = default;
   SocketAddressPosix(SocketAddressPosix&&) = default;

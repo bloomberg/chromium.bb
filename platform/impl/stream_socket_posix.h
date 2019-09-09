@@ -23,8 +23,9 @@ struct FileDescriptor {
 
 class StreamSocketPosix : public StreamSocket {
  public:
+  StreamSocketPosix(IPAddress::Version version);
   explicit StreamSocketPosix(const IPEndpoint& local_endpoint);
-  StreamSocketPosix(SocketAddressPosix address, int file_descriptor);
+  StreamSocketPosix(SocketAddressPosix local_address, int file_descriptor);
 
   // StreamSocketPosix is non-copyable, due to directly managing the file
   // descriptor.
@@ -61,7 +62,8 @@ class StreamSocketPosix : public StreamSocket {
   // last_error_code_ is an Error::Code instead of an Error so it meets
   // atomic's (trivially) copyable and moveable requirements.
   std::atomic<Error::Code> last_error_code_ = {Error::Code::kNone};
-  const SocketAddressPosix local_address_;
+  const IPAddress::Version version_;
+  absl::optional<SocketAddressPosix> local_address_;
   absl::optional<IPEndpoint> remote_address_;
 
   bool is_bound_ = false;

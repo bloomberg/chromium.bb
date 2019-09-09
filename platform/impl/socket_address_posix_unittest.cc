@@ -43,5 +43,46 @@ TEST(SocketAddressPosixTest, IPv6SocketAddressConvertsSuccessfully) {
 
   EXPECT_EQ(address.version(), IPAddress::Version::kV6);
 }
+
+TEST(SocketAddressPosixTest, IPv4ConvertsSuccessfully) {
+  struct sockaddr_in address;
+  address.sin_family = AF_INET;
+  address.sin_port = ntohs(80);
+  address.sin_addr.s_addr = 67305985u;
+
+  struct sockaddr* casted = reinterpret_cast<struct sockaddr*>(&address);
+  SocketAddressPosix address_posix(*casted);
+  const sockaddr_in* v4_address =
+      reinterpret_cast<const sockaddr_in*>(address_posix.address());
+
+  EXPECT_EQ(v4_address->sin_family, address.sin_family);
+  EXPECT_EQ(v4_address->sin_port, address.sin_port);
+  EXPECT_EQ(v4_address->sin_addr.s_addr, address.sin_addr.s_addr);
+}
+
+TEST(SocketAddressPosixTest, IPv6ConvertsSuccessfully) {
+  const unsigned char KExpectedAddress[16] = {1, 2,  3,  4,  5,  6,  7,  8,
+                                              9, 10, 11, 12, 13, 14, 15, 16};
+
+  struct sockaddr_in6 address;
+  address.sin6_family = AF_INET6;
+  address.sin6_port = ntohs(80);
+  address.sin6_flowinfo = 0u;
+  address.sin6_scope_id = 0u;
+  memcpy(&address.sin6_addr.s6_addr, KExpectedAddress, 16);
+
+  struct sockaddr* casted = reinterpret_cast<struct sockaddr*>(&address);
+  SocketAddressPosix address_posix(*casted);
+  const sockaddr_in6* v6_address =
+      reinterpret_cast<const sockaddr_in6*>(address_posix.address());
+
+  EXPECT_EQ(v6_address->sin6_family, address.sin6_family);
+  EXPECT_EQ(v6_address->sin6_port, address.sin6_port);
+  EXPECT_EQ(v6_address->sin6_flowinfo, address.sin6_flowinfo);
+  EXPECT_EQ(v6_address->sin6_scope_id, address.sin6_scope_id);
+  EXPECT_THAT(v6_address->sin6_addr.s6_addr,
+              testing::ElementsAreArray(KExpectedAddress));
+}
+
 }  // namespace platform
 }  // namespace openscreen
