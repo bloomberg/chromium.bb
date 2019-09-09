@@ -6422,7 +6422,7 @@ void RenderFrameHostImpl::GetFileSystemManager(
     mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
   // This is safe because file_system_manager_ is deleted on the IO thread
   base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&FileSystemManagerImpl::BindRequest,
+                 base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                                 base::Unretained(file_system_manager_.get()),
                                 std::move(receiver)));
 }
