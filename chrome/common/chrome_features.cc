@@ -202,6 +202,10 @@ const base::Feature kCrostiniAnsibleInfrastructure{
 const base::Feature kCrostiniAnsibleSoftwareManagement{
     "CrostiniAnsibleSoftwareManagement", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables custom UI for forcibly closing unresponsive windows.
+const base::Feature kCrostiniForceClose{"CrostiniForceClose",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the UI overhaul for Cups Printers in settings page.
 const base::Feature kCupsPrintersUiOverhaul{"CupsPrintersUiOverhaul",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
