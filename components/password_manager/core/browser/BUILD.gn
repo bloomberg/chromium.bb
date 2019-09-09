@@ -103,6 +103,8 @@ jumbo_static_library("browser") {
     "login_database_mac.cc",
     "login_database_win.cc",
     "manage_passwords_referrer.h",
+    "multi_store_form_fetcher.cc",
+    "multi_store_form_fetcher.h",
     "origin_credential_store.cc",
     "origin_credential_store.h",
     "password_autofill_manager.cc",
