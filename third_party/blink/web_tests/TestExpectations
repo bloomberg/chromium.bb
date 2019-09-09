@@ -3218,7 +3218,6 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-under
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-masking/clip-path/clip-path-inline-001.html [ Failure ]
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
@@ -6228,4 +6227,4 @@ crbug.com/998399 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers
 crbug.com/1001817 external/wpt/css/css-ui/text-overflow-016.html [ Pass Failure ]
 crbug.com/1001816 external/wpt/css/css-masking/clip-path/clip-path-inline-003.html [ Pass Failure ]
 crbug.com/1001814 external/wpt/css/css-masking/clip-path/clip-path-inline-002.html [ Pass Failure ]
-crbug.com/1001936 [ Linux Win ] external/wpt/css/css-masking/clip-path/clip-path-inline-001.html [ Pass Failure ]
+crbug.com/1001936 external/wpt/css/css-masking/clip-path/clip-path-inline-001.html [ Pass Failure ]
