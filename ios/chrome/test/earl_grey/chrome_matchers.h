@@ -163,6 +163,13 @@ id<GREYMatcher> SettingsDoneButton();
 // settings' navigation bar.
 id<GREYMatcher> SyncSettingsConfirmButton();
 
+// Returns matcher for the "Payment Methods" button in the settings menu.
+id<GREYMatcher> PaymentMethodsButton();
+
+// Returns matcher for the "Add Payment Method" button in the Settings Payment
+// Methods view.
+id<GREYMatcher> AddPaymentMethodButton();
+
 // Returns matcher for the tools menu table view.
 id<GREYMatcher> ToolsMenuView();
 
