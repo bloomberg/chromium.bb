@@ -12,6 +12,11 @@
 
 namespace openscreen {
 
+template <typename T, size_t N>
+constexpr size_t countof(T (&array)[N]) {
+  return N;
+}
+
 // std::basic_string::data() has no mutable overload prior to C++17 [1].
 // Hence this overload is provided.
 // Note: str[0] is safe even for empty strings, as they are guaranteed to be
