@@ -2030,9 +2030,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
 #if defined(OS_WIN)
   registry->AddInterface(
-      base::BindRepeating([](blink::mojom::DWriteFontProxyRequest request) {
-        DWriteFontProxyImpl::Create(std::move(request), {});
-      }),
+      base::BindRepeating(
+          [](mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver) {
+            DWriteFontProxyImpl::Create(std::move(receiver), {});
+          }),
       base::CreateSequencedTaskRunner({base::ThreadPool(),
                                        base::TaskPriority::USER_BLOCKING,
                                        base::MayBlock()}));
