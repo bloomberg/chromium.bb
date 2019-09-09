@@ -1525,39 +1525,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
 
-  // TODO(https://crbug.com/996267): Evict the document and wait for its
-  // destruction here instead.
-
-  auto old_document_using_webgl = [rfh_a]() {
-    return rfh_a->scheduler_tracked_features() &
-           (1 << static_cast<uint32_t>(
-                blink::scheduler::WebSchedulerTrackedFeature::kWebGL));
-  };
-
-  // Wait for WebGL to be used in the old document.
-  while (!old_document_using_webgl()) {
-    base::RunLoop loop;
-    base::PostDelayedTask(FROM_HERE, loop.QuitClosure(),
-                          base::TimeDelta::FromMilliseconds(50));
-    loop.Run();
-  }
-
-  // The scheduler tracked features have been updated. The document shouldn't
-  // stay in the BackForwardCache anymore.  TODO(arthursonzogni): Evict the
-  // page.
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_FALSE(
-      web_contents()->GetController().back_forward_cache().CanStoreDocument(
-          rfh_a));
-
-  // 3) Go back to A.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-
-  // TODO(https://crbug.com/996267): The document should have been evicted
-  // instead of being restored.
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_EQ(current_frame_host(), rfh_a);
+  // rfh_a should be evicted from the cache and destroyed.
+  delete_observer_rfh_a.WaitUntilDeleted();
 }
 
 // A fetch request starts during the "freeze" event. The current behavior is to

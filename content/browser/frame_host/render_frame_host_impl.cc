@@ -2330,6 +2330,9 @@ void RenderFrameHostImpl::UpdateActiveSchedulerTrackedFeatures(
     uint64_t features_mask) {
   TRACE_EVENT0("toplevel", "UpdateActiveSchedulerTrackedFeatures");
   renderer_reported_scheduler_tracked_features_ = features_mask;
+
+  // IMPORTANT NOTE: MaybeEvictFromBackForwardCache may delete |this|.
+  MaybeEvictFromBackForwardCache();
 }
 
 void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
@@ -2337,6 +2340,9 @@ void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
   TRACE_EVENT0("toplevel", "OnSchedulerTrackedFeatureUsed");
   browser_reported_scheduler_tracked_features_ |=
       1 << static_cast<uint64_t>(feature);
+
+  // IMPORTANT NOTE: MaybeEvictFromBackForwardCache may delete |this|.
+  MaybeEvictFromBackForwardCache();
 }
 
 bool RenderFrameHostImpl::IsFrozen() {
@@ -7528,6 +7534,19 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
             base::debug::CrashKeySize::Size32),
         bool_to_crash_key(dest_instance == GetSiteInstance()));
   }
+}
+
+void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
+  if (!is_in_back_forward_cache_)
+    return;
+
+  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
+      frame_tree_node_->navigator()->GetController());
+  if (controller->back_forward_cache().CanStoreDocument(this))
+    return;
+
+  // Note: Calling EvictFromBackForwradCache deletes |this|.
+  EvictFromBackForwardCache();
 }
 
 void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
