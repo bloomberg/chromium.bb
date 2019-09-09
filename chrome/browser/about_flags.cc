@@ -3757,10 +3757,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFilesystemInIncognitoDescription, kOsAll,
      FEATURE_VALUE_TYPE(storage::features::kEnableFilesystemInIncognito)},
 
-    {"enable-send-tab-to-self", flag_descriptions::kSendTabToSelfName,
-     flag_descriptions::kSendTabToSelfDescription, kOsAll,
-     FEATURE_VALUE_TYPE(switches::kSyncSendTabToSelf)},
-
     {"enable-send-tab-to-self-show-sending-ui",
      flag_descriptions::kSendTabToSelfShowSendingUIName,
      flag_descriptions::kSendTabToSelfShowSendingUIDescription, kOsAll,
