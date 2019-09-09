@@ -45,6 +45,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "components/login/localized_values_builder.h"
@@ -184,6 +185,7 @@ void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
                base::Value(DemoSetupController::IsDemoModeAllowed()));
   dict->SetKey("showTechnologyBadge",
                base::Value(!ash::features::IsSeparateNetworkIconsEnabled()));
+  dict->SetKey("adaptiveOobe", base::Value(features::IsAdaptiveOobeEnabled()));
 }
 
 void CoreOobeHandler::RegisterMessages() {
