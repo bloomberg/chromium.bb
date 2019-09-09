@@ -50,7 +50,6 @@ class TestLayerTreeHostBase : public testing::Test {
       Layer::LayerMaskType mask_type = Layer::LayerMaskType::NOT_MASK);
   void ActivateTree();
   void PerformImplSideInvalidation();
-  void RebuildPropertyTreesOnPendingTree();
 
   FakeLayerTreeHostImpl* host_impl() const { return host_impl_.get(); }
   TaskGraphRunner* task_graph_runner() const {

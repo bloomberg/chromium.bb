@@ -187,11 +187,6 @@ void TestLayerTreeHostBase::PerformImplSideInvalidation() {
   old_pending_layer_ = nullptr;
 }
 
-void TestLayerTreeHostBase::RebuildPropertyTreesOnPendingTree() {
-  host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
-  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-}
-
 void TestLayerTreeHostBase::SetInitialTreePriority() {
   GlobalStateThatImpactsTilePriority state;
 

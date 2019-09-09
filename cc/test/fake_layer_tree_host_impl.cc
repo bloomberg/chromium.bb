@@ -89,16 +89,6 @@ void FakeLayerTreeHostImpl::AdvanceToNextFrame(base::TimeDelta advance_by) {
   WillBeginImplFrame(next_begin_frame_args);
 }
 
-void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawPropertiesForActiveTree() {
-  UpdateNumChildrenAndDrawProperties(active_tree());
-}
-
-void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawProperties(
-    LayerTreeImpl* layerTree) {
-  layerTree->BuildLayerListAndPropertyTreesForTesting();
-  layerTree->UpdateDrawProperties();
-}
-
 AnimationHost* FakeLayerTreeHostImpl::animation_host() const {
   return static_cast<AnimationHost*>(mutator_host());
 }

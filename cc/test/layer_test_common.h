@@ -153,10 +153,6 @@ class LayerTestCommon {
     scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
     scoped_refptr<AnimationTimeline> timeline_impl() { return timeline_impl_; }
 
-    void BuildPropertyTreesForTesting() {
-      host_impl()->active_tree()->BuildPropertyTreesForTesting();
-    }
-
     void SetElementIdsForTesting() {
       host_impl()->active_tree()->SetElementIdsForTesting();
     }
