@@ -22,6 +22,7 @@
 #include "base/test/task_environment.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -163,7 +164,8 @@ class CorsURLLoaderTest : public testing::Test {
         net::ProxyConfigWithAnnotation::CreateDirect();
     context_params->cors_exempt_header_list.push_back(kTestCorsExemptHeader);
     network_context_ = std::make_unique<NetworkContext>(
-        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
 
     ResetFactory(base::nullopt, kRendererProcessId);
@@ -359,7 +361,7 @@ class CorsURLLoaderTest : public testing::Test {
   ResourceScheduler resource_scheduler_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
-  mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
 
   // CorsURLLoaderFactory instance under tests.
   std::unique_ptr<mojom::URLLoaderFactory> cors_url_loader_factory_;
