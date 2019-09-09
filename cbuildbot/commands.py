@@ -3698,6 +3698,8 @@ def SyncChrome(build_root,
 class ChromeSDK(object):
   """Wrapper for the 'cros chrome-sdk' command."""
 
+  DEFAULT_GOMA_JOBS = '80'
+
   def __init__(self,
                cwd,
                board,
@@ -3781,10 +3783,11 @@ class ChromeSDK(object):
     Returns:
       Command line to run "ninja".
     """
-    return [
-        'autoninja', '-C',
-        self._GetOutDirectory(debug=debug), 'chromiumos_preflight'
-    ]
+    cmd = ['autoninja']
+    if self.goma:
+      cmd += ['-j', self.DEFAULT_GOMA_JOBS]
+    cmd += ['-C', self._GetOutDirectory(debug=debug), 'chromiumos_preflight']
+    return cmd
 
   def VMTest(self, image_path, debug=False):
     """Run cros_run_test in a VM.

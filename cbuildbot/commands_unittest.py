@@ -153,10 +153,9 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['debug', self.BOARD] + list(self.EXTRA_ARGS) +
                                list(self.EXTRA_ARGS2) + self.CMD, cwd=self.CWD)
 
-  def MockGetDefaultTarget(self, with_nacl=False):
-    nacl_str = ' ninja nacl gold' if with_nacl else ''
+  def MockGetDefaultTarget(self):
     self.rc.AddCmdResult(partial_mock.In('qlist-%s' % self.BOARD),
-                         output='%s%s' % (constants.CHROME_CP, nacl_str))
+                         output='%s' % constants.CHROME_CP)
 
   def testNinjaWithRunArgs(self):
     """Test that running ninja with run_args.
@@ -173,8 +172,10 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
   def testNinjaOptions(self):
     """Test that running ninja with non-default options."""
     self.MockGetDefaultTarget()
-    self.inst.Ninja(debug=True)
-    self.assertCommandContains(['autoninja', '-C', 'out_%s/Debug' % self.BOARD,
+    custom_inst = commands.ChromeSDK(self.CWD, self.BOARD, goma=True)
+    custom_inst.Ninja(debug=True)
+    self.assertCommandContains(['autoninja', '-j', '80', '-C',
+                                'out_%s/Debug' % self.BOARD,
                                 'chromiumos_preflight'])
 
 
