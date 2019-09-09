@@ -8,6 +8,7 @@
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/numerics/ranges.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
@@ -328,7 +329,7 @@ int ScrollableShelfView::CalculateScrollUpperBound() const {
 
 float ScrollableShelfView::CalculateClampedScrollOffset(float scroll) const {
   const float scroll_upper_bound = CalculateScrollUpperBound();
-  scroll = std::min(scroll_upper_bound, std::max(0.f, scroll));
+  scroll = base::ClampToRange(scroll, 0.0f, scroll_upper_bound);
   return scroll;
 }
 

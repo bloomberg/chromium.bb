@@ -42,6 +42,7 @@
 #include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -1571,7 +1572,7 @@ void ShelfView::MoveDragViewTo(int primary_axis_coordinate) {
       *view_model_, drag_view_, shelf_->IsHorizontalAlignment(),
       drag_view_->x(), drag_view_->y());
   target_index =
-      std::min(indices.second, std::max(target_index, indices.first));
+      base::ClampToRange(target_index, indices.first, indices.second);
 
   if (target_index == current_index)
     return;
