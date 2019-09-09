@@ -36,6 +36,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private Profile mProfile;
     private BrowserController mBrowserController;
     private EditText mUrlView;
+    private View mMainView;
 
     public static class ShellFragment extends Fragment {
         private BrowserController mBrowserController;
@@ -61,6 +62,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         LinearLayout mainView = new LinearLayout(this);
         int viewId = View.generateViewId();
         mainView.setId(viewId);
+        mMainView = mainView;
         setContentView(mainView);
 
         mUrlView = new EditText(this);
@@ -111,6 +113,7 @@ public class WebLayerShellActivity extends FragmentActivity {
 
     private void loadUrl(String url) {
         mBrowserController.getNavigationController().navigate(Uri.parse(sanitizeUrl(url)));
+        mUrlView.clearFocus();
     }
 
     /**

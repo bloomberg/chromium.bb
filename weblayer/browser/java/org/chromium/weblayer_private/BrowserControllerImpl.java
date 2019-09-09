@@ -76,7 +76,9 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
 
         mNativeBrowserController = nativeCreateBrowserController(profile.getNativeProfile());
         mWebContents = nativeGetWebContents(mNativeBrowserController);
-        mWebContents.initialize("", ViewAndroidDelegate.createBasicDelegate(mContentViewRenderView),
+        mContentView = ContentView.createContentView(context, mWebContents);
+
+        mWebContents.initialize("", ViewAndroidDelegate.createBasicDelegate(mContentView),
                 new InternalAccessDelegateImpl(), mWindowAndroid,
                 WebContents.createDefaultInternalsHolder());
 
@@ -85,12 +87,12 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                 new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1f));
 
-        mContentView = ContentView.createContentView(context, mWebContents);
         mContentViewRenderView.addView(mContentView,
                 new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1f));
 
         mWebContents.onShow();
+        mContentView.requestFocus();
     }
 
     long getNativeBrowserController() {
