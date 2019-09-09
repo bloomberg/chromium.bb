@@ -1233,6 +1233,10 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   width: 268px;
 }
 
+#shortcuts-menu.hidden-selected .sh-option {
+  color: rgb(var(--GG500-rgb));
+}
+
 .sh-option-image {
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 4px;
@@ -1249,13 +1253,13 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   }
 }
 
-.selected .sh-option-image {
+#shortcuts-menu:not(.hidden-selected) .selected .sh-option-image {
   background-color: rgb(var(--GB050-rgb));
   border-color: rgb(var(--GB600-rgb));
 }
 
 @media (prefers-color-scheme: dark) {
-  .selected .sh-option-image {
+  #shortcuts-menu:not(.hidden-selected) .selected .sh-option-image {
     background-color: rgba(var(--GB200-rgb), .1);
     border-color: rgb(var(--GB300-rgb));
   }
@@ -1285,13 +1289,13 @@ html[dir=rtl] .sh-option-mini {
   right: unset;
 }
 
-.selected .sh-option-mini {
+#shortcuts-menu:not(.hidden-selected) .selected .sh-option-mini {
   box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
       0 4px 8px 3px rgba(var(--GG800-rgb), .15);
 }
 
 @media (prefers-color-scheme: dark) {
-  .selected .sh-option-mini {
+  #shortcuts-menu:not(.hidden-selected) .selected .sh-option-mini {
     border-color: transparent;
     box-shadow: var(--dark-mode-shadow);
   }
@@ -1301,12 +1305,12 @@ html[dir=rtl] .sh-option-mini {
   background-color: rgb(var(--GG500-rgb));
 }
 
-.selected .sh-option-mini .mini-shortcuts {
+#shortcuts-menu:not(.hidden-selected) .selected .mini-shortcuts {
   background-color: rgb(var(--GB600-rgb));
 }
 
 @media (prefers-color-scheme: dark) {
-  .selected .sh-option-mini .mini-shortcuts {
+  #shortcuts-menu:not(.hidden-selected) .selected .mini-shortcuts {
     background-color: rgb(var(--GB300-rgb));
   }
 }
@@ -1340,12 +1344,12 @@ html[dir=rtl] .sh-option-icon {
   }
 }
 
-.selected .sh-option-icon {
+#shortcuts-menu:not(.hidden-selected) .selected .sh-option-icon {
   background-color: rgba(var(--GB600-rgb), .24);
 }
 
 @media (prefers-color-scheme: dark) {
-  .selected .sh-option-icon {
+  #shortcuts-menu:not(.hidden-selected) .selected .sh-option-icon {
     background-color: rgb(var(--GB300-rgb));
   }
 }
@@ -1373,6 +1377,11 @@ html[dir=rtl] .sh-option-image .selected-circle {
 html[dir=rtl] .sh-option-image .selected-check {
   left: 32px;
   right: initial;
+}
+
+#shortcuts-menu.hidden-selected .sh-option-image
+    :-webkit-any(.selected-circle, .selected-check) {
+  display: none;
 }
 
 .sh-option-title {
