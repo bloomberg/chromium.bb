@@ -611,9 +611,9 @@ class IdentityManager : public KeyedService,
   base::Optional<CoreAccountInfo> ComputeUnconsentedPrimaryAccountInfo() const;
 
   // PrimaryAccountManager callbacks:
-  void GoogleSigninSucceeded(const AccountInfo& account_info);
-  void GoogleSignedOut(const AccountInfo& account_info);
-  void AuthenticatedAccountSet(const AccountInfo& account_info);
+  void GoogleSigninSucceeded(const CoreAccountInfo& account_info);
+  void GoogleSignedOut(const CoreAccountInfo& account_info);
+  void AuthenticatedAccountSet(const CoreAccountInfo& account_info);
   void AuthenticatedAccountCleared();
 
   // ProfileOAuth2TokenServiceObserver:
@@ -685,8 +685,8 @@ class IdentityManager : public KeyedService,
   base::ObserverList<DiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
 
-  // If |primary_account_| is set, it must equal |unconsented_primary_account_|.
-  base::Optional<CoreAccountInfo> primary_account_;
+  // If HasPrimaryAccount() is true, then |unconsented_primary_account_|
+  // must be equal to the value returned by GetPrimaryAccountInfo().
   base::Optional<CoreAccountInfo> unconsented_primary_account_;
 
 #if defined(OS_ANDROID)
