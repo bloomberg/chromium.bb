@@ -10,7 +10,6 @@ from __future__ import print_function
 import base64
 import datetime
 import json
-import multiprocessing
 import os
 import shutil
 import tempfile
@@ -35,8 +34,15 @@ from chromite.scripts import cros_set_lsb_release
 
 DESCRIPTION_FILE_VERSION = 2
 
-# Only two parallel paygen for now.
-_semaphore = multiprocessing.Semaphore(2)
+# See class docs for functionality information. Configured to reserve 32GB and
+# consider each individual task as consuming 10GB. Therefore we won't start a
+# new task unless available memory is about 42GB. We've observed two runs as
+# safe, so that even if we believe we're short, we will default to old behavior.
+_mem_semaphore = utils.MemoryConsumptionSemaphore(
+    system_available_buffer_bytes=2**35,  # 32 GB
+    single_proc_max_bytes=2**33 + 2**31,  # 10 GB
+    quiescence_time_seconds=120,
+    unchecked_acquires=2)
 
 
 class Error(Exception):
@@ -503,19 +509,23 @@ class PaygenPayload(object):
                     default='test' if src_image.build.channel else '')]
 
     # Run delta_generator for the purpose of generating an unsigned payload with
-    # smaller number of parallel processes as it already has full internal
-    # parallelism. Sometimes if a process cannot acquire the lock for a long
-    # period of time, the builder kills the process for not outputing any
+    # considerations for available memory. This is an adaption of the previous
+    # version which used a simple semaphore. This was highly limiting because
+    # while delta_generator is parallel there are single threaded portions
+    # of it that were taking a very long time (i.e. long poles).
+    #
+    # Sometimes if a process cannot acquire the lock for a long
+    # period of time, the builder kills the process for not outputting any
     # logs. So here we try to acquire the lock with a timeout of ten minutes in
     # a loop and log some output so not to be killed by the builder.
-    while not _semaphore.acquire(timeout=self._SEMAPHORE_TIMEOUT):
-      logging.info('Failed to acquire the lock in 10 minutes, trying again ...')
 
-    logging.info('Successfully acquired the lock.')
+    while not _mem_semaphore.acquire(timeout=self._SEMAPHORE_TIMEOUT):
+      logging.info('Failed to acquire the lock in 10 minutes, trying again ...')
+    logging.info('Successfully acquired the memory requirements lock.')
     try:
       self._RunGeneratorCmd(cmd)
     finally:
-      _semaphore.release()
+      _mem_semaphore.release()
 
   def _GenerateHashes(self):
     """Generate a payload hash and a metadata hash.
