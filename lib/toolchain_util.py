@@ -1225,8 +1225,8 @@ def UploadAndPublishVettedAFDOArtifacts(artifact_type, board):
     title = 'afdo_metadata: Publish new profiles for Chrome.'
   elif artifact_type == 'kernel_afdo':
     kver = KERNEL_AFDO_VERIFIER_BOARDS[board]
-    uploaded['chromeos-' + kver.replace('.', '_')] = _UploadVettedAFDOArtifacts(
-        artifact_type, kver)
+    name = 'chromeos-kernel-' + kver.replace('.', '_')
+    uploaded[name] = _UploadVettedAFDOArtifacts(artifact_type, kver)
     json_file = os.path.join(TOOLCHAIN_UTILS_PATH,
                              'afdo_metadata/kernel_afdo.json')
     title = 'afdo_metadata: Publish new profiles for kernel %s.' % kver

@@ -1143,7 +1143,8 @@ class UploadAndPublishVettedAFDOArtifactsTest(
     ret = toolchain_util.UploadAndPublishVettedAFDOArtifacts(
         'kernel_afdo', self.board)
     self.assertTrue(ret)
-    uploaded = {'chromeos-' + self.kver.replace('.', '_'): self.kernel_afdo}
+    uploaded = {'chromeos-kernel-' + self.kver.replace('.', '_'):
+                self.kernel_afdo}
     self.mock_upload.assert_called_once_with('kernel_afdo', self.kver)
     self.mock_publish.assert_called_once_with(
         self.kernel_json, uploaded,
