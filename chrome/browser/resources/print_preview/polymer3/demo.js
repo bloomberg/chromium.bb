@@ -6,6 +6,7 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
@@ -93,7 +94,12 @@ class HelloPolymer3Element extends PolymerElement {
 
       <div>
         <cr-search-field label="test search field"></cr-search-field>
+      </div>
+
       <div>
+        <cr-expand-button on-click="onExpand_">Expand</cr-expand-button>
+        <div hidden$="[[!expanded_]]">Expanded content</div>
+      </div>
     `;
   }
 
@@ -104,6 +110,12 @@ class HelloPolymer3Element extends PolymerElement {
 
       /** @private */
       checkboxChecked_: Boolean,
+
+      /** @private */
+      expanded_: {
+        type: Boolean,
+        value: false,
+      },
 
       /** @private */
       selectedSubpage_: {
@@ -148,6 +160,11 @@ class HelloPolymer3Element extends PolymerElement {
    */
   isTabBSelected_() {
     return this.selectedSubpage_ === 1;
+  }
+
+  /** @private */
+  onExpand_() {
+    this.expanded_ = !this.expanded_;
   }
 }  // class HelloPolymer3
 

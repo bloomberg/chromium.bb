@@ -10,6 +10,8 @@ js_modulizer("modulize") {
     "cr_checkbox_test.js",
     "cr_dialog_test.js",
     "cr_drawer_tests.js",
+    "cr_expand_button_tests.js",
+    "cr_expand_button_focus_tests.js",
     "cr_icon_button_tests.js",
     "cr_icon_button_focus_tests.js",
     "cr_input_test.js",
