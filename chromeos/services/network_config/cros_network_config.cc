@@ -258,6 +258,11 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
                                                 onc::kNetworkTechnologyTable);
       cellular->roaming = network->IndicateRoaming();
       cellular->signal_strength = network->signal_strength();
+
+      const DeviceState* cellular_device =
+          network_state_handler->GetDeviceState(network->device_path());
+      cellular->sim_locked = !cellular_device->IsSimAbsent() &&
+                             cellular_device->sim_lock_enabled();
       result->cellular = std::move(cellular);
       break;
     }
