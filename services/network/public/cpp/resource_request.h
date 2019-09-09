@@ -104,6 +104,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   base::Optional<std::string> devtools_request_id;
   bool is_signed_exchange_prefetch_cache_enabled = false;
   bool obey_origin_policy = false;
+  base::Optional<base::UnguessableToken> recursive_prefetch_token;
 
   base::Optional<TrustedParams> trusted_params;
 };

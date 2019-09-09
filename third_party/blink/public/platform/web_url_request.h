@@ -367,6 +367,9 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT bool IsSignedExchangePrefetchCacheEnabled() const;
 
+  BLINK_PLATFORM_EXPORT base::Optional<base::UnguessableToken>
+  RecursivePrefetchToken() const;
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();
   BLINK_PLATFORM_EXPORT const ResourceRequest& ToResourceRequest() const;

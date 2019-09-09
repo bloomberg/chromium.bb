@@ -238,6 +238,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   trusted_params(const network::ResourceRequest& request) {
     return request.trusted_params;
   }
+  static const base::Optional<base::UnguessableToken>& recursive_prefetch_token(
+      const network::ResourceRequest& request) {
+    return request.recursive_prefetch_token;
+  }
 
   static bool Read(network::mojom::URLRequestDataView data,
                    network::ResourceRequest* out);

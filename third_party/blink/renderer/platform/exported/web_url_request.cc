@@ -496,6 +496,11 @@ bool WebURLRequest::IsSignedExchangePrefetchCacheEnabled() const {
   return resource_request_->IsSignedExchangePrefetchCacheEnabled();
 }
 
+base::Optional<base::UnguessableToken> WebURLRequest::RecursivePrefetchToken()
+    const {
+  return resource_request_->RecursivePrefetchToken();
+}
+
 WebURLRequest::WebURLRequest(ResourceRequest& r) : resource_request_(&r) {}
 
 }  // namespace blink

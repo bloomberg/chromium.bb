@@ -408,6 +408,14 @@ class PLATFORM_EXPORT ResourceRequest final {
     return fetch_window_id_;
   }
 
+  void SetRecursivePrefetchToken(
+      const base::Optional<base::UnguessableToken>& token) {
+    recursive_prefetch_token_ = token;
+  }
+  const base::Optional<base::UnguessableToken>& RecursivePrefetchToken() const {
+    return recursive_prefetch_token_;
+  }
+
   void SetInspectorId(uint64_t inspector_id) { inspector_id_ = inspector_id; }
   uint64_t InspectorId() const { return inspector_id_; }
 
@@ -530,6 +538,11 @@ class PLATFORM_EXPORT ResourceRequest final {
   // the request under the cross-origin's partition. Furthermore, its reuse from
   // the prefetch cache will be restricted to top-level-navigations.
   bool prefetch_maybe_for_top_level_navigation_ = false;
+
+  // This is used when fetching preload header requests from cross-origin
+  // prefetch responses. The browser process uses this token to ensure the
+  // request is cached correctly.
+  base::Optional<base::UnguessableToken> recursive_prefetch_token_;
 };
 
 }  // namespace blink

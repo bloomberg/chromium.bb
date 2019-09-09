@@ -700,6 +700,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   resource_request->load_flags = request.GetLoadFlagsForWebUrlRequest();
 
+  resource_request->recursive_prefetch_token = request.RecursivePrefetchToken();
+
   if (resource_request->resource_type ==
           static_cast<int>(ResourceType::kPrefetch) ||
       resource_request->resource_type ==
@@ -1082,6 +1084,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetIsSignedExchangeInnerResponse(
       info.is_signed_exchange_inner_response);
   response->SetWasInPrefetchCache(info.was_in_prefetch_cache);
+  response->SetRecursivePrefetchToken(info.recursive_prefetch_token);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
 

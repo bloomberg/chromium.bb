@@ -187,7 +187,8 @@ bool StructTraits<
       !data.ReadCustomProxyPostCacheHeaders(
           &out->custom_proxy_post_cache_headers) ||
       !data.ReadFetchWindowId(&out->fetch_window_id) ||
-      !data.ReadDevtoolsRequestId(&out->devtools_request_id)) {
+      !data.ReadDevtoolsRequestId(&out->devtools_request_id) ||
+      !data.ReadRecursivePrefetchToken(&out->recursive_prefetch_token)) {
     return false;
   }
 

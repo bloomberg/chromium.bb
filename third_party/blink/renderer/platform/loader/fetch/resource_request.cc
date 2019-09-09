@@ -131,6 +131,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetFromOriginDirtyStyleSheet(IsFromOriginDirtyStyleSheet());
   request->SetSignedExchangePrefetchCacheEnabled(
       IsSignedExchangePrefetchCacheEnabled());
+  request->SetRecursivePrefetchToken(RecursivePrefetchToken());
 
   return request;
 }
