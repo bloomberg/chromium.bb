@@ -1398,7 +1398,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     expected_tarball = os.path.join(self._tarball_dir, 'guest_images.tar')
 
     pin_dir = os.path.join(self._buildroot, 'chroot', 'build', self._board,
-                           'opt/google/containers/pins')
+                           constants.GUEST_IMAGES_PINS_PATH)
     os.makedirs(pin_dir)
     for filename in ('file1', 'file2'):
       pin_file = os.path.join(pin_dir, filename + '.json')
@@ -1427,7 +1427,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
   def testBuildPinnedGuestImagesTarballBadPin(self):
     """Tests that generating a guest images tarball with a bad pin file."""
     pin_dir = os.path.join(self._buildroot, 'chroot', 'build', self._board,
-                           'opt/google/containers/pins')
+                           constants.GUEST_IMAGES_PINS_PATH)
     os.makedirs(pin_dir)
     pin_file = os.path.join(pin_dir, 'file1.json')
     with open(pin_file, 'w') as f:
