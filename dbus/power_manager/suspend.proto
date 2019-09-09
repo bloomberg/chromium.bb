@@ -75,14 +75,26 @@ message SuspendImminent {
 // a suspend request. Each SuspendImminent signal will be followed by a
 // SuspendDone signal.
 message SuspendDone {
-  // Next ID to use: 3
+  // Next ID to use: 4
 
+  enum WakeupType {
+    UNKNOWN = 0;
+    // Set when last suspend failed.
+    NOT_APPLICABLE = 1;
+    // Resume is triggered by an input device.
+    INPUT = 2;
+    // Resume is triggered by non-input devices (RTC for example).
+    OTHER = 3;
+  }
   // Unique ID corresponding to the suspend request.
   optional int32 suspend_id = 1;
 
   // Wall time that the system was suspended, as given by
   // base::TimeDelta::ToInternalValue().
   optional int64 suspend_duration = 2;
+
+   // Type of wakeup source.
+  optional WakeupType wakeup_type = 3;
 }
 
 // Included in calls to powerd's RegisterSuspendDelay method.
