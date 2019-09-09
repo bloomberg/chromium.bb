@@ -542,13 +542,17 @@ java_group("chrome_all_java") {
 group("jni_headers") {
   public_deps = [
     ":chrome_jni_headers",
-    "//chrome/android/features/autofill_assistant:jni_headers",
     "//chrome/android/features/keyboard_accessory:jni_headers",
     "//chrome/android/features/media_router:jni_headers",
     "//chrome/android/public/profiles:jni_headers",
     "//chrome/lib/image_fetcher/public/android:jni_headers",
     "//chrome/lib/util/public/android:jni_headers",
   ]
+
+  if (disable_autofill_assistant_dfm) {
+    public_deps +=
+        [ "//chrome/android/features/autofill_assistant:jni_headers" ]
+  }
 }
 
 android_library("bundle_canary_java") {
@@ -1452,6 +1456,7 @@ template("libmonochrome_apk_or_bundle_tmpl") {
     ]
     deps = [
       "//android_webview:common",
+      "//components/about_ui:about_ui_android",
       "//components/crash/android:crashpad_main",
     ]
 
@@ -2459,7 +2464,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/complex_tasks/endpoint_fetcher/EndpointFetcher.java",
     "java/src/org/chromium/chrome/browser/complex_tasks/endpoint_fetcher/EndpointResponse.java",
     "java/src/org/chromium/chrome/browser/component_updater/UpdateScheduler.java",
-    "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java",
     "java/src/org/chromium/chrome/browser/compositor/CompositorView.java",
     "java/src/org/chromium/chrome/browser/compositor/LayerTitleCache.java",
     "java/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelContent.java",
@@ -2725,5 +2729,9 @@ generate_jni("chrome_jni_headers") {
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedOfflineBridge.java",
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedSchedulerBridge.java",
     ]
+  }
+
+  if (enable_vr) {
+    sources += [ "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java" ]
   }
 }
