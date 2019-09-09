@@ -346,6 +346,12 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   base::CancelableTaskTracker bind_task_tracker_;
   std::unique_ptr<mojo::BindingSet<mojom::GpuService>> bindings_;
 
+#if defined(OS_WIN)
+  // Used to track if the Dx Diag task on a different thread is still running.
+  // The status is checked before exiting the unsandboxed GPU process.
+  bool long_dx_task_different_thread_in_progress_ = false;
+#endif
+
 #if defined(OS_CHROMEOS)
   scoped_refptr<arc::ProtectedBufferManager> protected_buffer_manager_;
 #endif  // defined(OS_CHROMEOS)
