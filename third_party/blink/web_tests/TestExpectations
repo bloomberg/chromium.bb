@@ -6232,3 +6232,4 @@ crbug.com/998399 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers
 crbug.com/1001817 external/wpt/css/css-ui/text-overflow-016.html [ Pass Failure ]
 crbug.com/1001816 external/wpt/css/css-masking/clip-path/clip-path-inline-003.html [ Pass Failure ]
 crbug.com/1001814 external/wpt/css/css-masking/clip-path/clip-path-inline-002.html [ Pass Failure ]
+crbug.com/1001936 [ Linux Win ] external/wpt/css/css-masking/clip-path/clip-path-inline-001.html [ Pass Failure ]
