@@ -54,7 +54,7 @@ class MODULES_EXPORT Scheduler : public ScriptWrappable,
   // documents, this returns nullptr.
   Task* postTask(V8Function*,
                  SchedulerPostTaskOptions*,
-                 const HeapVector<ScriptValue>& args);
+                 const Vector<ScriptValue>& args);
 
   // Callbacks invoked by TaskQueues when they run scheduled tasks.
   void OnTaskStarted(TaskQueue*, Task*);
