@@ -4,7 +4,7 @@
 
 #include "ash/shelf/scrollable_shelf_view.h"
 
-#include "ash/shelf/shelf_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -41,7 +41,8 @@ constexpr int kFlingVelocityThreshold = 1000;
 
 // Sum of the shelf button size and the gap between shelf buttons.
 int GetUnit() {
-  return ShelfConstants::button_size() + ShelfConstants::button_spacing();
+  return ShelfConfig::Get()->button_size() +
+         ShelfConfig::Get()->button_spacing();
 }
 
 // Length of the fade in/out zone.
@@ -52,7 +53,7 @@ int GetFadeZoneLength() {
 // Decides whether the current first visible shelf icon of the scrollable shelf
 // should be hidden or fully shown when gesture scroll ends.
 int GetGestureDragThreshold() {
-  return ShelfConstants::button_size() / 2;
+  return ShelfConfig::Get()->button_size() / 2;
 }
 
 // Returns the padding between the app icon and the end of the ScrollableShelf.
@@ -65,7 +66,7 @@ int GetAppIconEndPadding() {
 // Calculates the padding for overflow.
 int CalculateOverflowPadding(int available_size) {
   return (available_size - kArrowButtonGroupWidth -
-          ShelfConstants::button_size() - GetAppIconEndPadding()) %
+          ShelfConfig::Get()->button_size() - GetAppIconEndPadding()) %
          GetUnit();
 }
 
@@ -396,11 +397,11 @@ gfx::Size ScrollableShelfView::CalculatePreferredSize() const {
 
 void ScrollableShelfView::Layout() {
   const bool is_horizontal = GetShelf()->IsHorizontalAlignment();
-  const int adjusted_length =
-      (is_horizontal ? width() : height()) - 2 * kAppIconGroupMargin;
+  const int adjusted_length = (is_horizontal ? width() : height()) -
+                              2 * ShelfConfig::Get()->app_icon_group_margin();
   UpdateLayoutStrategy(adjusted_length);
 
-  // Both |left_padding| and |right_padding| include kAppIconGroupMargin.
+  // Both |left_padding| and |right_padding| include the app icon group margin.
   gfx::Insets padding_insets = CalculateEdgePadding();
   const int left_padding = padding_insets.left();
   const int right_padding = padding_insets.right();
@@ -564,12 +565,13 @@ void ScrollableShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {
 gfx::Insets ScrollableShelfView::CalculateEdgePadding() const {
   const int available_size_for_app_icons =
       (GetShelf()->IsHorizontalAlignment() ? width() : height()) -
-      2 * kAppIconGroupMargin;
+      2 * ShelfConfig::Get()->app_icon_group_margin();
   const int icons_size = shelf_view_->GetSizeOfAppIcons(
       shelf_view_->number_of_visible_apps(), false);
 
-  gfx::Insets padding_insets(/*vertical= */ 0,
-                             /*horizontal= */ kAppIconGroupMargin);
+  gfx::Insets padding_insets(
+      /*vertical= */ 0,
+      /*horizontal= */ ShelfConfig::Get()->app_icon_group_margin());
   int gap = layout_strategy_ == kNotShowArrowButtons
                 ? available_size_for_app_icons - icons_size -
                       2 * GetAppIconEndPadding()
@@ -737,7 +739,7 @@ float ScrollableShelfView::CalculatePageScrollingOffset(bool forward) const {
   // Implement the arrow button handler in the same way with the gesture
   // scrolling. The key is to calculate the suitable scroll distance.
   float offset = space_for_icons_ - kArrowButtonGroupWidth -
-                 ShelfConstants::button_size() - GetAppIconEndPadding();
+                 ShelfConfig::Get()->button_size() - GetAppIconEndPadding();
   if (layout_strategy_ == kShowRightArrowButton)
     offset -= (kArrowButtonGroupWidth - GetAppIconEndPadding());
   DCHECK_GT(offset, 0);

@@ -8,9 +8,9 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/mojom/constants.mojom.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -553,7 +553,7 @@ void CoreOobeHandler::UpdateClientAreaSize() {
   const gfx::Size size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
   SetClientAreaSize(size.width(), size.height());
-  SetShelfHeight(ash::ShelfConstants::shelf_size());
+  SetShelfHeight(ash::ShelfConfig::Get()->shelf_size());
 }
 
 void CoreOobeHandler::OnOobeConfigurationChanged() {

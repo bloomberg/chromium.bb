@@ -5,9 +5,9 @@
 #include "ash/system/overview/overview_button_tray.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
@@ -37,8 +37,8 @@ OverviewButtonTray::OverviewButtonTray(Shelf* shelf)
       scoped_session_observer_(this) {
   SetInkDropMode(InkDropMode::ON);
 
-  gfx::ImageSkia image =
-      gfx::CreateVectorIcon(kShelfOverviewIcon, kShelfIconColor);
+  gfx::ImageSkia image = gfx::CreateVectorIcon(
+      kShelfOverviewIcon, ShelfConfig::Get()->shelf_icon_color());
   icon_->SetImage(image);
   const int vertical_padding = (kTrayItemSize - image.height()) / 2;
   const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
