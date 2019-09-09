@@ -798,14 +798,14 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       int_mv *global_mvs, int mi_row, int mi_col,
                       int16_t *mode_context) {
   int_mv gm_mv[2];
-  const BLOCK_SIZE bsize = mi->sb_type;
 
   if (ref_frame == INTRA_FRAME) {
     gm_mv[0].as_int = gm_mv[1].as_int = 0;
-    if (global_mvs != NULL && ref_frame < REF_FRAMES) {
+    if (global_mvs != NULL) {
       global_mvs[ref_frame].as_int = INVALID_MV;
     }
   } else {
+    const BLOCK_SIZE bsize = mi->sb_type;
     if (ref_frame < REF_FRAMES) {
       gm_mv[0] = gm_get_motion_vector(
           &cm->global_motion[ref_frame], cm->allow_high_precision_mv, bsize,
