@@ -1269,12 +1269,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   read_ref_frames(cm, xd, r, mbmi->segment_id, mbmi->ref_frame);
   const int is_compound = has_second_ref(mbmi);
 
-  MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
+  const MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, xd->ref_mv_count, xd->ref_mv_stack,
                    xd->weight, ref_mvs, /*global_mvs=*/NULL, mi_row, mi_col,
                    inter_mode_ctx);
 
-  int mode_ctx = av1_mode_context_analyzer(inter_mode_ctx, mbmi->ref_frame);
   mbmi->ref_mv_idx = 0;
 
   if (mbmi->skip_mode) {
@@ -1285,6 +1284,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_GLOBALMV)) {
       mbmi->mode = GLOBALMV;
     } else {
+      const int mode_ctx =
+          av1_mode_context_analyzer(inter_mode_ctx, mbmi->ref_frame);
       if (is_compound)
         mbmi->mode = read_inter_compound_mode(xd, r, mode_ctx);
       else
@@ -1307,7 +1308,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 
   if (is_compound && mbmi->mode != GLOBAL_GLOBALMV) {
-    int ref_mv_idx = mbmi->ref_mv_idx + 1;
+    const int ref_mv_idx = mbmi->ref_mv_idx + 1;
     nearestmv[0] = xd->ref_mv_stack[ref_frame][0].this_mv;
     nearestmv[1] = xd->ref_mv_stack[ref_frame][0].comp_mv;
     nearmv[0] = xd->ref_mv_stack[ref_frame][ref_mv_idx].this_mv;
@@ -1321,14 +1322,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     lower_mv_precision(&nearmv[1].as_mv, allow_hp,
                        cm->cur_frame_force_integer_mv);
   } else if (mbmi->ref_mv_idx > 0 && mbmi->mode == NEARMV) {
-    int_mv cur_mv =
+    nearmv[0] =
         xd->ref_mv_stack[mbmi->ref_frame[0]][1 + mbmi->ref_mv_idx].this_mv;
-    nearmv[0] = cur_mv;
   }
 
-  int_mv ref_mv[2];
-  ref_mv[0] = nearestmv[0];
-  ref_mv[1] = nearestmv[1];
+  int_mv ref_mv[2] = { nearestmv[0], nearestmv[1] };
 
   if (is_compound) {
     int ref_mv_idx = mbmi->ref_mv_idx;
@@ -1391,9 +1389,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   if (is_motion_variation_allowed_bsize(mbmi->sb_type) && !mbmi->skip_mode &&
-      !has_second_ref(mbmi))
+      !has_second_ref(mbmi)) {
     mbmi->num_proj_ref =
         av1_findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
+  }
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
 
   if (mbmi->ref_frame[1] != INTRA_FRAME)
@@ -1434,13 +1433,14 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       assert(masked_compound_used);
 
       // compound_diffwtd, wedge
-      if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
+      if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
         mbmi->interinter_comp.type =
             COMPOUND_WEDGE + aom_read_symbol(r,
                                              ec_ctx->compound_type_cdf[bsize],
                                              MASKED_COMPOUND_TYPES, ACCT_STR);
-      else
+      } else {
         mbmi->interinter_comp.type = COMPOUND_DIFFWTD;
+      }
 
       if (mbmi->interinter_comp.type == COMPOUND_WEDGE) {
         assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
@@ -1461,9 +1461,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     mbmi->wm_params.wmtype = DEFAULT_WMTYPE;
     mbmi->wm_params.invalid = 0;
 
-    if (mbmi->num_proj_ref > 1)
+    if (mbmi->num_proj_ref > 1) {
       mbmi->num_proj_ref = av1_selectSamples(&mbmi->mv[0].as_mv, pts, pts_inref,
                                              mbmi->num_proj_ref, bsize);
+    }
 
     if (av1_find_projection(mbmi->num_proj_ref, pts, pts_inref, bsize,
                             mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
