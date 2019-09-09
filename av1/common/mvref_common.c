@@ -621,7 +621,6 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   switch (nearest_match) {
     case 0:
-      mode_context[ref_frame] |= 0;
       if (ref_match_count >= 1) mode_context[ref_frame] |= 1;
       if (ref_match_count == 1)
         mode_context[ref_frame] |= (1 << REFMV_OFFSET);
