@@ -7030,6 +7030,11 @@ void RenderFrameHostImpl::SendCommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
+  // TODO(lfg): Temporary to debug https://crbug.com/996337.
+  if (common_params->url.SchemeIsCryptographic() &&
+      response_head.ssl_info.has_value() && !response_head.ssl_info->cert) {
+    base::debug::DumpWithoutCrashing();
+  }
   if (navigation_client) {
     navigation_client->CommitNavigation(
         std::move(common_params), std::move(commit_params), response_head,
