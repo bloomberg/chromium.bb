@@ -5,6 +5,7 @@
 package org.chromium.components.signin.identitymanager;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 
@@ -42,11 +43,12 @@ public class IdentityManager {
      */
     @CalledByNative
     static private IdentityManager create(long nativeIdentityManager) {
+        assert nativeIdentityManager != 0;
         return new IdentityManager(nativeIdentityManager);
     }
-    private IdentityManager(long nativeIdentityManager) {
-        assert nativeIdentityManager != 0;
 
+    @VisibleForTesting
+    public IdentityManager(long nativeIdentityManager) {
         mNativeIdentityManager = nativeIdentityManager;
     }
 
@@ -86,7 +88,8 @@ public class IdentityManager {
      * Notifies observers that the primary account was cleared in C++.
      */
     @CalledByNative
-    private void onPrimaryAccountCleared(CoreAccountInfo account) {
+    @VisibleForTesting
+    public void onPrimaryAccountCleared(CoreAccountInfo account) {
         for (Observer observer : mObservers) {
             observer.onPrimaryAccountCleared(account);
         }
