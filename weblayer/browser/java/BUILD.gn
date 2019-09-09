@@ -9,9 +9,11 @@ android_library("java") {
   java_files = [
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
     "org/chromium/weblayer_private/BrowserObserverProxy.java",
+    "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
+    "org/chromium/weblayer_private/TopControlsContainerView.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
   ]
 
@@ -29,9 +31,11 @@ generate_jni("jni") {
   sources = [
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
     "org/chromium/weblayer_private/BrowserObserverProxy.java",
+    "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
+    "org/chromium/weblayer_private/TopControlsContainerView.java",
   ]
 }
 

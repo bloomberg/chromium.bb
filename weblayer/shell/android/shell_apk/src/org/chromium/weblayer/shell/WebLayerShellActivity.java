@@ -69,6 +69,9 @@ public class WebLayerShellActivity extends FragmentActivity {
         mUrlView.setSelectAllOnFocus(true);
         mUrlView.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
         mUrlView.setImeOptions(EditorInfo.IME_ACTION_GO);
+        // The background of the top-view must be opaque, otherwise it bleeds through to the
+        // cc::Layer that mirrors the contents of the top-view.
+        mUrlView.setBackgroundColor(0xFFa9a9a9);
         mUrlView.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
