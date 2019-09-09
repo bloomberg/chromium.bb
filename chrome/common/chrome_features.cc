@@ -197,6 +197,11 @@ const base::Feature kCrostiniAdvancedAccessControls{
 const base::Feature kCrostiniAnsibleInfrastructure{
     "CrostiniAnsibleInfrastructure", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables infrastructure for generating Ansible playbooks for the default
+// Crostini container from software configurations in JSON schema.
+const base::Feature kCrostiniAnsibleSoftwareManagement{
+    "CrostiniAnsibleSoftwareManagement", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the UI overhaul for Cups Printers in settings page.
 const base::Feature kCupsPrintersUiOverhaul{"CupsPrintersUiOverhaul",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

@@ -125,6 +125,8 @@ extern const base::Feature kCrostiniAdvancedAccessControls;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAnsibleInfrastructure;
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kCrostiniAnsibleSoftwareManagement;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCupsPrintersUiOverhaul;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kPluginVm;
 COMPONENT_EXPORT(CHROME_FEATURES)
