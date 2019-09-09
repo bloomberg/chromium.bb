@@ -1082,11 +1082,6 @@
     "expiry_milestone": 77
   },
   {
-    "name": "enable-cros-vm-cups-proxy",
-    "owners": [ "//chrome/services/cups_proxy/OWNERS" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-cups-printers-ui-overhaul",
     "owners": [ "jimmyxgong" ],
     "expiry_milestone": 79
