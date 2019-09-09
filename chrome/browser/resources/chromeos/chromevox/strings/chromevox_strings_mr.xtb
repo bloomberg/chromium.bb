@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">इव्हेंट स्ट्रीम फिल्टर लपवा</translation>
 <translation id="1088219014394087294">कोणतेही मथळे नाहीत.</translation>
 <translation id="1106741348836243114">ध्वनी अभिप्राय (इअरकॉन) चालू किंवा बंद करा.</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "अल्फा", "b": "ब्रेव्हो", "c": "चार्ली", "d": "डेल्टा", "e": "इको", "f": "फॉक्सट्रॉट", "g": "गोल्फ", "h": "हॉटेल", "i": "इंडिया", "j": "जुलिएट","k": "किलो", "l": "लिमा", "m": "माइक", "n": "नोव्हेंबर", "o": "ऑस्कर","p": "पापा", "q": "क्वेबेक", "r": "रोमिओ", "s": "सीएरा", "t": "टँगो", "u": "युनिफॉर्म", "v": "व्हिक्टर", "w": "व्हिस्की","x": "एक्सरे", "y": "यंकी", "z": "झुलू"}</translation>
 <translation id="1120938014254001895">दोन बोटांनी वरच्या दिशेला स्वाइप करा</translation>
 <translation id="1124771028211010580">वर्तमान डिस्प्ले आकार शेजारी-शेजारी आहे.</translation>
 <translation id="1126928665165112660">तिर्यक नाही</translation>
@@ -483,6 +483,7 @@
 <translation id="4372705107434148843">भाषण थांबवा</translation>
 <translation id="4373197658375206385">लिंक नसलेला मागील आयटम नाही.</translation>
 <translation id="4376316291247992553">ग्राफिक ब्रेल म्हणून पहा</translation>
+<translation id="437809255587011096">मजकुराच्या शैलीची घोषणा करा</translation>
 <translation id="4378308539633073595">पुढे स्क्रोल करा</translation>
 <translation id="4384583879834880242">प्रश्नोत्तरे</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1120,6 +1121,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8503360654911991865">नॅव्हिगेशन ग्रॅन्युलॅरिटी कमी करा</translation>
 <translation id="8504695234784218301">व्याकरण एरर सुरू झाली</translation>
 <translation id="8520472399088452386">स्पिन बटण</translation>
+<translation id="8534394844575788431">फॉरमॅटिंग</translation>
 <translation id="8538744478902126321">वर्तमान सेलच्या पंक्ती शीर्षलेखावर अंदाज करा</translation>
 <translation id="8540054775867439484">शीर्षस्थानी ओघ वळविला</translation>
 <translation id="8542271685829952264">सर्व ChromeVox कमांड आणि शॉर्टकट एक्सप्लोर करण्यासाठी, शोध + पूर्णविराम दाबा, नंतर मेनू मधून नेव्हिगेट करण्यासाठी बाण की चा आणि कमांड सक्रिय करण्यासाठी Enter चा वापर करा. Search+o नंतर t दाबून येथे परत या.</translation>
@@ -1199,6 +1201,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">टॅब</translation>
 <translation id="9151211641321628915">वर्तमान स्‍थितीबद्दल संक्षिप्त वर्णन घोषित करते</translation>
+<translation id="9151249085738989067">भाषेनुसार ChromeVox व्हॉइस आपोआप स्विच करा</translation>
 <translation id="9153606228985488238">पिच <ph name="PERCENT" /> टक्के</translation>
 <translation id="9160096769946561184">वर्तमान स्तंभाच्या शेवटी जा</translation>
 <translation id="9173115498289768110">व्हॉल्यूम <ph name="PERCENT" /> टक्के</translation>
