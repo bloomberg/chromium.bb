@@ -106,11 +106,4 @@ void AccountsMutatorImpl::MoveAccount(AccountsMutator* target,
 }
 #endif
 
-void AccountsMutatorImpl::LegacySetRefreshTokenForSupervisedUser(
-    const std::string& refresh_token) {
-  token_service_->UpdateCredentials(
-      CoreAccountId("managed_user@localhost"), refresh_token,
-      signin_metrics::SourceForRefreshTokenOperation::kSupervisedUser_InitSync);
-}
-
 }  // namespace signin

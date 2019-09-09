@@ -421,15 +421,6 @@ class IdentityManager : public KeyedService,
   // Registers per-profile prefs used by this class.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  // Explicitly triggers the loading of accounts in the context of supervised
-  // users.
-  // TODO(https://crbug.com/860492): Remove this method when supervised users
-  // support is eliminated.
-  void DeprecatedLoadCredentialsForSupervisedUser(
-      const CoreAccountId& primary_account_id);
-#endif
-
   // Returns pointer to the object used to obtain diagnostics about the internal
   // state of IdentityManager.
   DiagnosticsProvider* GetDiagnosticsProvider();

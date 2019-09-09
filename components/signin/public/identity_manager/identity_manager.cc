@@ -32,23 +32,6 @@
 
 namespace signin {
 
-namespace {
-
-// Local copy of the account ID used for supervised users (defined in //chrome
-// as supervised_users::kSupervisedUserPseudoEmail). Simply copied to avoid
-// plumbing it from //chrome all the way down through the Identity Service just
-// to handle the corner cases below.
-// TODO(860492): Remove this once supervised user support is removed.
-const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
-
-// A made-up Gaia ID to populate the supervised user's AccountInfo with in order
-// to maintain the invariant that the AccountInfos passed out by IdentityManager
-// always have an account ID, Gaia ID, and email set.
-// TODO(860492): Remove this once supervised user support is removed.
-const char kSupervisedUserPseudoGaiaID[] = "managed_user_gaia_id";
-
-}  // namespace
-
 IdentityManager::IdentityManager(
     std::unique_ptr<AccountTrackerService> account_tracker_service,
     std::unique_ptr<ProfileOAuth2TokenService> token_service,
@@ -437,13 +420,6 @@ void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 #endif
 }
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-void IdentityManager::DeprecatedLoadCredentialsForSupervisedUser(
-    const CoreAccountId& primary_account_id) {
-  token_service_->LoadCredentials(primary_account_id);
-}
-#endif
-
 DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
   return diagnostics_provider_.get();
 }
@@ -521,23 +497,7 @@ AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
 
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
-
-  // In the context of supervised users, the ProfileOAuth2TokenService is used
-  // without the AccountTrackerService being used. This is the only case in
-  // which the AccountTrackerService will potentially not know about the
-  // account. In this context, |account_id| is always set to
-  // kSupervisedUserPseudoEmail. Populate the information manually in this case
-  // to maintain the invariant that the account ID, gaia ID, and email are
-  // always set.
-  // TODO(860492): Remove this special case once supervised user support is
-  // removed.
-  DCHECK(!account_info.IsEmpty() ||
-         account_id.id == kSupervisedUserPseudoEmail);
-  if (account_id.id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
-    account_info.account_id = account_id;
-    account_info.email = kSupervisedUserPseudoEmail;
-    account_info.gaia = kSupervisedUserPseudoGaiaID;
-  }
+  DCHECK(!account_info.IsEmpty());
 
   return account_info;
 }
