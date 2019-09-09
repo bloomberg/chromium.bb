@@ -2023,7 +2023,7 @@
     },
 
     'cast': {
-      'gn_args': 'is_chromecast=true use_v4l2=true',
+      'gn_args': 'is_chromecast=true'
     },
 
     'cast_audio': {
