@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {
@@ -35,13 +36,13 @@ void MouseInputFilter::InjectMouseEvent(const MouseEvent& event) {
     int x = out_event.x() * output_size_.WidthAsPixels();
     x = (x + input_size_.WidthAsDips() / 2) / input_size_.WidthAsDips();
     out_event.set_x(output_offset_.x() +
-                    std::max(0, std::min(output_size_.WidthAsPixels(), x)));
+                    base::ClampToRange(x, 0, output_size_.WidthAsPixels()));
   }
   if (out_event.has_y()) {
     int y = out_event.y() * output_size_.HeightAsPixels();
     y = (y + input_size_.HeightAsDips() / 2) / input_size_.HeightAsDips();
     out_event.set_y(output_offset_.y() +
-                    std::max(0, std::min(output_size_.HeightAsPixels(), y)));
+                    base::ClampToRange(y, 0, output_size_.HeightAsPixels()));
   }
 
   InputFilter::InjectMouseEvent(out_event);
