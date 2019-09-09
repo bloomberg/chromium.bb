@@ -3758,7 +3758,7 @@
           'linux-xenial',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_linux_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_and_vulkan_gtests',
         },
         'args': [
           '--test-launcher-print-test-stdio=always',
