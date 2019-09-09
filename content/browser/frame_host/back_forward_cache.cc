@@ -107,8 +107,6 @@ uint64_t GetDisallowedFeatures() {
       ToFeatureBit(
           WebSchedulerTrackedFeature::kHasScriptableFramesInMultipleTabs) |
       ToFeatureBit(
-          WebSchedulerTrackedFeature::kRequestedGeolocationPermission) |
-      ToFeatureBit(
           WebSchedulerTrackedFeature::kRequestedNotificationsPermission) |
       ToFeatureBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |
       ToFeatureBit(

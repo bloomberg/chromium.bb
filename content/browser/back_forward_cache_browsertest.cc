@@ -29,6 +29,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
@@ -1858,4 +1859,134 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoToIndex(0);
   crash_observer.Wait();
 }
+
+class GeolocationBackForwardCacheBrowserTest
+    : public BackForwardCacheBrowserTest {
+ protected:
+  GeolocationBackForwardCacheBrowserTest() : geo_override_(0.0, 0.0) {}
+
+  device::ScopedGeolocationOverrider geo_override_;
+};
+
+// Test that a page which has queried geolocation in the past, but have no
+// active geolocation query, can be bfcached.
+IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
+                       CacheAfterGeolocationRequest) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL("/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+
+  // Query current position, and wait for the query to complete.
+  EXPECT_EQ("received", EvalJs(rfh_a, R"(
+      new Promise(resolve => {
+        navigator.geolocation.getCurrentPosition(() => resolve('received'));
+      });
+  )"));
+
+  RenderFrameDeletedObserver deleted(rfh_a);
+
+  // 2) Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // The page has no inflight geolocation request when we navigated away,
+  // so it should have been cached.
+  EXPECT_FALSE(deleted.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+}
+
+// Test that a page which has an inflight geolocation query can be bfcached,
+// and verify that the page does not observe any geolocation while the page
+// was inside bfcache.
+IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
+                       CancelGeolocationRequestInFlight) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL("/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+
+  // Continuously query current geolocation.
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    window.longitude_log = [];
+    window.err_log = [];
+    window.wait_for_first_position = new Promise(resolve => {
+      navigator.geolocation.watchPosition(
+        pos => {
+          window.longitude_log.push(pos.coords.longitude);
+          resolve("resolved");
+        },
+        err => window.err_log.push(err)
+      );
+    })
+  )"));
+  geo_override_.UpdateLocation(0.0, 0.0);
+  EXPECT_EQ("resolved", EvalJs(rfh_a, "window.wait_for_first_position"));
+
+  // Pause resolving Geoposition queries to keep the request inflight.
+  geo_override_.Pause();
+  geo_override_.UpdateLocation(1.0, 1.0);
+  EXPECT_EQ(1u, geo_override_.GetGeolocationInstanceCount());
+
+  // 2) Navigate away.
+  base::RunLoop loop_until_close;
+  geo_override_.SetGeolocationCloseCallback(loop_until_close.QuitClosure());
+
+  RenderFrameDeletedObserver deleted(rfh_a);
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  loop_until_close.Run();
+
+  // The page has no inflight geolocation request when we navigated away,
+  // so it should have been cached.
+  EXPECT_FALSE(deleted.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // Resume resolving Geoposition queries.
+  geo_override_.Resume();
+
+  // We update the location while the page is BFCached, but this location should
+  // not be observed.
+  geo_override_.UpdateLocation(2.0, 2.0);
+
+  // 3) Navigate back to A.
+
+  // The location when navigated back can be observed
+  geo_override_.UpdateLocation(3.0, 3.0);
+
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+
+  // Wait for an update after the user navigates back to A.
+  EXPECT_EQ("resolved", EvalJs(rfh_a, R"(
+    window.wait_for_position_after_resume = new Promise(resolve => {
+      navigator.geolocation.watchPosition(
+        pos => {
+          window.longitude_log.push(pos.coords.longitude);
+          resolve("resolved");
+        },
+        err => window.err_log.push(err)
+      );
+    })
+  )"));
+
+  EXPECT_LE(0, EvalJs(rfh_a, "longitude_log.indexOf(0.0)").ExtractInt())
+      << "Geoposition before the page is put into BFCache should be visible";
+  EXPECT_EQ(-1, EvalJs(rfh_a, "longitude_log.indexOf(1.0)").ExtractInt())
+      << "Geoposition while the page is put into BFCache should be invisible";
+  EXPECT_EQ(-1, EvalJs(rfh_a, "longitude_log.indexOf(2.0)").ExtractInt())
+      << "Geoposition while the page is put into BFCache should be invisible";
+  EXPECT_LT(0, EvalJs(rfh_a, "longitude_log.indexOf(3.0)").ExtractInt())
+      << "Geoposition when the page is restored from BFCache should be visible";
+  EXPECT_EQ(0, EvalJs(rfh_a, "err_log.length"))
+      << "watchPosition API should have reported no errors";
+}
+
 }  // namespace content
