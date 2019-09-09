@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -76,9 +77,9 @@ class StringUploadDataPipeGetter : public mojom::DataPipeGetter {
       : upload_string_(upload_string) {}
   ~StringUploadDataPipeGetter() override = default;
 
-  // Returns a DataPipeGetterPtr for a new upload attempt, closing all
-  // previously opened pipes.
-  mojom::DataPipeGetterPtr GetPtrForNewUpload() {
+  // Returns a mojo::PendingRemote<mojom::DataPipeGetter> for a new upload
+  // attempt, closing all previously opened pipes.
+  mojo::PendingRemote<mojom::DataPipeGetter> GetRemoteForNewUpload() {
     // If this is a retry, need to close all receivers, since only one consumer
     // can read from the data pipe at a time.
     receiver_set_.Clear();
@@ -86,8 +87,8 @@ class StringUploadDataPipeGetter : public mojom::DataPipeGetter {
     // any pending reads.
     ResetBodyPipe();
 
-    mojom::DataPipeGetterPtr data_pipe_getter;
-    receiver_set_.Add(this, mojo::MakeRequest(&data_pipe_getter));
+    mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter;
+    receiver_set_.Add(this, data_pipe_getter.InitWithNewPipeAndPassReceiver());
     return data_pipe_getter;
   }
 
@@ -1506,9 +1507,8 @@ void SimpleURLLoaderImpl::StartRequest(
   // uploading a string via a data pipe.
   if (string_upload_data_pipe_getter_) {
     resource_request_->request_body = new ResourceRequestBody();
-    mojom::DataPipeGetterPtr data_pipe_getter;
     resource_request_->request_body->AppendDataPipe(
-        string_upload_data_pipe_getter_->GetPtrForNewUpload());
+        string_upload_data_pipe_getter_->GetRemoteForNewUpload());
   }
   url_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,

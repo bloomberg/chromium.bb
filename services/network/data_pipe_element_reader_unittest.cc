@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -33,12 +34,10 @@ class PassThroughDataPipeGetter : public mojom::DataPipeGetter {
  public:
   explicit PassThroughDataPipeGetter() = default;
 
-  network::mojom::DataPipeGetterPtr GetDataPipeGetterPtr() {
+  mojo::PendingRemote<network::mojom::DataPipeGetter>
+  GetDataPipeGetterRemote() {
     EXPECT_FALSE(receiver_.is_bound());
-
-    network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-    receiver_.Bind(mojo::MakeRequest(&data_pipe_getter_ptr));
-    return data_pipe_getter_ptr;
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   void WaitForRead(mojo::ScopedDataPipeProducerHandle* write_pipe,
@@ -89,7 +88,7 @@ class PassThroughDataPipeGetter : public mojom::DataPipeGetter {
 class DataPipeElementReaderTest : public testing::Test {
  public:
   DataPipeElementReaderTest()
-      : element_reader_(nullptr, data_pipe_getter_.GetDataPipeGetterPtr()) {}
+      : element_reader_(nullptr, data_pipe_getter_.GetDataPipeGetterRemote()) {}
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_{

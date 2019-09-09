@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
@@ -95,18 +96,22 @@ scoped_refptr<EncodedFormData> DataPipeFormData() {
   body.AppendData(WebData("foo", 3));
 
   // Add data pipe.
-  network::mojom::blink::DataPipeGetterPtr data_pipe_getter_ptr;
+  mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
+      data_pipe_getter_remote;
   // Object deletes itself.
-  new SimpleDataPipeGetter(String(" hello world"),
-                           mojo::MakeRequest(&data_pipe_getter_ptr));
-  body.AppendDataPipe(data_pipe_getter_ptr.PassInterface().PassHandle());
+  new SimpleDataPipeGetter(
+      String(" hello world"),
+      data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
+  body.AppendDataPipe(data_pipe_getter_remote.PassPipe());
 
   // Add another data pipe.
-  network::mojom::blink::DataPipeGetterPtr data_pipe_getter_ptr2;
+  mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
+      data_pipe_getter_remote2;
   // Object deletes itself.
-  new SimpleDataPipeGetter(String(" here's another data pipe "),
-                           mojo::MakeRequest(&data_pipe_getter_ptr2));
-  body.AppendDataPipe(data_pipe_getter_ptr2.PassInterface().PassHandle());
+  new SimpleDataPipeGetter(
+      String(" here's another data pipe "),
+      data_pipe_getter_remote2.InitWithNewPipeAndPassReceiver());
+  body.AppendDataPipe(data_pipe_getter_remote2.PassPipe());
 
   // Add some more data.
   body.AppendData(WebData("bar baz", 7));
