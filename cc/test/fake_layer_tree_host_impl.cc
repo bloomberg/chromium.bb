@@ -16,7 +16,7 @@ namespace cc {
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
     TaskRunnerProvider* task_runner_provider,
     TaskGraphRunner* task_graph_runner)
-    : FakeLayerTreeHostImpl(LayerTreeSettings(),
+    : FakeLayerTreeHostImpl(LayerListSettings(),
                             task_runner_provider,
                             task_graph_runner) {}
 

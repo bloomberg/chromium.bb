@@ -1385,6 +1385,8 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
+  // TODO(994361): Remove impl-side property tree builder.
+  NOTREACHED();
   // Preserve render surfaces when rebuilding.
   std::vector<std::unique_ptr<RenderSurfaceImpl>> render_surfaces;
   property_trees->effect_tree.TakeRenderSurfaces(&render_surfaces);
