@@ -1972,6 +1972,11 @@ void RenderWidgetHostImpl::OnMouseEventAck(
   for (auto& input_event_observer : input_event_observers_)
     input_event_observer.OnInputEventAck(ack_source, ack_result,
                                          mouse_event.event);
+
+  // Give the delegate the ability to handle a mouse event that wasn't consumed
+  // by the renderer. eg. Back/Forward mouse buttons.
+  if (delegate_ && ack_result != INPUT_EVENT_ACK_STATE_CONSUMED && !is_hidden())
+    delegate_->HandleMouseEvent(mouse_event.event);
 }
 
 bool RenderWidgetHostImpl::IsMouseLocked() const {
