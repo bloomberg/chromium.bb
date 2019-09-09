@@ -93,8 +93,8 @@ The `isolate.py` tool will emit something like this:
 e625130b712096e3908266252c8cd779d7f442f1  unit_tests
 ```
 
-Do not ctrl-c it after it does this, even if it seems to be hanging for a minute
-- just let it finish.
+Do not ctrl-c it after it does this, even if it seems to be hanging for a
+minute - just let it finish.
 
 ## Running an isolate
 
