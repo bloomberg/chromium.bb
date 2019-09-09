@@ -77,7 +77,8 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
         # Copy the stateful partition into the GPT image.
         ['dd', 'if=%s' % state, 'of=%s' % self.image, 'conv=notrunc', 'bs=4K',
          'seek=%d' % (_STATEFUL_OFFSET // _BLOCK_SIZE),
-         'count=%s' % (_STATEFUL_SIZE // _BLOCK_SIZE)])
+         'count=%s' % (_STATEFUL_SIZE // _BLOCK_SIZE)],
+        ['sync'])
     for cmd in commands:
       cros_build_lib.RunCommand(cmd, quiet=True)
 
