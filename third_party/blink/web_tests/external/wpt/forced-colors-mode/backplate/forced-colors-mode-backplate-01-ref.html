@@ -2,7 +2,6 @@
 <meta charset="utf-8">
 <title>
   Forced colors mode - backplate reference.
-  Tests backplate invalidation.
 </title>
 <style>
   body {
@@ -14,10 +13,28 @@
                                   simulated in testing using a Window
                                   background-color behind the text.
                                 */
+    line-height: 10px;
+    text-align: justify;
+    width: 100px;
+  }
+  #a {
+    background-color: Window;
   }
 </style>
 <body>
-  <span style="background-color: Window;">
-    There should be a backplate covering one line of text.
-  </span>
+  <div id="a">
+    A backplate should be drawn behind the text
+    <br>
+    in forced colors mode
+    <br>
+    (forced-color-adjust is set to auto.)
+  </div>
+  <br><br><br>
+  <div>
+    There should NOT be a backplate drawn behind the text
+    <br>
+    in forced colors mode
+    <br>
+    (forced-color-adjust is set to none.)
+  </div>
 </body>
