@@ -221,7 +221,7 @@ void SharingService::SendMessageToDevice(
   send_message_callbacks_.emplace(message_guid, std::move(callback));
 
   base::PostDelayedTask(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, content::BrowserThread::UI},
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, content::BrowserThread::UI},
       base::BindOnce(&SharingService::InvokeSendMessageCallback,
                      weak_ptr_factory_.GetWeakPtr(), message_guid,
                      SharingSendMessageResult::kAckTimeout),
