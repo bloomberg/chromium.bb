@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import functools
+import json
 import os
 
 from chromite.lib import constants
@@ -226,10 +227,31 @@ def uprev_sample(*_args, **_kwargs):
       for repo in ('general-sandbox', 'merge-sandbox')
   ]
 
-  for path in paths:
-    osutils.WriteFile(path, cros_build_lib.GetRandomString())
-
   return UprevVersionedPackageResult('1.2.3', paths)
+
+
+@uprevs_versioned_package('afdo/kernel-profiles')
+def uprev_kernel_afdo(*_args, **_kwargs):
+  """Updates the kernel ebuild with version from kernel_afdo.json.
+
+  See: uprev_versioned_package.
+  """
+  path = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
+                      'toolchain-utils', 'afdo_metadata', 'kernel_afdo.json')
+
+  with open(path, 'r') as file:
+    versions = json.load(file)
+
+  paths = []
+  for version, version_info in versions.items():
+    ebuild_path = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
+                               'chromiumos-overlay', 'sys-kernel', version,
+                               '%s-9999.ebuild' % version)
+    portage_util.EBuild.UpdateEBuild(
+        ebuild_path, dict(AFDO_PROFILE_VERSION=version_info['name']))
+    paths.append(ebuild_path)
+
+  return UprevVersionedPackageResult("test version", paths)
 
 
 @uprevs_versioned_package(constants.CHROME_CP)
