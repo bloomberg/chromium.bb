@@ -55,12 +55,6 @@ class SinkUtils {
      */
     this.castControlPort = 0;
 
-    /**
-     * The last time cloud sinks were checked.
-     * @type {number}
-     */
-    this.lastCloudSinkCheckTimeMillis = 0;
-
     PersistentDataManager.register(this);
   }
 
@@ -125,7 +119,6 @@ class SinkUtils {
         'receiverIdToken': this.receiverIdToken_,
         'fixedIpList': this.fixedIpList.join(','),
         'castControlPort': this.castControlPort,
-        'lastCloudSinkCheckTimeMillis': this.lastCloudSinkCheckTimeMillis
       }
     ];
   }
@@ -150,8 +143,6 @@ class SinkUtils {
                           persistentData['fixedIpList'].split(',')) ||
           [];
       this.castControlPort = persistentData['castControlPort'] || 0;
-      this.lastCloudSinkCheckTimeMillis =
-          persistentData['lastCloudSinkCheckTimeMillis'] || 0;
     }
   }
 }
