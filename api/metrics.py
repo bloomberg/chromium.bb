@@ -11,6 +11,7 @@ module will be creating.
 
 from __future__ import print_function
 
+from chromite.lib import cros_logging as logging
 from chromite.utils import metrics
 
 
@@ -40,7 +41,11 @@ def deserialize_metrics_log(output_events, prefix=None):
       timers[input_event.key] = (input_event.name,
                                  input_event.timestamp_epoch_millis)
     elif input_event.op == metrics.OP_STOP_TIMER:
-      timer = timers.pop(input_event.key)
+      # TODO(wbbradley): Drop the None fallback https://crbug.com/1001909.
+      timer = timers.pop(input_event.key, None)
+      if timer is None:
+        logging.error('%s: stop timer recorded, but missing start timer!?',
+                      input_event.key)
       if timer:
         assert input_event.name == timer[0]
         output_event = output_events.add()

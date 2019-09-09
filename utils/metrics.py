@@ -122,6 +122,9 @@ def read_metrics_events():
     return
 
   logging.debug('reading metrics logs from %s', metrics_logfile)
+  # TODO(wbbradley): Drop this once it's stable https://crbug.com/1001909.
+  with open(metrics_logfile) as f:
+    logging.debug('[metrics log file]\n%s', f.read())
   with open(metrics_logfile, 'r') as f:
     for line in f:
       yield parse_metric(line)
