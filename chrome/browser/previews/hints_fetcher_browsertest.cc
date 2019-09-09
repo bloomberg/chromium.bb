@@ -96,8 +96,9 @@ class HintsFetcherDisabledBrowserTest
   ~HintsFetcherDisabledBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    content::NetworkConnectionChangeSimulator().SetConnectionType(
-        network::mojom::ConnectionType::CONNECTION_2G);
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -774,11 +775,11 @@ IN_PROC_BROWSER_TEST_P(HintsFetcherBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL("https://example1.com"));
 
   RetryForHistogramUntilCountReached(
-      histogram_tester, "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch",
-      1);
+      histogram_tester,
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 1);
 
   histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 1);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -814,11 +815,11 @@ IN_PROC_BROWSER_TEST_P(
   ui_test_utils::NavigateToURL(browser(), GURL("https://unSeenHost.com"));
 
   RetryForHistogramUntilCountReached(
-      histogram_tester, "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch",
-      1);
+      histogram_tester,
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 1);
 
   histogram_tester->ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false, 1);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -854,5 +855,5 @@ IN_PROC_BROWSER_TEST_P(
   ui_test_utils::NavigateToURL(browser(), GURL("http://example1.com"));
 
   histogram_tester->ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", 0);
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 0);
 }
