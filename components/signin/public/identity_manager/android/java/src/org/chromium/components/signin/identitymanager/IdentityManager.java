@@ -98,7 +98,7 @@ public class IdentityManager {
     /**
      * Returns whether the user's primary account is available.
      */
-    boolean hasPrimaryAccount() {
+    public boolean hasPrimaryAccount() {
         return IdentityManagerJni.get().hasPrimaryAccount(mNativeIdentityManager);
     }
 

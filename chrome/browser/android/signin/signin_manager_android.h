@@ -62,8 +62,6 @@ class SigninManagerAndroid : public KeyedService {
 
   jboolean IsForceSigninEnabled(JNIEnv* env);
 
-  jboolean IsSignedInOnNative(JNIEnv* env);
-
   // Registers a CloudPolicyClient for fetching policy for a user and fetches
   // the policy if necessary.
   void FetchAndApplyCloudPolicy(

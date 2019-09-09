@@ -279,6 +279,13 @@ public class SigninManager
     }
 
     /**
+     * Returns the IdentityManager used by SigninManager.
+     */
+    public IdentityManager getIdentityManager() {
+        return mIdentityManager;
+    }
+
+    /**
      * Notifies the SigninManager that the First Run check has completed.
      *
      * The user will be allowed to sign-in once this is signaled.
@@ -691,13 +698,6 @@ public class SigninManager
         }
     }
 
-    /**
-     * @return Whether there is a signed in account on the native side.
-     */
-    public boolean isSignedInOnNative() {
-        return SigninManagerJni.get().isSignedInOnNative(mNativeSigninManagerAndroid);
-    }
-
     @CalledByNative
     private void onSigninAllowedByPolicyChanged(boolean newSigninAllowedByPolicy) {
         mSigninAllowedByPolicy = newSigninAllowedByPolicy;
@@ -772,8 +772,6 @@ public class SigninManager
         void clearLastSignedInUser(long nativeSigninManagerAndroid);
 
         void logInSignedInUser(long nativeSigninManagerAndroid);
-
-        boolean isSignedInOnNative(long nativeSigninManagerAndroid);
 
         String extractDomainName(String email);
 

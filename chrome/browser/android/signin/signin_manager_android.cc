@@ -213,10 +213,6 @@ jboolean SigninManagerAndroid::IsForceSigninEnabled(JNIEnv* env) {
   return force_browser_signin_.GetValue();
 }
 
-jboolean SigninManagerAndroid::IsSignedInOnNative(JNIEnv* env) {
-  return identity_manager_->HasPrimaryAccount();
-}
-
 void SigninManagerAndroid::OnSigninAllowedPrefChanged() const {
   Java_SigninManager_onSigninAllowedByPolicyChanged(
       base::android::AttachCurrentThread(), java_signin_manager_,
