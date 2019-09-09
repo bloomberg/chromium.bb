@@ -135,17 +135,19 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
           : base::make_optional(event.time_stamp());
 
   OverviewController* controller = Shell::Get()->overview_controller();
-  // Note: Toggling overview mode will fail if there is no window to show, the
-  // screen is locked, a modal dialog is open or is running in kiosk app
-  // session.
-  bool performed;
   if (controller->InOverviewSession())
-    performed = controller->EndOverview();
+    controller->EndOverview();
   else
-    performed = controller->StartOverview();
+    controller->StartOverview();
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
-  return performed;
+
+  // The return value doesn't matter here. OnOverviewModeStarting() and
+  // OnOverviewModeEnded() will do the right thing to set the button state.
+  return true;
 }
+
+void OverviewButtonTray::HandlePerformActionResult(bool action_performed,
+                                                   const ui::Event& event) {}
 
 void OverviewButtonTray::OnSessionStateChanged(
     session_manager::SessionState state) {
