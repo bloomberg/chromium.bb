@@ -243,7 +243,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindCacheStorage(
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
       const url::Origin& origin) override;
-  void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
+  void BindIndexedDB(mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
                      const url::Origin& origin) override;
   void ForceCrash() override;
   void CleanupCorbExceptionForPluginUponDestruction() override;
