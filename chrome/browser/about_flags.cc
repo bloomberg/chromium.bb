@@ -2910,6 +2910,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnNTP)},
 
+    {"omnibox-zero-suggestions-on-ntp-realbox",
+     flag_descriptions::kOmniboxZeroSuggestionsOnNTPRealboxName,
+     flag_descriptions::kOmniboxZeroSuggestionsOnNTPRealboxDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnNTPRealbox)},
+
     {"omnibox-material-design-weather-icons",
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsName,
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsDescription,

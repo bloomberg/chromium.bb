@@ -885,6 +885,9 @@ extern const char kOmniboxUISwapTitleAndUrlDescription[];
 extern const char kOmniboxZeroSuggestionsOnNTPName[];
 extern const char kOmniboxZeroSuggestionsOnNTPDescription[];
 
+extern const char kOmniboxZeroSuggestionsOnNTPRealboxName[];
+extern const char kOmniboxZeroSuggestionsOnNTPRealboxDescription[];
+
 extern const char kOnTheFlyMhtmlHashComputationName[];
 extern const char kOnTheFlyMhtmlHashComputationDescription[];
 

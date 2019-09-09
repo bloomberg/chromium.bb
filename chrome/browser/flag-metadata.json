@@ -2714,6 +2714,11 @@
     "expiry_milestone": 81
   },
   {
+    "name": "omnibox-zero-suggestions-on-ntp-realbox",
+    "owners": [ "dbeam", "mahmadi" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "on-the-fly-mhtml-hash-computation",
     "owners": [ "mtlieuu", "offline-dev@chromium.org" ],
     "expiry_milestone": 76

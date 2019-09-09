@@ -308,6 +308,11 @@ const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
 const base::Feature kZeroSuggestionsOnNTP{"OmniboxZeroSuggestionsOnNTP",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow suggestions to be shown to the user on the New Tab Page upon focusing
+// the real search box.
+const base::Feature kZeroSuggestionsOnNTPRealbox{
+    "OmniboxZeroSuggestionsOnNTPRealbox", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature to provide non personalized head search suggestion from a compact
 // on device model.
 const base::Feature kOnDeviceHeadProvider{"OmniboxOnDeviceHeadProvider",
