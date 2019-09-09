@@ -239,6 +239,9 @@ crbug.com/857490 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 
 crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
 
+crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
+crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
+
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 # Skip some tests for rendersubtree
@@ -3220,12 +3223,6 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-masking/clip-path/clip-path-i
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
 crbug.com/626703 [ Win10 ] virtual/cascade/external/wpt/css/css-paint-api/color-custom-property-animation.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] virtual/omt-service-worker-startup/external/wpt/shape-detection/shapedetection-cross-origin.sub.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] virtual/omt-service-worker-startup/external/wpt/shape-detection/detection-security-test.https.html [ Timeout ]
