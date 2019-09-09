@@ -14,6 +14,7 @@ import unittest
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import image_lib
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.scripts import test_image
@@ -37,8 +38,8 @@ class TestImageTest(cros_test_lib.MockTempDirTestCase):
     )
     self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
                      autospec=True, return_value=fake_partitions)
-    self.PatchObject(osutils.MountImageContext, '_Mount', autospec=True)
-    self.PatchObject(osutils.MountImageContext, '_Unmount', autospec=True)
+    self.PatchObject(image_lib.LoopbackPartitions, '_Mount', autospec=True)
+    self.PatchObject(image_lib.LoopbackPartitions, '_Unmount', autospec=True)
 
 
 class FindImageTest(TestImageTest):
