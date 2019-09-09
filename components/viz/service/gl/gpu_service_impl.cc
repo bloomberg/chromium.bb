@@ -843,15 +843,7 @@ void GpuServiceImpl::Crash() {
 
 void GpuServiceImpl::Hang() {
   DCHECK(io_runner_->BelongsToCurrentThread());
-
-  main_runner_->PostTask(FROM_HERE, base::BindOnce([] {
-                           DVLOG(1) << "GPU: Simulating GPU hang";
-                           for (;;) {
-                             // Do not sleep here. The GPU watchdog timer tracks
-                             // the amount of user time this thread is using and
-                             // it doesn't use much while calling Sleep.
-                           }
-                         }));
+  main_runner_->PostTask(FROM_HERE, base::BindOnce(&gl::Hang));
 }
 
 void GpuServiceImpl::ThrowJavaException() {
