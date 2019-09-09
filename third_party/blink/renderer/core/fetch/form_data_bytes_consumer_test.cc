@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,12 +37,13 @@ using MockBytesConsumer = BytesConsumerTestUtil::MockBytesConsumer;
 
 class SimpleDataPipeGetter : public network::mojom::blink::DataPipeGetter {
  public:
-  SimpleDataPipeGetter(const String& str,
-                       network::mojom::blink::DataPipeGetterRequest request)
+  SimpleDataPipeGetter(
+      const String& str,
+      mojo::PendingReceiver<network::mojom::blink::DataPipeGetter> receiver)
       : str_(str) {
-    bindings_.set_connection_error_handler(WTF::BindRepeating(
-        &SimpleDataPipeGetter::OnConnectionError, WTF::Unretained(this)));
-    bindings_.AddBinding(this, std::move(request));
+    receivers_.set_disconnect_handler(WTF::BindRepeating(
+        &SimpleDataPipeGetter::OnMojoDisconnect, WTF::Unretained(this)));
+    receivers_.Add(this, std::move(receiver));
   }
   ~SimpleDataPipeGetter() override = default;
 
@@ -54,18 +55,18 @@ class SimpleDataPipeGetter : public network::mojom::blink::DataPipeGetter {
     std::move(callback).Run(0 /* OK */, str_.length());
   }
 
-  void Clone(network::mojom::blink::DataPipeGetterRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::blink::DataPipeGetter> receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
 
-  void OnConnectionError() {
-    if (bindings_.empty())
+  void OnMojoDisconnect() {
+    if (receivers_.empty())
       delete this;
   }
 
  private:
   String str_;
-  mojo::BindingSet<network::mojom::blink::DataPipeGetter> bindings_;
+  mojo::ReceiverSet<network::mojom::blink::DataPipeGetter> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDataPipeGetter);
 };

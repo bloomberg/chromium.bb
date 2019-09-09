@@ -27,7 +27,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/net_errors.h"
@@ -79,15 +79,15 @@ class StringUploadDataPipeGetter : public mojom::DataPipeGetter {
   // Returns a DataPipeGetterPtr for a new upload attempt, closing all
   // previously opened pipes.
   mojom::DataPipeGetterPtr GetPtrForNewUpload() {
-    // If this is a retry, need to close all bindings, since only one consumer
+    // If this is a retry, need to close all receivers, since only one consumer
     // can read from the data pipe at a time.
-    binding_set_.CloseAllBindings();
+    receiver_set_.Clear();
     // Not strictly needed, but seems best to close the old body pipe and stop
     // any pending reads.
     ResetBodyPipe();
 
     mojom::DataPipeGetterPtr data_pipe_getter;
-    binding_set_.AddBinding(this, mojo::MakeRequest(&data_pipe_getter));
+    receiver_set_.Add(this, mojo::MakeRequest(&data_pipe_getter));
     return data_pipe_getter;
   }
 
@@ -114,8 +114,8 @@ class StringUploadDataPipeGetter : public mojom::DataPipeGetter {
     WriteData();
   }
 
-  void Clone(mojom::DataPipeGetterRequest request) override {
-    binding_set_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<mojom::DataPipeGetter> receiver) override {
+    receiver_set_.Add(this, std::move(receiver));
   }
 
   void MojoReadyCallback(MojoResult result,
@@ -158,7 +158,7 @@ class StringUploadDataPipeGetter : public mojom::DataPipeGetter {
   }
 
   // Closes the body pipe, and resets the position the class is writing from.
-  // Should be called either when a new binding is created, or a new read
+  // Should be called either when a new receiver is created, or a new read
   // through the file is started.
   void ResetBodyPipe() {
     handle_watcher_.reset();
@@ -166,7 +166,7 @@ class StringUploadDataPipeGetter : public mojom::DataPipeGetter {
     write_position_ = 0;
   }
 
-  mojo::BindingSet<mojom::DataPipeGetter> binding_set_;
+  mojo::ReceiverSet<mojom::DataPipeGetter> receiver_set_;
 
   mojo::ScopedDataPipeProducerHandle upload_body_pipe_;
   // Must be below |write_pipe_|, so it's deleted first.

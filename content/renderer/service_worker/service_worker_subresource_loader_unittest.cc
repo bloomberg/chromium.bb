@@ -56,7 +56,8 @@ class FakeBlob final : public blink::mojom::Blob {
   void Clone(mojo::PendingReceiver<blink::mojom::Blob>) override {
     NOTREACHED();
   }
-  void AsDataPipeGetter(network::mojom::DataPipeGetterRequest) override {
+  void AsDataPipeGetter(
+      mojo::PendingReceiver<network::mojom::DataPipeGetter>) override {
     NOTREACHED();
   }
   void ReadRange(
