@@ -65,7 +65,8 @@ void ArcLauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
   if (command_id == ash::UNINSTALL) {
-    arc::ShowArcAppUninstallDialog(controller()->profile(), item().id.app_id);
+    arc::ShowArcAppUninstallDialog(controller()->profile(),
+                                   nullptr /* controller */, item().id.app_id);
     return;
   }
 
