@@ -17,6 +17,7 @@ import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -27,6 +28,15 @@ class HelloPolymer3Element extends PolymerElement {
       <style include="md-select">
         cr-toggle {
           display: inline-block;
+        }
+
+        .setting {
+          align-items: center;
+          display: flex;
+        }
+
+        div, cr-input, cr-icon-button, select, cr-checkbox {
+          margin-top: 20px;
         }
       </style>
 
@@ -100,6 +110,15 @@ class HelloPolymer3Element extends PolymerElement {
         <cr-expand-button on-click="onExpand_">Expand</cr-expand-button>
         <div hidden$="[[!expanded_]]">Expanded content</div>
       </div>
+
+      <div class="setting">
+        <span>Some setting</span>
+        <cr-tooltip-icon tooltip-text="This setting is controlled by policy"
+            icon-class="cr20:domain"
+            icon-aria-label="This setting is controlled by policy">
+        </cr-tooltip-icon>
+        <cr-toggle disabled checked></cr-toggle>
+      <div>
     `;
   }
 

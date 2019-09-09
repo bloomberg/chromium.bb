@@ -46,6 +46,7 @@ group("closure_compile") {
     "cr_toast:closure_compile_module",
     "cr_toggle:closure_compile_module",
     "cr_view_manager:closure_compile_module",
+    "policy:closure_compile_module",
   ]
 
   if (is_chromeos) {
@@ -148,6 +149,7 @@ group("polymer3_elements") {
     "cr_toast:cr_toast_module",
     "cr_toggle:cr_toggle_module",
     "cr_view_manager:cr_view_manager_module",
+    "policy:cr_tooltip_icon_module",
   ]
 }
 
