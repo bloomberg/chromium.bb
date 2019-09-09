@@ -6850,6 +6850,23 @@
             ]
         }
     ],
+    "WebRTC-VP8ConferenceTemporalLayers": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "2_V1"
+                }
+            ]
+        }
+    ],
     "WebRTC-VideoRateControl": [
         {
             "platforms": [
