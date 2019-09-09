@@ -892,8 +892,27 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
           visual_properties->visible_viewport_size;
 
   bool sent_visual_properties = false;
-  if (Send(new WidgetMsg_SynchronizeVisualProperties(routing_id_,
-                                                     *visual_properties))) {
+
+  // If the RenderWidget is associated with a RenderView, then we send the
+  // visual properties to the RenderView instead of the RenderWidget. The
+  // RenderView will pass along the relevant properties to the RenderWidget,
+  // which will send back an ACK.
+  if (owner_delegate_) {
+    owner_delegate_->UpdatePageVisualProperties(*visual_properties);
+
+    // TODO(erikchen): Remove sent_visual_properties. It's unused and doesn't
+    // even make sense, since we're potentially sending multiple IPC messages.
+    sent_visual_properties = true;
+  } else {
+    sent_visual_properties = Send(new WidgetMsg_SynchronizeVisualProperties(
+        routing_id_, *visual_properties));
+  }
+  if (delegate() && visible_viewport_size_changed) {
+    delegate()->NotifyVisibleViewportSizeChanged(
+        visual_properties->visible_viewport_size);
+  }
+
+  if (sent_visual_properties) {
     TRACE_EVENT_WITH_FLOW2(
         TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
         "RenderWidgetHostImpl::SynchronizeVisualProperties send message",
@@ -905,12 +924,7 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
             .ToString());
     visual_properties_ack_pending_ =
         DoesVisualPropertiesNeedAck(old_visual_properties_, *visual_properties);
-    if (delegate() && visible_viewport_size_changed) {
-      delegate()->NotifyVisibleViewportSizeChanged(
-          visual_properties->visible_viewport_size);
-    }
     old_visual_properties_.swap(visual_properties);
-    sent_visual_properties = true;
   }
 
   if (delegate_)
