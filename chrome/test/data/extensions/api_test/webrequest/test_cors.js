@@ -6,12 +6,12 @@ const callbackPass = chrome.test.callbackPass;
 const listeningUrlPattern = '*://cors.example.com/*';
 
 function getCorsMode() {
-    const query = location.search;
-    const prefix = '?cors_mode=';
-    chrome.test.assertTrue(query.startsWith(prefix));
-    const mode = query.substr(prefix.length);
-    chrome.test.assertTrue(mode == 'blink' || mode == 'network_service');
-    return mode;
+  const query = location.search;
+  const prefix = '?cors_mode=';
+  chrome.test.assertTrue(query.startsWith(prefix));
+  const mode = query.substr(prefix.length);
+  chrome.test.assertTrue(mode == 'blink' || mode == 'network_service');
+  return mode;
 }
 
 function registerOriginListeners(
@@ -99,4 +99,3 @@ runTests([
         getServerURL('extensions/api_test/webrequest/cors/fetch.html'));
   },
 ]);
-
