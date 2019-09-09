@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -734,13 +734,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         ('running', self.root_dir),                 # pre-deps hook
         ('running', self.root_dir),                 # pre-deps hook (fails)
     ]
-    executable = sys.executable
-    # On Python 3 we always execute hooks with 'python', so we cannot use
-    # sys.executable.
-    if sys.version_info.major == 3:
-      executable = subprocess.check_output(
-          ['python', '-c', 'import sys; print(sys.executable)'])
-      executable = executable.decode('utf-8').strip()
+    executable = sys.executable if sys.version_info.major == 2 else 'vpython'
     expected_stderr = ("Error: Command '%s -c import sys; "
                        "sys.exit(1)' returned non-zero exit status 1 in %s\n"
                        % (executable, self.root_dir))
