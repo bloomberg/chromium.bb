@@ -166,7 +166,9 @@ class SafetyTipPageInfoBubbleViewBrowserTest
         break;
       case UIStatus::kEnabledWithEditDistance:
         feature_list_.InitWithFeaturesAndParameters(
-            {{features::kSafetyTipUI, {{"editdistance", "true"}}},
+            {{features::kSafetyTipUI,
+              {{"editdistance", "true"},
+               {"editdistance_siteengagement", "true"}}},
              {features::kLookalikeUrlNavigationSuggestionsUI,
               {{"topsites", "true"}}}},
             {});
