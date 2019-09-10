@@ -1308,8 +1308,19 @@ const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
      1, nullptr},
     {"(mini-infobars)", &kQuietNotificationPromptsMiniInfobars, 1, nullptr},
 };
-
-#endif  // OS_ANDROID
+#else   // OS_ANDROID
+const FeatureEntry::FeatureParam kQuietNotificationPromptsStaticIcons = {
+    kQuietNotificationPromptsUIFlavourParameterName,
+    kQuietNotificationPromptsStaticIcon};
+const FeatureEntry::FeatureParam kQuietNotificationPromptsAnimatedIcons = {
+    kQuietNotificationPromptsUIFlavourParameterName,
+    kQuietNotificationPromptsAnimatedIcon};
+// The "default" option that only shows "Enabled" will be the static icon.
+const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
+    {"(static-icon)", &kQuietNotificationPromptsStaticIcons, 1, nullptr},
+    {"(animated-icon)", &kQuietNotificationPromptsAnimatedIcons, 1, nullptr},
+};
+#endif  // !OS_ANDROID
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -4465,14 +4476,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordLeakDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kLeakDetection)},
 
-#if defined(OS_ANDROID)
     {"quiet-notification-prompts",
      flag_descriptions::kQuietNotificationPromptsName,
-     flag_descriptions::kQuietNotificationPromptsDescription, kOsAndroid,
+     flag_descriptions::kQuietNotificationPromptsDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kQuietNotificationPrompts,
                                     kQuietNotificationPromptsVariations,
                                     "QuietNotificationPrompts")},
 
+#if defined(OS_ANDROID)
     {"context-menu-search-with-google-lens",
      flag_descriptions::kContextMenuSearchWithGoogleLensName,
      flag_descriptions::kContextMenuSearchWithGoogleLensDescription, kOsAndroid,

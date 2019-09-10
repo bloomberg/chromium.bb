@@ -980,6 +980,9 @@ extern const char kQueryInOmniboxDescription[];
 extern const char kQuicName[];
 extern const char kQuicDescription[];
 
+extern const char kQuietNotificationPromptsName[];
+extern const char kQuietNotificationPromptsDescription[];
+
 extern const char kReducedReferrerGranularityName[];
 extern const char kReducedReferrerGranularityDescription[];
 
@@ -1552,9 +1555,6 @@ extern const char kProcessSharingWithDefaultSiteInstancesDescription[];
 
 extern const char kProcessSharingWithStrictSiteInstancesName[];
 extern const char kProcessSharingWithStrictSiteInstancesDescription[];
-
-extern const char kQuietNotificationPromptsName[];
-extern const char kQuietNotificationPromptsDescription[];
 
 extern const char kReaderModeHeuristicsName[];
 extern const char kReaderModeHeuristicsDescription[];
