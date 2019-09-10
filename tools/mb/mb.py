@@ -1092,7 +1092,7 @@ class MetaBuildWrapper(object):
       # Skip a few configs that need extra cleanup for now.
       # TODO(https://crbug.com/912946): Fix everything on all platforms and
       # enable check everywhere.
-      if is_android or is_cros:
+      if is_android:
         break
 
       # Skip a few existing violations that need to be cleaned up. Each of
@@ -1104,6 +1104,17 @@ class MetaBuildWrapper(object):
           f == 'locales/' or
           f.startswith('nacl_test_data/') or
           f.startswith('ppapi_nacl_tests_libs/') or
+          (is_cros and f in (  # https://crbug.com/1002509
+              'chromevox_test_data/',
+              'gen/ui/file_manager/file_manager/',
+              'resources/chromeos/',
+              'resources/chromeos/autoclick/',
+              'resources/chromeos/chromevox/',
+              'resources/chromeos/select_to_speak/',
+              'test_data/chrome/browser/resources/chromeos/autoclick/',
+              'test_data/chrome/browser/resources/chromeos/chromevox/',
+              'test_data/chrome/browser/resources/chromeos/select_to_speak/',
+          )) or
           (is_mac and f in (  # https://crbug.com/1000667
               'AlertNotificationService.xpc/',
               'Chromium Framework.framework/',
