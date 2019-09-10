@@ -2944,8 +2944,8 @@ class InkDropSpy : public views::InkDrop {
     ink_drop_->AnimateToState(ink_drop_state);
   }
 
-  void SetHoverHighlightFadeDurationMs(int duration_ms) override {
-    ink_drop_->SetHoverHighlightFadeDurationMs(duration_ms);
+  void SetHoverHighlightFadeDuration(base::TimeDelta duration) override {
+    ink_drop_->SetHoverHighlightFadeDuration(duration);
   }
 
   void UseDefaultHoverHighlightFadeDuration() override {
