@@ -19,6 +19,7 @@
 using chrome_test_util::AddPaymentMethodButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::PaymentMethodsButton;
+using chrome_test_util::StaticTextWithAccessibilityLabelId;
 
 namespace {
 
@@ -46,10 +47,24 @@ id<GREYMatcher> YearOfExpiryField() {
       l10n_util::GetNSStringWithFixup(IDS_IOS_AUTOFILL_EXP_YEAR));
 }
 
-// Matcher for the use camera button in the add credit card view.
+// Matcher for the 'Use Camera' button in the add credit card view.
 id<GREYMatcher> UseCameraButton() {
   return ButtonWithAccessibilityLabelId(
       IDS_IOS_AUTOFILL_ADD_CREDIT_CARD_OPEN_CAMERA_BUTTON_LABEL);
+}
+
+// Matcher for the 'Card Number' text field in the add credit card view.
+id<GREYMatcher> CardNumberTextField() {
+  return grey_allOf(
+      grey_accessibilityID([l10n_util::GetNSStringWithFixup(
+          IDS_IOS_AUTOFILL_CARD_NUMBER) stringByAppendingString:@"_textField"]),
+      grey_kindOfClass([UITextField class]), nil);
+}
+
+// Matcher for the Invalid Card Number Alert.
+id<GREYMatcher> InvalidCardNumberAlert() {
+  return StaticTextWithAccessibilityLabelId(
+      IDS_IOS_ADD_CREDIT_CARD_INVALID_CARD_NUMBER_ALERT);
 }
 
 }  // namespace
@@ -113,6 +128,60 @@ id<GREYMatcher> UseCameraButton() {
     [[EarlGrey selectElementWithMatcher:UseCameraButton()]
         assertWithMatcher:grey_nil()];
   }
+}
+
+#pragma mark - Test top toolbar buttons
+
+// Tests that the 'Add' button in the top toolbar is disabled by default.
+- (void)testAddButtonDisabledOnDefault {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                   grey_not(grey_enabled()), nil)];
+}
+
+// Tests that the 'Add' button in the top toolbar is enabled when any text is
+// typed and disabled when there is no text.
+- (void)testAddButtonEnabledDisabledOnModifyingTextField {
+  [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
+      performAction:grey_typeText(@"1234")];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(), grey_enabled(),
+                                   nil)];
+  [[EarlGrey selectElementWithMatcher:CardNumberField()]
+      performAction:grey_clearText()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                   grey_not(grey_enabled()), nil)];
+}
+
+// Tests when a user tries to add an invalid card number, an alert is shown. On
+// clicking 'OK' the alert is dismissed.
+- (void)testAddButtonAlertOnInvalidNumber {
+  [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
+      performAction:grey_typeText(@"1234")];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:InvalidCardNumberAlert()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:InvalidCardNumberAlert()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
+      assertWithMatcher:grey_nil()];
+}
+
+// Tests that the 'Cancel' button dismisses the screen
+- (void)testCancelButtonDismissesScreen {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::AddCreditCardCancelButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
+      assertWithMatcher:grey_nil()];
 }
 
 @end
