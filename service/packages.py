@@ -248,7 +248,9 @@ def uprev_kernel_afdo(*_args, **_kwargs):
                                'chromiumos-overlay', 'sys-kernel', version,
                                '%s-9999.ebuild' % version)
     portage_util.EBuild.UpdateEBuild(
-        ebuild_path, dict(AFDO_PROFILE_VERSION=version_info['name']))
+        ebuild_path,
+        dict(AFDO_PROFILE_VERSION=version_info['name']),
+        make_stable=False)
     paths.append(ebuild_path)
 
   return UprevVersionedPackageResult("test version", paths)
