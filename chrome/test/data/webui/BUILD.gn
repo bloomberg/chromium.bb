@@ -168,6 +168,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_drawer_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_expand_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_link_row_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_radio_button_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_radio_group_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_search_field_tests.m.js",

@@ -9,6 +9,7 @@ import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.m.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.m.js';
@@ -126,7 +127,11 @@ class HelloPolymer3Element extends PolymerElement {
             icon-aria-label="This setting is controlled by policy">
         </cr-tooltip-icon>
         <cr-toggle disabled checked></cr-toggle>
+      </div>
+
       <div>
+        <cr-link-row class="hr" label="Hello Link Row"></cr-link-row>
+      </div>
     `;
   }
 
