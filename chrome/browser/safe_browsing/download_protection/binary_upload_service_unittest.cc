@@ -28,9 +28,7 @@ class MockRequest : public BinaryUploadService::Request {
  public:
   explicit MockRequest(BinaryUploadService::Callback callback)
       : BinaryUploadService::Request(std::move(callback)) {}
-  MOCK_METHOD1(GetFileContents,
-               void(base::OnceCallback<void(const std::string&)>));
-  MOCK_METHOD0(GetFileSize, size_t());
+  MOCK_METHOD1(GetRequestData, void(DataCallback));
 };
 
 class FakeMultipartUploadRequest : public MultipartUploadRequest {
@@ -143,11 +141,13 @@ class BinaryUploadServiceTest : public testing::Test {
           *target_response = response;
         },
         scanning_result, scanning_response));
-    ON_CALL(*request, GetFileSize()).WillByDefault(Return(strlen("contents")));
-    ON_CALL(*request, GetFileContents(_))
+    ON_CALL(*request, GetRequestData(_))
         .WillByDefault(
-            Invoke([](base::OnceCallback<void(const std::string&)> callback) {
-              std::move(callback).Run("contents");
+            Invoke([](BinaryUploadService::Request::DataCallback callback) {
+              BinaryUploadService::Request::Data data;
+              data.contents = "contents";
+              std::move(callback).Run(BinaryUploadService::Result::SUCCESS,
+                                      data);
             }));
     return request;
   }
@@ -163,9 +163,16 @@ TEST_F(BinaryUploadServiceTest, FailsForLargeFile) {
   BinaryUploadService::Result scanning_result;
   DeepScanningClientResponse scanning_response;
 
+  ExpectInstanceID("valid id");
   std::unique_ptr<MockRequest> request =
       MakeRequest(&scanning_result, &scanning_response);
-  ON_CALL(*request, GetFileSize()).WillByDefault(Return(100 * 1024 * 1024));
+  ON_CALL(*request, GetRequestData(_))
+      .WillByDefault(
+          Invoke([](BinaryUploadService::Request::DataCallback callback) {
+            BinaryUploadService::Request::Data data;
+            std::move(callback).Run(BinaryUploadService::Result::FILE_TOO_LARGE,
+                                    data);
+          }));
   service_->UploadForDeepScanning(std::move(request));
 
   content::RunAllTasksUntilIdle();
