@@ -432,6 +432,7 @@
     eve-release
     eve-swap-release
     eve-userdebug-release
+    excelsior-release
     expresso-release
     falco_li-release
     fizz-accelerator-release
@@ -2546,6 +2547,7 @@
     eve-release-tryjob
     eve-swap-release-tryjob
     eve-userdebug-release-tryjob
+    excelsior-release-tryjob
     expresso-release-tryjob
     falco_li-release-tryjob
     fizz-accelerator-release-tryjob
