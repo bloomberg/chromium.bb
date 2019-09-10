@@ -523,8 +523,7 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
       GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
   frame_layout_ = VideoFrameLayout::Create(format, pic_size);
   DCHECK(frame_layout_);
-  frame_pool_->NegotiateFrameFormat(*frame_layout_, visible_rect,
-                                    natural_size);
+  frame_pool_->NegotiateFrameFormat(*frame_layout_, visible_rect, natural_size);
   frame_pool_->SetMaxNumFrames(decoder_->GetRequiredNumOfPictures());
 
   // All pending decode operations will be completed before triggering a
