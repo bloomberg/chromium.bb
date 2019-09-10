@@ -487,46 +487,52 @@ void HttpServerProperties::SetAlternativeServices(
 }
 
 void HttpServerProperties::MarkAlternativeServiceBroken(
-    const AlternativeService& alternative_service) {
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
   broken_alternative_services_.MarkBroken(BrokenAlternativeService(
-      alternative_service, NetworkIsolationKey(), use_network_isolation_key_));
+      alternative_service, network_isolation_key, use_network_isolation_key_));
   MaybeQueueWriteProperties();
 }
 
 void HttpServerProperties::
     MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-        const AlternativeService& alternative_service) {
+        const AlternativeService& alternative_service,
+        const net::NetworkIsolationKey& network_isolation_key) {
   broken_alternative_services_.MarkBrokenUntilDefaultNetworkChanges(
-      BrokenAlternativeService(alternative_service, NetworkIsolationKey(),
+      BrokenAlternativeService(alternative_service, network_isolation_key,
                                use_network_isolation_key_));
   MaybeQueueWriteProperties();
 }
 
 void HttpServerProperties::MarkAlternativeServiceRecentlyBroken(
-    const AlternativeService& alternative_service) {
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
   broken_alternative_services_.MarkRecentlyBroken(BrokenAlternativeService(
-      alternative_service, NetworkIsolationKey(), use_network_isolation_key_));
+      alternative_service, network_isolation_key, use_network_isolation_key_));
   MaybeQueueWriteProperties();
 }
 
 bool HttpServerProperties::IsAlternativeServiceBroken(
-    const AlternativeService& alternative_service) const {
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) const {
   return broken_alternative_services_.IsBroken(BrokenAlternativeService(
-      alternative_service, NetworkIsolationKey(), use_network_isolation_key_));
+      alternative_service, network_isolation_key, use_network_isolation_key_));
 }
 
 bool HttpServerProperties::WasAlternativeServiceRecentlyBroken(
-    const AlternativeService& alternative_service) {
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
   return broken_alternative_services_.WasRecentlyBroken(
-      BrokenAlternativeService(alternative_service, NetworkIsolationKey(),
+      BrokenAlternativeService(alternative_service, network_isolation_key,
                                use_network_isolation_key_));
 }
 
 void HttpServerProperties::ConfirmAlternativeService(
-    const AlternativeService& alternative_service) {
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
   bool old_value = IsAlternativeServiceBroken(alternative_service);
   broken_alternative_services_.Confirm(BrokenAlternativeService(
-      alternative_service, NetworkIsolationKey(), use_network_isolation_key_));
+      alternative_service, network_isolation_key, use_network_isolation_key_));
   bool new_value = IsAlternativeServiceBroken(alternative_service);
 
   // For persisting, we only care about the value returned by

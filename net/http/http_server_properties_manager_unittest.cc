@@ -1209,10 +1209,10 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   const char expected_json[] =
       "{"
       "\"broken_alternative_services\":"
-      "[{\"broken_count\":1,\"host\":\"www.google.com\",\"port\":1234,"
-      "\"protocol_str\":\"h2\"},"
-      "{\"broken_count\":1,\"host\":\"foo.google.com\",\"port\":444,"
-      "\"protocol_str\":\"h2\"}],"
+      "[{\"broken_count\":1,\"host\":\"www.google.com\",\"isolation\":[],"
+      "\"port\":1234,\"protocol_str\":\"h2\"},"
+      "{\"broken_count\":1,\"host\":\"foo.google.com\",\"isolation\":[],"
+      "\"port\":444,\"protocol_str\":\"h2\"}],"
       "\"quic_servers\":"
       "{\"https://mail.google.com:80\":"
       "{\"server_info\":\"quic_server_info1\"}},"
@@ -1737,13 +1737,16 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       "{\"broken_until\":\"" +
       expiration_str +
       "\","
-      "\"host\":\"www.google.com\",\"port\":1234,\"protocol_str\":\"h2\"},"
+      "\"host\":\"www.google.com\",\"isolation\":[],"
+      "\"port\":1234,\"protocol_str\":\"h2\"},"
       "{\"broken_count\":2,\"broken_until\":\"" +
       expiration_str +
       "\","
-      "\"host\":\"cached_broken\",\"port\":443,\"protocol_str\":\"quic\"},"
+      "\"host\":\"cached_broken\",\"isolation\":[],"
+      "\"port\":443,\"protocol_str\":\"quic\"},"
       "{\"broken_count\":3,"
-      "\"host\":\"cached_rbroken\",\"port\":443,\"protocol_str\":\"quic\"}],"
+      "\"host\":\"cached_rbroken\",\"isolation\":[],"
+      "\"port\":443,\"protocol_str\":\"quic\"}],"
       "\"quic_servers\":{"
       "\"https://mail.google.com:80\":{"
       "\"server_info\":\"quic_server_info1\"}"
@@ -2387,6 +2390,260 @@ TEST_F(HttpServerPropertiesManagerTest,
       3u,
       properties->GetAlternativeServiceInfos(kServer3, kNetworkIsolationKey2)
           .size());
+}
+
+// Tests a full round trip with a NetworkIsolationKey, using the
+// HttpServerProperties interface and setting alternative services as broken.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyBrokenAltServiceRoundTrip) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo1.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://foo2.test/"));
+
+  const AlternativeService kAlternativeService1(kProtoHTTP2,
+                                                "alt.service1.test", 443);
+  const AlternativeService kAlternativeService2(kProtoHTTP2,
+                                                "alt.service2.test", 443);
+
+  for (auto save_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+    SCOPED_TRACE(static_cast<int>(save_network_isolation_key_mode));
+
+    // Save prefs using |save_network_isolation_key_mode|.
+    std::unique_ptr<base::DictionaryValue> saved_value;
+    {
+      // Configure the the feature.
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(save_network_isolation_key_mode);
+
+      // The NetworkIsolationKey constructor checks the field trial state, so
+      // need to create the keys only after setting up the field trials.
+      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+      // Create and initialize an HttpServerProperties, must be done after
+      // setting the feature.
+      std::unique_ptr<MockPrefDelegate> pref_delegate =
+          std::make_unique<MockPrefDelegate>();
+      MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+      std::unique_ptr<HttpServerProperties> properties =
+          std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                                 /*net_log=*/nullptr,
+                                                 GetMockTickClock());
+      unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+      // Set kAlternativeService1 as broken in the context of
+      // kNetworkIsolationKey1, and kAlternativeService2 as broken in the
+      // context of the empty NetworkIsolationKey2, and recently broken in the
+      // context of the empty NetworkIsolationKey.
+      properties->MarkAlternativeServiceBroken(kAlternativeService1,
+                                               kNetworkIsolationKey1);
+      properties->MarkAlternativeServiceRecentlyBroken(kAlternativeService2,
+                                                       NetworkIsolationKey());
+      properties->MarkAlternativeServiceBroken(kAlternativeService2,
+                                               kNetworkIsolationKey2);
+
+      // Verify values were set.
+      EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+          kAlternativeService1, kNetworkIsolationKey1));
+      EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+          kAlternativeService1, kNetworkIsolationKey1));
+      // When NetworkIsolationKeys are disabled, kAlternativeService2 is marked
+      // as broken regardless of the values passed to NetworkIsolationKey's
+      // constructor.
+      EXPECT_EQ(
+          save_network_isolation_key_mode == NetworkIsolationKeyMode::kDisabled,
+          properties->IsAlternativeServiceBroken(kAlternativeService2,
+                                                 NetworkIsolationKey()));
+      EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+          kAlternativeService2, NetworkIsolationKey()));
+      EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+          kAlternativeService2, kNetworkIsolationKey2));
+      EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+          kAlternativeService2, kNetworkIsolationKey2));
+
+      // If NetworkIsolationKeys are enabled, there should be no
+      // cross-contamination of the NetworkIsolationKeys.
+      if (save_network_isolation_key_mode !=
+          NetworkIsolationKeyMode::kDisabled) {
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, kNetworkIsolationKey2));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, kNetworkIsolationKey2));
+      }
+
+      // Wait until the data's been written to prefs, and then create a copy of
+      // the prefs data.
+      FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+      saved_value =
+          unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+    }
+
+    // Now try and load the data in each of the feature modes.
+    for (auto load_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+      SCOPED_TRACE(static_cast<int>(load_network_isolation_key_mode));
+
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(load_network_isolation_key_mode);
+
+      // The NetworkIsolationKey constructor checks the field trial state, so
+      // need to create the keys only after setting up the field trials.
+      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+      // Create a new HttpServerProperties, loading the data from before.
+      std::unique_ptr<MockPrefDelegate> pref_delegate =
+          std::make_unique<MockPrefDelegate>();
+      MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+      std::unique_ptr<HttpServerProperties> properties =
+          std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                                 /*net_log=*/nullptr,
+                                                 GetMockTickClock());
+      unowned_pref_delegate->InitializePrefs(*saved_value);
+
+      if (save_network_isolation_key_mode ==
+          NetworkIsolationKeyMode::kDisabled) {
+        // If NetworkIsolationKey was disabled when saving, it was saved with an
+        // empty NetworkIsolationKey, which should always be loaded
+        // successfully. This is needed to continue to support consumers that
+        // don't use NetworkIsolationKeys.
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+      } else if (save_network_isolation_key_mode ==
+                 load_network_isolation_key_mode) {
+        // If the save and load modes are the same, the load should succeed, and
+        // the network isolation keys should match.
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        // When NetworkIsolationKeys are disabled, kAlternativeService2 is
+        // marked as broken regardless of the values passed to
+        // NetworkIsolationKey's constructor.
+        EXPECT_EQ(save_network_isolation_key_mode ==
+                      NetworkIsolationKeyMode::kDisabled,
+                  properties->IsAlternativeServiceBroken(
+                      kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, kNetworkIsolationKey2));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, kNetworkIsolationKey2));
+
+        // If NetworkIsolationKeys are enabled, there should be no
+        // cross-contamination of the NetworkIsolationKeys.
+        if (save_network_isolation_key_mode !=
+            NetworkIsolationKeyMode::kDisabled) {
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+        }
+      } else {
+        // Otherwise, only the values set with an empty NetworkIsolationKey
+        // should have been loaded successfully.
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, kNetworkIsolationKey2));
+        // If the load mode is NetworkIsolationKeyMode::kDisabled,
+        // kNetworkIsolationKey2 is NetworkIsolationKey().
+        EXPECT_EQ(load_network_isolation_key_mode ==
+                      NetworkIsolationKeyMode::kDisabled,
+                  properties->WasAlternativeServiceRecentlyBroken(
+                      kAlternativeService2, kNetworkIsolationKey2));
+
+        // There should be no cross-contamination of NetworkIsolationKeys, if
+        // NetworkIsolationKeys are enabled.
+        if (load_network_isolation_key_mode !=
+            NetworkIsolationKeyMode::kDisabled) {
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+        }
+      }
+    }
+  }
+}
+
+// Make sure broken alt services with opaque origins aren't saved.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyBrokenAltServiceOpaqueOrigin) {
+  const url::Origin kOpaqueOrigin =
+      url::Origin::Create(GURL("data:text/plain,Hello World"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOpaqueOrigin, kOpaqueOrigin);
+  const AlternativeService kAlternativeService(kProtoHTTP2, "alt.service1.test",
+                                               443);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  // Create and initialize an HttpServerProperties, must be done after
+  // setting the feature.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  properties->MarkAlternativeServiceBroken(kAlternativeService,
+                                           kNetworkIsolationKey);
+
+  // Verify values were set.
+  EXPECT_TRUE(properties->IsAlternativeServiceBroken(kAlternativeService,
+                                                     kNetworkIsolationKey));
+  EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+      kAlternativeService, kNetworkIsolationKey));
+
+  // Wait until the data's been written to prefs, and then create a copy of
+  // the prefs data.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+
+  // No information should have been saved to prefs.
+  std::string preferences_json;
+  base::JSONWriter::Write(*unowned_pref_delegate->GetServerProperties(),
+                          &preferences_json);
+  EXPECT_EQ("{\"servers\":[],\"version\":5}", preferences_json);
 }
 
 }  // namespace net

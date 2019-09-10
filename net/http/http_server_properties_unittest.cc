@@ -44,9 +44,10 @@ class HttpServerPropertiesPeer {
   static void AddBrokenAlternativeServiceWithExpirationTime(
       HttpServerProperties* impl,
       const AlternativeService& alternative_service,
-      base::TimeTicks when) {
+      base::TimeTicks when,
+      const NetworkIsolationKey network_isolation_key = NetworkIsolationKey()) {
     BrokenAlternativeService broken_alternative_service(
-        alternative_service, NetworkIsolationKey(),
+        alternative_service, network_isolation_key,
         true /* use_network_isolation_key */);
     BrokenAlternativeServiceList::iterator unused_it;
     impl->broken_alternative_services_.AddToBrokenListAndMap(
@@ -91,6 +92,11 @@ class HttpServerPropertiesTest : public TestWithTaskEnvironment {
               &test_clock_) {
     // Set |test_clock_| to some random time.
     test_clock_.Advance(base::TimeDelta::FromSeconds(12345));
+
+    url::Origin origin1 = url::Origin::Create(GURL("https://foo.test/"));
+    network_isolation_key1_ = NetworkIsolationKey(origin1, origin1);
+    url::Origin origin2 = url::Origin::Create(GURL("https://bar.test/"));
+    network_isolation_key2_ = NetworkIsolationKey(origin2, origin2);
   }
 
   bool HasAlternativeService(const url::SchemeHostPort& origin,
@@ -120,6 +126,11 @@ class HttpServerPropertiesTest : public TestWithTaskEnvironment {
 
   const base::TickClock* test_tick_clock_;
   base::SimpleTestClock test_clock_;
+
+  // Two different non-empty network isolation keys for use in tests that need
+  // them.
+  NetworkIsolationKey network_isolation_key1_;
+  NetworkIsolationKey network_isolation_key2_;
 
   HttpServerProperties impl_;
 };
@@ -221,27 +232,27 @@ TEST_F(HttpServerPropertiesTest, SetSupportsSpdy) {
 
 TEST_F(HttpServerPropertiesTest, SetSupportsSpdyWithNetworkIsolationKey) {
   const url::SchemeHostPort kServer("https", "foo.test", 443);
-  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
 
-  EXPECT_FALSE(impl_.GetSupportsSpdy(kServer, kNetworkIsolationKey));
-  EXPECT_FALSE(impl_.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(kServer, network_isolation_key1_));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(kServer, network_isolation_key1_));
   EXPECT_FALSE(impl_.GetSupportsSpdy(kServer, NetworkIsolationKey()));
   EXPECT_FALSE(impl_.SupportsRequestPriority(kServer, NetworkIsolationKey()));
 
   // Without network isolation keys enabled for HttpServerProperties, passing in
   // a NetworkIsolationKey should have no effect on behavior.
   for (const auto network_isolation_key_to_set :
-       {NetworkIsolationKey(), kNetworkIsolationKey}) {
+       {NetworkIsolationKey(), network_isolation_key1_}) {
     impl_.SetSupportsSpdy(kServer, network_isolation_key_to_set, true);
-    EXPECT_TRUE(impl_.GetSupportsSpdy(kServer, kNetworkIsolationKey));
-    EXPECT_TRUE(impl_.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+    EXPECT_TRUE(impl_.GetSupportsSpdy(kServer, network_isolation_key1_));
+    EXPECT_TRUE(
+        impl_.SupportsRequestPriority(kServer, network_isolation_key1_));
     EXPECT_TRUE(impl_.GetSupportsSpdy(kServer, NetworkIsolationKey()));
     EXPECT_TRUE(impl_.SupportsRequestPriority(kServer, NetworkIsolationKey()));
 
     impl_.SetSupportsSpdy(kServer, network_isolation_key_to_set, false);
-    EXPECT_FALSE(impl_.GetSupportsSpdy(kServer, kNetworkIsolationKey));
-    EXPECT_FALSE(impl_.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+    EXPECT_FALSE(impl_.GetSupportsSpdy(kServer, network_isolation_key1_));
+    EXPECT_FALSE(
+        impl_.SupportsRequestPriority(kServer, network_isolation_key1_));
     EXPECT_FALSE(impl_.GetSupportsSpdy(kServer, NetworkIsolationKey()));
     EXPECT_FALSE(impl_.SupportsRequestPriority(kServer, NetworkIsolationKey()));
   }
@@ -258,41 +269,41 @@ TEST_F(HttpServerPropertiesTest, SetSupportsSpdyWithNetworkIsolationKey) {
                                   nullptr /* net_log */, test_tick_clock_,
                                   &test_clock_);
 
-  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, network_isolation_key1_));
   EXPECT_FALSE(
-      properties.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+      properties.SupportsRequestPriority(kServer, network_isolation_key1_));
   EXPECT_FALSE(properties.GetSupportsSpdy(kServer, NetworkIsolationKey()));
   EXPECT_FALSE(
       properties.SupportsRequestPriority(kServer, NetworkIsolationKey()));
 
-  properties.SetSupportsSpdy(kServer, kNetworkIsolationKey, true);
-  EXPECT_TRUE(properties.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  properties.SetSupportsSpdy(kServer, network_isolation_key1_, true);
+  EXPECT_TRUE(properties.GetSupportsSpdy(kServer, network_isolation_key1_));
   EXPECT_TRUE(
-      properties.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+      properties.SupportsRequestPriority(kServer, network_isolation_key1_));
   EXPECT_FALSE(properties.GetSupportsSpdy(kServer, NetworkIsolationKey()));
   EXPECT_FALSE(
       properties.SupportsRequestPriority(kServer, NetworkIsolationKey()));
 
   properties.SetSupportsSpdy(kServer, NetworkIsolationKey(), true);
-  EXPECT_TRUE(properties.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_TRUE(properties.GetSupportsSpdy(kServer, network_isolation_key1_));
   EXPECT_TRUE(
-      properties.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+      properties.SupportsRequestPriority(kServer, network_isolation_key1_));
   EXPECT_TRUE(properties.GetSupportsSpdy(kServer, NetworkIsolationKey()));
   EXPECT_TRUE(
       properties.SupportsRequestPriority(kServer, NetworkIsolationKey()));
 
-  properties.SetSupportsSpdy(kServer, kNetworkIsolationKey, false);
-  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  properties.SetSupportsSpdy(kServer, network_isolation_key1_, false);
+  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, network_isolation_key1_));
   EXPECT_FALSE(
-      properties.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+      properties.SupportsRequestPriority(kServer, network_isolation_key1_));
   EXPECT_TRUE(properties.GetSupportsSpdy(kServer, NetworkIsolationKey()));
   EXPECT_TRUE(
       properties.SupportsRequestPriority(kServer, NetworkIsolationKey()));
 
   properties.SetSupportsSpdy(kServer, NetworkIsolationKey(), false);
-  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(properties.GetSupportsSpdy(kServer, network_isolation_key1_));
   EXPECT_FALSE(
-      properties.SupportsRequestPriority(kServer, kNetworkIsolationKey));
+      properties.SupportsRequestPriority(kServer, network_isolation_key1_));
   EXPECT_FALSE(properties.GetSupportsSpdy(kServer, NetworkIsolationKey()));
   EXPECT_FALSE(
       properties.SupportsRequestPriority(kServer, NetworkIsolationKey()));
@@ -680,29 +691,28 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetWithNetworkIsolationKey) {
       {AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           AlternativeService(kProtoHTTP2, "foo", 443),
           base::Time::Now() + base::TimeDelta::FromDays(1) /* expiration */)});
-  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
 
-  EXPECT_TRUE(
-      impl_.GetAlternativeServiceInfos(kServer, kNetworkIsolationKey).empty());
+  EXPECT_TRUE(impl_.GetAlternativeServiceInfos(kServer, network_isolation_key1_)
+                  .empty());
   EXPECT_TRUE(
       impl_.GetAlternativeServiceInfos(kServer, NetworkIsolationKey()).empty());
 
   // Without network isolation keys enabled for HttpServerProperties, passing in
   // a NetworkIsolationKey should have no effect on behavior.
   for (const auto network_isolation_key_to_set :
-       {NetworkIsolationKey(), kNetworkIsolationKey}) {
+       {NetworkIsolationKey(), network_isolation_key1_}) {
     impl_.SetAlternativeServices(kServer, network_isolation_key_to_set,
                                  kAlternativeServices);
-    EXPECT_EQ(kAlternativeServices,
-              impl_.GetAlternativeServiceInfos(kServer, kNetworkIsolationKey));
+    EXPECT_EQ(kAlternativeServices, impl_.GetAlternativeServiceInfos(
+                                        kServer, network_isolation_key1_));
     EXPECT_EQ(kAlternativeServices,
               impl_.GetAlternativeServiceInfos(kServer, NetworkIsolationKey()));
 
     impl_.SetAlternativeServices(kServer, network_isolation_key_to_set,
                                  AlternativeServiceInfoVector());
-    EXPECT_TRUE(impl_.GetAlternativeServiceInfos(kServer, kNetworkIsolationKey)
-                    .empty());
+    EXPECT_TRUE(
+        impl_.GetAlternativeServiceInfos(kServer, network_isolation_key1_)
+            .empty());
     EXPECT_TRUE(impl_.GetAlternativeServiceInfos(kServer, NetworkIsolationKey())
                     .empty());
   }
@@ -719,10 +729,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetWithNetworkIsolationKey) {
                                   nullptr /* net_log */, test_tick_clock_,
                                   &test_clock_);
 
-  properties.SetAlternativeServices(kServer, kNetworkIsolationKey,
+  properties.SetAlternativeServices(kServer, network_isolation_key1_,
                                     kAlternativeServices);
   EXPECT_EQ(kAlternativeServices, properties.GetAlternativeServiceInfos(
-                                      kServer, kNetworkIsolationKey));
+                                      kServer, network_isolation_key1_));
   EXPECT_TRUE(
       properties.GetAlternativeServiceInfos(kServer, NetworkIsolationKey())
           .empty());
@@ -730,14 +740,14 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetWithNetworkIsolationKey) {
   properties.SetAlternativeServices(kServer, NetworkIsolationKey(),
                                     kAlternativeServices);
   EXPECT_EQ(kAlternativeServices, properties.GetAlternativeServiceInfos(
-                                      kServer, kNetworkIsolationKey));
+                                      kServer, network_isolation_key1_));
   EXPECT_EQ(kAlternativeServices, properties.GetAlternativeServiceInfos(
                                       kServer, NetworkIsolationKey()));
 
-  properties.SetAlternativeServices(kServer, kNetworkIsolationKey,
+  properties.SetAlternativeServices(kServer, network_isolation_key1_,
                                     AlternativeServiceInfoVector());
   EXPECT_TRUE(
-      properties.GetAlternativeServiceInfos(kServer, kNetworkIsolationKey)
+      properties.GetAlternativeServiceInfos(kServer, network_isolation_key1_)
           .empty());
   EXPECT_EQ(kAlternativeServices, properties.GetAlternativeServiceInfos(
                                       kServer, NetworkIsolationKey()));
@@ -745,7 +755,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetWithNetworkIsolationKey) {
   properties.SetAlternativeServices(kServer, NetworkIsolationKey(),
                                     AlternativeServiceInfoVector());
   EXPECT_TRUE(
-      properties.GetAlternativeServiceInfos(kServer, kNetworkIsolationKey)
+      properties.GetAlternativeServiceInfos(kServer, network_isolation_key1_)
           .empty());
   EXPECT_TRUE(
       properties.GetAlternativeServiceInfos(kServer, NetworkIsolationKey())
@@ -1219,6 +1229,115 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest,
+       MarkBrokenWithNetworkIsolationKey) {
+  url::SchemeHostPort server("http", "foo", 80);
+  const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
+  const base::Time expiration =
+      test_clock_.Now() + base::TimeDelta::FromDays(1);
+
+  // Without NetworkIsolationKeys enabled, the NetworkIsolationKey parameter
+  // should be ignored.
+  impl_.SetHttp2AlternativeService(server, network_isolation_key1_,
+                                   alternative_service, expiration);
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key1_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key2_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  impl_.MarkAlternativeServiceBroken(alternative_service,
+                                     network_isolation_key1_);
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               network_isolation_key1_));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               network_isolation_key2_));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  impl_.ConfirmAlternativeService(alternative_service, network_isolation_key2_);
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key1_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key2_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  HttpServerProperties properties(nullptr /* pref_delegate */,
+                                  nullptr /* net_log */, test_tick_clock_,
+                                  &test_clock_);
+
+  properties.SetHttp2AlternativeService(server, network_isolation_key1_,
+                                        alternative_service, expiration);
+  properties.SetHttp2AlternativeService(server, network_isolation_key2_,
+                                        alternative_service, expiration);
+
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.MarkAlternativeServiceBroken(alternative_service,
+                                          network_isolation_key1_);
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key1_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.MarkAlternativeServiceBroken(alternative_service,
+                                          network_isolation_key2_);
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key1_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key2_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.ConfirmAlternativeService(alternative_service,
+                                       network_isolation_key1_);
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key2_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.ConfirmAlternativeService(alternative_service,
+                                       network_isolation_key2_);
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, MarkRecentlyBroken) {
   url::SchemeHostPort server("http", "foo", 80);
   const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
@@ -1234,6 +1353,114 @@ TEST_F(AlternateProtocolServerPropertiesTest, MarkRecentlyBroken) {
   impl_.ConfirmAlternativeService(alternative_service);
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest,
+       MarkRecentlyBrokenWithNetworkIsolationKey) {
+  url::SchemeHostPort server("http", "foo", 80);
+  const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
+  const base::Time expiration =
+      test_clock_.Now() + base::TimeDelta::FromDays(1);
+
+  // Without NetworkIsolationKeys enabled, the NetworkIsolationKey parameter
+  // should be ignored.
+  impl_.SetHttp2AlternativeService(server, network_isolation_key1_,
+                                   alternative_service, expiration);
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key1_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key2_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  impl_.MarkAlternativeServiceRecentlyBroken(alternative_service,
+                                             network_isolation_key1_);
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key1_));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key2_));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  impl_.ConfirmAlternativeService(alternative_service, network_isolation_key2_);
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key1_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key2_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  HttpServerProperties properties(nullptr /* pref_delegate */,
+                                  nullptr /* net_log */, test_tick_clock_,
+                                  &test_clock_);
+
+  properties.SetHttp2AlternativeService(server, network_isolation_key1_,
+                                        alternative_service, expiration);
+  properties.SetHttp2AlternativeService(server, network_isolation_key2_,
+                                        alternative_service, expiration);
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.MarkAlternativeServiceRecentlyBroken(alternative_service,
+                                                  network_isolation_key1_);
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.MarkAlternativeServiceRecentlyBroken(alternative_service,
+                                                  network_isolation_key2_);
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.ConfirmAlternativeService(alternative_service,
+                                       network_isolation_key1_);
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.ConfirmAlternativeService(alternative_service,
+                                       network_isolation_key2_);
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest,
@@ -1253,6 +1480,116 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   impl_.ConfirmAlternativeService(alternative_service);
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest,
+       MarkBrokenUntilDefaultNetworkChangesWithNetworkIsolationKey) {
+  url::SchemeHostPort server("http", "foo", 80);
+  const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
+  const base::Time expiration =
+      test_clock_.Now() + base::TimeDelta::FromDays(1);
+
+  // Without NetworkIsolationKeys enabled, the NetworkIsolationKey parameter
+  // should be ignored.
+  impl_.SetHttp2AlternativeService(server, network_isolation_key1_,
+                                   alternative_service, expiration);
+
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key1_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key2_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  impl_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service, network_isolation_key1_);
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               network_isolation_key1_));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               network_isolation_key2_));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  impl_.ConfirmAlternativeService(alternative_service, network_isolation_key2_);
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key1_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                network_isolation_key2_));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  HttpServerProperties properties(nullptr /* pref_delegate */,
+                                  nullptr /* net_log */, test_tick_clock_,
+                                  &test_clock_);
+
+  properties.SetHttp2AlternativeService(server, network_isolation_key1_,
+                                        alternative_service, expiration);
+  properties.SetHttp2AlternativeService(server, network_isolation_key2_,
+                                        alternative_service, expiration);
+
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service, network_isolation_key1_);
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key1_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service, network_isolation_key2_);
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key1_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key2_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.ConfirmAlternativeService(alternative_service,
+                                       network_isolation_key1_);
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key2_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.ConfirmAlternativeService(alternative_service,
+                                       network_isolation_key2_);
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, OnDefaultNetworkChanged) {
@@ -1299,6 +1636,61 @@ TEST_F(AlternateProtocolServerPropertiesTest, OnDefaultNetworkChanged) {
   impl_.OnDefaultNetworkChanged();
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest,
+       OnDefaultNetworkChangedWithNetworkIsolationKey) {
+  url::SchemeHostPort server("http", "foo", 80);
+  const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  HttpServerProperties properties(nullptr /* pref_delegate */,
+                                  nullptr /* net_log */, test_tick_clock_,
+                                  &test_clock_);
+
+  const base::Time expiration =
+      test_clock_.Now() + base::TimeDelta::FromDays(1);
+  properties.SetHttp2AlternativeService(server, network_isolation_key1_,
+                                        alternative_service, expiration);
+  properties.SetHttp2AlternativeService(server, network_isolation_key2_,
+                                        alternative_service, expiration);
+
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  properties.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service, network_isolation_key1_);
+  properties.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      alternative_service, network_isolation_key2_);
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key1_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key2_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  // Default network change clears alt svc broken until default network changes.
+  properties.OnDefaultNetworkChanged();
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
@@ -1362,11 +1754,6 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearCanonical) {
 
 TEST_F(AlternateProtocolServerPropertiesTest,
        CanonicalWithNetworkIsolationKey) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
-
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
@@ -1377,10 +1764,11 @@ TEST_F(AlternateProtocolServerPropertiesTest,
                                   &test_clock_);
 
   url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
-  EXPECT_FALSE(HasAlternativeService(test_server, kNetworkIsolationKey1));
+  EXPECT_FALSE(HasAlternativeService(test_server, network_isolation_key1_));
 
   url::SchemeHostPort canonical_server1("https", "bar.c.youtube.com", 443);
-  EXPECT_FALSE(HasAlternativeService(canonical_server1, kNetworkIsolationKey1));
+  EXPECT_FALSE(
+      HasAlternativeService(canonical_server1, network_isolation_key1_));
 
   AlternativeServiceInfoVector alternative_service_info_vector;
   const AlternativeService canonical_alternative_service1(
@@ -1394,56 +1782,59 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           canonical_alternative_service2, expiration));
-  properties.SetAlternativeServices(canonical_server1, kNetworkIsolationKey1,
+  properties.SetAlternativeServices(canonical_server1, network_isolation_key1_,
                                     alternative_service_info_vector);
 
   // Since |test_server| does not have an alternative service itself,
   // GetAlternativeServiceInfos should return those of |canonical_server|.
   AlternativeServiceInfoVector alternative_service_info_vector2 =
-      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey1);
+      properties.GetAlternativeServiceInfos(test_server,
+                                            network_isolation_key1_);
   ASSERT_EQ(2u, alternative_service_info_vector2.size());
   EXPECT_EQ(canonical_alternative_service1,
             alternative_service_info_vector2[0].alternative_service());
 
   // Canonical information should not be visible for other NetworkIsolationKeys.
   EXPECT_TRUE(
-      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey2)
+      properties
+          .GetAlternativeServiceInfos(test_server, network_isolation_key2_)
           .empty());
   EXPECT_TRUE(
       properties.GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
           .empty());
 
-  // Now add an alternative service entry for kNetworkIsolationKey2 for a
+  // Now add an alternative service entry for network_isolation_key2_ for a
   // different server and different NetworkIsolationKey, but with the same
   // canonical suffix.
   url::SchemeHostPort canonical_server2("https", "shrimp.c.youtube.com", 443);
-  properties.SetAlternativeServices(canonical_server2, kNetworkIsolationKey2,
+  properties.SetAlternativeServices(canonical_server2, network_isolation_key2_,
                                     {alternative_service_info_vector[0]});
 
   // The canonical server information should reachable, and different, for both
   // NetworkIsolationKeys.
   EXPECT_EQ(
-      1u,
-      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey2)
-          .size());
+      1u, properties
+              .GetAlternativeServiceInfos(test_server, network_isolation_key2_)
+              .size());
   EXPECT_EQ(
-      2u,
-      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey1)
-          .size());
+      2u, properties
+              .GetAlternativeServiceInfos(test_server, network_isolation_key1_)
+              .size());
   EXPECT_TRUE(
       properties.GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
           .empty());
 
-  // Clearing the alternate service state of kNetworkIsolationKey1's canonical
-  // server should only affect kNetworkIsolationKey1.
-  properties.SetAlternativeServices(canonical_server1, kNetworkIsolationKey1,
+  // Clearing the alternate service state of network_isolation_key1_'s canonical
+  // server should only affect network_isolation_key1_.
+  properties.SetAlternativeServices(canonical_server1, network_isolation_key1_,
                                     {});
   EXPECT_EQ(
-      1u,
-      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey2)
-          .size());
+      1u, properties
+              .GetAlternativeServiceInfos(test_server, network_isolation_key2_)
+              .size());
   EXPECT_TRUE(
-      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey1)
+      properties
+          .GetAlternativeServiceInfos(test_server, network_isolation_key1_)
           .empty());
   EXPECT_TRUE(
       properties.GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
@@ -1528,8 +1919,95 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 
   HttpServerPropertiesPeer::ExpireBrokenAlternateProtocolMappings(&impl_);
+  EXPECT_FALSE(HasAlternativeService(server, NetworkIsolationKey()));
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest,
+       ExpireBrokenAlternateProtocolMappingsWithNetworkIsolationKey) {
+  url::SchemeHostPort server("https", "foo", 443);
+  AlternativeService alternative_service(kProtoHTTP2, "foo", 444);
+  base::TimeTicks past =
+      test_tick_clock_->NowTicks() - base::TimeDelta::FromSeconds(42);
+  base::TimeTicks future =
+      test_tick_clock_->NowTicks() + base::TimeDelta::FromSeconds(42);
+  const base::Time alt_service_expiration =
+      test_clock_.Now() + base::TimeDelta::FromDays(1);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  HttpServerProperties properties(nullptr /* pref_delegate */,
+                                  nullptr /* net_log */, test_tick_clock_,
+                                  &test_clock_);
+
+  properties.SetHttp2AlternativeService(server, network_isolation_key1_,
+                                        alternative_service,
+                                        alt_service_expiration);
+  properties.SetHttp2AlternativeService(server, network_isolation_key2_,
+                                        alternative_service,
+                                        alt_service_expiration);
+
+  EXPECT_FALSE(
+      properties.GetAlternativeServiceInfos(server, network_isolation_key1_)
+          .empty());
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(
+      properties.GetAlternativeServiceInfos(server, network_isolation_key2_)
+          .empty());
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  // Set broken alternative service with expiration date in the past for
+  // |network_isolation_key1_|.
+  HttpServerPropertiesPeer::AddBrokenAlternativeServiceWithExpirationTime(
+      &properties, alternative_service, past, network_isolation_key1_);
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key1_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key2_));
+  EXPECT_FALSE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  // Set broken alternative service with expiration date in the future for
+  // |network_isolation_key1_|.
+  HttpServerPropertiesPeer::AddBrokenAlternativeServiceWithExpirationTime(
+      &properties, alternative_service, future, network_isolation_key2_);
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key1_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key2_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
+
+  // Only the broken entry for |network_isolation_key1_| should be expired.
+  HttpServerPropertiesPeer::ExpireBrokenAlternateProtocolMappings(&properties);
+  EXPECT_TRUE(
+      properties.GetAlternativeServiceInfos(server, network_isolation_key1_)
+          .empty());
+  EXPECT_FALSE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                     network_isolation_key1_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key1_));
+  EXPECT_FALSE(
+      properties.GetAlternativeServiceInfos(server, network_isolation_key2_)
+          .empty());
+  EXPECT_TRUE(properties.IsAlternativeServiceBroken(alternative_service,
+                                                    network_isolation_key2_));
+  EXPECT_TRUE(properties.WasAlternativeServiceRecentlyBroken(
+      alternative_service, network_isolation_key2_));
 }
 
 // Regression test for https://crbug.com/505413.

@@ -297,34 +297,48 @@ class NET_EXPORT HttpServerProperties
       const net::NetworkIsolationKey& network_isolation_key,
       const AlternativeServiceInfoVector& alternative_service_info_vector);
 
-  // Marks |alternative_service| as broken.
-  // |alternative_service.host| must not be empty.
+  // Marks |alternative_service| as broken in the context of
+  // |network_isolation_key|. |alternative_service.host| must not be empty.
   void MarkAlternativeServiceBroken(
-      const AlternativeService& alternative_service);
+      const AlternativeService& alternative_service,
+      const net::NetworkIsolationKey& network_isolation_key =
+          NetworkIsolationKey());
 
-  // Marks |alternative_service| as broken until the default network changes.
+  // Marks |alternative_service| as broken in the context of
+  // |network_isolation_key| until the default network changes.
   // |alternative_service.host| must not be empty.
   void MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      const AlternativeService& alternative_service);
+      const AlternativeService& alternative_service,
+      const net::NetworkIsolationKey& network_isolation_key =
+          NetworkIsolationKey());
 
-  // Marks |alternative_service| as recently broken.
-  // |alternative_service.host| must not be empty.
+  // Marks |alternative_service| as recently broken in the context of
+  // |network_isolation_key|. |alternative_service.host| must not be empty.
   void MarkAlternativeServiceRecentlyBroken(
-      const AlternativeService& alternative_service);
+      const AlternativeService& alternative_service,
+      const net::NetworkIsolationKey& network_isolation_key =
+          NetworkIsolationKey());
 
-  // Returns true iff |alternative_service| is currently broken.
-  // |alternative_service.host| must not be empty.
+  // Returns true iff |alternative_service| is currently broken in the context
+  // of |network_isolation_key|. |alternative_service.host| must not be empty.
   bool IsAlternativeServiceBroken(
-      const AlternativeService& alternative_service) const;
+      const AlternativeService& alternative_service,
+      const net::NetworkIsolationKey& network_isolation_key =
+          NetworkIsolationKey()) const;
 
-  // Returns true iff |alternative_service| was recently broken.
-  // |alternative_service.host| must not be empty.
+  // Returns true iff |alternative_service| was recently broken in the context
+  // of |network_isolation_key|. |alternative_service.host| must not be empty.
   bool WasAlternativeServiceRecentlyBroken(
-      const AlternativeService& alternative_service);
+      const AlternativeService& alternative_service,
+      const net::NetworkIsolationKey& network_isolation_key =
+          NetworkIsolationKey());
 
-  // Confirms that |alternative_service| is working.
-  // |alternative_service.host| must not be empty.
-  void ConfirmAlternativeService(const AlternativeService& alternative_service);
+  // Confirms that |alternative_service| is working in the context of
+  // |network_isolation_key|. |alternative_service.host| must not be empty.
+  void ConfirmAlternativeService(
+      const AlternativeService& alternative_service,
+      const net::NetworkIsolationKey& network_isolation_key =
+          NetworkIsolationKey());
 
   // Called when the default network changes.
   // Clears all the alternative services that were marked broken until the
