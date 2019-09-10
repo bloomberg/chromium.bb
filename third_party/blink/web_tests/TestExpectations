@@ -5804,10 +5804,6 @@ crbug.com/921242 [ Mac ] fast/overflow/clip-rects-fixed-ancestor.html [ Failure 
 # Sheriff 2019-01-24
 crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-radius.html [ Pass Failure ]
 
-# Chrome does not implement the feature policy name currently in the spec,
-# which is still in flux.
-crbug.com/924670 external/wpt/webxr/webxr-supported-by-feature-policy.html [ Failure ]
-
 # Sheriff 2019-02-01, 2019-02-19
 # These are crashy on Win10, and seem to leave processes lying around, causing the swarming
 # task to hang.
