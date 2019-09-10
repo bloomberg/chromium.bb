@@ -68,15 +68,20 @@ class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
     (shared with LoopbackPartitions)
     path: Path to the image file.
     destination: destination directory.
+    part_ids: Mount these partitions at context manager entry.
+    mount_opts: Use these mount_opts for mounting |part_ids|.
     (unique to LoopbackPartitionsMock)
     dev: Path for the base loopback device.
     part_count: How many partition device files to make up.  Default: normal
         partition table.
   """
   # pylint: disable=super-init-not-called
-  def __init__(self, path, destination=None, dev=LOOP_DEV, part_count=0):
+  def __init__(self, path, destination=None, part_ids=None, mount_opts=None,
+               dev=LOOP_DEV, part_count=0):
     self.path = path
     self.dev = dev
+    self.part_ids = part_ids
+    self.mount_opts = mount_opts
     if destination:
       self.destination = destination
     else:
@@ -91,6 +96,7 @@ class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
                   for p in self._gpt_table}
     self.enable_rw_called = set()
     self.disable_rw_called = set()
+  # pylint: enable=super-init-not-called
 
   def EnableRwMount(self, part_id, offset=0):
     """Stub out enable rw mount."""
@@ -144,6 +150,35 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
       self.assertEquals(lb._gpt_table, LOOP_PARTITION_INFO)
     self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV])
+
+  def testContextManagerWithMounts(self):
+    """Test using the loopback class as a context manager with mounts."""
+    syml = self.PatchObject(osutils, 'SafeSymlink')
+    part_ids = (1, 'ROOT-A')
+    with image_lib.LoopbackPartitions(
+        FAKE_PATH, part_ids=part_ids, mount_opts=('ro',)) as lb:
+      expected_mounts = set()
+      expected_calls = []
+      for part_id in part_ids:
+        for part in LOOP_PARTITION_INFO:
+          if part.name == part_id or part.number == part_id:
+            expected_mounts.add(part)
+            expected_calls.append(
+                mock.call('dir-%d' % part.number, os.path.join(
+                    lb.destination, 'dir-%s' % part.name)))
+            break
+      self.rc_mock.assertCommandContains(['losetup', '--show', '-f', FAKE_PATH])
+      self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
+      self.rc_mock.assertCommandContains(['partx', '-a', LOOP_DEV])
+      self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV],
+                                         expected=False)
+      self.assertEquals(lb.parts, LOOP_PARTS_DICT)
+      self.assertEquals(lb._gpt_table, LOOP_PARTITION_INFO)
+      self.assertEquals(expected_calls, syml.call_args_list)
+      self.assertEquals(expected_mounts, lb._mounted)
+    self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
+    self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV])
+
 
   def testManual(self):
     """Test using the loopback class closed manually."""
@@ -278,7 +313,6 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
         [part.number in FS_PARTITIONS for part in LOOP_PARTITION_INFO],
         [lb._IsExt2(part.name) for part in LOOP_PARTITION_INFO])
 
-
 class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
   """Tests the various LSB utilities."""
 
@@ -290,23 +324,28 @@ class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
 
   def testWriteLsbRelease(self):
     """Tests writing out the lsb_release file using WriteLsbRelease(..)."""
+    rc_mock = self.PatchObject(cros_build_lib, 'SudoRunCommand')
     fields = {'x': '1', 'y': '2', 'foo': 'bar'}
     image_lib.WriteLsbRelease(self.tempdir, fields)
     lsb_release_file = os.path.join(self.tempdir, 'etc', 'lsb-release')
     expected_content = 'y=2\nx=1\nfoo=bar\n'
     self.assertFileContents(lsb_release_file, expected_content)
+    rc_mock.assert_called_once_with([
+        'setfattr', '-n', 'security.selinux', '-v',
+        'u:object_r:cros_conf_file:s0',
+        os.path.join(self.tempdir, 'etc/lsb-release')])
 
     # Test that WriteLsbRelease(..) correctly handles an existing file.
+    rc_mock = self.PatchObject(cros_build_lib, 'SudoRunCommand')
     fields = {'newkey1': 'value1', 'newkey2': 'value2', 'a': '3', 'b': '4'}
     image_lib.WriteLsbRelease(self.tempdir, fields)
     expected_content = ('y=2\nx=1\nfoo=bar\nnewkey2=value2\na=3\n'
                         'newkey1=value1\nb=4\n')
     self.assertFileContents(lsb_release_file, expected_content)
-    expected_selinux_label = 'u:object_r:cros_conf_file:s0'
-    actual_selinux_label = cros_build_lib.RunCommand([
-        'getfattr', '-n', 'security.selinux', '--only-values',
-        lsb_release_file], capture_output=True).output
-    self.assertEqual(actual_selinux_label, expected_selinux_label)
+    rc_mock.assert_called_once_with([
+        'setfattr', '-n', 'security.selinux', '-v',
+        'u:object_r:cros_conf_file:s0',
+        os.path.join(self.tempdir, 'etc/lsb-release')])
 
 
 class BuildImagePathTest(cros_test_lib.MockTempDirTestCase):

@@ -47,16 +47,20 @@ class LoopbackPartitions(object):
   In either case, the same arguments should be passed to init.
   """
 
-  def __init__(self, path, destination=None):
+  def __init__(self, path, destination=None, part_ids=None, mount_opts=None):
     """Initialize.
 
     Args:
       path: Path to the backing file.
       destination: Base path to mount partitions.
+      part_ids: Mount these partitions at context manager entry.
+      mount_opts: Use these mount_opts for mounting |part_ids|.
     """
     self.path = path
     self.destination = destination
     self.dev = None
+    self.part_ids = part_ids
+    self.mount_opts = mount_opts
     self.parts = {}
     self._destination_created = False
     self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(path)
@@ -204,13 +208,13 @@ class LoopbackPartitions(object):
         input=b'\xff', redirect_stderr=True)
 
   def _Mount(self, part, mount_opts):
+    if not self.destination:
+      self.destination = osutils.TempDir().tempdir
+      self._destination_created = True
+
     dest_number, dest_label = self._GetMountPointAndSymlink(part)
     if part in self._mounted and 'remount' not in mount_opts:
       return dest_number
-
-    if not self.destination:
-      self.destination = osutils.TempDir()
-      self._destination_created = True
 
     osutils.MountDir(self.GetPartitionDevName(part.number), dest_number,
                      makedirs=True, skip_mtab=False, sudo=True,
@@ -254,6 +258,8 @@ class LoopbackPartitions(object):
         self._destination_created = False
 
   def __enter__(self):
+    if self.part_ids:
+      self.Mount(self.part_ids, self.mount_opts)
     return self
 
   def __exit__(self, exc_type, exc, tb):
