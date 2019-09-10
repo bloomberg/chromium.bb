@@ -150,6 +150,7 @@ class PDFiumPage {
 
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, TestCalculateImages);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestAnnotLinkGeneration);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, TestImageAltText);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestLinkGeneration);
 
   // Returns a link index if the given character index is over a link, or -1
