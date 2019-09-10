@@ -766,6 +766,9 @@ typedef struct SPEED_FEATURES {
   // Whether to disable overlay frames for filtered Altref frames,
   // overiding oxcf->enable_overlay flag set as 1.
   int disable_overlay_frames;
+
+  // Use ALTREF frame in non-RD mode decision.
+  int use_nonrd_altref_frame;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

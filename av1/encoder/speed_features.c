@@ -648,6 +648,12 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 #if 0
     sf->use_modeled_non_rd_cost = 1;
 #endif
+// TODO(kyslov) Currently enabling ALTREF leads to 10%
+// slowdown with ~3% BDRate gain with current heuristics
+// We need to refine it before enabling ALTREF
+#if 0
+    sf->use_nonrd_altref_frame = 1;
+#endif
   }
 }
 

@@ -253,7 +253,7 @@ static INLINE void find_predictors(
     AV1_COMP *cpi, MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame,
     int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES], int const_motion[REF_FRAMES],
     int *ref_frame_skip_mask, const int flag_list[4], TileDataEnc *tile_data,
-    int mi_row, int mi_col, struct buf_2d yv12_mb[4][MAX_MB_PLANE],
+    int mi_row, int mi_col, struct buf_2d yv12_mb[8][MAX_MB_PLANE],
     BLOCK_SIZE bsize, int force_skip_low_temp_var, int comp_pred_allowed) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -1003,6 +1003,7 @@ static void model_rd_for_sb_uv(AV1_COMP *cpi, BLOCK_SIZE plane_bsize,
 
   this_rdc->rate = 0;
   this_rdc->dist = 0;
+  this_rdc->skip = 0;
 
   for (i = start_plane; i <= stop_plane; ++i) {
     struct macroblock_plane *const p = &x->plane[i];
@@ -1030,6 +1031,17 @@ static void model_rd_for_sb_uv(AV1_COMP *cpi, BLOCK_SIZE plane_bsize,
 
     this_rdc->rate += rate;
     this_rdc->dist += dist << 4;
+  }
+
+  if (this_rdc->rate == 0) {
+    this_rdc->skip = 1;
+  }
+
+  if (RDCOST(x->rdmult, this_rdc->rate, this_rdc->dist) >=
+      RDCOST(x->rdmult, 0, ((int64_t)tot_sse) << 4)) {
+    this_rdc->rate = 0;
+    this_rdc->dist = tot_sse << 4;
+    this_rdc->skip = 1;
   }
 
   *var_y = tot_var;
@@ -1230,9 +1242,9 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   MV_REFERENCE_FRAME usable_ref_frame, second_ref_frame;
   int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES];
   uint8_t mode_checked[MB_MODE_COUNT][REF_FRAMES];
-  struct buf_2d yv12_mb[6][MAX_MB_PLANE];
-  static const int flag_list[5] = { 0, AOM_LAST_FLAG, AOM_LAST2_FLAG,
-                                    AOM_LAST3_FLAG, AOM_GOLD_FLAG };
+  struct buf_2d yv12_mb[8][MAX_MB_PLANE];
+  static const int flag_list[8] = { 0, AOM_LAST_FLAG, 0, 0, AOM_GOLD_FLAG, 0,
+                                    0, AOM_ALT_FLAG };
   RD_STATS this_rdc, best_rdc;
   // var_y and sse_y are saved to be used in skipping checking
   unsigned int sse_y = UINT_MAX;
@@ -1249,7 +1261,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       ref_costs_comp[REF_FRAMES][REF_FRAMES];
   int use_golden_nonzeromv = 1;
   int force_skip_low_temp_var = 0;
-  int skip_ref_find_pred[5] = { 0 };
+  int skip_ref_find_pred[8] = { 0 };
   unsigned int sse_zeromv_norm = UINT_MAX;
   const unsigned int thresh_skip_golden = 500;
   int64_t best_sse_sofar = INT64_MAX;
@@ -1329,10 +1341,11 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   mi->ref_frame[0] = NONE_FRAME;
   mi->ref_frame[1] = NONE_FRAME;
 
+  usable_ref_frame =
+      cpi->sf.use_nonrd_altref_frame ? ALTREF_FRAME : GOLDEN_FRAME;
+
   if (cpi->rc.frames_since_golden == 0 && gf_temporal_ref) {
     usable_ref_frame = LAST_FRAME;
-  } else {
-    usable_ref_frame = GOLDEN_FRAME;
   }
 
   if (cpi->sf.short_circuit_low_temp_var) {
@@ -1419,7 +1432,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         get_segdata(seg, mi->segment_id, SEG_LVL_REF_FRAME) != (int)ref_frame)
       continue;
 
-    if (ref_frame == GOLDEN_FRAME && cpi->oxcf.rc_mode == AOM_CBR &&
+    if (ref_frame != LAST_FRAME && cpi->oxcf.rc_mode == AOM_CBR &&
         sse_zeromv_norm < thresh_skip_golden && this_mode == NEWMV)
       continue;
 
@@ -1429,16 +1442,15 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (const_motion[ref_frame] && this_mode == NEARMV) continue;
 
-    if (ref_frame == GOLDEN_FRAME && bsize > BLOCK_16X16) continue;
+    if (ref_frame != LAST_FRAME && bsize > BLOCK_16X16) continue;
 
-    if (ref_frame == GOLDEN_FRAME && this_mode == NEARMV) continue;
+    if (ref_frame != LAST_FRAME && this_mode == NEARMV) continue;
 
     // Skip non-zeromv mode search for golden frame if force_skip_low_temp_var
     // is set. If nearestmv for golden frame is 0, zeromv mode will be skipped
     // later.
     if (!force_mv_inter_layer && force_skip_low_temp_var &&
-        ref_frame == GOLDEN_FRAME &&
-        frame_mv[this_mode][ref_frame].as_int != 0) {
+        ref_frame != LAST_FRAME && frame_mv[this_mode][ref_frame].as_int != 0) {
       continue;
     }
 
@@ -1498,7 +1510,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     // Increase mode_rd_thresh value for GOLDEN_FRAME for improved encoding
     // speed
-    if (ref_frame == GOLDEN_FRAME && cpi->rc.frames_since_golden > 4)
+    if (ref_frame != LAST_FRAME && cpi->rc.frames_since_golden > 4)
       mode_rd_thresh = mode_rd_thresh << 3;
 
     if (rd_less_than_thresh(best_rdc.rdcost, mode_rd_thresh,
@@ -1639,6 +1651,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       model_rd_for_sb_uv(cpi, uv_bsize, x, xd, &rdc_uv, &var_y, &sse_y, 1, 2);
       this_rdc.rate += rdc_uv.rate;
       this_rdc.dist += rdc_uv.dist;
+      this_rdc.skip = this_rdc.skip && rdc_uv.skip;
     }
 
     // TODO(kyslov) account for UV prediction cost
