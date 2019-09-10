@@ -1452,6 +1452,8 @@ void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(
   WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow())
       ->SetShelfBoundsAndInsets(target_bounds->shelf_bounds,
                                 target_bounds->shelf_insets);
+  for (auto& observer : observers_)
+    observer.OnWorkAreaInsetsChanged();
 }
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(

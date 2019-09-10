@@ -32,6 +32,10 @@ class ASH_EXPORT ShelfLayoutManagerObserver {
 
   // Called when the hotseat state changes.
   virtual void OnHotseatStateChanged(HotseatState state) {}
+
+  // Called when ShelfLayoutManager has updated Shelf insets in work area
+  // insets.
+  virtual void OnWorkAreaInsetsChanged() {}
 };
 
 }  // namespace ash
