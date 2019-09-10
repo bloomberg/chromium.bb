@@ -502,11 +502,25 @@ std::unique_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
       base::ThreadTaskRunnerHandle::Get());
 }
 
-void ClientSession::SetMouseClampingFilter(const DisplaySize& size) {
+void ClientSession::SetMouseClampingFilter(const webrtc::DesktopSize& size,
+                                           const webrtc::DesktopVector& dpi) {
   UpdateMouseClampingFilterOffset();
-  // TODO(garykac) Combine these into a single call.
   mouse_clamping_filter_.set_output_size(size);
-  mouse_clamping_filter_.set_input_size(size);
+
+  switch (connection_->session()->config().protocol()) {
+    case protocol::SessionConfig::Protocol::ICE:
+      mouse_clamping_filter_.set_input_size(webrtc::DesktopSize(size));
+      break;
+
+    case protocol::SessionConfig::Protocol::WEBRTC: {
+      // When using WebRTC protocol the client sends mouse coordinates in DIPs,
+      // while InputInjector expects them in physical pixels.
+      // TODO(sergeyu): Fix InputInjector implementations to use DIPs as well.
+      webrtc::DesktopSize size_dips =
+          DesktopDisplayInfo::CalcSizeDips(size, dpi.x(), dpi.y());
+      mouse_clamping_filter_.set_input_size(webrtc::DesktopSize(size_dips));
+    }
+  }
 }
 
 void ClientSession::UpdateMouseClampingFilterOffset() {
@@ -518,40 +532,41 @@ void ClientSession::UpdateMouseClampingFilterOffset() {
 }
 
 void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
-                                       const webrtc::DesktopSize& size_px,
+                                       const webrtc::DesktopSize& size,
                                        const webrtc::DesktopVector& dpi) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(connection_->session()->config().protocol() ==
-         protocol::SessionConfig::Protocol::WEBRTC);
   LOG(INFO) << "ClientSession::OnVideoSizeChanged";
-  DisplaySize size =
-      DisplaySize::FromPixels(size_px.width(), size_px.height(), dpi.x());
-  LOG(INFO) << "   DisplaySize (dips): " << size;
-  LOG(INFO) << "   DisplaySize (px): " << size.WidthAsPixels() << ","
-            << size.HeightAsPixels();
-  SetMouseClampingFilter(size);
+  SetMouseClampingFilter(size, dpi);
 
   // Record default DPI in case a display reports 0 for DPI.
   default_x_dpi_ = dpi.x();
   default_y_dpi_ = dpi.y();
-  if (dpi.x() != dpi.y()) {
-    LOG(WARNING) << "Mismatch x,y dpi: x=" << dpi.x() << " y=" << dpi.y();
-  }
 
   if (connection_->session()->config().protocol() !=
       protocol::SessionConfig::Protocol::WEBRTC) {
     return;
   }
 
+  LOG(INFO) << "   WebRTC input size (pixels): " << size.width() << "x"
+            << size.height() << " @ " << dpi.x() << "," << dpi.y();
+  webrtc::DesktopSize size_dips =
+      DesktopDisplayInfo::CalcSizeDips(size, dpi.x(), dpi.y());
+  LOG(INFO) << "   DPI: " << dpi.x() << "," << dpi.y();
+  LOG(INFO) << "   WebRTC input size (DIPS): " << size_dips.width() << "x"
+            << size_dips.height();
+
   // Generate and send VideoLayout message.
   protocol::VideoLayout layout;
   protocol::VideoTrackLayout* video_track = layout.add_video_track();
   video_track->set_position_x(0);
   video_track->set_position_y(0);
-  video_track->set_width(size.WidthAsDips());
-  video_track->set_height(size.HeightAsDips());
+  video_track->set_width(size_dips.width());
+  video_track->set_height(size_dips.height());
   video_track->set_x_dpi(dpi.x());
   video_track->set_y_dpi(dpi.y());
+
+  LOG(INFO) << "  VideoLayout Desktop (DIPS) = 0,0 " << size_dips.width() << "x"
+            << size_dips.height() << " [" << dpi.x() << "," << dpi.y() << "]";
 
   // VideoLayout can be sent only after the control channel is connected.
   // TODO(sergeyu): Change client_stub() implementation to allow queuing

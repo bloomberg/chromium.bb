@@ -22,7 +22,7 @@ MouseInputFilter::MouseInputFilter(InputStub* input_stub)
 MouseInputFilter::~MouseInputFilter() = default;
 
 void MouseInputFilter::InjectMouseEvent(const MouseEvent& event) {
-  if (input_size_.IsEmpty() || output_size_.IsEmpty())
+  if (input_size_.is_empty() || output_size_.is_empty())
     return;
 
   // We scale based on the maximum input & output coordinates, rather than the
@@ -33,14 +33,14 @@ void MouseInputFilter::InjectMouseEvent(const MouseEvent& event) {
   // but will be non-zero when we are showing a single display.
   MouseEvent out_event(event);
   if (out_event.has_x()) {
-    int x = out_event.x() * output_size_.WidthAsPixels();
-    x = (x + input_size_.WidthAsDips() / 2) / input_size_.WidthAsDips();
+    int x = out_event.x() * output_size_.width();
+    x = (x + input_size_.width() / 2) / input_size_.width();
     out_event.set_x(output_offset_.x() +
                     base::ClampToRange(x, 0, output_size_.WidthAsPixels()));
   }
   if (out_event.has_y()) {
-    int y = out_event.y() * output_size_.HeightAsPixels();
-    y = (y + input_size_.HeightAsDips() / 2) / input_size_.HeightAsDips();
+    int y = out_event.y() * output_size_.height();
+    y = (y + input_size_.height() / 2) / input_size_.height();
     out_event.set_y(output_offset_.y() +
                     base::ClampToRange(y, 0, output_size_.HeightAsPixels()));
   }
@@ -48,18 +48,16 @@ void MouseInputFilter::InjectMouseEvent(const MouseEvent& event) {
   InputFilter::InjectMouseEvent(out_event);
 }
 
-void MouseInputFilter::set_input_size(const DisplaySize& size) {
-  input_size_ = DisplaySize(size.WidthAsDips() - 1, size.HeightAsDips() - 1,
-                            size.GetDpi());
-  LOG(INFO) << "Setting MouseInputFilter input_size to (dips) " << input_size_;
+void MouseInputFilter::set_input_size(const webrtc::DesktopSize& size) {
+  input_size_ = webrtc::DesktopSize(size.width() - 1, size.height() - 1);
+  LOG(INFO) << "Setting MouseInputFilter input_size to " << input_size_.width()
+            << "x" << input_size_.height();
 }
 
-void MouseInputFilter::set_output_size(const DisplaySize& size) {
-  output_size_ = DisplaySize::FromPixels(
-      size.WidthAsPixels() - 1, size.HeightAsPixels() - 1, size.GetDpi());
-  LOG(INFO) << "Setting MouseInputFilter output_size to (px) "
-            << output_size_.WidthAsPixels() << "x"
-            << output_size_.HeightAsPixels();
+void MouseInputFilter::set_output_size(const webrtc::DesktopSize& size) {
+  output_size_ = webrtc::DesktopSize(size.width() - 1, size.height() - 1);
+  LOG(INFO) << "Setting MouseInputFilter output_size to "
+            << output_size_.width() << "x" << output_size_.height();
 }
 
 void MouseInputFilter::set_output_offset(const webrtc::DesktopVector& v) {
