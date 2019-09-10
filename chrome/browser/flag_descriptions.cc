@@ -2490,15 +2490,6 @@ const char kInterestFeedNotificationsDescription[] =
     "Show notifications for some suggested content from the interest feed. "
     "#interest-feed-content-suggestions should also be enabled.";
 
-const char kHomePageButtonName[] = "Force Enable Home Page Button";
-const char kHomePageButtonDescription[] = "Displays a home button if enabled.";
-
-const char kHomepageTileName[] =
-    "Enable Homepage tile shown in Suggested Tiles";
-const char kHomepageTileDescription[] =
-    "When NTPButton is enabled, the first tile of the Suggested Tiles will be "
-    "used for homepage. It will not have an effect when NTPButton is disabled.";
-
 const char kIdentityDiscName[] = "Identity Disc";
 const char kIdentityDiscDescription[] =
     "Enables Identity Disc, profile avatar icon button in toolbar.";
@@ -2527,10 +2518,6 @@ const char kNewPhotoPickerDescription[] =
 const char kNoCreditCardAbort[] = "No Credit Card Abort";
 const char kNoCreditCardAbortDescription[] =
     "Whether or not the No Credit Card Abort is enabled.";
-
-const char kNtpButtonName[] = "Enable NTP Button";
-const char kNtpButtonDescription[] =
-    "Displays a New Tab Page button in the toolbar if enabled.";
 
 const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
 const char kOfflineIndicatorAlwaysHttpProbeDescription[] =

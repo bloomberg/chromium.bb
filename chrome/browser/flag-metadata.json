@@ -1296,11 +1296,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-homepage-tile",
-    "owners": [ "dimich", "twellington" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-horizontal-tab-switcher",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 77
@@ -1456,11 +1451,6 @@
   {
     "name": "enable-notification-indicator",
     "owners": [ "newcomer" ],
-    "expiry_milestone": 78
-  },
-  {
-    "name": "enable-ntp-button",
-    "owners": [ "twellington" ],
     "expiry_milestone": 78
   },
   {
@@ -2123,11 +2113,6 @@
     // ECT is a baked-in feature of Chrome. This flag is used for frequent
     // testing and should not be removed.
     "expiry_milestone": -1
-  },
-  {
-    "name": "force-enable-home-page-button",
-    "owners": [ "twellington", "chrome-android-app" ],
-    "expiry_milestone": 81
   },
   {
     "name": "force-enable-system-aec",

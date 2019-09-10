@@ -143,8 +143,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kEphemeralTabUsingBottomSheet,
     &kExploreSites,
     &kHandleMediaIntents,
-    &kHomePageButtonForceEnabled,
-    &kHomepageTile,
     &kHorizontalTabSwitcherAndroid,
     &kIdentityDisc,
     &kImmersiveUiMode,
@@ -155,7 +153,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNewPhotoPicker,
     &kNotificationSuspender,
     &kNoCreditCardAbort,
-    &kNTPButton,
     &kNTPLaunchAfterInactivity,
     &kOmniboxSpareRenderer,
     &kOverlayNewLayout,
@@ -436,12 +433,6 @@ const base::Feature kExploreSites{"ExploreSites",
 const base::Feature kHandleMediaIntents{"HandleMediaIntents",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kHomePageButtonForceEnabled{
-    "HomePageButtonForceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kHomepageTile{"HomepageTile",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kHorizontalTabSwitcherAndroid{
     "HorizontalTabSwitcherAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -484,8 +475,6 @@ const base::Feature kNotificationSuspender{"NotificationSuspender",
 
 const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNTPButton{"NTPButton", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPLaunchAfterInactivity{
     "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};

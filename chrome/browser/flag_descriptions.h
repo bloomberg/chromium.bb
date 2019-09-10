@@ -1478,12 +1478,6 @@ extern const char kExploreSitesDescription[];
 extern const char kInterestFeedNotificationsName[];
 extern const char kInterestFeedNotificationsDescription[];
 
-extern const char kHomePageButtonName[];
-extern const char kHomePageButtonDescription[];
-
-extern const char kHomepageTileName[];
-extern const char kHomepageTileDescription[];
-
 extern const char kIdentityDiscName[];
 extern const char kIdentityDiscDescription[];
 
@@ -1501,9 +1495,6 @@ extern const char kNewPhotoPickerDescription[];
 
 extern const char kNoCreditCardAbort[];
 extern const char kNoCreditCardAbortDescription[];
-
-extern const char kNtpButtonName[];
-extern const char kNtpButtonDescription[];
 
 extern const char kOfflineIndicatorAlwaysHttpProbeName[];
 extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
