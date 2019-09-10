@@ -242,8 +242,6 @@ source_set("common") {
     "accelerated_video_decoder.h",
     "codec_picture.cc",
     "codec_picture.h",
-    "format_utils.cc",
-    "format_utils.h",
     "gpu_video_decode_accelerator_helpers.cc",
     "gpu_video_decode_accelerator_helpers.h",
     "gpu_video_encode_accelerator_helpers.cc",

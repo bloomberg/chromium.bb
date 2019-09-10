@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/format_utils.h"
+#include "media/base/format_utils.h"
 #include "base/logging.h"
 #include "ui/gfx/buffer_format_util.h"
 
 namespace media {
 
-VideoPixelFormat GfxBufferFormatToVideoPixelFormat(gfx::BufferFormat format) {
+base::Optional<VideoPixelFormat> GfxBufferFormatToVideoPixelFormat(
+    gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::BGRX_8888:
       return PIXEL_FORMAT_XRGB;
@@ -31,9 +32,9 @@ VideoPixelFormat GfxBufferFormatToVideoPixelFormat(gfx::BufferFormat format) {
       return PIXEL_FORMAT_NV12;
 
     default:
-      LOG(FATAL) << "Unsupported BufferFormat: "
-                 << gfx::BufferFormatToString(format);
-      return PIXEL_FORMAT_UNKNOWN;
+      DLOG(WARNING) << "Unsupported BufferFormat: "
+                    << gfx::BufferFormatToString(format);
+      return base::nullopt;
   }
 }
 

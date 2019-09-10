@@ -148,6 +148,8 @@ jumbo_source_set("base") {
     "fallback_video_decoder.h",
     "feedback_signal_accumulator.h",
     "flinging_controller.h",
+    "format_utils.cc",
+    "format_utils.h",
     "hdr_metadata.cc",
     "hdr_metadata.h",
     "key_system_names.cc",
