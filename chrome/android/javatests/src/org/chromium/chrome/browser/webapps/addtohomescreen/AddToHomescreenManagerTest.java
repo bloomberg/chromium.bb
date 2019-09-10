@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.webapps;
+package org.chromium.chrome.browser.webapps.addtohomescreen;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
@@ -153,7 +154,7 @@ public class AddToHomescreenManagerTest {
 
         @Override
         public void showDialog() {
-            mDialog = new AddToHomescreenDialog(mActivity, TestAddToHomescreenManager.this) {
+            mDialog = new AddToHomescreenView(mActivity, TestAddToHomescreenManager.this) {
                 @Override
                 public void onUserTitleAvailable(String title, String url, boolean isWebapp) {
                     if (TextUtils.isEmpty(mTitle)) {

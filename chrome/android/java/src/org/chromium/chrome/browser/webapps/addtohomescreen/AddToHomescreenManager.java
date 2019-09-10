@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.webapps;
+package org.chromium.chrome.browser.webapps.addtohomescreen;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -17,11 +17,11 @@ import org.chromium.content_public.browser.WebContents;
  * Manages the add to home screen process. Coordinates the native-side data fetching, and owns
  * a dialog prompting the user to confirm the action (and potentially supply a title).
  */
-public class AddToHomescreenManager implements AddToHomescreenDialog.Delegate {
+public class AddToHomescreenManager implements AddToHomescreenView.Delegate {
     protected final Activity mActivity;
     protected final Tab mTab;
 
-    protected AddToHomescreenDialog mDialog;
+    protected AddToHomescreenView mDialog;
     private long mNativeAddToHomescreenManager;
 
     public AddToHomescreenManager(Activity activity, Tab tab) {
@@ -82,7 +82,7 @@ public class AddToHomescreenManager implements AddToHomescreenDialog.Delegate {
      */
     @CalledByNative
     public void showDialog() {
-        mDialog = new AddToHomescreenDialog(mActivity, this);
+        mDialog = new AddToHomescreenView(mActivity, this);
         mDialog.show();
     }
 

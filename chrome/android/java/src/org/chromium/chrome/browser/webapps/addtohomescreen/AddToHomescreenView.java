@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.webapps;
+package org.chromium.chrome.browser.webapps.addtohomescreen;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -36,7 +36,7 @@ import org.chromium.ui.UiUtils;
  * not yet fetched, and accepting the dialog is disabled until all data is available and in its
  * place on the screen.
  */
-public class AddToHomescreenDialog implements View.OnClickListener {
+public class AddToHomescreenView implements View.OnClickListener {
     /**
      * The delegate for which this dialog is displayed. Used by the dialog to indicate when the user
      * accedes to adding to home screen, and when the dialog is dismissed.
@@ -79,7 +79,7 @@ public class AddToHomescreenDialog implements View.OnClickListener {
 
     private boolean mHasIcon;
 
-    public AddToHomescreenDialog(Context context, Delegate delegate) {
+    public AddToHomescreenView(Context context, Delegate delegate) {
         mContext = context;
         mDelegate = delegate;
     }
@@ -270,7 +270,7 @@ public class AddToHomescreenDialog implements View.OnClickListener {
     void updateAddButtonEnabledState() {
         boolean enable = mHasIcon
                 && (!TextUtils.isEmpty(mShortcutTitleInput.getText())
-                           || mAppLayout.getVisibility() == View.VISIBLE);
+                        || mAppLayout.getVisibility() == View.VISIBLE);
         mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(enable);
     }
 }

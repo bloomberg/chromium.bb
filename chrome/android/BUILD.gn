@@ -2696,7 +2696,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/util/ChromeContextUtil.java",
     "java/src/org/chromium/chrome/browser/util/FeatureUtilities.java",
     "java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
-    "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenManager.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkHandlerDelegate.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkInstallService.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkInstaller.java",
@@ -2705,6 +2704,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/webapps/WebApkUpdateDataFetcher.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkUpdateManager.java",
     "java/src/org/chromium/chrome/browser/webapps/WebappRegistry.java",
+    "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenManager.java",
     "java/src/org/chromium/chrome/browser/widget/ThumbnailGenerator.java",
   ]
 

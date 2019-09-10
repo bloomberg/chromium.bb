@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.webapps;
+package org.chromium.chrome.browser.webapps.addtohomescreen;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -27,7 +27,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
- * Tests org.chromium.chrome.browser.webapps.AddToHomescreenDialog by verifying
+ * Tests org.chromium.chrome.browser.webapps.AddToHomescreenView by verifying
  * that the calling the show() method actually shows the dialog and checks that
  * some expected elements inside the dialog are present.
  *
@@ -37,7 +37,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         // Preconnect causes issues with the single-threaded Java test server.
         "--disable-features=NetworkPrediction"})
-public class AddToHomescreenDialogTest {
+public class AddToHomescreenViewTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -62,10 +62,9 @@ public class AddToHomescreenDialogTest {
     @RetryOnFailure
     public void testSmoke() throws InterruptedException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AddToHomescreenDialog dialog =
-                    new AddToHomescreenDialog(mActivityTestRule.getActivity(),
-                            new MockAddToHomescreenManager(mActivityTestRule.getActivity(),
-                                    mActivityTestRule.getActivity().getActivityTab()));
+            AddToHomescreenView dialog = new AddToHomescreenView(mActivityTestRule.getActivity(),
+                    new MockAddToHomescreenManager(mActivityTestRule.getActivity(),
+                            mActivityTestRule.getActivity().getActivityTab()));
             dialog.show();
 
             AlertDialog alertDialog = dialog.getAlertDialogForTesting();
