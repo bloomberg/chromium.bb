@@ -71,6 +71,12 @@ VULKAN_INSTANCE_FUNCTIONS = [
     ]
   },
   {
+  'min_api_version': 'VK_VERSION_1_1',
+    'functions': [
+      'vkGetPhysicalDeviceImageFormatProperties2',
+    ]
+  },
+  {
     # vkGetPhysicalDeviceFeatures2() is defined in Vulkan 1.1 or suffixed in the
     # VK_KHR_get_physical_device_properties2 extension.
     'min_api_version': 'VK_VERSION_1_1',
@@ -142,6 +148,12 @@ VULKAN_DEVICE_FUNCTIONS = [
     ]
   },
   {
+    'min_api_version': 'VK_VERSION_1_1',
+    'functions': [
+      'vkGetImageMemoryRequirements2',
+    ]
+  },
+  {
     'ifdef': 'defined(OS_ANDROID)',
     'extension':
         'VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME',
@@ -161,7 +173,8 @@ VULKAN_DEVICE_FUNCTIONS = [
     'ifdef': 'defined(OS_LINUX)',
     'extension': 'VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME',
     'functions': [
-      'vkGetMemoryFdKHR'
+      'vkGetMemoryFdKHR',
+      'vkGetMemoryFdPropertiesKHR',
     ]
   },
   {
