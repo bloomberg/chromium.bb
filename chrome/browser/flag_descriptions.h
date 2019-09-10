@@ -1588,9 +1588,6 @@ extern const char kStrictSiteIsolationDescription[];
 extern const char kTabSwitcherLongpressMenuName[];
 extern const char kTabSwitcherLongpressMenuDescription[];
 
-extern const char kTranslateAndroidManualTriggerName[];
-extern const char kTranslateAndroidManualTriggerDescription[];
-
 extern const char kStartSurfaceAndroidName[];
 extern const char kStartSurfaceAndroidDescription[];
 

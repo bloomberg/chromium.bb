@@ -2701,11 +2701,6 @@ extern const char kTabSwitcherLongpressMenuDescription[] =
     "Enable showing a popup menu when the tab switcher is long-pressed, which "
     "displays options for 'NewTab', 'New incognito tab' and 'Close tab'.";
 
-const char kTranslateAndroidManualTriggerName[] =
-    "Enable manual translate trigger";
-const char kTranslateAndroidManualTriggerDescription[] =
-    "Show a menu item in the main menu that triggers page translation.";
-
 const char kStartSurfaceAndroidName[] = "Start Surface";
 const char kStartSurfaceAndroidDescription[] =
     "Enable showing the start surface when launching Chrome via the "

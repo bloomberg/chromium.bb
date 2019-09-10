@@ -3678,10 +3678,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDrawVerticallyEdgeToEdgeName,
      flag_descriptions::kDrawVerticallyEdgeToEdgeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDrawVerticallyEdgeToEdge)},
-    {"translate-android-manual-trigger",
-     flag_descriptions::kTranslateAndroidManualTriggerName,
-     flag_descriptions::kTranslateAndroidManualTriggerDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(translate::kTranslateMobileManualTrigger)},
 #endif
 #if defined(OS_ANDROID)
     {"enable-ephemeral-tab", flag_descriptions::kEphemeralTabName,
