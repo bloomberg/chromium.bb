@@ -315,7 +315,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   EXPECT_CALL(*icon_store(), AddIcons(_, _))
       .WillOnce(Invoke([](IconStore::IconTypeBundleMap icons,
                           IconStore::AddCallback callback) {
-        std::move(callback).Run({}, true);
+        std::move(callback).Run(IconStore::IconTypeUuidMap{}, true);
       }));
   EXPECT_CALL(*notification_store(), Add(guid, _, _))
       .WillOnce(Invoke([guid](const std::string&, const NotificationEntry&,
@@ -358,7 +358,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationEmptyGuid) {
   EXPECT_CALL(*icon_store(), AddIcons(_, _))
       .WillOnce(Invoke([](IconStore::IconTypeBundleMap icons,
                           IconStore::AddCallback callback) {
-        std::move(callback).Run({}, true);
+        std::move(callback).Run(IconStore::IconTypeUuidMap{}, true);
       }));
   EXPECT_CALL(*notification_store(), Add(_, _, _))
       .WillOnce(Invoke(
@@ -696,7 +696,7 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotificationWithIconsFailed) {
   EXPECT_CALL(*icon_store(), LoadIcons(_, _))
       .WillOnce(Invoke([](std::vector<std::string> keys,
                           IconStore::LoadIconsCallback callback) {
-        std::move(callback).Run(false, {});
+        std::move(callback).Run(false, IconStore::LoadedIconsMap{});
       }));
   EXPECT_CALL(*notification_store(), Delete(kGuid, _));
   EXPECT_CALL(*icon_store(), DeleteIcons(_, _));
