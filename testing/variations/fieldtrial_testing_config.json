@@ -6172,25 +6172,6 @@
             ]
         }
     ],
-    "UseFluentLanguageModel": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseFluentLanguageModel"
-                    ]
-                }
-            ]
-        }
-    ],
     "UsePdfCompositorServiceForPrint": [
         {
             "platforms": [
