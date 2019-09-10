@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_P2P_SOCKET_CLIENT_H_
-#define CONTENT_RENDERER_P2P_SOCKET_CLIENT_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_SOCKET_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_SOCKET_CLIENT_H_
 
 #include <stdint.h>
 
@@ -16,11 +16,14 @@ namespace rtc {
 struct PacketOptions;
 }
 
-namespace content {
+namespace blink {
 
 class P2PSocketClientDelegate;
 
 // P2P socket that routes all calls over IPC.
+//
+// TODO(crbug.com/787254): Move this class out of the Blink exposed API when
+// all users of it have been Onion souped. Also, move it away from std::vector.
 class P2PSocketClient {
  public:
   virtual ~P2PSocketClient() {}
@@ -42,6 +45,6 @@ class P2PSocketClient {
  protected:
   P2PSocketClient() {}
 };
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_P2P_SOCKET_CLIENT_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_SOCKET_CLIENT_H_

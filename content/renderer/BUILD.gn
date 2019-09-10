@@ -254,8 +254,6 @@ target(link_target_type, "renderer") {
     "p2p/mdns_responder_adapter.h",
     "p2p/port_allocator.cc",
     "p2p/port_allocator.h",
-    "p2p/socket_client.h",
-    "p2p/socket_client_delegate.h",
     "p2p/socket_client_impl.cc",
     "p2p/socket_client_impl.h",
     "p2p/socket_dispatcher.cc",
