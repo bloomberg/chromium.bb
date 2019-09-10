@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/common/android/surface_texture_gl_owner.h"
+#include "gpu/command_buffer/service/surface_texture_gl_owner.h"
 
 #include <memory>
 

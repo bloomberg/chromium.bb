@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/common/android/surface_texture_gl_owner.h"
+#include "gpu/command_buffer/service/surface_texture_gl_owner.h"
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/test/task_environment.h"
-#include "gpu/ipc/common/android/mock_abstract_texture.h"
+#include "gpu/command_buffer/service/mock_abstract_texture.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"

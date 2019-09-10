@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_ANDROID_IMAGE_READER_GL_OWNER_H_
-#define GPU_IPC_COMMON_ANDROID_IMAGE_READER_GL_OWNER_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_IMAGE_READER_GL_OWNER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_IMAGE_READER_GL_OWNER_H_
 
 #include <memory>
 
 #include "base/android/android_image_reader_compat.h"
 #include "base/containers/flat_map.h"
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
+#include "gpu/gpu_gles2_export.h"
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 
@@ -27,7 +28,7 @@ namespace gpu {
 // decoded media frames. Media frames can update the attached surface handle
 // with image data and this class helps to create an eglImage using that image
 // data present in the surface.
-class GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
+class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
  public:
   gl::GLContext* GetContext() const override;
   gl::GLSurface* GetSurface() const override;
@@ -132,4 +133,4 @@ class GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
 
 }  // namespace gpu
 
-#endif  // GPU_IPC_COMMON_ANDROID_IMAGE_READER_GL_OWNER_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_IMAGE_READER_GL_OWNER_H_
