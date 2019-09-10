@@ -14,6 +14,7 @@ import pwd
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.scripts import cros_oobe_autoconfig
 
@@ -70,6 +71,7 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
         ['/sbin/mkfs.ext4', state],
         # Create the GPT headers and entry for the stateful partition.
         ['cgpt', 'create', self.image],
+        ['cgpt', 'boot', '-p', self.image],
         ['cgpt', 'add', self.image, '-t', 'data',
          '-l', str(constants.CROS_PART_STATEFUL),
          '-b', str(_STATEFUL_OFFSET // _SECTOR_SIZE),
@@ -88,8 +90,7 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
     # Mount the image's stateful partition for inspection.
     self.mount_tmp = os.path.join(self.tempdir, 'mount')
     osutils.SafeMakedirs(self.mount_tmp)
-    self.mount_ctx = osutils.MountImageContext(self.image, self.mount_tmp,
-                                               (1,), ('rw',))
+    self.mount_ctx = image_lib.LoopbackPartitions(self.image, self.mount_tmp)
     self.mount = os.path.join(self.mount_tmp,
                               'dir-%s' % constants.CROS_PART_STATEFUL)
 
@@ -102,19 +103,29 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
   def testChronosOwned(self):
     """Test that the OOBE autoconfig directory is owned by chronos."""
     with self.mount_ctx:
+      # TODO(mikenichols): Remove unneeded mount call once context
+      # handling is in place, http://crrev/c/1795578
+      _ = self.mount_ctx.Mount((constants.CROS_PART_STATEFUL,))[0]
       chronos_uid = pwd.getpwnam('chronos').pw_uid
       self.assertExists(self.oobe_autoconf_path)
       self.assertEqual(os.stat(self.config_path).st_uid, chronos_uid)
 
   def testConfigContents(self):
     """Test that the config JSON matches the correct data."""
-    with self.mount_ctx, open(self.config_path) as conf:
-      data = json.load(conf)
+    with self.mount_ctx:
+      # TODO(mikenichols): Remove unneeded mount call once context
+      # handling is in place, http://crrev/c/1795578
+      _ = self.mount_ctx.Mount((constants.CROS_PART_STATEFUL,))[0]
+      data = json.load(open(self.config_path))
       self.assertEqual(data, _TEST_CONFIG_JSON)
 
   def testDomainContents(self):
     """Test that the domain file matches the correct data."""
-    with self.mount_ctx, open(self.domain_path) as domain:
+    with self.mount_ctx:
+      # TODO(mikenichols): Remove unneeded mount call once context
+      # handling is in place, http://crrev/c/1795578
+      _ = self.mount_ctx.Mount((constants.CROS_PART_STATEFUL,))[0]
+      domain = open(self.domain_path)
       self.assertEqual(domain.read(), _TEST_DOMAIN)
 
 

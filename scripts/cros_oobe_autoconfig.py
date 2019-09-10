@@ -26,6 +26,7 @@ from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import image_lib
 from chromite.lib import osutils
 
 
@@ -133,9 +134,9 @@ def PrepareImage(image, content, domain=None):
     domain: Which domain to enroll to.
   """
   with osutils.TempDir() as tmp, \
-     osutils.MountImageContext(image, tmp, (constants.CROS_PART_STATEFUL,),
-                               ('rw',)) as _:
-    stateful_mnt = os.path.join(tmp, 'dir-%s' % constants.CROS_PART_STATEFUL)
+    image_lib.LoopbackPartitions(image, tmp) as image:
+    stateful_mnt = image.Mount((constants.CROS_PART_STATEFUL,),
+                               mount_opts=('rw',))[0]
 
     # /stateful/unencrypted may not exist at this point in time on the
     # recovery image, so create it root-owned here.
