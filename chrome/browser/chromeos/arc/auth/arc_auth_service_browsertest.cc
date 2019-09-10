@@ -25,6 +25,8 @@
 #include "chrome/browser/chromeos/arc/auth/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -78,6 +80,11 @@ constexpr char kFakeAuthCode[] = "fake-auth-code";
 
 std::string GetFakeAuthTokenResponse() {
   return base::StringPrintf(R"({ "token" : "%s"})", kFakeAuthCode);
+}
+
+std::unique_ptr<KeyedService> CreateCertificateProviderService(
+    content::BrowserContext* context) {
+  return std::make_unique<chromeos::CertificateProviderService>();
 }
 
 }  // namespace
@@ -286,6 +293,13 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
     MigrateSigninScopedDeviceId(profile());
+
+    // TestingProfile is not interpreted as a primary profile. Inject factory so
+    // that the instance of CertificateProviderService for the profile can be
+    // created.
+    chromeos::CertificateProviderServiceFactory::GetInstance()
+        ->SetTestingFactory(
+            profile(), base::BindRepeating(&CreateCertificateProviderService));
 
     ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
 
