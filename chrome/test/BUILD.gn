@@ -2807,6 +2807,7 @@ test("unit_tests") {
     "../browser/android/chrome_backup_agent_unittest.cc",
     "../browser/android/customtabs/detached_resource_request_unittest.cc",
     "../browser/android/favicon_helper_unittest.cc",
+    "../browser/android/metrics/background_task_memory_metrics_emitter_unittest.cc",
     "../browser/android/mock_location_settings.cc",
     "../browser/android/mock_location_settings.h",
     "../browser/android/oom_intervention/near_oom_monitor_unittest.cc",

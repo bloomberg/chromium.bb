@@ -891,6 +891,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/metrics/OneShotImpressionListener.java",
   "java/src/org/chromium/chrome/browser/metrics/PackageMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/PageLoadMetrics.java",
+  "java/src/org/chromium/chrome/browser/metrics/BackgroundTaskMemoryMetricsEmitter.java",
   "java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java",
   "java/src/org/chromium/chrome/browser/metrics/UmaUtils.java",
   "java/src/org/chromium/chrome/browser/metrics/VariationsSession.java",
