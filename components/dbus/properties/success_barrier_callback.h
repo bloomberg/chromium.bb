@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DBUS_MENU_SUCCESS_BARRIER_CALLBACK_H_
-#define COMPONENTS_DBUS_MENU_SUCCESS_BARRIER_CALLBACK_H_
+#ifndef COMPONENTS_DBUS_PROPERTIES_SUCCESS_BARRIER_CALLBACK_H_
+#define COMPONENTS_DBUS_PROPERTIES_SUCCESS_BARRIER_CALLBACK_H_
 
 #include <cstddef>
 
@@ -20,4 +20,4 @@ base::RepeatingCallback<void(bool)> SuccessBarrierCallback(
     size_t num_calls,
     base::OnceCallback<void(bool)> done_callback);
 
-#endif  // COMPONENTS_DBUS_MENU_SUCCESS_BARRIER_CALLBACK_H_
+#endif  // COMPONENTS_DBUS_PROPERTIES_SUCCESS_BARRIER_CALLBACK_H_

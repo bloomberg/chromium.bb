@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dbus/menu/types.h"
+#include "components/dbus/properties/types.h"
 
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -55,6 +55,32 @@ void DbusUint32::Write(dbus::MessageWriter* writer) const {
 // static
 std::string DbusUint32::GetSignature() {
   return "u";
+}
+
+DbusInt64::DbusInt64(int64_t value) : value_(value) {}
+DbusInt64::DbusInt64(DbusInt64&& other) = default;
+DbusInt64::~DbusInt64() = default;
+
+void DbusInt64::Write(dbus::MessageWriter* writer) const {
+  writer->AppendInt64(value_);
+}
+
+// static
+std::string DbusInt64::GetSignature() {
+  return "x";
+}
+
+DbusDouble::DbusDouble(double value) : value_(value) {}
+DbusDouble::DbusDouble(DbusDouble&& other) = default;
+DbusDouble::~DbusDouble() = default;
+
+void DbusDouble::Write(dbus::MessageWriter* writer) const {
+  writer->AppendDouble(value_);
+}
+
+// static
+std::string DbusDouble::GetSignature() {
+  return "d";
 }
 
 DbusString::DbusString(const std::string& value) : value_(value) {}
@@ -130,4 +156,33 @@ void DbusByteArray::Write(dbus::MessageWriter* writer) const {
 // static
 std::string DbusByteArray::GetSignature() {
   return "ay";  // lmao
+}
+
+DbusDictionary::DbusDictionary() = default;
+DbusDictionary::DbusDictionary(DbusDictionary&& other) = default;
+DbusDictionary::~DbusDictionary() = default;
+
+bool DbusDictionary::Put(const std::string& key, DbusVariant&& value) {
+  auto it = value_.find(key);
+  const bool updated = it == value_.end() || it->second != value;
+  value_[key] = std::move(value);
+  return updated;
+}
+
+void DbusDictionary::Write(dbus::MessageWriter* writer) const {
+  dbus::MessageWriter array_writer(nullptr);
+  writer->OpenArray("{sv}", &array_writer);
+  for (const auto& pair : value_) {
+    dbus::MessageWriter dict_entry_writer(nullptr);
+    array_writer.OpenDictEntry(&dict_entry_writer);
+    dict_entry_writer.AppendString(pair.first);
+    pair.second.Write(&dict_entry_writer);
+    array_writer.CloseContainer(&dict_entry_writer);
+  }
+  writer->CloseContainer(&array_writer);
+}
+
+// static
+std::string DbusDictionary::GetSignature() {
+  return "a{sv}";
 }

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dbus/menu/properties_interface.h"
+#include "components/dbus/properties/dbus_properties.h"
 
 #include <dbus/dbus-shared.h>
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "components/dbus/menu/success_barrier_callback.h"
+#include "components/dbus/properties/success_barrier_callback.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 
@@ -24,19 +24,17 @@ const char kSignalPropertiesChanged[] = "PropertiesChanged";
 
 }  // namespace
 
-DbusPropertiesInterface::DbusPropertiesInterface(
-    dbus::ExportedObject* exported_object,
-    InitializedCallback callback)
+DbusProperties::DbusProperties(dbus::ExportedObject* exported_object,
+                               InitializedCallback callback)
     : exported_object_(exported_object) {
   static constexpr struct {
     const char* name;
-    void (DbusPropertiesInterface::*callback)(
-        dbus::MethodCall*,
-        dbus::ExportedObject::ResponseSender);
+    void (DbusProperties::*callback)(dbus::MethodCall*,
+                                     dbus::ExportedObject::ResponseSender);
   } methods[3] = {
-      {kMethodPropertiesGetAll, &DbusPropertiesInterface::OnGetAllProperties},
-      {kMethodPropertiesGet, &DbusPropertiesInterface::OnGetProperty},
-      {kMethodPropertiesSet, &DbusPropertiesInterface::OnSetProperty},
+      {kMethodPropertiesGetAll, &DbusProperties::OnGetAllProperties},
+      {kMethodPropertiesGet, &DbusProperties::OnGetProperty},
+      {kMethodPropertiesSet, &DbusProperties::OnSetProperty},
   };
 
   barrier_ = SuccessBarrierCallback(base::size(methods), std::move(callback));
@@ -44,27 +42,76 @@ DbusPropertiesInterface::DbusPropertiesInterface(
     exported_object_->ExportMethod(
         DBUS_INTERFACE_PROPERTIES, method.name,
         base::BindRepeating(method.callback, weak_factory_.GetWeakPtr()),
-        base::BindRepeating(&DbusPropertiesInterface::OnExported,
+        base::BindRepeating(&DbusProperties::OnExported,
                             weak_factory_.GetWeakPtr()));
   }
 }
 
-DbusPropertiesInterface::~DbusPropertiesInterface() = default;
+DbusProperties::~DbusProperties() = default;
 
-void DbusPropertiesInterface::RegisterInterface(const std::string& interface) {
+void DbusProperties::RegisterInterface(const std::string& interface) {
   bool inserted =
       properties_.emplace(interface, std::map<std::string, DbusVariant>{})
           .second;
   DCHECK(inserted);
 }
 
-void DbusPropertiesInterface::OnExported(const std::string& interface_name,
-                                         const std::string& method_name,
-                                         bool success) {
+DbusVariant* DbusProperties::GetProperty(const std::string& interface,
+                                         const std::string& property_name) {
+  auto interface_it = properties_.find(interface);
+  if (interface_it == properties_.end())
+    return nullptr;
+  auto name_it = interface_it->second.find(property_name);
+  return name_it != interface_it->second.end() ? &name_it->second : nullptr;
+}
+
+void DbusProperties::PropertyUpdated(const std::string& interface,
+                                     const std::string& property_name,
+                                     bool send_change) {
+  if (!initialized_)
+    return;
+
+  // |signal| follows the PropertiesChanged API:
+  // org.freedesktop.DBus.Properties.PropertiesChanged(
+  //     STRING interface_name,
+  //     DICT<STRING,VARIANT> changed_properties,
+  //     ARRAY<STRING> invalidated_properties);
+  dbus::Signal signal(DBUS_INTERFACE_PROPERTIES, kSignalPropertiesChanged);
+  dbus::MessageWriter writer(&signal);
+  writer.AppendString(interface);
+
+  if (send_change) {
+    // Changed properties.
+    dbus::MessageWriter array_writer(nullptr);
+    writer.OpenArray("{sv}", &array_writer);
+    dbus::MessageWriter dict_entry_writer(nullptr);
+    array_writer.OpenDictEntry(&dict_entry_writer);
+    dict_entry_writer.AppendString(property_name);
+    properties_[interface][property_name].Write(&dict_entry_writer);
+    array_writer.CloseContainer(&dict_entry_writer);
+    writer.CloseContainer(&array_writer);
+
+    // Invalidated properties.
+    writer.AppendArrayOfStrings({});
+  } else {
+    // Changed properties.
+    DbusDictionary().Write(&writer);
+
+    // Invalidated properties.
+    writer.AppendArrayOfStrings({property_name});
+  }
+
+  exported_object_->SendSignal(&signal);
+}
+
+void DbusProperties::OnExported(const std::string& interface_name,
+                                const std::string& method_name,
+                                bool success) {
+  initialized_ = success;
   barrier_.Run(success);
 }
 
-void DbusPropertiesInterface::OnGetAllProperties(
+void DbusProperties::OnGetAllProperties(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   // org.freedesktop.DBus.Properties.GetAll(in STRING interface_name,
@@ -93,7 +140,7 @@ void DbusPropertiesInterface::OnGetAllProperties(
     writer.CloseContainer(&array_writer);
   } else if (interface == DBUS_INTERFACE_PROPERTIES) {
     // There are no properties to give for this interface.
-    DbusArray<DbusDictEntry<DbusString, DbusVariant>>().Write(&writer);
+    DbusDictionary().Write(&writer);
   } else {
     // The given interface is not supported, so return a null response.
     response = nullptr;
@@ -102,7 +149,7 @@ void DbusPropertiesInterface::OnGetAllProperties(
   response_sender.Run(std::move(response));
 }
 
-void DbusPropertiesInterface::OnGetProperty(
+void DbusProperties::OnGetProperty(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   // org.freedesktop.DBus.Properties.Get(in STRING interface_name,
@@ -125,47 +172,10 @@ void DbusPropertiesInterface::OnGetProperty(
   response_sender.Run(std::move(response));
 }
 
-void DbusPropertiesInterface::OnSetProperty(
+void DbusProperties::OnSetProperty(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   // Not needed for now.
   NOTIMPLEMENTED();
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
-}
-
-void DbusPropertiesInterface::EmitPropertiesChangedSignal(
-    const std::string& interface,
-    const std::string& property_name,
-    bool send_change) {
-  // |signal| follows the PropertiesChanged API:
-  // org.freedesktop.DBus.Properties.PropertiesChanged(
-  //     STRING interface_name,
-  //     DICT<STRING,VARIANT> changed_properties,
-  //     ARRAY<STRING> invalidated_properties);
-  dbus::Signal signal(DBUS_INTERFACE_PROPERTIES, kSignalPropertiesChanged);
-  dbus::MessageWriter writer(&signal);
-  writer.AppendString(interface);
-
-  if (send_change) {
-    // Changed properties.
-    dbus::MessageWriter array_writer(nullptr);
-    writer.OpenArray("{sv}", &array_writer);
-    dbus::MessageWriter dict_entry_writer(nullptr);
-    array_writer.OpenDictEntry(&dict_entry_writer);
-    dict_entry_writer.AppendString(property_name);
-    properties_[interface][property_name].Write(&dict_entry_writer);
-    array_writer.CloseContainer(&dict_entry_writer);
-    writer.CloseContainer(&array_writer);
-
-    // Invalidated properties.
-    writer.AppendArrayOfStrings({});
-  } else {
-    // Changed properties.
-    DbusArray<DbusDictEntry<DbusString, DbusVariant>>().Write(&writer);
-
-    // Invalidated properties.
-    writer.AppendArrayOfStrings({property_name});
-  }
-
-  exported_object_->SendSignal(&signal);
 }

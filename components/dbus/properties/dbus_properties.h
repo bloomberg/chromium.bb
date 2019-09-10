@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DBUS_MENU_PROPERTIES_INTERFACE_H_
-#define COMPONENTS_DBUS_MENU_PROPERTIES_INTERFACE_H_
+#ifndef COMPONENTS_DBUS_PROPERTIES_DBUS_PROPERTIES_H_
+#define COMPONENTS_DBUS_PROPERTIES_DBUS_PROPERTIES_H_
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "components/dbus/menu/types.h"
+#include "components/dbus/properties/types.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 
 // https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-properties
-class COMPONENT_EXPORT(DBUS) DbusPropertiesInterface {
+class COMPONENT_EXPORT(DBUS) DbusProperties {
  public:
   using InitializedCallback = base::OnceCallback<void(bool success)>;
 
   // Registers method handlers for the properties interface.  The handlers will
   // not be removed until the bus is shut down.
-  DbusPropertiesInterface(dbus::ExportedObject* exported_object,
-                          InitializedCallback callback);
-  ~DbusPropertiesInterface();
+  DbusProperties(dbus::ExportedObject* exported_object,
+                 InitializedCallback callback);
+  ~DbusProperties();
 
   void RegisterInterface(const std::string& interface);
 
@@ -33,12 +33,27 @@ class COMPONENT_EXPORT(DBUS) DbusPropertiesInterface {
                    T&& value,
                    bool emit_signal = true,
                    bool send_change = true) {
-    auto it = properties_.find(interface);
-    DCHECK(it != properties_.end());
-    (it->second)[name] = MakeDbusVariant(std::move(value));
-    if (emit_signal)
-      EmitPropertiesChangedSignal(interface, name, send_change);
+    auto interface_it = properties_.find(interface);
+    DCHECK(interface_it != properties_.end());
+    auto property_it = interface_it->second.find(name);
+    DbusVariant new_value = MakeDbusVariant(std::move(value));
+    const bool send_signal =
+        emit_signal && (property_it == interface_it->second.end() ||
+                        property_it->second != new_value);
+    (interface_it->second)[name] = std::move(new_value);
+    if (send_signal)
+      PropertyUpdated(interface, name, send_change);
   }
+
+  DbusVariant* GetProperty(const std::string& interface,
+                           const std::string& property_name);
+
+  // If emitting a PropertiesChangedSignal is desired, this should be called
+  // after an existing property is modified through any means other than
+  // SetProperty().
+  void PropertyUpdated(const std::string& interface,
+                       const std::string& property_name,
+                       bool send_change = true);
 
  private:
   void OnExported(const std::string& interface_name,
@@ -52,9 +67,7 @@ class COMPONENT_EXPORT(DBUS) DbusPropertiesInterface {
   void OnSetProperty(dbus::MethodCall* method_call,
                      dbus::ExportedObject::ResponseSender response_sender);
 
-  void EmitPropertiesChangedSignal(const std::string& interface,
-                                   const std::string& property_name,
-                                   bool send_change);
+  bool initialized_ = false;
 
   dbus::ExportedObject* exported_object_ = nullptr;
 
@@ -64,9 +77,9 @@ class COMPONENT_EXPORT(DBUS) DbusPropertiesInterface {
   // from property name to property value.
   std::map<std::string, std::map<std::string, DbusVariant>> properties_;
 
-  base::WeakPtrFactory<DbusPropertiesInterface> weak_factory_{this};
+  base::WeakPtrFactory<DbusProperties> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(DbusPropertiesInterface);
+  DISALLOW_COPY_AND_ASSIGN(DbusProperties);
 };
 
-#endif  // COMPONENTS_DBUS_MENU_PROPERTIES_INTERFACE_H_
+#endif  // COMPONENTS_DBUS_PROPERTIES_DBUS_PROPERTIES_H_

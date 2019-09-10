@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dbus/menu/types.h"
+#include "components/dbus/properties/types.h"
 
 #include "base/memory/ref_counted_memory.h"
 #include "dbus/object_path.h"

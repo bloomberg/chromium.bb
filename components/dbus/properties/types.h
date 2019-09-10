@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DBUS_MENU_TYPES_H_
-#define COMPONENTS_DBUS_MENU_TYPES_H_
+#ifndef COMPONENTS_DBUS_PROPERTIES_TYPES_H_
+#define COMPONENTS_DBUS_PROPERTIES_TYPES_H_
 
 #include <stdint.h>
 
@@ -150,6 +150,40 @@ class COMPONENT_EXPORT(DBUS) DbusUint32 : public DbusTypeImpl<DbusUint32> {
   uint32_t value_;
 };
 
+class COMPONENT_EXPORT(DBUS) DbusInt64 : public DbusTypeImpl<DbusInt64> {
+ public:
+  explicit DbusInt64(int64_t value);
+  DbusInt64(DbusInt64&& other);
+  ~DbusInt64() override;
+
+  // DbusType:
+  void Write(dbus::MessageWriter* writer) const override;
+
+  static std::string GetSignature();
+
+ private:
+  friend class DbusTypeImpl<DbusInt64>;
+
+  int64_t value_;
+};
+
+class COMPONENT_EXPORT(DBUS) DbusDouble : public DbusTypeImpl<DbusDouble> {
+ public:
+  explicit DbusDouble(double value);
+  DbusDouble(DbusDouble&& other);
+  ~DbusDouble() override;
+
+  // DbusType:
+  void Write(dbus::MessageWriter* writer) const override;
+
+  static std::string GetSignature();
+
+ private:
+  friend class DbusTypeImpl<DbusDouble>;
+
+  double value_;
+};
+
 class COMPONENT_EXPORT(DBUS) DbusString : public DbusTypeImpl<DbusString> {
  public:
   explicit DbusString(const std::string& value);
@@ -191,6 +225,13 @@ class COMPONENT_EXPORT(DBUS) DbusVariant : public DbusTypeImpl<DbusVariant> {
   explicit DbusVariant(std::unique_ptr<DbusType> value);
   DbusVariant(DbusVariant&& other);
   ~DbusVariant() override;
+
+  template <typename T>
+  T* GetAs() {
+    return value_ && value_->GetSignatureDynamic() == T::GetSignature()
+               ? reinterpret_cast<T*>(value_.get())
+               : nullptr;
+  }
 
   DbusVariant& operator=(DbusVariant&& other);
 
@@ -337,4 +378,31 @@ auto MakeDbusDictEntry(K&& k, V&& v) {
   return DbusDictEntry<K, V>(std::move(k), std::move(v));
 }
 
-#endif  // COMPONENTS_DBUS_MENU_TYPES_H_
+// A convenience class for DbusArray<DbusDictEntry<DbusString, DbusVariant>>,
+// which is a common idiom for DBus APIs.  Except this class has some subtle
+// differences:
+//   1. Duplicate keys are not allowed.
+//   2. You cannot control the ordering of keys.  They will always be in sorted
+//      order.
+class COMPONENT_EXPORT(DBUS) DbusDictionary
+    : public DbusTypeImpl<DbusDictionary> {
+ public:
+  DbusDictionary();
+  DbusDictionary(DbusDictionary&& other);
+  ~DbusDictionary() override;
+
+  // Returns true iff the value corresponding to |key| was updated.
+  bool Put(const std::string& key, DbusVariant&& value);
+
+  // DbusType:
+  void Write(dbus::MessageWriter* writer) const override;
+
+  static std::string GetSignature();
+
+ private:
+  friend class DbusTypeImpl<DbusDictionary>;
+
+  std::map<std::string, DbusVariant> value_;
+};
+
+#endif  // COMPONENTS_DBUS_PROPERTIES_TYPES_H_
