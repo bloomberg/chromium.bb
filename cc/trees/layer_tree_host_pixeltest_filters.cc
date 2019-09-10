@@ -603,12 +603,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
-  if (renderer_type() == RENDERER_SKIA_GL ||
-      renderer_type() == RENDERER_SKIA_VK) {
-    // TODO(1001093): SkiaRenderer expected image needs rebaseline after Skia
-    // roll, so suppress until that lands.
-    return;
-  }
   // Add a white background with a rotated red rect in the center.
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
