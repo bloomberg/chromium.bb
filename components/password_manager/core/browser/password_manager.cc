@@ -643,12 +643,6 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
   return matched_manager;
 }
 
-void PasswordManager::ReportSpecPriorityForGeneratedPassword(
-    const PasswordForm& password_form,
-    uint32_t spec_priority) {
-  // TODO(https://crbug.com/949519): remove Generation.SpecPriority metric.
-}
-
 void PasswordManager::LogFirstFillingResult(PasswordManagerDriver* driver,
                                             uint32_t form_renderer_id,
                                             int32_t result) {
@@ -1043,14 +1037,6 @@ void PasswordManager::RecordProvisionalSaveFailure(
     client_->GetMetricsRecorder()->RecordProvisionalSaveFailure(
         failure, main_frame_url_, form_origin, logger);
   }
-}
-
-scoped_refptr<PasswordFormMetricsRecorder>
-PasswordManager::GetMetricRecorderFromPasswordFormManager(
-    const FormData& form,
-    const PasswordManagerDriver* driver) {
-  PasswordFormManager* matched_manager = GetMatchedManager(driver, form);
-  return matched_manager ? matched_manager->metrics_recorder() : nullptr;
 }
 
 // TODO(https://crbug.com/831123): Implement creating missing
