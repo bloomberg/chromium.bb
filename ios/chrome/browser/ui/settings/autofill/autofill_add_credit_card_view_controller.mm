@@ -178,6 +178,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cameraButtonItem.text = l10n_util::GetNSString(
       IDS_IOS_AUTOFILL_ADD_CREDIT_CARD_OPEN_CAMERA_BUTTON_LABEL);
   cameraButtonItem.textAlignment = NSTextAlignmentCenter;
+  cameraButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
   if (base::FeatureList::IsEnabled(kCreditCardScanner)) {
     if (@available(iOS 13, *)) {
       [model addSectionWithIdentifier:SectionIdentifierCameraButton];
