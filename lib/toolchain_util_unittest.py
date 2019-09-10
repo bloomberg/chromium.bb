@@ -64,6 +64,25 @@ class ProfilesNameHelperTest(cros_test_lib.MockTempDirTestCase):
         toolchain_util.CWPProfileVersion(
             major=77, build=3809, patch=38, clock=1562580965))
 
+  def testParseOrderfileName(self):
+    """Test top-level function _ParseOrderfileName."""
+    # Test parse failure
+    profile_name_to_fail = 'this_is_an_invalid_name'
+    with self.assertRaises(toolchain_util.ProfilesNameHelperError) as context:
+      toolchain_util._ParseOrderfileName(profile_name_to_fail)
+    self.assertIn('Unparseable orderfile name:', str(context.exception))
+
+    # Test parse success
+    orderfile_name = ('chromeos-chrome-orderfile-field-77-3809.38-1562580965'
+                      '-benchmark-77.0.3849.0-r1.orderfile.xz')
+    result = toolchain_util._ParseOrderfileName(orderfile_name)
+    self.assertEqual(
+        result, (toolchain_util.BenchmarkProfileVersion(
+            major=77, minor=0, build=3849, patch=0, revision=1,
+            is_merged=False),
+                 toolchain_util.CWPProfileVersion(
+                     major=77, build=3809, patch=38, clock=1562580965)))
+
   def testGetArtifactVersionInEbuild(self):
     """Test top-level function _GetArtifactVersionInEbuild."""
     package = 'package'
@@ -202,69 +221,103 @@ class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
         '/path/to/buildroot/src/path/to/chromeos-chrome-1.0.ebuild')
 
 
-class FindLatestAFDOArtifactTest(cros_test_lib.RunCommandTempDirTestCase):
-  """Test _FindLatestAFDOArtifact()."""
+class LatestAFDOArtifactTest(cros_test_lib.RunCommandTempDirTestCase):
+  """Test related function to compare freshness of AFDO artifacts."""
 
   # pylint: disable=protected-access
   def setUp(self):
     self.board = 'board'
-    self.unvetted_gs_url = 'gs://path/to/unvetted'
-    self.vetted_gs_url = 'gs://path/to/vetted'
-    MockListResult = collections.namedtuple('MockListResult',
-                                            ('url', 'creation_time'))
-    self.unvetted_files = [
-        MockListResult(
-            url=self.unvetted_gs_url +
-            '/chrome-orderfile-77.0.2.0.orderfile.xz',
-            creation_time=2.0),
-        MockListResult(
-            url=self.unvetted_gs_url + '/chrome-orderfile-77.0.3.0.afdo.xz',
-            creation_time=3.0),
-        MockListResult(
-            url=self.unvetted_gs_url +
-            '/chrome-orderfile-77.0.1.0.orderfile.xz',
-            creation_time=1.0),
-        MockListResult(
-            url=self.unvetted_gs_url + '/chrome-afdo-77.0.4.0.afdo.bz2',
-            creation_time=4.0),
-        MockListResult(
-            url=self.unvetted_gs_url + '/chrome-afdo-78.0.2.5.afdo.xz',
-            creation_time=5.0),
-    ]  # Intentionally unsorted
-    self.PatchObject(gs.GSContext, 'List', return_value=self.unvetted_files)
+    self.gs_url = 'gs://path/to/any_gs_url'
+    self.current_branch = '78'
+    self.current_arch = 'airmont'
+    self.MockListResult = collections.namedtuple('MockListResult',
+                                                 ('url', 'creation_time'))
+    files_in_gs_bucket = [
+        # Benchmark profiles
+        ('chromeos-chrome-amd64-78.0.3893.0_rc-r1.afdo.bz2', 2.0),
+        ('chromeos-chrome-amd64-78.0.3896.0_rc-r1.afdo.bz2', 1.0),  #Latest
+        ('chromeos-chrome-amd64-78.0.3897.0_rc-r1-merged.afdo.bz2', 3.0),
+        # CWP profiles
+        ('R78-3869.38-1562580965.afdo.xz', 2.1),
+        ('R78-3866.0-1570000000.afdo.xz', 1.1),  #Latest
+        ('R77-3811.0-1580000000.afdo.xz', 3.1),
+        # Orderfiles
+        ('chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
+         'benchmark-78.0.3893.0-r1.orderfile.xz', 1.2),  #Latest
+        ('chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
+         'benchmark-78.0.3850.0-r1.orderfile.xz', 2.2),
+    ]
+
+    self.gs_list = [
+        self.MockListResult(url=os.path.join(self.gs_url, x), creation_time=y)
+        for x, y in files_in_gs_bucket
+    ]
+    self.PatchObject(gs.GSContext, 'List', return_value=self.gs_list)
     self.PatchObject(
-        toolchain_util, '_FindCurrentChromeBranch', return_value='77')
+        toolchain_util,
+        '_FindCurrentChromeBranch',
+        return_value=self.current_branch)
 
   def testFindCurrentChromeBranch(self):
     """Test _FindCurrentChromeBranch() works correctly."""
-    chrome_name = 'chromeos-chrome-77.0.3845.0_rc-r1.ebuild'
+    chrome_name = 'chromeos-chrome-78.0.3893.0_rc-r1.ebuild'
     self.PatchObject(
         toolchain_util,
         '_FindEbuildPath',
         return_value=os.path.join('/path/to', chrome_name))
-    branch = '77'
     ret = toolchain_util._FindCurrentChromeBranch()
-    self.assertEqual(ret, branch)
+    self.assertEqual(ret, self.current_branch)
 
-  def testFindLatestChromeOrderfile(self):
-    """Test returns latest file matching orderfile."""
-    orderfile = toolchain_util._FindLatestAFDOArtifact(
-        self.unvetted_gs_url, toolchain_util.ORDERFILE_LS_PATTERN)
-    self.assertEqual(orderfile, 'chrome-orderfile-77.0.2.0.orderfile.xz')
+  def testFindLatestAFDOArtifactPassWithBenchmarkAFDO(self):
+    """Test _FindLatestAFDOArtifact returns latest benchmark AFDO."""
+    latest_afdo = toolchain_util._FindLatestAFDOArtifact(
+        self.gs_url, toolchain_util._RankValidBenchmarkProfiles)
+    self.assertEqual(latest_afdo,
+                     'chromeos-chrome-amd64-78.0.3896.0_rc-r1.afdo.bz2')
 
-  def testFindLatestAFDOWithBranch(self):
-    """Test returns latest file matching afdo, and also the branch."""
-    afdo_on_branch = toolchain_util._FindLatestAFDOArtifact(
-        self.unvetted_gs_url, '.afdo')
-    self.assertEqual(afdo_on_branch, 'chrome-afdo-77.0.4.0.afdo.bz2')
+  def testFindLatestAFDOArtifactPassWithCWPAFDO(self):
+    """Test _FindLatestAFDOArtifact return latest cwp AFDO."""
+    latest_afdo = toolchain_util._FindLatestAFDOArtifact(
+        self.gs_url, toolchain_util._RankValidCWPProfiles)
+    self.assertEqual(latest_afdo, 'R78-3866.0-1570000000.afdo.xz')
 
-  def testFindLatestAFDOOnLastBranch(self):
+  def testFindLatestAFDOArtifactPassWithOrderfile(self):
+    """Test _FindLatestAFDOArtifact return latest orderfile."""
+    latest_orderfile = toolchain_util._FindLatestAFDOArtifact(
+        self.gs_url, toolchain_util._RankValidOrderfiles)
+    self.assertEqual(
+        latest_orderfile,
+        'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
+        'benchmark-78.0.3893.0-r1.orderfile.xz')
+
+  def testFindLatestAFDOArtifactPassOnLastBranch(self):
     """Test returns latest file on last branch when current has none."""
     self.PatchObject(
         toolchain_util, '_FindCurrentChromeBranch', return_value='79')
-    afdo_on_branch = toolchain_util._FindLatestAFDOArtifact(
-        self.unvetted_gs_url, '.afdo')
-    self.assertEqual(afdo_on_branch, 'chrome-afdo-78.0.2.5.afdo.xz')
+    self.testFindLatestAFDOArtifactPassWithBenchmarkAFDO()
+
+  def testFindLatestAFDOArtifactFailToFindAnyFiles(self):
+    """Test function fails when no files on current branch."""
+    self.PatchObject(
+        toolchain_util, '_FindCurrentChromeBranch', return_value='80')
+    with self.assertRaises(RuntimeError) as context:
+      self.testFindLatestAFDOArtifactPassWithBenchmarkAFDO()
+
+    self.assertEqual('No files found on %s for branch 80' % self.gs_url,
+                     str(context.exception))
+
+  def testFindLatestAFDOArtifactsFindMaxFromInvalidFiles(self):
+    """Test function fails when searching max from list of invalid files."""
+    mock_gs_list = [
+        self.MockListResult(
+            url=os.path.join(self.gs_url, 'Invalid-name-but-end-in-78.afdo'),
+            creation_time=1.0)
+    ]
+    self.PatchObject(gs.GSContext, 'List', return_value=mock_gs_list)
+    with self.assertRaises(RuntimeError) as context:
+      toolchain_util._FindLatestAFDOArtifact(
+          self.gs_url, toolchain_util._RankValidBenchmarkProfiles)
+    self.assertIn('No valid latest artifact was found', str(context.exception))
 
 
 class UploadAFDOArtifactToGSBucketTest(cros_test_lib.MockTempDirTestCase):
@@ -610,6 +663,7 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
       if arch in url:
         return AFDOUpdateEbuildTests.mock_cwp_afdo[arch]
 
+  # pylint: disable=protected-access
   def setUp(self):
     self.board = 'eve'
     self.kver = '4_4'
@@ -636,12 +690,13 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
 
     toolchain_util.OrderfileUpdateChromeEbuild(self.board)
     mock_find.assert_called_once_with(toolchain_util.ORDERFILE_GS_URL_UNVETTED,
-                                      toolchain_util.ORDERFILE_LS_PATTERN)
+                                      toolchain_util._RankValidOrderfiles)
     self.mock_obj.assert_called_with(
         board=self.board,
         package='chromeos-chrome',
         update_rules={'UNVETTED_ORDERFILE': self.orderfile_stripped})
 
+  # pylint: disable=protected-access
   def testAFDOUpdateChromeEbuildPass(self):
     """Test AFDOUpdateChromeEbuild() calls other functions correctly."""
     mock_find = self.PatchObject(
@@ -654,7 +709,7 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
 
     calls = [
         mock.call(toolchain_util.BENCHMARK_AFDO_GS_URL,
-                  toolchain_util.BENCHMARK_AFDO_LS_PATTERN)
+                  toolchain_util._RankValidBenchmarkProfiles)
     ]
     update_rules = {
         toolchain_util.AFDO_VARIABLE_REGEX % 'benchmark':
@@ -662,7 +717,7 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
     }
     for arch in toolchain_util.CWP_PROFILE_SUPPORTED_ARCHS:
       url = os.path.join(toolchain_util.CWP_AFDO_GS_URL, arch)
-      calls.append(mock.call(url, toolchain_util.CWP_AFDO_LS_PATTERN))
+      calls.append(mock.call(url, toolchain_util._RankValidCWPProfiles))
       variable = toolchain_util.AFDO_VARIABLE_REGEX % arch
       update_rules[variable] = os.path.splitext(self.mock_cwp_afdo[arch])[0]
 
@@ -670,6 +725,7 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
     self.mock_obj.assert_called_with(
         board=self.board, package='chromeos-chrome', update_rules=update_rules)
 
+  # pylint: disable=protected-access
   def testAFDOUpdateKernelEbuildPass(self):
     """Test AFDOUpdateKernelEbuild() calls other functions correctly."""
     mock_age = self.PatchObject(
@@ -683,8 +739,7 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
 
     url = os.path.join(toolchain_util.KERNEL_PROFILE_URL,
                        self.kver.replace('_', '.'))
-    mock_find.assert_called_once_with(url,
-                                      toolchain_util.KERNEL_PROFILE_LS_PATTERN)
+    mock_find.assert_called_once_with(url, toolchain_util._RankValidCWPProfiles)
     mock_age.assert_called_once_with(self.kernel_stripped, 'kernel_afdo')
 
     self.mock_warn.assert_not_called()
@@ -1021,10 +1076,20 @@ class PublishVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
 
   # pylint: disable=protected-access
   def setUp(self):
-    self.package = 'some-package-name-1'
-    self.package2 = 'some-package-name-2'
-    self.uploaded_exist = {self.package: 'R1234', self.package2: None}
-    self.uploaded = {self.package: 'R5678', self.package2: None}
+    self.package = 'silvermont'
+    self.package2 = 'benchmark'
+    self.afdo_sorted_by_freshness = [
+        'R78-3865.0-1560000000.afdo', 'R78-3869.38-1562580965.afdo',
+        'R78-3866.0-1570000000.afdo'
+    ]
+    self.uploaded_invalid = {
+        self.package: self.afdo_sorted_by_freshness[0],
+        self.package2: None
+    }
+    self.uploaded = {
+        self.package: self.afdo_sorted_by_freshness[2],
+        self.package2: None
+    }
     # Prepare a JSON file containing metadata
     toolchain_util.TOOLCHAIN_UTILS_PATH = self.tempdir
     osutils.SafeMakedirs(os.path.join(self.tempdir, 'afdo_metadata'))
@@ -1032,10 +1097,10 @@ class PublishVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
                                   'afdo_metadata/kernel_afdo.json')
     self.afdo_versions = {
         self.package: {
-            'name': self.uploaded_exist[self.package],
+            'name': self.afdo_sorted_by_freshness[1],
         },
         self.package2: {
-            'name': 'R12345-12',
+            'name': 'R1234',
         },
         'some-package-should-not-change': {
             'name': 'R5678-1234',
@@ -1048,13 +1113,13 @@ class PublishVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
     self.mock_git = self.PatchObject(
         git, 'RunGit', return_value=GitStatus(output='non-empty'))
 
-  def testPublishSameArtifactAsInMetadataFailure(self):
-    """Test failure when publishing a same metadata as in JSON file."""
+  def testPublishOlderArtifactThanInMetadataFailure(self):
+    """Test failure when publishing an older metadata as than JSON file."""
     with self.assertRaises(
         toolchain_util.PublishVettedAFDOArtifactsError) as context:
       toolchain_util._PublishVettedAFDOArtifacts(self.json_file,
-                                                 self.uploaded_exist)
-    self.assertIn('The artifact to update is the same as in JSON file',
+                                                 self.uploaded_invalid)
+    self.assertIn('to update is not newer than the JSON file',
                   str(context.exception))
 
   def testPublishUploadedProfilesPass(self):
@@ -1073,8 +1138,17 @@ class PublishVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
 
     # Check the git calls correct
     message = 'afdo_metadata: Publish new profiles.\n\n'
-    message += 'Update %s from %s to %s\n' % (self.package, 'R1234', 'R5678')
+    message += 'Update %s from %s to %s\n' % (self.package,
+                                              self.afdo_sorted_by_freshness[1],
+                                              self.afdo_sorted_by_freshness[2])
     calls = [
+        mock.call(
+            self.tempdir, [
+                'pull',
+                toolchain_util.TOOLCHAIN_UTILS_REPO,
+                'refs/heads/master',
+            ],
+            print_cmd=True),
         mock.call(
             self.tempdir, ['status', '--porcelain', '-uno'],
             capture_output=True,
