@@ -18,6 +18,7 @@
 #include "android_webview/common/url_constants.h"
 #include "base/android/build_info.h"
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -31,6 +32,8 @@
 #include "content/public/common/url_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "url/gurl.h"
 
 namespace android_webview {
 
