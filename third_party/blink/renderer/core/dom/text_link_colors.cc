@@ -66,9 +66,10 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
     return color_value->Value();
 
   if (auto* pair = DynamicTo<CSSValuePair>(value)) {
-    const CSSColorValue& color_value = To<CSSColorValue>(
-        WebColorScheme::kLight ? pair->First() : pair->Second());
-    return color_value.Value();
+    const CSSValue& color_value =
+        color_scheme == WebColorScheme::kLight ? pair->First() : pair->Second();
+    return ColorFromCSSValue(color_value, current_color, color_scheme,
+                             for_visited_link);
   }
 
   CSSValueID value_id = To<CSSIdentifierValue>(value).GetValueID();
