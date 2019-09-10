@@ -24,6 +24,10 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace cricket {
+class PortAllocator;
+}
+
 namespace media {
 class GpuVideoAcceleratorFactories;
 }
@@ -44,7 +48,6 @@ namespace content {
 
 class IpcPacketSocketFactory;
 class MdnsResponderAdapter;
-class P2PPortAllocator;
 
 // Object factory for RTC PeerConnections.
 class CONTENT_EXPORT PeerConnectionDependencyFactory
@@ -84,7 +87,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   // Creates a PortAllocator that uses Chrome IPC sockets and enforces privacy
   // controls according to the permissions granted on the page.
-  virtual std::unique_ptr<P2PPortAllocator> CreatePortAllocator(
+  virtual std::unique_ptr<cricket::PortAllocator> CreatePortAllocator(
       blink::WebLocalFrame* web_frame);
 
   // Creates an AsyncResolverFactory that uses the networking Mojo service.

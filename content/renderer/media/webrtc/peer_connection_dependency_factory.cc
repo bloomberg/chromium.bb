@@ -369,7 +369,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
       .get();
 }
 
-std::unique_ptr<P2PPortAllocator>
+std::unique_ptr<cricket::PortAllocator>
 PeerConnectionDependencyFactory::CreatePortAllocator(
     blink::WebLocalFrame* web_frame) {
   DCHECK(web_frame);
