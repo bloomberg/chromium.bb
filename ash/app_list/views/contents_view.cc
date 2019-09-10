@@ -507,6 +507,15 @@ gfx::Rect ContentsView::GetDefaultSearchBoxBounds() const {
                            0);
   search_box_bounds.set_y(
       AppListConfig::instance().search_box_fullscreen_top_padding());
+  // Reduce the search box size in fullscreen view state when the work area
+  // height is less than 600 dip - the goal is to increase the amount of space
+  // available to apps grid.
+  if (GetContentsBounds().height() < 600 &&
+      !app_list_features::IsScalableAppListEnabled() &&
+      (target_view_state_ == ash::AppListViewState::kFullscreenAllApps ||
+       target_view_state_ == ash::AppListViewState::kFullscreenSearch)) {
+    search_box_bounds.set_height(40);
+  }
   return search_box_bounds;
 }
 
