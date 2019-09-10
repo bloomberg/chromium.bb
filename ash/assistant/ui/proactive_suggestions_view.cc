@@ -30,9 +30,12 @@ namespace {
 
 // Appearance.
 constexpr int kAssistantIconSizeDip = 16;
-constexpr int kCloseButtonSizeDip = 16;
+constexpr int kCloseButtonIconSizeDip = 16;
+constexpr int kCloseButtonSizeDip = 32;
 constexpr int kLineHeightDip = 20;
 constexpr int kMaxWidthDip = 240;
+constexpr int kPaddingLeftDip = 8;
+constexpr int kPaddingRightDip = 0;
 constexpr int kPreferredHeightDip = 32;
 
 }  // namespace
@@ -131,7 +134,7 @@ void ProactiveSuggestionsView::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0, kSpacingDip), kSpacingDip));
+          gfx::Insets(0, kPaddingLeftDip, 0, kPaddingRightDip)));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -143,6 +146,14 @@ void ProactiveSuggestionsView::InitLayout() {
   assistant_icon->SetPreferredSize(
       gfx::Size(kAssistantIconSizeDip, kAssistantIconSizeDip));
   AddChildView(assistant_icon);
+
+  // Spacing.
+  // Note that we don't add similar spacing between |label_| and the
+  // |close_button_| as the latter has internal spacing between its icon and
+  // outer bounds so as to provide a larger hit rect to the user.
+  views::View* spacing = new views::View();
+  spacing->SetPreferredSize(gfx::Size(kSpacingDip, kPreferredHeightDip));
+  AddChildView(spacing);
 
   // Label.
   views::Label* label = new views::Label();
@@ -173,8 +184,10 @@ void ProactiveSuggestionsView::InitLayout() {
   close_button_ = new views::ImageButton(/*listener=*/this);
   close_button_->SetImage(
       views::ImageButton::ButtonState::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseButtonSizeDip,
+      gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseButtonIconSizeDip,
                             gfx::kGoogleGrey100));
+  close_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  close_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   close_button_->SetPreferredSize(
       gfx::Size(kCloseButtonSizeDip, kCloseButtonSizeDip));
   AddChildView(close_button_);
