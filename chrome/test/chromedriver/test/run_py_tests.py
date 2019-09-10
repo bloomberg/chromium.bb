@@ -2959,11 +2959,19 @@ class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
       self._driver.SetTimeouts({'implicit': 2000})
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/cross_domain_iframe.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    self.assertTrue(self.WaitForCondition(
+        lambda: 'outer.html' in
+                self._driver.ExecuteScript('return window.location.href')))
+    self.assertTrue(self.WaitForCondition(
+        lambda: 'complete' ==
+                self._driver.ExecuteScript('return document.readyState')))
+    self._driver.SwitchToMainFrame()
     a_outer = self._driver.FindElement('tag name', 'a')
     a_outer.Click()
     frame_url = self._driver.ExecuteScript('return window.location.href')
     self.assertTrue(frame_url.endswith('#one'))
-    frame = self._driver.FindElement('tag name', 'iframe')
     self._driver.SwitchToFrame(frame)
     a_inner = self._driver.FindElement('tag name', 'a')
     a_inner.Click()
