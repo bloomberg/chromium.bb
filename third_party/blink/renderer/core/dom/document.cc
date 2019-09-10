@@ -4196,7 +4196,9 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   return false;
 }
 
-void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
+void Document::DispatchUnloadEvents(
+    SecurityOrigin* committing_origin,
+    base::Optional<Document::UnloadEventTiming>* unload_timing) {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   if (parser_)
     parser_->StopParsing();
@@ -4254,21 +4256,25 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
 
       load_event_progress_ = kUnloadEventInProgress;
       Event& unload_event = *Event::Create(event_type_names::kUnload);
-      if (timing && timing->UnloadEventStart().is_null() &&
-          timing->UnloadEventEnd().is_null()) {
-        DCHECK(!timing->NavigationStart().is_null());
-        const base::TimeTicks unload_event_start = base::TimeTicks::Now();
-        timing->MarkUnloadEventStart(unload_event_start);
-        frame_->DomWindow()->DispatchEvent(unload_event, this);
-        const base::TimeTicks unload_event_end = base::TimeTicks::Now();
+      const base::TimeTicks unload_event_start = base::TimeTicks::Now();
+      frame_->DomWindow()->DispatchEvent(unload_event, this);
+      const base::TimeTicks unload_event_end = base::TimeTicks::Now();
+
+      if (unload_timing) {
+        // Record unload event timing when navigating cross-document.
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, unload_histogram,
             ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));
         unload_histogram.CountMicroseconds(unload_event_end -
                                            unload_event_start);
-        timing->MarkUnloadEventEnd(unload_event_end);
-      } else {
-        frame_->DomWindow()->DispatchEvent(unload_event, frame_->GetDocument());
+
+        // Fill in the unload timing if the new document origin has access to
+        // them.
+        if (committing_origin->CanRequest(Url())) {
+          auto& timing = unload_timing->emplace();
+          timing.unload_event_start = unload_event_start;
+          timing.unload_event_end = unload_event_end;
+        }
       }
     }
     load_event_progress_ = kUnloadEventHandled;
