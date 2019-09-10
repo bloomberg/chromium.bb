@@ -62,4 +62,6 @@ def deserialize_metrics_log(output_events, prefix=None):
           input_event.op, input_event))
 
   # This is a sanity-check for unclosed timers.
-  assert len(timers.values()) == 0
+  # TODO(wbbradley): Turn this back into an assert https://crbug.com/1001909.
+  if timers:
+    logging.error('excess timer metric data left over: %s', timers)
