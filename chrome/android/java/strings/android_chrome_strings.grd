@@ -3890,6 +3890,9 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_SHARING_NO_DEVICES_AVAILABLE_TEXT" desc="Text to show when no device targets are available for sharing.">
         To share something from your phone to another device, turn on sync in Chrome settings on both devices
       </message>
+      <message name="IDS_SHARING_CHROME_SETTINGS" desc="Text shown in a button when user has turned off sync.">
+        Go to Chrome settings
+      </message>
 
       <!-- ClickToCall -->
       <message name="IDS_CLICK_TO_CALL_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification to call on a number.">
