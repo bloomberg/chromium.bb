@@ -617,7 +617,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
     label->SetSubpixelRenderingEnabled(false);
     label->SetAutoColorReadabilityEnabled(false);
     label->SetEnabledColor(kTextColor);
-    label->SetFocusBehavior(FocusBehavior::ALWAYS);
+    label->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   };
 
   // Main view title.
