@@ -52,6 +52,10 @@ class AndroidIsPinnedUprevError(UprevError):
     self.new_android_atom = new_android_atom
 
 
+class EbuildManifestError(Error):
+  """Error when running ebuild manifest."""
+
+
 class UprevVersionedPackageResult(object):
   """Result data object for uprev_versioned_package."""
 
@@ -235,6 +239,9 @@ def uprev_kernel_afdo(*_args, **_kwargs):
   """Updates the kernel ebuild with version from kernel_afdo.json.
 
   See: uprev_versioned_package.
+
+  Raises:
+    EbuildManifestError: When ebuild manifest does not complete successfuly.
   """
   path = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
                       'toolchain-utils', 'afdo_metadata', 'kernel_afdo.json')
@@ -244,14 +251,26 @@ def uprev_kernel_afdo(*_args, **_kwargs):
 
   paths = []
   for version, version_info in versions.items():
-    ebuild_path = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
-                               'chromiumos-overlay', 'sys-kernel', version,
-                               '%s-9999.ebuild' % version)
+    path = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
+                        'chromiumos-overlay', 'sys-kernel', version)
+    ebuild_path = os.path.join(path, '%s-9999.ebuild' % version)
     portage_util.EBuild.UpdateEBuild(
         ebuild_path,
         dict(AFDO_PROFILE_VERSION=version_info['name']),
         make_stable=False)
     paths.append(ebuild_path)
+
+    cmd = ['ebuild', ebuild_path, 'manifest', '--force']
+
+    try:
+      cros_build_lib.RunCommand(cmd, enter_chroot=True)
+    except cros_build_lib.RunCommandError as e:
+      raise EbuildManifestError(
+          'Error encountered when regenerating the manifest for ebuild: %s\n%s'
+          % (ebuild_path, e), e)
+
+    manifest_path = os.path.join(path, 'Manifest')
+    paths.append(manifest_path)
 
   return UprevVersionedPackageResult("test version", paths)
 
