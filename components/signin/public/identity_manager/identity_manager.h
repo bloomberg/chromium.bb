@@ -458,8 +458,7 @@ class IdentityManager : public KeyedService,
   base::android::ScopedJavaLocalRef<jobject>
   LegacyGetOAuth2TokenServiceJavaObject();
 
-  // Get the reference on the java IdentityManager, InitializeJavaObject must
-  // be called before hand.
+  // Get the reference on the java IdentityManager.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // This method has the contractual assumption that the account is a known
