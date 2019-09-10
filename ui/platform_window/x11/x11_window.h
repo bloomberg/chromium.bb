@@ -67,6 +67,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoredBoundsInPixels() const override;
+  void SetZOrderLevel(ZOrderLevel order) override;
+  ZOrderLevel GetZOrderLevel() const override;
 
  protected:
   PlatformWindowDelegateLinux* platform_window_delegate() const {
@@ -113,6 +115,10 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
 
   // Tells if the window got a ::Close call.
   bool is_shutting_down_ = false;
+
+  // The z-order level of the window; the window exhibits "always on top"
+  // behavior if > 0.
+  ui::ZOrderLevel z_order_ = ui::ZOrderLevel::kNormal;
 
   DISALLOW_COPY_AND_ASSIGN(X11Window);
 };

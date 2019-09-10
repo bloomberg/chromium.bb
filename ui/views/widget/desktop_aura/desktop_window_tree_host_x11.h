@@ -122,8 +122,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   bool HasCapture() const override;
-  void SetZOrderLevel(ui::ZOrderLevel order) override;
-  ui::ZOrderLevel GetZOrderLevel() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
   Widget::MoveLoopResult RunMoveLoop(
@@ -244,10 +242,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
 
   // Whether |xwindow_| was requested to be fullscreen via SetFullscreen().
   bool is_fullscreen_ = false;
-
-  // The z-order level of the window; the window exhibits "always on top"
-  // behavior if > 0.
-  ui::ZOrderLevel z_order_ = ui::ZOrderLevel::kNormal;
 
   DesktopDragDropClientAuraX11* drag_drop_client_ = nullptr;
 

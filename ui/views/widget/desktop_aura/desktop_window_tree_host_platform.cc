@@ -426,13 +426,11 @@ bool DesktopWindowTreeHostPlatform::HasCapture() const {
 }
 
 void DesktopWindowTreeHostPlatform::SetZOrderLevel(ui::ZOrderLevel order) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->SetZOrderLevel(order);
 }
 
 ui::ZOrderLevel DesktopWindowTreeHostPlatform::GetZOrderLevel() const {
-  // TODO: needs PlatformWindow support.
-  return ui::ZOrderLevel::kNormal;
+  return platform_window()->GetZOrderLevel();
 }
 
 void DesktopWindowTreeHostPlatform::SetVisibleOnAllWorkspaces(

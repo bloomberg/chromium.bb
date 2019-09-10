@@ -212,6 +212,28 @@ gfx::Rect X11Window::GetRestoredBoundsInPixels() const {
   return gfx::Rect();
 }
 
+void X11Window::SetZOrderLevel(ZOrderLevel order) {
+  z_order_ = order;
+
+  // Emulate the multiple window levels provided by other platforms by
+  // collapsing the z-order enum into kNormal = normal, everything else = always
+  // on top.
+  XWindow::SetAlwaysOnTop(order != ui::ZOrderLevel::kNormal);
+}
+
+ZOrderLevel X11Window::GetZOrderLevel() const {
+  bool window_always_on_top = is_always_on_top();
+  bool level_always_on_top = z_order_ != ui::ZOrderLevel::kNormal;
+
+  if (window_always_on_top == level_always_on_top)
+    return z_order_;
+
+  // If something external has forced a window to be always-on-top, map it to
+  // kFloatingWindow as a reasonable equivalent.
+  return window_always_on_top ? ui::ZOrderLevel::kFloatingWindow
+                              : ui::ZOrderLevel::kNormal;
+}
+
 void X11Window::SetPlatformEventDispatcher() {
   DCHECK(PlatformEventSource::GetInstance());
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
