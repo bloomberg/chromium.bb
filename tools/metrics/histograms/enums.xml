@@ -24615,6 +24615,8 @@ Called by update_net_error_codes.py.-->
   <int value="3027" label="PointerLockUnadjustedMovement"/>
   <int value="3028" label="CreateObjectBlob"/>
   <int value="3029" label="QuotaRead"/>
+  <int value="3030" label="DelegateFocus"/>
+  <int value="3031" label="DelegateFocusNotFirstInFlatTree"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
