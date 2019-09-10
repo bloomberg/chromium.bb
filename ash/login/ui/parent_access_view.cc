@@ -842,6 +842,7 @@ void ParentAccessView::UpdateState(State state) {
       title_label_->SetEnabledColor(kErrorColor);
       title_label_->SetText(
           l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_ERROR));
+      title_label_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
       return;
     }
   }
