@@ -69,8 +69,8 @@ void MdnsRecordTracker::SendQuery() {
   const Clock::time_point expiration_time = start_time_ + record.ttl();
   const bool is_expired = (now_function_() >= expiration_time);
   if (!is_expired) {
-    MdnsQuestion question(record.name(), record.dns_type(),
-                          record.record_class(), ResponseType::kMulticast);
+    MdnsQuestion question(record.name(), record.dns_type(), record.dns_class(),
+                          ResponseType::kMulticast);
     MdnsMessage message(CreateMessageId(), MessageType::Query);
     message.AddQuestion(std::move(question));
     sender_->SendMulticast(message);

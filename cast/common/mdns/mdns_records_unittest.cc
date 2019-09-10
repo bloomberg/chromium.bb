@@ -288,7 +288,7 @@ TEST(MdnsRecordTest, Construct) {
   EXPECT_EQ(record1.MaxWireSize(), UINT64_C(11));
   EXPECT_EQ(record1.name(), DomainName());
   EXPECT_EQ(record1.dns_type(), static_cast<DnsType>(0));
-  EXPECT_EQ(record1.record_class(), static_cast<DnsClass>(0));
+  EXPECT_EQ(record1.dns_class(), static_cast<DnsClass>(0));
   EXPECT_EQ(record1.record_type(), RecordType::kShared);
   EXPECT_EQ(record1.ttl(),
             std::chrono::seconds(255));  // 255 is kDefaultRecordTTLSeconds
@@ -300,7 +300,7 @@ TEST(MdnsRecordTest, Construct) {
   EXPECT_EQ(record2.MaxWireSize(), UINT64_C(41));
   EXPECT_EQ(record2.name(), (DomainName{"hostname", "local"}));
   EXPECT_EQ(record2.dns_type(), DnsType::kPTR);
-  EXPECT_EQ(record2.record_class(), DnsClass::kIN);
+  EXPECT_EQ(record2.dns_class(), DnsClass::kIN);
   EXPECT_EQ(record2.record_type(), RecordType::kUnique);
   EXPECT_EQ(record2.ttl(), kTtl);
   EXPECT_EQ(record2.rdata(),
@@ -351,7 +351,7 @@ TEST(MdnsQuestionTest, Construct) {
   EXPECT_EQ(question1.MaxWireSize(), UINT64_C(5));
   EXPECT_EQ(question1.name(), DomainName());
   EXPECT_EQ(question1.dns_type(), static_cast<DnsType>(0));
-  EXPECT_EQ(question1.record_class(), static_cast<DnsClass>(0));
+  EXPECT_EQ(question1.dns_class(), static_cast<DnsClass>(0));
   EXPECT_EQ(question1.response_type(), ResponseType::kMulticast);
 
   MdnsQuestion question2(DomainName{"testing", "local"}, DnsType::kPTR,
@@ -359,7 +359,7 @@ TEST(MdnsQuestionTest, Construct) {
   EXPECT_EQ(question2.MaxWireSize(), UINT64_C(19));
   EXPECT_EQ(question2.name(), (DomainName{"testing", "local"}));
   EXPECT_EQ(question2.dns_type(), DnsType::kPTR);
-  EXPECT_EQ(question2.record_class(), DnsClass::kIN);
+  EXPECT_EQ(question2.dns_class(), DnsClass::kIN);
   EXPECT_EQ(question2.response_type(), ResponseType::kUnicast);
 }
 

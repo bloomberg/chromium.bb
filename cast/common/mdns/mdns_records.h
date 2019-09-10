@@ -301,7 +301,7 @@ class MdnsRecord {
   MdnsRecord() = default;
   MdnsRecord(DomainName name,
              DnsType dns_type,
-             DnsClass record_class,
+             DnsClass dns_class,
              RecordType record_type,
              std::chrono::seconds ttl,
              Rdata rdata);
@@ -318,7 +318,7 @@ class MdnsRecord {
   size_t MaxWireSize() const;
   const DomainName& name() const { return name_; }
   DnsType dns_type() const { return dns_type_; }
-  DnsClass record_class() const { return record_class_; }
+  DnsClass dns_class() const { return dns_class_; }
   RecordType record_type() const { return record_type_; }
   std::chrono::seconds ttl() const { return ttl_; }
   const Rdata& rdata() const { return rdata_; }
@@ -326,14 +326,14 @@ class MdnsRecord {
   template <typename H>
   friend H AbslHashValue(H h, const MdnsRecord& record) {
     return H::combine(std::move(h), record.name_, record.dns_type_,
-                      record.record_class_, record.record_type_, record.ttl_,
+                      record.dns_class_, record.record_type_, record.ttl_,
                       record.rdata_);
   }
 
  private:
   DomainName name_;
   DnsType dns_type_ = static_cast<DnsType>(0);
-  DnsClass record_class_ = static_cast<DnsClass>(0);
+  DnsClass dns_class_ = static_cast<DnsClass>(0);
   RecordType record_type_ = RecordType::kShared;
   std::chrono::seconds ttl_{kDefaultRecordTTLSeconds};
   // Default-constructed Rdata contains default-constructed RawRecordRdata
@@ -350,7 +350,7 @@ class MdnsQuestion {
   MdnsQuestion() = default;
   MdnsQuestion(DomainName name,
                DnsType dns_type,
-               DnsClass record_class,
+               DnsClass dns_class,
                ResponseType response_type);
   MdnsQuestion(const MdnsQuestion& other) = default;
   MdnsQuestion(MdnsQuestion&& other) noexcept = default;
@@ -365,13 +365,13 @@ class MdnsQuestion {
   size_t MaxWireSize() const;
   const DomainName& name() const { return name_; }
   DnsType dns_type() const { return dns_type_; }
-  DnsClass record_class() const { return record_class_; }
+  DnsClass dns_class() const { return dns_class_; }
   ResponseType response_type() const { return response_type_; }
 
   template <typename H>
   friend H AbslHashValue(H h, const MdnsQuestion& record) {
     return H::combine(std::move(h), record.name_, record.dns_type_,
-                      record.record_class_, record.response_type_);
+                      record.dns_class_, record.response_type_);
   }
 
  private:
@@ -379,7 +379,7 @@ class MdnsQuestion {
 
   DomainName name_;
   DnsType dns_type_ = static_cast<DnsType>(0);
-  DnsClass record_class_ = static_cast<DnsClass>(0);
+  DnsClass dns_class_ = static_cast<DnsClass>(0);
   ResponseType response_type_ = ResponseType::kMulticast;
 };
 
