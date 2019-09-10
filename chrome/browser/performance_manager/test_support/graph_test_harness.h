@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_TEST_HARNESS_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_TEST_HARNESS_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_TEST_SUPPORT_GRAPH_TEST_HARNESS_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_TEST_SUPPORT_GRAPH_TEST_HARNESS_H_
 
 #include <stdint.h>
 #include <memory>
@@ -203,4 +203,4 @@ class GraphTestHarness : public ::testing::Test {
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_TEST_HARNESS_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_TEST_SUPPORT_GRAPH_TEST_HARNESS_H_

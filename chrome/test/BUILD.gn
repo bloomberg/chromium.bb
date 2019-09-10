@@ -162,6 +162,7 @@ static_library("test_support") {
 
     #"//chrome/app/theme:theme_resources",
     "//chrome/browser:test_support",
+    "//chrome/browser/performance_manager/test_support",
     "//chrome/child",
     "//chrome/common:test_support",
     "//chrome/renderer",
@@ -3057,10 +3058,6 @@ test("unit_tests") {
     "../browser/performance_manager/graph/graph_impl_operations_unittest.cc",
     "../browser/performance_manager/graph/graph_impl_unittest.cc",
     "../browser/performance_manager/graph/graph_operations_unittest.cc",
-    "../browser/performance_manager/graph/graph_test_harness.cc",
-    "../browser/performance_manager/graph/graph_test_harness.h",
-    "../browser/performance_manager/graph/mock_graphs.cc",
-    "../browser/performance_manager/graph/mock_graphs.h",
     "../browser/performance_manager/graph/node_attached_data_unittest.cc",
     "../browser/performance_manager/graph/node_base_unittest.cc",
     "../browser/performance_manager/graph/page_node_impl_unittest.cc",

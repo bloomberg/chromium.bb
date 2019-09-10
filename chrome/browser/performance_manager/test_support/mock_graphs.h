@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_MOCK_GRAPHS_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_MOCK_GRAPHS_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_TEST_SUPPORT_MOCK_GRAPHS_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_TEST_SUPPORT_MOCK_GRAPHS_H_
 
-#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/test_support/graph_test_harness.h"
 
 namespace performance_manager {
 
@@ -119,4 +119,4 @@ struct MockMultiplePagesWithMultipleProcessesGraph
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_MOCK_GRAPHS_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_TEST_SUPPORT_MOCK_GRAPHS_H_
