@@ -118,10 +118,7 @@ if [ "X$DEPOT_TOOLS_UPDATE" != "X0" ]; then
     cd - > /dev/null
   fi
 
-  # Sync CIPD and CIPD client tools.
-  source "$base_dir/cipd_bin_setup.sh"
-  cipd_bin_setup
-
-  find "$base_dir" | grep -i ".*\.pyc" | xargs rm -f;
+  # Ensure depot_tools is bootstrapped
+  $base_dir/ensure_bootstrap
 fi
 
