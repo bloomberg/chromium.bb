@@ -94,8 +94,7 @@ class MockBinaryFCMService : public BinaryFCMService {
 class BinaryUploadServiceTest : public testing::Test {
  public:
   BinaryUploadServiceTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         fake_factory_(true, DeepScanningClientResponse()) {
     MultipartUploadRequest::RegisterFactoryForTests(&fake_factory_);
     auto fcm_service = std::make_unique<MockBinaryFCMService>();
@@ -154,7 +153,7 @@ class BinaryUploadServiceTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<BinaryUploadService> service_;
   MockBinaryFCMService* fcm_service_;
   FakeMultipartUploadRequestFactory fake_factory_;
@@ -251,7 +250,7 @@ TEST_F(BinaryUploadServiceTest, TimesOut) {
   ExpectNetworkResponse(true, DeepScanningClientResponse());
   service_->UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
-  thread_bundle_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
 }
@@ -276,7 +275,7 @@ TEST_F(BinaryUploadServiceTest, OnInstanceIDAfterTimeout) {
   ExpectNetworkResponse(true, DeepScanningClientResponse());
   service_->UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
-  thread_bundle_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
 
@@ -300,7 +299,7 @@ TEST_F(BinaryUploadServiceTest, OnUploadCompleteAfterTimeout) {
   MockRequest* raw_request = request.get();
   service_->UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
-  thread_bundle_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
 
   // Expect nothing to change if the upload finishes after the timeout.
@@ -323,7 +322,7 @@ TEST_F(BinaryUploadServiceTest, OnGetResponseAfterTimeout) {
   MockRequest* raw_request = request.get();
   service_->UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
-  thread_bundle_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
 
   // Expect nothing to change if we get a message after the timeout.

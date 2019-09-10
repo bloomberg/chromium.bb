@@ -42,7 +42,7 @@ class DownloadItemRequestTest : public ::testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   download::MockDownloadItem item_;
   DownloadItemRequest request_;
   base::ScopedTempDir temp_dir_;
