@@ -71,7 +71,7 @@ static uint8_t *pad_8tap_convolve(const int *data, int w, int h, bool high_bd) {
       if (high_bd) {
         *CONVERT_TO_SHORTPTR(dst + i + j * pad_w) = v;
       } else {
-        dst[i + j * pad_w] = v;
+        dst[i + j * pad_w] = static_cast<uint8_t>(v);
       }
     }
   }
