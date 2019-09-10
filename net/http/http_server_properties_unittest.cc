@@ -772,14 +772,15 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetWithEmptyHostname) {
   const AlternativeService alternative_service_with_foo_hostname(kProtoHTTP2,
                                                                  "foo", 1234);
   SetAlternativeService(server, alternative_service_with_empty_hostname);
-  impl_.MarkAlternativeServiceBroken(alternative_service_with_foo_hostname);
+  impl_.MarkAlternativeServiceBroken(alternative_service_with_foo_hostname,
+                                     NetworkIsolationKey());
 
   std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
       std::make_unique<HttpServerProperties::ServerInfoMap>();
   impl_.OnServerInfoLoadedForTesting(std::move(server_info_map));
 
-  EXPECT_TRUE(
-      impl_.IsAlternativeServiceBroken(alternative_service_with_foo_hostname));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(
+      alternative_service_with_foo_hostname, NetworkIsolationKey()));
   const AlternativeServiceInfoVector alternative_service_info_vector =
       impl_.GetAlternativeServiceInfos(server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
@@ -939,16 +940,19 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                                NetworkIsolationKey()));
 
   // GetAlternativeServiceInfos should return the broken alternative service.
-  impl_.MarkAlternativeServiceBroken(alternative_service1);
+  impl_.MarkAlternativeServiceBroken(alternative_service1,
+                                     NetworkIsolationKey());
   alternative_service_info_vector =
       impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                               NetworkIsolationKey()));
 
   // SetAlternativeServices should add a broken alternative service to the map.
   AlternativeServiceInfoVector alternative_service_info_vector2;
@@ -969,8 +973,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
             alternative_service_info_vector[0].alternative_service());
   EXPECT_EQ(alternative_service2,
             alternative_service_info_vector[1].alternative_service());
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                               NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2,
+                                                NetworkIsolationKey()));
 
   // SetAlternativeService should add a broken alternative service to the map.
   SetAlternativeService(test_server, alternative_service1);
@@ -979,7 +985,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                               NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest,
@@ -992,18 +999,20 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                                NetworkIsolationKey()));
 
   // Mark the alternative service as broken until the default network changes.
   impl_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      alternative_service1);
+      alternative_service1, NetworkIsolationKey());
   // The alternative service should be persisted and marked as broken.
   alternative_service_info_vector =
       impl_.GetAlternativeServiceInfos(test_server, NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                               NetworkIsolationKey()));
 
   // SetAlternativeServices should add a broken alternative service to the map.
   AlternativeServiceInfoVector alternative_service_info_vector2;
@@ -1024,8 +1033,10 @@ TEST_F(AlternateProtocolServerPropertiesTest,
             alternative_service_info_vector[0].alternative_service());
   EXPECT_EQ(alternative_service2,
             alternative_service_info_vector[1].alternative_service());
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                               NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2,
+                                                NetworkIsolationKey()));
 
   // SetAlternativeService should add a broken alternative service to the map.
   SetAlternativeService(test_server, alternative_service1);
@@ -1034,7 +1045,8 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector[0].alternative_service());
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                               NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, MaxAge) {
@@ -1203,8 +1215,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
             alternative_service_info_vector[0].alternative_service());
 
   const AlternativeService broken_alternative_service(kProtoHTTP2, "foo", 443);
-  impl_.MarkAlternativeServiceBroken(broken_alternative_service);
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(broken_alternative_service));
+  impl_.MarkAlternativeServiceBroken(broken_alternative_service,
+                                     NetworkIsolationKey());
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(broken_alternative_service,
+                                               NetworkIsolationKey()));
 
   SetAlternativeService(test_server, broken_alternative_service);
   alternative_service_info_vector =
@@ -1212,21 +1226,25 @@ TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(broken_alternative_service,
             alternative_service_info_vector[0].alternative_service());
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(broken_alternative_service));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(broken_alternative_service,
+                                               NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
   url::SchemeHostPort test_server("http", "foo", 80);
   const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
   SetAlternativeService(test_server, alternative_service);
-  impl_.MarkAlternativeServiceBroken(alternative_service);
+  impl_.MarkAlternativeServiceBroken(alternative_service,
+                                     NetworkIsolationKey());
   ASSERT_TRUE(HasAlternativeService(test_server, NetworkIsolationKey()));
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               NetworkIsolationKey()));
   // SetAlternativeServices should leave a broken alternative service marked
   // as such.
   impl_.SetAlternativeServices(test_server, NetworkIsolationKey(),
                                AlternativeServiceInfoVector());
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest,
@@ -1343,16 +1361,23 @@ TEST_F(AlternateProtocolServerPropertiesTest, MarkRecentlyBroken) {
   const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
   SetAlternativeService(server, alternative_service);
 
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, NetworkIsolationKey()));
 
-  impl_.MarkAlternativeServiceRecentlyBroken(alternative_service);
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  impl_.MarkAlternativeServiceRecentlyBroken(alternative_service,
+                                             NetworkIsolationKey());
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service,
+                                                        NetworkIsolationKey()));
 
-  impl_.ConfirmAlternativeService(alternative_service);
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  impl_.ConfirmAlternativeService(alternative_service, NetworkIsolationKey());
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest,
@@ -1469,17 +1494,23 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
   SetAlternativeService(server, alternative_service);
 
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, NetworkIsolationKey()));
 
   impl_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      alternative_service);
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+      alternative_service, NetworkIsolationKey());
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service,
+                                                        NetworkIsolationKey()));
 
-  impl_.ConfirmAlternativeService(alternative_service);
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  impl_.ConfirmAlternativeService(alternative_service, NetworkIsolationKey());
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest,
@@ -1597,45 +1628,62 @@ TEST_F(AlternateProtocolServerPropertiesTest, OnDefaultNetworkChanged) {
   const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
 
   SetAlternativeService(server, alternative_service);
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, NetworkIsolationKey()));
 
   impl_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      alternative_service);
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+      alternative_service, NetworkIsolationKey());
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service,
+                                                        NetworkIsolationKey()));
 
   // Default network change clears alt svc broken until default network changes.
   impl_.OnDefaultNetworkChanged();
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, NetworkIsolationKey()));
 
   impl_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      alternative_service);
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+      alternative_service, NetworkIsolationKey());
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service,
+                                                        NetworkIsolationKey()));
 
-  impl_.MarkAlternativeServiceBroken(alternative_service);
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  impl_.MarkAlternativeServiceBroken(alternative_service,
+                                     NetworkIsolationKey());
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service,
+                                                        NetworkIsolationKey()));
 
   // Default network change doesn't affect alt svc that was simply marked broken
   // most recently.
   impl_.OnDefaultNetworkChanged();
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service,
+                                                        NetworkIsolationKey()));
 
   impl_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      alternative_service);
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+      alternative_service, NetworkIsolationKey());
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service,
+                                                        NetworkIsolationKey()));
 
   // Default network change clears alt svc that was marked broken until default
   // network change most recently even if the alt svc was initially marked
   // broken.
   impl_.OnDefaultNetworkChanged();
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest,
@@ -1849,7 +1897,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
 
   SetAlternativeService(canonical_server, canonical_alternative_service);
   EXPECT_TRUE(HasAlternativeService(test_server, NetworkIsolationKey()));
-  impl_.MarkAlternativeServiceBroken(canonical_alternative_service);
+  impl_.MarkAlternativeServiceBroken(canonical_alternative_service,
+                                     NetworkIsolationKey());
   EXPECT_FALSE(HasAlternativeService(test_server, NetworkIsolationKey()));
 }
 
@@ -1863,7 +1912,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   SetAlternativeService(canonical_server, canonical_alternative_service);
   EXPECT_TRUE(HasAlternativeService(test_server, NetworkIsolationKey()));
   impl_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      canonical_alternative_service);
+      canonical_alternative_service, NetworkIsolationKey());
   EXPECT_FALSE(HasAlternativeService(test_server, NetworkIsolationKey()));
 }
 
@@ -1908,20 +1957,26 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   AlternativeService alternative_service(kProtoQUIC, "foo", 443);
   SetAlternativeService(server, alternative_service);
   EXPECT_TRUE(HasAlternativeService(server, NetworkIsolationKey()));
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      alternative_service, NetworkIsolationKey()));
 
   base::TimeTicks past =
       test_tick_clock_->NowTicks() - base::TimeDelta::FromSeconds(42);
   HttpServerPropertiesPeer::AddBrokenAlternativeServiceWithExpirationTime(
       &impl_, alternative_service, past);
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                               NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service,
+                                                        NetworkIsolationKey()));
 
   HttpServerPropertiesPeer::ExpireBrokenAlternateProtocolMappings(&impl_);
   EXPECT_FALSE(HasAlternativeService(server, NetworkIsolationKey()));
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service,
+                                                NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service,
+                                                        NetworkIsolationKey()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest,
@@ -2043,10 +2098,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc) {
   // The alternative service of "bar:443" should be unaffected.
   EXPECT_TRUE(HasAlternativeService(bar_server2, NetworkIsolationKey()));
 
-  EXPECT_TRUE(
-      impl_.WasAlternativeServiceRecentlyBroken(bar_alternative_service));
-  EXPECT_FALSE(
-      impl_.WasAlternativeServiceRecentlyBroken(baz_alternative_service));
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(bar_alternative_service,
+                                                        NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(
+      baz_alternative_service, NetworkIsolationKey()));
 }
 
 // Regression test for https://crbug.com/724302
@@ -2070,12 +2125,14 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc2) {
   // Repeatedly mark alt svc 1 broken and wait for its brokenness to expire.
   // This will increase its time until expiration.
   for (int i = 0; i < 3; ++i) {
-    impl_.MarkAlternativeServiceBroken(alternative_service1);
+    impl_.MarkAlternativeServiceBroken(alternative_service1,
+                                       NetworkIsolationKey());
 
     // |impl_| should have posted task to expire the brokenness of
     // |alternative_service1|
     EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
-    EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
+    EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                                 NetworkIsolationKey()));
 
     // Advance time by just enough so that |alternative_service1|'s brokenness
     // expires.
@@ -2083,27 +2140,35 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc2) {
 
     // Ensure brokenness of |alternative_service1| has expired.
     EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
-    EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1));
+    EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                                  NetworkIsolationKey()));
   }
 
-  impl_.MarkAlternativeServiceBroken(alternative_service1);
-  impl_.MarkAlternativeServiceBroken(alternative_service2);
+  impl_.MarkAlternativeServiceBroken(alternative_service1,
+                                     NetworkIsolationKey());
+  impl_.MarkAlternativeServiceBroken(alternative_service2,
+                                     NetworkIsolationKey());
 
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service2,
+                                               NetworkIsolationKey()));
 
   // Advance time by just enough so that |alternative_service2|'s brokennness
   // expires.
   FastForwardBy(BROKEN_ALT_SVC_EXPIRE_DELAYS[0]);
 
-  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                               NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2,
+                                                NetworkIsolationKey()));
 
   // Advance time by enough so that |alternative_service1|'s brokenness expires.
   FastForwardBy(BROKEN_ALT_SVC_EXPIRE_DELAYS[3] -
                 BROKEN_ALT_SVC_EXPIRE_DELAYS[0]);
 
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1));
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1,
+                                                NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2,
+                                                NetworkIsolationKey()));
 }
 
 // Regression test for https://crbug.com/994537. Having a ServerInfo entry
@@ -2169,11 +2234,11 @@ TEST_F(AlternateProtocolServerPropertiesTest,
                                NetworkIsolationKey(),
                                alternative_service_info_vector);
 
-  impl_.MarkAlternativeServiceBroken(
-      AlternativeService(kProtoQUIC, "bar", 443));
+  impl_.MarkAlternativeServiceBroken(AlternativeService(kProtoQUIC, "bar", 443),
+                                     NetworkIsolationKey());
 
   impl_.MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      AlternativeService(kProtoQUIC, "baz", 443));
+      AlternativeService(kProtoQUIC, "baz", 443), NetworkIsolationKey());
 
   alternative_service_info_vector.clear();
   alternative_service_info_vector.push_back(

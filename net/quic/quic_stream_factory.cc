@@ -1415,7 +1415,7 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
   QuicSessionAliasKey key(destination, session_key);
   std::unique_ptr<Job> job =
       std::make_unique<Job>(this, quic_version, host_resolver_, key,
-                            WasQuicRecentlyBroken(session_key.server_id()),
+                            WasQuicRecentlyBroken(session_key),
                             params_.retry_on_alternate_network_before_handshake,
                             params_.race_stale_dns_on_connection, priority,
                             cert_verify_flags, net_log);
@@ -2028,11 +2028,12 @@ int64_t QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
 }
 
 bool QuicStreamFactory::WasQuicRecentlyBroken(
-    const quic::QuicServerId& server_id) const {
+    const QuicSessionKey& session_key) const {
   const AlternativeService alternative_service(
-      kProtoQUIC, HostPortPair(server_id.host(), server_id.port()));
+      kProtoQUIC, HostPortPair(session_key.server_id().host(),
+                               session_key.server_id().port()));
   return http_server_properties_->WasAlternativeServiceRecentlyBroken(
-      alternative_service);
+      alternative_service, session_key.network_isolation_key());
 }
 
 bool QuicStreamFactory::CryptoConfigCacheIsEmpty(
@@ -2103,11 +2104,16 @@ void QuicStreamFactory::ProcessGoingAwaySession(
 
   url::SchemeHostPort server("https", server_id.host(), server_id.port());
   // Do nothing if QUIC is currently marked as broken.
-  if (http_server_properties_->IsAlternativeServiceBroken(alternative_service))
+  if (http_server_properties_->IsAlternativeServiceBroken(
+          alternative_service,
+          session->quic_session_key().network_isolation_key())) {
     return;
+  }
 
   if (session->IsCryptoHandshakeConfirmed()) {
-    http_server_properties_->ConfirmAlternativeService(alternative_service);
+    http_server_properties_->ConfirmAlternativeService(
+        alternative_service,
+        session->quic_session_key().network_isolation_key());
     ServerNetworkStats network_stats;
     network_stats.srtt = base::TimeDelta::FromMicroseconds(stats.srtt_us);
     network_stats.bandwidth_estimate = stats.estimated_bandwidth;
@@ -2138,7 +2144,7 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   // avoid not using QUIC when we otherwise could, we mark it as recently
   // broken, which means that 0-RTT will be disabled but we'll still race.
   http_server_properties_->MarkAlternativeServiceRecentlyBroken(
-      alternative_service);
+      alternative_service, session->quic_session_key().network_isolation_key());
 }
 
 }  // namespace net

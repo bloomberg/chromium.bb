@@ -340,12 +340,14 @@ AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
     AlternativeService alternative_service(it->alternative_service());
     if (alternative_service.host.empty()) {
       alternative_service.host = canonical->second.host();
-      if (IsAlternativeServiceBroken(alternative_service)) {
+      if (IsAlternativeServiceBroken(alternative_service,
+                                     network_isolation_key)) {
         ++it;
         continue;
       }
       alternative_service.host = origin.host();
-    } else if (IsAlternativeServiceBroken(alternative_service)) {
+    } else if (IsAlternativeServiceBroken(alternative_service,
+                                          network_isolation_key)) {
       ++it;
       continue;
     }
@@ -530,10 +532,12 @@ bool HttpServerProperties::WasAlternativeServiceRecentlyBroken(
 void HttpServerProperties::ConfirmAlternativeService(
     const AlternativeService& alternative_service,
     const net::NetworkIsolationKey& network_isolation_key) {
-  bool old_value = IsAlternativeServiceBroken(alternative_service);
+  bool old_value =
+      IsAlternativeServiceBroken(alternative_service, network_isolation_key);
   broken_alternative_services_.Confirm(BrokenAlternativeService(
       alternative_service, network_isolation_key, use_network_isolation_key_));
-  bool new_value = IsAlternativeServiceBroken(alternative_service);
+  bool new_value =
+      IsAlternativeServiceBroken(alternative_service, network_isolation_key);
 
   // For persisting, we only care about the value returned by
   // IsAlternativeServiceBroken. If that value changes, then call persist.
@@ -829,7 +833,8 @@ HttpServerProperties::GetIteratorWithAlternativeServiceInfo(
     if (alternative_service.host.empty()) {
       alternative_service.host = canonical_server.host();
     }
-    if (!IsAlternativeServiceBroken(alternative_service)) {
+    if (!IsAlternativeServiceBroken(alternative_service,
+                                    network_isolation_key)) {
       return it;
     }
   }
