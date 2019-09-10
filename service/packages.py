@@ -15,7 +15,6 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
-from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import uprev_lib
 
@@ -236,7 +235,7 @@ def uprev_sample(*_args, **_kwargs):
 
 @uprevs_versioned_package('afdo/kernel-profiles')
 def uprev_kernel_afdo(*_args, **_kwargs):
-  """Updates the kernel ebuild with version from kernel_afdo.json.
+  """Updates kernel ebuilds with versions from kernel_afdo.json.
 
   See: uprev_versioned_package.
 
@@ -246,8 +245,8 @@ def uprev_kernel_afdo(*_args, **_kwargs):
   path = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
                       'toolchain-utils', 'afdo_metadata', 'kernel_afdo.json')
 
-  with open(path, 'r') as file:
-    versions = json.load(file)
+  with open(path, 'r') as f:
+    versions = json.load(f)
 
   paths = []
   for version, version_info in versions.items():
@@ -272,7 +271,7 @@ def uprev_kernel_afdo(*_args, **_kwargs):
     manifest_path = os.path.join(path, 'Manifest')
     paths.append(manifest_path)
 
-  return UprevVersionedPackageResult("test version", paths)
+  return UprevVersionedPackageResult('test version', paths)
 
 
 @uprevs_versioned_package(constants.CHROME_CP)
