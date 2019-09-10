@@ -13,7 +13,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -73,13 +72,10 @@ public class SharedClipboardShareActivity
         View mask = findViewById(R.id.mask);
         mask.setOnClickListener(v -> finish());
 
-        TextView toolbarText = findViewById(R.id.device_picker_toolbar);
-        toolbarText.setText(R.string.send_tab_to_self_sheet_toolbar);
-
         mListView = findViewById(R.id.device_picker_list);
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(this);
-        mListView.setEmptyView(findViewById(android.R.id.empty));
+        mListView.setEmptyView(findViewById(R.id.empty_state));
 
         View content = findViewById(R.id.device_picker_content);
         content.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_up));
@@ -98,6 +94,10 @@ public class SharedClipboardShareActivity
         super.finishNativeInitialization();
 
         mAdapter = new SharingAdapter(SharingDeviceCapability.SHARED_CLIPBOARD);
+        if (!mAdapter.isEmpty()) {
+            findViewById(R.id.device_picker_toolbar).setVisibility(View.VISIBLE);
+        }
+
         mListView.setAdapter(mAdapter);
     }
 
