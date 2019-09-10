@@ -43,8 +43,8 @@ class MdnsRandom {
   static constexpr int64_t kMinimumInitialQueryDelayMs = 20;
   static constexpr int64_t kMaximumInitialQueryDelayMs = 120;
 
-  static constexpr double kMinimumTtlVariationPercent = 0.0;
-  static constexpr double kMaximumTtlVariationPercent = 2.0;
+  static constexpr double kMinimumTtlVariation = 0.0;
+  static constexpr double kMaximumTtlVariation = 0.02;
 
   static constexpr int64_t kMinimumSharedRecordResponseDelayMs = 20;
   static constexpr int64_t kMaximumSharedRecordResponseDelayMs = 120;
@@ -56,7 +56,7 @@ class MdnsRandom {
   std::uniform_int_distribution<int64_t> initial_query_delay_{
       kMinimumInitialQueryDelayMs, kMaximumInitialQueryDelayMs};
   std::uniform_real_distribution<double> record_ttl_variation_{
-      kMinimumTtlVariationPercent, kMaximumTtlVariationPercent};
+      kMinimumTtlVariation, kMaximumTtlVariation};
   std::uniform_int_distribution<int64_t> shared_record_response_delay_{
       kMinimumSharedRecordResponseDelayMs, kMaximumSharedRecordResponseDelayMs};
   std::uniform_int_distribution<int64_t> truncated_query_response_delay_{

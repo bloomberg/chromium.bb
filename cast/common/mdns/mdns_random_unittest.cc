@@ -15,44 +15,44 @@ constexpr int kIterationCount = 100;
 }
 
 TEST(MdnsRandomTest, InitialQueryDelay) {
-  std::chrono::milliseconds lower_bound{20};
-  std::chrono::milliseconds upper_bound{120};
+  constexpr std::chrono::milliseconds lower_bound{20};
+  constexpr std::chrono::milliseconds upper_bound{120};
   MdnsRandom mdns_random;
   for (int i = 0; i < kIterationCount; ++i) {
-    Clock::duration delay = mdns_random.GetInitialQueryDelay();
+    const Clock::duration delay = mdns_random.GetInitialQueryDelay();
     EXPECT_GE(delay, lower_bound);
     EXPECT_LE(delay, upper_bound);
   }
 }
 
 TEST(MdnsRandomTest, RecordTtlVariation) {
-  double lower_bound = 0.0;
-  double upper_bound = 2.0;
+  constexpr double lower_bound = 0.0;
+  constexpr double upper_bound = 0.02;
   MdnsRandom mdns_random;
   for (int i = 0; i < kIterationCount; ++i) {
-    double variation = mdns_random.GetRecordTtlVariation();
+    const double variation = mdns_random.GetRecordTtlVariation();
     EXPECT_GE(variation, lower_bound);
     EXPECT_LE(variation, upper_bound);
   }
 }
 
 TEST(MdnsRandomTest, SharedRecordResponseDelay) {
-  std::chrono::milliseconds lower_bound{20};
-  std::chrono::milliseconds upper_bound{120};
+  constexpr std::chrono::milliseconds lower_bound{20};
+  constexpr std::chrono::milliseconds upper_bound{120};
   MdnsRandom mdns_random;
   for (int i = 0; i < kIterationCount; ++i) {
-    Clock::duration delay = mdns_random.GetSharedRecordResponseDelay();
+    const Clock::duration delay = mdns_random.GetSharedRecordResponseDelay();
     EXPECT_GE(delay, lower_bound);
     EXPECT_LE(delay, upper_bound);
   }
 }
 
 TEST(MdnsRandomTest, TruncatedQueryResponseDelay) {
-  std::chrono::milliseconds lower_bound{400};
-  std::chrono::milliseconds upper_bound{500};
+  constexpr std::chrono::milliseconds lower_bound{400};
+  constexpr std::chrono::milliseconds upper_bound{500};
   MdnsRandom mdns_random;
   for (int i = 0; i < kIterationCount; ++i) {
-    Clock::duration delay = mdns_random.GetTruncatedQueryResponseDelay();
+    const Clock::duration delay = mdns_random.GetTruncatedQueryResponseDelay();
     EXPECT_GE(delay, lower_bound);
     EXPECT_LE(delay, upper_bound);
   }
