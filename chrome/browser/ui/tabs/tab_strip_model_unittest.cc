@@ -3657,16 +3657,9 @@ TEST_F(TabStripModelTest, MoveWebContentsAtCorrectlySendsGroupClearedEvent) {
   EXPECT_EQ("1 2 0", GetTabStripStateString(strip));
   EXPECT_EQ(base::nullopt, strip.GetTabGroupForTab(2));
 
-  int num_group_changed_notifications = 0;
-  for (int i = 0; i < observer.GetStateCount(); i++) {
-    if (observer.GetStateAt(i).action ==
-        MockTabStripModelObserver::GROUP_CHANGED) {
-      observer.ExpectStateEquals(
-          i, ExpectedGroupChangeState(strip, 2, group1, base::nullopt));
-      ++num_group_changed_notifications;
-    }
-  }
-  EXPECT_EQ(num_group_changed_notifications, 1);
+  EXPECT_EQ(3, observer.GetStateCount());
+  observer.ExpectStateEquals(
+      2, ExpectedGroupChangeState(strip, 2, group1, base::nullopt));
 
   strip.CloseAllTabs();
 }
