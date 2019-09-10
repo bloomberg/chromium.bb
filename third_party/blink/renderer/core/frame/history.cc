@@ -89,7 +89,7 @@ SerializedScriptValue* History::state(ExceptionState& exception_state) {
 }
 
 SerializedScriptValue* History::StateInternal() const {
-  if (!GetFrame())
+  if (!GetFrame() || !GetFrame()->Loader().GetDocumentLoader())
     return nullptr;
 
   if (HistoryItem* history_item =
