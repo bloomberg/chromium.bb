@@ -24,6 +24,10 @@ struct DateTime {
   uint8_t second;
 };
 
+bool operator<(const DateTime& a, const DateTime& b);
+bool operator>(const DateTime& a, const DateTime& b);
+bool DateTimeFromSeconds(uint64_t seconds, DateTime* time);
+
 }  // namespace certificate
 }  // namespace cast
 

@@ -92,11 +92,11 @@ bool VerifyCRL(const Crl& crl,
 
   // Verify the CRL is still valid.
   DateTime not_before;
-  if (!ConvertTimeSeconds(tbs_crl.not_before_seconds(), &not_before)) {
+  if (!DateTimeFromSeconds(tbs_crl.not_before_seconds(), &not_before)) {
     return false;
   }
   DateTime not_after;
-  if (!ConvertTimeSeconds(tbs_crl.not_after_seconds(), &not_after)) {
+  if (!DateTimeFromSeconds(tbs_crl.not_after_seconds(), &not_after)) {
     return false;
   }
   if ((time < not_before) || (not_after < time)) {
@@ -167,8 +167,8 @@ CastCRL::CastCRL(const TbsCrl& tbs_crl, const DateTime& overall_not_after) {
   // Parse the validity information.
   // Assume ConvertTimeSeconds will succeed. Successful call to VerifyCRL
   // means that these calls were successful.
-  ConvertTimeSeconds(tbs_crl.not_before_seconds(), &not_before_);
-  ConvertTimeSeconds(tbs_crl.not_after_seconds(), &not_after_);
+  DateTimeFromSeconds(tbs_crl.not_before_seconds(), &not_before_);
+  DateTimeFromSeconds(tbs_crl.not_after_seconds(), &not_after_);
   if (overall_not_after < not_after_) {
     not_after_ = overall_not_after;
   }

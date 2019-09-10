@@ -188,7 +188,8 @@ openscreen::Error VerifyDeviceCert(
     return error;
   }
 
-  if (crl && !crl->CheckRevocation(result_path.path, time)) {
+  if (crl_policy == CRLPolicy::kCrlRequired &&
+      !crl->CheckRevocation(result_path.path, time)) {
     return CastCertError::kErrCertsRevoked;
   }
 

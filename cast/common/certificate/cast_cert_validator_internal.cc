@@ -64,20 +64,9 @@ uint8_t ParseAsn1TimeDoubleDigit(ASN1_GENERALIZEDTIME* time, int index) {
 }
 
 CastCertError VerifyCertTime(X509* cert, const DateTime& time) {
-  ASN1_GENERALIZEDTIME* not_before_asn1 = ASN1_TIME_to_generalizedtime(
-      cert->cert_info->validity->notBefore, nullptr);
-  ASN1_GENERALIZEDTIME* not_after_asn1 = ASN1_TIME_to_generalizedtime(
-      cert->cert_info->validity->notAfter, nullptr);
-  if (!not_before_asn1 || !not_after_asn1) {
-    return CastCertError::kErrCertsVerifyGeneric;
-  }
   DateTime not_before;
   DateTime not_after;
-  bool times_valid = ParseAsn1GeneralizedTime(not_before_asn1, &not_before) &&
-                     ParseAsn1GeneralizedTime(not_after_asn1, &not_after);
-  ASN1_GENERALIZEDTIME_free(not_before_asn1);
-  ASN1_GENERALIZEDTIME_free(not_after_asn1);
-  if (!times_valid) {
+  if (!GetCertValidTimeRange(cert, &not_before, &not_after)) {
     return CastCertError::kErrCertsVerifyGeneric;
   }
   if ((time < not_before) || (not_after < time)) {
@@ -350,6 +339,23 @@ bool ParseAsn1GeneralizedTime(ASN1_GENERALIZEDTIME* time, DateTime* out) {
   return true;
 }
 
+bool GetCertValidTimeRange(X509* cert,
+                           DateTime* not_before,
+                           DateTime* not_after) {
+  ASN1_GENERALIZEDTIME* not_before_asn1 = ASN1_TIME_to_generalizedtime(
+      cert->cert_info->validity->notBefore, nullptr);
+  ASN1_GENERALIZEDTIME* not_after_asn1 = ASN1_TIME_to_generalizedtime(
+      cert->cert_info->validity->notAfter, nullptr);
+  if (!not_before_asn1 || !not_after_asn1) {
+    return false;
+  }
+  bool times_valid = ParseAsn1GeneralizedTime(not_before_asn1, not_before) &&
+                     ParseAsn1GeneralizedTime(not_after_asn1, not_after);
+  ASN1_GENERALIZEDTIME_free(not_before_asn1);
+  ASN1_GENERALIZEDTIME_free(not_after_asn1);
+  return times_valid;
+}
+
 bool VerifySignedData(const EVP_MD* digest,
                       EVP_PKEY* public_key,
                       const ConstDataSpan& data,
@@ -362,59 +368,6 @@ bool VerifySignedData(const EVP_MD* digest,
   }
   return (EVP_DigestVerify(ctx.get(), signature.data, signature.length,
                            data.data, data.length) == 1);
-}
-
-bool operator<(const DateTime& a, const DateTime& b) {
-  if (a.year < b.year) {
-    return true;
-  } else if (a.year > b.year) {
-    return false;
-  }
-  if (a.month < b.month) {
-    return true;
-  } else if (a.month > b.month) {
-    return false;
-  }
-  if (a.day < b.day) {
-    return true;
-  } else if (a.day > b.day) {
-    return false;
-  }
-  if (a.hour < b.hour) {
-    return true;
-  } else if (a.hour > b.hour) {
-    return false;
-  }
-  if (a.minute < b.minute) {
-    return true;
-  } else if (a.minute > b.minute) {
-    return false;
-  }
-  if (a.second < b.second) {
-    return true;
-  } else if (a.second > b.second) {
-    return false;
-  }
-  return false;
-}
-
-bool ConvertTimeSeconds(uint64_t seconds, DateTime* time) {
-  struct tm tm = {};
-  time_t sec = static_cast<time_t>(seconds);
-  OSP_DCHECK_GE(sec, 0);
-  OSP_DCHECK_EQ(static_cast<uint64_t>(sec), seconds);
-  if (!gmtime_r(&sec, &tm)) {
-    return false;
-  }
-
-  time->second = tm.tm_sec;
-  time->minute = tm.tm_min;
-  time->hour = tm.tm_hour;
-  time->day = tm.tm_mday;
-  time->month = tm.tm_mon + 1;
-  time->year = tm.tm_year + 1900;
-
-  return true;
 }
 
 openscreen::Error FindCertificatePath(const std::vector<std::string>& der_certs,

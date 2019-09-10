@@ -4,9 +4,6 @@
 
 #include "cast/common/certificate/cast_crl.h"
 
-#include <fcntl.h>
-#include <unistd.h>
-
 #include "cast/common/certificate/cast_cert_validator.h"
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/common/certificate/proto/test_suite.pb.h"
@@ -88,35 +85,19 @@ bool TestVerifyRevocation(CastCertError expected_result,
   return expected_result == result.code();
 }
 
-TrustStore CreateTrustStoreFromPemFile(const std::string& filename) {
-  TrustStore store;
-
-  std::vector<std::string> certs =
-      testing::ReadCertificatesFromPemFile(filename);
-  for (const auto& der_cert : certs) {
-    const uint8_t* data = (const uint8_t*)der_cert.data();
-    store.certs.emplace_back(d2i_X509(nullptr, &data, der_cert.size()));
-  }
-  return store;
-}
-
 #define TEST_DATA_PREFIX "test/data/cast/common/certificate/"
 
 bool RunTest(const DeviceCertTest& test_case) {
-  TrustStore crl_trust_store_local;
-  TrustStore cast_trust_store_local;
-  TrustStore* crl_trust_store = nullptr;
-  TrustStore* cast_trust_store = nullptr;
+  std::unique_ptr<TrustStore> crl_trust_store;
+  std::unique_ptr<TrustStore> cast_trust_store;
   if (test_case.use_test_trust_anchors()) {
-    crl_trust_store_local = CreateTrustStoreFromPemFile(
+    crl_trust_store = testing::CreateTrustStoreFromPemFile(
         TEST_DATA_PREFIX "certificates/cast_crl_test_root_ca.pem");
-    cast_trust_store_local = CreateTrustStoreFromPemFile(
+    cast_trust_store = testing::CreateTrustStoreFromPemFile(
         TEST_DATA_PREFIX "certificates/cast_test_root_ca.pem");
-    crl_trust_store = &crl_trust_store_local;
-    cast_trust_store = &cast_trust_store_local;
 
-    EXPECT_FALSE(crl_trust_store_local.certs.empty());
-    EXPECT_FALSE(cast_trust_store_local.certs.empty());
+    EXPECT_FALSE(crl_trust_store->certs.empty());
+    EXPECT_FALSE(cast_trust_store->certs.empty());
   }
 
   std::vector<std::string> der_cert_path;
@@ -125,12 +106,12 @@ bool RunTest(const DeviceCertTest& test_case) {
   }
 
   DateTime cert_verification_time;
-  EXPECT_TRUE(ConvertTimeSeconds(test_case.cert_verification_time_seconds(),
-                                 &cert_verification_time));
+  EXPECT_TRUE(DateTimeFromSeconds(test_case.cert_verification_time_seconds(),
+                                  &cert_verification_time));
 
   uint64_t crl_verify_time = test_case.crl_verification_time_seconds();
   DateTime crl_verification_time;
-  EXPECT_TRUE(ConvertTimeSeconds(crl_verify_time, &crl_verification_time));
+  EXPECT_TRUE(DateTimeFromSeconds(crl_verify_time, &crl_verification_time));
   if (crl_verify_time == 0) {
     crl_verification_time = cert_verification_time;
   }
@@ -139,65 +120,48 @@ bool RunTest(const DeviceCertTest& test_case) {
   switch (test_case.expected_result()) {
     case PATH_VERIFICATION_FAILED:
       return TestVerifyCertificate(kResultFail, der_cert_path,
-                                   cert_verification_time, cast_trust_store);
+                                   cert_verification_time,
+                                   cast_trust_store.get());
     case CRL_VERIFICATION_FAILED:
       return TestVerifyCRL(kResultFail, crl_bundle, crl_verification_time,
-                           crl_trust_store);
+                           crl_trust_store.get());
     case REVOCATION_CHECK_FAILED_WITHOUT_CRL:
       return TestVerifyCertificate(kResultSuccess, der_cert_path,
-                                   cert_verification_time, cast_trust_store) &&
+                                   cert_verification_time,
+                                   cast_trust_store.get()) &&
              TestVerifyCRL(kResultFail, crl_bundle, crl_verification_time,
-                           crl_trust_store) &&
-             TestVerifyRevocation(CastCertError::kErrCrlInvalid, der_cert_path,
-                                  crl_bundle, crl_verification_time,
-                                  cert_verification_time, true,
-                                  cast_trust_store, crl_trust_store);
+                           crl_trust_store.get()) &&
+             TestVerifyRevocation(
+                 CastCertError::kErrCrlInvalid, der_cert_path, crl_bundle,
+                 crl_verification_time, cert_verification_time, true,
+                 cast_trust_store.get(), crl_trust_store.get());
     case CRL_EXPIRED_AFTER_INITIAL_VERIFICATION:  // fallthrough
     case REVOCATION_CHECK_FAILED:
       return TestVerifyCertificate(kResultSuccess, der_cert_path,
-                                   cert_verification_time, cast_trust_store) &&
+                                   cert_verification_time,
+                                   cast_trust_store.get()) &&
              TestVerifyCRL(kResultSuccess, crl_bundle, crl_verification_time,
-                           crl_trust_store) &&
-             TestVerifyRevocation(CastCertError::kErrCertsRevoked,
-                                  der_cert_path, crl_bundle,
-                                  crl_verification_time, cert_verification_time,
-                                  false, cast_trust_store, crl_trust_store);
+                           crl_trust_store.get()) &&
+             TestVerifyRevocation(
+                 CastCertError::kErrCertsRevoked, der_cert_path, crl_bundle,
+                 crl_verification_time, cert_verification_time, true,
+                 cast_trust_store.get(), crl_trust_store.get());
     case SUCCESS:
       return (crl_bundle.empty() ||
               TestVerifyCRL(kResultSuccess, crl_bundle, crl_verification_time,
-                            crl_trust_store)) &&
+                            crl_trust_store.get())) &&
              TestVerifyCertificate(kResultSuccess, der_cert_path,
-                                   cert_verification_time, cast_trust_store) &&
+                                   cert_verification_time,
+                                   cast_trust_store.get()) &&
              TestVerifyRevocation(CastCertError::kNone, der_cert_path,
                                   crl_bundle, crl_verification_time,
                                   cert_verification_time, !crl_bundle.empty(),
-                                  cast_trust_store, crl_trust_store);
+                                  cast_trust_store.get(),
+                                  crl_trust_store.get());
     case UNSPECIFIED:
       return false;
   }
   return false;
-}
-
-std::string ReadEntireFileToString(const std::string& filename) {
-  int fd = open(filename.c_str(), O_RDONLY);
-  if (fd == -1) {
-    return {};
-  }
-  off_t file_size = lseek(fd, 0, SEEK_END);
-  lseek(fd, 0, SEEK_SET);
-  std::string contents(file_size, 0);
-  off_t bytes_read = 0;
-  while (bytes_read < file_size) {
-    int ret = read(fd, &contents[bytes_read], file_size - bytes_read);
-    if (ret == -1 && errno != EINTR) {
-      return {};
-    } else {
-      bytes_read += ret;
-    }
-  }
-  close(fd);
-
-  return contents;
 }
 
 // Parses the provided test suite provided in wire-format proto.
@@ -205,7 +169,8 @@ std::string ReadEntireFileToString(const std::string& filename) {
 // To see the description of the test, execute the test.
 // These tests are generated by a test generator in google3.
 void RunTestSuite(const std::string& test_suite_file_name) {
-  std::string testsuite_raw = ReadEntireFileToString(test_suite_file_name);
+  std::string testsuite_raw =
+      testing::ReadEntireFileToString(test_suite_file_name);
   ASSERT_FALSE(testsuite_raw.empty());
   DeviceCertTestSuite test_suite;
   ASSERT_TRUE(test_suite.ParseFromString(testsuite_raw));

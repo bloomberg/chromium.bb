@@ -34,12 +34,12 @@ bool VerifySignedData(const EVP_MD* digest,
                       const ConstDataSpan& data,
                       const ConstDataSpan& signature);
 
-bool operator<(const DateTime& a, const DateTime& b);
-bool ConvertTimeSeconds(uint64_t seconds, DateTime* time);
-
 // Parses DateTime with additional restrictions laid out by RFC 5280
 // 4.1.2.5.2.
 bool ParseAsn1GeneralizedTime(ASN1_GENERALIZEDTIME* time, DateTime* out);
+bool GetCertValidTimeRange(X509* cert,
+                           DateTime* not_before,
+                           DateTime* not_after);
 
 struct CertificatePathResult {
   bssl::UniquePtr<X509> target_cert;

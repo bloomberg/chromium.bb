@@ -158,6 +158,38 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: OperationInvalid";
     case Error::Code::kOperationCancelled:
       return os << "Failure: OperationCancelled";
+    case Error::Code::kCastV2PeerCertEmpty:
+      return os << "Failure: kCastV2PeerCertEmpty";
+    case Error::Code::kCastV2WrongPayloadType:
+      return os << "Failure: kCastV2WrongPayloadType";
+    case Error::Code::kCastV2NoPayload:
+      return os << "Failure: kCastV2NoPayload";
+    case Error::Code::kCastV2PayloadParsingFailed:
+      return os << "Failure: kCastV2PayloadParsingFailed";
+    case Error::Code::kCastV2MessageError:
+      return os << "Failure: CastV2kMessageError";
+    case Error::Code::kCastV2NoResponse:
+      return os << "Failure: kCastV2NoResponse";
+    case Error::Code::kCastV2FingerprintNotFound:
+      return os << "Failure: kCastV2FingerprintNotFound";
+    case Error::Code::kCastV2CertNotSignedByTrustedCa:
+      return os << "Failure: kCastV2CertNotSignedByTrustedCa";
+    case Error::Code::kCastV2CannotExtractPublicKey:
+      return os << "Failure: kCastV2CannotExtractPublicKey";
+    case Error::Code::kCastV2SignedBlobsMismatch:
+      return os << "Failure: kCastV2SignedBlobsMismatch";
+    case Error::Code::kCastV2TlsCertValidityPeriodTooLong:
+      return os << "Failure: kCastV2TlsCertValidityPeriodTooLong";
+    case Error::Code::kCastV2TlsCertValidStartDateInFuture:
+      return os << "Failure: kCastV2TlsCertValidStartDateInFuture";
+    case Error::Code::kCastV2TlsCertExpired:
+      return os << "Failure: kCastV2TlsCertExpired";
+    case Error::Code::kCastV2SenderNonceMismatch:
+      return os << "Failure: kCastV2SenderNonceMismatch";
+    case Error::Code::kCastV2DigestUnsupported:
+      return os << "Failure: kCastV2DigestUnsupported";
+    case Error::Code::kCastV2SignatureEmpty:
+      return os << "Failure: kCastV2SignatureEmpty";
   }
 
   // Unused 'return' to get around failure on GCC.

@@ -10,6 +10,8 @@ source_set("certificate") {
     "cast_cert_validator_internal.h",
     "cast_crl.cc",
     "cast_crl.h",
+    "types.cc",
+    "types.h",
   ]
   public_deps = [
     "../../../third_party/boringssl",

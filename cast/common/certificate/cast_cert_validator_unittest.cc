@@ -110,53 +110,16 @@ void RunTest(CastCertError expected_result,
 
   // If valid signatures are known for this device certificate, test them.
   if (!optional_signed_data_file_name.empty()) {
-    FILE* fp = fopen(optional_signed_data_file_name.c_str(), "r");
-    ASSERT_TRUE(fp);
-    ConstDataSpan message = {};
-    ConstDataSpan sha1 = {};
-    ConstDataSpan sha256 = {};
-    for (;;) {
-      char* name;
-      char* header;
-      unsigned char* data;
-      long length;
-      if (PEM_read(fp, &name, &header, &data, &length) == 1) {
-        if (strcmp(name, "MESSAGE") == 0) {
-          ASSERT_FALSE(message.data);
-          message.data = data;
-          message.length = length;
-        } else if (strcmp(name, "SIGNATURE SHA1") == 0) {
-          ASSERT_FALSE(sha1.data);
-          sha1.data = data;
-          sha1.length = length;
-        } else if (strcmp(name, "SIGNATURE SHA256") == 0) {
-          ASSERT_FALSE(sha256.data);
-          sha256.data = data;
-          sha256.length = length;
-        } else {
-          OPENSSL_free(data);
-        }
-        OPENSSL_free(name);
-        OPENSSL_free(header);
-      } else {
-        break;
-      }
-    }
-    ASSERT_TRUE(message.data);
-    ASSERT_TRUE(sha1.data);
-    ASSERT_TRUE(sha256.data);
+    testing::SignatureTestData signatures =
+        testing::ReadSignatureTestData(optional_signed_data_file_name);
 
     // Test verification of a valid SHA1 signature.
-    EXPECT_TRUE(context->VerifySignatureOverData(sha1, message,
-                                                 DigestAlgorithm::kSha1));
+    EXPECT_TRUE(context->VerifySignatureOverData(
+        signatures.sha1, signatures.message, DigestAlgorithm::kSha1));
 
     // Test verification of a valid SHA256 signature.
-    EXPECT_TRUE(context->VerifySignatureOverData(sha256, message,
-                                                 DigestAlgorithm::kSha256));
-
-    OPENSSL_free((uint8_t*)message.data);
-    OPENSSL_free((uint8_t*)sha1.data);
-    OPENSSL_free((uint8_t*)sha256.data);
+    EXPECT_TRUE(context->VerifySignatureOverData(
+        signatures.sha256, signatures.message, DigestAlgorithm::kSha256));
   }
 }
 
