@@ -13,13 +13,11 @@
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "platform/impl/socket_address_posix.h"
+#include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/stream_socket.h"
 
 namespace openscreen {
 namespace platform {
-struct FileDescriptor {
-  int fd;
-};
 
 class StreamSocketPosix : public StreamSocket {
  public:
@@ -42,7 +40,7 @@ class StreamSocketPosix : public StreamSocket {
   Error Listen(int max_backlog_size) override;
 
   // StreamSocket getter overrides.
-  FileDescriptor file_descriptor() const override;
+  SocketHandle socket_handle() const override;
   absl::optional<IPEndpoint> remote_address() const override;
   SocketState state() const override;
   IPAddress::Version version() const override;

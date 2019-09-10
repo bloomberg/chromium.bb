@@ -12,7 +12,6 @@
 #include <mutex>  // NOLINT
 
 #include "platform/api/network_waiter.h"
-#include "platform/impl/udp_socket_posix.h"
 
 namespace openscreen {
 namespace platform {
@@ -21,9 +20,9 @@ class NetworkWaiterPosix : public NetworkWaiter {
  public:
   NetworkWaiterPosix();
   ~NetworkWaiterPosix();
-  ErrorOr<std::vector<UdpSocket*>> AwaitSocketsReadable(
-      const std::vector<UdpSocket*>& sockets,
-      const Clock::duration& timeout) override;
+  ErrorOr<std::vector<SocketHandle>> AwaitSocketsReadable(
+      const std::vector<SocketHandle>& socket_handles,
+      const Clock::duration& timeout);
 
   // TODO(rwkeane): Move this to a platform-specific util library.
   static struct timeval ToTimeval(const Clock::duration& timeout);

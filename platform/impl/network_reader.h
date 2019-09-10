@@ -21,6 +21,7 @@ namespace platform {
 // calling the function associated with these sockets once that data is read.
 // NOTE: This class will only function as intended while its RunUntilStopped
 // method is running.
+// TODO(rwkeane): Rename this class NetworkReaderPosix.
 class NetworkReader : public UdpSocket::LifetimeObserver {
  public:
   // Create a type for readability

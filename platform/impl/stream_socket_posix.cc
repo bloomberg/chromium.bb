@@ -11,8 +11,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "platform/impl/socket_address_posix.h"
-
 namespace openscreen {
 namespace platform {
 
@@ -156,8 +154,8 @@ Error StreamSocketPosix::Listen(int max_backlog_size) {
   return Error::None();
 }
 
-FileDescriptor StreamSocketPosix::file_descriptor() const {
-  return FileDescriptor{.fd = file_descriptor_.load()};
+SocketHandle StreamSocketPosix::socket_handle() const {
+  return SocketHandle{file_descriptor_.load()};
 }
 
 absl::optional<IPEndpoint> StreamSocketPosix::remote_address() const {

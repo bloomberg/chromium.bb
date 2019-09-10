@@ -10,6 +10,7 @@
 #include <string>
 
 #include "platform/api/network_interface.h"
+#include "platform/api/socket_handle.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "platform/base/macros.h"
@@ -17,8 +18,6 @@
 
 namespace openscreen {
 namespace platform {
-
-struct FileDescriptor;
 
 // StreamSocket is an incomplete abstraction of synchronous platform methods for
 // creating, initializing, and closing stream sockets. Callers can use this
@@ -48,7 +47,7 @@ class StreamSocket {
   virtual Error Listen(int max_backlog_size) = 0;
 
   // Returns the file descriptor (e.g. fd or HANDLE pointer) for this socket.
-  virtual FileDescriptor file_descriptor() const = 0;
+  virtual SocketHandle socket_handle() const = 0;
 
   // Returns the connected remote address, if socket is connected.
   virtual absl::optional<IPEndpoint> remote_address() const = 0;

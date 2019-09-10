@@ -39,6 +39,7 @@ struct UdpSocketPosix : public UdpSocket {
                    const IPEndpoint& dest) override;
   void SetDscp(DscpMode state) override;
 
+  // TODO(rwkeane): Update to return a SocketHandle object.
   int GetFd() const { return fd_; }
 
  private:

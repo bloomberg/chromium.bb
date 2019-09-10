@@ -8,6 +8,7 @@
 #include <condition_variable>
 
 #include "platform/api/logging.h"
+#include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/udp_socket_posix.h"
 
 namespace openscreen {
@@ -20,36 +21,45 @@ NetworkReader::NetworkReader(std::unique_ptr<NetworkWaiter> waiter)
 
 NetworkReader::~NetworkReader() = default;
 
+// TODO(rwkeane): Remove unsafe casts to UdpSocketPosix.
 Error NetworkReader::WaitAndRead(Clock::duration timeout) {
   // Get the set of all sockets we care about. A different list than the
   // existing unordered_set is used to avoid race conditions with the method
   // using this new list.
   socket_deletion_block_.notify_all();
-  std::vector<UdpSocket*> sockets;
+  std::vector<SocketHandle> socket_handles;
+  socket_handles.reserve(sockets_.size());
   {
     std::lock_guard<std::mutex> lock(mutex_);
-    sockets = sockets_;
+    for (const auto& socket : sockets_) {
+      UdpSocketPosix* read_socket = static_cast<UdpSocketPosix*>(socket);
+      socket_handles.emplace_back(read_socket->GetFd());
+    }
   }
 
   // Wait for the sockets to find something interesting or for the timeout.
-  auto changed_or_error = waiter_->AwaitSocketsReadable(sockets, timeout);
+  auto changed_or_error =
+      waiter_->AwaitSocketsReadable(socket_handles, timeout);
   if (changed_or_error.is_error()) {
     return changed_or_error.error();
   }
 
   // Process the results.
   socket_deletion_block_.notify_all();
+  const std::vector<SocketHandle>& changed_handles = changed_or_error.value();
+  if (changed_handles.empty()) {
+    return Error::None();
+  }
+
   {
     std::lock_guard<std::mutex> lock(mutex_);
-    for (UdpSocket* socket : changed_or_error.value()) {
-      if (std::find(sockets_.begin(), sockets_.end(), socket) ==
-          sockets_.end()) {
-        continue;
-      }
-
-      // TODO(rwkeane): Remove this unsafe cast.
+    for (UdpSocket* socket : sockets_) {
       UdpSocketPosix* read_socket = static_cast<UdpSocketPosix*>(socket);
-      read_socket->ReceiveMessage();
+      if (std::find(changed_handles.begin(), changed_handles.end(),
+                    SocketHandle(read_socket->GetFd())) !=
+          changed_handles.end()) {
+        read_socket->ReceiveMessage();
+      }
     }
   }
 

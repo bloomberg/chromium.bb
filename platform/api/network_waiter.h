@@ -5,10 +5,11 @@
 #ifndef PLATFORM_API_NETWORK_WAITER_H_
 #define PLATFORM_API_NETWORK_WAITER_H_
 
+#include <memory>
 #include <vector>
 
+#include "platform/api/socket_handle.h"
 #include "platform/api/time.h"
-#include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 
 namespace openscreen {
@@ -24,11 +25,11 @@ class NetworkWaiter {
 
   virtual ~NetworkWaiter() = default;
 
-  // Waits until data is available to read in one of the provided sockets or the
-  // provided timeout has passed - whichever is first. If any sockets have read
-  // data available, they are returned. Else, an error is returned.
-  virtual ErrorOr<std::vector<UdpSocket*>> AwaitSocketsReadable(
-      const std::vector<UdpSocket*>& sockets,
+  // Waits until data is available in one of the provided sockets or the
+  // provided timeout has passed - whichever is first. If any sockets have data
+  // available, they are returned. Else, an error is returned.
+  virtual ErrorOr<std::vector<SocketHandle>> AwaitSocketsReadable(
+      const std::vector<SocketHandle>& socket_fds,
       const Clock::duration& timeout) = 0;
 };
 

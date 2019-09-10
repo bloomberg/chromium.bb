@@ -11,7 +11,7 @@
 
 #include "platform/api/logging.h"
 #include "platform/base/error.h"
-#include "platform/impl/network_reader.h"
+#include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/udp_socket_posix.h"
 
 namespace openscreen {
@@ -21,15 +21,14 @@ NetworkWaiterPosix::NetworkWaiterPosix() = default;
 
 NetworkWaiterPosix::~NetworkWaiterPosix() = default;
 
-ErrorOr<std::vector<UdpSocket*>> NetworkWaiterPosix::AwaitSocketsReadable(
-    const std::vector<UdpSocket*>& sockets,
+ErrorOr<std::vector<SocketHandle>> NetworkWaiterPosix::AwaitSocketsReadable(
+    const std::vector<SocketHandle>& socket_handles,
     const Clock::duration& timeout) {
   int max_fd = -1;
   FD_ZERO(&read_handles_);
-  for (UdpSocket* socket : sockets) {
-    UdpSocketPosix* posix_socket = static_cast<UdpSocketPosix*>(socket);
-    FD_SET(posix_socket->GetFd(), &read_handles_);
-    max_fd = std::max(max_fd, posix_socket->GetFd());
+  for (const SocketHandle& handle : socket_handles) {
+    FD_SET(handle.fd, &read_handles_);
+    max_fd = std::max(max_fd, handle.fd);
   }
   if (max_fd < 0) {
     return Error::Code::kIOFailure;
@@ -49,15 +48,14 @@ ErrorOr<std::vector<UdpSocket*>> NetworkWaiterPosix::AwaitSocketsReadable(
     return Error::Code::kAgain;
   }
 
-  std::vector<UdpSocket*> changed_sockets;
-  for (UdpSocket* socket : sockets) {
-    UdpSocketPosix* posix_socket = static_cast<UdpSocketPosix*>(socket);
-    if (FD_ISSET(posix_socket->GetFd(), &read_handles_)) {
-      changed_sockets.push_back(socket);
+  std::vector<SocketHandle> changed_handles;
+  for (const SocketHandle& handle : socket_handles) {
+    if (FD_ISSET(handle.fd, &read_handles_)) {
+      changed_handles.push_back(handle);
     }
   }
 
-  return changed_sockets;
+  return changed_handles;
 }
 
 // static
