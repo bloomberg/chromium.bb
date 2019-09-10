@@ -11,7 +11,10 @@ import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
-class TabGridSheetProperties {
+/**
+ * List of properties used by TabGridSheet and TabGridDialog.
+ */
+class TabGridPanelProperties {
     public static final PropertyModel
             .WritableObjectPropertyKey<OnClickListener> COLLAPSE_CLICK_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<OnClickListener>();

@@ -16,14 +16,14 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * Coordinator for the toolbar component that will be shown on top of the tab
- * grid when presented inside the bottom sheet. {@link TabGridSheetCoordinator}
+ * grid components, used in {@link TabGridSheetCoordinator} and {@link TabGridDialogCoordinator}.
  */
-class TabGridSheetToolbarCoordinator implements Destroyable {
+class TabGridPanelToolbarCoordinator implements Destroyable {
     private final TabGroupUiToolbarView mToolbarView;
     private final PropertyModelChangeProcessor mModelChangeProcessor;
 
     /**
-     * Construct a new {@link TabGridSheetToolbarCoordinator}.
+     * Construct a new {@link TabGridPanelToolbarCoordinator}.
      *
      * @param context              The {@link Context} used to retrieve resources.
      * @param contentView          The {@link View} to which the content will
@@ -31,12 +31,12 @@ class TabGridSheetToolbarCoordinator implements Destroyable {
      * @param toolbarPropertyModel The {@link PropertyModel} instance representing
      *                             the toolbar.
      */
-    TabGridSheetToolbarCoordinator(
+    TabGridPanelToolbarCoordinator(
             Context context, RecyclerView contentView, PropertyModel toolbarPropertyModel) {
         this(context, contentView, toolbarPropertyModel, null);
     }
 
-    TabGridSheetToolbarCoordinator(Context context, RecyclerView contentView,
+    TabGridPanelToolbarCoordinator(Context context, RecyclerView contentView,
             PropertyModel toolbarPropertyModel, TabGridDialogParent dialog) {
         mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(context).inflate(
                 R.layout.bottom_tab_grid_toolbar, contentView, false);
@@ -44,8 +44,8 @@ class TabGridSheetToolbarCoordinator implements Destroyable {
             mToolbarView.setupDialogToolbarLayout();
         }
         mModelChangeProcessor = PropertyModelChangeProcessor.create(toolbarPropertyModel,
-                new TabGridSheetViewBinder.ViewHolder(mToolbarView, contentView, dialog),
-                TabGridSheetViewBinder::bind);
+                new TabGridPanelViewBinder.ViewHolder(mToolbarView, contentView, dialog),
+                TabGridPanelViewBinder::bind);
     }
 
     /** @return The content {@link View}. */

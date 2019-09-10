@@ -4,22 +4,22 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.ADD_CLICK_LISTENER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.ANIMATION_PARAMS;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.COLLAPSE_CLICK_LISTENER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.CONTENT_TOP_MARGIN;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.DIALOG_BACKGROUND_RESOUCE_ID;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.DIALOG_UNGROUP_BAR_TEXT_APPEARANCE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.HEADER_TITLE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.INITIAL_SCROLL_INDEX;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.IS_DIALOG_VISIBLE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.IS_MAIN_CONTENT_VISIBLE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.PRIMARY_COLOR;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.SCRIMVIEW_OBSERVER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.TINT;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.UNGROUP_BAR_STATUS;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.ADD_CLICK_LISTENER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.ANIMATION_PARAMS;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.COLLAPSE_CLICK_LISTENER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.CONTENT_TOP_MARGIN;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.DIALOG_BACKGROUND_RESOUCE_ID;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.DIALOG_UNGROUP_BAR_TEXT_APPEARANCE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.HEADER_TITLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.INITIAL_SCROLL_INDEX;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_DIALOG_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_MAIN_CONTENT_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.PRIMARY_COLOR;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.SCRIMVIEW_OBSERVER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TINT;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.UNGROUP_BAR_STATUS;
 
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -31,11 +31,11 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * ViewBinder for TabGridSheet.
+ * ViewBinder for TabGridSheet and TabGridDialog.
  */
-class TabGridSheetViewBinder {
+class TabGridPanelViewBinder {
     /**
-     * ViewHolder class to get access to all {@link View}s inside the TabGridSheet.
+     * ViewHolder class to get access to all {@link View}s inside the TabGridSheet or TabGridDialog.
      */
     public static class ViewHolder {
         public final TabGroupUiToolbarView toolbarView;
