@@ -45,8 +45,6 @@ source_set("platform") {
     "base/tls_credentials.cc",
     "base/tls_credentials.h",
     "base/tls_listen_options.h",
-    "impl/ssl_context.cc",
-    "impl/ssl_context.h",
   ]
 
   public_deps = [
@@ -171,7 +169,6 @@ source_set("platform_unittests") {
       # is implemented in Chromium, as part of the NetworkRunner work.
       "api/socket_integration_unittest.cc",
       "impl/network_reader_unittest.cc",
-      "impl/ssl_context_unittest.cc",
       "impl/task_runner_unittest.cc",
       "impl/time_unittest.cc",
     ]

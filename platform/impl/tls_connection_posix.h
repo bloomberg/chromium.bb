@@ -14,7 +14,6 @@
 #include "platform/api/task_runner.h"
 #include "platform/api/tls_connection.h"
 #include "platform/base/socket_state.h"
-#include "platform/impl/ssl_context.h"
 #include "platform/impl/stream_socket_posix.h"
 
 namespace openscreen {
