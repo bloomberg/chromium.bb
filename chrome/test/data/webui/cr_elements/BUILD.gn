@@ -19,12 +19,14 @@ js_modulizer("modulize") {
     "cr_radio_button_test.js",
     "cr_radio_group_test.js",
     "cr_search_field_tests.js",
+    "cr_toolbar_search_field_tests.js",
     "cr_tabs_test.js",
     "cr_toast_test.js",
     "cr_toggle_test.js",
     "cr_view_manager_test.js",
   ]
   namespace_rewrites = [
+    "MockInteractions.blur|blur",
     "MockInteractions.downAndUp|downAndUp",
     "MockInteractions.keyDownOn|keyDownOn",
     "MockInteractions.keyEventOn|keyEventOn",

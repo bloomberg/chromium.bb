@@ -45,6 +45,7 @@ group("closure_compile") {
     "cr_tabs:closure_compile_module",
     "cr_toast:closure_compile_module",
     "cr_toggle:closure_compile_module",
+    "cr_toolbar:closure_compile_module",
     "cr_view_manager:closure_compile_module",
     "policy:closure_compile_module",
   ]
@@ -148,6 +149,9 @@ group("polymer3_elements") {
     "cr_tabs:cr_tabs_module",
     "cr_toast:cr_toast_module",
     "cr_toggle:cr_toggle_module",
+    "cr_toolbar:cr_toolbar_module",
+    "cr_toolbar:cr_toolbar_search_field_module",
+    "cr_toolbar:cr_toolbar_selection_overlay_module",
     "cr_view_manager:cr_view_manager_module",
     "policy:cr_tooltip_icon_module",
   ]

@@ -15,6 +15,7 @@ import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.m.js';
 import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
@@ -30,15 +31,24 @@ class HelloPolymer3Element extends PolymerElement {
           display: inline-block;
         }
 
+        cr-icon-button {
+          --cr-icon-button-color: white;
+        }
+
         .setting {
           align-items: center;
           display: flex;
         }
 
-        div, cr-input, cr-icon-button, select, cr-checkbox {
+        div, cr-input, select, cr-checkbox {
           margin-top: 20px;
         }
       </style>
+
+      <cr-toolbar id="toolbar" page-name="Polymer 3 Demo"
+          search-prompt="Search">
+        <cr-icon-button iron-icon="cr:more-vert"></cr-icon-button>
+      </cr-toolbar>
 
       <cr-checkbox checked="{{checkboxChecked_}}">
         [[checkboxChecked_]]
@@ -57,8 +67,6 @@ class HelloPolymer3Element extends PolymerElement {
       </select>
 
       <cr-input></cr-input>
-
-      <cr-icon-button iron-icon="cr:more-vert"></cr-icon-button>
 
       <div>
         <cr-button on-click="onClick_">Show toast</cr-button>
