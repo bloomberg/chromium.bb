@@ -1045,15 +1045,6 @@ void AssistantManagerServiceImpl::PostInitAssistant(
   std::move(post_init_callback).Run();
   assistant_settings_manager_->UpdateServerDeviceSettings();
 
-  if (is_first_init) {
-    is_first_init = false;
-    // Only sync status at the first init to prevent unexpected corner cases.
-    // This still does not handle browser restart.
-    if (service_->assistant_state()->hotword_enabled().value()) {
-      assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
-    }
-  }
-
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport)) {
     mojom::AppListEventSubscriberPtr subscriber_ptr;
     app_list_subscriber_binding_.Bind(mojo::MakeRequest(&subscriber_ptr));
@@ -1118,6 +1109,13 @@ void AssistantManagerServiceImpl::OnStartFinished() {
 
   // TODO(b/129896357): find a better place for additional setups.
   start_finished_ = true;
+
+  if (is_first_init) {
+    is_first_init = false;
+    // Only sync status at the first init to prevent unexpected corner cases.
+    if (service_->assistant_state()->hotword_enabled().value())
+      assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
+  }
 
   RegisterFallbackMediaHandler();
   AddMediaControllerObserver();
