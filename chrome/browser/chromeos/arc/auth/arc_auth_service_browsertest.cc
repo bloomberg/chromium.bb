@@ -505,6 +505,22 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
             auth_instance().sign_in_status());
 }
 
+IN_PROC_BROWSER_TEST_F(
+    ArcAuthServiceTest,
+    FetchSecondaryAccountInfoReturnsErrorForNotFoundAccounts) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  // Don't add account with kSecondaryAccountEmail.
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfo(kSecondaryAccountEmail,
+                                     run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_FALSE(auth_instance().account_info());
+  EXPECT_EQ(mojom::ArcSignInStatus::CHROME_ACCOUNT_NOT_FOUND,
+            auth_instance().sign_in_status());
+}
+
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchGoogleAccountsFromArc) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
 

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
@@ -99,6 +100,7 @@ ProvisioningResult ConvertArcSignInStatusToProvisioningResult(
     MAP_PROVISIONING_RESULT(SUCCESS);
     MAP_PROVISIONING_RESULT(SUCCESS_ALREADY_PROVISIONED);
     MAP_PROVISIONING_RESULT(UNSUPPORTED_ACCOUNT_TYPE);
+    MAP_PROVISIONING_RESULT(CHROME_ACCOUNT_NOT_FOUND);
   }
 #undef MAP_PROVISIONING_RESULT
 
@@ -172,11 +174,14 @@ bool IsPrimaryOrDeviceLocalAccount(
   if (user->IsDeviceLocalAccount())
     return true;
 
-  const std::string gaia_id =
+  const base::Optional<AccountInfo> account_info =
       identity_manager
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              account_name)
-          ->gaia;
+              account_name);
+  if (!account_info)
+    return false;
+
+  const std::string& gaia_id = account_info->gaia;
   DCHECK(!gaia_id.empty());
   return IsPrimaryGaiaAccount(gaia_id);
 }
@@ -664,12 +669,16 @@ void ArcAuthService::FetchSecondaryAccountInfo(
     const std::string& account_name,
     RequestAccountInfoCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   base::Optional<AccountInfo> account_info =
       identity_manager_
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               account_name);
-  DCHECK(account_info.has_value());
+  if (!account_info.has_value()) {
+    // Account is in ARC, but not in Chrome OS Account Manager.
+    std::move(callback).Run(mojom::ArcSignInStatus::CHROME_ACCOUNT_NOT_FOUND,
+                            nullptr);
+    return;
+  }
 
   const std::string& account_id = account_info->account_id;
   DCHECK(!account_id.empty());

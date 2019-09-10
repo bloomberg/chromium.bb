@@ -2708,6 +2708,7 @@ Unknown properties are collapsed to zero. -->
   <int value="20" label="Disabled"/>
   <int value="21" label="Already provisioned"/>
   <int value="22" label="Unsupported account type"/>
+  <int value="23" label="Account is not present in Chrome"/>
 </enum>
 
 <enum name="ArcSdkVersionUpgradeType">
