@@ -35,7 +35,6 @@ js_modulizer("modulize") {
     "MockInteractions.pressAndReleaseKeyOn|pressAndReleaseKeyOn",
     "MockInteractions.tap|tap",
     "Polymer.dom.flush|flush",
-    "PolymerTest.importHtml|importHtml",
     "test_util.eventToPromise|eventToPromise",
     "test_util.flushTasks|flushTasks",
     "test_util.isVisible|isVisible",
