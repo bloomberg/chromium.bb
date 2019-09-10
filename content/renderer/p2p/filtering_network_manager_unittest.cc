@@ -15,10 +15,10 @@
 #include "base/stl_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/renderer/p2p/empty_network_manager.h"
 #include "media/base/media_permission.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/p2p/empty_network_manager.h"
 #include "third_party/webrtc/rtc_base/ip_address.h"
 
 using NetworkList = rtc::NetworkManager::NetworkList;
@@ -174,8 +174,8 @@ class FilteringNetworkManagerTest : public testing::Test,
           base_network_manager_.get(), GURL(), media_permission_.get());
       network_manager_->Initialize();
     } else {
-      network_manager_ =
-          std::make_unique<EmptyNetworkManager>(base_network_manager_.get());
+      network_manager_ = std::make_unique<blink::EmptyNetworkManager>(
+          base_network_manager_.get());
     }
     network_manager_->SignalNetworksChanged.connect(
         this, &FilteringNetworkManagerTest::OnNetworksChanged);

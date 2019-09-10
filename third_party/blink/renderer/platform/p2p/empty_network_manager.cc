@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/p2p/empty_network_manager.h"
+#include "third_party/blink/public/platform/modules/p2p/empty_network_manager.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -10,36 +10,36 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/blink/public/platform/modules/p2p/network_manager_uma.h"
 
-namespace content {
+namespace blink {
 
 EmptyNetworkManager::EmptyNetworkManager(rtc::NetworkManager* network_manager)
     : network_manager_(network_manager) {
   DCHECK(network_manager);
-  thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(thread_checker_);
   set_enumeration_permission(ENUMERATION_BLOCKED);
   network_manager_->SignalNetworksChanged.connect(
       this, &EmptyNetworkManager::OnNetworksChanged);
 }
 
 EmptyNetworkManager::~EmptyNetworkManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void EmptyNetworkManager::StartUpdating() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ++start_count_;
   network_manager_->StartUpdating();
 }
 
 void EmptyNetworkManager::StopUpdating() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   network_manager_->StopUpdating();
   --start_count_;
   DCHECK_GE(start_count_, 0);
 }
 
 void EmptyNetworkManager::GetNetworks(NetworkList* networks) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   networks->clear();
 }
 
@@ -50,7 +50,7 @@ bool EmptyNetworkManager::GetDefaultLocalAddress(
 }
 
 void EmptyNetworkManager::OnNetworksChanged() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!start_count_)
     return;
@@ -62,4 +62,4 @@ void EmptyNetworkManager::OnNetworksChanged() {
   SignalNetworksChanged();
 }
 
-}  // namespace content
+}  // namespace blink

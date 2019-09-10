@@ -240,8 +240,6 @@ target(link_target_type, "renderer") {
     "navigation_state.h",
     "net_info_helper.cc",
     "net_info_helper.h",
-    "p2p/empty_network_manager.cc",
-    "p2p/empty_network_manager.h",
     "p2p/filtering_network_manager.cc",
     "p2p/filtering_network_manager.h",
     "p2p/host_address_request.cc",

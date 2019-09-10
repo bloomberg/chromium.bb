@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_P2P_EMPTY_NETWORK_MANAGER_H_
-#define CONTENT_RENDERER_P2P_EMPTY_NETWORK_MANAGER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_EMPTY_NETWORK_MANAGER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_EMPTY_NETWORK_MANAGER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/rtc_base/network.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
@@ -16,19 +16,22 @@ namespace rtc {
 class IPAddress;
 }  // namespace rtc
 
-namespace content {
+namespace blink {
 
 // A NetworkManager implementation which handles the case where local address
 // enumeration is not requested and just returns empty network lists. This class
 // is not thread safe and should only be used by WebRTC's network thread.
+//
+// TODO(crbug.com/787254): Move this class out of the Blink exposed API when
+// all users of it have been Onion souped. Also, move it away from std::vector.
 class EmptyNetworkManager : public rtc::NetworkManagerBase,
                             public sigslot::has_slots<> {
  public:
   // This class is created by WebRTC's signaling thread but used by WebRTC's
   // worker thread |task_runner|.
-  CONTENT_EXPORT explicit EmptyNetworkManager(
+  BLINK_PLATFORM_EXPORT explicit EmptyNetworkManager(
       rtc::NetworkManager* network_manager);
-  CONTENT_EXPORT ~EmptyNetworkManager() override;
+  BLINK_PLATFORM_EXPORT ~EmptyNetworkManager() override;
 
   // rtc::NetworkManager:
   void StartUpdating() override;
@@ -45,7 +48,7 @@ class EmptyNetworkManager : public rtc::NetworkManagerBase,
   // default IP addresses.
   void OnNetworksChanged();
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Whether we have fired the first SignalNetworksChanged.
   // Used to ensure we only report metrics once.
@@ -64,6 +67,6 @@ class EmptyNetworkManager : public rtc::NetworkManagerBase,
   DISALLOW_COPY_AND_ASSIGN(EmptyNetworkManager);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_P2P_EMPTY_NETWORK_MANAGER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_EMPTY_NETWORK_MANAGER_H_
