@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
