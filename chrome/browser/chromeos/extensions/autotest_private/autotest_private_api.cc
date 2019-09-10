@@ -93,6 +93,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/filename_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -1704,8 +1705,7 @@ void AutotestPrivateSetAssistantEnabledFunction::Timeout() {
 
 AutotestPrivateSendAssistantTextQueryFunction::
     AutotestPrivateSendAssistantTextQueryFunction()
-    : assistant_interaction_subscriber_binding_(this),
-      result_(std::make_unique<base::DictionaryValue>()) {}
+    : result_(std::make_unique<base::DictionaryValue>()) {}
 
 AutotestPrivateSendAssistantTextQueryFunction::
     ~AutotestPrivateSendAssistantTextQueryFunction() = default;
@@ -1730,9 +1730,8 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
   AssistantClient::Get()->BindAssistant(mojo::MakeRequest(&assistant_));
 
   // Subscribe to Assistant interaction events.
-  chromeos::assistant::mojom::AssistantInteractionSubscriberPtr ptr;
-  assistant_interaction_subscriber_binding_.Bind(mojo::MakeRequest(&ptr));
-  assistant_->AddAssistantInteractionSubscriber(std::move(ptr));
+  assistant_->AddAssistantInteractionSubscriber(
+      assistant_interaction_subscriber_receiver_.BindNewPipeAndPassRemote());
 
   // Start text interaction with Assistant server.
   assistant_->StartTextInteraction(params->query, /*allow_tts*/ false);

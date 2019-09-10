@@ -19,7 +19,7 @@
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/snapshot/screenshot_grabber.h"
 
 namespace crostini {
@@ -556,8 +556,8 @@ class AutotestPrivateSendAssistantTextQueryFunction
   void Timeout();
 
   chromeos::assistant::mojom::AssistantPtr assistant_;
-  mojo::Binding<chromeos::assistant::mojom::AssistantInteractionSubscriber>
-      assistant_interaction_subscriber_binding_;
+  mojo::Receiver<chromeos::assistant::mojom::AssistantInteractionSubscriber>
+      assistant_interaction_subscriber_receiver_{this};
   base::OneShotTimer timeout_timer_;
   std::unique_ptr<base::DictionaryValue> result_;
 };

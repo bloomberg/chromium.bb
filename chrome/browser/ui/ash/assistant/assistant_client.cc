@@ -86,14 +86,12 @@ void AssistantClient::MaybeInit(Profile* profile) {
 
   initialized_ = true;
 
-  chromeos::assistant::mojom::ClientPtr client_ptr;
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-
   bool is_test = base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kBrowserTest);
   auto* service =
       AssistantServiceConnection::GetForProfile(profile_)->service();
-  service->Init(std::move(client_ptr), device_actions_.AddBinding(), is_test);
+  service->Init(client_receiver_.BindNewPipeAndPassRemote(),
+                device_actions_.AddReceiver(), is_test);
   assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
   assistant_setup_ = std::make_unique<AssistantSetup>(service);
 
