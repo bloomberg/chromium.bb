@@ -9,15 +9,16 @@
 // to do background file reads for us.
 //
 // Since overlapped reads require a 'static' buffer for the duration of the
-// asynchronous read, the URLRequestFileJob keeps a buffer as a member var.  In
-// URLRequestFileJob::Read, data is simply copied from the object's buffer into
-// the given buffer.  If there is no data to copy, the URLRequestFileJob
-// attempts to read more from the file to fill its buffer.  If reading from the
-// file does not complete synchronously, then the URLRequestFileJob waits for a
-// signal from the OS that the overlapped read has completed.  It does so by
-// leveraging the MessageLoop::WatchObject API.
+// asynchronous read, the URLRequestTestJobBackedByFile keeps a buffer as a
+// member var.  In URLRequestTestJobBackedByFile::Read, data is simply copied
+// from the object's buffer into the given buffer.  If there is no data to copy,
+// the URLRequestTestJobBackedByFile attempts to read more from the file to fill
+// its buffer.  If reading from the file does not complete synchronously, then
+// the URLRequestTestJobBackedByFile waits for a signal from the OS that the
+// overlapped read has completed.  It does so by leveraging the
+// MessageLoop::WatchObject API.
 
-#include "net/url_request/url_request_file_job.h"
+#include "net/test/url_request/url_request_test_job_backed_by_file.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -38,7 +39,6 @@
 #include "net/filter/source_stream.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_error_job.h"
-#include "net/url_request/url_request_file_dir_job.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -47,14 +47,13 @@
 
 namespace net {
 
-URLRequestFileJob::FileMetaInfo::FileMetaInfo()
+URLRequestTestJobBackedByFile::FileMetaInfo::FileMetaInfo()
     : file_size(0),
       mime_type_result(false),
       file_exists(false),
-      is_directory(false) {
-}
+      is_directory(false) {}
 
-URLRequestFileJob::URLRequestFileJob(
+URLRequestTestJobBackedByFile::URLRequestTestJobBackedByFile(
     URLRequest* request,
     NetworkDelegate* network_delegate,
     const base::FilePath& file_path,
@@ -66,24 +65,24 @@ URLRequestFileJob::URLRequestFileJob(
       remaining_bytes_(0),
       range_parse_result_(OK) {}
 
-void URLRequestFileJob::Start() {
+void URLRequestTestJobBackedByFile::Start() {
   FileMetaInfo* meta_info = new FileMetaInfo();
   file_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::BindOnce(&URLRequestFileJob::FetchMetaInfo, file_path_,
+      base::BindOnce(&URLRequestTestJobBackedByFile::FetchMetaInfo, file_path_,
                      base::Unretained(meta_info)),
-      base::BindOnce(&URLRequestFileJob::DidFetchMetaInfo,
+      base::BindOnce(&URLRequestTestJobBackedByFile::DidFetchMetaInfo,
                      weak_ptr_factory_.GetWeakPtr(), base::Owned(meta_info)));
 }
 
-void URLRequestFileJob::Kill() {
+void URLRequestTestJobBackedByFile::Kill() {
   stream_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   URLRequestJob::Kill();
 }
 
-int URLRequestFileJob::ReadRawData(IOBuffer* dest, int dest_size) {
+int URLRequestTestJobBackedByFile::ReadRawData(IOBuffer* dest, int dest_size) {
   DCHECK_NE(dest_size, 0);
   DCHECK_GE(remaining_bytes_, 0);
 
@@ -96,7 +95,7 @@ int URLRequestFileJob::ReadRawData(IOBuffer* dest, int dest_size) {
     return 0;
 
   int rv = stream_->Read(dest, dest_size,
-                         base::BindOnce(&URLRequestFileJob::DidRead,
+                         base::BindOnce(&URLRequestTestJobBackedByFile::DidRead,
                                         weak_ptr_factory_.GetWeakPtr(),
                                         base::WrapRefCounted(dest)));
   if (rv >= 0) {
@@ -107,46 +106,7 @@ int URLRequestFileJob::ReadRawData(IOBuffer* dest, int dest_size) {
   return rv;
 }
 
-bool URLRequestFileJob::IsRedirectResponse(GURL* location,
-                                           int* http_status_code,
-                                           bool* insecure_scheme_was_upgraded) {
-  if (meta_info_.is_directory) {
-    // This happens when we discovered the file is a directory, so needs a
-    // slash at the end of the path.
-    std::string new_path = request_->url().path();
-    new_path.push_back('/');
-    GURL::Replacements replacements;
-    replacements.SetPathStr(new_path);
-
-    *insecure_scheme_was_upgraded = false;
-    *location = request_->url().ReplaceComponents(replacements);
-    *http_status_code = 301;  // simulate a permanent redirect
-    return true;
-  }
-
-#if defined(OS_WIN)
-  // Follow a Windows shortcut.
-  // We just resolve .lnk file, ignore others.
-  if (!base::LowerCaseEqualsASCII(file_path_.Extension(), ".lnk"))
-    return false;
-
-  base::FilePath new_path = file_path_;
-  bool resolved;
-  resolved = base::win::ResolveShortcut(new_path, &new_path, nullptr);
-
-  // If shortcut is not resolved successfully, do not redirect.
-  if (!resolved)
-    return false;
-
-  *location = FilePathToFileURL(new_path);
-  *http_status_code = 301;
-  return true;
-#else
-  return false;
-#endif
-}
-
-bool URLRequestFileJob::GetMimeType(std::string* mime_type) const {
+bool URLRequestTestJobBackedByFile::GetMimeType(std::string* mime_type) const {
   DCHECK(request_);
   if (meta_info_.mime_type_result) {
     *mime_type = meta_info_.mime_type;
@@ -155,7 +115,7 @@ bool URLRequestFileJob::GetMimeType(std::string* mime_type) const {
   return false;
 }
 
-void URLRequestFileJob::SetExtraRequestHeaders(
+void URLRequestTestJobBackedByFile::SetExtraRequestHeaders(
     const HttpRequestHeaders& headers) {
   std::string range_header;
   if (headers.GetHeader(HttpRequestHeaders::kRange, &range_header)) {
@@ -178,7 +138,7 @@ void URLRequestFileJob::SetExtraRequestHeaders(
   }
 }
 
-void URLRequestFileJob::GetResponseInfo(HttpResponseInfo* info) {
+void URLRequestTestJobBackedByFile::GetResponseInfo(HttpResponseInfo* info) {
   if (!serve_mime_type_as_content_type_ || !meta_info_.mime_type_result)
     return;
   auto headers =
@@ -189,16 +149,16 @@ void URLRequestFileJob::GetResponseInfo(HttpResponseInfo* info) {
   info->headers = headers;
 }
 
-void URLRequestFileJob::OnOpenComplete(int result) {}
+void URLRequestTestJobBackedByFile::OnOpenComplete(int result) {}
 
-void URLRequestFileJob::OnSeekComplete(int64_t result) {}
+void URLRequestTestJobBackedByFile::OnSeekComplete(int64_t result) {}
 
-void URLRequestFileJob::OnReadComplete(IOBuffer* buf, int result) {
-}
+void URLRequestTestJobBackedByFile::OnReadComplete(IOBuffer* buf, int result) {}
 
-URLRequestFileJob::~URLRequestFileJob() = default;
+URLRequestTestJobBackedByFile::~URLRequestTestJobBackedByFile() = default;
 
-std::unique_ptr<SourceStream> URLRequestFileJob::SetUpSourceStream() {
+std::unique_ptr<SourceStream>
+URLRequestTestJobBackedByFile::SetUpSourceStream() {
   std::unique_ptr<SourceStream> source = URLRequestJob::SetUpSourceStream();
   if (!base::LowerCaseEqualsASCII(file_path_.Extension(), ".svgz"))
     return source;
@@ -207,14 +167,9 @@ std::unique_ptr<SourceStream> URLRequestFileJob::SetUpSourceStream() {
   return GzipSourceStream::Create(std::move(source), SourceStream::TYPE_GZIP);
 }
 
-bool URLRequestFileJob::CanAccessFile(const base::FilePath& original_path,
-                                      const base::FilePath& absolute_path) {
-  return !network_delegate() || network_delegate()->CanAccessFile(
-                                    *request(), original_path, absolute_path);
-}
-
-void URLRequestFileJob::FetchMetaInfo(const base::FilePath& file_path,
-                                      FileMetaInfo* meta_info) {
+void URLRequestTestJobBackedByFile::FetchMetaInfo(
+    const base::FilePath& file_path,
+    FileMetaInfo* meta_info) {
   base::File::Info file_info;
   meta_info->file_exists = base::GetFileInfo(file_path, &file_info);
   if (meta_info->file_exists) {
@@ -223,47 +178,37 @@ void URLRequestFileJob::FetchMetaInfo(const base::FilePath& file_path,
   }
   // On Windows GetMimeTypeFromFile() goes to the registry. Thus it should be
   // done in WorkerPool.
-  meta_info->mime_type_result = GetMimeTypeFromFile(file_path,
-                                                    &meta_info->mime_type);
+  meta_info->mime_type_result =
+      GetMimeTypeFromFile(file_path, &meta_info->mime_type);
   meta_info->absolute_path = base::MakeAbsoluteFilePath(file_path);
 }
 
-void URLRequestFileJob::DidFetchMetaInfo(const FileMetaInfo* meta_info) {
+void URLRequestTestJobBackedByFile::DidFetchMetaInfo(
+    const FileMetaInfo* meta_info) {
   meta_info_ = *meta_info;
 
-  // We use URLRequestFileJob to handle files as well as directories without
-  // trailing slash.
-  // If a directory does not exist, we return ERR_FILE_NOT_FOUND. Otherwise,
-  // we will append trailing slash and redirect to FileDirJob.
-  // A special case is "\" on Windows. We should resolve as invalid.
-  // However, Windows resolves "\" to "C:\", thus reports it as existent.
-  // So what happens is we append it with trailing slash and redirect it to
-  // FileDirJob where it is resolved as invalid.
   if (!meta_info_.file_exists) {
     DidOpen(ERR_FILE_NOT_FOUND);
     return;
   }
+
+  // This class is only used for mocking out network requests in test by using a
+  // file as a response body. It doesn't need to support directory listings.
   if (meta_info_.is_directory) {
-    DidOpen(OK);
+    DidOpen(ERR_INVALID_ARGUMENT);
     return;
   }
 
-  if (!CanAccessFile(file_path_, meta_info->absolute_path)) {
-    DidOpen(ERR_ACCESS_DENIED);
-    return;
-  }
-
-  int flags = base::File::FLAG_OPEN |
-              base::File::FLAG_READ |
-              base::File::FLAG_ASYNC;
+  int flags =
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_ASYNC;
   int rv = stream_->Open(file_path_, flags,
-                         base::BindOnce(&URLRequestFileJob::DidOpen,
+                         base::BindOnce(&URLRequestTestJobBackedByFile::DidOpen,
                                         weak_ptr_factory_.GetWeakPtr()));
   if (rv != ERR_IO_PENDING)
     DidOpen(rv);
 }
 
-void URLRequestFileJob::DidOpen(int result) {
+void URLRequestTestJobBackedByFile::DidOpen(int result) {
   OnOpenComplete(result);
   if (result != OK) {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
@@ -276,14 +221,15 @@ void URLRequestFileJob::DidOpen(int result) {
     return;
   }
 
-  remaining_bytes_ = byte_range_.last_byte_position() -
-                     byte_range_.first_byte_position() + 1;
+  remaining_bytes_ =
+      byte_range_.last_byte_position() - byte_range_.first_byte_position() + 1;
   DCHECK_GE(remaining_bytes_, 0);
 
   if (remaining_bytes_ > 0 && byte_range_.first_byte_position() != 0) {
-    int rv = stream_->Seek(byte_range_.first_byte_position(),
-                           base::BindOnce(&URLRequestFileJob::DidSeek,
-                                          weak_ptr_factory_.GetWeakPtr()));
+    int rv =
+        stream_->Seek(byte_range_.first_byte_position(),
+                      base::BindOnce(&URLRequestTestJobBackedByFile::DidSeek,
+                                     weak_ptr_factory_.GetWeakPtr()));
     if (rv != ERR_IO_PENDING)
       DidSeek(ERR_REQUEST_RANGE_NOT_SATISFIABLE);
   } else {
@@ -294,7 +240,7 @@ void URLRequestFileJob::DidOpen(int result) {
   }
 }
 
-void URLRequestFileJob::DidSeek(int64_t result) {
+void URLRequestTestJobBackedByFile::DidSeek(int64_t result) {
   DCHECK(result < 0 || result == byte_range_.first_byte_position());
 
   OnSeekComplete(result);
@@ -308,7 +254,8 @@ void URLRequestFileJob::DidSeek(int64_t result) {
   NotifyHeadersComplete();
 }
 
-void URLRequestFileJob::DidRead(scoped_refptr<IOBuffer> buf, int result) {
+void URLRequestTestJobBackedByFile::DidRead(scoped_refptr<IOBuffer> buf,
+                                            int result) {
   if (result >= 0) {
     remaining_bytes_ -= result;
     DCHECK_GE(remaining_bytes_, 0);

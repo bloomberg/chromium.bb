@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_URL_REQUEST_URL_REQUEST_FILE_JOB_H_
-#define NET_URL_REQUEST_URL_REQUEST_FILE_JOB_H_
+#ifndef NET_TEST_URL_REQUEST_URL_REQUEST_TEST_JOB_BACKED_BY_FILE_H_
+#define NET_TEST_URL_REQUEST_URL_REQUEST_TEST_JOB_BACKED_BY_FILE_H_
 
 #include <stdint.h>
 
@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_export.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -29,21 +28,24 @@ namespace net {
 
 class FileStream;
 
-// A request job that handles reading file URLs
-class NET_EXPORT URLRequestFileJob : public URLRequestJob {
+// A request job for testing that reads the response body from a file. Used to
+// be used in production for file URLs, but not only used in tests, as the
+// parent class of URLRequestMockHttpJob and TestURLRequestJob.
+//
+// TODO(mmenke): Consider merging those classes with this one. Could also
+// simplify the logic a bit.
+class URLRequestTestJobBackedByFile : public URLRequestJob {
  public:
-  URLRequestFileJob(URLRequest* request,
-                    NetworkDelegate* network_delegate,
-                    const base::FilePath& file_path,
-                    const scoped_refptr<base::TaskRunner>& file_task_runner);
+  URLRequestTestJobBackedByFile(
+      URLRequest* request,
+      NetworkDelegate* network_delegate,
+      const base::FilePath& file_path,
+      const scoped_refptr<base::TaskRunner>& file_task_runner);
 
   // URLRequestJob:
   void Start() override;
   void Kill() override;
   int ReadRawData(IOBuffer* buf, int buf_size) override;
-  bool IsRedirectResponse(GURL* location,
-                          int* http_status_code,
-                          bool* insecure_scheme_was_upgraded) override;
   bool GetMimeType(std::string* mime_type) const override;
   void SetExtraRequestHeaders(const HttpRequestHeaders& headers) override;
   void ShouldServeMimeTypeAsContentTypeHeader() {
@@ -67,7 +69,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   virtual void OnReadComplete(IOBuffer* buf, int result);
 
  protected:
-  ~URLRequestFileJob() override;
+  ~URLRequestTestJobBackedByFile() override;
 
   // URLRequestJob implementation.
   std::unique_ptr<SourceStream> SetUpSourceStream() override;
@@ -78,14 +80,9 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   base::FilePath file_path_;
 
  private:
-  // This class checks if a path is accessible via file: scheme, with
-  // NetworkDelegate. Subclasses can disable the check if needed.
-  virtual bool CanAccessFile(const base::FilePath& original_path,
-                             const base::FilePath& absolute_path);
-
   // Meta information about the file. It's used as a member in the
-  // URLRequestFileJob and also passed between threads because disk access is
-  // necessary to obtain it.
+  // URLRequestTestJobBackedByFile and also passed between threads because disk
+  // access is necessary to obtain it.
   struct FileMetaInfo {
     FileMetaInfo();
 
@@ -132,11 +129,11 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
 
   Error range_parse_result_;
 
-  base::WeakPtrFactory<URLRequestFileJob> weak_ptr_factory_{this};
+  base::WeakPtrFactory<URLRequestTestJobBackedByFile> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(URLRequestFileJob);
+  DISALLOW_COPY_AND_ASSIGN(URLRequestTestJobBackedByFile);
 };
 
 }  // namespace net
 
-#endif  // NET_URL_REQUEST_URL_REQUEST_FILE_JOB_H_
+#endif  // NET_TEST_URL_REQUEST_URL_REQUEST_TEST_JOB_BACKED_BY_FILE_H_
