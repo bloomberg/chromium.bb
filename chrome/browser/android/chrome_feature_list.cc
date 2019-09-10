@@ -140,6 +140,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadTabManagementModule,
     &kDrawVerticallyEdgeToEdge,
     &kEphemeralTab,
+    &kEphemeralTabUsingBottomSheet,
     &kExploreSites,
     &kHandleMediaIntents,
     &kHomePageButtonForceEnabled,
@@ -425,6 +426,9 @@ const base::Feature kDownloadTabManagementModule{
 
 const base::Feature kEphemeralTab{"EphemeralTab",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEphemeralTabUsingBottomSheet{
+    "EphemeralTabUsingBottomSheet", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kExploreSites{"ExploreSites",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

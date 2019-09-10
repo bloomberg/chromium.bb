@@ -1154,6 +1154,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-ephemeral-tab-bottom-sheet",
+    "owners": [ "donnd", "jinsukkim" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-experimental-accessibility-autoclick",
     "owners": [ "katie", "dmazzoni", "dtseng" ],
     "expiry_milestone": 78

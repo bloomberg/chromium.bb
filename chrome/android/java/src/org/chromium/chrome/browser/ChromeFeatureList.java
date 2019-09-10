@@ -239,6 +239,7 @@ public abstract class ChromeFeatureList {
     public static final String DOWNLOAD_TAB_MANAGEMENT_MODULE = "DownloadTabManagementModule";
     public static final String DRAW_VERTICALLY_EDGE_TO_EDGE = "DrawVerticallyEdgeToEdge";
     public static final String EPHEMERAL_TAB = "EphemeralTab";
+    public static final String EPHEMERAL_TAB_USING_BOTTOM_SHEET = "EphemeralTabUsingBottomSheet";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
     public static final String EXPLORE_SITES = "ExploreSites";
     public static final String GENERIC_SENSOR_EXTRA_CLASSES = "GenericSensorExtraClasses";
