@@ -665,6 +665,22 @@ DawnFrontFace AsDawnEnum<DawnFrontFace>(const WTF::String& webgpu_enum) {
   return DAWN_FRONT_FACE_FORCE32;
 }
 
+template <>
+DawnTextureAspect AsDawnEnum<DawnTextureAspect>(
+    const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "all") {
+    return DAWN_TEXTURE_ASPECT_ALL;
+  }
+  if (webgpu_enum == "stencil-only") {
+    return DAWN_TEXTURE_ASPECT_STENCIL_ONLY;
+  }
+  if (webgpu_enum == "depth-only") {
+    return DAWN_TEXTURE_ASPECT_DEPTH_ONLY;
+  }
+  NOTREACHED();
+  return DAWN_TEXTURE_ASPECT_FORCE32;
+}
+
 DawnColor AsDawnType(const GPUColor* webgpu_color) {
   DCHECK(webgpu_color);
 
