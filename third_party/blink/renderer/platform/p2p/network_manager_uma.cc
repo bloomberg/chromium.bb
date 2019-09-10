@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/p2p/network_manager_uma.h"
+#include "third_party/blink/public/platform/modules/p2p/network_manager_uma.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 
-namespace content {
+namespace blink {
 
 void ReportTimeToUpdateNetworkList(const base::TimeDelta& ticks) {
   UMA_HISTOGRAM_TIMES("WebRTC.PeerConnection.TimeToNetworkUpdated", ticks);
@@ -18,4 +18,4 @@ void ReportIPPermissionStatus(IPPermissionStatus status) {
                             PERMISSION_MAX);
 }
 
-}  // namespace content
+}  // namespace blink

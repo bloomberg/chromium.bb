@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_P2P_NETWORK_MANAGER_UMA_H_
-#define CONTENT_RENDERER_P2P_NETWORK_MANAGER_UMA_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_MANAGER_UMA_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_MANAGER_UMA_H_
+
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace base {
 class TimeDelta;
-}  // namespace
+}  // namespace base
 
-namespace content {
+namespace blink {
+
+// TODO(crbug.com/787254): Move the enum and helper methods here
+// out of the Blink exposed API when all users of it have been Onion souped.
 
 // Need to be kept the same order as in histograms.xml
 enum IPPermissionStatus {
@@ -23,9 +28,10 @@ enum IPPermissionStatus {
   PERMISSION_MAX,
 };
 
-void ReportIPPermissionStatus(IPPermissionStatus status);
-void ReportTimeToUpdateNetworkList(const base::TimeDelta& ticks);
+BLINK_PLATFORM_EXPORT void ReportIPPermissionStatus(IPPermissionStatus status);
+BLINK_PLATFORM_EXPORT void ReportTimeToUpdateNetworkList(
+    const base::TimeDelta& ticks);
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_P2P_NETWORK_MANAGER_UMA_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_MANAGER_UMA_H_
