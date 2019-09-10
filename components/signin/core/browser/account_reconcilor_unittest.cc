@@ -249,7 +249,9 @@ class AccountReconcilorTest : public ::testing::Test {
     return &identity_test_env_;
   }
 
-  base::test::TaskEnvironment* task_environment() { return &task_environment_; }
+  base::test::SingleThreadTaskEnvironment* task_environment() {
+    return &task_environment_;
+  }
 
   TestSigninClient* test_signin_client() { return &test_signin_client_; }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
@@ -287,7 +289,7 @@ class AccountReconcilorTest : public ::testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   signin::AccountConsistencyMethod account_consistency_;
   bool dice_migration_completed_ = false;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
@@ -354,7 +356,8 @@ INSTANTIATE_TEST_SUITE_P(Dice_Mirror,
                              signin::AccountConsistencyMethod::kMirror));
 
 AccountReconcilorTest::AccountReconcilorTest()
-    : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+    : task_environment_(
+          base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME),
       account_consistency_(signin::AccountConsistencyMethod::kDisabled),
       test_signin_client_(&pref_service_, &test_url_loader_factory_),
       identity_test_env_(/*test_url_loader_factory=*/nullptr,
