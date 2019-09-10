@@ -45,16 +45,19 @@ class HttpServerPropertiesPeer {
       HttpServerProperties* impl,
       const AlternativeService& alternative_service,
       base::TimeTicks when) {
+    BrokenAlternativeService broken_alternative_service(
+        alternative_service, NetworkIsolationKey(),
+        true /* use_network_isolation_key */);
     BrokenAlternativeServiceList::iterator unused_it;
     impl->broken_alternative_services_.AddToBrokenListAndMap(
-        alternative_service, when, &unused_it);
+        broken_alternative_service, when, &unused_it);
     auto it =
         impl->broken_alternative_services_.recently_broken_alternative_services_
-            .Get(alternative_service);
+            .Get(broken_alternative_service);
     if (it == impl->broken_alternative_services_
                   .recently_broken_alternative_services_.end()) {
       impl->broken_alternative_services_.recently_broken_alternative_services_
-          .Put(alternative_service, 1);
+          .Put(broken_alternative_service, 1);
     } else {
       it->second++;
     }
