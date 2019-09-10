@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_ANDROID_MOCK_TEXTURE_OWNER_H_
-#define GPU_IPC_COMMON_ANDROID_MOCK_TEXTURE_OWNER_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_MOCK_TEXTURE_OWNER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_MOCK_TEXTURE_OWNER_H_
 
 #include <memory>
 
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"
@@ -55,4 +55,4 @@ class MockTextureOwner : public TextureOwner {
 
 }  // namespace gpu
 
-#endif  // GPU_IPC_COMMON_ANDROID_MOCK_TEXTURE_OWNER_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_MOCK_TEXTURE_OWNER_H_

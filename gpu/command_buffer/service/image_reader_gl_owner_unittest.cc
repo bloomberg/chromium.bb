@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 
 #include <stdint.h>
 #include <memory>
@@ -11,8 +11,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
-#include "gpu/ipc/common/android/image_reader_gl_owner.h"
-#include "gpu/ipc/common/android/mock_abstract_texture.h"
+#include "gpu/command_buffer/service/image_reader_gl_owner.h"
+#include "gpu/command_buffer/service/mock_abstract_texture.h"
 #include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 
 #include <memory>
 
@@ -13,9 +13,9 @@
 #include "gpu/command_buffer/service/abstract_texture_impl_shared_context_state.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/image_reader_gl_owner.h"
+#include "gpu/command_buffer/service/surface_texture_gl_owner.h"
 #include "gpu/command_buffer/service/texture_base.h"
-#include "gpu/ipc/common/android/image_reader_gl_owner.h"
-#include "gpu/ipc/common/android/surface_texture_gl_owner.h"
 #include "ui/gl/scoped_binders.h"
 
 namespace gpu {

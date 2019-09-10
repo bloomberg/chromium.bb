@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_ANDROID_MOCK_ABSTRACT_TEXTURE_H_
-#define GPU_IPC_COMMON_ANDROID_MOCK_ABSTRACT_TEXTURE_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_MOCK_ABSTRACT_TEXTURE_H_
+#define GPU_COMMAND_BUFFER_SERVICE_MOCK_ABSTRACT_TEXTURE_H_
 
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
@@ -42,4 +42,4 @@ class MockAbstractTexture
 
 }  // namespace gpu
 
-#endif  // GPU_IPC_COMMON_ANDROID_MOCK_ABSTRACT_TEXTURE_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_MOCK_ABSTRACT_TEXTURE_H_

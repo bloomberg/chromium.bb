@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
-#define GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_SURFACE_TEXTURE_GL_OWNER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_SURFACE_TEXTURE_GL_OWNER_H_
 
 #include "base/threading/thread_checker.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 #include "gpu/gpu_export.h"
-#include "gpu/ipc/common/android/texture_owner.h"
 #include "ui/gl/android/surface_texture.h"
 
 namespace base {
@@ -62,4 +62,4 @@ class GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
 
 }  // namespace gpu
 
-#endif  // GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_SURFACE_TEXTURE_GL_OWNER_H_

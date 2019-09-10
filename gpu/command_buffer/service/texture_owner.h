@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_ANDROID_TEXTURE_OWNER_H_
-#define GPU_IPC_COMMON_ANDROID_TEXTURE_OWNER_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_TEXTURE_OWNER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_TEXTURE_OWNER_H_
 
 #include <android/hardware_buffer.h>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/single_thread_task_runner.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -37,7 +37,7 @@ class AbstractTexture;
 // be called on any thread. It's safe to keep and drop refptrs to it on any
 // thread; it will be automatically destructed on the thread it was constructed
 // on.
-class GPU_EXPORT TextureOwner
+class GPU_GLES2_EXPORT TextureOwner
     : public base::RefCountedDeleteOnSequence<TextureOwner> {
  public:
   // Creates a GL texture using the current platform GL context and returns a
@@ -136,4 +136,4 @@ class GPU_EXPORT TextureOwner
 
 }  // namespace gpu
 
-#endif  // GPU_IPC_COMMON_ANDROID_TEXTURE_OWNER_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_TEXTURE_OWNER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/common/android/image_reader_gl_owner.h"
+#include "gpu/command_buffer/service/image_reader_gl_owner.h"
 
 #include <android/native_window_jni.h>
 #include <jni.h>
