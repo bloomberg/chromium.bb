@@ -22,6 +22,11 @@ const char kAcceleratedVideoEncodeName[] = "Hardware-accelerated video encode";
 const char kAcceleratedVideoEncodeDescription[] =
     "Hardware-accelerated video encode where available.";
 
+const char kAccessibilityInternalsPageImprovementsName[] =
+    "Accessibility internals page improvements";
+const char kAccessibilityInternalsPageImprovementsDescription[] =
+    "Improvements to the chrome://accessibility page.";
+
 const char kAllowInsecureLocalhostName[] =
     "Allow invalid certificates for resources loaded from localhost.";
 const char kAllowInsecureLocalhostDescription[] =

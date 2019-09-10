@@ -526,6 +526,9 @@ extern const base::Feature kWin10AcceleratedDefaultBrowserFlow;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAccessibilityInternalsPageImprovements;
+
 bool PrefServiceEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

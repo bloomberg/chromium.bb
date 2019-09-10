@@ -845,4 +845,10 @@ const base::Feature kWin10AcceleratedDefaultBrowserFlow{
 const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile{
     "WriteBasicSystemProfileToPersistentHistogramsFile",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables improvements to the chrome://accessibility page.
+const base::Feature kAccessibilityInternalsPageImprovements{
+    "AccessibilityInternalsPageImprovements",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
