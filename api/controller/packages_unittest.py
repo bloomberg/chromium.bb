@@ -92,7 +92,7 @@ class UprevVersionedPackageTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """UprevVersionedPackage tests."""
 
   def setUp(self):
-    self.response = packages_pb2.UprevPackagesResponse()
+    self.response = packages_pb2.UprevVersionedPackageResponse()
 
   def _addVersion(self, request, version):
     """Helper method to add a full version message to the request."""
@@ -148,8 +148,9 @@ class UprevVersionedPackageTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   def testOutputHandling(self):
     """Test the modified files are getting correctly added to the output."""
     version = '1.2.3.4'
-    result = packages_service.UprevVersionedPackageResult(
+    result = packages_service.UprevVersionedPackageResult().add_result(
         version, ['/file/one', '/file/two'])
+
     self.PatchObject(
         packages_service, 'uprev_versioned_package', return_value=result)
 
@@ -161,10 +162,11 @@ class UprevVersionedPackageTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     packages_controller.UprevVersionedPackage(request, self.response,
                                               self.api_config)
 
-    self.assertEqual(version, self.response.version)
-    self.assertItemsEqual(
-        result.modified_ebuilds,
-        [ebuild.path for ebuild in self.response.modified_ebuilds])
+    for idx, uprev_response in enumerate(self.response.responses):
+      self.assertEqual(result.modified[idx].new_version, uprev_response.version)
+      self.assertItemsEqual(
+          result.modified[idx].files,
+          [ebuild.path for ebuild in uprev_response.modified_ebuilds])
 
 
 class GetBestVisibleTest(cros_test_lib.MockTestCase, ApiConfigMixin):

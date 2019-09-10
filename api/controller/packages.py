@@ -76,9 +76,12 @@ def UprevVersionedPackage(input_proto, output_proto, _config):
     # No uprevs executed, skip the output population.
     return
 
-  output_proto.version = result.new_version
-  for path in result.modified_ebuilds:
-    output_proto.modified_ebuilds.add().path = path
+  for modified in result.modified:
+    uprev_response = output_proto.responses.add()
+    uprev_response.version = modified.new_version
+    for path in modified.files:
+      uprev_response.modified_ebuilds.add().path = path
+
 
 
 @faux.all_empty

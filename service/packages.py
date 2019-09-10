@@ -7,9 +7,11 @@
 
 from __future__ import print_function
 
+import collections
 import functools
 import json
 import os
+
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -55,16 +57,30 @@ class EbuildManifestError(Error):
   """Error when running ebuild manifest."""
 
 
-class UprevVersionedPackageResult(object):
-  """Result data object for uprev_versioned_package."""
+UprevVersionedPackageModifications = collections.namedtuple(
+    'UprevVersionedPackageModifications', ('new_version', 'files'))
 
-  def __init__(self, new_version=None, modified_ebuilds=None):
-    self.new_version = new_version
-    self.modified_ebuilds = modified_ebuilds or []
+
+class UprevVersionedPackageResult(object):
+  """Data object for uprev_versioned_package."""
+
+  def __init__(self):
+    self.modified = []
+
+  def add_result(self, new_version, modified_files):
+    """Adds version/ebuilds tuple to result.
+
+    Args:
+      new_version: New version number of package.
+      modified_files: List of files modified for the given version.
+    """
+    result = UprevVersionedPackageModifications(new_version, modified_files)
+    self.modified.append(result)
+    return self
 
   @property
   def uprevved(self):
-    return bool(self.new_version)
+    return bool(self.modified)
 
 
 def uprevs_versioned_package(package):
@@ -230,7 +246,7 @@ def uprev_sample(*_args, **_kwargs):
       for repo in ('general-sandbox', 'merge-sandbox')
   ]
 
-  return UprevVersionedPackageResult('1.2.3', paths)
+  return UprevVersionedPackageResult().add_result('1.2.3', paths)
 
 
 @uprevs_versioned_package('afdo/kernel-profiles')
@@ -248,7 +264,7 @@ def uprev_kernel_afdo(*_args, **_kwargs):
   with open(path, 'r') as f:
     versions = json.load(f)
 
-  paths = []
+  result = UprevVersionedPackageResult()
   for version, version_info in versions.items():
     path = os.path.join('src', 'third_party', 'chromiumos-overlay',
                         'sys-kernel', version)
@@ -256,16 +272,12 @@ def uprev_kernel_afdo(*_args, **_kwargs):
                                '%s-9999.ebuild' % version)
     chroot_ebuild_path = os.path.join(constants.CHROOT_SOURCE_ROOT, path,
                                       '%s-9999.ebuild' % version)
-
+    afdo_profile_version = version_info['name']
     portage_util.EBuild.UpdateEBuild(
-        ebuild_path,
-        dict(AFDO_PROFILE_VERSION=version_info['name']),
-        make_stable=False)
-    paths.append(ebuild_path)
-
-    cmd = ['ebuild', chroot_ebuild_path, 'manifest', '--force']
+        ebuild_path, dict(AFDO_PROFILE_VERSION=afdo_profile_version))
 
     try:
+      cmd = ['ebuild', chroot_ebuild_path, 'manifest', '--force']
       cros_build_lib.RunCommand(cmd, enter_chroot=True)
     except cros_build_lib.RunCommandError as e:
       raise EbuildManifestError(
@@ -273,9 +285,10 @@ def uprev_kernel_afdo(*_args, **_kwargs):
           % (chroot_ebuild_path, e), e)
 
     manifest_path = os.path.join(constants.SOURCE_ROOT, path, 'Manifest')
-    paths.append(manifest_path)
 
-  return UprevVersionedPackageResult('test version', paths)
+    result.add_result(afdo_profile_version, [ebuild_path, manifest_path])
+
+  return result
 
 
 @uprevs_versioned_package(constants.CHROME_CP)
@@ -299,8 +312,8 @@ def uprev_chrome(build_targets, refs, chroot):
   for package in constants.OTHER_CHROME_PACKAGES:
     uprev_manager.uprev(package)
 
-  return UprevVersionedPackageResult(chrome_version,
-                                     uprev_manager.modified_ebuilds)
+  return UprevVersionedPackageResult().add_result(
+      chrome_version, uprev_manager.modified_ebuilds)
 
 
 def get_best_visible(atom, build_target=None):
