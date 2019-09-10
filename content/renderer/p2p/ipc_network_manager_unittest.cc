@@ -7,24 +7,24 @@
 #include <algorithm>
 #include <memory>
 
-#include "content/renderer/p2p/network_list_manager.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/p2p/network_list_manager.h"
 #include "third_party/webrtc/rtc_base/mdns_responder_interface.h"
 
 namespace content {
 
 namespace {
 
-class MockP2PSocketDispatcher : public NetworkListManager {
+class MockP2PSocketDispatcher : public blink::NetworkListManager {
  public:
   void AddNetworkListObserver(
-      NetworkListObserver* network_list_observer) override {}
+      blink::NetworkListObserver* network_list_observer) override {}
 
   void RemoveNetworkListObserver(
-      NetworkListObserver* network_list_observer) override {}
+      blink::NetworkListObserver* network_list_observer) override {}
 
   ~MockP2PSocketDispatcher() override {}
 };

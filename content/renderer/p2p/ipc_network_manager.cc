@@ -46,7 +46,7 @@ rtc::AdapterType ConvertConnectionTypeToAdapterType(
 }  // namespace
 
 IpcNetworkManager::IpcNetworkManager(
-    NetworkListManager* network_list_manager,
+    blink::NetworkListManager* network_list_manager,
     std::unique_ptr<webrtc::MdnsResponderInterface> mdns_responder)
     : network_list_manager_(network_list_manager),
       mdns_responder_(std::move(mdns_responder)) {

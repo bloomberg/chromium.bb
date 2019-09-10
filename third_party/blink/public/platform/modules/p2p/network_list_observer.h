@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_P2P_NETWORK_LIST_OBSERVER_H_
-#define CONTENT_RENDERER_P2P_NETWORK_LIST_OBSERVER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_LIST_OBSERVER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_LIST_OBSERVER_H_
 
 #include <vector>
 
@@ -13,8 +13,10 @@ struct NetworkInterface;
 typedef std::vector<NetworkInterface> NetworkInterfaceList;
 }  // namespace net
 
-namespace content {
+namespace blink {
 
+// TODO(crbug.com/787254): Move this class out of the Blink exposed API when
+// all users of it have been Onion souped. Also, move it away from std::vector.
 class NetworkListObserver {
  public:
   virtual ~NetworkListObserver() {}
@@ -28,6 +30,6 @@ class NetworkListObserver {
   NetworkListObserver() {}
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_P2P_NETWORK_LIST_OBSERVER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_LIST_OBSERVER_H_

@@ -6,14 +6,18 @@
 // IpcNetworkManager such that it doesn't depend on implementation of
 // P2PSocketDispatcher.
 
-#ifndef CONTENT_RENDERER_P2P_NETWORK_LIST_MANAGER_H_
-#define CONTENT_RENDERER_P2P_NETWORK_LIST_MANAGER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_LIST_MANAGER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_LIST_MANAGER_H_
 
-namespace content {
+#include "third_party/blink/public/platform/web_common.h"
+
+namespace blink {
 
 class NetworkListObserver;
 
-class CONTENT_EXPORT NetworkListManager {
+// TODO(crbug.com/787254): Move this class out of the Blink exposed API when
+// all users of it have been Onion souped.
+class BLINK_PLATFORM_EXPORT NetworkListManager {
  public:
   // Add a new network list observer. Each observer is called
   // immidiately after it is registered and then later whenever
@@ -33,6 +37,6 @@ class CONTENT_EXPORT NetworkListManager {
   virtual ~NetworkListManager() {}
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_P2P_NETWORK_LIST_MANAGER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_LIST_MANAGER_H_

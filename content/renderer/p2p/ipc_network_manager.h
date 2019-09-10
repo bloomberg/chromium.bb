@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/renderer/p2p/network_list_manager.h"
-#include "content/renderer/p2p/network_list_observer.h"
+#include "third_party/blink/public/platform/modules/p2p/network_list_manager.h"
+#include "third_party/blink/public/platform/modules/p2p/network_list_observer.h"
 #include "third_party/webrtc/rtc_base/mdns_responder_interface.h"
 #include "third_party/webrtc/rtc_base/network.h"
 
@@ -25,11 +25,11 @@ namespace content {
 // IpcNetworkManager is a NetworkManager for libjingle that gets a
 // list of network interfaces from the browser.
 class IpcNetworkManager : public rtc::NetworkManagerBase,
-                          public NetworkListObserver {
+                          public blink::NetworkListObserver {
  public:
   // Constructor doesn't take ownership of the |network_list_manager|.
   CONTENT_EXPORT IpcNetworkManager(
-      NetworkListManager* network_list_manager,
+      blink::NetworkListManager* network_list_manager,
       std::unique_ptr<webrtc::MdnsResponderInterface> mdns_responder);
   ~IpcNetworkManager() override;
 
@@ -38,7 +38,7 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
   void StopUpdating() override;
   webrtc::MdnsResponderInterface* GetMdnsResponder() const override;
 
-  // P2PSocketDispatcher::NetworkListObserver interface.
+  // blink::NetworkListObserver interface.
   void OnNetworkListChanged(
       const net::NetworkInterfaceList& list,
       const net::IPAddress& default_ipv4_local_address,
@@ -47,7 +47,7 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
  private:
   void SendNetworksChangedSignal();
 
-  NetworkListManager* network_list_manager_;
+  blink::NetworkListManager* network_list_manager_;
   std::unique_ptr<webrtc::MdnsResponderInterface> mdns_responder_;
   int start_count_ = 0;
   bool network_list_received_ = false;
