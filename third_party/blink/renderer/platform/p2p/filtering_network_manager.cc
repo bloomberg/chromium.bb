@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/p2p/filtering_network_manager.h"
+#include "third_party/blink/public/platform/modules/p2p/filtering_network_manager.h"
 
 #include <utility>
 
@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/media_permission.h"
 
-namespace content {
+namespace blink {
 
 FilteringNetworkManager::FilteringNetworkManager(
     rtc::NetworkManager* network_manager,
@@ -21,7 +21,7 @@ FilteringNetworkManager::FilteringNetworkManager(
     : network_manager_(network_manager),
       media_permission_(media_permission),
       requesting_origin_(requesting_origin) {
-  thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(thread_checker_);
   set_enumeration_permission(ENUMERATION_BLOCKED);
 
   // If the feature is not enabled, just return ALLOWED as it's requested.
@@ -34,7 +34,7 @@ FilteringNetworkManager::FilteringNetworkManager(
 }
 
 FilteringNetworkManager::~FilteringNetworkManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // This helps to catch the case if permission never comes back.
   if (!start_updating_time_.is_null())
     ReportMetrics(false);
@@ -51,7 +51,7 @@ void FilteringNetworkManager::Initialize() {
 }
 
 void FilteringNetworkManager::StartUpdating() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(started_permission_check_);
 
   if (start_updating_time_.is_null()) {
@@ -75,14 +75,14 @@ void FilteringNetworkManager::StartUpdating() {
 }
 
 void FilteringNetworkManager::StopUpdating() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   network_manager_->StopUpdating();
   DCHECK_GT(start_count_, 0);
   --start_count_;
 }
 
 void FilteringNetworkManager::GetNetworks(NetworkList* networks) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   networks->clear();
 
   if (enumeration_permission() == ENUMERATION_ALLOWED)
@@ -93,7 +93,7 @@ void FilteringNetworkManager::GetNetworks(NetworkList* networks) const {
 
 webrtc::MdnsResponderInterface* FilteringNetworkManager::GetMdnsResponder()
     const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (enumeration_permission() == ENUMERATION_ALLOWED)
     return nullptr;
@@ -102,7 +102,7 @@ webrtc::MdnsResponderInterface* FilteringNetworkManager::GetMdnsResponder()
 }
 
 void FilteringNetworkManager::CheckPermission() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!started_permission_check_);
 
   started_permission_check_ = true;
@@ -121,7 +121,7 @@ void FilteringNetworkManager::CheckPermission() {
 }
 
 void FilteringNetworkManager::OnPermissionStatus(bool granted) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_GT(pending_permission_checks_, 0);
   VLOG(1) << "FilteringNetworkManager received permission status: "
           << (granted ? "granted" : "denied");
@@ -139,7 +139,7 @@ void FilteringNetworkManager::OnPermissionStatus(bool granted) {
 }
 
 void FilteringNetworkManager::OnNetworksChanged() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   pending_network_update_ = false;
 
   // Update the default local addresses.
@@ -214,4 +214,4 @@ void FilteringNetworkManager::SendNetworksChangedSignal() {
   SignalNetworksChanged();
 }
 
-}  // namespace content
+}  // namespace blink

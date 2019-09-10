@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_P2P_FILTERING_NETWORK_MANAGER_H_
-#define CONTENT_RENDERER_P2P_FILTERING_NETWORK_MANAGER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_FILTERING_NETWORK_MANAGER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_FILTERING_NETWORK_MANAGER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/modules/p2p/network_manager_uma.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/rtc_base/network.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 #include "url/gurl.h"
@@ -19,7 +19,7 @@ namespace media {
 class MediaPermission;
 }  // namespace media
 
-namespace content {
+namespace blink {
 
 // FilteringNetworkManager exposes rtc::NetworkManager to
 // PeerConnectionDependencyFactory and wraps the IpcNetworkManager. It only
@@ -32,19 +32,22 @@ namespace content {
 // to reduce any extra call setup delay. This class is not thread safe and
 // should only be used by WebRTC's network thread. It inherits from
 // rtc::NetworkManagerBase to have the same implementation of
-// GetAnyAddressNetworks(). We can't mark the whole class CONTENT_EXPORT as it
-// requires all super classes to be CONTENT_EXPORT as well.
+// GetAnyAddressNetworks(). We can't mark the whole class BLINK_PLATFORM_EXPORT
+// as it requires all super classes to be BLINK_PLATFORM_EXPORT as well.
+//
+// TODO(crbug.com/787254): Move this class out of the Blink exposed API when
+// all users of it have been Onion souped. Also, move it away from url/gurl.h.
 class FilteringNetworkManager : public rtc::NetworkManagerBase,
                                 public sigslot::has_slots<> {
  public:
   // This class is created by WebRTC's signaling thread but used by WebRTC's
   // worker thread |task_runner|.
-  CONTENT_EXPORT FilteringNetworkManager(
+  BLINK_PLATFORM_EXPORT FilteringNetworkManager(
       rtc::NetworkManager* network_manager,
       const GURL& requesting_origin,
       media::MediaPermission* media_permission);
 
-  CONTENT_EXPORT ~FilteringNetworkManager() override;
+  BLINK_PLATFORM_EXPORT ~FilteringNetworkManager() override;
 
   // rtc::NetworkManager:
   void Initialize() override;
@@ -88,7 +91,7 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   rtc::NetworkManager* network_manager_;
 
   // The class is created by the signaling thread but used by the worker thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   media::MediaPermission* media_permission_;
 
@@ -120,6 +123,6 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   DISALLOW_COPY_AND_ASSIGN(FilteringNetworkManager);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_P2P_FILTERING_NETWORK_MANAGER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_FILTERING_NETWORK_MANAGER_H_

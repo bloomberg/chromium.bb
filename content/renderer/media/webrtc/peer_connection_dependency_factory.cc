@@ -29,7 +29,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/media/webrtc/stun_field_trial.h"
-#include "content/renderer/p2p/filtering_network_manager.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/mdns_responder_adapter.h"
@@ -45,6 +44,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/p2p/empty_network_manager.h"
+#include "third_party/blink/public/platform/modules/p2p/filtering_network_manager.h"
 #include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
 #include "third_party/blink/public/platform/modules/peerconnection/video_codec_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
@@ -471,7 +471,7 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
 
   std::unique_ptr<rtc::NetworkManager> network_manager;
   if (port_config.enable_multiple_routes) {
-    network_manager = std::make_unique<FilteringNetworkManager>(
+    network_manager = std::make_unique<blink::FilteringNetworkManager>(
         network_manager_.get(), requesting_origin, media_permission);
   } else {
     network_manager =

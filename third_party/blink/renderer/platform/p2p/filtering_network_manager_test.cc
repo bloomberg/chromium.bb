@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/p2p/filtering_network_manager.h"
+#include "third_party/blink/public/platform/modules/p2p/filtering_network_manager.h"
 
 #include <stddef.h>
 
@@ -147,7 +147,7 @@ class MockMediaPermission : public media::MediaPermission {
 
 }  // namespace
 
-namespace content {
+namespace blink {
 
 class FilteringNetworkManagerTest : public testing::Test,
                                     public sigslot::has_slots<> {
@@ -487,4 +487,4 @@ TEST_F(FilteringNetworkManagerTest,
   }
 }
 
-}  // namespace content
+}  // namespace blink
