@@ -790,12 +790,10 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
       // TODO(kyslov): do the same for pick_intra_mode and
       //               pick_inter_mode_sb_seg_skip
       switch (pick_mode_type) {
-#if !CONFIG_REALTIME_ONLY
         case PICK_MODE_RD:
           av1_rd_pick_inter_mode_sb(cpi, tile_data, x, mi_row, mi_col, rd_cost,
                                     bsize, ctx, best_rd.rdcost);
           break;
-#endif
         case PICK_MODE_NONRD:
           av1_nonrd_pick_inter_mode_sb(cpi, tile_data, x, mi_row, mi_col,
                                        rd_cost, bsize, ctx, best_rd.rdcost);
@@ -1419,7 +1417,6 @@ typedef struct {
   TXFM_CONTEXT tl[MAX_MIB_SIZE];
 } RD_SEARCH_MACROBLOCK_CONTEXT;
 
-#if !CONFIG_REALTIME_ONLY
 static void restore_context(MACROBLOCK *x,
                             const RD_SEARCH_MACROBLOCK_CONTEXT *ctx, int mi_row,
                             int mi_col, BLOCK_SIZE bsize,
@@ -1492,7 +1489,6 @@ static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
   ctx->p_ta = xd->above_txfm_context;
   ctx->p_tl = xd->left_txfm_context;
 }
-#endif  // !CONFIG_REALTIME_ONLY
 
 static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                      ThreadData *td, TOKENEXTRA **tp, int mi_row, int mi_col,
@@ -1599,7 +1595,6 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   x->rdmult = origin_mult;
 }
 
-#if !CONFIG_REALTIME_ONLY
 static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
                       TileDataEnc *tile_data, TOKENEXTRA **tp, int mi_row,
                       int mi_col, RUN_TYPE dry_run, BLOCK_SIZE bsize,
@@ -1728,6 +1723,7 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
   update_ext_partition_context(xd, mi_row, mi_col, subsize, bsize, partition);
 }
 
+#if !CONFIG_REALTIME_ONLY
 static void set_partial_sb_partition(const AV1_COMMON *const cm,
                                      MB_MODE_INFO *mi, int bh_in, int bw_in,
                                      int mi_rows_remaining,
@@ -1785,6 +1781,7 @@ static void set_fixed_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
                              mi_cols_remaining, bsize, mib);
   }
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
                              TileDataEnc *tile_data, MB_MODE_INFO **mib,
@@ -2055,7 +2052,6 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   *dist = chosen_rdc.dist;
   x->rdmult = orig_rdmult;
 }
-#endif  // !CONFIG_REALTIME_ONLY
 
 static void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
                                 TileDataEnc *tile_data, MB_MODE_INFO **mib,
@@ -4107,13 +4103,20 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     // Realtime non-rd path.
     if (!(sf->partition_search_type == FIXED_PARTITION || seg_skip) &&
         !cpi->partition_search_skippable_frame &&
-        sf->partition_search_type == VAR_BASED_PARTITION && use_nonrd_mode) {
+        sf->partition_search_type == VAR_BASED_PARTITION) {
       set_offsets_without_segment_id(cpi, tile_info, x, mi_row, mi_col,
                                      sb_size);
       av1_choose_var_based_partitioning(cpi, tile_info, x, mi_row, mi_col);
       td->mb.cb_offset = 0;
-      nonrd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
-                          pc_root);
+      if (use_nonrd_mode) {
+        nonrd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
+                            pc_root);
+      } else {
+        int dummy_rate;
+        int64_t dummy_dist;
+        rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
+                         &dummy_rate, &dummy_dist, 1, pc_root);
+      }
     } else {
 #if !CONFIG_REALTIME_ONLY
       int dummy_rate;
