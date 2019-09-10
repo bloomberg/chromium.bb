@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
@@ -498,5 +500,66 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     histogram_tester.ExpectUniqueSample(
         kHistogramPrefix + "SafetyTip_BadReputation",
         safety_tips::SafetyTipInteraction::kDismiss, 1);
+  }
+}
+
+// Tests that the histograms recording how long the Safety Tip is open are
+// recorded properly.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       TimeOpenHistogram) {
+  if (ui_status() == UIStatus::kDisabled) {
+    return;
+  }
+  const base::TimeDelta kMinWarningTime = base::TimeDelta::FromMilliseconds(10);
+
+  // Test the histogram for no user action taken.
+  {
+    base::HistogramTester histograms;
+    auto kNavigatedUrl = GetURL("site1.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    // Ensure that the tab is open for more than 0 ms, even in the face of bots
+    // with bad clocks.
+    base::RunLoop run_loop;
+    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    run_loop.Run();
+    NavigateToURL(browser(), GURL("about:blank"),
+                  WindowOpenDisposition::CURRENT_TAB);
+    auto samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.NoAction.SafetyTip_BadReputation");
+    ASSERT_EQ(1u, samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
+  }
+
+  // Test the histogram for when the user adheres to the warning.
+  {
+    base::HistogramTester histograms;
+    auto kNavigatedUrl = GetURL("site1.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    base::RunLoop run_loop;
+    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    run_loop.Run();
+    CloseWarningLeaveSite(browser());
+    auto samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.LeaveSite.SafetyTip_BadReputation");
+    ASSERT_EQ(1u, samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
+  }
+
+  // Test the histogram for when the user dismisses the warning.
+  {
+    base::HistogramTester histograms;
+    auto kNavigatedUrl = GetURL("site1.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    base::RunLoop run_loop;
+    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    run_loop.Run();
+    CloseWarningIgnore();
+    auto samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.Dismiss.SafetyTip_BadReputation");
+    ASSERT_EQ(1u, samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
   }
 }
