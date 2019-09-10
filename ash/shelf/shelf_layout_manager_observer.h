@@ -29,6 +29,9 @@ class ASH_EXPORT ShelfLayoutManagerObserver {
   // Called when shelf background animation is started.
   virtual void OnBackgroundUpdated(ShelfBackgroundType background_type,
                                    AnimationChangeType change_type) {}
+
+  // Called when the hotseat state changes.
+  virtual void OnHotseatStateChanged(HotseatState state) {}
 };
 
 }  // namespace ash
