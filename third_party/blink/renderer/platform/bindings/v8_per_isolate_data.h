@@ -262,7 +262,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
   // When taking a V8 context snapshot, we can't keep V8 objects with eternal
   // handles. So we use a special interface map that doesn't use eternal handles
   // instead of the default V8FunctionTemplateMap.
-  V8GlobalValueMap<const WrapperTypeInfo*, v8::FunctionTemplate, v8::kNotWeak>
+  V8GlobalValueMap<const WrapperTypeInfo*, v8::FunctionTemplate>
       interface_template_map_for_v8_context_snapshot_;
 
   std::unique_ptr<StringCache> string_cache_;
