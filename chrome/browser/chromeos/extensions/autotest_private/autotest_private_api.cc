@@ -1637,6 +1637,7 @@ void AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError() {
 
 AutotestPrivateSetAssistantEnabledFunction::
     AutotestPrivateSetAssistantEnabledFunction() {
+  // |AddObserver| will immediately trigger |OnAssistantStatusChanged|.
   ash::AssistantState::Get()->AddObserver(this);
 }
 
@@ -1660,19 +1661,23 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
   if (!err_msg.empty())
     return RespondNow(Error(err_msg));
 
-  // |NOT_READY| means service not running
-  // |STOPPED| means service running but UI not shown
-  auto new_state = params->enabled
-                       ? ash::mojom::VoiceInteractionState::STOPPED
-                       : ash::mojom::VoiceInteractionState::NOT_READY;
-
-  if (ash::AssistantState::Get()->voice_interaction_state() == new_state)
+  // There are three possible states for the voice interaction:
+  // |NOT_READY| means service not running;
+  // |STOPPED| means service running but UI not shown;
+  // |RUNNING| means service running with UI shown on screen.
+  // When enabling Assistant, either |STOPPED| or |RUNNING| state could be
+  // possible depending on whether the UI has been brought up.
+  auto current_state = ash::AssistantState::Get()->voice_interaction_state();
+  const bool not_ready =
+      (current_state == ash::mojom::VoiceInteractionState::NOT_READY);
+  const bool success = (params->enabled != not_ready);
+  if (success)
     return RespondNow(NoArguments());
 
   // Assistant service has not responded yet, set up a delayed timer to wait for
   // it and holder a reference to |this|. Also make sure we stop and respond
   // when timeout.
-  expected_state_ = new_state;
+  enabled_ = params->enabled;
   timeout_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(params->timeout_ms),
       base::BindOnce(&AutotestPrivateSetAssistantEnabledFunction::Timeout,
@@ -1682,16 +1687,23 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
 
 void AutotestPrivateSetAssistantEnabledFunction::OnAssistantStatusChanged(
     ash::mojom::VoiceInteractionState state) {
-  if (!expected_state_)
+  // Must check if the Optional contains value first to avoid possible
+  // segmentation fault caused by Respond() below being called before
+  // RespondLater() in Run(). This will happen due to AddObserver() call
+  // in the constructor will trigger this function immediately.
+  if (!enabled_.has_value())
     return;
 
   // The service could go through |NOT_READY| then to |STOPPED| during enable
   // flow if this API is called before the initial state is reported.
-  if (expected_state_ != state)
+  const bool not_ready =
+      (state == ash::mojom::VoiceInteractionState::NOT_READY);
+  const bool success = (enabled_.value() != not_ready);
+  if (!success)
     return;
 
   Respond(NoArguments());
-  expected_state_.reset();
+  enabled_.reset();
   timeout_timer_.AbandonAndStop();
 }
 

@@ -505,7 +505,7 @@ class AutotestPrivateSetAssistantEnabledFunction
   // will respond with an error.
   void Timeout();
 
-  base::Optional<ash::mojom::VoiceInteractionState> expected_state_;
+  base::Optional<bool> enabled_;
   base::OneShotTimer timeout_timer_;
 };
 
