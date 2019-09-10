@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.widget.accessibility.AccessibleTextView;
@@ -73,7 +74,8 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
     public void onClick(View v) {
         if (getNativeInfoBarPtr() == 0 || mIsHiding) return;
 
-        nativeAddToHomescreen(getNativeInfoBarPtr());
+        InstallableAmbientBadgeInfoBarJni.get().addToHomescreen(
+                getNativeInfoBarPtr(), InstallableAmbientBadgeInfoBar.this);
     }
 
     /**
@@ -89,5 +91,9 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
         mUrl = url;
     }
 
-    private native void nativeAddToHomescreen(long nativeInstallableAmbientBadgeInfoBar);
+    @NativeMethods
+    interface Natives {
+        void addToHomescreen(
+                long nativeInstallableAmbientBadgeInfoBar, InstallableAmbientBadgeInfoBar caller);
+    }
 }
