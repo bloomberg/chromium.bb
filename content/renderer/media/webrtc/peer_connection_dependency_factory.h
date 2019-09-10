@@ -33,6 +33,7 @@ class Thread;
 }
 
 namespace blink {
+class IpcNetworkManager;
 class WebLocalFrame;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -41,7 +42,6 @@ class WebRtcAudioDeviceImpl;
 
 namespace content {
 
-class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class MdnsResponderAdapter;
 class P2PPortAllocator;
@@ -158,7 +158,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   // network_manager_ must be deleted on the worker thread. The network manager
   // uses |p2p_socket_dispatcher_|.
-  std::unique_ptr<IpcNetworkManager> network_manager_;
+  std::unique_ptr<blink::IpcNetworkManager> network_manager_;
   std::unique_ptr<IpcPacketSocketFactory> socket_factory_;
 
   scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;

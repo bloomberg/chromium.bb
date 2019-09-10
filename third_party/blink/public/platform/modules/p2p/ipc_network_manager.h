@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_P2P_IPC_NETWORK_MANAGER_H_
-#define CONTENT_RENDERER_P2P_IPC_NETWORK_MANAGER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_IPC_NETWORK_MANAGER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_IPC_NETWORK_MANAGER_H_
 
 #include <memory>
-#include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/modules/p2p/network_list_manager.h"
 #include "third_party/blink/public/platform/modules/p2p/network_list_observer.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/rtc_base/mdns_responder_interface.h"
 #include "third_party/webrtc/rtc_base/network.h"
 
@@ -20,7 +18,7 @@ namespace net {
 class IPAddress;
 }  // namespace net
 
-namespace content {
+namespace blink {
 
 // IpcNetworkManager is a NetworkManager for libjingle that gets a
 // list of network interfaces from the browser.
@@ -28,7 +26,7 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
                           public blink::NetworkListObserver {
  public:
   // Constructor doesn't take ownership of the |network_list_manager|.
-  CONTENT_EXPORT IpcNetworkManager(
+  BLINK_PLATFORM_EXPORT IpcNetworkManager(
       blink::NetworkListManager* network_list_manager,
       std::unique_ptr<webrtc::MdnsResponderInterface> mdns_responder);
   ~IpcNetworkManager() override;
@@ -55,6 +53,6 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
   base::WeakPtrFactory<IpcNetworkManager> weak_factory_{this};
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_P2P_IPC_NETWORK_MANAGER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_IPC_NETWORK_MANAGER_H_

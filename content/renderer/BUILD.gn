@@ -242,8 +242,6 @@ target(link_target_type, "renderer") {
     "net_info_helper.h",
     "p2p/host_address_request.cc",
     "p2p/host_address_request.h",
-    "p2p/ipc_network_manager.cc",
-    "p2p/ipc_network_manager.h",
     "p2p/ipc_socket_factory.cc",
     "p2p/ipc_socket_factory.h",
     "p2p/mdns_responder_adapter.cc",

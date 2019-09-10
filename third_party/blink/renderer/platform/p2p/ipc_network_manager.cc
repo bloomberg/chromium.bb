@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/p2p/ipc_network_manager.h"
+#include "third_party/blink/public/platform/modules/p2p/ipc_network_manager.h"
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/content_switches.h"
 #include "jingle/glue/utils.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/webrtc/rtc_base/socket_address.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -29,17 +29,17 @@ rtc::AdapterType ConvertConnectionTypeToAdapterType(
     net::NetworkChangeNotifier::ConnectionType type) {
   switch (type) {
     case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-        return rtc::ADAPTER_TYPE_UNKNOWN;
+      return rtc::ADAPTER_TYPE_UNKNOWN;
     case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-        return rtc::ADAPTER_TYPE_ETHERNET;
+      return rtc::ADAPTER_TYPE_ETHERNET;
     case net::NetworkChangeNotifier::CONNECTION_WIFI:
-        return rtc::ADAPTER_TYPE_WIFI;
+      return rtc::ADAPTER_TYPE_WIFI;
     case net::NetworkChangeNotifier::CONNECTION_2G:
     case net::NetworkChangeNotifier::CONNECTION_3G:
     case net::NetworkChangeNotifier::CONNECTION_4G:
-        return rtc::ADAPTER_TYPE_CELLULAR;
+      return rtc::ADAPTER_TYPE_CELLULAR;
     default:
-        return rtc::ADAPTER_TYPE_UNKNOWN;
+      return rtc::ADAPTER_TYPE_UNKNOWN;
   }
 }
 
@@ -148,12 +148,11 @@ void IpcNetworkManager::OnNetworkListChanged(
   }
   set_default_local_addresses(ipv4_default, ipv6_default);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowLoopbackInPeerConnection)) {
+  if (Platform::Current()->AllowsLoopbackInPeerConnection()) {
     std::string name_v4("loopback_ipv4");
     rtc::IPAddress ip_address_v4(INADDR_LOOPBACK);
-    rtc::Network* network_v4 = new rtc::Network(
-        name_v4, name_v4, ip_address_v4, 32, rtc::ADAPTER_TYPE_UNKNOWN);
+    rtc::Network* network_v4 = new rtc::Network(name_v4, name_v4, ip_address_v4,
+                                                32, rtc::ADAPTER_TYPE_UNKNOWN);
     network_v4->set_default_local_address_provider(this);
     network_v4->set_mdns_responder_provider(this);
     network_v4->AddIP(ip_address_v4);
@@ -197,4 +196,4 @@ void IpcNetworkManager::SendNetworksChangedSignal() {
   SignalNetworksChanged();
 }
 
-}  // namespace content
+}  // namespace blink

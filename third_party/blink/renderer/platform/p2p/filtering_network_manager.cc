@@ -202,6 +202,8 @@ void FilteringNetworkManager::FireEventIfStarted() {
     ReportMetrics(true);
 
   // Post a task to avoid reentrancy.
+  //
+  // TODO(crbug.com/787254): Use Frame-based TaskRunner here.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FilteringNetworkManager::SendNetworksChangedSignal,

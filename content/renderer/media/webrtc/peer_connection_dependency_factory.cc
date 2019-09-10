@@ -29,7 +29,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/media/webrtc/stun_field_trial.h"
-#include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/mdns_responder_adapter.h"
 #include "content/renderer/p2p/port_allocator.h"
@@ -45,6 +44,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/p2p/empty_network_manager.h"
 #include "third_party/blink/public/platform/modules/p2p/filtering_network_manager.h"
+#include "third_party/blink/public/platform/modules/p2p/ipc_network_manager.h"
 #include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
 #include "third_party/blink/public/platform/modules/peerconnection/video_codec_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
@@ -580,7 +580,7 @@ void PeerConnectionDependencyFactory::CreateIpcNetworkManagerOnWorkerThread(
     base::WaitableEvent* event,
     std::unique_ptr<MdnsResponderAdapter> mdns_responder) {
   DCHECK(chrome_worker_thread_.task_runner()->BelongsToCurrentThread());
-  network_manager_ = std::make_unique<IpcNetworkManager>(
+  network_manager_ = std::make_unique<blink::IpcNetworkManager>(
       p2p_socket_dispatcher_.get(), std::move(mdns_responder));
   event->Signal();
 }
