@@ -4,6 +4,9 @@
 
 #include "extensions/browser/events/event_ack_data.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/guid.h"
@@ -11,6 +14,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/service_worker_external_request_result.h"
 
 namespace extensions {
 
@@ -51,8 +55,10 @@ void EventAckData::StartExternalRequestOnIO(
 
   std::string request_uuid = base::GenerateGUID();
 
-  if (!context->StartingExternalRequest(version_id, request_uuid)) {
-    LOG(ERROR) << "StartExternalRequest failed";
+  content::ServiceWorkerExternalRequestResult result =
+      context->StartingExternalRequest(version_id, request_uuid);
+  if (result != content::ServiceWorkerExternalRequestResult::kOk) {
+    LOG(ERROR) << "StartExternalRequest failed: " << static_cast<int>(result);
     return;
   }
 
@@ -85,8 +91,12 @@ void EventAckData::FinishExternalRequestOnIO(
   std::string request_uuid = std::move(request_info_iter->second.first);
   unacked_events_map.erase(request_info_iter);
 
-  if (!context->FinishedExternalRequest(version_id, request_uuid))
+  content::ServiceWorkerExternalRequestResult result =
+      context->FinishedExternalRequest(version_id, request_uuid);
+  if (result != content::ServiceWorkerExternalRequestResult::kOk) {
+    LOG(ERROR) << "FinishExternalRequest failed: " << static_cast<int>(result);
     std::move(failure_callback).Run();
+  }
 }
 
 EventAckData::EventAckData()

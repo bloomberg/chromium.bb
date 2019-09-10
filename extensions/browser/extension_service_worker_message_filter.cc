@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/service_worker_external_request_result.h"
 #include "extensions/browser/bad_message.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/events/event_ack_data.h"
@@ -85,10 +86,13 @@ void ExtensionServiceWorkerMessageFilter::OnDecrementServiceWorkerActivity(
     int64_t service_worker_version_id,
     const std::string& request_uuid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  bool status = service_worker_context_->FinishedExternalRequest(
-      service_worker_version_id, request_uuid);
-  if (!status)
-    LOG(ERROR) << "ServiceWorkerContext::FinishedExternalRequest failed.";
+  content::ServiceWorkerExternalRequestResult result =
+      service_worker_context_->FinishedExternalRequest(
+          service_worker_version_id, request_uuid);
+  if (result != content::ServiceWorkerExternalRequestResult::kOk) {
+    LOG(ERROR) << "ServiceWorkerContext::FinishedExternalRequest failed: "
+               << static_cast<int>(result);
+  }
   bool erased = active_request_uuids_.erase(request_uuid) == 1;
   // The worker may have already stopped before we got here, so only report
   // a bad message if we didn't have an increment for the UUID.
