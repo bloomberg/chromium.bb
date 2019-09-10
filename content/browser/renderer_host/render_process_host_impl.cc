@@ -2193,20 +2193,22 @@ void RenderProcessHostImpl::BindRouteProvider(
 
 void RenderProcessHostImpl::GetRoute(
     int32_t routing_id,
-    blink::mojom::AssociatedInterfaceProviderAssociatedRequest request) {
-  DCHECK(request.is_pending());
-  associated_interface_provider_bindings_.AddBinding(
-      this, std::move(request), routing_id);
+    mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+        receiver) {
+  DCHECK(receiver.is_valid());
+  associated_interface_provider_receivers_.Add(this, std::move(receiver),
+                                               routing_id);
 }
 
 void RenderProcessHostImpl::GetAssociatedInterface(
     const std::string& name,
-    blink::mojom::AssociatedInterfaceAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
+        receiver) {
   int32_t routing_id =
-      associated_interface_provider_bindings_.dispatch_context();
+      associated_interface_provider_receivers_.current_context();
   IPC::Listener* listener = listeners_.Lookup(routing_id);
   if (listener)
-    listener->OnAssociatedInterfaceRequest(name, request.PassHandle());
+    listener->OnAssociatedInterfaceRequest(name, receiver.PassHandle());
 }
 
 void RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider(
@@ -4151,8 +4153,9 @@ void RenderProcessHostImpl::ProcessDied(
 void RenderProcessHostImpl::ResetIPC() {
   if (renderer_host_binding_.is_bound())
     renderer_host_binding_.Unbind();
+
   route_provider_receiver_.reset();
-  associated_interface_provider_bindings_.CloseAllBindings();
+  associated_interface_provider_receivers_.Clear();
   associated_interfaces_.reset();
 
   // Destroy all embedded CompositorFrameSinks.
