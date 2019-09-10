@@ -280,7 +280,7 @@ base::Value URLRequest::GetStateAsValue() const {
   if (url_chain_.size() > 1) {
     base::Value list(base::Value::Type::LIST);
     for (const GURL& url : url_chain_) {
-      list.GetList().emplace_back(url.possibly_invalid_spec());
+      list.Append(url.possibly_invalid_spec());
     }
     dict.SetKey("url_chain", std::move(list));
   }

@@ -1613,7 +1613,7 @@ std::unique_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
         hosts.insert(HostPortPair(alias_it->server_id().host(),
                                   alias_it->server_id().port()));
       }
-      list->GetList().push_back(session->GetInfoAsValue(hosts));
+      list->Append(session->GetInfoAsValue(hosts));
     }
   }
   return std::move(list);

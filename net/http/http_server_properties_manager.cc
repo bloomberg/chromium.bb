@@ -724,7 +724,7 @@ void HttpServerPropertiesManager::WriteToPrefs(
     server_dict.SetStringKey(kServerKey, key.server.Serialize());
     server_dict.SetKey(kNetworkIsolationKey,
                        std::move(network_isolation_key_value));
-    servers_list.GetList().emplace_back(std::move(server_dict));
+    servers_list.Append(std::move(server_dict));
   }
   http_server_properties_dict.SetKey(kServersKey, std::move(servers_list));
 
@@ -861,7 +861,7 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
       }
       entry_dict.SetKey(kBrokenCountKey, base::Value(broken_count));
       json_list_index_map[broken_alt_service] = json_list->GetList().size();
-      json_list->GetList().push_back(std::move(entry_dict));
+      json_list->Append(std::move(entry_dict));
     }
   }
 
@@ -898,7 +898,7 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
         }
         entry_dict.SetKey(kBrokenUntilKey,
                           base::Value(base::NumberToString(expiration_int64)));
-        json_list->GetList().push_back(std::move(entry_dict));
+        json_list->Append(std::move(entry_dict));
       }
     }
   }

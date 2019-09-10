@@ -1042,21 +1042,20 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
     alternative_service_dict.SetStringKey("protocol_str", "quic");
     alternative_service_dict.SetIntKey("port", i);
     base::Value alternative_service_list(base::Value::Type::LIST);
-    alternative_service_list.GetList().emplace_back(
-        std::move(alternative_service_dict));
+    alternative_service_list.Append(std::move(alternative_service_dict));
     server_dict.SetKey("alternative_service",
                        std::move(alternative_service_list));
     server_dict.SetStringKey("server",
                              StringPrintf("https://www.google.com:%d", i));
     server_dict.SetKey("isolation", base::Value(base::Value::Type::LIST));
-    servers_list->GetList().emplace_back(std::move(server_dict));
+    servers_list->Append(std::move(server_dict));
   }
 
   // Set the server preference for http://mail.google.com server.
   base::Value server_dict2(base::Value::Type::DICTIONARY);
   server_dict2.SetStringKey("server", "https://mail.google.com");
   server_dict2.SetKey("isolation", base::Value(base::Value::Type::LIST));
-  servers_list->GetList().emplace_back(std::move(server_dict2));
+  servers_list->Append(std::move(server_dict2));
 
   base::DictionaryValue http_server_properties_dict = DictWithVersion();
   http_server_properties_dict.SetWithoutPathExpansion("servers",
