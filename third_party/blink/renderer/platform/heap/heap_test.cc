@@ -6118,39 +6118,4 @@ TEST_F(HeapTest, AccessDeletedBackingStore) {
   }
 }
 
-struct Parent : GarbageCollectedFinalized<Parent> {
-  virtual ~Parent() {}
-  virtual void Trace(Visitor*) {}
-};
-
-struct Child : Parent {
-  ~Child() override { ++destructor_calls; }
-  void Trace(Visitor*) override { ++trace_calls; }
-
-  static size_t destructor_calls;
-  static size_t trace_calls;
-};
-
-size_t Child::destructor_calls = 0;
-size_t Child::trace_calls = 0;
-
-TEST_F(HeapTest, WrongFinalizers) {
-  {
-    Child::destructor_calls = 0;
-    Child::trace_calls = 0;
-
-    MakeGarbageCollected<Child>();
-    PreciselyCollectGarbage();
-    EXPECT_EQ(1u, Child::destructor_calls);
-  }
-  {
-    Child::destructor_calls = 0;
-    Child::trace_calls = 0;
-
-    Persistent<Parent> p = MakeGarbageCollected<Child>();
-    PreciselyCollectGarbage();
-    EXPECT_EQ(1u, Child::trace_calls);
-  }
-}
-
 }  // namespace blink
