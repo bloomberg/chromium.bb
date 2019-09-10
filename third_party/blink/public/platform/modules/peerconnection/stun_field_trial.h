@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_STUN_FIELD_TRIAL_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_STUN_FIELD_TRIAL_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_STUN_FIELD_TRIAL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_STUN_FIELD_TRIAL_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/modules/p2p/network_list_manager.h"
 #include "third_party/blink/public/platform/modules/p2p/network_list_observer.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
 #include "third_party/webrtc/rtc_base/network.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
@@ -25,7 +24,7 @@ class PacketSocketFactory;
 class SocketAddress;
 }  // namespace rtc
 
-namespace content {
+namespace blink {
 
 // Wait for 30 seconds to avoid high CPU usage during browser start-up which
 // might affect the accuracy of the trial. The trial wakes up the browser every
@@ -33,10 +32,13 @@ namespace content {
 // stun probe.
 static const int kExperimentStartDelayMs = 30000;
 
+// TODO(crbug.com/787254): Move this class out of the Blink exposed API when
+// all users of it have been Onion souped. Also migrate away from std::vector
+// and std::string.
 class StunProberTrial : public stunprober::StunProber::Observer,
                         public sigslot::has_slots<> {
  public:
-  struct CONTENT_EXPORT Param {
+  struct BLINK_PLATFORM_EXPORT Param {
     Param();
     ~Param();
     int requests_per_ip = 0;
@@ -47,9 +49,9 @@ class StunProberTrial : public stunprober::StunProber::Observer,
     std::vector<rtc::SocketAddress> servers;
   };
 
-  StunProberTrial(rtc::NetworkManager* network_manager,
-                  const std::string& params,
-                  rtc::PacketSocketFactory* factory);
+  BLINK_PLATFORM_EXPORT StunProberTrial(rtc::NetworkManager* network_manager,
+                                        const std::string& params,
+                                        rtc::PacketSocketFactory* factory);
   ~StunProberTrial() override;
 
  private:
@@ -59,8 +61,9 @@ class StunProberTrial : public stunprober::StunProber::Observer,
   void OnNetworksChanged();
 
   // Parsing function to decode the '/' separated parameter string |params|.
-  static CONTENT_EXPORT bool ParseParameters(const std::string& param_line,
-                                             Param* params);
+  static BLINK_PLATFORM_EXPORT bool ParseParameters(
+      const std::string& param_line,
+      Param* params);
 
   // stunprober::StunProber::Observer:
   void OnPrepared(stunprober::StunProber* prober,
@@ -85,7 +88,7 @@ class StunProberTrial : public stunprober::StunProber::Observer,
   int started_probers_ = 0;
   int finished_probers_ = 0;
   std::vector<stunprober::StunProber*> probers_;
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // The reason we use a timer instead of depending on the OnFinished callback
   // of each prober is that the OnFinished is not fired at the last of STUN
@@ -98,6 +101,6 @@ class StunProberTrial : public stunprober::StunProber::Observer,
   DISALLOW_COPY_AND_ASSIGN(StunProberTrial);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_STUN_FIELD_TRIAL_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_STUN_FIELD_TRIAL_H_

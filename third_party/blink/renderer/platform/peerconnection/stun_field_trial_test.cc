@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/stun_field_trial.h"
+#include "third_party/blink/public/platform/modules/peerconnection/stun_field_trial.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/rtc_base/socket_address.h"
 
-namespace content {
+namespace blink {
 
 TEST(StunProbeTrial, VerifyParameterParsing) {
   StunProberTrial::Param params;
@@ -38,4 +38,4 @@ TEST(StunProbeTrial, VerifyParameterParsing) {
   EXPECT_FALSE(StunProberTrial::ParseParameters(param_line, &params));
 }
 
-}  // namespace content
+}  // namespace blink

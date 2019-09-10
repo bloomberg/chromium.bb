@@ -28,7 +28,6 @@
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
-#include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/mdns_responder_adapter.h"
 #include "content/renderer/p2p/port_allocator.h"
@@ -46,6 +45,7 @@
 #include "third_party/blink/public/platform/modules/p2p/filtering_network_manager.h"
 #include "third_party/blink/public/platform/modules/p2p/ipc_network_manager.h"
 #include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
+#include "third_party/blink/public/platform/modules/peerconnection/stun_field_trial.h"
 #include "third_party/blink/public/platform/modules/peerconnection/video_codec_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
@@ -565,15 +565,15 @@ void PeerConnectionDependencyFactory::TryScheduleStunProbeTrial() {
       base::BindOnce(
           &PeerConnectionDependencyFactory::StartStunProbeTrialOnWorkerThread,
           base::Unretained(this), params),
-      base::TimeDelta::FromMilliseconds(kExperimentStartDelayMs));
+      base::TimeDelta::FromMilliseconds(blink::kExperimentStartDelayMs));
 }
 
 void PeerConnectionDependencyFactory::StartStunProbeTrialOnWorkerThread(
     const std::string& params) {
   DCHECK(network_manager_);
   DCHECK(chrome_worker_thread_.task_runner()->BelongsToCurrentThread());
-  stun_trial_.reset(new StunProberTrial(network_manager_.get(), params,
-                                        socket_factory_.get()));
+  stun_trial_.reset(new blink::StunProberTrial(network_manager_.get(), params,
+                                               socket_factory_.get()));
 }
 
 void PeerConnectionDependencyFactory::CreateIpcNetworkManagerOnWorkerThread(

@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/stun_field_trial.h"
+#include "third_party/blink/public/platform/modules/peerconnection/stun_field_trial.h"
 
 #include <math.h>
 
-#include "base/bind.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -26,7 +24,7 @@
 
 using stunprober::StunProber;
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -40,8 +38,8 @@ enum NatType {
 };
 
 // This needs to match "NatType" in histograms.xml.
-const char* const NatTypeNames[] =
-    {"NoNAT", "UnknownNAT", "SymNAT", "NonSymNAT"};
+const char* const NatTypeNames[] = {"NoNAT", "UnknownNAT", "SymNAT",
+                                    "NonSymNAT"};
 static_assert(base::size(NatTypeNames) == NAT_TYPE_MAX,
               "NatType enums must match names");
 
@@ -91,7 +89,7 @@ StunProberTrial::StunProberTrial(rtc::NetworkManager* network_manager,
 StunProberTrial::~StunProberTrial() {}
 
 void StunProberTrial::SaveHistogramData() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NatType nat_type = NAT_TYPE_UNKNOWN;
   int interval_ms = 0;
   int count = 0;
@@ -238,7 +236,7 @@ bool StunProberTrial::ParseParameters(const std::string& param_line,
 }
 
 void StunProberTrial::OnNetworksChanged() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << "Starting stun trial with params: " << param_line_;
   rtc::NetworkManager::NetworkList networks;
   network_manager_->GetNetworks(&networks);
@@ -277,7 +275,7 @@ void StunProberTrial::OnNetworksChanged() {
 
 void StunProberTrial::OnFinished(StunProber* prober,
                                  StunProber::Status result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (result == StunProber::SUCCESS)
     ++finished_probers_;
 
@@ -287,7 +285,7 @@ void StunProberTrial::OnFinished(StunProber* prober,
 
 void StunProberTrial::OnPrepared(StunProber* prober,
                                  StunProber::Status result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (result == StunProber::SUCCESS)
     ++ready_probers_;
 
@@ -295,14 +293,15 @@ void StunProberTrial::OnPrepared(StunProber* prober,
     // TODO(guoweis) estimated_execution_time() is the same for all probers. It
     // could be moved up to the StunProberTrial class once the DNS resolution
     // part is moved up too.
-    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
-                                probers_.front()->estimated_execution_time()),
+    timer_.Start(FROM_HERE,
+                 base::TimeDelta::FromMilliseconds(
+                     probers_.front()->estimated_execution_time()),
                  this, &StunProberTrial::OnTimer);
   }
 }
 
 void StunProberTrial::OnTimer() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   probers_[started_probers_]->Start(this);
   started_probers_++;
 
@@ -310,4 +309,4 @@ void StunProberTrial::OnTimer() {
     timer_.Stop();
 }
 
-}  // namespace content
+}  // namespace blink
