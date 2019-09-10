@@ -129,8 +129,8 @@ static void vfilter8(const int16_t *src, int src_stride, uint8_t *dst,
 
   const int w0 = conv_params->fwd_offset;
   const int w1 = conv_params->bck_offset;
-  const __m128i wt0 = _mm_set1_epi16(w0);
-  const __m128i wt1 = _mm_set1_epi16(w1);
+  const __m128i wt0 = _mm_set1_epi16((short)w0);
+  const __m128i wt1 = _mm_set1_epi16((short)w1);
   const __m128i wt = _mm_unpacklo_epi16(wt0, wt1);
 
   int y_qn = subpel_y_qn;
