@@ -3214,6 +3214,8 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-linet
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
+crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.html [ Failure Crash ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
