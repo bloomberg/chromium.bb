@@ -3333,6 +3333,10 @@ test("unit_tests") {
     }
   }
 
+  if (enable_library_cdms) {
+    sources += [ "../common/media/cdm_manifest_unittest.cc" ]
+  }
+
   if (!is_android) {
     sources += [
       # CRLSets are not supported on Android or iOS, but available on all other
