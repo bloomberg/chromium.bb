@@ -1,5 +1,6 @@
 per-file cros_test*=achuith@chromium.org
 per-file vm*=achuith@chromium.org
 per-file device*=achuith@chromium.org
+per-file auto_update*=dhaddock@chromium.org,ahassani@chromium.org
 
 per-file toolchain_util*=file:chromiumos/third_party/toolchain-utils:/OWNERS.toolchain
