@@ -46,6 +46,7 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
@@ -722,7 +723,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   int32_t client_id_;
 
-  mojom::FrameSinkProviderPtr frame_sink_provider_;
+  mojo::Remote<mojom::FrameSinkProvider> frame_sink_provider_;
 
   // A mojo connection to the CompositingModeReporter service.
   viz::mojom::CompositingModeReporterPtr compositing_mode_reporter_;

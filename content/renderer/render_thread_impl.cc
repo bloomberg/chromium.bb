@@ -959,7 +959,7 @@ void RenderThreadImpl::Init() {
   needs_to_record_first_active_paint_ = false;
   was_backgrounded_time_ = base::TimeTicks::Min();
 
-  BindHostReceiver(mojo::MakeRequest(&frame_sink_provider_));
+  BindHostReceiver(frame_sink_provider_.BindNewPipeAndPassReceiver());
 
   if (!is_gpu_compositing_disabled_) {
     BindHostReceiver(mojo::MakeRequest(&compositing_mode_reporter_));
