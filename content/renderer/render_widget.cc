@@ -765,9 +765,10 @@ void RenderWidget::OnSynchronizeVisualProperties(
   if (device_scale_factor_for_testing_) {
     visual_properties.screen_info.device_scale_factor =
         device_scale_factor_for_testing_;
-    visual_properties.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
-        visual_properties.new_size,
-        visual_properties.screen_info.device_scale_factor);
+    visual_properties.compositor_viewport_pixel_rect =
+        gfx::Rect(gfx::ScaleToCeiledSize(
+            visual_properties.new_size,
+            visual_properties.screen_info.device_scale_factor));
   }
 
   // Inform the rendering thread of the color space indicating the presence of
@@ -920,8 +921,7 @@ void RenderWidget::OnEnableDeviceEmulation(
     VisualProperties visual_properties;
     visual_properties.screen_info = screen_info_;
     visual_properties.new_size = size_;
-    visual_properties.compositor_viewport_pixel_size =
-        CompositorViewportRect().size();
+    visual_properties.compositor_viewport_pixel_rect = CompositorViewportRect();
     visual_properties.local_surface_id_allocation =
         local_surface_id_allocation_from_parent_;
     visual_properties.visible_viewport_size = visible_viewport_size_;
@@ -1660,16 +1660,15 @@ void RenderWidget::UpdateZoom(double zoom_level) {
 
 void RenderWidget::SynchronizeVisualProperties(
     const VisualProperties& visual_properties) {
-  gfx::Size new_compositor_viewport_pixel_size =
+  gfx::Rect new_compositor_viewport_pixel_rect =
       visual_properties.auto_resize_enabled
-          ? gfx::ScaleToCeiledSize(
-                size_, visual_properties.screen_info.device_scale_factor)
-          : visual_properties.compositor_viewport_pixel_size;
+          ? gfx::Rect(gfx::ScaleToCeiledSize(
+                size_, visual_properties.screen_info.device_scale_factor))
+          : visual_properties.compositor_viewport_pixel_rect;
   UpdateSurfaceAndScreenInfo(
       visual_properties.local_surface_id_allocation.value_or(
           viz::LocalSurfaceIdAllocation()),
-      gfx::Rect(new_compositor_viewport_pixel_size),
-      visual_properties.screen_info);
+      new_compositor_viewport_pixel_rect, visual_properties.screen_info);
   UpdateCaptureSequenceNumber(visual_properties.capture_sequence_number);
   layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
       visual_properties.top_controls_height,
@@ -2297,8 +2296,9 @@ void RenderWidget::SetWindowRectSynchronously(
   VisualProperties visual_properties;
   visual_properties.screen_info = screen_info_;
   visual_properties.new_size = new_window_rect.size();
-  visual_properties.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
-      new_window_rect.size(), GetWebScreenInfo().device_scale_factor);
+  visual_properties.compositor_viewport_pixel_rect =
+      gfx::Rect(gfx::ScaleToCeiledSize(new_window_rect.size(),
+                                       GetWebScreenInfo().device_scale_factor));
   visual_properties.visible_viewport_size = new_window_rect.size();
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
@@ -2725,13 +2725,13 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
 
     // TODO(ccameron): Note that this destroys any information differentiating
     // |size_| from the compositor's viewport size. Also note that the
-    // calculation of |new_compositor_viewport_pixel_size| does not appear to
+    // calculation of |new_compositor_viewport_pixel_rect| does not appear to
     // take into account device emulation.
     layer_tree_view_->RequestNewLocalSurfaceId();
-    gfx::Size new_compositor_viewport_pixel_size =
-        gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
+    gfx::Rect new_compositor_viewport_pixel_rect = gfx::Rect(
+        gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor));
     UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                               gfx::Rect(new_compositor_viewport_pixel_size),
+                               new_compositor_viewport_pixel_rect,
                                screen_info_);
   }
 }
@@ -3810,7 +3810,7 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
 
   // Make sure the DSF override stays for future VisualProperties updates, and
   // that includes overriding the VisualProperties'
-  // compositor_viewport_pixel_size with size * this for-testing DSF.
+  // compositor_viewport_pixel_rect with size * this for-testing DSF.
   device_scale_factor_for_testing_ = factor;
 }
 
@@ -3853,8 +3853,7 @@ void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   visual_properties.auto_resize_enabled = false;
   visual_properties.screen_info = screen_info_;
   visual_properties.new_size = new_size;
-  visual_properties.compositor_viewport_pixel_size =
-      CompositorViewportRect().size();
+  visual_properties.compositor_viewport_pixel_rect = CompositorViewportRect();
   visual_properties.browser_controls_shrink_blink_size =
       browser_controls_shrink_blink_size_;
   visual_properties.top_controls_height = top_controls_height_;

@@ -2603,7 +2603,8 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
     EXPECT_EQ("100x100", std::get<0>(params).new_size.ToString());  // dip size
     EXPECT_EQ("100x100",
               std::get<0>(params)
-                  .compositor_viewport_pixel_size.ToString());  // backing size
+                  .compositor_viewport_pixel_rect.size()
+                  .ToString());  // backing size
   }
 
   widget_host_->ResetSentVisualProperties();

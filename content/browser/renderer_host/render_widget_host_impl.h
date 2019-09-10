@@ -598,6 +598,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // properties of this widget.
   VisualProperties GetVisualProperties();
 
+  // Tracks the compositor viewport requested for an OOPIF subframe.
+  void SetCompositorViewport(const gfx::Rect& compositor_viewport);
+
   // Sets the |visual_properties| that were sent to the renderer bundled with
   // the request to create a new RenderWidget.
   void SetInitialVisualProperties(const VisualProperties& visual_properties);
@@ -1078,6 +1081,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // True when the renderer is currently undergoing a pinch-zoom gesture.
   bool is_pinch_gesture_active_ = false;
+
+  gfx::Rect compositor_viewport_;
 
   bool waiting_for_screen_rects_ack_ = false;
   gfx::Rect last_view_screen_rect_;
