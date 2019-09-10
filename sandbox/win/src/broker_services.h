@@ -22,12 +22,6 @@
 #include "sandbox/win/src/win2k_threadpool.h"
 #include "sandbox/win/src/win_utils.h"
 
-namespace {
-
-struct JobTracker;
-
-}  // namespace
-
 namespace sandbox {
 
 // BrokerServicesBase ---------------------------------------------------------
@@ -71,19 +65,8 @@ class BrokerServicesBase final : public BrokerServices,
   // Handle to the worker thread that reacts to job notifications.
   base::win::ScopedHandle job_thread_;
 
-  // Lock used to protect the list of targets from being modified by 2
-  // threads at the same time.
-  CRITICAL_SECTION lock_;
-
   // Provides a pool of threads that are used to wait on the IPC calls.
   std::unique_ptr<ThreadProvider> thread_pool_;
-
-  // List of the trackers for closing and cleanup purposes.
-  std::list<std::unique_ptr<JobTracker>> tracker_list_;
-
-  // Provides a fast lookup to identify sandboxed processes that belong to a
-  // job.
-  std::set<DWORD> child_process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);
 };
