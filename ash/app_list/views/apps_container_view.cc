@@ -422,21 +422,6 @@ void AppsContainerView::OnGestureEvent(ui::GestureEvent* event) {
     event->SetHandled();
 }
 
-gfx::Size AppsContainerView::GetMinimumSize() const {
-  const bool switch_cols_and_rows = ShouldSwitchColsAndRows();
-  const int cols = switch_cols_and_rows
-                       ? AppListConfig::instance().preferred_rows()
-                       : AppListConfig::instance().preferred_cols();
-  const int rows = switch_cols_and_rows
-                       ? AppListConfig::instance().preferred_cols()
-                       : AppListConfig::instance().preferred_rows();
-  gfx::Size min_size = apps_grid_view_->GetMinimumTileGridSize(cols, rows);
-
-  const gfx::Size non_apps_grid_size = GetNonAppsGridSize();
-  min_size.Enlarge(non_apps_grid_size.width(), non_apps_grid_size.height());
-  return min_size;
-}
-
 void AppsContainerView::OnWillBeHidden() {
   if (show_state_ == SHOW_APPS || show_state_ == SHOW_ITEM_REPARENT)
     apps_grid_view_->EndDrag(true);
