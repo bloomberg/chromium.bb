@@ -1846,20 +1846,20 @@ void LayerTreeHost::QueueImageDecode(const PaintImage& image,
   SetNeedsCommit();
 }
 
-LayerListIterator<Layer> LayerTreeHost::begin() const {
-  return LayerListIterator<Layer>(root_layer_.get());
+LayerListIterator LayerTreeHost::begin() const {
+  return LayerListIterator(root_layer_.get());
 }
 
-LayerListIterator<Layer> LayerTreeHost::end() const {
-  return LayerListIterator<Layer>(nullptr);
+LayerListIterator LayerTreeHost::end() const {
+  return LayerListIterator(nullptr);
 }
 
-LayerListReverseIterator<Layer> LayerTreeHost::rbegin() {
-  return LayerListReverseIterator<Layer>(root_layer_.get());
+LayerListReverseIterator LayerTreeHost::rbegin() {
+  return LayerListReverseIterator(root_layer_.get());
 }
 
-LayerListReverseIterator<Layer> LayerTreeHost::rend() {
-  return LayerListReverseIterator<Layer>(nullptr);
+LayerListReverseIterator LayerTreeHost::rend() {
+  return LayerListReverseIterator(nullptr);
 }
 
 void LayerTreeHost::SetPropertyTreesForTesting(
