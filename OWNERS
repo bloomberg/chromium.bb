@@ -24,3 +24,5 @@ per-file chrome_set_ver=file://CROS_OWNERS
 per-file cros=file://CROS_OWNERS
 per-file cros_sdk=file://CROS_OWNERS
 per-file repo=file://CROS_OWNERS
+
+# COMPONENT: Infra>SDK
