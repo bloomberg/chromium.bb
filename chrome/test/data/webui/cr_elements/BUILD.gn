@@ -16,6 +16,7 @@ js_modulizer("modulize") {
     "cr_icon_button_tests.js",
     "cr_icon_button_focus_tests.js",
     "cr_input_test.js",
+    "cr_lazy_render_tests.js",
     "cr_link_row_tests.js",
     "cr_radio_button_test.js",
     "cr_radio_group_test.js",

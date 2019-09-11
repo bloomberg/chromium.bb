@@ -9,6 +9,7 @@ import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.m.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
@@ -106,9 +107,13 @@ class HelloPolymer3Element extends PolymerElement {
 
       <div>
         <cr-button on-click="showDialog_">Click to open dialog</cr-button>
-        <cr-dialog id="dialog">
-          <div slot="title">I am a dialog</div>
-        </cr-dialog>
+        <cr-lazy-render id="dialog">
+          <template>
+            <cr-dialog>
+              <div slot="title">I am a dialog</div>
+            </cr-dialog>
+          </template>
+        </cr-lazy-render>
       </div>
 
       <div>
@@ -175,7 +180,7 @@ class HelloPolymer3Element extends PolymerElement {
 
   /** @private */
   showDialog_() {
-    this.shadowRoot.querySelector('cr-dialog').showModal();
+    this.shadowRoot.querySelector('#dialog').get().showModal();
   }
 
   /**

@@ -37,6 +37,14 @@ Polymer.Templatize.templatize = function(template, owner, options) {};
 
 /**
  * @see
+ * https://polymer-library.polymer-project.org/2.0/api/namespaces/Polymer.Templatize
+ * @constructor
+ * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
+ */
+let TemplateInstanceBase = function() {};
+
+/**
+ * @see
  * https://polymer-library.polymer-project.org/2.0/api/elements/Polymer.DomIf
  * @constructor
  */
