@@ -1923,7 +1923,7 @@ void ChromeContentBrowserClient::PersistIsolatedOrigin(
   base::ListValue* list = update.Get();
   base::Value value(origin.Serialize());
   if (!base::Contains(list->GetList(), value))
-    list->GetList().push_back(std::move(value));
+    list->Append(std::move(value));
 }
 
 bool ChromeContentBrowserClient::IsFileAccessAllowed(
