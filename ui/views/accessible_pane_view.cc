@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view_tracker.h"

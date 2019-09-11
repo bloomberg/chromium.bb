@@ -18,6 +18,7 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -1181,7 +1182,8 @@ BrowserAccessibility::CreatePositionAt(int offset,
 BrowserAccessibilityPosition::AXPositionInstance
 BrowserAccessibility::CreatePositionForSelectionAt(int offset) const {
   BrowserAccessibilityPositionInstance position =
-      CreatePositionAt(offset)->AsLeafTextPosition();
+      CreatePositionAt(offset, ax::mojom::TextAffinity::kDownstream)
+          ->AsLeafTextPosition();
   if (position->GetAnchor() &&
       position->GetAnchor()->GetRole() == ax::mojom::Role::kInlineTextBox) {
     return position->CreateParentPosition();
