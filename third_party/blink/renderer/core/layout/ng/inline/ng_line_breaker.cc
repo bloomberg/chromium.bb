@@ -445,7 +445,8 @@ void NGLineBreaker::BreakLine(
     }
 
     if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
-      AddItem(item, line_info);
+      NGInlineItemResult* item_result = AddItem(item, line_info);
+      ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
       MoveToNextOf(item);
     } else if (item.Length()) {
       NOTREACHED();
