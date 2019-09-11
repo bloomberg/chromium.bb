@@ -23,13 +23,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://www.w3.org/TR/geolocation-API/#position_interface
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_POSITION_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_POSITION_ERROR_H_
 
-[
-    Exposed=Window,
-    NoInterfaceObject,
-    ImplementedAs=Geoposition
-] interface Position {
-    readonly attribute Coordinates coords;
-    readonly attribute DOMTimeStamp timestamp;
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+namespace blink {
+
+class GeolocationPositionError final : public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+
+ public:
+  enum ErrorCode {
+    kPermissionDenied = 1,
+    kPositionUnavailable = 2,
+    kTimeout = 3
+  };
+
+  GeolocationPositionError(ErrorCode code, const String& message)
+      : code_(code), message_(message), is_fatal_(false) {}
+
+  ErrorCode code() const { return code_; }
+  const String& message() const { return message_; }
+  void SetIsFatal(bool is_fatal) { is_fatal_ = is_fatal; }
+  bool IsFatal() const { return is_fatal_; }
+
+ private:
+  ErrorCode code_;
+  String message_;
+  // Whether the error is fatal, such that no request can ever obtain a good
+  // position fix in the future.
+  bool is_fatal_;
 };
+
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_POSITION_ERROR_H_

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2013 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,15 +23,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Exposed=Window,
-    NoInterfaceObject
-] interface Coordinates {
-    readonly attribute double latitude;
-    readonly attribute double longitude;
-    readonly attribute double? altitude;
-    readonly attribute double accuracy;
-    readonly attribute double? altitudeAccuracy;
-    readonly attribute double? heading;
-    readonly attribute double? speed;
-};
+#include "third_party/blink/renderer/modules/geolocation/geolocation_coordinates.h"
+
+namespace blink {
+
+double GeolocationCoordinates::altitude(bool& is_null) const {
+  if (can_provide_altitude_)
+    return altitude_;
+
+  is_null = true;
+  return 0;
+}
+
+double GeolocationCoordinates::altitudeAccuracy(bool& is_null) const {
+  if (can_provide_altitude_accuracy_)
+    return altitude_accuracy_;
+
+  is_null = true;
+  return 0;
+}
+
+double GeolocationCoordinates::heading(bool& is_null) const {
+  if (can_provide_heading_)
+    return heading_;
+
+  is_null = true;
+  return 0;
+}
+
+double GeolocationCoordinates::speed(bool& is_null) const {
+  if (can_provide_speed_)
+    return speed_;
+
+  is_null = true;
+  return 0;
+}
+
+}  // namespace blink

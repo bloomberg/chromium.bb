@@ -24,9 +24,8 @@
  */
 
 [
-    Exposed=Window,
-    NoInterfaceObject
-] interface PositionError {
+    Exposed=Window
+] interface GeolocationPositionError {
     readonly attribute unsigned short code;
     readonly attribute DOMString message;
 

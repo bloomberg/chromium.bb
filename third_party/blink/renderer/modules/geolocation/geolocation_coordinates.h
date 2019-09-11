@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_COORDINATES_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_COORDINATES_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_COORDINATES_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_COORDINATES_H_
 
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -32,21 +32,21 @@
 
 namespace blink {
 
-class Coordinates : public ScriptWrappable {
+class GeolocationCoordinates : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  Coordinates(double latitude,
-              double longitude,
-              bool provides_altitude,
-              double altitude,
-              double accuracy,
-              bool provides_altitude_accuracy,
-              double altitude_accuracy,
-              bool provides_heading,
-              double heading,
-              bool provides_speed,
-              double speed)
+  GeolocationCoordinates(double latitude,
+                         double longitude,
+                         bool provides_altitude,
+                         double altitude,
+                         double accuracy,
+                         bool provides_altitude_accuracy,
+                         double altitude_accuracy,
+                         bool provides_heading,
+                         double heading,
+                         bool provides_speed,
+                         double speed)
       : latitude_(latitude),
         longitude_(longitude),
         altitude_(altitude),
@@ -84,4 +84,4 @@ class Coordinates : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_COORDINATES_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_COORDINATES_H_
