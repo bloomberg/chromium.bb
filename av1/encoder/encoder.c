@@ -4755,20 +4755,18 @@ static void recode_loop_update_q(
 
   if (cpi->oxcf.rc_mode == AOM_Q) return;
 
+  const int last_q = *q;
   int frame_over_shoot_limit = 0, frame_under_shoot_limit = 0;
   av1_rc_compute_frame_size_bounds(cpi, rc->this_frame_target,
                                    &frame_under_shoot_limit,
                                    &frame_over_shoot_limit);
   if (frame_over_shoot_limit == 0) frame_over_shoot_limit = 1;
 
-  if ((cm->current_frame.frame_type == KEY_FRAME) &&
-      rc->this_key_frame_forced &&
-      (rc->projected_frame_size < rc->max_frame_bandwidth)) {
-    int last_q = *q;
+  if (cm->current_frame.frame_type == KEY_FRAME && rc->this_key_frame_forced &&
+      rc->projected_frame_size < rc->max_frame_bandwidth) {
     int64_t kf_err;
-
-    int64_t high_err_target = cpi->ambient_err;
-    int64_t low_err_target = cpi->ambient_err >> 1;
+    const int64_t high_err_target = cpi->ambient_err;
+    const int64_t low_err_target = cpi->ambient_err >> 1;
 
 #if CONFIG_AV1_HIGHBITDEPTH
     if (cm->seq_params.use_highbitdepth) {
@@ -4789,7 +4787,7 @@ static void recode_loop_update_q(
         (kf_err > low_err_target &&
          rc->projected_frame_size <= frame_under_shoot_limit)) {
       // Lower q_high
-      *q_high = *q > *q_low ? *q - 1 : *q_low;
+      *q_high = AOMMAX(*q - 1, *q_low);
 
       // Adjust Q
       *q = (int)((*q * high_err_target) / kf_err);
@@ -4798,7 +4796,7 @@ static void recode_loop_update_q(
                rc->projected_frame_size >= frame_under_shoot_limit) {
       // The key frame is much better than the previous frame
       // Raise q_low
-      *q_low = *q < *q_high ? *q + 1 : *q_high;
+      *q_low = AOMMIN(*q + 1, *q_high);
 
       // Adjust Q
       *q = (int)((*q * low_err_target) / kf_err);
@@ -4807,14 +4805,14 @@ static void recode_loop_update_q(
 
     // Clamp Q to upper and lower limits:
     *q = clamp(*q, *q_low, *q_high);
+    *loop = (*q != last_q);
+    return;
+  }
 
-    *loop = *q != last_q;
-  } else if (recode_loop_test(cpi, frame_over_shoot_limit,
-                              frame_under_shoot_limit, *q,
-                              AOMMAX(*q_high, top_index), bottom_index)) {
+  if (recode_loop_test(cpi, frame_over_shoot_limit, frame_under_shoot_limit, *q,
+                       AOMMAX(*q_high, top_index), bottom_index)) {
     // Is the projected frame size out of range and are we allowed
     // to attempt to recode.
-    int last_q = *q;
 
     // Frame size out of permitted range:
     // Update correction factor & compute new Q to try...
@@ -4833,7 +4831,7 @@ static void recode_loop_update_q(
       }
 
       // Raise Qlow as to at least the current value
-      *q_low = *q < *q_high ? *q + 1 : *q_high;
+      *q_low = AOMMIN(*q + 1, *q_high);
 
       if (*undershoot_seen || loop_at_this_size > 2 ||
           (loop_at_this_size == 2 && !frame_is_intra_only(cm))) {
@@ -4855,7 +4853,7 @@ static void recode_loop_update_q(
       *overshoot_seen = 1;
     } else {
       // Frame is too small
-      *q_high = *q > *q_low ? *q - 1 : *q_low;
+      *q_high = AOMMAX(*q - 1, *q_low);
 
       if (*overshoot_seen || loop_at_this_size > 2 ||
           (loop_at_this_size == 2 && !frame_is_intra_only(cm))) {
@@ -4893,11 +4891,9 @@ static void recode_loop_update_q(
 
     // Clamp Q to upper and lower limits:
     *q = clamp(*q, *q_low, *q_high);
-
-    *loop = (*q != last_q);
-  } else {
-    *loop = 0;
   }
+
+  *loop = (*q != last_q);
 }
 
 static int get_interp_filter_selected(const AV1_COMMON *const cm,
