@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget.text;
 
 import android.content.Context;
 import android.graphics.PorterDuff;
@@ -16,7 +16,7 @@ import android.view.MenuItem;
 import android.widget.EditText;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.R;
 
 /**
  * EditText to use in AlertDialog needed due to b/20882793 and b/122113958. This class should be
@@ -28,7 +28,6 @@ import org.chromium.chrome.R;
  * the change.
  */
 public class AlertDialogEditText extends AppCompatEditText {
-
     public AlertDialogEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
     }

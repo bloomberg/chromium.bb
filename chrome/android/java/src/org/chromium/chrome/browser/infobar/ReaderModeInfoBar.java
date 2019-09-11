@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.accessibility.AccessibleTextView;
+import org.chromium.chrome.browser.ui.widget.text.AccessibleTextView;
 
 /**
  * This is the InfoBar implementation of the Reader Mode UI. This is used in place of the

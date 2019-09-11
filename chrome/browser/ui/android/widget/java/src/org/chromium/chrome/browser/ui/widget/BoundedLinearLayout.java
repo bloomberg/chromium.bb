@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -10,8 +10,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.widget.LinearLayout;
-
-import org.chromium.chrome.R;
 
 /**
  * A LinearLayout that can be constrained to a maximum size or percentage of the screen size.
@@ -27,7 +25,6 @@ import org.chromium.chrome.R;
  *     ...
  */
 public class BoundedLinearLayout extends LinearLayout {
-
     private static final int NOT_SPECIFIED = -1;
 
     private TypedValue mMaxWidthLandscape = new TypedValue();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -45,7 +45,9 @@ public class LoadingView extends ProgressBar {
     private final Runnable mDelayedHide = new Runnable() {
         @Override
         public void run() {
-            animate().alpha(0.0f).setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
+            animate()
+                    .alpha(0.0f)
+                    .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
                     .setListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
@@ -91,8 +93,10 @@ public class LoadingView extends ProgressBar {
         mShouldShow = false;
 
         if (getVisibility() == VISIBLE) {
-            postDelayed(mDelayedHide, Math.max(0,
-                    mStartTime + MINIMUM_ANIMATION_SHOW_TIME_MS - SystemClock.elapsedRealtime()));
+            postDelayed(mDelayedHide,
+                    Math.max(0,
+                            mStartTime + MINIMUM_ANIMATION_SHOW_TIME_MS
+                                    - SystemClock.elapsedRealtime()));
         }
     }
 }

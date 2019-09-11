@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -13,7 +13,6 @@ import android.util.AttributeSet;
 import android.widget.ScrollView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -52,7 +51,7 @@ public class FadingEdgeScrollView extends ScrollView {
 
         mSeparatorColor =
                 ApiCompatibilityUtils.getColor(getResources(), R.color.toolbar_shadow_color);
-        mSeparatorHeight = getResources().getDimensionPixelSize(R.dimen.separator_height);
+        mSeparatorHeight = getResources().getDimensionPixelSize(R.dimen.divider_height);
     }
 
     @Override

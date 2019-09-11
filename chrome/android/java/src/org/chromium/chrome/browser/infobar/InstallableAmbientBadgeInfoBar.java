@@ -18,7 +18,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.widget.accessibility.AccessibleTextView;
+import org.chromium.chrome.browser.ui.widget.text.AccessibleTextView;
 
 /**
  * An ambient infobar to tell the user that the current site they are visiting is a PWA.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget.text;
 
 import android.content.Context;
 import android.support.v7.widget.AppCompatEditText;
@@ -14,7 +14,6 @@ import android.widget.EditText;
  * can be useful when the EditText is put into a layout where it is smaller than it's normal height.
  */
 public class VerticallyFixedEditText extends AppCompatEditText {
-
     public VerticallyFixedEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -37,5 +36,4 @@ public class VerticallyFixedEditText extends AppCompatEditText {
         // TextView.bringPointIntoView(...) to change the vertical scroll.
         super.scrollTo(x, mBringingPointIntoView ? y : getScrollY());
     }
-
 }

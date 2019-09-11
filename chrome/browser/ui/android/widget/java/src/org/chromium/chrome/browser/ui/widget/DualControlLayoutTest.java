@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -17,14 +17,15 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Space;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.DualControlLayout.DualControlLayoutAlignment;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.chromium.chrome.browser.ui.widget.DualControlLayout.DualControlLayoutAlignment;
+import org.chromium.chrome.browser.ui.widget.test.R;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Tests for DualControlLayout.
@@ -50,7 +51,6 @@ public class DualControlLayoutTest {
     @Before
     public void setUp() throws Exception {
         mContext = InstrumentationRegistry.getTargetContext();
-        mContext.setTheme(R.style.Theme_Chromium_WithWindowAnimation);
         mTinyControlWidth = INFOBAR_WIDTH / 4;
     }
 
@@ -122,10 +122,9 @@ public class DualControlLayoutTest {
         // Confirm that the primary View is in the correct place.
         if ((isRtl && alignment == DualControlLayoutAlignment.START)
                 || (!isRtl
-                           && (alignment == DualControlLayoutAlignment.APART
-                                      || alignment
-                                              == DualControlLayout.DualControlLayoutAlignment
-                                                         .END))) {
+                        && (alignment == DualControlLayoutAlignment.APART
+                                || alignment
+                                        == DualControlLayout.DualControlLayoutAlignment.END))) {
             int expectedRight = INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0);
             Assert.assertEquals(
                     "Primary should be on the right.", expectedRight, primary.getRight());
@@ -234,8 +233,7 @@ public class DualControlLayoutTest {
         layout.addView(secondary);
 
         // Trigger the measurement & layout algorithms.
-        int parentWidthSpec =
-                MeasureSpec.makeMeasureSpec(INFOBAR_WIDTH, MeasureSpec.AT_MOST);
+        int parentWidthSpec = MeasureSpec.makeMeasureSpec(INFOBAR_WIDTH, MeasureSpec.AT_MOST);
         int parentHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         layout.measure(parentWidthSpec, parentHeightSpec);
         layout.layout(0, 0, layout.getMeasuredWidth(), layout.getMeasuredHeight());
@@ -280,24 +278,23 @@ public class DualControlLayoutTest {
         Assert.assertNull(layout.findViewById(R.id.button_primary));
         Assert.assertNull(layout.findViewById(R.id.button_secondary));
 
+        float dpToPx = mContext.getResources().getDisplayMetrics().density;
         // Inflate a DualControlLayout that has all of the attributes set and confirm they're used
         // correctly.
         FrameLayout containerView = new FrameLayout(mContext);
         LayoutInflater.from(mContext).inflate(
-                R.layout.autofill_editor_base_buttons, containerView, true);
-        DualControlLayout inflatedLayout =
-                (DualControlLayout) containerView.findViewById(R.id.button_bar);
+                R.layout.dual_control_test_layout, containerView, true);
+        DualControlLayout inflatedLayout = containerView.findViewById(R.id.button_bar);
         Assert.assertEquals(DualControlLayoutAlignment.END, inflatedLayout.getAlignment());
-        Assert.assertEquals(mContext.getResources().getDimensionPixelSize(
-                                    R.dimen.infobar_margin_between_stacked_buttons),
-                inflatedLayout.getStackedMargin());
+        Assert.assertEquals("Incorrect stacked margin. Should be 24dp", 24 * dpToPx,
+                inflatedLayout.getStackedMargin(), 0.f);
 
-        Button primaryButton = (Button) inflatedLayout.findViewById(R.id.button_primary);
+        Button primaryButton = inflatedLayout.findViewById(R.id.button_primary);
         Assert.assertNotNull(primaryButton);
-        Assert.assertEquals(mContext.getString(R.string.done), primaryButton.getText());
+        Assert.assertEquals("Done", primaryButton.getText());
 
         Button secondaryButton = (Button) inflatedLayout.findViewById(R.id.button_secondary);
         Assert.assertNotNull(secondaryButton);
-        Assert.assertEquals(mContext.getString(R.string.cancel), secondaryButton.getText());
+        Assert.assertEquals("Cancel", secondaryButton.getText());
     }
 }

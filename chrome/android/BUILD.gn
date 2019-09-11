@@ -703,6 +703,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/test:junit_test_support",
+    "//chrome/browser/ui/android/widget:ui_widget_junit_tests",
     "//chrome/test/android:chrome_java_test_support",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/bookmarks/common/android:bookmarks_java",
@@ -1997,6 +1998,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",
+    "//chrome/browser/ui/android/widget:ui_widget_java_tests",
   ]
   if (enable_chrome_android_internal) {
     data_deps = [

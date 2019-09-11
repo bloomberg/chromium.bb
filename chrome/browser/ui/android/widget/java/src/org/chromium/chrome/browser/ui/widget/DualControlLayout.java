@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.lang.annotation.Retention;
@@ -106,7 +105,7 @@ public final class DualControlLayout extends ViewGroup {
         // Cache dimensions.
         Resources resources = getContext().getResources();
         mHorizontalMarginBetweenViews =
-                resources.getDimensionPixelSize(R.dimen.infobar_control_margin_between_items);
+                resources.getDimensionPixelSize(R.dimen.dual_control_margin_between_items);
 
         if (attrs != null) parseAttributes(attrs);
     }
@@ -157,7 +156,8 @@ public final class DualControlLayout extends ViewGroup {
 
         // Measure the primary View, allowing it to be as wide as the Layout.
         int maxWidth = MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED
-                ? Integer.MAX_VALUE : (MeasureSpec.getSize(widthMeasureSpec) - sidePadding);
+                ? Integer.MAX_VALUE
+                : (MeasureSpec.getSize(widthMeasureSpec) - sidePadding);
         int unspecifiedSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         measureChild(mPrimaryView, unspecifiedSpec, unspecifiedSpec);
 
@@ -205,11 +205,11 @@ public final class DualControlLayout extends ViewGroup {
         boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         boolean isPrimaryOnRight = (isRtl && mAlignment == DualControlLayoutAlignment.START)
                 || (!isRtl
-                           && (mAlignment == DualControlLayoutAlignment.APART
-                                      || mAlignment == DualControlLayoutAlignment.END));
+                        && (mAlignment == DualControlLayoutAlignment.APART
+                                || mAlignment == DualControlLayoutAlignment.END));
 
-        int primaryRight = isPrimaryOnRight
-                ? (width - rightPadding) : (mPrimaryView.getMeasuredWidth() + leftPadding);
+        int primaryRight = isPrimaryOnRight ? (width - rightPadding)
+                                            : (mPrimaryView.getMeasuredWidth() + leftPadding);
         int primaryLeft = primaryRight - mPrimaryView.getMeasuredWidth();
         int primaryTop = getPaddingTop();
         int primaryBottom = primaryTop + mPrimaryView.getMeasuredHeight();
@@ -234,7 +234,8 @@ public final class DualControlLayout extends ViewGroup {
             if (mAlignment == DualControlLayoutAlignment.APART) {
                 // Put the second View on the other side of the Layout from the primary View.
                 secondaryLeft = isPrimaryOnRight
-                        ? leftPadding : width - rightPadding - mSecondaryView.getMeasuredWidth();
+                        ? leftPadding
+                        : width - rightPadding - mSecondaryView.getMeasuredWidth();
                 secondaryRight = secondaryLeft + mSecondaryView.getMeasuredWidth();
             } else if (isPrimaryOnRight) {
                 // Sit to the left of the primary View.
@@ -252,8 +253,7 @@ public final class DualControlLayout extends ViewGroup {
                 secondaryRight = secondaryLeft + mSecondaryView.getMeasuredWidth();
             }
 
-            mSecondaryView.layout(
-                    secondaryLeft, secondaryTop, secondaryRight, secondaryBottom);
+            mSecondaryView.layout(secondaryLeft, secondaryTop, secondaryRight, secondaryBottom);
         }
     }
 
