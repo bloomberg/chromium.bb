@@ -18,6 +18,7 @@
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/job.h"
 #include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_policy_info.h"
 #include "sandbox/win/src/sharedmem_ipc_server.h"
 #include "sandbox/win/src/win2k_threadpool.h"
 #include "sandbox/win/src/win_utils.h"
@@ -48,6 +49,8 @@ class BrokerServicesBase final : public BrokerServices,
                          DWORD* last_error,
                          PROCESS_INFORMATION* target) override;
   ResultCode WaitForAllTargets() override;
+  ResultCode GetPolicyDiagnostics(
+      std::unique_ptr<PolicyDiagnosticsReceiver> receiver) override;
 
  private:
   // The routine that the worker thread executes. It is in charge of

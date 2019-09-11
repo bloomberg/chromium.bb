@@ -53,6 +53,7 @@ enum {
   THREAD_CTRL_NEW_JOB_TRACKER,
   THREAD_CTRL_NEW_PROCESS_TRACKER,
   THREAD_CTRL_PROCESS_SIGNALLED,
+  THREAD_CTRL_GET_POLICY_INFO,
   THREAD_CTRL_QUIT,
   THREAD_CTRL_LAST,
 };
@@ -116,11 +117,11 @@ void ProcessTracker::FreeResources() {
   }
 }
 
-// Helper redispatches to process events to tracker thread
+// Helper redispatches process events to tracker thread.
 void WINAPI ProcessEventCallback(PVOID param, BOOLEAN ignored) {
-  // This callback should do very little, and must be threadpool safe
+  // This callback should do very little, and must be threadpool safe.
   ProcessTracker* tracker = reinterpret_cast<ProcessTracker*>(param);
-  // if this fails we can do nothing... we will leak the policy.
+  // If this fails we can do nothing... we will leak the policy.
   ::PostQueuedCompletionStatus(tracker->iocp, 0, THREAD_CTRL_PROCESS_SIGNALLED,
                                reinterpret_cast<LPOVERLAPPED>(tracker));
 }
@@ -327,6 +328,28 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
           processes.begin(), processes.end(), [&](auto&& p) -> bool {
             return p->process_id == tracker->process_id;
           }));
+
+    } else if (THREAD_CTRL_GET_POLICY_INFO == key) {
+      // Clone the policies for sandbox diagnostics.
+      std::unique_ptr<PolicyDiagnosticsReceiver> receiver;
+      receiver.reset(static_cast<PolicyDiagnosticsReceiver*>(
+          reinterpret_cast<void*>(ovl)));
+      // The PollicyInfo ctor copies essential information from the trackers.
+      auto policy_list = std::make_unique<PolicyList>();
+      for (auto&& process_tracker : processes) {
+        if (process_tracker->policy) {
+          policy_list->push_back(
+              std::make_unique<PolicyInfo>(process_tracker->policy.get()));
+        }
+      }
+      for (auto&& job_tracker : jobs) {
+        if (job_tracker->policy) {
+          policy_list->push_back(
+              std::make_unique<PolicyInfo>(job_tracker->policy.get()));
+        }
+      }
+      // Receiver should return quickly.
+      receiver->ReceiveDiagnostics(std::move(policy_list));
 
     } else if (THREAD_CTRL_QUIT == key) {
       // The broker object is being destroyed so the thread needs to exit.
@@ -612,6 +635,22 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
 ResultCode BrokerServicesBase::WaitForAllTargets() {
   ::WaitForSingleObject(no_targets_.Get(), INFINITE);
+  return SBOX_ALL_OK;
+}
+
+ResultCode BrokerServicesBase::GetPolicyDiagnostics(
+    std::unique_ptr<PolicyDiagnosticsReceiver> receiver) {
+  CHECK(job_thread_.IsValid());
+  // Post to the job thread.
+  if (!::PostQueuedCompletionStatus(
+          job_port_.Get(), 0, THREAD_CTRL_GET_POLICY_INFO,
+          reinterpret_cast<LPOVERLAPPED>(receiver.get()))) {
+    receiver->OnError(SBOX_ERROR_GENERIC);
+    return SBOX_ERROR_GENERIC;
+  }
+
+  // Ownership has passed to tracker thread.
+  receiver.release();
   return SBOX_ALL_OK;
 }
 
