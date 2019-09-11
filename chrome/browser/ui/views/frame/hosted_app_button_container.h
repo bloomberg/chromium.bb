@@ -21,6 +21,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace {
@@ -32,10 +33,6 @@ class BrowserView;
 class ExtensionsToolbarContainer;
 class HostedAppOriginText;
 class HostedAppMenuButton;
-
-namespace views {
-class Widget;
-}
 
 // A container for hosted app buttons in the title bar.
 class HostedAppButtonContainer : public views::AccessiblePaneView,
@@ -164,7 +161,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   // Whether we're waiting for the widget to become visible.
   bool pending_widget_visibility_ = true;
 
-  ScopedObserver<views::Widget, views::WidgetObserver> scoped_widget_observer_;
+  ScopedObserver<views::Widget, views::WidgetObserver> scoped_widget_observer_{
+      this};
 
   // Timers for synchronising their respective parts of the titlebar animation.
   base::OneShotTimer animation_start_delay_;

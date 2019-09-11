@@ -189,8 +189,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
     SkColor active_color,
     SkColor inactive_color,
     base::Optional<int> right_margin)
-    : scoped_widget_observer_(this),
-      browser_view_(browser_view),
+    : browser_view_(browser_view),
       active_color_(active_color),
       inactive_color_(inactive_color) {
   DCHECK(browser_view_);
