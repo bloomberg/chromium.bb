@@ -31,8 +31,8 @@ class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
       override;
   void RegisterRenderFrameMetadataObserver(
       int32_t widget_id,
-      mojom::RenderFrameMetadataObserverClientRequest
-          render_frame_metadata_observer_client_request,
+      mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+          render_frame_metadata_observer_client_receiver,
       mojo::PendingRemote<mojom::RenderFrameMetadataObserver> observer)
       override;
 

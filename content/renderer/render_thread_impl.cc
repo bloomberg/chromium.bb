@@ -1847,8 +1847,8 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
     LayerTreeFrameSinkCallback callback,
-    mojom::RenderFrameMetadataObserverClientRequest
-        render_frame_metadata_observer_client_request,
+    mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+        render_frame_metadata_observer_client_receiver,
     mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
         render_frame_metadata_observer_remote,
     const char* client_name) {
@@ -1902,7 +1902,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
         std::move(compositor_frame_sink_client));
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
         widget_routing_id,
-        std::move(render_frame_metadata_observer_client_request),
+        std::move(render_frame_metadata_observer_client_receiver),
         std::move(render_frame_metadata_observer_remote));
     std::move(callback).Run(
         std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
@@ -1965,7 +1965,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       // TODO(ericrk): Collapse with non-webview registration below.
       frame_sink_provider_->RegisterRenderFrameMetadataObserver(
           widget_routing_id,
-          std::move(render_frame_metadata_observer_client_request),
+          std::move(render_frame_metadata_observer_client_receiver),
           std::move(render_frame_metadata_observer_remote));
 
       std::move(callback).Run(std::make_unique<SynchronousLayerTreeFrameSink>(
@@ -1988,7 +1988,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       std::move(compositor_frame_sink_client));
   frame_sink_provider_->RegisterRenderFrameMetadataObserver(
       widget_routing_id,
-      std::move(render_frame_metadata_observer_client_request),
+      std::move(render_frame_metadata_observer_client_receiver),
       std::move(render_frame_metadata_observer_remote));
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
   std::move(callback).Run(

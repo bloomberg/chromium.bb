@@ -58,6 +58,7 @@
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
@@ -651,8 +652,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client);
 
   void RegisterRenderFrameMetadataObserver(
-      mojom::RenderFrameMetadataObserverClientRequest
-          render_frame_metadata_observer_client_request,
+      mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+          render_frame_metadata_observer_client_receiver,
       mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
           render_frame_metadata_observer);
 

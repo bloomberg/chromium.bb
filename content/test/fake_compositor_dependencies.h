@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "content/renderer/compositor/compositor_dependencies.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 
@@ -41,8 +42,8 @@ class FakeCompositorDependencies : public CompositorDependencies {
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
-      mojom::RenderFrameMetadataObserverClientRequest
-          render_frame_metadata_observer_client_request,
+      mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+          render_frame_metadata_observer_client_receiver,
       mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
           render_frame_metadata_observer_remote,
       const char* client_name) override;

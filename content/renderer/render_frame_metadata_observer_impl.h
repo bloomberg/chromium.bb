@@ -11,7 +11,9 @@
 #include "content/common/content_export.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 
@@ -30,7 +32,8 @@ class CONTENT_EXPORT RenderFrameMetadataObserverImpl
  public:
   RenderFrameMetadataObserverImpl(
       mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver,
-      mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
+      mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient>
+          client_remote);
   ~RenderFrameMetadataObserverImpl() override;
 
   // cc::RenderFrameMetadataObserver:
@@ -76,11 +79,11 @@ class CONTENT_EXPORT RenderFrameMetadataObserverImpl
 
   // These are destroyed when BindToCurrentThread() is called.
   mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver_;
-  mojom::RenderFrameMetadataObserverClientPtrInfo client_info_;
+  mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient> client_remote_;
 
   mojo::Receiver<mojom::RenderFrameMetadataObserver>
       render_frame_metadata_observer_receiver_{this};
-  mojom::RenderFrameMetadataObserverClientPtr
+  mojo::Remote<mojom::RenderFrameMetadataObserverClient>
       render_frame_metadata_observer_client_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameMetadataObserverImpl);

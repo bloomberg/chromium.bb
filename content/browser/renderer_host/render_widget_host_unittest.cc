@@ -266,14 +266,15 @@ class MockRenderViewHostDelegateView : public RenderViewHostDelegateView {
 // Fake out the renderer side of mojom::RenderFrameMetadataObserver, allowing
 // for RenderWidgetHostImpl to be created.
 //
-// All methods are no-opts, the provided mojo request and info are held, but
+// All methods are no-opts, the provided mojo receiver and remote are held, but
 // never bound.
 class FakeRenderFrameMetadataObserver
     : public mojom::RenderFrameMetadataObserver {
  public:
   FakeRenderFrameMetadataObserver(
       mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver,
-      mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
+      mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient>
+          client_remote);
   ~FakeRenderFrameMetadataObserver() override {}
 
 #if defined(OS_ANDROID)
@@ -283,14 +284,15 @@ class FakeRenderFrameMetadataObserver
 
  private:
   mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver_;
-  mojom::RenderFrameMetadataObserverClientPtrInfo client_info_;
+  mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient> client_remote_;
   DISALLOW_COPY_AND_ASSIGN(FakeRenderFrameMetadataObserver);
 };
 
 FakeRenderFrameMetadataObserver::FakeRenderFrameMetadataObserver(
     mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver,
-    mojom::RenderFrameMetadataObserverClientPtrInfo client_info)
-    : receiver_(std::move(receiver)), client_info_(std::move(client_info)) {}
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient> client_remote)
+    : receiver_(std::move(receiver)),
+      client_remote_(std::move(client_remote)) {}
 
 // MockRenderWidgetHostDelegate --------------------------------------------
 
@@ -509,22 +511,23 @@ class RenderWidgetHostTest : public testing::Test {
 
     mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
         renderer_render_frame_metadata_observer_remote;
-    mojom::RenderFrameMetadataObserverClientPtrInfo
-        render_frame_metadata_observer_client_info;
-    mojom::RenderFrameMetadataObserverClientRequest
-        render_frame_metadata_observer_client_request =
-            mojo::MakeRequest(&render_frame_metadata_observer_client_info);
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient>
+        render_frame_metadata_observer_remote;
+    mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+        render_frame_metadata_observer_client_receiver =
+            render_frame_metadata_observer_remote
+                .InitWithNewPipeAndPassReceiver();
     renderer_render_frame_metadata_observer_ =
         std::make_unique<FakeRenderFrameMetadataObserver>(
             renderer_render_frame_metadata_observer_remote
                 .InitWithNewPipeAndPassReceiver(),
-            std::move(render_frame_metadata_observer_client_info));
+            std::move(render_frame_metadata_observer_remote));
 
     host_->RequestCompositorFrameSink(
         std::move(sink_request),
         std::move(renderer_compositor_frame_sink_ptr_));
     host_->RegisterRenderFrameMetadataObserver(
-        std::move(render_frame_metadata_observer_client_request),
+        std::move(render_frame_metadata_observer_client_receiver),
         std::move(renderer_render_frame_metadata_observer_remote));
   }
 

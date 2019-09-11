@@ -13,8 +13,7 @@ RenderFrameMetadataProviderImpl::RenderFrameMetadataProviderImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     FrameTokenMessageQueue* frame_token_message_queue)
     : task_runner_(task_runner),
-      frame_token_message_queue_(frame_token_message_queue),
-      render_frame_metadata_observer_client_binding_(this) {}
+      frame_token_message_queue_(frame_token_message_queue) {}
 
 RenderFrameMetadataProviderImpl::~RenderFrameMetadataProviderImpl() = default;
 
@@ -27,13 +26,14 @@ void RenderFrameMetadataProviderImpl::RemoveObserver(Observer* observer) {
 }
 
 void RenderFrameMetadataProviderImpl::Bind(
-    mojom::RenderFrameMetadataObserverClientRequest client_request,
+    mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+        client_receiver,
     mojo::PendingRemote<mojom::RenderFrameMetadataObserver> observer) {
   render_frame_metadata_observer_remote_.reset();
   render_frame_metadata_observer_remote_.Bind(std::move(observer));
-  render_frame_metadata_observer_client_binding_.Close();
-  render_frame_metadata_observer_client_binding_.Bind(std::move(client_request),
-                                                      task_runner_);
+  render_frame_metadata_observer_client_receiver_.reset();
+  render_frame_metadata_observer_client_receiver_.Bind(
+      std::move(client_receiver), task_runner_);
 
 #if defined(OS_ANDROID)
   if (pending_report_all_root_scrolls_for_accessibility_.has_value()) {

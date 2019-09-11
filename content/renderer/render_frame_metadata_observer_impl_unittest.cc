@@ -11,6 +11,7 @@
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,11 +30,12 @@ class MockRenderFrameMetadataObserverClient
     : public mojom::RenderFrameMetadataObserverClient {
  public:
   MockRenderFrameMetadataObserverClient(
-      mojom::RenderFrameMetadataObserverClientRequest client_request,
+      mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+          client_receiver,
       mojo::PendingRemote<mojom::RenderFrameMetadataObserver> observer)
       : render_frame_metadata_observer_client_binding_(
             this,
-            std::move(client_request)),
+            std::move(client_receiver)),
         render_frame_metadata_observer_remote_(std::move(observer)) {}
 
   MOCK_METHOD2(OnRenderFrameMetadataChanged,
@@ -64,15 +66,14 @@ class RenderFrameMetadataObserverImplTest : public testing::Test {
     mojo::PendingRemote<mojom::RenderFrameMetadataObserver> observer_remote;
     mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver =
         observer_remote.InitWithNewPipeAndPassReceiver();
-    mojom::RenderFrameMetadataObserverClientPtrInfo client_info;
-    mojom::RenderFrameMetadataObserverClientRequest client_request =
-        mojo::MakeRequest(&client_info);
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient> client_remote;
 
     client_ = std::make_unique<
         testing::NiceMock<MockRenderFrameMetadataObserverClient>>(
-        std::move(client_request), std::move(observer_remote));
+        client_remote.InitWithNewPipeAndPassReceiver(),
+        std::move(observer_remote));
     observer_impl_ = std::make_unique<RenderFrameMetadataObserverImpl>(
-        std::move(receiver), std::move(client_info));
+        std::move(receiver), std::move(client_remote));
     observer_impl_->BindToCurrentThread();
   }
 
