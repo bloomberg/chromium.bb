@@ -7,6 +7,7 @@
 
 #include "absl/types/optional.h"
 #include "platform/api/udp_socket.h"
+#include "platform/impl/socket_handle_posix.h"
 
 namespace openscreen {
 namespace platform {
@@ -17,7 +18,7 @@ struct UdpSocketPosix : public UdpSocket {
   // exist for the duration of this socket's lifetime.
   UdpSocketPosix(TaskRunner* task_runner,
                  Client* client,
-                 int fd,
+                 SocketHandle handle,
                  const IPEndpoint& local_endpoint);
 
   ~UdpSocketPosix() override;
@@ -39,8 +40,7 @@ struct UdpSocketPosix : public UdpSocket {
                    const IPEndpoint& dest) override;
   void SetDscp(DscpMode state) override;
 
-  // TODO(rwkeane): Update to return a SocketHandle object.
-  int GetFd() const { return fd_; }
+  const SocketHandle& GetHandle() const;
 
  private:
   void Close() override;
@@ -48,7 +48,7 @@ struct UdpSocketPosix : public UdpSocket {
   // Creates an error to be used in above methods.
   Error CreateError(Error::Code code);
 
-  const int fd_;
+  const SocketHandle handle_;
 
   // Cached value of current local endpoint. This can change (e.g., when the
   // operating system auto-assigns a free local port when Bind() is called). If

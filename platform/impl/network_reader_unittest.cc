@@ -26,7 +26,7 @@ class MockUdpSocketPosix : public UdpSocketPosix {
                               Client* client,
                               int fd,
                               Version version = Version::kV4)
-      : UdpSocketPosix(task_runner, client, fd, IPEndpoint()),
+      : UdpSocketPosix(task_runner, client, SocketHandle(fd), IPEndpoint()),
         version_(version) {}
   ~MockUdpSocketPosix() override = default;
 
@@ -192,9 +192,9 @@ TEST(NetworkReaderTest, WaitSuccessfullyCalledOnAllWatchedSockets) {
 
   network_waiter.OnCreate(socket.get());
   EXPECT_CALL(*mock_waiter_ptr,
-              AwaitSocketsReadable(ContainerEq<std::vector<SocketHandle>>(
-                                       {SocketHandle{socket->GetFd()}}),
-                                   timeout))
+              AwaitSocketsReadable(
+                  ContainerEq<std::vector<SocketHandle>>({socket->GetHandle()}),
+                  timeout))
       .WillOnce(Return(ByMove(std::move(Error::Code::kAgain))));
   EXPECT_EQ(network_waiter.WaitTesting(timeout), Error::Code::kAgain);
 }
@@ -216,8 +216,7 @@ TEST(NetworkReaderTest, WaitSuccessfulReadAndCallCallback) {
   network_waiter.OnCreate(&socket);
 
   EXPECT_CALL(*mock_waiter_ptr, AwaitSocketsReadable(_, timeout))
-      .WillOnce(Return(
-          ByMove(std::vector<SocketHandle>{SocketHandle{socket.GetFd()}})));
+      .WillOnce(Return(ByMove(std::vector<SocketHandle>{socket.GetHandle()})));
   EXPECT_CALL(socket, ReceiveMessage()).Times(1);
   EXPECT_EQ(network_waiter.WaitTesting(timeout), Error::Code::kNone);
 }

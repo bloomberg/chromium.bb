@@ -33,7 +33,7 @@ Error NetworkReader::WaitAndRead(Clock::duration timeout) {
     std::lock_guard<std::mutex> lock(mutex_);
     for (const auto& socket : sockets_) {
       UdpSocketPosix* read_socket = static_cast<UdpSocketPosix*>(socket);
-      socket_handles.emplace_back(read_socket->GetFd());
+      socket_handles.push_back(read_socket->GetHandle());
     }
   }
 
@@ -56,8 +56,7 @@ Error NetworkReader::WaitAndRead(Clock::duration timeout) {
     for (UdpSocket* socket : sockets_) {
       UdpSocketPosix* read_socket = static_cast<UdpSocketPosix*>(socket);
       if (std::find(changed_handles.begin(), changed_handles.end(),
-                    SocketHandle(read_socket->GetFd())) !=
-          changed_handles.end()) {
+                    read_socket->GetHandle()) != changed_handles.end()) {
         read_socket->ReceiveMessage();
       }
     }
