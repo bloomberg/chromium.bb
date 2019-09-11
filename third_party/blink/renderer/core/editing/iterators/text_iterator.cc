@@ -612,7 +612,7 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
 
   // Need to make an exception for option and optgroup, because we want to
   // keep the legacy behavior before we added layoutObjects to them.
-  if (IsHTMLOptionElement(node) || IsHTMLOptGroupElement(node))
+  if (IsHTMLOptionElement(node) || IsA<HTMLOptGroupElement>(node))
     return false;
 
   // Need to make an exception for table cells, because they are blocks, but we

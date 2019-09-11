@@ -390,7 +390,7 @@ void ElementInnerTextCollector::ProcessSelectElement(
       ProcessOptionElement(ToHTMLOptionElement(child));
       continue;
     }
-    if (!IsHTMLOptGroupElement(child))
+    if (!IsA<HTMLOptGroupElement>(child))
       continue;
     // Note: We should emit newline for OPTGROUP even if it has no OPTION.
     // e.g. <div>a<select><optgroup></select>b</div>.innerText == "a\nb"

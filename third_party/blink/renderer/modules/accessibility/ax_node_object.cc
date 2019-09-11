@@ -1189,7 +1189,7 @@ AXRestriction AXNodeObject::Restriction() const {
     return kRestrictionNone;
 
   // An <optgroup> is not exposed directly in the AX tree.
-  if (IsHTMLOptGroupElement(elem))
+  if (IsA<HTMLOptGroupElement>(elem))
     return kRestrictionNone;
 
   // According to ARIA, all elements of the base markup can be disabled.
