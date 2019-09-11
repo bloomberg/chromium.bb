@@ -894,10 +894,10 @@ void Session::CreateAndSendOffer() {
 }
 
 void Session::ConnectToRemotingSource(
-    media::mojom::RemoterPtr remoter,
-    media::mojom::RemotingSourceRequest request) {
+    mojo::PendingRemote<media::mojom::Remoter> remoter,
+    mojo::PendingReceiver<media::mojom::RemotingSource> receiver) {
   resource_provider_->ConnectToRemotingSource(std::move(remoter),
-                                              std::move(request));
+                                              std::move(receiver));
 }
 
 void Session::RequestRemotingStreaming() {

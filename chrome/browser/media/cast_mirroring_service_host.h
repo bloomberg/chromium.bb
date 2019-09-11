@@ -92,8 +92,8 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
       const media::AudioParameters& params,
       uint32_t total_segments) override;
   void ConnectToRemotingSource(
-      media::mojom::RemoterPtr remoter,
-      media::mojom::RemotingSourceRequest request) override;
+      mojo::PendingRemote<media::mojom::Remoter> remoter,
+      mojo::PendingReceiver<media::mojom::RemotingSource> receiver) override;
 
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override;

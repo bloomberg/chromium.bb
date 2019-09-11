@@ -308,13 +308,13 @@ void CastMirroringServiceHost::CreateAudioStream(
 }
 
 void CastMirroringServiceHost::ConnectToRemotingSource(
-    media::mojom::RemoterPtr remoter,
-    media::mojom::RemotingSourceRequest request) {
+    mojo::PendingRemote<media::mojom::Remoter> remoter,
+    mojo::PendingReceiver<media::mojom::RemotingSource> receiver) {
   if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
     content::WebContents* source_contents = web_contents();
     if (source_contents) {
       CastRemotingConnector::Get(source_contents)
-          ->ConnectWithMediaRemoter(std::move(remoter), std::move(request));
+          ->ConnectWithMediaRemoter(std::move(remoter), std::move(receiver));
     }
   }
 }
