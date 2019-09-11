@@ -857,11 +857,16 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
      base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
+const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
+    {"ZeroSuggestVariant:6:*", ZeroSuggestProvider::kRemoteSendUrlVariant}};
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPOmnibox[] = {
     {"ZeroSuggestVariant:7:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPRealbox[] = {
     {"ZeroSuggestVariant:15:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
 const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
+    {"SERP - RemoteSendURL", kOmniboxOnFocusSuggestionsParamSERP,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPOmnibox),
+     "t3315869" /* variation_id */},
     {"NTP Omnibox - Remote", kOmniboxOnFocusSuggestionsParamNTPOmnibox,
      base::size(kOmniboxOnFocusSuggestionsParamNTPOmnibox),
      "t3316133" /* variation_id */},
