@@ -1413,7 +1413,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webrtc-hide-local-ips-with-mdns",
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsName,
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsDecription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kWebRtcHideLocalIpsWithMdns)},
+     FEATURE_VALUE_TYPE(blink::features::kWebRtcHideLocalIpsWithMdns)},
 #if defined(OS_ANDROID)
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
      flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,

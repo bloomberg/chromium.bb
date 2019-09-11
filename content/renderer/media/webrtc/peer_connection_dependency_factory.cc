@@ -23,7 +23,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -208,7 +207,8 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   std::unique_ptr<MdnsResponderAdapter> mdns_responder;
 #if BUILDFLAG(ENABLE_MDNS)
-  if (base::FeatureList::IsEnabled(features::kWebRtcHideLocalIpsWithMdns)) {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWebRtcHideLocalIpsWithMdns)) {
     // Note that MdnsResponderAdapter is created on the main thread to have
     // access to the connector to the service manager.
     mdns_responder = std::make_unique<MdnsResponderAdapter>();
@@ -306,7 +306,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
       blink::CreateWebrtcVideoDecoderFactory(gpu_factories);
 
   // Enable Multiplex codec in SDP optionally.
-  if (base::FeatureList::IsEnabled(features::kWebRtcMultiplexCodec)) {
+  if (base::FeatureList::IsEnabled(blink::features::kWebRtcMultiplexCodec)) {
     webrtc_encoder_factory = std::make_unique<webrtc::MultiplexEncoderFactory>(
         std::move(webrtc_encoder_factory));
     webrtc_decoder_factory = std::make_unique<webrtc::MultiplexDecoderFactory>(
