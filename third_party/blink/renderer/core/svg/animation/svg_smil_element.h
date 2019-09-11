@@ -81,7 +81,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime Elapsed() const;
 
   SMILTime IntervalBegin() const { return interval_.begin; }
-  SMILTime PreviousIntervalBegin() const { return previous_interval_.begin; }
+  SMILTime BeginTimeForPrioritization(double presentation_time) const;
   SMILTime SimpleDuration() const;
 
   bool NeedsToProgress(double elapsed);
@@ -104,7 +104,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   static SMILTime ParseOffsetValue(const String&);
 
   bool IsContributing(double elapsed) const;
-  bool IsFrozen() const;
 
   unsigned DocumentOrderIndex() const { return document_order_index_; }
   void SetDocumentOrderIndex(unsigned index) { document_order_index_ = index; }

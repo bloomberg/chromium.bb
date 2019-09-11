@@ -617,8 +617,13 @@ SMILTime SVGSMILElement::Elapsed() const {
   return time_container_ ? time_container_->Elapsed() : 0;
 }
 
-bool SVGSMILElement::IsFrozen() const {
-  return GetActiveState() == kFrozen;
+SMILTime SVGSMILElement::BeginTimeForPrioritization(
+    double presentation_time) const {
+  if (GetActiveState() == kFrozen) {
+    if (interval_.BeginsAfter(presentation_time))
+      return previous_interval_.begin;
+  }
+  return interval_.begin;
 }
 
 SMILTime SVGSMILElement::Dur() const {
