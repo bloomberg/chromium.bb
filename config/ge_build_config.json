@@ -1970,55 +1970,6 @@
       "models": [
         {
           "board_name": "fizz-moblab",
-          "name": "fizz",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-tast-cq",
-            "bvt-installer",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild",
-            "bvt-tast-informational"
-          ],
-          "cq_test_enabled": true,
-          "release_builder_test_pool": "bvt",
-          "board_id": 353,
-          "is_active": true
-        },
-        {
-          "board_name": "fizz-moblab",
-          "name": "jax",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 353,
-          "is_active": true
-        },
-        {
-          "board_name": "fizz-moblab",
-          "name": "kench",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 353,
-          "is_active": true
-        },
-        {
-          "board_name": "fizz-moblab",
-          "name": "sion",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 353,
-          "is_active": true
-        },
-        {
-          "board_name": "fizz-moblab",
-          "name": "teemo",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 353,
-          "is_active": true
-        },
-        {
-          "board_name": "fizz-moblab",
           "name": "wukong",
           "test_suites": [
             "bvt-inline",
