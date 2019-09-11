@@ -420,7 +420,7 @@ void ExtensionApps::OnExtensionUnloaded(
       break;
     case extensions::UnloadedExtensionReason::UNINSTALL:
       readiness = apps::mojom::Readiness::kUninstalledByUser;
-      return;
+      break;
     default:
       return;
   }
