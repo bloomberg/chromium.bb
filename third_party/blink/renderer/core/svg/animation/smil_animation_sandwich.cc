@@ -63,7 +63,8 @@ void SMILAnimationSandwich::UpdateTiming(double elapsed) {
     DCHECK(animation->HasValidTarget());
 
     if (animation->NeedsToProgress(elapsed)) {
-      animation->Progress(elapsed);
+      bool interval_restart = animation->CheckAndUpdateInterval(elapsed);
+      animation->UpdateActiveState(elapsed, interval_restart);
       active_.push_back(animation);
     } else if (animation->IsContributing(elapsed)) {
       active_.push_back(animation);

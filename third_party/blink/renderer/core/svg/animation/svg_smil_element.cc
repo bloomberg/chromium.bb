@@ -946,30 +946,37 @@ void SVGSMILElement::EndListChanged(SMILTime) {
     time_container_->NotifyIntervalsChanged();
 }
 
-base::Optional<SMILInterval> SVGSMILElement::CheckForNewRestartInterval(
-    double elapsed) {
+bool SVGSMILElement::CheckAndUpdateInterval(double elapsed) {
   DCHECK(!is_waiting_for_first_interval_);
   DCHECK(elapsed >= interval_.begin);
 
   Restart restart = GetRestart();
   if (restart == kRestartNever)
-    return base::nullopt;
+    return false;
 
-  base::Optional<SMILInterval> modified;
+  base::Optional<SMILInterval> new_interval;
   if (elapsed < interval_.end && restart == kRestartAlways) {
     SMILTime next_begin = FindInstanceTime(kBegin, interval_.begin, false);
     if (next_begin < interval_.end) {
-      modified = interval_;
-      modified->end = next_begin;
+      new_interval = interval_;
+      new_interval->end = next_begin;
     }
   }
 
-  if ((modified && elapsed >= modified->end) ||
-      (!modified && elapsed >= interval_.end)) {
-    modified = ResolveNextInterval();
+  if ((new_interval && elapsed >= new_interval->end) ||
+      (!new_interval && elapsed >= interval_.end)) {
+    new_interval = ResolveNextInterval();
   }
 
-  return modified;
+  // Track "restarts" to handle active -> active transitions.
+  bool interval_restart = (new_interval && *new_interval != interval_);
+
+  if (new_interval) {
+    previous_interval_ = interval_;
+    interval_ = *new_interval;
+    interval_has_changed_ = true;
+  }
+  return interval_restart;
 }
 
 const SMILInterval& SVGSMILElement::GetActiveInterval(double elapsed) const {
@@ -1139,19 +1146,7 @@ void SVGSMILElement::UpdateNextProgressTime(double elapsed) {
   next_progress_time_ = CalculateNextProgressTime(elapsed);
 }
 
-void SVGSMILElement::Progress(double elapsed) {
-  base::Optional<SMILInterval> new_interval =
-      CheckForNewRestartInterval(elapsed);
-
-  // Track "restarts" to handle active -> active transitions.
-  bool interval_restart = (new_interval && *new_interval != interval_);
-
-  if (new_interval) {
-    previous_interval_ = interval_;
-    interval_ = *new_interval;
-    interval_has_changed_ = true;
-  }
-
+void SVGSMILElement::UpdateActiveState(double elapsed, bool interval_restart) {
   ActiveState old_active_state = GetActiveState();
   active_state_ = DetermineActiveState(elapsed);
 

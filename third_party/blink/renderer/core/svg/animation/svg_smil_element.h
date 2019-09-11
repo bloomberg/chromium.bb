@@ -85,7 +85,10 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime SimpleDuration() const;
 
   bool NeedsToProgress(double elapsed);
-  void Progress(double elapsed);
+  // Check if the current interval is still current, and if not compute the
+  // next interval. Returns true if the interval was restarted.
+  bool CheckAndUpdateInterval(double elapsed);
+  void UpdateActiveState(double elapsed, bool interval_restart);
   void TriggerPendingEvents(double elapsed);
   void UpdateSyncBases();
   void UpdateNextProgressTime(double elapsed);
@@ -191,7 +194,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime RepeatingDuration() const;
   const SMILInterval& GetActiveInterval(double elapsed) const;
 
-  base::Optional<SMILInterval> CheckForNewRestartInterval(double elapsed);
   void BeginListChanged(SMILTime event_time);
   void EndListChanged(SMILTime event_time);
 
