@@ -676,7 +676,6 @@ RenderThreadImpl::RenderThreadImpl(
                           .Build()),
       main_thread_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
-      renderer_binding_(this),
       client_id_(1),
       compositing_mode_watcher_binding_(this) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
@@ -696,7 +695,6 @@ RenderThreadImpl::RenderThreadImpl(
       main_thread_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       is_scroll_animator_enabled_(false),
-      renderer_binding_(this),
       compositing_mode_watcher_binding_(this) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -805,7 +803,7 @@ void RenderThreadImpl::Init() {
   StartServiceManagerConnection();
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
-      &RenderThreadImpl::OnRendererInterfaceRequest, base::Unretained(this)));
+      &RenderThreadImpl::OnRendererInterfaceReceiver, base::Unretained(this)));
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -2405,11 +2403,11 @@ void RenderThreadImpl::OnSyncMemoryPressure(
       v8_memory_pressure_level);
 }
 
-void RenderThreadImpl::OnRendererInterfaceRequest(
-    mojom::RendererAssociatedRequest request) {
-  DCHECK(!renderer_binding_.is_bound());
-  renderer_binding_.Bind(std::move(request),
-                         GetWebMainThreadScheduler()->IPCTaskRunner());
+void RenderThreadImpl::OnRendererInterfaceReceiver(
+    mojo::PendingAssociatedReceiver<mojom::Renderer> receiver) {
+  DCHECK(!renderer_receiver_.is_bound());
+  renderer_receiver_.Bind(std::move(receiver),
+                          GetWebMainThreadScheduler()->IPCTaskRunner());
 }
 
 bool RenderThreadImpl::NeedsToRecordFirstActivePaint(

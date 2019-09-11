@@ -44,8 +44,9 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/media_buildflags.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/network_change_notifier.h"
@@ -559,7 +560,8 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<viz::SyntheticBeginFrameSource>
   CreateSyntheticBeginFrameSource();
 
-  void OnRendererInterfaceRequest(mojom::RendererAssociatedRequest request);
+  void OnRendererInterfaceReceiver(
+      mojo::PendingAssociatedReceiver<mojom::Renderer> receiver);
 
   std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
@@ -702,7 +704,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   blink::AssociatedInterfaceRegistry associated_interfaces_;
 
-  mojo::AssociatedBinding<mojom::Renderer> renderer_binding_;
+  mojo::AssociatedReceiver<mojom::Renderer> renderer_receiver_{this};
 
   mojom::RenderMessageFilterAssociatedPtr render_message_filter_;
 
