@@ -32450,6 +32450,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Page Control Drag"/>
 </enum>
 
+<enum name="IOSUserInterfaceStyle">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="Light"/>
+  <int value="2" label="Dark"/>
+</enum>
+
 <enum name="IOSWKWebViewLinkPreviewAction">
   <summary>
     This enum is used to track the user actions that occur when previewing links
