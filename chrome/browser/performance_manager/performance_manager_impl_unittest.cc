@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_impl.h"
 
 #include <utility>
 
@@ -25,29 +25,30 @@ class PerformanceManagerTest : public testing::Test {
   ~PerformanceManagerTest() override {}
 
   void SetUp() override {
-    EXPECT_EQ(nullptr, PerformanceManager::GetInstance());
-    performance_manager_ = PerformanceManager::Create();
+    EXPECT_EQ(nullptr, PerformanceManagerImpl::GetInstance());
+    performance_manager_ = PerformanceManagerImpl::Create();
     // Make sure creation registers the created instance.
-    EXPECT_EQ(performance_manager_.get(), PerformanceManager::GetInstance());
+    EXPECT_EQ(performance_manager_.get(),
+              PerformanceManagerImpl::GetInstance());
   }
 
   void TearDown() override {
     if (performance_manager_) {
-      PerformanceManager::Destroy(std::move(performance_manager_));
+      PerformanceManagerImpl::Destroy(std::move(performance_manager_));
       // Make sure destruction unregisters the instance.
-      EXPECT_EQ(nullptr, PerformanceManager::GetInstance());
+      EXPECT_EQ(nullptr, PerformanceManagerImpl::GetInstance());
     }
 
     task_environment_.RunUntilIdle();
   }
 
  protected:
-  PerformanceManager* performance_manager() {
+  PerformanceManagerImpl* performance_manager() {
     return performance_manager_.get();
   }
 
  private:
-  std::unique_ptr<PerformanceManager> performance_manager_;
+  std::unique_ptr<PerformanceManagerImpl> performance_manager_;
   base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTest);
@@ -120,7 +121,7 @@ TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
   performance_manager()->BatchDeleteNodes(std::move(nodes));
 }
 
-TEST_F(PerformanceManagerTest, CallOnGraph) {
+TEST_F(PerformanceManagerTest, CallOnGraphImpl) {
   // Create a page node for something to target.
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
@@ -128,15 +129,15 @@ TEST_F(PerformanceManagerTest, CallOnGraph) {
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
   EXPECT_FALSE(performance_manager()->OnPMTaskRunnerForTesting());
-  PerformanceManager::GraphCallback graph_callback =
+  PerformanceManagerImpl::GraphImplCallback graph_callback =
       base::BindLambdaForTesting([&](GraphImpl* graph) {
         EXPECT_TRUE(
-            PerformanceManager::GetInstance()->OnPMTaskRunnerForTesting());
+            PerformanceManagerImpl::GetInstance()->OnPMTaskRunnerForTesting());
         EXPECT_EQ(page_node.get()->graph(), graph);
         std::move(quit_closure).Run();
       });
 
-  performance_manager()->CallOnGraph(FROM_HERE, std::move(graph_callback));
+  performance_manager()->CallOnGraphImpl(FROM_HERE, std::move(graph_callback));
   run_loop.Run();
 
   performance_manager()->DeleteNode(std::move(page_node));
@@ -153,7 +154,7 @@ TEST_F(PerformanceManagerTest, CallOnGraphAndReplyWithResult) {
   base::OnceCallback<int(GraphImpl*)> task =
       base::BindLambdaForTesting([&](GraphImpl* graph) {
         EXPECT_TRUE(
-            PerformanceManager::GetInstance()->OnPMTaskRunnerForTesting());
+            PerformanceManagerImpl::GetInstance()->OnPMTaskRunnerForTesting());
         EXPECT_EQ(page_node.get()->graph(), graph);
         return 1;
       });
