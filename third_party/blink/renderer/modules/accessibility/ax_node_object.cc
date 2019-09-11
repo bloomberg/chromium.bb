@@ -382,7 +382,7 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
 }
 
 static bool IsListElement(Node* node) {
-  return IsHTMLUListElement(*node) || IsHTMLOListElement(*node) ||
+  return IsHTMLUListElement(*node) || IsA<HTMLOListElement>(*node) ||
          IsA<HTMLDListElement>(*node);
 }
 
