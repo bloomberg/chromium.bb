@@ -155,6 +155,15 @@ typedef struct {
   DECODER_MODEL decoder_models[SEQ_LEVELS];
 } AV1LevelInfo;
 
+static INLINE int is_in_operating_point(int operating_point,
+                                        int temporal_layer_id,
+                                        int spatial_layer_id) {
+  if (!operating_point) return 1;
+
+  return ((operating_point >> temporal_layer_id) & 1) &&
+         ((operating_point >> (spatial_layer_id + 8)) & 1);
+}
+
 void av1_init_level_info(struct AV1_COMP *cpi);
 
 void av1_update_level_info(struct AV1_COMP *cpi, size_t size, int64_t ts_start,
@@ -174,4 +183,15 @@ void av1_decoder_model_process_frame(const struct AV1_COMP *const cpi,
                                      size_t coded_bits,
                                      DECODER_MODEL *const decoder_model);
 
+// Return max bitrate(bps) for given level.
+double av1_get_max_bitrate_for_level(AV1_LEVEL level_index, int tier,
+                                     BITSTREAM_PROFILE profile);
+
+// Get max number of tiles and tile columns for given level.
+void av1_get_max_tiles_for_level(AV1_LEVEL level_index, int *const max_tiles,
+                                 int *const max_tile_cols);
+
+// Return minimum compression ratio for given level.
+double av1_get_min_cr_for_level(AV1_LEVEL level_index, int tier,
+                                int is_still_picture);
 #endif  // AOM_AV1_ENCODER_LEVEL_H_

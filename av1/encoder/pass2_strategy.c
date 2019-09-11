@@ -549,7 +549,7 @@ static int64_t calculate_total_gf_group_bits(AV1_COMP *cpi,
   return total_group_bits;
 }
 
-// Calculate the number bits extra to assign to boosted frames in a group.
+// Calculate the number of bits to assign to boosted frames in a group.
 static int calculate_boost_bits(int frame_count, int boost,
                                 int64_t total_group_bits) {
   int allocation_chunks;
@@ -569,6 +569,67 @@ static int calculate_boost_bits(int frame_count, int boost,
   // Calculate the number of extra bits for use in the boosted frame or frames.
   return AOMMAX((int)(((int64_t)boost * total_group_bits) / allocation_chunks),
                 0);
+}
+
+// Calculate the boost factor based on the number of bits assigned, i.e. the
+// inverse of calculate_boost_bits().
+static int calculate_boost_factor(int frame_count, int bits,
+                                  int64_t total_group_bits) {
+  aom_clear_system_state();
+  return (int)(100.0 * frame_count * bits / (total_group_bits - bits));
+}
+
+// Reduce the number of bits assigned to keyframe or arf if necessary, to
+// prevent bitrate spikes that may break level constraints.
+// frame_type: 0: keyframe; 1: arf.
+static int adjust_boost_bits_for_target_level(AV1_COMP *const cpi,
+                                              int bits_assigned, int group_bits,
+                                              int frame_type) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const SequenceHeader *const seq_params = &cm->seq_params;
+  const int temporal_layer_id = cm->temporal_layer_id;
+  const int spatial_layer_id = cm->spatial_layer_id;
+  for (int index = 0; index < seq_params->operating_points_cnt_minus_1 + 1;
+       ++index) {
+    if (!is_in_operating_point(seq_params->operating_point_idc[index],
+                               temporal_layer_id, spatial_layer_id)) {
+      continue;
+    }
+
+    const AV1_LEVEL target_level = cpi->target_seq_level_idx[index];
+    if (target_level >= SEQ_LEVELS) continue;
+
+    assert(is_valid_seq_level_idx(target_level));
+
+    const double level_bitrate_limit = av1_get_max_bitrate_for_level(
+        target_level, seq_params->tier[0], seq_params->profile);
+    const int target_bits_per_frame =
+        (int)(level_bitrate_limit / cpi->framerate);
+    RATE_CONTROL *const rc = &cpi->rc;
+    if (frame_type == 0) {
+      // Maximum bits for keyframe is 8 times the target_bits_per_frame.
+      const int level_enforced_max_kf_bits = target_bits_per_frame * 8;
+      if (bits_assigned > level_enforced_max_kf_bits) {
+        const int frames = rc->frames_to_key - 1;
+        rc->kf_boost = calculate_boost_factor(
+            frames, level_enforced_max_kf_bits, group_bits);
+        bits_assigned = calculate_boost_bits(frames, rc->kf_boost, group_bits);
+      }
+    } else if (frame_type == 1) {
+      // Maximum bits for arf is 4 times the target_bits_per_frame.
+      const int level_enforced_max_arf_bits = target_bits_per_frame * 4;
+      if (bits_assigned > level_enforced_max_arf_bits) {
+        rc->gfu_boost = calculate_boost_factor(
+            rc->baseline_gf_interval, level_enforced_max_arf_bits, group_bits);
+        bits_assigned = calculate_boost_bits(rc->baseline_gf_interval,
+                                             rc->gfu_boost, group_bits);
+      }
+    } else {
+      assert(0);
+    }
+  }
+
+  return bits_assigned;
 }
 
 static void allocate_gf_group_bits(
@@ -1133,6 +1194,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // Calculate the extra bits to be used for boosted frame(s)
   gf_arf_bits = calculate_boost_bits(rc->baseline_gf_interval, rc->gfu_boost,
                                      gf_group_bits);
+  gf_arf_bits =
+      adjust_boost_bits_for_target_level(cpi, gf_arf_bits, gf_group_bits, 1);
 
   // Adjust KF group bits and error remaining.
   twopass->kf_group_error_left -= (int64_t)gf_group_err;
@@ -1518,6 +1581,8 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
                                  twopass->kf_group_bits);
   // printf("kf boost = %d kf_bits = %d kf_zeromotion_pct = %d\n", rc->kf_boost,
   //        kf_bits, twopass->kf_zeromotion_pct);
+  kf_bits = adjust_boost_bits_for_target_level(cpi, kf_bits,
+                                               twopass->kf_group_bits, 0);
 
   // Work out the fraction of the kf group bits reserved for the inter frames
   // within the group after discounting the bits for the kf itself.

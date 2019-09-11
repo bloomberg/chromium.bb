@@ -2600,6 +2600,50 @@ void av1_release_compound_type_rd_buffers(CompoundTypeRdBuffers *const bufs) {
   av1_zero(*bufs);  // Set all pointers to NULL for safety.
 }
 
+static void config_target_level(AV1_COMP *const cpi, AV1_LEVEL target_level,
+                                int tier) {
+  aom_clear_system_state();
+
+  AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  SequenceHeader *const seq_params = &cpi->common.seq_params;
+
+  // Adjust target bitrate to be no larger than 70% of level limit.
+  const BITSTREAM_PROFILE profile = seq_params->profile;
+  const double level_bitrate_limit =
+      av1_get_max_bitrate_for_level(target_level, tier, profile);
+  const int64_t max_bitrate = (int64_t)(level_bitrate_limit * 0.70);
+  oxcf->target_bandwidth = AOMMIN(oxcf->target_bandwidth, max_bitrate);
+  // Also need to update cpi->twopass.bits_left.
+  TWO_PASS *const twopass = &cpi->twopass;
+  FIRSTPASS_STATS *stats = &twopass->total_stats;
+  cpi->twopass.bits_left =
+      (int64_t)(stats->duration * cpi->oxcf.target_bandwidth / 10000000.0);
+
+  // Adjust max over-shoot percentage.
+  oxcf->over_shoot_pct = 0;
+
+  // Adjust max quantizer.
+  oxcf->worst_allowed_q = 255;
+
+  // Adjust number of tiles and tile columns to be under level limit.
+  int max_tiles, max_tile_cols;
+  av1_get_max_tiles_for_level(target_level, &max_tiles, &max_tile_cols);
+  while (oxcf->tile_columns > 0 && (1 << oxcf->tile_columns) > max_tile_cols) {
+    --oxcf->tile_columns;
+  }
+  const int tile_cols = (1 << oxcf->tile_columns);
+  while (oxcf->tile_rows > 0 &&
+         tile_cols * (1 << oxcf->tile_rows) > max_tiles) {
+    --oxcf->tile_rows;
+  }
+
+  // Adjust min compression ratio.
+  const int still_picture = seq_params->still_picture;
+  const double min_cr =
+      av1_get_min_cr_for_level(target_level, tier, still_picture);
+  oxcf->min_cr = AOMMAX(oxcf->min_cr, (unsigned int)(min_cr * 100));
+}
+
 void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
   SequenceHeader *const seq_params = &cm->seq_params;
@@ -2618,19 +2662,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
   assert(IMPLIES(seq_params->profile <= PROFILE_1,
                  seq_params->bit_depth <= AOM_BITS_10));
-
-  memcpy(cpi->target_seq_level_idx, oxcf->target_seq_level_idx,
-         sizeof(cpi->target_seq_level_idx));
-  cpi->keep_level_stats = 0;
-  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    if (cpi->target_seq_level_idx[i] <= SEQ_LEVELS) {
-      cpi->keep_level_stats |= 1u << i;
-      if (!cpi->level_info[i]) {
-        CHECK_MEM_ERROR(cm, cpi->level_info[i],
-                        aom_calloc(1, sizeof(*cpi->level_info[i])));
-      }
-    }
-  }
 
   cm->timing_info_present = oxcf->timing_info_present;
   cm->timing_info.num_units_in_display_tick =
@@ -2668,6 +2699,26 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cpi->common.options = oxcf->cfg;
   x->e_mbd.bd = (int)seq_params->bit_depth;
   x->e_mbd.global_motion = cm->global_motion;
+
+  memcpy(cpi->target_seq_level_idx, cpi->oxcf.target_seq_level_idx,
+         sizeof(cpi->target_seq_level_idx));
+  cpi->keep_level_stats = 0;
+  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
+    if (cpi->target_seq_level_idx[i] <= SEQ_LEVELS) {
+      cpi->keep_level_stats |= 1u << i;
+      if (!cpi->level_info[i]) {
+        CHECK_MEM_ERROR(cm, cpi->level_info[i],
+                        aom_calloc(1, sizeof(*cpi->level_info[i])));
+      }
+    }
+  }
+
+  // TODO(huisu@): level targeting currently only works for the 0th operating
+  // point, so scalable coding is not supported yet.
+  if (cpi->target_seq_level_idx[0] < SEQ_LEVELS) {
+    // Adjust encoder config in order to meet target level.
+    config_target_level(cpi, cpi->target_seq_level_idx[0], seq_params->tier[0]);
+  }
 
   if ((oxcf->pass == 0) && (oxcf->rc_mode == AOM_Q)) {
     rc->baseline_gf_interval = FIXED_GF_INTERVAL;
