@@ -702,6 +702,14 @@ static void define_gf_group_pass0(AV1_COMP *cpi,
   rc->constrained_gf_group =
       (rc->baseline_gf_interval >= rc->frames_to_key) ? 1 : 0;
 
+  gf_group->max_layer_depth_allowed = cpi->oxcf.gf_max_pyr_height;
+
+  // Rare case when the look-ahead is less than the target GOP length, can't
+  // generate ARF frame.
+  if (rc->baseline_gf_interval < cpi->oxcf.lag_in_frames ||
+      !is_altref_enabled(cpi) || rc->baseline_gf_interval < rc->min_gf_interval)
+    gf_group->max_layer_depth_allowed = 0;
+
   // Set up the structure of this Group-Of-Pictures (same as GF_GROUP)
   av1_gop_setup_structure(cpi, frame_params);
 
