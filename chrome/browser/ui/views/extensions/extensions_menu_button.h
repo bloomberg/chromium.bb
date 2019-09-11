@@ -29,10 +29,6 @@ class ExtensionsMenuButton : public HoverButton,
                        ToolbarActionViewController* controller);
   ~ExtensionsMenuButton() override;
 
-  // Update pin button icon, color, tooltip, and visibility based on pinned
-  // state.
-  void UpdatePinButton();
-
   static const char kClassName[];
 
  private:

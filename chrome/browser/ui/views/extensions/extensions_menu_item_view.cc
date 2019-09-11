@@ -77,7 +77,6 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
 
   context_menu_button_ = context_menu_button.get();
   AddChildView(std::move(context_menu_button));
-
   UpdatePinButton();
 }
 
@@ -117,16 +116,6 @@ void ExtensionsMenuItemView::UpdatePinButton() {
   views::SetImageFromVectorIcon(
       pin_button_, IsPinned() ? views::kUnpinIcon : views::kPinIcon,
       kSecondaryIconSizeDp, icon_color);
-  pin_button_->SetVisible(IsPinned() || IsMouseHovered() ||
-                          IsContextMenuRunning());
-}
-
-void ExtensionsMenuItemView::OnMouseEntered(const ui::MouseEvent& event) {
-  UpdatePinButton();
-}
-
-void ExtensionsMenuItemView::OnMouseExited(const ui::MouseEvent& event) {
-  UpdatePinButton();
 }
 
 bool ExtensionsMenuItemView::IsContextMenuRunning() {
