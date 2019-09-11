@@ -164,6 +164,10 @@ class MediaToolbarButtonControllerTest : public testing::Test {
     item_itr->second.WebContentsDestroyed();
   }
 
+  void SimulateDismissButtonClicked(const base::UnguessableToken& id) {
+    controller_->OnDismissButtonClicked(id.ToString());
+  }
+
   void ExpectHistogramCountRecorded(int count, int size) {
     histogram_tester_.ExpectBucketCount(
         media_message_center::kCountHistogramName, count, size);
@@ -375,5 +379,22 @@ TEST_F(MediaToolbarButtonControllerTest,
   // Then, close the tab. The button should immediately hide.
   EXPECT_CALL(delegate(), Hide());
   SimulateTabClosed(id);
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+}
+
+TEST_F(MediaToolbarButtonControllerTest, DismissesMediaSession) {
+  // First, show the button.
+  EXPECT_CALL(delegate(), Show());
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // Then, open a dialog.
+  MockMediaDialogDelegate dialog_delegate;
+  EXPECT_CALL(dialog_delegate, ShowMediaSession(id.ToString(), _));
+  SimulateDialogOpened(&dialog_delegate);
+
+  // Then, click the dismiss button. This should stop and hide the session.
+  EXPECT_CALL(dialog_delegate, HideMediaSession(id.ToString()));
+  SimulateDismissButtonClicked(id);
   testing::Mock::VerifyAndClearExpectations(&delegate());
 }

@@ -60,6 +60,9 @@ class MediaToolbarButtonController
 
   void SetDialogDelegate(MediaDialogDelegate* delegate);
 
+  // Called when the dismiss button was clicked on a session.
+  void OnDismissButtonClicked(const std::string& id);
+
  private:
   friend class MediaToolbarButtonControllerTest;
 

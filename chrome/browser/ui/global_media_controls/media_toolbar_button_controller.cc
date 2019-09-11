@@ -226,6 +226,13 @@ void MediaToolbarButtonController::SetDialogDelegate(
       active_controllable_session_ids_.size());
 }
 
+void MediaToolbarButtonController::OnDismissButtonClicked(
+    const std::string& id) {
+  auto it = sessions_.find(id);
+  if (it != sessions_.end())
+    it->second.item()->Dismiss();
+}
+
 void MediaToolbarButtonController::OnReceivedAudioFocusRequests(
     std::vector<media_session::mojom::AudioFocusRequestStatePtr> sessions) {
   for (auto& session : sessions)
