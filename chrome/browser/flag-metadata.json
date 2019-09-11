@@ -1047,12 +1047,12 @@
   {
     "name": "enable-cloud-print-xps",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-cloud-printer-handler",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enable-command-line-on-non-rooted-devices",
@@ -1088,8 +1088,8 @@
   },
   {
     "name": "enable-custom-mac-paper-sizes",
-    "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
+    "owners": [ "thestig" ],
+    "expiry_milestone": 82
   },
   {
     "name": "enable-data-reduction-proxy-server-experiment",
@@ -2181,7 +2181,7 @@
   {
     "name": "gdi-text-printing",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 84
   },
   {
     "name": "gesture-properties-dbus-service",
@@ -2803,7 +2803,7 @@
   {
     "name": "pdf-form-save",
     "owners": [ "thestig" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "pdf-isolation",
@@ -3308,7 +3308,7 @@
   {
     "name": "use-pdf-compositor-service-for-print",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "use-search-click-for-right-click",
