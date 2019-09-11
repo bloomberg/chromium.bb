@@ -63,10 +63,10 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   bool IsSymbolMarker() const { return TextType() == kSymbolMarker; }
 
-  // TODO(yosin): We should replace |Length()| to |TextLength()|.
-  unsigned Length() const { return end_offset_ - start_offset_; }
-  unsigned TextLength() const { return Length(); }
-  StringView Text() const { return StringView(text_, start_offset_, Length()); }
+  unsigned TextLength() const { return end_offset_ - start_offset_; }
+  StringView Text() const {
+    return StringView(text_, start_offset_, TextLength());
+  }
   const String& TextContent() const { return text_; }
 
   // ShapeResult may be nullptr if |IsFlowControl()|.
