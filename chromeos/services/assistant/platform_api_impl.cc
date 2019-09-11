@@ -79,7 +79,7 @@ void PlatformApiImpl::DummyAuthProvider::Reset() {}
 PlatformApiImpl::PlatformApiImpl(
     mojom::Client* client,
     AssistantMediaSession* media_session,
-    device::mojom::BatteryMonitorPtr battery_monitor,
+    mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
     std::string pref_locale)

@@ -149,7 +149,8 @@ class DeviceService : public service_manager::Service {
 #endif
 
 #if !defined(OS_ANDROID)
-  void BindBatteryMonitorRequest(mojom::BatteryMonitorRequest request);
+  void BindBatteryMonitorReceiver(
+      mojo::PendingReceiver<mojom::BatteryMonitor> receiver);
   void BindHidManagerRequest(mojom::HidManagerRequest request);
   void BindNFCProviderReceiver(
       mojo::PendingReceiver<mojom::NFCProvider> receiver);

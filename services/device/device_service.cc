@@ -180,7 +180,7 @@ void DeviceService::OnStart() {
           ->CreateInterfaceFactory<mojom::VibrationManager>());
 #else
   registry_.AddInterface<mojom::BatteryMonitor>(base::Bind(
-      &DeviceService::BindBatteryMonitorRequest, base::Unretained(this)));
+      &DeviceService::BindBatteryMonitorReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::HidManager>(base::Bind(
       &DeviceService::BindHidManagerRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::NFCProvider>(base::Bind(
@@ -230,9 +230,9 @@ void DeviceService::OnBindInterface(
 }
 
 #if !defined(OS_ANDROID)
-void DeviceService::BindBatteryMonitorRequest(
-    mojom::BatteryMonitorRequest request) {
-  BatteryMonitorImpl::Create(std::move(request));
+void DeviceService::BindBatteryMonitorReceiver(
+    mojo::PendingReceiver<mojom::BatteryMonitor> receiver) {
+  BatteryMonitorImpl::Create(std::move(receiver));
 }
 
 void DeviceService::BindHidManagerRequest(mojom::HidManagerRequest request) {
