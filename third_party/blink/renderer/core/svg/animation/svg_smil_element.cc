@@ -861,9 +861,9 @@ SMILTime SVGSMILElement::NextInterestingTime(SMILTime document_time) const {
   DCHECK(0.0 <= document_time);
   const double dt = document_time.Value();
   SMILTime next_interesting_interval_time = SMILTime::Indefinite();
-  if (dt < interval_.begin) {
+  if (interval_.BeginsAfter(dt)) {
     next_interesting_interval_time = interval_.begin;
-  } else if (dt < interval_.end) {
+  } else if (interval_.EndsAfter(dt)) {
     next_interesting_interval_time = interval_.end;
     SMILTime simple_duration = SimpleDuration();
     if (simple_duration.IsFinite()) {
@@ -903,15 +903,15 @@ void SVGSMILElement::BeginListChanged(SMILTime event_time) {
     ResolveFirstInterval();
   } else if (GetRestart() != kRestartNever) {
     SMILTime new_begin = FindInstanceTime(kBegin, event_time, true);
-    if (new_begin.IsFinite() &&
-        (interval_.end <= event_time || new_begin < interval_.begin)) {
+    if (new_begin.IsFinite() && (interval_.EndsBefore(event_time) ||
+                                 interval_.BeginsAfter(new_begin))) {
       // Begin time changed, re-resolve the interval.
       SMILTime old_begin = interval_.begin;
       interval_.end = event_time;
       interval_ = ResolveInterval(kNextInterval);
-      DCHECK(!interval_.begin.IsUnresolved());
+      DCHECK(interval_.IsResolved());
       if (interval_.begin != old_begin) {
-        if (GetActiveState() == kActive && interval_.begin > event_time) {
+        if (GetActiveState() == kActive && interval_.BeginsAfter(event_time)) {
           active_state_ = DetermineActiveState(event_time);
           if (GetActiveState() != kActive)
             EndedActiveInterval();
@@ -930,9 +930,9 @@ void SVGSMILElement::EndListChanged(SMILTime) {
   SMILTime elapsed = Elapsed();
   if (is_waiting_for_first_interval_) {
     ResolveFirstInterval();
-  } else if (elapsed < interval_.end && interval_.begin.IsFinite()) {
+  } else if (interval_.IsResolved() && interval_.EndsAfter(elapsed)) {
     SMILTime new_end = FindInstanceTime(kEnd, interval_.begin, false);
-    if (new_end < interval_.end) {
+    if (interval_.EndsAfter(new_end)) {
       new_end = ResolveActiveEnd(interval_.begin, new_end);
       if (new_end != interval_.end) {
         interval_.end = new_end;
@@ -948,23 +948,23 @@ void SVGSMILElement::EndListChanged(SMILTime) {
 
 bool SVGSMILElement::CheckAndUpdateInterval(double elapsed) {
   DCHECK(!is_waiting_for_first_interval_);
-  DCHECK(elapsed >= interval_.begin);
+  DCHECK(interval_.BeginsBefore(elapsed));
 
   Restart restart = GetRestart();
   if (restart == kRestartNever)
     return false;
 
   base::Optional<SMILInterval> new_interval;
-  if (elapsed < interval_.end && restart == kRestartAlways) {
+  if (restart == kRestartAlways && interval_.EndsAfter(elapsed)) {
     SMILTime next_begin = FindInstanceTime(kBegin, interval_.begin, false);
-    if (next_begin < interval_.end) {
+    if (interval_.EndsAfter(next_begin)) {
       new_interval = interval_;
       new_interval->end = next_begin;
     }
   }
 
-  if ((new_interval && elapsed >= new_interval->end) ||
-      (!new_interval && elapsed >= interval_.end)) {
+  if ((new_interval && new_interval->EndsBefore(elapsed)) ||
+      (!new_interval && interval_.EndsBefore(elapsed))) {
     new_interval = ResolveNextInterval();
   }
 
@@ -981,11 +981,11 @@ bool SVGSMILElement::CheckAndUpdateInterval(double elapsed) {
 
 const SMILInterval& SVGSMILElement::GetActiveInterval(double elapsed) const {
   // If there's no current interval, return the previous interval.
-  if (!interval_.begin.IsFinite())
+  if (!interval_.IsResolved())
     return previous_interval_;
   // If there's a previous interval and the current interval hasn't begun yet,
   // return the previous interval.
-  if (previous_interval_.begin.IsFinite() && elapsed < interval_.begin)
+  if (previous_interval_.IsResolved() && interval_.BeginsAfter(elapsed))
     return previous_interval_;
   return interval_;
 }
@@ -1024,7 +1024,7 @@ float SVGSMILElement::CalculateAnimationPercent(double elapsed) const {
   }
   DCHECK(simple_duration.IsFinite());
   const SMILInterval& active_interval = GetActiveInterval(elapsed);
-  DCHECK(active_interval.begin.IsFinite());
+  DCHECK(active_interval.IsResolved());
 
   SMILTime repeating_duration = RepeatingDuration();
   double active_time = elapsed - active_interval.begin.Value();
@@ -1062,7 +1062,7 @@ SMILTime SVGSMILElement::CalculateNextProgressTime(double elapsed) const {
       // element is still active.
       // Take care that we get a timer callback at that point.
       if (elapsed < repeating_duration_end &&
-          repeating_duration_end < interval_.end &&
+          interval_.EndsAfter(repeating_duration_end) &&
           repeating_duration_end.IsFinite())
         return repeating_duration_end;
       return interval_.end;
@@ -1074,9 +1074,8 @@ SMILTime SVGSMILElement::CalculateNextProgressTime(double elapsed) const {
 
 SVGSMILElement::ActiveState SVGSMILElement::DetermineActiveState(
     SMILTime elapsed) const {
-  if (elapsed >= interval_.begin && elapsed < interval_.end)
+  if (interval_.Contains(elapsed))
     return kActive;
-
   return Fill() == kFillFreeze ? kFrozen : kInactive;
 }
 
@@ -1096,19 +1095,19 @@ bool SVGSMILElement::NeedsToProgress(double elapsed) {
   // Check we're connected to something.
   DCHECK(time_container_);
   // Check that we have some form of start or are prepared to find it.
-  DCHECK(is_waiting_for_first_interval_ || interval_.begin.IsFinite());
+  DCHECK(is_waiting_for_first_interval_ || interval_.IsResolved());
 
   if (!sync_base_conditions_connected_)
     ConnectSyncBaseConditions();
 
   // Check if we need updating, otherwise just return.
-  if (!interval_.begin.IsFinite()) {
+  if (!interval_.IsResolved()) {
     DCHECK_EQ(GetActiveState(), kInactive);
     next_progress_time_ = SMILTime::Unresolved();
     return false;
   }
 
-  if (elapsed < interval_.begin) {
+  if (interval_.BeginsAfter(elapsed)) {
     DCHECK_NE(GetActiveState(), kActive);
     next_progress_time_ = interval_.begin;
     return false;
@@ -1175,7 +1174,7 @@ void SVGSMILElement::UpdateActiveState(double elapsed, bool interval_restart) {
 
 void SVGSMILElement::NotifyDependentsIntervalChanged(
     const SMILInterval& interval) {
-  DCHECK(interval.begin.IsFinite());
+  DCHECK(interval.IsResolved());
   // |loopBreaker| is used to avoid infinite recursions which may be caused by:
   // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncBase| ->
   // |add{Begin,End}Time| -> |{begin,end}TimeChanged| ->
@@ -1234,7 +1233,7 @@ void SVGSMILElement::CreateInstanceTimesFromSyncBase(
 
 void SVGSMILElement::AddSyncBaseDependent(SVGSMILElement& animation) {
   sync_base_dependents_.insert(&animation);
-  if (interval_.begin.IsFinite())
+  if (interval_.IsResolved())
     animation.CreateInstanceTimesFromSyncBase(this, interval_);
 }
 
