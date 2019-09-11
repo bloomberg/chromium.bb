@@ -28,8 +28,9 @@ void RenderFrameMetadataProviderImpl::RemoveObserver(Observer* observer) {
 
 void RenderFrameMetadataProviderImpl::Bind(
     mojom::RenderFrameMetadataObserverClientRequest client_request,
-    mojom::RenderFrameMetadataObserverPtr observer) {
-  render_frame_metadata_observer_ptr_ = std::move(observer);
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserver> observer) {
+  render_frame_metadata_observer_remote_.reset();
+  render_frame_metadata_observer_remote_.Bind(std::move(observer));
   render_frame_metadata_observer_client_binding_.Close();
   render_frame_metadata_observer_client_binding_.Bind(std::move(client_request),
                                                       task_runner_);
@@ -51,24 +52,24 @@ void RenderFrameMetadataProviderImpl::Bind(
 #if defined(OS_ANDROID)
 void RenderFrameMetadataProviderImpl::ReportAllRootScrollsForAccessibility(
     bool enabled) {
-  if (!render_frame_metadata_observer_ptr_) {
+  if (!render_frame_metadata_observer_remote_) {
     pending_report_all_root_scrolls_for_accessibility_ = enabled;
     return;
   }
 
-  render_frame_metadata_observer_ptr_->ReportAllRootScrollsForAccessibility(
+  render_frame_metadata_observer_remote_->ReportAllRootScrollsForAccessibility(
       enabled);
 }
 #endif
 
 void RenderFrameMetadataProviderImpl::ReportAllFrameSubmissionsForTesting(
     bool enabled) {
-  if (!render_frame_metadata_observer_ptr_) {
+  if (!render_frame_metadata_observer_remote_) {
     pending_report_all_frame_submission_for_testing_ = enabled;
     return;
   }
 
-  render_frame_metadata_observer_ptr_->ReportAllFrameSubmissionsForTesting(
+  render_frame_metadata_observer_remote_->ReportAllFrameSubmissionsForTesting(
       enabled);
 }
 

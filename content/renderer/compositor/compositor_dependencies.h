@@ -12,6 +12,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "content/common/content_export.h"
 #include "content/common/render_frame_metadata.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 class GURL;
 
@@ -65,7 +66,8 @@ class CONTENT_EXPORT CompositorDependencies {
       LayerTreeFrameSinkCallback callback,
       mojom::RenderFrameMetadataObserverClientRequest
           render_frame_metadata_observer_client_request,
-      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+      mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
+          render_frame_metadata_observer_remote,
       const char* client_name) = 0;
 
 #ifdef OS_ANDROID

@@ -53,6 +53,8 @@
 #include "content/test/stub_render_widget_host_owner_delegate.h"
 #include "content/test/test_render_view_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
@@ -270,7 +272,7 @@ class FakeRenderFrameMetadataObserver
     : public mojom::RenderFrameMetadataObserver {
  public:
   FakeRenderFrameMetadataObserver(
-      mojom::RenderFrameMetadataObserverRequest request,
+      mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver,
       mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
   ~FakeRenderFrameMetadataObserver() override {}
 
@@ -280,15 +282,15 @@ class FakeRenderFrameMetadataObserver
   void ReportAllFrameSubmissionsForTesting(bool enabled) override {}
 
  private:
-  mojom::RenderFrameMetadataObserverRequest request_;
+  mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver_;
   mojom::RenderFrameMetadataObserverClientPtrInfo client_info_;
   DISALLOW_COPY_AND_ASSIGN(FakeRenderFrameMetadataObserver);
 };
 
 FakeRenderFrameMetadataObserver::FakeRenderFrameMetadataObserver(
-    mojom::RenderFrameMetadataObserverRequest request,
+    mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver,
     mojom::RenderFrameMetadataObserverClientPtrInfo client_info)
-    : request_(std::move(request)), client_info_(std::move(client_info)) {}
+    : receiver_(std::move(receiver)), client_info_(std::move(client_info)) {}
 
 // MockRenderWidgetHostDelegate --------------------------------------------
 
@@ -505,11 +507,8 @@ class RenderWidgetHostTest : public testing::Test {
         std::make_unique<FakeRendererCompositorFrameSink>(
             std::move(sink), std::move(client_request));
 
-    mojom::RenderFrameMetadataObserverPtr
-        renderer_render_frame_metadata_observer_ptr;
-    mojom::RenderFrameMetadataObserverRequest
-        render_frame_metadata_observer_request =
-            mojo::MakeRequest(&renderer_render_frame_metadata_observer_ptr);
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
+        renderer_render_frame_metadata_observer_remote;
     mojom::RenderFrameMetadataObserverClientPtrInfo
         render_frame_metadata_observer_client_info;
     mojom::RenderFrameMetadataObserverClientRequest
@@ -517,7 +516,8 @@ class RenderWidgetHostTest : public testing::Test {
             mojo::MakeRequest(&render_frame_metadata_observer_client_info);
     renderer_render_frame_metadata_observer_ =
         std::make_unique<FakeRenderFrameMetadataObserver>(
-            std::move(render_frame_metadata_observer_request),
+            renderer_render_frame_metadata_observer_remote
+                .InitWithNewPipeAndPassReceiver(),
             std::move(render_frame_metadata_observer_client_info));
 
     host_->RequestCompositorFrameSink(
@@ -525,7 +525,7 @@ class RenderWidgetHostTest : public testing::Test {
         std::move(renderer_compositor_frame_sink_ptr_));
     host_->RegisterRenderFrameMetadataObserver(
         std::move(render_frame_metadata_observer_client_request),
-        std::move(renderer_render_frame_metadata_observer_ptr));
+        std::move(renderer_render_frame_metadata_observer_remote));
   }
 
   void TearDown() override {

@@ -12,6 +12,8 @@
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 class FrameTokenMessageQueue;
@@ -37,7 +39,7 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
   void RemoveObserver(Observer* observer) override;
 
   void Bind(mojom::RenderFrameMetadataObserverClientRequest client_request,
-            mojom::RenderFrameMetadataObserverPtr observer);
+            mojo::PendingRemote<mojom::RenderFrameMetadataObserver> observer);
 
   const cc::RenderFrameMetadata& LastRenderFrameMetadata() override;
 
@@ -86,7 +88,8 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
 
   mojo::Binding<mojom::RenderFrameMetadataObserverClient>
       render_frame_metadata_observer_client_binding_;
-  mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr_;
+  mojo::Remote<mojom::RenderFrameMetadataObserver>
+      render_frame_metadata_observer_remote_;
 
 #if defined(OS_ANDROID)
   base::Optional<bool> pending_report_all_root_scrolls_for_accessibility_;

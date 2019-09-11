@@ -45,7 +45,8 @@ void FrameSinkProviderImpl::RegisterRenderFrameMetadataObserver(
     int32_t widget_id,
     mojom::RenderFrameMetadataObserverClientRequest
         render_frame_metadata_observer_client_request,
-    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer) {
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
+        render_frame_metadata_observer) {
   RenderWidgetHostImpl* render_widget_host_impl =
       RenderWidgetHostImpl::FromID(process_id_, widget_id);
   if (!render_widget_host_impl) {

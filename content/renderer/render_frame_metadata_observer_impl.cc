@@ -18,17 +18,15 @@ constexpr float kEdgeThreshold = 10.0f;
 }
 
 RenderFrameMetadataObserverImpl::RenderFrameMetadataObserverImpl(
-    mojom::RenderFrameMetadataObserverRequest request,
+    mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver,
     mojom::RenderFrameMetadataObserverClientPtrInfo client_info)
-    : request_(std::move(request)),
-      client_info_(std::move(client_info)),
-      render_frame_metadata_observer_binding_(this) {}
+    : receiver_(std::move(receiver)), client_info_(std::move(client_info)) {}
 
 RenderFrameMetadataObserverImpl::~RenderFrameMetadataObserverImpl() {}
 
 void RenderFrameMetadataObserverImpl::BindToCurrentThread() {
-  DCHECK(request_.is_pending());
-  render_frame_metadata_observer_binding_.Bind(std::move(request_));
+  DCHECK(receiver_.is_valid());
+  render_frame_metadata_observer_receiver_.Bind(std::move(receiver_));
   render_frame_metadata_observer_client_.Bind(std::move(client_info_));
 }
 

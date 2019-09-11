@@ -121,7 +121,6 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
@@ -1850,7 +1849,8 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     LayerTreeFrameSinkCallback callback,
     mojom::RenderFrameMetadataObserverClientRequest
         render_frame_metadata_observer_client_request,
-    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
+        render_frame_metadata_observer_remote,
     const char* client_name) {
   // Misconfigured bots (eg. crbug.com/780757) could run web tests on a
   // machine where gpu compositing doesn't work. Don't crash in that case.
@@ -1903,7 +1903,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
         widget_routing_id,
         std::move(render_frame_metadata_observer_client_request),
-        std::move(render_frame_metadata_observer_ptr));
+        std::move(render_frame_metadata_observer_remote));
     std::move(callback).Run(
         std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
             nullptr, nullptr, &params));
@@ -1966,7 +1966,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       frame_sink_provider_->RegisterRenderFrameMetadataObserver(
           widget_routing_id,
           std::move(render_frame_metadata_observer_client_request),
-          std::move(render_frame_metadata_observer_ptr));
+          std::move(render_frame_metadata_observer_remote));
 
       std::move(callback).Run(std::make_unique<SynchronousLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
@@ -1989,7 +1989,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   frame_sink_provider_->RegisterRenderFrameMetadataObserver(
       widget_routing_id,
       std::move(render_frame_metadata_observer_client_request),
-      std::move(render_frame_metadata_observer_ptr));
+      std::move(render_frame_metadata_observer_remote));
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
   std::move(callback).Run(
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(

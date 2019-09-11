@@ -10,7 +10,8 @@
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "content/common/content_export.h"
 #include "content/common/render_frame_metadata.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
 
@@ -28,7 +29,7 @@ class CONTENT_EXPORT RenderFrameMetadataObserverImpl
       public mojom::RenderFrameMetadataObserver {
  public:
   RenderFrameMetadataObserverImpl(
-      mojom::RenderFrameMetadataObserverRequest request,
+      mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver,
       mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
   ~RenderFrameMetadataObserverImpl() override;
 
@@ -74,11 +75,11 @@ class CONTENT_EXPORT RenderFrameMetadataObserverImpl
   base::Optional<cc::RenderFrameMetadata> last_render_frame_metadata_;
 
   // These are destroyed when BindToCurrentThread() is called.
-  mojom::RenderFrameMetadataObserverRequest request_;
+  mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver_;
   mojom::RenderFrameMetadataObserverClientPtrInfo client_info_;
 
-  mojo::Binding<mojom::RenderFrameMetadataObserver>
-      render_frame_metadata_observer_binding_;
+  mojo::Receiver<mojom::RenderFrameMetadataObserver>
+      render_frame_metadata_observer_receiver_{this};
   mojom::RenderFrameMetadataObserverClientPtr
       render_frame_metadata_observer_client_;
 

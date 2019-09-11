@@ -21,5 +21,6 @@ interface FrameSinkProvider {
       int32  widget_id,
       RenderFrameMetadataObserverClient&
         render_frame_metadata_observer_client_request,
-      RenderFrameMetadataObserver render_frame_metadata_observer);
+      pending_remote<RenderFrameMetadataObserver>
+        render_frame_metadata_observer);
 };

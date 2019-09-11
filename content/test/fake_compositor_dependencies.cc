@@ -89,7 +89,8 @@ void FakeCompositorDependencies::RequestNewLayerTreeFrameSink(
     LayerTreeFrameSinkCallback callback,
     mojom::RenderFrameMetadataObserverClientRequest
         render_frame_metadata_observer_client_request,
-    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
+        render_frame_metadata_observer_remote,
     const char* client_name) {
   std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d());
 }
