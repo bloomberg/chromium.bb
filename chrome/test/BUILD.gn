@@ -4085,6 +4085,7 @@ test("unit_tests") {
       "../browser/metrics/perf/metric_collector_unittest.cc",
       "../browser/metrics/perf/metric_provider_unittest.cc",
       "../browser/metrics/perf/perf_events_collector_unittest.cc",
+      "../browser/metrics/perf/perf_output_unittest.cc",
       "../browser/metrics/perf/process_type_collector_unittest.cc",
       "../browser/metrics/perf/profile_provider_chromeos_unittest.cc",
       "../browser/metrics/perf/windowed_incognito_observer_unittest.cc",
