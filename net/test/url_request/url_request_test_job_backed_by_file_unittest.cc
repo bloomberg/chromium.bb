@@ -126,18 +126,6 @@ class TestJobFactory : public URLRequestJobFactory {
     return job;
   }
 
-  URLRequestJob* MaybeInterceptRedirect(URLRequest* request,
-                                        NetworkDelegate* network_delegate,
-                                        const GURL& location) const override {
-    return nullptr;
-  }
-
-  URLRequestJob* MaybeInterceptResponse(
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const override {
-    return nullptr;
-  }
-
   bool IsHandledProtocol(const std::string& scheme) const override {
     return scheme == "file";
   }

@@ -927,16 +927,6 @@ TEST_F(URLRequestTest, InvalidReferrerTest) {
   EXPECT_TRUE(d.request_failed());
 }
 
-class CancelTestJob : public URLRequestTestJob {
- public:
-  explicit CancelTestJob(URLRequest* request, NetworkDelegate* network_delegate)
-    : URLRequestTestJob(request, network_delegate, true) {}
- protected:
-  void StartAsync() override { request_->Cancel(); }
- private:
-  ~CancelTestJob() override = default;
-};
-
 // An Interceptor for use with interceptor tests.
 class MockURLRequestInterceptor : public URLRequestInterceptor {
  public:
@@ -949,38 +939,7 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
     return URLRequestTestJob::test_headers();
   }
 
-  static std::string redirect_data() {
-    return std::string();
-  }
-
-  static std::string redirect_headers() {
-    return URLRequestTestJob::test_redirect_headers();
-  }
-
-  static std::string error_data() {
-    return std::string("ohhh nooooo mr. bill!");
-  }
-
-  static std::string error_headers() {
-    return URLRequestTestJob::test_error_headers();
-  }
-
-  MockURLRequestInterceptor()
-      : intercept_main_request_(false),
-        cancel_main_request_(false),
-        simulate_main_network_error_(false),
-        intercept_redirect_(false),
-        cancel_redirect_request_(false),
-        intercept_final_response_(false),
-        cancel_final_request_(false),
-        use_url_request_http_job_(false),
-        did_intercept_main_(false),
-        did_cancel_main_(false),
-        did_simulate_error_main_(false),
-        did_intercept_redirect_(false),
-        did_cancel_redirect_(false),
-        did_intercept_final_(false),
-        did_cancel_final_(false) {}
+  MockURLRequestInterceptor() {}
 
   ~MockURLRequestInterceptor() override = default;
 
@@ -988,88 +947,10 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
   URLRequestJob* MaybeInterceptRequest(
       URLRequest* request,
       NetworkDelegate* network_delegate) const override {
-    if (cancel_main_request_) {
-      cancel_main_request_ = false;
-      did_cancel_main_ = true;
-      return new CancelTestJob(request, network_delegate);
-    }
-    if (simulate_main_network_error_) {
-      simulate_main_network_error_ = false;
-      did_simulate_error_main_ = true;
-      if (use_url_request_http_job_) {
-        return URLRequestHttpJob::Factory(request, network_delegate, "http");
-      }
-      // This job will result in error since the requested URL is not one of the
-      // URLs supported by these tests.
-      return new URLRequestTestJob(request, network_delegate, true);
-    }
-    if (!intercept_main_request_)
-      return nullptr;
-    intercept_main_request_ = false;
-    did_intercept_main_ = true;
-    URLRequestTestJob* job =  new URLRequestTestJob(request,
-                                                    network_delegate,
-                                                    main_headers_,
-                                                    main_data_,
-                                                    true);
+    URLRequestTestJob* job = new URLRequestTestJob(
+        request, network_delegate, ok_headers(), ok_data(), true);
     job->set_load_timing_info(main_request_load_timing_info_);
     return job;
-  }
-
-  URLRequestJob* MaybeInterceptRedirect(URLRequest* request,
-                                        NetworkDelegate* network_delegate,
-                                        const GURL& location) const override {
-    if (cancel_redirect_request_) {
-      cancel_redirect_request_ = false;
-      did_cancel_redirect_ = true;
-      return new CancelTestJob(request, network_delegate);
-    }
-    if (!intercept_redirect_)
-      return nullptr;
-    intercept_redirect_ = false;
-    did_intercept_redirect_ = true;
-    if (use_url_request_http_job_) {
-      return URLRequestHttpJob::Factory(request, network_delegate, "http");
-    }
-    return new URLRequestTestJob(request,
-                                 network_delegate,
-                                 redirect_headers_,
-                                 redirect_data_,
-                                 true);
-  }
-
-  URLRequestJob* MaybeInterceptResponse(
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const override {
-    if (cancel_final_request_) {
-      cancel_final_request_ = false;
-      did_cancel_final_ = true;
-      return new CancelTestJob(request, network_delegate);
-    }
-    if (!intercept_final_response_)
-      return nullptr;
-    intercept_final_response_ = false;
-    did_intercept_final_ = true;
-    if (use_url_request_http_job_) {
-      return URLRequestHttpJob::Factory(request, network_delegate, "http");
-    }
-    return new URLRequestTestJob(request,
-                                 network_delegate,
-                                 final_headers_,
-                                 final_data_,
-                                 true);
-  }
-
-  void set_intercept_main_request(bool intercept_main_request) {
-    intercept_main_request_ = intercept_main_request;
-  }
-
-  void set_main_headers(const std::string& main_headers) {
-    main_headers_ = main_headers;
-  }
-
-  void set_main_data(const std::string& main_data) {
-    main_data_ = main_data;
   }
 
   void set_main_request_load_timing_info(
@@ -1077,119 +958,8 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
     main_request_load_timing_info_ = main_request_load_timing_info;
   }
 
-  void set_cancel_main_request(bool cancel_main_request) {
-    cancel_main_request_ = cancel_main_request;
-  }
-
-  void set_simulate_main_network_error(bool simulate_main_network_error) {
-    simulate_main_network_error_ = simulate_main_network_error;
-  }
-
-  void set_intercept_redirect(bool intercept_redirect) {
-    intercept_redirect_ = intercept_redirect;
-  }
-
-  void set_redirect_headers(const std::string& redirect_headers) {
-    redirect_headers_ = redirect_headers;
-  }
-
-  void set_redirect_data(const std::string& redirect_data) {
-    redirect_data_ = redirect_data;
-  }
-
-  void set_cancel_redirect_request(bool cancel_redirect_request) {
-    cancel_redirect_request_ = cancel_redirect_request;
-  }
-
-  void set_intercept_final_response(bool intercept_final_response) {
-    intercept_final_response_ = intercept_final_response;
-  }
-
-  void set_final_headers(const std::string& final_headers) {
-    final_headers_ = final_headers;
-  }
-
-  void set_final_data(const std::string& final_data) {
-    final_data_ = final_data;
-  }
-
-  void set_cancel_final_request(bool cancel_final_request) {
-    cancel_final_request_ = cancel_final_request;
-  }
-
-  void set_use_url_request_http_job(bool use_url_request_http_job) {
-    use_url_request_http_job_ = use_url_request_http_job;
-  }
-
-  bool did_intercept_main() const {
-    return did_intercept_main_;
-  }
-
-  bool did_cancel_main() const {
-    return did_cancel_main_;
-  }
-
-  bool did_simulate_error_main() const {
-    return did_simulate_error_main_;
-  }
-
-  bool did_intercept_redirect() const {
-    return did_intercept_redirect_;
-  }
-
-  bool did_cancel_redirect() const {
-    return did_cancel_redirect_;
-  }
-
-  bool did_intercept_final() const {
-    return did_intercept_final_;
-  }
-
-  bool did_cancel_final() const {
-    return did_cancel_final_;
-  }
-
  private:
-  // Indicate whether to intercept the main request, and if so specify the
-  // response to return and the LoadTimingInfo to use.
-  mutable bool intercept_main_request_;
-  mutable std::string main_headers_;
-  mutable std::string main_data_;
   mutable LoadTimingInfo main_request_load_timing_info_;
-
-  // These indicate actions that can be taken within MaybeInterceptRequest.
-  mutable bool cancel_main_request_;
-  mutable bool simulate_main_network_error_;
-
-  // Indicate whether to intercept redirects, and if so specify the response to
-  // return.
-  mutable bool intercept_redirect_;
-  mutable std::string redirect_headers_;
-  mutable std::string redirect_data_;
-
-  // Cancel the request within MaybeInterceptRedirect.
-  mutable bool cancel_redirect_request_;
-
-  // Indicate whether to intercept the final response, and if so specify the
-  // response to return.
-  mutable bool intercept_final_response_;
-  mutable std::string final_headers_;
-  mutable std::string final_data_;
-
-  // Cancel the final request within MaybeInterceptResponse.
-  mutable bool cancel_final_request_;
-
-  // Instruct the interceptor to use a real URLRequestHTTPJob.
-  mutable bool use_url_request_http_job_;
-
-  // These indicate if the interceptor did something or not.
-  mutable bool did_intercept_main_;
-  mutable bool did_cancel_main_;
-  mutable bool did_simulate_error_main_;
-  mutable bool did_intercept_redirect_;
-  mutable bool did_cancel_redirect_;
-  mutable bool did_intercept_final_;
-  mutable bool did_cancel_final_;
 };
 
 // Inherit PlatformTest since we require the autorelease pool on Mac OS X.
@@ -1218,9 +988,6 @@ class URLRequestInterceptorTest : public URLRequestTest {
 
 TEST_F(URLRequestInterceptorTest, Intercept) {
   // Intercept the main request and respond with a simple response.
-  interceptor()->set_intercept_main_request(true);
-  interceptor()->set_main_headers(MockURLRequestInterceptor::ok_headers());
-  interceptor()->set_main_data(MockURLRequestInterceptor::ok_data());
   TestDelegate d;
   std::unique_ptr<URLRequest> req(default_context().CreateRequest(
       GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d,
@@ -1246,181 +1013,6 @@ TEST_F(URLRequestInterceptorTest, Intercept) {
   EXPECT_EQ(MockURLRequestInterceptor::ok_data(), d.data_received());
   EXPECT_EQ(1, d.response_started_count());
   EXPECT_EQ(0, d.received_redirect_count());
-}
-
-TEST_F(URLRequestInterceptorTest, InterceptRedirect) {
-  // Intercept the main request and respond with a redirect.
-  interceptor()->set_intercept_main_request(true);
-  interceptor()->set_main_headers(
-      MockURLRequestInterceptor::redirect_headers());
-  interceptor()->set_main_data(MockURLRequestInterceptor::redirect_data());
-
-  // Intercept that redirect and respond with a final OK response.
-  interceptor()->set_intercept_redirect(true);
-  interceptor()->set_redirect_headers(MockURLRequestInterceptor::ok_headers());
-  interceptor()->set_redirect_data(MockURLRequestInterceptor::ok_data());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_method("GET");
-  req->Start();
-  d.RunUntilComplete();
-
-  // Check that the interceptor got called as expected.
-  EXPECT_TRUE(interceptor()->did_intercept_main());
-  EXPECT_TRUE(interceptor()->did_intercept_redirect());
-
-  // Check that we got one good response.
-  int status = d.request_status();
-  EXPECT_EQ(OK, status);
-  if (status == OK)
-    EXPECT_EQ(200, req->response_headers()->response_code());
-
-  EXPECT_EQ(MockURLRequestInterceptor::ok_data(), d.data_received());
-  EXPECT_EQ(1, d.response_started_count());
-  EXPECT_EQ(0, d.received_redirect_count());
-}
-
-TEST_F(URLRequestInterceptorTest, InterceptServerError) {
-  // Intercept the main request to generate a server error response.
-  interceptor()->set_intercept_main_request(true);
-  interceptor()->set_main_headers(MockURLRequestInterceptor::error_headers());
-  interceptor()->set_main_data(MockURLRequestInterceptor::error_data());
-
-  // Intercept that error and respond with an OK response.
-  interceptor()->set_intercept_final_response(true);
-  interceptor()->set_final_headers(MockURLRequestInterceptor::ok_headers());
-  interceptor()->set_final_data(MockURLRequestInterceptor::ok_data());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_method("GET");
-  req->Start();
-  d.RunUntilComplete();
-
-  // Check that the interceptor got called as expected.
-  EXPECT_TRUE(interceptor()->did_intercept_main());
-  EXPECT_TRUE(interceptor()->did_intercept_final());
-
-  // Check that we got one good response.
-  EXPECT_EQ(OK, d.request_status());
-  EXPECT_EQ(200, req->response_headers()->response_code());
-  EXPECT_EQ(MockURLRequestInterceptor::ok_data(), d.data_received());
-  EXPECT_EQ(1, d.response_started_count());
-  EXPECT_EQ(0, d.received_redirect_count());
-}
-
-TEST_F(URLRequestInterceptorTest, InterceptNetworkError) {
-  // Intercept the main request to simulate a network error.
-  interceptor()->set_simulate_main_network_error(true);
-
-  // Intercept that error and respond with an OK response.
-  interceptor()->set_intercept_final_response(true);
-  interceptor()->set_final_headers(MockURLRequestInterceptor::ok_headers());
-  interceptor()->set_final_data(MockURLRequestInterceptor::ok_data());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_method("GET");
-  req->Start();
-  d.RunUntilComplete();
-
-  // Check that the interceptor got called as expected.
-  EXPECT_TRUE(interceptor()->did_simulate_error_main());
-  EXPECT_TRUE(interceptor()->did_intercept_final());
-
-  // Check that we received one good response.
-  EXPECT_EQ(OK, d.request_status());
-  EXPECT_EQ(200, req->response_headers()->response_code());
-  EXPECT_EQ(MockURLRequestInterceptor::ok_data(), d.data_received());
-  EXPECT_EQ(1, d.response_started_count());
-  EXPECT_EQ(0, d.received_redirect_count());
-}
-
-TEST_F(URLRequestInterceptorTest, InterceptRespectsCancelMain) {
-  // Intercept the main request and cancel from within the restarted job.
-  interceptor()->set_cancel_main_request(true);
-
-  // Set up to intercept the final response and override it with an OK response.
-  interceptor()->set_intercept_final_response(true);
-  interceptor()->set_final_headers(MockURLRequestInterceptor::ok_headers());
-  interceptor()->set_final_data(MockURLRequestInterceptor::ok_data());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_method("GET");
-  req->Start();
-  d.RunUntilComplete();
-
-  // Check that the interceptor got called as expected.
-  EXPECT_TRUE(interceptor()->did_cancel_main());
-  EXPECT_FALSE(interceptor()->did_intercept_final());
-
-  // Check that we see a canceled request.
-  EXPECT_EQ(ERR_ABORTED, d.request_status());
-}
-
-TEST_F(URLRequestInterceptorTest, InterceptRespectsCancelRedirect) {
-  // Intercept the main request and respond with a redirect.
-  interceptor()->set_intercept_main_request(true);
-  interceptor()->set_main_headers(
-      MockURLRequestInterceptor::redirect_headers());
-  interceptor()->set_main_data(MockURLRequestInterceptor::redirect_data());
-
-  // Intercept the redirect and cancel from within that job.
-  interceptor()->set_cancel_redirect_request(true);
-
-  // Set up to intercept the final response and override it with an OK response.
-  interceptor()->set_intercept_final_response(true);
-  interceptor()->set_final_headers(MockURLRequestInterceptor::ok_headers());
-  interceptor()->set_final_data(MockURLRequestInterceptor::ok_data());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_method("GET");
-  req->Start();
-  d.RunUntilComplete();
-
-  // Check that the interceptor got called as expected.
-  EXPECT_TRUE(interceptor()->did_intercept_main());
-  EXPECT_TRUE(interceptor()->did_cancel_redirect());
-  EXPECT_FALSE(interceptor()->did_intercept_final());
-
-  // Check that we see a canceled request.
-  EXPECT_EQ(ERR_ABORTED, d.request_status());
-}
-
-TEST_F(URLRequestInterceptorTest, InterceptRespectsCancelFinal) {
-  // Intercept the main request to simulate a network error.
-  interceptor()->set_simulate_main_network_error(true);
-
-  // Set up to intercept final the response and cancel from within that job.
-  interceptor()->set_cancel_final_request(true);
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_method("GET");
-  req->Start();
-  d.RunUntilComplete();
-
-  // Check that the interceptor got called as expected.
-  EXPECT_TRUE(interceptor()->did_simulate_error_main());
-  EXPECT_TRUE(interceptor()->did_cancel_final());
-
-  // Check that we see a canceled request.
-  EXPECT_EQ(ERR_ABORTED, d.request_status());
 }
 
 // "Normal" LoadTimingInfo as returned by a job.  Everything is in order, not
@@ -1479,7 +1071,6 @@ LoadTimingInfo RunURLRequestInterceptorLoadTimingTest(
     const LoadTimingInfo& job_load_timing,
     const URLRequestContext& context,
     MockURLRequestInterceptor* interceptor) {
-  interceptor->set_intercept_main_request(true);
   interceptor->set_main_request_load_timing_info(job_load_timing);
   TestDelegate d;
   std::unique_ptr<URLRequest> req(
@@ -8992,105 +8583,6 @@ class URLRequestInterceptorTestHTTP : public URLRequestTestHTTP {
  private:
   MockURLRequestInterceptor* interceptor_;
 };
-
-TEST_F(URLRequestInterceptorTestHTTP,
-       NetworkDelegateNotificationOnRedirectIntercept) {
-  interceptor()->set_intercept_redirect(true);
-  interceptor()->set_redirect_headers(MockURLRequestInterceptor::ok_headers());
-  interceptor()->set_redirect_data(MockURLRequestInterceptor::ok_data());
-
-  ASSERT_TRUE(http_test_server()->Start());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      http_test_server()->GetURL("/redirect-test.html"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->Start();
-  d.RunUntilComplete();
-
-  EXPECT_TRUE(interceptor()->did_intercept_redirect());
-  // Check we got one good response
-  int status = d.request_status();
-  EXPECT_EQ(OK, status);
-  if (status == OK)
-    EXPECT_EQ(200, req->response_headers()->response_code());
-
-  EXPECT_EQ(MockURLRequestInterceptor::ok_data(), d.data_received());
-  EXPECT_EQ(1, d.response_started_count());
-  EXPECT_EQ(0, d.received_redirect_count());
-
-  EXPECT_EQ(1, default_network_delegate()->created_requests());
-  EXPECT_EQ(1, default_network_delegate()->before_start_transaction_count());
-  EXPECT_EQ(1, default_network_delegate()->headers_received_count());
-}
-
-TEST_F(URLRequestInterceptorTestHTTP,
-       NetworkDelegateNotificationOnErrorIntercept) {
-  // Intercept that error and respond with an OK response.
-  interceptor()->set_intercept_final_response(true);
-  interceptor()->set_final_headers(MockURLRequestInterceptor::ok_headers());
-  interceptor()->set_final_data(MockURLRequestInterceptor::ok_data());
-  default_network_delegate()->set_can_be_intercepted_on_error(true);
-
-  ASSERT_TRUE(http_test_server()->Start());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      http_test_server()->GetURL("/two-content-lengths.html"), DEFAULT_PRIORITY,
-      &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_method("GET");
-  req->Start();
-  d.RunUntilComplete();
-
-  EXPECT_TRUE(interceptor()->did_intercept_final());
-
-  // Check we received one good response.
-  int status = d.request_status();
-  EXPECT_EQ(OK, status);
-  if (status == OK)
-    EXPECT_EQ(200, req->response_headers()->response_code());
-  EXPECT_EQ(MockURLRequestInterceptor::ok_data(), d.data_received());
-  EXPECT_EQ(1, d.response_started_count());
-  EXPECT_EQ(0, d.received_redirect_count());
-
-  EXPECT_EQ(1, default_network_delegate()->created_requests());
-  EXPECT_EQ(1, default_network_delegate()->before_start_transaction_count());
-  EXPECT_EQ(0, default_network_delegate()->headers_received_count());
-}
-
-TEST_F(URLRequestInterceptorTestHTTP,
-       NetworkDelegateNotificationOnResponseIntercept) {
-  // Intercept that error and respond with an OK response.
-  interceptor()->set_intercept_final_response(true);
-
-  // Intercept with a real URLRequestHttpJob.
-  interceptor()->set_use_url_request_http_job(true);
-
-  ASSERT_TRUE(http_test_server()->Start());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      http_test_server()->GetURL("/simple.html"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_method("GET");
-  req->Start();
-  d.RunUntilComplete();
-
-  EXPECT_TRUE(interceptor()->did_intercept_final());
-
-  // Check we received one good response.
-  int status = d.request_status();
-  EXPECT_EQ(OK, status);
-  if (status == OK)
-    EXPECT_EQ(200, req->response_headers()->response_code());
-  EXPECT_EQ("hello", d.data_received());
-  EXPECT_EQ(1, d.response_started_count());
-  EXPECT_EQ(0, d.received_redirect_count());
-
-  EXPECT_EQ(1, default_network_delegate()->created_requests());
-  EXPECT_EQ(2, default_network_delegate()->before_start_transaction_count());
-  EXPECT_EQ(2, default_network_delegate()->headers_received_count());
-}
 
 class URLRequestTestReferrerPolicy : public URLRequestTest {
  public:
