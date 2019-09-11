@@ -571,12 +571,6 @@ void URLRequestJob::NotifyCanceled() {
   }
 }
 
-void URLRequestJob::NotifyRestartRequired() {
-  DCHECK(!has_handled_response_);
-  if (GetStatus().status() != URLRequestStatus::CANCELED)
-    request_->Restart();
-}
-
 void URLRequestJob::OnCallToDelegate(NetLogEventType type) {
   request_->OnCallToDelegate(type);
 }

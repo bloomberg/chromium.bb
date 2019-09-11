@@ -927,17 +927,6 @@ TEST_F(URLRequestTest, InvalidReferrerTest) {
   EXPECT_TRUE(d.request_failed());
 }
 
-// Custom URLRequestJobs for use with interceptor tests
-class RestartTestJob : public URLRequestTestJob {
- public:
-  RestartTestJob(URLRequest* request, NetworkDelegate* network_delegate)
-    : URLRequestTestJob(request, network_delegate, true) {}
- protected:
-  void StartAsync() override { this->NotifyRestartRequired(); }
- private:
-  ~RestartTestJob() override = default;
-};
-
 class CancelTestJob : public URLRequestTestJob {
  public:
   explicit CancelTestJob(URLRequest* request, NetworkDelegate* network_delegate)
@@ -946,21 +935,6 @@ class CancelTestJob : public URLRequestTestJob {
   void StartAsync() override { request_->Cancel(); }
  private:
   ~CancelTestJob() override = default;
-};
-
-class CancelThenRestartTestJob : public URLRequestTestJob {
- public:
-  explicit CancelThenRestartTestJob(URLRequest* request,
-                                    NetworkDelegate* network_delegate)
-      : URLRequestTestJob(request, network_delegate, true) {
-  }
- protected:
-  void StartAsync() override {
-    request_->Cancel();
-    this->NotifyRestartRequired();
-  }
- private:
-  ~CancelThenRestartTestJob() override = default;
 };
 
 // An Interceptor for use with interceptor tests.
@@ -992,18 +966,21 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
   }
 
   MockURLRequestInterceptor()
-      : intercept_main_request_(false), restart_main_request_(false),
-        cancel_main_request_(false), cancel_then_restart_main_request_(false),
+      : intercept_main_request_(false),
+        cancel_main_request_(false),
         simulate_main_network_error_(false),
-        intercept_redirect_(false), cancel_redirect_request_(false),
-        intercept_final_response_(false), cancel_final_request_(false),
+        intercept_redirect_(false),
+        cancel_redirect_request_(false),
+        intercept_final_response_(false),
+        cancel_final_request_(false),
         use_url_request_http_job_(false),
-        did_intercept_main_(false), did_restart_main_(false),
-        did_cancel_main_(false), did_cancel_then_restart_main_(false),
+        did_intercept_main_(false),
+        did_cancel_main_(false),
         did_simulate_error_main_(false),
-        did_intercept_redirect_(false), did_cancel_redirect_(false),
-        did_intercept_final_(false), did_cancel_final_(false) {
-  }
+        did_intercept_redirect_(false),
+        did_cancel_redirect_(false),
+        did_intercept_final_(false),
+        did_cancel_final_(false) {}
 
   ~MockURLRequestInterceptor() override = default;
 
@@ -1011,20 +988,10 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
   URLRequestJob* MaybeInterceptRequest(
       URLRequest* request,
       NetworkDelegate* network_delegate) const override {
-    if (restart_main_request_) {
-      restart_main_request_ = false;
-      did_restart_main_ = true;
-      return new RestartTestJob(request, network_delegate);
-    }
     if (cancel_main_request_) {
       cancel_main_request_ = false;
       did_cancel_main_ = true;
       return new CancelTestJob(request, network_delegate);
-    }
-    if (cancel_then_restart_main_request_) {
-      cancel_then_restart_main_request_ = false;
-      did_cancel_then_restart_main_ = true;
-      return new CancelThenRestartTestJob(request, network_delegate);
     }
     if (simulate_main_network_error_) {
       simulate_main_network_error_ = false;
@@ -1110,17 +1077,8 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
     main_request_load_timing_info_ = main_request_load_timing_info;
   }
 
-  void set_restart_main_request(bool restart_main_request) {
-    restart_main_request_ = restart_main_request;
-  }
-
   void set_cancel_main_request(bool cancel_main_request) {
     cancel_main_request_ = cancel_main_request;
-  }
-
-  void set_cancel_then_restart_main_request(
-      bool cancel_then_restart_main_request) {
-    cancel_then_restart_main_request_ = cancel_then_restart_main_request;
   }
 
   void set_simulate_main_network_error(bool simulate_main_network_error) {
@@ -1167,16 +1125,8 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
     return did_intercept_main_;
   }
 
-  bool did_restart_main() const {
-    return did_restart_main_;
-  }
-
   bool did_cancel_main() const {
     return did_cancel_main_;
-  }
-
-  bool did_cancel_then_restart_main() const {
-    return did_cancel_then_restart_main_;
   }
 
   bool did_simulate_error_main() const {
@@ -1208,9 +1158,7 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
   mutable LoadTimingInfo main_request_load_timing_info_;
 
   // These indicate actions that can be taken within MaybeInterceptRequest.
-  mutable bool restart_main_request_;
   mutable bool cancel_main_request_;
-  mutable bool cancel_then_restart_main_request_;
   mutable bool simulate_main_network_error_;
 
   // Indicate whether to intercept redirects, and if so specify the response to
@@ -1236,9 +1184,7 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
 
   // These indicate if the interceptor did something or not.
   mutable bool did_intercept_main_;
-  mutable bool did_restart_main_;
   mutable bool did_cancel_main_;
-  mutable bool did_cancel_then_restart_main_;
   mutable bool did_simulate_error_main_;
   mutable bool did_intercept_redirect_;
   mutable bool did_cancel_redirect_;
@@ -1397,38 +1343,6 @@ TEST_F(URLRequestInterceptorTest, InterceptNetworkError) {
   EXPECT_EQ(0, d.received_redirect_count());
 }
 
-TEST_F(URLRequestInterceptorTest, InterceptRestartRequired) {
-  // Restart the main request.
-  interceptor()->set_restart_main_request(true);
-
-  // then intercept the new main request and respond with an OK response
-  interceptor()->set_intercept_main_request(true);
-  interceptor()->set_main_headers(MockURLRequestInterceptor::ok_headers());
-  interceptor()->set_main_data(MockURLRequestInterceptor::ok_data());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_method("GET");
-  req->Start();
-  d.RunUntilComplete();
-
-  // Check that the interceptor got called as expected.
-  EXPECT_TRUE(interceptor()->did_restart_main());
-  EXPECT_TRUE(interceptor()->did_intercept_main());
-
-  // Check that we received one good response.
-  int status = d.request_status();
-  EXPECT_EQ(OK, status);
-  if (status == OK)
-    EXPECT_EQ(200, req->response_headers()->response_code());
-
-  EXPECT_EQ(MockURLRequestInterceptor::ok_data(), d.data_received());
-  EXPECT_EQ(1, d.response_started_count());
-  EXPECT_EQ(0, d.received_redirect_count());
-}
-
 TEST_F(URLRequestInterceptorTest, InterceptRespectsCancelMain) {
   // Intercept the main request and cancel from within the restarted job.
   interceptor()->set_cancel_main_request(true);
@@ -1504,31 +1418,6 @@ TEST_F(URLRequestInterceptorTest, InterceptRespectsCancelFinal) {
   // Check that the interceptor got called as expected.
   EXPECT_TRUE(interceptor()->did_simulate_error_main());
   EXPECT_TRUE(interceptor()->did_cancel_final());
-
-  // Check that we see a canceled request.
-  EXPECT_EQ(ERR_ABORTED, d.request_status());
-}
-
-TEST_F(URLRequestInterceptorTest, InterceptRespectsCancelInRestart) {
-  // Intercept the main request and cancel then restart from within that job.
-  interceptor()->set_cancel_then_restart_main_request(true);
-
-  // Set up to intercept the final response and override it with an OK response.
-  interceptor()->set_intercept_final_response(true);
-  interceptor()->set_final_headers(MockURLRequestInterceptor::ok_headers());
-  interceptor()->set_final_data(MockURLRequestInterceptor::ok_data());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_method("GET");
-  req->Start();
-  d.RunUntilComplete();
-
-  // Check that the interceptor got called as expected.
-  EXPECT_TRUE(interceptor()->did_cancel_then_restart_main());
-  EXPECT_FALSE(interceptor()->did_intercept_final());
 
   // Check that we see a canceled request.
   EXPECT_EQ(ERR_ABORTED, d.request_status());

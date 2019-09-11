@@ -705,13 +705,6 @@ void URLRequest::StartJob(URLRequestJob* job) {
   job_->Start();
 }
 
-void URLRequest::Restart() {
-  // Should only be called if the original job didn't make any progress.
-  DCHECK(job_.get() && !job_->has_response_started());
-  RestartWithJob(
-      URLRequestJobManager::GetInstance()->CreateJob(this, network_delegate_));
-}
-
 void URLRequest::RestartWithJob(URLRequestJob* job) {
   DCHECK(job->request() == this);
   PrepareToRestart();
