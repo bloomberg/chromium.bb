@@ -621,11 +621,8 @@ message StartLxdContainerRequest {
   // The owner of the VM and container.
   string owner_id = 3;
 
-  // If true, StartLxdContainer will return the final container start result
-  // as a signal. If false, StartLxdContainer will block until the container
-  // has started. This field will be required to be true once all clients are
-  // migrated to use async.
-  bool async = 4;
+  // Deprecated.  All calls are async.
+  bool async = 4 [deprecated = true];
 
   // Full path where drivefs is mounted (/media/fuse/drivefs-<drivefs-hash>).
   string drivefs_mount_path = 5;
