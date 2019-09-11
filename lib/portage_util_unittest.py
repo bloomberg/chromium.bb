@@ -1321,6 +1321,25 @@ class PortageDBTest(cros_test_lib.TempDirTestCase):
     self.fake_packages.sort()
     self.assertEqual(self.fake_packages, packages)
 
+  def testGeneratePackageSizes(self):
+    """Test if calculating installed package sizes works."""
+    fake_data = 'FAKE DATA'
+    expected_size = 0
+    for fake_file in self.fake_files:
+      if fake_file[0] == 'obj':
+        fake_filename = os.path.join(self.fake_chroot,
+                                     os.path.relpath(fake_file[1], '/'))
+        osutils.WriteFile(fake_filename, fake_data, makedirs=True)
+        expected_size += len(fake_data)
+
+    portage_db = portage_util.PortageDB(self.fake_chroot)
+    installed_packages = portage_db.InstalledPackages()
+    package_size_pairs = portage_util.GeneratePackageSizes(portage_db,
+                                                           'fake_chroot',
+                                                           installed_packages)
+    total_size = sum(x for _, x in package_size_pairs)
+    self.assertEqual(total_size, expected_size)
+
   def testIsPackageInstalled(self):
     """Test if checking the existence of an installed package works."""
     self.assertTrue(portage_util.IsPackageInstalled(

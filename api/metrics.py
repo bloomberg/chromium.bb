@@ -38,14 +38,14 @@ def deserialize_metrics_log(output_events, prefix=None):
   # Reduce over the input events to append output_events.
   for input_event in metrics.read_metrics_events():
     if input_event.op == metrics.OP_START_TIMER:
-      timers[input_event.key] = (input_event.name,
+      timers[input_event.arg] = (input_event.name,
                                  input_event.timestamp_epoch_millis)
     elif input_event.op == metrics.OP_STOP_TIMER:
       # TODO(wbbradley): Drop the None fallback https://crbug.com/1001909.
-      timer = timers.pop(input_event.key, None)
+      timer = timers.pop(input_event.arg, None)
       if timer is None:
         logging.error('%s: stop timer recorded, but missing start timer!?',
-                      input_event.key)
+                      input_event.arg)
       if timer:
         assert input_event.name == timer[0]
         output_event = output_events.add()
@@ -57,6 +57,11 @@ def deserialize_metrics_log(output_events, prefix=None):
       output_event = output_events.add()
       output_event.name = make_name(input_event.name)
       output_event.timestamp_milliseconds = input_event.timestamp_epoch_millis
+    elif input_event.op == metrics.OP_GAUGE:
+      output_event = output_events.add()
+      output_event.name = make_name(input_event.name)
+      output_event.timestamp_milliseconds = input_event.timestamp_epoch_millis
+      output_event.gauge = input_event.arg
     else:
       raise ValueError('unexpected op "%s" found in metric event: %s' % (
           input_event.op, input_event))

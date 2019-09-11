@@ -2258,3 +2258,51 @@ def PortageqMatch(atom, board=None):
   """
   result = _Portageq(['match', '/', atom], board=board)
   return SplitCPV(result.output.strip()) if result.output else None
+
+
+class PackageNotFoundError(Error):
+  """Error indicating that the package asked for was not found."""
+
+
+def GenerateInstalledPackages(db, root, packages):
+  """Generate a sequence of installed package objects from package names."""
+  for package in packages:
+    category, pv = package.split('/')
+    installed_package = db.GetInstalledPackage(category, pv)
+    if not installed_package:
+      raise PackageNotFoundError('Unable to locate package %s in %s' % (package,
+                                                                        root))
+    yield installed_package
+
+
+def GeneratePackageSizes(db, root, installed_packages):
+  """Collect package sizes and generate package size pairs.
+
+  Yields:
+    (str, int): A pair of cpv and total package size.
+  """
+  visited_cpvs = set()
+  for installed_package in installed_packages:
+    package_cpv = '%s/%s' % (installed_package.category, installed_package.pf)
+
+    assert package_cpv not in visited_cpvs
+    visited_cpvs.add(package_cpv)
+
+    total_package_filesize = 0
+    if not installed_package:
+      raise PackageNotFoundError('Unable to locate installed_package %s in %s' %
+                                 (package_cpv, root))
+    for content_type, path in installed_package.ListContents():
+      if content_type == InstalledPackage.OBJ:
+        filename = os.path.join(db.root, path)
+        try:
+          filesize = os.path.getsize(filename)
+        except OSError as e:
+          logging.warn('unable to compute the size of %s (skipping): %s',
+                       filename, e)
+          continue
+        logging.debug('size of %s = %d', filename, filesize)
+        total_package_filesize += filesize
+    logging.debug('%s installed_package size is %d', package_cpv,
+                  total_package_filesize)
+    yield (package_cpv, total_package_filesize)
