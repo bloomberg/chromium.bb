@@ -24,17 +24,18 @@ void ApplicationMediaCapabilities::AddBinding(
 void ApplicationMediaCapabilities::SetSupportedBitstreamAudioCodecs(
     int codecs) {
   supported_bitstream_audio_codecs_ = codecs;
-  observers_.ForAllPtrs(
-      [codecs](mojom::ApplicationMediaCapabilitiesObserver* observer) {
-        observer->OnSupportedBitstreamAudioCodecsChanged(codecs);
-      });
+  for (auto& observer : observers_)
+    observer->OnSupportedBitstreamAudioCodecsChanged(codecs);
 }
 
 void ApplicationMediaCapabilities::AddObserver(
-    mojom::ApplicationMediaCapabilitiesObserverPtr observer) {
+    mojo::PendingRemote<mojom::ApplicationMediaCapabilitiesObserver>
+        observer_remote) {
+  mojo::Remote<mojom::ApplicationMediaCapabilitiesObserver> observer(
+      std::move(observer_remote));
   observer->OnSupportedBitstreamAudioCodecsChanged(
       supported_bitstream_audio_codecs_);
-  observers_.AddPtr(std::move(observer));
+  observers_.Add(std::move(observer));
 }
 
 }  // namespace shell

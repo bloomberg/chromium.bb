@@ -77,7 +77,6 @@ constexpr base::TimeDelta kAudioRendererStartingCapacityEncrypted =
 CastContentRendererClient::CastContentRendererClient()
     : supported_profiles_(
           std::make_unique<media::SupportedCodecProfileLevelsMemo>()),
-      app_media_capabilities_observer_binding_(this),
       supported_bitstream_audio_codecs_(kBitstreamAudioCodecNone) {
 #if defined(OS_ANDROID)
   DCHECK(::media::MediaCodecUtil::IsMediaCodecAvailable())
@@ -176,13 +175,12 @@ void CastContentRendererClient::RenderFrameCreated(
   // APIs. The objects' lifetimes are bound to the RenderFrame's lifetime.
   new OnLoadScriptInjector(render_frame);
 
-  if (!app_media_capabilities_observer_binding_.is_bound()) {
-    mojom::ApplicationMediaCapabilitiesObserverPtr observer;
-    app_media_capabilities_observer_binding_.Bind(mojo::MakeRequest(&observer));
+  if (!app_media_capabilities_observer_receiver_.is_bound()) {
     mojom::ApplicationMediaCapabilitiesPtr app_media_capabilities;
     render_frame->GetRemoteInterfaces()->GetInterface(
         mojo::MakeRequest(&app_media_capabilities));
-    app_media_capabilities->AddObserver(std::move(observer));
+    app_media_capabilities->AddObserver(
+        app_media_capabilities_observer_receiver_.BindNewPipeAndPassRemote());
   }
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)

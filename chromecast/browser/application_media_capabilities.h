@@ -8,7 +8,8 @@
 #include "base/macros.h"
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace content {
 class RenderFrameHost;
@@ -30,10 +31,11 @@ class ApplicationMediaCapabilities
  private:
   // mojom::ApplicationMediaCapabilities implementation:
   void AddObserver(
-      mojom::ApplicationMediaCapabilitiesObserverPtr observer) override;
+      mojo::PendingRemote<mojom::ApplicationMediaCapabilitiesObserver>
+          observer_remote) override;
 
   mojo::BindingSet<mojom::ApplicationMediaCapabilities> bindings_;
-  mojo::InterfacePtrSet<mojom::ApplicationMediaCapabilitiesObserver> observers_;
+  mojo::RemoteSet<mojom::ApplicationMediaCapabilitiesObserver> observers_;
   int supported_bitstream_audio_codecs_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationMediaCapabilities);
