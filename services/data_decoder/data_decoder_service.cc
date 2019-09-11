@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/data_decoder/bundled_exchanges_parser_factory.h"
 #include "services/data_decoder/image_decoder_impl.h"
@@ -76,10 +77,11 @@ void DataDecoderService::BindBleScanParser(
 }
 #endif  // OS_CHROMEOS
 
-void DataDecoderService::BindImageDecoder(mojom::ImageDecoderRequest request) {
-  mojo::MakeStrongBinding(
+void DataDecoderService::BindImageDecoder(
+    mojo::PendingReceiver<mojom::ImageDecoder> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<ImageDecoderImpl>(keepalive_.CreateRef()),
-      std::move(request));
+      std::move(receiver));
 }
 
 void DataDecoderService::BindJsonParser(mojom::JsonParserRequest request) {

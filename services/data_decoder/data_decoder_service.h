@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
@@ -42,7 +43,7 @@ class DataDecoderService : public service_manager::Service {
  private:
   void BindBundledExchangesParserFactory(
       mojom::BundledExchangesParserFactoryRequest request);
-  void BindImageDecoder(mojom::ImageDecoderRequest request);
+  void BindImageDecoder(mojo::PendingReceiver<mojom::ImageDecoder> receiver);
   void BindJsonParser(mojom::JsonParserRequest request);
   void BindXmlParser(mojom::XmlParserRequest request);
 
