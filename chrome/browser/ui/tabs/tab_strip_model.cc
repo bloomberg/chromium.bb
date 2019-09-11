@@ -1248,7 +1248,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     }
 
     case CommandSendTabToSelfSingleTarget: {
-      send_tab_to_self::ShareToSingleTarget(GetActiveWebContents());
+      send_tab_to_self::ShareToSingleTarget(GetWebContentsAt(context_index));
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kTabMenu, SendTabToSelfClickResult::kClickItem);
       break;
