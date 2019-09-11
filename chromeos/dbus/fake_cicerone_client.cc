@@ -94,6 +94,10 @@ bool FakeCiceroneClient::IsImportLxdContainerProgressSignalConnected() {
   return is_import_lxd_container_progress_signal_connected_;
 }
 
+bool FakeCiceroneClient::IsApplyAnsiblePlaybookProgressSignalConnected() {
+  return is_apply_ansible_playbook_progress_signal_connected_;
+}
+
 // Currently no tests need to change the output of this method. If you want to
 // add one, make it return a variable like the above examples.
 bool FakeCiceroneClient::IsPendingAppListUpdatesSignalConnected() {
@@ -280,6 +284,15 @@ void FakeCiceroneClient::CancelImportLxdContainer(
                                 cancel_import_lxd_container_response_));
 }
 
+void FakeCiceroneClient::ApplyAnsiblePlaybook(
+    const vm_tools::cicerone::ApplyAnsiblePlaybookRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), apply_ansible_playbook_response_));
+}
+
 void FakeCiceroneClient::NotifyLxdContainerCreated(
     const vm_tools::cicerone::LxdContainerCreatedSignal& proto) {
   for (auto& observer : observer_list_) {
@@ -340,6 +353,13 @@ void FakeCiceroneClient::NotifyPendingAppListUpdates(
     const vm_tools::cicerone::PendingAppListUpdatesSignal& proto) {
   for (auto& observer : observer_list_) {
     observer.OnPendingAppListUpdates(proto);
+  }
+}
+
+void FakeCiceroneClient::NotifyApplyAnsiblePlaybookProgress(
+    const vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal& signal) {
+  for (auto& observer : observer_list_) {
+    observer.OnApplyAnsiblePlaybookProgress(signal);
   }
 }
 

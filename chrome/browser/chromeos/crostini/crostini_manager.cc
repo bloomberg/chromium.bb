@@ -2126,6 +2126,16 @@ void CrostiniManager::OnUninstallPackageProgress(
   }
 }
 
+void CrostiniManager::OnApplyAnsiblePlaybookProgress(
+    const vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal& signal) {
+  if (signal.owner_id() != owner_id_)
+    return;
+
+  // TODO(okalitova): Add an observer.
+  AnsibleManagementService::GetForProfile(profile_)
+      ->OnApplyAnsiblePlaybookProgress(signal.status());
+}
+
 void CrostiniManager::OnUninstallPackageOwningFile(
     CrostiniResultCallback callback,
     base::Optional<vm_tools::cicerone::UninstallPackageOwningFileResponse>

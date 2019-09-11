@@ -467,6 +467,9 @@ class CrostiniManager : public KeyedService,
       override;
   void OnPendingAppListUpdates(
       const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) override;
+  void OnApplyAnsiblePlaybookProgress(
+      const vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal& signal)
+      override;
 
   // chromeos::PowerManagerClient::Observer overrides:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
