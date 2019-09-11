@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_util.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_string_util.h"
 
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -11,12 +11,12 @@
 #error "This file requires ARC support."
 #endif
 
-using CreditCardScannerMediatorUtilTest = PlatformTest;
+using CreditCardScannerStringUtilUnitTest = PlatformTest;
 
 #pragma mark - Test ExtractExpirationDateFromText
 
 // Tests extracting month and year from valid date text.
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractExpirationDateFromValidDateText) {
   NSDateComponents* components = ios::ExtractExpirationDateFromText(@"10/25");
 
@@ -25,7 +25,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 }
 
 // Tests extracting month and year from invalid date text.
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractExpirationDateFromInvalidDateText) {
   NSDateComponents* components = ios::ExtractExpirationDateFromText(@"13/888");
 
@@ -33,7 +33,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 }
 
 // Tests extracting month and year from invalid text.
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractExpirationDateFromInvalidText) {
   NSDateComponents* components = ios::ExtractExpirationDateFromText(@"aaaaa");
 
@@ -41,7 +41,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 }
 
 // Tests extracting month and year from invalid text with correct format.
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractExpirationDateFromInvalidFormattedText) {
   NSDateComponents* components = ios::ExtractExpirationDateFromText(@"aa/aa");
 
@@ -51,7 +51,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 #pragma mark - Test ExtractCreditCardNumber
 
 // Tests extracting card number from valid card number text (16 digits).
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractCardNumberFromValidCreditCardNumber16Digits) {
   NSString* cardNumber = ios::ExtractCreditCardNumber(@"4111111111111111");
 
@@ -59,7 +59,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 }
 
 // Tests extracting card number from valid card number text (14 digits).
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractCardNumberFromValidCreditCardNumber14Digits) {
   NSString* cardNumber = ios::ExtractCreditCardNumber(@"4111111111111");
 
@@ -68,7 +68,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 
 // Tests extracting card number from valid card number text contains wrong
 // characters.
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractCardNumberFromValidCreditCardNumberWithWrongCharacters) {
   NSString* cardNumber = ios::ExtractCreditCardNumber(@"41/11-1111 1111.11:11");
 
@@ -77,7 +77,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 
 // Tests extracting card number from text after converting
 // illegal characters.
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractCardNumberFromValidCreditCardNumberAfterConversion) {
   NSString* cardNumber = ios::ExtractCreditCardNumber(@"41b1C1g1D1i1L1z1");
 
@@ -85,7 +85,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 }
 
 // Tests extracting card number from invalid card number text (10 digits).
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractCardNumberFromInvalidCreditCardNumber10Digits) {
   NSString* cardNumber = ios::ExtractCreditCardNumber(@"4111111111");
 
@@ -93,7 +93,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 }
 
 // Tests extracting card number from invalid card number text.
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractCardNumberFromInvalidCreditCardNumber) {
   NSString* cardNumber = ios::ExtractCreditCardNumber(@"4111a11b11c11");
 
@@ -103,7 +103,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 #pragma mark - Test SubstituteSimilarCharactersInRecognizedText
 
 // Tests substituting convertible characters with digits.
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestSubstitutingTrueCharactersWithDigits) {
   NSString* number =
       ios::SubstituteSimilarCharactersInRecognizedText(@"bCdGiLoQsTuZ");
@@ -112,7 +112,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 }
 
 // Tests substituting text without characters with digits.
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestSubstitutingTextWithoutCharacters) {
   NSString* number =
       ios::SubstituteSimilarCharactersInRecognizedText(@"4111111111111111");
@@ -121,7 +121,7 @@ TEST_F(CreditCardScannerMediatorUtilTest,
 }
 
 // Tests substituting inconvertible characters with digits.
-TEST_F(CreditCardScannerMediatorUtilTest,
+TEST_F(CreditCardScannerStringUtilUnitTest,
        TestSubstitutingFalseCharactersWithDigits) {
   NSString* cardNumber =
       ios::SubstituteSimilarCharactersInRecognizedText(@"abcdefghi");
