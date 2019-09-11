@@ -31,7 +31,7 @@ int aom_free_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
       aom_free(ybf->buffer_alloc);
     }
     if (ybf->y_buffer_8bit) aom_free(ybf->y_buffer_8bit);
-
+    aom_remove_metadata_from_frame_buffer(ybf);
     /* buffer_alloc isn't accessed by most functions.  Rather y_buffer,
       u_buffer and v_buffer point to buffer_alloc and are used.  Clear out
       all of this so that a freed pointer isn't inadvertently used */
@@ -286,4 +286,33 @@ int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                                     NULL, NULL, NULL);
   }
   return AOM_CODEC_MEM_ERROR;
+}
+
+size_t aom_remove_metadata_from_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
+  if (ybf && ybf->metadata) {
+    size_t sz = aom_img_metadata_array_free(ybf->metadata);
+    ybf->metadata = NULL;
+    return sz;
+  }
+  return 0;
+}
+
+int aom_copy_metadata_to_frame_buffer(YV12_BUFFER_CONFIG *ybf,
+                                      aom_metadata_array_t *arr) {
+  if (!ybf || !arr || !arr->metadata_array) return -1;
+  aom_remove_metadata_from_frame_buffer(ybf);
+  ybf->metadata = aom_img_metadata_array_alloc(arr->sz);
+  if (!ybf->metadata) return 0;
+  for (size_t i = 0; i < ybf->metadata->sz; i++) {
+    ybf->metadata->metadata_array[i] = aom_img_metadata_alloc(
+        arr->metadata_array[i]->type, arr->metadata_array[i]->payload,
+        arr->metadata_array[i]->sz);
+    if (ybf->metadata->metadata_array[i] == NULL) {
+      aom_img_metadata_array_free(ybf->metadata);
+      ybf->metadata = NULL;
+      return -1;
+    }
+  }
+  ybf->metadata->sz = arr->sz;
+  return 0;
 }
