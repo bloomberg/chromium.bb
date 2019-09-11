@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
@@ -80,7 +79,7 @@ class CrashyDataDecoderService : public service_manager::Service,
   service_manager::ServiceBinding binding_;
 
   std::unique_ptr<mojo::Receiver<mojom::ImageDecoder>> image_decoder_receiver_;
-  std::unique_ptr<mojo::Binding<mojom::JsonParser>> json_parser_binding_;
+  std::unique_ptr<mojo::Receiver<mojom::JsonParser>> json_parser_receiver_;
 
   // An instance of the actual DataDecoderService we forward requests to for
   // interfaces that should not crash.

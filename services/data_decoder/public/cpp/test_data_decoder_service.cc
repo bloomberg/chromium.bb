@@ -38,9 +38,10 @@ void CrashyDataDecoderService::OnBindInterface(
   DCHECK(interface_name == mojom::JsonParser::Name_ ||
          interface_name == mojom::ImageDecoder::Name_);
   if (interface_name == mojom::JsonParser::Name_ && crash_json_) {
-    DCHECK(!json_parser_binding_);
-    json_parser_binding_ = std::make_unique<mojo::Binding<mojom::JsonParser>>(
-        this, mojom::JsonParserRequest(std::move(interface_pipe)));
+    DCHECK(!json_parser_receiver_);
+    json_parser_receiver_ = std::make_unique<mojo::Receiver<mojom::JsonParser>>(
+        this,
+        mojo::PendingReceiver<mojom::JsonParser>(std::move(interface_pipe)));
     return;
   }
   if (interface_name == mojom::ImageDecoder::Name_ && crash_image_) {
@@ -76,7 +77,7 @@ void CrashyDataDecoderService::DecodeAnimation(
 
 void CrashyDataDecoderService::Parse(const std::string& json,
                                      ParseCallback callback) {
-  json_parser_binding_.reset();
+  json_parser_receiver_.reset();
 }
 
 }  // namespace data_decoder

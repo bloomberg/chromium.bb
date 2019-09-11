@@ -84,10 +84,11 @@ void DataDecoderService::BindImageDecoder(
       std::move(receiver));
 }
 
-void DataDecoderService::BindJsonParser(mojom::JsonParserRequest request) {
-  mojo::MakeStrongBinding(
+void DataDecoderService::BindJsonParser(
+    mojo::PendingReceiver<mojom::JsonParser> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<JsonParserImpl>(keepalive_.CreateRef()),
-      std::move(request));
+      std::move(receiver));
 }
 
 void DataDecoderService::BindXmlParser(mojom::XmlParserRequest request) {
