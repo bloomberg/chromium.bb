@@ -128,6 +128,8 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
 
   bool CanBlacklistSite() override { return can_blacklist_site_; }
 
+  bool IsTranslationInProgress() override { return false; }
+
   void SetCanBlacklistSite(bool value) { can_blacklist_site_ = value; }
 
   TranslateBubbleViewStateTransition view_state_transition_;

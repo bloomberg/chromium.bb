@@ -282,11 +282,6 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
         TranslateErrors::IDENTICAL_LANGUAGES, triggered_from_menu);
     NotifyTranslateError(TranslateErrors::IDENTICAL_LANGUAGES);
     return;
-  } else {
-    // Trigger the "translating now" UI.
-    translate_client_->ShowTranslateUI(
-        translate::TRANSLATE_STEP_TRANSLATING, source_lang, target_lang,
-        TranslateErrors::NONE, triggered_from_menu);
   }
 
   TranslateScript* script = TranslateDownloadManager::GetInstance()->script();
@@ -295,16 +290,20 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
   const std::string& script_data = script->data();
   if (!script_data.empty()) {
     DoTranslatePage(script_data, source_lang, target_lang);
-    return;
+  } else {
+    // The script is not available yet.  Queue that request and query for the
+    // script.  Once it is downloaded we'll do the translate.
+    TranslateScript::RequestCallback callback =
+        base::Bind(&TranslateManager::OnTranslateScriptFetchComplete,
+                   GetWeakPtr(), source_lang, target_lang);
+
+    script->Request(callback, translate_driver_->IsIncognito());
   }
 
-  // The script is not available yet.  Queue that request and query for the
-  // script.  Once it is downloaded we'll do the translate.
-  TranslateScript::RequestCallback callback =
-      base::Bind(&TranslateManager::OnTranslateScriptFetchComplete,
-                 GetWeakPtr(), source_lang, target_lang);
-
-  script->Request(callback, translate_driver_->IsIncognito());
+  // Trigger the "translating now" UI.
+  translate_client_->ShowTranslateUI(
+      translate::TRANSLATE_STEP_TRANSLATING, source_lang, target_lang,
+      TranslateErrors::NONE, triggered_from_menu);
 }
 
 void TranslateManager::RevertTranslation() {

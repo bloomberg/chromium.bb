@@ -52,6 +52,7 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
   void OnBubbleClosing() override;
   bool IsPageTranslatedInCurrentLanguages() const override;
   bool CanBlacklistSite() override;
+  bool IsTranslationInProgress() override;
 
  private:
   std::unique_ptr<translate::TranslateUIDelegate> ui_delegate_;
