@@ -598,7 +598,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsHTMLDivElement(*GetNode()))
     return ax::mojom::Role::kGenericContainer;
 
-  if (IsHTMLMeterElement(*GetNode()))
+  if (IsA<HTMLMeterElement>(*GetNode()))
     return ax::mojom::Role::kMeter;
 
   if (IsHTMLProgressElement(*GetNode()))
@@ -1723,7 +1723,7 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
     return std::isfinite(*out_value);
   }
 
-  if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
+  if (auto* meter = DynamicTo<HTMLMeterElement>(GetNode())) {
     *out_value = meter->value();
     return true;
   }
@@ -1769,7 +1769,7 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
     return std::isfinite(*out_value);
   }
 
-  if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
+  if (auto* meter = DynamicTo<HTMLMeterElement>(GetNode())) {
     *out_value = meter->max();
     return true;
   }
@@ -1802,7 +1802,7 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
     return std::isfinite(*out_value);
   }
 
-  if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
+  if (auto* meter = DynamicTo<HTMLMeterElement>(GetNode())) {
     *out_value = meter->min();
     return true;
   }
