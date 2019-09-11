@@ -415,6 +415,7 @@ typedef struct AV1EncoderConfig {
   int quant_b_adapt;
   COST_UPDATE_TYPE coeff_cost_upd_freq;
   COST_UPDATE_TYPE mode_cost_upd_freq;
+  COST_UPDATE_TYPE mv_cost_upd_freq;
   int border_in_pixels;
   AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];
   // Bit mask to specify which tier each of the 32 possible operating points
@@ -834,9 +835,6 @@ typedef struct AV1_COMP {
 
   int gmtype_cost[TRANS_TYPES];
   int gmparams_cost[REF_FRAMES];
-
-  int nmv_costs[2][MV_VALS];
-  int nmv_costs_hp[2][MV_VALS];
 
   int64_t last_time_stamp_seen;
   int64_t last_end_time_stamp_seen;

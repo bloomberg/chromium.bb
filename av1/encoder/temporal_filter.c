@@ -1559,7 +1559,8 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   rdmult = av1_compute_rd_mult_based_on_qindex(cpi, ARNR_FILT_QINDEX);
   set_error_per_bit(&cpi->td.mb, rdmult);
   av1_initialize_me_consts(cpi, &cpi->td.mb, ARNR_FILT_QINDEX);
-  av1_initialize_cost_tables(&cpi->common, &cpi->td.mb);
+  av1_fill_mv_costs(cpi->common.fc, cpi->common.cur_frame_force_integer_mv,
+                    cpi->common.allow_high_precision_mv, &cpi->td.mb);
 
   temporal_filter_iterate_c(cpi, frames, frames_to_blur,
                             frames_to_blur_backward, strength, sigma,

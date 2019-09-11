@@ -202,8 +202,6 @@ int av1_compute_rd_mult(const struct AV1_COMP *cpi, int qindex);
 
 void av1_initialize_rd_consts(struct AV1_COMP *cpi);
 
-void av1_initialize_cost_tables(const AV1_COMMON *const cm, MACROBLOCK *x);
-
 void av1_initialize_me_consts(const struct AV1_COMP *cpi, MACROBLOCK *x,
                               int qindex);
 
@@ -294,6 +292,9 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 
 void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
                           const int num_planes);
+
+void av1_fill_mv_costs(const FRAME_CONTEXT *const fc, int integer_mv, int usehp,
+                       MACROBLOCK *x);
 
 int av1_get_adaptive_rdmult(const struct AV1_COMP *cpi, double beta);
 

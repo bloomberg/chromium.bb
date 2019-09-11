@@ -276,6 +276,8 @@ struct macroblock {
   int best_pred_mv_sad;
 
   int nmv_vec_cost[MV_JOINTS];
+  int nmv_costs[2][MV_VALS];
+  int nmv_costs_hp[2][MV_VALS];
   int *nmvcost[2];
   int *nmvcost_hp[2];
   int **mv_cost_stack;

@@ -1126,6 +1126,14 @@ enum aome_enc_control_id {
    */
   AV1E_SET_MODE_COST_UPD_FREQ,
 
+  /*!\brief Control to set frequency of the cost updates for motion vectors
+   * Possible values are:
+   * 0: Update at SB level (default)
+   * 1: Update at SB row level in tile
+   * 2: Update at tile level
+   */
+  AV1E_SET_MV_COST_UPD_FREQ,
+
   /*!\brief Control to set bit mask that specifies which tier each of the 32
    * possible operating points conforms to.
    * Bit value 0: Main Tier; 1: High Tier.
@@ -1607,6 +1615,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_COEFF_COST_UPD_FREQ, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_MODE_COST_UPD_FREQ, unsigned int)
 #define AOM_CTRL_AV1E_SET_MODE_COST_UPD_FREQ
+
+AOM_CTRL_USE_TYPE(AV1E_SET_MV_COST_UPD_FREQ, unsigned int)
+#define AOM_CTRL_AV1E_SET_MV_COST_UPD_FREQ
 
 AOM_CTRL_USE_TYPE(AV1E_SET_TARGET_SEQ_LEVEL_IDX, int)
 #define AOM_CTRL_AV1E_SET_TARGET_SEQ_LEVEL_IDX
