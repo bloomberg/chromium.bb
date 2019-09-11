@@ -38,9 +38,9 @@ void MediaCapsImpl::Initialize() {
   supported_codec_finder.FindSupportedCodecProfileLevels(this);
 }
 
-void MediaCapsImpl::AddBinding(
-    mojom::MediaCapsRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void MediaCapsImpl::AddReceiver(
+    mojo::PendingReceiver<mojom::MediaCaps> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void MediaCapsImpl::ScreenResolutionChanged(unsigned width, unsigned height) {

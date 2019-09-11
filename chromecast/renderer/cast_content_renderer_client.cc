@@ -99,8 +99,8 @@ CastContentRendererClient::~CastContentRendererClient() = default;
 void CastContentRendererClient::RenderThreadStarted() {
   // Register as observer for media capabilities
   content::RenderThread* thread = content::RenderThread::Get();
-  media::mojom::MediaCapsPtr media_caps;
-  thread->BindHostReceiver(mojo::MakeRequest(&media_caps));
+  mojo::Remote<media::mojom::MediaCaps> media_caps;
+  thread->BindHostReceiver(media_caps.BindNewPipeAndPassReceiver());
   media::mojom::MediaCapsObserverPtr proxy;
   media_caps_observer_.reset(
       new media::MediaCapsObserverImpl(&proxy, supported_profiles_.get()));

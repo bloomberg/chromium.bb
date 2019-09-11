@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "chromecast/common/mojom/media_caps.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chromecast {
@@ -24,7 +24,7 @@ class MediaCapsImpl : public mojom::MediaCaps {
   ~MediaCapsImpl() override;
 
   void Initialize();
-  void AddBinding(mojom::MediaCapsRequest request);
+  void AddReceiver(mojo::PendingReceiver<mojom::MediaCaps> receiver);
 
   void ScreenResolutionChanged(unsigned width, unsigned height);
   void ScreenInfoChanged(int hdcp_version,
@@ -51,7 +51,7 @@ class MediaCapsImpl : public mojom::MediaCaps {
   gfx::Size screen_resolution_;
   std::vector<CodecProfileLevel> codec_profile_levels_;
   mojo::InterfacePtrSet<mojom::MediaCapsObserver> observers_;
-  mojo::BindingSet<mojom::MediaCaps> bindings_;
+  mojo::ReceiverSet<mojom::MediaCaps> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCapsImpl);
 };
