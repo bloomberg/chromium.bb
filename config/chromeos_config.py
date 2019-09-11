@@ -4069,6 +4069,10 @@ def ApplyCustomOverrides(site_config):
           'sign_types': ['recovery', 'factory'],
       },
 
+      'excelsior-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+
       'sarien-release': {
           'sign_types': ['recovery', 'factory'],
       },
