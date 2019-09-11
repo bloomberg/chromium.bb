@@ -536,9 +536,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Owned by the URLRequestContext
   net::StaticHttpUserAgentSettings* user_agent_settings_ = nullptr;
 
-  // TODO(yhirano): Consult with switches::kDisableResourceScheduler.
-  constexpr static bool enable_resource_scheduler_ = true;
-
   // Pointed to by the TransportSecurityState (owned by the
   // URLRequestContext), and must be disconnected from it before it's destroyed.
   std::unique_ptr<net::ReportSender> certificate_report_sender_;

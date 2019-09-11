@@ -385,8 +385,7 @@ void StopMonitorBodyReadFromNetBeforePausedHistogram() {
 class URLLoaderTest : public testing::Test {
  public:
   URLLoaderTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
-        resource_scheduler_(true) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
     root_certs->AddFromFile(
         net::GetTestCertsDirectory().AppendASCII("quic-root.pem"));
