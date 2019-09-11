@@ -3796,6 +3796,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }];
 }
 
+- (void)updateForFullscreenMinViewportInsets:(UIEdgeInsets)minViewportInsets
+                           maxViewportInsets:(UIEdgeInsets)maxViewportInsets {
+  FullscreenController* controller =
+      FullscreenControllerFactory::GetForBrowserState(self.browserState);
+  [self updateForFullscreenProgress:controller->GetProgress()];
+}
+
 #pragma mark - FullscreenUIElement helpers
 
 // Returns the height difference between the fully expanded and fully collapsed
