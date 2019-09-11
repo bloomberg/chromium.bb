@@ -149,7 +149,7 @@ ScriptPromise Bluetooth::getAvailability(ScriptState* script_state) {
   }
 
   CHECK(context->IsSecureContext());
-  EnsureServiceConnection();
+  EnsureServiceConnection(context);
 
   // Subsequent steps are handled in the browser process.
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -183,7 +183,12 @@ void Bluetooth::RequestDeviceCallback(
 ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
                                        const RequestDeviceOptions* options,
                                        ExceptionState& exception_state) {
-  ExecutionContext* context = ExecutionContext::From(script_state);
+  ExecutionContext* context = GetExecutionContext();
+  if (!context) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), kInactiveDocumentError));
+  }
 
 // Remind developers when they are using Web Bluetooth on unsupported platforms.
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_MACOSX) && \
@@ -216,7 +221,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  EnsureServiceConnection();
+  EnsureServiceConnection(context);
 
   // In order to convert the arguments from service names and aliases to just
   // UUIDs, do the following substeps:
@@ -300,8 +305,12 @@ void Bluetooth::RequestScanningCallback(
 ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
                                        const BluetoothLEScanOptions* options,
                                        ExceptionState& exception_state) {
-  ExecutionContext* context = ExecutionContext::From(script_state);
-  DCHECK(context);
+  ExecutionContext* context = GetExecutionContext();
+  if (!context) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), kInactiveDocumentError));
+  }
 
   // Remind developers when they are using Web Bluetooth on unsupported
   // platforms.
@@ -332,7 +341,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  EnsureServiceConnection();
+  EnsureServiceConnection(context);
 
   auto scan_options = mojom::blink::WebBluetoothRequestLEScanOptions::New();
   ConvertRequestLEScanOptions(options, scan_options, exception_state);
@@ -451,12 +460,9 @@ BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
   return device;
 }
 
-void Bluetooth::EnsureServiceConnection() {
+void Bluetooth::EnsureServiceConnection(ExecutionContext* context) {
   if (!service_) {
     // See https://bit.ly/2S0zRAS for task types.
-    auto* context = GetExecutionContext();
-    DCHECK(context);
-
     auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
     context->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&service_, task_runner));

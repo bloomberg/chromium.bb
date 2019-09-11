@@ -77,7 +77,7 @@ class Bluetooth final : public EventTargetWithInlineData,
                                mojo::BindingId id,
                                mojom::blink::RequestScanningStartResultPtr);
 
-  void EnsureServiceConnection();
+  void EnsureServiceConnection(ExecutionContext*);
 
   // Map of device ids to BluetoothDevice objects.
   // Ensures only one BluetoothDevice instance represents each
