@@ -74,7 +74,6 @@ public class SharedClipboardShareActivity
         View mask = findViewById(R.id.mask);
         mask.setOnClickListener(v -> finish());
 
-
         ButtonCompat chromeSettingsButton = findViewById(R.id.chrome_settings);
         if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
             chromeSettingsButton.setVisibility(View.VISIBLE);
@@ -99,6 +98,9 @@ public class SharedClipboardShareActivity
         mAdapter = new SharingAdapter(SharingDeviceCapability.SHARED_CLIPBOARD);
         if (!mAdapter.isEmpty()) {
             findViewById(R.id.device_picker_toolbar).setVisibility(View.VISIBLE);
+            SharedClipboardMetrics.recordShowDeviceList();
+        } else {
+            SharedClipboardMetrics.recordShowEducationalDialog();
         }
 
         ListView listView = findViewById(R.id.device_picker_list);
@@ -118,8 +120,13 @@ public class SharedClipboardShareActivity
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         DeviceInfo device = mAdapter.getItem(position);
-        SharedClipboardMessageHandler.showSendingNotification(
-                device.guid, device.clientName, getIntent().getStringExtra(Intent.EXTRA_TEXT));
+        String text = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+
+        // Log metrics for device click and text size.
+        SharedClipboardMetrics.recordDeviceClick(position);
+        SharedClipboardMetrics.recordTextSize(text.length());
+
+        SharedClipboardMessageHandler.showSendingNotification(device.guid, device.clientName, text);
         finish();
     }
 }

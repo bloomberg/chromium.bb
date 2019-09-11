@@ -5820,4 +5820,9 @@ if (is_android) {
       "sharing/sharing_send_message_result.h",
     ]
   }
+  java_cpp_enum("sharing_dialog_type_generated_enum") {
+    sources = [
+      "sharing/sharing_metrics.h",
+    ]
+  }
 }
