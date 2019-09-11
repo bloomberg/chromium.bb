@@ -4770,9 +4770,6 @@ if (enable_java_templates) {
       outputs = [
         _bundle_path,
       ]
-      data = [
-        _bundle_path,
-      ]
       deps = _all_create_module_targets + [ ":$_build_config_target" ]
       args = [
         "--out-bundle=$_rebased_bundle_path",
@@ -4859,6 +4856,7 @@ if (enable_java_templates) {
         _bundle_wrapper_script_path,
         _android_aapt2_path,
         _keystore_path,
+        _bundle_path,
       ]
       data_deps = [
         "//build/android:bundle_wrapper_script_py",
@@ -4926,6 +4924,9 @@ if (enable_java_templates) {
         _bundle_path,
       ]
       outputs = [
+        _apks_path,
+      ]
+      data = [
         _apks_path,
       ]
       args = [
