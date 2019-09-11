@@ -137,8 +137,7 @@ void RemoveBrowsingData() {
 
 // Tests that signing out of a managed account from the Settings works
 // correctly.
-// TODO(crbug.com/929967): Re-enable the test.
-- (void)DISABLED_testSignInDisconnectFromChromeManaged {
+- (void)testSignInDisconnectFromChromeManaged {
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeManagedIdentity];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
@@ -146,7 +145,7 @@ void RemoveBrowsingData() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
   [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
-
+  [SigninEarlGreyUI confirmSigninConfirmationDialog];
   {
     // Synchronization off due to an infinite spinner.
     ScopedSynchronizationDisabler disabler;
@@ -154,9 +153,9 @@ void RemoveBrowsingData() {
         IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON));
     TapButtonWithLabelId(IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON);
   }
-
-  [SigninEarlGreyUI confirmSigninConfirmationDialog];
   [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 
   // Sign out.
   [SigninEarlGreyUI signOutWithManagedAccount:YES];
