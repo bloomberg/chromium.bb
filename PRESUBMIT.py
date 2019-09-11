@@ -1122,6 +1122,8 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       False,
       (
+        r'^fuchsia/engine/browser/url_request_rewrite_rules_manager\.cc$',
+        r'^fuchsia/engine/url_request_rewrite_type_converters\.cc$',
         r'^third_party/blink/.*\.(cc|h)$',
         r'^content/renderer/.*\.(cc|h)$',
       ),
