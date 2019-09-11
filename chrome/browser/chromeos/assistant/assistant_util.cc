@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/public/mojom/voice_interaction_controller.mojom-shared.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"

@@ -1667,9 +1667,9 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
   // |RUNNING| means service running with UI shown on screen.
   // When enabling Assistant, either |STOPPED| or |RUNNING| state could be
   // possible depending on whether the UI has been brought up.
-  auto current_state = ash::AssistantState::Get()->voice_interaction_state();
+  auto current_state = ash::AssistantState::Get()->assistant_state();
   const bool not_ready =
-      (current_state == ash::mojom::VoiceInteractionState::NOT_READY);
+      (current_state == ash::mojom::AssistantState::NOT_READY);
   const bool success = (params->enabled != not_ready);
   if (success)
     return RespondNow(NoArguments());
@@ -1686,7 +1686,7 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
 }
 
 void AutotestPrivateSetAssistantEnabledFunction::OnAssistantStatusChanged(
-    ash::mojom::VoiceInteractionState state) {
+    ash::mojom::AssistantState state) {
   // Must check if the Optional contains value first to avoid possible
   // segmentation fault caused by Respond() below being called before
   // RespondLater() in Run(). This will happen due to AddObserver() call
@@ -1696,8 +1696,7 @@ void AutotestPrivateSetAssistantEnabledFunction::OnAssistantStatusChanged(
 
   // The service could go through |NOT_READY| then to |STOPPED| during enable
   // flow if this API is called before the initial state is reported.
-  const bool not_ready =
-      (state == ash::mojom::VoiceInteractionState::NOT_READY);
+  const bool not_ready = (state == ash::mojom::AssistantState::NOT_READY);
   const bool success = (enabled_.value() != not_ready);
   if (!success)
     return;

@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/public/cpp/network_config_service.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -128,8 +127,8 @@ void AssistantClient::OnAssistantStatusChanged(bool running) {
   // |STOPPED| and |NOT_READY|. |RUNNING| maps to UI is shown and an assistant
   // session is running.
   arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
-      running ? ash::mojom::VoiceInteractionState::STOPPED
-              : ash::mojom::VoiceInteractionState::NOT_READY);
+      running ? ash::mojom::AssistantState::READY
+              : ash::mojom::AssistantState::NOT_READY);
 }
 
 void AssistantClient::RequestAssistantStructure(

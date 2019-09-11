@@ -498,8 +498,7 @@ class AutotestPrivateSetAssistantEnabledFunction
   ResponseAction Run() override;
 
   // ash::AssistantStateObserver overrides:
-  void OnAssistantStatusChanged(
-      ash::mojom::VoiceInteractionState state) override;
+  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override;
 
   // Called when the Assistant service does not respond in a timely fashion. We
   // will respond with an error.

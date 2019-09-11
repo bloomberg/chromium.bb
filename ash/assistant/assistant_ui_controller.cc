@@ -400,8 +400,8 @@ void AssistantUiController::OnUiVisibilityChanged(
     base::Optional<AssistantExitPoint> exit_point) {
   AssistantState::Get()->NotifyStatusChanged(
       new_visibility == AssistantVisibility::kVisible
-          ? mojom::VoiceInteractionState::RUNNING
-          : mojom::VoiceInteractionState::STOPPED);
+          ? mojom::AssistantState::VISIBLE
+          : mojom::AssistantState::READY);
 
   switch (new_visibility) {
     case AssistantVisibility::kClosed:
@@ -487,8 +487,7 @@ void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
   }
 
   // TODO(dmblack): Show a more helpful message to the user.
-  if (assistant_state->voice_interaction_state() ==
-      mojom::VoiceInteractionState::NOT_READY) {
+  if (assistant_state->assistant_state() == mojom::AssistantState::NOT_READY) {
     ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
     return;
   }
