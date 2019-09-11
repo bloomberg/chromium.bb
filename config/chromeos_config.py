@@ -2341,6 +2341,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'puff',
       'veyron_jerry-kernelnext',
       'veyron_minnie-kernelnext',
+      'viking-poc2',
       'volteer',
   ])
 

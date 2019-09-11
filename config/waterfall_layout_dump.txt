@@ -130,6 +130,7 @@
     veyron_speedy-paladin
     veyron_tiger-paladin
     viking-paladin
+    viking-poc2-paladin
     volteer-paladin
     whirlwind-paladin
     winky-paladin
@@ -2494,6 +2495,7 @@
     veyron_speedy-paladin-tryjob
     veyron_tiger-paladin-tryjob
     viking-paladin-tryjob
+    viking-poc2-paladin-tryjob
     volteer-paladin-tryjob
     whirlwind-paladin-tryjob
     winky-paladin-tryjob
@@ -3609,6 +3611,15 @@
   viking-llvm-toolchain-tryjob
   viking-no-vmtest-pre-cq
   viking-paladin-tryjob
+  viking-poc2-compile-only-pre-cq
+  viking-poc2-full-tryjob
+  viking-poc2-llvm-next-toolchain-tryjob
+  viking-poc2-llvm-toolchain-tryjob
+  viking-poc2-no-vmtest-pre-cq
+  viking-poc2-paladin-tryjob
+  viking-poc2-pre-cq
+  viking-poc2-release-tryjob
+  viking-poc2-unittest-stress
   viking-pre-cq
   viking-release-tryjob
   viking-unittest-stress

@@ -63,6 +63,7 @@ arm_internal_release_boards = frozenset([
     'veyron_speedy',
     'veyron_tiger',
     'viking',
+    'viking-poc2',
     'whirlwind',
     'wooten',
 ])
@@ -226,6 +227,7 @@ loonix_boards = frozenset([
 wshwos_boards = frozenset([
     'littlejoe',
     'viking',
+    'viking-poc2',
 ])
 
 moblab_boards = frozenset([
