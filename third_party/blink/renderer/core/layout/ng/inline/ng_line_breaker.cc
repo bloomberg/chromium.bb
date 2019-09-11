@@ -483,6 +483,41 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
     line_info->UpdateTextAlign();
 }
 
+// For Web-compatibility, allow break between an atomic inline and any adjacent
+// U+00A0 NO-BREAK SPACE character.
+// https://www.w3.org/TR/css-text-3/#line-break-details
+bool NGLineBreaker::IsAtomicInlineBeforeNoBreakSpace(
+    const NGInlineItemResult& item_result) const {
+  DCHECK_EQ(item_result.item->Type(), NGInlineItem::kAtomicInline);
+  const String& text = Text();
+  DCHECK_GE(text.length(), item_result.end_offset);
+  return text.length() > item_result.end_offset &&
+         text[item_result.end_offset] == kNoBreakSpaceCharacter;
+}
+
+bool NGLineBreaker::IsAtomicInlineAfterNoBreakSpace(
+    const NGInlineItemResult& item_result) const {
+  DCHECK_EQ(item_result.item->Type(), NGInlineItem::kText);
+  const String& text = Text();
+  DCHECK_GE(text.length(), item_result.end_offset);
+  if (text[item_result.end_offset - 1] != kNoBreakSpaceCharacter ||
+      text.length() <= item_result.end_offset ||
+      text[item_result.end_offset] != kObjectReplacementCharacter)
+    return false;
+  // This kObjectReplacementCharacter can be any objects, such as a floating or
+  // an OOF object. Check if it's really an atomic inline.
+  const Vector<NGInlineItem>& items = Items();
+  for (const NGInlineItem* item = std::next(item_result.item);
+       item != items.end(); ++item) {
+    DCHECK_EQ(item->StartOffset(), item_result.end_offset);
+    if (item->Type() == NGInlineItem::kAtomicInline)
+      return true;
+    if (item->EndOffset() > item_result.end_offset)
+      break;
+  }
+  return false;
+}
+
 void NGLineBreaker::HandleText(const NGInlineItem& item,
                                const ShapeResult& shape_result,
                                NGLineInfo* line_info) {
@@ -711,6 +746,9 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
     DCHECK_EQ(item_result->end_offset, item.EndOffset());
     item_result->can_break_after =
         break_iterator_.IsBreakable(item_result->end_offset);
+    if (!item_result->can_break_after && item.Type() == NGInlineItem::kText &&
+        IsAtomicInlineAfterNoBreakSpace(*item_result))
+      item_result->can_break_after = true;
     trailing_whitespace_ = WhitespaceState::kUnknown;
   }
   return inline_size <= available_width ? kSuccess : kOverflow;
@@ -1252,6 +1290,9 @@ bool NGLineBreaker::HandleAtomicInline(
   trailing_whitespace_ = WhitespaceState::kNone;
   position_ += item_result->inline_size;
   ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
+  if (!item_result->can_break_after &&
+      IsAtomicInlineBeforeNoBreakSpace(*item_result))
+    item_result->can_break_after = true;
 
   if (UNLIKELY(is_sticky_image)) {
     const auto& items = Items();
