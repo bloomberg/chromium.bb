@@ -35,7 +35,6 @@ import org.chromium.ui.widget.ButtonCompat;
 public class SharedClipboardShareActivity
         extends AsyncInitializationActivity implements OnItemClickListener {
     private SharingAdapter mAdapter;
-    private ListView mListView;
 
     /**
      * Checks whether sending shared clipboard message is enabled for the user and enables/disables
@@ -75,13 +74,6 @@ public class SharedClipboardShareActivity
         View mask = findViewById(R.id.mask);
         mask.setOnClickListener(v -> finish());
 
-        mListView = findViewById(R.id.device_picker_list);
-        mListView.setAdapter(mAdapter);
-        mListView.setOnItemClickListener(this);
-        mListView.setEmptyView(findViewById(R.id.empty_state));
-
-        View content = findViewById(R.id.device_picker_content);
-        content.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_up));
 
         ButtonCompat chromeSettingsButton = findViewById(R.id.chrome_settings);
         if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
@@ -109,7 +101,13 @@ public class SharedClipboardShareActivity
             findViewById(R.id.device_picker_toolbar).setVisibility(View.VISIBLE);
         }
 
-        mListView.setAdapter(mAdapter);
+        ListView listView = findViewById(R.id.device_picker_list);
+        listView.setAdapter(mAdapter);
+        listView.setOnItemClickListener(this);
+        listView.setEmptyView(findViewById(R.id.empty_state));
+
+        View content = findViewById(R.id.device_picker_content);
+        content.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_up));
     }
 
     @Override
