@@ -1788,7 +1788,7 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
       CreateResourceRequest("POST", test_server()->GetURL("/echo"));
   request.request_body = base::MakeRefCounted<ResourceRequestBody>();
   request.request_body->SetToChunkedDataPipe(
-      data_pipe_getter.GetDataPipeGetterPtr());
+      data_pipe_getter.GetDataPipeGetterRemote());
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;

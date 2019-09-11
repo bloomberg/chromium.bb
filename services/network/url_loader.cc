@@ -202,9 +202,8 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
       body->elements()->begin()->type() ==
           network::mojom::DataElementType::kChunkedDataPipe) {
     return std::make_unique<ChunkedDataPipeUploadDataStream>(
-        body, mojom::ChunkedDataPipeGetterPtr(
-                  const_cast<DataElement&>(body->elements()->front())
-                      .ReleaseChunkedDataPipeGetter()));
+        body, const_cast<DataElement&>(body->elements()->front())
+                  .ReleaseChunkedDataPipeGetter());
   }
 
   auto opened_file = opened_files.begin();
