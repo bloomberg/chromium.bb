@@ -29,7 +29,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/web_state.h"
@@ -139,23 +138,9 @@ void RemoveBrowsingData() {
 // correctly.
 - (void)testSignInDisconnectFromChromeManaged {
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeManagedIdentity];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
 
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
-  [SigninEarlGreyUI confirmSigninConfirmationDialog];
-  {
-    // Synchronization off due to an infinite spinner.
-    ScopedSynchronizationDisabler disabler;
-    WaitForMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
-        IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON));
-    TapButtonWithLabelId(IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON);
-  }
-  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
+  // Sign-in with a managed account.
+  [SigninEarlGreyUI signinWithIdentity:identity isManagedAccount:YES];
 
   // Sign out.
   [SigninEarlGreyUI signOutWithManagedAccount:YES];
