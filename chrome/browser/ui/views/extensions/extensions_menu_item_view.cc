@@ -44,13 +44,12 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
   views::FlexLayout* layout_manager_ =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetCollapseMargins(true)
       .SetIgnoreDefaultMainAxisMargins(true);
 
   AddChildView(primary_action_button_);
   primary_action_button_->SetProperty(
       views::kFlexBehaviorKey, views::FlexSpecification::ForSizeRule(
-                                   views::MinimumFlexSizeRule::kPreferred,
+                                   views::MinimumFlexSizeRule::kScaleToZero,
                                    views::MaximumFlexSizeRule::kUnbounded));
 
   const SkColor icon_color =
