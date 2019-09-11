@@ -44,10 +44,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   <body>
     <header>
       <details open>
-        <summary>AR Plane Detection</summary>
-        This sample demonstrates using the Plane Detection feature,
+        <summary>AR Plane Detection with Anchors</summary>
+        This sample demonstrates using the Plane Detection feature with Anchors,
         including implementation of synchronous hit test in JavaScript
-        leveraging obtained plane data.
+        leveraging obtained plane data and anchors API to position objects.
         <p>
           <input id="useReticle" type="checkbox" checked>
           <label for="useReticle">Use reticle for placement</label><br/>
@@ -55,16 +55,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           <input id="useReticleRays" type="checkbox" checked>
           <label for="useReticleRays">Hit-test rays visible</label><br/>
 
-          <input id="useReticleOrigin" type="checkbox">
+          <input id="useReticleOrigin" type="checkbox" checked>
           <label for="useReticleOrigin">Reticle coordinate system visible</label><br/>
 
-          <input id="usePlaneOrigin" type="checkbox">
+          <input id="usePlaneOrigin" type="checkbox" checked>
           <label for="usePlaneOrigin">Plane coordinate system visible</label><br/>
 
-          <input id="enlargedPlanesEnabled" type="checkbox" checked>
+          <input id="enlargedPlanesEnabled" type="checkbox">
           <label for="enlargedPlanesEnabled">Extend planes by 20cm</label><br/>
 
-          <input id="extendPlanesEnabled" type="checkbox" checked>
+          <input id="extendPlanesEnabled" type="checkbox">
           <label for="extendPlanesEnabled">Extend bottom-most plane to infinity</label><br/>
           <a class="back" href="./index.html">Back</a>
         </p>
@@ -128,6 +128,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let scene = new Scene();
       scene.enableStats(false);
 
+      // Visualise the origin.
+      {
+        let xRay = new RayNode({direction : [5, 0, 0], baseColor : [1, 0, 0, 1]});
+        let yRay = new RayNode({direction : [0, 5, 0], baseColor : [0, 1, 0, 1]});
+        let zRay = new RayNode({direction : [0, 0, 5], baseColor : [0, 0, 1, 1]});
+
+        scene.addNode(xRay);
+        scene.addNode(yRay);
+        scene.addNode(zRay);
+      }
+
       // ------------------------------
       // Create "crosshair" out of 4 rays for debugging
       let rayObject = new Node();
@@ -180,9 +191,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let reticleFrameOfReference = new Node();
       reticleFrameOfReference.visible = useReticleOrigin.checked;
 
-      let xRay = new RayNode({direction : [5, 0, 0], baseColor : [0, 1, 1, 1]});
-      let yRay = new RayNode({direction : [0, 5, 0], baseColor : [0, 1, 1, 1]});
-      let zRay = new RayNode({direction : [0, 0, 5], baseColor : [0, 1, 1, 1]});
+      let xRay = new RayNode({direction : [5, 0, 0], baseColor : [1, 0, 0, 1]});
+      let yRay = new RayNode({direction : [0, 5, 0], baseColor : [0, 1, 0, 1]});
+      let zRay = new RayNode({direction : [0, 0, 5], baseColor : [0, 0, 1, 1]});
 
       reticleFrameOfReference.addNode(xRay);
       reticleFrameOfReference.addNode(yRay);
@@ -277,22 +288,44 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         xrButton.setSession(null);
       }
 
-      // Adds a new object to the scene at the
-      // specificed transform.
-      function addARObjectAt(matrix) {
-        let newFlower = flowerNode.clone();
-        newFlower.visible = true;
-        newFlower.matrix = matrix;
-        scene.addNode(newFlower);
+      function onCreateAnchor(anchor) {
+        console.debug("Anchor created");
 
-        flowers.push(newFlower);
+        anchor.context = {};
+
+        let sceneObject = flowerNode.clone();
+        sceneObject.visible = false;
+
+        let xRay = new RayNode({direction : [5, 0, 0], baseColor : [1, 0, 0, 1]});
+        let yRay = new RayNode({direction : [0, 5, 0], baseColor : [0, 1, 0, 1]});
+        let zRay = new RayNode({direction : [0, 0, 5], baseColor : [0, 0, 1, 1]});
+
+        sceneObject.addNode(xRay);
+        sceneObject.addNode(yRay);
+        sceneObject.addNode(zRay);
+
+        scene.addNode(sceneObject);
+        flowers.push(sceneObject);
+
+        anchor.context.sceneObject = sceneObject;
+        sceneObject.anchor = anchor;
 
         // For performance reasons if we add too many objects start
         // removing the oldest ones to keep the scene complexity
         // from growing too much.
         if (flowers.length > MAX_FLOWERS) {
           let oldFlower = flowers.shift();
+          oldFlower.anchor.detach();
           scene.removeNode(oldFlower);
+        }
+      }
+
+      // Creates new anchor for object and places it there.
+      function addARObjectAt(session, frame, plane, pose, space) {
+        if(plane != null) {
+          plane.createAnchor(pose, space).then(onCreateAnchor);
+        } else {
+          session.createAnchor(pose, space).then(onCreateAnchor);
         }
       }
 
@@ -302,15 +335,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       let rayOrigin = vec4.create();
       let rayDirection = vec4.create();
+
       function onSelect(event) {
         if (useReticle.checked && arObject.visible) {
           // If we're using the reticle then we've already got a mesh positioned
           // at the latest hit point and we should just use it's matrix to save
           // an unnecessary requestHitTest call.
-          addARObjectAt(arObject.matrix);
+          addARObjectAt(event.frame.session,
+                        event.frame,
+                        arObject.plane,
+                        new XRRigidTransform(arObject.hitPoint),
+                        arObject.space);
         } else {
           if(!event.frame.worldInformation.detectedPlanes) {
-            console.error("Not supported yet - no planes on frame!");
+            console.log("No planes detected, placing an anchor at origin.");
+            addARObjectAt(event.frame.session,
+                          event.frame,
+                          null,
+                          new XRRigidTransform({x : 0, y : 0, z : 0, w : 1}),
+                          xrRefSpace);
             return;
           }
 
@@ -334,14 +377,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
             let ray = new XRRay(DOMPointFromVec4(rayOrigin), DOMPointFromVec4(rayDirection));
 
-            const hitTestResults = hitTest(ray, event.frame.worldInformation.detectedPlanes, xrRefSpace);
+            const hitTestResults = hitTest(event.frame, ray, xrRefSpace);
             const hitTestFiltered = filterHitTestResults(hitTestResults,
                                                          extendPlanesEnabled.checked,
                                                          false,
                                                          enlargedPlanesEnabled.checked);
 
             if (hitTestFiltered.length) {
-              addARObjectAt(hitTestFiltered[0].hitMatrix);
+              let hitResult = hitTestFiltered[0];
+              addARObjectAt(event.frame.session,
+                            event.frame,
+                            hitResult.plane,
+                            new XRRigidTransform(hitResult.hitMatrix),
+                            hitResult.plane.plane_space);
+            } else {
+              console.log("Missed everything, placing an anchor at origin.");
+              addARObjectAt(event.frame.session,
+                            event.frame,
+                            null,
+                            new XRRigidTransform({x : 0, y : 0, z : 0, w: 1}),
+                            xrRefSpace);
             }
           }
         }
@@ -375,9 +430,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           let planeFrameOfReference = new Node();
           planeFrameOfReference.visible = usePlaneOrigin.checked;
 
-          let xRay = new RayNode({direction : [5, 0, 0], baseColor : [1, 0, 1, 1]});
-          let yRay = new RayNode({direction : [0, 5, 0], baseColor : [1, 0, 1, 1]});
-          let zRay = new RayNode({direction : [0, 0, 5], baseColor : [1, 0, 1, 1]});
+          let xRay = new RayNode({direction : [5, 0, 0], baseColor : [1, 0, 0, 1]});
+          let yRay = new RayNode({direction : [0, 5, 0], baseColor : [0, 1, 0, 1]});
+          let zRay = new RayNode({direction : [0, 0, 5], baseColor : [0, 0, 1, 1]});
 
           plane_node.origins = planeFrameOfReference;
           all_plane_origins.push(planeFrameOfReference);
@@ -414,6 +469,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // Set with all planes detected in a previous frame.
       let all_previous_planes = new Set();
+      // Set with all anchors tracked in a previous frame.
+      let all_previous_anchors = new Set();
 
       // Called every time a XRSession requests that a new frame be drawn.
       async function onXRFrame(t, frame) {
@@ -453,6 +510,31 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           addPlaneToScene(frame, plane, t);
         });
 
+        const tracked_anchors = frame.trackedAnchors;
+
+        if(tracked_anchors){
+          all_previous_anchors.forEach(anchor => {
+            if(!tracked_anchors.has(anchor)){
+              scene.removeNode(anchor.sceneObject);
+            }
+          });
+
+          tracked_anchors.forEach(anchor => {
+            if(t == anchor.lastChangedTime) {
+              anchor.context.sceneObject.matrix = frame.getPose(anchor.anchorSpace, xrRefSpace).transform.matrix;
+              anchor.context.sceneObject.visible = true;
+            }
+          });
+
+          all_previous_anchors = tracked_anchors;
+        } else {
+          all_previous_anchors.forEach(anchor => {
+            scene.removeNode(anchor.sceneObject);
+          });
+
+          all_previous_anchors = new Set();
+        }
+
         // If requested, use the pose to cast a reticle into the scene using a
         // continuous hit test. For the moment we're just using the flower
         // as the "reticle".
@@ -476,10 +558,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                                                        enlargedPlanesEnabled.checked);
 
           if(hitTestFiltered && hitTestFiltered.length > 0) {
-
+            // Reticle position is always up-to-date wrt the hittest result.
             let hitResult = hitTestFiltered[0];
             arObject.visible = true;
             arObject.matrix = hitResult.hitMatrix;
+
+            // Store data that'll be needed for anchor creation.
+            arObject.plane = hitResult.plane;
+            arObject.space = hitResult.plane.planeSpace;
+            arObject.hitPoint = hitResult.point_on_plane;
+
           } else {
             arObject.visible = false;
           }
