@@ -28,8 +28,6 @@ namespace blink {
 
 static constexpr base::TimeDelta kTimerDelay =
     base::TimeDelta::FromMilliseconds(500);
-// TODO(crbug.com/1000716): Remove granularity scaling logic.
-static const float kSweepLineRegionGranularity = 1.0;
 static const float kMovementThreshold = 3.0;  // CSS pixels.
 
 static FloatPoint LogicalStart(const FloatRect& rect,
@@ -50,11 +48,6 @@ static float GetMoveDistance(const FloatRect& old_rect,
   return std::max(fabs(location_delta.Width()), fabs(location_delta.Height()));
 }
 
-float LayoutShiftTracker::RegionGranularityScale(
-    const IntRect& viewport) const {
-  return kSweepLineRegionGranularity;
-}
-
 static bool EqualWithinMovementThreshold(const FloatPoint& a,
                                          const FloatPoint& b,
                                          const LayoutObject& object) {
@@ -64,10 +57,10 @@ static bool EqualWithinMovementThreshold(const FloatPoint& a,
          fabs(a.Y() - b.Y()) < threshold_physical_px;
 }
 
-static bool SmallerThanRegionGranularity(const FloatRect& rect,
-                                         float granularity_scale) {
-  return rect.Width() * granularity_scale < 0.5 ||
-         rect.Height() * granularity_scale < 0.5;
+static bool SmallerThanRegionGranularity(const FloatRect& rect) {
+  // The region uses integer coordinates, so the rects are snapped to
+  // pixel boundaries. Ignore rects smaller than half a pixel.
+  return rect.Width() < 0.5 || rect.Height() < 0.5;
 }
 
 static const PropertyTreeState PropertyTreeStateFor(
@@ -75,28 +68,22 @@ static const PropertyTreeState PropertyTreeStateFor(
   return object.FirstFragment().LocalBorderBoxProperties();
 }
 
-static void RegionToTracedValue(const Region& region,
-                                double granularity_scale,
+static void RegionToTracedValue(const LayoutShiftRegion& region,
                                 TracedValue& value) {
+  Region blink_region;
+  for (IntRect rect : region.GetRects())
+    blink_region.Unite(Region(rect));
+
   value.BeginArray("region_rects");
-  for (const IntRect& rect : region.Rects()) {
+  for (const IntRect& rect : blink_region.Rects()) {
     value.BeginArray();
-    value.PushInteger(clampTo<int>(roundf(rect.X() / granularity_scale)));
-    value.PushInteger(clampTo<int>(roundf(rect.Y() / granularity_scale)));
-    value.PushInteger(clampTo<int>(roundf(rect.Width() / granularity_scale)));
-    value.PushInteger(clampTo<int>(roundf(rect.Height() / granularity_scale)));
+    value.PushInteger(rect.X());
+    value.PushInteger(rect.Y());
+    value.PushInteger(rect.Width());
+    value.PushInteger(rect.Height());
     value.EndArray();
   }
   value.EndArray();
-}
-
-static void RegionToTracedValue(const LayoutShiftRegion& region,
-                                double granularity_scale,
-                                TracedValue& value) {
-  Region old_region;
-  for (IntRect rect : region.GetRects())
-    old_region.Unite(Region(rect));
-  RegionToTracedValue(old_region, granularity_scale, value);
 }
 
 #if DCHECK_IS_ON()
@@ -133,13 +120,8 @@ void LayoutShiftTracker::ObjectShifted(
                                    LogicalStart(new_rect, source), source))
     return;
 
-  IntRect viewport =
-      IntRect(IntPoint(),
-              frame_view_->GetScrollableArea()->VisibleContentRect().Size());
-  float scale = RegionGranularityScale(viewport);
-
-  if (SmallerThanRegionGranularity(old_rect, scale) &&
-      SmallerThanRegionGranularity(new_rect, scale))
+  if (SmallerThanRegionGranularity(old_rect) &&
+      SmallerThanRegionGranularity(new_rect))
     return;
 
   // Ignore layout objects that move (in the coordinate space of the paint
@@ -187,6 +169,10 @@ void LayoutShiftTracker::ObjectShifted(
     clipped_new_rect.Intersect(clip_rect.Rect());
   }
 
+  IntRect viewport =
+      IntRect(IntPoint(),
+              frame_view_->GetScrollableArea()->VisibleContentRect().Size());
+
   IntRect visible_old_rect = RoundedIntRect(clipped_old_rect);
   visible_old_rect.Intersect(viewport);
   IntRect visible_new_rect = RoundedIntRect(clipped_new_rect);
@@ -211,9 +197,6 @@ void LayoutShiftTracker::ObjectShifted(
              << visible_new_rect.ToString() << ")";
   }
 #endif
-
-  visible_old_rect.Scale(scale);
-  visible_new_rect.Scale(scale);
 
   region_.AddRect(visible_old_rect);
   region_.AddRect(visible_new_rect);
@@ -266,12 +249,7 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   if (viewport.IsEmpty())
     return;
 
-  double granularity_scale = RegionGranularityScale(viewport);
-  IntRect scaled_viewport = viewport;
-  scaled_viewport.Scale(granularity_scale);
-
-  double viewport_area =
-      double(scaled_viewport.Width()) * double(scaled_viewport.Height());
+  double viewport_area = double(viewport.Width()) * double(viewport.Height());
   double impact_fraction = region_.Area() / viewport_area;
   DCHECK_GT(impact_fraction, 0);
 
@@ -304,7 +282,7 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   }
 
   if (!region_.IsEmpty())
-    SetLayoutShiftRects(region_.GetRects(), 1);
+    SetLayoutShiftRects(region_.GetRects());
   region_.Reset();
 
   frame_max_distance_ = 0.0;
@@ -433,33 +411,13 @@ std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
   value->SetDouble("cumulative_score", score_);
   value->SetDouble("overall_max_distance", overall_max_distance_);
   value->SetDouble("frame_max_distance", frame_max_distance_);
-
-  float granularity_scale = RegionGranularityScale(
-      IntRect(IntPoint(),
-              frame_view_->GetScrollableArea()->VisibleContentRect().Size()));
-
-  RegionToTracedValue(region_, granularity_scale, *value);
-
+  RegionToTracedValue(region_, *value);
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   value->SetBoolean("had_recent_input", input_detected);
   return value;
 }
 
-WebVector<gfx::Rect> LayoutShiftTracker::ConvertIntRectsToGfxRects(
-    const Vector<IntRect>& int_rects,
-    double granularity_scale) {
-  WebVector<gfx::Rect> rects;
-  for (const IntRect& rect : int_rects) {
-    gfx::Rect r = gfx::Rect(
-        rect.X() / granularity_scale, rect.Y() / granularity_scale,
-        rect.Width() / granularity_scale, rect.Height() / granularity_scale);
-    rects.emplace_back(r);
-  }
-  return rects;
-}
-
-void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
-                                             double granularity_scale) {
+void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects) {
   // Store the layout shift rects in the HUD layer.
   GraphicsLayer* root_graphics_layer =
       frame_view_->GetLayoutView()->Compositor()->RootGraphicsLayer();
@@ -474,10 +432,11 @@ void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
       return;
     if (cc_layer->layer_tree_host()->hud_layer()) {
       WebVector<gfx::Rect> rects;
-      Region old_region;
+      Region blink_region;
       for (IntRect rect : int_rects)
-        old_region.Unite(Region(rect));
-      rects = ConvertIntRectsToGfxRects(old_region.Rects(), granularity_scale);
+        blink_region.Unite(Region(rect));
+      for (const IntRect& rect : blink_region.Rects())
+        rects.emplace_back(rect);
       cc_layer->layer_tree_host()->hud_layer()->SetLayoutShiftRects(
           rects.ReleaseVector());
       cc_layer->layer_tree_host()->hud_layer()->SetNeedsPushProperties();

@@ -70,13 +70,8 @@ class CORE_EXPORT LayoutShiftTracker {
   void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(double score_delta,
                                                  bool input_detected) const;
-  float RegionGranularityScale(const IntRect& viewport) const;
   double SubframeWeightingFactor() const;
-  WebVector<gfx::Rect> ConvertIntRectsToGfxRects(
-      const Vector<IntRect>& int_rects,
-      double granularity_scale);
-  void SetLayoutShiftRects(const Vector<IntRect>& int_rects,
-                           double granularity_scale);
+  void SetLayoutShiftRects(const Vector<IntRect>& int_rects);
   void UpdateInputTimestamp(base::TimeTicks timestamp);
 
   // This owns us.
