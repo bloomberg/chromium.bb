@@ -2796,6 +2796,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDocumentProvider,
                                     kOmniboxDocumentProviderVariations,
                                     "OmniboxBundledExperimentV1")},
+    {"omnibox-autocomplete-titles",
+     flag_descriptions::kOmniboxAutocompleteTitlesName,
+     flag_descriptions::kOmniboxAutocompleteTitlesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kAutocompleteTitles)},
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
     {"enable-speculative-service-worker-start-on-query-input",

@@ -2534,6 +2534,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-autocomplete-titles",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "omnibox-disable-instant-extended-limit",
     "owners": [ "pnoland", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80

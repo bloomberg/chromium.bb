@@ -1329,6 +1329,11 @@ const char kOmniboxAlternateMatchDescriptionSeparatorDescription[] =
     "Shows an alternate separator before the description of omnibox matches. "
     "In English, this changes the separator from '-' to '|'.";
 
+const char kOmniboxAutocompleteTitlesName[] = "Omnibox Autocomplete Titles";
+const char kOmniboxAutocompleteTitlesDescription[] =
+    "Allows autocompleting bookmark, history, and document suggestions when the"
+    " user input is a prefix of their titles, as opposed to their URLs.";
+
 const char kOmniboxDisplayTitleForCurrentUrlName[] =
     "Include title for the current URL in the omnibox";
 const char kOmniboxDisplayTitleForCurrentUrlDescription[] =

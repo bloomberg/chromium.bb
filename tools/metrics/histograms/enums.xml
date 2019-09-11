@@ -37240,6 +37240,7 @@ from previous Chrome versions.
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
+  <int value="1431934725" label="OmniboxAutocompleteTitles:disabled"/>
   <int value="1434515920" label="ReaderModeInCCT:enabled"/>
   <int value="1435251818" label="AutofillNoLocalSaveOnUploadSuccess:enabled"/>
   <int value="1437413720" label="CooperativeScheduling:disabled"/>
@@ -37523,6 +37524,7 @@ from previous Chrome versions.
   <int value="1831593339" label="stop-in-background:disabled"/>
   <int value="1831835753" label="MaterialDesignIncognitoNTP:enabled"/>
   <int value="1832552562" label="EnableVirtualKeyboardUkm:enabled"/>
+  <int value="1834968807" label="OmniboxAutocompleteTitles:enabled"/>
   <int value="1835523483" label="OmniboxUIExperimentSwapTitleAndUrl:enabled"/>
   <int value="1838990777" label="V8Future:enabled"/>
   <int value="1839740266" label="LocationHardReload:disabled"/>
