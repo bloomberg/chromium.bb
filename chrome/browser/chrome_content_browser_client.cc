@@ -4960,7 +4960,7 @@ void ChromeContentBrowserClient::OnNetworkServiceCreated(
       network_service);
 }
 
-network::mojom::NetworkContextPtr
+mojo::Remote<network::mojom::NetworkContext>
 ChromeContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,

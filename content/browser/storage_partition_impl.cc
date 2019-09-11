@@ -2284,7 +2284,7 @@ void StoragePartitionImpl::InitNetworkContext() {
   network_context_client_receiver_.reset();
   network_context_->SetClient(
       network_context_client_receiver_.BindNewPipeAndPassRemote());
-  network_context_.set_connection_error_handler(base::BindOnce(
+  network_context_.set_disconnect_handler(base::BindOnce(
       &StoragePartitionImpl::InitNetworkContext, weak_factory_.GetWeakPtr()));
 }
 

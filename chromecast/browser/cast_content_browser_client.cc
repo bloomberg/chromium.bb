@@ -995,7 +995,7 @@ void CastContentBrowserClient::OnNetworkServiceCreated(
   cast_network_contexts_->OnNetworkServiceCreated(network_service);
 }
 
-network::mojom::NetworkContextPtr
+mojo::Remote<network::mojom::NetworkContext>
 CastContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,
