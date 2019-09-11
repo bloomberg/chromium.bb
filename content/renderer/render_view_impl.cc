@@ -508,7 +508,7 @@ void RenderViewImpl::Initialize(
     // RenderWidget for a remote main frame.
     render_widget_ = RenderWidget::CreateForFrame(
         params->main_frame_widget_routing_id, compositor_deps,
-        params->visual_properties.screen_info,
+        page_properties(), params->visual_properties.screen_info,
         params->visual_properties.display_mode,
         /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
         params->never_visible);
@@ -1452,7 +1452,8 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, view_render_widget->compositor_deps(),
-      view_render_widget->screen_info(), blink::kWebDisplayModeUndefined,
+      page_properties(), view_render_widget->screen_info(),
+      blink::kWebDisplayModeUndefined,
       /*hidden=*/false,
       /*never_visible=*/false, std::move(widget_channel_request));
 

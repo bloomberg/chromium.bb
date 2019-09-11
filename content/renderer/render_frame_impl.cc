@@ -1466,7 +1466,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // RenderFrame.
   render_view->render_widget_ = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
-      params->visual_properties.screen_info,
+      render_view->page_properties(), params->visual_properties.screen_info,
       params->visual_properties.display_mode,
       /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
       params->never_visible);
@@ -1686,7 +1686,8 @@ void RenderFrameImpl::CreateFrame(
     // local root with a new compositing, painting, and input coordinate
     // space/context.
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
-        widget_params.routing_id, compositor_deps, screen_info_from_main_frame,
+        widget_params.routing_id, compositor_deps,
+        render_view->page_properties(), screen_info_from_main_frame,
         blink::kWebDisplayModeUndefined,
         /*is_undead=*/false, /*never_visible=*/false);
 
@@ -2146,8 +2147,9 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   // web ScreenInfo or the original ScreenInfo here.
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       fullscreen_widget_routing_id, std::move(show_callback),
-      GetLocalRootRenderWidget()->compositor_deps(), plugin,
-      std::move(main_frame_url), GetLocalRootRenderWidget()->GetWebScreenInfo(),
+      GetLocalRootRenderWidget()->compositor_deps(),
+      render_view()->page_properties(), plugin, std::move(main_frame_url),
+      GetLocalRootRenderWidget()->GetWebScreenInfo(),
       std::move(widget_channel_request));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
   // since there's no real delay between CreateFullscreenWidget and
