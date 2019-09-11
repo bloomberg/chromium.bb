@@ -64,7 +64,7 @@ AFDO_GENERATE_LLVM_PROF = '/usr/bin/create_llvm_prof'
 # away, it is considered valid.
 
 # How old can the AFDO data be? (in days).
-AFDO_ALLOWED_STALE_DAYS = 14
+AFDO_ALLOWED_STALE_DAYS = 30
 
 # How old can the AFDO data be? (in difference of builds).
 AFDO_ALLOWED_STALE_BUILDS = 7
