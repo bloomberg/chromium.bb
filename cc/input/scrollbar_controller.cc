@@ -79,15 +79,18 @@ gfx::Vector2dF ScrollbarController::GetThumbRelativePoint(
 // GSU.
 InputHandlerPointerResult ScrollbarController::HandlePointerDown(
     const gfx::PointF position_in_widget) {
-  InputHandlerPointerResult scroll_result;
   LayerImpl* layer_impl = GetLayerHitByPoint(position_in_widget);
 
   // If a non-custom scrollbar layer was not found, we return early as there is
-  // no point in setting additional state in the ScrollbarController.
+  // no point in setting additional state in the ScrollbarController. Return an
+  // empty InputHandlerPointerResult in this case so that when it is bubbled up
+  // to InputHandlerProxy::RouteToTypeSpecificHandler, the pointer event gets
+  // passed on to the main thread.
   if (!(layer_impl && layer_impl->ToScrollbarLayer()))
-    return scroll_result;
+    return InputHandlerPointerResult();
 
   currently_captured_scrollbar_ = layer_impl->ToScrollbarLayer();
+  InputHandlerPointerResult scroll_result;
   scroll_result.target_scroller =
       currently_captured_scrollbar_->scroll_element_id();
   scroll_result.type = PointerResultType::kScrollbarScroll;
@@ -414,8 +417,7 @@ LayerImpl* ScrollbarController::GetLayerHitByPoint(
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree->device_scale_factor());
   LayerImpl* layer_impl =
-      active_tree->FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
-          device_viewport_point);
+      active_tree->FindLayerThatIsHitByPoint(device_viewport_point);
 
   return layer_impl;
 }
