@@ -105,8 +105,12 @@ IdentityManager::IdentityManager(
     UpdateUnconsentedPrimaryAccount();
 
 #if defined(OS_ANDROID)
+  base::android::ScopedJavaLocalRef<jobject> java_primary_account_mutator =
+      primary_account_mutator_ ? primary_account_mutator_->GetJavaObject()
+                               : nullptr;
   java_identity_manager_ = Java_IdentityManager_create(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      java_primary_account_mutator);
 #endif
 }
 
@@ -434,6 +438,18 @@ void IdentityManager::ForceRefreshOfExtendedAccountInfo(
 
 bool IdentityManager::HasPrimaryAccount(JNIEnv* env) const {
   return HasPrimaryAccount();
+}
+
+base::android::ScopedJavaLocalRef<jobject> IdentityManager::
+    FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+        JNIEnv* env,
+        const base::android::JavaParamRef<jstring>& j_email) const {
+  auto account_info =
+      FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          base::android::ConvertJavaStringToUTF8(env, j_email));
+  if (!account_info.has_value())
+    return nullptr;
+  return ConvertToJavaCoreAccountInfo(env, account_info.value());
 }
 #endif
 
