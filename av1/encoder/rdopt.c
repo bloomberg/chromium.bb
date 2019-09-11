@@ -10294,10 +10294,14 @@ static int ref_mv_idx_to_search(AV1_COMP *const cpi, MACROBLOCK *x,
   }
   // Only include indices that are good and within a % of the best.
   const double dth = has_second_ref(mbmi) ? 1.05 : 1.001;
+  // If the simple translation cost is not within this multiple of the
+  // best RD, skip it. Note that the cutoff is derived experimentally.
+  const double ref_dth = 5;
   int result = 0;
   for (int i = 0; i < ref_set; ++i) {
     if (mask_check_bit(good_indices, i) &&
-        (1.0 * idx_rdcost[i]) / idx_rdcost[best_idx] < dth) {
+        (1.0 * idx_rdcost[i]) / idx_rdcost[best_idx] < dth &&
+        (1.0 * idx_rdcost[i]) / ref_best_rd < ref_dth) {
       mask_set_bit(&result, i);
     }
   }
