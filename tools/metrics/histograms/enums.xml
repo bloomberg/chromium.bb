@@ -18040,6 +18040,7 @@ Called by update_net_error_codes.py.-->
   <int value="600" label="DomainsToCheckForMalwareOfUploadedContent"/>
   <int value="601" label="HSTSPolicyBypassList"/>
   <int value="602" label="ReportDeviceOsUpdateStatus"/>
+  <int value="603" label="DeviceLoginScreenWebUsbAllowDevicesForUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

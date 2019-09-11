@@ -4951,6 +4951,52 @@
         URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.''',
     },
     {
+      'name': 'DeviceLoginScreenWebUsbAllowDevicesForUrls',
+      'owners': ['reillyg@chromium.org', 'odejesush@chromium.org'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'devices': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'vendor_id': { 'type': 'integer' },
+                  'product_id': { 'type': 'integer' }
+                }
+              }
+            },
+            'urls': {
+              'type': 'array',
+              'items': { 'type': 'string' }
+            }
+          },
+          'required': ['devices', 'urls']
+        }
+      },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': [{
+        'devices': [{'vendor_id': 1234, 'product_id': 5678}],
+        'urls': ['https://google.com', 'https://requesting.com,https://embedded.com'],
+      }],
+      'id': 603,
+      'caption': '''Automatically grant permission to these sites to connect to USB devices with the given vendor and product IDs on the login screen.''',
+      'tags': ['website-sharing'],
+      'desc': '''Allows you to set a list of urls that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs on the login screen. Each item in the list must contain both devices and urls in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
+
+        The USB permission model uses the URL of the requesting site ("requesting URL") and the URL of the top-level frame site ("embedding URL") to grant permission to the requesting URL to access the USB device. The requesting URL may be different than the embedding URL when the requesting site is loaded in an iframe. Therefore, the "urls" field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in "urls" must be valid URLs, otherwise the policy will be ignored.
+
+        If this policy is left not set, the global default value will be used for all sites (no automatic access).''',
+    },
+    {
       'name': 'WebUsbAskForUrls',
       'owners': ['reillyg@chromium.org', 'odejesush@chromium.org'],
       'type': 'list',
@@ -17977,7 +18023,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceBatteryChargeCustomStartCharging': 'device_battery_charge_mode.custom_charge_start',
     'DeviceBatteryChargeCustomStopCharging': 'device_battery_charge_mode.custom_charge_stop',
     'DeviceScheduledUpdateCheck': 'device_scheduled_update_check.device_scheduled_update_check_settings',
-    'DevicePowerwashAllowed': 'device_powerwash_allowed.device_powerwash_allowed'
+    'DevicePowerwashAllowed': 'device_powerwash_allowed.device_powerwash_allowed',
+    'DeviceLoginScreenWebUsbAllowDevicesForUrls': 'device_login_screen_webusb_allow_devices_for_urls.device_login_screen_webusb_allow_devices_for_urls'
   },
   'policy_atomic_group_definitions': [
     {
@@ -18164,6 +18211,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'caption': '''Web USB settings''',
       'policies': [
         'DefaultWebUsbGuardSetting',
+        'DeviceLoginScreenWebUsbAllowDevicesForUrls',
         'WebUsbAllowDevicesForUrls',
         'WebUsbAskForUrls',
         'WebUsbBlockedForUrls',
@@ -18418,6 +18466,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 602,
+  'highest_id_currently_used': 603,
   'highest_atomic_group_id_currently_used': 37
 }
