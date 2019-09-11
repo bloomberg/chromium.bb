@@ -117,7 +117,6 @@ class BrowserPluginManager;
 class CategorizedWorkerPool;
 class GpuVideoAcceleratorFactoriesImpl;
 class LowMemoryModeController;
-class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
 class RenderThreadObserver;
@@ -310,11 +309,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   PeerConnectionTracker* peer_connection_tracker() {
     return peer_connection_tracker_.get();
-  }
-
-  // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
-  P2PSocketDispatcher* p2p_socket_dispatcher() {
-    return p2p_socket_dispatcher_.get();
   }
 
   blink::WebVideoCaptureImplManager* video_capture_impl_manager() const {
@@ -583,9 +577,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // This is used to communicate to the browser process the status
   // of all the peer connections created in the renderer.
   std::unique_ptr<PeerConnectionTracker> peer_connection_tracker_;
-
-  // Dispatches all P2P sockets.
-  scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
 
   // Filter out unfreezable messages and pass it to unfreezable task runners.
   scoped_refptr<UnfreezableMessageFilter> unfreezable_message_filter_;

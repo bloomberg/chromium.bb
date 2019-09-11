@@ -31,6 +31,7 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/mdns_responder_adapter.h"
 #include "content/renderer/p2p/port_allocator.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -120,9 +121,10 @@ class ProxyAsyncResolverFactory final : public webrtc::AsyncResolverFactory {
 }  // namespace
 
 PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
-    P2PSocketDispatcher* p2p_socket_dispatcher)
+    bool create_p2p_socket_dispatcher)
     : network_manager_(nullptr),
-      p2p_socket_dispatcher_(p2p_socket_dispatcher),
+      p2p_socket_dispatcher_(
+          create_p2p_socket_dispatcher ? new P2PSocketDispatcher() : nullptr),
       signaling_thread_(nullptr),
       worker_thread_(nullptr),
       chrome_signaling_thread_("Chrome_libJingle_Signaling"),
