@@ -61,7 +61,11 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return StyleVariant() == NGStyleVariant::kEllipsis;
   }
 
+  bool IsSymbolMarker() const { return TextType() == kSymbolMarker; }
+
+  // TODO(yosin): We should replace |Length()| to |TextLength()|.
   unsigned Length() const { return end_offset_ - start_offset_; }
+  unsigned TextLength() const { return Length(); }
   StringView Text() const { return StringView(text_, start_offset_, Length()); }
   const String& TextContent() const { return text_; }
 
