@@ -215,9 +215,8 @@ void LayoutShiftTracker::ObjectShifted(
   visible_old_rect.Scale(scale);
   visible_new_rect.Scale(scale);
 
-  // TODO(crbug.com/1000716): Rename region_experimental_.
-  region_experimental_.AddRect(visible_old_rect);
-  region_experimental_.AddRect(visible_new_rect);
+  region_.AddRect(visible_old_rect);
+  region_.AddRect(visible_new_rect);
 }
 
 void LayoutShiftTracker::NotifyObjectPrePaint(
@@ -260,10 +259,7 @@ double LayoutShiftTracker::SubframeWeightingFactor() const {
 void LayoutShiftTracker::NotifyPrePaintFinished() {
   if (!IsActive())
     return;
-  bool use_sweep_line = true;
-  bool region_is_empty =
-      use_sweep_line ? region_experimental_.IsEmpty() : region_.IsEmpty();
-  if (region_is_empty)
+  if (region_.IsEmpty())
     return;
 
   IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
@@ -276,9 +272,7 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
 
   double viewport_area =
       double(scaled_viewport.Width()) * double(scaled_viewport.Height());
-  uint64_t region_area =
-      use_sweep_line ? region_experimental_.Area() : region_.Area();
-  double impact_fraction = region_area / viewport_area;
+  double impact_fraction = region_.Area() / viewport_area;
   DCHECK_GT(impact_fraction, 0);
 
   DCHECK_GT(frame_max_distance_, 0.0);
@@ -309,17 +303,10 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
     ReportShift(score_delta, weighted_score_delta);
   }
 
-  if (use_sweep_line) {
-    if (!region_experimental_.IsEmpty()) {
-      SetLayoutShiftRects(region_experimental_.GetRects(), 1, true);
-    }
-    region_experimental_.Reset();
-  } else {
-    if (!region_.IsEmpty()) {
-      SetLayoutShiftRects(region_.Rects(), granularity_scale, false);
-    }
-    region_ = Region();
-  }
+  if (!region_.IsEmpty())
+    SetLayoutShiftRects(region_.GetRects(), 1);
+  region_.Reset();
+
   frame_max_distance_ = 0.0;
   frame_scroll_delta_ = ScrollOffset();
 }
@@ -451,7 +438,7 @@ std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
       IntRect(IntPoint(),
               frame_view_->GetScrollableArea()->VisibleContentRect().Size()));
 
-  RegionToTracedValue(region_experimental_, granularity_scale, *value);
+  RegionToTracedValue(region_, granularity_scale, *value);
 
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   value->SetBoolean("had_recent_input", input_detected);
@@ -472,8 +459,7 @@ WebVector<gfx::Rect> LayoutShiftTracker::ConvertIntRectsToGfxRects(
 }
 
 void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
-                                             double granularity_scale,
-                                             bool using_sweep_line) {
+                                             double granularity_scale) {
   // Store the layout shift rects in the HUD layer.
   GraphicsLayer* root_graphics_layer =
       frame_view_->GetLayoutView()->Compositor()->RootGraphicsLayer();
@@ -488,15 +474,10 @@ void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
       return;
     if (cc_layer->layer_tree_host()->hud_layer()) {
       WebVector<gfx::Rect> rects;
-      if (using_sweep_line) {
-        Region old_region;
-        for (IntRect rect : int_rects)
-          old_region.Unite(Region(rect));
-        rects =
-            ConvertIntRectsToGfxRects(old_region.Rects(), granularity_scale);
-      } else {
-        rects = ConvertIntRectsToGfxRects(int_rects, granularity_scale);
-      }
+      Region old_region;
+      for (IntRect rect : int_rects)
+        old_region.Unite(Region(rect));
+      rects = ConvertIntRectsToGfxRects(old_region.Rects(), granularity_scale);
       cc_layer->layer_tree_host()->hud_layer()->SetLayoutShiftRects(
           rects.ReleaseVector());
       cc_layer->layer_tree_host()->hud_layer()->SetNeedsPushProperties();
