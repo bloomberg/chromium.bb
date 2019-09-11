@@ -260,7 +260,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^android_webview/browser/',
   '^apps/',
   '^ash/',
-  '^base/',
   '^base/callback.h',  # Intentional.
   '^chrome/app/',
   '^chrome/browser/',
