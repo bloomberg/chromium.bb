@@ -101,7 +101,7 @@ void CastContentRendererClient::RenderThreadStarted() {
   content::RenderThread* thread = content::RenderThread::Get();
   mojo::Remote<media::mojom::MediaCaps> media_caps;
   thread->BindHostReceiver(media_caps.BindNewPipeAndPassReceiver());
-  media::mojom::MediaCapsObserverPtr proxy;
+  mojo::PendingRemote<media::mojom::MediaCapsObserver> proxy;
   media_caps_observer_.reset(
       new media::MediaCapsObserverImpl(&proxy, supported_profiles_.get()));
   media_caps->AddObserver(std::move(proxy));
