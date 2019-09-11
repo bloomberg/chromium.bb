@@ -30,7 +30,7 @@ interface ResourceProvider {
   BindGpu(pending_receiver<viz.mojom.Gpu> receiver);
   GetVideoCaptureHost(media.mojom.VideoCaptureHost& request);
   GetNetworkContext(pending_receiver<network.mojom.NetworkContext> receiver);
-  CreateAudioStream(AudioStreamCreatorClient client,
+  CreateAudioStream(pending_remote<AudioStreamCreatorClient> client,
                     media.mojom.AudioParameters param,
                     uint32 shared_memory_count);
   ConnectToRemotingSource(media.mojom.Remoter remoter,

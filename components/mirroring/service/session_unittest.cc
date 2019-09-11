@@ -126,9 +126,10 @@ class SessionTest : public mojom::ResourceProvider,
     OnGetNetworkContext();
   }
 
-  void CreateAudioStream(mojom::AudioStreamCreatorClientPtr client,
-                         const media::AudioParameters& params,
-                         uint32_t total_segments) override {
+  void CreateAudioStream(
+      mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
+      const media::AudioParameters& params,
+      uint32_t total_segments) override {
     OnCreateAudioStream();
   }
 
