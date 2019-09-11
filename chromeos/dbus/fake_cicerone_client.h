@@ -233,6 +233,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
     lxd_container_os_release_ = std::move(os_release);
   }
 
+  void set_send_container_started_signal(bool send) {
+    send_container_started_signal_ = send;
+  }
+
   // Additional functions to allow tests to trigger Signals.
   void NotifyLxdContainerCreated(
       const vm_tools::cicerone::LxdContainerCreatedSignal& signal);
@@ -272,6 +276,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   bool is_import_lxd_container_progress_signal_connected_ = true;
 
   std::string last_container_username_;
+  bool send_container_started_signal_ = true;
 
   vm_tools::cicerone::LxdContainerCreatedSignal_Status
       lxd_container_created_signal_status_ =

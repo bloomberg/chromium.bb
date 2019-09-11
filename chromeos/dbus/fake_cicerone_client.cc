@@ -209,18 +209,18 @@ void FakeCiceroneClient::StartLxdContainer(
         FROM_HERE,
         base::BindOnce(&FakeCiceroneClient::NotifyLxdContainerStarting,
                        base::Unretained(this), std::move(signal)));
-  }
-  if (lxd_container_starting_signal_status_ ==
-      vm_tools::cicerone::LxdContainerStartingSignal::STARTED) {
-    // Trigger CiceroneClient::Observer::NotifyContainerStartedSignal.
-    vm_tools::cicerone::ContainerStartedSignal signal;
-    signal.set_owner_id(request.owner_id());
-    signal.set_vm_name(request.vm_name());
-    signal.set_container_name(request.container_name());
-    signal.set_container_username(last_container_username_);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyContainerStarted,
-                                  base::Unretained(this), std::move(signal)));
+
+    if (send_container_started_signal_) {
+      // Trigger CiceroneClient::Observer::NotifyContainerStartedSignal.
+      vm_tools::cicerone::ContainerStartedSignal signal;
+      signal.set_owner_id(request.owner_id());
+      signal.set_vm_name(request.vm_name());
+      signal.set_container_name(request.container_name());
+      signal.set_container_username(last_container_username_);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyContainerStarted,
+                                    base::Unretained(this), std::move(signal)));
+    }
   }
 }
 
