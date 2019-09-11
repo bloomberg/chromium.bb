@@ -75,8 +75,10 @@ foreach (@tx_sizes) {
   foreach $pred_name (@pred_names) {
     add_proto "void", "aom_${pred_name}_predictor_${w}x${h}",
               "uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left";
-    add_proto "void", "aom_highbd_${pred_name}_predictor_${w}x${h}",
-              "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+    if (aom_config("CONFIG_AV1_HIGHBITDEPTH") eq "yes") {
+        add_proto "void", "aom_highbd_${pred_name}_predictor_${w}x${h}",
+                  "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+    }
   }
 }
 
@@ -280,7 +282,7 @@ specialize qw/aom_dc_predictor_32x64 sse2 avx2/;
 specialize qw/aom_dc_predictor_64x64 sse2 avx2/;
 specialize qw/aom_dc_predictor_64x32 sse2 avx2/;
 specialize qw/aom_dc_predictor_64x16 sse2 avx2/;
-
+if (aom_config("CONFIG_AV1_HIGHBITDEPTH") eq "yes") {
   specialize qw/aom_highbd_v_predictor_4x4 sse2/;
   specialize qw/aom_highbd_v_predictor_4x8 sse2/;
   specialize qw/aom_highbd_v_predictor_8x4 sse2/;
@@ -346,7 +348,7 @@ specialize qw/aom_dc_predictor_64x16 sse2 avx2/;
   specialize qw/aom_highbd_dc_left_predictor_32x32 sse2/;
   specialize qw/aom_highbd_dc_top_predictor_32x32 sse2/;
   specialize qw/aom_highbd_dc_128_predictor_32x32 sse2/;
-
+}
 #
 # Sub Pixel Filters
 #
