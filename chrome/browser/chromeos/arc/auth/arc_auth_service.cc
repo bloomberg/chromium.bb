@@ -241,7 +241,7 @@ void ArcAuthService::OnConnectionReady() {
   // For the second and subsequent sessions,
   // |ArcSessionManager::Get()->IsArcProvisioned()| will be |true|.
   if (arc::IsArcProvisioned(profile_))
-    TriggerAccountsPushToArc();
+    TriggerAccountsPushToArc(false /* filter_primary_account */);
 
   if (pending_get_arc_accounts_callback_)
     DispatchAccountsInArc(std::move(pending_get_arc_accounts_callback_));
@@ -543,7 +543,7 @@ void ArcAuthService::OnExtendedAccountInfoRemoved(
 }
 
 void ArcAuthService::OnArcInitialStart() {
-  TriggerAccountsPushToArc();
+  TriggerAccountsPushToArc(true /* filter_primary_account */);
 }
 
 void ArcAuthService::Shutdown() {
@@ -727,14 +727,18 @@ void ArcAuthService::SkipMergeSessionForTesting() {
   skip_merge_session_for_testing_ = true;
 }
 
-void ArcAuthService::TriggerAccountsPushToArc() {
+void ArcAuthService::TriggerAccountsPushToArc(bool filter_primary_account) {
   if (!chromeos::IsAccountManagerAvailable(profile_))
     return;
 
   const std::vector<CoreAccountInfo> accounts =
       identity_manager_->GetAccountsWithRefreshTokens();
-  for (const CoreAccountInfo& account : accounts)
+  for (const CoreAccountInfo& account : accounts) {
+    if (filter_primary_account && IsPrimaryGaiaAccount(account.gaia))
+      continue;
+
     OnRefreshTokenUpdatedForAccount(account);
+  }
 }
 
 void ArcAuthService::DispatchAccountsInArc(
