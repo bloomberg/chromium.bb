@@ -681,6 +681,21 @@ DawnTextureAspect AsDawnEnum<DawnTextureAspect>(
   return DAWN_TEXTURE_ASPECT_FORCE32;
 }
 
+template <>
+DawnErrorFilter AsDawnEnum<DawnErrorFilter>(const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "none") {
+    return DAWN_ERROR_FILTER_NONE;
+  }
+  if (webgpu_enum == "out-of-memory") {
+    return DAWN_ERROR_FILTER_OUT_OF_MEMORY;
+  }
+  if (webgpu_enum == "validation") {
+    return DAWN_ERROR_FILTER_VALIDATION;
+  }
+  NOTREACHED();
+  return DAWN_ERROR_FILTER_FORCE32;
+}
+
 DawnColor AsDawnType(const GPUColor* webgpu_color) {
   DCHECK(webgpu_color);
 
