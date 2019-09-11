@@ -5074,8 +5074,9 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     // Dummy pack of the bitstream using up to date stats to get an
     // accurate estimate of output frame size to determine if we need
     // to recode.
-    const int do_dummy_pack =
-        cpi->sf.recode_loop >= ALLOW_RECODE_KFARFGF || cpi->oxcf.min_cr > 0;
+    const int do_dummy_pack = (cpi->sf.recode_loop >= ALLOW_RECODE_KFARFGF &&
+                               cpi->oxcf.rc_mode != AOM_Q) ||
+                              cpi->oxcf.min_cr > 0;
     if (do_dummy_pack) {
       restore_coding_context(cpi);
 
@@ -5096,9 +5097,10 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     }
 
     // Special case for overlay frame.
-    if (rc->is_src_frame_alt_ref &&
-        rc->projected_frame_size < rc->max_frame_bandwidth)
+    if (loop && rc->is_src_frame_alt_ref &&
+        rc->projected_frame_size < rc->max_frame_bandwidth) {
       loop = 0;
+    }
 
     if (allow_recode && !cpi->sf.gm_disable_recode &&
         recode_loop_test_global_motion(cpi)) {
