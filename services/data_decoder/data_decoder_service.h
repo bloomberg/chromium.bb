@@ -42,13 +42,13 @@ class DataDecoderService : public service_manager::Service {
 
  private:
   void BindBundledExchangesParserFactory(
-      mojom::BundledExchangesParserFactoryRequest request);
+      mojo::PendingReceiver<mojom::BundledExchangesParserFactory> receiver);
   void BindImageDecoder(mojo::PendingReceiver<mojom::ImageDecoder> receiver);
   void BindJsonParser(mojo::PendingReceiver<mojom::JsonParser> receiver);
   void BindXmlParser(mojom::XmlParserRequest request);
 
 #ifdef OS_CHROMEOS
-  void BindBleScanParser(mojom::BleScanParserRequest request);
+  void BindBleScanParser(mojo::PendingReceiver<mojom::BleScanParser> receiver);
 #endif  // OS_CHROMEOS
 
   service_manager::ServiceBinding binding_{this};

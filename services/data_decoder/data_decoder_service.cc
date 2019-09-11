@@ -70,10 +70,10 @@ void DataDecoderService::OnBindInterface(
 
 #ifdef OS_CHROMEOS
 void DataDecoderService::BindBleScanParser(
-    mojom::BleScanParserRequest request) {
-  mojo::MakeStrongBinding(
+    mojo::PendingReceiver<mojom::BleScanParser> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<BleScanParserImpl>(keepalive_.CreateRef()),
-      std::move(request));
+      std::move(receiver));
 }
 #endif  // OS_CHROMEOS
 
@@ -97,10 +97,10 @@ void DataDecoderService::BindXmlParser(mojom::XmlParserRequest request) {
 }
 
 void DataDecoderService::BindBundledExchangesParserFactory(
-    mojom::BundledExchangesParserFactoryRequest request) {
-  mojo::MakeStrongBinding(
+    mojo::PendingReceiver<mojom::BundledExchangesParserFactory> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<BundledExchangesParserFactory>(keepalive_.CreateRef()),
-      std::move(request));
+      std::move(receiver));
 }
 
 }  // namespace data_decoder
