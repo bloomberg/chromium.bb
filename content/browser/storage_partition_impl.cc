@@ -70,6 +70,7 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
@@ -766,10 +767,11 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
     DCHECK((cert && private_key) || (!cert && !private_key));
 
     if (cert && private_key) {
-      network::mojom::SSLPrivateKeyPtr ssl_private_key;
+      mojo::PendingRemote<network::mojom::SSLPrivateKey> ssl_private_key;
 
-      mojo::MakeStrongBinding(std::make_unique<SSLPrivateKeyImpl>(private_key),
-                              mojo::MakeRequest(&ssl_private_key));
+      mojo::MakeSelfOwnedReceiver(
+          std::make_unique<SSLPrivateKeyImpl>(private_key),
+          ssl_private_key.InitWithNewPipeAndPassReceiver());
 
       client_cert_responder_->ContinueWithCertificate(
           cert, private_key->GetProviderName(),
