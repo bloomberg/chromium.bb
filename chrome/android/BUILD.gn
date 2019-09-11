@@ -2152,9 +2152,16 @@ instrumentation_test_runner("monochrome_public_bundle_smoke_test") {
   android_test_apk_name = "ChromeBundleSmokeTest"
   never_incremental = true
   modules = [ "test_dummy" ]
-  command_line_args = [
+  extra_args = [
+    # Make extra args be passed through to the bundle under test (see below).
+    "--use-apk-under-test-flags-file",
+
+    # Chrome crashes at startup if strict mode is turned on.
+    "--strict-mode=off",
+
+    # These args are passed through to the bundle under test.
     "--enable-test-dummy-module",
-    "--no-fre",
+    "--disable-fre",
   ]
 }
 

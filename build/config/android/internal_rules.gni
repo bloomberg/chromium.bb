@@ -796,8 +796,8 @@ template("test_runner_script") {
       }
     }
 
-    if (defined(invoker.command_line_args)) {
-      executable_args += invoker.command_line_args
+    if (defined(invoker.extra_args)) {
+      executable_args += invoker.extra_args
     }
   }
 }
