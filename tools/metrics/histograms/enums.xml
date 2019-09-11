@@ -58779,7 +58779,8 @@ would be helpful to identify which type is being sent.
   <int value="7" label="Web app action share"/>
   <int value="8" label="Web app action open in Chrome"/>
   <int value="9" label="Offline content suggestion settings"/>
-  <int value="10" label="Sharing notification dismiss button"/>
+  <int value="10"
+      label="[Deprecated in M79] Sharing notification dismiss button"/>
   <int value="11" label="Sharing error notification try again button"/>
 </enum>
 
