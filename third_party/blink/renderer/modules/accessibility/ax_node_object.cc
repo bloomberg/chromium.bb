@@ -607,7 +607,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLOutputElement>(*GetNode()))
     return ax::mojom::Role::kStatus;
 
-  if (IsHTMLParagraphElement(*GetNode()))
+  if (IsA<HTMLParagraphElement>(*GetNode()))
     return ax::mojom::Role::kParagraph;
 
   if (IsA<HTMLLabelElement>(*GetNode()))
