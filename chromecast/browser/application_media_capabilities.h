@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace content {
@@ -24,7 +24,8 @@ class ApplicationMediaCapabilities
   ApplicationMediaCapabilities();
   ~ApplicationMediaCapabilities() override;
 
-  void AddBinding(mojom::ApplicationMediaCapabilitiesRequest request);
+  void AddReceiver(
+      mojo::PendingReceiver<mojom::ApplicationMediaCapabilities> receiver);
 
   void SetSupportedBitstreamAudioCodecs(int codecs);
 
@@ -34,7 +35,7 @@ class ApplicationMediaCapabilities
       mojo::PendingRemote<mojom::ApplicationMediaCapabilitiesObserver>
           observer_remote) override;
 
-  mojo::BindingSet<mojom::ApplicationMediaCapabilities> bindings_;
+  mojo::ReceiverSet<mojom::ApplicationMediaCapabilities> receivers_;
   mojo::RemoteSet<mojom::ApplicationMediaCapabilitiesObserver> observers_;
   int supported_bitstream_audio_codecs_;
 

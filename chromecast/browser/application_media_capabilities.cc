@@ -16,9 +16,9 @@ ApplicationMediaCapabilities::ApplicationMediaCapabilities()
 
 ApplicationMediaCapabilities::~ApplicationMediaCapabilities() = default;
 
-void ApplicationMediaCapabilities::AddBinding(
-    mojom::ApplicationMediaCapabilitiesRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void ApplicationMediaCapabilities::AddReceiver(
+    mojo::PendingReceiver<mojom::ApplicationMediaCapabilities> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void ApplicationMediaCapabilities::SetSupportedBitstreamAudioCodecs(

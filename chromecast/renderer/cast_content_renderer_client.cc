@@ -176,9 +176,9 @@ void CastContentRendererClient::RenderFrameCreated(
   new OnLoadScriptInjector(render_frame);
 
   if (!app_media_capabilities_observer_receiver_.is_bound()) {
-    mojom::ApplicationMediaCapabilitiesPtr app_media_capabilities;
+    mojo::Remote<mojom::ApplicationMediaCapabilities> app_media_capabilities;
     render_frame->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&app_media_capabilities));
+        app_media_capabilities.BindNewPipeAndPassReceiver());
     app_media_capabilities->AddObserver(
         app_media_capabilities_observer_receiver_.BindNewPipeAndPassRemote());
   }
