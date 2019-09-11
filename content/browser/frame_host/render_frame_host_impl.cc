@@ -6429,6 +6429,12 @@ void RenderFrameHostImpl::GetFileSystemManager(
                                 std::move(receiver)));
 }
 
+void RenderFrameHostImpl::CreateLockManager(
+    mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
+  GetProcess()->CreateLockManager(GetLastCommittedOrigin(),
+                                  std::move(receiver));
+}
+
 void RenderFrameHostImpl::GetAuthenticator(
     mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
 #if !defined(OS_ANDROID)
