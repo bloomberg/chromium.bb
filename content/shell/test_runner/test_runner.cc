@@ -1111,7 +1111,7 @@ void TestRunnerBindings::ClearPrinting() {
 
 void TestRunnerBindings::SetShouldGeneratePixelResults(bool value) {
   if (runner_)
-    runner_->setShouldGeneratePixelResults(value);
+    runner_->SetShouldGeneratePixelResults(value);
 }
 
 void TestRunnerBindings::SetShouldStayOnPageAfterHandlingBeforeUnload(
@@ -1348,7 +1348,7 @@ void TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen(
 
 void TestRunnerBindings::SetCustomTextOutput(const std::string& output) {
   if (runner_)
-    runner_->setCustomTextOutput(output);
+    runner_->SetCustomTextOutput(output);
 }
 
 void TestRunnerBindings::SetViewSourceForFrame(const std::string& name,
@@ -1584,34 +1584,34 @@ bool TestRunner::ShouldDumpSelectionRect() const {
   return web_test_runtime_flags_.dump_selection_rect();
 }
 
-bool TestRunner::shouldDumpEditingCallbacks() const {
+bool TestRunner::ShouldDumpEditingCallbacks() const {
   return web_test_runtime_flags_.dump_editting_callbacks();
 }
 
-void TestRunner::setShouldDumpAsText(bool value) {
+void TestRunner::SetShouldDumpAsText(bool value) {
   web_test_runtime_flags_.set_dump_as_text(value);
   OnWebTestRuntimeFlagsChanged();
 }
 
-void TestRunner::setShouldDumpAsMarkup(bool value) {
+void TestRunner::SetShouldDumpAsMarkup(bool value) {
   web_test_runtime_flags_.set_dump_as_markup(value);
   OnWebTestRuntimeFlagsChanged();
 }
 
-void TestRunner::setShouldDumpAsLayout(bool value) {
+void TestRunner::SetShouldDumpAsLayout(bool value) {
   web_test_runtime_flags_.set_dump_as_layout(value);
   OnWebTestRuntimeFlagsChanged();
 }
 
-bool TestRunner::shouldDumpAsCustomText() const {
+bool TestRunner::ShouldDumpAsCustomText() const {
   return web_test_runtime_flags_.has_custom_text_output();
 }
 
-std::string TestRunner::customDumpText() const {
+std::string TestRunner::CustomDumpText() const {
   return web_test_runtime_flags_.custom_text_output();
 }
 
-void TestRunner::setCustomTextOutput(const std::string& text) {
+void TestRunner::SetCustomTextOutput(const std::string& text) {
   web_test_runtime_flags_.set_custom_text_output(text);
   web_test_runtime_flags_.set_has_custom_text_output(true);
   OnWebTestRuntimeFlagsChanged();
@@ -1622,11 +1622,11 @@ bool TestRunner::ShouldGeneratePixelResults() {
   return web_test_runtime_flags_.generate_pixel_results();
 }
 
-bool TestRunner::shouldStayOnPageAfterHandlingBeforeUnload() const {
+bool TestRunner::ShouldStayOnPageAfterHandlingBeforeUnload() const {
   return web_test_runtime_flags_.stay_on_page_after_handling_before_unload();
 }
 
-void TestRunner::setShouldGeneratePixelResults(bool value) {
+void TestRunner::SetShouldGeneratePixelResults(bool value) {
   web_test_runtime_flags_.set_generate_pixel_results(value);
   OnWebTestRuntimeFlagsChanged();
 }
@@ -1701,30 +1701,30 @@ void TestRunner::ReplicateWebTestRuntimeFlagsChanges(
 }
 
 bool TestRunner::HasCustomTextDump(std::string* custom_text_dump) const {
-  if (shouldDumpAsCustomText()) {
-    *custom_text_dump = customDumpText();
+  if (ShouldDumpAsCustomText()) {
+    *custom_text_dump = CustomDumpText();
     return true;
   }
 
   return false;
 }
 
-bool TestRunner::shouldDumpFrameLoadCallbacks() const {
+bool TestRunner::ShouldDumpFrameLoadCallbacks() const {
   return test_is_running_ &&
          web_test_runtime_flags_.dump_frame_load_callbacks();
 }
 
-void TestRunner::setShouldDumpFrameLoadCallbacks(bool value) {
+void TestRunner::SetShouldDumpFrameLoadCallbacks(bool value) {
   web_test_runtime_flags_.set_dump_frame_load_callbacks(value);
   OnWebTestRuntimeFlagsChanged();
 }
 
-bool TestRunner::shouldDumpPingLoaderCallbacks() const {
+bool TestRunner::ShouldDumpPingLoaderCallbacks() const {
   return test_is_running_ &&
          web_test_runtime_flags_.dump_ping_loader_callbacks();
 }
 
-void TestRunner::setShouldEnableViewSource(bool value) {
+void TestRunner::SetShouldEnableViewSource(bool value) {
   // TODO(lukasza): This flag should be 1) replicated across OOPIFs and
   // 2) applied to all views, not just the main window view.
 
@@ -1737,28 +1737,28 @@ void TestRunner::setShouldEnableViewSource(bool value) {
   main_view_->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(value);
 }
 
-bool TestRunner::shouldDumpUserGestureInFrameLoadCallbacks() const {
+bool TestRunner::ShouldDumpUserGestureInFrameLoadCallbacks() const {
   return test_is_running_ &&
          web_test_runtime_flags_.dump_user_gesture_in_frame_load_callbacks();
 }
 
-bool TestRunner::shouldDumpTitleChanges() const {
+bool TestRunner::ShouldDumpTitleChanges() const {
   return web_test_runtime_flags_.dump_title_changes();
 }
 
-bool TestRunner::shouldDumpIconChanges() const {
+bool TestRunner::ShouldDumpIconChanges() const {
   return web_test_runtime_flags_.dump_icon_changes();
 }
 
-bool TestRunner::shouldDumpCreateView() const {
+bool TestRunner::ShouldDumpCreateView() const {
   return web_test_runtime_flags_.dump_create_view();
 }
 
-bool TestRunner::canOpenWindows() const {
+bool TestRunner::CanOpenWindows() const {
   return web_test_runtime_flags_.can_open_windows();
 }
 
-bool TestRunner::shouldDumpResourceLoadCallbacks() const {
+bool TestRunner::ShouldDumpResourceLoadCallbacks() const {
   return test_is_running_ &&
          web_test_runtime_flags_.dump_resource_load_callbacks();
 }
@@ -1771,7 +1771,7 @@ blink::WebTextCheckClient* TestRunner::GetWebTextCheckClient() const {
   return spellcheck_.get();
 }
 
-bool TestRunner::shouldDumpSpellCheckCallbacks() const {
+bool TestRunner::ShouldDumpSpellCheckCallbacks() const {
   return web_test_runtime_flags_.dump_spell_check_callbacks();
 }
 
@@ -1779,15 +1779,11 @@ bool TestRunner::ShouldDumpBackForwardList() const {
   return dump_back_forward_list_;
 }
 
-bool TestRunner::isPrinting() const {
-  return web_test_runtime_flags_.is_printing();
-}
-
-bool TestRunner::shouldWaitUntilExternalURLLoad() const {
+bool TestRunner::ShouldWaitUntilExternalURLLoad() const {
   return web_test_runtime_flags_.wait_until_external_url_load();
 }
 
-const std::set<std::string>* TestRunner::httpHeadersToClear() const {
+const std::set<std::string>* TestRunner::HttpHeadersToClear() const {
   return &http_headers_to_clear_;
 }
 
@@ -1888,37 +1884,37 @@ blink::WebFrame* TestRunner::MainFrame() const {
   return main_view_->MainFrame();
 }
 
-void TestRunner::policyDelegateDone() {
+void TestRunner::PolicyDelegateDone() {
   DCHECK(web_test_runtime_flags_.wait_until_done());
   delegate_->TestFinished();
   web_test_runtime_flags_.set_wait_until_done(false);
   OnWebTestRuntimeFlagsChanged();
 }
 
-bool TestRunner::policyDelegateEnabled() const {
+bool TestRunner::PolicyDelegateEnabled() const {
   return web_test_runtime_flags_.policy_delegate_enabled();
 }
 
-bool TestRunner::policyDelegateIsPermissive() const {
+bool TestRunner::PolicyDelegateIsPermissive() const {
   return web_test_runtime_flags_.policy_delegate_is_permissive();
 }
 
-bool TestRunner::policyDelegateShouldNotifyDone() const {
+bool TestRunner::PolicyDelegateShouldNotifyDone() const {
   return web_test_runtime_flags_.policy_delegate_should_notify_done();
 }
 
-void TestRunner::setToolTipText(const blink::WebString& text) {
+void TestRunner::SetToolTipText(const blink::WebString& text) {
   tooltip_text_ = text.Utf8();
 }
 
-void TestRunner::setDragImage(const SkBitmap& drag_image) {
+void TestRunner::SetDragImage(const SkBitmap& drag_image) {
   if (web_test_runtime_flags_.dump_drag_image()) {
     if (drag_image_.isNull())
       drag_image_ = drag_image;
   }
 }
 
-bool TestRunner::shouldDumpNavigationPolicy() const {
+bool TestRunner::ShouldDumpNavigationPolicy() const {
   return web_test_runtime_flags_.dump_navigation_policy();
 }
 
@@ -2143,7 +2139,7 @@ void TestRunner::DisableAutoResizeMode(int new_width, int new_height) {
   delegate_->DisableAutoResizeMode(new_size);
 }
 
-MockScreenOrientationClient* TestRunner::getMockScreenOrientationClient() {
+MockScreenOrientationClient* TestRunner::GetMockScreenOrientationClient() {
   return &mock_screen_orientation_client_;
 }
 
