@@ -33,6 +33,33 @@ async function install() { // eslint-disable-line no-unused-vars
 }
 
 /**
+ * Delegates handling of the provided options to the payment handler.
+ * @param {Array<string>} delegations The list of payment options to delegate.
+ * @return {string} The 'success' or error message.
+ */
+async function enableDelegations(delegations) { // eslint-disable-line no-unused-vars, max-len
+  try {
+    await navigator.serviceWorker.ready;
+    let registration =
+        await navigator.serviceWorker.getRegistration(swSrcUrl);
+    if (!registration) {
+      return 'The payment handler is not installed.';
+    }
+    if (!registration.paymentManager) {
+      return 'PaymentManager API not found.';
+    }
+    if (!registration.paymentManager.enableDelegations) {
+      return 'PaymentManager does not support enableDelegations method';
+    }
+
+    await registration.paymentManager.enableDelegations(delegations);
+    return 'success';
+  } catch (e) {
+    return e.toString();
+  }
+}
+
+/**
  * Launches the payment handler.
  */
 async function launch() { // eslint-disable-line no-unused-vars
