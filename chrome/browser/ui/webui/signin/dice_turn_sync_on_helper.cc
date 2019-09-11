@@ -490,7 +490,8 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
       syncer::SyncService* sync_service = GetSyncService();
       if (sync_service)
-        sync_service->GetUserSettings()->SetFirstSetupComplete();
+        sync_service->GetUserSettings()->SetFirstSetupComplete(
+            syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
       if (consent_service)
         consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
       break;

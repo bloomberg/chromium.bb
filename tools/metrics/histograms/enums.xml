@@ -58458,6 +58458,15 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Sync transport only."/>
 </enum>
 
+<enum name="SyncFirstSetupCompleteSource">
+  <summary>Possible flows where the FirstSetupComplete bit was set.</summary>
+  <int value="0" label="Basic Flow"/>
+  <int value="1" label="Confirm Clicked In Advanced Flow"/>
+  <int value="2" label="Sync Turned On After Interrupted Advanced Flow"/>
+  <int value="3" label="Sync Left Off After Interrupted Advanced Flow"/>
+  <int value="4" label="Engine Initialized With Auto Start"/>
+</enum>
+
 <enum name="SyncFSConflictResolutionPolicy">
   <int value="0" label="Unknown"/>
   <int value="1" label="LastWriteWin"/>
