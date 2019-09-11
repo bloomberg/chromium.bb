@@ -698,11 +698,6 @@ const char kDownloadAutoResumptionNativeName[] =
 const char kDownloadAutoResumptionNativeDescription[] =
     "Enables download auto-resumption in native";
 
-const char kDragToPinTabsName[] = "Drag to Modify Tab Pinnedness";
-const char kDragToPinTabsDescription[] =
-    "Allows users to drag tabs between pinned and unpinned tabs to modify the "
-    "pinned state of the tab.";
-
 const char kEnableCSSBackdropFilterName[] = "Enable backdrop-filter";
 const char kEnableCSSBackdropFilterDescription[] =
     "Enable a new CSS property called backdrop-filter.";

@@ -2997,10 +2997,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScrollableTabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kScrollableTabStrip)},
 
-    {"drag-to-pin-tabs", flag_descriptions::kDragToPinTabsName,
-     flag_descriptions::kDragToPinTabsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDragToPinTabs)},
-
     {"tab-outlines-in-low-contrast-themes",
      flag_descriptions::kTabOutlinesInLowContrastThemesName,
      flag_descriptions::kTabOutlinesInLowContrastThemesDescription, kOsDesktop,

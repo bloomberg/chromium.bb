@@ -502,9 +502,6 @@ extern const char kMemlogStackModePseudo[];
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
 
-extern const char kDragToPinTabsName[];
-extern const char kDragToPinTabsDescription[];
-
 extern const char kEnableNewDownloadBackendName[];
 extern const char kEnableNewDownloadBackendDescription[];
 
