@@ -873,9 +873,8 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
   // values are treated as <auto>.
   if (IsRelativeSizedTrackAsAuto(track_size, direction)) {
     if (direction == kForRows) {
-      Deprecation::CountDeprecation(
-          layout_grid_->GetDocument(),
-          WebFeature::kGridRowTrackPercentIndefiniteHeight);
+      UseCounter::Count(layout_grid_->GetDocument(),
+                        WebFeature::kGridRowTrackPercentIndefiniteHeight);
     }
     if (min_track_breadth.HasPercentage())
       min_track_breadth = Length::Auto();
