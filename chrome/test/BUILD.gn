@@ -505,6 +505,10 @@ if (is_android) {
       "//testing/android/native_test:native_test_support",
     ]
 
+    data_deps = [
+      "//testing/buildbot/filters:android_browsertests_filters",
+    ]
+
     sources = [
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_browsertest.cc",

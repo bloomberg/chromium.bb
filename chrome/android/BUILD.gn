@@ -2007,10 +2007,13 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/browser/profiling_host:profiling_host_javatests",
     "//chrome/browser/ui/android/widget:ui_widget_java_tests",
   ]
+
+  data_deps = [
+    "//testing/buildbot/filters:chrome_public_test_apk_filters",
+  ]
+
   if (enable_chrome_android_internal) {
-    data_deps = [
-      "//clank/build/bot/filters:chrome_public_test_apk_filters",
-    ]
+    data_deps += [ "//clank/build/bot/filters:chrome_public_test_apk_filters" ]
   }
   additional_apks = [
     "//chrome/android/webapk/libs/runtime_library/javatests/apk_with_webapk_service:apk_with_webapk_service",
