@@ -135,7 +135,6 @@ class DefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
     return false;
   }
   LayoutUnit FreeSpaceForStretchAutoTracksStep() const override;
-  LayoutUnit MinContentForChild(LayoutBox&) const override;
   bool IsComputingSizeContainment() const override { return false; }
 };
 
@@ -150,15 +149,10 @@ bool GridTrackSizingAlgorithmStrategy::
       GridLayoutUtils::FlowAwareDirectionForChild(grid, child, kForColumns);
   if (direction == child_inline_direction) {
     return child.HasRelativeLogicalWidth() ||
-           child.StyleRef().LogicalWidth().IsIntrinsicOrAuto() ||
-           child.StyleRef().MarginStart().IsPercentOrCalc() ||
-           child.StyleRef().MarginEnd().IsPercentOrCalc();
+           child.StyleRef().LogicalWidth().IsIntrinsicOrAuto();
   }
   return child.HasRelativeLogicalHeight() ||
-         child.StyleRef().LogicalHeight().IsIntrinsicOrAuto() ||
-         child.StyleRef().MarginBefore().IsPercentOrCalc() ||
-         child.StyleRef().MarginAfter().IsPercentOrCalc();
-  ;
+         child.StyleRef().LogicalHeight().IsIntrinsicOrAuto();
 }
 
 void GridTrackSizingAlgorithmStrategy::
@@ -581,21 +575,6 @@ double DefiniteSizeStrategy::FindUsedFlexFraction(
 LayoutUnit DefiniteSizeStrategy::FreeSpaceForStretchAutoTracksStep() const {
   DCHECK(algorithm_.FreeSpace(Direction()));
   return algorithm_.FreeSpace(Direction()).value();
-}
-
-DISABLE_CFI_PERF
-LayoutUnit DefiniteSizeStrategy::MinContentForChild(LayoutBox& child) const {
-  GridTrackSizingDirection child_inline_direction =
-      GridLayoutUtils::FlowAwareDirectionForChild(*GetLayoutGrid(), child,
-                                                  kForColumns);
-  if (Direction() == child_inline_direction &&
-      ShouldClearOverrideContainingBlockContentSizeForChild(
-          *GetLayoutGrid(), child, child_inline_direction)) {
-    SetOverrideContainingBlockContentSizeForChild(child, child_inline_direction,
-                                                  LayoutUnit());
-  }
-
-  return GridTrackSizingAlgorithmStrategy::MinContentForChild(child);
 }
 
 void IndefiniteSizeStrategy::LayoutGridItemForMinSizeComputation(
