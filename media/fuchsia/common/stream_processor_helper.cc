@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/fuchsia/stream_processor_helper.h"
+#include "media/fuchsia/common/stream_processor_helper.h"
 
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "media/base/bind_to_current_loop.h"
 
 namespace media {
 
@@ -270,9 +269,8 @@ void StreamProcessorHelper::OnOutputPacket(fuchsia::media::Packet output_packet,
   client_->OnOutputPacket(IoPacket::CreateOutput(
       buffer_index, output_packet.start_offset(),
       output_packet.valid_length_bytes(), timestamp,
-      BindToCurrentLoop(base::BindOnce(
-          &StreamProcessorHelper::OnRecycleOutputBuffer, weak_this_,
-          output_buffer_lifetime_ordinal_, packet_index))));
+      base::BindOnce(&StreamProcessorHelper::OnRecycleOutputBuffer, weak_this_,
+                     output_buffer_lifetime_ordinal_, packet_index)));
 }
 
 void StreamProcessorHelper::OnOutputEndOfStream(

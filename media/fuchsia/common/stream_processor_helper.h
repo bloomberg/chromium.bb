@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_FUCHSIA_STREAM_PROCESSOR_HELPER_H_
-#define MEDIA_FILTERS_FUCHSIA_STREAM_PROCESSOR_HELPER_H_
+#ifndef MEDIA_FUCHSIA_COMMON_STREAM_PROCESSOR_HELPER_H_
+#define MEDIA_FUCHSIA_COMMON_STREAM_PROCESSOR_HELPER_H_
 
 #include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "media/base/media_export.h"
 
 namespace media {
 
@@ -23,9 +22,9 @@ namespace media {
 // 1. Data validation check.
 // 2. Stream/Buffer life time management.
 // 3. Configure StreamProcessor and input/output buffer settings.
-class MEDIA_EXPORT StreamProcessorHelper {
+class StreamProcessorHelper {
  public:
-  class MEDIA_EXPORT IoPacket {
+  class IoPacket {
    public:
     static std::unique_ptr<IoPacket> CreateInput(
         size_t index,
@@ -85,6 +84,7 @@ class MEDIA_EXPORT StreamProcessorHelper {
 
     // Called when output packet is available. Deleting |packet| will notify
     // StreamProcessor the output buffer is available to be re-used.
+    // Client should delete |packet| on the same thread as this function.
     virtual void OnOutputPacket(std::unique_ptr<IoPacket> packet) = 0;
 
     // Only available for decryption, which indicates currently the
@@ -170,4 +170,4 @@ class MEDIA_EXPORT StreamProcessorHelper {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_FUCHSIA_STREAM_PROCESSOR_HELPER_H_
+#endif  // MEDIA_FUCHSIA_COMMON_STREAM_PROCESSOR_HELPER_H_

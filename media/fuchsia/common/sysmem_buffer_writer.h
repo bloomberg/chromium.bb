@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_FUCHSIA_SYSMEM_BUFFER_WRITER_H_
-#define MEDIA_FILTERS_FUCHSIA_SYSMEM_BUFFER_WRITER_H_
+#ifndef MEDIA_FUCHSIA_COMMON_SYSMEM_BUFFER_WRITER_H_
+#define MEDIA_FUCHSIA_COMMON_SYSMEM_BUFFER_WRITER_H_
 
 #include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
@@ -12,12 +12,11 @@
 
 #include "base/containers/span.h"
 #include "base/optional.h"
-#include "media/base/media_export.h"
 
 namespace media {
 
 // Helper class to write content into fuchsia::sysmem::BufferCollection.
-class MEDIA_EXPORT SysmemBufferWriter {
+class SysmemBufferWriter {
  public:
   class Buffer;
 
@@ -52,4 +51,4 @@ class MEDIA_EXPORT SysmemBufferWriter {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_FUCHSIA_SYSMEM_BUFFER_WRITER_H_
+#endif  // MEDIA_FUCHSIA_COMMON_SYSMEM_BUFFER_WRITER_H_

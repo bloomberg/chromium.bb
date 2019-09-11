@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/fuchsia/sysmem_buffer_pool.h"
+#include "media/fuchsia/common/sysmem_buffer_pool.h"
 
 #include <zircon/rights.h>
 #include <algorithm>
@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "media/filters/fuchsia/sysmem_buffer_reader.h"
-#include "media/filters/fuchsia/sysmem_buffer_writer.h"
+#include "media/fuchsia/common/sysmem_buffer_reader.h"
+#include "media/fuchsia/common/sysmem_buffer_writer.h"
 
 namespace media {
 namespace {

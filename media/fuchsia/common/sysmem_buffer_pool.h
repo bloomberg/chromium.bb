@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_FUCHSIA_SYSMEM_BUFFER_POOL_H_
-#define MEDIA_FILTERS_FUCHSIA_SYSMEM_BUFFER_POOL_H_
+#ifndef MEDIA_FUCHSIA_COMMON_SYSMEM_BUFFER_POOL_H_
+#define MEDIA_FUCHSIA_COMMON_SYSMEM_BUFFER_POOL_H_
 
 #include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
-#include "media/base/media_export.h"
 
 namespace media {
 
@@ -25,7 +24,7 @@ class SysmemBufferWriter;
 // Pool of buffers allocated by sysmem. It owns BufferCollection. It doesn't
 // provide any function read/write the buffers. Call should use
 // ReadableBufferPool/WritableBufferPool for read/write.
-class MEDIA_EXPORT SysmemBufferPool {
+class SysmemBufferPool {
  public:
   using CreateReaderCB =
       base::OnceCallback<void(std::unique_ptr<SysmemBufferReader>)>;
@@ -34,7 +33,7 @@ class MEDIA_EXPORT SysmemBufferPool {
 
   // Creates SysmemBufferPool asynchronously. It also owns the channel to
   // fuchsia services.
-  class MEDIA_EXPORT Creator {
+  class Creator {
    public:
     using CreateCB =
         base::OnceCallback<void(std::unique_ptr<SysmemBufferPool>)>;
@@ -86,7 +85,7 @@ class MEDIA_EXPORT SysmemBufferPool {
 };
 
 // Wrapper of sysmem Allocator.
-class MEDIA_EXPORT BufferAllocator {
+class BufferAllocator {
  public:
   BufferAllocator();
   ~BufferAllocator();
@@ -102,4 +101,4 @@ class MEDIA_EXPORT BufferAllocator {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_FUCHSIA_SYSMEM_BUFFER_POOL_H_
+#endif  // MEDIA_FUCHSIA_COMMON_SYSMEM_BUFFER_POOL_H_
