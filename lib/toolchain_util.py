@@ -586,26 +586,35 @@ def _FindLatestAFDOArtifact(gs_url, pattern):
   Raises:
     RuntimeError: If no files matches the pattern in the bucket.
   """
+
+  def _FilterResultsBasedOnBranch(branch):
+    """Filter out results that doesn't belong to this branch."""
+    # The branch should appear in the name either as:
+    # R78-12371.22-1566207135 for kernel/CWP profiles
+    # OR chromeos-chrome-amd64-78.0.3877.0 for benchmark profiles
+    return [
+        x for x in matching_files
+        if 'R%s' % branch in x.url or '-%s.' % branch in x.url
+    ]
+
   gs_context = gs.GSContext()
 
   # Obtain all files from gs_url and filter out those not match
   # pattern.
-  results = [
+  matching_files = [
       x for x in gs_context.List(gs_url, details=True) if pattern in x.url
   ]
 
   chrome_branch = _FindCurrentChromeBranch()
-  # The branch should appear in the name either as:
-  # R78-12371.22-1566207135 for kernel/CWP profiles
-  # OR chromeos-chrome-amd64-78.0.3877.0 for benchmark profiles
-  results = [
-      x for x in results
-      if 'R%s' % chrome_branch in x.url or '-%s.' % chrome_branch in x.url
-  ]
+  results = _FilterResultsBasedOnBranch(chrome_branch)
 
-  if not len(results):
-    raise RuntimeError(
-        'No files found with pattern %s on %s' % (pattern, gs_url))
+  if not results:
+    # If no results found, it's maybe because we just branched.
+    # Try to find the latest profile from last branch.
+    results = _FilterResultsBasedOnBranch(str(int(chrome_branch) - 1))
+    if not results:
+      raise RuntimeError(
+          'No files found with pattern %s on %s' % (pattern, gs_url))
   full_url = max(results, key=lambda x: x.creation_time).url
   name = os.path.basename(full_url)
   logging.info('Latest AFDO artifact in %s is %s', gs_url, name)

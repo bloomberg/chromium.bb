@@ -257,6 +257,14 @@ class FindLatestAFDOArtifactTest(cros_test_lib.RunCommandTempDirTestCase):
         self.unvetted_gs_url, '.afdo')
     self.assertEqual(afdo_on_branch, 'chrome-afdo-77.0.4.0.afdo.bz2')
 
+  def testFindLatestAFDOOnLastBranch(self):
+    """Test returns latest file on last branch when current has none."""
+    self.PatchObject(
+        toolchain_util, '_FindCurrentChromeBranch', return_value='79')
+    afdo_on_branch = toolchain_util._FindLatestAFDOArtifact(
+        self.unvetted_gs_url, '.afdo')
+    self.assertEqual(afdo_on_branch, 'chrome-afdo-78.0.2.5.afdo.xz')
+
 
 class UploadAFDOArtifactToGSBucketTest(cros_test_lib.MockTempDirTestCase):
   """Test top-level function _UploadAFDOArtifactToGSBucket."""
@@ -1143,8 +1151,9 @@ class UploadAndPublishVettedAFDOArtifactsTest(
     ret = toolchain_util.UploadAndPublishVettedAFDOArtifacts(
         'kernel_afdo', self.board)
     self.assertTrue(ret)
-    uploaded = {'chromeos-kernel-' + self.kver.replace('.', '_'):
-                self.kernel_afdo}
+    uploaded = {
+        'chromeos-kernel-' + self.kver.replace('.', '_'): self.kernel_afdo
+    }
     self.mock_upload.assert_called_once_with('kernel_afdo', self.kver)
     self.mock_publish.assert_called_once_with(
         self.kernel_json, uploaded,
