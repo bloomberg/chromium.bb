@@ -4527,10 +4527,6 @@ crbug.com/888470 virtual/blink-cors/external/wpt/referrer-policy/css-integration
 crbug.com/888470 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/child-css/internal-import-stylesheet.html [ Failure ]
 crbug.com/888470 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/child-css/processing-instruction.html [ Failure ]
 
-# This behavior (popups during unload) is being reverted on trunk; this test is
-# expected to fail when this change is merged back to earlier branches.
-crbug.com/936080 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/no_window_open_when_term_nesting_level_nonzero.window.html [ Failure ]
-
 crbug.com/805756 external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Pass Timeout ]
 
 crbug.com/666993 [ Debug ] external/wpt/requestidlecallback/callback-idle-periods.html [ Pass Timeout ]
