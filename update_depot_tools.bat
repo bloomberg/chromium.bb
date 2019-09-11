@@ -24,7 +24,7 @@ IF EXIST "%DEPOT_TOOLS_DIR%.disable_auto_update" GOTO :EOF
 set GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
 :: Will download git and python.
-call "%DEPOT_TOOLS_DIR%bootstrap\win_tools.bat"
+call "%DEPOT_TOOLS_DIR%bootstrap\win\win_tools.bat"
 if errorlevel 1 goto :EOF
 :: Now clear errorlevel so it can be set by other programs later.
 set errorlevel=
