@@ -24594,6 +24594,7 @@ Called by update_net_error_codes.py.-->
   <int value="3024" label="IndexedDBWrite"/>
   <int value="3025" label="DeprecatedFileSystemRead"/>
   <int value="3026" label="DeprecatedFileSystemWrite"/>
+  <int value="3027" label="PointerLockUnadjustedMovement"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35532,6 +35533,7 @@ from previous Chrome versions.
   <int value="-855277252" label="CookiesWithoutSameSiteMustBeSecure:disabled"/>
   <int value="-855130893" label="enable-touch-calibration-setting"/>
   <int value="-854716639" label="TranslateAndroidManualTrigger:enabled"/>
+  <int value="-854519621" label="PointerLockOptions:disabled"/>
   <int value="-853594220" label="disable-new-avatar-menu"/>
   <int value="-850821337" label="WebContentsForceDark:enabled"/>
   <int value="-848691867" label="DesktopPWAWindowing:enabled"/>
@@ -36089,6 +36091,7 @@ from previous Chrome versions.
   <int value="-76953963" label="CloseTabSuggestionsStale:enabled"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
   <int value="-76445689" label="WasmCodeCache:enabled"/>
+  <int value="-76348564" label="PointerLockOptions:enabled"/>
   <int value="-75418012" label="ContextualSuggestionsOptOut:disabled"/>
   <int value="-73282711" label="EnableAppListSearchAutocomplete:enabled"/>
   <int value="-72455054" label="WebVrAutopresent:disabled"/>

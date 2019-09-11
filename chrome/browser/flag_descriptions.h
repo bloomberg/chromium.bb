@@ -952,6 +952,9 @@ extern const char kPeriodicBackgroundSyncDescription[];
 extern const char kPerMethodCanMakePaymentQuotaName[];
 extern const char kPerMethodCanMakePaymentQuotaDescription[];
 
+extern const char kPointerLockOptionsName[];
+extern const char kPointerLockOptionsDescription[];
+
 extern const char kPolicyAtomicGroupsEnabledName[];
 extern const char kPolicyAtomicGroupsEnabledDescription[];
 
