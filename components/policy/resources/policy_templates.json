@@ -17831,7 +17831,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     'doc_reference_link': {
       'desc': '''Text pointing the user to the reference page for this policy, which may have more info (since it doesn't have a size limit)''',
-      'text': '''Reference: <ph name="REFERENCE_URL">$6<ex>https://www.chromium.org/administrators/policy-list-3#WallpaperImage</ex></ph>''',
+      'text': '''Reference: <ph name="REFERENCE_URL">$6<ex>https://cloud.google.com/docs/chrome-enterprise/policies/?policy=WallpaperImage</ex></ph>''',
     },
     'doc_legacy_single_line_label': {
       'desc': '''A label for the legacy single-line textbox for a policy also has a more user-friendly multi-line textbox. See http://crbug/829328''',
@@ -17851,7 +17851,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     'doc_schema_description_link': {
       'desc': '''Text pointing the user to the expanded documentation page for this policy, containing the information about schema and formatting.''',
-      'text': '''See <ph name="REFERENCE_URL">$6<ex>https://www.chromium.org/administrators/policy-list-3#WallpaperImage</ex></ph> for more information about schema and formatting.'''
+      'text': '''See <ph name="REFERENCE_URL">$6<ex>https://cloud.google.com/docs/chrome-enterprise/policies/?policy=WallpaperImage</ex></ph> for more information about schema and formatting.'''
     },
     'deprecated_policy_group_caption': {
       'desc': '''Localized name for the deprecated policies folder, for Microsoft's Group Policy Editor.''',
