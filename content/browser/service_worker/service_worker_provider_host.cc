@@ -41,6 +41,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -928,11 +929,25 @@ void ServiceWorkerProviderHost::Register(
   TRACE_EVENT_ASYNC_BEGIN2(
       "ServiceWorker", "ServiceWorkerProviderHost::Register", trace_id, "Scope",
       options->scope.spec(), "Script URL", script_url.spec());
+
+  // Wrap the callback with default invoke before passing it, since
+  // RegisterServiceWorker() can drop the callback on service worker
+  // context core shutdown (i.e., browser session shutdown or
+  // DeleteAndStartOver()) and a DCHECK would happen.
+  // TODO(crbug.com/1002776): Remove this wrapper and have the Mojo connections
+  // drop during shutdown, so the callback can be dropped without crash. Note
+  // that we currently would need to add this WrapCallback to *ALL* Mojo
+  // callbacks that go through ServiceWorkerContextCore or its members like
+  // ServiceWorkerStorage. We're only adding it to Register() now because a
+  // browser test fails without it.
+  auto wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback), blink::mojom::ServiceWorkerErrorType::kUnknown,
+      std::string(), nullptr);
   context_->RegisterServiceWorker(
       script_url, *options,
       base::BindOnce(&ServiceWorkerProviderHost::RegistrationComplete,
                      AsWeakPtr(), GURL(script_url), GURL(options->scope),
-                     std::move(callback), trace_id,
+                     std::move(wrapped_callback), trace_id,
                      mojo::GetBadMessageCallback()));
 }
 
