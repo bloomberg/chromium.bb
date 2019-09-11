@@ -254,24 +254,23 @@ def uprev_kernel_afdo(*_args, **_kwargs):
                         'sys-kernel', version)
     ebuild_path = os.path.join(constants.SOURCE_ROOT, path,
                                '%s-9999.ebuild' % version)
+    chroot_ebuild_path = os.path.join(constants.CHROOT_SOURCE_ROOT, path,
+                                      '%s-9999.ebuild' % version)
+
     portage_util.EBuild.UpdateEBuild(
         ebuild_path,
         dict(AFDO_PROFILE_VERSION=version_info['name']),
         make_stable=False)
     paths.append(ebuild_path)
 
-    cmd = [
-        'ebuild',
-        os.path.join(constants.CHROOT_SOURCE_ROOT, ebuild_path), 'manifest',
-        '--force'
-    ]
+    cmd = ['ebuild', chroot_ebuild_path, 'manifest', '--force']
 
     try:
       cros_build_lib.RunCommand(cmd, enter_chroot=True)
     except cros_build_lib.RunCommandError as e:
       raise EbuildManifestError(
           'Error encountered when regenerating the manifest for ebuild: %s\n%s'
-          % (ebuild_path, e), e)
+          % (chroot_ebuild_path, e), e)
 
     manifest_path = os.path.join(constants.SOURCE_ROOT, path, 'Manifest')
     paths.append(manifest_path)
