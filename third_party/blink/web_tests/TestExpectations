@@ -2178,6 +2178,11 @@ crbug.com/803276 [ Win ] inspector-protocol/memory/sampling-native-snapshot.js [
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
+crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.html [ Failure Pass ]
+crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.serviceworker.html [ Failure Pass ]
+crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.sharedworker.html [ Failure Pass ]
+crbug.com/1002780 [ Linux ] external/wpt/websockets/stream-tentative/backpressure-receive.any.worker.html [ Failure Pass ]
+
 # For win10, see crbug.com/955109
 crbug.com/538697 [ Win Win10 ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
