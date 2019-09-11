@@ -75,7 +75,7 @@ public class SigninManagerTest {
                 androidSyncSettings);
 
         mAccount = new CoreAccountInfo(new CoreAccountId("gaia-id-user"),
-                AccountManagerFacade.createAccountFromName("user@domain.com"));
+                AccountManagerFacade.createAccountFromName("user@domain.com"), "gaia-id-user");
     }
 
     @Test
@@ -202,6 +202,10 @@ public class SigninManagerTest {
 
     @Test
     public void callbackNotifiedOnSignin() {
+        CoreAccountInfo account = new CoreAccountInfo(new CoreAccountId("test_at_gmail.com"),
+                new Account("test@gmail.com", AccountManagerFacade.GOOGLE_ACCOUNT_TYPE),
+                "test_at_gmail.com");
+
         // No need to seed accounts to the native code.
         doReturn(true).when(mAccountTrackerService).checkAndSeedSystemAccounts();
         // Request that policy is loaded. It will pause sign-in until onPolicyCheckedBeforeSignIn is
@@ -213,8 +217,7 @@ public class SigninManagerTest {
 
         mSigninManager.onFirstRunCheckDone(); // Allow sign-in.
 
-        Account account = new Account("test@gmail.com", AccountManagerFacade.GOOGLE_ACCOUNT_TYPE);
-        mSigninManager.signIn(account, null, null);
+        mSigninManager.signIn(account.getAccount(), null, null);
         assertTrue(mSigninManager.isOperationInProgress());
         AtomicInteger callCount = new AtomicInteger(0);
         mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);

@@ -516,10 +516,12 @@ void IdentityManager::GoogleSigninSucceeded(
     observer.OnPrimaryAccountSet(account_info);
   }
 #if defined(OS_ANDROID)
-  if (java_identity_manager_)
+  if (java_identity_manager_) {
+    JNIEnv* env = base::android::AttachCurrentThread();
     Java_IdentityManager_onPrimaryAccountSet(
-        base::android::AttachCurrentThread(), java_identity_manager_,
-        ConvertToJavaCoreAccountInfo(account_info));
+        env, java_identity_manager_,
+        ConvertToJavaCoreAccountInfo(env, account_info));
+  }
 #endif
 }
 
@@ -530,10 +532,12 @@ void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
     observer.OnPrimaryAccountCleared(account_info);
   }
 #if defined(OS_ANDROID)
-  if (java_identity_manager_)
+  if (java_identity_manager_) {
+    JNIEnv* env = base::android::AttachCurrentThread();
     Java_IdentityManager_onPrimaryAccountCleared(
-        base::android::AttachCurrentThread(), java_identity_manager_,
-        ConvertToJavaCoreAccountInfo(account_info));
+        env, java_identity_manager_,
+        ConvertToJavaCoreAccountInfo(env, account_info));
+  }
 #endif
 }
 
