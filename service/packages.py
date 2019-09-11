@@ -250,16 +250,21 @@ def uprev_kernel_afdo(*_args, **_kwargs):
 
   paths = []
   for version, version_info in versions.items():
-    path = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
-                        'chromiumos-overlay', 'sys-kernel', version)
-    ebuild_path = os.path.join(path, '%s-9999.ebuild' % version)
+    path = os.path.join('src', 'third_party', 'chromiumos-overlay',
+                        'sys-kernel', version)
+    ebuild_path = os.path.join(constants.SOURCE_ROOT, path,
+                               '%s-9999.ebuild' % version)
     portage_util.EBuild.UpdateEBuild(
         ebuild_path,
         dict(AFDO_PROFILE_VERSION=version_info['name']),
         make_stable=False)
     paths.append(ebuild_path)
 
-    cmd = ['ebuild', ebuild_path, 'manifest', '--force']
+    cmd = [
+        'ebuild',
+        os.path.join(constants.CHROOT_SOURCE_ROOT, ebuild_path), 'manifest',
+        '--force'
+    ]
 
     try:
       cros_build_lib.RunCommand(cmd, enter_chroot=True)
@@ -268,7 +273,7 @@ def uprev_kernel_afdo(*_args, **_kwargs):
           'Error encountered when regenerating the manifest for ebuild: %s\n%s'
           % (ebuild_path, e), e)
 
-    manifest_path = os.path.join(path, 'Manifest')
+    manifest_path = os.path.join(constants.SOURCE_ROOT, path, 'Manifest')
     paths.append(manifest_path)
 
   return UprevVersionedPackageResult('test version', paths)
