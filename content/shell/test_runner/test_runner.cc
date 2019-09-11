@@ -277,8 +277,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void WaitForPolicyDelegate();
   void WaitUntilDone();
   void WaitUntilExternalURLLoad();
-  bool DisableAutoResizeMode(int new_width, int new_height);
-  bool EnableAutoResizeMode(int min_width,
+  void DisableAutoResizeMode(int new_width, int new_height);
+  void EnableAutoResizeMode(int min_width,
                             int min_height,
                             int max_width,
                             int max_height);
@@ -873,21 +873,17 @@ void TestRunnerBindings::UseUnfortunateSynchronousResizeMode() {
     runner_->UseUnfortunateSynchronousResizeMode();
 }
 
-bool TestRunnerBindings::EnableAutoResizeMode(int min_width,
+void TestRunnerBindings::EnableAutoResizeMode(int min_width,
                                               int min_height,
                                               int max_width,
                                               int max_height) {
-  if (runner_) {
-    return runner_->EnableAutoResizeMode(min_width, min_height, max_width,
-                                         max_height);
-  }
-  return false;
+  if (runner_)
+    runner_->EnableAutoResizeMode(min_width, min_height, max_width, max_height);
 }
 
-bool TestRunnerBindings::DisableAutoResizeMode(int new_width, int new_height) {
+void TestRunnerBindings::DisableAutoResizeMode(int new_width, int new_height) {
   if (runner_)
     return runner_->DisableAutoResizeMode(new_width, new_height);
-  return false;
 }
 
 void TestRunnerBindings::SetMockScreenOrientation(
@@ -1545,7 +1541,7 @@ void TestRunner::Reset() {
     delegate_->SetBlockThirdPartyCookies(false);
     delegate_->SetLocale("");
     delegate_->UseUnfortunateSynchronousResizeMode(false);
-    delegate_->DisableAutoResizeMode(blink::WebSize());
+    delegate_->ResetAutoResizeMode();
     delegate_->DeleteAllCookies();
     delegate_->SetBluetoothManualChooser(false);
     delegate_->ResetPermissions();
@@ -2129,20 +2125,22 @@ void TestRunner::UseUnfortunateSynchronousResizeMode() {
   delegate_->UseUnfortunateSynchronousResizeMode(true);
 }
 
-bool TestRunner::EnableAutoResizeMode(int min_width,
+void TestRunner::EnableAutoResizeMode(int min_width,
                                       int min_height,
                                       int max_width,
                                       int max_height) {
+  if (max_width <= 0 || max_height <= 0)
+    return;
   blink::WebSize min_size(min_width, min_height);
   blink::WebSize max_size(max_width, max_height);
   delegate_->EnableAutoResizeMode(min_size, max_size);
-  return true;
 }
 
-bool TestRunner::DisableAutoResizeMode(int new_width, int new_height) {
+void TestRunner::DisableAutoResizeMode(int new_width, int new_height) {
+  if (new_width <= 0 || new_height <= 0)
+    return;
   blink::WebSize new_size(new_width, new_height);
   delegate_->DisableAutoResizeMode(new_size);
-  return true;
 }
 
 MockScreenOrientationClient* TestRunner::getMockScreenOrientationClient() {

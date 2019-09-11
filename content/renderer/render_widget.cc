@@ -810,8 +810,6 @@ void RenderWidget::OnSynchronizeVisualProperties(
       delegate()->ApplyAutoResizeLimitsForWidget(min_auto_size, max_auto_size);
     } else if (auto_resize_mode_changed) {
       delegate()->DisableAutoResizeForWidget();
-      if (visual_properties.new_size.IsEmpty())
-        return;
     }
 
     browser_controls_shrink_blink_size_ =
@@ -3811,6 +3809,15 @@ void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   visual_properties.visible_viewport_size = visible_viewport_size_;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
+
+  if (new_size.IsEmpty()) {
+    // The |new_size| is empty when resetting auto resize in between tests. In
+    // this case the current size should just be preserved.
+    visual_properties.new_size = size_;
+  } else {
+    visual_properties.new_size = new_size;
+  }
+
   OnSynchronizeVisualProperties(visual_properties);
 }
 

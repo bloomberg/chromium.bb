@@ -275,11 +275,11 @@ class TestRunner : public WebTestRunner {
   // http://crbug.com/309760 for the plan.
   void UseUnfortunateSynchronousResizeMode();
 
-  bool EnableAutoResizeMode(int min_width,
+  void EnableAutoResizeMode(int min_width,
                             int min_height,
                             int max_width,
                             int max_height);
-  bool DisableAutoResizeMode(int new_width, int new_height);
+  void DisableAutoResizeMode(int new_width, int new_height);
 
   void SetMockScreenOrientation(const std::string& orientation);
   void DisableMockScreenOrientation();
