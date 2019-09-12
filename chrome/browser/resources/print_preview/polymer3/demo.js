@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/action_link_css.m.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
@@ -22,6 +23,7 @@ import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -29,7 +31,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 class HelloPolymer3Element extends PolymerElement {
   static get template() {
     return html`
-      <style include="md-select">
+      <style include="md-select action-link">
         cr-toggle {
           display: inline-block;
         }
@@ -144,6 +146,8 @@ class HelloPolymer3Element extends PolymerElement {
       <div>
         <cr-link-row class="hr" label="Hello Link Row"></cr-link-row>
       </div>
+
+      <a is="action-link">I am an action link</a>
     `;
   }
 
