@@ -1083,8 +1083,6 @@ if (is_android && enable_java_templates) {
   }
 }
 
-# TODO(GYP): Gyp has considerations here for QNX and for the host toolchain
-#  that have not been ported over.
 if (is_android) {
 # Use android_small for now to keep the size till we decide to switch to the new one.
   data_dir = "android_small"
@@ -1104,7 +1102,6 @@ if (current_cpu == "mips" || current_cpu == "mips64" ||
 }
 data_bundle = "${data_bundle_prefix}.dat"
 
-# TODO(GYP) support use_system_icu.
 if (icu_use_data_file) {
   if (is_ios) {
     bundle_data("icudata") {
@@ -1129,8 +1126,6 @@ if (icu_use_data_file) {
       rebase_path(inputs[0], root_build_dir),
       rebase_path(data_assembly, root_build_dir),
     ]
-    # TODO(GYP): Gyp has considerations here for QNX and for the host
-    # toolchain that have not been ported over.
     if (is_mac || is_ios) {
       args += [ "--mac" ]
     } else if (is_win) {
