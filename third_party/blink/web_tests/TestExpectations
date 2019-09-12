@@ -6219,3 +6219,6 @@ crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-targe
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-001.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-002.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-003.html [ Failure ]
+
+# Sheriff 2019-09-12
+crbug.com/1003268 [ Win10 ] fast/harness/internals-observe-gc.html [ Failure ]
