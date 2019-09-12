@@ -2982,24 +2982,27 @@ void WebContentsImpl::CreateNewWindow(
   }
 }
 
-void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
-                                      int32_t widget_route_id,
-                                      mojom::WidgetPtr widget) {
+void WebContentsImpl::CreateNewWidget(
+    int32_t render_process_id,
+    int32_t widget_route_id,
+    mojo::PendingRemote<mojom::Widget> widget) {
   CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/false,
                   std::move(widget));
 }
 
-void WebContentsImpl::CreateNewFullscreenWidget(int32_t render_process_id,
-                                                int32_t widget_route_id,
-                                                mojom::WidgetPtr widget) {
+void WebContentsImpl::CreateNewFullscreenWidget(
+    int32_t render_process_id,
+    int32_t widget_route_id,
+    mojo::PendingRemote<mojom::Widget> widget) {
   CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/true,
                   std::move(widget));
 }
 
-void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
-                                      int32_t route_id,
-                                      bool is_fullscreen,
-                                      mojom::WidgetPtr widget) {
+void WebContentsImpl::CreateNewWidget(
+    int32_t render_process_id,
+    int32_t route_id,
+    bool is_fullscreen,
+    mojo::PendingRemote<mojom::Widget> widget) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
   // A message to create a new widget can only come from an active process for
   // this WebContentsImpl instance. If any other process sends the request,
