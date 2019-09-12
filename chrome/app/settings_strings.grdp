@@ -3046,6 +3046,9 @@
     <message name="IDS_SETTINGS_FACTORY_RESET_WARNING" desc="Warning text in the 'Factory Reset' window">
       A restart is required before your device can be reset with Powerwash.
     </message>
+    <message name="IDS_SETTINGS_FACTORY_RESET_BUTTON_LABEL" desc="Label for the factory reset button.">
+      Reset
+    </message>
   </if>
 
   <!-- Search Page -->
