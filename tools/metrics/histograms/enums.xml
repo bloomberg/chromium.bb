@@ -18041,6 +18041,7 @@ Called by update_net_error_codes.py.-->
   <int value="601" label="HSTSPolicyBypassList"/>
   <int value="602" label="ReportDeviceOsUpdateStatus"/>
   <int value="603" label="DeviceLoginScreenWebUsbAllowDevicesForUrls"/>
+  <int value="604" label="AllowSyncXHRInPageDismissal"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
