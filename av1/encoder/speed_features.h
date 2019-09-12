@@ -407,10 +407,6 @@ typedef struct SPEED_FEATURES {
   MAX_PART_PRED_MODE auto_max_partition_based_on_simple_motion;
   int auto_min_partition_based_on_simple_motion;
 
-  // Ensures the rd based auto partition search will always
-  // go down at least to the specified level.
-  BLOCK_SIZE rd_auto_partition_min_limit;
-
   // Min and max square partition size we enable (block_size) as per auto
   // min max, but also used by adjust partitioning, and pick_partitioning.
   BLOCK_SIZE default_min_partition_size;

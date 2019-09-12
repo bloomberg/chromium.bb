@@ -74,28 +74,6 @@ static int frame_is_boosted(const AV1_COMP *cpi) {
   return frame_is_kf_gf_arf(cpi);
 }
 
-// Sets a partition size down to which the auto partition code will always
-// search (can go lower), based on the image dimensions. The logic here
-// is that the extent to which ringing artefacts are offensive, depends
-// partly on the screen area that over which they propogate. Propogation is
-// limited by transform block size but the screen area take up by a given block
-// size will be larger for a small image format stretched to full screen.
-static BLOCK_SIZE set_partition_min_limit(const AV1_COMMON *const cm) {
-  unsigned int screen_area = (cm->width * cm->height);
-
-  // Select block size based on image format size.
-  if (screen_area < 1280 * 720) {
-    // Formats smaller in area than 720P
-    return BLOCK_4X4;
-  } else if (screen_area < 1920 * 1080) {
-    // Format >= 720P and < 1080P
-    return BLOCK_8X8;
-  } else {
-    // Formats 1080P and up
-    return BLOCK_16X16;
-  }
-}
-
 static BLOCK_SIZE dim_to_size(int dim) {
   switch (dim) {
     case 4: return BLOCK_4X4;
@@ -178,7 +156,6 @@ static void set_good_speed_feature_framesize_dependent(
       sf->partition_search_breakout_dist_thr = (1 << 22);
       sf->partition_search_breakout_rate_thr = 100;
     }
-    sf->rd_auto_partition_min_limit = set_partition_min_limit(cm);
 
     if (is_480p_or_larger) sf->tx_type_search.prune_tx_type_using_stats = 1;
   }
@@ -762,7 +739,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->prune_ref_frame_for_rect_partitions = 0;
   sf->auto_max_partition_based_on_simple_motion = NOT_IN_USE;
   sf->auto_min_partition_based_on_simple_motion = 0;
-  sf->rd_auto_partition_min_limit = BLOCK_4X4;
   sf->default_max_partition_size = BLOCK_LARGEST;
   sf->default_min_partition_size = BLOCK_4X4;
   sf->adjust_partitioning_from_last_frame = 0;
