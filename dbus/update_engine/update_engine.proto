@@ -53,8 +53,8 @@ message StatusResult {
   // The size of the update payload (bytes).
   int64 new_size = 5;
 
-  // Whether the update is actually an enterprise rollback.
-  // TODO(crbug.com/864672): Actually set its value from update_attempter.cc.
+  // Whether the update is actually an enterprise rollback. The value is valid
+  // only if the current_operation is passed |CHECKING_FOR_UPDATE|.
   bool is_enterprise_rollback = 6;
 
   // Indication of install for DLC(s).
