@@ -2882,6 +2882,7 @@ source_set("unit_tests") {
     "//chromeos/audio",
     "//chromeos/components/multidevice:test_support",
     "//chromeos/components/proximity_auth",
+    "//chromeos/components/proximity_auth:test_support",
     "//chromeos/components/tether:test_support",
     "//chromeos/constants",
     "//chromeos/cryptohome:test_support",
