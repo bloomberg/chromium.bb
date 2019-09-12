@@ -46,12 +46,6 @@ void NetworkDelegateImpl::OnBeforeRedirect(URLRequest* request,
 void NetworkDelegateImpl::OnResponseStarted(URLRequest* request,
                                             int net_error) {}
 
-void NetworkDelegateImpl::OnNetworkBytesReceived(URLRequest* request,
-                                                 int64_t bytes_received) {}
-
-void NetworkDelegateImpl::OnNetworkBytesSent(URLRequest* request,
-                                             int64_t bytes_sent) {}
-
 void NetworkDelegateImpl::OnCompleted(URLRequest* request,
                                       bool started,
                                       int net_error) {}

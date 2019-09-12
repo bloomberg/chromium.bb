@@ -360,8 +360,6 @@ TestNetworkDelegate::TestNetworkDelegate()
       before_send_headers_with_proxy_count_(0),
       before_start_transaction_count_(0),
       headers_received_count_(0),
-      total_network_bytes_received_(0),
-      total_network_bytes_sent_(0),
       has_load_timing_info_before_redirect_(false),
       experimental_cookie_features_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
@@ -550,18 +548,6 @@ void TestNetworkDelegate::OnResponseStarted(URLRequest* request,
     error_count_++;
     last_error_ = net_error;
   }
-}
-
-void TestNetworkDelegate::OnNetworkBytesReceived(URLRequest* request,
-                                                 int64_t bytes_received) {
-  event_order_[request->identifier()] += "OnNetworkBytesReceived\n";
-  total_network_bytes_received_ += bytes_received;
-}
-
-void TestNetworkDelegate::OnNetworkBytesSent(URLRequest* request,
-                                             int64_t bytes_sent) {
-  event_order_[request->identifier()] += "OnNetworkBytesSent\n";
-  total_network_bytes_sent_ += bytes_sent;
 }
 
 void TestNetworkDelegate::OnCompleted(URLRequest* request,

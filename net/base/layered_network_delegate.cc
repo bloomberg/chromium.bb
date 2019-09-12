@@ -116,25 +116,6 @@ void LayeredNetworkDelegate::OnResponseStarted(URLRequest* request,
 void LayeredNetworkDelegate::OnResponseStartedInternal(URLRequest* request,
                                                        int net_error) {}
 
-void LayeredNetworkDelegate::OnNetworkBytesReceived(URLRequest* request,
-                                                    int64_t bytes_received) {
-  OnNetworkBytesReceivedInternal(request, bytes_received);
-  nested_network_delegate_->NotifyNetworkBytesReceived(request, bytes_received);
-}
-
-void LayeredNetworkDelegate::OnNetworkBytesReceivedInternal(
-    URLRequest* request,
-    int64_t bytes_received) {}
-
-void LayeredNetworkDelegate::OnNetworkBytesSent(URLRequest* request,
-                                                int64_t bytes_sent) {
-  OnNetworkBytesSentInternal(request, bytes_sent);
-  nested_network_delegate_->NotifyNetworkBytesSent(request, bytes_sent);
-}
-
-void LayeredNetworkDelegate::OnNetworkBytesSentInternal(URLRequest* request,
-                                                        int64_t bytes_sent) {}
-
 void LayeredNetworkDelegate::OnCompleted(URLRequest* request,
                                          bool started,
                                          int net_error) {

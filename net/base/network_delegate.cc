@@ -86,22 +86,6 @@ void NetworkDelegate::NotifyResponseStarted(URLRequest* request,
   OnResponseStarted(request, net_error);
 }
 
-void NetworkDelegate::NotifyNetworkBytesReceived(URLRequest* request,
-                                                 int64_t bytes_received) {
-  TRACE_EVENT0(NetTracingCategory(),
-               "NetworkDelegate::NotifyNetworkBytesReceived");
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_GT(bytes_received, 0);
-  OnNetworkBytesReceived(request, bytes_received);
-}
-
-void NetworkDelegate::NotifyNetworkBytesSent(URLRequest* request,
-                                             int64_t bytes_sent) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_GT(bytes_sent, 0);
-  OnNetworkBytesSent(request, bytes_sent);
-}
-
 void NetworkDelegate::NotifyBeforeRedirect(URLRequest* request,
                                            const GURL& new_location) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

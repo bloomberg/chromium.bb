@@ -65,9 +65,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   void OnBeforeRedirect(URLRequest* request, const GURL& new_location) final;
 
   void OnResponseStarted(URLRequest* request, int net_error) final;
-  void OnNetworkBytesReceived(URLRequest* request,
-                              int64_t bytes_received) final;
-  void OnNetworkBytesSent(URLRequest* request, int64_t bytes_sent) final;
   void OnCompleted(URLRequest* request, bool started, int net_error) final;
   void OnURLRequestDestroyed(URLRequest* request) final;
   void OnPACScriptError(int line_number, const base::string16& error) final;
@@ -125,12 +122,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                                         const GURL& new_location);
 
   virtual void OnResponseStartedInternal(URLRequest* request, int net_error);
-
-  virtual void OnNetworkBytesReceivedInternal(URLRequest* request,
-                                              int64_t bytes_received);
-
-  virtual void OnNetworkBytesSentInternal(URLRequest* request,
-                                          int64_t bytes_sent);
 
   virtual void OnCompletedInternal(URLRequest* request,
                                    bool started,
