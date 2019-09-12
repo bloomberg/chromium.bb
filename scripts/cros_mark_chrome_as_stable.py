@@ -18,7 +18,7 @@ emerge-x86-generic =chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 from __future__ import print_function
 
 import base64
-import distutils.version
+import distutils.version  # pylint: disable=import-error,no-name-in-module
 import filecmp
 import os
 import re

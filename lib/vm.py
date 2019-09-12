@@ -7,7 +7,7 @@
 
 from __future__ import print_function
 
-import distutils.version
+import distutils.version  # pylint: disable=import-error,no-name-in-module
 import errno
 import multiprocessing
 import os
