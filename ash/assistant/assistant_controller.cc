@@ -362,7 +362,7 @@ void AssistantController::BindScreenContextController(
 
 void AssistantController::BindStateController(
     mojo::PendingReceiver<mojom::AssistantStateController> receiver) {
-  assistant_state_controller_.BindRequest(std::move(receiver));
+  assistant_state_controller_.BindReceiver(std::move(receiver));
 }
 
 void AssistantController::BindVolumeControl(
