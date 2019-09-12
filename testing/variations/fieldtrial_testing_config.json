@@ -4125,6 +4125,24 @@
             ]
         }
     ],
+    "PasswordManagerStickyBubble": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordManagerStickyBubble"
+                    ]
+                }
+            ]
+        }
+    ],
     "PasswordProtectionForEnterprise": [
         {
             "platforms": [
