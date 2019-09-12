@@ -65745,6 +65745,14 @@ Full version information for the fingerprint enum values:
   </int>
 </enum>
 
+<enum name="ZeroStateResultType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Unanticipated"/>
+  <int value="2" label="OmniboxSearch"/>
+  <int value="3" label="ZeroStateFile"/>
+  <int value="4" label="DriveQuickAccess"/>
+</enum>
+
 <enum name="ZeroSuggestEligibleOnFocus">
   <int value="0" label="Eligible">
     URL can be currently sent to the suggest server.
