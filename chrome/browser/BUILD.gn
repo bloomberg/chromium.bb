@@ -2351,8 +2351,6 @@ jumbo_split_static_library("browser") {
       "android/contextualsearch/contextual_search_field_trial.h",
       "android/contextualsearch/contextual_search_manager.cc",
       "android/contextualsearch/contextual_search_manager.h",
-      "android/contextualsearch/contextual_search_preference_helper.cc",
-      "android/contextualsearch/contextual_search_preference_helper.h",
       "android/contextualsearch/contextual_search_ranker_logger_impl.cc",
       "android/contextualsearch/contextual_search_ranker_logger_impl.h",
       "android/contextualsearch/contextual_search_tab_helper.cc",

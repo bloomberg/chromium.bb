@@ -2796,7 +2796,6 @@ test("unit_tests") {
     "../browser/android/compositor/layer/tab_layer_unittest.cc",
     "../browser/android/contextualsearch/contextual_search_delegate_unittest.cc",
     "../browser/android/contextualsearch/contextual_search_field_trial_unittest.cc",
-    "../browser/android/contextualsearch/contextual_search_preference_helper_unittest.cc",
     "../browser/android/digital_asset_links/digital_asset_links_handler_unittest.cc",
     "../browser/android/download/available_offline_content_provider_unittest.cc",
     "../browser/android/download/download_manager_service_unittest.cc",

@@ -87,12 +87,6 @@ public class ChromePreferenceManager {
     public static final String CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT =
             "contextual_search_quick_actions_ignored_count";
     /**
-     * The user's previous preference setting before Unified Consent took effect, as an int, for
-     * Contextual Search. This can be removed after the full rollout of Unified Consent.
-     */
-    public static final String CONTEXTUAL_SEARCH_PRE_UNIFIED_CONSENT_PREF =
-            "contextual_search_pre_unified_consent_pref";
-    /**
      * A user interaction event ID for interaction with Contextual Search, stored as a long.
      */
     public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID =

@@ -2404,11 +2404,6 @@ const char kContextualSearchTranslationModelDescription[] =
     "Enables triggering translation in Contextual Search according to the "
     "Chrome translation model semantics.";
 
-const char kContextualSearchUnityIntegrationName[] =
-    "Contextual Search integration with Unified Consent";
-const char kContextualSearchUnityIntegrationDescription[] =
-    "Enables integration of Tap to Search with Unified Consent.";
-
 const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =
     "Enables direct actions (Android Q and more).";

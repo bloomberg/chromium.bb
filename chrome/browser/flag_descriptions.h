@@ -1421,9 +1421,6 @@ extern const char kContextualSearchSimplifiedServerDescription[];
 extern const char kContextualSearchTranslationModelName[];
 extern const char kContextualSearchTranslationModelDescription[];
 
-extern const char kContextualSearchUnityIntegrationName[];
-extern const char kContextualSearchUnityIntegrationDescription[];
-
 extern const char kDirectActionsName[];
 extern const char kDirectActionsDescription[];
 

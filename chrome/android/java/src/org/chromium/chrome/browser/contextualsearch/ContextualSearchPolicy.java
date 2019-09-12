@@ -46,7 +46,6 @@ class ContextualSearchPolicy {
     private final ContextualSearchSelectionController mSelectionController;
     private ContextualSearchNetworkCommunicator mNetworkCommunicator;
     private ContextualSearchPanel mSearchPanel;
-    private ContextualSearchPreferenceHelper mContextualSearchPreferenceHelper;
 
     // Members used only for testing purposes.
     private boolean mDidOverrideDecidedStateForTesting;
@@ -62,11 +61,6 @@ class ContextualSearchPolicy {
 
         mSelectionController = selectionController;
         mNetworkCommunicator = networkCommunicator;
-    }
-
-    void initialize() {
-        // TODO(donnd): remove when integration with Unified Consent is complete.
-        mContextualSearchPreferenceHelper = ContextualSearchPreferenceHelper.getInstance();
     }
 
     /**
@@ -157,11 +151,7 @@ class ContextualSearchPolicy {
             return true;
         }
 
-        return (isPromoAvailable()
-                       || (mContextualSearchPreferenceHelper != null
-                                  && mContextualSearchPreferenceHelper.canThrottle()))
-                ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl())
-                : true;
+        return isPromoAvailable() ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl()) : true;
     }
 
     /** @return Whether a long-press gesture can resolve. */
@@ -432,12 +422,6 @@ class ContextualSearchPolicy {
     int getTapCount() {
         return mPreferenceManager.readInt(
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT);
-    }
-
-    @VisibleForTesting
-    void applyUnifiedConsentGivenMetadata(
-            @ContextualSearchPreviousPreferenceMetadata int metadata) {
-        mContextualSearchPreferenceHelper.applyUnifiedConsentGivenMetadata(metadata);
     }
 
     // --------------------------------------------------------------------------------------------
