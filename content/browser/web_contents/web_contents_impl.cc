@@ -3291,10 +3291,10 @@ device::mojom::GeolocationContext* WebContentsImpl::GetGeolocationContext() {
   if (geolocation_context_)
     return geolocation_context_.get();
 
-  auto request = mojo::MakeRequest(&geolocation_context_);
   service_manager::Connector* connector = GetSystemConnector();
+  auto receiver = geolocation_context_.BindNewPipeAndPassReceiver();
   if (connector)
-    connector->BindInterface(device::mojom::kServiceName, std::move(request));
+    connector->Connect(device::mojom::kServiceName, std::move(receiver));
   return geolocation_context_.get();
 }
 

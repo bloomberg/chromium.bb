@@ -141,7 +141,8 @@ class DeviceService : public service_manager::Service {
   void BindFingerprintReceiver(
       mojo::PendingReceiver<mojom::Fingerprint> receiver);
   void BindGeolocationConfigRequest(mojom::GeolocationConfigRequest request);
-  void BindGeolocationContextRequest(mojom::GeolocationContextRequest request);
+  void BindGeolocationContextReceiver(
+      mojo::PendingReceiver<mojom::GeolocationContext> receiver);
   void BindGeolocationControlRequest(mojom::GeolocationControlRequest request);
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
