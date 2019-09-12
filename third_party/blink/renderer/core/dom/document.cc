@@ -215,7 +215,7 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
-#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
+#include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 #include "third_party/blink/renderer/core/html/window_name_collection.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
@@ -4014,9 +4014,9 @@ static bool AllDescendantsAreComplete(Document* document) {
     if (child->IsLoading())
       return false;
   }
-  for (HTMLPortalElement* portal :
-       DocumentPortals::From(*document).GetPortals()) {
-    if (portal->ContentFrame() && portal->ContentFrame()->IsLoading())
+  for (PortalContents* portal : DocumentPortals::From(*document).GetPortals()) {
+    auto* frame = portal->GetFrame();
+    if (frame && frame->IsLoading())
       return false;
   }
   return true;
