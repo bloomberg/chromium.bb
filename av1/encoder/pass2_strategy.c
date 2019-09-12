@@ -706,7 +706,7 @@ static void define_gf_group_pass0(AV1_COMP *cpi,
 
   // Rare case when the look-ahead is less than the target GOP length, can't
   // generate ARF frame.
-  if (rc->baseline_gf_interval < cpi->oxcf.lag_in_frames ||
+  if (rc->baseline_gf_interval > cpi->oxcf.lag_in_frames ||
       !is_altref_enabled(cpi) || rc->baseline_gf_interval < rc->min_gf_interval)
     gf_group->max_layer_depth_allowed = 0;
 
