@@ -3884,8 +3884,11 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_SHARING_DISMISS_ACTION" desc="Text for action that dismiss a sharing sending notification.">
         Dismiss
       </message>
-      <message name="IDS_SHARING_DEVICE_LIST_EMPTY" desc="Text to shown when no device targets are available for sharing.">
-        No devices available.
+      <message name="IDS_SHARING_NO_DEVICES_AVAILABLE_TITLE" desc="Text to show when no device targets are available for sharing.">
+        Turn on sync to share across devices
+      </message>
+      <message name="IDS_SHARING_NO_DEVICES_AVAILABLE_TEXT" desc="Text to show when no device targets are available for sharing.">
+        To share something from your phone to another device, turn on sync in Chrome settings on both devices
       </message>
 
       <!-- ClickToCall -->
