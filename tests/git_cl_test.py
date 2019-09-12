@@ -2381,6 +2381,42 @@ class TestGitCl(TestCase):
   def test_git_cl_try_buildbucket_with_properties_gerrit(self):
     self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda _: 7)
     self.mock(git_cl.uuid, 'uuid4', lambda: 'uuid4')
+    def mocked_call_with_stdin(*a, **kw):
+      args = list(a)
+      if kw.get('stdin'):
+        args.append(kw['stdin'])
+      return ([self._mocked_call(*args), ''], 0)
+
+    self.mock(subprocess2, 'communicate', mocked_call_with_stdin)
+
+    bb_request = json.dumps({
+        "requests": [{
+            "scheduleBuild": {
+                "requestId": "uuid4",
+                "builder": {
+                    "project": "luci",
+                    "builder": "win",
+                    "bucket": "chromium.try",
+                },
+                "gerritChanges": [{
+                    "project": "depot_tools",
+                    "host": "chromium-review.googlesource.com",
+                    "patchset": 7,
+                    "change": 123456,
+                }],
+                "properties": {
+                    "category": "git_cl_try",
+                    "json": [{"a": 1}, None],
+                    "key": "val",
+                },
+                "tags": [
+                    {"value": "win", "key": "builder"},
+                    {"value": "git_cl_try", "key": "user_agent"},
+                ],
+            },
+        }],
+    }, sort_keys=True)
+
 
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
@@ -2410,45 +2446,11 @@ class TestGitCl(TestCase):
             },
           },
         }),
+        ((['bb', 'auth-info'],), ''),
+        ((['git', 'config', 'branch.feature.gerritpatchset'],), '7'),
+        ((['bb', 'batch', '-host', 'cr-buildbucket.appspot.com'],
+          bb_request,), ''),
     ]
-
-    def _buildbucket_retry(*_, **kw):
-      # self.maxDiff = 10000
-      body = json.loads(kw['body'])
-      self.assertEqual(len(body['builds']), 1)
-      build = body['builds'][0]
-      params = json.loads(build.pop('parameters_json'))
-      self.assertEqual(params, {
-        u'builder_name': u'win',
-        u'changes': [{u'author': {u'email': u'owner@e.mail'},
-                      u'revision': None}],
-        u'properties': {
-          u'category': u'git_cl_try',
-           u'key': u'val',
-           u'json': [{u'a': 1}, None],
-
-           u'patch_gerrit_url':
-             u'https://chromium-review.googlesource.com',
-           u'patch_issue': 123456,
-           u'patch_project': u'depot_tools',
-           u'patch_ref': u'refs/changes/56/123456/7',
-           u'patch_repository_url':
-             u'https://chromium.googlesource.com/depot_tools',
-           u'patch_set': 7,
-           u'patch_storage': u'gerrit',
-        }
-      })
-      self.assertEqual(build, {
-        u'bucket': u'luci.chromium.try',
-        u'client_operation_id': u'uuid4',
-        u'tags': [
-          u'builder:win',
-          u'buildset:patch/gerrit/chromium-review.googlesource.com/123456/7',
-          u'user_agent:git_cl_try',
-        ],
-      })
-
-    self.mock(git_cl, '_buildbucket_retry', _buildbucket_retry)
 
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.assertEqual(0, git_cl.main([
