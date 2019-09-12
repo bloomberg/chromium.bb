@@ -45,35 +45,6 @@ class URLRequest;
 
 class NET_EXPORT NetworkDelegate {
  public:
-  // AuthRequiredResponse indicates how a NetworkDelegate handles an
-  // OnAuthRequired call. It's placed in this file to prevent url_request.h
-  // from having to include network_delegate.h.
-  //
-  //  - AUTH_REQUIRED_RESPONSE_NO_ACTION: |auth_info| is observed, but
-  //    no action is being taken on it.
-  //  - AUTH_REQUIRED_RESPONSE_SET_AUTH: |credentials| is filled in with
-  //    a username and password, which should be used in a response to
-  //    |auth_info|.
-  //  - AUTH_REQUIRED_RESPONSE_CANCEL_AUTH: The authentication challenge
-  //    should not be attempted.
-  //  - AUTH_REQUIRED_RESPONSE_IO_PENDING: The action will be decided
-  //    asynchronously. |callback| will be invoked when the decision is made,
-  //    and one of the other AuthRequiredResponse values will be passed in with
-  //    the same semantics as described above. Note, however, that a pending
-  //    operation may be cancelled by OnURLRequestDestroyed. Once cancelled,
-  //    |request|, |auth_info|, and |credentials| become invalid and |callback|
-  //    may not be called.
-  //
-  // TODO(mmenke): These are no longer used by NetworkDelegate. Move
-  // AuthRequiredResponse and remove AuthCallback.
-  enum AuthRequiredResponse {
-    AUTH_REQUIRED_RESPONSE_NO_ACTION,
-    AUTH_REQUIRED_RESPONSE_SET_AUTH,
-    AUTH_REQUIRED_RESPONSE_CANCEL_AUTH,
-    AUTH_REQUIRED_RESPONSE_IO_PENDING,
-  };
-  using AuthCallback = base::OnceCallback<void(AuthRequiredResponse)>;
-
   virtual ~NetworkDelegate();
 
   // Notification interface called by the network stack. Note that these
