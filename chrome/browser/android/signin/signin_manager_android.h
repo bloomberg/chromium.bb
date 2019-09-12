@@ -45,8 +45,6 @@ class SigninManagerAndroid : public KeyedService {
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  void LogInSignedInUser(JNIEnv* env);
-
   void ClearLastSignedInUser(JNIEnv* env);
 
   jboolean IsSigninAllowedByPolicy(JNIEnv* env) const;

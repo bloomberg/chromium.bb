@@ -165,13 +165,6 @@ void SigninManagerAndroid::ClearLastSignedInUser(JNIEnv* env) {
   ClearLastSignedInUserForProfile(profile_);
 }
 
-void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env) {
-  // With the account consistency enabled let the account Reconcilor handles
-  // everything.
-  // TODO(https://crbug.com/930094): Determine the right long-term flow here.
-  identity_manager_->LegacyReloadAccountsFromSystem();
-}
-
 bool SigninManagerAndroid::IsSigninAllowed() const {
   return signin_allowed_.GetValue();
 }

@@ -34,7 +34,7 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.identitymanager.ClearAccountsAction;
 import org.chromium.components.signin.identitymanager.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
-import org.chromium.components.signin.identitymanager.PrimaryAccountMutator;
+import org.chromium.components.signin.identitymanager.IdentityMutator;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SigninReason;
 import org.chromium.components.signin.metrics.SignoutDelete;
@@ -200,7 +200,7 @@ public class SigninManager
     private final Context mContext;
     private final AccountTrackerService mAccountTrackerService;
     private final IdentityManager mIdentityManager;
-    private final PrimaryAccountMutator mPrimaryAccountMutator;
+    private final IdentityMutator mIdentityMutator;
     private final AndroidSyncSettings mAndroidSyncSettings;
     private final ObserverList<SignInStateObserver> mSignInStateObservers = new ObserverList<>();
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
@@ -255,7 +255,7 @@ public class SigninManager
         mNativeSigninManagerAndroid = nativeSigninManagerAndroid;
         mAccountTrackerService = accountTrackerService;
         mIdentityManager = identityManager;
-        mPrimaryAccountMutator = identityManager.getPrimaryAccountMutator();
+        mIdentityMutator = identityManager.getIdentityMutator();
         mAndroidSyncSettings = androidSyncSettings;
 
         mSigninAllowedByPolicy =
@@ -502,7 +502,7 @@ public class SigninManager
         // This method should be called at most once per sign-in flow.
         assert mSignInState != null && mSignInState.mCoreAccountInfo != null;
 
-        if (!mPrimaryAccountMutator.setPrimaryAccount(mSignInState.mCoreAccountInfo.getId())) {
+        if (!mIdentityMutator.setPrimaryAccount(mSignInState.mCoreAccountInfo.getId())) {
             Log.w(TAG, "Failed to set the PrimaryAccount in IdentityManager, aborting signin");
             abortSignIn();
             return;
@@ -519,7 +519,7 @@ public class SigninManager
         }
 
         // Trigger token requests via native.
-        logInSignedInUser();
+        mIdentityMutator.reloadAccountsFromSystem();
 
         if (mSignInState.isInteractive()) {
             // If signin was a user action, record that it succeeded.
@@ -545,7 +545,7 @@ public class SigninManager
      * Implements {@link IdentityManager.Observer}: take action when primary account is set.
      * Simply verify that the request is ongoing (mSignInState != null), as only SigninManager
      * should update IdentityManager. This is triggered by the call to
-     * PrimaryAccountMutator.setPrimaryAccount
+     * IdentityMutator.setPrimaryAccount
      */
     @VisibleForTesting
     @Override
@@ -637,7 +637,7 @@ public class SigninManager
 
         // User data will be wiped in disableSyncAndWipeData(), called from
         // onPrimaryAccountcleared().
-        mPrimaryAccountMutator.clearPrimaryAccount(ClearAccountsAction.DEFAULT, signoutSource,
+        mIdentityMutator.clearPrimaryAccount(ClearAccountsAction.DEFAULT, signoutSource,
                 // Always use IGNORE_METRIC for the profile deletion argument. Chrome
                 // Android has just a single-profile which is never deleted upon
                 // sign-out.
@@ -649,11 +649,6 @@ public class SigninManager
      */
     public String getManagementDomain() {
         return SigninManagerJni.get().getManagementDomain(mNativeSigninManagerAndroid);
-    }
-
-    @VisibleForTesting
-    void logInSignedInUser() {
-        SigninManagerJni.get().logInSignedInUser(mNativeSigninManagerAndroid);
     }
 
     public void clearLastSignedInUser() {
@@ -800,8 +795,6 @@ public class SigninManager
         boolean isForceSigninEnabled(long nativeSigninManagerAndroid);
 
         void clearLastSignedInUser(long nativeSigninManagerAndroid);
-
-        void logInSignedInUser(long nativeSigninManagerAndroid);
 
         String extractDomainName(String email);
 
