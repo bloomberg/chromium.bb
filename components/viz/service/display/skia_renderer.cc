@@ -507,8 +507,7 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     if (!image_context->has_image()) {
       image_context->set_alpha_type(alpha_type);
       image_context->set_origin(origin);
-      if (ycbcr_info)
-        image_context->set_ycbcr_info(*ycbcr_info);
+      image_context->set_ycbcr_info(ycbcr_info);
       skia_renderer->skia_output_surface_->MakePromiseSkImage(image_context);
       LOG_IF(ERROR, !image_context->has_image())
           << "Failed to create the promise sk image.";
