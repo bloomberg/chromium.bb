@@ -6,10 +6,11 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="acquire-after-resize-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 .contained {
-  contain: style layout;
+  content-size: 123px 456px;
 }
 #spacer {
   width: 50px;
@@ -31,17 +32,13 @@ function finishTest(status_string) {
 
 function runTest() {
   const container = document.getElementById("small");
-  container.displayLock.acquire({ timeout: Infinity, size: [123, 456] }).then(
-    () => {
-      // Re-acquire with a different size.
-      container.displayLock.acquire({ timeout: Infinity, size: [150, 150] }).then(
-        () => { finishTest("PASS"); },
-        (e) => { finishTest("FAIL " + e.message); });
-    },
-    (e) => { finishTest("FAIL " + e.message); }
-  );
+  setInvisible(container).then(() => {
+    container.style = "content-size: 150px 150px";
+    requestAnimationFrame(() => finishTest("PASS"));
+  });
 }
 
 window.onload = runTest;
 </script>
 </html>
+

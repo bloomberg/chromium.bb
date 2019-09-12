@@ -1,7 +1,7 @@
 <!doctype HTML>
 <html>
 <meta charset="utf8">
-<title>Display Locking: contain: size block layout (reference)</title>
+<title>Display Locking: fieldset with legend and size containment, sized by display lock</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
 
@@ -10,7 +10,15 @@
   border: 1px solid black;
   width: min-content;
 }
+#container {
+  width: 123px;
+  height: 234px;
+}
 </style>
+
 <div id="border">
+  <fieldset id="container">
+  </fieldset>
 </div>
+
 </html>
