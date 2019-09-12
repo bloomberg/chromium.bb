@@ -3587,8 +3587,22 @@
     "NetworkServiceSandbox": [
         {
             "platforms": [
-                "mac",
                 "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NetworkServiceSandbox"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NetworkServiceSandboxMac": [
+        {
+            "platforms": [
+                "mac"
             ],
             "experiments": [
                 {
