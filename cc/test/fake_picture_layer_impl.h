@@ -19,16 +19,11 @@ class FakePictureLayerImpl : public PictureLayerImpl {
  public:
   using TileRequirementCheck = bool (PictureLayerTiling::*)(const Tile*) const;
 
-  static std::unique_ptr<FakePictureLayerImpl> Create(LayerTreeImpl* tree_impl,
-                                                      int id) {
-    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id));
-  }
-
-  // Create layer from a raster source that covers the entire layer.
-  static std::unique_ptr<FakePictureLayerImpl> CreateWithRasterSource(
+  // If raster_source is provided, it will cover the entire layer.
+  static std::unique_ptr<FakePictureLayerImpl> Create(
       LayerTreeImpl* tree_impl,
       int id,
-      scoped_refptr<RasterSource> raster_source) {
+      scoped_refptr<RasterSource> raster_source = nullptr) {
     return base::WrapUnique(
         new FakePictureLayerImpl(tree_impl, id, raster_source));
   }
@@ -137,21 +132,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   bool use_set_valid_tile_priorities_flag_ = false;
   size_t release_resources_count_ = 0;
   size_t release_tile_resources_count_ = 0;
-};
-
-// An adapter so that FakePictureLayerImpl::CreateWithRasterSource can be used
-// as FakePictureLayerImplWithRasterSource::Create() in some templates.
-class FakePictureLayerImplWithRasterSource : public FakePictureLayerImpl {
- public:
-  static std::unique_ptr<FakePictureLayerImplWithRasterSource> Create(
-      LayerTreeImpl* tree_impl,
-      int id,
-      scoped_refptr<RasterSource> raster_source) {
-    return base::WrapUnique(static_cast<FakePictureLayerImplWithRasterSource*>(
-        FakePictureLayerImpl::CreateWithRasterSource(tree_impl, id,
-                                                     std::move(raster_source))
-            .release()));
-  }
 };
 
 }  // namespace cc
