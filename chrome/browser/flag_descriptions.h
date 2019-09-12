@@ -1718,6 +1718,9 @@ extern const char kOmniboxWrapPopupPositionDescription[];
 extern const char kProactiveTabFreezeAndDiscardName[];
 extern const char kProactiveTabFreezeAndDiscardDescription[];
 
+extern const char kWebUIA11yEnhancementsName[];
+extern const char kWebUIA11yEnhancementsDescription[];
+
 #if defined(GOOGLE_CHROME_BUILD)
 
 extern const char kGoogleBrandedContextMenuName[];
