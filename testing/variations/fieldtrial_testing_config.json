@@ -5261,6 +5261,24 @@
             ]
         }
     ],
+    "ServiceWorkerOnUI": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceWorkerOnUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "SettingsEnforcement": [
         {
             "platforms": [
