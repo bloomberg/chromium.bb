@@ -35,9 +35,11 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -75,6 +77,11 @@ class RubberbandCandidate {
         return true;
     }
 };
+
+void appendCandidatesByLayoutNGText(
+    const RubberbandContext& localContext,
+    const LayoutText* layoutText,
+    std::vector<RubberbandCandidate>& candidates);
 
 struct RubberbandCandidate_XSorter {
     bool operator()(const RubberbandCandidate& lhs,
@@ -442,7 +449,11 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
         const LayoutText* layoutText = ToLayoutText(layoutObject);
 
         WTF::String text(layoutText->GetText());
-        for (InlineTextBox* textBox = layoutText->FirstTextBox(); textBox; textBox = textBox->NextForSameLayoutObject()) {
+        if (layoutText->IsLayoutNGText()) {
+          appendCandidatesByLayoutNGText(localContext, layoutText,
+                                         rubberbandState_->impl_->m_candidates);
+        } else {
+          for (InlineTextBox* textBox = layoutText->FirstTextBox(); textBox; textBox = textBox->NextForSameLayoutObject()) {
             LayoutUnit textBoxTop = textBox->Root().LineTop();
             LayoutUnit textBoxHeight = textBox->Root().LineBottom() - textBoxTop;
             LayoutUnit textBoxLeft = textBox->X();
@@ -484,6 +495,7 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
                         * localContext.m_layerContext->m_scaleX);
                 }
             }
+          }
         }
     }
 
@@ -828,6 +840,7 @@ bool WebViewImpl::HandleAltDragRubberbandEvent(const WebInputEvent& inputEvent)
         else {
             WebString copied = FinishRubberbandingImpl(rc);
             SystemClipboard::GetInstance().WritePlainText(copied, SystemClipboard::kCannotSmartReplace);
+            SystemClipboard::GetInstance().CommitWrite();
         }
 
         return true;
@@ -1031,4 +1044,67 @@ WebString WebViewImpl::GetTextInRubberband(const WebRect& rc)
     return result;
 }
 
-} // namespace blink
+void appendCandidatesByLayoutNGText(
+    const RubberbandContext& localContext,
+    const LayoutText* layoutText,
+    std::vector<RubberbandCandidate>& candidates)
+{
+    static const UChar space = ' ';
+    const Font& font = layoutText->Style()->GetFont();
+    for (const NGPaintFragment* paintFragment :
+        NGPaintFragment::InlineFragmentsFor(layoutText)) {
+        const auto& physicalFragment = paintFragment->PhysicalFragment();
+        if (!physicalFragment.IsText()) {
+            continue;
+        }
+        const blink::NGPhysicalTextFragment& physicalTextFragment =
+            blink::To<blink::NGPhysicalTextFragment>(physicalFragment);
+        const blink::PhysicalOffset& offset = paintFragment->InlineOffsetToContainerBox();
+        const blink::LayoutSize fragSize{physicalTextFragment.Size().width,
+                                         physicalTextFragment.Size().height};
+        LayoutRect localRect{offset.ToLayoutPoint(), fragSize};
+        // NG needs to take m_layerScrollOffset into account
+        localRect.Move(-localContext.m_layerContext->m_layerScrollOffset.Width(),
+                       -localContext.m_layerContext->m_layerScrollOffset.Height());
+        LayoutRect absRect = localContext.calcAbsRect(localRect);
+        if (!absRect.Intersects(localContext.m_layerContext->m_clipRect)) {
+            continue;
+        }
+
+        candidates.push_back(RubberbandCandidate());
+        RubberbandCandidate& candidate = candidates.back();
+        candidate.m_absRect = absRect;
+        candidate.m_clipRect = candidate.m_absRect;
+        candidate.m_clipRect.Intersect(localContext.m_layerContext->m_clipRect);
+        candidate.m_text = physicalTextFragment.Text().ToString();
+        candidate.m_isLTR = blink::IsLtr(physicalFragment.ResolvedDirection());
+        candidate.m_useLeadingTab = isTextWithTab(layoutText);
+        // startOffset is indexed to layoutText->GetText()
+        int startOffset = physicalTextFragment.StartOffset();
+        // m_start is indexed to candidate.m_text, which is also physicalTextFragment.Text()
+        candidate.m_start = 0;
+        candidate.m_len = physicalTextFragment.Length();
+        candidate.m_groupId = localContext.m_groupId;
+        candidate.m_groupDelimiter = localContext.m_groupDelimiter;
+
+        candidate.m_spaceWidth = LayoutUnit(
+            font.Width(ConstructTextRun(
+                font, &space, 1, layoutText->StyleRef(),
+                candidate.m_isLTR ? TextDirection::kLtr : TextDirection::kRtl)) *
+            localContext.m_layerContext->m_scaleX);
+
+        candidate.m_charPositions.reserve(candidate.m_len);
+        for (int id = startOffset; id < startOffset + candidate.m_len; ++id) {
+            auto localRect = physicalTextFragment.LocalRect(id, id + 1);
+            LayoutUnit pos = localRect.X();
+            pos *= localContext.m_layerContext->m_scaleX;
+            if (candidate.m_isLTR)
+                pos += candidate.m_absRect.X();
+            else
+                pos = candidate.m_absRect.MaxX() - pos;
+            candidate.m_charPositions.push_back(pos);
+        }
+    }
+}
+
+}  // namespace blink
