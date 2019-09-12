@@ -102,9 +102,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     """Find configs in |pfq_configs| that are "close" to |config|.
 
     If there are no prebuilts from any PFQ that match this board, then try to
-    help with diagnostics by finding the "closest" matches.  Since most failures
-    are related to mismatched USE flags, we ignore the compiler settings and
-    find configs that have the fewest USE flag changes.
+    help with diagnostics by finding the "closest" matches.
 
     Args:
       pfq_configs: A PrebuiltMapping object.
@@ -112,8 +110,8 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       skipped_useflags: set of USE flags to ignore when computing changes.
 
     Returns:
-      A list of (BoardKey, CompatId, added-USE-flags, removed-USE-flags) sorted
-      by the number of changed USE flags.
+      A list of (BoardKey, CompatId, <flag source>, added-flags, removed-flags)
+      sorted by the number of changed flags.
     """
     compat_id = self.GetCompatId(config)
 
@@ -126,12 +124,18 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         removed = (set(compat_id.useflags) - set(close_id.useflags) -
                    skipped_useflags)
         if added or removed:
-          ret.append((board_key, compat_id,
+          ret.append((board_key, compat_id, 'USE',
+                      sorted('+%s' % x for x in added),
+                      sorted('-%s' % x for x in removed)))
+        else:
+          added = set(close_id.cflags) - set(compat_id.cflags)
+          removed = set(close_id.cflags) - set(compat_id.cflags)
+          ret.append((board_key, compat_id, 'CFLAGS',
                       sorted('+%s' % x for x in added),
                       sorted('-%s' % x for x in removed)))
 
     # Do the final sort of the configs based on number of USE changes.
-    return sorted(ret, key=lambda x: len(x[2]) + len(x[3]))
+    return sorted(ret, key=lambda x: len(x[3]) + len(x[4]))
 
   def AssertChromePrebuilts(self, pfq_configs, config, skip_useflags=False):
     """Verify that the specified config has Chrome prebuilts.
@@ -172,9 +176,15 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
 
     if not pfqs:
       pre_cq = (config.build_type == config_lib.CONFIG_TYPE_PRECQ)
-      msg = ('%s%s cannot find Chrome prebuilts (probably due to USE flag '
+      if pre_cq:
+        fatal_scope = 'pre_cq'
+      elif config.important:
+        fatal_scope = 'important'
+      else:
+        fatal_scope = 'non-fatal'
+      msg = ('%s%s (%s) cannot find Chrome prebuilts (probably due to USE flag '
              'mismatch)\nBuild settings: %s'
-             % (msg_prefix, config.name, compat_id))
+             % (msg_prefix, config.name, fatal_scope, compat_id))
 
       # For brevity, we only show the first three closest matches.  After that,
       # we start getting redundant, and the deltas get larger.  This is just a
@@ -183,9 +193,9 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
                                              skipped_useflags)
       if close_configs:
         msg += '\nClosest matching configs:\n'
-        for board_key, compat_id, added, removed in close_configs[0:3]:
-          msg += ('\tBoards: %s\n\t\tUSE changes: %s\n\t\tBuild settings: %s\n'
-                  % (board_key, added + removed, compat_id))
+        for board_key, compat_id, source, added, removed in close_configs[0:6]:
+          msg += ('\tBoards: %s\n\t\t%s changes: %s\n\t\tBuild settings: %s\n'
+                  % (board_key, source, added + removed, compat_id))
 
       self.Complain(msg, fatal=pre_cq or config.important)
 
