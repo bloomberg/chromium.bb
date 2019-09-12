@@ -1386,13 +1386,6 @@ const char kOmniboxSpareRendererDescription[] =
     "When the omnibox is focused, start an empty spare renderer. This can "
     "speed up the load of the navigation from the omnibox.";
 
-const char kOmniboxUICuesForSearchHistoryMatchesName[] =
-    "Omnibox UI Cues to Differentiate Search History Matches";
-const char kOmniboxUICuesForSearchHistoryMatchesDescription[] =
-    "Shows UI cues in the omnibox to differentiate Search History matches from "
-    "other search suggestions provided by the default search provider. This "
-    "feature is a narrow subset of Omnibox Suggestion Transparency Options.";
-
 const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
     "Omnibox UI Hide Steady-State URL Scheme";
 const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =
@@ -2908,8 +2901,8 @@ const char kOmniboxSuggestionTransparencyOptionsName[] =
     "Omnibox Suggestion Transparency Options";
 const char kOmniboxSuggestionTransparencyOptionsDescription[] =
     "Improves transparency of and control over omnibox suggestions. This "
-    "includes UI cues (like a clock icon for Search History suggestions), as "
-    "well as user controls to delete personalized suggestions.";
+    "includes \"Why this Suggestion?\" and user controls to delete "
+    "personalized suggestions.";
 
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";

@@ -846,9 +846,6 @@ extern const char kOmniboxSearchEngineLogoDescription[];
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
-extern const char kOmniboxUICuesForSearchHistoryMatchesName[];
-extern const char kOmniboxUICuesForSearchHistoryMatchesDescription[];
-
 extern const char kOmniboxUIHideSteadyStateUrlSchemeName[];
 extern const char kOmniboxUIHideSteadyStateUrlSchemeDescription[];
 

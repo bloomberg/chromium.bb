@@ -1047,8 +1047,7 @@ function onQueryAutocompleteDone(result) {
     let iconClass;
     if (match.isSearchType) {
       const isSearchHistory = SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
-      const useClock = isSearchHistory && configData.realboxUseClockIcon;
-      iconClass = useClock ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON;
+      iconClass = isSearchHistory ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON;
     } else {
       // TODO(crbug.com/997229): use chrome://favicon/<url> when perms allow.
       iconClass = CLASSES.URL_ICON;
