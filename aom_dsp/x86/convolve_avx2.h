@@ -138,8 +138,8 @@ DECLARE_ALIGNED(32, static const uint8_t, filt4_global_avx2[32]) = {
       xx_storel_32(p_0, res_0);                                               \
       xx_storel_32(p_1, res_1);                                               \
     } else {                                                                  \
-      *(uint16_t *)p_0 = _mm_cvtsi128_si32(res_0);                            \
-      *(uint16_t *)p_1 = _mm_cvtsi128_si32(res_1);                            \
+      *(uint16_t *)p_0 = (uint16_t)_mm_cvtsi128_si32(res_0);                  \
+      *(uint16_t *)p_1 = (uint16_t)_mm_cvtsi128_si32(res_1);                  \
     }                                                                         \
                                                                               \
     s[0] = s[1];                                                              \
