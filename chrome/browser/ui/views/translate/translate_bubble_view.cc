@@ -46,7 +46,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -214,8 +213,7 @@ base::string16 TranslateBubbleView::GetWindowTitle() const {
 
 void TranslateBubbleView::TabSelectedAt(int index) {
   // Tabbed pane is indexed from left to right starting at 0.
-  if (!model_->IsPageTranslatedInCurrentLanguages() &&
-      !model_->IsTranslationInProgress() && index == 1) {
+  if (!model_->IsPageTranslatedInCurrentLanguages() && index == 1) {
     Translate();
   } else if (index == 0) {
     ShowOriginal();
@@ -905,8 +903,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   tab_translate_options_button->SetInkDropMode(views::Button::InkDropMode::ON);
   tab_translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU_TAB);
   tab_translate_options_button->SetFocusForPlatform();
-  tab_translate_options_button->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
   tab_translate_options_button->set_request_focus_on_press(true);
 
   // Close button
@@ -925,7 +921,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   close_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
   close_button->SetFocusForPlatform();
   close_button->SetID(BUTTON_ID_CLOSE);
-  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
 
   constexpr int kColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
@@ -1001,7 +996,6 @@ std::unique_ptr<views::View> TranslateBubbleView::GM2CreateView(
       gfx::CreateVectorIcon(*close_icon_id, 16, close_icon_color));
   close_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
   close_button->SetID(BUTTON_ID_CLOSE);
-  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
 
   // Initialize a columnset
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_TITLE);
@@ -1570,7 +1564,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   close_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
   close_button->SetFocusForPlatform();
   close_button->SetID(BUTTON_ID_CLOSE);
-  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
 
   auto view = std::make_unique<AdvancedViewContainer>();
   views::GridLayout* layout =

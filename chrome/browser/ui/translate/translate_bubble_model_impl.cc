@@ -138,9 +138,3 @@ bool TranslateBubbleModelImpl::IsPageTranslatedInCurrentLanguages() const {
          ui_delegate_->GetTargetLanguageCode() ==
              language_state.current_language();
 }
-
-bool TranslateBubbleModelImpl::IsTranslationInProgress() {
-  const translate::LanguageState& language_state =
-      ui_delegate_->GetLanguageState();
-  return language_state.translation_pending();
-}

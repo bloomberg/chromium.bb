@@ -120,9 +120,6 @@ class TranslateBubbleModel {
 
   // True if the site of the current page can be blacklisted.
   virtual bool CanBlacklistSite() = 0;
-
-  // True if there's currently a pending translation on the page.
-  virtual bool IsTranslationInProgress() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_BUBBLE_MODEL_H_
