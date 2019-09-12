@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_DOM_TASK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_DOM_TASK_H_
 
 #include "base/time/time.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -18,22 +18,23 @@
 
 namespace blink {
 
+class DOMTaskQueue;
 class ScriptState;
 class ScriptValue;
-class TaskQueue;
 class V8Function;
 
-class MODULES_EXPORT Task : public ScriptWrappable, ContextLifecycleObserver {
+class MODULES_EXPORT DOMTask : public ScriptWrappable,
+                               ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Task);
+  USING_GARBAGE_COLLECTED_MIXIN(DOMTask);
 
  public:
-  // Creating a task also causes the Task to be scheduled.
-  Task(TaskQueue*,
-       ExecutionContext*,
-       V8Function*,
-       const HeapVector<ScriptValue>& args,
-       base::TimeDelta delay);
+  // Creating a task also causes the DOMTask to be scheduled.
+  DOMTask(DOMTaskQueue*,
+          ExecutionContext*,
+          V8Function*,
+          const HeapVector<ScriptValue>& args,
+          base::TimeDelta delay);
 
   // Task IDL Interface.
   AtomicString priority() const;
@@ -41,9 +42,9 @@ class MODULES_EXPORT Task : public ScriptWrappable, ContextLifecycleObserver {
   void cancel(ScriptState*);
   ScriptPromise result(ScriptState*);
 
-  // Move this Task to a different TaskQueue. If the task is already enqueued in
-  // the given task queue, this method has no effect.
-  void MoveTo(TaskQueue*);
+  // Move this DOMTask to a different DOMTaskQueue. If the task is already
+  // enqueued in the given task queue, this method has no effect.
+  void MoveTo(DOMTaskQueue*);
 
   void ContextDestroyed(ExecutionContext*) override;
 
@@ -71,7 +72,7 @@ class MODULES_EXPORT Task : public ScriptWrappable, ContextLifecycleObserver {
   // otherwise it's queued after |delay|.
   void Schedule(base::TimeDelta delay);
 
-  // Callback for running the Task.
+  // Callback for running the DOMTask.
   void Invoke();
   void InvokeInternal(ScriptState*);
 
@@ -82,7 +83,7 @@ class MODULES_EXPORT Task : public ScriptWrappable, ContextLifecycleObserver {
 
   Status status_;
   TaskHandle task_handle_;
-  Member<TaskQueue> task_queue_;
+  Member<DOMTaskQueue> task_queue_;
   Member<V8Function> callback_;
   HeapVector<ScriptValue> arguments_;
   const base::TimeDelta delay_;
@@ -92,7 +93,7 @@ class MODULES_EXPORT Task : public ScriptWrappable, ContextLifecycleObserver {
   const base::TimeTicks queue_time_;
 
   using TaskResultPromise =
-      ScriptPromiseProperty<Member<Task>, ScriptValue, ScriptValue>;
+      ScriptPromiseProperty<Member<DOMTask>, ScriptValue, ScriptValue>;
   Member<TaskResultPromise> result_promise_;
 
   TraceWrapperV8Reference<v8::Value> result_value_;
@@ -101,4 +102,4 @@ class MODULES_EXPORT Task : public ScriptWrappable, ContextLifecycleObserver {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_DOM_TASK_H_

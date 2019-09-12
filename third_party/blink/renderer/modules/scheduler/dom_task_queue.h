@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_QUEUE_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_QUEUE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_DOM_TASK_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_DOM_TASK_QUEUE_H_
 
 #include <memory>
 
@@ -22,11 +22,11 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 
+class DOMScheduler;
+class DOMTask;
 class Document;
 class ExecutionContext;
-class Scheduler;
 class ScriptValue;
-class Task;
 class TaskQueuePostTaskOptions;
 class V8Function;
 class WebSchedulingTaskQueue;
@@ -35,46 +35,46 @@ namespace scheduler {
 class WebSchedulingTaskQueue;
 }  // namespace scheduler
 
-class MODULES_EXPORT TaskQueue : public ScriptWrappable,
-                                 ContextLifecycleObserver {
+class MODULES_EXPORT DOMTaskQueue : public ScriptWrappable,
+                                    ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(TaskQueue);
+  USING_GARBAGE_COLLECTED_MIXIN(DOMTaskQueue);
 
  public:
-  TaskQueue(Document*, WebSchedulingPriority, Scheduler*);
+  DOMTaskQueue(Document*, WebSchedulingPriority, DOMScheduler*);
 
-  // Returns the priority of the TaskQueue.
+  // Returns the priority of the DOMTaskQueue.
   AtomicString priority() const;
 
-  // postTask creates and queues a Task in this TaskQueue and returns the Task.
-  // If the underlying context is destroyed, e.g. for detached documents, this
-  // returns nullptr.
-  Task* postTask(V8Function*,
-                 TaskQueuePostTaskOptions*,
-                 const HeapVector<ScriptValue>& args);
+  // postTask creates and queues a DOMTask in this DOMTaskQueue and returns the
+  // DOMTask. If the underlying context is destroyed, e.g. for detached
+  // documents, this returns nullptr.
+  DOMTask* postTask(V8Function*,
+                    TaskQueuePostTaskOptions*,
+                    const HeapVector<ScriptValue>& args);
 
-  // Move the task from its current TaskQueue to this one. For pending
-  // non-delayed tasks, the task is enqueued at the end of this TaskQueue. For
-  // delayed tasks, the delay is adjusted before reposting it.
-  void take(Task*);
+  // Move the task from its current DOMTaskQueue to this one. For pending
+  // non-delayed tasks, the task is enqueued at the end of this DOMTaskQueue.
+  // For delayed tasks, the delay is adjusted before reposting it.
+  void take(DOMTask*);
 
   base::SingleThreadTaskRunner* GetTaskRunner() { return task_runner_.get(); }
-  Scheduler* GetScheduler() { return scheduler_.Get(); }
+  DOMScheduler* GetScheduler() { return scheduler_.Get(); }
 
   void ContextDestroyed(ExecutionContext*) override;
 
   void Trace(Visitor*) override;
 
  private:
-  void RunTaskCallback(Task*);
-  void ScheduleTask(Task*, base::TimeDelta delay);
+  void RunTaskCallback(DOMTask*);
+  void ScheduleTask(DOMTask*, base::TimeDelta delay);
 
   const WebSchedulingPriority priority_;
   std::unique_ptr<WebSchedulingTaskQueue> web_scheduling_task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  Member<Scheduler> scheduler_;
+  Member<DOMScheduler> scheduler_;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_QUEUE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_DOM_TASK_QUEUE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/scheduler/task.h"
+#include "third_party/blink/renderer/modules/scheduler/dom_task.h"
 
 #include <utility>
 
@@ -10,18 +10,18 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/modules/scheduler/scheduler.h"
-#include "third_party/blink/renderer/modules/scheduler/task_queue.h"
+#include "third_party/blink/renderer/modules/scheduler/dom_scheduler.h"
+#include "third_party/blink/renderer/modules/scheduler/dom_task_queue.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
-Task::Task(TaskQueue* task_queue,
-           ExecutionContext* context,
-           V8Function* callback,
-           const HeapVector<ScriptValue>& args,
-           base::TimeDelta delay)
+DOMTask::DOMTask(DOMTaskQueue* task_queue,
+                 ExecutionContext* context,
+                 V8Function* callback,
+                 const HeapVector<ScriptValue>& args,
+                 base::TimeDelta delay)
     : ContextLifecycleObserver(context),
       status_(Status::kPending),
       task_queue_(task_queue),
@@ -36,7 +36,7 @@ Task::Task(TaskQueue* task_queue,
   Schedule(delay_);
 }
 
-void Task::Trace(Visitor* visitor) {
+void DOMTask::Trace(Visitor* visitor) {
   visitor->Trace(task_queue_);
   visitor->Trace(callback_);
   visitor->Trace(arguments_);
@@ -47,22 +47,22 @@ void Task::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void Task::ContextDestroyed(ExecutionContext* context) {
+void DOMTask::ContextDestroyed(ExecutionContext* context) {
   if (status_ != Status::kPending)
     return;
   CancelPendingTask();
 }
 
-AtomicString Task::priority() const {
+AtomicString DOMTask::priority() const {
   DCHECK(task_queue_);
   return task_queue_->priority();
 }
 
-AtomicString Task::status() const {
+AtomicString DOMTask::status() const {
   return TaskStatusToString(status_);
 }
 
-void Task::cancel(ScriptState* script_state) {
+void DOMTask::cancel(ScriptState* script_state) {
   if (status_ != Status::kPending)
     return;
   CancelPendingTask();
@@ -70,7 +70,7 @@ void Task::cancel(ScriptState* script_state) {
   ResolveOrRejectPromiseIfNeeded(script_state);
 }
 
-ScriptPromise Task::result(ScriptState* script_state) {
+ScriptPromise DOMTask::result(ScriptState* script_state) {
   if (!result_promise_) {
     result_promise_ = MakeGarbageCollected<TaskResultPromise>(
         ExecutionContext::From(script_state), this,
@@ -80,7 +80,7 @@ ScriptPromise Task::result(ScriptState* script_state) {
   return result_promise_->Promise(script_state->World());
 }
 
-void Task::MoveTo(TaskQueue* task_queue) {
+void DOMTask::MoveTo(DOMTaskQueue* task_queue) {
   if (status_ != Status::kPending || task_queue == task_queue_)
     return;
 
@@ -99,31 +99,31 @@ void Task::MoveTo(TaskQueue* task_queue) {
   Schedule(delay);
 }
 
-void Task::Schedule(base::TimeDelta delay) {
+void DOMTask::Schedule(base::TimeDelta delay) {
   DCHECK_EQ(status_, Status::kPending);
   DCHECK(!task_handle_.IsActive());
   DCHECK_GE(delay, base::TimeDelta());
 
   task_handle_ = PostDelayedCancellableTask(
       *task_queue_->GetTaskRunner(), FROM_HERE,
-      WTF::Bind(&Task::Invoke, WrapPersistent(this)), delay_);
+      WTF::Bind(&DOMTask::Invoke, WrapPersistent(this)), delay_);
 }
 
-void Task::CancelPendingTask() {
+void DOMTask::CancelPendingTask() {
   DCHECK_EQ(status_, Status::kPending);
   DCHECK(task_handle_.IsActive());
 
   task_handle_.Cancel();
 }
 
-void Task::Invoke() {
+void DOMTask::Invoke() {
   DCHECK_EQ(status_, Status::kPending);
   DCHECK(callback_);
   DCHECK(GetExecutionContext());
   DCHECK(!GetExecutionContext()->IsContextDestroyed());
 
   ScriptState* script_state =
-      callback_->CallbackRelevantScriptStateOrReportError("Task", "Invoke");
+      callback_->CallbackRelevantScriptStateOrReportError("DOMTask", "Invoke");
   if (!script_state || !script_state->ContextIsValid())
     return;
 
@@ -136,7 +136,7 @@ void Task::Invoke() {
   callback_.Release();
 }
 
-void Task::InvokeInternal(ScriptState* script_state) {
+void DOMTask::InvokeInternal(ScriptState* script_state) {
   ScriptState::Scope scope(script_state);
   v8::TryCatch try_catch(script_state->GetIsolate());
   try_catch.SetVerbose(true);
@@ -151,7 +151,7 @@ void Task::InvokeInternal(ScriptState* script_state) {
   result_value_.Set(script_state->GetIsolate(), result.V8Value());
 }
 
-void Task::ResolveOrRejectPromiseIfNeeded(ScriptState* script_state) {
+void DOMTask::ResolveOrRejectPromiseIfNeeded(ScriptState* script_state) {
   // Lazily resolove or reject the Promise - we don't do anything unless the
   // result property has been accessed.
   if (!result_promise_)
@@ -183,15 +183,15 @@ void Task::ResolveOrRejectPromiseIfNeeded(ScriptState* script_state) {
   }
 }
 
-void Task::SetTaskStatus(Status status) {
+void DOMTask::SetTaskStatus(Status status) {
   DCHECK(IsValidStatusChange(status_, status))
-      << "Cannot transition from Task::Status " << TaskStatusToString(status_)
-      << " to " << TaskStatusToString(status);
+      << "Cannot transition from DOMTask::Status "
+      << TaskStatusToString(status_) << " to " << TaskStatusToString(status);
   status_ = status;
 }
 
 // static
-AtomicString Task::TaskStatusToString(Status status) {
+AtomicString DOMTask::TaskStatusToString(Status status) {
   DEFINE_STATIC_LOCAL(const AtomicString, pending, ("pending"));
   DEFINE_STATIC_LOCAL(const AtomicString, running, ("running"));
   DEFINE_STATIC_LOCAL(const AtomicString, canceled, ("canceled"));
@@ -213,7 +213,7 @@ AtomicString Task::TaskStatusToString(Status status) {
 }
 
 // static
-bool Task::IsValidStatusChange(Status from, Status to) {
+bool DOMTask::IsValidStatusChange(Status from, Status to) {
   // Note: Self transitions are not valid.
   switch (from) {
     case Status::kPending: {
