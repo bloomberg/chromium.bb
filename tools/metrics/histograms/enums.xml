@@ -17996,6 +17996,7 @@ Called by update_net_error_codes.py.-->
   <int value="598" label="RendererCodeIntegrityEnabled"/>
   <int value="599" label="DeviceLoginScreenLargeCursorEnabled"/>
   <int value="600" label="DomainsToCheckForMalwareOfUploadedContent"/>
+  <int value="601" label="HSTSPolicyBlocklist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

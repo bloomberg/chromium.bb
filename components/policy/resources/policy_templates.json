@@ -17575,6 +17575,28 @@
       If this policy is not set or set to an empty list of domains, no uploaded content is checked for malware.
       '''
     },
+    {
+      'name': 'HSTSPolicyBypassList',
+      'owners': ['nharper@chromium.org', 'rsleevi@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'pattern': '^[a-z0-9-]*$',
+        },
+      },
+      'supported_on': ['chrome.*:78-','android:78-','chrome_os:78-'],
+      'features': {
+        'per_profile': True,
+        'dynamic_refresh': False,
+      },
+      'example_value': ['meet'],
+      'id': 601,
+      'caption': '''List of names that will bypass the HSTS policy check''',
+      'tags': ['system-security'],
+      'desc': '''Hostnames specified in this list will be exempt from the HSTS policy check that could potentially upgrade requests from http to https. Only single-label hostnames are allowed in this policy. Hostnames must be canonicalized: any IDNs must be convered to their A-label format, and all ASCII letters must be lowercase. This policy only applies to the specific hostnames specified; it does not apply to subdomains of the names specified.''',
+    },
   ],
 
   'messages': {
@@ -18371,6 +18393,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 600,
+  'highest_id_currently_used': 601,
   'highest_atomic_group_id_currently_used': 37
 }

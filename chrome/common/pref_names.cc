@@ -1845,6 +1845,10 @@ const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
 const char kH2ClientCertCoalescingHosts[] =
     "ssl.client_certs.h2_coalescing_hosts";
 
+// List of single-label hostnames that will skip the check to possibly upgrade
+// from http to https.
+const char kHSTSPolicyBypassList[] = "hsts.policy.upgrade_bypass_list";
+
 // Boolean that specifies whether the built-in asynchronous DNS client is used.
 const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
 
