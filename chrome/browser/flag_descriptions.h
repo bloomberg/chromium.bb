@@ -95,6 +95,9 @@ extern const char kAndroidSiteSettingsUIRefreshDescription[];
 extern const char kAutomaticPasswordGenerationName[];
 extern const char kAutomaticPasswordGenerationDescription[];
 
+extern const char kAutofillAlwaysReturnCloudTokenizedCardName[];
+extern const char kAutofillAlwaysReturnCloudTokenizedCardDescription[];
+
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[];
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[];
 

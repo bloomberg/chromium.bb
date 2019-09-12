@@ -219,6 +219,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "autofill-always-return-cloud-tokenized-card",
+    "owners": [ "aneeshali@google.com", "annelim@google.com", "jsaul@google.com" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "autofill-always-show-server-cards-in-sync-transport",
     "owners": [ "sebsg" ],
     "expiry_milestone": 74

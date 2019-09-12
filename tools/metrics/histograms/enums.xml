@@ -35310,6 +35310,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1222805155" label="PdfIsolation:enabled"/>
   <int value="-1222556118" label="VirtualDesks:disabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
+  <int value="-1217623062"
+      label="AutofillAlwaysReturnCloudTokenizedCard:disabled"/>
   <int value="-1217462552"
       label="OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains:disabled"/>
   <int value="-1217425153" label="ChromeHomeClearUrlOnOpen:enabled"/>
@@ -37379,6 +37381,8 @@ from previous Chrome versions.
   <int value="1632112977" label="ash-disable-tablet-autohide-titlebars"/>
   <int value="1633456034" label="chrome-home-swipe-logic"/>
   <int value="1634732103" label="PassiveDocumentWheelEventListeners:enabled"/>
+  <int value="1634884226"
+      label="AutofillAlwaysReturnCloudTokenizedCard:enabled"/>
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1634980726" label="VrShellExperimentalRendering:disabled"/>
   <int value="1635986352" label="ContextMenuSearchWithGoogleLens:enabled"/>
