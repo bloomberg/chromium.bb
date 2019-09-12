@@ -69,13 +69,13 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Tests for {@link GridTabSwitcherMediatorUnitTest}.
+ * Tests for {@link TabSwitcherMediator}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 @DisableFeatures(ChromeFeatureList.TAB_SWITCHER_ON_RETURN)
 @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-public class GridTabSwitcherMediatorUnitTest {
+public class TabSwitcherMediatorUnitTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
 
