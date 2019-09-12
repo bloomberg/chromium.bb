@@ -84,6 +84,32 @@ void ProactiveSuggestionsView::OnPaintBackground(gfx::Canvas* canvas) {
   canvas->DrawRoundRect(GetLocalBounds(), radius, flags);
 }
 
+void ProactiveSuggestionsView::OnMouseEntered(const ui::MouseEvent& event) {
+  views::Button::OnMouseEntered(event);
+  delegate_->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/true);
+}
+
+void ProactiveSuggestionsView::OnMouseExited(const ui::MouseEvent& event) {
+  views::Button::OnMouseExited(event);
+  delegate_->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/false);
+}
+
+void ProactiveSuggestionsView::OnGestureEvent(ui::GestureEvent* event) {
+  views::Button::OnGestureEvent(event);
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP_CANCEL:
+      delegate_->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/false);
+      break;
+    case ui::ET_GESTURE_TAP_DOWN:
+      delegate_->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/true);
+      break;
+    default:
+      // No action necessary.
+      break;
+  }
+}
+
 void ProactiveSuggestionsView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
   // There are two possible |senders|, the close button...
