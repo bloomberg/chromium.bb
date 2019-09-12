@@ -132,16 +132,16 @@ class TestShelfObserver : public ShelfObserver {
   bool icon_positions_changed() const { return icon_positions_changed_; }
   void Reset() {
     icon_positions_changed_ = false;
-    icon_positions_animation_duration_ = 0;
+    icon_positions_animation_duration_ = base::TimeDelta();
   }
-  int icon_positions_animation_duration() const {
+  base::TimeDelta icon_positions_animation_duration() const {
     return icon_positions_animation_duration_;
   }
 
  private:
   Shelf* shelf_;
   bool icon_positions_changed_ = false;
-  int icon_positions_animation_duration_ = 0;
+  base::TimeDelta icon_positions_animation_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfObserver);
 };
@@ -161,7 +161,8 @@ class ShelfObserverIconTest : public AshTestBase {
     observer_.reset(new TestShelfObserver(GetPrimaryShelf()));
     shelf_view_test_.reset(
         new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
-    shelf_view_test_->SetAnimationDuration(1);
+    shelf_view_test_->SetAnimationDuration(
+        base::TimeDelta::FromMilliseconds(1));
   }
 
   void TearDown() override {
@@ -310,7 +311,7 @@ class ShelfViewTest : public AshTestBase {
               500);
 
     test_api_.reset(new ShelfViewTestAPI(shelf_view_));
-    test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
+    test_api_->SetAnimationDuration(base::TimeDelta::FromMilliseconds(1));
 
     // Add a browser shortcut shelf item, as chrome does, for testing.
     AddItem(TYPE_BROWSER_SHORTCUT, true);
@@ -1816,7 +1817,8 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
 
   ShelfViewTestAPI test_api_for_secondary(shelf_view_for_secondary);
   // Speeds up animation for test.
-  test_api_for_secondary.SetAnimationDuration(1);
+  test_api_for_secondary.SetAnimationDuration(
+      base::TimeDelta::FromMilliseconds(1));
 
   AddAppShortcutsUntilOverflow();
 
@@ -2233,8 +2235,7 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   ShelfID second_app_id = AddAppShortcut();
 
   // Set the animation duration for shelf items.
-  const int animation_duration = 100;
-  test_api_->SetAnimationDuration(animation_duration);
+  test_api_->SetAnimationDuration(base::TimeDelta::FromMilliseconds(100));
 
   // The shelf items should animate if they are moved within the shelf, either
   // by swapping or if the items need to be rearranged due to an item getting
@@ -2243,14 +2244,14 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   generator->DragMouseTo(GetButtonCenter(second_app_id));
   generator->DragMouseBy(0, 50);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
+  EXPECT_EQ(100, observer.icon_positions_animation_duration().InMilliseconds());
 
   // The shelf items should not animate when the whole shelf and its contents
   // have to move.
   observer.Reset();
   shelf_view_->shelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(1, observer.icon_positions_animation_duration());
+  EXPECT_EQ(1, observer.icon_positions_animation_duration().InMilliseconds());
 
   // The shelf items should animate if we are entering or exiting tablet mode,
   // and the shelf alignment is bottom aligned.
@@ -2262,12 +2263,12 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
+  EXPECT_EQ(100, observer.icon_positions_animation_duration().InMilliseconds());
 
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
+  EXPECT_EQ(100, observer.icon_positions_animation_duration().InMilliseconds());
 
   // The shelf items should not animate if we are entering or exiting tablet
   // mode, and the shelf alignment is not bottom aligned.
@@ -2276,12 +2277,12 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(1, observer.icon_positions_animation_duration());
+  EXPECT_EQ(1, observer.icon_positions_animation_duration().InMilliseconds());
 
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(1, observer.icon_positions_animation_duration());
+  EXPECT_EQ(1, observer.icon_positions_animation_duration().InMilliseconds());
 }
 
 // Tests that the blank shelf view area shows a context menu on right click.

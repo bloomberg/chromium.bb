@@ -124,7 +124,8 @@ class BoundsAnimatorDisabler {
   explicit BoundsAnimatorDisabler(views::BoundsAnimator* bounds_animator)
       : old_duration_(bounds_animator->GetAnimationDuration()),
         bounds_animator_(bounds_animator) {
-    bounds_animator_->SetAnimationDuration(1);
+    bounds_animator_->SetAnimationDuration(
+        base::TimeDelta::FromMilliseconds(1));
   }
 
   ~BoundsAnimatorDisabler() {
@@ -133,7 +134,7 @@ class BoundsAnimatorDisabler {
 
  private:
   // The previous animation duration.
-  int old_duration_;
+  base::TimeDelta old_duration_;
   // The bounds animator which gets used.
   views::BoundsAnimator* bounds_animator_;
 

@@ -293,10 +293,11 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       contents_background_color_(SkColorSetRGB(0xF2, 0xF2, 0xF2)),
       grid_selected_color_(gfx::kGoogleBlue300),
       card_background_color_(SK_ColorWHITE),
-      page_transition_duration_ms_(250),
-      overscroll_page_transition_duration_ms_(50),
-      folder_transition_in_duration_ms_(250),
-      folder_transition_out_duration_ms_(30),
+      page_transition_duration_(base::TimeDelta::FromMilliseconds(250)),
+      overscroll_page_transition_duration_(
+          base::TimeDelta::FromMilliseconds(50)),
+      folder_transition_in_duration_(base::TimeDelta::FromMilliseconds(250)),
+      folder_transition_out_duration_(base::TimeDelta::FromMilliseconds(30)),
       num_start_page_tiles_(5),
       max_search_results_(6),
       max_folder_pages_(3),
@@ -423,13 +424,13 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
       contents_background_color_(base_config.contents_background_color_),
       grid_selected_color_(base_config.grid_selected_color_),
       card_background_color_(base_config.card_background_color_),
-      page_transition_duration_ms_(base_config.page_transition_duration_ms_),
-      overscroll_page_transition_duration_ms_(
-          base_config.overscroll_page_transition_duration_ms_),
-      folder_transition_in_duration_ms_(
-          base_config.folder_transition_in_duration_ms_),
-      folder_transition_out_duration_ms_(
-          base_config.folder_transition_out_duration_ms_),
+      page_transition_duration_(base_config.page_transition_duration_),
+      overscroll_page_transition_duration_(
+          base_config.overscroll_page_transition_duration_),
+      folder_transition_in_duration_(
+          base_config.folder_transition_in_duration_),
+      folder_transition_out_duration_(
+          base_config.folder_transition_out_duration_),
       num_start_page_tiles_(base_config.num_start_page_tiles_),
       max_search_results_(base_config.max_search_results_),
       max_folder_pages_(base_config.max_folder_pages_),

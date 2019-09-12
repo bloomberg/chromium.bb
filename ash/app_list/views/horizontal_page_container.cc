@@ -25,8 +25,8 @@ HorizontalPageContainer::HorizontalPageContainer(ContentsView* contents_view,
   // Assumes all horizontal pages paint to their own layers.
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   pagination_model_.SetTransitionDurations(
-      AppListConfig::instance().page_transition_duration_ms(),
-      AppListConfig::instance().overscroll_page_transition_duration_ms());
+      AppListConfig::instance().page_transition_duration(),
+      AppListConfig::instance().overscroll_page_transition_duration());
   pagination_model_.AddObserver(this);
   pagination_controller_ = std::make_unique<ash::PaginationController>(
       &pagination_model_, ash::PaginationController::SCROLL_AXIS_HORIZONTAL,
