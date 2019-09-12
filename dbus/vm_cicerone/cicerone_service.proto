@@ -1240,3 +1240,125 @@ message ConnectChunnelResponse {
   // If status is FAILED, contains the reason the request failed.
   string failure_reason = 2;
 }
+
+message UpgradeContainerRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container to upgrade.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Version {
+    // Uknown OS version.
+    UNKNOWN = 0;
+
+    // Debian 9 AKA Stretch.
+    DEBIAN_STRETCH = 1;
+
+    // Debian 10 AKA Buster.
+    DEBIAN_BUSTER = 2;
+  }
+  // Version from which the container will upgrade.
+  Version source_version = 4;
+
+  // Version to which the container will be upgraded.
+  Version target_version = 5;
+}
+
+message UpgradeContainerResponse {
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // Upgrade successfully started.
+    STARTED = 1;
+
+    // An upgrade is already running.
+    ALREADY_RUNNING = 2;
+
+    // Upgrade path not supported e.g. buster->stretch.
+    NOT_SUPPORTED = 3;
+
+    // The container is already upgraded to the requested target_version.
+    ALREADY_UPGRADED = 4;
+
+    // Failed to start the upgrade for some other reason.
+    FAILED = 5;
+  }
+
+  // Status of the request.
+  Status status = 1;
+
+  // If status is FAILED, contains the reason the request failed.
+  string failure_reason = 2;
+}
+
+message CancelUpgradeContainerRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container being upgraded.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+}
+
+message CancelUpgradeContainerResponse {
+  enum Status {
+    // The status is unknown.
+    UNKNOWN = 0;
+
+    // Upgrade was not in progress, nothing to do.
+    NOT_RUNNING = 1;
+
+    // Upgrade cancelled.
+    CANCELLED = 2;
+
+    // Failed to cancel.
+    FAILED = 3;
+  }
+
+  // Status of the request.
+  Status status = 1;
+
+  // If status is FAILED, contains the reason the request failed.
+  string failure_reason = 2;
+}
+
+message UpgradeContainerProgressSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container to upgrade.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    // The current status is unknown.
+    UNKNOWN = 0;
+
+    // Still in progress.
+    IN_PROGRESS = 1;
+
+    // Completed successfully.
+    SUCCEEDED = 2;
+
+    // Failed to complete.
+    FAILED = 3;
+  }
+
+  // Status of the upgrade.
+  Status status = 4;
+
+  // If status is FAILED, contains the reason the upgrade failed.
+  string failure_reason = 5;
+
+  // Human readable upgrade progress.
+  repeated string progress_messages = 6;
+}
