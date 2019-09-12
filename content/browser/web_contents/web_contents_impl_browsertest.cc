@@ -2567,8 +2567,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       base_web_contents->GetBrowserContext());
   create_params.desired_renderer_state =
       WebContents::CreateParams::kInitializeAndWarmupRendererProcess;
-  create_params.initial_size =
-      base_web_contents->GetContainerBounds().size();
   std::unique_ptr<WebContents> web_contents(WebContents::Create(create_params));
   ASSERT_TRUE(web_contents);
 
@@ -2619,7 +2617,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
         base_web_contents->GetBrowserContext());
     create_params.desired_renderer_state =
         WebContents::CreateParams::kNoRendererProcess;
-    create_params.initial_size = base_web_contents->GetContainerBounds().size();
     std::unique_ptr<WebContents> web_contents(
         WebContents::Create(create_params));
     ASSERT_TRUE(web_contents);
@@ -2678,8 +2675,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       base_web_contents->GetBrowserContext());
   create_params.desired_renderer_state =
       WebContents::CreateParams::kInitializeAndWarmupRendererProcess;
-  create_params.initial_size =
-      base_web_contents->GetContainerBounds().size();
   std::unique_ptr<WebContents> web_contents(WebContents::Create(create_params));
   ASSERT_TRUE(web_contents);
 
@@ -3789,7 +3784,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SetVisibilityBeforeLoad) {
   // the WebContents is fully controlled by the app.
   WebContents::CreateParams create_params(
       attached_web_contents->GetBrowserContext(), nullptr /* site_instance */);
-  create_params.initial_size = gfx::Size(100, 100);
   std::unique_ptr<WebContents> web_contents =
       WebContents::Create(create_params);
   EXPECT_EQ(Visibility::VISIBLE, web_contents->GetVisibility());
@@ -3864,7 +3858,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   WebContents::CreateParams create_params(
       attached_web_contents->GetBrowserContext(), /*site_instance=*/nullptr);
-  create_params.initial_size = gfx::Size(100, 100);
   std::unique_ptr<WebContents> public_web_contents =
       WebContents::Create(create_params);
   auto* web_contents = static_cast<WebContentsImpl*>(public_web_contents.get());

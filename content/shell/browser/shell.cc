@@ -231,11 +231,10 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
     create_params.starting_sandbox_flags =
         blink::kPresentationReceiverSandboxFlags;
   }
-  create_params.initial_size = AdjustWindowSize(initial_size);
   std::unique_ptr<WebContents> web_contents =
       WebContents::Create(create_params);
   Shell* shell =
-      CreateShell(std::move(web_contents), create_params.initial_size,
+      CreateShell(std::move(web_contents), AdjustWindowSize(initial_size),
                   true /* should_set_delegate */);
   if (!url.is_empty())
     shell->LoadURL(url);
@@ -254,14 +253,13 @@ Shell* Shell::CreateNewWindowWithSessionStorageNamespace(
     create_params.starting_sandbox_flags =
         blink::kPresentationReceiverSandboxFlags;
   }
-  create_params.initial_size = AdjustWindowSize(initial_size);
   std::map<std::string, scoped_refptr<SessionStorageNamespace>>
       session_storages;
   session_storages[""] = session_storage_namespace;
   std::unique_ptr<WebContents> web_contents =
       WebContents::CreateWithSessionStorage(create_params, session_storages);
   Shell* shell =
-      CreateShell(std::move(web_contents), create_params.initial_size,
+      CreateShell(std::move(web_contents), AdjustWindowSize(initial_size),
                   true /* should_set_delegate */);
   if (!url.is_empty())
     shell->LoadURL(url);
