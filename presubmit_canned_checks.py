@@ -971,7 +971,27 @@ def CheckOwnersFormat(input_api, output_api):
 def CheckOwners(input_api, output_api, source_file_filter=None):
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
-  affects_owners = any('OWNERS' in name for name in affected_files)
+  owners_db = input_api.owners_db
+  owners_db.override_files = input_api.change.OriginalOwnersFiles()
+  owner_email, reviewers = GetCodereviewOwnerAndReviewers(
+      input_api,
+      owners_db.email_regexp,
+      approval_needed=input_api.is_committing)
+
+  owner_email = owner_email or input_api.change.author_email
+
+  finder = input_api.owners_finder(
+      affected_files,
+      input_api.change.RepositoryRoot(),
+      owner_email,
+      reviewers,
+      fopen=file,
+      os_path=input_api.os_path,
+      email_postfix='',
+      disable_color=True,
+      override_files=input_api.change.OriginalOwnersFiles())
+  missing_files = finder.unreviewed_files
+  affects_owners = any('OWNERS' in name for name in missing_files)
 
   if input_api.is_committing:
     if input_api.tbr and not affects_owners:
@@ -992,29 +1012,12 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     needed = 'OWNER reviewers'
     output_fn = output_api.PresubmitNotifyResult
 
-  owners_db = input_api.owners_db
-  owners_db.override_files = input_api.change.OriginalOwnersFiles()
-  owner_email, reviewers = GetCodereviewOwnerAndReviewers(
-      input_api,
-      owners_db.email_regexp,
-      approval_needed=input_api.is_committing)
-
-  owner_email = owner_email or input_api.change.author_email
-
-  finder = input_api.owners_finder(
-      affected_files, input_api.change.RepositoryRoot(),
-      owner_email, reviewers, fopen=file, os_path=input_api.os_path,
-      email_postfix='', disable_color=True,
-      override_files=input_api.change.OriginalOwnersFiles())
-  missing_files = finder.unreviewed_files
-
   if missing_files:
     output_list = [
         output_fn('Missing %s for these files:\n    %s' %
                   (needed, '\n    '.join(sorted(missing_files))))]
     if input_api.tbr and affects_owners:
-      output_list.append(output_fn('The CL affects an OWNERS file, so TBR will '
-                                   'be ignored.'))
+      output_list.append(output_fn('TBR for OWNERS files are ignored.'))
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
       owners_with_comments = []
