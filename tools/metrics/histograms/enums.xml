@@ -24595,6 +24595,7 @@ Called by update_net_error_codes.py.-->
   <int value="3025" label="DeprecatedFileSystemRead"/>
   <int value="3026" label="DeprecatedFileSystemWrite"/>
   <int value="3027" label="PointerLockUnadjustedMovement"/>
+  <int value="3029" label="QuotaRead"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
