@@ -5322,6 +5322,7 @@ grit("resources") {
     ":chrome_internal_resources_gen",
     "//chrome/browser/engagement:mojo_bindings_js",
     "//chrome/browser/media:mojo_bindings_js",
+    "//chrome/browser/resources/browser_switch:app_module",
     "//chrome/browser/resources/safety_tips:make_safety_tips_protobuf",
     "//chrome/browser/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js",

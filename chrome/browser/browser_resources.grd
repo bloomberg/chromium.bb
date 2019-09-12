@@ -106,9 +106,7 @@
         <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS" file="resources\discards\sorted_table_behavior.js" compress="gzip" type="BINDATA" />
       </if>
       <if expr="is_win or is_macosx or (is_linux and not is_chromeos)">
-        <include name="IDR_BROWSER_SWITCH_APP_HTML" file="resources\browser_switch\app.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_BROWSER_SWITCH_APP_JS" file="resources\browser_switch\app.js" compress="gzip" type="BINDATA" />
-        <include name="IDR_BROWSER_SWITCH_PROXY_HTML" file="resources\browser_switch\browser_switch_proxy.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCH_APP_JS" file="${root_gen_dir}\chrome\browser\resources\browser_switch\app.js" compress="gzip" use_base_dir="false" type="BINDATA" />
         <include name="IDR_BROWSER_SWITCH_PROXY_JS" file="resources\browser_switch\browser_switch_proxy.js" compress="gzip" type="BINDATA" />
         <include name="IDR_BROWSER_SWITCH_HTML" file="resources\browser_switch\browser_switch.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_BROWSER_SWITCH_INTERNALS_HTML" file="resources\browser_switch\internals\browser_switch_internals.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
