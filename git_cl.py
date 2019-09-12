@@ -110,9 +110,6 @@ DEFAULT_LINT_IGNORE_REGEX = r"$^"
 # File name for yapf style config files.
 YAPF_CONFIG_FILENAME = '.style.yapf'
 
-# Buildbucket master name prefix for Buildbot masters.
-MASTER_PREFIX = 'master.'
-
 # Shortcut since it quickly becomes repetitive.
 Fore = colorama.Fore
 
@@ -344,32 +341,6 @@ def _get_properties_from_options(options):
   return properties
 
 
-def _prefix_master(master):
-  """Convert user-specified master name to full master name.
-
-  Buildbucket uses full master name(master.tryserver.chromium.linux) as bucket
-  name, while the developers always use shortened master name
-  (tryserver.chromium.linux) by stripping off the prefix 'master.'. This
-  function does the conversion for buildbucket migration.
-  """
-  if master.startswith(MASTER_PREFIX):
-    return master
-  return '%s%s' % (MASTER_PREFIX, master)
-
-
-def _unprefix_master(bucket):
-  """Convert bucket name to shortened master name.
-
-  Buildbucket uses full master name(master.tryserver.chromium.linux) as bucket
-  name, while the developers always use shortened master name
-  (tryserver.chromium.linux) by stripping off the prefix 'master.'. This
-  function does the conversion for buildbucket migration.
-  """
-  if bucket.startswith(MASTER_PREFIX):
-    return bucket[len(MASTER_PREFIX):]
-  return bucket
-
-
 def _buildbucket_retry(operation_name, http, *args, **kwargs):
   """Retries requests to buildbucket service and returns parsed json content."""
   try_count = 0
@@ -428,7 +399,7 @@ def _get_bucket_map(changelist, options, option_parser):
         output_stream=sys.stdout)
     if masters is None:
       return None
-    return {_prefix_master(m): b for m, b in masters.iteritems()}
+    return {m: b for m, b in masters.iteritems()}
 
   if options.bucket:
     return {options.bucket: {b: [] for b in options.bot}}
@@ -479,9 +450,6 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   print_text.append('Tried jobs on:')
   for bucket, builders_and_tests in sorted(buckets.iteritems()):
     print_text.append('Bucket: %s' % bucket)
-    master = None
-    if bucket.startswith(MASTER_PREFIX):
-      master = _unprefix_master(bucket)
     for builder, tests in sorted(builders_and_tests.iteritems()):
       print_text.append('  %s: %s' % (builder, tests))
       parameters = {
@@ -502,9 +470,6 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
           'buildset:%s' % buildset,
           'user_agent:git_cl_try',
       ]
-      if master:
-        parameters['properties']['master'] = master
-        tags.append('master:%s' % master)
 
       batch_req_body['builds'].append(
           {
@@ -598,18 +563,12 @@ def print_try_jobs(options, builds):
       builder_names_cache[b['id']] = name
       return name
 
-  def get_bucket(b):
-    bucket = b['bucket']
-    if bucket.startswith('master.'):
-      return bucket[len('master.'):]
-    return bucket
-
   if options.print_master:
     name_fmt = '%%-%ds %%-%ds' % (
-        max(len(str(get_bucket(b))) for b in builds.itervalues()),
+        max(len(str(b['bucket'])) for b in builds.itervalues()),
         max(len(str(get_builder(b))) for b in builds.itervalues()))
     def get_name(b):
-      return name_fmt % (get_bucket(b), get_builder(b))
+      return name_fmt % (b['bucket'], get_builder(b))
   else:
     name_fmt = '%%-%ds' % (
         max(len(str(get_builder(b))) for b in builds.itervalues()))
@@ -4952,6 +4911,9 @@ def CMDtry(parser, args):
     parser.error('Can\'t trigger tryjobs: %s' % error_message)
 
   buckets = _get_bucket_map(cl, options, parser)
+  if buckets and any(b.startswith('master.') for b in buckets):
+    print('ERROR: Buildbot masters are not supported.')
+    return 1
 
   # If no bots are listed and we couldn't get a list based on PRESUBMIT files,
   # then we default to triggering a CQ dry run (see http://crbug.com/625697).
