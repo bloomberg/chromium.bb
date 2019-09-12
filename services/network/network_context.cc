@@ -1720,7 +1720,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
                             ->report_client),
               net::CertVerifyProc::CreateDefault(cert_net_fetcher_),
               net::CreateCertVerifyProcBuiltin(
-                  cert_net_fetcher_, /*system_trust_store_provider=*/nullptr)));
+                  cert_net_fetcher_,
+                  net::SystemTrustStoreProvider::CreateDefaultForSSL())));
     }
 #endif
     if (!cert_verifier)
