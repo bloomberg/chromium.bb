@@ -378,6 +378,13 @@ class RawDiffTest(cros_test_lib.MockTestCase):
          'chromium-source-40.0.2197.2_rc-r1.ebuild')
     ])
 
+  def testEmptyDiff(self):
+    """Verify an empty diff doesn't crash."""
+    result = cros_build_lib.CommandResult(output='\n')
+    self.PatchObject(git, 'RunGit', return_value=result)
+    entries = git.RawDiff('foo', 'bar')
+    self.assertEqual([], entries)
+
 
 class GitPushTest(cros_test_lib.RunCommandTestCase):
   """Tests for git.GitPush function."""

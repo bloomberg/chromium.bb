@@ -1247,7 +1247,7 @@ def RawDiff(path, target):
 
   cmd = ['diff', '-M', '--raw', target]
   diff = RunGit(path, cmd).output
-  diff_lines = diff.strip().split('\n')
+  diff_lines = diff.strip().splitlines()
   for line in diff_lines:
     match = DIFF_RE.match(line)
     if not match:
