@@ -172,6 +172,7 @@ PYTHON3_TESTS = {
     'lib/cros_import_unittest',
     'lib/cros_logging_unittest',
     'lib/factory_unittest',
+    'lib/failures_lib_unittest',
     'lib/iter_utils_unittest',
     'lib/json_lib_unittest',
     'lib/launch_control/processed_builds_unittest',

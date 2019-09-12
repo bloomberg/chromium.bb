@@ -41,12 +41,7 @@ class StepFailure(Exception):
     Args:
       message: An error message.
     """
-    Exception.__init__(self, message)
-    self.args = (message,)
-
-  def __str__(self):
-    """Stringify the message."""
-    return self.message
+    super(StepFailure, self).__init__(message)
 
   def EncodeExtraInfo(self):
     """Encode extra_info into a json string, can be overwritten by subclasses"""
@@ -65,7 +60,7 @@ class StepFailure(Exception):
       An instance of failure_message_lib.StageFailureMessage.
     """
     stage_failure = failure_message_lib.StageFailure(
-        None, build_stage_id, None, self.__class__.__name__, self.message,
+        None, build_stage_id, None, self.__class__.__name__, str(self),
         self.EXCEPTION_CATEGORY, self.EncodeExtraInfo(), None, stage_name,
         None, None, None, None, None, None, None, None, None, None)
     return failure_message_lib.StageFailureMessage(
@@ -113,10 +108,11 @@ class CompoundFailure(StepFailure):
       # By default, print all stored ExceptInfo objects. This is the
       # preferred behavior because we'd always have the full
       # tracebacks to debug the failure.
-      self.message = '\n'.join(['{e.type}: {e.str}\n{e.traceback}'.format(e=ex)
-                                for ex in self.exc_infos])
+      message = '\n'.join('{e.type}: {e.str}\n{e.traceback}'.format(e=ex)
+                          for ex in self.exc_infos)
+    self.msg = message
 
-    super(CompoundFailure, self).__init__(message=message)
+    super(CompoundFailure, self).__init__(message)
 
   def ToSummaryString(self):
     """Returns a string with type and string of each ExceptInfo object.
@@ -126,7 +122,7 @@ class CompoundFailure(StepFailure):
     """
     if self.HasEmptyList():
       # Fall back to return self.message if list is empty.
-      return self.message
+      return self.msg
     else:
       return '\n'.join(['%s: %s' % (e.type, e.str) for e in self.exc_infos])
 
@@ -175,7 +171,7 @@ class CompoundFailure(StepFailure):
       An instance of failure_message_lib.StageFailureMessage.
     """
     stage_failure = failure_message_lib.StageFailure(
-        None, build_stage_id, None, self.__class__.__name__, self.message,
+        None, build_stage_id, None, self.__class__.__name__, str(self),
         self.EXCEPTION_CATEGORY, self.EncodeExtraInfo(), None, stage_name,
         None, None, None, None, None, None, None, None, None, None)
     compound_failure_message = failure_message_lib.CompoundFailureMessage(
