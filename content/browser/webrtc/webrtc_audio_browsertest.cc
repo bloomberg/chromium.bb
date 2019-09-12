@@ -46,7 +46,6 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     // Automatically grant device permission.
     AppendUseFakeUIForMediaStreamFlag();
   }

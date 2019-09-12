@@ -140,11 +140,6 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
     return web_contents->current_fullscreen_frame_;
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentsImplBrowserTest);
 };

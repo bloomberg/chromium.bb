@@ -356,7 +356,7 @@ void WidgetInputHandlerManager::DispatchEvent(
   // move event.
   // We don't want users interacting with stuff they can't see, so we drop it.
   // We allow moves because we need to keep the current pointer location up
-  // to date. Tests can allow pre-commit input through the
+  // to date. Tests and other code can allow pre-commit input through the
   // "allow-pre-commit-input" command line flag.
   // TODO(schenney): Also allow scrolls? This would make some tests not flaky,
   // it seems, because they sometimes crash on seeing a scroll update/end
