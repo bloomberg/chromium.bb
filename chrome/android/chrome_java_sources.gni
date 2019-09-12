@@ -767,7 +767,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/identity/UniqueIdentificationGenerator.java",
   "java/src/org/chromium/chrome/browser/identity/UniqueIdentificationGeneratorFactory.java",
   "java/src/org/chromium/chrome/browser/identity/UuidBasedUniqueIdentificationGenerator.java",
-  "java/src/org/chromium/chrome/browser/incognito/IncognitoDisclosureActivity.java",
   "java/src/org/chromium/chrome/browser/incognito/IncognitoNotificationManager.java",
   "java/src/org/chromium/chrome/browser/incognito/IncognitoNotificationService.java",
   "java/src/org/chromium/chrome/browser/incognito/IncognitoTabHost.java",

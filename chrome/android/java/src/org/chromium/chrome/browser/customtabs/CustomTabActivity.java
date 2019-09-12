@@ -25,10 +25,8 @@ import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -37,7 +35,6 @@ import org.chromium.chrome.browser.ActivityTabTaskDescriptionHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
@@ -59,8 +56,6 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarC
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.gsa.GSAState;
-import org.chromium.chrome.browser.incognito.IncognitoTabHost;
-import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
@@ -157,9 +152,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         }
     };
 
-    @Nullable
-    private IncognitoTabHost mIncognitoTabHost;
-
     @Override
     protected Drawable getBackgroundDrawable() {
         int initialBackgroundColor = mIntentDataProvider.getInitialBackgroundColor();
@@ -212,10 +204,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
         mSession = mIntentDataProvider.getSession();
 
-        if (mIntentDataProvider.isIncognito()) {
-            initializeIncognito();
-        }
-
         CustomTabNavigationBarController.updateNavigationBarColor(this, mIntentDataProvider);
     }
 
@@ -226,17 +214,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         }
         assert false : "NightModeStateController should have been already created";
         return COLOR_SCHEME_LIGHT;
-    }
-
-    private void initializeIncognito() {
-        mIncognitoTabHost = new IncognitoCustomTabHost();
-        IncognitoTabHostRegistry.getInstance().register(mIncognitoTabHost);
-
-        if (!CommandLine.getInstance().hasSwitch(
-                ChromeSwitches.ENABLE_INCOGNITO_SNAPSHOTS_IN_ANDROID_RECENTS)) {
-            // Disable taking screenshots and seeing snapshots in recents
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-        }
     }
 
     @Override
@@ -369,11 +346,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     protected void onDestroyInternal() {
         super.onDestroyInternal();
-
-        if (mIncognitoTabHost != null) {
-            IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);
-        }
-
         if (mTaskDescriptionHelper != null) mTaskDescriptionHelper.destroy();
     }
 
@@ -648,23 +620,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         String publisherUrlPackage = mConnection.getTrustedCdnPublisherUrlPackage();
         return publisherUrlPackage != null
                 && publisherUrlPackage.equals(mConnection.getClientPackageNameForSession(mSession));
-    }
-
-    private class IncognitoCustomTabHost implements IncognitoTabHost {
-
-        public IncognitoCustomTabHost() {
-            assert mIntentDataProvider.isIncognito();
-        }
-
-        @Override
-        public boolean hasIncognitoTabs() {
-            return !isFinishing();
-        }
-
-        @Override
-        public void closeAllIncognitoTabs() {
-            mNavigationController.finish(CustomTabActivityNavigationController.FinishReason.OTHER);
-        }
     }
 
     @Override
