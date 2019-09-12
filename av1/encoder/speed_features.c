@@ -405,9 +405,6 @@ static void set_good_speed_features_framesize_independent(
   }
 
   if (speed >= 5) {
-    // Note(yunqing): This recode feature causes big quality drop in vbr
-    // encoding. Need to work on it.
-    sf->recode_loop = ALLOW_RECODE_KFMAXBW;
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_H_V_CFL;
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC_H_V;
