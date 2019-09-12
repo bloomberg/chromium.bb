@@ -1438,14 +1438,35 @@ deps = {
   'src/tools/page_cycler/acid3':
     Var('chromium_git') + '/chromium/deps/acid3.git' + '@' + '6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
 
-  'src/tools/skia_goldctl': {
+  'src/tools/skia_goldctl/linux': {
       'packages': [
         {
-          'package': 'skia/tools/goldctl/${{platform}}',
+          'package': 'skia/tools/goldctl/linux-amd64',
           'version': 'git_revision:343c20ec0539c9d390d11dc566eab245561234f9',
         },
       ],
       'dep_type': 'cipd',
+      'condition': 'checkout_linux',
+  },
+  'src/tools/skia_goldctl/win': {
+      'packages': [
+        {
+          'package': 'skia/tools/goldctl/windows-amd64',
+          'version': 'git_revision:343c20ec0539c9d390d11dc566eab245561234f9',
+        },
+      ],
+      'dep_type': 'cipd',
+      'condition': 'checkout_win',
+  },
+  'src/tools/skia_goldctl/mac': {
+      'packages': [
+        {
+          'package': 'skia/tools/goldctl/mac-amd64',
+          'version': 'git_revision:343c20ec0539c9d390d11dc566eab245561234f9',
+        },
+      ],
+      'dep_type': 'cipd',
+      'condition': 'checkout_mac',
   },
 
   'src/tools/swarming_client':
