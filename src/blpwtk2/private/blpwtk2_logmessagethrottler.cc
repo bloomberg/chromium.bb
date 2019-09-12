@@ -170,7 +170,6 @@ bool LogMessageThrottler::writeLog(int severity,
                                    size_t message_start,
                                    const std::string& str) {
   if (impl_->acceptWriteLog()) {
-    DCHECK(Statics::isInApplicationMainThread());
     return impl_->writeLog(severity, file, line, message_start, str);
   }
   return false;
@@ -183,7 +182,6 @@ bool LogMessageThrottler::writeConsole(int severity,
                                        const std::string& message,
                                        const std::string& stack_trace) {
   if (impl_->acceptWriteConsole()) {
-    DCHECK(Statics::isInApplicationMainThread());
     return impl_->writeConsole(severity, file, line, column, message,
                                stack_trace);
   }
