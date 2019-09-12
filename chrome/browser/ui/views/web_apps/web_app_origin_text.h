@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_ORIGIN_TEXT_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_ORIGIN_TEXT_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_ORIGIN_TEXT_H_
+#define CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_ORIGIN_TEXT_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -18,10 +18,10 @@ class Label;
 }
 
 // A URL's origin text with a fade in/out animation.
-class HostedAppOriginText : public views::View {
+class WebAppOriginText : public views::View {
  public:
-  explicit HostedAppOriginText(Browser* browser);
-  ~HostedAppOriginText() override;
+  explicit WebAppOriginText(Browser* browser);
+  ~WebAppOriginText() override;
 
   void SetTextColor(SkColor color);
 
@@ -37,9 +37,9 @@ class HostedAppOriginText : public views::View {
 
   void AnimationComplete();
 
-  base::WeakPtrFactory<HostedAppOriginText> weak_factory_{this};
+  base::WeakPtrFactory<WebAppOriginText> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(HostedAppOriginText);
+  DISALLOW_COPY_AND_ASSIGN(WebAppOriginText);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_ORIGIN_TEXT_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_ORIGIN_TEXT_H_

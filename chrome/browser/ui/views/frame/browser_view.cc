@@ -623,7 +623,7 @@ WebContents* BrowserView::GetActiveWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-bool BrowserView::IsBrowserTypeHostedApp() const {
+bool BrowserView::IsBrowserTypeWebApp() const {
   return web_app::AppBrowserController::IsForWebAppBrowser(browser_.get());
 }
 

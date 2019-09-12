@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
+#include "chrome/browser/ui/views/web_apps/web_app_origin_text.h"
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -24,7 +24,7 @@ constexpr gfx::Tween::Type kTweenType = gfx::Tween::FAST_OUT_SLOW_IN_2;
 
 }  // namespace
 
-HostedAppOriginText::HostedAppOriginText(Browser* browser) {
+WebAppOriginText::WebAppOriginText(Browser* browser) {
   DCHECK(web_app::AppBrowserController::IsForWebAppBrowser(browser));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -50,13 +50,13 @@ HostedAppOriginText::HostedAppOriginText(Browser* browser) {
   layer()->SetMasksToBounds(true);
 }
 
-HostedAppOriginText::~HostedAppOriginText() = default;
+WebAppOriginText::~WebAppOriginText() = default;
 
-void HostedAppOriginText::SetTextColor(SkColor color) {
+void WebAppOriginText::SetTextColor(SkColor color) {
   label_->SetEnabledColor(color);
 }
 
-void HostedAppOriginText::StartFadeAnimation() {
+void WebAppOriginText::StartFadeAnimation() {
   ui::Layer* label_layer = label_->layer();
 
   // Current state will become the first animation keyframe.
@@ -66,17 +66,17 @@ void HostedAppOriginText::StartFadeAnimation() {
 
   // Fade in.
   auto opacity_keyframe = ui::LayerAnimationElement::CreateOpacityElement(
-      1, HostedAppButtonContainer::kOriginFadeInDuration);
+      1, WebAppFrameToolbarView::kOriginFadeInDuration);
   opacity_keyframe->set_tween_type(kTweenType);
   opacity_sequence->AddElement(std::move(opacity_keyframe));
 
   // Pause.
   opacity_sequence->AddElement(ui::LayerAnimationElement::CreatePauseElement(
-      0, HostedAppButtonContainer::kOriginPauseDuration));
+      0, WebAppFrameToolbarView::kOriginPauseDuration));
 
   // Fade out.
   opacity_keyframe = ui::LayerAnimationElement::CreateOpacityElement(
-      0, HostedAppButtonContainer::kOriginFadeOutDuration);
+      0, WebAppFrameToolbarView::kOriginFadeOutDuration);
   opacity_keyframe->set_tween_type(kTweenType);
   opacity_sequence->AddElement(std::move(opacity_keyframe));
 
@@ -84,18 +84,18 @@ void HostedAppOriginText::StartFadeAnimation() {
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&HostedAppOriginText::AnimationComplete,
+      base::BindOnce(&WebAppOriginText::AnimationComplete,
                      weak_factory_.GetWeakPtr()),
-      HostedAppButtonContainer::OriginTotalDuration());
+      WebAppFrameToolbarView::OriginTotalDuration());
 
   NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
-void HostedAppOriginText::AnimationComplete() {
+void WebAppOriginText::AnimationComplete() {
   SetVisible(false);
 }
 
-void HostedAppOriginText::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+void WebAppOriginText::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kApplication;
   node_data->SetName(label_->GetText());
 }

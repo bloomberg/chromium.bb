@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_MENU_BUTTON_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_MENU_BUTTON_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_MENU_BUTTON_H_
+#define CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_MENU_BUTTON_H_
 
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
@@ -13,12 +13,12 @@
 
 class BrowserView;
 
-// The 'app menu' button for the hosted app.
-class HostedAppMenuButton : public AppMenuButton,
-                            public views::MenuButtonListener {
+// The 'app menu' button for a web app window.
+class WebAppMenuButton : public AppMenuButton,
+                         public views::MenuButtonListener {
  public:
-  explicit HostedAppMenuButton(BrowserView* browser_view);
-  ~HostedAppMenuButton() override;
+  explicit WebAppMenuButton(BrowserView* browser_view);
+  ~WebAppMenuButton() override;
 
   // Sets the color of the menu button icon and highlight.
   void SetColor(SkColor color);
@@ -50,7 +50,7 @@ class HostedAppMenuButton : public AppMenuButton,
 
   base::OneShotTimer highlight_off_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(HostedAppMenuButton);
+  DISALLOW_COPY_AND_ASSIGN(WebAppMenuButton);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_MENU_BUTTON_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_MENU_BUTTON_H_

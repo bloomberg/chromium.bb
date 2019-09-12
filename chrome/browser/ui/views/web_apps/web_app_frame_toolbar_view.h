@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_BUTTON_CONTAINER_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_BUTTON_CONTAINER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_FRAME_TOOLBAR_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_FRAME_TOOLBAR_VIEW_H_
 
 #include <memory>
 
@@ -24,24 +24,20 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace {
-class HostedAppNonClientFrameViewAshTest;
-}
-
 class AppMenuButton;
 class BrowserView;
 class ExtensionsToolbarContainer;
-class HostedAppOriginText;
-class HostedAppMenuButton;
+class WebAppOriginText;
+class WebAppMenuButton;
 
-// A container for hosted app buttons in the title bar.
-class HostedAppButtonContainer : public views::AccessiblePaneView,
-                                 public BrowserActionsContainer::Delegate,
-                                 public ContentSettingImageView::Delegate,
-                                 public ImmersiveModeController::Observer,
-                                 public PageActionIconView::Delegate,
-                                 public ToolbarButtonProvider,
-                                 public views::WidgetObserver {
+// A container for web app buttons in the title bar.
+class WebAppFrameToolbarView : public views::AccessiblePaneView,
+                               public BrowserActionsContainer::Delegate,
+                               public ContentSettingImageView::Delegate,
+                               public ImmersiveModeController::Observer,
+                               public PageActionIconView::Delegate,
+                               public ToolbarButtonProvider,
+                               public views::WidgetObserver {
  public:
   static const char kViewClassName[];
 
@@ -60,12 +56,12 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
 
   // |active_color| and |inactive_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
-  HostedAppButtonContainer(views::Widget* widget,
-                           BrowserView* browser_view,
-                           SkColor active_color,
-                           SkColor inactive_color,
-                           base::Optional<int> right_margin = base::nullopt);
-  ~HostedAppButtonContainer() override;
+  WebAppFrameToolbarView(views::Widget* widget,
+                         BrowserView* browser_view,
+                         SkColor active_color,
+                         SkColor inactive_color,
+                         base::Optional<int> right_margin = base::nullopt);
+  ~WebAppFrameToolbarView() override;
 
   void UpdateStatusIconsVisibility();
 
@@ -132,10 +128,10 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   void ChildVisibilityChanged(views::View* child) override;
 
  private:
-  friend class HostedAppNonClientFrameViewAshTest;
-  friend class HostedAppGlassBrowserFrameViewTest;
-  friend class ImmersiveModeControllerAshHostedAppBrowserTest;
-  friend class HostedAppAshInteractiveUITest;
+  friend class WebAppNonClientFrameViewAshTest;
+  friend class WebAppGlassBrowserFrameViewTest;
+  friend class ImmersiveModeControllerAshWebAppBrowserTest;
+  friend class WebAppAshInteractiveUITest;
 
   // Duration to wait before starting the opening animation.
   static constexpr base::TimeDelta kTitlebarAnimationDelay =
@@ -177,15 +173,15 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   SkColor inactive_color_;
 
   // Owned by the views hierarchy.
-  HostedAppOriginText* hosted_app_origin_text_ = nullptr;
+  WebAppOriginText* web_app_origin_text_ = nullptr;
   ContentSettingsContainer* content_settings_container_ = nullptr;
   OmniboxPageActionIconContainerView* omnibox_page_action_icon_container_view_ =
       nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;
   ExtensionsToolbarContainer* extensions_container_ = nullptr;
-  HostedAppMenuButton* app_menu_button_ = nullptr;
+  WebAppMenuButton* web_app_menu_button_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(HostedAppButtonContainer);
+  DISALLOW_COPY_AND_ASSIGN(WebAppFrameToolbarView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_BUTTON_CONTAINER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_FRAME_TOOLBAR_VIEW_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,11 +17,11 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
-#include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
+#include "chrome/browser/ui/views/web_apps/web_app_origin_text.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/features.h"
@@ -51,7 +51,7 @@ bool g_animation_disabled_for_testing = false;
 constexpr base::TimeDelta kContentSettingsFadeInDuration =
     base::TimeDelta::FromMilliseconds(500);
 
-class HostedAppToolbarActionsBar : public ToolbarActionsBar {
+class WebAppToolbarActionsBar : public ToolbarActionsBar {
  public:
   using ToolbarActionsBar::ToolbarActionsBar;
 
@@ -73,7 +73,7 @@ class HostedAppToolbarActionsBar : public ToolbarActionsBar {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(HostedAppToolbarActionsBar);
+  DISALLOW_COPY_AND_ASSIGN(WebAppToolbarActionsBar);
 };
 
 int HorizontalPaddingBetweenItems() {
@@ -83,23 +83,22 @@ int HorizontalPaddingBetweenItems() {
 
 }  // namespace
 
-const char HostedAppButtonContainer::kViewClassName[] =
-    "HostedAppButtonContainer";
+const char WebAppFrameToolbarView::kViewClassName[] = "WebAppFrameToolbarView";
 
-constexpr base::TimeDelta HostedAppButtonContainer::kTitlebarAnimationDelay;
-constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeInDuration;
-constexpr base::TimeDelta HostedAppButtonContainer::kOriginPauseDuration;
-constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeOutDuration;
+constexpr base::TimeDelta WebAppFrameToolbarView::kTitlebarAnimationDelay;
+constexpr base::TimeDelta WebAppFrameToolbarView::kOriginFadeInDuration;
+constexpr base::TimeDelta WebAppFrameToolbarView::kOriginPauseDuration;
+constexpr base::TimeDelta WebAppFrameToolbarView::kOriginFadeOutDuration;
 
 // static
-base::TimeDelta HostedAppButtonContainer::OriginTotalDuration() {
+base::TimeDelta WebAppFrameToolbarView::OriginTotalDuration() {
   // TimeDelta.operator+ uses time_internal::SaturatedAdd() which isn't
   // constexpr, so this needs to be a function to not introduce a static
   // initializer.
   return kOriginFadeInDuration + kOriginPauseDuration + kOriginFadeOutDuration;
 }
 
-class HostedAppButtonContainer::ContentSettingsContainer : public views::View {
+class WebAppFrameToolbarView::ContentSettingsContainer : public views::View {
  public:
   explicit ContentSettingsContainer(
       ContentSettingImageView::Delegate* delegate);
@@ -156,7 +155,7 @@ class HostedAppButtonContainer::ContentSettingsContainer : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsContainer);
 };
 
-HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
+WebAppFrameToolbarView::ContentSettingsContainer::ContentSettingsContainer(
     ContentSettingImageView::Delegate* delegate) {
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -183,12 +182,11 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
   }
 }
 
-HostedAppButtonContainer::HostedAppButtonContainer(
-    views::Widget* widget,
-    BrowserView* browser_view,
-    SkColor active_color,
-    SkColor inactive_color,
-    base::Optional<int> right_margin)
+WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
+                                               BrowserView* browser_view,
+                                               SkColor active_color,
+                                               SkColor inactive_color,
+                                               base::Optional<int> right_margin)
     : browser_view_(browser_view),
       active_color_(active_color),
       inactive_color_(inactive_color) {
@@ -196,7 +194,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   DCHECK(web_app::AppBrowserController::IsForWebAppBrowser(
       browser_view_->browser()));
 
-  SetID(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
+  SetID(VIEW_ID_WEB_APP_FRAME_TOOLBAR);
 
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -211,8 +209,8 @@ HostedAppButtonContainer::HostedAppButtonContainer(
 
   auto* app_controller = browser_view_->browser()->app_controller();
   if (app_controller->HasTitlebarAppOriginText()) {
-    hosted_app_origin_text_ = AddChildView(
-        std::make_unique<HostedAppOriginText>(browser_view->browser()));
+    web_app_origin_text_ = AddChildView(
+        std::make_unique<WebAppOriginText>(browser_view->browser()));
   }
 
   if (app_controller->HasTitlebarContentSettings()) {
@@ -231,7 +229,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
     params.types_enabled.push_back(PageActionIconType::kNativeFileSystemAccess);
   if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls))
     params.types_enabled.push_back(PageActionIconType::kCookieControls);
-  params.icon_size = GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE);
+  params.icon_size = GetLayoutConstant(WEB_APP_PAGE_ACTION_ICON_SIZE);
   params.icon_color = GetCaptionColor();
   params.between_icon_spacing = HorizontalPaddingBetweenItems();
   params.browser = browser_view_->browser();
@@ -258,15 +256,15 @@ HostedAppButtonContainer::HostedAppButtonContainer(
 // TODO(crbug.com/998900): Create AppControllerUi class to contain this logic.
 #if defined(OS_CHROMEOS)
   if (app_controller->UseTitlebarTerminalSystemAppMenu()) {
-    app_menu_button_ = AddChildView(
+    web_app_menu_button_ = AddChildView(
         std::make_unique<TerminalSystemAppMenuButton>(browser_view));
   } else {
-    app_menu_button_ =
-        AddChildView(std::make_unique<HostedAppMenuButton>(browser_view));
+    web_app_menu_button_ =
+        AddChildView(std::make_unique<WebAppMenuButton>(browser_view));
   }
 #else
-  app_menu_button_ =
-      AddChildView(std::make_unique<HostedAppMenuButton>(browser_view));
+  web_app_menu_button_ =
+      AddChildView(std::make_unique<WebAppMenuButton>(browser_view));
 #endif
 
   UpdateChildrenColor();
@@ -283,20 +281,20 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   scoped_widget_observer_.Add(widget);
 }
 
-HostedAppButtonContainer::~HostedAppButtonContainer() {
+WebAppFrameToolbarView::~WebAppFrameToolbarView() {
   ImmersiveModeController* immersive_controller =
       browser_view_->immersive_mode_controller();
   if (immersive_controller)
     immersive_controller->RemoveObserver(this);
 }
 
-void HostedAppButtonContainer::UpdateStatusIconsVisibility() {
+void WebAppFrameToolbarView::UpdateStatusIconsVisibility() {
   if (content_settings_container_)
     content_settings_container_->UpdateContentSettingViewsVisibility();
   omnibox_page_action_icon_container_view_->UpdateAll();
 }
 
-void HostedAppButtonContainer::UpdateCaptionColors() {
+void WebAppFrameToolbarView::UpdateCaptionColors() {
   const BrowserNonClientFrameView* frame_view =
       browser_view_->frame()->GetFrameView();
   active_color_ = frame_view->GetCaptionColor(
@@ -306,17 +304,17 @@ void HostedAppButtonContainer::UpdateCaptionColors() {
   UpdateChildrenColor();
 }
 
-void HostedAppButtonContainer::SetPaintAsActive(bool active) {
+void WebAppFrameToolbarView::SetPaintAsActive(bool active) {
   if (paint_as_active_ == active)
     return;
   paint_as_active_ = active;
   UpdateChildrenColor();
 }
 
-int HostedAppButtonContainer::LayoutInContainer(int leading_x,
-                                                int trailing_x,
-                                                int y,
-                                                int available_height) {
+int WebAppFrameToolbarView::LayoutInContainer(int leading_x,
+                                              int trailing_x,
+                                              int y,
+                                              int available_height) {
   if (available_height == 0) {
     SetSize(gfx::Size());
     return trailing_x;
@@ -333,105 +331,102 @@ int HostedAppButtonContainer::LayoutInContainer(int leading_x,
   return bounds().x();
 }
 
-const char* HostedAppButtonContainer::GetClassName() const {
+const char* WebAppFrameToolbarView::GetClassName() const {
   return kViewClassName;
 }
 
-views::LabelButton* HostedAppButtonContainer::GetOverflowReferenceView() {
-  return app_menu_button_;
+views::LabelButton* WebAppFrameToolbarView::GetOverflowReferenceView() {
+  return web_app_menu_button_;
 }
 
-base::Optional<int> HostedAppButtonContainer::GetMaxBrowserActionsWidth()
-    const {
+base::Optional<int> WebAppFrameToolbarView::GetMaxBrowserActionsWidth() const {
   // Our maximum size is 1 icon so don't specify a pixel-width max here.
   return base::Optional<int>();
 }
 
-bool HostedAppButtonContainer::CanShowIconInToolbar() const {
+bool WebAppFrameToolbarView::CanShowIconInToolbar() const {
   return false;
 }
 
 std::unique_ptr<ToolbarActionsBar>
-HostedAppButtonContainer::CreateToolbarActionsBar(
+WebAppFrameToolbarView::CreateToolbarActionsBar(
     ToolbarActionsBarDelegate* delegate,
     Browser* browser,
     ToolbarActionsBar* main_bar) const {
   DCHECK_EQ(browser_view_->browser(), browser);
-  return std::make_unique<HostedAppToolbarActionsBar>(delegate, browser,
-                                                      main_bar);
+  return std::make_unique<WebAppToolbarActionsBar>(delegate, browser, main_bar);
 }
 
-SkColor HostedAppButtonContainer::GetContentSettingInkDropColor() const {
+SkColor WebAppFrameToolbarView::GetContentSettingInkDropColor() const {
   return GetCaptionColor();
 }
 
-content::WebContents* HostedAppButtonContainer::GetContentSettingWebContents() {
+content::WebContents* WebAppFrameToolbarView::GetContentSettingWebContents() {
   return browser_view_->GetActiveWebContents();
 }
 
 ContentSettingBubbleModelDelegate*
-HostedAppButtonContainer::GetContentSettingBubbleModelDelegate() {
+WebAppFrameToolbarView::GetContentSettingBubbleModelDelegate() {
   return browser_view_->browser()->content_setting_bubble_model_delegate();
 }
 
-void HostedAppButtonContainer::OnContentSettingImageBubbleShown(
+void WebAppFrameToolbarView::OnContentSettingImageBubbleShown(
     ContentSettingImageModel::ImageType type) const {
   UMA_HISTOGRAM_ENUMERATION(
       "HostedAppFrame.ContentSettings.ImagePressed", type,
       ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
 }
 
-void HostedAppButtonContainer::OnImmersiveRevealStarted() {
+void WebAppFrameToolbarView::OnImmersiveRevealStarted() {
   // Don't wait for the fade in animation to make content setting icons visible
   // once in immersive mode.
   if (content_settings_container_)
     content_settings_container_->EnsureVisible();
 }
 
-SkColor HostedAppButtonContainer::GetPageActionInkDropColor() const {
+SkColor WebAppFrameToolbarView::GetPageActionInkDropColor() const {
   return GetCaptionColor();
 }
 
 content::WebContents*
-HostedAppButtonContainer::GetWebContentsForPageActionIconView() {
+WebAppFrameToolbarView::GetWebContentsForPageActionIconView() {
   return browser_view_->GetActiveWebContents();
 }
 
-BrowserActionsContainer*
-HostedAppButtonContainer::GetBrowserActionsContainer() {
+BrowserActionsContainer* WebAppFrameToolbarView::GetBrowserActionsContainer() {
   CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   return browser_actions_container_;
 }
 
-ToolbarActionView* HostedAppButtonContainer::GetToolbarActionViewForId(
+ToolbarActionView* WebAppFrameToolbarView::GetToolbarActionViewForId(
     const std::string& id) {
   // TODO(pbos): Implement this for kExtensionsToolbarMenu.
   CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   return browser_actions_container_->GetViewForId(id);
 }
 
-views::View* HostedAppButtonContainer::GetDefaultExtensionDialogAnchorView() {
+views::View* WebAppFrameToolbarView::GetDefaultExtensionDialogAnchorView() {
   // TODO(pbos): Implement this for kExtensionsToolbarMenu.
   CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   return GetAppMenuButton();
 }
 
 OmniboxPageActionIconContainerView*
-HostedAppButtonContainer::GetOmniboxPageActionIconContainerView() {
+WebAppFrameToolbarView::GetOmniboxPageActionIconContainerView() {
   return omnibox_page_action_icon_container_view_;
 }
 
-AppMenuButton* HostedAppButtonContainer::GetAppMenuButton() {
-  return app_menu_button_;
+AppMenuButton* WebAppFrameToolbarView::GetAppMenuButton() {
+  return web_app_menu_button_;
 }
 
-gfx::Rect HostedAppButtonContainer::GetFindBarBoundingBox(
+gfx::Rect WebAppFrameToolbarView::GetFindBarBoundingBox(
     int contents_height) const {
   if (!IsDrawn())
     return gfx::Rect();
 
-  gfx::Rect anchor_bounds =
-      app_menu_button_->ConvertRectToWidget(app_menu_button_->GetLocalBounds());
+  gfx::Rect anchor_bounds = web_app_menu_button_->ConvertRectToWidget(
+      web_app_menu_button_->GetLocalBounds());
   if (base::i18n::IsRTL()) {
     // Find bar will be left aligned so align to left edge of app menu button.
     int widget_width = GetWidget()->GetRootView()->width();
@@ -443,20 +438,20 @@ gfx::Rect HostedAppButtonContainer::GetFindBarBoundingBox(
                    anchor_bounds.x() + anchor_bounds.width(), contents_height);
 }
 
-void HostedAppButtonContainer::FocusToolbar() {
+void WebAppFrameToolbarView::FocusToolbar() {
   SetPaneFocus(nullptr);
 }
 
-views::AccessiblePaneView* HostedAppButtonContainer::GetAsAccessiblePaneView() {
+views::AccessiblePaneView* WebAppFrameToolbarView::GetAsAccessiblePaneView() {
   return this;
 }
 
-views::View* HostedAppButtonContainer::GetAnchorView() {
-  return app_menu_button_;
+views::View* WebAppFrameToolbarView::GetAnchorView() {
+  return web_app_menu_button_;
 }
 
-void HostedAppButtonContainer::OnWidgetVisibilityChanged(views::Widget* widget,
-                                                         bool visibility) {
+void WebAppFrameToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
+                                                       bool visibility) {
   if (!visibility || !pending_widget_visibility_)
     return;
   pending_widget_visibility_ = false;
@@ -465,74 +460,73 @@ void HostedAppButtonContainer::OnWidgetVisibilityChanged(views::Widget* widget,
       content_settings_container_->SetUpForFadeIn();
     animation_start_delay_.Start(
         FROM_HERE, kTitlebarAnimationDelay, this,
-        &HostedAppButtonContainer::StartTitlebarAnimation);
+        &WebAppFrameToolbarView::StartTitlebarAnimation);
   }
 }
 
-gfx::Size HostedAppButtonContainer::CalculatePreferredSize() const {
+gfx::Size WebAppFrameToolbarView::CalculatePreferredSize() const {
   // Prefer height consistency over accommodating edge case icons that may bump
   // up the container height (e.g. extension action icons with badges).
   // TODO(https://crbug.com/889745): Fix the inconsistent icon sizes found in
   // this container and turn this into a DCHECK that the conatiner height is the
   // same as the app menu button height.
   return gfx::Size(views::View::CalculatePreferredSize().width(),
-                   app_menu_button_->GetPreferredSize().height());
+                   web_app_menu_button_->GetPreferredSize().height());
 }
 
-void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {
+void WebAppFrameToolbarView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void HostedAppButtonContainer::ChildVisibilityChanged(views::View* child) {
+void WebAppFrameToolbarView::ChildVisibilityChanged(views::View* child) {
   // Changes to layout need to be taken into account by the frame view.
   PreferredSizeChanged();
 }
 
-bool HostedAppButtonContainer::ShouldAnimate() const {
+bool WebAppFrameToolbarView::ShouldAnimate() const {
   return !g_animation_disabled_for_testing &&
          !browser_view_->immersive_mode_controller()->IsEnabled();
 }
 
-void HostedAppButtonContainer::StartTitlebarAnimation() {
+void WebAppFrameToolbarView::StartTitlebarAnimation() {
   if (!ShouldAnimate())
     return;
 
-  if (hosted_app_origin_text_)
-    hosted_app_origin_text_->StartFadeAnimation();
-  app_menu_button_->StartHighlightAnimation();
-  icon_fade_in_delay_.Start(
-      FROM_HERE, OriginTotalDuration(), this,
-      &HostedAppButtonContainer::FadeInContentSettingIcons);
+  if (web_app_origin_text_)
+    web_app_origin_text_->StartFadeAnimation();
+  web_app_menu_button_->StartHighlightAnimation();
+  icon_fade_in_delay_.Start(FROM_HERE, OriginTotalDuration(), this,
+                            &WebAppFrameToolbarView::FadeInContentSettingIcons);
 }
 
-void HostedAppButtonContainer::FadeInContentSettingIcons() {
+void WebAppFrameToolbarView::FadeInContentSettingIcons() {
   if (content_settings_container_)
     content_settings_container_->FadeIn();
 }
 
-void HostedAppButtonContainer::DisableAnimationForTesting() {
+void WebAppFrameToolbarView::DisableAnimationForTesting() {
   g_animation_disabled_for_testing = true;
 }
 
-views::View* HostedAppButtonContainer::GetContentSettingContainerForTesting() {
+views::View* WebAppFrameToolbarView::GetContentSettingContainerForTesting() {
   return content_settings_container_;
 }
 
 const std::vector<ContentSettingImageView*>&
-HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
+WebAppFrameToolbarView::GetContentSettingViewsForTesting() const {
   return content_settings_container_->GetContentSettingViewsForTesting();
 }
 
-SkColor HostedAppButtonContainer::GetCaptionColor() const {
+SkColor WebAppFrameToolbarView::GetCaptionColor() const {
   return paint_as_active_ ? active_color_ : inactive_color_;
 }
 
-void HostedAppButtonContainer::UpdateChildrenColor() {
+void WebAppFrameToolbarView::UpdateChildrenColor() {
   SkColor icon_color = GetCaptionColor();
-  if (hosted_app_origin_text_)
-    hosted_app_origin_text_->SetTextColor(icon_color);
+  if (web_app_origin_text_)
+    web_app_origin_text_->SetTextColor(icon_color);
   if (content_settings_container_)
     content_settings_container_->SetIconColor(icon_color);
   omnibox_page_action_icon_container_view_->SetIconColor(icon_color);
-  app_menu_button_->SetColor(icon_color);
+  web_app_menu_button_->SetColor(icon_color);
 }
