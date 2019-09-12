@@ -84,6 +84,7 @@ class GpuMemoryBufferManager;
 namespace media {
 struct AudioSinkParameters;
 struct AudioSourceParameters;
+class MediaPermission;
 class GpuVideoAcceleratorFactories;
 }
 
@@ -639,6 +640,16 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() {
     return base::nullopt;
   }
+
+  virtual media::MediaPermission* GetWebRTCMediaPermission(
+      WebLocalFrame* web_frame) {
+    return nullptr;
+  }
+
+  virtual void GetWebRTCRendererPreferences(WebLocalFrame* web_frame,
+                                            WebString* ip_handling_policy,
+                                            uint16_t* udp_min_port,
+                                            uint16_t* udp_max_port) {}
 
   virtual base::Optional<int> GetAgcStartupMinimumVolume() {
     return base::nullopt;

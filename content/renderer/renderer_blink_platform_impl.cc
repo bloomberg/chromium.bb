@@ -51,6 +51,7 @@
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/p2p/port_allocator.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
@@ -61,6 +62,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/audio/audio_output_device.h"
+#include "media/base/media_permission.h"
 #include "media/base/media_switches.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
@@ -685,6 +687,46 @@ RendererBlinkPlatformImpl::GetWebRTCAudioProcessingConfiguration() {
   return GetContentClient()
       ->renderer()
       ->WebRTCPlatformSpecificAudioProcessingConfiguration();
+}
+
+media::MediaPermission* RendererBlinkPlatformImpl::GetWebRTCMediaPermission(
+    blink::WebLocalFrame* web_frame) {
+  media::MediaPermission* media_permission = nullptr;
+  bool create_media_permission =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnforceWebRtcIPPermissionCheck);
+  create_media_permission =
+      create_media_permission ||
+      !StartsWith(
+          base::FieldTrialList::FindFullName("WebRTC-LocalIPPermissionCheck"),
+          "Disabled", base::CompareCase::SENSITIVE);
+  if (create_media_permission) {
+    RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(web_frame);
+    if (render_frame)
+      media_permission = render_frame->GetMediaPermission();
+    DCHECK(media_permission);
+  }
+
+  return media_permission;
+}
+
+void RendererBlinkPlatformImpl::GetWebRTCRendererPreferences(
+    blink::WebLocalFrame* web_frame,
+    blink::WebString* ip_handling_policy,
+    uint16_t* udp_min_port,
+    uint16_t* udp_max_port) {
+  DCHECK(ip_handling_policy);
+  DCHECK(udp_min_port);
+  DCHECK(udp_max_port);
+
+  auto* render_frame = RenderFrameImpl::FromWebFrame(web_frame);
+  if (!render_frame)
+    return;
+
+  *ip_handling_policy = blink::WebString::FromUTF8(
+      render_frame->GetRendererPreferences().webrtc_ip_handling_policy);
+  *udp_min_port = render_frame->GetRendererPreferences().webrtc_udp_min_port;
+  *udp_max_port = render_frame->GetRendererPreferences().webrtc_udp_max_port;
 }
 
 base::Optional<int> RendererBlinkPlatformImpl::GetAgcStartupMinimumVolume() {

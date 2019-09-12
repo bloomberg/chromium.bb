@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -29,9 +28,7 @@
 #include "content/renderer/p2p/mdns_responder_adapter.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
-#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "crypto/openssl_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/media_permission.h"
@@ -43,7 +40,6 @@
 #include "third_party/blink/public/platform/modules/p2p/filtering_network_manager.h"
 #include "third_party/blink/public/platform/modules/p2p/ipc_network_manager.h"
 #include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
-#include "third_party/blink/public/platform/modules/peerconnection/stun_field_trial.h"
 #include "third_party/blink/public/platform/modules/peerconnection/video_codec_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -402,65 +398,46 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
     VLOG(3) << "WebRTC routing preferences will not be enforced";
   } else {
     if (web_frame && web_frame->View()) {
-      RenderViewImpl* renderer_view_impl =
-          RenderViewImpl::FromWebView(web_frame->View());
-      if (renderer_view_impl) {
-        // TODO(guoweis): |enable_multiple_routes| should be renamed to
-        // |request_multiple_routes|. Whether local IP addresses could be
-        // collected depends on if mic/camera permission is granted for this
-        // origin.
-        WebRTCIPHandlingPolicy policy =
-            GetWebRTCIPHandlingPolicy(renderer_view_impl->renderer_preferences()
-                                          .webrtc_ip_handling_policy);
-        switch (policy) {
-          // TODO(guoweis): specify the flag of disabling local candidate
-          // collection when webrtc is updated.
-          case DEFAULT_PUBLIC_INTERFACE_ONLY:
-          case DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES:
-            port_config.enable_multiple_routes = false;
-            port_config.enable_nonproxied_udp = true;
-            port_config.enable_default_local_candidate =
-                (policy == DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES);
-            break;
-          case DISABLE_NON_PROXIED_UDP:
-            port_config.enable_multiple_routes = false;
-            port_config.enable_nonproxied_udp = false;
-            break;
-          case DEFAULT:
-            port_config.enable_multiple_routes = true;
-            port_config.enable_nonproxied_udp = true;
-            break;
-        }
+      blink::WebString webrtc_ip_handling_policy;
+      blink::Platform::Current()->GetWebRTCRendererPreferences(
+          web_frame, &webrtc_ip_handling_policy, &min_port, &max_port);
 
-        min_port =
-            renderer_view_impl->renderer_preferences().webrtc_udp_min_port;
-        max_port =
-            renderer_view_impl->renderer_preferences().webrtc_udp_max_port;
-
-        VLOG(3) << "WebRTC routing preferences: "
-                << "policy: " << policy
-                << ", multiple_routes: " << port_config.enable_multiple_routes
-                << ", nonproxied_udp: " << port_config.enable_nonproxied_udp
-                << ", min_udp_port: " << min_port
-                << ", max_udp_port: " << max_port;
+      // TODO(guoweis): |enable_multiple_routes| should be renamed to
+      // |request_multiple_routes|. Whether local IP addresses could be
+      // collected depends on if mic/camera permission is granted for this
+      // origin.
+      WebRTCIPHandlingPolicy policy =
+          GetWebRTCIPHandlingPolicy(webrtc_ip_handling_policy.Utf8());
+      switch (policy) {
+        // TODO(guoweis): specify the flag of disabling local candidate
+        // collection when webrtc is updated.
+        case DEFAULT_PUBLIC_INTERFACE_ONLY:
+        case DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES:
+          port_config.enable_multiple_routes = false;
+          port_config.enable_nonproxied_udp = true;
+          port_config.enable_default_local_candidate =
+              (policy == DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES);
+          break;
+        case DISABLE_NON_PROXIED_UDP:
+          port_config.enable_multiple_routes = false;
+          port_config.enable_nonproxied_udp = false;
+          break;
+        case DEFAULT:
+          port_config.enable_multiple_routes = true;
+          port_config.enable_nonproxied_udp = true;
+          break;
       }
+
+      VLOG(3) << "WebRTC routing preferences: "
+              << "policy: " << policy
+              << ", multiple_routes: " << port_config.enable_multiple_routes
+              << ", nonproxied_udp: " << port_config.enable_nonproxied_udp
+              << ", min_udp_port: " << min_port
+              << ", max_udp_port: " << max_port;
     }
     if (port_config.enable_multiple_routes) {
-      bool create_media_permission =
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnforceWebRtcIPPermissionCheck);
-      create_media_permission =
-          create_media_permission ||
-          !StartsWith(base::FieldTrialList::FindFullName(
-                          "WebRTC-LocalIPPermissionCheck"),
-                      "Disabled", base::CompareCase::SENSITIVE);
-      if (create_media_permission) {
-        content::RenderFrameImpl* render_frame =
-            content::RenderFrameImpl::FromWebFrame(web_frame);
-        if (render_frame)
-          media_permission = render_frame->GetMediaPermission();
-        DCHECK(media_permission);
-      }
+      media_permission =
+          blink::Platform::Current()->GetWebRTCMediaPermission(web_frame);
     }
   }
 
