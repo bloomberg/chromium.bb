@@ -769,34 +769,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   if (cpi->use_svc) av1_free_svc_cyclic_refresh(cpi);
 }
 
-static void save_coding_context(AV1_COMP *cpi) {
-  CODING_CONTEXT *const cc = &cpi->coding_context;
-  AV1_COMMON *cm = &cpi->common;
-
-  // Stores a snapshot of key state variables which can subsequently be
-  // restored with a call to av1_restore_coding_context. These functions are
-  // intended for use in a re-code loop in av1_compress_frame where the
-  // quantizer value is adjusted between loop iterations.
-  av1_copy(cc->nmv_vec_cost, cpi->td.mb.nmv_vec_cost);
-  av1_copy(cc->nmv_costs, cpi->td.mb.nmv_costs);
-  av1_copy(cc->nmv_costs_hp, cpi->td.mb.nmv_costs_hp);
-
-  cc->fc = *cm->fc;
-}
-
-static void restore_coding_context(AV1_COMP *cpi) {
-  CODING_CONTEXT *const cc = &cpi->coding_context;
-  AV1_COMMON *cm = &cpi->common;
-
-  // Restore key state variables to the snapshot state stored in the
-  // previous call to av1_save_coding_context.
-  av1_copy(cpi->td.mb.nmv_vec_cost, cc->nmv_vec_cost);
-  av1_copy(cpi->td.mb.nmv_costs, cc->nmv_costs);
-  av1_copy(cpi->td.mb.nmv_costs_hp, cc->nmv_costs_hp);
-
-  *cm->fc = cc->fc;
-}
-
 static void configure_static_seg_features(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
@@ -5059,7 +5031,6 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     }
     segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
 
-    if (allow_recode) save_coding_context(cpi);
 #if CONFIG_COLLECT_COMPONENT_TIMING
     start_timing(cpi, av1_encode_frame_time);
 #endif
@@ -5078,15 +5049,12 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
                                cpi->oxcf.rc_mode != AOM_Q) ||
                               cpi->oxcf.min_cr > 0;
     if (do_dummy_pack) {
-      restore_coding_context(cpi);
-
       finalize_encoded_frame(cpi);
       int largest_tile_id = 0;  // Output from bitstream: unused here
       if (av1_pack_bitstream(cpi, dest, size, &largest_tile_id) != AOM_CODEC_OK)
         return AOM_CODEC_ERROR;
 
       rc->projected_frame_size = (int)(*size) << 3;
-      restore_coding_context(cpi);
     }
 
     if (allow_recode) {
@@ -5274,7 +5242,6 @@ static void save_extra_coding_context(AV1_COMP *cpi) {
 }
 
 static void save_all_coding_context(AV1_COMP *cpi) {
-  save_coding_context(cpi);
   save_cur_buf(cpi);
   save_extra_coding_context(cpi);
   if (!frame_is_intra_only(&cpi->common)) release_scaled_references(cpi);
@@ -5299,7 +5266,6 @@ static void restore_extra_coding_context(AV1_COMP *cpi) {
 }
 
 static void restore_all_coding_context(AV1_COMP *cpi) {
-  restore_coding_context(cpi);
   restore_cur_buf(cpi);
   restore_extra_coding_context(cpi);
   if (!frame_is_intra_only(&cpi->common)) release_scaled_references(cpi);
@@ -5724,8 +5690,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   cm->last_frame_type = current_frame->frame_type;
 
   if (encode_show_existing_frame(cm)) {
-    restore_coding_context(cpi);
-
     finalize_encoded_frame(cpi);
     // Build the bitstream
     int largest_tile_id = 0;  // Output from bitstream: unused here

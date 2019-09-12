@@ -65,12 +65,6 @@ typedef struct aom_rational64 {
 } aom_rational64_t;  // alias for struct aom_rational
 
 typedef struct {
-  int nmv_vec_cost[MV_JOINTS];
-  int nmv_costs[2][MV_VALS];
-  int nmv_costs_hp[2][MV_VALS];
-
-  FRAME_CONTEXT fc;
-
 #if CONFIG_SUPERRES_IN_RECODE
   struct loopfilter lf;
   CdefInfo cdef_info;
