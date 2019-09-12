@@ -4790,12 +4790,6 @@ crbug.com/746128 [ Win7 Debug ] virtual/audio-service/media/controls/video-enter
 crbug.com/746128 [ Mac ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure Pass ]
 crbug.com/746128 [ Mac ] virtual/audio-service/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure Pass ]
 
-crbug.com/731018 [ Mac ] sensor/accelerometer.html [ Failure Pass Crash ]
-crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass Crash ]
-crbug.com/731018 [ Mac ] sensor/gyroscope.html [ Failure Pass Crash ]
-crbug.com/731018 [ Mac ] sensor/magnetometer.html [ Failure Pass Crash ]
-crbug.com/731018 [ Mac ] sensor/orientation-sensor.html [ Failure Pass Crash ]
-
 # Tests failing when enabling new modern media controls
 crbug.com/831942 media/webkit-media-controls-webkit-appearance.html [ Failure Pass ]
 crbug.com/831942 virtual/audio-service/media/webkit-media-controls-webkit-appearance.html [ Failure Pass ]
@@ -5666,9 +5660,6 @@ crbug.com/931349 [ Mac ] virtual/audio-service/media/video-played-ranges-1.html 
 # Sheriff 2019-02-13
 crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Failure Pass ]
 
-# Sheriff 2019-02-19
-crbug.com/933346 [ Debug ] external/wpt/orientation-sensor/RelativeOrientationSensor.https.html [ Failure Timeout Pass ]
-
 # These started failing when network service was enabled by default.
 crbug.com/933880 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
@@ -5719,7 +5710,6 @@ crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-
 crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure ]
 crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure ]
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function.html [ Failure Pass ]
-crbug.com/937858 [ Debug ] external/wpt/ambient-light/AmbientLightSensor.https.html [ Pass Failure ]
 
 # Sheriff 2019-03-05
 crbug.com/938200 http/tests/devtools/network/network-blocked-reason.js [ Timeout Pass ]
@@ -5814,8 +5804,6 @@ crbug.com/947690 [ Debug ] http/tests/history/back-during-beforeunload.html [ Pa
 # Sheriff 2019-04-03
 crbug.com/949167 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.html [ Pass Timeout ]
 crbug.com/949207 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener_base.html [ Pass Timeout ]
-crbug.com/949442 [ Mac10.13 Debug ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
-crbug.com/949442 [ Mac10.13 Debug ] external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Pass Failure ]
 crbug.com/949445 [ Mac ] fast/forms/text/input-text-scroll-left-on-blur.html [ Failure ]
 
 # Sheriff 2019-04-09
