@@ -419,10 +419,7 @@ IdentityManager::LegacyGetAccountTrackerServiceJavaObject() {
 
 base::android::ScopedJavaLocalRef<jobject>
 IdentityManager::LegacyGetOAuth2TokenServiceJavaObject() {
-  OAuth2TokenServiceDelegateAndroid* delegate =
-      static_cast<OAuth2TokenServiceDelegateAndroid*>(
-          token_service_->GetDelegate());
-  return delegate->GetJavaObject();
+  return token_service_->GetDelegate()->GetJavaObject();
 }
 
 base::android::ScopedJavaLocalRef<jobject> IdentityManager::GetJavaObject() {
