@@ -218,7 +218,8 @@ class LayerTreeViewWithFrameSinkTrackingTest : public testing::Test {
     cc::LayerTreeSettings settings;
     settings.single_thread_proxy_scheduler = false;
     layer_tree_view_.Initialize(settings,
-                                std::make_unique<cc::TestUkmRecorderFactory>());
+                                std::make_unique<cc::TestUkmRecorderFactory>(),
+                                0);
   }
 
   void RunTest(int expected_successes, FailureMode failure_mode) {
@@ -344,7 +345,8 @@ TEST(LayerTreeViewTest, VisibilityTest) {
       &fake_thread_scheduler);
 
   layer_tree_view.Initialize(cc::LayerTreeSettings(),
-                             std::make_unique<cc::TestUkmRecorderFactory>());
+                             std::make_unique<cc::TestUkmRecorderFactory>(),
+                             0);
 
   {
     // Make one request and stop immediately while invisible.
