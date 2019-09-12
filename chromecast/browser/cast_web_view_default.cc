@@ -41,8 +41,6 @@ namespace {
 std::unique_ptr<content::WebContents> CreateWebContents(
     content::BrowserContext* browser_context,
     scoped_refptr<content::SiteInstance> site_instance) {
-  CHECK(display::Screen::GetScreen());
-
   content::WebContents::CreateParams create_params(browser_context, NULL);
   create_params.routing_id = MSG_ROUTING_NONE;
   create_params.site_instance = site_instance;
