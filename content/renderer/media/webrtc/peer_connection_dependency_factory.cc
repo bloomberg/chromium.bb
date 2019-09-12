@@ -28,7 +28,6 @@
 #include "content/renderer/p2p/mdns_responder_adapter.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
-#include "content/renderer/render_thread_impl.h"
 #include "crypto/openssl_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/media_permission.h"
@@ -232,8 +231,7 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
       FROM_HERE,
       base::BindOnce(
           &PeerConnectionDependencyFactory::InitializeSignalingThread,
-          base::Unretained(this),
-          RenderThreadImpl::current()->GetGpuFactories(),
+          base::Unretained(this), blink::Platform::Current()->GetGpuFactories(),
           &start_signaling_event));
 
   start_signaling_event.Wait();
