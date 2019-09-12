@@ -176,10 +176,20 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
 
     if not pfqs:
       pre_cq = (config.build_type == config_lib.CONFIG_TYPE_PRECQ)
+      fatal = False
       if pre_cq:
+        fatal = True
         fatal_scope = 'pre_cq'
       elif config.important:
-        fatal_scope = 'important'
+        if config.name.endswith('-tryjob'):
+          # The chromeos_config module hacks all tryjobs to important=True
+          # even when the underlying config sets it to False.  Since tryjobs
+          # shouldn't really matter to binhost tests (we care more about the
+          # non-tryjob variant), just ignore them.
+          fatal_scope = 'ignoring tryjob'
+        else:
+          fatal = True
+          fatal_scope = 'important'
       else:
         fatal_scope = 'non-fatal'
       msg = ('%s%s (%s) cannot find Chrome prebuilts (probably due to USE flag '
@@ -197,7 +207,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
           msg += ('\tBoards: %s\n\t\t%s changes: %s\n\t\tBuild settings: %s\n'
                   % (board_key, source, added + removed, compat_id))
 
-      self.Complain(msg, fatal=pre_cq or config.important)
+      self.Complain(msg, fatal=fatal)
 
   def GetCompatId(self, config, board=None):
     """Get the CompatId for a config.
