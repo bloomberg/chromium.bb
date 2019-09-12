@@ -193,49 +193,15 @@ class HWTestList(object):
                                       **default_dict))
     return suite_list
 
-  def SharedPoolPFQ(self):
-    """Return a list of HWTestConfigs for Chrome PFQ which uses a shared pool.
-
-    The returned suites will run in pool:critical by default, which is
-    shared with other types of builders (canaries, cq). The first suite in the
-    list is a blocking sanity suite that verifies the build will not break dut.
-    """
-    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                       file_bugs=True,
-                       priority=constants.HWTEST_PFQ_PRIORITY,
-                       minimum_duts=1,
-                       suite_min_duts=1,
-                       blocking=True)
-
-    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                        file_bugs=True,
-                        priority=constants.HWTEST_PFQ_PRIORITY,
-                        minimum_duts=4,
-                        suite_min_duts=3)
-
-    suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
-                                          **sanity_dict),
-                  config_lib.HWTestConfig(
-                      constants.HWTEST_PROVISION_SUITE,
-                      blocking=True,
-                      suite_args={'num_required': 1},
-                      **default_dict),
-                  config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                          **default_dict),
-                  config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                          **default_dict),
-                  self.TastConfig(constants.HWTEST_TAST_CHROME_PFQ_SUITE,
-                                  **default_dict)]
-
-    return suite_list
-
-  def DefaultListAndroidPFQ(self, **kwargs):
-    """Return a default list of HWTestConfig's for an ARC PFQ build.
+  def DefaultListPFQ(self, **kwargs):
+    """Return a default list of HWTestConfig's for a PFQ build.
 
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
     """
     default_dict = dict(file_bugs=True,
+                        pool=constants.HWTEST_QUOTA_POOL,
+                        quota_account='pfq',
                         timeout=config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT,
                         priority=constants.HWTEST_PFQ_PRIORITY, minimum_duts=3)
     # Allows kwargs overrides to default_dict for pfq.
@@ -243,21 +209,20 @@ class HWTestList(object):
 
     return [
         config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                pool=constants.HWTEST_MACH_POOL,
                                 **default_dict),
         self.TastConfig(constants.HWTEST_TAST_ANDROID_PFQ_SUITE,
-                        pool=constants.HWTEST_MACH_POOL, **default_dict),
+                        **default_dict),
     ]
 
-  def SharedPoolAndroidPFQ(self, **kwargs):
-    """Return a list of HWTestConfigs for ARC PFQ which uses a shared pool.
+  def SharedPoolPFQ(self, **kwargs):
+    """Return a list of HWTestConfigs for PFQ which uses a shared pool.
 
-    The returned suites will run in pool:critical by default, which is
+    The returned suites will run in quotascheduler by default, which is
     shared with other types of builders (canaries, cq). The first suite in the
     list is a blocking sanity suite that verifies the build will not break dut.
     """
-    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                       file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
+    sanity_dict = dict(pool=constants.HWTEST_QUOTA_POOL,
+                       file_bugs=True, quota_account='pfq')
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(minimum_duts=1, suite_min_duts=1,
                             blocking=True))
@@ -265,7 +230,7 @@ class HWTestList(object):
     default_dict.update(kwargs)
     suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
                                           **sanity_dict)]
-    suite_list.extend(self.DefaultListAndroidPFQ(**default_dict))
+    suite_list.extend(self.DefaultListPFQ(**default_dict))
     return suite_list
 
   def SharedPoolCQ(self, **kwargs):
@@ -561,15 +526,15 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
       'cyan-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
 
       'grunt-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
 
       'kevin-arcnext-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
 
       'moblab-generic-vm-paladin': config_lib.BuildConfig().apply(
@@ -583,11 +548,11 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       # ),
 
       'reef-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
 
       'veyron_minnie-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
 
       'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
@@ -805,8 +770,8 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.templates.chrome_pfq_cheets_informational.apply(
       site_config.templates.default_hw_tests_override,
-      hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
-      hw_tests_override=hw_test_list.SharedPoolAndroidPFQ(),
+      hw_tests=hw_test_list.SharedPoolPFQ(),
+      hw_tests_override=hw_test_list.SharedPoolPFQ(),
   )
 
   site_config.templates.chrome_pfq_informational.apply(
