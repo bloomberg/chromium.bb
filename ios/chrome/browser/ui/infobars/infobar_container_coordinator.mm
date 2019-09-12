@@ -264,8 +264,9 @@
 #pragma mark InfobarCommands
 
 - (void)displayModalInfobar:(InfobarType)infobarType {
-  NSArray* allCoordinators = [self.infobarCoordinators allValues];
-  InfobarCoordinator* infobarCoordinator = [allCoordinators lastObject];
+  NSNumber* infobarKey = [NSNumber numberWithInt:static_cast<int>(infobarType)];
+  InfobarCoordinator* infobarCoordinator = self.infobarCoordinators[infobarKey];
+  DCHECK(infobarCoordinator);
   [infobarCoordinator presentInfobarModal];
 }
 
