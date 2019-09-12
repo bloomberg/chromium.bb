@@ -24647,6 +24647,7 @@ Called by update_net_error_codes.py.-->
   <int value="3029" label="QuotaRead"/>
   <int value="3030" label="DelegateFocus"/>
   <int value="3031" label="DelegateFocusNotFirstInFlatTree"/>
+  <int value="3032" label="ThirdPartySharedWorker"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
