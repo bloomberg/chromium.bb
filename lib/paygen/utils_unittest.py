@@ -19,6 +19,10 @@ from chromite.lib.paygen import utils
 # We access a lot of protected members during testing.
 # pylint: disable=protected-access
 
+# Tests involving the memory semaphore should block this long.
+ACQUIRE_TIMEOUT = 120
+ACQUIRE_SHOULD_BLOCK_TIMEOUT = 20
+
 
 class TestUtils(cros_test_lib.TempDirTestCase):
   """Test utils methods."""
@@ -74,8 +78,8 @@ class TestUtils(cros_test_lib.TempDirTestCase):
         quiescence_time_seconds=0)
 
     # You can't get that much.
-    self.assertEqual(_semaphore.acquire(2), False)
-    _semaphore.release()
+    self.assertEqual(_semaphore.acquire(
+        ACQUIRE_SHOULD_BLOCK_TIMEOUT), False)
 
   def testNoMemoryConsumptionSemaphore(self):
     """Tests that you can acquire a very little amount of memory."""
@@ -86,7 +90,7 @@ class TestUtils(cros_test_lib.TempDirTestCase):
         quiescence_time_seconds=0)
 
     # Sure you can have two bytes.
-    self.assertEqual(_semaphore.acquire(2), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
     _semaphore.release()
 
   def testQuiesceMemoryConsumptionSemaphore(self):
@@ -99,12 +103,12 @@ class TestUtils(cros_test_lib.TempDirTestCase):
 
     # Should want two bytes, have a whole lot.
     _semaphore._get_system_available = self.mock_get_system_available(2**64)
-    self.assertEqual(_semaphore.acquire(2), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
     _semaphore.release()
 
     # Should want two bytes, have a whole lot (but you'll block for 2 seconds).
     _semaphore._get_system_available = self.mock_get_system_available(2**64 - 2)
-    self.assertEqual(_semaphore.acquire(2), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
     _semaphore.release()
 
   def testUncheckedMemoryConsumptionSemaphore(self):
@@ -118,9 +122,9 @@ class TestUtils(cros_test_lib.TempDirTestCase):
 
     # Nothing available, but we expect unchecked_acquires to allow it.
     _semaphore._get_system_available = self.mock_get_system_available(0)
-    self.assertEqual(_semaphore.acquire(2), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
     _semaphore.release()
-    self.assertEqual(_semaphore.acquire(2), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
     _semaphore.release()
 
   def testQuiescenceUnblocksMemoryConsumptionSemaphore(self):
@@ -135,17 +139,18 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     # to block the second task.
     _semaphore._get_system_available = self.mock_get_system_available(2**64)
     start_time = time.time()
-    self.assertEqual(_semaphore.acquire(2), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
     _semaphore.release()
 
-    # Get the lock or die trying.
-    while not _semaphore.acquire(2):
+    # Get the lock or die trying. We spin fast here instead of ACQUIRE_TIMEOUT.
+    while not _semaphore.acquire(1):
       continue
     _semaphore.release()
 
     # Check that the lock was acquired after quiescence_time_seconds.
     end_time = time.time()
-    self.assertGreaterEqual(end_time - start_time, 2.0)
+    # Why 1.8? Because the clock isn't monotonic and we don't want to flake.
+    self.assertGreaterEqual(end_time - start_time, 1.8)
 
   def testThreadedMemoryConsumptionSemaphore(self):
     """Test many threads simultaneously using the Semaphore."""
