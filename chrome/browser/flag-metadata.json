@@ -2933,13 +2933,8 @@
     "expiry_milestone": 80
   },
   {
-    "name": "shelf-dense-clamshell",
-    "owners": [ "manucornet", "mmourgos" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "shelf-hotseat",
-    "owners": [ "manucornet", "newcomer" ],
+    "owners": [ "manucornet", "mmourgos", "newcomer" ],
     "expiry_milestone": 82
   },
   {

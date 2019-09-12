@@ -1070,9 +1070,6 @@ extern const char kSharingDeviceRegistrationDescription[];
 extern const char kSharingUseDeviceInfoName[];
 extern const char kSharingUseDeviceInfoDescription[];
 
-extern const char kShelfDenseClamshellName[];
-extern const char kShelfDenseClamshellDescription[];
-
 extern const char kShelfHotseatName[];
 extern const char kShelfHotseatDescription[];
 

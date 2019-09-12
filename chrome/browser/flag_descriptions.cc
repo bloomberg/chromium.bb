@@ -1809,16 +1809,12 @@ const char kSharingUseDeviceInfoDescription[] =
     "Enables Sharing infrastructure to register devices in DeviceInfo and "
     "remove sync requirement.";
 
-const char kShelfDenseClamshellName[] =
-    "Show a smaller, denser shelf in laptop mode.";
-const char kShelfDenseClamshellDescription[] =
-    "Reduces the size of the shelf and its apps when in laptop mode.";
-
 const char kShelfHotseatName[] = "Enable a modular design for the shelf.";
 const char kShelfHotseatDescription[] =
     "Shows a modular design for the shelf where the apps are shown separately "
     "in a 'hotseat' interface when in tablet mode, and where various pieces "
-    "are separate and behave independently.";
+    "are separate and behave independently. Also reduces the size of the"
+    "shelf and its app when in laptop mode.";
 
 const char kShelfHoverPreviewsName[] =
     "Show previews of running apps when hovering over the shelf.";
