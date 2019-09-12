@@ -90,7 +90,6 @@ js_library("dialogs") {
 
 js_library("drag_wrapper") {
   deps = [
-    "../..:assert",
     "../..:cr",
   ]
 }
