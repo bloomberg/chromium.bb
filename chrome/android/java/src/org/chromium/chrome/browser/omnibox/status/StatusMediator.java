@@ -315,6 +315,9 @@ class StatusMediator {
      *     - not shown if URL is focused.
      */
     private void updateLocationBarIcon() {
+        // Update the accessibility description before continuing since we need it either way.
+        mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES, getAccessibilityDescriptionRes());
+
         // When the search engine logo should be shown, but the engine isn't Google. In this case,
         // we download the icon on the fly.
         boolean showFocused = mUrlHasFocus && mShowStatusIconWhenUrlFocused;
@@ -358,7 +361,6 @@ class StatusMediator {
 
         int icon = 0;
         int tint = 0;
-        int description = 0;
         int toast = 0;
 
         mIsSecurityButtonShown = false;
@@ -367,13 +369,11 @@ class StatusMediator {
                 icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
                                                      : R.drawable.ic_omnibox_page;
                 tint = mNavigationIconTintRes;
-                description = R.string.accessibility_toolbar_btn_site_info;
             }
         } else if (mSecurityIconRes != 0) {
             mIsSecurityButtonShown = true;
             icon = mSecurityIconRes;
             tint = mSecurityIconTintRes;
-            description = mSecurityIconDescriptionRes;
             toast = R.string.menu_page_info;
         }
 
@@ -384,7 +384,21 @@ class StatusMediator {
 
         mModel.set(StatusProperties.STATUS_ICON_RES, icon);
         mModel.set(StatusProperties.STATUS_ICON_TINT_RES, tint);
-        mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES, description);
         mModel.set(StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES, toast);
+    }
+
+    /** Return the resource id for the accessibility description or 0 if none apply. */
+    private int getAccessibilityDescriptionRes() {
+        if (mUrlHasFocus) {
+            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+                return 0;
+            } else if (mShowStatusIconWhenUrlFocused) {
+                return R.string.accessibility_toolbar_btn_site_info;
+            }
+        } else if (mSecurityIconRes != 0) {
+            return mSecurityIconDescriptionRes;
+        }
+
+        return 0;
     }
 }

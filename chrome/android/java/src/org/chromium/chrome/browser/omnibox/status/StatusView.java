@@ -281,10 +281,13 @@ public class StatusView extends LinearLayout {
      */
     void setStatusIconDescription(@StringRes int descriptionRes) {
         String description = null;
+        int importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO;
         if (descriptionRes != 0) {
             description = getResources().getString(descriptionRes);
+            importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES;
         }
         mIconView.setContentDescription(description);
+        mIconView.setImportantForAccessibility(importantForAccessibility);
     }
 
     /**
