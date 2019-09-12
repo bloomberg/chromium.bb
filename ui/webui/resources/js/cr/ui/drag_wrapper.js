@@ -9,7 +9,7 @@
  */
 cr.define('cr.ui', function() {
   /** @interface */
-  class DragWrapperDelegate {
+  /* #export */ class DragWrapperDelegate {
     // TODO(devlin): The only method this "delegate" actually needs is
     // shouldAcceptDrag(); the rest can be events emitted by the DragWrapper.
     /**
@@ -36,7 +36,7 @@ cr.define('cr.ui', function() {
    * Creates a DragWrapper which listens for drag target events on |target| and
    * delegates event handling to |delegate|.
    */
-  class DragWrapper {
+  /* #export */ class DragWrapper {
     /**
      * @param {!Element} target
      * @param {!cr.ui.DragWrapperDelegate} delegate
@@ -139,6 +139,7 @@ cr.define('cr.ui', function() {
     }
   }
 
+  // #cr_define_end
   return {
     DragWrapper: DragWrapper,
     DragWrapperDelegate: DragWrapperDelegate,
