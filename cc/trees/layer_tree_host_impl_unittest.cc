@@ -13665,8 +13665,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest, CommitWithDirtyPaintWorklets) {
   // PaintWorklets.
   host_impl_->CreatePendingTree();
   auto* root = SetupRootLayer<PictureLayerImpl>(host_impl_->pending_tree(),
-                                                gfx::Size(100, 100),
-                                                Layer::LayerMaskType::NOT_MASK);
+                                                gfx::Size(100, 100));
   root->SetNeedsPushProperties();
 
   // Add a PaintWorkletInput to the PictureLayerImpl.
@@ -13715,8 +13714,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
 
   host_impl_->CreatePendingTree();
   auto* root = SetupRootLayer<PictureLayerImpl>(host_impl_->pending_tree(),
-                                                gfx::Size(100, 100),
-                                                Layer::LayerMaskType::NOT_MASK);
+                                                gfx::Size(100, 100));
   root->SetNeedsPushProperties();
 
   // Add some PaintWorklets.
@@ -13763,8 +13761,7 @@ TEST_F(ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest,
   // PaintWorklets.
   host_impl_->CreatePendingTree();
   auto* root = SetupRootLayer<PictureLayerImpl>(host_impl_->pending_tree(),
-                                                gfx::Size(100, 100),
-                                                Layer::LayerMaskType::NOT_MASK);
+                                                gfx::Size(100, 100));
   root->SetNeedsPushProperties();
 
   // Add a PaintWorkletInput to the PictureLayerImpl.

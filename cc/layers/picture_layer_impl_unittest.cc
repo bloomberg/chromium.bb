@@ -1159,7 +1159,7 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
 
   // Mask layers dont create low res since they always fit on one tile.
   CreateEffectNode(pending_layer());
-  auto* mask = AddMaskLayer<FakePictureLayerImplWithRasterSourceAsMask>(
+  auto* mask = AddMaskLayer<FakePictureLayerImplWithRasterSource>(
       host_impl()->pending_tree(), pending_layer(), pending_raster_source);
   mask->SetBounds(layer_bounds);
   mask->SetDrawsContent(true);
@@ -1188,7 +1188,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   SetupPendingTree(valid_raster_source);
 
   CreateEffectNode(pending_layer());
-  auto* pending_mask = AddMaskLayer<FakePictureLayerImplWithRasterSourceAsMask>(
+  auto* pending_mask = AddMaskLayer<FakePictureLayerImplWithRasterSource>(
       host_impl()->pending_tree(), pending_layer(), valid_raster_source);
   pending_mask->SetBounds(layer_bounds);
   pending_mask->SetDrawsContent(true);
@@ -1315,7 +1315,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   SetupPendingTree(valid_raster_source);
 
   CreateEffectNode(pending_layer());
-  auto* pending_mask = AddMaskLayer<FakePictureLayerImplWithRasterSourceAsMask>(
+  auto* pending_mask = AddMaskLayer<FakePictureLayerImplWithRasterSource>(
       host_impl()->pending_tree(), pending_layer(), valid_raster_source);
   pending_mask->SetBounds(layer_bounds);
   pending_mask->SetDrawsContent(true);
@@ -3327,8 +3327,7 @@ TEST_F(PictureLayerImplTest, OcclusionOnSolidColorPictureLayer) {
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_bounds);
-  SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region(),
-                   Layer::LayerMaskType::NOT_MASK);
+  SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region());
   // Device scale factor should not affect a non-mask solid color layer.
   host_impl()->pending_tree()->SetDeviceScaleFactor(2.f);
   ActivateTree();
@@ -3358,8 +3357,8 @@ TEST_F(PictureLayerImplTest, IgnoreOcclusionOnSolidColorMask) {
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_bounds);
-  SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region(),
-                   Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
+  SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region());
+
   host_impl()->pending_tree()->SetDeviceScaleFactor(2.f);
   ActivateTree();
 
