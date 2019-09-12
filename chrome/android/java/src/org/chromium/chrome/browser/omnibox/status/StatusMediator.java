@@ -299,10 +299,6 @@ class StatusMediator {
 
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
-        mModel.set(StatusProperties.STATUS_ICON, null);
-        mModel.set(StatusProperties.STATUS_ICON_RES, 0);
-        mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
-
         mIsSearchEngineGoogle = isSearchEngineGoogle;
         updateLocationBarIcon();
     }
