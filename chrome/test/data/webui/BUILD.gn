@@ -160,6 +160,7 @@ js2gtest("browser_tests_js_webui") {
     ":modulize",
     "//build:branding_buildflags",
     "//chrome/browser/ui",
+    "//services/network/public/cpp",
     "//skia",
   ]
   data = [
