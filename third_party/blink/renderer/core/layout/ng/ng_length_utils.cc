@@ -607,7 +607,10 @@ LogicalSize ComputeReplacedSize(
                           aspect_ratio.inline_size / aspect_ratio.block_size) +
                          border_padding.InlineSum();
     } else {
-      intrinsic_inline = space.AvailableSize().inline_size;
+      NGBoxStrut margins = ComputeMarginsForSelf(space, node.Style());
+      intrinsic_inline =
+          (space.AvailableSize().inline_size - margins.InlineSum())
+              .ClampNegativeToZero();
     }
   }
   if (!intrinsic_block) {
