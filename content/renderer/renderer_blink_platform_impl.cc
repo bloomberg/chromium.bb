@@ -49,6 +49,7 @@
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
+#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
@@ -82,6 +83,7 @@
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -537,15 +539,24 @@ std::unique_ptr<WebRTCPeerConnectionHandler>
 RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  // TODO(crbug.com/787254): Move this method body back to
+  // PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler
+  // when it the file gets Onion soup'ed.
+
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
   if (!render_thread)
     return nullptr;
 
+  // Save histogram data so we can see how much PeerConnection is used.
+  // The histogram counts the number of calls to the JS API
+  // RTCPeerConnection.
+  UpdateWebRTCMethodCount(blink::WebRTCAPIName::kRTCPeerConnection);
+
   PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
-  return rtc_dependency_factory->CreateRTCPeerConnectionHandler(client,
-                                                                task_runner);
+  return std::make_unique<RTCPeerConnectionHandler>(
+      client, rtc_dependency_factory, task_runner);
 }
 
 //------------------------------------------------------------------------------
