@@ -236,15 +236,29 @@ class CommandResult(object):
 
 
 class RunCommandError(Exception):
-  """Error caught in run() method."""
+  """Error caught in run() method.
 
-  def __init__(self, msg, result, exception=None):
-    self.msg, self.result, self.exception = msg, result, exception
+  Attributes:
+    args: Tuple of the attributes below.
+    msg: Short explanation of the error.
+    result: The CommandResult that triggered this error, if available.
+    exception: The underlying Exception if available.
+  """
+
+  def __init__(self, msg, result=None, exception=None):
     if exception is not None and not isinstance(exception, Exception):
       raise ValueError('exception must be an exception instance; got %r'
                        % (exception,))
-    Exception.__init__(self, msg)
-    self.args = (msg, result, exception)
+
+    # This makes mocking tests easier.
+    if result is None:
+      result = CommandResult()
+    elif not isinstance(result, CommandResult):
+      raise TypeError('result must be a CommandResult instance; got %r'
+                      % (result,))
+
+    self.msg, self.result, self.exception = msg, result, exception
+    super(RunCommandError, self).__init__(msg, result, exception)
 
   def Stringify(self, error=True, output=True):
     """Custom method for controlling what is included in stringifying this.

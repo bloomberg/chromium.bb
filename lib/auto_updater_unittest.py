@@ -348,8 +348,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start')
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'GetURL')
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
-                       side_effect=cros_build_lib.RunCommandError(
-                           'fail', CommandErrorResult()))
+                       side_effect=cros_build_lib.RunCommandError('fail'))
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        'RevertBootPartition')
       with mock.patch('os.path.join', return_value=''):
@@ -382,8 +381,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       CrOS_AU = auto_updater.ChromiumOSUpdater(
           device, None, self.payload_dir, do_rootfs_update=False)
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
-                       side_effect=cros_build_lib.RunCommandError(
-                           'fail', CommandErrorResult()))
+                       side_effect=cros_build_lib.RunCommandError('fail'))
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        'ResetStatefulPartition')
       with mock.patch('os.path.join', return_value=''):
@@ -453,8 +451,7 @@ class ChromiumOSUpdaterRetryTest(ChromiumOSErrorTest):
       auto_updater.MAX_RETRY = 1
       transfer_update_utils = self.PatchObject(
           auto_updater.ChromiumOSUpdater, '_TransferUpdateUtilsPackage',
-          side_effect=cros_build_lib.RunCommandError(
-              'fail', CommandErrorResult()))
+          side_effect=cros_build_lib.RunCommandError('fail'))
 
       self.assertRaises(cros_build_lib.RunCommandError,
                         CrOS_AU.TransferUpdateUtilsPackage)
@@ -470,8 +467,7 @@ class ChromiumOSUpdaterRetryTest(ChromiumOSErrorTest):
       auto_updater.MAX_RETRY = 2
       transfer_stateful = self.PatchObject(
           auto_updater.ChromiumOSUpdater, '_TransferStatefulUpdate',
-          side_effect=cros_build_lib.RunCommandError(
-              'fail', CommandErrorResult()))
+          side_effect=cros_build_lib.RunCommandError('fail'))
 
       self.assertRaises(cros_build_lib.RunCommandError,
                         CrOS_AU.TransferStatefulUpdate)
@@ -487,8 +483,7 @@ class ChromiumOSUpdaterRetryTest(ChromiumOSErrorTest):
       auto_updater.MAX_RETRY = 3
       transfer_rootfs = self.PatchObject(
           auto_updater.ChromiumOSUpdater, '_TransferRootfsUpdate',
-          side_effect=cros_build_lib.RunCommandError(
-              'fail', CommandErrorResult()))
+          side_effect=cros_build_lib.RunCommandError('fail'))
 
       self.assertRaises(cros_build_lib.RunCommandError,
                         CrOS_AU.TransferRootfsUpdate)

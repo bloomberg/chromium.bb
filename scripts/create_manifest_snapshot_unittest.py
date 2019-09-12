@@ -100,7 +100,7 @@ class CreateManifestSnapshotTest(cros_test_lib.MockTempDirTestCase,
 
   def testNeedsSnapshotIsReachableFailure(self):
     """Test _NeedsSnapshot with no project upstream."""
-    self.mock_is_reachable.side_effect = cros_build_lib.RunCommandError('', '')
+    self.mock_is_reachable.side_effect = cros_build_lib.RunCommandError('')
     result = create_manifest_snapshot._NeedsSnapshot('root', self.project_a)
     self.assertTrue(result)
 

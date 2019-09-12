@@ -205,9 +205,8 @@ class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def testRunCommandError(self):
     """Test handling when the run command call is not successful."""
-    result = cros_build_lib.CommandResult()
     self.rc.SetDefaultCmdResult(
-        side_effect=cros_build_lib.RunCommandError('Error', result))
+        side_effect=cros_build_lib.RunCommandError('Error'))
 
     with self.assertRaises(artifacts.CrosGenerateSysrootError):
       artifacts.CreateChromeRoot(self.chroot, self.build_target,

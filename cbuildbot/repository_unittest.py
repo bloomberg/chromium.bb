@@ -211,8 +211,7 @@ warning: Skipped upgrade to unverified version
   def test_RepoSelfupdateRaisesException(self):
     """Test _RepoSelfupdate when exception is raised."""
     mock_rm = self.PatchObject(osutils, 'RmDir')
-    ex = cros_build_lib.RunCommandError(
-        'msg', cros_build_lib.CommandResult())
+    ex = cros_build_lib.RunCommandError('msg')
     self.PatchObject(cros_build_lib, 'run', side_effect=ex)
     self.repo._RepoSelfupdate()
 

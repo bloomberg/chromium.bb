@@ -766,7 +766,7 @@ class MountOverlayTest(cros_test_lib.MockTempDirTestCase):
       if kwargs['fs_type'] == 'overlay':
         raise cros_build_lib.RunCommandError(
             'Phony failure',
-            cros_build_lib.CommandResult(cmd='MounDir', returncode=32))
+            cros_build_lib.CommandResult(cmd=['MounDir'], returncode=32))
 
     mount_call = self.PatchObject(osutils, 'MountDir')
     mount_call.side_effect = _FailOverlay

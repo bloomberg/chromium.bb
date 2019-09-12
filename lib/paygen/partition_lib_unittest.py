@@ -85,7 +85,7 @@ Block count: %d
 
     # Tests failure to identify.
     self.PatchObject(cros_build_lib, 'run',
-                     side_effect=cros_build_lib.RunCommandError('error', 1))
+                     side_effect=cros_build_lib.RunCommandError('error'))
     self.assertFalse(partition_lib.IsSquashfsImage(image))
 
   def testIsExt4Image(self):
@@ -102,7 +102,7 @@ Block count: %d
 
     # Tests failure to identify.
     self.PatchObject(cros_build_lib, 'run',
-                     side_effect=cros_build_lib.RunCommandError('error', 1))
+                     side_effect=cros_build_lib.RunCommandError('error'))
     self.assertFalse(partition_lib.IsExt4Image(image))
 
   def testIsGptImage(self):
@@ -114,7 +114,7 @@ Block count: %d
     part_info_mock.assert_called_once_with(image)
 
     # Tests failure to identify.
-    part_info_mock.side_effect = cros_build_lib.RunCommandError('error', 1)
+    part_info_mock.side_effect = cros_build_lib.RunCommandError('error')
     part_info_mock.return_value = []
     self.assertFalse(partition_lib.IsGptImage(image))
 

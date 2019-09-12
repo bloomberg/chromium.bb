@@ -459,7 +459,7 @@ class CbuildbotLaunchTestEndToEndTest(
     self.tryjob_mock = self.PatchObject(
         commands, 'RunLocalTryjob', autospec=True)
     self.tryjob_failure_exception = failures_lib.BuildScriptFailure(
-        cros_build_lib.RunCommandError('msg', 1), 'cros tryjob')
+        cros_build_lib.RunCommandError('msg'), 'cros tryjob')
 
     self._Prepare()
     self.buildstore = FakeBuildStore()

@@ -370,8 +370,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testUploadCrashStillNotifies(self):
     """Crashes in symbol upload should still notify external events."""
     self.upload_mock.side_effect = failures_lib.BuildScriptFailure(
-        cros_build_lib.RunCommandError('mew', cros_build_lib.CommandResult()),
-        'mew')
+        cros_build_lib.RunCommandError('mew'), 'mew')
     result = self._TestPerformStage()
     self.assertIs(result[0], results_lib.Results.FORGIVEN)
 
@@ -381,8 +380,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testUploadCrashUploadsList(self):
     """A crash in symbol upload should still post the failed list file."""
     self.upload_mock.side_effect = failures_lib.BuildScriptFailure(
-        cros_build_lib.RunCommandError('mew', cros_build_lib.CommandResult()),
-        'mew')
+        cros_build_lib.RunCommandError('mew'), 'mew')
     self._Prepare()
     stage = self.ConstructStage()
 

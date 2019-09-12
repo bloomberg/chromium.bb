@@ -436,7 +436,7 @@ class SecurityTestConfigTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def testVbootCheckoutError(self):
     """Test exceptions in a git command."""
-    rce = cros_build_lib.RunCommandError('error', None)
+    rce = cros_build_lib.RunCommandError('error')
     self.PatchObject(git, 'Clone', side_effect=rce)
     with self.assertRaises(image_lib.VbootCheckoutError):
       self.config._VbootCheckout()
