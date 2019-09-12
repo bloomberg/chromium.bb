@@ -30,12 +30,12 @@ BASE_EXPORT scoped_refptr<TaskRunner> CreateTaskRunner(
 // callback will be posted immediately, otherwise it has to wait.
 //
 // Promise<> is copyable, moveable and thread safe. Under the hood
-// internal::AbstractPromise is refcounted so retaining multiple Promises<> will
+// AbstractPromise is refcounted so retaining multiple Promises<> will
 // prevent that part of the promise graph from being released.
 template <typename ResolveType, typename RejectType = NoReject>
-class Promise {
+class Promise : public internal::BasePromise {
  public:
-  Promise() : abstract_promise_(nullptr) {}
+  Promise() = default;
 
   static_assert(
       !std::is_reference<ResolveType>::value ||
@@ -49,16 +49,17 @@ class Promise {
 
   explicit Promise(
       scoped_refptr<internal::AbstractPromise> abstract_promise) noexcept
-      : abstract_promise_(std::move(abstract_promise)) {}
+      : BasePromise(std::move(abstract_promise)) {}
+
+  // Every PostTask calls this constructor so we need to be careful to avoid
+  // unnecessary binary bloat.
+  explicit Promise(internal::PassedPromise passed_promise) noexcept
+      : BasePromise(std::move(passed_promise),
+                    BasePromise::InlineConstructor()) {}
 
   ~Promise() = default;
 
-  operator bool() const { return !!abstract_promise_; }
-
-  bool IsCancelledForTesting() const {
-    DCHECK(abstract_promise_);
-    return abstract_promise_->IsCanceled();
-  }
+  bool IsCancelledForTesting() const { return abstract_promise_->IsCanceled(); }
 
   // Waits until the promise has settled and if resolved it returns the resolved
   // value.
@@ -75,8 +76,10 @@ class Promise {
     }
     DCHECK(abstract_promise_->IsResolved())
         << "Can't take resolved value, promise wasn't resolved.";
-    return std::move(
-        abstract_promise_->TakeValue().value().Get<Resolved<T>>()->value);
+    return std::move(abstract_promise_->TakeValue()
+                         .value()
+                         .template Get<Resolved<T>>()
+                         ->value);
   }
 
   // Waits until the promise has settled and if rejected it returns the rejected
@@ -95,8 +98,10 @@ class Promise {
     abstract_promise_->IgnoreUncaughtCatchForTesting();
     DCHECK(abstract_promise_->IsRejected())
         << "Can't take rejected value, promise wasn't rejected.";
-    return std::move(
-        abstract_promise_->TakeValue().value().Get<Rejected<T>>()->value);
+    return std::move(abstract_promise_->TakeValue()
+                         .value()
+                         .template Get<Rejected<T>>()
+                         ->value);
   }
 
   bool IsResolvedForTesting() const {
@@ -442,8 +447,6 @@ class Promise {
             nullptr, from_here, nullptr, RejectPolicy::kMustCatchRejection,
             internal::DependentList::ConstructResolved(),
             std::move(executor_data)));
-    promise->emplace(in_place_type_t<Rejected<RejectType>>(),
-                     std::forward<Args>(args)...);
     return Promise<ResolveType, RejectType>(std::move(promise));
   }
 
@@ -452,6 +455,11 @@ class Promise {
 
   void IgnoreUncaughtCatchForTesting() {
     abstract_promise_->IgnoreUncaughtCatchForTesting();
+  }
+
+  const scoped_refptr<internal::AbstractPromise>& GetScopedRefptrForTesting()
+      const {
+    return abstract_promise_;
   }
 
  private:
@@ -471,8 +479,6 @@ class Promise {
 
   template <typename A, typename B>
   friend class ManualPromiseResolver;
-
-  scoped_refptr<internal::AbstractPromise> abstract_promise_;
 };
 
 // Used for manually resolving and rejecting a Promise. This is for
@@ -624,8 +630,8 @@ class Promises {
     std::vector<internal::DependentList::Node> prerequisite_list(
         sizeof...(promises));
     int i = 0;
-    for (auto&& p : {promises.abstract_promise_...}) {
-      prerequisite_list[i++].SetPrerequisite(p.get());
+    for (auto&& p : {promises.abstract_promise_.get()...}) {
+      prerequisite_list[i++].SetPrerequisite(p);
     }
 
     internal::PromiseExecutor::Data executor_data(

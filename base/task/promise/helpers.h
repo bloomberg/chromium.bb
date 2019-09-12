@@ -582,35 +582,9 @@ struct RunHelper<OnceCallback<CbResult(CbArgs...)>,
   }
 };
 
-// For use with base::Bind*. Cancels the promise if the callback was not run by
-// the time the callback is deleted.
-class BASE_EXPORT PromiseHolder {
- public:
-  explicit PromiseHolder(scoped_refptr<internal::AbstractPromise> promise);
-
-  ~PromiseHolder();
-
-  PromiseHolder(PromiseHolder&& other);
-
-  scoped_refptr<internal::AbstractPromise> Unwrap() const;
-
- private:
-  mutable scoped_refptr<internal::AbstractPromise> promise_;
-};
-
-}  // namespace internal
-
-template <>
-struct BindUnwrapTraits<internal::PromiseHolder> {
-  static scoped_refptr<internal::AbstractPromise> Unwrap(
-      const internal::PromiseHolder& o) {
-    return o.Unwrap();
-  }
-};
-
-namespace internal {
-
-// Used by ManualPromiseResolver<> to generate callbacks.
+// Used by ManualPromiseResolver<> to generate callbacks. Note the use of
+// WrappedPromise, this is necessary because we want to cancel the promise (to
+// release memory) if the callback gets deleted without having being run.
 template <typename T, typename... Args>
 class PromiseCallbackHelper {
  public:
@@ -624,7 +598,7 @@ class PromiseCallbackHelper {
                            std::forward<Args>(args)...);
           promise->OnResolved();
         },
-        PromiseHolder(promise));
+        promise);
   }
 
   static RepeatingCallback GetRepeatingResolveCallback(
@@ -635,7 +609,7 @@ class PromiseCallbackHelper {
                            std::forward<Args>(args)...);
           promise->OnResolved();
         },
-        PromiseHolder(promise));
+        promise);
   }
 
   static Callback GetRejectCallback(scoped_refptr<AbstractPromise>& promise) {
@@ -645,7 +619,7 @@ class PromiseCallbackHelper {
                            std::forward<Args>(args)...);
           promise->OnRejected();
         },
-        PromiseHolder(promise));
+        promise);
   }
 
   static RepeatingCallback GetRepeatingRejectCallback(
@@ -656,7 +630,7 @@ class PromiseCallbackHelper {
                            std::forward<Args>(args)...);
           promise->OnRejected();
         },
-        PromiseHolder(promise));
+        promise);
   }
 };
 
@@ -679,8 +653,7 @@ struct IsValidPromiseArg<PromiseType&, CallbackArgType> {
 // rejection storage type.
 template <typename RejectT>
 struct AllPromiseRejectHelper {
-  static void Reject(AbstractPromise* result,
-                     const scoped_refptr<AbstractPromise>& prerequisite) {
+  static void Reject(AbstractPromise* result, AbstractPromise* prerequisite) {
     result->emplace(scoped_refptr<AbstractPromise>(prerequisite));
   }
 };
@@ -709,14 +682,20 @@ CallbackBase&& ToCallbackBase(const CallbackT&& task) {
 
 // Helps reduce template bloat by moving AbstractPromise construction out of
 // line.
-scoped_refptr<AbstractPromise> BASE_EXPORT
-ConstructAbstractPromiseWithSinglePrerequisite(
+PassedPromise BASE_EXPORT ConstructAbstractPromiseWithSinglePrerequisite(
     const scoped_refptr<TaskRunner>& task_runner,
     const Location& from_here,
     AbstractPromise* prerequsite,
-    internal::PromiseExecutor::Data&& executor_data) noexcept;
+    PromiseExecutor::Data&& executor_data) noexcept;
 
-scoped_refptr<AbstractPromise> BASE_EXPORT
+// Like ConstructAbstractPromiseWithSinglePrerequisite except tasks are posted
+// onto SequencedTaskRunnerHandle::Get.
+PassedPromise BASE_EXPORT ConstructHereAbstractPromiseWithSinglePrerequisite(
+    const Location& from_here,
+    AbstractPromise* prerequsite,
+    PromiseExecutor::Data&& executor_data) noexcept;
+
+PassedPromise BASE_EXPORT
 ConstructManualPromiseResolverPromise(const Location& from_here,
                                       RejectPolicy reject_policy,
                                       bool can_resolve,
