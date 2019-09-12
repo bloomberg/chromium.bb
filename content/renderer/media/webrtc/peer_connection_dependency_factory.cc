@@ -24,7 +24,6 @@
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
@@ -40,6 +39,7 @@
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/p2p/empty_network_manager.h"
 #include "third_party/blink/public/platform/modules/p2p/filtering_network_manager.h"
@@ -84,11 +84,11 @@ enum WebRTCIPHandlingPolicy {
 
 WebRTCIPHandlingPolicy GetWebRTCIPHandlingPolicy(
     const std::string& preference) {
-  if (preference == kWebRTCIPHandlingDefaultPublicAndPrivateInterfaces)
+  if (preference == blink::kWebRTCIPHandlingDefaultPublicAndPrivateInterfaces)
     return DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
-  if (preference == kWebRTCIPHandlingDefaultPublicInterfaceOnly)
+  if (preference == blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly)
     return DEFAULT_PUBLIC_INTERFACE_ONLY;
-  if (preference == kWebRTCIPHandlingDisableNonProxiedUdp)
+  if (preference == blink::kWebRTCIPHandlingDisableNonProxiedUdp)
     return DISABLE_NON_PROXIED_UDP;
   return DEFAULT;
 }
