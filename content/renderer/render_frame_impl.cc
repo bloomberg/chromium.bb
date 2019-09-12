@@ -2393,9 +2393,9 @@ void RenderFrameImpl::BindFrameNavigationControl(
 }
 
 void RenderFrameImpl::BindNavigationClient(
-    mojom::NavigationClientAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<mojom::NavigationClient> receiver) {
   navigation_client_impl_ = std::make_unique<NavigationClient>(this);
-  navigation_client_impl_->Bind(std::move(request));
+  navigation_client_impl_->Bind(std::move(receiver));
 }
 
 void RenderFrameImpl::OnBeforeUnload(bool is_reload) {
@@ -7270,9 +7270,11 @@ void RenderFrameImpl::BeginNavigationInternal(
           initiator ? base::make_optional<base::Value>(std::move(*initiator))
                     : base::nullopt);
 
-  mojom::NavigationClientAssociatedPtrInfo navigation_client_info;
+  mojo::PendingAssociatedRemote<mojom::NavigationClient>
+      navigation_client_remote;
   if (IsPerNavigationMojoInterfaceEnabled()) {
-    BindNavigationClient(mojo::MakeRequest(&navigation_client_info));
+    BindNavigationClient(
+        navigation_client_remote.InitWithNewEndpointAndPassReceiver());
     navigation_client_impl_->MarkWasInitiatedInThisFrame();
   }
 
@@ -7291,7 +7293,7 @@ void RenderFrameImpl::BeginNavigationInternal(
                                  load_flags, has_download_sandbox_flag, from_ad,
                                  is_history_navigation_in_new_child_frame),
       std::move(begin_navigation_params), std::move(blob_url_token),
-      std::move(navigation_client_info), std::move(navigation_initiator));
+      std::move(navigation_client_remote), std::move(navigation_initiator));
 }
 
 void RenderFrameImpl::DecodeDataURL(
