@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -191,10 +192,16 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
 
   views::ImageView* image_view = identity_info_container_->AddChildView(
       std::make_unique<views::ImageView>());
-  image_view->SetImage(profiles::GetSizedAvatarIcon(
-                           image, /*is_rectangle=*/true, kIdentityImageSize,
-                           kIdentityImageSize, profiles::SHAPE_CIRCLE)
-                           .AsImageSkia());
+  // Fall back on |kUserAccountAvatarIcon| if |image| is empty. This can happen
+  // in tests and when the account image hasn't been fetched yet.
+  image_view->SetImage(
+      image.IsEmpty()
+          ? gfx::CreateVectorIcon(kUserAccountAvatarIcon, kIdentityImageSize,
+                                  kIdentityImageSize)
+          : profiles::GetSizedAvatarIcon(image, /*is_rectangle=*/true,
+                                         kIdentityImageSize, kIdentityImageSize,
+                                         profiles::SHAPE_CIRCLE)
+                .AsImageSkia());
 
   views::View* title_label =
       identity_info_container_->AddChildView(std::make_unique<views::Label>(
