@@ -164,7 +164,7 @@ class HWTestList(object):
     """
     default_dict = dict(pool=constants.HWTEST_QUOTA_POOL,
                         timeout=config_lib.HWTestConfig.PALADIN_HW_TEST_TIMEOUT,
-                        file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
+                        file_bugs=False, quota_account='cq',
                         minimum_duts=4)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
