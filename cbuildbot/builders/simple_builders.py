@@ -294,7 +294,9 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(android_stages.AndroidMetadataStage)
     if self._run.config.build_type == constants.PALADIN_TYPE:
       self._RunStage(build_stages.RegenPortageCacheStage)
-    self._RunStage(test_stages.BinhostTestStage)
+    if self._run.config.build_type in [constants.ANDROID_PFQ_TYPE,
+                                       constants.CHROME_PFQ_TYPE]:
+      self._RunStage(test_stages.BinhostTestStage)
 
   def RunEarlySyncAndSetupStages(self):
     """Runs through the early sync and board setup stages."""
