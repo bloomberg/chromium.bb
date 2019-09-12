@@ -127,6 +127,8 @@ message SharePathRequest {
     MY_FILES = 5;
     // The user's PlayFiles/ directory /run/arc/sdcard/write/emulated/0.
     PLAY_FILES = 6;
+    // The user's LinuxFiles/ directory /media/fuse/crostini_<username>_terminal_penguin.
+    LINUX_FILES = 7;
   }
   StorageLocation storage_location = 3;
 
