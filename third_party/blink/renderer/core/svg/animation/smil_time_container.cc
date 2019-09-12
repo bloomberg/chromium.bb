@@ -424,9 +424,11 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
   ApplyAnimationValues(elapsed);
 
   SMILTime next_progress_time = SMILTime::Unresolved();
-  for (auto& sandwich : scheduled_animations_) {
+  for (auto& sandwich : scheduled_animations_.Values()) {
     next_progress_time =
-        std::min(next_progress_time, sandwich.value->NextProgressTime(elapsed));
+        std::min(next_progress_time, sandwich->NextProgressTime(elapsed));
+    if (next_progress_time <= elapsed)
+      break;
   }
 
   if (!CanScheduleFrame(next_progress_time))

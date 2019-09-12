@@ -1057,7 +1057,7 @@ SMILTime SVGSMILElement::NextProgressTime(double presentation_time) const {
         return repeating_duration_end;
       return interval_.end;
     }
-    return presentation_time + 0.025;
+    return presentation_time;
   }
   return interval_.begin >= presentation_time ? interval_.begin
                                               : SMILTime::Unresolved();
