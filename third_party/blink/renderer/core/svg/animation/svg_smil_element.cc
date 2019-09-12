@@ -1109,17 +1109,6 @@ bool SVGSMILElement::NeedsToProgress(double elapsed) {
   return true;
 }
 
-void SVGSMILElement::TriggerPendingEvents(double elapsed) {
-  if (GetActiveState() == kInactive)
-    ScheduleEvent(event_type_names::kBeginEvent);
-
-  if (CalculateAnimationRepeat(elapsed))
-    ScheduleEvent(event_type_names::kRepeatEvent);
-
-  if (GetActiveState() == kInactive || GetActiveState() == kFrozen)
-    ScheduleEvent(event_type_names::kEndEvent);
-}
-
 void SVGSMILElement::UpdateSyncBases() {
   if (!interval_has_changed_)
     return;
