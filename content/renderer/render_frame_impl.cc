@@ -3043,8 +3043,7 @@ void RenderFrameImpl::LoadNavigationErrorPage(
     error_html = error_page_content.value();
   } else {
     GetContentClient()->renderer()->PrepareErrorPage(
-        this, error, document_loader->HttpMethod().Ascii(),
-        false /* ignoring_cache */, &error_html);
+        this, error, document_loader->HttpMethod().Ascii(), &error_html);
   }
 
   // Make sure we never show errors in view source mode.
@@ -3878,18 +3877,13 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
     history_entry = PageStateToHistoryEntry(commit_params->page_state);
 
   std::string error_html;
-  if (error_page_content.has_value()) {
+  std::string* error_html_ptr = &error_html;
+  if (error_page_content) {
     error_html = error_page_content.value();
-    // We don't need the actual error page content, but still call this
-    // for any possible side effects.
-    GetContentClient()->renderer()->PrepareErrorPage(
-        this, error, navigation_params->http_method.Ascii(),
-        false /* ignoring_cache */, nullptr);
-  } else {
-    GetContentClient()->renderer()->PrepareErrorPage(
-        this, error, navigation_params->http_method.Ascii(),
-        false /* ignoring_cache */, &error_html);
+    error_html_ptr = nullptr;
   }
+  GetContentClient()->renderer()->PrepareErrorPage(
+      this, error, navigation_params->http_method.Ascii(), error_html_ptr);
 
   // Make sure we never show errors in view source mode.
   frame_->EnableViewSourceMode(false);
@@ -5082,7 +5076,7 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
     std::string error_html;
     GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
         this, unreachable_url, document_loader->HttpMethod().Ascii(),
-        false /* ignoring_cache */, http_status_code, &error_html);
+        http_status_code, &error_html);
     // This call may run scripts, e.g. via the beforeunload event, and possibly
     // delete |this|.
     LoadNavigationErrorPage(document_loader,
