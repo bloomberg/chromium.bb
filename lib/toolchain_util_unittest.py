@@ -932,6 +932,8 @@ class UploadVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
     self.mock_exist = self.PatchObject(
         gs.GSContext, 'Exists', return_value=False)
     self.mock_upload = self.PatchObject(gs.GSContext, 'Copy')
+    self.mock_update_latest = self.PatchObject(toolchain_util,
+                                               '_UpdateLatestFileForLegacyPFQ')
 
   def testWrongArtifactType(self):
     """Test wrong artifact_type raises exception."""
@@ -978,6 +980,7 @@ class UploadVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
     self.mock_exist.assert_called_once_with(dest_url)
     self.mock_upload.assert_called_once_with(
         source_url, dest_url, acl='public-read')
+    self.mock_update_latest.assert_not_called()
     self.assertEqual(ret, self.artifact)
 
   def testUploadVettedChromeBenchmarkAFDO(self):
@@ -992,6 +995,7 @@ class UploadVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
     self.mock_exist.assert_called_once_with(dest_url)
     self.mock_upload.assert_called_once_with(
         source_url, dest_url, acl='public-read')
+    self.mock_update_latest.assert_called_once_with(self.artifact)
     self.assertEqual(ret, self.artifact)
 
   def testUploadVettedChromeCWPAFDO(self):
@@ -1007,6 +1011,7 @@ class UploadVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
     self.mock_exist.assert_called_once_with(dest_url)
     self.mock_upload.assert_called_once_with(
         source_url, dest_url, acl='public-read')
+    self.mock_update_latest.assert_not_called()
     self.assertEqual(ret, self.artifact)
 
 

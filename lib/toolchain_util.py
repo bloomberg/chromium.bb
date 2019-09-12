@@ -1190,6 +1190,30 @@ def CheckAFDOArtifactExists(buildroot, board, target):
   raise ValueError('Unsupported target %s to check' % target)
 
 
+def _UpdateLatestFileForLegacyPFQ(artifact):
+  """Update the content of lastet file to support legacy PFQ."""
+
+  gs_context = gs.GSContext()
+  chrome_branch = _FindCurrentChromeBranch()
+  latest_file = 'latest-chromeos-chrome-amd64-%s.afdo' % chrome_branch
+  latest_file_url = os.path.join(BENCHMARK_AFDO_GS_URL, latest_file)
+
+  if gs_context.Exists(latest_file_url):
+    with osutils.TempDir() as tempdir:
+      local_file = os.path.join(tempdir, latest_file)
+      gs_context.Copy(latest_file_url, local_file)
+      old_artifact = osutils.ReadFile(local_file)
+      logging.info('Updating %s from %s to %s', latest_file_url, old_artifact,
+                   artifact)
+  else:
+    logging.info('Creating a new %s with %s', latest_file_url, artifact)
+
+  with osutils.TempDir() as tempdir:
+    local_file = os.path.join(tempdir, latest_file)
+    osutils.WriteFile(local_file, artifact)
+    gs_context.Copy(local_file, latest_file_url)
+
+
 def _UploadVettedAFDOArtifacts(artifact_type, subcategory=None):
   """Upload vetted artifact type to GS bucket.
 
@@ -1251,6 +1275,13 @@ def _UploadVettedAFDOArtifacts(artifact_type, subcategory=None):
 
   logging.info('Copying artifact from %s to %s', source_url, dest_url)
   gs_context.Copy(source_url, dest_url, acl='public-read')
+
+  # For benchmark AFDO, we also need to update lastest-* file on the bucket
+  # to be compatible with legacy PFQ. Should not be needed once migrated to
+  # PUpr.
+  if artifact_type == 'benchmark_afdo':
+    _UpdateLatestFileForLegacyPFQ(artifact)
+
   return artifact
 
 
