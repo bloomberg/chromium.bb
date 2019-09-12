@@ -21,10 +21,13 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.sharing.SharingAdapter;
 import org.chromium.chrome.browser.sharing.SharingDeviceCapability;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy.DeviceInfo;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.ui.widget.ButtonCompat;
 
 /**
  * Activity to display device targets to share text.
@@ -79,6 +82,14 @@ public class SharedClipboardShareActivity
 
         View content = findViewById(R.id.device_picker_content);
         content.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_up));
+
+        ButtonCompat chromeSettingsButton = findViewById(R.id.chrome_settings);
+        if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
+            chromeSettingsButton.setVisibility(View.VISIBLE);
+            chromeSettingsButton.setOnClickListener(view -> {
+                PreferencesLauncher.launchSettingsPage(ContextUtils.getApplicationContext(), null);
+            });
+        }
 
         onInitialLayoutInflationComplete();
     }
