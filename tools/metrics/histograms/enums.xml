@@ -7658,9 +7658,10 @@ histogram as enum -->
 </enum>
 
 <enum name="ChromeColorsRevertReason">
-  <int value="0" label="User action"/>
+  <int value="0" label="Menu Cancel"/>
   <int value="1" label="Search provider change"/>
   <int value="2" label="Tab closed"/>
+  <int value="3" label="Navigation"/>
 </enum>
 
 <enum name="ChromeDownloadCountType">
