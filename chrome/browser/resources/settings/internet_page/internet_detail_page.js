@@ -522,10 +522,25 @@ Polymer({
       this.close();
       return;
     }
+
     const managedProperties = OncMojo.getDefaultManagedProperties(
         networkState.type, networkState.guid, networkState.name);
     managedProperties.connectable = networkState.connectable;
     managedProperties.connectionState = networkState.connectionState;
+    switch (networkState.type) {
+      case mojom.NetworkType.kCellular:
+        managedProperties.cellular.signalStrength =
+            networkState.cellular.signalStrength;
+        break;
+      case mojom.NetworkType.kTether:
+        managedProperties.tether.signalStrength =
+            networkState.tether.signalStrength;
+        break;
+      case mojom.NetworkType.kWiFi:
+        managedProperties.wifi.signalStrength =
+            networkState.wifi.signalStrength;
+        break;
+    }
     this.managedProperties_ = managedProperties;
 
     this.propertiesReceived_ = true;
