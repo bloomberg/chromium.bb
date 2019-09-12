@@ -86,7 +86,7 @@ SPECIAL_TESTS = {
     'scripts/cros_extract_deps_unittest': INSIDE,
     'scripts/cros_generate_update_payload_unittest': INSIDE,
     'scripts/cros_mark_android_as_stable_unittest': INSIDE,
-    'scripts/cros_oobe_autoconfig_unittest': INSIDE,
+    'scripts/cros_oobe_autoconfig_unittest': SKIP, # https://crbug.com/1000761
     'scripts/cros_install_debug_syms_unittest': INSIDE,
     'scripts/cros_list_modified_packages_unittest': INSIDE,
     'scripts/cros_mark_as_stable_unittest': INSIDE,
