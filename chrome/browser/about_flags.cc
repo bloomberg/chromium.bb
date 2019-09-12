@@ -1668,9 +1668,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableCancelAllTouchesName,
      flag_descriptions::kDisableCancelAllTouchesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kDisableCancelAllTouches)},
-    {"enable_messages_web_push", flag_descriptions::kEnableMessagesWebPushName,
-     flag_descriptions::kEnableMessagesWebPushDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEnableMessagesWebPush)},
     {
         "enable-background-blur",
         flag_descriptions::kEnableBackgroundBlurName,
