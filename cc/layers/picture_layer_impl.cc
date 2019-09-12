@@ -1277,12 +1277,12 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
 
   PictureLayerImpl* twin = GetPendingOrActiveTwinLayer();
   if (twin && twin->CanHaveTilings()) {
-    min_acceptable_high_res_scale = std::min(
-        min_acceptable_high_res_scale,
-        std::min(twin->raster_contents_scale_, twin->ideal_contents_scale_));
-    max_acceptable_high_res_scale = std::max(
-        max_acceptable_high_res_scale,
-        std::max(twin->raster_contents_scale_, twin->ideal_contents_scale_));
+    min_acceptable_high_res_scale =
+        std::min({min_acceptable_high_res_scale, twin->raster_contents_scale_,
+                  twin->ideal_contents_scale_});
+    max_acceptable_high_res_scale =
+        std::max({max_acceptable_high_res_scale, twin->raster_contents_scale_,
+                  twin->ideal_contents_scale_});
   }
 
   PictureLayerTilingSet* twin_set = twin ? twin->tilings_.get() : nullptr;

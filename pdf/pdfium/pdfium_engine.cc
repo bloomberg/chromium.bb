@@ -3288,11 +3288,10 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
 
   // Page drop shadow parameters.
   constexpr double factor = 0.5;
-  uint32_t depth =
-      std::max(std::max(page_rect.x() - shadow_rect.x(),
-                        page_rect.y() - shadow_rect.y()),
-               std::max(shadow_rect.right() - page_rect.right(),
-                        shadow_rect.bottom() - page_rect.bottom()));
+  uint32_t depth = std::max({page_rect.x() - shadow_rect.x(),
+                             page_rect.y() - shadow_rect.y(),
+                             shadow_rect.right() - page_rect.right(),
+                             shadow_rect.bottom() - page_rect.bottom()});
   depth = static_cast<uint32_t>(depth * 1.5) + 1;
 
   // We need to check depth only to verify our copy of shadow matrix is correct.
