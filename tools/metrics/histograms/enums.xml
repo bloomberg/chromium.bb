@@ -11599,6 +11599,13 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Closed"/>
 </enum>
 
+<enum name="CrosSettingsOsBannerInteraction">
+  <int value="0" label="Not shown"/>
+  <int value="1" label="Shown"/>
+  <int value="2" label="Clicked"/>
+  <int value="3" label="Closed"/>
+</enum>
+
 <enum name="CrosShelfClickTarget">
   <obsolete>
     Deprecated as of 12/2013. Default pinned apps trial is finished.
