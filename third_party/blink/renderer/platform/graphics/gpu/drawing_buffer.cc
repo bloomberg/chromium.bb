@@ -1277,6 +1277,11 @@ void DrawingBuffer::ResolveIfNeeded() {
       !contents_change_resolved_)
     ResolveMultisampleFramebufferInternal();
   contents_change_resolved_ = true;
+
+  auto* gl = ContextProvider()->ContextGL();
+  if (gl->DidGpuSwitch() == GL_TRUE) {
+    // TODO(crbug.com/681341): reallocate multi-sampled render buffer.
+  }
 }
 
 void DrawingBuffer::RestoreFramebufferBindings() {

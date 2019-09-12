@@ -108,6 +108,8 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/gpu_switching_manager.h"
+#include "ui/gl/gpu_switching_observer.h"
 #include "ui/gl/gpu_timing.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/scoped_make_current.h"
@@ -599,7 +601,9 @@ int GLES2Decoder::GetRasterDecoderId() const {
 
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
-class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
+class GLES2DecoderImpl : public GLES2Decoder,
+                         public ErrorStateClient,
+                         public ui::GpuSwitchingObserver {
  public:
   GLES2DecoderImpl(DecoderClient* client,
                    CommandBufferServiceBase* command_buffer_service,
@@ -745,6 +749,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                     unsigned format,
                     unsigned type,
                     const gfx::Rect& cleared_rect) override;
+
+  // Implements GpuSwitchingObserver.
+  void OnGpuSwitched() override;
 
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
@@ -3606,6 +3613,11 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   transform_feedback_manager_.reset(new TransformFeedbackManager(
       group_->max_transform_feedback_separate_attribs(), needs_emulation));
 
+  // Register this object as a GPU switching observer.
+  if (feature_info_->IsWebGLContext()) {
+    ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
+  }
+
   if (feature_info_->IsWebGL2OrES3Context()) {
     // Verified in ContextGroup.
     DCHECK(feature_info_->IsES3Capable());
@@ -5271,6 +5283,11 @@ void GLES2DecoderImpl::SetLevelInfo(uint32_t client_id,
                                   0 /* border */, format, type, cleared_rect);
 }
 
+void GLES2DecoderImpl::OnGpuSwitched() {
+  // Send OnGpuSwitched notification to renderer process via decoder client.
+  client()->OnGpuSwitched();
+}
+
 void GLES2DecoderImpl::Destroy(bool have_context) {
   if (!initialized())
     return;
@@ -5484,6 +5501,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   if (gpu_tracer_) {
     gpu_tracer_->Destroy(have_context);
     gpu_tracer_.reset();
+  }
+
+  // Unregister this object as a GPU switching observer.
+  if (feature_info_->IsWebGLContext()) {
+    ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
   }
 
   if (group_.get()) {
