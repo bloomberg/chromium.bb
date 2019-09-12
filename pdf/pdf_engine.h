@@ -58,7 +58,7 @@ namespace chrome_pdf {
 // Do one time initialization of the SDK.
 // If |enable_v8| is false, then the PDFEngine will not be able to run
 // JavaScript.
-bool InitializeSDK(bool enable_v8);
+void InitializeSDK(bool enable_v8);
 // Tells the SDK that we're shutting down.
 void ShutdownSDK();
 

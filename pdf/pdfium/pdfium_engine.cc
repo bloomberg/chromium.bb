@@ -363,7 +363,7 @@ wchar_t SimplifyForSearch(wchar_t c) {
 
 }  // namespace
 
-bool InitializeSDK(bool enable_v8) {
+void InitializeSDK(bool enable_v8) {
   FPDF_LIBRARY_CONFIG config;
   config.version = 2;
   config.m_pUserFontPaths = nullptr;
@@ -382,8 +382,6 @@ bool InitializeSDK(bool enable_v8) {
 #endif
 
   InitializeUnsupportedFeaturesHandler();
-
-  return true;
 }
 
 void ShutdownSDK() {
