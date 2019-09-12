@@ -153,6 +153,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNotificationSuspender,
     &kNoCreditCardAbort,
     &kNTPLaunchAfterInactivity,
+    &kOfflineIndicatorV2,
     &kOmniboxSpareRenderer,
     &kOverlayNewLayout,
     &kPayWithGoogleV1,
@@ -474,6 +475,9 @@ const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
 
 const base::Feature kNTPLaunchAfterInactivity{
     "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOfflineIndicatorV2{"OfflineIndicatorV2",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

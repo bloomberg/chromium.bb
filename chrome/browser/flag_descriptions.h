@@ -1496,6 +1496,9 @@ extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
 extern const char kOfflineIndicatorChoiceName[];
 extern const char kOfflineIndicatorChoiceDescription[];
 
+extern const char kOfflineIndicatorV2Name[];
+extern const char kOfflineIndicatorV2Description[];
+
 extern const char kOfflinePagesCtName[];
 extern const char kOfflinePagesCtDescription[];
 

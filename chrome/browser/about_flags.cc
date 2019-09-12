@@ -2260,6 +2260,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflineIndicatorAlwaysHttpProbeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature)},
+    {"offline-indicator-v2", flag_descriptions::kOfflineIndicatorV2Name,
+     flag_descriptions::kOfflineIndicatorV2Description, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kOfflineIndicatorV2)},
     {"on-the-fly-mhtml-hash-computation",
      flag_descriptions::kOnTheFlyMhtmlHashComputationName,
      flag_descriptions::kOnTheFlyMhtmlHashComputationDescription, kOsAndroid,
