@@ -31,6 +31,7 @@
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/proto/webprotect.pb.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 
@@ -39,6 +40,23 @@ namespace safe_browsing {
 using content::BrowserThread;
 
 namespace {
+
+// TODO(drubery): This function would be simpler if the ClientDownloadResponse
+// and MalwareDeepScanningVerdict used the same enum.
+std::string MalwareVerdictToThreatType(
+    MalwareDeepScanningVerdict::Verdict verdict) {
+  switch (verdict) {
+    case MalwareDeepScanningVerdict::CLEAN:
+      return "SAFE";
+    case MalwareDeepScanningVerdict::UWS:
+      return "POTENTIALLY_UNWANTED";
+    case MalwareDeepScanningVerdict::MALWARE:
+      return "DANGEROUS";
+    case MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED:
+    default:
+      return "UNKNOWN";
+  }
+}
 
 void MaybeReportDownloadDeepScanningVerdict(
     Profile* profile,
@@ -64,7 +82,10 @@ void MaybeReportDownloadDeepScanningVerdict(
       response.malware_scan_verdict().verdict() ==
           MalwareDeepScanningVerdict::MALWARE) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnDangerousDeepScanningResult(url, file_name, download_digest_sha256);
+        ->OnDangerousDeepScanningResult(
+            url, file_name, download_digest_sha256,
+            MalwareVerdictToThreatType(
+                response.malware_scan_verdict().verdict()));
   }
 
   if (response.dlp_scan_verdict().status() == DlpDeepScanningVerdict::SUCCESS) {
