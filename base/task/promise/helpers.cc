@@ -11,10 +11,6 @@
 namespace base {
 namespace internal {
 
-scoped_refptr<TaskRunner> GetCurrentSequence() {
-  return SequencedTaskRunnerHandle::Get();
-}
-
 DoNothing ToCallbackBase(DoNothing task) {
   return task;
 }

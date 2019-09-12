@@ -19,11 +19,6 @@ class DoNothing;
 
 namespace internal {
 
-// A wrapper around SequencedTaskRunnerHandle::Get(). This file is included by
-// base/task_runner.h which means we can't include anything that depends on
-// that!
-scoped_refptr<TaskRunner> BASE_EXPORT GetCurrentSequence();
-
 template <typename T>
 using ToNonVoidT = std::conditional_t<std::is_void<T>::value, Void, T>;
 
@@ -689,7 +684,7 @@ PassedPromise BASE_EXPORT ConstructAbstractPromiseWithSinglePrerequisite(
     PromiseExecutor::Data&& executor_data) noexcept;
 
 // Like ConstructAbstractPromiseWithSinglePrerequisite except tasks are posted
-// onto SequencedTaskRunnerHandle::Get.
+// onto SequencedTaskRunnerHandle::Get().
 PassedPromise BASE_EXPORT ConstructHereAbstractPromiseWithSinglePrerequisite(
     const Location& from_here,
     AbstractPromise* prerequsite,
