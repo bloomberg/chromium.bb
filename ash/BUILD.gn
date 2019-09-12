@@ -1633,6 +1633,7 @@ test("ash_unittests") {
     "accessibility/touch_accessibility_enabler_unittest.cc",
     "accessibility/touch_exploration_controller_unittest.cc",
     "accessibility/touch_exploration_manager_unittest.cc",
+    "ambient/model/photo_model_unittest.cc",
     "ambient/ui/ambient_container_view_unittest.cc",
     "app_list/app_list_controller_impl_unittest.cc",
     "app_list/app_list_metrics_unittest.cc",
