@@ -20,7 +20,7 @@ namespace assistant {
 
 class FakeBatteryMonitor : device::mojom::BatteryMonitor {
  public:
-  FakeBatteryMonitor() = default;
+  FakeBatteryMonitor() {}
 
   mojo::PendingRemote<device::mojom::BatteryMonitor> CreateRemoteAndBind() {
     return receiver_.BindNewPipeAndPassRemote();
@@ -51,7 +51,7 @@ class FakeBatteryMonitor : device::mojom::BatteryMonitor {
   device::mojom::BatteryStatusPtr battery_status_;
   QueryNextStatusCallback callback_;
 
-  mojo::Receiver<device::mojom::BatteryMonitor> receiver_;
+  mojo::Receiver<device::mojom::BatteryMonitor> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeBatteryMonitor);
 };
