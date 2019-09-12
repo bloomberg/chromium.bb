@@ -20,7 +20,15 @@ namespace ash {
 class ASH_PUBLIC_EXPORT ProactiveSuggestions
     : public base::RefCounted<ProactiveSuggestions> {
  public:
-  ProactiveSuggestions(const std::string& description, const std::string& html);
+  static const int kCategoryUnknown = 0;
+
+  // Constructs a instance with the specified |category|, |description|, and
+  // renderable |html| content. Note that |category| is an opaque int that is
+  // provided by the proactive suggestions server to represent the category of
+  // the associated content (e.g. news, shopping, etc.).
+  ProactiveSuggestions(int category,
+                       std::string&& description,
+                       std::string&& html);
 
   // Returns true if |a| is considered equivalent to |b|.
   static bool AreEqual(const ProactiveSuggestions* a,
@@ -29,14 +37,16 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
   // Returns a fast hash representation of the given |proactive_suggestions|.
   static size_t ToHash(const ProactiveSuggestions* proactive_suggestions);
 
-  const std::string description() const { return description_; }
-  const std::string html() const { return html_; }
+  int category() const { return category_; }
+  const std::string& description() const { return description_; }
+  const std::string& html() const { return html_; }
 
  private:
   // Destruction only allowed by base::RefCounted<ProactiveSuggestions>.
   friend class base::RefCounted<ProactiveSuggestions>;
   ~ProactiveSuggestions();
 
+  const int category_;
   const std::string description_;
   const std::string html_;
 
@@ -56,7 +66,8 @@ struct hash<::ash::ProactiveSuggestions> {
       const ::ash::ProactiveSuggestions& proactive_suggestions) const {
     size_t description = base::FastHash(proactive_suggestions.description());
     size_t html = base::FastHash(proactive_suggestions.html());
-    return base::HashInts(description, html);
+    return base::HashInts(proactive_suggestions.category(),
+                          base::HashInts(description, html));
   }
 };
 

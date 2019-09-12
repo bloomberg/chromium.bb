@@ -6,9 +6,12 @@
 
 namespace ash {
 
-ProactiveSuggestions::ProactiveSuggestions(const std::string& description,
-                                           const std::string& html)
-    : description_(description), html_(html) {}
+ProactiveSuggestions::ProactiveSuggestions(int category,
+                                           std::string&& description,
+                                           std::string&& html)
+    : category_(category),
+      description_(std::move(description)),
+      html_(std::move(html)) {}
 
 ProactiveSuggestions::~ProactiveSuggestions() = default;
 

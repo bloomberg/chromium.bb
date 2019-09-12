@@ -2891,6 +2891,7 @@ Unknown properties are collapsed to zero. -->
   <int value="7" label="kStylus"/>
   <int value="8" label="kLauncherSearchResult"/>
   <int value="9" label="kLauncherSearchBoxMic"/>
+  <int value="10" label="kProactiveSuggestions"/>
 </enum>
 
 <enum name="AssistantExitPoint">
@@ -49627,6 +49628,30 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="PRIVET_NOTIFICATION_CANCELED"/>
   <int value="6" label="PRIVET_NOTIFICATION_CLICKED"/>
   <int value="7" label="PRIVET_DISABLE_NOTIFICATIONS_CLICKED"/>
+</enum>
+
+<enum name="ProactiveSuggestionsCategory">
+  <int value="0" label="kUnknown"/>
+  <int value="1" label="kShopping"/>
+  <int value="2" label="kNews"/>
+</enum>
+
+<enum name="ProactiveSuggestionsRequestResult">
+  <int value="0" label="kError"/>
+  <int value="1" label="kSuccessWithContent"/>
+  <int value="2" label="kSuccessWithoutContent"/>
+</enum>
+
+<enum name="ProactiveSuggestionsShowAttempt">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kAbortedByDuplicateSuppression"/>
+</enum>
+
+<enum name="ProactiveSuggestionsShowResult">
+  <int value="0" label="kClick"/>
+  <int value="1" label="kCloseByContextChange"/>
+  <int value="2" label="kCloseByTimeout"/>
+  <int value="3" label="kCloseByUser"/>
 </enum>
 
 <enum name="ProbeResult">
