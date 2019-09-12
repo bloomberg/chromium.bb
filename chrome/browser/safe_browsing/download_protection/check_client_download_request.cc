@@ -19,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -59,6 +58,8 @@ std::string MalwareVerdictToThreatType(
   }
 }
 
+}  // namespace
+
 void MaybeReportDownloadDeepScanningVerdict(
     Profile* profile,
     const GURL& url,
@@ -97,8 +98,6 @@ void MaybeReportDownloadDeepScanningVerdict(
     }
   }
 }
-
-}  // namespace
 
 CheckClientDownloadRequest::CheckClientDownloadRequest(
     download::DownloadItem* item,

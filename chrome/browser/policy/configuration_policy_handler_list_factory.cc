@@ -1113,6 +1113,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDomainsToCheckForMalwareOfUploadedContent,
     prefs::kDomainsToCheckForMalwareOfUploadedContent,
     base::Value::Type::LIST },
+  { key::kDomainsToNotCheckComplianceOfUploadedContent,
+    prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+    base::Value::Type::LIST },
 #endif
 #if defined(OS_WIN)
   { key::kBrowserSwitcherUseIeSitelist,
