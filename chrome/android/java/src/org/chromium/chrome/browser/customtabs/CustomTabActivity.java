@@ -19,7 +19,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Pair;
@@ -55,7 +54,6 @@ import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarCon
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
@@ -63,7 +61,6 @@ import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
@@ -73,9 +70,6 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
@@ -83,21 +77,8 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
 public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent> {
-    // For CustomTabs.ConnectionStatusOnReturn, see histograms.xml. Append only.
-    @IntDef({ConnectionStatus.DISCONNECTED, ConnectionStatus.DISCONNECTED_KEEP_ALIVE,
-            ConnectionStatus.CONNECTED, ConnectionStatus.CONNECTED_KEEP_ALIVE})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ConnectionStatus {
-        int DISCONNECTED = 0;
-        int DISCONNECTED_KEEP_ALIVE = 1;
-        int CONNECTED = 2;
-        int CONNECTED_KEEP_ALIVE = 3;
-        int NUM_ENTRIES = 4;
-    }
-
     private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
-    private CustomTabBottomBarDelegate mBottomBarDelegate;
     private CustomTabActivityTabController mTabController;
     private CustomTabActivityTabProvider mTabProvider;
     private CustomTabActivityTabFactory mTabFactory;
@@ -111,8 +92,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     // TODO(ianwen, yusufo): Figure out a solution to extract external resources without having to
     // change the package name.
     private boolean mShouldOverridePackage;
-
-    private boolean mIsKeepAlive;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
@@ -176,20 +155,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        mIsKeepAlive = mConnection.keepAliveForSession(
-                mIntentDataProvider.getSession(), mIntentDataProvider.getKeepAliveServiceIntent());
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        mConnection.dontKeepAliveForSession(mIntentDataProvider.getSession());
-        mIsKeepAlive = false;
-    }
-
-    @Override
     public void performPreInflationStartup() {
         // Parse the data from the Intent before calling super to allow the Intent to customize
         // the Activity parameters, including the background of the page.
@@ -238,8 +203,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         // Setting task title and icon to be null will preserve the client app's title and icon.
         ApiCompatibilityUtils.setTaskDescription(this, null, null,
                 mIntentDataProvider.getToolbarColor());
-        mBottomBarDelegate = getComponent().resolveBottomBarDelegate();
-        mBottomBarDelegate.showBottomBarIfNecessary();
+        getComponent().resolveBottomBarDelegate().showBottomBarIfNecessary();
     }
 
     @Override
@@ -305,15 +269,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         // getIntent() returns the same intent as before.
         setIntent(originalIntent);
 
-        handleNewIntent(intent);
-    }
-
-    private boolean handleNewIntent(Intent intent) {
         // Color scheme doesn't matter here: currently we don't support updating UI using Intents.
         CustomTabIntentDataProvider dataProvider = new CustomTabIntentDataProvider(intent, this,
                 CustomTabsIntent.COLOR_SCHEME_LIGHT);
 
-        return mCustomTabIntentHandler.onNewIntent(dataProvider);
+        mCustomTabIntentHandler.onNewIntent(dataProvider);
     }
 
     private void resetPostMessageHandlersForCurrentSession() {
@@ -426,38 +386,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     protected boolean handleBackPressed() {
         return mNavigationController.navigateOnBack();
-    }
-
-    private void recordClientConnectionStatus() {
-        String packageName =
-                (getActivityTab() == null) ? null : TabAssociatedApp.getAppId(getActivityTab());
-        if (packageName == null) return; // No associated package
-
-        boolean isConnected =
-                packageName.equals(mConnection.getClientPackageNameForSession(mSession));
-        int status = -1;
-        if (isConnected) {
-            if (mIsKeepAlive) {
-                status = ConnectionStatus.CONNECTED_KEEP_ALIVE;
-            } else {
-                status = ConnectionStatus.CONNECTED;
-            }
-        } else {
-            if (mIsKeepAlive) {
-                status = ConnectionStatus.DISCONNECTED_KEEP_ALIVE;
-            } else {
-                status = ConnectionStatus.DISCONNECTED;
-            }
-        }
-        assert status >= 0;
-
-        if (GSAState.isGsaPackageName(packageName)) {
-            RecordHistogram.recordEnumeratedHistogram("CustomTabs.ConnectionStatusOnReturn.GSA",
-                    status, ConnectionStatus.NUM_ENTRIES);
-        } else {
-            RecordHistogram.recordEnumeratedHistogram("CustomTabs.ConnectionStatusOnReturn.NonGSA",
-                    status, ConnectionStatus.NUM_ENTRIES);
-        }
     }
 
     @Override
@@ -642,9 +570,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mTabFactory = component.resolveTabFactory();
         mToolbarCoordinator = component.resolveToolbarCoordinator();
         component.resolveUmaTracker();
+        CustomTabActivityClientConnectionKeeper connectionKeeper =
+                component.resolveConnectionKeeper();
         mNavigationController = component.resolveNavigationController();
         mNavigationController.setFinishHandler((reason) -> {
-            if (reason == USER_NAVIGATION) recordClientConnectionStatus();
+            if (reason == USER_NAVIGATION) connectionKeeper.recordClientConnectionStatus();
             handleFinishAndClose();
         });
         mCustomTabIntentHandler = component.resolveIntentHandler();
