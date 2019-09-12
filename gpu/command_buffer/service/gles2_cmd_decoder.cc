@@ -2121,6 +2121,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoPushGroupMarkerEXT(GLsizei length, const GLchar* group);
   void DoPopGroupMarkerEXT(void);
 
+  // Wrapper for ContextVisibilityHintCHROMIUM.
+  void DoContextVisibilityHintCHROMIUM(GLboolean visibility);
+
   // Gets the number of values that will be returned by glGetXXX. Returns
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
@@ -20696,6 +20699,11 @@ void GLES2DecoderImpl::RestoreAllExternalTextureBindingsIfNeeded() {
 
   texture_manager_service_id_generation_ =
       texture_manager()->GetServiceIdGeneration();
+}
+
+void GLES2DecoderImpl::DoContextVisibilityHintCHROMIUM(GLboolean visibility) {
+  if (feature_info_->IsWebGLContext())
+    context_->SetVisibility(visibility == GL_TRUE);
 }
 
 error::Error GLES2DecoderImpl::HandleInitializeDiscardableTextureCHROMIUM(
