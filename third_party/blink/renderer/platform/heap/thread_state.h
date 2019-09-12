@@ -57,6 +57,7 @@ namespace blink {
 
 namespace incremental_marking_test {
 class IncrementalMarkingScope;
+class IncrementalMarkingTestDriver;
 }  // namespace incremental_marking_test
 
 class CancelableTaskScheduler;
@@ -592,7 +593,7 @@ class PLATFORM_EXPORT ThreadState final {
 
   friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;
-  friend class IncrementalMarkingTestDriver;
+  friend class incremental_marking_test::IncrementalMarkingTestDriver;
   friend class HeapAllocator;
   template <typename T>
   friend class PrefinalizerRegistration;
