@@ -6,12 +6,13 @@ package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
 import android.net.MailTo;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.ContextMenu;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;

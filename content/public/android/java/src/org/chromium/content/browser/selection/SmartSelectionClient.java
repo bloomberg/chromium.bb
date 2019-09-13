@@ -7,9 +7,10 @@ package org.chromium.content.browser.selection;
 import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.view.textclassifier.TextClassifier;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
