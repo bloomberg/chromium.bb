@@ -11,6 +11,7 @@
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
+#include "net/base/escape.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -153,9 +154,15 @@ void ProactiveSuggestionsView::InitLayout() {
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   label->SetLineHeight(kLineHeightDip);
   label->SetMultiLine(false);
-  label->SetText(base::UTF8ToUTF16(delegate_->GetSuggestionsModel()
-                                       ->GetProactiveSuggestions()
-                                       ->description()));
+
+  // The |description| string coming from the proactive suggestions server may
+  // be HTML escaped so we need to unescape before displaying to avoid printing
+  // HTML entities to the user.
+  label->SetText(
+      net::UnescapeForHTML(base::UTF8ToUTF16(delegate_->GetSuggestionsModel()
+                                                 ->GetProactiveSuggestions()
+                                                 ->description())));
+
   AddChildView(label);
 
   // We impose a maximum width restriction on the proactive suggestions view.
