@@ -264,6 +264,7 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       search_box_closed_top_padding_(0),
       search_box_peeking_top_padding_(84),
       search_box_fullscreen_top_padding_(24),
+      search_box_preferred_size_for_dense_layout_(40),
       preferred_cols_(5),
       preferred_rows_(4),
       page_spacing_(48),
@@ -376,6 +377,8 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
           base_config.search_box_peeking_top_padding_),
       search_box_fullscreen_top_padding_(
           base_config.search_box_fullscreen_top_padding_),
+      search_box_preferred_size_for_dense_layout_(
+          base_config.search_box_preferred_size_for_dense_layout_),
       preferred_cols_(base_config.preferred_cols_),
       preferred_rows_(base_config.preferred_rows_),
       page_spacing_(base_config.page_spacing_),

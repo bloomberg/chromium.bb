@@ -94,6 +94,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int search_box_fullscreen_top_padding() const {
     return search_box_fullscreen_top_padding_;
   }
+  int search_box_preferred_size_for_dense_layout() const {
+    return search_box_preferred_size_for_dense_layout_;
+  }
   int preferred_cols() const { return preferred_cols_; }
   int preferred_rows() const { return preferred_rows_; }
   int page_spacing() const { return page_spacing_; }
@@ -296,6 +299,10 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The top padding of search box in fullscreen state.
   const int search_box_fullscreen_top_padding_;
+
+  // The preferred search box size when the vertical app list contents space is
+  // condensed - normally the default search box preferred size would be used.
+  const int search_box_preferred_size_for_dense_layout_;
 
   // Preferred number of columns and rows in apps grid.
   const int preferred_cols_;
