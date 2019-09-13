@@ -528,6 +528,23 @@ gfx::Rect ContentsView::GetSearchBoxBoundsForViewState(
                    size);
 }
 
+gfx::Rect ContentsView::GetSearchBoxExpectedBoundsForProgress(
+    float progress) const {
+  gfx::Rect bounds = GetSearchBoxBoundsForViewState(
+      ash::AppListState::kStateApps, ash::AppListViewState::kPeeking);
+
+  if (progress <= 1) {
+    bounds.set_y(gfx::Tween::IntValueBetween(progress, 0, bounds.y()));
+  } else {
+    const int fullscreen_y =
+        GetSearchBoxTopForViewState(ash::AppListState::kStateApps,
+                                    ash::AppListViewState::kFullscreenAllApps);
+    bounds.set_y(
+        gfx::Tween::IntValueBetween(progress - 1, bounds.y(), fullscreen_y));
+  }
+  return bounds;
+}
+
 bool ContentsView::Back() {
   // If the virtual keyboard is visible, dismiss the keyboard and return early
   auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
@@ -792,6 +809,14 @@ int ContentsView::GetSearchBoxTopForViewState(
       return AppListConfig::instance().search_box_closed_top_padding();
     case ash::AppListViewState::kFullscreenAllApps:
     case ash::AppListViewState::kFullscreenSearch:
+      if (app_list_features::IsScalableAppListEnabled()) {
+        return horizontal_page_container_->apps_container_view()
+            ->CalculateMarginsForAvailableBounds(
+                GetContentsBounds(),
+                GetSearchBoxSize(ash::AppListState::kStateApps),
+                true /*for_full_container_bounds*/)
+            .top();
+      }
       return AppListConfig::instance().search_box_fullscreen_top_padding();
     case ash::AppListViewState::kPeeking:
     case ash::AppListViewState::kHalf:
@@ -800,23 +825,6 @@ int ContentsView::GetSearchBoxTopForViewState(
 
   NOTREACHED();
   return AppListConfig::instance().search_box_fullscreen_top_padding();
-}
-
-gfx::Rect ContentsView::GetSearchBoxExpectedBoundsForProgress(
-    float progress) const {
-  gfx::Rect bounds = GetSearchBoxBoundsForViewState(
-      ash::AppListState::kStateApps, ash::AppListViewState::kPeeking);
-
-  if (progress <= 1) {
-    bounds.set_y(gfx::Tween::IntValueBetween(progress, 0, bounds.y()));
-  } else {
-    const int fullscreen_y =
-        GetSearchBoxTopForViewState(ash::AppListState::kStateApps,
-                                    ash::AppListViewState::kFullscreenAllApps);
-    bounds.set_y(
-        gfx::Tween::IntValueBetween(progress - 1, bounds.y(), fullscreen_y));
-  }
-  return bounds;
 }
 
 }  // namespace app_list
