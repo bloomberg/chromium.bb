@@ -280,8 +280,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   views::View* FindFirstFocusableChild();
   views::View* FindLastFocusableChild();
 
-  // Handles the gesture event.
-  void HandleGestureEvent(ui::GestureEvent* event);
+  // Handles the gesture event. Returns true if |event| has been consumed.
+  bool HandleGestureEvent(const ui::GestureEvent* event);
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
