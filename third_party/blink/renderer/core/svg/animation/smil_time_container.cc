@@ -45,7 +45,6 @@ static constexpr base::TimeDelta kAnimationPolicyOnceDuration =
 
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     : presentation_time_(0),
-      reference_time_(0),
       latest_update_time_(0),
       frame_scheduling_state_(kIdle),
       started_(false),
@@ -146,7 +145,7 @@ void SMILTimeContainer::NotifyIntervalsChanged() {
   if (HasPendingSynchronization())
     return;
   CancelAnimationFrame();
-  ScheduleWakeUp(0, kSynchronizeAnimations);
+  ScheduleWakeUp(base::TimeDelta(), kSynchronizeAnimations);
 }
 
 double SMILTimeContainer::Elapsed() const {
@@ -156,12 +155,12 @@ double SMILTimeContainer::Elapsed() const {
   if (IsPaused())
     return presentation_time_;
 
-  double elapsed = presentation_time_ + (GetDocument()
-                                             .Timeline()
-                                             .CurrentTimeInternal()
-                                             .value_or(base::TimeDelta())
-                                             .InSecondsF() -
-                                         reference_time_);
+  base::TimeDelta time_offset =
+      GetDocument().Timeline().CurrentTimeInternal().value_or(
+          base::TimeDelta()) -
+      reference_time_;
+  DCHECK_GE(time_offset, base::TimeDelta());
+  double elapsed = presentation_time_ + time_offset.InSecondsF();
   DCHECK_GE(elapsed, 0.0);
   return elapsed;
 }
@@ -185,11 +184,8 @@ double SMILTimeContainer::CurrentDocumentTime() const {
 }
 
 void SMILTimeContainer::SynchronizeToDocumentTimeline() {
-  reference_time_ = GetDocument()
-                        .Timeline()
-                        .CurrentTimeInternal()
-                        .value_or(base::TimeDelta())
-                        .InSecondsF();
+  reference_time_ = GetDocument().Timeline().CurrentTimeInternal().value_or(
+      base::TimeDelta());
 }
 
 bool SMILTimeContainer::IsPaused() const {
@@ -246,7 +242,7 @@ void SMILTimeContainer::Unpause() {
     return;
 
   SynchronizeToDocumentTimeline();
-  ScheduleWakeUp(0, kSynchronizeAnimations);
+  ScheduleWakeUp(base::TimeDelta(), kSynchronizeAnimations);
 }
 
 void SMILTimeContainer::SetElapsed(double elapsed) {
@@ -279,16 +275,16 @@ void SMILTimeContainer::SetElapsed(double elapsed) {
   UpdateAnimationsAndScheduleFrameIfNeeded(elapsed);
 }
 
-void SMILTimeContainer::ScheduleAnimationFrame(double delay_time) {
-  DCHECK(std::isfinite(delay_time));
+void SMILTimeContainer::ScheduleAnimationFrame(base::TimeDelta delay_time) {
   DCHECK(IsTimelineRunning());
   DCHECK(!wakeup_timer_.IsActive());
 
-  if (delay_time < DocumentTimeline::kMinimumDelay) {
+  const base::TimeDelta kLocalMinimumDelay =
+      base::TimeDelta::FromSecondsD(DocumentTimeline::kMinimumDelay);
+  if (delay_time < kLocalMinimumDelay) {
     ServiceOnNextFrame();
   } else {
-    ScheduleWakeUp(delay_time - DocumentTimeline::kMinimumDelay,
-                   kFutureAnimationFrame);
+    ScheduleWakeUp(delay_time - kLocalMinimumDelay, kFutureAnimationFrame);
   }
 }
 
@@ -298,12 +294,11 @@ void SMILTimeContainer::CancelAnimationFrame() {
 }
 
 void SMILTimeContainer::ScheduleWakeUp(
-    double delay_time,
+    base::TimeDelta delay_time,
     FrameSchedulingState frame_scheduling_state) {
   DCHECK(frame_scheduling_state == kSynchronizeAnimations ||
          frame_scheduling_state == kFutureAnimationFrame);
-  wakeup_timer_.StartOneShot(base::TimeDelta::FromSecondsD(delay_time),
-                             FROM_HERE);
+  wakeup_timer_.StartOneShot(delay_time, FROM_HERE);
   frame_scheduling_state_ = frame_scheduling_state;
 }
 
@@ -434,7 +429,8 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
   if (!CanScheduleFrame(next_progress_time))
     return;
   double delay_time = next_progress_time.Value() - elapsed;
-  ScheduleAnimationFrame(delay_time);
+  DCHECK(std::isfinite(delay_time));
+  ScheduleAnimationFrame(base::TimeDelta::FromSecondsD(delay_time));
 }
 
 // A helper function to fetch the next interesting time after document_time

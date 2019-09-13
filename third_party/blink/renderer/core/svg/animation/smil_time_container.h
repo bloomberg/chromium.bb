@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_TIME_CONTAINER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_TIME_CONTAINER_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/svg/animation/smil_animation_sandwich.h"
 #include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
@@ -104,7 +105,7 @@ class SMILTimeContainer final
 
   bool IsTimelineRunning() const;
   void SynchronizeToDocumentTimeline();
-  void ScheduleAnimationFrame(double delay_time);
+  void ScheduleAnimationFrame(base::TimeDelta delay_time);
   void CancelAnimationFrame();
   void WakeupTimerFired(TimerBase*);
   void ScheduleAnimationPolicyTimer();
@@ -120,7 +121,7 @@ class SMILTimeContainer final
   void UpdateAnimationTimings(double elapsed);
   void ApplyAnimationValues(double elapsed);
   void ServiceOnNextFrame();
-  void ScheduleWakeUp(double delay_time, FrameSchedulingState);
+  void ScheduleWakeUp(base::TimeDelta delay_time, FrameSchedulingState);
   bool HasPendingSynchronization() const;
 
   void UpdateDocumentOrderIndexes();
@@ -131,10 +132,10 @@ class SMILTimeContainer final
   // The latest "restart" time for the time container's timeline. If the
   // timeline has not been manipulated (seeked, paused) this will be zero.
   double presentation_time_;
-  // The time on the document timeline corresponding to |m_presentationTime|.
-  double reference_time_;
   // The state all svg_smil_elements should be at.
   double latest_update_time_;
+  // The time on the document timeline corresponding to |presentation_time_|.
+  base::TimeDelta reference_time_;
 
   FrameSchedulingState frame_scheduling_state_;
   bool started_;  // The timeline has been started.
