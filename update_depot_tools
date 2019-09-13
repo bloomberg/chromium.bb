@@ -45,7 +45,7 @@ fi
 
 # We want to update the bundled tools even under MinGW.
 if [ $MINGW = 0 ]; then
-  $COMSPEC /c `cygpath -w "$base_dir/bootstrap/win/win_tools.bat"`
+  $COMSPEC /c `cygpath -w "$base_dir/bootstrap/win_tools.bat"`
   case $? in
     123)
       # msys environment was upgraded, need to quit.
