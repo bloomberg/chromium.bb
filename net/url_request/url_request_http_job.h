@@ -134,8 +134,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void RecordTimer();
   void ResetTimer();
 
-  void UpdatePacketReadTimes() override;
-
   // Starts the transaction if extensions using the webrequest API do not
   // object.
   void StartTransaction();
@@ -189,35 +187,10 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // back-off. May be NULL.
   scoped_refptr<URLRequestThrottlerEntryInterface> throttling_entry_;
 
-  // For recording of stats, we need to remember if this is cached content.
-  bool is_cached_content_;
-
   base::Time request_creation_time_;
 
-  // Data used for statistics gathering. This data is only used for histograms
-  // and is not required. It is only gathered if packet_timing_enabled_ == true.
-  //
-  // TODO(jar): improve the quality of the gathered info by gathering most times
-  // at a lower point in the network stack, assuring we have actual packet
-  // boundaries, rather than approximations. Also note that input byte count
-  // as gathered here is post-SSL, and post-cache-fetch, and does not reflect
-  // true packet arrival times in such cases.
-
-  // Enable recording of packet arrival times for histogramming.
-  bool packet_timing_enabled_;
-  bool done_;  // True when we are done doing work.
-
-  // The number of bytes that have been accounted for in packets (where some of
-  // those packets may possibly have had their time of arrival recorded).
-  int64_t bytes_observed_in_packets_;
-
-  // The request time may not be available when we are being destroyed, so we
-  // snapshot it early on.
-  base::Time request_time_snapshot_;
-
-  // Since we don't save all packet times in packet_times_, we save the
-  // last time for use in histograms.
-  base::Time final_packet_time_;
+  // True when we are done doing work.
+  bool done_;
 
   // The start time for the job, ignoring re-starts.
   base::TimeTicks start_time_;

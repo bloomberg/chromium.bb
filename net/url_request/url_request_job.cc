@@ -719,10 +719,6 @@ void URLRequestJob::RecordBytesRead(int bytes_read) {
            << " pre bytes read = " << bytes_read
            << " pre total = " << prefilter_bytes_read()
            << " post total = " << postfilter_bytes_read();
-  UpdatePacketReadTimes();  // Facilitate stats recording if it is active.
-}
-
-void URLRequestJob::UpdatePacketReadTimes() {
 }
 
 }  // namespace net

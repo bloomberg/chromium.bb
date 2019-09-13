@@ -396,11 +396,6 @@ class NET_EXPORT URLRequestJob {
   // the URLRequest::Delegate.
   void NotifyDone();
 
-  // Subclasses may implement this method to record packet arrival times.
-  // The default implementation does nothing.  Only invoked when bytes have been
-  // read since the last invocation.
-  virtual void UpdatePacketReadTimes();
-
   // Indicates that the job is done producing data, either it has completed
   // all the data or an error has been encountered. Set exclusively by
   // NotifyDone so that it is kept in sync with the request.
