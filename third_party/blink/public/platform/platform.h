@@ -641,9 +641,19 @@ class BLINK_PLATFORM_EXPORT Platform {
     return base::nullopt;
   }
 
+  virtual bool ShouldEnforceWebRTCRoutingPreferences() { return true; }
+
   virtual media::MediaPermission* GetWebRTCMediaPermission(
       WebLocalFrame* web_frame) {
     return nullptr;
+  }
+
+  virtual bool UsesFakeCodecForPeerConnection() { return false; }
+
+  virtual bool IsWebRtcEncryptionEnabled() { return true; }
+
+  virtual base::Optional<std::string> WebRtcStunProbeTrialParameter() {
+    return base::nullopt;
   }
 
   virtual void GetWebRTCRendererPreferences(WebLocalFrame* web_frame,

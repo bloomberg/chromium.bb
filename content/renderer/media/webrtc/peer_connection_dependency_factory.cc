@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -21,9 +20,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/mdns_responder_adapter.h"
 #include "content/renderer/p2p/port_allocator.h"
@@ -288,8 +284,6 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   socket_factory_.reset(new IpcPacketSocketFactory(p2p_socket_dispatcher_.get(),
                                                    traffic_annotation));
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-
   std::unique_ptr<webrtc::VideoEncoderFactory> webrtc_encoder_factory =
       blink::CreateWebrtcVideoEncoderFactory(gpu_factories);
   std::unique_ptr<webrtc::VideoDecoderFactory> webrtc_decoder_factory =
@@ -303,7 +297,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
         std::move(webrtc_decoder_factory));
   }
 
-  if (cmd_line->HasSwitch(switches::kUseFakeCodecForPeerConnection)) {
+  if (blink::Platform::Current()->UsesFakeCodecForPeerConnection()) {
     webrtc_encoder_factory =
         std::make_unique<webrtc::FakeVideoEncoderFactory>();
     webrtc_decoder_factory =
@@ -333,7 +327,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   webrtc::PeerConnectionFactoryInterface::Options factory_options;
   factory_options.disable_sctp_data_channels = false;
   factory_options.disable_encryption =
-      cmd_line->HasSwitch(switches::kDisableWebRtcEncryption);
+      !blink::Platform::Current()->IsWebRtcEncryptionEnabled();
   pc_factory_->SetOptions(factory_options);
 
   event->Signal();
@@ -388,9 +382,7 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
   // detached, it is impossible for RTCPeerConnectionHandler to outlive the
   // frame. Therefore using a raw pointer of |media_permission| is safe here.
   media::MediaPermission* media_permission = nullptr;
-  if (!GetContentClient()
-           ->renderer()
-           ->ShouldEnforceWebRTCRoutingPreferences()) {
+  if (!blink::Platform::Current()->ShouldEnforceWebRTCRoutingPreferences()) {
     port_config.enable_multiple_routes = true;
     port_config.enable_nonproxied_udp = true;
     VLOG(3) << "WebRTC routing preferences will not be enforced";
@@ -523,21 +515,18 @@ void PeerConnectionDependencyFactory::InitializeWorkerThread(
 }
 
 void PeerConnectionDependencyFactory::TryScheduleStunProbeTrial() {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-
-  if (!cmd_line->HasSwitch(switches::kWebRtcStunProbeTrialParameter))
+  base::Optional<std::string> params =
+      blink::Platform::Current()->WebRtcStunProbeTrialParameter();
+  if (!params)
     return;
 
   GetPcFactory();
-
-  const std::string params =
-      cmd_line->GetSwitchValueASCII(switches::kWebRtcStunProbeTrialParameter);
 
   chrome_worker_thread_.task_runner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(
           &PeerConnectionDependencyFactory::StartStunProbeTrialOnWorkerThread,
-          base::Unretained(this), params),
+          base::Unretained(this), *params),
       base::TimeDelta::FromMilliseconds(blink::kExperimentStartDelayMs));
 }
 

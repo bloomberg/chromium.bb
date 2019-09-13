@@ -689,8 +689,36 @@ RendererBlinkPlatformImpl::GetWebRTCAudioProcessingConfiguration() {
       ->WebRTCPlatformSpecificAudioProcessingConfiguration();
 }
 
+bool RendererBlinkPlatformImpl::ShouldEnforceWebRTCRoutingPreferences() {
+  return GetContentClient()
+      ->renderer()
+      ->ShouldEnforceWebRTCRoutingPreferences();
+}
+
+bool RendererBlinkPlatformImpl::UsesFakeCodecForPeerConnection() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeCodecForPeerConnection);
+}
+
+bool RendererBlinkPlatformImpl::IsWebRtcEncryptionEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableWebRtcEncryption);
+}
+
+base::Optional<std::string>
+RendererBlinkPlatformImpl::WebRtcStunProbeTrialParameter() {
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kWebRtcStunProbeTrialParameter))
+    return base::nullopt;
+
+  return cmd_line->GetSwitchValueASCII(
+      switches::kWebRtcStunProbeTrialParameter);
+}
+
 media::MediaPermission* RendererBlinkPlatformImpl::GetWebRTCMediaPermission(
     blink::WebLocalFrame* web_frame) {
+  DCHECK(ShouldEnforceWebRTCRoutingPreferences());
+
   media::MediaPermission* media_permission = nullptr;
   bool create_media_permission =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
