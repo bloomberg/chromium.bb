@@ -7,14 +7,12 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/local_card_migration_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 
@@ -211,8 +209,7 @@ class LocalCardMigrationManager {
     observer_for_testing_ = observer;
   }
 
-  // The parsed lines from the legal message return from GetUploadDetails.
-  LegalMessageLines legal_message_lines_;
+  std::unique_ptr<base::DictionaryValue> legal_message_;
 
   std::string app_locale_;
 

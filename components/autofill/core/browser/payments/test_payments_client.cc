@@ -7,9 +7,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -54,12 +52,11 @@ void TestPaymentsClient::GetUploadDetails(
   active_experiments_ = active_experiments;
   billable_service_number_ = billable_service_number;
   upload_card_source_ = upload_card_source;
-  std::move(callback).Run(app_locale == "en-US"
-                              ? AutofillClient::SUCCESS
-                              : AutofillClient::PERMANENT_FAILURE,
-                          base::ASCIIToUTF16("this is a context token"),
-                          std::move(TestPaymentsClient::LegalMessage()),
-                          supported_card_bin_ranges_);
+  std::move(callback).Run(
+      app_locale == "en-US" ? AutofillClient::SUCCESS
+                            : AutofillClient::PERMANENT_FAILURE,
+      base::ASCIIToUTF16("this is a context token"),
+      std::unique_ptr<base::Value>(nullptr), supported_card_bin_ranges_);
 }
 
 void TestPaymentsClient::UploadCard(
@@ -137,41 +134,6 @@ void TestPaymentsClient::SetSaveResultForCardsMigration(
 void TestPaymentsClient::SetSupportedBINRanges(
     std::vector<std::pair<int, int>> bin_ranges) {
   supported_card_bin_ranges_ = bin_ranges;
-}
-
-void TestPaymentsClient::SetUseInvalidLegalMessageInGetUploadDetails(
-    bool use_invalid_legal_message) {
-  use_invalid_legal_message_ = use_invalid_legal_message;
-}
-
-std::unique_ptr<base::Value> TestPaymentsClient::LegalMessage() {
-  if (use_invalid_legal_message_) {
-    // Legal message is invalid because it's missing the url.
-    return std::unique_ptr<base::Value>(
-        base::JSONReader::ReadDeprecated("{"
-                                         "  \"line\" : [ {"
-                                         "     \"template\": \"Panda {0}.\","
-                                         "     \"template_parameter\": [ {"
-                                         "        \"display_text\": \"bear\""
-                                         "     } ]"
-                                         "  } ]"
-                                         "}"));
-    return std::unique_ptr<base::Value>(base::JSONReader::ReadDeprecated("{}"));
-  } else {
-    return std::unique_ptr<base::Value>(base::JSONReader::ReadDeprecated(
-        "{"
-        "  \"line\" : [ {"
-        "     \"template\": \"The legal documents are: {0} and {1}.\","
-        "     \"template_parameter\" : [ {"
-        "        \"display_text\" : \"Terms of Service\","
-        "        \"url\": \"http://www.example.com/tos\""
-        "     }, {"
-        "        \"display_text\" : \"Privacy Policy\","
-        "        \"url\": \"http://www.example.com/pp\""
-        "     } ]"
-        "  } ]"
-        "}"));
-  }
 }
 
 }  // namespace payments

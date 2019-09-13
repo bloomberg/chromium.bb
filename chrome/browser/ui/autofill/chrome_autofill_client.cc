@@ -239,7 +239,7 @@ void ChromeAutofillClient::ShowLocalCardMigrationDialog(
 }
 
 void ChromeAutofillClient::ConfirmMigrateLocalCardToCloud(
-    const LegalMessageLines& legal_message_lines,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     const std::string& user_email,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     LocalCardMigrationCallback start_migrating_cards_callback) {
@@ -247,7 +247,7 @@ void ChromeAutofillClient::ConfirmMigrateLocalCardToCloud(
   autofill::ManageMigrationUiController::CreateForWebContents(web_contents());
   autofill::ManageMigrationUiController* controller =
       autofill::ManageMigrationUiController::FromWebContents(web_contents());
-  controller->ShowOfferDialog(legal_message_lines, user_email,
+  controller->ShowOfferDialog(std::move(legal_message), user_email,
                               migratable_credit_cards,
                               std::move(start_migrating_cards_callback));
 #endif
@@ -316,7 +316,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              /*upload=*/false, options, card, LegalMessageLines(),
+              /*upload=*/false, options, card,
+              std::make_unique<base::DictionaryValue>(),
               /*upload_save_card_callback=*/
               AutofillClient::UploadSaveCardPromptCallback(),
               /*local_save_card_callback=*/std::move(callback), GetPrefs(),
@@ -371,7 +372,7 @@ void ChromeAutofillClient::ConfirmExpirationDateFixFlow(
 
 void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
-    const LegalMessageLines& legal_message_lines,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
 #if defined(OS_ANDROID)
@@ -379,20 +380,22 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
   std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
       save_card_info_bar_delegate_mobile =
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              /*upload=*/true, options, card, legal_message_lines,
+              /*upload=*/true, options, card, std::move(legal_message),
               /*upload_save_card_callback=*/std::move(callback),
               /*local_save_card_callback=*/
               AutofillClient::LocalSaveCardPromptCallback(), GetPrefs(),
               payments_client_->is_off_the_record());
-  InfoBarService::FromWebContents(web_contents())
-      ->AddInfoBar(CreateSaveCardInfoBarMobile(
-          std::move(save_card_info_bar_delegate_mobile)));
+  if (save_card_info_bar_delegate_mobile->LegalMessagesParsedSuccessfully()) {
+    InfoBarService::FromWebContents(web_contents())
+        ->AddInfoBar(CreateSaveCardInfoBarMobile(
+            std::move(save_card_info_bar_delegate_mobile)));
+  }
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->OfferUploadSave(card, legal_message_lines, options,
+  controller->OfferUploadSave(card, std::move(legal_message), options,
                               std::move(callback));
 #endif
 }

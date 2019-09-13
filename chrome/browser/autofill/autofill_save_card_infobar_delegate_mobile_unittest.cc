@@ -109,13 +109,14 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
     prefs::PreviousSaveCreditCardPromptUserDecision
         previous_save_credit_card_prompt_user_decision) {
   CreditCard credit_card;
-  LegalMessageLines legal_message_lines;
+  std::unique_ptr<base::DictionaryValue> legal_message;
   if (!legal_message_string.empty()) {
     std::unique_ptr<base::Value> value(
         base::JSONReader::ReadDeprecated(legal_message_string));
     EXPECT_TRUE(value);
-    LegalMessageLine::Parse(*value, &legal_message_lines,
-                            /*escape_apostrophes=*/true);
+    base::DictionaryValue* dictionary;
+    EXPECT_TRUE(value->GetAsDictionary(&dictionary));
+    legal_message = dictionary->CreateDeepCopy();
   }
   profile()->GetPrefs()->SetInteger(
       prefs::kAutofillAcceptSaveCreditCardPromptState,
@@ -126,7 +127,7 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate(
         new AutofillSaveCardInfoBarDelegateMobile(
             is_uploading, AutofillClient::SaveCreditCardOptions(), credit_card,
-            legal_message_lines,
+            std::move(legal_message),
             /*upload_save_card_callback=*/
             base::BindOnce(&AutofillSaveCardInfoBarDelegateMobileTest::
                                UploadSaveCardPromptCallback,
@@ -140,7 +141,7 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new AutofillSaveCardInfoBarDelegateMobile(
           is_uploading, AutofillClient::SaveCreditCardOptions(), credit_card,
-          legal_message_lines,
+          std::move(legal_message),
           /*upload_save_card_callback=*/{},
           /*local_save_card_callback=*/
           base::BindOnce(&AutofillSaveCardInfoBarDelegateMobileTest::
@@ -230,6 +231,29 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Server_Main) {
 
     histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Server",
                                         AutofillMetrics::INFOBAR_SHOWN, 1);
+  }
+
+  // Infobar is not shown because the provided legal message is invalid.
+  {
+    base::HistogramTester histogram_tester;
+    // Legal message is invalid because it's missing the url.
+    std::string bad_legal_message =
+        "{"
+        "  \"line\" : [ {"
+        "     \"template\": \"Panda {0}.\","
+        "     \"template_parameter\": [ {"
+        "        \"display_text\": \"bear\""
+        "     } ]"
+        "  } ]"
+        "}";
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegateWithLegalMessage(
+            /* is_uploading= */ true, std::move(bad_legal_message),
+            prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE));
+
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.CreditCardInfoBar.Server",
+        AutofillMetrics::INFOBAR_NOT_SHOWN_INVALID_LEGAL_MESSAGE, 1);
   }
 
   // Accept the infobar.

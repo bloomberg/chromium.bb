@@ -88,7 +88,7 @@ void TestAutofillClient::ShowLocalCardMigrationDialog(
 }
 
 void TestAutofillClient::ConfirmMigrateLocalCardToCloud(
-    const LegalMessageLines& legal_message_lines,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     const std::string& user_email,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     LocalCardMigrationCallback start_migrating_cards_callback) {
@@ -152,7 +152,7 @@ void TestAutofillClient::ConfirmExpirationDateFixFlow(
 
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
-    const LegalMessageLines& legal_message_lines,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
   offer_to_save_credit_card_bubble_was_shown_ = options.show_prompt;

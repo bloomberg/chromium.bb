@@ -72,7 +72,7 @@ AutofillSaveCardInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       base::android::ConvertUTF16ToJavaString(env, delegate->card_label()),
       base::android::ConvertUTF16ToJavaString(env, delegate->card_sub_label()));
 
-  for (const auto& line : delegate->legal_message_lines()) {
+  for (const auto& line : delegate->legal_messages()) {
     Java_AutofillSaveCardInfoBar_addLegalMessageLine(
         env, java_delegate,
         base::android::ConvertUTF16ToJavaString(env, line.text()));

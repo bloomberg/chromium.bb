@@ -208,7 +208,7 @@ void ChromeAutofillClientIOS::ShowLocalCardMigrationDialog(
 }
 
 void ChromeAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
-    const LegalMessageLines& legal_message_lines,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     const std::string& user_email,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     LocalCardMigrationCallback start_migrating_cards_callback) {
@@ -243,7 +243,8 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
   DCHECK(options.show_prompt);
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-          /*upload=*/false, options, card, LegalMessageLines(),
+          /*upload=*/false, options, card,
+          std::make_unique<base::DictionaryValue>(),
           /*upload_save_card_callback=*/UploadSaveCardPromptCallback(),
           /*local_save_card_callback=*/std::move(callback), GetPrefs(),
           payments_client_->is_off_the_record())));
@@ -251,20 +252,22 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
 
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
-    const LegalMessageLines& legal_message_lines,
+    std::unique_ptr<base::DictionaryValue> legal_message,
     SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
   DCHECK(options.show_prompt);
-
   auto save_card_info_bar_delegate_mobile =
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-          /*upload=*/true, options, card, legal_message_lines,
+          /*upload=*/true, options, card, std::move(legal_message),
           /*upload_save_card_callback=*/std::move(callback),
           /*local_save_card_callback=*/LocalSaveCardPromptCallback(),
           GetPrefs(), payments_client_->is_off_the_record());
-
-  infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
-      std::move(save_card_info_bar_delegate_mobile)));
+  // Allow user to save card only if legal messages are successfully parsed.
+  // Legal messages are provided only for the upload case, not for local save.
+  if (save_card_info_bar_delegate_mobile->LegalMessagesParsedSuccessfully()) {
+    infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
+        std::move(save_card_info_bar_delegate_mobile)));
+  }
 }
 
 void ChromeAutofillClientIOS::CreditCardUploadCompleted(bool card_saved) {

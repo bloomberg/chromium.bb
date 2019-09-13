@@ -19,7 +19,6 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/credit_card_save_strike_database.h"
-#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/local_card_migration_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -333,8 +332,8 @@ class CreditCardSaveManager {
   // The origin of the top level frame from which a form is uploaded.
   url::Origin pending_upload_request_origin_;
 
-  // The parsed lines from the legal message returned from GetUploadDetails.
-  LegalMessageLines legal_message_lines_;
+  // The returned legal message from a GetUploadDetails call to Google Payments.
+  std::unique_ptr<base::DictionaryValue> legal_message_;
 
   std::unique_ptr<CreditCardSaveStrikeDatabase>
       credit_card_save_strike_database_;
