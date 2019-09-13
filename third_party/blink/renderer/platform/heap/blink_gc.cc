@@ -34,8 +34,8 @@ const char* BlinkGC::ToString(BlinkGC::MarkingType type) {
   switch (type) {
     case BlinkGC::MarkingType::kAtomicMarking:
       return "AtomicMarking";
-    case BlinkGC::MarkingType::kIncrementalMarking:
-      return "IncrementalMarking";
+    case BlinkGC::MarkingType::kIncrementalAndConcurrentMarking:
+      return "IncrementalAndConcurrentMarking";
     case BlinkGC::MarkingType::kTakeSnapshot:
       return "TakeSnapshot";
   }

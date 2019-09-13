@@ -291,6 +291,8 @@ class PLATFORM_EXPORT ThreadHeap {
   bool AdvanceMarking(MarkingVisitor*, base::TimeTicks deadline);
   void VerifyMarking();
 
+  void AdvanceConcurrentMarking(ConcurrentMarkingVisitor*);
+
   // Conservatively checks whether an address is a pointer in any of the
   // thread heaps.  If so marks the object pointed to as live.
   Address CheckAndMarkPointer(MarkingVisitor*, Address);
@@ -421,7 +423,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void InvokeEphemeronCallbacks(MarkingVisitor*);
 
-  void FlushV8References(MarkingVisitor*);
+  void FlushV8References();
 
   ThreadState* thread_state_;
   std::unique_ptr<ThreadHeapStatsCollector> heap_stats_collector_;

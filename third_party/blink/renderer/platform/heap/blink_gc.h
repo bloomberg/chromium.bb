@@ -54,7 +54,8 @@ using MovingObjectCallback = void (*)(MovableReference from,
 
 class PLATFORM_EXPORT WorklistTaskId {
  public:
-  static constexpr int MainThread = 0;
+  static constexpr int MutatorThread = 0;
+  static constexpr int ConcurrentThreadBase = 1;
 };
 
 class PLATFORM_EXPORT BlinkGC final {
@@ -70,8 +71,9 @@ class PLATFORM_EXPORT BlinkGC final {
   enum MarkingType {
     // The marking completes synchronously.
     kAtomicMarking,
-    // The marking task is split and executed in chunks.
-    kIncrementalMarking,
+    // The marking task is split and executed in chunks (either on the mutator
+    // thread or concurrently).
+    kIncrementalAndConcurrentMarking,
     // We run marking to take a heap snapshot. Sweeping should do nothing and
     // just clear the mark flags.
     kTakeSnapshot,

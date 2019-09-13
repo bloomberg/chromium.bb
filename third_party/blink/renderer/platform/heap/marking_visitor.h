@@ -110,8 +110,6 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   // Flush private segments remaining in visitor's worklists to global pools.
   void FlushCompactionWorklists();
 
-  void FlushWeakTableCallbacks();
-
   size_t marked_bytes() const { return marked_bytes_; }
 
   int task_id() const { return task_id_; }
@@ -214,6 +212,8 @@ class PLATFORM_EXPORT MarkingVisitor : public MarkingVisitorBase {
   // to be in construction.
   void DynamicallyMarkAddress(Address);
 
+  void FlushMarkingWorklist();
+
  private:
   // Exact version of the marking write barriers.
   static bool WriteBarrierSlow(void*);
@@ -243,6 +243,8 @@ class PLATFORM_EXPORT ConcurrentMarkingVisitor : public MarkingVisitorBase {
  public:
   ConcurrentMarkingVisitor(ThreadState*, MarkingMode, int);
   ~ConcurrentMarkingVisitor() override = default;
+
+  virtual void FlushWorklists();
 };
 
 }  // namespace blink

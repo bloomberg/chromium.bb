@@ -282,7 +282,7 @@ void HeapCompact::MovableObjectFixups::RelocateInteriorFixups(Address from,
 
 void HeapCompact::MovableObjectFixups::UpdateCallbacks() {
   BackingStoreCallbackWorklist::View backing_store_callbacks(
-      heap_->GetBackingStoreCallbackWorklist(), WorklistTaskId::MainThread);
+      heap_->GetBackingStoreCallbackWorklist(), WorklistTaskId::MutatorThread);
   BackingStoreCallbackItem item;
   while (backing_store_callbacks.Pop(&item)) {
     fixup_callbacks_.insert(item.backing, item.callback);
@@ -448,7 +448,7 @@ void HeapCompact::FilterNonLiveSlots() {
 
   last_fixup_count_for_testing_ = 0;
   MovableReferenceWorklist::View traced_slots(
-      heap_->GetMovableReferenceWorklist(), WorklistTaskId::MainThread);
+      heap_->GetMovableReferenceWorklist(), WorklistTaskId::MutatorThread);
   MovableReference* slot;
   while (traced_slots.Pop(&slot)) {
     if (*slot) {

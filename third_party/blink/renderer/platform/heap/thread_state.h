@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
@@ -60,6 +61,7 @@ class IncrementalMarkingScope;
 }  // namespace incremental_marking_test
 
 class CancelableTaskScheduler;
+class ConcurrentMarkingVisitor;
 class MarkingVisitor;
 class PersistentNode;
 class PersistentRegion;
@@ -293,6 +295,11 @@ class PLATFORM_EXPORT ThreadState final {
 
   void EnableIncrementalMarkingBarrier();
   void DisableIncrementalMarkingBarrier();
+
+  // Returns true if concurrent markers are still running.
+  bool ConcurrentMarkingStep();
+  void ScheduleConcurrentMarking();
+  void PerformConcurrentMark(std::unique_ptr<ConcurrentMarkingVisitor>);
 
   void CompleteSweep();
   void FinishSnapshot();
@@ -587,6 +594,11 @@ class PLATFORM_EXPORT ThreadState final {
     std::unique_ptr<MarkingVisitor> visitor;
   };
   GCData current_gc_data_;
+
+  std::unique_ptr<CancelableTaskScheduler> marker_scheduler_;
+  uint8_t active_markers_{0};
+  base::Lock active_concurrent_markers_lock_;
+  size_t concurrently_marked_bytes_{0};
 
   std::unique_ptr<CancelableTaskScheduler> sweeper_scheduler_;
 
