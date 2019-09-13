@@ -35,6 +35,8 @@
 
 namespace blink {
 
+struct SMILInterval;
+
 class SMILTime {
   DISALLOW_NEW();
 
@@ -59,7 +61,36 @@ class SMILTime {
   bool IsIndefinite() const { return std::isinf(time_); }
   bool IsUnresolved() const { return std::isnan(time_); }
 
+  SMILTime operator+(SMILTime other) const { return time_ + other.time_; }
+  SMILTime operator-(SMILTime other) const { return time_ - other.time_; }
+  // So multiplying times does not make too much sense but SMIL defines it for
+  // duration * repeatCount
+  SMILTime operator*(SMILTime other) const;
+
+  bool operator==(SMILTime other) const {
+    return (IsUnresolved() && other.IsUnresolved()) || time_ == other.time_;
+  }
+  bool operator!() const { return !IsFinite() || !time_; }
+  bool operator!=(SMILTime other) const { return !this->operator==(other); }
+
+  // Ordering of SMILTimes has to follow: finite < indefinite (Inf) < unresolved
+  // (NaN). The first comparison is handled by IEEE754 but NaN values must be
+  // checked explicitly to guarantee that unresolved is ordered correctly too.
+  bool operator>(SMILTime other) const {
+    return IsUnresolved() || time_ > other.time_;
+  }
+  bool operator<(SMILTime other) const { return other.operator>(*this); }
+  bool operator>=(SMILTime other) const {
+    return this->operator>(other) || this->operator==(other);
+  }
+  bool operator<=(SMILTime other) const {
+    return this->operator<(other) || this->operator==(other);
+  }
+
  private:
+  friend bool operator!=(const SMILInterval& a, const SMILInterval& b);
+  friend struct SMILTimeHash;
+
   double time_;
 };
 
@@ -87,45 +118,10 @@ class SMILTimeWithOrigin {
 
 std::ostream& operator<<(std::ostream& os, SMILTime time);
 
-inline bool operator==(const SMILTime& a, const SMILTime& b) {
-  return (a.IsUnresolved() && b.IsUnresolved()) || a.Value() == b.Value();
-}
-inline bool operator!(const SMILTime& a) {
-  return !a.IsFinite() || !a.Value();
-}
-inline bool operator!=(const SMILTime& a, const SMILTime& b) {
-  return !operator==(a, b);
-}
-
-// Ordering of SMILTimes has to follow: finite < indefinite (Inf) < unresolved
-// (NaN). The first comparison is handled by IEEE754 but NaN values must be
-// checked explicitly to guarantee that unresolved is ordered correctly too.
-inline bool operator>(const SMILTime& a, const SMILTime& b) {
-  return a.IsUnresolved() || (a.Value() > b.Value());
-}
-inline bool operator<(const SMILTime& a, const SMILTime& b) {
-  return operator>(b, a);
-}
-inline bool operator>=(const SMILTime& a, const SMILTime& b) {
-  return operator>(a, b) || operator==(a, b);
-}
-inline bool operator<=(const SMILTime& a, const SMILTime& b) {
-  return operator<(a, b) || operator==(a, b);
-}
 inline bool operator<(const SMILTimeWithOrigin& a,
                       const SMILTimeWithOrigin& b) {
   return a.Time() < b.Time();
 }
-
-inline SMILTime operator+(const SMILTime& a, const SMILTime& b) {
-  return a.Value() + b.Value();
-}
-inline SMILTime operator-(const SMILTime& a, const SMILTime& b) {
-  return a.Value() - b.Value();
-}
-// So multiplying times does not make too much sense but SMIL defines it for
-// duration * repeatCount
-SMILTime operator*(const SMILTime&, const SMILTime&);
 
 // An interval of SMILTimes.
 // "...the begin time of the interval is included in the interval, but the end
@@ -156,16 +152,16 @@ struct SMILInterval {
 inline bool operator!=(const SMILInterval& a, const SMILInterval& b) {
   // Compare the "raw" values since the operator!= for SMILTime always return
   // true for non-finite times.
-  return a.begin.Value() != b.begin.Value() || a.end.Value() != b.end.Value();
+  return a.begin.time_ != b.begin.time_ || a.end.time_ != b.end.time_;
 }
 
 struct SMILTimeHash {
   STATIC_ONLY(SMILTimeHash);
   static unsigned GetHash(const SMILTime& key) {
-    return WTF::FloatHash<double>::GetHash(key.Value());
+    return WTF::FloatHash<double>::GetHash(key.time_);
   }
   static bool Equal(const SMILTime& a, const SMILTime& b) {
-    return WTF::FloatHash<double>::Equal(a.Value(), b.Value());
+    return WTF::FloatHash<double>::Equal(a.time_, b.time_);
   }
   static const bool safe_to_compare_to_empty_or_deleted = true;
 };
@@ -183,10 +179,10 @@ template <>
 struct HashTraits<blink::SMILTime> : GenericHashTraits<blink::SMILTime> {
   static blink::SMILTime EmptyValue() { return blink::SMILTime::Unresolved(); }
   static void ConstructDeletedValue(blink::SMILTime& slot, bool) {
-    slot = -std::numeric_limits<double>::infinity();
+    slot = blink::SMILTime::Earliest();
   }
   static bool IsDeletedValue(blink::SMILTime value) {
-    return value == -std::numeric_limits<double>::infinity();
+    return value == blink::SMILTime::Earliest();
   }
 };
 
