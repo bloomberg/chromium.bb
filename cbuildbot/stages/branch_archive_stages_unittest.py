@@ -42,6 +42,7 @@ class BranchArchiveStageTestBase(workspace_stages_unittest.WorkspaceStageBase,
     tempdir_mock.return_value.__enter__.return_value = '/tempdir'
 
     self.copy_mock = self.PatchObject(shutil, 'copyfile')
+    self.mkdir_mock = self.PatchObject(os, 'mkdir')
     self.gs_copy_mock = self.PatchObject(gs.GSContext, 'CopyInto')
 
     self.push_mock = self.PatchObject(
@@ -93,15 +94,15 @@ class FirmwareArchiveStageTest(BranchArchiveStageTestBase):
     self.assertEqual(self.copy_mock.call_args_list, [
         mock.call(
             '/tempdir/firmware_from_source.tar.bz2',
-            '/tempdir/board_firmware_from_source.tar.bz2'),
+            '/tempdir/board/firmware_from_source.tar.bz2'),
         mock.call(
             '/tempdir/metadata.json',
-            '/tempdir/board_metadata.json'),
+            '/tempdir/board/metadata.json'),
     ])
 
     self.assertEqual(self.upload_mock.call_args_list, [
-        mock.call('/tempdir/board_firmware_from_source.tar.bz2', archive=True),
-        mock.call('/tempdir/board_metadata.json', archive=True),
+        mock.call('/tempdir/board/firmware_from_source.tar.bz2', archive=True),
+        mock.call('/tempdir/board/metadata.json', archive=True),
     ])
 
     self.assertEqual(self.read_overlay_file_mock.call_args_list, 2 * [
@@ -162,15 +163,15 @@ class FirmwareArchiveStageTest(BranchArchiveStageTestBase):
     self.assertEqual(self.copy_mock.call_args_list, [
         mock.call(
             '/tempdir/firmware_from_source.tar.bz2',
-            '/tempdir/board_firmware_from_source.tar.bz2'),
+            '/tempdir/board/firmware_from_source.tar.bz2'),
         mock.call(
             '/tempdir/metadata.json',
-            '/tempdir/board_metadata.json'),
+            '/tempdir/board/metadata.json'),
     ])
 
     self.assertEqual(self.upload_mock.call_args_list, [
-        mock.call('/tempdir/board_firmware_from_source.tar.bz2', archive=True),
-        mock.call('/tempdir/board_metadata.json', archive=True),
+        mock.call('/tempdir/board/firmware_from_source.tar.bz2', archive=True),
+        mock.call('/tempdir/board/metadata.json', archive=True),
     ])
 
     self.assertEqual(self.read_overlay_file_mock.call_args_list, 2 * [
@@ -286,19 +287,19 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
     self.assertEqual(self.copy_mock.call_args_list, [
         mock.call(
             '/factory.zip',
-            '/tempdir/board_factory.zip'),
+            '/tempdir/board/factory.zip'),
         mock.call(
             '/tempdir/chromiumos_test_image.tar.xz',
-            '/tempdir/board_chromiumos_test_image.tar.xz'),
+            '/tempdir/board/chromiumos_test_image.tar.xz'),
         mock.call(
             '/tempdir/metadata.json',
-            '/tempdir/board_metadata.json'),
+            '/tempdir/board/metadata.json'),
     ])
 
     self.assertEqual(self.upload_mock.call_args_list, [
-        mock.call('/tempdir/board_factory.zip', archive=True),
-        mock.call('/tempdir/board_chromiumos_test_image.tar.xz', archive=True),
-        mock.call('/tempdir/board_metadata.json', archive=True),
+        mock.call('/tempdir/board/factory.zip', archive=True),
+        mock.call('/tempdir/board/chromiumos_test_image.tar.xz', archive=True),
+        mock.call('/tempdir/board/metadata.json', archive=True),
     ])
 
     self.assertEqual(self.read_overlay_file_mock.call_args_list, 3 * [
@@ -401,19 +402,19 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
     self.assertEqual(self.copy_mock.call_args_list, [
         mock.call(
             '/factory.zip',
-            '/tempdir/board_factory.zip'),
+            '/tempdir/board/factory.zip'),
         mock.call(
             '/tempdir/chromiumos_test_image.tar.xz',
-            '/tempdir/board_chromiumos_test_image.tar.xz'),
+            '/tempdir/board/chromiumos_test_image.tar.xz'),
         mock.call(
             '/tempdir/metadata.json',
-            '/tempdir/board_metadata.json'),
+            '/tempdir/board/metadata.json'),
     ])
 
     self.assertEqual(self.upload_mock.call_args_list, [
-        mock.call('/tempdir/board_factory.zip', archive=True),
-        mock.call('/tempdir/board_chromiumos_test_image.tar.xz', archive=True),
-        mock.call('/tempdir/board_metadata.json', archive=True),
+        mock.call('/tempdir/board/factory.zip', archive=True),
+        mock.call('/tempdir/board/chromiumos_test_image.tar.xz', archive=True),
+        mock.call('/tempdir/board/metadata.json', archive=True),
     ])
 
     self.assertEqual(self.read_overlay_file_mock.call_args_list, 3 * [
