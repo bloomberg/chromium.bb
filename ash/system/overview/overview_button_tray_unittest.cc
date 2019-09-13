@@ -147,7 +147,7 @@ TEST_F(OverviewButtonTrayTest, VisibilityTest) {
 
   ASSERT_FALSE(GetTray()->GetVisible());
   TabletModeControllerTestApi().EnterTabletMode();
-  EXPECT_FALSE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
   EXPECT_FALSE(GetTray()->GetVisible());
 
   TabletModeWaiter wait;
