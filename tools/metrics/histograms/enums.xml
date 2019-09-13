@@ -3683,6 +3683,7 @@ Unknown properties are collapsed to zero. -->
   <int value="15" label="Upload was offered for a non-focusable form"/>
   <int value="16" label="Card was not in a supported bin range"/>
   <int value="17" label="Upload was offered for a dynamic form"/>
+  <int value="18" label="Invalid legal message detected"/>
 </enum>
 
 <enum name="AutofillCardUploadEnabled">
@@ -4132,6 +4133,7 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="All cards are unsupported"/>
   <int value="7" label="Single local card"/>
   <int value="8" label="User used unsupported local card"/>
+  <int value="9" label="Invalid legal message detected"/>
 </enum>
 
 <enum name="AutofillLocalCardMigrationDialogOffer">
