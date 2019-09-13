@@ -2522,7 +2522,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
               hw_test_list.DefaultListCQ()[0],
               config_lib.HWTestConfig(
                   constants.HWTEST_JETSTREAM_COMMIT_SUITE,
-                  pool=constants.HWTEST_QUOTA_POOL)
+                  pool=constants.HWTEST_QUOTA_POOL,
+                  quota_account='cq',
+              )
           ],
           hw_tests_override=None)
     if board in _paladin_bluestreak_hwtest_boards:
