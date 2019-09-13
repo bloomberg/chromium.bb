@@ -750,6 +750,14 @@ typedef struct SPEED_FEATURES {
   // 1: more aggressive reduced usage of high precision MV
   // 2: use only quarter pel motion
   int reduce_high_precision_mv_usage;
+
+  // Whether to override and disable sb level coeff cost updates, if
+  // cpi->oxcf.coeff_cost_upd_freq = COST_UPD_SB (i.e. set at SB level)
+  int disable_sb_level_coeff_cost_upd;
+
+  // Whether to override and disable sb level mv cost updates, if
+  // cpi->oxcf.coeff_cost_upd_freq = COST_UPD_SB (i.e. set at SB level)
+  int disable_sb_level_mv_cost_upd;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

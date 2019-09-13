@@ -4049,6 +4049,9 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
         if (mi_col != tile_info->mi_col_start) break;
         AOM_FALLTHROUGH_INTENDED;
       case COST_UPD_SB:  // SB level
+        if (cpi->sf.disable_sb_level_coeff_cost_upd &&
+            mi_col != tile_info->mi_col_start)
+          break;
         av1_fill_coeff_costs(&td->mb, xd->tile_ctx, num_planes);
         break;
       default: assert(0);
@@ -4075,6 +4078,9 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
         if (mi_col != tile_info->mi_col_start) break;
         AOM_FALLTHROUGH_INTENDED;
       case COST_UPD_SB:  // SB level
+        if (cpi->sf.disable_sb_level_mv_cost_upd &&
+            mi_col != tile_info->mi_col_start)
+          break;
         av1_fill_mv_costs(xd->tile_ctx, cm->cur_frame_force_integer_mv,
                           cm->allow_high_precision_mv, x);
         break;

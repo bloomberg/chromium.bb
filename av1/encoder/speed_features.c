@@ -360,6 +360,7 @@ static void set_good_speed_features_framesize_independent(
     sf->reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->simple_motion_search_prune_agg = 1;
+    sf->disable_sb_level_mv_cost_upd = 1;
   }
 
   if (speed >= 4) {
@@ -545,6 +546,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     // TODO(yunqing): evaluate this speed feature for speed 1 & 2, and combine
     // it with cpi->sf.disable_wedge_search_var_thresh.
     sf->disable_wedge_interintra_search = 1;
+    sf->disable_sb_level_mv_cost_upd = 1;
   }
 
   if (speed >= 4) {
@@ -770,6 +772,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->interp_filter_search_mask = ALLOW_ALL_INTERP_FILT_MASK;
   sf->src_var_thresh_intra_skip = 1;
   sf->reduce_high_precision_mv_usage = 0;
+  sf->disable_sb_level_coeff_cost_upd = 0;
+  sf->disable_sb_level_mv_cost_upd = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;
