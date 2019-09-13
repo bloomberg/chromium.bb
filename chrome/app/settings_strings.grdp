@@ -969,6 +969,9 @@
   <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_ENABLED_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-out users who have not disabled the feature.">
     Google can check if your passwords were part of a data breach. This will be turned on when you sign in with your Google Account.
   </message>
+  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_DESC" desc="Text that describes the 'Password Leak Detection' functionality to users">
+    Show a warning when you use an unsafe password that was a part of data breach. It is available for signed-in users only.
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVED_HEADING" desc="The title for a list of username/site/password items. These items are already saved by the browser and can be deleted/edited.">
     Saved Passwords
   </message>

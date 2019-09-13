@@ -40,7 +40,6 @@ Polymer({
     ListPropertyUpdateBehavior,
     Polymer.IronA11yKeysBehavior,
     settings.GlobalScrollTargetBehavior,
-    PrefsBehavior,
   ],
 
   properties: {
@@ -130,12 +129,6 @@ Polymer({
 
     /** @private {settings.SyncStatus} */
     syncStatus_: Object,
-
-    /** @private */
-    userSignedIn_: {
-      type: Boolean,
-      computed: 'computeUserSignedIn_(syncStatus_)',
-    },
 
     /** Filter on the saved passwords and exceptions. */
     filter: {
@@ -351,23 +344,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean}
-   * @private
-   */
-  computeUserSignedIn_: function() {
-    return !!this.syncStatus_ && !!this.syncStatus_.signedIn;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  getCheckedLeakDetection_: function() {
-    return this.userSignedIn_ &&
-        !!this.getPref('profile.password_manager_leak_detection').value;
-  },
-
-  /**
    * @param {string} filter
    * @return {!Array<!PasswordManagerProxy.UiEntryWithPassword>}
    * @private
@@ -380,20 +356,6 @@ Polymer({
     return this.savedPasswords.filter(
         p => [p.entry.urls.shown, p.entry.username].some(
             term => term.toLowerCase().includes(filter.toLowerCase())));
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getPasswordsLeakDetectionSubLabel_: function() {
-    if (this.userSignedIn_) {
-      return this.i18n('passwordsLeakDetectionSignedInDescription');
-    }
-    if (this.getPref('profile.password_manager_leak_detection').value) {
-      return this.i18n('passwordsLeakDetectionSignedOutEnabledDescription');
-    }
-    return this.i18n('passwordsLeakDetectionSignedOutDisabledDescription');
   },
 
   /**

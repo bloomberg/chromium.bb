@@ -120,10 +120,7 @@ cr.define('settings_passwords_section', function() {
     test('testPasswordsExtensionIndicator', function() {
       // Initialize with dummy prefs.
       const element = document.createElement('passwords-section');
-      element.prefs = {
-        credentials_enable_service: {},
-        profile: {password_manager_leak_detection: {}},
-      };
+      element.prefs = {credentials_enable_service: {}};
       document.body.appendChild(element);
 
       assertFalse(!!element.$$('#passwordsExtensionIndicator'));
@@ -851,9 +848,9 @@ cr.define('settings_passwords_section', function() {
     test('hideLinkToPasswordManagerWhenEncrypted', function() {
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
-      syncPrefs.encryptAllData = true;
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      const prefs = sync_test_util.getSyncAllPrefs();
+      prefs.encryptAllData = true;
+      cr.webUIListenerCallback('sync-prefs-changed', prefs);
       sync_test_util.simulateSyncStatus({signedIn: true});
       Polymer.dom.flush();
       assertTrue(passwordsSection.$.manageLink.hidden);
@@ -862,9 +859,9 @@ cr.define('settings_passwords_section', function() {
     test('showLinkToPasswordManagerWhenNotEncrypted', function() {
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
-      syncPrefs.encryptAllData = false;
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      const prefs = sync_test_util.getSyncAllPrefs();
+      prefs.encryptAllData = false;
+      cr.webUIListenerCallback('sync-prefs-changed', prefs);
       Polymer.dom.flush();
       assertFalse(passwordsSection.$.manageLink.hidden);
     });
@@ -872,115 +869,11 @@ cr.define('settings_passwords_section', function() {
     test('showLinkToPasswordManagerWhenNotSignedIn', function() {
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
+      const prefs = sync_test_util.getSyncAllPrefs();
       sync_test_util.simulateSyncStatus({signedIn: false});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      cr.webUIListenerCallback('sync-prefs-changed', prefs);
       Polymer.dom.flush();
       assertFalse(passwordsSection.$.manageLink.hidden);
-    });
-
-    test('leakDetectionToggleSignedInToSignedOutWithFalsePref', function() {
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
-
-      passwordsSection.set(
-          'prefs.profile.password_manager_leak_detection.value', false);
-      sync_test_util.simulateSyncStatus({signedIn: true});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-
-      sync_test_util.simulateSyncStatus({signedIn: false});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString(
-              'passwordsLeakDetectionSignedOutDisabledDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-    });
-
-    test('leakDetectionToggleSignedInToSignedOutWithTruePref', function() {
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
-
-      sync_test_util.simulateSyncStatus({signedIn: true});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-
-      sync_test_util.simulateSyncStatus({signedIn: false});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString(
-              'passwordsLeakDetectionSignedOutEnabledDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-    });
-
-    test('leakDetectionToggleSignedOutToSignedInWithFalsePref', function() {
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
-
-      passwordsSection.set(
-          'prefs.profile.password_manager_leak_detection.value', false);
-      sync_test_util.simulateSyncStatus({signedIn: false});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString(
-              'passwordsLeakDetectionSignedOutDisabledDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-
-      sync_test_util.simulateSyncStatus({signedIn: true});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-    });
-
-    test('leakDetectionToggleSignedOutToSignedInWithTruePref', function() {
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
-
-      sync_test_util.simulateSyncStatus({signedIn: false});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString(
-              'passwordsLeakDetectionSignedOutEnabledDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-
-      sync_test_util.simulateSyncStatus({signedIn: true});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
     });
   });
 });
