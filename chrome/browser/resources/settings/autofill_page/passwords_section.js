@@ -125,11 +125,6 @@ Polymer({
     /** @private */
     showPasswordEditDialog_: Boolean,
 
-    // <if expr="not chromeos">
-    /** @private {Array<!settings.StoredAccount>} */
-    storedAccounts_: Object,
-    // </if>
-
     /** @private {settings.SyncPrefs} */
     syncPrefs_: Object,
 
@@ -139,7 +134,7 @@ Polymer({
     /** @private */
     userSignedIn_: {
       type: Boolean,
-      computed: 'computeUserSignedIn_(syncStatus_, storedAccounts_)',
+      computed: 'computeUserSignedIn_(syncStatus_)',
     },
 
     /** Filter on the saved passwords and exceptions. */
@@ -266,16 +261,9 @@ Polymer({
     syncBrowserProxy.getSyncStatus().then(syncStatusChanged);
     this.addWebUIListener('sync-status-changed', syncStatusChanged);
 
-    // <if expr="not chromeos">
-    const storedAccountsChanged = storedAccounts => this.storedAccounts_ =
-        storedAccounts;
-    syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
-    this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
-    // </if>
-
     const syncPrefsChanged = syncPrefs => this.syncPrefs_ = syncPrefs;
-    syncBrowserProxy.sendSyncPrefsChanged();
     this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
+    syncBrowserProxy.sendSyncPrefsChanged();
 
     Polymer.RenderStatus.afterNextRender(this, function() {
       Polymer.IronA11yAnnouncer.requestAvailability();
@@ -367,8 +355,7 @@ Polymer({
    * @private
    */
   computeUserSignedIn_: function() {
-    return (!!this.syncStatus_ && !!this.syncStatus_.signedIn) ||
-      (!!this.storedAccounts_ && this.storedAccounts_.length > 0);
+    return !!this.syncStatus_ && !!this.syncStatus_.signedIn;
   },
 
   /**
