@@ -214,6 +214,7 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/adaptive_quantize_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/highbd_adaptive_quantize_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/quantize_x86.h"
+              "${AOM_ROOT}/aom_dsp/x86/blk_sse_sum_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/sum_squares_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/variance_sse2.c")
   if(NOT CONFIG_AV1_HIGHBITDEPTH)

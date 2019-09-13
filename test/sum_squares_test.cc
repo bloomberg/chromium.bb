@@ -539,6 +539,13 @@ TEST_P(SSE_Sum_Test, DISABLED_Speed) {
   }
 }
 
+#if HAVE_SSE2
+TestSSE_SumFuncs sse_sum_sse2[] = { TestSSE_SumFuncs(
+    &aom_get_blk_sse_sum_c, &aom_get_blk_sse_sum_sse2) };
+INSTANTIATE_TEST_CASE_P(SSE2, SSE_Sum_Test,
+                        Combine(ValuesIn(sse_sum_sse2), Range(4, 65, 4)));
+#endif  // HAVE_SSE2
+
 #if HAVE_AVX2
 TestSSE_SumFuncs sse_sum_avx2[] = { TestSSE_SumFuncs(
     &aom_get_blk_sse_sum_c, &aom_get_blk_sse_sum_avx2) };
