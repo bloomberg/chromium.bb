@@ -52725,6 +52725,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="DONT_REMEMBER_PASSWORD"/>
 </enum>
 
+<enum name="SavingOnUsernameFirstFlow">
+  <int value="0" label="Saved"/>
+  <int value="1" label="Saved with edited username"/>
+  <int value="2" label="Not saved"/>
+</enum>
+
 <enum name="SB2BloomFailure">
   <obsolete>
     Bloom filter support deleted in October 2012.
