@@ -256,7 +256,7 @@ void ScrollableShelfView::Init() {
 
   focus_search_ = std::make_unique<ScrollableShelfFocusSearch>(this);
 
-  GetShelf()->tooltip()->set_shelf_tooltip_delegate(shelf_view_);
+  GetShelf()->tooltip()->set_shelf_tooltip_delegate(this);
 }
 
 void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
@@ -596,6 +596,50 @@ void ScrollableShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {
   right_arrow_->set_is_horizontal_alignment(is_horizontal_alignment);
   scroll_offset_ = gfx::Vector2dF();
   Layout();
+}
+
+bool ScrollableShelfView::ShouldShowTooltipForView(
+    const views::View* view) const {
+  if (!view || !view->parent())
+    return false;
+
+  if (view->parent() != shelf_view_)
+    return false;
+
+  const gfx::Rect screen_bounds = view->GetBoundsInScreen();
+  const gfx::Rect visible_bounds = shelf_container_view_->GetBoundsInScreen();
+  return visible_bounds.Contains(screen_bounds);
+}
+
+bool ScrollableShelfView::ShouldHideTooltip(
+    const gfx::Point& cursor_location) const {
+  return !available_space_.Contains(cursor_location);
+}
+
+const std::vector<aura::Window*> ScrollableShelfView::GetOpenWindowsForView(
+    views::View* view) {
+  if (!view || view->parent() != shelf_view_)
+    return std::vector<aura::Window*>();
+
+  return shelf_view_->GetOpenWindowsForView(view);
+}
+
+base::string16 ScrollableShelfView::GetTitleForView(
+    const views::View* view) const {
+  if (!view || !view->parent())
+    return base::string16();
+
+  if (view->parent() == shelf_view_)
+    return shelf_view_->GetTitleForView(view);
+
+  return base::string16();
+}
+
+views::View* ScrollableShelfView::GetViewForEvent(const ui::Event& event) {
+  if (event.target() == GetWidget()->GetNativeWindow())
+    return this;
+
+  return nullptr;
 }
 
 gfx::Insets ScrollableShelfView::CalculateEdgePadding() const {

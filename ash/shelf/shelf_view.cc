@@ -329,7 +329,7 @@ ShelfView::~ShelfView() {
   model_->RemoveObserver(this);
 
   // Resets the shelf tooltip delegate when the main shelf gets destroyed.
-  if (!is_overflow_mode())
+  if (!is_overflow_mode() && !chromeos::switches::ShouldShowScrollableShelf())
     shelf_->tooltip()->set_shelf_tooltip_delegate(nullptr);
 }
 
@@ -376,8 +376,9 @@ void ShelfView::Init() {
 
   // We'll layout when our bounds change.
 
-  // Add the main shelf view as ShelfTooltipDelegate.
-  if (!is_overflow_mode())
+  // Add the main shelf view as ShelfTooltipDelegate when scrollable shelf
+  // is not enabled.
+  if (!is_overflow_mode() && !chromeos::switches::ShouldShowScrollableShelf())
     shelf_->tooltip()->set_shelf_tooltip_delegate(this);
 }
 
