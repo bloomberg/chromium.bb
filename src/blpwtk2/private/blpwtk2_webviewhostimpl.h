@@ -153,7 +153,7 @@ class WebViewHostImpl final : private WebViewImplClient
     void applyRegion(const std::string&         blob,
                      applyRegionCallback callback) override;
     void clearTooltip() override;
-    void setParent(unsigned int window) override;
+    void setParent(unsigned int window, setParentCallback callback) override;
 
     DISALLOW_COPY_AND_ASSIGN(WebViewHostImpl);
 

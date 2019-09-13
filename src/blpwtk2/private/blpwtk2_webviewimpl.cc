@@ -443,21 +443,23 @@ void WebViewImpl::hide()
     d_widget->hide();
 }
 
-void WebViewImpl::setParent(NativeView parent)
+int WebViewImpl::setParent(NativeView parent)
 {
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(!d_wasDestroyed);
+    int status = 0;
 
     if (!parent) {
         parent = ui::GetHiddenWindow();
     }
 
     if (!d_widget) {
-        createWidget(parent);
+        status = createWidget(parent);
     }
     else {
-        d_widget->setParent(parent);
+        status = d_widget->setParent(parent);
     }
+    return status;
 }
 
 void WebViewImpl::move(int left, int top, int width, int height)
@@ -607,22 +609,25 @@ void WebViewImpl::setDelegate(blpwtk2::WebViewDelegate *delegate)
     d_delegate = delegate;
 }
 
-void WebViewImpl::createWidget(blpwtk2::NativeView parent)
+int WebViewImpl::createWidget(blpwtk2::NativeView parent)
 {
     DCHECK(!d_widget);
     DCHECK(!d_wasDestroyed);
+    int status = 0;
 
     // This creates the HWND that will host the WebContents.  The widget
     // will be deleted when the HWND is destroyed.
     d_widget = new blpwtk2::NativeViewWidget(
         d_webContents->GetNativeView(),
-        parent,
         this,
         d_properties.rerouteMouseWheelToAnyRelatedWindow);
+
+    status = d_widget->setParent(parent);
 
     if (d_implClient) {
         d_implClient->updateNativeViews(d_widget->getNativeWidgetView(), ui::GetHiddenWindow());
     }
+    return status;
 }
 
 void WebViewImpl::onDestroyed(NativeViewWidget *source)
