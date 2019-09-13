@@ -17,7 +17,6 @@ color-picker {
 
 visual-color-picker {
   height: 59%;
-  min-height: 0;
 }
 
 color-well {
@@ -91,7 +90,6 @@ hue-slider > color-selection-ring {
 
 manual-color-picker {
   height: 28%;
-  min-height: 0;
 }
 
 color-value-container:not(.hidden-color-value-container) {
@@ -163,7 +161,6 @@ submission-controls {
   display: flex;
   flex-direction: row;
   height: 13%;
-  min-height: 0;
 }
 
 #submission-controls-padding {

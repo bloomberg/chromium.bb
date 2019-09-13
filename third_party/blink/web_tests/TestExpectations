@@ -1962,7 +1962,6 @@ crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-008.xht [ Failure ]
 crbug.com/996474 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-009.html [ Pass Failure ]
-crbug.com/998080 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-012.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-015.html [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-005.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
