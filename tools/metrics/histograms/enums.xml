@@ -25747,6 +25747,31 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Manage Plugin VM sharing toast startup"/>
 </enum>
 
+<enum name="FileManagerNotificationType">
+  <int value="0" label="DEVICE_NAVIGATION_ALLOW_APP_ACCESS"/>
+  <int value="1" label="DEVICE_NAVIGATION_APPS_HAVE_ACCESS"/>
+  <int value="2" label="DEVICE_NAVIGATION"/>
+  <int value="3" label="DEVICE_NAVIGATION_READONLY_POLICY"/>
+  <int value="4" label="DEVICE_IMPORT"/>
+  <int value="5" label="DEVICE_FAIL"/>
+  <int value="6" label="DEVICE_FAIL_UNKNOWN"/>
+  <int value="7" label="DEVICE_FAIL_UNKNOWN_READONLY"/>
+  <int value="8" label="DEVICE_EXTERNAL_STORAGE_DISABLED"/>
+  <int value="9" label="DEVICE_HARD_UNPLUGGED"/>
+  <int value="10" label="FORMAT_START"/>
+  <int value="11" label="FORMAT_SUCCESS"/>
+  <int value="12" label="FORMAT_FAIL"/>
+  <int value="13" label="RENAME_FAIL"/>
+</enum>
+
+<enum name="FileManagerNotificationUserAction">
+  <int value="0" label="OPEN_SETTINGS_FOR_ARC_STORAGE"/>
+  <int value="1" label="OPEM_MEDIA_DEVICE_NAVIGATION"/>
+  <int value="2" label="OPEN_MEDIA_DEVICE_NAVIGATION_ARC"/>
+  <int value="3" label="OPEN_MEDIA_DEVICE_FAIL"/>
+  <int value="4" label="OPEN_MEDIA_DEVICE_IMPORT"/>
+</enum>
+
 <enum name="FileManagerQuickViewWayToOpen">
   <int value="0" label="Context menu"/>
   <int value="1" label="Space key"/>
