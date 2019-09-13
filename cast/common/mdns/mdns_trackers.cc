@@ -11,6 +11,37 @@
 namespace cast {
 namespace mdns {
 
+namespace {
+
+// RFC 6762 Section 5.2
+// https://tools.ietf.org/html/rfc6762#section-5.2
+
+// Attempt to refresh a record should be performed at 80%, 85%, 90% and 95% TTL.
+constexpr double kTtlFractions[] = {0.80, 0.85, 0.90, 0.95, 1.00};
+
+// Intervals between successive queries must increase by at least a factor of 2.
+constexpr int kIntervalIncreaseFactor = 2;
+
+// The interval between the first two queries must be at least one second.
+constexpr std::chrono::seconds kMinimumQueryInterval{1};
+
+// The querier may cap the question refresh interval to a maximum of 60 minutes.
+constexpr std::chrono::minutes kMaximumQueryInterval{60};
+
+// RFC 6762 Section 10.1
+// https://tools.ietf.org/html/rfc6762#section-10.1
+
+// A goodbye record is a record with TTL of 0.
+bool IsGoodbyeRecord(const MdnsRecord& record) {
+  constexpr std::chrono::seconds zero_ttl{0};
+  return record.ttl() == zero_ttl;
+}
+
+// The interval between the first two queries must be at least one second.
+constexpr std::chrono::seconds kGoodbyeRecordTtl{1};
+
+}  // namespace
+
 MdnsTracker::MdnsTracker(MdnsSender* sender,
                          TaskRunner* task_runner,
                          ClockNowFunctionPtr now_function,
@@ -25,17 +56,19 @@ MdnsTracker::MdnsTracker(MdnsSender* sender,
   OSP_DCHECK(sender);
 }
 
-namespace {
-// RFC 6762 Section 5.2
-// https://tools.ietf.org/html/rfc6762#section-5.2
-constexpr double kTtlFractions[] = {0.80, 0.85, 0.90, 0.95, 1.00};
-}  // namespace
-
-MdnsRecordTracker::MdnsRecordTracker(MdnsSender* sender,
-                                     TaskRunner* task_runner,
-                                     ClockNowFunctionPtr now_function,
-                                     MdnsRandom* random_delay)
-    : MdnsTracker(sender, task_runner, now_function, random_delay) {}
+MdnsRecordTracker::MdnsRecordTracker(
+    MdnsSender* sender,
+    TaskRunner* task_runner,
+    ClockNowFunctionPtr now_function,
+    MdnsRandom* random_delay,
+    std::function<void(const MdnsRecord&)> record_updated_callback,
+    std::function<void(const MdnsRecord&)> record_expired_callback)
+    : MdnsTracker(sender, task_runner, now_function, random_delay),
+      record_updated_callback_(record_updated_callback),
+      record_expired_callback_(record_expired_callback) {
+  OSP_DCHECK(record_updated_callback);
+  OSP_DCHECK(record_expired_callback);
+}
 
 Error MdnsRecordTracker::Start(MdnsRecord record) {
   if (record_.has_value()) {
@@ -60,6 +93,49 @@ Error MdnsRecordTracker::Stop() {
   return Error::None();
 }
 
+Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
+  if (!record_.has_value()) {
+    return Error::Code::kOperationInvalid;
+  }
+
+  MdnsRecord& old_record = record_.value();
+  if ((old_record.dns_type() != new_record.dns_type()) ||
+      (old_record.dns_class() != new_record.dns_class()) ||
+      (old_record.name() != new_record.name())) {
+    // The new record has been passed to a wrong tracker
+    return Error::Code::kParameterInvalid;
+  }
+
+  // Check if RDATA has changed before a call to Stop clears the old record
+  bool is_updated = (new_record.rdata() != old_record.rdata());
+
+  Error error = Stop();
+  if (!error.ok()) {
+    return error;
+  }
+
+  if (IsGoodbyeRecord(new_record)) {
+    // RFC 6762 Section 10.1
+    // https://tools.ietf.org/html/rfc6762#section-10.1
+    // In case of a goodbye record, the querier should set TTL to 1 second
+    error = Start(MdnsRecord(new_record.name(), new_record.dns_type(),
+                             new_record.dns_class(), new_record.record_type(),
+                             kGoodbyeRecordTtl, new_record.rdata()));
+  } else {
+    error = Start(new_record);
+  }
+
+  if (!error.ok()) {
+    return error;
+  }
+
+  if (is_updated) {
+    record_updated_callback_(record_.value());
+  }
+
+  return Error::None();
+}
+
 bool MdnsRecordTracker::IsStarted() {
   return record_.has_value();
 };
@@ -77,7 +153,7 @@ void MdnsRecordTracker::SendQuery() {
     send_alarm_.Schedule(std::bind(&MdnsRecordTracker::SendQuery, this),
                          GetNextSendTime());
   } else {
-    // TODO(yakimakha): Notify owner that the record has expired
+    record_expired_callback_(record);
   }
 }
 
@@ -95,14 +171,6 @@ Clock::time_point MdnsRecordTracker::GetNextSendTime() {
       record_.value().ttl() * ttl_fraction);
   return start_time_ + delay;
 }
-
-namespace {
-// RFC 6762 Section 5.2
-// https://tools.ietf.org/html/rfc6762#section-5.2
-constexpr int kIntervalIncreaseFactor = 2;
-constexpr std::chrono::seconds kMinimumQueryInterval{1};
-constexpr std::chrono::minutes kMaximumQueryInterval{60};
-}  // namespace
 
 MdnsQuestionTracker::MdnsQuestionTracker(MdnsSender* sender,
                                          TaskRunner* task_runner,

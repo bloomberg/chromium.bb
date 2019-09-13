@@ -172,6 +172,7 @@ MdnsRecord::MdnsRecord(DomainName name,
       ttl_(ttl),
       rdata_(std::move(rdata)) {
   OSP_DCHECK(!name_.empty());
+  OSP_DCHECK_LE(ttl_.count(), std::numeric_limits<uint32_t>::max());
   OSP_DCHECK((dns_type == DnsType::kSRV &&
               absl::holds_alternative<SrvRecordRdata>(rdata_)) ||
              (dns_type == DnsType::kA &&

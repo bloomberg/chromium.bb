@@ -52,10 +52,13 @@ class MdnsTracker {
 // refreshing records as they reach their expiration time.
 class MdnsRecordTracker : public MdnsTracker {
  public:
-  MdnsRecordTracker(MdnsSender* sender,
-                    TaskRunner* task_runner,
-                    ClockNowFunctionPtr now_function,
-                    MdnsRandom* random_delay);
+  MdnsRecordTracker(
+      MdnsSender* sender,
+      TaskRunner* task_runner,
+      ClockNowFunctionPtr now_function,
+      MdnsRandom* random_delay,
+      std::function<void(const MdnsRecord&)> record_updated_callback,
+      std::function<void(const MdnsRecord&)> record_expired_callback);
 
   // Starts sending query messages for the provided record using record's TTL
   // and the time of the call to determine when to send the queries. Returns
@@ -69,6 +72,12 @@ class MdnsRecordTracker : public MdnsTracker {
   // MdnsRecordTracker that has not yet been started or has already been
   // stopped.
   Error Stop();
+
+  // Updates record tracker with the new record:
+  // 1. Calls update callback if RDATA has changed.
+  // 2. Resets TTL to the value specified in new_record.
+  // 3. Schedules expiration in case of a goodbye record.
+  Error Update(const MdnsRecord& new_record);
 
   // Returns true if MdnsRecordTracker instance has been started and is
   // automatically refreshing the record, false otherwise.
@@ -84,6 +93,8 @@ class MdnsRecordTracker : public MdnsTracker {
   Clock::time_point start_time_;
   // Number of times a question to refresh the record has been sent.
   size_t send_count_ = 0;
+  std::function<void(const MdnsRecord&)> record_updated_callback_;
+  std::function<void(const MdnsRecord&)> record_expired_callback_;
 };
 
 // MdnsQuestionTracker manages automatic resending of mDNS queries for
