@@ -1,10 +1,11 @@
-Verifies that when we get a non-secure set-cookie header that would overwrite a secure one, we get a Network.ResponseReceivedExtraInfo event with the blocked cookie.
+Verifies that we get multiple cookie blocked reasons when overwriting a Secure cookie over an insecure connection.
 set-cookie that would overwrite secure cookie blocked set-cookies: [
   {
     "blockedReasons": [
+      "SecureOnly",
       "OverwriteSecure"
     ],
-    "cookieLine": "name=value",
+    "cookieLine": "name=value; Secure",
     "cookie": {
       "name": "name",
       "value": "value",
@@ -13,7 +14,7 @@ set-cookie that would overwrite secure cookie blocked set-cookies: [
       "expires": -1,
       "size": 9,
       "httpOnly": false,
-      "secure": false,
+      "secure": true,
       "session": true
     }
   }
