@@ -130,6 +130,10 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
     SHOW_ITEM_REPARENT,
   };
 
+  // Returns the AppListConfig for the app list view this AppsContainerView
+  // belongs to.
+  const AppListConfig& GetAppListConfig() const;
+
   void SetShowState(ShowState show_state, bool show_apps_with_animation);
 
   // Suggestion chips and apps grid view become unfocusable if |disabled| is

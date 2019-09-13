@@ -81,7 +81,10 @@ constexpr int kSearchBoxAndSuggestionChipsHeight =
     32 /* suggestion chips container height */;
 
 // The app list grid vertical inset - the height of the view fadeout area.
-constexpr int kGridVerticalInset = 24;
+constexpr int kGridVerticalInset = 16;
+
+// Vertical margin for apps grid view (in addition to the grid insets).
+constexpr int kGridVerticalMargin = 8;
 
 // The horizontal spacing between apps grid view and the page switcher.
 constexpr int kPageSwitcherSpacing = 8;
@@ -278,8 +281,9 @@ class AppListViewTest : public views::ViewsTestBase,
     const int kExpectedGridWidth =
         container_size.width() - 2 * expected_horizontal_margin;
 
-    const int kExpectedGridTop =
-        expected_vertical_margin + kSearchBoxAndSuggestionChipsHeight;
+    const int kExpectedGridTop = expected_vertical_margin +
+                                 kSearchBoxAndSuggestionChipsHeight +
+                                 kGridVerticalMargin;
     const int kExpectedGridHeight =
         container_size.height() - kExpectedGridTop -
         (expected_vertical_margin - kGridVerticalInset) - ShelfHeight();
@@ -2896,7 +2900,7 @@ TEST_F(AppListViewTest, VerticalAppsGridItemSpacingIsBounded) {
       (window_size.width() - GetItemGridSizeWithMaxItemMargins(120, 4)) / 2;
   const int expected_vertical_margin =
       (window_size.height() - ShelfHeight() - kGridVerticalInset -
-       kSearchBoxAndSuggestionChipsHeight -
+       kSearchBoxAndSuggestionChipsHeight - kGridVerticalMargin -
        GetItemGridSizeWithMaxItemMargins(120, 5)) /
       2;
   VerifyAppsContainerLayout(window_size, 4 /*column_count*/, 5 /*row_count*/,

@@ -306,15 +306,18 @@ void AppsContainerView::Layout() {
       gfx::Rect grid_rect = rect;
 
       if (app_list_features::IsScalableAppListEnabled()) {
+        const gfx::Insets grid_insets = apps_grid_view_->GetInsets();
         const gfx::Insets margins = CalculateMarginsForAvailableBounds(
             GetContentsBounds(),
             contents_view_->GetSearchBoxSize(ash::AppListState::kStateApps),
             true /*for_full_container_bounds*/);
-        grid_rect.Inset(margins.left(), 0, margins.right(), margins.bottom());
+        grid_rect.Inset(
+            margins.left(),
+            GetAppListConfig().grid_fadeout_zone_height() - grid_insets.top(),
+            margins.right(), margins.bottom());
         // The grid rect insets are added to calculated margins. Given that the
         // grid bounds rect should include insets, they have to be removed from
         // added margins.
-        const gfx::Insets grid_insets = apps_grid_view_->GetInsets();
         grid_rect.Inset(-grid_insets.left(), 0, -grid_insets.right(),
                         -grid_insets.bottom());
       } else {
@@ -447,8 +450,9 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
   // total margin values.
   if (for_full_container_bounds) {
     available_height -= search_box_size.height() +
+                        GetAppListConfig().grid_fadeout_zone_height() +
                         kSuggestionChipContainerHeight +
-                        kSuggestionChipContainerTopMargin + grid_insets.top();
+                        kSuggestionChipContainerTopMargin;
   }
 
   // Calculates margin value to ensure the apps grid size is within required
@@ -513,6 +517,10 @@ void AppsContainerView::UpdateSuggestionChips() {
           ->view_delegate()
           ->GetSearchModel()
           ->results());
+}
+
+const AppListConfig& AppsContainerView::GetAppListConfig() const {
+  return contents_view_->app_list_view()->GetAppListConfig();
 }
 
 void AppsContainerView::SetShowState(ShowState show_state,
@@ -592,8 +600,7 @@ AppsContainerView::GridLayout AppsContainerView::CalculateGridLayout() const {
           .size();
 
   GridLayout result;
-  const AppListConfig& config =
-      contents_view_->app_list_view()->GetAppListConfig();
+  const AppListConfig& config = GetAppListConfig();
   // Switch columns and rows for portrait mode.
   if (size.width() < size.height()) {
     result.columns = config.preferred_rows();
