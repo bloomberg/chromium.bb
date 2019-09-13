@@ -34,6 +34,13 @@ class FormFetcherImpl : public FormFetcher,
 
   ~FormFetcherImpl() override;
 
+  // Returns a MultiStoreFormFetcher if  the password account storage feature is
+  // enabled. Returns a FormFetcherImpl otherwise.
+  static std::unique_ptr<FormFetcherImpl> CreateFormFetcherImpl(
+      PasswordStore::FormDigest form_digest,
+      const PasswordManagerClient* client,
+      bool should_migrate_http_passwords);
+
   // FormFetcher:
   void AddConsumer(FormFetcher::Consumer* consumer) override;
   void RemoveConsumer(FormFetcher::Consumer* consumer) override;
