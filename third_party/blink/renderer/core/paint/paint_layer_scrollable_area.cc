@@ -2713,7 +2713,7 @@ static IntRect InvalidatePaintOfScrollbarIfNeeded(
     GraphicsLayer* graphics_layer,
     bool& previously_was_overlay,
     const IntRect& previous_visual_rect,
-    bool needs_paint_invalidation_arg,
+    bool needs_paint_invalidation,
     LayoutBox& box,
     bool& box_geometry_has_been_invalidated,
     const PaintInvalidatorContext& context) {
@@ -2727,7 +2727,6 @@ static IntRect InvalidatePaintOfScrollbarIfNeeded(
                                               context, previous_visual_rect);
   }
 
-  bool needs_paint_invalidation = needs_paint_invalidation_arg;
   if (needs_paint_invalidation && graphics_layer) {
     // If the scrollbar needs paint invalidation but didn't change location/size
     // or the scrollbar is an overlay scrollbar (visual rect is empty),
