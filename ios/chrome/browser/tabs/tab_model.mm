@@ -229,8 +229,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // WebStateListObserverBridges.
   NSArray<id<WebStateListObserving>>* _retainedWebStateListObservers;
 
-  // The delegate for sync.
-  std::unique_ptr<TabModelSyncedWindowDelegate> _syncedWindowDelegate;
+  // The delegate for sync (the actual object will be owned by the observers
+  // vector, above).
+  TabModelSyncedWindowDelegate* _syncedWindowDelegate;
 
   // Counters for metrics.
   WebStateListMetricsObserver* _webStateListMetricsObserver;
@@ -266,10 +267,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 }
 
 #pragma mark - Public methods
-
-- (TabModelSyncedWindowDelegate*)syncedWindowDelegate {
-  return _syncedWindowDelegate.get();
-}
 
 - (TabUsageRecorder*)tabUsageRecorder {
   return _tabUsageRecorder.get();
@@ -313,8 +310,13 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
           _webStateList.get(),
           PrerenderServiceFactory::GetForBrowserState(browserState));
     }
-    _syncedWindowDelegate =
+    std::unique_ptr<TabModelSyncedWindowDelegate> syncedWindowDelegate =
         std::make_unique<TabModelSyncedWindowDelegate>(_webStateList.get());
+
+    // Keep a weak ref to the the window delegate, which is then moved into
+    // the web state list observers list.
+    _syncedWindowDelegate = syncedWindowDelegate.get();
+    _webStateListObservers.push_back(std::move(syncedWindowDelegate));
 
     // There must be a valid session service defined to consume session windows.
     DCHECK(service);
