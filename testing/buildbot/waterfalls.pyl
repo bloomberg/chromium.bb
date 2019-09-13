@@ -2786,7 +2786,7 @@
           'amd_8870m',
           'gpu_pool',
           'limited_capacity_bot',
-          'mac_10.14',
+          'mac_10.14.4',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
@@ -2800,7 +2800,7 @@
           'gpu_pool',
           'intel_iris_5100',
           'limited_capacity_bot',
-          'mac_10.14',
+          'mac_10.14.4',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
@@ -2812,7 +2812,7 @@
         'browser_config': 'release',
         'mixins': [
           'gpu_pool',
-          'mac_10.14',
+          'mac_10.14.4',
           'limited_capacity_bot',
           'nvidia_750m_mac_edition',
         ],
