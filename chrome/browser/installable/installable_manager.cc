@@ -171,7 +171,6 @@ InstallableManager::InstallableManager(content::WebContents* web_contents)
 }
 
 InstallableManager::~InstallableManager() {
-  // Null in unit tests.
   if (service_worker_context_)
     service_worker_context_->RemoveObserver(this);
 }
@@ -668,6 +667,11 @@ void InstallableManager::OnRegistrationCompleted(const GURL& pattern) {
     return;  // If the pipeline was already running, we don't restart it.
 
   WorkOnTask();
+}
+
+void InstallableManager::OnDestruct(content::ServiceWorkerContext* context) {
+  service_worker_context_->RemoveObserver(this);
+  service_worker_context_ = nullptr;
 }
 
 void InstallableManager::DidFinishNavigation(
