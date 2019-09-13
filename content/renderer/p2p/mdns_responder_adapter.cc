@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "content/child/child_thread_impl.h"
-#include "content/public/common/service_names.mojom.h"
 #include "jingle/glue/utils.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"

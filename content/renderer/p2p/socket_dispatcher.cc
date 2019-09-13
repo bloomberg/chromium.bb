@@ -5,12 +5,9 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 
 #include "base/bind.h"
-#include "base/memory/ref_counted.h"
-#include "content/child/child_process.h"
+#include "base/memory/scoped_refptr.h"
 #include "content/child/child_thread_impl.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/renderer/p2p/socket_client_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
 #include "third_party/blink/public/platform/modules/p2p/network_list_observer.h"
 
