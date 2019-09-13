@@ -749,7 +749,8 @@ function init() {
       realboxEl.placeholder = configData.translatedStrings.searchboxPlaceholder;
       realboxEl.classList.toggle(
           CLASSES.SHOW_PLACEHOLDER, configData.showPlaceholderOnFocus);
-      realboxEl.addEventListener('copy', onRealboxCopy);
+      realboxEl.addEventListener('copy', onRealboxCutCopy);
+      realboxEl.addEventListener('cut', onRealboxCutCopy);
       realboxEl.addEventListener('input', onRealboxInput);
 
       const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
@@ -1109,12 +1110,12 @@ function onQueryAutocompleteDone(result) {
 }
 
 /** @param {!Event} e */
-function onRealboxCopy(e) {
+function onRealboxCutCopy(e) {
   const realboxEl = $(IDS.REALBOX);
   if (!realboxEl.value || realboxEl.selectionStart !== 0 ||
       realboxEl.selectionEnd !== realboxEl.value.length ||
       autocompleteMatches.length === 0) {
-    // Only handle copy events when realbox has content and it's all selected.
+    // Only handle cut/copy when realbox has content and it's all selected.
     return;
   }
 
@@ -1127,6 +1128,9 @@ function onRealboxCopy(e) {
   if (!selectedMatch.isSearchType) {
     e.clipboardData.setData('text/plain', selectedMatch.destinationUrl);
     e.preventDefault();
+    if (e.type === 'cut') {
+      realboxEl.value = '';
+    }
   }
 }
 
