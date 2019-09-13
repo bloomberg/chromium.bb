@@ -210,14 +210,16 @@ bool CastCRL::CheckRevocation(const std::vector<X509*>& trusted_chain,
       return false;
     }
 
-    std::string spki_hash = openscreen::SHA256HashString(spki_tlv);
-    if (revoked_hashes_.find(spki_hash) != revoked_hashes_.end()) {
+    openscreen::ErrorOr<std::string> spki_hash =
+        openscreen::SHA256HashString(spki_tlv);
+    if (spki_hash.is_error() ||
+        (revoked_hashes_.find(spki_hash.value()) != revoked_hashes_.end())) {
       return false;
     }
 
     // Check if the subordinate certificate was revoked by serial number.
     if (i < (trusted_chain.size() - 1)) {
-      auto issuer_iter = revoked_serial_numbers_.find(spki_hash);
+      const auto issuer_iter = revoked_serial_numbers_.find(spki_hash.value());
       if (issuer_iter != revoked_serial_numbers_.end()) {
         const auto& subordinate = trusted_chain[i + 1];
         uint64_t serial_number;

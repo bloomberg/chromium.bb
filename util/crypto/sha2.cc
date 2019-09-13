@@ -13,14 +13,25 @@
 
 namespace openscreen {
 
-void SHA256HashString(absl::string_view str,
-                      uint8_t output[SHA256_DIGEST_LENGTH]) {
-  SHA256(reinterpret_cast<const uint8_t*>(str.data()), str.length(), output);
+Error SHA256HashString(absl::string_view str,
+                       uint8_t output[SHA256_DIGEST_LENGTH]) {
+  bssl::UniquePtr<EVP_MD_CTX> context(EVP_MD_CTX_new());
+  if (!EVP_Digest(str.data(), str.size(), output, nullptr, EVP_sha256(),
+                  nullptr)) {
+    return Error::Code::kSha256HashFailure;
+  }
+
+  return Error::None();
 }
 
-std::string SHA256HashString(absl::string_view str) {
+ErrorOr<std::string> SHA256HashString(absl::string_view str) {
   std::string output(SHA256_DIGEST_LENGTH, 0);
-  SHA256HashString(str, reinterpret_cast<uint8_t*>(data(output)));
+  const Error error =
+      SHA256HashString(str, reinterpret_cast<uint8_t*>(data(output)));
+  if (error != Error::None()) {
+    return error;
+  }
+
   return output;
 }
 

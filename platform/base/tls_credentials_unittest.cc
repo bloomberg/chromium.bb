@@ -49,14 +49,15 @@ TEST(TlsCredentialsTest, CredentialsAreGeneratedAppropriately) {
 
   FakeClock clock(Clock::now());
   ErrorOr<TlsCredentials> creds_or_error = TlsCredentials::Create(
-      "test.com", seconds(31556952), platform::FakeClock::now, std::move(pkey));
+      "test.com", seconds(31556952), platform::FakeClock::now, pkey.get());
   EXPECT_TRUE(creds_or_error.is_value());
   TlsCredentials credentials = std::move(creds_or_error.value());
 
   // Validate the generated certificate. A const cast is necessary because
   // openssl is not const correct for this method.
-  EXPECT_NE(0, X509_verify(const_cast<X509*>(&credentials.certificate()),
-                           const_cast<EVP_PKEY*>(&credentials.key_pair())));
+  EXPECT_NE(0,
+            X509_verify(const_cast<X509*>(&credentials.certificate()),
+                        const_cast<EVP_PKEY*>(credentials.key_pair().key())));
 
   const auto raw_cert = credentials.raw_der_certificate();
   EXPECT_GT(raw_cert.size(), 0u);
@@ -69,18 +70,14 @@ TEST(TlsCredentialsTest, CredentialsAreGeneratedAppropriately) {
   EXPECT_NE(nullptr, x509_certificate);
 
   // Validate the private key
+  // NOTE: both the private and public keys are base64 encoded, so we can't
+  // actually validate their contents properly.
   const auto private_key = credentials.private_key_base64();
   EXPECT_GT(private_key.size(), 0u);
-  const std::string private_key_string = ToString(private_key);
-  EXPECT_THAT(private_key_string, StartsWith("-----BEGIN PRIVATE KEY-----\n"));
-  EXPECT_THAT(private_key_string, EndsWith("-----END PRIVATE KEY-----\n"));
 
   // Validate the public key
   const auto public_key = credentials.public_key_base64();
   EXPECT_GT(public_key.size(), 0u);
-  const std::string public_key_string = ToString(public_key);
-  EXPECT_THAT(public_key_string, StartsWith("-----BEGIN PUBLIC KEY-----\n"));
-  EXPECT_THAT(public_key_string, EndsWith("-----END PUBLIC KEY-----\n"));
 
   // Validate the hash
   // A SHA-256 hash should always be 256 bits, or 32 bytes.

@@ -79,6 +79,12 @@ class Error {
 
     // OpenSSL errors.
 
+    // Was unable to generate an RSA key.
+    kRSAKeyGenerationFailure,
+
+    // Was unable to initialize an EVP_PKEY type.
+    kEVPInitializationError,
+
     // Was unable to generate a certificate.
     kCertificateCreationError,
 

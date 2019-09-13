@@ -30,11 +30,6 @@ CharT* data(std::basic_string<CharT, Traits, Allocator>& str) {
   return std::addressof(str[0]);
 }
 
-template <typename T>
-const std::string ToString(const std::vector<T>& vec) {
-  return std::string(vec.begin(), vec.end());
-}
-
 template <typename Key, typename Value>
 void RemoveValueFromMap(std::map<Key, Value*>* map, Value* value) {
   for (auto it = map->begin(); it != map->end();) {

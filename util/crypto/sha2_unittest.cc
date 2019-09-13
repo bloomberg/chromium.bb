@@ -21,7 +21,7 @@ TEST(Sha256Test, Test1) {
       0x7a, 0x9c, 0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad};
 
   uint8_t output[SHA256_DIGEST_LENGTH];
-  SHA256HashString(input, output);
+  EXPECT_EQ(Error::None(), SHA256HashString(input, output));
   EXPECT_THAT(output, testing::ElementsAreArray(kExpected));
 }
 
@@ -34,9 +34,10 @@ TEST(Sha256Test, Test1_String) {
       0xde, 0x5d, 0xae, 0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17,
       0x7a, 0x9c, 0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad};
 
-  const std::string output = SHA256HashString(input);
-  ASSERT_EQ(static_cast<size_t>(SHA256_DIGEST_LENGTH), output.size());
-  EXPECT_THAT(output, testing::ElementsAreArray(kExpected));
+  const ErrorOr<std::string> output = SHA256HashString(input);
+  EXPECT_TRUE(output.is_value());
+  ASSERT_EQ(static_cast<size_t>(SHA256_DIGEST_LENGTH), output.value().size());
+  EXPECT_THAT(output.value(), testing::ElementsAreArray(kExpected));
 }
 
 TEST(Sha256Test, Test2) {
@@ -49,7 +50,7 @@ TEST(Sha256Test, Test2) {
       0x21, 0x67, 0xf6, 0xec, 0xed, 0xd4, 0x19, 0xdb, 0x06, 0xc1};
 
   uint8_t output[SHA256_DIGEST_LENGTH];
-  SHA256HashString(input, output);
+  EXPECT_EQ(Error::None(), SHA256HashString(input, output));
   EXPECT_THAT(output, testing::ElementsAreArray(kExpected));
 }
 
@@ -62,7 +63,7 @@ TEST(Sha256Test, Test3) {
       0x20, 0x0e, 0x04, 0x6d, 0x39, 0xcc, 0xc7, 0x11, 0x2c, 0xd0};
 
   uint8_t output[SHA256_DIGEST_LENGTH];
-  SHA256HashString(input, output);
+  EXPECT_EQ(Error::None(), SHA256HashString(input, output));
   EXPECT_THAT(output, testing::ElementsAreArray(kExpected));
 }
 }  // namespace openscreen

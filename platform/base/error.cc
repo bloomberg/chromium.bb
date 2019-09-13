@@ -117,13 +117,17 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
     case Error::Code::kJsonWriteError:
       return os << "Failure: JsonWriteError";
     case Error::Code::kFatalSSLError:
-      return os << "Failure: kFatalSSLError";
+      return os << "Failure: FatalSSLError";
+    case Error::Code::kRSAKeyGenerationFailure:
+      return os << "Failure: RSAKeyGenerationFailure";
+    case Error::Code::kEVPInitializationError:
+      return os << "Failure: EVPInitializationError";
     case Error::Code::kCertificateCreationError:
-      return os << "Failure: kCertificateCreationError";
+      return os << "Failure: CertificateCreationError";
     case Error::Code::kCertificateValidationError:
-      return os << "Failure: kCertificateValidationError";
+      return os << "Failure: CertificateValidationError";
     case Error::Code::kSha256HashFailure:
-      return os << "Failure: kSha256HashFailure";
+      return os << "Failure: Sha256HashFailure";
     case Error::Code::kFileLoadFailure:
       return os << "Failure: FileLoadFailure";
     case Error::Code::kErrCertsMissing:
