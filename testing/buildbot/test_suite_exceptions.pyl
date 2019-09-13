@@ -1359,6 +1359,16 @@
       'android-asan',  # https://crbug.com/962650
     ],
   },
+  'sbox_validation_tests': {
+    'modifications': {
+      # TODO(crbug.com/1003894): Remove the idempotency exception when safe.
+      'Win7 (32) Tests': {
+        'swarming': {
+          'idempotent': False,
+        },
+      },
+    },
+  },
   'services_unittests': {
     'modifications': {
       'android-asan': {
