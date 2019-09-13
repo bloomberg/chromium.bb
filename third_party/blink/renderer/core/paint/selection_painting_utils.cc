@@ -93,8 +93,10 @@ Color SelectionColor(const Document& document,
   if (!LayoutTheme::GetTheme().SupportsSelectionForegroundColors())
     return style.VisitedDependentColor(color_property);
   return document.GetFrame()->Selection().FrameIsFocusedAndActive()
-             ? LayoutTheme::GetTheme().ActiveSelectionForegroundColor()
-             : LayoutTheme::GetTheme().InactiveSelectionForegroundColor();
+             ? LayoutTheme::GetTheme().ActiveSelectionForegroundColor(
+                   style.UsedColorScheme())
+             : LayoutTheme::GetTheme().InactiveSelectionForegroundColor(
+                   style.UsedColorScheme());
 }
 
 const ComputedStyle* SelectionPseudoStyle(Node* node) {
@@ -133,8 +135,10 @@ Color SelectionPaintingUtils::SelectionBackgroundColor(
   }
 
   return document.GetFrame()->Selection().FrameIsFocusedAndActive()
-             ? LayoutTheme::GetTheme().ActiveSelectionBackgroundColor()
-             : LayoutTheme::GetTheme().InactiveSelectionBackgroundColor();
+             ? LayoutTheme::GetTheme().ActiveSelectionBackgroundColor(
+                   style.UsedColorScheme())
+             : LayoutTheme::GetTheme().InactiveSelectionBackgroundColor(
+                   style.UsedColorScheme());
 }
 
 Color SelectionPaintingUtils::SelectionForegroundColor(
