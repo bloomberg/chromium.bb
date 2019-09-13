@@ -69,9 +69,6 @@ IdentityManager::IdentityManager(
   primary_account_manager_->SetAuthenticatedAccountSetCallback(
       base::BindRepeating(&IdentityManager::AuthenticatedAccountSet,
                           base::Unretained(this)));
-  primary_account_manager_->SetAuthenticatedAccountClearedCallback(
-      base::BindRepeating(&IdentityManager::AuthenticatedAccountCleared,
-                          base::Unretained(this)));
 #if !defined(OS_CHROMEOS)
   primary_account_manager_->SetGoogleSignedOutCallback(base::BindRepeating(
       &IdentityManager::GoogleSignedOut, base::Unretained(this)));
@@ -551,6 +548,7 @@ void IdentityManager::GoogleSigninSucceeded(
 void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
   DCHECK(!HasPrimaryAccount());
   DCHECK(!account_info.IsEmpty());
+  UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountCleared(account_info);
   }
@@ -567,11 +565,6 @@ void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
 void IdentityManager::AuthenticatedAccountSet(
     const CoreAccountInfo& account_info) {
   DCHECK(primary_account_manager_->IsAuthenticated());
-  UpdateUnconsentedPrimaryAccount();
-}
-
-void IdentityManager::AuthenticatedAccountCleared() {
-  DCHECK(!primary_account_manager_->IsAuthenticated());
   UpdateUnconsentedPrimaryAccount();
 }
 

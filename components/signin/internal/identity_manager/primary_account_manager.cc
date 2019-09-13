@@ -158,13 +158,6 @@ void PrimaryAccountManager::SetAuthenticatedAccountInfo(
   }
 }
 
-void PrimaryAccountManager::ClearAuthenticatedAccountInfo() {
-  authenticated_account_info_ = base::nullopt;
-  if (on_authenticated_account_cleared_callback_) {
-    on_authenticated_account_cleared_callback_.Run();
-  }
-}
-
 bool PrimaryAccountManager::IsAuthenticated() const {
   return authenticated_account_info_.has_value();
 }
@@ -190,13 +183,6 @@ void PrimaryAccountManager::SetAuthenticatedAccountSetCallback(
   DCHECK(!on_authenticated_account_set_callback_)
       << "AuthenticatedAccountSetCallback shouldn't be set multiple times.";
   on_authenticated_account_set_callback_ = callback;
-}
-
-void PrimaryAccountManager::SetAuthenticatedAccountClearedCallback(
-    AccountClearedCallback callback) {
-  DCHECK(!on_authenticated_account_cleared_callback_)
-      << "AuthenticatedAccountClearedCallback shouldn't be set multiple times.";
-  on_authenticated_account_cleared_callback_ = callback;
 }
 
 void PrimaryAccountManager::SignIn(const std::string& username) {
@@ -281,8 +267,7 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
   }
 
   const CoreAccountInfo account_info = GetAuthenticatedAccountInfo();
-
-  ClearAuthenticatedAccountInfo();
+  authenticated_account_info_ = base::nullopt;
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
 
@@ -308,14 +293,8 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
       break;
   }
 
-  FireGoogleSignedOut(account_info);
-}
-
-void PrimaryAccountManager::FireGoogleSignedOut(
-    const CoreAccountInfo& account_info) {
-  if (on_google_signed_out_callback_) {
+  if (on_google_signed_out_callback_)
     on_google_signed_out_callback_.Run(account_info);
-  }
 }
 
 void PrimaryAccountManager::OnRefreshTokensLoaded() {
