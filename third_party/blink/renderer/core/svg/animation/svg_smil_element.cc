@@ -48,6 +48,23 @@
 
 namespace blink {
 
+namespace {
+
+// Compute the next time an interval with a certain (non-zero) simple duration
+// will repeat, relative to a certain presentation time.
+SMILTime ComputeNextRepeatTime(SMILTime interval_begin,
+                               SMILTime simple_duration,
+                               SMILTime presentation_time) {
+  DCHECK(simple_duration);
+  DCHECK_LE(interval_begin, presentation_time);
+  SMILTime time_in_interval = presentation_time - interval_begin;
+  SMILTime time_until_next_repeat =
+      simple_duration - fmod(time_in_interval.Value(), simple_duration.Value());
+  return presentation_time + time_until_next_repeat;
+}
+
+}  // namespace
+
 // This is used for duration type time values that can't be negative.
 static constexpr SMILTime kInvalidCachedTime = SMILTime::Earliest();
 
@@ -861,12 +878,16 @@ SMILTime SVGSMILElement::NextInterestingTime(SMILTime presentation_time) const {
   } else if (interval_.EndsAfter(presentation_time)) {
     next_interesting_interval_time = interval_.end;
     SMILTime simple_duration = SimpleDuration();
-    if (simple_duration.IsFinite()) {
-      unsigned next_repeat = CalculateAnimationRepeat(presentation_time) + 1;
-      SMILTime repeat_time = interval_.begin + simple_duration * next_repeat;
-      if (repeat_time.IsFinite() && presentation_time < repeat_time) {
+    if (simple_duration.IsFinite() && simple_duration.Value()) {
+      SMILTime next_repeat_time = ComputeNextRepeatTime(
+          interval_.begin, simple_duration, presentation_time);
+      DCHECK(next_repeat_time.IsFinite());
+      // Because of floating point issues we can end up getting a
+      // |next_repeat_time| == |presentation_time|, which would fail our
+      // requirement, meaning we wouldn't make progress. Integers FTW!
+      if (presentation_time < next_repeat_time) {
         next_interesting_interval_time =
-            std::min(next_interesting_interval_time, repeat_time);
+            std::min(next_interesting_interval_time, next_repeat_time);
       }
     }
   }
