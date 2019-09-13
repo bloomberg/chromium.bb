@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/content_security_policy.h"
+#include "services/network/public/cpp/content_security_policy.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -44,24 +44,25 @@ static void TestCSPParser(const std::string& header,
   policy.Parse(*headers);
 
   if (!expected_result) {
-    EXPECT_FALSE(policy.frame_ancestors());
+    EXPECT_FALSE(policy.content_security_policy_ptr());
     return;
   }
-  EXPECT_EQ(policy.frame_ancestors()->sources.size(), expected_result->size);
+  auto& frame_ancestors = policy.content_security_policy_ptr()->frame_ancestors;
+  EXPECT_EQ(frame_ancestors->sources.size(), expected_result->size);
   for (size_t i = 0; i < expected_result->parsed_sources.size(); i++) {
-    EXPECT_EQ(policy.frame_ancestors()->sources[i]->scheme,
+    EXPECT_EQ(frame_ancestors->sources[i]->scheme,
               expected_result->parsed_sources[i].scheme);
-    EXPECT_EQ(policy.frame_ancestors()->sources[i]->host,
+    EXPECT_EQ(frame_ancestors->sources[i]->host,
               expected_result->parsed_sources[i].host);
-    EXPECT_EQ(policy.frame_ancestors()->sources[i]->port,
+    EXPECT_EQ(frame_ancestors->sources[i]->port,
               expected_result->parsed_sources[i].port);
-    EXPECT_EQ(policy.frame_ancestors()->sources[i]->path,
+    EXPECT_EQ(frame_ancestors->sources[i]->path,
               expected_result->parsed_sources[i].path);
-    EXPECT_EQ(policy.frame_ancestors()->sources[i]->is_host_wildcard,
+    EXPECT_EQ(frame_ancestors->sources[i]->is_host_wildcard,
               expected_result->parsed_sources[i].is_host_wildcard);
-    EXPECT_EQ(policy.frame_ancestors()->sources[i]->is_port_wildcard,
+    EXPECT_EQ(frame_ancestors->sources[i]->is_port_wildcard,
               expected_result->parsed_sources[i].is_port_wildcard);
-    EXPECT_EQ(policy.frame_ancestors()->sources[i]->allow_self,
+    EXPECT_EQ(frame_ancestors->sources[i]->allow_self,
               expected_result->parsed_sources[i].allow_self);
   }
 }
@@ -198,15 +199,16 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     ContentSecurityPolicy policy;
     policy.Parse(*headers);
 
-    EXPECT_EQ(policy.frame_ancestors()->sources.size(), 1U);
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->scheme, "");
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->host, "example.com");
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->port,
-              url::PORT_UNSPECIFIED);
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->path, "");
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->is_host_wildcard, false);
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->is_port_wildcard, false);
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->allow_self, false);
+    auto& frame_ancestors =
+        policy.content_security_policy_ptr()->frame_ancestors;
+    EXPECT_EQ(frame_ancestors->sources.size(), 1U);
+    EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
+    EXPECT_EQ(frame_ancestors->sources[0]->port, url::PORT_UNSPECIFIED);
+    EXPECT_EQ(frame_ancestors->sources[0]->path, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->allow_self, false);
   }
 
   // Skip the first directive, which is not frame-ancestors.
@@ -219,15 +221,16 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     ContentSecurityPolicy policy;
     policy.Parse(*headers);
 
-    EXPECT_EQ(policy.frame_ancestors()->sources.size(), 1U);
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->scheme, "");
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->host, "example.org");
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->port,
-              url::PORT_UNSPECIFIED);
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->path, "");
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->is_host_wildcard, false);
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->is_port_wildcard, false);
-    EXPECT_EQ(policy.frame_ancestors()->sources[0]->allow_self, false);
+    auto& frame_ancestors =
+        policy.content_security_policy_ptr()->frame_ancestors;
+    EXPECT_EQ(frame_ancestors->sources.size(), 1U);
+    EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->host, "example.org");
+    EXPECT_EQ(frame_ancestors->sources[0]->port, url::PORT_UNSPECIFIED);
+    EXPECT_EQ(frame_ancestors->sources[0]->path, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->allow_self, false);
   }
 }
 

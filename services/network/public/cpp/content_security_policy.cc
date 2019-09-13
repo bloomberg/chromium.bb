@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/content_security_policy.h"
+#include "services/network/public/cpp/content_security_policy.h"
 
 #include <string>
 
@@ -249,6 +249,28 @@ base::Optional<mojom::CSPSourceListPtr> ParseFrameAncestorsDirective(
 ContentSecurityPolicy::ContentSecurityPolicy() = default;
 ContentSecurityPolicy::~ContentSecurityPolicy() = default;
 
+ContentSecurityPolicy::ContentSecurityPolicy(
+    mojom::ContentSecurityPolicyPtr content_security_policy_ptr)
+    : content_security_policy_ptr_(std::move(content_security_policy_ptr)) {}
+
+ContentSecurityPolicy::ContentSecurityPolicy(const ContentSecurityPolicy& other)
+    : content_security_policy_ptr_(other.content_security_policy_ptr_.Clone()) {
+}
+
+ContentSecurityPolicy::ContentSecurityPolicy(ContentSecurityPolicy&& other) =
+    default;
+
+ContentSecurityPolicy& ContentSecurityPolicy::operator=(
+    const ContentSecurityPolicy& other) {
+  content_security_policy_ptr_ = other.content_security_policy_ptr_.Clone();
+
+  return *this;
+}
+
+ContentSecurityPolicy::operator mojom::ContentSecurityPolicyPtr() const {
+  return content_security_policy_ptr_.Clone();
+}
+
 bool ContentSecurityPolicy::Parse(const net::HttpResponseHeaders& headers) {
   size_t iter = 0;
   std::string header_value;
@@ -274,7 +296,9 @@ bool ContentSecurityPolicy::ParseFrameAncestors(
     // expression.
     if (auto parsed_frame_ancestors =
             ParseFrameAncestorsDirective(*frame_ancestors_value)) {
-      frame_ancestors_ = std::move(*parsed_frame_ancestors);
+      content_security_policy_ptr_ = mojom::ContentSecurityPolicy::New();
+      content_security_policy_ptr_->frame_ancestors =
+          std::move(*parsed_frame_ancestors);
       return true;
     }
   }
