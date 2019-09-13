@@ -1113,6 +1113,7 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
   was_granted_media_access_ = true;
+  MaybeEvictFromBackForwardCache();
 }
 
 void RenderFrameHostImpl::OnPortalActivated(
