@@ -193,8 +193,9 @@ TEST_P(DatarateTestRealtime, BasicRateTargetingCBR) {
   BasicRateTargetingCBRTest();
 }
 
+// TODO(jianj): Investigate why this test is slow.
 // Check basic rate targeting for CBR.
-TEST_P(DatarateTestRealtime, BasicRateTargeting444CBR) {
+TEST_P(DatarateTestRealtime, DISABLED_BasicRateTargeting444CBR) {
   BasicRateTargeting444CBRTest();
 }
 
@@ -209,14 +210,12 @@ TEST_P(DatarateTestRealtime, ChangingDropFrameThresh) {
 AV1_INSTANTIATE_TEST_CASE(DatarateTestLarge,
                           ::testing::Values(::libaom_test::kOnePassGood,
                                             ::libaom_test::kRealTime),
-                          ::testing::Range(2, 7),
-                          ::testing::Range<unsigned int>(0, 4),
+                          ::testing::Range(5, 7), ::testing::Values(0, 3),
                           ::testing::Values(0, 1));
 
 AV1_INSTANTIATE_TEST_CASE(DatarateTestRealtime,
                           ::testing::Values(::libaom_test::kRealTime),
-                          ::testing::Range(7, 9),
-                          ::testing::Range<unsigned int>(0, 4),
+                          ::testing::Range(7, 9), ::testing::Values(0, 3),
                           ::testing::Values(0, 1));
 
 }  // namespace
