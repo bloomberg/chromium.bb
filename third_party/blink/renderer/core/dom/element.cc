@@ -2919,7 +2919,7 @@ static const StyleRecalcChange ApplyComputedStyleDiff(
     const StyleRecalcChange change,
     ComputedStyle::Difference diff) {
   if (change.RecalcDescendants() ||
-      diff < ComputedStyle::Difference::kPseudoStyle)
+      diff < ComputedStyle::Difference::kPseudoElementStyle)
     return change;
   if (diff == ComputedStyle::Difference::kDisplayAffectingDescendantStyles)
     return change.ForceRecalcDescendants();
@@ -2927,7 +2927,7 @@ static const StyleRecalcChange ApplyComputedStyleDiff(
     return change.EnsureAtLeast(StyleRecalcChange::kRecalcChildren);
   if (diff == ComputedStyle::Difference::kIndependentInherited)
     return change.EnsureAtLeast(StyleRecalcChange::kIndependentInherit);
-  DCHECK(diff == ComputedStyle::Difference::kPseudoStyle);
+  DCHECK(diff == ComputedStyle::Difference::kPseudoElementStyle);
   return change.EnsureAtLeast(StyleRecalcChange::kUpdatePseudoElements);
 }
 
@@ -4704,7 +4704,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
     return element_style;
 
   if (const ComputedStyle* pseudo_element_style =
-          element_style->GetCachedPseudoStyle(pseudo_element_specifier))
+          element_style->GetCachedPseudoElementStyle(pseudo_element_specifier))
     return pseudo_element_style;
 
   const ComputedStyle* layout_parent_style = element_style;
@@ -4718,12 +4718,13 @@ const ComputedStyle* Element::EnsureComputedStyle(
   scoped_refptr<ComputedStyle> result =
       GetDocument().EnsureStyleResolver().PseudoStyleForElement(
           this,
-          PseudoStyleRequest(pseudo_element_specifier,
-                             PseudoStyleRequest::kForComputedStyle),
+          PseudoElementStyleRequest(
+              pseudo_element_specifier,
+              PseudoElementStyleRequest::kForComputedStyle),
           element_style, layout_parent_style);
   DCHECK(result);
   result->SetIsEnsuredInDisplayNone();
-  return element_style->AddCachedPseudoStyle(std::move(result));
+  return element_style->AddCachedPseudoElementStyle(std::move(result));
 }
 
 bool Element::HasDisplayContentsStyle() const {
@@ -4953,26 +4954,26 @@ LayoutObject* Element::PseudoElementLayoutObject(PseudoId pseudo_id) const {
 }
 
 const ComputedStyle* Element::CachedStyleForPseudoElement(
-    const PseudoStyleRequest& request) {
+    const PseudoElementStyleRequest& request) {
   const ComputedStyle* style = GetComputedStyle();
 
   if (!style || (request.pseudo_id < kFirstInternalPseudoId &&
-                 !style->HasPseudoStyle(request.pseudo_id))) {
+                 !style->HasPseudoElementStyle(request.pseudo_id))) {
     return nullptr;
   }
 
   if (const ComputedStyle* cached =
-          style->GetCachedPseudoStyle(request.pseudo_id))
+          style->GetCachedPseudoElementStyle(request.pseudo_id))
     return cached;
 
   scoped_refptr<ComputedStyle> result = StyleForPseudoElement(request, style);
   if (result)
-    return style->AddCachedPseudoStyle(std::move(result));
+    return style->AddCachedPseudoElementStyle(std::move(result));
   return nullptr;
 }
 
 scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
-    const PseudoStyleRequest& request,
+    const PseudoElementStyleRequest& request,
     const ComputedStyle* parent_style) {
   const ComputedStyle* style = GetComputedStyle();
   const bool is_before_or_after = request.pseudo_id == kPseudoIdBefore ||
@@ -6032,7 +6033,7 @@ void Element::SetHovered(bool hovered) {
   const ComputedStyle* style = GetComputedStyle();
   if (!style || style->AffectedByHover()) {
     StyleChangeType change_type = kLocalStyleChange;
-    if (style && style->HasPseudoStyle(kPseudoIdFirstLetter))
+    if (style && style->HasPseudoElementStyle(kPseudoIdFirstLetter))
       change_type = kSubtreeStyleChange;
     SetNeedsStyleRecalc(change_type,
                         StyleChangeReasonForTracing::CreateWithExtraData(
@@ -6066,7 +6067,7 @@ void Element::SetActive(bool active) {
 
   if (GetComputedStyle()->AffectedByActive()) {
     StyleChangeType change_type =
-        GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
+        GetComputedStyle()->HasPseudoElementStyle(kPseudoIdFirstLetter)
             ? kSubtreeStyleChange
             : kLocalStyleChange;
     SetNeedsStyleRecalc(change_type,

@@ -40,7 +40,7 @@ scoped_refptr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
     if (root->IsUserAgent()) {
       if (Element* shadow_host = node->OwnerShadowHost()) {
         return shadow_host->StyleForPseudoElement(
-            PseudoStyleRequest(kPseudoIdSelection));
+            PseudoElementStyleRequest(kPseudoIdSelection));
       }
     }
   }
@@ -61,7 +61,8 @@ scoped_refptr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
     return nullptr;
   }
 
-  return element->StyleForPseudoElement(PseudoStyleRequest(kPseudoIdSelection));
+  return element->StyleForPseudoElement(
+      PseudoElementStyleRequest(kPseudoIdSelection));
 }
 
 Color SelectionColor(const Document& document,
@@ -106,7 +107,7 @@ const ComputedStyle* SelectionPseudoStyle(Node* node) {
   if (!element)
     return nullptr;
   return element->CachedStyleForPseudoElement(
-      PseudoStyleRequest(kPseudoIdSelection));
+      PseudoElementStyleRequest(kPseudoIdSelection));
 }
 
 }  // anonymous namespace
