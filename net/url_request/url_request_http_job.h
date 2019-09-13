@@ -122,7 +122,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
       scoped_refptr<SSLPrivateKey> client_private_key) override;
   void ContinueDespiteLastError() override;
   int ReadRawData(IOBuffer* buf, int buf_size) override;
-  void StopCaching() override;
   int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
   void DoneReading() override;

@@ -634,13 +634,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // TODO(maksims): Remove this.
   bool Read(IOBuffer* buf, int max_bytes, int* bytes_read);
 
-  // If this request is being cached by the HTTP cache, stop subsequent caching.
-  // Note that this method has no effect on other (simultaneous or not) requests
-  // for the same resource. The typical example is a request that results in
-  // the data being stored to disk (downloaded instead of rendered) so we don't
-  // want to store it twice.
-  void StopCaching();
-
   // This method may be called to follow a redirect that was deferred in
   // response to an OnReceivedRedirect call. If non-null,
   // |modified_headers| are changes applied to the request headers after
@@ -706,15 +699,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Gets the over the wire raw header size of the response after https
   // encryption, 0 for cached responses.
   int raw_header_size() const { return raw_header_size_; }
-
-  // True if this request was issued by the proxy service subsystem in order to
-  // probe/fetch a Proxy Auto Config script.
-  // TODO(mmenke): See if there's a way to not need this.
-  bool is_pac_request() const { return is_pac_request_; }
-  // Sets whether this is a request for a PAC script. Defaults to false.
-  void set_is_pac_request(bool is_pac_request) {
-    is_pac_request_ = is_pac_request;
-  }
 
   // Returns the error status of the request.
   // Do not use! Going to be protected!
@@ -968,9 +952,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // The raw header size of the response.
   int raw_header_size_;
-
-  // True if this is a request for a PAC script.
-  bool is_pac_request_;
 
   const NetworkTrafficAnnotationTag traffic_annotation_;
 

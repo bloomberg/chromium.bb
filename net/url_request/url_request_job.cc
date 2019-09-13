@@ -127,10 +127,6 @@ int URLRequestJob::Read(IOBuffer* buf, int buf_size) {
   return result;
 }
 
-void URLRequestJob::StopCaching() {
-  // Nothing to do here.
-}
-
 int64_t URLRequestJob::GetTotalReceivedBytes() const {
   return 0;
 }

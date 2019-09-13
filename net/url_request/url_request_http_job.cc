@@ -1306,11 +1306,6 @@ int URLRequestHttpJob::ReadRawData(IOBuffer* buf, int buf_size) {
   return rv;
 }
 
-void URLRequestHttpJob::StopCaching() {
-  if (transaction_.get())
-    transaction_->StopCaching();
-}
-
 int64_t URLRequestHttpJob::GetTotalReceivedBytes() const {
   int64_t total_received_bytes =
       total_received_bytes_from_previous_transactions_;
