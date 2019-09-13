@@ -1522,7 +1522,8 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   }
 
   cpi->common.showable_frame =
-      (strength == 0 && frames_to_blur == 1) || (cpi->oxcf.enable_overlay == 0);
+      (strength == 0 && frames_to_blur == 1) ||
+      (cpi->oxcf.enable_overlay == 0 || cpi->sf.disable_overlay_frames);
 
   if (distance == -1) {
     frames_to_blur_backward = 0;

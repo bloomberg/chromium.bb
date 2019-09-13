@@ -1138,7 +1138,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
     frame_params.show_existing_frame =
-        (oxcf->enable_overlay == 0 &&
+        ((oxcf->enable_overlay == 0 || cpi->sf.disable_overlay_frames) &&
          gf_group->update_type[gf_group->index] == OVERLAY_UPDATE) ||
         gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE;
     frame_params.show_existing_frame &= allow_show_existing(cpi, *frame_flags);

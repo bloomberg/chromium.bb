@@ -774,6 +774,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->reduce_high_precision_mv_usage = 0;
   sf->disable_sb_level_coeff_cost_upd = 0;
   sf->disable_sb_level_mv_cost_upd = 0;
+  sf->disable_overlay_frames = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

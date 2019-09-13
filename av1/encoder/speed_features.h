@@ -758,6 +758,10 @@ typedef struct SPEED_FEATURES {
   // Whether to override and disable sb level mv cost updates, if
   // cpi->oxcf.coeff_cost_upd_freq = COST_UPD_SB (i.e. set at SB level)
   int disable_sb_level_mv_cost_upd;
+
+  // Whether to disable overlay frames for filtered Altref frames,
+  // overiding oxcf->enable_overlay flag set as 1.
+  int disable_overlay_frames;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
