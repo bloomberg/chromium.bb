@@ -11,50 +11,8 @@ crbug.com/972096 compositing/reflections/transform-inside-reflection.html [ Skip
 crbug.com/972096 css3/filters/composited-reflected.html [ Skip ]
 crbug.com/972096 media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Skip ]
 
-# Incorrect Blurring
-crbug.com/972621 images/color-profile-image-filter-all.html [ Skip ]
-crbug.com/972621 images/yuv-decode-eligible/color-profile-filter.html [ Skip ]
-crbug.com/972621 images/yuv-decode-eligible/color-profile-layer-filter.html [ Skip ]
-crbug.com/972621 media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Skip ]
-crbug.com/972621 media/controls/paint-controls-webkit-appearance-none.html [ Skip ]
-crbug.com/972621 media/video-no-audio.html [ Skip ]
-crbug.com/972621 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Skip ]
-crbug.com/972621 transforms/shadows.html [ Skip ]
-crbug.com/972621 transforms/svg-vs-css.xhtml [ Skip ]
-crbug.com/972621 transforms/transformed-document-element.html [ Skip ]
-
-# Blurring - Needs Rebaseline for GPU Rasterization
-crbug.com/972637 images/rgb-png-with-cmyk-color-profile.html [ Skip ]
-crbug.com/972637 images/ycbcr-with-cmyk-color-profile.html [ Skip ]
-crbug.com/972637 media/video-poster-scale.html [ Skip ]
-
-# Gradients - Needs Rebaseline for GPU Rasterization
-crbug.com/972684 media/color-profile-video-poster-image.html [ Skip ]
-
 # Test consistently hitting default timeout.
 Bug(none) css3/filters/effect-reference-subregion.html [ Skip ]
-
-# Reflection needs rebaselining.
-crbug.com/977289 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Skip ]
-crbug.com/977289 compositing/reflections/compositing-change-inside-reflection.html [ Skip ]
-crbug.com/977289 compositing/reflections/deeply-nested-reflections.html [ Skip ]
-crbug.com/977289 compositing/reflections/load-video-in-reflection.html [ Skip ]
-crbug.com/977289 compositing/reflections/masked-reflection-on-composited.html [ Skip ]
-crbug.com/977289 compositing/reflections/nested-reflection-size-change.html [ Skip ]
-crbug.com/977289 compositing/reflections/nested-reflection-transition.html [ Skip ]
-crbug.com/977289 compositing/reflections/reflection-opacity.html [ Skip ]
-crbug.com/977289 compositing/reflections/reflection-ordering.html [ Skip ]
-crbug.com/977289 compositing/reflections/reflection-positioning.html [ Skip ]
-crbug.com/977289 compositing/reflections/reflection-positioning2.html [ Skip ]
-crbug.com/977289 compositing/reflections/remove-add-reflection.html [ Skip ]
-crbug.com/977289 compositing/reflections/simple-composited-reflections.html [ Skip ]
-crbug.com/977289 compositing/squashing/squashing-reflection-disallowed.html [ Skip ]
-crbug.com/977289 compositing/webgl/webgl-reflection.html [ Skip ]
-crbug.com/977289 css3/blending/mix-blend-mode-with-masking.html [ Skip ]
-crbug.com/977289 css3/filters/blur-filter-page-scroll-self.html [ Skip ]
-crbug.com/977289 css3/filters/effect-reference-add-hw.html [ Skip ]
-crbug.com/977289 css3/filters/effect-reference-source-alpha-hw.html [ Skip ]
-crbug.com/977289 css3/filters/effect-reference-subregion-hidpi-hw.html [ Skip ]
 
 # Times out.
 crbug.com/994331 compositing/lots-of-img-layers.html [ Skip ]
