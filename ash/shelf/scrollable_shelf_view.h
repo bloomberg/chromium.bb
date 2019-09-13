@@ -186,6 +186,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   views::View* FindFirstFocusableChild();
   views::View* FindLastFocusableChild();
 
+  // Returns the available space on the main axis for shelf icons.
+  int GetSpaceForIcons() const;
+
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
   // Child views Owned by views hierarchy.
@@ -194,7 +197,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   ShelfContainerView* shelf_container_view_ = nullptr;
 
   // Available space to accommodate shelf icons.
-  int space_for_icons_ = 0;
+  gfx::Rect available_space_;
 
   ShelfView* shelf_view_ = nullptr;
 
