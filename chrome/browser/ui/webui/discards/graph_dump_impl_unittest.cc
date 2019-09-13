@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/discards/webui_graph_dump_impl.h"
+#include "chrome/browser/ui/webui/discards/graph_dump_impl.h"
 
 #include <map>
 #include <set>
@@ -17,29 +17,29 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace performance_manager {
-
 namespace {
 
-class TestChangeStream : public mojom::WebUIGraphChangeStream {
+using performance_manager::NodeBase;
+
+class TestChangeStream : public discards::mojom::GraphChangeStream {
  public:
-  using FrameMap = std::map<int64_t, mojom::WebUIFrameInfoPtr>;
-  using PageMap = std::map<int64_t, mojom::WebUIPageInfoPtr>;
-  using ProcessMap = std::map<int64_t, mojom::WebUIProcessInfoPtr>;
+  using FrameMap = std::map<int64_t, discards::mojom::FrameInfoPtr>;
+  using PageMap = std::map<int64_t, discards::mojom::PageInfoPtr>;
+  using ProcessMap = std::map<int64_t, discards::mojom::ProcessInfoPtr>;
   using IdSet = std::set<int64_t>;
 
   TestChangeStream() : binding_(this) {}
 
-  mojom::WebUIGraphChangeStreamPtr GetProxy() {
-    mojom::WebUIGraphChangeStreamPtr proxy;
+  discards::mojom::GraphChangeStreamPtr GetProxy() {
+    discards::mojom::GraphChangeStreamPtr proxy;
 
     binding_.Bind(mojo::MakeRequest(&proxy));
 
     return proxy;
   }
 
-  // mojom::WebUIGraphChangeStream implementation
-  void FrameCreated(mojom::WebUIFrameInfoPtr frame) override {
+  // discards::mojom::GraphChangeStream implementation
+  void FrameCreated(discards::mojom::FrameInfoPtr frame) override {
     EXPECT_FALSE(HasId(frame->id));
     // If the node has a parent frame, we must have heard of it.
     EXPECT_TRUE(HasIdIfValid(frame->parent_frame_id));
@@ -50,37 +50,37 @@ class TestChangeStream : public mojom::WebUIGraphChangeStream {
     frame_map_.insert(std::make_pair(frame->id, std::move(frame)));
   }
 
-  void PageCreated(mojom::WebUIPageInfoPtr page) override {
+  void PageCreated(discards::mojom::PageInfoPtr page) override {
     EXPECT_FALSE(HasId(page->id));
     id_set_.insert(page->id);
     page_map_.insert(std::make_pair(page->id, std::move(page)));
   }
 
-  void ProcessCreated(mojom::WebUIProcessInfoPtr process) override {
+  void ProcessCreated(discards::mojom::ProcessInfoPtr process) override {
     EXPECT_FALSE(HasId(process->id));
     id_set_.insert(process->id);
     process_map_.insert(std::make_pair(process->id, std::move(process)));
   }
 
-  void FrameChanged(mojom::WebUIFrameInfoPtr frame) override {
+  void FrameChanged(discards::mojom::FrameInfoPtr frame) override {
     EXPECT_TRUE(HasId(frame->id));
     frame_map_[frame->id] = std::move(frame);
     ++num_changes_;
   }
 
-  void PageChanged(mojom::WebUIPageInfoPtr page) override {
+  void PageChanged(discards::mojom::PageInfoPtr page) override {
     EXPECT_TRUE(HasId(page->id));
     page_map_[page->id] = std::move(page);
     ++num_changes_;
   }
 
-  void ProcessChanged(mojom::WebUIProcessInfoPtr process) override {
+  void ProcessChanged(discards::mojom::ProcessInfoPtr process) override {
     EXPECT_TRUE(HasId(process->id));
     process_map_[process->id] = std::move(process);
     ++num_changes_;
   }
 
-  void FavIconDataAvailable(mojom::WebUIFavIconInfoPtr favicon) override {}
+  void FavIconDataAvailable(discards::mojom::FavIconInfoPtr favicon) override {}
 
   void NodeDeleted(int64_t node_id) override {
     EXPECT_EQ(1u, id_set_.erase(node_id));
@@ -106,23 +106,24 @@ class TestChangeStream : public mojom::WebUIGraphChangeStream {
   IdSet id_set_;
   size_t num_changes_ = 0;
 
-  mojo::Binding<mojom::WebUIGraphChangeStream> binding_;
+  mojo::Binding<discards::mojom::GraphChangeStream> binding_;
 };
 
-class WebUIGraphDumpImplTest : public testing::Test {
+class DiscardsGraphDumpImplTest : public testing::Test {
  public:
   void TearDown() override { graph_.TearDown(); }
 
  protected:
-  GraphImpl graph_;
+  performance_manager::GraphImpl graph_;
 };
 
 }  // namespace
 
-TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
+TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   content::BrowserTaskEnvironment task_environment;
 
-  MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph_);
+  performance_manager::MockMultiplePagesWithMultipleProcessesGraph mock_graph(
+      &graph_);
 
   base::TimeTicks now = base::TimeTicks::Now();
 
@@ -133,11 +134,11 @@ TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
   auto* main_frame = mock_graph.page->GetMainFrameNodeImpl();
   main_frame->OnNavigationCommitted(kExampleUrl, /* same_document */ false);
 
-  std::unique_ptr<WebUIGraphDumpImpl> impl =
-      std::make_unique<WebUIGraphDumpImpl>();
-  WebUIGraphDumpImpl* impl_raw = impl.get();
+  std::unique_ptr<DiscardsGraphDumpImpl> impl =
+      std::make_unique<DiscardsGraphDumpImpl>();
+  DiscardsGraphDumpImpl* impl_raw = impl.get();
   // Create a mojo proxy to the impl.
-  mojom::WebUIGraphDumpPtr impl_proxy;
+  discards::mojom::GraphDumpPtr impl_proxy;
   impl->BindWithGraph(&graph_, mojo::MakeRequest(&impl_proxy));
   graph_.PassToGraph(std::move(impl));
 
@@ -211,5 +212,3 @@ TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
 
   EXPECT_EQ(nullptr, graph_.TakeFromGraph(impl_raw));
 }
-
-}  // namespace performance_manager

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/discards/webui_graph_dump_impl.h"
+#include "chrome/browser/ui/webui/discards/graph_dump_impl.h"
 
 #include <memory>
 #include <utility>
@@ -24,15 +24,21 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
-namespace performance_manager {
+namespace {
 
-class WebUIGraphDumpImpl::FaviconRequestHelper {
+int64_t GetSerializationId(const performance_manager::Node* node) {
+  return performance_manager::Node::GetSerializationId(node);
+}
+
+}  // namespace
+
+class DiscardsGraphDumpImpl::FaviconRequestHelper {
  public:
-  FaviconRequestHelper(base::WeakPtr<WebUIGraphDumpImpl> graph_dump,
+  FaviconRequestHelper(base::WeakPtr<DiscardsGraphDumpImpl> graph_dump,
                        scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   void RequestFavicon(GURL page_url,
-                      WebContentsProxy contents_proxy,
+                      performance_manager::WebContentsProxy contents_proxy,
                       int64_t serialization_id);
   void FaviconDataAvailable(int64_t serialization_id,
                             const favicon_base::FaviconRawBitmapResult& result);
@@ -40,7 +46,7 @@ class WebUIGraphDumpImpl::FaviconRequestHelper {
  private:
   std::unique_ptr<base::CancelableTaskTracker> cancelable_task_tracker_;
 
-  base::WeakPtr<WebUIGraphDumpImpl> graph_dump_;
+  base::WeakPtr<DiscardsGraphDumpImpl> graph_dump_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -48,16 +54,16 @@ class WebUIGraphDumpImpl::FaviconRequestHelper {
   DISALLOW_COPY_AND_ASSIGN(FaviconRequestHelper);
 };
 
-WebUIGraphDumpImpl::FaviconRequestHelper::FaviconRequestHelper(
-    base::WeakPtr<WebUIGraphDumpImpl> graph_dump,
+DiscardsGraphDumpImpl::FaviconRequestHelper::FaviconRequestHelper(
+    base::WeakPtr<DiscardsGraphDumpImpl> graph_dump,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : graph_dump_(graph_dump), task_runner_(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-void WebUIGraphDumpImpl::FaviconRequestHelper::RequestFavicon(
+void DiscardsGraphDumpImpl::FaviconRequestHelper::RequestFavicon(
     GURL page_url,
-    WebContentsProxy contents_proxy,
+    performance_manager::WebContentsProxy contents_proxy,
     int64_t serialization_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   content::WebContents* web_contents = contents_proxy.Get();
@@ -89,7 +95,7 @@ void WebUIGraphDumpImpl::FaviconRequestHelper::RequestFavicon(
       cancelable_task_tracker_.get());
 }
 
-void WebUIGraphDumpImpl::FaviconRequestHelper::FaviconDataAvailable(
+void DiscardsGraphDumpImpl::FaviconRequestHelper::FaviconDataAvailable(
     int64_t serialization_id,
     const favicon_base::FaviconRawBitmapResult& result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -98,13 +104,13 @@ void WebUIGraphDumpImpl::FaviconRequestHelper::FaviconDataAvailable(
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&WebUIGraphDumpImpl::SendFaviconNotification, graph_dump_,
-                     serialization_id, result.bitmap_data));
+      base::BindOnce(&DiscardsGraphDumpImpl::SendFaviconNotification,
+                     graph_dump_, serialization_id, result.bitmap_data));
 }
 
-WebUIGraphDumpImpl::WebUIGraphDumpImpl() : binding_(this) {}
+DiscardsGraphDumpImpl::DiscardsGraphDumpImpl() : binding_(this) {}
 
-WebUIGraphDumpImpl::~WebUIGraphDumpImpl() {
+DiscardsGraphDumpImpl::~DiscardsGraphDumpImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!graph_);
   DCHECK(!change_subscriber_);
@@ -112,55 +118,62 @@ WebUIGraphDumpImpl::~WebUIGraphDumpImpl() {
 }
 
 // static
-void WebUIGraphDumpImpl::CreateAndBind(mojom::WebUIGraphDumpRequest request,
-                                       Graph* graph) {
-  std::unique_ptr<WebUIGraphDumpImpl> dump =
-      std::make_unique<WebUIGraphDumpImpl>();
+void DiscardsGraphDumpImpl::CreateAndBind(
+    discards::mojom::GraphDumpRequest request,
+    performance_manager::Graph* graph) {
+  std::unique_ptr<DiscardsGraphDumpImpl> dump =
+      std::make_unique<DiscardsGraphDumpImpl>();
 
   dump->BindWithGraph(graph, std::move(request));
   graph->PassToGraph(std::move(dump));
 }
 
-void WebUIGraphDumpImpl::BindWithGraph(Graph* graph,
-                                       mojom::WebUIGraphDumpRequest request) {
+void DiscardsGraphDumpImpl::BindWithGraph(
+    performance_manager::Graph* graph,
+    discards::mojom::GraphDumpRequest request) {
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(base::BindOnce(
-      &WebUIGraphDumpImpl::OnConnectionError, base::Unretained(this)));
+      &DiscardsGraphDumpImpl::OnConnectionError, base::Unretained(this)));
 }
 
 namespace {
 
 template <typename FunctionType>
-void ForFrameAndOffspring(const FrameNode* parent_frame,
+void ForFrameAndOffspring(const performance_manager::FrameNode* parent_frame,
                           FunctionType on_frame) {
   on_frame(parent_frame);
 
-  for (const FrameNode* child_frame : parent_frame->GetChildFrameNodes())
+  for (const performance_manager::FrameNode* child_frame :
+       parent_frame->GetChildFrameNodes())
     ForFrameAndOffspring(child_frame, on_frame);
 }
 
 }  // namespace
 
-void WebUIGraphDumpImpl::SubscribeToChanges(
-    mojom::WebUIGraphChangeStreamPtr change_subscriber) {
+void DiscardsGraphDumpImpl::SubscribeToChanges(
+    discards::mojom::GraphChangeStreamPtr change_subscriber) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   change_subscriber_ = std::move(change_subscriber);
 
   // Send creation notifications for all existing nodes.
-  for (const ProcessNode* process_node : graph_->GetAllProcessNodes())
+  for (const performance_manager::ProcessNode* process_node :
+       graph_->GetAllProcessNodes())
     SendProcessNotification(process_node, true);
 
-  for (const PageNode* page_node : graph_->GetAllPageNodes()) {
+  for (const performance_manager::PageNode* page_node :
+       graph_->GetAllPageNodes()) {
     SendPageNotification(page_node, true);
     StartPageFaviconRequest(page_node);
 
     // Dispatch preorder frame notifications.
-    for (const FrameNode* main_frame_node : page_node->GetMainFrameNodes()) {
-      ForFrameAndOffspring(main_frame_node,
-                           [this](const FrameNode* frame_node) {
-                             this->SendFrameNotification(frame_node, true);
-                             this->StartFrameFaviconRequest(frame_node);
-                           });
+    for (const performance_manager::FrameNode* main_frame_node :
+         page_node->GetMainFrameNodes()) {
+      ForFrameAndOffspring(
+          main_frame_node,
+          [this](const performance_manager::FrameNode* frame_node) {
+            this->SendFrameNotification(frame_node, true);
+            this->StartFrameFaviconRequest(frame_node);
+          });
     }
   }
 
@@ -170,12 +183,13 @@ void WebUIGraphDumpImpl::SubscribeToChanges(
   graph_->AddProcessNodeObserver(this);
 }
 
-void WebUIGraphDumpImpl::OnPassedToGraph(Graph* graph) {
+void DiscardsGraphDumpImpl::OnPassedToGraph(performance_manager::Graph* graph) {
   DCHECK(!graph_);
   graph_ = graph;
 }
 
-void WebUIGraphDumpImpl::OnTakenFromGraph(Graph* graph) {
+void DiscardsGraphDumpImpl::OnTakenFromGraph(
+    performance_manager::Graph* graph) {
   DCHECK_EQ(graph_, graph);
 
   if (change_subscriber_) {
@@ -195,56 +209,63 @@ void WebUIGraphDumpImpl::OnTakenFromGraph(Graph* graph) {
   graph_ = nullptr;
 }
 
-void WebUIGraphDumpImpl::OnFrameNodeAdded(const FrameNode* frame_node) {
+void DiscardsGraphDumpImpl::OnFrameNodeAdded(
+    const performance_manager::FrameNode* frame_node) {
   SendFrameNotification(frame_node, true);
   StartFrameFaviconRequest(frame_node);
 }
 
-void WebUIGraphDumpImpl::OnBeforeFrameNodeRemoved(const FrameNode* frame_node) {
+void DiscardsGraphDumpImpl::OnBeforeFrameNodeRemoved(
+    const performance_manager::FrameNode* frame_node) {
   SendDeletionNotification(frame_node);
 }
 
-void WebUIGraphDumpImpl::OnURLChanged(const FrameNode* frame_node) {
+void DiscardsGraphDumpImpl::OnURLChanged(
+    const performance_manager::FrameNode* frame_node) {
   SendFrameNotification(frame_node, false);
   StartFrameFaviconRequest(frame_node);
 }
 
-void WebUIGraphDumpImpl::OnPageNodeAdded(const PageNode* page_node) {
+void DiscardsGraphDumpImpl::OnPageNodeAdded(
+    const performance_manager::PageNode* page_node) {
   SendPageNotification(page_node, true);
   StartPageFaviconRequest(page_node);
 }
 
-void WebUIGraphDumpImpl::OnBeforePageNodeRemoved(const PageNode* page_node) {
+void DiscardsGraphDumpImpl::OnBeforePageNodeRemoved(
+    const performance_manager::PageNode* page_node) {
   SendDeletionNotification(page_node);
 }
 
-void WebUIGraphDumpImpl::OnFaviconUpdated(const PageNode* page_node) {
+void DiscardsGraphDumpImpl::OnFaviconUpdated(
+    const performance_manager::PageNode* page_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   StartPageFaviconRequest(page_node);
 }
 
-void WebUIGraphDumpImpl::OnMainFrameNavigationCommitted(
-    const PageNode* page_node) {
+void DiscardsGraphDumpImpl::OnMainFrameNavigationCommitted(
+    const performance_manager::PageNode* page_node) {
   SendPageNotification(page_node, false);
   StartPageFaviconRequest(page_node);
 }
 
-void WebUIGraphDumpImpl::OnProcessNodeAdded(const ProcessNode* process_node) {
+void DiscardsGraphDumpImpl::OnProcessNodeAdded(
+    const performance_manager::ProcessNode* process_node) {
   SendProcessNotification(process_node, true);
 }
 
-void WebUIGraphDumpImpl::OnProcessLifetimeChange(
-    const ProcessNode* process_node) {
+void DiscardsGraphDumpImpl::OnProcessLifetimeChange(
+    const performance_manager::ProcessNode* process_node) {
   SendProcessNotification(process_node, false);
 }
 
-void WebUIGraphDumpImpl::OnBeforeProcessNodeRemoved(
-    const ProcessNode* process_node) {
+void DiscardsGraphDumpImpl::OnBeforeProcessNodeRemoved(
+    const performance_manager::ProcessNode* process_node) {
   SendDeletionNotification(process_node);
 }
 
-WebUIGraphDumpImpl::FaviconRequestHelper*
-WebUIGraphDumpImpl::EnsureFaviconRequestHelper() {
+DiscardsGraphDumpImpl::FaviconRequestHelper*
+DiscardsGraphDumpImpl::EnsureFaviconRequestHelper() {
   if (!favicon_request_helper_) {
     favicon_request_helper_ = std::make_unique<FaviconRequestHelper>(
         weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get());
@@ -253,7 +274,8 @@ WebUIGraphDumpImpl::EnsureFaviconRequestHelper() {
   return favicon_request_helper_.get();
 }
 
-void WebUIGraphDumpImpl::StartPageFaviconRequest(const PageNode* page_node) {
+void DiscardsGraphDumpImpl::StartPageFaviconRequest(
+    const performance_manager::PageNode* page_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!page_node->GetMainFrameUrl().is_valid())
     return;
@@ -263,10 +285,11 @@ void WebUIGraphDumpImpl::StartPageFaviconRequest(const PageNode* page_node) {
                                 base::Unretained(EnsureFaviconRequestHelper()),
                                 page_node->GetMainFrameUrl(),
                                 page_node->GetContentsProxy(),
-                                Node::GetSerializationId(page_node)));
+                                GetSerializationId(page_node)));
 }
 
-void WebUIGraphDumpImpl::StartFrameFaviconRequest(const FrameNode* frame_node) {
+void DiscardsGraphDumpImpl::StartFrameFaviconRequest(
+    const performance_manager::FrameNode* frame_node) {
   if (!frame_node->GetURL().is_valid())
     return;
 
@@ -275,25 +298,26 @@ void WebUIGraphDumpImpl::StartFrameFaviconRequest(const FrameNode* frame_node) {
                                 base::Unretained(EnsureFaviconRequestHelper()),
                                 frame_node->GetURL(),
                                 frame_node->GetPageNode()->GetContentsProxy(),
-                                Node::GetSerializationId(frame_node)));
+                                GetSerializationId(frame_node)));
 }
 
-void WebUIGraphDumpImpl::SendFrameNotification(const FrameNode* frame,
-                                               bool created) {
+void DiscardsGraphDumpImpl::SendFrameNotification(
+    const performance_manager::FrameNode* frame,
+    bool created) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(https://crbug.com/961785): Add more frame properties.
-  mojom::WebUIFrameInfoPtr frame_info = mojom::WebUIFrameInfo::New();
+  discards::mojom::FrameInfoPtr frame_info = discards::mojom::FrameInfo::New();
 
-  frame_info->id = Node::GetSerializationId(frame);
+  frame_info->id = GetSerializationId(frame);
 
   auto* parent_frame = frame->GetParentFrameNode();
-  frame_info->parent_frame_id = Node::GetSerializationId(parent_frame);
+  frame_info->parent_frame_id = GetSerializationId(parent_frame);
 
   auto* process = frame->GetProcessNode();
-  frame_info->process_id = Node::GetSerializationId(process);
+  frame_info->process_id = GetSerializationId(process);
 
   auto* page = frame->GetPageNode();
-  frame_info->page_id = Node::GetSerializationId(page);
+  frame_info->page_id = GetSerializationId(page);
 
   frame_info->url = frame->GetURL();
 
@@ -303,13 +327,14 @@ void WebUIGraphDumpImpl::SendFrameNotification(const FrameNode* frame,
     change_subscriber_->FrameChanged(std::move(frame_info));
 }
 
-void WebUIGraphDumpImpl::SendPageNotification(const PageNode* page_node,
-                                              bool created) {
+void DiscardsGraphDumpImpl::SendPageNotification(
+    const performance_manager::PageNode* page_node,
+    bool created) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(https://crbug.com/961785): Add more page_node properties.
-  mojom::WebUIPageInfoPtr page_info = mojom::WebUIPageInfo::New();
+  discards::mojom::PageInfoPtr page_info = discards::mojom::PageInfo::New();
 
-  page_info->id = Node::GetSerializationId(page_node);
+  page_info->id = GetSerializationId(page_node);
   page_info->main_frame_url = page_node->GetMainFrameUrl();
   if (created)
     change_subscriber_->PageCreated(std::move(page_info));
@@ -317,12 +342,14 @@ void WebUIGraphDumpImpl::SendPageNotification(const PageNode* page_node,
     change_subscriber_->PageChanged(std::move(page_info));
 }
 
-void WebUIGraphDumpImpl::SendProcessNotification(const ProcessNode* process,
-                                                 bool created) {
+void DiscardsGraphDumpImpl::SendProcessNotification(
+    const performance_manager::ProcessNode* process,
+    bool created) {
   // TODO(https://crbug.com/961785): Add more process properties.
-  mojom::WebUIProcessInfoPtr process_info = mojom::WebUIProcessInfo::New();
+  discards::mojom::ProcessInfoPtr process_info =
+      discards::mojom::ProcessInfo::New();
 
-  process_info->id = Node::GetSerializationId(process);
+  process_info->id = GetSerializationId(process);
   process_info->pid = process->GetProcessId();
   process_info->cumulative_cpu_usage = process->GetCumulativeCpuUsage();
   process_info->private_footprint_kb = process->GetPrivateFootprintKb();
@@ -333,18 +360,20 @@ void WebUIGraphDumpImpl::SendProcessNotification(const ProcessNode* process,
     change_subscriber_->ProcessChanged(std::move(process_info));
 }
 
-void WebUIGraphDumpImpl::SendDeletionNotification(const Node* node) {
+void DiscardsGraphDumpImpl::SendDeletionNotification(
+    const performance_manager::Node* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  change_subscriber_->NodeDeleted(Node::GetSerializationId(node));
+  change_subscriber_->NodeDeleted(GetSerializationId(node));
 }
 
-void WebUIGraphDumpImpl::SendFaviconNotification(
+void DiscardsGraphDumpImpl::SendFaviconNotification(
     int64_t serialization_id,
     scoped_refptr<base::RefCountedMemory> bitmap_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(0u, bitmap_data->size());
 
-  mojom::WebUIFavIconInfoPtr icon_info = mojom::WebUIFavIconInfo::New();
+  discards::mojom::FavIconInfoPtr icon_info =
+      discards::mojom::FavIconInfo::New();
   icon_info->node_id = serialization_id;
 
   base::Base64Encode(
@@ -356,8 +385,6 @@ void WebUIGraphDumpImpl::SendFaviconNotification(
 }
 
 // static
-void WebUIGraphDumpImpl::OnConnectionError(WebUIGraphDumpImpl* impl) {
+void DiscardsGraphDumpImpl::OnConnectionError(DiscardsGraphDumpImpl* impl) {
   std::unique_ptr<GraphOwned> owned_impl = impl->graph_->TakeFromGraph(impl);
 }
-
-}  // namespace performance_manager
