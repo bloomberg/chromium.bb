@@ -320,10 +320,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
     return last_observed_proxy_;
   }
 
-  void set_can_be_intercepted_on_error(bool can_be_intercepted_on_error) {
-    will_be_intercepted_on_next_error_ = can_be_intercepted_on_error;
-  }
-
   void set_before_start_transaction_fails() {
     before_start_transaction_fails_ = true;
   }
@@ -340,8 +336,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                            const ProxyInfo& proxy_info,
                            const ProxyRetryInfoMap& proxy_retry_info,
                            HttpRequestHeaders* headers) override;
-  void OnStartTransaction(URLRequest* request,
-                          const HttpRequestHeaders& headers) override;
   int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,
@@ -402,7 +396,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
 
   bool experimental_cookie_features_enabled_;           // false by default
   bool cancel_request_with_policy_violating_referrer_;  // false by default
-  bool will_be_intercepted_on_next_error_;
   bool before_start_transaction_fails_;
   bool add_header_to_first_response_;
 };

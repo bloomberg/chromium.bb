@@ -54,8 +54,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                            const ProxyInfo& proxy_info,
                            const ProxyRetryInfoMap& proxy_retry_info,
                            HttpRequestHeaders* headers) final;
-  void OnStartTransaction(URLRequest* request,
-                          const HttpRequestHeaders& headers) final;
   int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,
@@ -108,9 +106,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
       const ProxyInfo& proxy_info,
       const ProxyRetryInfoMap& proxy_retry_info,
       HttpRequestHeaders* headers);
-
-  virtual void OnStartTransactionInternal(URLRequest* request,
-                                          const HttpRequestHeaders& headers);
 
   virtual void OnHeadersReceivedInternal(
       URLRequest* request,

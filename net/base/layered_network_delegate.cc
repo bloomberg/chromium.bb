@@ -64,17 +64,6 @@ void LayeredNetworkDelegate::OnBeforeSendHeadersInternal(
     const ProxyRetryInfoMap& proxy_retry_info,
     HttpRequestHeaders* headers) {}
 
-void LayeredNetworkDelegate::OnStartTransaction(
-    URLRequest* request,
-    const HttpRequestHeaders& headers) {
-  OnStartTransactionInternal(request, headers);
-  nested_network_delegate_->NotifyStartTransaction(request, headers);
-}
-
-void LayeredNetworkDelegate::OnStartTransactionInternal(
-    URLRequest* request,
-    const HttpRequestHeaders& headers) {}
-
 int LayeredNetworkDelegate::OnHeadersReceived(
     URLRequest* request,
     CompletionOnceCallback callback,

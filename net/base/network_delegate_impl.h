@@ -48,9 +48,6 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
                            const ProxyRetryInfoMap& proxy_retry_info,
                            HttpRequestHeaders* headers) override;
 
-  void OnStartTransaction(URLRequest* request,
-                          const HttpRequestHeaders& headers) override;
-
   int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,

@@ -55,14 +55,6 @@ void NetworkDelegate::NotifyBeforeSendHeaders(
   OnBeforeSendHeaders(request, proxy_info, proxy_retry_info, headers);
 }
 
-void NetworkDelegate::NotifyStartTransaction(
-    URLRequest* request,
-    const HttpRequestHeaders& headers) {
-  TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::NotifyStartTransaction");
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  OnStartTransaction(request, headers);
-}
-
 int NetworkDelegate::NotifyHeadersReceived(
     URLRequest* request,
     CompletionOnceCallback callback,

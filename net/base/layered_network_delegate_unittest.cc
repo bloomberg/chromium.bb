@@ -62,11 +62,6 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     IncrementAndCompareCounter("on_before_send_headers_count");
   }
 
-  void OnStartTransaction(URLRequest* request,
-                          const HttpRequestHeaders& headers) override {
-    IncrementAndCompareCounter("on_start_transaction_count");
-  }
-
   int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,
@@ -172,7 +167,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
                                        request_headers.get()));
     OnBeforeSendHeaders(nullptr, ProxyInfo(), proxy_retry_info,
                         request_headers.get());
-    OnStartTransaction(nullptr, *request_headers);
     EXPECT_EQ(OK, OnHeadersReceived(nullptr, completion_callback.callback(),
                                     response_headers.get(), nullptr, nullptr));
     OnResponseStarted(request.get(), net::OK);
@@ -205,12 +199,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
                                    HttpRequestHeaders* headers) override {
     ++(*counters_)["on_before_send_headers_count"];
     EXPECT_EQ(1, (*counters_)["on_before_send_headers_count"]);
-  }
-
-  void OnStartTransactionInternal(URLRequest* request,
-                                  const HttpRequestHeaders& headers) override {
-    ++(*counters_)["on_start_transaction_count"];
-    EXPECT_EQ(1, (*counters_)["on_start_transaction_count"]);
   }
 
   void OnHeadersReceivedInternal(

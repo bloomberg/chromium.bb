@@ -61,8 +61,6 @@ class NET_EXPORT NetworkDelegate {
                                const ProxyInfo& proxy_info,
                                const ProxyRetryInfoMap& proxy_retry_info,
                                HttpRequestHeaders* headers);
-  void NotifyStartTransaction(URLRequest* request,
-                              const HttpRequestHeaders& headers);
   int NotifyHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,
@@ -162,11 +160,6 @@ class NET_EXPORT NetworkDelegate {
                                    const ProxyInfo& proxy_info,
                                    const ProxyRetryInfoMap& proxy_retry_info,
                                    HttpRequestHeaders* headers) = 0;
-
-  // Called right before the HTTP request(s) are being sent to the network.
-  // |headers| is only valid only for the duration of the call.
-  virtual void OnStartTransaction(URLRequest* request,
-                                  const HttpRequestHeaders& headers) = 0;
 
   // Called for HTTP requests when the headers have been received.
   // |original_response_headers| contains the headers as received over the

@@ -27,10 +27,6 @@ void NetworkDelegateImpl::OnBeforeSendHeaders(
     const ProxyRetryInfoMap& proxy_retry_info,
     HttpRequestHeaders* headers) {}
 
-void NetworkDelegateImpl::OnStartTransaction(
-    URLRequest* request,
-    const HttpRequestHeaders& headers) {}
-
 int NetworkDelegateImpl::OnHeadersReceived(
     URLRequest* request,
     CompletionOnceCallback callback,
