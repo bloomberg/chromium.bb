@@ -89,6 +89,9 @@ bool BlockLengthUnresolvable(
     const Length& length,
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max) {
+  if (length.IsAuto() || length.IsMinContent() || length.IsMaxContent() ||
+      length.IsFitContent() || length.IsMaxSizeNone())
+    return true;
   if (length.IsPercentOrCalc()) {
     if (phase == LengthResolvePhase::kIntrinsic)
       return true;
