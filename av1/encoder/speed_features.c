@@ -288,18 +288,27 @@ static void set_good_speed_features_framesize_independent(
             ? 0
             : (boosted ? 1 : 2);
     sf->intra_cnn_split = (speed == 1);
+
+    sf->enable_sgr_ep_pruning = 1;
+    sf->inter_tx_size_search_init_depth_rect = 1;
+    sf->inter_tx_size_search_init_depth_sqr = 1;
+    sf->cdef_pick_method = CDEF_FAST_SEARCH;
+    sf->cb_pred_filter_search = 0;
+    sf->model_based_prune_tx_search_level = 0;
+    sf->reduce_inter_modes = boosted ? 1 : 2;
+    sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
+    sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
   }
 
   if (speed >= 2) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_2;
 
-    sf->enable_sgr_ep_pruning = 1;
     sf->selective_ref_frame = 3;
-    sf->inter_tx_size_search_init_depth_rect = 1;
-    sf->inter_tx_size_search_init_depth_sqr = 1;
 
-    sf->cdef_pick_method = CDEF_FAST_SEARCH;
-
+    // TODO(chiyotsai@google.com): We can get 10% speed up if we move
+    // adaptive_rd_thresh to speed 1. But currently it performs poorly on some
+    // clips (e.g. 5% loss on dinner_1080p). We need to examine the sequence a
+    // bit more closely to figure out why.
     sf->adaptive_rd_thresh = 1;
     sf->mv.auto_mv_step_size = 1;
     sf->mv.subpel_iters_per_step = 1;
@@ -315,15 +324,10 @@ static void set_good_speed_features_framesize_independent(
     sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_DISABLED;
     sf->prune_comp_type_by_comp_avg = 2;
     // TODO(Sachin): Enable/Enhance this speed feature for speed 2 & 3
-    sf->cb_pred_filter_search = 0;
     sf->adaptive_interp_filter_search = 1;
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 3;
-    sf->model_based_prune_tx_search_level = 0;
 
-    sf->reduce_inter_modes = boosted ? 1 : 2;
-    sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
     sf->prune_warp_using_wmtype = 1;
-    sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
     sf->disable_smooth_intra =
         !frame_is_intra_only(&cpi->common) || (cpi->rc.frames_to_key != 1);
   }
