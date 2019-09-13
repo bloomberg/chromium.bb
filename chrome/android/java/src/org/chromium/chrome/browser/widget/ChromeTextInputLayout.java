@@ -110,7 +110,7 @@ public class ChromeTextInputLayout extends LinearLayout {
                 0);
         ApiCompatibilityUtils.setTextAppearance(mLabel,
                 a.getResourceId(R.styleable.ChromeTextInputLayout_hintTextAppearance,
-                        android.R.style.TextAppearance_Small));
+                        R.style.TextAppearance_BlackCaption));
         mLabel.setPivotX(0f);
         mLabel.setPivotY(mLabel.getPaint().getFontMetrics().bottom);
         mLabelStatus = LabelStatus.COLLAPSED;
@@ -146,7 +146,7 @@ public class ChromeTextInputLayout extends LinearLayout {
         mLabel.setTextColor(new ColorStateList(
                 new int[][] {new int[] {android.R.attr.state_activated}, new int[] {}},
                 new int[] {getColorAttribute(context, R.attr.colorControlActivated),
-                        mLabel.getCurrentHintTextColor()}));
+                        mLabel.getCurrentTextColor()}));
 
         mInterpolator = new FastOutSlowInInterpolator();
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
