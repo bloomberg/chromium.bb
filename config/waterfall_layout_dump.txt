@@ -456,6 +456,7 @@
     hatch-release
     heli-release
     jacuzzi-release
+    kalista-cfm-release
     kalista-release
     kefka-kernelnext-release
     kefka-release
@@ -494,6 +495,7 @@
     reef-release
     reks-release
     relm-release
+    rikku-cfm-release
     rikku-release
     romer-release
     samus-kernelnext-release
@@ -2031,6 +2033,17 @@
   jecht-tot-chrome-pfq-informational-tryjob
   jecht-tot-chromium-pfq-informational-tryjob
   jecht-unittest-stress
+  kalista-cfm-chromium-pfq-tryjob
+  kalista-cfm-compile-only-pre-cq
+  kalista-cfm-full-tryjob
+  kalista-cfm-llvm-next-toolchain-tryjob
+  kalista-cfm-llvm-toolchain-tryjob
+  kalista-cfm-no-vmtest-pre-cq
+  kalista-cfm-paladin-tryjob
+  kalista-cfm-pre-cq
+  kalista-cfm-release-tryjob
+  kalista-cfm-tot-chromium-pfq-informational-tryjob
+  kalista-cfm-unittest-stress
   kalista-chrome-pfq-tryjob
   kalista-chromium-pfq-tryjob
   kalista-compile-only-pre-cq
@@ -2572,6 +2585,7 @@
     hatch-release-tryjob
     heli-release-tryjob
     jacuzzi-release-tryjob
+    kalista-cfm-release-tryjob
     kalista-release-tryjob
     kefka-kernelnext-release-tryjob
     kefka-release-tryjob
@@ -2610,6 +2624,7 @@
     reef-release-tryjob
     reks-release-tryjob
     relm-release-tryjob
+    rikku-cfm-release-tryjob
     rikku-release-tryjob
     romer-release-tryjob
     samus-kernelnext-release-tryjob
@@ -3040,6 +3055,17 @@
   relm-tot-chrome-pfq-informational-tryjob
   relm-tot-chromium-pfq-informational-tryjob
   relm-unittest-stress
+  rikku-cfm-chromium-pfq-tryjob
+  rikku-cfm-compile-only-pre-cq
+  rikku-cfm-full-tryjob
+  rikku-cfm-llvm-next-toolchain-tryjob
+  rikku-cfm-llvm-toolchain-tryjob
+  rikku-cfm-no-vmtest-pre-cq
+  rikku-cfm-paladin-tryjob
+  rikku-cfm-pre-cq
+  rikku-cfm-release-tryjob
+  rikku-cfm-tot-chromium-pfq-informational-tryjob
+  rikku-cfm-unittest-stress
   rikku-chrome-pfq-tryjob
   rikku-chromium-pfq-tryjob
   rikku-compile-only-pre-cq
