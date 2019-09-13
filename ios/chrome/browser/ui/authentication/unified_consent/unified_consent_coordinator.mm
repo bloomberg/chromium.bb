@@ -122,6 +122,9 @@
 
 - (void)unifiedConsentViewControllerDidTapSettingsLink:
     (UnifiedConsentViewController*)controller {
+  if (self.isUIDisabled) {
+    return;
+  }
   DCHECK_EQ(self.unifiedConsentViewController, controller);
   DCHECK(!self.settingsLinkWasTapped);
   self.settingsLinkWasTapped = YES;
@@ -131,6 +134,9 @@
 - (void)unifiedConsentViewControllerDidTapIdentityPickerView:
             (UnifiedConsentViewController*)controller
                                                      atPoint:(CGPoint)point {
+  if (self.isUIDisabled) {
+    return;
+  }
   DCHECK_EQ(self.unifiedConsentViewController, controller);
   [self showIdentityChooserDialogWithPoint:point];
 }
