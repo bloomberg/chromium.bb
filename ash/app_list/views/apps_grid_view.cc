@@ -1193,7 +1193,9 @@ void AppsGridView::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 bool AppsGridView::EventIsBetweenOccupiedTiles(const ui::LocatedEvent* event) {
-  return IsValidIndex(GetNearestTileIndexForPoint(event->location()));
+  gfx::Point mirrored_point(GetMirroredXInView(event->location().x()),
+                            event->location().y());
+  return IsValidIndex(GetNearestTileIndexForPoint(mirrored_point));
 }
 
 void AppsGridView::Update() {
