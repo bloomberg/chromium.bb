@@ -990,7 +990,8 @@ Polymer({
    * @private
    */
   getTetherDialog_: function() {
-    return /** @type {!TetherConnectionDialogElement} */ (this.$.tetherDialog);
+    return /** @type {!TetherConnectionDialogElement} */ (
+        this.$$('#tetherDialog'));
   },
 
   /** @private */
