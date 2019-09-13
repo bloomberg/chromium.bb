@@ -3083,8 +3083,6 @@ crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-block
 
 crbug.com/552085 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 
-crbug.com/626703 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
-
 # TODO(chrishtr): rebaseline these
 crbug.com/921242 [ Mac ] paint/invalidation/compositing/fixed-pos-inside-composited-intermediate-layer.html [ Failure ]
 crbug.com/921242 [ Mac ] paint/invalidation/scroll/fixed-under-composited-absolute-scrolled.html [ Failure ]
