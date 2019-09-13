@@ -2534,11 +2534,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-alternate-match-description-separator",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "omnibox-autocomplete-titles",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85

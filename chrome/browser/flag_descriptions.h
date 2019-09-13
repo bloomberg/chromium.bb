@@ -813,9 +813,6 @@ extern const char kUseMultiloginEndpointDescription[];
 extern const char kOfferStoreUnmaskedWalletCardsName[];
 extern const char kOfferStoreUnmaskedWalletCardsDescription[];
 
-extern const char kOmniboxAlternateMatchDescriptionSeparatorName[];
-extern const char kOmniboxAlternateMatchDescriptionSeparatorDescription[];
-
 extern const char kOmniboxAutocompleteTitlesName[];
 extern const char kOmniboxAutocompleteTitlesDescription[];
 
