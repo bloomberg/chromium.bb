@@ -2470,9 +2470,9 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si se le asigna el valor "False", el cursor grande se inhabilitará cuando se muestre la pantalla de inicio de sesión.
 
-          Si asignas un valor a esta política, los usuarios podrán anularlo temporalmente habilitando o inhabilitando el cursor grande. Sin embargo, la selección del usuario no se mantendrá y se restablecerá el valor predeterminado cuando se vuelva a mostrar la pantalla de inicio de sesión o cuando el usuario permanezca inactivo en la pantalla de inicio durante un minuto.
+          Si asignas un valor a esta política, los usuarios podrán anularlo temporalmente habilitando o inhabilitando el cursor grande. Sin embargo, la selección del usuario no se mantendrá y se restablecerá el valor predeterminado cuando se vuelva a mostrar la pantalla de inicio de sesión o cuando el usuario permanezca inactivo en la pantalla de inicio durante 1 minuto.
 
-          Si no se asigna ningún valor a esta política, el cursor grande se inhabilitará cuando la pantalla de inicio de sesión se muestre por primera vez. Los usuarios podrán habilitar o inhabilitar el cursor grande en cualquier momento y su estado en la pantalla de inicio de sesión permanecerá entre usuarios.
+          Si no se asigna ningún valor a esta política, el cursor grande se inhabilitará cuando la pantalla de inicio de sesión se muestre por primera vez. Los usuarios podrán habilitar o inhabilitar el cursor grande en cualquier momento, y se quedará como lo dejen hasta que otro usuario inicie sesión.
 
           Nota: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> anula esta política si se especifica la anterior.</translation>
 <translation id="538108065117008131">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los tipos de contenido que se indican a continuación.</translation>

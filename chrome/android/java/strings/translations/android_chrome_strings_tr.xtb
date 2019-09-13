@@ -42,6 +42,7 @@
 <translation id="1258753120186372309">Google doodle'ı: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Arama yapın ve keşfedin</translation>
 <translation id="1264974993859112054">Spor</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> paylaşılamadı</translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1283039547216852943">Genişletmek için dokunun</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
@@ -71,6 +72,7 @@
 <translation id="1430915738399379752">Yazdır</translation>
 <translation id="1445680696957526815">Chrome bileşenleri birbirleriyle uyumlu değil. Chrome yeni sürüme geçiyor olabilir, lütfen birkaç dakika sonra tekrar deneyin. Sorun devam ederse Chrome'u kaldırıp yeniden yüklemeyi deneyin.</translation>
 <translation id="1446450296470737166">MIDI cihazlarının tam denetimine izin verme</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> paylaşılamıyor</translation>
 <translation id="145097072038377568">Android Ayarları'ndan kapatıldı</translation>
 <translation id="1477626028522505441">Sunucu sorunları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="1501480321619201731">Grubu sil</translation>
@@ -153,6 +155,7 @@
 <translation id="2049961518639794558">Dosya uzantısını değiştirmek, beklenmedik bir davranışla sonuçlanabilir ve cihazınız için zararlı olabilir.</translation>
 <translation id="2056878612599315956">Site duraklatıldı</translation>
 <translation id="2063713494490388661">Dokun ve Ara</translation>
+<translation id="2067805253194386918">Kısa mesaj</translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> sonuçtan <ph name="RESULT_NUMBER" /> numaralı sonuç</translation>
 <translation id="2091887806945687916">Ses</translation>
@@ -324,6 +327,7 @@
 <translation id="3384347053049321195">Resmi paylaş</translation>
 <translation id="3386292677130313581">Sitelerin, konumunuzu öğrenmesine izin verilmeden önce size sorulsun (önerilir)</translation>
 <translation id="3387650086002190359">Dosya sistemi hataları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
+<translation id="3389286852084373014">Metin çok büyük</translation>
 <translation id="3398320232533725830">Yer işareti yöneticisini açar</translation>
 <translation id="3414952576877147120">Boyut:</translation>
 <translation id="3443221991560634068">Geçerli sayfayı yeniden yükler</translation>
@@ -348,6 +352,7 @@
 <translation id="3599863153486145794">Oturumunuzun açık olduğu tüm cihazlarda geçmişi temizler. Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir.</translation>
 <translation id="3600792891314830896">Ses çalan sitelerin sesini kapat</translation>
 <translation id="3616113530831147358">Ses</translation>
+<translation id="3631987586758005671"><ph name="DEVICE_NAME" /> ile paylaşılıyor</translation>
 <translation id="3632295766818638029">Şifreyi göster</translation>
 <translation id="363596933471559332">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik kapatıldığında, bir web sitesinde oturum açmadan önce her defasında doğrulama yapmanız istenir.</translation>
 <translation id="3658159451045945436">Sıfırlama işlemi, ziyaret edilen sitelerin listesi de dahil olmak üzere veri tasarrufu geçmişinizi siler.</translation>
@@ -578,6 +583,7 @@ VR moduna girmeden önce bu siteye güvendiğinizden emin olun.</translation>
 <translation id="5324858694974489420">Ebeveyn Ayarları</translation>
 <translation id="5327248766486351172">Ad</translation>
 <translation id="5335288049665977812">Sitelerin JavaScript çalıştırmasına izin ver (önerilir)</translation>
+<translation id="5342314432463739672">İzin istekleri</translation>
 <translation id="5357811892247919462">Sekme alındı</translation>
 <translation id="5363230136052241468">Yeni sekme sayfasını yüklemek için ana ekran düğmesine dokunun</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> açık sekme, sekmeler arasında geçiş yapmak için dokunun}other{<ph name="OPEN_TABS_MANY" /> açık sekme, sekmeler arasında geçiş yapmak için dokunun}}</translation>
@@ -748,6 +754,7 @@ VR moduna girmeden önce bu siteye güvendiğinizden emin olun.</translation>
 <translation id="6532866250404780454">Chrome'da ziyaret ettiğiniz siteler gösterilmez. Tüm site zamanlayıcıları silinir.</translation>
 <translation id="6534565668554028783">Google çok geç yanıt verdi</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB indirildi</translation>
+<translation id="6539092367496845964">Bir sorun oldu. Daha sonra tekrar deneyin.</translation>
 <translation id="654446541061731451">Işınlamak için bir sekme seçin</translation>
 <translation id="6545017243486555795">Tüm Verileri Temizle</translation>
 <translation id="6545864417968258051">Bluetooth taraması</translation>
@@ -879,6 +886,7 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> güncellendi)</translation>
 <translation id="7494974237137038751">tasarruf edilen veri miktarı</translation>
 <translation id="7498271377022651285">Lütfen bekleyin…</translation>
+<translation id="7510943789645525906">Kullandığınız şifre bir veri ihlaline dahilse sizi uyarır</translation>
 <translation id="7514365320538308">İndir</translation>
 <translation id="751961395872307827">Siteye bağlanılamıyor</translation>
 <translation id="7521387064766892559">JavaScript</translation>

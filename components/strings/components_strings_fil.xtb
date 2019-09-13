@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Di-wastong URL ng paghahanap.</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="248348093745724435">Mga patakaran sa machine</translation>
-<translation id="2485387744899240041">Mga username para sa iyong device at browser</translation>
 <translation id="2491120439723279231">Naglalaman ng mga error ang certificate ng server.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Pang-parse ng JSON</translation>
@@ -591,6 +590,7 @@
 <translation id="4103249731201008433">Di-wasto ang serial number ng device</translation>
 <translation id="410351446219883937">I-autoplay</translation>
 <translation id="4103763322291513355">Bisitahin ang &lt;strong&gt;chrome://policy&lt;/strong&gt; upang makita ang listahan ng mga naka-blacklist na URL at iba pang mga patakaran na ipinapatupad ng iyong system administrator.</translation>
+<translation id="4108231218301530806">Gamitin ang fingerprint para i-verify ang card na ito sa susunod.</translation>
 <translation id="4110652170750985508">Suriin ang iyong pagbabayad</translation>
 <translation id="4112140312785995938">Mag-seek Pabalik</translation>
 <translation id="4116663294526079822">Palaging payagan sa site na ito</translation>

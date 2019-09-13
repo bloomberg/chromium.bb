@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">'Software on your computer is stopping Chrome from safely connecting to the web' (Windows computers only)</translation>
 <translation id="1294154142200295408">Command-line variations</translation>
 <translation id="129553762522093515">Recently closed</translation>
+<translation id="1298536327547837046">Malware Scanning</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Try clearing your cookies<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Deprecated Features</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -298,7 +299,6 @@
 <translation id="2479410451996844060">Invalid search URL.</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="248348093745724435">Machine policies</translation>
-<translation id="2485387744899240041">Usernames for your device and browser</translation>
 <translation id="2491120439723279231">Server's certificate contains errors.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON Parser</translation>
@@ -567,6 +567,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{None}=1{From 1 site }other{From # sites }}</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> is blocked</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> has enabled Chrome Enterprise Threat Protection on your browser. Chrome Enterprise Threat Protection has access to some of your data.</translation>
 <translation id="3987940399970879459">Less than 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web page nearby}other{# web pages nearby}}</translation>
 <translation id="4030383055268325496">&amp;Undo add</translation>
@@ -635,6 +636,7 @@
 <translation id="4277028893293644418">Reset password</translation>
 <translation id="4279811152705618813">Your <ph name="DEVICE_TYPE" /> is managed by <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{This card has been saved in your Google Account}other{These cards have been saved in your Google Account}}</translation>
+<translation id="428847186335018806">Scan files that you download or upload in Chrome.</translation>
 <translation id="42981349822642051">Expand</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">Switch</translation>
@@ -1018,6 +1020,7 @@
 <translation id="6433490469411711332">Edit contact info</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> refused to connect.</translation>
 <translation id="6434309073475700221">Discard</translation>
+<translation id="6435221585574090192">Share data about security events that have been flagged by Chrome Enterprise Threat Protection with your Administrator. These may include page urls, file name and file metadata, your device username and Chrome username.</translation>
 <translation id="6440503408713884761">Ignored</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Add more information</translation>
@@ -1062,6 +1065,7 @@
 <translation id="6671697161687535275">Remove form suggestion from Chromium?</translation>
 <translation id="6685834062052613830">Sign out and complete setup</translation>
 <translation id="6689271823431384964">Chrome is offering to save your cards in your Google account because you are signed in. You can change this behaviour in settings. The cardholder name comes from your account.</translation>
+<translation id="6707256370811247129">Scan the contents of the cache and files that you download or upload in Chrome.</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="6710594484020273272">&lt;Type search term&gt;</translation>
 <translation id="671076103358959139">Enrolment Token:</translation>
@@ -1080,6 +1084,7 @@
 <translation id="681021252041861472">Required Field</translation>
 <translation id="6810899417690483278">Customisation ID</translation>
 <translation id="6825578344716086703">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate signed using a weak signature algorithm (such as SHA-1). This means that the security credentials that the server presented could have been forged, and the server may not be the server that you expected (you may be communicating with an attacker).</translation>
+<translation id="6826370046007623921">Data Loss Prevention</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="6852204201400771460">Reload app?</translation>
@@ -1226,6 +1231,7 @@ Additional details:
 <translation id="7542995811387359312">Automatic credit card filling is disabled because this form does not use a secure connection.</translation>
 <translation id="7548892272833184391">Fix connection errors</translation>
 <translation id="7549584377607005141">This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed.</translation>
+<translation id="7550637293666041147">Your device username and Chrome username</translation>
 <translation id="7552846755917812628">Try the following tips:</translation>
 <translation id="7554791636758816595">New Tab</translation>
 <translation id="7564049878696755256">You could lose access to your <ph name="ORG_NAME" /> account or experience identity theft. Chrome recommends changing your password now.</translation>
@@ -1240,6 +1246,7 @@ Additional details:
 <translation id="7610193165460212391">Value is out of range <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Exp: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">You already have data that is encrypted using a different version of your Google Account password. Please enter it below.</translation>
+<translation id="7625784245512586808">Chrome Enterprise Threat Protection</translation>
 <translation id="7633909222644580952">Performance data and crash reports</translation>
 <translation id="7637571805876720304">Remove credit card from Chromium?</translation>
 <translation id="7638605456503525968">Serial ports</translation>
@@ -1350,6 +1357,7 @@ Additional details:
 <translation id="8211406090763984747">Connection is secure</translation>
 <translation id="8218327578424803826">Assigned Location:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
+<translation id="8220639454292072926">Enterprise Reporting</translation>
 <translation id="8225771182978767009">The person who set up this computer has chosen to block this site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Open page in a new Incognito tab</translation>
@@ -1496,6 +1504,7 @@ Additional details:
 <translation id="9080712759204168376">Order Summary</translation>
 <translation id="9089260154716455634">Off-hours policy:</translation>
 <translation id="9095388113577226029">More languages...</translation>
+<translation id="9098981495403789647">Your administrator has enabled Chrome Enterprise Threat Protection on your browser. Chrome Enterprise Threat Protection has access to some of your data.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normally uses encryption to protect your information. When Chromium tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chromium stopped the connection before any data was exchanged.</translation>
 <translation id="9106062320799175032">Add Billing Address</translation>
 <translation id="9114524666733003316">Confirming card...</translation>

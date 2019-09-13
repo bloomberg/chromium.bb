@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Virheellinen hakukoneen URL-osoite.</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
 <translation id="248348093745724435">Laitteen käytännöt</translation>
-<translation id="2485387744899240041">Laitteen ja selaimen käyttäjänimet</translation>
 <translation id="2491120439723279231">Palvelimen varmenteessa on virheitä.</translation>
 <translation id="2493640343870896922">Kirje-plus</translation>
 <translation id="2495083838625180221">JSON-jäsentäjä</translation>
@@ -592,6 +591,7 @@
 <translation id="4103249731201008433">Laitteen sarjanumero on virheellinen</translation>
 <translation id="410351446219883937">Automaattinen toisto</translation>
 <translation id="4103763322291513355">Voit lukea listan kielletyistä URL-osoitteista ja muut järjestelmänvalvojasi määräämät käytännöt osoitteessa &lt;strong&gt;chrome://policy&lt;/strong&gt;.</translation>
+<translation id="4108231218301530806">Vahvista kortti seuraavan kerran sormenjäljellä.</translation>
 <translation id="4110652170750985508">Tarkasta maksu</translation>
 <translation id="4112140312785995938">Kelaa taaksepäin</translation>
 <translation id="4116663294526079822">Salli aina tässä sivustossa</translation>

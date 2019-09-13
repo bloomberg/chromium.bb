@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">URL ricerca non valido.</translation>
 <translation id="2482878487686419369">Notifiche</translation>
 <translation id="248348093745724435">Norme macchina</translation>
-<translation id="2485387744899240041">Nomi utente del dispositivo e del browser</translation>
 <translation id="2491120439723279231">Il certificato del server contiene degli errori.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON Parser</translation>
@@ -355,7 +354,7 @@
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica della connettività<ph name="END_LINK" /></translation>
-<translation id="2734544361860335147">Se attivi queste funzioni, potresti perdere i dati del browser
+<translation id="2734544361860335147">Se attivi queste funzioni, potresti perdere i dati del browser oppure
     compromettere la sicurezza o la privacy. Le funzioni attivate vengono applicate per tutti
     gli utenti di questo browser.</translation>
 <translation id="2735043616039983645">È presente più di un'origine con valori in conflitto per questo criterio.</translation>
@@ -588,6 +587,7 @@
 <translation id="4103249731201008433">Il numero di serie del dispositivo non è valido</translation>
 <translation id="410351446219883937">Riproduzione automatica</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; per visualizzare l'elenco di URL inseriti nella blacklist e altre norme applicate dall'amministratore di sistema.</translation>
+<translation id="4108231218301530806">Usa l'impronta per verificare questa carta la prossima volta</translation>
 <translation id="4110652170750985508">Verifica il pagamento</translation>
 <translation id="4112140312785995938">Vai indietro</translation>
 <translation id="4116663294526079822">Consenti sempre su questo sito</translation>
@@ -1072,7 +1072,7 @@
 <translation id="6738516213925468394">I tuoi dati sono stati criptati con la tua <ph name="BEGIN_LINK" />passphrase di sincronizzazione<ph name="END_LINK" /> in data <ph name="TIME" />. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="674375294223700098">Errore sconosciuto del certificato del server.</translation>
 <translation id="6744009308914054259">In attesa di una connessione, puoi visitare la pagina Download per leggere gli articoli offline.</translation>
-<translation id="6747611005629681221">Avviso: seguono funzionalità obsolete.</translation>
+<translation id="6747611005629681221">Avviso: le funzionalità verranno ritirate a breve.</translation>
 <translation id="6753269504797312559">Valore criterio</translation>
 <translation id="6757797048963528358">Il dispositivo è entrato in modalità sospensione.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>

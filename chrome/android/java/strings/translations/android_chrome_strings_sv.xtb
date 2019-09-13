@@ -42,6 +42,7 @@
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Sök och utforska</translation>
 <translation id="1264974993859112054">Sport</translation>
+<translation id="1266864766717917324">Det gick inte att dela <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1283039547216852943">Tryck och utöka</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
@@ -71,6 +72,7 @@
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1445680696957526815">Chromes komponenter är inte inbördes kompatibla. Kanske håller Chrome på att uppgraderas. Försök igen om några minuter. Om problemet kvarstår testar du att avinstallera och sedan installera om Chrome.</translation>
 <translation id="1446450296470737166">Tillåt fullst. kontroll av MIDI</translation>
+<translation id="1450753235335490080">Det gick inte att dela <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Inaktiverad i Android-inställningarna</translation>
 <translation id="1477626028522505441">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av serverfel.</translation>
 <translation id="1501480321619201731">Ta bort grupp</translation>
@@ -153,6 +155,7 @@
 <translation id="2049961518639794558">Att ändra filnamnstillägg kan leda till oväntat beteende. Detta kan vara skadligt för enheten.</translation>
 <translation id="2056878612599315956">Webbplatsen har pausats</translation>
 <translation id="2063713494490388661">Tryck för att söka</translation>
+<translation id="2067805253194386918">text</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Ljud</translation>
@@ -324,6 +327,7 @@
 <translation id="3384347053049321195">Dela bild</translation>
 <translation id="3386292677130313581">Fråga innan webbplatser tillåts att veta var du befinner dig (rekommenderas)</translation>
 <translation id="3387650086002190359">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av filsystemfel.</translation>
+<translation id="3389286852084373014">Texten är för stor</translation>
 <translation id="3398320232533725830">Öppna bokmärkeshanteraren</translation>
 <translation id="3414952576877147120">Storlek:</translation>
 <translation id="3443221991560634068">Läs in den aktuella sidan igen</translation>
@@ -348,6 +352,7 @@
 <translation id="3599863153486145794">Historik rensas från alla inloggade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Stäng av ljudet på webbplatser</translation>
 <translation id="3616113530831147358">Ljud</translation>
+<translation id="3631987586758005671">Delas med <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Visa lösenord</translation>
 <translation id="363596933471559332">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du verifiera dina uppgifter varje gång du besöker webbplatsen innan du kan logga in.</translation>
 <translation id="3658159451045945436">Om du återställer begränsat läge raderas databesparingshistoriken, inklusive listan med webbplatser som du har besökt.</translation>
@@ -578,6 +583,7 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5324858694974489420">Föräldrainställningar</translation>
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5335288049665977812">Tillåt att Javascript körs på webbplatser (rekommenderas)</translation>
+<translation id="5342314432463739672">Behörighetsförfrågningar</translation>
 <translation id="5357811892247919462">En flik har tagits emot</translation>
 <translation id="5363230136052241468">Tryck på hemknappen om du vill läsa in sidan Ny flik</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> flik öppen, tryck här om du vill byta flik}other{<ph name="OPEN_TABS_MANY" /> flikar öppna, tryck här om du vill byta flik}}</translation>
@@ -748,6 +754,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6532866250404780454">Webbplatser som du besöker i Chrome visas inte. Alla timer för webbplatser raderas.</translation>
 <translation id="6534565668554028783">Google tog för lång tid på sig att svara</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB har laddats ned</translation>
+<translation id="6539092367496845964">Något gick fel. Försök igen senare.</translation>
 <translation id="654446541061731451">Välj en flik som du vill överföra</translation>
 <translation id="6545017243486555795">Rensa all data</translation>
 <translation id="6545864417968258051">Bluetooth-sökning</translation>
@@ -879,6 +886,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7493994139787901920"><ph name="VERSION" /> (uppdaterades <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">Sparad data</translation>
 <translation id="7498271377022651285">Vänta …</translation>
+<translation id="7510943789645525906">Varnar om ett lösenord du använder har identifierats i samband med ett dataintrång</translation>
 <translation id="7514365320538308">Ladda ned</translation>
 <translation id="751961395872307827">Det gick inte att ansluta till webbplatsen</translation>
 <translation id="7521387064766892559">JavaScript</translation>

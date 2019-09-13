@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Adresă URL de căutare nevalidă.</translation>
 <translation id="2482878487686419369">Notificări</translation>
 <translation id="248348093745724435">Politicile dispozitivului</translation>
-<translation id="2485387744899240041">Nume de utilizator pentru dispozitivul și browserul tău</translation>
 <translation id="2491120439723279231">Certificatul serverului conține erori.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Analizor JSON</translation>
@@ -589,6 +588,7 @@
 <translation id="4103249731201008433">Numărul de serie al gadgetului este nevalid</translation>
 <translation id="410351446219883937">Redare automată</translation>
 <translation id="4103763322291513355">Accesați &lt;strong&gt;chrome://policy&lt;/strong&gt; pentru a vedea adresele URL introduse pe lista neagră și alte politici impuse de către administratorul de sistem.</translation>
+<translation id="4108231218301530806">Folosește amprenta pentru a confirma cardul data viitoare.</translation>
 <translation id="4110652170750985508">Examinează plata</translation>
 <translation id="4112140312785995938">Derulează înapoi</translation>
 <translation id="4116663294526079822">Permiteți întotdeauna pe acest site</translation>

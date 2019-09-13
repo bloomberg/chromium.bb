@@ -10,7 +10,7 @@
 <translation id="1036348656032585052">முடக்கு</translation>
 <translation id="1038842779957582377">அறியப்படாத பெயர்</translation>
 <translation id="1039626062703039346">உங்கள் Google கணக்கைப் பாதுகாக்கவும் கடவுச்சொல்லை மாற்றவும் Chrome உதவும். இந்தத் தளம் குறித்து Googleளுக்குத் தெரியப்படுத்தும்.</translation>
-<translation id="1050038467049342496">பிற பயன்பாடுகளை மூடவும்</translation>
+<translation id="1050038467049342496">பிற ஆப்ஸை மூடவும்</translation>
 <translation id="1055184225775184556">&amp;சேர்த்தலைச் செயல்தவிர்</translation>
 <translation id="1056898198331236512">எச்சரிக்கை</translation>
 <translation id="1058479211578257048">கார்டுகளைச் சேமிக்கிறது...</translation>
@@ -307,7 +307,6 @@
 <translation id="2479410451996844060">தவறான தேடல் URL.</translation>
 <translation id="2482878487686419369">அறிவிப்புகள்</translation>
 <translation id="248348093745724435">சாதனக் கொள்கைகள்</translation>
-<translation id="2485387744899240041">உங்கள் சாதனம் மற்றும் உலாவியின் பயனர்பெயர்கள்</translation>
 <translation id="2491120439723279231">சேவையகச் சான்றிதழில் பிழைகள் உள்ளன.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON பார்சர்</translation>
@@ -341,7 +340,7 @@
 <translation id="2650446666397867134">கோப்பிற்கான அணுகல் மறுக்கப்பட்டது</translation>
 <translation id="2653659639078652383">சமர்ப்பி</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{எதுவுமில்லை}=1{ஒரு கடவுச்சொல் (டொமைன்கள்: <ph name="DOMAIN_LIST" />)}=2{2 கடவுச்சொற்கள் (டொமைன்கள்: <ph name="DOMAIN_LIST" />)}other{# கடவுச்சொற்கள் (டொமைன்கள்: <ph name="DOMAIN_LIST" />)}}</translation>
-<translation id="2666117266261740852">பிற தாவல்கள் அல்லது பயன்பாடுகளை மூடவும்</translation>
+<translation id="2666117266261740852">பிற தாவல்கள் அல்லது ஆப்ஸை மூடவும்</translation>
 <translation id="2674170444375937751">உங்கள் வரலாற்றிலிருக்கும் பக்கங்களை நிச்சயமாக நீக்க விரும்புகிறீர்களா?</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">வெளியேறு</translation>
@@ -586,6 +585,7 @@
 <translation id="4103249731201008433">சாதன சீரியல் எண் தவறானது</translation>
 <translation id="410351446219883937">தானியங்கி</translation>
 <translation id="4103763322291513355">ஏற்கத்தகாத URLகளின் பட்டியலையும் உங்கள் கணினி நிர்வாகியால் செயற்படுத்தப்படும் பிற கொள்கைகளையும் காண &lt;strong&gt;chrome://policy&lt;/strong&gt; ஐப் பார்வையிடவும்.</translation>
+<translation id="4108231218301530806">அடுத்த முறை இந்தக் கார்டை சரிபார்க்க கைரேகையைப் பயன்படுத்தவும்.</translation>
 <translation id="4110652170750985508">உங்கள் கட்டணத்தை மதிப்பாய்வு செய்யவும்</translation>
 <translation id="4112140312785995938">பின்செல்</translation>
 <translation id="4116663294526079822">இந்தத் தளத்தில் எப்போதும் அனுமதி</translation>

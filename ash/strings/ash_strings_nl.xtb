@@ -223,6 +223,7 @@
 <translation id="4181841719683918333">Talen</translation>
 <translation id="4195877955194704651">Knop 'Automatische klikken'</translation>
 <translation id="4217571870635786043">Dicteren</translation>
+<translation id="421885205185866088">Pincode voor smartkaart voor <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Instellingen voor meldingen weergeven. Meldingen zijn uitgeschakeld</translation>
 <translation id="4269883910223712419">De beheerder van dit apparaat kan het volgende doen:</translation>
@@ -477,7 +478,7 @@
 <translation id="813913629614996137">Starten...</translation>
 <translation id="8142441511840089262">Dubbelklik</translation>
 <translation id="8142699993796781067">Privénetwerk</translation>
-<translation id="8152092012181020186">Druk op Ctrl + W om af te sluiten.</translation>
+<translation id="8152092012181020186">Druk op Ctrl + W om te sluiten.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> in gebruik</translation>
 <translation id="8190698733819146287">Talen en invoer aanpassen...</translation>
 <translation id="8192202700944119416">Meldingen zijn verborgen.</translation>

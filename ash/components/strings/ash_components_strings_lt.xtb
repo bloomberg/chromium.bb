@@ -3,7 +3,6 @@
 <translationbundle lang="lt">
 <translation id="1036550831858290950">Išsaugoti dabartinį skirtuką kaip žymę</translation>
 <translation id="104962181688258143">Atidaryti Failų programą</translation>
-<translation id="1098295134904615027">Aktyvinamas virtualusis pultas dešinėje</translation>
 <translation id="1122869341872663659">Rodomi paieškos rezultatai (<ph name="N" />) pagal užklausą „<ph name="QUERY" />“</translation>
 <translation id="1195667586424773550">Nuvilkite nuorodą į skirtuko adreso juostą</translation>
 <translation id="1204450209689312104">Atidaryti naują langą inkognito režimu</translation>
@@ -24,8 +23,8 @@
 <translation id="169515659049020177">Antrojo lygio klavišas</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Pridėkite „www.“ ir „.com“ prie įvesties adreso juostoje, tada atidarykite puslapį</translation>
+<translation id="1872219238824176091">Pašalinkite esamą darbalaukį</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, tada <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> arba <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Aktyvinamas virtualusis pultas kairėje</translation>
 <translation id="1996162290124031907">Eiti į kitą skirtuką</translation>
 <translation id="2010818616644390445">Eiti į paskutinį skirtuką lange</translation>
 <translation id="2040706009561734834">Atidaryti / uždaryti paleidimo priemonę</translation>
@@ -44,6 +43,7 @@
 <translation id="2441202986792279177">Greitai perjungti langus</translation>
 <translation id="2454251766545114447">Tolinti ekraną</translation>
 <translation id="2478303094958140141">Įjungti arba išjungti „ChromeVox“ (ekrano skaitymą balsu)</translation>
+<translation id="2488661730534396940">Aktyvinkite darbalaukį kairėje</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Slinkti tinklalapiu žemyn</translation>
 <translation id="2574014812750545982">Iš naujo nustatyti puslapio mastelio keitimo lygį</translation>
@@ -51,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, tada <ph name="TAB" /> arba <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">Iš naujo įkelti dabartinį puslapį</translation>
 <translation id="2764005613199379871">Perkelti žymeklį ant paieškos adreso juostos</translation>
+<translation id="2774822903829597107">Sukurkite naują darbalaukį</translation>
 <translation id="2789868185375229787">Tolinti puslapyje</translation>
 <translation id="2804480015716812239">Paspauskite <ph name="ALT" /> ir spustelėkite nuorodą</translation>
 <translation id="2830827904629746450">Pritvirtinti langą dešinėje</translation>
@@ -64,7 +65,6 @@
 <translation id="3105917916468784889">Padaryti ekrano kopiją</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokusuoti adreso juostą</translation>
-<translation id="3165428420335997629">Sukuriamas naujas virtualusis pultas</translation>
 <translation id="3256109297135787951">Pašalinti elemento lentynoje paryškinimą</translation>
 <translation id="3288816184963444640">Uždaryti esamą langą</translation>
 <translation id="3407560819924487926">Rodyti užduočių tvarkytuvę</translation>
@@ -103,6 +103,7 @@
 <translation id="4642092649622328492">Padaryti dalinę ekrano kopiją</translation>
 <translation id="4698850295812410683">Rodyti rašiklio įrankius</translation>
 <translation id="4801989101741319327">Pereiti prie kito žodžio pabaigos</translation>
+<translation id="4866066940972151697">Aktyvinkite darbalaukį dešinėje</translation>
 <translation id="4916163929714267752">Atidaryti nuorodą naujame lange</translation>
 <translation id="5030659775136592441">Rodyti žymių tvarkytuvę</translation>
 <translation id="5034421018520995080">Eiti į puslapio viršų</translation>
@@ -181,7 +182,6 @@
 <translation id="8234414138295101081">Pasukti ekraną 90 laipsnių kampu</translation>
 <translation id="8241665785394195545">uždaromasis laužtinis skliaustas</translation>
 <translation id="8264941229485248811">Rodyti arba slėpti kūrėjo įrankių tikrinimo priemonę</translation>
-<translation id="8355937569537581904">Pašalinamas dabartinis virtualusis pultas</translation>
 <translation id="836869401750819675">Atidaryti atsisiuntimų puslapį</translation>
 <translation id="8388247778047144397">Nuvilkite nuorodą į tuščią sritį skirtuko juostelėje</translation>
 <translation id="8389638407792712197">Atidaryti naują langą</translation>

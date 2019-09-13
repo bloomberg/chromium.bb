@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Неважећа URL адреса претраге.</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="248348093745724435">Смернице за уређаје</translation>
-<translation id="2485387744899240041">Корисничка имена за уређај и прегледач</translation>
 <translation id="2491120439723279231">Сертификат сервера садржи грешке.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Рашчлањивач JSON датотека</translation>
@@ -591,6 +590,7 @@
 <translation id="4103249731201008433">Серијски број уређаја је неважећи</translation>
 <translation id="410351446219883937">Аутоплеј</translation>
 <translation id="4103763322291513355">Посетите &lt;strong&gt;chrome://policy&lt;/strong&gt; да бисте видели листу URL-ова стављених на црну листу и друге смернице које је наметнуо администратор система.</translation>
+<translation id="4108231218301530806">Следећи пут верификуј ову картицу помоћу дигиталног отиска.</translation>
 <translation id="4110652170750985508">Прегледајте уплату</translation>
 <translation id="4112140312785995938">Премотај уназад</translation>
 <translation id="4116663294526079822">Увек дозволи на овом сајту</translation>

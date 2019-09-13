@@ -42,6 +42,7 @@
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
 <translation id="1264974993859112054">体育</translation>
+<translation id="1266864766717917324">无法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1283039547216852943">点按即可展开</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
@@ -71,6 +72,7 @@
 <translation id="1430915738399379752">打印</translation>
 <translation id="1445680696957526815">Chrome 的组件互不兼容。Chrome 可能正在升级，请过几分钟后重试。如果问题仍然存在，请尝试卸载并重新安装 Chrome。</translation>
 <translation id="1446450296470737166">允许全面控制 MIDI 设备</translation>
+<translation id="1450753235335490080">无法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">已在 Android 设置中停用</translation>
 <translation id="1477626028522505441">未能成功下载 <ph name="FILE_NAME" />，因为服务器出现了问题。</translation>
 <translation id="1501480321619201731">删除群组</translation>
@@ -153,6 +155,7 @@
 <translation id="2049961518639794558">更改文件扩展名可能会导致意外行为并对您的设备造成损害。</translation>
 <translation id="2056878612599315956">网站已被暂停</translation>
 <translation id="2063713494490388661">点按搜索</translation>
+<translation id="2067805253194386918">文本</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
 <translation id="2091887806945687916">声音</translation>
@@ -324,6 +327,7 @@
 <translation id="3384347053049321195">分享图片</translation>
 <translation id="3386292677130313581">网站需要先询问并得到您的许可才能获取您的位置信息（推荐）</translation>
 <translation id="3387650086002190359">未能成功下载 <ph name="FILE_NAME" />，因为文件系统出现了错误。</translation>
+<translation id="3389286852084373014">文本过长</translation>
 <translation id="3398320232533725830">打开书签管理器</translation>
 <translation id="3414952576877147120">大小：</translation>
 <translation id="3443221991560634068">重新加载当前网页</translation>
@@ -348,6 +352,7 @@
 <translation id="3599863153486145794">清除所有登录过的设备上的历史记录。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="3600792891314830896">将播放声音的网站静音</translation>
 <translation id="3616113530831147358">音频</translation>
+<translation id="3631987586758005671">正在分享给<ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">显示密码</translation>
 <translation id="363596933471559332">使用存储的凭据自动登录网站。当该功能处于停用状态时，您每次都要通过验证才能登录网站。</translation>
 <translation id="3658159451045945436">这项重置操作会清空流量节省情况历史记录，包括曾访问过的网站的列表。</translation>
@@ -578,6 +583,7 @@
 <translation id="5324858694974489420">家长设置</translation>
 <translation id="5327248766486351172">名称</translation>
 <translation id="5335288049665977812">允许网站运行 JavaScript（推荐）</translation>
+<translation id="5342314432463739672">权限请求</translation>
 <translation id="5357811892247919462">收到了标签页</translation>
 <translation id="5363230136052241468">点按“首页”按钮即可加载新标签页</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> 个打开的标签页，点按即可切换标签页}other{<ph name="OPEN_TABS_MANY" /> 个打开的标签页，点按即可切换标签页}}</translation>
@@ -748,6 +754,7 @@
 <translation id="6532866250404780454">您在 Chrome 中访问的网站不会显示。所有网站计时器都会被删除。</translation>
 <translation id="6534565668554028783">Google 的响应速度太慢</translation>
 <translation id="6538442820324228105">已下载 <ph name="GBS" /> GB</translation>
+<translation id="6539092367496845964">出了点问题。请稍后重试。</translation>
 <translation id="654446541061731451">选择要传输的标签页</translation>
 <translation id="6545017243486555795">清除所有数据</translation>
 <translation id="6545864417968258051">蓝牙扫描</translation>
@@ -879,6 +886,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7494974237137038751">已节省的流量</translation>
 <translation id="7498271377022651285">请稍候…</translation>
+<translation id="7510943789645525906">如果您使用的某个密码属于已遭泄露的数据，就会向您发出警告</translation>
 <translation id="7514365320538308">下载</translation>
 <translation id="751961395872307827">无法连接到该网站</translation>
 <translation id="7521387064766892559">JavaScript</translation>

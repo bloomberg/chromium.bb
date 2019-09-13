@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">„Programinė įranga jūsų kompiuteryje neleidžia „Chrome“ saugiai prisijungti prie žiniatinklio“ (tik „Windows“ kompiuteriuose)</translation>
 <translation id="1294154142200295408">Komandos eilutės kintamieji</translation>
 <translation id="129553762522093515">Neseniai uždarytas</translation>
+<translation id="1298536327547837046">Kenkėjiškų programų nuskaitymas</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Pabandykite išvalyti slapukus<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Nebenaudojamos funkcijos</translation>
 <translation id="1320233736580025032">„Prc1“ (vokas)</translation>
@@ -306,7 +307,6 @@
 <translation id="2479410451996844060">Netinkamas paieškos URL.</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
 <translation id="248348093745724435">Įrenginio politikos</translation>
-<translation id="2485387744899240041">Jūsų įrenginio ir naršyklės naudotojo vardai</translation>
 <translation id="2491120439723279231">Serverio sertifikate yra klaidų.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON analizavimo įrankis</translation>
@@ -576,6 +576,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Nėra}=1{Iš 1 svetainės }one{Iš # svetainės }few{Iš # svetainių }many{Iš # svetainės }other{Iš # svetainių }}</translation>
 <translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> užblokuota.</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> jūsų įrenginyje įgalino „Chrome Enterprise“ apsaugą nuo grėsmių. „Chrome Enterprise“ apsaugos nuo grėsmių funkcija gali pasiekti kai kuriuos jūsų duomenis.</translation>
 <translation id="3987940399970879459">Mažiau nei 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 tinklalapis netoliese}one{# tinklalapis netoliese}few{# tinklalapiai netoliese}many{# tinklalapio netoliese}other{# tinklalapių netoliese}}</translation>
 <translation id="4030383055268325496">&amp;Anuliuoti pridėjimą</translation>
@@ -592,6 +593,7 @@
 <translation id="4103249731201008433">Netinkamas įrenginio serijos numeris</translation>
 <translation id="410351446219883937">Automatinis paleidimas</translation>
 <translation id="4103763322291513355">Apsilankykite &lt;strong&gt;chrome://policy&lt;/strong&gt;, kad peržiūrėtumėte į juodąjį sąrašą įtrauktų URL sąrašą ir kitą politiką, kurią priverstinai paleido sistemos administratorius.</translation>
+<translation id="4108231218301530806">Kitą kartą šią kortelę reikės patvirtinti naudojant kontrolinį kodą.</translation>
 <translation id="4110652170750985508">Mokėjimo peržiūra</translation>
 <translation id="4112140312785995938">Prasukti atgal</translation>
 <translation id="4116663294526079822">Visada leisti šioje svetainėje</translation>
@@ -643,6 +645,7 @@
 <translation id="4277028893293644418">Iš naujo nustatyti slaptažodį</translation>
 <translation id="4279811152705618813">Jūsų „<ph name="DEVICE_TYPE" />“ tvarko <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ši kortelė išsaugota jūsų „Google“ paskyroje}one{Šios kortelės išsaugotos jūsų „Google“ paskyroje}few{Šios kortelės išsaugotos jūsų „Google“ paskyroje}many{Šios kortelės išsaugotos jūsų „Google“ paskyroje}other{Šios kortelės išsaugotos jūsų „Google“ paskyroje}}</translation>
+<translation id="428847186335018806">Nuskaitykite failus, kuriuos atsisiunčiate ar įkeliate į „Chrome“.</translation>
 <translation id="42981349822642051">Išskleisti</translation>
 <translation id="4302965934281694568">„Chou3“ (vokas)</translation>
 <translation id="4305817255990598646">Perjungti</translation>
@@ -1026,6 +1029,7 @@
 <translation id="6433490469411711332">Kontaktinės informacijos redagavimas</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> atsisakė prisijungti.</translation>
 <translation id="6434309073475700221">Atmesti</translation>
+<translation id="6435221585574090192">Bendrinkite duomenis apie saugos įvykius, pažymėtus „Chrome Enterprise“ apsaugos nuo grėsmių funkcijos, su administratoriumi. Tai gali būti puslapių URL, failų pavadinimai ir failų metaduomenys, įrenginio naudotojo vardas ir „Chrome“ naudotojo vardas.</translation>
 <translation id="6440503408713884761">Nepaisoma</translation>
 <translation id="6446163441502663861">„Kahu“ (vokas)</translation>
 <translation id="6446608382365791566">Daugiau informacijos pridėjimas</translation>
@@ -1070,6 +1074,7 @@
 <translation id="6671697161687535275">Pašalinti formos pasiūlymą iš „Chromium“?</translation>
 <translation id="6685834062052613830">Atsijunkite ir užbaikite sąranką</translation>
 <translation id="6689271823431384964">„Chrome“ siūlo išsaugoti korteles „Google“ paskyroje, nes esate prisijungę. Šią elgseną galite pakeisti nustatymuose. Kortelės savininko vardas gaunamas iš jūsų paskyros.</translation>
+<translation id="6707256370811247129">Nuskaitykite talpyklos ir failų, kuriuos atsisiunčiate ar įkeliate į „Chrome“, turinį.</translation>
 <translation id="6710213216561001401">Ankstesnis</translation>
 <translation id="6710594484020273272">&lt;Įveskite paieškos terminą&gt;</translation>
 <translation id="671076103358959139">Registracijos prieigos raktas:</translation>
@@ -1088,6 +1093,7 @@
 <translation id="681021252041861472">Būtinas laukas</translation>
 <translation id="6810899417690483278">Tinkinimo ID</translation>
 <translation id="6825578344716086703">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė sertifikatą, kuris pasirašytas naudojant nesudėtingą parašo algoritmą (pvz., SHA-1). Tai reiškia, kad serverio pateikti saugos prisijungimo duomenys galėjo būti suklastoti ir serveris gali būti ne tas, kurio tikėjotės (gali būti, kad bendraujate su užpuoliku).</translation>
+<translation id="6826370046007623921">Duomenų praradimo prevencija</translation>
 <translation id="6831043979455480757">Vertėjas</translation>
 <translation id="6839929833149231406">Sritis</translation>
 <translation id="6852204201400771460">Įkelti programą iš naujo?</translation>
@@ -1237,6 +1243,7 @@ Papildoma išsami informacija:
 <translation id="7542995811387359312">Automatinis kredito kortelės informacijos pildymas neleidžiamas, nes šiai formai nenaudojamas saugus ryšys.</translation>
 <translation id="7548892272833184391">Ryšio klaidų taisymas</translation>
 <translation id="7549584377607005141">Jei norite, kad šis tinklalapis būtų tinkamai pateikiamas, reikalingi anksčiau įvesti duomenys. Galite nusiųsti šiuos duomenis iš naujo, bet taip pakartosite visus anksčiau šiame puslapyje įvykdytus veiksmus.</translation>
+<translation id="7550637293666041147">Įrenginio naudotojo vardas ir „Chrome“ naudotojo vardas</translation>
 <translation id="7552846755917812628">Išbandykite toliau pateiktus patarimus.</translation>
 <translation id="7554791636758816595">Naujas skirtukas</translation>
 <translation id="7564049878696755256">Galite prarasti galimybę pasiekti „<ph name="ORG_NAME" />“ paskyrą arba gali būti pavogta tapatybė. „Chrome“ rekomenduoja pakeisti slaptažodį dabar.</translation>
@@ -1251,6 +1258,7 @@ Papildoma išsami informacija:
 <translation id="7610193165460212391">Vertė nepatenka į diapazoną <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Galioja iki: <ph name="EXPIRATION_YEAR" />-<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="7615602087246926389">Jau turite duomenų, kurie šifruojami naudojant kitos versijos „Google“ paskyros slaptažodį. Įveskite juos toliau.</translation>
+<translation id="7625784245512586808">„Chrome Enterprise“ apsauga nuo grėsmių</translation>
 <translation id="7633909222644580952">Našumo duomenys ir strigčių ataskaitos</translation>
 <translation id="7637571805876720304">Pašalinti kredito kortelės informaciją iš „Chromium“?</translation>
 <translation id="7638605456503525968">Nuoseklieji prievadai</translation>
@@ -1361,6 +1369,7 @@ Papildoma išsami informacija:
 <translation id="8211406090763984747">Ryšys saugus</translation>
 <translation id="8218327578424803826">Priskirta vieta:</translation>
 <translation id="8220146938470311105">C7 / C6 (vokas)</translation>
+<translation id="8220639454292072926">Įmonės ataskaitų teikimas</translation>
 <translation id="8225771182978767009">Šį kompiuterį nustatęs asmuo pasirinko blokuoti šią svetainę.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Atidarykite puslapį naujame inkognito skirtuke</translation>
@@ -1508,6 +1517,7 @@ Papildoma išsami informacija:
 <translation id="9080712759204168376">Užsakymų suvestinė</translation>
 <translation id="9089260154716455634">Nenaudojimo valandų politika:</translation>
 <translation id="9095388113577226029">Daugiau kalbų...</translation>
+<translation id="9098981495403789647">Administratorius jūsų naršyklėje įgalino „Chrome Enterprise“ apsaugą nuo grėsmių. „Chrome Enterprise“ apsaugos nuo grėsmių funkcija gali pasiekti kai kuriuos jūsų duomenis.</translation>
 <translation id="9103872766612412690">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Chromium“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Chromium“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
 <translation id="9106062320799175032">Atsiskaitymo adreso pridėjimas</translation>
 <translation id="9114524666733003316">Kortelė patvirtinama...</translation>

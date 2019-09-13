@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Kehtetu otsingu URL.</translation>
 <translation id="2482878487686419369">Märguanded</translation>
 <translation id="248348093745724435">Seadme reeglid</translation>
-<translation id="2485387744899240041">Teie seadme ja brauseri kasutajanimed</translation>
 <translation id="2491120439723279231">Serveri sertifikaat sisaldab vigu.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON-i parser</translation>
@@ -591,6 +590,7 @@
 <translation id="4103249731201008433">Seadme seerianumber on kehtetu</translation>
 <translation id="410351446219883937">Automaatesitus</translation>
 <translation id="4103763322291513355">Külastage saiti &lt;strong&gt;chrome://policy&lt;/strong&gt;, et näha mustas nimekirjas olevate URL-ide loendit ja teisi reegleid, mille on jõustanud teie süsteemiadministraator.</translation>
+<translation id="4108231218301530806">Kasuta järgmisel korral selle kaardi kinnitamiseks sõrmejälge.</translation>
 <translation id="4110652170750985508">Vaadake makse üle</translation>
 <translation id="4112140312785995938">Keri tagasi</translation>
 <translation id="4116663294526079822">Luba sellel saidil alati</translation>

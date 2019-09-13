@@ -42,6 +42,7 @@
 <translation id="1258753120186372309">Doodles de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Buscar y explorar</translation>
 <translation id="1264974993859112054">Deportes</translation>
+<translation id="1266864766717917324">No se ha podido compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1283039547216852943">Toca para ampliar</translation>
 <translation id="1285320974508926690">No traducir nunca este sitio</translation>
@@ -71,6 +72,7 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1445680696957526815">Los componentes de Chrome no son compatibles entre sí. Es posible que Chrome se esté actualizando. Vuelve a intentarlo dentro de unos minutos. Si el problema persiste, prueba a desinstalar Chrome y volver a instalarlo.</translation>
 <translation id="1446450296470737166">Control total dispositivos MIDI</translation>
+<translation id="1450753235335490080">No se ha podido compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Ajustes de Android desactivados</translation>
 <translation id="1477626028522505441">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el servidor.</translation>
 <translation id="1501480321619201731">Eliminar grupo</translation>
@@ -153,6 +155,7 @@
 <translation id="2049961518639794558">Cambiar la extensión del archivo podría provocar un comportamiento inesperado y dañar tu dispositivo.</translation>
 <translation id="2056878612599315956">Sitio web en pausa</translation>
 <translation id="2063713494490388661">Tocar para buscar</translation>
+<translation id="2067805253194386918">texto</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Sonido</translation>
@@ -324,6 +327,7 @@
 <translation id="3384347053049321195">Compartir imagen</translation>
 <translation id="3386292677130313581">Preguntar antes de permitir que los sitios web detecten tu ubicación (recomendado)</translation>
 <translation id="3387650086002190359">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el sistema de archivos.</translation>
+<translation id="3389286852084373014">El texto es demasiado largo</translation>
 <translation id="3398320232533725830">Abre el administrador de marcadores</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
 <translation id="3443221991560634068">Vuelve a cargar la página actual</translation>
@@ -348,6 +352,7 @@
 <translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que hayas iniciado sesión. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar los sitios web que reproducen sonidos</translation>
 <translation id="3616113530831147358">Audio</translation>
+<translation id="3631987586758005671">Compartiendo con <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">Mostrar contraseña</translation>
 <translation id="363596933471559332">Permite iniciar sesión automáticamente en sitios web con credenciales almacenadas. Si esta función está desactivada, se solicitará la verificación cada vez que se intente iniciar sesión en un sitio web.</translation>
 <translation id="3658159451045945436">Restablecerlo borra tu historial de ahorro de datos, incluidas las listas de los sitios web que has visitado.</translation>
@@ -578,6 +583,7 @@ Asegúrate de que este sitio web sea de confianza antes de acceder al modo de re
 <translation id="5324858694974489420">Configuración parental</translation>
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5335288049665977812">Permitir que los sitios web utilicen JavaScript (recomendado)</translation>
+<translation id="5342314432463739672">Solicitudes de permiso</translation>
 <translation id="5357811892247919462">Pestaña recibida</translation>
 <translation id="5363230136052241468">Toca el botón de inicio para cargar la página Nueva pestaña</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> pestaña abierta, toca para cambiar de una a otra}other{<ph name="OPEN_TABS_MANY" /> pestañas abiertas, toca para cambiar de una a otra}}</translation>
@@ -748,6 +754,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6532866250404780454">Los sitios web que visites en Chrome no se mostrarán. Se eliminarán todos los temporizadores de los sitios web.</translation>
 <translation id="6534565668554028783">Google ha tardado demasiado en responder</translation>
 <translation id="6538442820324228105">GB descargados: <ph name="GBS" /></translation>
+<translation id="6539092367496845964">Se ha producido un error. Vuelve a intentarlo más tarde.</translation>
 <translation id="654446541061731451">Selecciona una pestaña para compartir</translation>
 <translation id="6545017243486555795">Borrar todos los datos</translation>
 <translation id="6545864417968258051">Búsqueda de dispositivos Bluetooth</translation>
@@ -879,6 +886,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="7493994139787901920"><ph name="VERSION" /> (actualizada el <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de datos ahorrados</translation>
 <translation id="7498271377022651285">Espera…</translation>
+<translation id="7510943789645525906">Te avisa si una de tus contraseñas se ha visto afectada por una quiebra de seguridad de datos</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="751961395872307827">No se puede establecer conexión con el sitio web</translation>
 <translation id="7521387064766892559">JavaScript</translation>

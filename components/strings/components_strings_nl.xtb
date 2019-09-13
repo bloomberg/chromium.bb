@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">Ongeldige zoek-URL.</translation>
 <translation id="2482878487686419369">Meldingen</translation>
 <translation id="248348093745724435">Apparaatbeleid</translation>
-<translation id="2485387744899240041">Gebruikersnamen voor je apparaat en browser</translation>
 <translation id="2491120439723279231">Het servercertificaat bevat fouten.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON Parser</translation>
@@ -576,6 +575,7 @@
 <translation id="4103249731201008433">Serienummer van apparaat is ongeldig</translation>
 <translation id="410351446219883937">Automatisch afspelen</translation>
 <translation id="4103763322291513355">Ga naar &lt;strong&gt;chrome://policy&lt;/strong&gt; om de lijst met URL's op de zwarte lijst en andere beleidsregels te bekijken die worden afgedwongen door je systeembeheerder.</translation>
+<translation id="4108231218301530806">Gebruik je vingerafdruk om deze kaart de volgende keer te verifiëren.</translation>
 <translation id="4110652170750985508">Je betaling controleren</translation>
 <translation id="4112140312785995938">Achteruit zoeken</translation>
 <translation id="4116663294526079822">Altijd toestaan op deze site</translation>
@@ -836,7 +836,7 @@
 <translation id="5457113250005438886">Ongeldig</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Opnieuw bewerken</translation>
-<translation id="5473728911100096288">Als je deze functies inschakelt, gebruik je verouderde functies die in toekomstige versies verdwijnen.</translation>
+<translation id="5473728911100096288">Als je deze functies inschakelt, gebruik je verouderde functies die in toekomstige versies gaan verdwijnen.</translation>
 <translation id="5478437291406423475">B6/C4 (envelop)</translation>
 <translation id="5481076368049295676">Deze content probeert mogelijk gevaarlijke software op je apparaat te installeren die je gegevens steelt of verwijdert. <ph name="BEGIN_LINK" />Toch weergeven<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Voeg een geldig adres toe</translation>

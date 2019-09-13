@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">検索 URL が無効です。</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="248348093745724435">マシンポリシー</translation>
-<translation id="2485387744899240041">デバイスとブラウザのユーザー名</translation>
 <translation id="2491120439723279231">サーバーの証明書にエラーがあります。</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON パーサー</translation>
@@ -581,6 +580,7 @@
 <translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
 <translation id="410351446219883937">自動再生</translation>
 <translation id="4103763322291513355">&lt;strong&gt;chrome://policy&lt;/strong&gt; にアクセスして、ブラックリストに登録されている URL とシステム管理者が設定した他のポリシーを確認できます。</translation>
+<translation id="4108231218301530806">今後は指紋を使ってこのカードを確認する。</translation>
 <translation id="4110652170750985508">お支払いの確認</translation>
 <translation id="4112140312785995938">後方に移動</translation>
 <translation id="4116663294526079822">このサイトでは常に許可</translation>

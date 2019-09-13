@@ -1572,7 +1572,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
       Jika kebijakan ini ditetapkan ke <ph name="BR_ENABLED" />, status awal pencadangan dan pemulihan Android adalah diaktifkan.
 
-      Jika kebijakan ini ditetapkan ke <ph name="BR_UNDER_USER_CONTROL" />, pengguna akan diminta memilih apakah mereka ingin menggunakan pencadangan dan pemulihan Android atau tidak. Jika pengguna mengaktifkan pencadangan dan pemulihan, data aplikasi Android akan diupload ke server backup Android dan dipulihkan dari server tersebut setelah penginstalan ulang untuk aplikasi yang kompatibel.
+      Jika kebijakan ini ditetapkan ke <ph name="BR_UNDER_USER_CONTROL" />, pengguna akan diminta memilih apakah mereka ingin menggunakan pencadangan dan pemulihan Android atau tidak. Jika pengguna mengaktifkan pencadangan dan pemulihan, data aplikasi Android akan diupload ke server cadangan Android dan dipulihkan dari server tersebut setelah penginstalan ulang untuk aplikasi yang kompatibel.
 
       Perhatikan bahwa kebijakan ini mengontrol status pencadangan dan pemulihan Android selama penyiapan awal saja. Pengguna dapat membuka setelan Android setelahnya dan mengaktifkan/menonaktifkan pencadangan dan pemulihan Android.</translation>
 <translation id="3831376478177535007">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan mengizinkan sertifikat yang dikeluarkan oleh operasi Symantec Corporation's Legacy PKI untuk dipercaya jika tidak berhasil memvalidasi dan menjangkau Sertifikat CA yang dikenal.

@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">‏URL جستجو نامعتبر است.</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
 <translation id="248348093745724435">خط‌مشی‌های ماشین</translation>
-<translation id="2485387744899240041">نام کاربری دستگاه و مرورگرتان</translation>
 <translation id="2491120439723279231">گواهی سرور دارای چندین خطاست.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">‏تجزیه‌کننده JSON</translation>
@@ -589,6 +588,7 @@
 <translation id="4103249731201008433">شماره سریال دستگاه نامعتبر است</translation>
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="4103763322291513355">‏برای مشاهده فهرست نشانی‌های وب ممنوع و سایر خط‌مشی‌های اجباری براساس تصمیم سرپرست سیستم خود از &lt;strong&gt;chrome://policy&lt;/strong&gt; بازدید نمایید.</translation>
+<translation id="4108231218301530806">دفعه بعد از اثر انگشت برای به‌تأیید رساندن این کارت استفاده کنید.</translation>
 <translation id="4110652170750985508">مرور پرداخت</translation>
 <translation id="4112140312785995938">رفتن به عقب</translation>
 <translation id="4116663294526079822">همیشه مجاز در این سایت</translation>
@@ -1074,7 +1074,7 @@
 <translation id="6738516213925468394">داده‌ها با  <ph name="BEGIN_LINK" />گذرنویسه همگام‌سازی‌شده<ph name="END_LINK" /> شما در <ph name="TIME" /> رمز می‌شود. برای شروع همگام‌سازی، آن را وارد کنید.</translation>
 <translation id="674375294223700098">خطای ناشناس گواهی سرور.</translation>
 <translation id="6744009308914054259">وقتی درانتظار اتصال هستید، می‌توانید برای خواندن مقاله‌های آفلاین، «بارگیری‌ها» را مشاهده کنید.</translation>
-<translation id="6747611005629681221">هشدار: ویژگی‌های منسوخ‌شده در پیش هستند!</translation>
+<translation id="6747611005629681221">هشدار: ویژگی‌های منسوخ‌شده!</translation>
 <translation id="6753269504797312559">مقدار خط‌‌مشی</translation>
 <translation id="6757797048963528358">دستگاهتان به خواب رفته است.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>

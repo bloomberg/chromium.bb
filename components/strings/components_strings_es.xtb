@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">La URL de búsqueda no es válida.</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="248348093745724435">Políticas del equipo</translation>
-<translation id="2485387744899240041">Nombres de usuario de tu dispositivo y navegador</translation>
 <translation id="2491120439723279231">El certificado del servidor contiene errores.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Analizador de archivos JSON</translation>
@@ -583,6 +582,7 @@
 <translation id="4103249731201008433">El número de serie del dispositivo no es válido.</translation>
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4103763322291513355">Accede a la página &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver la lista de URLs no admitidas y otras políticas establecidas por el administrador del sistema.</translation>
+<translation id="4108231218301530806">Usar la huella digital para verificar esta tarjeta la próxima vez</translation>
 <translation id="4110652170750985508">Revisa tu pago</translation>
 <translation id="4112140312785995938">Ir hacia atrás</translation>
 <translation id="4116663294526079822">Permitir siempre en este sitio</translation>

@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">Недействительный URL поисковой системы.</translation>
 <translation id="2482878487686419369">Уведомления</translation>
 <translation id="248348093745724435">Правила для компьютера</translation>
-<translation id="2485387744899240041">Имена пользователей для вашего устройства и браузера</translation>
 <translation id="2491120439723279231">Сертификат сервера содержит ошибки.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Синтаксический анализатор JSON</translation>
@@ -580,6 +579,7 @@
 <translation id="4103249731201008433">Серийный номер устройства недействителен</translation>
 <translation id="410351446219883937">Автовоспроизведение</translation>
 <translation id="4103763322291513355">Чтобы просмотреть URL, внесенные в черный список, и другие правила, заданные системным администратором, перейдите по адресу: &lt;strong&gt;chrome://policy&lt;/strong&gt;.</translation>
+<translation id="4108231218301530806">В следующий раз подтверждать эту карту с помощью отпечатков пальцев</translation>
 <translation id="4110652170750985508">Просмотр платежа</translation>
 <translation id="4112140312785995938">Перемотать назад</translation>
 <translation id="4116663294526079822">Всегда разрешать на этом сайте</translation>

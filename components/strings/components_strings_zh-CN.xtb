@@ -118,7 +118,7 @@
 <translation id="1521655867290435174">Google 表格</translation>
 <translation id="1527263332363067270">正在等待建立连接…</translation>
 <translation id="1529521330346880926">10x15 (Envelope)</translation>
-<translation id="1530707389502320859">您刚才尝试访问的网站貌似虚假网站。攻击者有时会通过对网址进行难以发现的细微更改来仿冒网站。</translation>
+<translation id="1530707389502320859">您刚才尝试访问的网站貌似为虚假网站。攻击者有时会对网址做些令人难以发现的细微更改来仿冒网站。</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">此网页显示</translation>
 <translation id="153384715582417236">暂无新内容</translation>
@@ -298,7 +298,6 @@
 <translation id="2479410451996844060">搜索网址无效。</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="248348093745724435">设备政策</translation>
-<translation id="2485387744899240041">您的设备和浏览器的用户名</translation>
 <translation id="2491120439723279231">服务器证书中包含错误。</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">JSON 解析器</translation>
@@ -577,6 +576,7 @@
 <translation id="4103249731201008433">设备序列号无效</translation>
 <translation id="410351446219883937">自动播放</translation>
 <translation id="4103763322291513355">请访问 &lt;strong&gt;chrome:// 政策&lt;/strong&gt;，查看列入黑名单的网址列表以及您的系统管理员强制要求执行的其他政策。</translation>
+<translation id="4108231218301530806">下次使用指纹验证此卡片。</translation>
 <translation id="4110652170750985508">查看您的付款</translation>
 <translation id="4112140312785995938">快退</translation>
 <translation id="4116663294526079822">在此网站上始终允许</translation>
@@ -800,7 +800,7 @@
 <translation id="5251803541071282808">云端</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
-<translation id="5269999699920406580">在整个系统范围内应用的功能只能由所有者设定：<ph name="OWNER_EMAIL" /></translation>
+<translation id="5269999699920406580">在整个系统范围内应用的功能只能由所有者 <ph name="OWNER_EMAIL" /> 设定</translation>
 <translation id="5273658854610202413">警告：系统未按照 PolicyDictionaryMultipleSourceMergeList 政策中指定的方式合并此政策，因为此政策不是可合并的字典政策的一部分。</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">结束</translation>

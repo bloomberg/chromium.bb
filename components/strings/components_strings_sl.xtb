@@ -306,7 +306,6 @@
 <translation id="2479410451996844060">Neveljaven URL iskanja.</translation>
 <translation id="2482878487686419369">Obvestila</translation>
 <translation id="248348093745724435">Pravilniki naprave</translation>
-<translation id="2485387744899240041">Uporabniška imena za napravo in brskalnik</translation>
 <translation id="2491120439723279231">V potrdilu strežnika so napake.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
 <translation id="2495083838625180221">Razčlenjevalnik za JSON</translation>
@@ -591,6 +590,7 @@
 <translation id="4103249731201008433">Neveljavna serijska številka naprave</translation>
 <translation id="410351446219883937">Samodejno predvajanje</translation>
 <translation id="4103763322291513355">Na &lt;strong&gt;chrome://policy&lt;/strong&gt; si lahko ogledate seznam blokiranih URL-jev in drugih pravilnikov, ki jih uveljavlja skrbnik sistema.</translation>
+<translation id="4108231218301530806">Uporaba prstnega odtisa za potrditev te kartice naslednjič.</translation>
 <translation id="4110652170750985508">Pregled plačila</translation>
 <translation id="4112140312785995938">Išči nazaj</translation>
 <translation id="4116663294526079822">Vedno dovoli na tem spletnem mestu</translation>
