@@ -698,18 +698,6 @@
       ]
     },
     {
-      "name": "kalista-cfm",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "cfb",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "kefka",
       "configs": [
         {
@@ -2302,6 +2290,23 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 369,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "kalista-cfm",
+      "reference_board_name": "kalista-cfm",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "kalista-cfm",
+          "name": "karma",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 409,
           "is_active": true
         }
       ]
