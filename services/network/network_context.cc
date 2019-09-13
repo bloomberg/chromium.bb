@@ -523,7 +523,9 @@ NetworkContext::NetworkContext(
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
-      receiver_(this, std::move(receiver)) {
+      receiver_(this, std::move(receiver)),
+      cors_preflight_controller_(
+          params_->cors_extra_safelisted_request_header_names) {
   url_request_context_owner_ = MakeURLRequestContext();
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
@@ -564,7 +566,8 @@ NetworkContext::NetworkContext(
                                           nullptr)),
       socket_factory_(
           std::make_unique<SocketFactory>(url_request_context_->net_log(),
-                                          url_request_context)) {
+                                          url_request_context)),
+      cors_preflight_controller_(std::vector<std::string>()) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
