@@ -114,7 +114,13 @@ class BLPWTK2_EXPORT WebViewDelegate {
         // Invoked response to a WebView::find method call to report
         // find-on-page status update.
 
+    virtual void didParentStatus(WebView *source, int status, NativeView parent);
+        // Invoked when the call to parent the webview specified by 'source' to the 
+        // given parent is done
+        // If successful, status 0 will be returned, otherwise error code from GetLassError()
+        // will be return as status
 
+    
 
     // patch section: devtools integration
 

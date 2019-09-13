@@ -41,14 +41,13 @@ class NativeViewWidgetDelegate;
 class NativeViewWidget : private views::WidgetDelegateView {
   public:
     NativeViewWidget(gfx::NativeView contents,
-                     blpwtk2::NativeView parent,
                      NativeViewWidgetDelegate* delegate,
                      bool rerouteMouseWheelToAnyRelatedWindow);
     ~NativeViewWidget() final;
 
     void destroy();
     void setDelegate(NativeViewWidgetDelegate* delegate);
-    void setParent(blpwtk2::NativeView parent);
+    int setParent(blpwtk2::NativeView parent);
     void show();
     void hide();
     void move(int x, int y, int width, int height);
