@@ -658,6 +658,8 @@ function init() {
 
   renderTheme();
 
+  window.matchMedia('(prefers-color-scheme: dark)').onchange = onThemeChange;
+
   const searchboxApiHandle = embeddedSearchApiHandle.searchBox;
 
   if (configData.isGooglePage) {
