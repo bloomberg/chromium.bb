@@ -44149,11 +44149,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="DeprecatedThumbnailDefault">
     Deprecated: The item displays a default graphic in place of a thumbnail.
   </int>
-  <int value="7" label="Thumbnail">
-    The item displays a thumbnail of the page.
+  <int value="7" label="Obsolete: Thumbnail">
+    The item displays a thumbnail of the page. Removed 9/2019.
   </int>
-  <int value="8" label="ThumbnailFailed">
-    The item displays a default gray box in place of a thumbnail.
+  <int value="8" label="Obsolete: ThumbnailFailed">
+    The item displays a default gray box in place of a thumbnail. Removed
+    9/2019.
   </int>
 </enum>
 
