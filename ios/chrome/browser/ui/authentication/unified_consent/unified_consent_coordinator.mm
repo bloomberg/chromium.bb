@@ -111,6 +111,9 @@
   if (!self.autoOpenIdentityPicker)
     return;
 
+  // The identity picker should not open a second time, to avoid opening it
+  // again after the merge/clear data dialog disappears.
+  self.autoOpenIdentityPicker = NO;
   CGFloat midX = CGRectGetMidX(self.unifiedConsentViewController.view.bounds);
   CGFloat midY = CGRectGetMidY(self.unifiedConsentViewController.view.bounds);
   CGPoint point = CGPointMake(midX, midY);
