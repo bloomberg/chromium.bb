@@ -143,7 +143,8 @@ class DeviceService : public service_manager::Service {
       mojo::PendingReceiver<mojom::GeolocationConfig> receiver);
   void BindGeolocationContextReceiver(
       mojo::PendingReceiver<mojom::GeolocationContext> receiver);
-  void BindGeolocationControlRequest(mojom::GeolocationControlRequest request);
+  void BindGeolocationControlReceiver(
+      mojo::PendingReceiver<mojom::GeolocationControl> receiver);
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
   void BindInputDeviceManagerRequest(mojom::InputDeviceManagerRequest request);
