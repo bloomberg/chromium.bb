@@ -251,7 +251,6 @@ crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure 
 
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
-crbug.com/1000702 wpt_internal/display-lock/rendersubtree/sizing/get-bounding-client-rect-block-layout.html [ Failure ]
 
 # MSAN failure
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
