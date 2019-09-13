@@ -616,7 +616,7 @@ SMILTime SVGSMILElement::Elapsed() const {
 }
 
 SMILTime SVGSMILElement::BeginTimeForPrioritization(
-    double presentation_time) const {
+    SMILTime presentation_time) const {
   if (GetActiveState() == kFrozen) {
     if (interval_.BeginsAfter(presentation_time))
       return previous_interval_.begin;
@@ -853,7 +853,7 @@ base::Optional<SMILInterval> SVGSMILElement::ResolveNextInterval() {
   return base::nullopt;
 }
 
-SMILTime SVGSMILElement::NextInterestingTime(double presentation_time) const {
+SMILTime SVGSMILElement::NextInterestingTime(SMILTime presentation_time) const {
   DCHECK_GE(presentation_time, 0);
   SMILTime next_interesting_interval_time = SMILTime::Indefinite();
   if (interval_.BeginsAfter(presentation_time)) {
@@ -935,7 +935,7 @@ void SVGSMILElement::EndListChanged(SMILTime) {
     time_container_->NotifyIntervalsChanged();
 }
 
-bool SVGSMILElement::CheckAndUpdateInterval(double elapsed) {
+bool SVGSMILElement::CheckAndUpdateInterval(SMILTime elapsed) {
   DCHECK(!is_waiting_for_first_interval_);
   DCHECK(interval_.BeginsBefore(elapsed));
 
@@ -968,7 +968,7 @@ bool SVGSMILElement::CheckAndUpdateInterval(double elapsed) {
   return interval_restart;
 }
 
-const SMILInterval& SVGSMILElement::GetActiveInterval(double elapsed) const {
+const SMILInterval& SVGSMILElement::GetActiveInterval(SMILTime elapsed) const {
   // If there's no current interval, return the previous interval.
   if (!interval_.IsResolved())
     return previous_interval_;
@@ -979,7 +979,7 @@ const SMILInterval& SVGSMILElement::GetActiveInterval(double elapsed) const {
   return interval_;
 }
 
-unsigned SVGSMILElement::CalculateAnimationRepeat(double elapsed) const {
+unsigned SVGSMILElement::CalculateAnimationRepeat(SMILTime elapsed) const {
   const SMILTime simple_duration = SimpleDuration();
   if (simple_duration.IsIndefinite() || !simple_duration)
     return 0;
@@ -987,7 +987,7 @@ unsigned SVGSMILElement::CalculateAnimationRepeat(double elapsed) const {
   const SMILInterval& active_interval = GetActiveInterval(elapsed);
   DCHECK(active_interval.begin.IsFinite());
 
-  double active_time = std::max(elapsed - active_interval.begin.Value(), 0.0);
+  SMILTime active_time = elapsed - active_interval.begin;
   SMILTime repeating_duration = RepeatingDuration();
   if (elapsed >= active_interval.end || active_time > repeating_duration) {
     if (!repeating_duration.IsFinite())
@@ -999,11 +999,11 @@ unsigned SVGSMILElement::CalculateAnimationRepeat(double elapsed) const {
     return repeat;
   }
   unsigned repeat =
-      static_cast<unsigned>(active_time / simple_duration.Value());
+      static_cast<unsigned>(active_time.Value() / simple_duration.Value());
   return repeat;
 }
 
-float SVGSMILElement::CalculateAnimationPercent(double elapsed) const {
+float SVGSMILElement::CalculateAnimationPercent(SMILTime elapsed) const {
   SMILTime simple_duration = SimpleDuration();
   if (simple_duration.IsIndefinite()) {
     return 0.f;
@@ -1016,31 +1016,27 @@ float SVGSMILElement::CalculateAnimationPercent(double elapsed) const {
   DCHECK(active_interval.IsResolved());
 
   SMILTime repeating_duration = RepeatingDuration();
-  double active_time = elapsed - active_interval.begin.Value();
+  SMILTime active_time = elapsed - active_interval.begin;
   if (elapsed >= active_interval.end || active_time > repeating_duration) {
     // Use the interval to compute the interval position if we've passed the
     // interval end, otherwise use the "repeating duration". This prevents a
     // stale interval (with for instance an 'indefinite' end) from yielding an
     // invalid interval position.
-    double last_active_duration;
-    if (elapsed >= active_interval.end) {
-      last_active_duration =
-          active_interval.end.Value() - active_interval.begin.Value();
-    } else {
-      last_active_duration = repeating_duration.Value();
-    }
-    double percent = last_active_duration / simple_duration.Value();
+    SMILTime last_active_duration = repeating_duration;
+    if (elapsed >= active_interval.end)
+      last_active_duration = active_interval.end - active_interval.begin;
+    double percent = last_active_duration.Value() / simple_duration.Value();
     percent = percent - floor(percent);
     float epsilon = std::numeric_limits<float>::epsilon();
     if (percent < epsilon || 1 - percent < epsilon)
       return 1.0f;
     return clampTo<float>(percent);
   }
-  double simple_time = fmod(active_time, simple_duration.Value());
+  double simple_time = fmod(active_time.Value(), simple_duration.Value());
   return clampTo<float>(simple_time / simple_duration.Value());
 }
 
-SMILTime SVGSMILElement::NextProgressTime(double presentation_time) const {
+SMILTime SVGSMILElement::NextProgressTime(SMILTime presentation_time) const {
   if (GetActiveState() == kActive) {
     // If duration is indefinite the value does not actually change over time.
     // Same is true for <set>.
@@ -1069,7 +1065,7 @@ SVGSMILElement::ActiveState SVGSMILElement::DetermineActiveState(
   return Fill() == kFillFreeze ? kFrozen : kInactive;
 }
 
-bool SVGSMILElement::IsContributing(double elapsed) const {
+bool SVGSMILElement::IsContributing(SMILTime elapsed) const {
   // Animation does not contribute during the active time if it is past its
   // repeating duration and has fill=remove.
   return (GetActiveState() == kActive &&
@@ -1081,7 +1077,7 @@ bool SVGSMILElement::IsContributing(double elapsed) const {
 // The first part of the processing of the animation,
 // this checks if there are any further calculations needed
 // to continue and makes sure the intervals are correct.
-bool SVGSMILElement::NeedsToProgress(double elapsed) {
+bool SVGSMILElement::NeedsToProgress(SMILTime elapsed) {
   // Check we're connected to something.
   DCHECK(time_container_);
   // Check that we have some form of start or are prepared to find it.
@@ -1115,7 +1111,8 @@ void SVGSMILElement::UpdateSyncBases() {
   NotifyDependentsIntervalChanged(interval_);
 }
 
-void SVGSMILElement::UpdateActiveState(double elapsed, bool interval_restart) {
+void SVGSMILElement::UpdateActiveState(SMILTime elapsed,
+                                       bool interval_restart) {
   ActiveState old_active_state = GetActiveState();
   active_state_ = DetermineActiveState(elapsed);
 
