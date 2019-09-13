@@ -10,6 +10,7 @@
 namespace extensions_features {
 
 extern const base::Feature kNewExtensionUpdaterService;
+extern const base::Feature kForceWebRequestExtraHeaders;
 extern const base::Feature kForceWebRequestProxyForTest;
 
 }  // namespace extensions_features
