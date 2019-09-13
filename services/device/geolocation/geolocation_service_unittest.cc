@@ -76,14 +76,15 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
   }
 
   void BindGeolocationConfig() {
-    connector()->BindInterface(mojom::kServiceName, &geolocation_config_);
+    connector()->Connect(mojom::kServiceName,
+                         geolocation_config_.BindNewPipeAndPassReceiver());
   }
 
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   mojom::GeolocationControlPtr geolocation_control_;
   mojo::Remote<mojom::GeolocationContext> geolocation_context_;
   mojo::Remote<mojom::Geolocation> geolocation_;
-  mojom::GeolocationConfigPtr geolocation_config_;
+  mojo::Remote<mojom::GeolocationConfig> geolocation_config_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationServiceUnitTest);
 };
