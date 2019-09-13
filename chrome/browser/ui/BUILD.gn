@@ -3684,6 +3684,8 @@ jumbo_split_static_library("ui") {
         "ash/launcher/shelf_spinner_item_controller.h",
         "views/arc_app_dialog_view.cc",
         "views/arc_data_removal_dialog_view.cc",
+        "views/crostini/crostini_ansible_software_config_view.cc",
+        "views/crostini/crostini_ansible_software_config_view.h",
         "views/crostini/crostini_app_restart_view.cc",
         "views/crostini/crostini_app_restart_view.h",
         "views/crostini/crostini_app_uninstaller_view.cc",

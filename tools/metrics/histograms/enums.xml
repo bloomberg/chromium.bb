@@ -13629,8 +13629,8 @@ Called by update_net_error_codes.py.-->
   <int value="92" label="Incognito Window Counter"/>
   <int value="93" label="Crostini App Uninstaller"/>
   <int value="94" label="Crostini Container Upgrade"/>
-  <int value="95" label="Incognito Menu"/>
-  <int value="96" label="Phone Chooser"/>
+  <int value="95" label="Cookie Controls"/>
+  <int value="96" label="Crostini Ansible Software Config"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
