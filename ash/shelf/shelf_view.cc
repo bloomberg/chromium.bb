@@ -13,7 +13,6 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -309,6 +308,7 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf)
   DCHECK(shelf_);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->system_tray_model()->virtual_keyboard()->AddObserver(this);
+  ShelfConfig::Get()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
@@ -323,6 +323,7 @@ ShelfView::~ShelfView() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
+  ShelfConfig::Get()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
@@ -836,6 +837,18 @@ void ShelfView::OnTabletModeEnded() {
 
 void ShelfView::OnVirtualKeyboardVisibilityChanged() {
   LayoutToIdealBounds();
+}
+
+void ShelfView::OnShelfConfigUpdated() {
+  // Ensure the shelf app buttons have an icon which is up to date with the
+  // current ShelfConfig sizing.
+  for (int i = 0; i < view_model_->view_size(); i++) {
+    ShelfAppButton* button =
+        static_cast<ShelfAppButton*>(view_model_->view_at(i));
+
+    if (!button->IsIconSizeCurrent())
+      ShelfItemChanged(i, model_->items()[i]);
+  }
 }
 
 bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
