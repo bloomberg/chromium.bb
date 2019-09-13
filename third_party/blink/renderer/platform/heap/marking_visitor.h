@@ -21,9 +21,6 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
     // This is a default visitor. This is used for MarkingType=kAtomicMarking
     // and MarkingType=kIncrementalMarking.
     kGlobalMarking,
-    // This visitor just marks objects and ignores weak processing.
-    // This is used for MarkingType=kTakeSnapshot.
-    kSnapshotMarking,
     // Perform global marking along with preparing for additional sweep
     // compaction of heap arenas afterwards. Compared to the GlobalMarking
     // visitor, this visitor will also register references to objects

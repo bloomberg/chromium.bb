@@ -152,13 +152,13 @@ ThreadState::~ThreadState() {
   **thread_specific_ = nullptr;
 }
 
-void ThreadState::AttachMainThread() {
+ThreadState* ThreadState::AttachMainThread() {
   thread_specific_ = new WTF::ThreadSpecific<ThreadState*>();
-  new (main_thread_state_storage_) ThreadState();
+  return new (main_thread_state_storage_) ThreadState();
 }
 
-void ThreadState::AttachCurrentThread() {
-  new ThreadState();
+ThreadState* ThreadState::AttachCurrentThread() {
+  return new ThreadState();
 }
 
 void ThreadState::DetachCurrentThread() {
@@ -341,12 +341,6 @@ void ThreadState::VisitWeakPersistents(Visitor* visitor) {
   ProcessHeap::GetCrossThreadWeakPersistentRegion().TraceNodes(visitor);
   weak_persistent_region_->TraceNodes(visitor);
 }
-
-ThreadState::GCSnapshotInfo::GCSnapshotInfo(wtf_size_t num_object_types)
-    : live_count(Vector<int>(num_object_types)),
-      dead_count(Vector<int>(num_object_types)),
-      live_size(Vector<size_t>(num_object_types)),
-      dead_size(Vector<size_t>(num_object_types)) {}
 
 void ThreadState::WillStartV8GC(BlinkGC::V8GCType gc_type) {
   // Finish Oilpan's complete sweeping before running a V8 major GC.
@@ -632,14 +626,6 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
   }
 }
 
-void ThreadState::FinishSnapshot() {
-  // Force setting NoGCScheduled to circumvent checkThread()
-  // in setGCState().
-  gc_state_ = kNoGCScheduled;
-  SetGCPhase(GCPhase::kSweeping);
-  SetGCPhase(GCPhase::kNone);
-}
-
 void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
                                           BlinkGC::MarkingType marking_type,
                                           BlinkGC::GCReason reason) {
@@ -673,9 +659,6 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
   } else {
     MarkPhasePrologue(stack_state, marking_type, reason);
   }
-
-  if (marking_type == BlinkGC::kTakeSnapshot)
-    BlinkGCMemoryDumpProvider::Instance()->ClearProcessDumpForCurrentGC();
 
   if (stack_state == BlinkGC::kNoHeapPointersOnStack) {
     Heap().FlushNotFullyConstructedObjects();
@@ -1321,23 +1304,6 @@ void ThreadState::AtomicPauseSweepAndCompact(
   DCHECK(CheckThread());
   Heap().PrepareForSweep();
 
-  if (marking_type == BlinkGC::kTakeSnapshot) {
-    // Doing lazy sweeping for kTakeSnapshot doesn't make any sense so the
-    // sweeping type should always be kEagerSweeping.
-    DCHECK_EQ(sweeping_type, BlinkGC::kEagerSweeping);
-    Heap().TakeSnapshot(ThreadHeap::SnapshotType::kHeapSnapshot);
-
-    // This unmarks all marked objects and marks all unmarked objects dead.
-    Heap().MakeConsistentForMutator();
-
-    Heap().TakeSnapshot(ThreadHeap::SnapshotType::kFreelistSnapshot);
-
-    FinishSnapshot();
-    CHECK(!IsSweepingInProgress());
-    CHECK_EQ(GetGCState(), kNoGCScheduled);
-    return;
-  }
-
   // We have to set the GCPhase to Sweeping before calling pre-finalizers
   // to disallow a GC during the pre-finalizers.
   SetGCPhase(GCPhase::kSweeping);
@@ -1490,13 +1456,9 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
 
 namespace {
 
-MarkingVisitor::MarkingMode GetMarkingMode(bool should_compact,
-                                           bool create_snapshot) {
-  CHECK(!should_compact || !create_snapshot);
-  return (create_snapshot)
-             ? MarkingVisitor::kSnapshotMarking
-             : (should_compact) ? MarkingVisitor::kGlobalMarkingWithCompaction
-                                : MarkingVisitor::kGlobalMarking;
+MarkingVisitor::MarkingMode GetMarkingMode(bool should_compact) {
+  return (should_compact) ? MarkingVisitor::kGlobalMarkingWithCompaction
+                          : MarkingVisitor::kGlobalMarking;
 }
 
 }  // namespace
@@ -1507,12 +1469,7 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   SetGCPhase(GCPhase::kMarking);
   Heap().SetupWorklists();
 
-  const bool take_snapshot = marking_type == BlinkGC::kTakeSnapshot;
-
-  // Enable compaction if supported and feasible. Compaction flag is kept
-  // so concurrent markers use the same value
   const bool compaction_enabled =
-      !take_snapshot &&
       Heap().Compaction()->ShouldCompact(stack_state, marking_type, reason);
   if (compaction_enabled) {
     Heap().Compaction()->Initialize(this);
@@ -1522,10 +1479,9 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   current_gc_data_.visitor =
       IsUnifiedGCMarkingInProgress()
           ? std::make_unique<UnifiedHeapMarkingVisitor>(
-                this, GetMarkingMode(compaction_enabled, take_snapshot),
-                GetIsolate())
+                this, GetMarkingMode(compaction_enabled), GetIsolate())
           : std::make_unique<MarkingVisitor>(
-                this, GetMarkingMode(compaction_enabled, take_snapshot));
+                this, GetMarkingMode(compaction_enabled));
   current_gc_data_.stack_state = stack_state;
   current_gc_data_.marking_type = marking_type;
 }
@@ -1609,8 +1565,6 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
 }
 
 void ThreadState::VerifyMarking(BlinkGC::MarkingType marking_type) {
-  DCHECK_NE(BlinkGC::kTakeSnapshot, marking_type);
-
   if (IsVerifyMarkingEnabled())
     Heap().VerifyMarking();
 }
@@ -1675,12 +1629,10 @@ void ThreadState::ScheduleConcurrentMarking() {
         &ThreadState::PerformConcurrentMark, WTF::CrossThreadUnretained(this),
         IsUnifiedGCMarkingInProgress()
             ? std::make_unique<ConcurrentUnifiedHeapMarkingVisitor>(
-                  this,
-                  GetMarkingMode(Heap().Compaction()->IsCompacting(), false),
+                  this, GetMarkingMode(Heap().Compaction()->IsCompacting()),
                   GetIsolate(), task_id)
             : std::make_unique<ConcurrentMarkingVisitor>(
-                  this,
-                  GetMarkingMode(Heap().Compaction()->IsCompacting(), false),
+                  this, GetMarkingMode(Heap().Compaction()->IsCompacting()),
                   task_id)));
   }
 }

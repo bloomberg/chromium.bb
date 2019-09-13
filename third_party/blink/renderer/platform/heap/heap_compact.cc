@@ -341,7 +341,6 @@ HeapCompact::MovableObjectFixups& HeapCompact::Fixups() {
 bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
                                 BlinkGC::MarkingType marking_type,
                                 BlinkGC::GCReason reason) {
-  DCHECK_NE(BlinkGC::MarkingType::kTakeSnapshot, marking_type);
   if (marking_type == BlinkGC::MarkingType::kAtomicMarking &&
       stack_state == BlinkGC::StackState::kHeapPointersOnStack) {
     // The following check ensures that tests that want to test compaction are

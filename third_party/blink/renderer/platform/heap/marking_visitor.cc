@@ -46,9 +46,6 @@ void MarkingVisitorBase::FlushCompactionWorklists() {
 
 void MarkingVisitorBase::RegisterWeakCallback(void* object,
                                               WeakCallback callback) {
-  // We don't want to run weak processings when taking a snapshot.
-  if (marking_mode_ == kSnapshotMarking)
-    return;
   weak_callback_worklist_.Push({object, callback});
 }
 

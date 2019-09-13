@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/process_heap.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/thread_state_statistics.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/heap/worklist.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -392,8 +393,7 @@ class PLATFORM_EXPORT ThreadHeap {
   void InvokeFinalizersOnSweptPages();
   void CompleteSweep();
 
-  enum SnapshotType { kHeapSnapshot, kFreelistSnapshot };
-  void TakeSnapshot(SnapshotType);
+  void CollectStatistics(ThreadState::Statistics* statistics);
 
   ThreadHeapStatsCollector* stats_collector() const {
     return heap_stats_collector_.get();
