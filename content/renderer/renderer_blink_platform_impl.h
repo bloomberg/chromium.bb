@@ -144,7 +144,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& kind) override;
   std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
       const blink::WebString& kind) override;
-  void UpdateWebRTCAPICount(blink::WebRTCAPIName api_name) override;
   base::Optional<double> GetWebRtcMaxCaptureFrameRate() override;
   scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(
       blink::WebAudioDeviceSourceType source_type,

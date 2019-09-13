@@ -85,7 +85,6 @@
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -641,11 +640,6 @@ RendererBlinkPlatformImpl::GetRtpReceiverCapabilities(
 }
 
 //------------------------------------------------------------------------------
-
-void RendererBlinkPlatformImpl::UpdateWebRTCAPICount(
-    blink::WebRTCAPIName api_name) {
-  UpdateWebRTCMethodCount(api_name);
-}
 
 base::Optional<double>
 RendererBlinkPlatformImpl::GetWebRtcMaxCaptureFrameRate() {

@@ -614,8 +614,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
       const WebString& kind);
 
-  virtual void UpdateWebRTCAPICount(WebRTCAPIName api_name) {}
-
   // Checks if the default minimum starting volume value for the AGC is
   // overridden on the command line.
   virtual base::Optional<double> GetWebRtcMaxCaptureFrameRate() {
