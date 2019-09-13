@@ -821,14 +821,26 @@ NGLineHeightMetrics NGInlineLayoutStateStack::MetricsForTopAndBottomAlign(
 
   // BoxData contains inline boxes to be created later. Take them into account.
   for (const BoxData& box_data : box_data_list_) {
+    // Except when the box has `vertical-align: top` or `bottom`.
+    DCHECK(box_data.item->Style());
+    const ComputedStyle& style = *box_data.item->Style();
+    EVerticalAlign vertical_align = style.VerticalAlign();
+    if (vertical_align == EVerticalAlign::kTop ||
+        vertical_align == EVerticalAlign::kBottom)
+      continue;
+
     // |block_offset| is the top position when the baseline is at 0.
     LayoutUnit box_ascent =
         -line_box[box_data.fragment_end].offset.block_offset;
-    LayoutUnit box_descent = box_data.size.block_size - box_ascent;
+    NGLineHeightMetrics box_metrics(box_ascent,
+                                    box_data.size.block_size - box_ascent);
     // The top/bottom of inline boxes should not include their paddings.
-    box_ascent -= box_data.padding.line_over;
-    box_descent -= box_data.padding.line_under;
-    metrics.Unite(NGLineHeightMetrics(box_ascent, box_descent));
+    box_metrics.ascent -= box_data.padding.line_over;
+    box_metrics.descent -= box_data.padding.line_under;
+    // Include the line-height property. The inline box has the height of the
+    // font metrics without the line-height included.
+    box_metrics.AddLeading(style.ComputedLineHeightAsFixed());
+    metrics.Unite(box_metrics);
   }
 
   // In quirks mode, metrics is empty if no content.
