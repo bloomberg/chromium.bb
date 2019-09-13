@@ -22,12 +22,13 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
  public:
   static const int kCategoryUnknown = 0;
 
-  // Constructs a instance with the specified |category|, |description|, and
-  // renderable |html| content. Note that |category| is an opaque int that is
-  // provided by the proactive suggestions server to represent the category of
-  // the associated content (e.g. news, shopping, etc.).
+  // Constructs an instance with the specified |category|, |description|,
+  // |search_query|, and renderable |html| content. Note that |category| is an
+  // opaque int that is provided by the proactive suggestions server to
+  // represent the category of the associated content (e.g. news, shopping).
   ProactiveSuggestions(int category,
                        std::string&& description,
+                       std::string&& search_query,
                        std::string&& html);
 
   // Returns true if |a| is considered equivalent to |b|.
@@ -39,6 +40,7 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
 
   int category() const { return category_; }
   const std::string& description() const { return description_; }
+  const std::string& search_query() const { return search_query_; }
   const std::string& html() const { return html_; }
 
  private:
@@ -48,6 +50,7 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
 
   const int category_;
   const std::string description_;
+  const std::string search_query_;
   const std::string html_;
 
   DISALLOW_COPY_AND_ASSIGN(ProactiveSuggestions);
@@ -65,9 +68,12 @@ struct hash<::ash::ProactiveSuggestions> {
   size_t operator()(
       const ::ash::ProactiveSuggestions& proactive_suggestions) const {
     size_t description = base::FastHash(proactive_suggestions.description());
+    size_t search_query = base::FastHash(proactive_suggestions.search_query());
     size_t html = base::FastHash(proactive_suggestions.html());
-    return base::HashInts(proactive_suggestions.category(),
-                          base::HashInts(description, html));
+
+    size_t hash = base::HashInts(proactive_suggestions.category(), description);
+    hash = base::HashInts(hash, search_query);
+    return base::HashInts(hash, html);
   }
 };
 

@@ -835,19 +835,22 @@ void AssistantInteractionController::StartProactiveSuggestionsInteraction(
   if (model_.interaction_state() != InteractionState::kInactive)
     return;
 
-  const std::string& query = proactive_suggestions->description();
+  const std::string& description = proactive_suggestions->description();
+  const std::string& search_query = proactive_suggestions->search_query();
 
-  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(query));
+  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(description));
 
   OnInteractionStarted(AssistantInteractionMetadata::New(
-      /*type=*/AssistantInteractionType::kText, /*query=*/query));
+      AssistantInteractionType::kText, /*query=*/description));
 
   OnHtmlResponse(proactive_suggestions->html(), /*fallback=*/std::string());
 
   // TODO(dmblack): Support suggestion chips from the server when available.
-  std::vector<AssistantSuggestionPtr> suggestions;
-  suggestions.push_back(CreateSearchSuggestion(query));
-  OnSuggestionsResponse(std::move(suggestions));
+  if (!search_query.empty()) {
+    std::vector<AssistantSuggestionPtr> suggestions;
+    suggestions.push_back(CreateSearchSuggestion(search_query));
+    OnSuggestionsResponse(std::move(suggestions));
+  }
 
   OnInteractionFinished(AssistantInteractionResolution::kNormal);
 }
