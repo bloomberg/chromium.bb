@@ -288,17 +288,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // This method may only be called before Start().
   void set_site_for_cookies(const GURL& site_for_cookies);
 
-  // The origin of the top frame of the page making the request (where
-  // applicable). Note that this is experimental and may not always be set.
-  // DEPRECATED: This was introduced for the cache key and will be removed once
-  // |network_isolation_key| is set for most cases.
-  const base::Optional<url::Origin>& top_frame_origin() const {
-    return top_frame_origin_;
-  }
-  void set_top_frame_origin(const base::Optional<url::Origin>& origin) {
-    top_frame_origin_ = origin;
-  }
-
   // This key is used to isolate requests from different contexts in accessing
   // shared network resources like the cache.
   const NetworkIsolationKey& network_isolation_key() const {
@@ -880,9 +869,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   std::vector<GURL> url_chain_;
   GURL site_for_cookies_;
-
-  // DEPRECATED: See comment on the getter function.
-  base::Optional<url::Origin> top_frame_origin_;
 
   NetworkIsolationKey network_isolation_key_;
 
