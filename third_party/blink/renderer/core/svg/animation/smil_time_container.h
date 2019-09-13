@@ -59,9 +59,9 @@ class SMILTimeContainer final
   void NotifyIntervalsChanged();
 
   // Returns the time we are currently updating.
-  double Elapsed() const;
+  SMILTime Elapsed() const;
   // Returns the current time in the document.
-  double CurrentDocumentTime() const;
+  SMILTime CurrentDocumentTime() const;
 
   bool IsPaused() const;
   bool IsStarted() const;
@@ -69,7 +69,7 @@ class SMILTimeContainer final
   void Start();
   void Pause();
   void Unpause();
-  void SetElapsed(double);
+  void SetElapsed(SMILTime);
 
   void ServiceAnimations();
   bool HasAnimations() const;
@@ -114,12 +114,12 @@ class SMILTimeContainer final
   ImageAnimationPolicy AnimationPolicy() const;
   bool HandleAnimationPolicy(AnimationPolicyOnceAction);
   bool CanScheduleFrame(SMILTime earliest_fire_time) const;
-  void UpdateAnimationsAndScheduleFrameIfNeeded(double elapsed);
+  void UpdateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed);
   void RemoveUnusedKeys();
   void UpdateIntervals(SMILTime);
-  SMILTime NextInterestingTime(double elapsed) const;
-  void UpdateAnimationTimings(double elapsed);
-  void ApplyAnimationValues(double elapsed);
+  SMILTime NextInterestingTime(SMILTime elapsed) const;
+  void UpdateAnimationTimings(SMILTime elapsed);
+  void ApplyAnimationValues(SMILTime elapsed);
   void ServiceOnNextFrame();
   void ScheduleWakeUp(base::TimeDelta delay_time, FrameSchedulingState);
   bool HasPendingSynchronization() const;
@@ -131,9 +131,9 @@ class SMILTimeContainer final
 
   // The latest "restart" time for the time container's timeline. If the
   // timeline has not been manipulated (seeked, paused) this will be zero.
-  double presentation_time_;
-  // The state all svg_smil_elements should be at.
-  double latest_update_time_;
+  SMILTime presentation_time_;
+  // The state all SVGSMILElements should be at.
+  SMILTime latest_update_time_;
   // The time on the document timeline corresponding to |presentation_time_|.
   base::TimeDelta reference_time_;
 

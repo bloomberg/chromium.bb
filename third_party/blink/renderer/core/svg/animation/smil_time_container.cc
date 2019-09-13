@@ -95,7 +95,7 @@ void SMILTimeContainer::Schedule(SVGSMILElement* animation,
 
   sandwich->Schedule(animation);
 
-  double latest_update = CurrentDocumentTime();
+  SMILTime latest_update = CurrentDocumentTime();
   if (animation->IntervalBegin() <= latest_update ||
       animation->NextProgressTime(latest_update).IsFinite())
     NotifyIntervalsChanged();
@@ -148,7 +148,7 @@ void SMILTimeContainer::NotifyIntervalsChanged() {
   ScheduleWakeUp(base::TimeDelta(), kSynchronizeAnimations);
 }
 
-double SMILTimeContainer::Elapsed() const {
+SMILTime SMILTimeContainer::Elapsed() const {
   if (!IsStarted())
     return 0;
 
@@ -160,7 +160,7 @@ double SMILTimeContainer::Elapsed() const {
           base::TimeDelta()) -
       reference_time_;
   DCHECK_GE(time_offset, base::TimeDelta());
-  double elapsed = presentation_time_ + time_offset.InSecondsF();
+  SMILTime elapsed = presentation_time_ + time_offset.InSecondsF();
   DCHECK_GE(elapsed, 0.0);
   return elapsed;
 }
@@ -179,7 +179,7 @@ void SMILTimeContainer::ResetDocumentTime() {
   SynchronizeToDocumentTimeline();
 }
 
-double SMILTimeContainer::CurrentDocumentTime() const {
+SMILTime SMILTimeContainer::CurrentDocumentTime() const {
   return latest_update_time_;
 }
 
@@ -245,7 +245,7 @@ void SMILTimeContainer::Unpause() {
   ScheduleWakeUp(base::TimeDelta(), kSynchronizeAnimations);
 }
 
-void SMILTimeContainer::SetElapsed(double elapsed) {
+void SMILTimeContainer::SetElapsed(SMILTime elapsed) {
   presentation_time_ = elapsed;
 
   // If the document hasn't finished loading, |m_presentationTime| will be
@@ -411,7 +411,7 @@ bool SMILTimeContainer::CanScheduleFrame(SMILTime earliest_fire_time) const {
 }
 
 void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
-    double elapsed) {
+    SMILTime elapsed) {
   if (!GetDocument().IsActive())
     return;
 
@@ -428,14 +428,14 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
 
   if (!CanScheduleFrame(next_progress_time))
     return;
-  double delay_time = next_progress_time.Value() - elapsed;
+  double delay_time = (next_progress_time - elapsed).Value();
   DCHECK(std::isfinite(delay_time));
   ScheduleAnimationFrame(base::TimeDelta::FromSecondsD(delay_time));
 }
 
 // A helper function to fetch the next interesting time after document_time
 SMILTime SMILTimeContainer::NextInterestingTime(
-    double presentation_time) const {
+    SMILTime presentation_time) const {
   DCHECK_GE(presentation_time, 0);
   SMILTime next_interesting_time = SMILTime::Indefinite();
   for (const auto& sandwich : scheduled_animations_) {
@@ -472,7 +472,7 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
   } while (intervals_dirty_);
 }
 
-void SMILTimeContainer::UpdateAnimationTimings(double presentation_time) {
+void SMILTimeContainer::UpdateAnimationTimings(SMILTime presentation_time) {
   DCHECK(GetDocument().IsActive());
 
 #if DCHECK_IS_ON()
@@ -501,7 +501,7 @@ void SMILTimeContainer::UpdateAnimationTimings(double presentation_time) {
   }
 }
 
-void SMILTimeContainer::ApplyAnimationValues(double elapsed) {
+void SMILTimeContainer::ApplyAnimationValues(SMILTime elapsed) {
 #if DCHECK_IS_ON()
   prevent_scheduled_animations_changes_ = true;
 #endif
@@ -549,8 +549,8 @@ void SMILTimeContainer::ApplyAnimationValues(double elapsed) {
 }
 
 void SMILTimeContainer::AdvanceFrameForTesting() {
-  const double kInitialFrameDelay = 0.025;
-  SetElapsed(Elapsed() + kInitialFrameDelay);
+  const SMILTime kFrameDuration = 0.025;
+  SetElapsed(Elapsed() + kFrameDuration);
 }
 
 void SMILTimeContainer::Trace(blink::Visitor* visitor) {

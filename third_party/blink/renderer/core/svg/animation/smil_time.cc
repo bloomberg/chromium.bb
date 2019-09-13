@@ -38,7 +38,7 @@ SMILTime operator*(const SMILTime& a, const SMILTime& b) {
 }
 
 std::ostream& operator<<(std::ostream& os, SMILTime time) {
-  return os << time.Value() << " s";
+  return os << time.InSecondsF() << " s";
 }
 
 }  // namespace blink

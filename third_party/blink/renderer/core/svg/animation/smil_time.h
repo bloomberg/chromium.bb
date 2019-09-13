@@ -53,6 +53,7 @@ class SMILTime {
   }
 
   double Value() const { return time_; }
+  double InSecondsF() const { return time_; }
 
   bool IsFinite() const { return std::isfinite(time_); }
   bool IsIndefinite() const { return std::isinf(time_); }
