@@ -1513,7 +1513,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
   void CreateAudioInputStreamFactory(
-      mojom::RendererAudioInputStreamFactoryRequest request);
+      mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
   void CreateAudioOutputStreamFactory(
       mojom::RendererAudioOutputStreamFactoryRequest request);
 
