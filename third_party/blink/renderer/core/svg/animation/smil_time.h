@@ -28,6 +28,7 @@
 
 #include <ostream>
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -54,8 +55,12 @@ class SMILTime {
     return -std::numeric_limits<double>::infinity();
   }
 
-  double Value() const { return time_; }
+  // Used for computing progress. Don't use for anything else.
+  double InternalValueAsDouble() const { return time_; }
   double InSecondsF() const { return time_; }
+  int64_t InMicroseconds() const {
+    return time_ * base::Time::kMicrosecondsPerSecond;
+  }
 
   bool IsFinite() const { return std::isfinite(time_); }
   bool IsIndefinite() const { return std::isinf(time_); }
@@ -66,11 +71,21 @@ class SMILTime {
   // So multiplying times does not make too much sense but SMIL defines it for
   // duration * repeatCount
   SMILTime operator*(SMILTime other) const;
+  // Similarly for divisions/modulo. (Used primarily for computing interval
+  // progress/repeats.)
+  int64_t operator/(SMILTime other) const {
+    return int64_t(time_ / other.time_);
+  }
+  SMILTime operator%(SMILTime other) const {
+    DCHECK(IsFinite());
+    DCHECK(other.IsFinite());
+    return SMILTime(fmod(time_, other.time_));
+  }
 
   bool operator==(SMILTime other) const {
     return (IsUnresolved() && other.IsUnresolved()) || time_ == other.time_;
   }
-  bool operator!() const { return !IsFinite() || !time_; }
+  explicit operator bool() const { return IsFinite() && time_; }
   bool operator!=(SMILTime other) const { return !this->operator==(other); }
 
   // Ordering of SMILTimes has to follow: finite < indefinite (Inf) < unresolved

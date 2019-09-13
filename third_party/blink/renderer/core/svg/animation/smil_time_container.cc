@@ -428,9 +428,10 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
 
   if (!CanScheduleFrame(next_progress_time))
     return;
-  double delay_time = (next_progress_time - elapsed).Value();
-  DCHECK(std::isfinite(delay_time));
-  ScheduleAnimationFrame(base::TimeDelta::FromSecondsD(delay_time));
+  SMILTime delay_time = next_progress_time - elapsed;
+  DCHECK(delay_time.IsFinite());
+  ScheduleAnimationFrame(
+      base::TimeDelta::FromMicroseconds(delay_time.InMicroseconds()));
 }
 
 // A helper function to fetch the next interesting time after document_time
@@ -465,10 +466,10 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
     intervals_dirty_ = false;
 
     for (auto& sandwich : scheduled_animations_.Values())
-      sandwich->UpdateTiming(document_time.Value());
+      sandwich->UpdateTiming(document_time);
 
     for (auto& sandwich : scheduled_animations_.Values())
-      sandwich->UpdateSyncBases(document_time.Value());
+      sandwich->UpdateSyncBases(document_time);
   } while (intervals_dirty_);
 }
 
@@ -494,8 +495,7 @@ void SMILTimeContainer::UpdateAnimationTimings(SMILTime presentation_time) {
 
   while (latest_update_time_ < presentation_time) {
     const SMILTime interesting_time = NextInterestingTime(latest_update_time_);
-    latest_update_time_ =
-        std::min<SMILTime>(presentation_time, interesting_time).Value();
+    latest_update_time_ = std::min(presentation_time, interesting_time);
 
     UpdateIntervals(latest_update_time_);
   }
