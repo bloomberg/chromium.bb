@@ -105,10 +105,6 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   void SetGoogleSignedOutCallback(AccountSigninCallback callback);
 #endif
 
-  // If set, this callback will be invoked during the signin as soon as
-  // PrimaryAccountManager::authenticated_account_id_ is set.
-  void SetAuthenticatedAccountSetCallback(AccountSigninCallback callback);
-
   // Signs a user in. PrimaryAccountManager assumes that |username| can be used
   // to look up the corresponding account_id and gaia_id for this email.
   void SignIn(const std::string& username);
@@ -188,7 +184,6 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
 #if !defined(OS_CHROMEOS)
   AccountSigninCallback on_google_signed_out_callback_;
 #endif
-  AccountSigninCallback on_authenticated_account_set_callback_;
 
   // The list of callbacks notified on shutdown.
   base::CallbackList<void()> on_shutdown_callback_list_;

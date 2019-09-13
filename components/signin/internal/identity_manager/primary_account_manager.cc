@@ -120,12 +120,7 @@ CoreAccountId PrimaryAccountManager::GetAuthenticatedAccountId() const {
 void PrimaryAccountManager::SetAuthenticatedAccountInfo(
     const CoreAccountInfo& account_info) {
   DCHECK(!account_info.account_id.empty());
-  if (IsAuthenticated()) {
-    DCHECK_EQ(account_info.account_id, GetAuthenticatedAccountId())
-        << "Changing the authenticated account while authenticated is not "
-           "allowed.";
-    return;
-  }
+  DCHECK(!IsAuthenticated());
 
   std::string pref_account_id =
       client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
@@ -152,10 +147,6 @@ void PrimaryAccountManager::SetAuthenticatedAccountInfo(
   // Commit authenticated account info immediately so that it does not get lost
   // if Chrome crashes before the next commit interval.
   client_->GetPrefs()->CommitPendingWrite();
-
-  if (on_authenticated_account_set_callback_) {
-    on_authenticated_account_set_callback_.Run(account_info);
-  }
 }
 
 bool PrimaryAccountManager::IsAuthenticated() const {
@@ -178,23 +169,22 @@ void PrimaryAccountManager::SetGoogleSignedOutCallback(
 }
 #endif  // !defined(OS_CHROMEOS)
 
-void PrimaryAccountManager::SetAuthenticatedAccountSetCallback(
-    AccountSigninCallback callback) {
-  DCHECK(!on_authenticated_account_set_callback_)
-      << "AuthenticatedAccountSetCallback shouldn't be set multiple times.";
-  on_authenticated_account_set_callback_ = callback;
-}
-
 void PrimaryAccountManager::SignIn(const std::string& username) {
   CoreAccountInfo info =
       account_tracker_service_->FindAccountInfoByEmail(username);
   DCHECK(!info.gaia.empty());
   DCHECK(!info.email.empty());
+  DCHECK(!info.account_id.empty());
+  if (IsAuthenticated()) {
+    DCHECK_EQ(info.account_id, GetAuthenticatedAccountId())
+        << "Changing the authenticated account while authenticated is not "
+           "allowed.";
+    return;
+  }
 
-  bool reauth_in_progress = IsAuthenticated();
   SetAuthenticatedAccountInfo(info);
 
-  if (!reauth_in_progress && on_google_signin_succeeded_callback_)
+  if (on_google_signin_succeeded_callback_)
     on_google_signin_succeeded_callback_.Run(GetAuthenticatedAccountInfo());
 }
 
