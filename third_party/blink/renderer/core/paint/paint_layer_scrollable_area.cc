@@ -2715,6 +2715,7 @@ static IntRect InvalidatePaintOfScrollbarIfNeeded(
     const IntRect& previous_visual_rect,
     bool needs_paint_invalidation_arg,
     LayoutBox& box,
+    bool& box_geometry_has_been_invalidated,
     const PaintInvalidatorContext& context) {
   bool is_overlay = scrollbar && scrollbar->IsOverlayScrollbar();
 
@@ -2758,12 +2759,14 @@ static IntRect InvalidatePaintOfScrollbarIfNeeded(
 
   // The IsEmpty() check avoids invalidaiton in cases when the visual rect
   // changes from (0,0 0x0) to (0,0 0x100).
-  if (!(new_scrollbar_used_space_in_box.IsEmpty() &&
+  if (!box_geometry_has_been_invalidated &&
+      !(new_scrollbar_used_space_in_box.IsEmpty() &&
         previous_scrollbar_used_space_in_box.IsEmpty()) &&
       new_scrollbar_used_space_in_box != previous_scrollbar_used_space_in_box) {
     context.painting_layer->SetNeedsRepaint();
     ObjectPaintInvalidator(box).InvalidateDisplayItemClient(
         box, PaintInvalidationReason::kGeometry);
+    box_geometry_has_been_invalidated = true;
   }
 
   bool invalidated = InvalidatePaintOfScrollControlIfNeeded(
@@ -2789,16 +2792,19 @@ static IntRect InvalidatePaintOfScrollbarIfNeeded(
 void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
     const PaintInvalidatorContext& context) {
   LayoutBox& box = *GetLayoutBox();
+  bool box_geometry_has_been_invalidated = false;
   SetHorizontalScrollbarVisualRect(InvalidatePaintOfScrollbarIfNeeded(
       HorizontalScrollbar(), LayerForHorizontalScrollbar(),
       horizontal_scrollbar_previously_was_overlay_,
       horizontal_scrollbar_visual_rect_,
-      HorizontalScrollbarNeedsPaintInvalidation(), box, context));
+      HorizontalScrollbarNeedsPaintInvalidation(), box,
+      box_geometry_has_been_invalidated, context));
   SetVerticalScrollbarVisualRect(InvalidatePaintOfScrollbarIfNeeded(
       VerticalScrollbar(), LayerForVerticalScrollbar(),
       vertical_scrollbar_previously_was_overlay_,
       vertical_scrollbar_visual_rect_,
-      VerticalScrollbarNeedsPaintInvalidation(), box, context));
+      VerticalScrollbarNeedsPaintInvalidation(), box,
+      box_geometry_has_been_invalidated, context));
 
   IntRect scroll_corner_and_resizer_visual_rect =
       ScrollControlVisualRect(ScrollCornerAndResizerRect(), box, context,
@@ -2820,6 +2826,11 @@ void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
       ObjectPaintInvalidator(*resizer)
           .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
               PaintInvalidationReason::kScrollControl);
+    } else if (!box_geometry_has_been_invalidated && box.CanResize() &&
+               !HasLayerForScrollCorner()) {
+      context.painting_layer->SetNeedsRepaint();
+      ObjectPaintInvalidator(box).InvalidateDisplayItemClient(
+          box, PaintInvalidationReason::kGeometry);
     }
   }
 
