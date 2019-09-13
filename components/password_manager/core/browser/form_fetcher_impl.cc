@@ -21,8 +21,6 @@
 
 using autofill::PasswordForm;
 
-// Shorten the name to spare line breaks. The code provides enough context
-// already.
 using Logger = autofill::SavePasswordProgressLogger;
 
 namespace password_manager {
