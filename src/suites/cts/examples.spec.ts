@@ -58,9 +58,10 @@ g.test('basic/async', async t => {
 g.test('basic/params', t => {
   t.expect(t.params.x + t.params.y === t.params.result);
 }).params([
-  { x: 2, y: 4, result: 6 }, // (blank comment to enforce newlines on autoformat)
+  { x: 2, y: 4, result: 6 }, //
   { x: -10, y: 18, result: 8 },
 ]);
+// (note blank comment above to enforce newlines on autoformat)
 
 g.test('gpu/async', async t => {
   const fence = t.queue.createFence();
