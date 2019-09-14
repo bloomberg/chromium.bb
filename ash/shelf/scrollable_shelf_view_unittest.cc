@@ -4,6 +4,7 @@
 
 #include "ash/shelf/scrollable_shelf_view.h"
 
+#include "ash/shelf/shelf_test_util.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -40,7 +41,6 @@ class ScrollableShelfViewTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kShelfScrollable);
     AshTestBase::SetUp();
-    model_ = ShelfModel::Get();
     scrollable_shelf_view_ = GetPrimaryShelf()
                                  ->shelf_widget()
                                  ->hotseat_widget()
@@ -52,12 +52,8 @@ class ScrollableShelfViewTest : public AshTestBase {
 
  protected:
   ShelfID AddAppShortcut() {
-    ShelfItem item;
-    item.type = TYPE_PINNED_APP;
-    item.id = ShelfID(base::NumberToString(id_++));
-    model_->Add(item);
-    model_->SetShelfItemDelegate(
-        item.id, std::make_unique<TestShelfItemDelegate>(item.id));
+    ShelfItem item = ShelfTestUtil::AddAppShortcut(base::NumberToString(id_++),
+                                                   TYPE_PINNED_APP);
 
     // Wait for shelf view's bounds animation to end. Otherwise the scrollable
     // shelf's bounds are not updated yet.
@@ -72,7 +68,6 @@ class ScrollableShelfViewTest : public AshTestBase {
       AddAppShortcut();
   }
 
-  ShelfModel* model_ = nullptr;
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
   ShelfView* shelf_view_ = nullptr;
   std::unique_ptr<ShelfViewTestAPI> test_api_;
