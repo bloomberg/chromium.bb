@@ -99,12 +99,12 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
           popup_contents_view_, this,
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
-          omnibox::kSwitchIcon);
+          omnibox::kSwitchIcon, theme_provider_);
     } else {
       suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
           // TODO(krb): Make official strings when we accept the feature.
           popup_contents_view_, this, base::ASCIIToUTF16("Open in this tab"),
-          base::ASCIIToUTF16("Open"), omnibox::kSwitchIcon);
+          base::ASCIIToUTF16("Open"), omnibox::kSwitchIcon, theme_provider_);
     }
 
     suggestion_tab_switch_button_->set_owned_by_client();
