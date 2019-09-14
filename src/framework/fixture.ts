@@ -22,7 +22,7 @@ export class Fixture {
     this.rec.log(msg);
   }
 
-  finalize(): void {
+  async finalize(): Promise<void> {
     if (this.numOutstandingAsyncExpectations !== 0) {
       throw new Error(
         'there were outstanding asynchronous expectations (e.g. shouldReject) at the end of the test'

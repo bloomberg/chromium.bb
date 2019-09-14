@@ -115,7 +115,7 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
       const inst = new this.fixture(rec, this.id.params || {});
       await inst.init();
       await this.fn(inst);
-      inst.finalize();
+      await inst.finalize();
     } catch (e) {
       rec.threw(e);
     }

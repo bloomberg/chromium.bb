@@ -278,10 +278,10 @@
   resolved "https://registry.yarnpkg.com/@webgpu/glslang/-/glslang-0.0.6.tgz#959b9cfc0a40d0a17d3d6ce48b47894b861591a3"
   integrity sha512-MZqO8zYc7fnpaNxstz801Ju393rw07X3XFpm64JulmPnJJcBvWJs7d5zgRZvd4rz5lTuWaG3ZnQNs0qiQciS7Q==
 
-"@webgpu/types@0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@webgpu/types/-/types-0.0.9.tgz#8e20b30deb333f0509cca674123071d244a85556"
-  integrity sha512-ZCoHv31cLfnn4lv8M/uMhFsIRWZ2Jl4qgFdkknadywUWVL34x5okD5eD+elXHmOxOnf/iLcp/F6lxY1RaDBXUQ==
+"@webgpu/types@0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@webgpu/types/-/types-0.0.12.tgz#00d8b15d0e0a015e8c65c4c20eedea360d69dc2e"
+  integrity sha512-OcVT8XxvYWj5OwE3JEJjSKxKyLiE/8gd7x/EJnWt/kkbkLdVeW2RXQAB8VcYNteNV6j37SWX30378CzOeZciJA==
 
 abbrev@1:
   version "1.1.1"

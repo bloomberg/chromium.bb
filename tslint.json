@@ -9,7 +9,8 @@
         "named-imports-order": "lowercase-last"
       }
     ],
-    "typedef": [true, "call-signature", "parameter", "property-declaration"]
+    "typedef": [true, "call-signature", "parameter", "property-declaration"],
+    "no-inferrable-types": false
   },
   "linterOptions": {
     "exclude": ["**/*.json"]

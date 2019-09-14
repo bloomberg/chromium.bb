@@ -10,7 +10,7 @@ export interface ParamsAny {
 export type ParamAnyIterable = Iterable<ParamsAny>;
 export type ParamAnyIterator = IterableIterator<ParamsAny>;
 
-export type ParamArgument = boolean | number | string;
+export type ParamArgument = undefined | boolean | number | string | number[];
 export interface ParamsSpec {
   [k: string]: ParamArgument;
 }

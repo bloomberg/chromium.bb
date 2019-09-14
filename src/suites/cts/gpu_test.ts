@@ -12,6 +12,25 @@ export class GPUTest extends Fixture {
     const adapter = await gpu.requestAdapter();
     this.device = await adapter.requestDevice({});
     this.queue = this.device.getQueue();
+
+    this.device.pushErrorScope('out-of-memory');
+    this.device.pushErrorScope('validation');
+  }
+
+  async finalize(): Promise<void> {
+    super.finalize();
+
+    const gpuValidationError = await this.device.popErrorScope();
+    if (gpuValidationError !== null) {
+      if (!(gpuValidationError instanceof GPUValidationError)) throw new Error();
+      this.fail(`Unexpected validation error occurred: ${gpuValidationError.message}`);
+    }
+
+    const gpuOutOfMemoryError = await this.device.popErrorScope();
+    if (gpuOutOfMemoryError !== null) {
+      if (!(gpuOutOfMemoryError instanceof GPUValidationError)) throw new Error();
+      this.fail(`Unexpected out-of-memory error occurred: ${gpuOutOfMemoryError.message}`);
+    }
   }
 
   // TODO: add an expectContents for textures, which logs data: uris on failure
