@@ -183,9 +183,14 @@ foreach header : ['sys/sysctl.h', 'sys/select.h', 'alloca.h']
   config.set('HAVE_' + header.underscorify().to_upper(),
     cc.compiles('#include <@0@>'.format(header), name : '@0@ works'.format(header)))
 endforeach
-if cc.has_header_symbol('sys/sysmacros.h', 'major')
+if (cc.has_header_symbol('sys/sysmacros.h', 'major') and
+  cc.has_header_symbol('sys/sysmacros.h', 'minor') and
+  cc.has_header_symbol('sys/sysmacros.h', 'makedev'))
   config.set10('MAJOR_IN_SYSMACROS', true)
-elif cc.has_header_symbol('sys/mkdev.h', 'major')
+endif
+if (cc.has_header_symbol('sys/mkdev.h', 'major') and
+  cc.has_header_symbol('sys/mkdev.h', 'minor') and
+  cc.has_header_symbol('sys/mkdev.h', 'makedev'))
   config.set10('MAJOR_IN_MKDEV', true)
 endif
 config.set10('HAVE_OPEN_MEMSTREAM', cc.has_function('open_memstream'))
