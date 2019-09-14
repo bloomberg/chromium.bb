@@ -7,7 +7,7 @@ import GLSL from '../../../tools/glsl.macro.js';
 
 import { ValidationTest } from './validation_test.js';
 
-export class F extends ValidationTest {
+class F extends ValidationTest {
   makeAttachmentTexture(): GPUTexture {
     return this.device.createTexture({
       format: 'rgba8unorm',
