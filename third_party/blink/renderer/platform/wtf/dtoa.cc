@@ -33,7 +33,7 @@
  * file.
  */
 
-#include "third_party/blink/renderer/platform/wtf/dtoa/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
 
 #include <string.h>
 

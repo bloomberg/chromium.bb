@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_DTOA_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_DTOA_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_H_
 
 #include "base/numerics/safe_conversions.h"
 #include "base/third_party/double_conversion/double-conversion/double-conversion.h"
@@ -55,7 +55,7 @@ double ParseDoubleFromLongString(const UChar* string,
                                  size_t length,
                                  size_t& parsed_length);
 const double_conversion::StringToDoubleConverter& GetDoubleConverter();
-}
+}  // namespace internal
 
 inline double ParseDouble(const LChar* string,
                           size_t length,
