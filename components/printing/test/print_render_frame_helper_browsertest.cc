@@ -261,7 +261,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   void OnPrintPreview(const base::DictionaryValue& dict) {
     PrintRenderFrameHelper* print_render_frame_helper =
         GetPrintRenderFrameHelper();
-    print_render_frame_helper->OnInitiatePrintPreview(false);
+    print_render_frame_helper->InitiatePrintPreview(false);
     base::RunLoop run_loop;
     DidPreviewPageListener filter(&run_loop);
     render_thread_->sink().AddFilter(&filter);

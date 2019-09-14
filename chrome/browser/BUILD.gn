@@ -4317,6 +4317,8 @@ jumbo_split_static_library("browser") {
         "printing/pwg_raster_converter.h",
       ]
 
+      deps += [ "//components/printing/common:mojo_interfaces" ]
+
       if (is_posix || is_fuchsia) {
         sources += [ "printing/print_dialog_cloud_posix.cc" ]
       }
