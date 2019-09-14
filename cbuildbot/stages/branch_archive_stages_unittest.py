@@ -101,7 +101,10 @@ class FirmwareArchiveStageTest(BranchArchiveStageTestBase):
     ])
 
     self.assertEqual(self.upload_mock.call_args_list, [
-        mock.call('/tempdir/board/firmware_from_source.tar.bz2', archive=True),
+        mock.call(
+            '/tempdir/board/firmware_from_source.tar.bz2',
+            prefix='board',
+            archive=True),
         mock.call('/tempdir/board/metadata.json', archive=True),
     ])
 
@@ -170,7 +173,10 @@ class FirmwareArchiveStageTest(BranchArchiveStageTestBase):
     ])
 
     self.assertEqual(self.upload_mock.call_args_list, [
-        mock.call('/tempdir/board/firmware_from_source.tar.bz2', archive=True),
+        mock.call(
+            '/tempdir/board/firmware_from_source.tar.bz2',
+            prefix='board',
+            archive=True),
         mock.call('/tempdir/board/metadata.json', archive=True),
     ])
 
