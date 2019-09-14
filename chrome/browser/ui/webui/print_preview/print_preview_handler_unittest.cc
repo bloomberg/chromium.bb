@@ -98,6 +98,7 @@ base::Value GetPrintPreviewTicket() {
   print_ticket.SetKey(kIsFirstRequest, base::Value(true));
   print_ticket.SetKey(kPreviewRequestID, base::Value(0));
   print_ticket.SetKey(kSettingPreviewModifiable, base::Value(false));
+  print_ticket.SetKey(kSettingPreviewIsPDF, base::Value(true));
   print_ticket.RemoveKey(kSettingPageWidth);
   print_ticket.RemoveKey(kSettingPageHeight);
   print_ticket.RemoveKey(kSettingShowSystemDialog);
