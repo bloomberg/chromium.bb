@@ -5046,8 +5046,7 @@
               "cpu": "x86-32",
               "os": "Windows-7-SP1"
             }
-          ],
-          "idempotent": false
+          ]
         },
         "test": "sbox_validation_tests"
       }
