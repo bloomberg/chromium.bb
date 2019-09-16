@@ -11,19 +11,19 @@
 setlocal EnableDelayedExpansion
 
 :: Get absolute root directory (.js scripts don't handle relative paths well).
-pushd %~dp0..
-set BOOTSTRAP_ROOT_DIR=%CD%
+pushd %~dp0..\..
+set WIN_TOOLS_ROOT_DIR=%CD%
 popd
 
 :: Extra arguments to pass to our "win_tools.py" script.
-set BOOTSTRAP_EXTRA_ARGS=
+set WIN_TOOLS_EXTRA_ARGS=
 
 :: Determine if we're running a bleeding-edge installation.
-if not exist "%BOOTSTRAP_ROOT_DIR%\.bleeding_edge" (
+if not exist "%WIN_TOOLS_ROOT_DIR%\.bleeding_edge" (
   set CIPD_MANIFEST=manifest.txt
 ) else (
   set CIPD_MANIFEST=manifest_bleeding_edge.txt
-  set BOOTSTRAP_EXTRA_ARGS=%BOOTSTRAP_EXTRA_ARGS% --bleeding-edge
+  set WIN_TOOLS_EXTRA_ARGS=%WIN_TOOLS_EXTRA_ARGS% --bleeding-edge
 )
 
 :: Parse our CIPD manifest and identify the "cpython" version. We do this by
@@ -51,25 +51,25 @@ if "%PYTHON3_VERSION%" == "" (
 )
 
 :: We will take the version string, replace "." with "_", and surround it with
-:: "bootstrap-<PYTHON3_VERSION>_bin" so that it matches "win_tools.py"'s cleanup
+:: "win-tools-<PYTHON_VERSION>_bin" so that it matches "win_tools.py"'s cleanup
 :: expression and ".gitignore".
 ::
-:: We incorporate PYTHON3_VERSION into the "win_tools" directory name so that
+:: We incorporate PYTHON_VERSION into the "win_tools" directory name so that
 :: new installations don't interfere with long-running Python processes if
 :: Python is upgraded.
-set BOOTSTRAP_NAME=bootstrap-%PYTHON3_VERSION:.=_%_bin
-set BOOTSTRAP_PATH=%BOOTSTRAP_ROOT_DIR%\%BOOTSTRAP_NAME%
-set BOOTSTRAP_EXTRA_ARGS=%BOOTSTRAP_EXTRA_ARGS% --bootstrap-name "%BOOTSTRAP_NAME%"
+set WIN_TOOLS_NAME=win_tools-%PYTHON_VERSION:.=_%_bin
+set WIN_TOOLS_PATH=%WIN_TOOLS_ROOT_DIR%\%WIN_TOOLS_NAME%
+set WIN_TOOLS_EXTRA_ARGS=%WIN_TOOLS_EXTRA_ARGS% --win-tools-name "%WIN_TOOLS_NAME%"
 
 :: Install our CIPD packages. The CIPD client self-bootstraps.
 :: See "//cipd.bat" and "//cipd.ps1" for more information.
-set CIPD_EXE=%BOOTSTRAP_ROOT_DIR%\cipd.bat
-call "%CIPD_EXE%" ensure -log-level warning -ensure-file "%~dp0%CIPD_MANIFEST%" -root "%BOOTSTRAP_PATH%"
+set CIPD_EXE=%WIN_TOOLS_ROOT_DIR%\cipd.bat
+call "%CIPD_EXE%" ensure -log-level warning -ensure-file "%~dp0%CIPD_MANIFEST%" -root "%WIN_TOOLS_PATH%"
 if errorlevel 1 goto :END
 
 :: This executes "win_tools.py" using the bundle's Python interpreter.
-set BOOTSTRAP_PYTHON_BIN=%BOOTSTRAP_PATH%\python3\bin\python3.exe
-call "%BOOTSTRAP_PYTHON_BIN%" "%~dp0bootstrap.py" %BOOTSTRAP_EXTRA_ARGS%
+set WIN_TOOLS_PYTHON_BIN=%WIN_TOOLS_PATH%\python\bin\python.exe
+call "%WIN_TOOLS_PYTHON_BIN%" "%~dp0win_tools.py" %WIN_TOOLS_EXTRA_ARGS%
 
 
 :END

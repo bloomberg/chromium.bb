@@ -19,16 +19,15 @@ import tempfile
 
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-ROOT_DIR = os.path.abspath(os.path.join(THIS_DIR, '..'))
+ROOT_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..'))
 
 DEVNULL = open(os.devnull, 'w')
 
-IS_WIN = sys.platform.startswith('win')
-BAT_EXT = '.bat' if IS_WIN else ''
+BAT_EXT = '.bat' if sys.platform.startswith('win') else ''
 
 # Top-level stubs to generate that fall through to executables within the Git
 # directory.
-WIN_GIT_STUBS = {
+STUBS = {
   'git.bat': 'cmd\\git.exe',
   'gitk.bat': 'cmd\\gitk.exe',
   'ssh.bat': 'usr\\bin\\ssh.exe',
@@ -89,7 +88,6 @@ def maybe_update(content, dst_path):
   logging.debug('Updating %r', dst_path)
   with open(dst_path, 'w') as fd:
     fd.write(content)
-  os.chmod(dst_path, 0o755)
   return True
 
 
@@ -202,7 +200,7 @@ def _safe_rmtree(path):
 
   def _make_writable_and_remove(path):
     st = os.stat(path)
-    new_mode = st.st_mode | 0o200
+    new_mode = st.st_mode | 0200
     if st.st_mode == new_mode:
       return False
     try:
@@ -228,7 +226,7 @@ def clean_up_old_installations(skip_dir):
   that is using the bootstrapped Python!
   """
   root_contents = os.listdir(ROOT_DIR)
-  for f in ('win_tools-*_bin', 'python27*_bin', 'git-*_bin', 'bootstrap-*_bin'):
+  for f in ('win_tools-*_bin', 'python27*_bin', 'git-*_bin'):
     for entry in fnmatch.filter(root_contents, f):
       full_entry = os.path.join(ROOT_DIR, entry)
       if full_entry == skip_dir or not os.path.isdir(full_entry):
@@ -268,7 +266,7 @@ def git_postprocess(template, git_directory):
     logging.info('Could not find mingw directory for %r.', git_directory)
 
   # Create Git templates and configure its base layout.
-  for stub_name, relpath in WIN_GIT_STUBS.items():
+  for stub_name, relpath in STUBS.iteritems():
     stub_template = template._replace(GIT_PROGRAM=relpath)
     stub_template.maybe_install(
         'git.template.bat',
@@ -295,7 +293,7 @@ def git_postprocess(template, git_directory):
 def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--verbose', action='store_true')
-  parser.add_argument('--bootstrap-name', required=True,
+  parser.add_argument('--win-tools-name', required=True,
                       help='The directory of the Python installation.')
   parser.add_argument('--bleeding-edge', action='store_true',
                       help='Force bleeding edge Git.')
@@ -304,59 +302,52 @@ def main(argv):
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
 
   template = Template.empty()._replace(
-      PYTHON_RELDIR=os.path.join(args.bootstrap_name, 'python'),
-      PYTHON_BIN_RELDIR=os.path.join(args.bootstrap_name, 'python', 'bin'),
+      PYTHON_RELDIR=os.path.join(args.win_tools_name, 'python'),
+      PYTHON_BIN_RELDIR=os.path.join(args.win_tools_name, 'python', 'bin'),
       PYTHON_BIN_RELDIR_UNIX=posixpath.join(
-          args.bootstrap_name, 'python', 'bin'),
-      PYTHON3_BIN_RELDIR=os.path.join(args.bootstrap_name, 'python3', 'bin'),
+          args.win_tools_name, 'python', 'bin'),
+      PYTHON3_BIN_RELDIR=os.path.join(args.win_tools_name, 'python3', 'bin'),
       PYTHON3_BIN_RELDIR_UNIX=posixpath.join(
-          args.bootstrap_name, 'python3', 'bin'),
-      GIT_BIN_RELDIR=os.path.join(args.bootstrap_name, 'git'),
-      GIT_BIN_RELDIR_UNIX=posixpath.join(args.bootstrap_name, 'git'))
+          args.win_tools_name, 'python3', 'bin'),
+      GIT_BIN_RELDIR=os.path.join(args.win_tools_name, 'git'),
+      GIT_BIN_RELDIR_UNIX=posixpath.join(args.win_tools_name, 'git'))
 
-  bootstrap_dir = os.path.join(ROOT_DIR, args.bootstrap_name)
+  win_tools_dir = os.path.join(ROOT_DIR, args.win_tools_name)
+  git_postprocess(template, os.path.join(win_tools_dir, 'git'))
 
   # Clean up any old Python and Git installations.
-  clean_up_old_installations(bootstrap_dir)
+  clean_up_old_installations(win_tools_dir)
 
-  # Only bootstrap git and Python 2 on Windows.
-  if IS_WIN:
-    git_postprocess(template, os.path.join(bootstrap_dir, 'git'))
-
-    # Emit our Python bin depot-tools-relative directory. This is ready by
-    # "python.bat" to identify the path of the current Python installation.
-    #
-    # We use this indirection so that upgrades can change this pointer to
-    # redirect "python.bat" to a new Python installation. We can't just update
-    # "python.bat" because batch file executions reload the batch file and seek
-    # to the previous cursor in between every command, so changing the batch
-    # file contents could invalidate any existing executions.
-    #
-    # The intention is that the batch file itself never needs to change when
-    # switching Python versions.
-    maybe_update(
-        template.PYTHON_BIN_RELDIR,
-        os.path.join(ROOT_DIR, 'python_bin_reldir.txt'))
-
-    python_template = 'python27.%s.bat' % (
-        'bleeding_edge' if args.bleeding_edge else 'new')
-    for src_name, dst_name in (
-        ('git-bash.template.sh', 'git-bash'),
-        (python_template, 'python' + BAT_EXT),
-        ):
-      # Re-evaluate and regenerate our root templated files.
-      template.maybe_install(src_name, os.path.join(ROOT_DIR, dst_name))
-
+  # Emit our Python bin depot-tools-relative directory. This is ready by
+  # "python.bat" to identify the path of the current Python installation.
+  #
+  # We use this indirection so that upgrades can change this pointer to
+  # redirect "python.bat" to a new Python installation. We can't just update
+  # "python.bat" because batch file executions reload the batch file and seek
+  # to the previous cursor in between every command, so changing the batch
+  # file contents could invalidate any existing executions.
+  #
+  # The intention is that the batch file itself never needs to change when
+  # switching Python versions.
+  maybe_update(
+      template.PYTHON_BIN_RELDIR,
+      os.path.join(ROOT_DIR, 'python_bin_reldir.txt'))
   maybe_update(
       template.PYTHON3_BIN_RELDIR,
       os.path.join(ROOT_DIR, 'python3_bin_reldir.txt'))
 
-  python3_template = 'python3.'
-  python3_template += 'bleeding_edge' if args.bleeding_edge else 'new'
-  python3_template += BAT_EXT
+  python_bat_template = ('python27.new.bat' if not args.bleeding_edge
+                         else 'python27.bleeding_edge.bat')
+  python3_bat_template = ('python3.new.bat' if not args.bleeding_edge
+                          else 'python3.bleeding_edge.bat')
 
-  template.maybe_install(
-      python3_template, os.path.join(ROOT_DIR, 'python3' + BAT_EXT))
+  # Re-evaluate and regenerate our root templated files.
+  for src_name, dst_name in (
+      ('git-bash.template.sh', 'git-bash'),
+      (python_bat_template, 'python.bat'),
+      (python3_bat_template, 'python3.bat'),
+      ):
+    template.maybe_install(src_name, os.path.join(ROOT_DIR, dst_name))
 
   return 0
 
