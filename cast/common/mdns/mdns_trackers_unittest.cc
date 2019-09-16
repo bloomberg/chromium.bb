@@ -109,16 +109,11 @@ class MdnsTrackerTest : public ::testing::Test {
     clock_.Advance(std::chrono::hours(1));
   }
 
-  void UpdateCallback(const MdnsRecord&) { update_called_ = true; }
-  void ExpirationCallback(const MdnsRecord&) { expiration_called_ = true; }
-
   std::unique_ptr<MdnsRecordTracker> CreateRecordTracker() {
     return std::make_unique<MdnsRecordTracker>(
         &sender_, &task_runner_, &FakeClock::now, &random_,
-        std::bind(&MdnsTrackerTest::UpdateCallback, this,
-                  std::placeholders::_1),
-        std::bind(&MdnsTrackerTest::ExpirationCallback, this,
-                  std::placeholders::_1));
+        [this](const MdnsRecord& record) { update_called_ = true; },
+        [this](const MdnsRecord& record) { expiration_called_ = true; });
   }
 
   std::unique_ptr<MdnsQuestionTracker> CreateQuestionTracker() {

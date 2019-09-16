@@ -8,6 +8,7 @@
 #include <random>
 #include <unordered_map>
 
+#include "absl/hash/hash.h"
 #include "cast/common/mdns/mdns_random.h"
 #include "cast/common/mdns/mdns_sender.h"
 #include "platform/api/task_runner.h"
@@ -121,13 +122,35 @@ class MdnsQuestionTracker : public MdnsTracker {
   // automatically sending queries, false otherwise.
   bool IsStarted();
 
+  // Called by the owner of the class
+  void OnRecordReceived(const MdnsRecord& record);
+
  private:
+  // Called by owned MdnsRecordTrackers when a tracked record is expired
+  void OnRecordExpired(const MdnsRecord& record);
+
+  // Called by owned MdnsRecordTrackers when a tracked record's RDATA changes
+  void OnRecordUpdated(const MdnsRecord& record);
+
   // Sends a query message via MdnsSender and schedules the next resend.
   void SendQuery();
 
+  // MdnsQuestionTracker has to store task runner pointer explicitly to pass it
+  // to MdnsRecordTracker constructor.
+  TaskRunner* task_runner_;
+
   // Stores MdnsQuestion provided to Start method call.
   absl::optional<MdnsQuestion> question_;
+
+  // A delay between the currently scheduled and the next queries.
   Clock::duration send_delay_;
+
+  // Active record trackers, uniquely identified by domain name, DNS record type
+  // and DNS record class
+  std::unordered_map<std::tuple<DomainName, DnsType, DnsClass>,
+                     std::unique_ptr<MdnsRecordTracker>,
+                     absl::Hash<std::tuple<DomainName, DnsType, DnsClass>>>
+      record_trackers_;
 };
 
 }  // namespace mdns

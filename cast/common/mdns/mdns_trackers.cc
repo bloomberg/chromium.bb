@@ -33,11 +33,12 @@ constexpr std::chrono::minutes kMaximumQueryInterval{60};
 
 // A goodbye record is a record with TTL of 0.
 bool IsGoodbyeRecord(const MdnsRecord& record) {
-  constexpr std::chrono::seconds zero_ttl{0};
-  return record.ttl() == zero_ttl;
+  return record.ttl() == std::chrono::seconds{0};
 }
 
-// The interval between the first two queries must be at least one second.
+// RFC 6762 Section 10.1
+// https://tools.ietf.org/html/rfc6762#section-10.1
+// In case of a goodbye record, the querier should set TTL to 1 second
 constexpr std::chrono::seconds kGoodbyeRecordTtl{1};
 
 }  // namespace
@@ -78,8 +79,7 @@ Error MdnsRecordTracker::Start(MdnsRecord record) {
   record_ = std::move(record);
   start_time_ = now_function_();
   send_count_ = 0;
-  send_alarm_.Schedule(std::bind(&MdnsRecordTracker::SendQuery, this),
-                       GetNextSendTime());
+  send_alarm_.Schedule([this] { SendQuery(); }, GetNextSendTime());
   return Error::None();
 }
 
@@ -107,7 +107,7 @@ Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
   }
 
   // Check if RDATA has changed before a call to Stop clears the old record
-  bool is_updated = (new_record.rdata() != old_record.rdata());
+  const bool is_updated = (new_record.rdata() != old_record.rdata());
 
   Error error = Stop();
   if (!error.ok()) {
@@ -115,9 +115,6 @@ Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
   }
 
   if (IsGoodbyeRecord(new_record)) {
-    // RFC 6762 Section 10.1
-    // https://tools.ietf.org/html/rfc6762#section-10.1
-    // In case of a goodbye record, the querier should set TTL to 1 second
     error = Start(MdnsRecord(new_record.name(), new_record.dns_type(),
                              new_record.dns_class(), new_record.record_type(),
                              kGoodbyeRecordTtl, new_record.rdata()));
@@ -129,6 +126,8 @@ Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
     return error;
   }
 
+  // There's no need to run a callback on task runner as the entire method
+  // should be running on task runner.
   if (is_updated) {
     record_updated_callback_(record_.value());
   }
@@ -150,7 +149,7 @@ void MdnsRecordTracker::SendQuery() {
     MdnsMessage message(CreateMessageId(), MessageType::Query);
     message.AddQuestion(std::move(question));
     sender_->SendMulticast(message);
-    send_alarm_.Schedule(std::bind(&MdnsRecordTracker::SendQuery, this),
+    send_alarm_.Schedule([this] { MdnsRecordTracker::SendQuery(); },
                          GetNextSendTime());
   } else {
     record_expired_callback_(record);
@@ -176,7 +175,8 @@ MdnsQuestionTracker::MdnsQuestionTracker(MdnsSender* sender,
                                          TaskRunner* task_runner,
                                          ClockNowFunctionPtr now_function,
                                          MdnsRandom* random_delay)
-    : MdnsTracker(sender, task_runner, now_function, random_delay) {}
+    : MdnsTracker(sender, task_runner, now_function, random_delay),
+      task_runner_(task_runner) {}
 
 Error MdnsQuestionTracker::Start(MdnsQuestion question) {
   if (question_.has_value()) {
@@ -188,7 +188,7 @@ Error MdnsQuestionTracker::Start(MdnsQuestion question) {
   // The initial query has to be sent after a random delay of 20-120
   // milliseconds.
   const Clock::duration delay = random_delay_->GetInitialQueryDelay();
-  send_alarm_.Schedule(std::bind(&MdnsQuestionTracker::SendQuery, this),
+  send_alarm_.Schedule([this] { MdnsQuestionTracker::SendQuery(); },
                        now_function_() + delay);
   return Error::None();
 }
@@ -207,13 +207,54 @@ bool MdnsQuestionTracker::IsStarted() {
   return question_.has_value();
 };
 
+void MdnsQuestionTracker::OnRecordReceived(const MdnsRecord& record) {
+  if (!question_.has_value()) {
+    return;
+  }
+
+  const std::tuple<DomainName, DnsType, DnsClass> key =
+      std::make_tuple(record.name(), record.dns_type(), record.dns_class());
+
+  const auto find_result = record_trackers_.find(key);
+  if (find_result != record_trackers_.end()) {
+    MdnsRecordTracker* record_tracker = find_result->second.get();
+    record_tracker->Update(record);
+    return;
+  }
+
+  std::unique_ptr<MdnsRecordTracker> record_tracker =
+      std::make_unique<MdnsRecordTracker>(
+          sender_, task_runner_, now_function_, random_delay_,
+          [this](const MdnsRecord& record) {
+            MdnsQuestionTracker::OnRecordUpdated(record);
+          },
+          [this](const MdnsRecord& record) {
+            MdnsQuestionTracker::OnRecordExpired(record);
+          });
+
+  record_tracker->Start(record);
+  record_trackers_.emplace(key, std::move(record_tracker));
+  // TODO(yakimakha): Notify all interested parties that a new record has been
+  // added
+}
+
+void MdnsQuestionTracker::OnRecordExpired(const MdnsRecord& record) {
+  // TODO(yakimakha): Notify all interested parties that an existing record has
+  // been deleted
+}
+
+void MdnsQuestionTracker::OnRecordUpdated(const MdnsRecord& record) {
+  // TODO(yakimakha): Notify all interested parties that an existing record has
+  // been updated
+}
+
 void MdnsQuestionTracker::SendQuery() {
   MdnsMessage message(CreateMessageId(), MessageType::Query);
   message.AddQuestion(question_.value());
   // TODO(yakimakha): Implement known-answer suppression by adding known
   // answers to the question
   sender_->SendMulticast(message);
-  send_alarm_.Schedule(std::bind(&MdnsQuestionTracker::SendQuery, this),
+  send_alarm_.Schedule([this] { MdnsQuestionTracker::SendQuery(); },
                        now_function_() + send_delay_);
   send_delay_ = send_delay_ * kIntervalIncreaseFactor;
   if (send_delay_ > kMaximumQueryInterval) {
