@@ -12,7 +12,6 @@ import os
 from textwrap import dedent
 
 import mock
-from six.moves import StringIO
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -132,7 +131,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
         B=0
         C=256
         D=0""")
-    result = StringIO(base64.b64encode(TEST_VERSION_CONTENTS))
+    result = base64.b64encode(TEST_VERSION_CONTENTS)
     self.PatchObject(gob_util, 'FetchUrl', return_value=result)
     # pylint: disable=protected-access
     version = cros_mark_chrome_as_stable._GetSpecificVersionUrl(
@@ -164,8 +163,8 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
         """)
 
     self.PatchObject(gob_util, 'FetchUrl', side_effect=(
-        StringIO(base64.b64encode(TEST_BAD_DEPS_CONTENT)),
-        StringIO(base64.b64encode(TEST_GOOD_DEPS_CONTENT)),
+        base64.b64encode(TEST_BAD_DEPS_CONTENT),
+        base64.b64encode(TEST_GOOD_DEPS_CONTENT),
     ))
     self.PatchObject(gob_util, 'FetchUrlJson', side_effect=(TEST_REFS_JSON,))
     release = cros_mark_chrome_as_stable.GetLatestRelease(TEST_URL)
@@ -182,7 +181,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
         """)
 
     self.PatchObject(gob_util, 'FetchUrl', side_effect=(
-        StringIO(base64.b64encode(TEST_DEPS_CONTENT)),
+        base64.b64encode(TEST_DEPS_CONTENT),
     ))
     self.PatchObject(gob_util, 'FetchUrlJson', side_effect=(TEST_REFS_JSON,))
     release = cros_mark_chrome_as_stable.GetLatestRelease(TEST_URL, '7.0.224')

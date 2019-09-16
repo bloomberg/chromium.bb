@@ -16,7 +16,6 @@ import os
 import struct
 
 import mock
-from six.moves import StringIO
 
 from chromite.cbuildbot import commands
 from chromite.lib import config_lib
@@ -1193,7 +1192,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
     site_params = config_lib.GetSiteParams()
     with mock.patch.object(
         gob_util, 'FetchUrl',
-        return_value=StringIO(base64.b64encode(chrome_lkgm))) as patcher:
+        return_value=base64.b64encode(chrome_lkgm)) as patcher:
       self.assertEqual(chrome_lkgm, commands.GetChromeLKGM(chrome_revision))
       patcher.assert_called_with(site_params.EXTERNAL_GOB_HOST, url)
 

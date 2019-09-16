@@ -30,7 +30,6 @@ import six
 from six.moves import html_parser as HTMLParser
 from six.moves import http_client as httplib
 from six.moves import http_cookiejar as cookielib
-from six.moves import StringIO
 from six.moves import urllib
 
 from chromite.lib import constants
@@ -271,7 +270,7 @@ def _InAppengine():
 
 def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
              ignore_204=False, ignore_404=True):
-  """Fetches the http response from the specified URL into a string buffer.
+  """Fetches the http response from the specified URL.
 
   Args:
     host: The hostname of the Gerrit service.
@@ -288,7 +287,7 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
                 want the API to return None rather than raise an Exception.
 
   Returns:
-    A string buffer containing the connection's reply.
+    The connection's reply, as bytes.
   """
   @timeout_util.TimeoutDecorator(REQUEST_TIMEOUT_SECONDS)
   def _FetchUrlHelper():
@@ -307,9 +306,9 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
       # This exception is used to confirm expected response status.
       raise GOBError(http_status=response.status, reason=response.reason)
     if response.status == 404 and ignore_404:
-      return StringIO()
+      return b''
     elif response.status == 200:
-      return StringIO(response_body)
+      return response_body
 
     # Bad responses.
     logging.debug('response msg:\n%s', response.msg)
@@ -389,14 +388,18 @@ def FetchUrlJson(*args, **kwargs):
   See FetchUrl for arguments.
   """
   fh = FetchUrl(*args, **kwargs)
-  # The first line of the response should always be: )]}'
-  s = fh.readline()
-  if s and s.rstrip() != ")]}'":
-    raise GOBError(http_status=200, reason='Unexpected json output: %s' % s)
-  s = fh.read()
-  if not s:
+
+  # In case ignore_404 is True, we want to return None instead of
+  # raising an exception.
+  if not fh:
     return None
-  return json.loads(s)
+
+  # The first line of the response should always be: )]}'
+  if not fh.startswith(b")]}'"):
+    raise GOBError(http_status=200, reason='Unexpected json output: %r' % fh)
+
+  _, _, json_data = fh.partition(b'\n')
+  return json.loads(json_data)
 
 
 def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,

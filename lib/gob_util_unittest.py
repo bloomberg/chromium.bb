@@ -25,7 +25,7 @@ class FakeHTTPResponse(object):
   for more details.
   """
 
-  def __init__(self, body='', headers=(), reason=None, status=200, version=11):
+  def __init__(self, body=b'', headers=(), reason=None, status=200, version=11):
     if reason is None:
       reason = httplib.responses[status]
 
@@ -66,7 +66,7 @@ class FakeHTTPConnection(object):
 class GobTest(cros_test_lib.MockTestCase):
   """Unittests that use mocks."""
 
-  UTF8_DATA = 'That\xe2\x80\x99s an error. That\xe2\x80\x99s all we know.'
+  UTF8_DATA = b'That\xe2\x80\x99s an error. That\xe2\x80\x99s all we know.'
 
   def setUp(self):
     self.conn = self.PatchObject(gob_util, 'CreateHttpConn', autospec=False)

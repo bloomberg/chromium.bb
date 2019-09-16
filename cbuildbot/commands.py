@@ -3662,7 +3662,9 @@ def GetChromeLKGM(revision):
       constants.CHROMIUM_SRC_PROJECT, revision, constants.PATH_TO_CHROME_LKGM)
   contents_b64 = gob_util.FetchUrl(config_lib.GetSiteParams().EXTERNAL_GOB_HOST,
                                    lkgm_url_path)
-  return base64.b64decode(contents_b64.read()).strip()
+  # TODO(crbug.com/997354): for Python 3 support, it probably makes
+  # sense to return a string here, not bytes.
+  return base64.b64decode(contents_b64).strip()
 
 
 def SyncChrome(build_root,
