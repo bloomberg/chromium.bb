@@ -72,4 +72,18 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
   properties->wm_role_name = params.wm_role_name;
 }
 
+// As DWTHX11 subclasses DWTHPlatform through DWTHLinux now (during transition
+// period. see https://crbug.com/990756), we need to guard this factory method.
+// TODO(msisov): remove this guard once DWTHX11 is finally merged into
+// DWTHPlatform and .
+#if !defined(USE_X11)
+// static
+DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
+    internal::NativeWidgetDelegate* native_widget_delegate,
+    DesktopNativeWidgetAura* desktop_native_widget_aura) {
+  return new DesktopWindowTreeHostLinux(native_widget_delegate,
+                                        desktop_native_widget_aura);
+}
+#endif
+
 }  // namespace views

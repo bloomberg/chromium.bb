@@ -792,11 +792,8 @@ void DesktopWindowTreeHostPlatform::AddAdditionalInitProperties(
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHost:
 
-// As DWTHX11 subclasses DWTHPlatform now (during transition period. see
-// https://crbug.com/990756), we need to guard this factory method.
-// TODO(msisov): remove this guard once DWTHX11 is finally merged into
-// DWTHPlatform.
-#if !defined(USE_X11)
+// Linux subclasses this host and adds some Linux specific bits.
+#if !defined(OS_LINUX)
 // static
 DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,
