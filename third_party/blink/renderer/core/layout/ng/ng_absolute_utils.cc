@@ -234,18 +234,6 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
            *margin_end;
   }
 
-#if DCHECK_IS_ON()
-  values_might_be_saturated |=
-      inset_start->MightBeSaturated() || inset_end->MightBeSaturated() ||
-      size->MightBeSaturated() || margin_start->MightBeSaturated() ||
-      margin_end->MightBeSaturated() || available_size.MightBeSaturated();
-  // The DCHECK is useful, but only holds true if the values aren't saturated.
-  if (!values_might_be_saturated) {
-    DCHECK_EQ(available_size,
-              *inset_start + *inset_end + *margin_start + *margin_end + *size);
-  }
-#endif  // #if DCHECK_IS_ON()
-
   // If calculated |size| is outside of min/max constraints, rerun the
   // algorithm with the constrained |size|.
   LayoutUnit constrained_size = ConstrainByMinMax(*size, min_size, max_size);
