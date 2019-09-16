@@ -515,7 +515,6 @@ bool PropertyTreeBuilderContext::AddEffectNodeIfNeeded(
   node->stable_id = layer->id();
   node->opacity = layer->opacity();
   node->blend_mode = layer->blend_mode();
-  node->unscaled_mask_target_size = layer->bounds();
   node->cache_render_surface = layer->cache_render_surface();
   node->has_copy_request = layer->HasCopyRequest();
   node->filters = layer->filters();
