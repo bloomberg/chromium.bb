@@ -3612,4 +3612,9 @@ GlobalFrameRoutingId NavigationRequest::GetPreviousRenderFrameHostId() {
   return previous_render_frame_host_id_;
 }
 
+// static
+NavigationRequest* NavigationRequest::From(NavigationHandle* handle) {
+  return static_cast<NavigationHandleImpl*>(handle)->navigation_request();
+}
+
 }  // namespace content
