@@ -286,7 +286,7 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 // If enabled, use SurfaceLayer instead of VideoLayer for all playbacks that
 // aren't MediaStream.
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable VA-API hardware low power encoder for all codecs.
 const base::Feature kVaapiLowPowerEncoder{"VaapiLowPowerEncoder",
