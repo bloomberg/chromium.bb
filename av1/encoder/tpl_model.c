@@ -42,10 +42,10 @@ static BLOCK_SIZE convert_length_to_bsize(int length) {
   }
 }
 
-static void get_quantize_error(MACROBLOCK *x, int plane, tran_low_t *coeff,
-                               tran_low_t *qcoeff, tran_low_t *dqcoeff,
-                               TX_SIZE tx_size, int64_t *recon_error,
-                               int64_t *sse) {
+static AOM_INLINE void get_quantize_error(MACROBLOCK *x, int plane,
+                                          tran_low_t *coeff, tran_low_t *qcoeff,
+                                          tran_low_t *dqcoeff, TX_SIZE tx_size,
+                                          int64_t *recon_error, int64_t *sse) {
   const struct macroblock_plane *const p = &x->plane[plane];
   const SCAN_ORDER *const scan_order = &av1_default_scan_orders[tx_size];
   uint16_t eob;
@@ -63,8 +63,9 @@ static void get_quantize_error(MACROBLOCK *x, int plane, tran_low_t *coeff,
   *sse = AOMMAX(*sse, 1);
 }
 
-static void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
-                         TX_SIZE tx_size, int is_hbd) {
+static AOM_INLINE void wht_fwd_txfm(int16_t *src_diff, int bw,
+                                    tran_low_t *coeff, TX_SIZE tx_size,
+                                    int is_hbd) {
   if (is_hbd) {
     switch (tx_size) {
       case TX_8X8: aom_highbd_hadamard_8x8(src_diff, bw, coeff); break;
@@ -137,7 +138,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   return bestsme;
 }
 
-static void mode_estimation(
+static AOM_INLINE void mode_estimation(
     AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd, struct scale_factors *sf,
     int frame_idx, int16_t *src_diff, tran_low_t *coeff, tran_low_t *qcoeff,
     tran_low_t *dqcoeff, int use_satd, int mi_row, int mi_col, BLOCK_SIZE bsize,
@@ -383,11 +384,12 @@ int av1_tpl_ptr_pos(AV1_COMP *cpi, int mi_row, int mi_col, int stride) {
   return (mi_row >> right_shift) * stride + (mi_col >> right_shift);
 }
 
-static void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
-                               TplDepStats *tpl_stats_ptr, int mi_row,
-                               int mi_col, double quant_ratio,
-                               const BLOCK_SIZE bsize, int ref_frame_index,
-                               int_mv mv) {
+static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
+                                          TplDepStats *tpl_stats_ptr,
+                                          int mi_row, int mi_col,
+                                          double quant_ratio,
+                                          const BLOCK_SIZE bsize,
+                                          int ref_frame_index, int_mv mv) {
   TplDepFrame *ref_tpl_frame = &tpl_frame[ref_frame_index];
   TplDepStats *ref_stats_ptr = ref_tpl_frame->tpl_stats_ptr;
 
@@ -440,10 +442,11 @@ static void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
   }
 }
 
-static void tpl_model_update(AV1_COMP *cpi, TplDepFrame *tpl_frame,
-                             TplDepStats *tpl_stats_ptr, int mi_row, int mi_col,
-                             double quant_ratio, const BLOCK_SIZE bsize,
-                             int ref_frame_index, int_mv mv) {
+static AOM_INLINE void tpl_model_update(AV1_COMP *cpi, TplDepFrame *tpl_frame,
+                                        TplDepStats *tpl_stats_ptr, int mi_row,
+                                        int mi_col, double quant_ratio,
+                                        const BLOCK_SIZE bsize,
+                                        int ref_frame_index, int_mv mv) {
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
   const int step = 1 << cpi->tpl_stats_block_mis_log2;
@@ -460,9 +463,10 @@ static void tpl_model_update(AV1_COMP *cpi, TplDepFrame *tpl_frame,
   }
 }
 
-static void tpl_model_store(AV1_COMP *cpi, TplDepStats *tpl_stats_ptr,
-                            int mi_row, int mi_col, BLOCK_SIZE bsize,
-                            int stride, const TplDepStats *src_stats) {
+static AOM_INLINE void tpl_model_store(AV1_COMP *cpi,
+                                       TplDepStats *tpl_stats_ptr, int mi_row,
+                                       int mi_col, BLOCK_SIZE bsize, int stride,
+                                       const TplDepStats *src_stats) {
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
   const int step = 1 << cpi->tpl_stats_block_mis_log2;
@@ -503,7 +507,7 @@ static YV12_BUFFER_CONFIG *get_framebuf(
   }
 }
 
-static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
+static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
   const GF_GROUP *gf_group = &cpi->gf_group;
   if (frame_idx == gf_group->size) return;
   TplDepFrame *tpl_frame = &cpi->tpl_frame[frame_idx];
@@ -609,7 +613,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
   xd->mi = backup_mi_grid;
 }
 
-static void init_gop_frames_for_tpl(
+static AOM_INLINE void init_gop_frames_for_tpl(
     AV1_COMP *cpi, const EncodeFrameParams *const init_frame_params,
     GF_GROUP *gf_group, int *tpl_group_frames,
     const EncodeFrameInput *const frame_input) {
@@ -743,7 +747,7 @@ static void init_gop_frames_for_tpl(
   av1_get_ref_frames(cpi, &cpi->ref_buffer_stack);
 }
 
-static void init_tpl_stats(AV1_COMP *cpi) {
+static AOM_INLINE void init_tpl_stats(AV1_COMP *cpi) {
   for (int frame_idx = 0; frame_idx < MAX_LENGTH_TPL_FRAME_STATS; ++frame_idx) {
     TplDepFrame *tpl_frame = &cpi->tpl_stats_buffer[frame_idx];
     memset(tpl_frame->tpl_stats_ptr, 0,
@@ -798,11 +802,12 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
   cm->current_frame.frame_type = frame_params->frame_type;
 }
 
-static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
-                                  BLOCK_SIZE bsize, int use_satd,
-                                  YV12_BUFFER_CONFIG *ref,
-                                  YV12_BUFFER_CONFIG *src,
-                                  TplDepFrame *ref_tpl_frame) {
+static AOM_INLINE void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x,
+                                             MACROBLOCKD *xd, BLOCK_SIZE bsize,
+                                             int use_satd,
+                                             YV12_BUFFER_CONFIG *ref,
+                                             YV12_BUFFER_CONFIG *src,
+                                             TplDepFrame *ref_tpl_frame) {
 // TODO(yuec) Consider deleting forward tpl model completely
 #if !USE_TPL_CLASSIC_MODEL
   AV1_COMMON *cm = &cpi->common;

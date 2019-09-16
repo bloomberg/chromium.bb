@@ -22,9 +22,9 @@ typedef struct {
   tran_low_t *dqcoeff_buf[MAX_MB_PLANE];
 } PC_TREE_SHARED_BUFFERS;
 
-static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
-                               PICK_MODE_CONTEXT *ctx,
-                               PC_TREE_SHARED_BUFFERS *shared_bufs) {
+static AOM_INLINE void alloc_mode_context(AV1_COMMON *cm, int num_pix,
+                                          PICK_MODE_CONTEXT *ctx,
+                                          PC_TREE_SHARED_BUFFERS *shared_bufs) {
   const int num_planes = av1_num_planes(cm);
   int i;
   const int num_blk = num_pix / 16;
@@ -51,7 +51,8 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
   }
 }
 
-static void free_mode_context(PICK_MODE_CONTEXT *ctx, const int num_planes) {
+static AOM_INLINE void free_mode_context(PICK_MODE_CONTEXT *ctx,
+                                         const int num_planes) {
   int i;
   aom_free(ctx->blk_skip);
   ctx->blk_skip = 0;
@@ -71,9 +72,9 @@ static void free_mode_context(PICK_MODE_CONTEXT *ctx, const int num_planes) {
   }
 }
 
-static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree, int num_pix,
-                                int is_leaf,
-                                PC_TREE_SHARED_BUFFERS *shared_bufs) {
+static AOM_INLINE void alloc_tree_contexts(
+    AV1_COMMON *cm, PC_TREE *tree, int num_pix, int is_leaf,
+    PC_TREE_SHARED_BUFFERS *shared_bufs) {
   alloc_mode_context(cm, num_pix, &tree->none, shared_bufs);
 
   if (is_leaf) return;
@@ -106,7 +107,7 @@ static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree, int num_pix,
   }
 }
 
-static void free_tree_contexts(PC_TREE *tree, const int num_planes) {
+static AOM_INLINE void free_tree_contexts(PC_TREE *tree, const int num_planes) {
   int i;
   for (i = 0; i < 3; i++) {
     free_mode_context(&tree->horizontala[i], num_planes);

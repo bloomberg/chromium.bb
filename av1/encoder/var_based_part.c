@@ -87,7 +87,8 @@ typedef struct {
   var *split[4];
 } variance_node;
 
-static void tree_to_node(void *data, BLOCK_SIZE bsize, variance_node *node) {
+static AOM_INLINE void tree_to_node(void *data, BLOCK_SIZE bsize,
+                                    variance_node *node) {
   int i;
   node->part_variances = NULL;
   switch (bsize) {
@@ -137,13 +138,13 @@ static void tree_to_node(void *data, BLOCK_SIZE bsize, variance_node *node) {
 }
 
 // Set variance values given sum square error, sum error, count.
-static void fill_variance(uint32_t s2, int32_t s, int c, var *v) {
+static AOM_INLINE void fill_variance(uint32_t s2, int32_t s, int c, var *v) {
   v->sum_square_error = s2;
   v->sum_error = s;
   v->log2_count = c;
 }
 
-static void get_variance(var *v) {
+static AOM_INLINE void get_variance(var *v) {
   v->variance =
       (int)(256 * (v->sum_square_error -
                    (uint32_t)(((int64_t)v->sum_error * v->sum_error) >>
@@ -151,13 +152,13 @@ static void get_variance(var *v) {
             v->log2_count);
 }
 
-static void sum_2_variances(const var *a, const var *b, var *r) {
+static AOM_INLINE void sum_2_variances(const var *a, const var *b, var *r) {
   assert(a->log2_count == b->log2_count);
   fill_variance(a->sum_square_error + b->sum_square_error,
                 a->sum_error + b->sum_error, a->log2_count + 1, r);
 }
 
-static void fill_variance_tree(void *data, BLOCK_SIZE bsize) {
+static AOM_INLINE void fill_variance_tree(void *data, BLOCK_SIZE bsize) {
   variance_node node;
   memset(&node, 0, sizeof(node));
   tree_to_node(data, bsize, &node);
@@ -169,9 +170,9 @@ static void fill_variance_tree(void *data, BLOCK_SIZE bsize) {
                   &node.part_variances->none);
 }
 
-static void set_block_size(AV1_COMP *const cpi, MACROBLOCK *const x,
-                           MACROBLOCKD *const xd, int mi_row, int mi_col,
-                           BLOCK_SIZE bsize) {
+static AOM_INLINE void set_block_size(AV1_COMP *const cpi, MACROBLOCK *const x,
+                                      MACROBLOCKD *const xd, int mi_row,
+                                      int mi_col, BLOCK_SIZE bsize) {
   if (cpi->common.mi_cols > mi_col && cpi->common.mi_rows > mi_row) {
     set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
     xd->mi[0]->sb_type = bsize;
@@ -258,10 +259,11 @@ static int set_vt_partitioning(AV1_COMP *cpi, MACROBLOCK *const x,
   return 0;
 }
 
-static void fill_variance_8x8avg(const uint8_t *s, int sp, const uint8_t *d,
-                                 int dp, int x16_idx, int y16_idx, v16x16 *vst,
-                                 int pixels_wide, int pixels_high,
-                                 int is_key_frame) {
+static AOM_INLINE void fill_variance_8x8avg(const uint8_t *s, int sp,
+                                            const uint8_t *d, int dp,
+                                            int x16_idx, int y16_idx,
+                                            v16x16 *vst, int pixels_wide,
+                                            int pixels_high, int is_key_frame) {
   int k;
   for (k = 0; k < 4; k++) {
     int x8_idx = x16_idx + ((k & 1) << 3);
@@ -303,10 +305,11 @@ static int compute_minmax_8x8(const uint8_t *s, int sp, const uint8_t *d,
   return (minmax_max - minmax_min);
 }
 
-static void fill_variance_4x4avg(const uint8_t *s, int sp, const uint8_t *d,
-                                 int dp, int x8_idx, int y8_idx, v8x8 *vst,
-                                 int pixels_wide, int pixels_high,
-                                 int is_key_frame) {
+static AOM_INLINE void fill_variance_4x4avg(const uint8_t *s, int sp,
+                                            const uint8_t *d, int dp,
+                                            int x8_idx, int y8_idx, v8x8 *vst,
+                                            int pixels_wide, int pixels_high,
+                                            int is_key_frame) {
   int k;
   for (k = 0; k < 4; k++) {
     int x4_idx = x8_idx + ((k & 1) << 2);
@@ -342,8 +345,8 @@ static int64_t scale_part_thresh_sumdiff(int64_t threshold_base, int speed,
 // 0 - threshold_128x128, 1 - threshold_64x64, 2 - threshold_32x32,
 // 3 - vbp_threshold_16x16. 4 - vbp_threshold_8x8 (to split to 4x4 partition) is
 // currently only used on key frame.
-static void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[], int q,
-                               int content_state) {
+static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
+                                          int q, int content_state) {
   AV1_COMMON *const cm = &cpi->common;
   const int is_key_frame = frame_is_intra_only(cm);
   const int threshold_multiplier = is_key_frame ? 40 : 1;
@@ -380,10 +383,10 @@ static void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[], int q,
   }
 }
 
-static void set_low_temp_var_flag(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
-                                  v128x128 *vt, int64_t thresholds[],
-                                  MV_REFERENCE_FRAME ref_frame_partition,
-                                  int mi_col, int mi_row) {
+static AOM_INLINE void set_low_temp_var_flag(
+    AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd, v128x128 *vt,
+    int64_t thresholds[], MV_REFERENCE_FRAME ref_frame_partition, int mi_col,
+    int mi_row) {
   int i, j, k;
   AV1_COMMON *const cm = &cpi->common;
   const int mv_thr = cm->width > 640 ? 8 : 4;
@@ -496,8 +499,9 @@ void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q,
   }
 }
 
-static void chroma_check(AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                         unsigned int y_sad, int is_key_frame) {
+static AOM_INLINE void chroma_check(AV1_COMP *cpi, MACROBLOCK *x,
+                                    BLOCK_SIZE bsize, unsigned int y_sad,
+                                    int is_key_frame) {
   int i;
   MACROBLOCKD *xd = &x->e_mbd;
 

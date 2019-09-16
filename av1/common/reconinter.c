@@ -118,7 +118,8 @@ static const uint8_t wedge_master_vertical[MASK_MASTER_SIZE] = {
   64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
 };
 
-static void shift_copy(const uint8_t *src, uint8_t *dst, int shift, int width) {
+static AOM_INLINE void shift_copy(const uint8_t *src, uint8_t *dst, int shift,
+                                  int width) {
   if (shift >= 0) {
     memcpy(dst + shift, src, width - shift);
     memset(dst, src[0], shift);
@@ -276,10 +277,10 @@ const uint8_t *av1_get_compound_type_mask(
   }
 }
 
-static void diffwtd_mask_d16(uint8_t *mask, int which_inverse, int mask_base,
-                             const CONV_BUF_TYPE *src0, int src0_stride,
-                             const CONV_BUF_TYPE *src1, int src1_stride, int h,
-                             int w, ConvolveParams *conv_params, int bd) {
+static AOM_INLINE void diffwtd_mask_d16(
+    uint8_t *mask, int which_inverse, int mask_base, const CONV_BUF_TYPE *src0,
+    int src0_stride, const CONV_BUF_TYPE *src1, int src1_stride, int h, int w,
+    ConvolveParams *conv_params, int bd) {
   int round =
       2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1 + (bd - 8);
   int i, j, m, diff;
@@ -310,9 +311,10 @@ void av1_build_compound_diffwtd_mask_d16_c(
   }
 }
 
-static void diffwtd_mask(uint8_t *mask, int which_inverse, int mask_base,
-                         const uint8_t *src0, int src0_stride,
-                         const uint8_t *src1, int src1_stride, int h, int w) {
+static AOM_INLINE void diffwtd_mask(uint8_t *mask, int which_inverse,
+                                    int mask_base, const uint8_t *src0,
+                                    int src0_stride, const uint8_t *src1,
+                                    int src1_stride, int h, int w) {
   int i, j, m, diff;
   for (i = 0; i < h; ++i) {
     for (j = 0; j < w; ++j) {
@@ -420,7 +422,7 @@ void av1_build_compound_diffwtd_mask_highbd_c(
   }
 }
 
-static void init_wedge_master_masks() {
+static AOM_INLINE void init_wedge_master_masks() {
   int i, j;
   const int w = MASK_MASTER_SIZE;
   const int h = MASK_MASTER_SIZE;
@@ -485,7 +487,7 @@ static void init_wedge_master_masks() {
 // If the signs for the wedges for various blocksizes are
 // inconsistent flip the sign flag. Do it only once for every
 // wedge codebook.
-static void init_wedge_signs() {
+static AOM_INLINE void init_wedge_signs() {
   BLOCK_SIZE sb_type;
   memset(wedge_signflip_lookup, 0, sizeof(wedge_signflip_lookup));
   for (sb_type = BLOCK_4X4; sb_type < BLOCK_SIZES_ALL; ++sb_type) {
@@ -519,7 +521,7 @@ static void init_wedge_signs() {
 }
 #endif  // !USE_PRECOMPUTED_WEDGE_SIGN
 
-static void init_wedge_masks() {
+static AOM_INLINE void init_wedge_masks() {
   uint8_t *dst = wedge_mask_buf;
   BLOCK_SIZE bsize;
   memset(wedge_masks, 0, sizeof(wedge_masks));
@@ -558,7 +560,7 @@ void av1_init_wedge_masks() {
   init_wedge_masks();
 }
 
-static void build_masked_compound_no_round(
+static AOM_INLINE void build_masked_compound_no_round(
     uint8_t *dst, int dst_stride, const CONV_BUF_TYPE *src0, int src0_stride,
     const CONV_BUF_TYPE *src1, int src1_stride,
     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type, int h,
@@ -995,9 +997,9 @@ static uint8_t ii_size_scales[BLOCK_SIZES_ALL] = {
 };
 /* clang-format on */
 
-static void build_smooth_interintra_mask(uint8_t *mask, int stride,
-                                         BLOCK_SIZE plane_bsize,
-                                         INTERINTRA_MODE mode) {
+static AOM_INLINE void build_smooth_interintra_mask(uint8_t *mask, int stride,
+                                                    BLOCK_SIZE plane_bsize,
+                                                    INTERINTRA_MODE mode) {
   int i, j;
   const int bw = block_size_wide[plane_bsize];
   const int bh = block_size_high[plane_bsize];
@@ -1036,13 +1038,11 @@ static void build_smooth_interintra_mask(uint8_t *mask, int stride,
   }
 }
 
-static void combine_interintra(INTERINTRA_MODE mode,
-                               int8_t use_wedge_interintra, int8_t wedge_index,
-                               int8_t wedge_sign, BLOCK_SIZE bsize,
-                               BLOCK_SIZE plane_bsize, uint8_t *comppred,
-                               int compstride, const uint8_t *interpred,
-                               int interstride, const uint8_t *intrapred,
-                               int intrastride) {
+static AOM_INLINE void combine_interintra(
+    INTERINTRA_MODE mode, int8_t use_wedge_interintra, int8_t wedge_index,
+    int8_t wedge_sign, BLOCK_SIZE bsize, BLOCK_SIZE plane_bsize,
+    uint8_t *comppred, int compstride, const uint8_t *interpred,
+    int interstride, const uint8_t *intrapred, int intrastride) {
   const int bw = block_size_wide[plane_bsize];
   const int bh = block_size_high[plane_bsize];
 
@@ -1065,7 +1065,7 @@ static void combine_interintra(INTERINTRA_MODE mode,
                      interstride, mask, bw, bw, bh, 0, 0);
 }
 
-static void combine_interintra_highbd(
+static AOM_INLINE void combine_interintra_highbd(
     INTERINTRA_MODE mode, int8_t use_wedge_interintra, int8_t wedge_index,
     int8_t wedge_sign, BLOCK_SIZE bsize, BLOCK_SIZE plane_bsize,
     uint8_t *comppred8, int compstride, const uint8_t *interpred8,

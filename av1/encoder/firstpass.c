@@ -53,8 +53,8 @@
 #define NCOUNT_INTRA_THRESH 8192
 #define NCOUNT_INTRA_FACTOR 3
 
-static void output_stats(FIRSTPASS_STATS *stats,
-                         struct aom_codec_pkt_list *pktlist) {
+static AOM_INLINE void output_stats(FIRSTPASS_STATS *stats,
+                                    struct aom_codec_pkt_list *pktlist) {
   struct aom_codec_cx_pkt pkt;
   pkt.kind = AOM_CODEC_STATS_PKT;
   pkt.data.twopass_stats.buf = stats;
@@ -109,8 +109,8 @@ void av1_twopass_zero_stats(FIRSTPASS_STATS *section) {
   section->duration = 1.0;
 }
 
-static void accumulate_stats(FIRSTPASS_STATS *section,
-                             const FIRSTPASS_STATS *frame) {
+static AOM_INLINE void accumulate_stats(FIRSTPASS_STATS *section,
+                                        const FIRSTPASS_STATS *frame) {
   section->frame += frame->frame;
   section->weight += frame->weight;
   section->intra_error += frame->intra_error;
@@ -214,9 +214,9 @@ static int get_search_range(const AV1_COMP *cpi) {
   return sr;
 }
 
-static void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
-                                     const MV *ref_mv, MV *best_mv,
-                                     int *best_motion_err) {
+static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
+                                                const MV *ref_mv, MV *best_mv,
+                                                int *best_motion_err) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MV tmp_mv = kZeroMv;
   MV ref_mv_full = { ref_mv->row >> 3, ref_mv->col >> 3 };

@@ -29,7 +29,7 @@
 #include "av1/encoder/rdopt.h"
 
 #if !CONFIG_REALTIME_ONLY
-static void simple_motion_search_prune_part_features(
+static AOM_INLINE void simple_motion_search_prune_part_features(
     AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
     int mi_col, BLOCK_SIZE bsize, float *features, int features_to_get);
 #endif
@@ -377,7 +377,7 @@ static int simple_motion_search_get_best_ref(
 //  - whether a left marcoblock exists
 //  - width of left macroblock
 //  - height of left macroblock
-static void simple_motion_search_prune_part_features(
+static AOM_INLINE void simple_motion_search_prune_part_features(
     AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
     int mi_col, BLOCK_SIZE bsize, float *features, int features_to_get) {
   const int w_mi = mi_size_wide[bsize];
@@ -769,7 +769,8 @@ BLOCK_SIZE av1_predict_max_partition(AV1_COMP *const cpi, MACROBLOCK *const x,
 
 // Get the minimum partition block width and height(in log scale) under a
 // PC_TREE.
-static void get_min_bsize(const PC_TREE *pc_tree, int *min_bw, int *min_bh) {
+static AOM_INLINE void get_min_bsize(const PC_TREE *pc_tree, int *min_bw,
+                                     int *min_bh) {
   if (!pc_tree) return;
 
   const BLOCK_SIZE bsize = pc_tree->block_size;
