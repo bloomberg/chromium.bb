@@ -416,79 +416,81 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
     buckets: A nested dict mapping bucket names to builders to tests.
     options: Command-line options.
   """
-  _, ret_code = subprocess2.communicate(
-      ['bb', 'auth-info'], stdout=subprocess2.VOID, stderr=subprocess2.VOID)
-  if ret_code:
-    DieWithError('"bb auth-login" must be executed before scheduling try jobs.')
+  assert changelist.GetIssue(), 'CL must be uploaded first'
+  codereview_url = changelist.GetCodereviewServer()
+  assert codereview_url, 'CL must be uploaded first'
+  patchset = patchset or changelist.GetMostRecentPatchset()
+  assert patchset, 'CL must be uploaded first'
 
-  gerrit_change = changelist.GetGerritChange()
-  shared_properties = {
-      'category': options.category,
-  }
+  codereview_host = urlparse.urlparse(codereview_url).hostname
+  # Cache the buildbucket credentials under the codereview host key, so that
+  # users can use different credentials for different buckets.
+  authenticator = auth.get_authenticator_for_host(codereview_host, auth_config)
+  http = authenticator.authorize(httplib2.Http())
+  http.force_exception_to_status_code = True
+
+  buildbucket_put_url = (
+      'https://{hostname}/_ah/api/buildbucket/v1/builds/batch'.format(
+          hostname=options.buildbucket_host))
+  buildset = 'patch/gerrit/{hostname}/{issue}/{patch}'.format(
+      hostname=codereview_host,
+      issue=changelist.GetIssue(),
+      patch=patchset)
+
+  shared_parameters_properties = changelist.GetTryJobProperties(patchset)
+  shared_parameters_properties['category'] = options.category
   if options.clobber:
-    shared_properties['clobber'] = True
+    shared_parameters_properties['clobber'] = True
   extra_properties = _get_properties_from_options(options)
   if extra_properties:
-    shared_properties.update(extra_properties)
+    shared_parameters_properties.update(extra_properties)
 
-  batch_request = {'requests': []}
+  batch_req_body = {'builds': []}
   print_text = []
   print_text.append('Tried jobs on:')
   for bucket, builders_and_tests in sorted(buckets.iteritems()):
     print_text.append('Bucket: %s' % bucket)
-    project, bucket = bucket.split('.', 1)
     for builder, tests in sorted(builders_and_tests.iteritems()):
       print_text.append('  %s: %s' % (builder, tests))
-      properties = shared_properties.copy()
+      parameters = {
+          'builder_name': builder,
+          'changes': [{
+              'author': {'email': changelist.GetIssueOwner()},
+              'revision': options.revision,
+          }],
+          'properties': shared_parameters_properties.copy(),
+      }
       if 'presubmit' in builder.lower():
-        properties['dry_run'] = 'true'
+        parameters['properties']['dry_run'] = 'true'
       if tests:
-        properties['testfilter'] = tests
+        parameters['properties']['testfilter'] = tests
 
       tags = [
-          {
-              'key': 'builder',
-              'value': builder,
-          },
-          {
-              'key': 'user_agent',
-              'value': 'git_cl_try',
-          },
+          'builder:%s' % builder,
+          'buildset:%s' % buildset,
+          'user_agent:git_cl_try',
       ]
 
-      batch_request['requests'].append(
+      batch_req_body['builds'].append(
           {
-              'scheduleBuild': {
-                  'builder': {
-                      'project': options.project or project,
-                      'bucket': bucket,
-                      'builder': builder,
-                  },
-                  'properties': properties,
-                  'requestId': str(uuid.uuid4()),
-                  'gerritChanges': [gerrit_change],
-                  'tags': tags,
-              }
+              'bucket': bucket,
+              'parameters_json': json.dumps(parameters),
+              'client_operation_id': str(uuid.uuid4()),
+              'tags': tags,
           }
       )
 
-  (stdout, _), ret_code = subprocess2.communicate(
-      ['bb', 'batch', '-host', options.buildbucket_host],
-      stdin=json.dumps(batch_request, sort_keys=True),
-      stdout=subprocess2.PIPE)
-  if ret_code:
-    print_text.append('Failed to schedule builds for some bots:')
-    if stdout:
-      responses = json.loads(stdout)
-    print_text.extend(
-        '  ' + response['error']['message']
-        for response in responses['responses'] if 'error' in response)
-
+  _buildbucket_retry(
+      'triggering tryjobs',
+      http,
+      buildbucket_put_url,
+      'PUT',
+      body=json.dumps(batch_req_body),
+      headers={'Content-Type': 'application/json'}
+  )
   print_text.append('To see results here, run:        git cl try-results')
   print_text.append('To see results in browser, run:  git cl web')
   print('\n'.join(print_text))
-
-  return ret_code
 
 
 def fetch_try_jobs(auth_config, changelist, buildbucket_host,
@@ -2688,27 +2690,26 @@ class Changelist(object):
     if data['status'] in ('ABANDONED', 'MERGED'):
       return 'CL %s is closed' % self.GetIssue()
 
-  def GetGerritChange(self, patchset=None):
-    """Returns a buildbucket.v2.GerritChange message for the current issue."""
-    host = urlparse.urlparse(self.GetCodereviewServer()).hostname
-    issue = self.GetIssue()
-    patchset = int(patchset or self.GetPatchset())
+  def GetTryJobProperties(self, patchset=None):
+    """Returns dictionary of properties to launch a tryjob."""
     data = self._GetChangeDetail(['ALL_REVISIONS'])
-
-    assert host and issue and patchset, 'CL must be uploaded first'
-
-    has_patchset = any(
-        int(revision_data['_number']) == patchset
-        for revision_data in data['revisions'].itervalues())
-    if not has_patchset:
+    patchset = int(patchset or self.GetPatchset())
+    assert patchset
+    revision_data = None  # Pylint wants it to be defined.
+    for revision_data in data['revisions'].itervalues():
+      if int(revision_data['_number']) == patchset:
+        break
+    else:
       raise Exception('Patchset %d is not known in Gerrit change %d' %
                       (patchset, self.GetIssue()))
-
     return {
-        'host': host,
-        'change': issue,
-        'project': data['project'],
-        'patchset': patchset,
+      'patch_issue': self.GetIssue(),
+      'patch_set': patchset or self.GetPatchset(),
+      'patch_project': data['project'],
+      'patch_storage': 'gerrit',
+      'patch_ref': revision_data['fetch']['http']['ref'],
+      'patch_repository_url': revision_data['fetch']['http']['url'],
+      'patch_gerrit_url': self.GetCodereviewServer(),
     }
 
   def GetIssueOwner(self):
@@ -4739,7 +4740,12 @@ def CMDtry(parser, args):
       return 1
 
   patchset = cl.GetMostRecentPatchset()
-  return _trigger_try_jobs(auth_config, cl, buckets, options, patchset)
+  try:
+    _trigger_try_jobs(auth_config, cl, buckets, options, patchset)
+  except BuildbucketResponseException as ex:
+    print('ERROR: %s' % ex)
+    return 1
+  return 0
 
 
 @metrics.collector.collect_metrics('git cl try-results')
