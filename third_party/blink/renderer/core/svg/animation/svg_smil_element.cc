@@ -359,9 +359,12 @@ SMILTime SVGSMILElement::ParseOffsetValue(const String& data) {
     result = parse.Left(parse.length() - 1).ToDouble(&ok);
   else
     result = parse.ToDouble(&ok);
-  if (!ok || !SMILTime(result).IsFinite())
+  if (!ok)
     return SMILTime::Unresolved();
-  return result;
+  SMILTime offset_value = SMILTime::FromSecondsD(result);
+  if (!offset_value.IsFinite())
+    return SMILTime::Unresolved();
+  return offset_value;
 }
 
 SMILTime SVGSMILElement::ParseClockValue(const String& data) {
@@ -392,12 +395,16 @@ SMILTime SVGSMILElement::ParseClockValue(const String& data) {
     if (!ok)
       return SMILTime::Unresolved();
     result += parse.Substring(3).ToDouble(&ok);
-  } else
+  } else {
     return ParseOffsetValue(parse);
+  }
 
-  if (!ok || !SMILTime(result).IsFinite())
+  if (!ok)
     return SMILTime::Unresolved();
-  return result;
+  SMILTime clock_value = SMILTime::FromSecondsD(result);
+  if (!clock_value.IsFinite())
+    return SMILTime::Unresolved();
+  return clock_value;
 }
 
 bool SVGSMILElement::ParseCondition(const String& value,
@@ -629,7 +636,7 @@ void SVGSMILElement::SetTargetElement(SVGElement* target) {
 }
 
 SMILTime SVGSMILElement::Elapsed() const {
-  return time_container_ ? time_container_->Elapsed() : 0;
+  return time_container_ ? time_container_->Elapsed() : SMILTime();
 }
 
 SMILTime SVGSMILElement::BeginTimeForPrioritization(
@@ -646,7 +653,8 @@ SMILTime SVGSMILElement::Dur() const {
     return cached_dur_;
   const AtomicString& value = FastGetAttribute(svg_names::kDurAttr);
   SMILTime clock_value = ParseClockValue(value);
-  return cached_dur_ = clock_value <= 0 ? SMILTime::Unresolved() : clock_value;
+  return cached_dur_ =
+             clock_value <= SMILTime() ? SMILTime::Unresolved() : clock_value;
 }
 
 SMILTime SVGSMILElement::RepeatDur() const {
@@ -654,7 +662,8 @@ SMILTime SVGSMILElement::RepeatDur() const {
     return cached_repeat_dur_;
   const AtomicString& value = FastGetAttribute(svg_names::kRepeatDurAttr);
   SMILTime clock_value = ParseClockValue(value);
-  cached_repeat_dur_ = clock_value <= 0 ? SMILTime::Unresolved() : clock_value;
+  cached_repeat_dur_ =
+      clock_value <= SMILTime() ? SMILTime::Unresolved() : clock_value;
   return cached_repeat_dur_;
 }
 
@@ -684,7 +693,7 @@ SMILTime SVGSMILElement::MaxValue() const {
     return cached_max_;
   const AtomicString& value = FastGetAttribute(svg_names::kMaxAttr);
   SMILTime result = ParseClockValue(value);
-  return cached_max_ = (result.IsUnresolved() || result <= 0)
+  return cached_max_ = (result.IsUnresolved() || result <= SMILTime())
                            ? SMILTime::Indefinite()
                            : result;
 }
@@ -694,7 +703,9 @@ SMILTime SVGSMILElement::MinValue() const {
     return cached_min_;
   const AtomicString& value = FastGetAttribute(svg_names::kMinAttr);
   SMILTime result = ParseClockValue(value);
-  return cached_min_ = (result.IsUnresolved() || result < 0) ? 0 : result;
+  return cached_min_ = (result.IsUnresolved() || result < SMILTime())
+                           ? SMILTime()
+                           : result;
 }
 
 SMILTime SVGSMILElement::SimpleDuration() const {
@@ -720,7 +731,7 @@ void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
                                      SMILTime time,
                                      SMILTimeWithOrigin::Origin origin) {
   SMILTime current_presentation_time =
-      time_container_ ? time_container_->CurrentDocumentTime() : 0;
+      time_container_ ? time_container_->CurrentDocumentTime() : SMILTime();
   DCHECK(!current_presentation_time.IsUnresolved());
   SMILTimeWithOrigin time_with_origin(time, origin);
   // Ignore new instance times for 'end' if the element is not active
@@ -802,7 +813,7 @@ SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin,
   if (min_value > max_value) {
     // Ignore both.
     // http://www.w3.org/TR/2001/REC-smil-animation-20010904/#MinMax
-    min_value = 0;
+    min_value = SMILTime();
     max_value = SMILTime::Indefinite();
   }
   return resolved_begin +
@@ -836,7 +847,7 @@ SMILInterval SVGSMILElement::ResolveInterval(
       }
       temp_end = ResolveActiveEnd(temp_begin, temp_end);
     }
-    if (!first || (temp_end > 0 || (!temp_begin && !temp_end)))
+    if (!first || (temp_end > SMILTime() || (!temp_begin && !temp_end)))
       return SMILInterval(temp_begin, temp_end);
 
     begin_after = temp_end;
@@ -871,7 +882,7 @@ base::Optional<SMILInterval> SVGSMILElement::ResolveNextInterval() {
 }
 
 SMILTime SVGSMILElement::NextInterestingTime(SMILTime presentation_time) const {
-  DCHECK_GE(presentation_time, 0);
+  DCHECK_GE(presentation_time, SMILTime());
   SMILTime next_interesting_interval_time = SMILTime::Indefinite();
   if (interval_.BeginsAfter(presentation_time)) {
     next_interesting_interval_time = interval_.begin;
@@ -902,7 +913,7 @@ SMILTime SVGSMILElement::NextInterestingTime(SMILTime presentation_time) const {
   // These break because the updates land ON THE SAME TIMES as the
   // instance times. And the animation cannot then get a new interval
   // from that instance time.
-  const float half_ms = 0.0005;
+  const SMILTime half_ms = SMILTime::FromSecondsD(0.0005);
   const SMILTime instance_time =
       FindInstanceTime(kBegin, presentation_time, false) - half_ms;
   if (presentation_time < instance_time)
@@ -1208,8 +1219,9 @@ void SVGSMILElement::CreateInstanceTimesFromSyncBase(
           // If the STAPIT algorithm works, the current document
           // time will be accurate. So this event should be sent
           // correctly.
-          SMILTime base_time =
-              time_container_ ? time_container_->CurrentDocumentTime() : 0;
+          SMILTime base_time = time_container_
+                                   ? time_container_->CurrentDocumentTime()
+                                   : SMILTime();
           time = base_time + condition->Offset();
         }
       }

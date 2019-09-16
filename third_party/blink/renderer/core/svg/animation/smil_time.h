@@ -44,7 +44,6 @@ class SMILTime {
 
  public:
   constexpr SMILTime() : time_(0) {}
-  constexpr SMILTime(double time) : time_(time) {}
 
   static constexpr SMILTime Unresolved() {
     return std::numeric_limits<double>::quiet_NaN();
@@ -54,6 +53,13 @@ class SMILTime {
   }
   static constexpr SMILTime Earliest() {
     return -std::numeric_limits<double>::infinity();
+  }
+  static constexpr SMILTime FromSecondsD(double seconds) {
+    return SMILTime(seconds);
+  }
+  static constexpr SMILTime FromMicroseconds(int64_t us) {
+    return SMILTime(static_cast<double>(us) /
+                    base::Time::kMicrosecondsPerSecond);
   }
 
   // Used for computing progress. Don't use for anything else.
@@ -106,6 +112,8 @@ class SMILTime {
  private:
   friend bool operator!=(const SMILInterval& a, const SMILInterval& b);
   friend struct SMILTimeHash;
+
+  constexpr SMILTime(double time) : time_(time) {}
 
   double time_;
 };
