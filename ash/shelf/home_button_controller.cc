@@ -31,7 +31,6 @@ namespace ash {
 namespace {
 
 constexpr int kVoiceInteractionAnimationDelayMs = 200;
-constexpr int kVoiceInteractionAnimationHideDelayMs = 500;
 
 // Returns true if the button should appear activatable.
 bool CanActivate() {
@@ -188,16 +187,6 @@ void HomeButtonController::OnAssistantStatusChanged(
     case mojom::AssistantState::NOT_READY:
       break;
     case mojom::AssistantState::VISIBLE:
-      // we start hiding the animation if it is running.
-      if (assistant_overlay_->IsBursting() || assistant_overlay_->IsWaiting()) {
-        assistant_animation_hide_delay_timer_->Start(
-            FROM_HERE,
-            base::TimeDelta::FromMilliseconds(
-                kVoiceInteractionAnimationHideDelayMs),
-            base::BindOnce(&AssistantOverlay::HideAnimation,
-                           base::Unretained(assistant_overlay_)));
-      }
-
       voice_interaction_start_timestamp_ = base::TimeTicks::Now();
       break;
   }
@@ -233,8 +222,6 @@ void HomeButtonController::InitializeVoiceInteractionOverlay() {
   button_->AddChildView(assistant_overlay_);
   assistant_overlay_->SetVisible(false);
   assistant_animation_delay_timer_ = std::make_unique<base::OneShotTimer>();
-  assistant_animation_hide_delay_timer_ =
-      std::make_unique<base::OneShotTimer>();
 }
 
 }  // namespace ash

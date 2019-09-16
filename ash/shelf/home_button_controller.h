@@ -83,7 +83,6 @@ class HomeButtonController : public AppListControllerObserver,
   // enabled.
   AssistantOverlay* assistant_overlay_ = nullptr;
   std::unique_ptr<base::OneShotTimer> assistant_animation_delay_timer_;
-  std::unique_ptr<base::OneShotTimer> assistant_animation_hide_delay_timer_;
   base::TimeTicks voice_interaction_start_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeButtonController);
