@@ -1144,6 +1144,11 @@ Document::Document(const DocumentInit& initializer,
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
         properties, &FetchContext::NullInstance(),
         GetTaskRunner(TaskType::kNetworking), nullptr /* loader_factory */));
+
+    if (imports_controller_) {
+      // We don't expect the fetcher to be used, so count such unexpected use.
+      fetcher_->SetShouldLogRequestAsInvalidInImportedDocument();
+    }
   }
   DCHECK(fetcher_);
 
