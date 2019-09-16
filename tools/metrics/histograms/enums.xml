@@ -24650,6 +24650,7 @@ Called by update_net_error_codes.py.-->
   <int value="3030" label="DelegateFocus"/>
   <int value="3031" label="DelegateFocusNotFirstInFlatTree"/>
   <int value="3032" label="ThirdPartySharedWorker"/>
+  <int value="3033" label="ThirdPartyBroadcastChannel"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
