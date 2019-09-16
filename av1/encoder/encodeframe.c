@@ -4860,28 +4860,30 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
            sizeof(*segment_map) * segment_map_w * segment_map_h);
 
     for (frame = ALTREF_FRAME; frame >= LAST_FRAME; --frame) {
+      const WarpedMotionParams *ref_params;
       const MV_REFERENCE_FRAME ref_frame[2] = { frame, NONE_FRAME };
-      ref_buf[frame] = NULL;
       RefCntBuffer *buf = get_ref_frame_buf(cm, frame);
-      if (buf != NULL) ref_buf[frame] = &buf->buf;
-      int pframe;
+      const int ref_disabled =
+          !(cpi->ref_frame_flags & av1_ref_frame_flag_list[frame]);
+      ref_buf[frame] = NULL;
       cm->global_motion[frame] = default_warp_params;
-      const WarpedMotionParams *ref_params =
-          cm->prev_frame ? &cm->prev_frame->global_motion[frame]
-                         : &default_warp_params;
-      // check for duplicate buffer
-      for (pframe = ALTREF_FRAME; pframe > frame; --pframe) {
-        if (ref_buf[frame] == ref_buf[pframe]) break;
+      // Skip global motion estimation for invalid ref frames
+      if (buf == NULL ||
+          (ref_disabled && cpi->sf.recode_loop != DISALLOW_RECODE)) {
+        cpi->gmparams_cost[frame] = 0;
+        continue;
+      } else {
+        ref_buf[frame] = &buf->buf;
+        ref_params = cm->prev_frame ? &cm->prev_frame->global_motion[frame]
+                                    : &default_warp_params;
       }
-      if (pframe > frame) {
-        memcpy(&cm->global_motion[frame], &cm->global_motion[pframe],
-               sizeof(WarpedMotionParams));
-      } else if (ref_buf[frame] &&
-                 ref_buf[frame]->y_crop_width == cpi->source->y_crop_width &&
-                 ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
-                 do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame) &&
-                 !prune_ref_by_selective_ref_frame(cpi, ref_frame) &&
-                 !(cpi->sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
+
+      if (ref_buf[frame]->y_crop_width == cpi->source->y_crop_width &&
+          ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
+          do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame) &&
+          !prune_ref_by_selective_ref_frame(cpi, ref_frame) &&
+          !(cpi->sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
+        assert(ref_buf[frame] != NULL);
         if (num_frm_corners < 0) {
           // compute interest points using FAST features
           num_frm_corners = av1_fast_corner_detect(
@@ -4998,15 +5000,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
           cpi->gmtype_cost[IDENTITY];
     }
     aom_free(segment_map);
-    // clear disabled ref_frames
-    for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-      const int ref_disabled =
-          !(cpi->ref_frame_flags & av1_ref_frame_flag_list[frame]);
-      if (ref_disabled && cpi->sf.recode_loop != DISALLOW_RECODE) {
-        cpi->gmparams_cost[frame] = 0;
-        cm->global_motion[frame] = default_warp_params;
-      }
-    }
+
     cpi->global_motion_search_done = 1;
     for (int m = 0; m < RANSAC_NUM_MOTIONS; m++) {
       aom_free(params_by_motion[m].inliers);
