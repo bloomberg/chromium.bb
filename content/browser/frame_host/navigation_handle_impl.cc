@@ -89,11 +89,6 @@ bool NavigationHandleImpl::IsPost() {
   return navigation_request_->IsPost();
 }
 
-const scoped_refptr<network::ResourceRequestBody>&
-NavigationHandleImpl::GetResourceRequestBody() {
-  return navigation_request_->common_params().post_data;
-}
-
 const blink::mojom::Referrer& NavigationHandleImpl::GetReferrer() {
   return navigation_request_->GetReferrer();
 }

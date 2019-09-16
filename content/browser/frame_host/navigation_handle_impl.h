@@ -60,8 +60,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   base::TimeTicks NavigationStart() override;
   base::TimeTicks NavigationInputStart() override;
   bool IsPost() override;
-  const scoped_refptr<network::ResourceRequestBody>& GetResourceRequestBody()
-      override;
   const blink::mojom::Referrer& GetReferrer() override;
   bool HasUserGesture() override;
   ui::PageTransition GetPageTransition() override;

@@ -144,12 +144,6 @@ class CONTENT_EXPORT NavigationHandle {
   // |bool IsPost()| as opposed to |const std::string& GetMethod()| method.
   virtual bool IsPost() = 0;
 
-  // Returns the POST body associated with this navigation. This will be null
-  // for GET and/or other non-POST requests (or if a response to a POST request
-  // was a redirect that changed the method to GET - for example 302).
-  virtual const scoped_refptr<network::ResourceRequestBody>&
-  GetResourceRequestBody() = 0;
-
   // Returns a sanitized version of the referrer for this request.
   virtual const blink::mojom::Referrer& GetReferrer() = 0;
 

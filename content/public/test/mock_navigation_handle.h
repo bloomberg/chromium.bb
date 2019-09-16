@@ -48,8 +48,6 @@ class MockNavigationHandle : public NavigationHandle {
   RestoreType GetRestoreType() override { return RestoreType::NONE; }
   const GURL& GetBaseURLForDataURL() override { return base_url_for_data_url_; }
   MOCK_METHOD0(IsPost, bool());
-  MOCK_METHOD0(GetResourceRequestBody,
-               const scoped_refptr<network::ResourceRequestBody>&());
   const blink::mojom::Referrer& GetReferrer() override { return referrer_; }
   MOCK_METHOD0(HasUserGesture, bool());
   ui::PageTransition GetPageTransition() override { return page_transition_; }
