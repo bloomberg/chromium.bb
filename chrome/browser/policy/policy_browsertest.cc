@@ -5873,6 +5873,7 @@ update_client::CrxComponent ComponentUpdaterPolicyTest::MakeCrxComponent(
   // The component uses HTTPS only for network interception purposes.
   update_client::CrxComponent crx_component;
   crx_component.pk_hash.assign(std::begin(jebg_hash), std::end(jebg_hash));
+  crx_component.app_id = "jebgalgnebhfojomionfpkfelancnnkf";
   crx_component.version = base::Version("0.9");
   crx_component.installer = scoped_refptr<MockInstaller>(new MockInstaller());
   crx_component.requires_network_encryption = true;
