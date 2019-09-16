@@ -2082,9 +2082,9 @@ New Search
       to dismiss a presented view with pending changes.">
         Discard Changes
       </message>
-      <message name="IDS_IOS_VIEW_CONTROLLER_DISMISS_CANCEL_CHANGES" desc="Text displayed on an alert button for Canceling the alert whenever trying
+      <message name="IDS_IOS_VIEW_CONTROLLER_DISMISS_CANCEL_CHANGES" desc="Text displayed on an alert button to prevent dismissal of the view whenever trying
       to dismiss a presented view with pending changes.">
-        Cancel
+        Keep Editing
       </message>
       <message name="IDS_IOS_ADD_CREDIT_CARD_VIEW_CONTROLLER_DISMISS_ALERT_TITLE" desc="Text displayed on an alert as a title whenever trying to dismiss a presented 'add new credit card view' with pending changes.">
         Are you sure you want to discard this new card?
