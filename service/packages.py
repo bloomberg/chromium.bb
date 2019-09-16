@@ -8,9 +8,11 @@
 from __future__ import print_function
 
 import collections
+import fileinput
 import functools
 import json
 import os
+import sys
 
 
 from chromite.lib import constants
@@ -81,6 +83,28 @@ class UprevVersionedPackageResult(object):
   @property
   def uprevved(self):
     return bool(self.modified)
+
+
+def patch_ebuild_vars(ebuild_path, variables):
+  """Updates variables in ebuild.
+
+  Use this function rather than portage_util.EBuild.UpdateEBuild when you
+  want to preserve the variable position and quotes within the ebuild.
+
+  Args:
+    ebuild_path: The path of the ebuild.
+    variables: Dictionary of variables to update in ebuild.
+  """
+  try:
+    for line in fileinput.input(ebuild_path, inplace=1):
+      varname, eq, _ = line.partition('=')
+      if eq == '=' and varname.strip() in variables:
+        value = variables[varname]
+        sys.stdout.write('%s="%s"\n' % (varname, value))
+      else:
+        sys.stdout.write(line)
+  finally:
+    fileinput.close()
 
 
 def uprevs_versioned_package(package):
@@ -273,8 +297,8 @@ def uprev_kernel_afdo(*_args, **_kwargs):
     chroot_ebuild_path = os.path.join(constants.CHROOT_SOURCE_ROOT, path,
                                       '%s-9999.ebuild' % version)
     afdo_profile_version = version_info['name']
-    portage_util.EBuild.UpdateEBuild(
-        ebuild_path, dict(AFDO_PROFILE_VERSION=afdo_profile_version))
+    patch_ebuild_vars(ebuild_path,
+                      dict(AFDO_PROFILE_VERSION=afdo_profile_version))
 
     try:
       cmd = ['ebuild', chroot_ebuild_path, 'manifest', '--force']
