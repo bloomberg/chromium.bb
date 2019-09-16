@@ -6,6 +6,13 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/prerender/prerender_handle.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_test_utils.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -106,9 +113,23 @@ class LazyLoadBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
+  void SetUpURLMonitor() {
+    embedded_test_server()->RegisterRequestMonitor(base::Bind(
+        [](std::vector<std::string>* request_paths,
+           const net::test_server::HttpRequest& request) {
+          request_paths->push_back(request.relative_url);
+        },
+        &request_paths_));
+  }
+
+  const std::vector<std::string>& request_paths() const {
+    return request_paths_;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer cross_origin_server_;
+  std::vector<std::string> request_paths_;
 };
 
 IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest, CSSBackgroundImageDeferred) {
@@ -226,4 +247,122 @@ IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
   EXPECT_THAT(messages,
               testing::Contains("LAZY_LOAD CONSOLE below-viewport "
                                 "loading=lazy iframe ON_LOAD FOR TEST"));
+}
+
+IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
+                       LazyLoadImage_DisabledInBackgroundTab) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url(embedded_test_server()->GetURL("/lazyload/img.html"));
+
+  auto* background_contents = browser()->OpenURL(content::OpenURLParams(
+      test_url, content::Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
+  content::ConsoleObserverDelegate console_observer(
+      background_contents, "LAZY_LOAD CONSOLE * ON_LOAD FOR TEST");
+  background_contents->SetDelegate(&console_observer);
+
+  // Wait for the four images and the document to load.
+  while (console_observer.messages().size() < 7) {
+    base::RunLoop().RunUntilIdle();
+  }
+  console_observer.Wait();
+
+  EXPECT_THAT(
+      console_observer.messages(),
+      testing::UnorderedElementsAre(
+          "LAZY_LOAD CONSOLE document ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE in-viewport img ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE in-viewport loading=lazy img ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE in-viewport loading=eager img ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE below-viewport img ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE below-viewport loading=lazy img ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE below-viewport loading=eager img ON_LOAD FOR "
+          "TEST"));
+}
+
+IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
+                       LazyLoadFrame_DisabledInBackgroundTab) {
+  SetUpLazyLoadFrameTestPage();
+  GURL test_url(embedded_test_server()->GetURL("/mainpage.html"));
+
+  auto* background_contents = browser()->OpenURL(content::OpenURLParams(
+      test_url, content::Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
+  content::ConsoleObserverDelegate console_observer(
+      background_contents, "LAZY_LOAD CONSOLE * ON_LOAD FOR TEST");
+  background_contents->SetDelegate(&console_observer);
+
+  // Wait for the four iframes and the document to load.
+  while (console_observer.messages().size() < 7) {
+    base::RunLoop().RunUntilIdle();
+  }
+  console_observer.Wait();
+
+  EXPECT_THAT(
+      console_observer.messages(),
+      testing::UnorderedElementsAre(
+          "LAZY_LOAD CONSOLE document ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE in-viewport iframe ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE in-viewport loading=lazy iframe ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE in-viewport loading=eager iframe ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE below-viewport iframe ON_LOAD FOR TEST",
+          "LAZY_LOAD CONSOLE below-viewport loading=lazy iframe ON_LOAD FOR "
+          "TEST",
+          "LAZY_LOAD CONSOLE below-viewport loading=eager iframe ON_LOAD FOR "
+          "TEST"));
+}
+
+class LazyLoadPrerenderBrowserTest : public LazyLoadBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    LazyLoadBrowserTest::SetUpOnMainThread();
+
+    prerender::PrerenderManager::SetMode(
+        prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(LazyLoadPrerenderBrowserTest, ImagesIgnored) {
+  SetUpURLMonitor();
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url(embedded_test_server()->GetURL("/lazyload/img.html"));
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          browser()->profile());
+  ASSERT_TRUE(prerender_manager);
+
+  prerender::test_utils::TestPrerenderContentsFactory*
+      prerender_contents_factory =
+          new prerender::test_utils::TestPrerenderContentsFactory();
+  prerender_manager->SetPrerenderContentsFactoryForTest(
+      prerender_contents_factory);
+
+  content::SessionStorageNamespace* storage_namespace =
+      browser()
+          ->tab_strip_model()
+          ->GetActiveWebContents()
+          ->GetController()
+          .GetDefaultSessionStorageNamespace();
+  ASSERT_TRUE(storage_namespace);
+
+  std::unique_ptr<prerender::test_utils::TestPrerender> test_prerender =
+      prerender_contents_factory->ExpectPrerenderContents(
+          prerender::FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  std::unique_ptr<prerender::PrerenderHandle> prerender_handle =
+      prerender_manager->AddPrerenderFromOmnibox(test_url, storage_namespace,
+                                                 gfx::Size(640, 480));
+
+  ASSERT_EQ(prerender_handle->contents(), test_prerender->contents());
+
+  test_prerender->WaitForStop();
+  EXPECT_THAT(request_paths(),
+              testing::UnorderedElementsAre(
+                  "/lazyload/img.html", "/lazyload/images/fruit1.jpg?auto",
+                  "/lazyload/images/fruit1.jpg?lazy",
+                  "/lazyload/images/fruit1.jpg?eager",
+                  "/lazyload/images/fruit2.jpg?auto",
+                  "/lazyload/images/fruit2.jpg?lazy",
+                  "/lazyload/images/fruit2.jpg?eager"));
 }
