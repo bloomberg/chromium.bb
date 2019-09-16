@@ -517,7 +517,7 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
 
   AV1_COMMON *cm = &cpi->common;
   struct scale_factors sf;
-  int rdmult, idx;
+  int rdmult;
   ThreadData *td = &cpi->td;
   MACROBLOCK *x = &td->mb;
   MACROBLOCKD *xd = &x->e_mbd;
@@ -547,9 +547,20 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
   uint8_t *predictor =
       is_cur_buf_hbd(xd) ? CONVERT_TO_BYTEPTR(predictor8) : predictor8;
 
-  // TODO(jingning): remove the duplicate frames.
-  for (idx = 0; idx < INTER_REFS_PER_FRAME; ++idx)
-    ref_frame[idx] = cpi->tpl_frame[tpl_frame->ref_map_index[idx]].gf_picture;
+  // Remove duplicate frames
+  for (int idx1 = 0; idx1 < INTER_REFS_PER_FRAME; ++idx1) {
+    const int rf_idx1 = tpl_frame->ref_map_index[idx1];
+    int duplicate = 0;
+    for (int idx2 = 0; idx2 < idx1; ++idx2) {
+      const int rf_idx2 = tpl_frame->ref_map_index[idx2];
+      if (cpi->tpl_frame[rf_idx1].gf_picture ==
+          cpi->tpl_frame[rf_idx2].gf_picture) {
+        duplicate = 1;
+        break;
+      }
+    }
+    if (!duplicate) ref_frame[idx1] = cpi->tpl_frame[rf_idx1].gf_picture;
+  }
 
   // Make a temporary mbmi for tpl model
   MB_MODE_INFO **backup_mi_grid = xd->mi;
