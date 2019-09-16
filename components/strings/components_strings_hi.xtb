@@ -72,7 +72,7 @@
 <translation id="1294154142200295408">अलग-अलग तरह की कमांड-लाइन</translation>
 <translation id="129553762522093515">हाल ही में बंद किए गए</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />अपनी कुकी साफ़ करके देखें<ph name="END_LINK" /></translation>
-<translation id="1307966114820526988">बंद की गईं सुविधाएं</translation>
+<translation id="1307966114820526988">बंद की गई सुविधाएं</translation>
 <translation id="1320233736580025032">पीआरसी1 (एन्वेलप)</translation>
 <translation id="132301787627749051">क्लिपबोर्ड इमेज खोजें</translation>
 <translation id="1323433172918577554">और दिखाएं</translation>
@@ -810,7 +810,7 @@
 <translation id="5251803541071282808">क्लाउड</translation>
 <translation id="5252000469029418751">सी7 (एन्वेलप)</translation>
 <translation id="5254958791078852567">ई1</translation>
-<translation id="5269999699920406580">सिस्टम-व्यापी रूप से लागू होने वाली सुविधाओं को सिर्फ़ मालिक ही सेट कर सकता है: <ph name="OWNER_EMAIL" /></translation>
+<translation id="5269999699920406580">सिस्टम से जुड़ी हुई सुविधाओं को सिर्फ़ मालिक ही सेट कर सकता है: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">चेतावनी: इस नीति को PolicyDictionaryMultipleSourceMergeList नीति में बताए अनुसार नहीं मिलाया जा सकता, क्योंकि यह शब्दकोश की उन नीतियों का हिस्सा नहीं है जिन्हें मिलाया जा सकता है.</translation>
 <translation id="5283044957620376778">बी1</translation>
 <translation id="528468243742722775">खत्म</translation>
@@ -847,7 +847,7 @@
 <translation id="5457113250005438886">अमान्य</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}one{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}other{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}}</translation>
 <translation id="5470861586879999274">&amp;बदलाव को फिर से लागू करें</translation>
-<translation id="5473728911100096288">इन सुविधाओं को चालू करके, आप रोके गए फ़ीचर इस्तेमाल करेंगे जो आने वाले वर्शन में मौजूद नहीं होंगे.</translation>
+<translation id="5473728911100096288">इन सुविधाओं को चालू करके, आप रोकी गई सुविधाएं इस्तेमाल करेंगे. ये आने वाले वर्शन में मौजूद नहीं होंगी.</translation>
 <translation id="5478437291406423475">बी6/सी4 (एन्वेलप)</translation>
 <translation id="5481076368049295676">यह सामग्री आपके डिवाइस पर ऐसा खतरनाक सॉफ़्टवेयर इंस्टॉल करने की कोशिश कर सकती है जो आपकी जानकारी चुरा सकता है या उसे हटा सकता है. <ph name="BEGIN_LINK" />फिर भी दिखाएं<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">मान्य पता जोड़ें</translation>

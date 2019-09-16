@@ -1546,7 +1546,7 @@
 <translation id="3280237271814976245">Сохранить &amp;как...</translation>
 <translation id="3280243678470289153">Продолжить в Chrome</translation>
 <translation id="3281892622610078515">Файлы и программы, которые будут отправлены в карантин:</translation>
-<translation id="3282568296779691940">Войдите в Chrome</translation>
+<translation id="3282568296779691940">Войти в Chrome</translation>
 <translation id="3285322247471302225">Новая вкладка</translation>
 <translation id="328571385944182268">Сохранить пароли?</translation>
 <translation id="3286654161521615710">Используется браузером Chrome и панелью запуска устройства <ph name="DEVICE_TYPE" /></translation>
@@ -3524,7 +3524,6 @@
 <translation id="6212039847102026977">Показать дополнительные свойства сети</translation>
 <translation id="6212168817037875041">Выключать экран</translation>
 <translation id="6212752530110374741">Отправить ссылку по эл. почте</translation>
-<translation id="6214642087594370545">Если ваш пароль стал небезопасным из-за утечки данных, вы получите уведомление. Это касается только пользователей, выполнивших вход в аккаунт.</translation>
 <translation id="6216696360484424239">Автоматический вход</translation>
 <translation id="6218058416316985984">Устройство <ph name="DEVICE_TYPE" /> не подключено к Интернету. Установите соединение и повторите попытку.</translation>
 <translation id="6220413761270491930">Ошибка при загрузке расширения</translation>

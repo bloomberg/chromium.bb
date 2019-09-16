@@ -97,6 +97,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       정책이 설정되지 않으면 캐시된 GPO가 최대 25시간 동안 재사용됩니다.
 
       정책이 0으로 설정되면 GPO 캐싱이 사용 중지됩니다. 이렇게 하면 GPO가 바뀌지 않더라도 정책을 가져올 때마다 GPO가 다시 다운로드되기 때문에 서버 로드가 증가합니다.</translation>
+<translation id="1111470455889178048">사용자 업로드 및 다운로드 항목을 전송하여 검사</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" />은 여기에 지정된 호스트 목록에 대해 모든 프록시를 우회합니다.
 
           이 정책은 '프록시 서버 설정을 지정하는 방법 선택'에서 수동 프록시 설정을 선택한 경우 및 <ph name="PROXY_SETTINGS_POLICY_NAME" /> 정책을 지정하지 않은 경우에만 적용됩니다.
@@ -402,6 +403,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       와일드 카드 패턴은 허용되지 않습니다.</translation>
 <translation id="1634989431648355062">이 사이트에서 <ph name="FLASH_PLUGIN_NAME" /> 플러그인 허용</translation>
 <translation id="1645793986494086629">스키마:</translation>
+<translation id="1648816843164517573">HSTS 정책 검사를 우회할 이름 목록입니다.</translation>
 <translation id="1653229475925941921">이 정책이 설정되어 있으면 사용 설정된 화면 돋보기 유형을 지정합니다. 이 정책을 'None'으로 설정하면 화면 돋보기가 사용 중지됩니다.
 
           이 정책을 설정하면 사용자는 변경하거나 덮어쓸 수 없습니다.
@@ -912,6 +914,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="254653220329944566"><ph name="PRODUCT_NAME" /> 클라우드 보고 기능 사용</translation>
 <translation id="2548572254685798999">세이프 브라우징 정보 보고</translation>
 <translation id="2550593661567988768">단면 인쇄만</translation>
+<translation id="2551520365302988324">사용자 업로드 항목을 전송하여 검사</translation>
 <translation id="2552966063069741410">시간대</translation>
 <translation id="2562339630163277285">순간 검색결과를 제공하는 데 사용되는 검색엔진의 URL을 지정합니다. URL에는 <ph name="SEARCH_TERM_MARKER" /> 문자열이 포함되어야 하며 이 문자열은 검색 시 사용자가 지금까지 입력한 내용으로 대체됩니다.
 
@@ -992,6 +995,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책은 선택사항입니다. 설정하지 않으면 기본값인 UTF-8이 사용됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
+<translation id="2679827548357140943">업로드한 콘텐츠에 멀웨어가 있는지 검사해야 하는 도메인 목록입니다.</translation>
 <translation id="268577405881275241">데이터 압축 프록시 기능 사용</translation>
 <translation id="2693108589792503178">비밀번호 변경 URL을 설정합니다.</translation>
 <translation id="2694143893026486692">고정 돋보기 사용 설정됨</translation>
@@ -1370,6 +1374,10 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="332771718998993005"><ph name="PRODUCT_NAME" /> 전송 대상으로 알릴 이름을 설정하세요.
 
           이 정책을 비어 있지 않은 문자열로 설정하면 해당 문자열이 <ph name="PRODUCT_NAME" /> 전송 대상의 이름으로 사용됩니다. 반면에 비어 있는 문자열로 설정하면 기기 이름이 전송 대상의 이름으로 사용됩니다. 이 정책을 설정하지 않으면 기기 이름이 전송 대상의 이름으로 사용되며, 기기 소유자(또는 기기를 관리하는 도메인의 사용자)가 이 이름을 변경할 수 있습니다. 이름의 길이는 영문 24자로 제한됩니다.</translation>
+<translation id="3331950121151548952">업로드한 콘텐츠에 멀웨어가 있는지 검사해야 하는 도메인 목록입니다.  이 정책은 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />이(가) 업로드 항목에 멀웨어 검사를 허용하거나 시행하는 값으로 설정된 경우에만 사용됩니다.
+
+      정책이 설정되지 않거나 빈 도메인 목록으로 설정되면 업로드한 콘텐츠에 멀웨어가 있는지 검사하지 않습니다.
+      </translation>
 <translation id="3335468714959531450">쿠키 설정이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않으면 'DefaultCookiesSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다
@@ -1439,6 +1447,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책이 false로 설정되거나 설정되지 않으면 세션이 시작되자마자 즉시 전원 관리 지연 및 세션 길이 제한이 실행됩니다.</translation>
 <translation id="3478024346823118645">로그아웃 시 사용자 데이터 삭제</translation>
 <translation id="3480961938508521469">배터리를 일반 속도로 완전히 충전합니다.</translation>
+<translation id="3483729306380590354">배터리 충전을 시작할 지점을 퍼센트로 맞춤설정합니다.
+
+          배터리가 맞춤설정된 충전 시작 값까지 소모되면 배터리 충전이 시작됩니다.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" />은(는) <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />보다 최소 5퍼센트 포인트 낮아야 합니다.
+
+          이 정책은 <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" />이(가) <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />(으)로 설정된 경우에만 사용됩니다.
+
+          정책이 구성 또는 설정되지 않은 경우 <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> 배터리 충전 모드가 적용됩니다.</translation>
 <translation id="348495353354674884">가상 키보드 사용</translation>
 <translation id="3487623755010328395">
         이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 모든 프로필에 직접 제품을 등록하고 관련 클라우드 정책을 적용하려 합니다.
@@ -1887,6 +1904,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
 
           정책이 설정되지 않은 경우 처음에는 자동 클릭이 사용 중지되어 있으나 사용자가 언제든지 사용하도록 설정할 수 있습니다.</translation>
+<translation id="4215197846797661927">고급 배터리 충전 모드의 주간 구성을 설정합니다.
+
+          이 정책은 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />이(가) True로 설정된 경우에만 사용됩니다.
+
+          정책이 구성 또는 설정되지 않은 경우 고급 배터리 충전 모드는 항상 사용 중지됩니다.
+
+          참고: <ph name="CHARGE_START_TIME_FIELD_NAME" />은(는) <ph name="CHARGE_END_TIME_FIELD_NAME" /> 미만이어야 합니다.
+
+          참고: <ph name="CHARGE_START_TIME_FIELD_NAME" /> 및 <ph name="CHARGE_END_TIME_FIELD_NAME" />의 <ph name="MINUTE_FIELD_NAME" /> 필드에 허용된 값은 0, 15, 30, 45입니다.</translation>
 <translation id="4224610387358583899">화면 잠금 지연</translation>
 <translation id="423797045246308574">키 생성 사용이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다. URL 패턴이 'KeygenAllowedForUrls'에 있는 경우 이 정책은 이 예외를 무시합니다.
 
@@ -1952,6 +1978,17 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책 값은 밀리초 단위로 지정해야 하며 값은 유휴 지연보다 작거나 같게 고정됩니다.
 
           유휴 작업이 로그아웃 또는 종료인 경우에만 경고 메시지가 표시됩니다.</translation>
+<translation id="4342827592971649626">이 정책은 세이프 브라우징을 통한 사용자 다운로드 항목의 심층 검사를 제어합니다. 정책이 설정되지 않거나 기본값인 '파일을 검사하지 않음'으로 설정되면 세이프 브라우징에서 사용자 다운로드 항목을 검사하지 않습니다.
+
+      '파일 검사 금지'로 설정되면 사용자가 다운로드 항목을 검사할 수 없습니다. 이는 일부 사용자(예: 고급 보호 사용자)가 다운로드 항목을 전송하여 검사하도록 허용하는 기본값과는 다릅니다. '파일 검사 금지'로 설정하면 이러한 사용자의 검사도 차단됩니다.
+
+      '사용자 다운로드 항목을 전송하여 검사'로 설정되면 사용자 다운로드 항목이 네트워크를 통해 세이프 브라우징으로 전송되어 멀웨어 검사를 거치게 됩니다.
+
+      '사용자 업로드 항목을 전송하여 검사'로 설정되면 사용자 업로드 항목이 네트워크를 통해 세이프 브라우징으로 전송되어 멀웨어 검사를 거치게 됩니다.
+
+      '사용자 업로드 및 다운로드 항목을 전송하여 검사'로 설정되면 '사용자 업로드 항목을 전송하여 검사' 및 '사용자 다운로드 항목을 전송하여 검사'에서 설명된 규칙에 따라 작동합니다.
+
+      검사 결과가 사용자와 관리자에게 어떻게 표시되는지 자세히 알아보려면 <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> 및 <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> 정책을 참조하세요.</translation>
 <translation id="4344356660952451291">다운로드한 콘텐츠의 규정 준수를 검사해야 하는 도메인 목록</translation>
 <translation id="4346674324214534449">방해가 되는 광고가 포함된 사이트에서 광고를 차단할지 설정할 수 있습니다.
 
@@ -2542,6 +2579,16 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
 
       이 정책을 설정하지 않으면 사용자가 데스크톱 및 로그인 화면 배경에 표시되는 이미지를 선택할 수 있습니다.</translation>
+<translation id="5437214086679373363">검사가 필요한 경우 사용자가 비밀번호로 보호된 파일을 업로드 또는 다운로드하도록 허용할지 여부를 제어합니다.  이 제한은 검사가 사용 설정된 도메인 목록을 제어하는 정책, <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> 및 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />에서 검사가 필요하다고 결정한 파일에만 적용됩니다.
+
+      정책이 '없음'으로 설정되면 <ph name="PRODUCT_NAME" />에서 사용자가 비밀번호로 보호된 파일을 업로드하거나 다운로드하지 못하도록 차단합니다.
+
+      정책이 '다운로드 허용'으로 설정되면 <ph name="PRODUCT_NAME" />에서 사용자가 비밀번호로 보호된 파일을 다운로드하도록 허용합니다.
+
+      정책이 '업로드 허용'으로 설정되면 <ph name="PRODUCT_NAME" />에서 사용자가 비밀번호로 보호된 파일을 업로드하도록 허용합니다.
+
+      정책이 설정되지 않거나 '업로드 및 다운로드 허용'으로 설정되면 <ph name="PRODUCT_NAME" />은(는) '다운로드 허용' 및 '업로드 허용'에 설명된 규칙에 따라 작동합니다.
+      </translation>
 <translation id="5437733496511628148">이 설정을 사용하면 브라우저의 주소 표시줄에 있는 도메인이 출처가 아닌 웹페이지 요소의 쿠키 설정을 금지합니다.
 
       이 설정을 사용하지 않으면 브라우저의 주소 표시줄에 있는 도메인이 출처가 아닌 웹페이지 요소의 쿠키 설정을 허용하며 사용자가 이 설정을 변경하지 못하게 됩니다.
@@ -3479,13 +3526,32 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       Internet Explorer의 <ph name="IEEM_SITELIST_POLICY" /> 정책은 https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode에서 자세히 살펴보세요.</translation>
 <translation id="7132877481099023201">별도 메시지를 표시하지 않고 동영상 캡처 기기에 대한 액세스 권한이 부여되는 URL입니다.</translation>
+<translation id="713712866686796666">전력 피크 시프트 요일 구성을 설정합니다.
+
+          이 정책은 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" />이(가) True로 설정된 경우에만 사용됩니다.
+
+          정책이 구성 또는 설정되지 않은 경우 전력 피크 시프트는 항상 사용 중지되어 있습니다.
+
+          참고: <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> 및 <ph name="CHARGE_START_TIME_FIELD_NAME" />의 <ph name="MINUTE_FIELD_NAME" /> 필드에 허용된 값은 0, 15, 30, 45입니다.</translation>
 <translation id="7138678301420049075">기타</translation>
+<translation id="7139809614375682935">배터리 충전을 중단할 지점을 퍼센트로 맞춤설정합니다.
+
+          맞춤설정된 배터리 충전 중단 값에 도달하면 배터리 충전이 중지됩니다.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" />은(는) <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />보다 최소 5퍼센트 포인트 낮아야 합니다.
+
+          이 정책은 <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" />이(가) <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />(으)로 설정된 경우에만 사용됩니다.
+
+          정책이 구성 또는 설정되지 않은 경우 <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> 배터리 충전 모드가 적용됩니다.</translation>
 <translation id="7140629953254369759"><ph name="PRODUCT_OS_NAME" />이(가) 지정된 이름으로 식별된 작업 스케줄러 설정을 사용하도록 지시합니다.
 
       이 정책은 '소극적' 또는 '성능 최적화'로 설정할 수 있습니다. 각각 안정성 또는 최대 성능을 기준으로 작업 스케줄러 설정을 선택하는 옵션입니다.
 
       정책을 설정하지 않으면 사용자가 직접 선택할 수 있습니다.</translation>
 <translation id="7145335384492396213">기본 PIN 인쇄 모드</translation>
+<translation id="7149042336307555519"> OS 업데이트에 사용할 수 있는 연결 유형입니다. OS 업데이트는 용량이 크기 때문에 잠재적으로 연결 네트워크에 부담이 되며 부가 비용이 발생할 수 있습니다. 따라서 비용이 부담스러운 연결 유형은 기본적으로 사용하지 않도록 설정합니다(현재 'cellular'만 해당).
+
+      인식할 수 있는 연결 유형 식별자는 <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" />, <ph name="CONNECTION_TYPE_CELLULAR_NAME" />입니다.</translation>
 <translation id="7152605873936173525">DNS-over-HTTPS 리졸버의 모드를 제어합니다. 이 정책은 각 쿼리의 기본 모드만 설정합니다. DNS-over-HTTPS 서버 호스트 이름 리졸브 요청과 같은 특별한 유형의 쿼리에서는 모드가 재정의될 수 있습니다.
 
       <ph name="SECURE_DNS_MODE_OFF" /> 모드는 DNS-over-HTTPS를 사용 중지합니다.
@@ -3518,6 +3584,17 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책이 false로 설정되면 화면 wake lock 요청이 시스템 wake lock 요청으로 강등됩니다.</translation>
 <translation id="7177857088692019405">빠른 잠금 해제</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">전력 피크 시프트 전원 관리 정책을 사용합니다.
+
+          피크 시프트는 하루 중 사용량이 최대치에 이를 때 교류 전원 사용을 최소화하는 절전 정책입니다. 매주 평일 전력 피크 시프트 모드를 시작할 시간과 종료할 시간을 설정할 수 있습니다. 이 시간 동안에는 교류 전원이 연결되어 있어도 배터리가 지정된 임계값 이상으로 유지되는 한 시스템이 배터리 전원으로 작동합니다. 지정된 종료 시간이 지나면 교류 전원이 연결되어 있는 경우 시스템이 교류 전원으로 작동하지만 배터리가 충전되지는 않습니다. 지정된 충전 시작 시간이 되면 시스템이 다시 교류 전원을 사용하여 평소대로 작동하며 배터리가 충전됩니다.
+
+          이 정책이 True로 설정되어 있고 <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" />, <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" />이(가) 설정되어 있으면 전력 피크 시프트는 기기가 지원할 경우 항상 사용 설정됩니다.
+
+          이 정책이 False로 설정된 경우 전력 피크 시프트는 항상 사용 중지됩니다.
+
+          정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
+
+          정책이 설정되지 않은 경우 전력 피크 시프트는 처음부터 사용 중지되며 사용자가 활성화할 수 없습니다.</translation>
 <translation id="718956142899066210">업데이트에 허용되어 있는 연결 유형</translation>
 <translation id="7190286937411178540">키보드 포커스 강조표시 접근성 기능 사용</translation>
 <translation id="7194407337890404814">기본 검색 공급자 이름</translation>
@@ -4166,6 +4243,17 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
           이 정책을 설정하지 않은 상태로 두면 설정이 사용됩니다.</translation>
 <translation id="8382184662529825177">기기의 콘텐츠 보호에 원격 인증을 사용합니다.</translation>
+<translation id="8382693763260501307">고급 배터리 충전 모드 전원 관리 정책을 사용합니다.
+
+          고급 배터리 충전 모드를 사용하면 사용자가 배터리의 상태를 최적화할 수 있습니다. 고급 충전 모드에서 시스템은 근무 시간이 아닐 때 표준 충전 알고리즘 및 기타 기법을 사용해 배터리의 상태를 최적화합니다. 근무 시간 동안에는 급속 충전이 사용됩니다. 급속 충전을 사용하면 배터리가 빠르게 충전되기 때문에 완전히 충전되기까지 걸리는 시간이 짧습니다. 매일 시스템 사용량이 가장 큰 시간대가 시작 시간 및 지속 시간으로 지정됩니다.
+
+          이 정책이 True로 설정되고 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" />이(가) 설정되면 기기에서 지원되는 경우 고급 배터리 충전 모드가 항상 사용됩니다.
+
+          이 정책이 False로 설정되면 고급 배터리 충전 모드가 항상 사용 중지됩니다.
+
+          정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
+
+          정책이 설정되지 않으면 고급 배터리 충전 모드가 사용 중지되며 사용자가 활성화할 수 없습니다.</translation>
 <translation id="838870586332499308">데이터 로밍 사용</translation>
 <translation id="8390049129576938611"><ph name="PRODUCT_NAME" />의 내부 PDF 뷰어를 사용 중지합니다. 대신 이를 다운로드 파일로 처리해 사용자가 기본 애플리케이션으로 PDF 파일을 열 수 있도록 합니다.
 
@@ -4376,9 +4464,15 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       이 정책이 구성되면 애플리케이션 집합이 고정되어 사용자가 변경할 수 없습니다.
 
       정책이 설정되지 않으면 사용자가 런처에 고정된 앱 목록을 변경할 수 있습니다.</translation>
+<translation id="8779504970846195767">전력 피크 시프트 배터리 임계값을 퍼센트로 설정합니다.
+
+          이 정책은 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" />이(가) True로 설정된 경우에만 사용됩니다.
+
+          정책이 구성 또는 설정되지 않은 경우 전력 피크 시프트는 항상 사용 중지되어 있습니다.</translation>
 <translation id="8798099450830957504">기본값</translation>
 <translation id="8800453707696044281">배터리 충전을 중단할 지점을 퍼센트로 맞춤설정합니다.</translation>
 <translation id="8801680448782904838">사용자에게 브라우저 재실행 또는 기기 재시작이 필요하거나 권장된다고 알림</translation>
+<translation id="8802816494059596691">이 목록에 지정된 호스트 이름은 http에서 https로 요청을 업그레이드할 가능성이 있는 HSTS 정책 검사에서 제외됩니다. 이 정책에서는 단일 라벨 호스트 이름만 허용됩니다. 호스트 이름은 표준화되어야 합니다. 모든 IDN은 A 라벨 형식으로 표현되어야 하며 모든 ASCII 문자는 소문자여야 합니다. 이 정책은 지정된 호스트 이름에만 적용되며 지정된 이름의 하위 도메인에는 적용되지 않습니다.</translation>
 <translation id="8818173863808665831">기기의 지리적 위치를 신고합니다.
 
       정책이 설정되지 않았거나 잘못 설정되어 있으면 위치가 신고되지 않습니다.</translation>
@@ -4541,6 +4635,17 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       정책 값이 빠른 픽스 빌드로 매핑되는 토큰으로 설정된 경우 업데이트가 다른 정책에 의해 차단되지 않으면 기기가 빠른 픽스 빌드로 업데이트됩니다.
 
       이 정책이 설정되지 않았거나 값이 빠른 픽스 빌드로 매핑되지 않는 경우 기기가 빠른 픽스 빌드로 업데이트되지 않습니다. 기기에서 이미 빠른 픽스 빌드가 실행되고 있고 정책이 더 이상 설정되지 않거나 정책 값이 더 이상 빠른 픽스 빌드로 매핑되지 않는 경우 업데이트가 다른 정책에 의해 차단되지 않으면 기기가 일반 빌드로 업데이트됩니다.</translation>
+<translation id="9053158112041032237">배터리 충전 모드의 전원 관리 정책을 지정합니다.
+
+          배터리 충전을 동적으로 제어하여 배터리 스트레스로 인한 배터리 소모를 최소화하고 배터리 수명을 늘립니다.
+
+          맞춤 배터리 충전 모드가 선택되었다면 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> 및 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />이(가) 지정되어야 합니다.
+
+          이 정책이 설정되면 기기에서 지원되는 경우 배터리 충전 모드가 적용됩니다.
+
+          이 정책이 기기에서 지원되지만 설정되지 않았다면 표준 배터리 충전 모드가 적용되며 사용자가 변경할 수 없습니다.
+
+          참고: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />이(가) 지정된 경우 이 정책을 재정의합니다.</translation>
 <translation id="9054012305936267950">브라우저의 로그인 동작을 제어하는 정책입니다. 이 정책을 사용하면 사용자가 자신의 계정으로 <ph name="PRODUCT_NAME" />에 로그인하고 Chrome 동기화와 같은 계정 관련 서비스를 사용하도록 허용할지 결정할 수 있습니다.
 
       정책을 '브라우저 로그인 사용 중지'로 설정하면 사용자가 브라우저에 로그인하여 계정 기반 서비스를 사용할 수 없습니다. 이 경우 Chrome 동기화와 같은 브라우저 수준의 기능을 사용할 수 없으며, 이러한 기능이 제공되지도 않습니다. 사용자가 로그인되어 있는 상태에서 정책이 '사용 중지'로 설정되면 다음번에 Chrome을 실행할 때 사용자가 로그아웃됩니다. 이때 북마크, 비밀번호 등 사용자의 로컬 프로필 데이터는 삭제되지 않습니다. Gmail과 같은 Google 웹 서비스의 경우 계속해서 로그인하여 사용할 수 있습니다.

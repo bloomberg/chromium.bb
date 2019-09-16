@@ -2280,7 +2280,7 @@
 <translation id="4351060348582610152"><ph name="ORIGIN" /> が近くの Bluetooth デバイスのスキャンを求めています。検出済みのデバイスは次のとおりです。</translation>
 <translation id="4354344420232759511">アクセスしたサイトがここに表示されます</translation>
 <translation id="435527878592612277">写真を選択</translation>
-<translation id="4358313196493694334">クリック位置を補正します</translation>
+<translation id="4358313196493694334">クリック位置のぶれを補正する</translation>
 <translation id="4359408040881008151">依存関係にある拡張機能によってインストールされました。</translation>
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">このクライアント証明書には秘密鍵がないか、秘密鍵が無効です</translation>
@@ -3526,7 +3526,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="6212039847102026977">ネットワークの詳細プロパティを表示</translation>
 <translation id="6212168817037875041">画面をオフにする</translation>
 <translation id="6212752530110374741">リンクをメールで送信</translation>
-<translation id="6214642087594370545">データ侵害が記録された安全でないパスワードを入力したときに警告を表示します。この機能はログインしているユーザーのみ利用可能です。</translation>
 <translation id="6216696360484424239">自動ログイン</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> はオフラインです。インターネットに接続してもう一度お試しください。</translation>
 <translation id="6220413761270491930">拡張機能の読み込みエラー</translation>
