@@ -36,6 +36,7 @@
 
 namespace blink {
 
+class SMILRepeatCount;
 struct SMILInterval;
 
 class SMILTime {
@@ -66,13 +67,13 @@ class SMILTime {
   bool IsIndefinite() const { return std::isinf(time_); }
   bool IsUnresolved() const { return std::isnan(time_); }
 
+  SMILTime Repeat(SMILRepeatCount repeat_count) const;
+
   SMILTime operator+(SMILTime other) const { return time_ + other.time_; }
   SMILTime operator-(SMILTime other) const { return time_ - other.time_; }
-  // So multiplying times does not make too much sense but SMIL defines it for
-  // duration * repeatCount
-  SMILTime operator*(SMILTime other) const;
-  // Similarly for divisions/modulo. (Used primarily for computing interval
-  // progress/repeats.)
+  SMILTime operator-() const { return SMILTime(-time_); }
+  // Division and /modulo are used primarily for computing interval
+  // progress/repeats.
   int64_t operator/(SMILTime other) const {
     return int64_t(time_ / other.time_);
   }

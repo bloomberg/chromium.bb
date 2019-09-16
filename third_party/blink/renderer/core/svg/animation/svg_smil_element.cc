@@ -222,7 +222,7 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       document_order_index_(0),
       cached_dur_(kInvalidCachedTime),
       cached_repeat_dur_(kInvalidCachedTime),
-      cached_repeat_count_(kInvalidCachedTime),
+      cached_repeat_count_(SMILRepeatCount::Invalid()),
       cached_min_(kInvalidCachedTime),
       cached_max_(kInvalidCachedTime),
       interval_has_changed_(false) {
@@ -404,16 +404,15 @@ bool SVGSMILElement::ParseCondition(const String& value,
                                     BeginOrEnd begin_or_end) {
   String parse_string = value.StripWhiteSpace();
 
-  double sign = 1.;
+  bool is_negated = false;
   bool ok;
   wtf_size_t pos = parse_string.find('+');
   if (pos == kNotFound) {
     pos = parse_string.find('-');
-    if (pos != kNotFound)
-      sign = -1.;
+    is_negated = pos != kNotFound;
   }
   String condition_string;
-  SMILTime offset = 0;
+  SMILTime offset;
   if (pos == kNotFound)
     condition_string = parse_string;
   else {
@@ -422,7 +421,8 @@ bool SVGSMILElement::ParseCondition(const String& value,
     offset = ParseOffsetValue(offset_string);
     if (offset.IsUnresolved())
       return false;
-    offset = offset * sign;
+    if (is_negated)
+      offset = -offset;
   }
   if (condition_string.IsEmpty())
     return false;
@@ -553,7 +553,7 @@ void SVGSMILElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   } else if (attr_name == svg_names::kRepeatDurAttr) {
     cached_repeat_dur_ = kInvalidCachedTime;
   } else if (attr_name == svg_names::kRepeatCountAttr) {
-    cached_repeat_count_ = kInvalidCachedTime;
+    cached_repeat_count_ = SMILRepeatCount::Invalid();
   } else if (attr_name == svg_names::kMinAttr) {
     cached_min_ = kInvalidCachedTime;
   } else if (attr_name == svg_names::kMaxAttr) {
@@ -658,24 +658,24 @@ SMILTime SVGSMILElement::RepeatDur() const {
   return cached_repeat_dur_;
 }
 
-// So a count is not really a time but let just all pretend we did not notice.
-SMILTime SVGSMILElement::RepeatCount() const {
-  if (cached_repeat_count_ != kInvalidCachedTime)
-    return cached_repeat_count_;
-  SMILTime computed_repeat_count = SMILTime::Unresolved();
-  const AtomicString& value = FastGetAttribute(svg_names::kRepeatCountAttr);
-  if (!value.IsNull()) {
-    DEFINE_STATIC_LOCAL(const AtomicString, indefinite_value, ("indefinite"));
-    if (value == indefinite_value) {
-      computed_repeat_count = SMILTime::Indefinite();
-    } else {
-      bool ok;
-      double result = value.ToDouble(&ok);
-      if (ok && result > 0)
-        computed_repeat_count = result;
-    }
+static SMILRepeatCount ParseRepeatCount(const AtomicString& value) {
+  if (value.IsNull())
+    return SMILRepeatCount::Unspecified();
+  if (value == "indefinite")
+    return SMILRepeatCount::Indefinite();
+  bool ok;
+  double result = value.ToDouble(&ok);
+  if (ok && result > 0)
+    return SMILRepeatCount::Numeric(result);
+  return SMILRepeatCount::Unspecified();
+}
+
+SMILRepeatCount SVGSMILElement::RepeatCount() const {
+  if (!cached_repeat_count_.IsValid()) {
+    cached_repeat_count_ =
+        ParseRepeatCount(FastGetAttribute(svg_names::kRepeatCountAttr));
   }
-  cached_repeat_count_ = computed_repeat_count;
+  DCHECK(cached_repeat_count_.IsValid());
   return cached_repeat_count_;
 }
 
@@ -770,14 +770,14 @@ SMILTime SVGSMILElement::FindInstanceTime(BeginOrEnd begin_or_end,
 SMILTime SVGSMILElement::RepeatingDuration() const {
   // Computing the active duration
   // http://www.w3.org/TR/SMIL2/smil-timing.html#Timing-ComputingActiveDur
-  SMILTime repeat_count = RepeatCount();
+  SMILRepeatCount repeat_count = RepeatCount();
   SMILTime repeat_dur = RepeatDur();
   SMILTime simple_duration = SimpleDuration();
   if (!simple_duration ||
-      (repeat_dur.IsUnresolved() && repeat_count.IsUnresolved()))
+      (repeat_dur.IsUnresolved() && repeat_count.IsUnspecified()))
     return simple_duration;
   repeat_dur = std::min(repeat_dur, SMILTime::Indefinite());
-  SMILTime repeat_count_duration = simple_duration * repeat_count;
+  SMILTime repeat_count_duration = simple_duration.Repeat(repeat_count);
   if (!repeat_count_duration.IsUnresolved())
     return std::min(repeat_dur, repeat_count_duration);
   return repeat_dur;
@@ -789,7 +789,7 @@ SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin,
   // http://www.w3.org/TR/SMIL2/smil-timing.html#Timing-ComputingActiveDur
   SMILTime preliminary_active_duration;
   if (!resolved_end.IsUnresolved() && Dur().IsUnresolved() &&
-      RepeatDur().IsUnresolved() && RepeatCount().IsUnresolved())
+      RepeatDur().IsUnresolved() && RepeatCount().IsUnspecified())
     preliminary_active_duration = resolved_end - resolved_begin;
   else if (!resolved_end.IsFinite())
     preliminary_active_duration = RepeatingDuration();
