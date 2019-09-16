@@ -604,12 +604,6 @@ void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
                              emulator->original_screen_info());
 }
 
-gfx::Rect RenderWidget::AdjustValidationMessageAnchor(const gfx::Rect& anchor) {
-  if (screen_metrics_emulator_)
-    return screen_metrics_emulator_->AdjustValidationMessageAnchor(anchor);
-  return anchor;
-}
-
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
     ExternalPopupMenu* popup) {
