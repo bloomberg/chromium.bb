@@ -50,10 +50,6 @@
     boolean mShiftingMode;
 }
 
-# Trichrome builds don't include a native library list in the main APK; it's
-# picked up from the library APK at runtime.
--dontwarn org.chromium.base.library_loader.NativeLibraries
-
 # Let proguard know CastMediaOptions in CastOptions is always null, so it can
 # trim unused MediaNotificationService methods. This saves about 170 methods in
 # the dex file. https://crbug.com/855081
