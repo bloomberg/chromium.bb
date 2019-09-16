@@ -321,9 +321,6 @@ extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[];
 extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[];
 
-extern const char kEnableAutofillImportDynamicFormsName[];
-extern const char kEnableAutofillImportDynamicFormsDescription[];
-
 extern const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name[];
 extern const char
     kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Description[];

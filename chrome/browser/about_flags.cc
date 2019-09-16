@@ -2608,10 +2608,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
-    {"enable-autofill-import-dynamic-forms",
-     flag_descriptions::kEnableAutofillImportDynamicFormsName,
-     flag_descriptions::kEnableAutofillImportDynamicFormsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillImportDynamicForms)},
     {"enable-autofill-local-card-migration-uses-strike-system-v2",
      flag_descriptions::kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name,
      flag_descriptions::
