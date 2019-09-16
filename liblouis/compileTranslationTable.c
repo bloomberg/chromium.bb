@@ -3950,6 +3950,7 @@ _lou_defaultTableResolver(const char *tableList, const char *base) {
 	char *cp;
 	int last;
 	int k;
+	size_t sz = NULL;
 
 	/* Set up search path */
 	searchPath = _lou_getTablePath();
@@ -3958,7 +3959,10 @@ _lou_defaultTableResolver(const char *tableList, const char *base) {
 	k = 0;
 	for (cp = (char *)tableList; *cp != '\0'; cp++)
 		if (*cp == ',') k++;
-	tableFiles = (char **)malloc((k + 2) * sizeof(char *));
+	sz = (k + 2);
+	tableFiles = (char **)malloc(sz * sizeof(char *));
+	if (!tableFiles) _lou_outOfMemory();
+	for (size_t i = 0; i < sz; ++i) tableFiles[i] = NULL;
 
 	/* Resolve subtables */
 	k = 0;
@@ -3976,6 +3980,7 @@ _lou_defaultTableResolver(const char *tableList, const char *base) {
 				_lou_logMessage(LOU_LOG_ERROR, "LOUIS_TABLEPATH=%s", path);
 			free(searchPath);
 			free(tableList_copy);
+			for(unsigned int i = 0; i < sz; i++) free(*(tableFiles+i));
 			free(tableFiles);
 			return NULL;
 		}
