@@ -315,6 +315,48 @@ def uprev_kernel_afdo(*_args, **_kwargs):
   return result
 
 
+@uprevs_versioned_package('afdo/chrome-profiles')
+def uprev_chrome_afdo(*_args, **_kwargs):
+  """Updates chrome ebuilds with versions from chrome_afdo.json.
+
+  See: uprev_versioned_package.
+
+  Raises:
+    EbuildManifestError: When ebuild manifest does not complete successfuly.
+  """
+  path = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
+                      'toolchain-utils', 'afdo_metadata', 'chrome_afdo.json')
+
+  with open(path, 'r') as f:
+    versions = json.load(f)
+
+  path = os.path.join('src', 'third_party', 'chromiumos-overlay',
+                      'chromeos-base', 'chromeos-chrome')
+  ebuild_path = os.path.join(constants.SOURCE_ROOT, path,
+                             'chromeos-chrome-9999.ebuild')
+  chroot_ebuild_path = os.path.join(constants.CHROOT_SOURCE_ROOT, path,
+                                    'chromeos-chrome-9999.ebuild')
+
+  result = UprevVersionedPackageResult()
+  for version, version_info in versions.items():
+    afdo_profile_version = version_info['name']
+    varname = 'AFDO_FILE["%s"]' % version
+    patch_ebuild_vars(ebuild_path, {varname: afdo_profile_version})
+
+  try:
+    cmd = ['ebuild', chroot_ebuild_path, 'manifest', '--force']
+    cros_build_lib.RunCommand(cmd, enter_chroot=True)
+  except cros_build_lib.RunCommandError as e:
+    raise EbuildManifestError(
+        'Error encountered when regenerating the manifest for ebuild: %s\n%s' %
+        (chroot_ebuild_path, e), e)
+
+  manifest_path = os.path.join(constants.SOURCE_ROOT, path, 'Manifest')
+  result.add_result('chromeos-chrome', [ebuild_path, manifest_path])
+
+  return result
+
+
 @uprevs_versioned_package(constants.CHROME_CP)
 def uprev_chrome(build_targets, refs, chroot):
   """Uprev chrome and its related packages.
