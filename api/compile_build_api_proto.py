@@ -15,6 +15,7 @@ import os
 from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 _API_DIR = os.path.join(constants.CHROMITE_DIR, 'api')
@@ -25,8 +26,17 @@ _PROTO_DIR = os.path.join(constants.CHROMITE_DIR, 'infra', 'proto')
 PROTOC_VERSION = '3.6.1'
 
 
+class Error(Exception):
+  """Base error class for the module."""
+
+
+class GenerationError(Error):
+  """A failure we can't recover from."""
+
+
 def _InstallProtoc():
   """Install protoc from CIPD."""
+  logging.info('Installing protoc.')
   cmd = ['cipd', 'ensure']
   # Clean up the output.
   cmd.extend(['-log-level', 'warning'])
@@ -41,7 +51,8 @@ def _InstallProtoc():
 
     cmd.extend(['-ensure-file', ensure_file])
 
-    cros_build_lib.RunCommand(cmd, cwd=constants.CHROMITE_DIR)
+    cros_build_lib.RunCommand(cmd, cwd=constants.CHROMITE_DIR, print_cmd=False)
+
 
 def _CleanTargetDirectory(directory):
   """Remove any existing generated files in the directory.
@@ -55,10 +66,18 @@ def _CleanTargetDirectory(directory):
   Args:
     directory (str): Path to be cleaned up.
   """
+  logging.info('Cleaning old files.')
   for dirpath, _dirnames, filenames in os.walk(directory):
     old = [os.path.join(dirpath, f) for f in filenames if f.endswith('_pb2.py')]
+    # Remove empty init files to clean up otherwise empty directories.
+    if '__init__.py' in filenames:
+      init = os.path.join(dirpath, '__init__.py')
+      if not osutils.ReadFile(init):
+        old.append(init)
+
     for current in old:
       osutils.SafeUnlink(current)
+
 
 def _GenerateFiles(source, output):
   """Generate the proto files from the |source| tree into |output|.
@@ -67,12 +86,15 @@ def _GenerateFiles(source, output):
     source (str): Path to the proto source root directory.
     output (str): Path to the output root directory.
   """
+  logging.info('Generating files.')
   targets = []
 
   # Only compile the subset we need for the API.
-  subdirs = [os.path.join(source, 'chromite'),
-             os.path.join(source, 'chromiumos'),
-             os.path.join(source, 'test_platform')]
+  subdirs = [
+      os.path.join(source, 'chromite'),
+      os.path.join(source, 'chromiumos'),
+      os.path.join(source, 'test_platform')
+  ]
   for basedir in subdirs:
     for dirpath, _dirnames, filenames in os.walk(basedir):
       for filename in filenames:
@@ -80,15 +102,18 @@ def _GenerateFiles(source, output):
           # We have a match, add the file.
           targets.append(os.path.join(dirpath, filename))
 
-  template = ('%(protoc)s --python_out %(output)s '
-              '--proto_path %(src)s  %(targets)s')
-  cmd = template % {'protoc': _PROTOC, 'output': output, 'src': source,
-                    'targets': ' '.join(targets)}
-  cros_build_lib.RunCommand(cmd, shell=True, cwd=source)
+  cmd = [_PROTOC, '--python_out', output, '--proto_path', source] + targets
+  result = cros_build_lib.RunCommand(
+      cmd, cwd=source, print_cmd=False, error_code_ok=True)
+
+  if result.returncode:
+    raise GenerationError('Error compiling the proto. See the output for a '
+                          'message.')
 
 
 def _InstallMissingInits(directory):
   """Add any __init__.py files not present in the generated protobuf folders."""
+  logging.info('Adding missing __init__.py files.')
   for dirpath, _dirnames, filenames in os.walk(directory):
     if '__init__.py' not in filenames:
       osutils.Touch(os.path.join(dirpath, '__init__.py'))
@@ -101,6 +126,7 @@ def _PostprocessFiles(directory):
     directory (str): The root directory containing the generated files that are
       to be processed.
   """
+  logging.info('Postprocessing: Fix imports.')
   # We are using a negative address here (the /address/! portion of the sed
   # command) to make sure we don't change any imports from protobuf itself.
   address = '^from google.protobuf'
@@ -113,15 +139,21 @@ def _PostprocessFiles(directory):
   find = r'^from \([^ ]*\) import \([^ ]*\)_pb2 as \([^ ]*\)$'
   # Substitute: 'from chromite.api.gen.x import y_pb2 as x_dot_y_pb2'.
   sub = 'from chromite.api.gen.\\1 import \\2_pb2 as \\3'
-  from_sed = ['sed', '-i', '/%(address)s/!s/%(find)s/%(sub)s/g' %
-              {'address': address, 'find': find, 'sub': sub}]
+  from_sed = [
+      'sed', '-i',
+      '/%(address)s/!s/%(find)s/%(sub)s/g' % {
+          'address': address,
+          'find': find,
+          'sub': sub
+      }
+  ]
 
   for dirpath, _dirnames, filenames in os.walk(directory):
     # Update the
     pb2 = [os.path.join(dirpath, f) for f in filenames if f.endswith('_pb2.py')]
     if pb2:
       cmd = from_sed + pb2
-      cros_build_lib.RunCommand(cmd)
+      cros_build_lib.RunCommand(cmd, print_cmd=False)
 
 
 def CompileProto(output=None):
@@ -147,9 +179,11 @@ def CompileProto(output=None):
 def GetParser():
   """Build the argument parser."""
   parser = commandline.ArgumentParser(description=__doc__)
-  parser.add_argument('--destination', type='path',
-                      help='The directory where the proto should be generated.'
-                           'Defaults to the correct directory for the API.')
+  parser.add_argument(
+      '--destination',
+      type='path',
+      help='The directory where the proto should be generated. Defaults to '
+           'the correct directory for the API.')
   return parser
 
 
@@ -165,4 +199,8 @@ def _ParseArguments(argv):
 def main(argv):
   opts = _ParseArguments(argv)
 
-  CompileProto(output=opts.destination)
+  try:
+    CompileProto(output=opts.destination)
+  except Error as e:
+    logging.error(e.message)
+    return 1
