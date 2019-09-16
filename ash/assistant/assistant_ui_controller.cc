@@ -38,11 +38,6 @@ namespace {
 // When hidden, Assistant will automatically close after |kAutoCloseThreshold|.
 constexpr base::TimeDelta kAutoCloseThreshold = base::TimeDelta::FromMinutes(5);
 
-// When shown, the proactive suggestions widget will automatically close if the
-// user doesn't interact with it within a fixed interval.
-constexpr base::TimeDelta kAutoCloseProactiveSuggestionsThreshold =
-    base::TimeDelta::FromSeconds(15);
-
 // Toast -----------------------------------------------------------------------
 
 constexpr int kToastDurationMs = 2500;
@@ -213,7 +208,9 @@ void AssistantUiController::OnProactiveSuggestionsChanged(
     // The proactive suggestions widget will automatically be closed if the user
     // doesn't interact with it within a fixed interval.
     auto_close_proactive_suggestions_timer_.Start(
-        FROM_HERE, kAutoCloseProactiveSuggestionsThreshold,
+        FROM_HERE,
+        chromeos::assistant::features::
+            GetProactiveSuggestionsTimeoutThreshold(),
         base::BindRepeating(
             &AssistantUiController::ResetProactiveSuggestionsView,
             weak_factory_.GetWeakPtr(), proactive_suggestions->category(),
