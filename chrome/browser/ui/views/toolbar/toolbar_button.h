@@ -124,6 +124,10 @@ class ToolbarButton : public views::LabelButton,
 
   void UpdateHighlightBackgroundAndInsets();
 
+  // Sets the spacing on the outer side of the label (not the side where the
+  // image is). The spacing is applied only when the label is non-empty.
+  void SetLabelSideSpacing(int spacing);
+
   // Callback for MenuModelAdapter.
   void OnMenuClosed();
 
