@@ -978,12 +978,9 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
 
   // If we have a provisional request for a different document, a fragment
   // scroll should cancel it.
+  // Note: see fragment-change-does-not-cancel-pending-navigation, where
+  // this does not actually happen.
   GetFrameLoader().DetachProvisionalDocumentLoader();
-  // TODO(dgozman): despite the comment above, next call does not actually
-  // cancel client navigation. See
-  // fragment-change-does-not-cancel-pending-navigation test. We should remove
-  // this call.
-  GetFrameLoader().CancelClientNavigation();
   GetFrameLoader().DidFinishNavigation(
       FrameLoader::NavigationFinishState::kSuccess);
 
