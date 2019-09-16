@@ -214,9 +214,7 @@ class CONTENT_EXPORT VideoCaptureManager
   // Checks to see if |controller| has no clients left. If so, remove it from
   // the list of controllers, and delete it asynchronously. |controller| may be
   // freed by this function.
-  void DestroyControllerIfNoClients(
-      const base::UnguessableToken& capture_session_id,
-      VideoCaptureController* controller);
+  void DestroyControllerIfNoClients(VideoCaptureController* controller);
 
   // Finds a VideoCaptureController in different ways: by |session_id|, by its
   // |device_id| and |type| (if it is already opened), by its |controller| or by
