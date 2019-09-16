@@ -296,6 +296,8 @@ static_library("test_support") {
       "../browser/chromeos/settings/scoped_cros_settings_test_helper.h",
       "../browser/component_updater/fake_cros_component_manager.cc",
       "../browser/component_updater/fake_cros_component_manager.h",
+      "../browser/extensions/policy_test_utils.cc",
+      "../browser/extensions/policy_test_utils.h",
       "../browser/ui/ash/accessibility/fake_accessibility_controller.cc",
       "../browser/ui/ash/accessibility/fake_accessibility_controller.h",
       "base/browser_process_platform_part_test_api_chromeos.cc",
