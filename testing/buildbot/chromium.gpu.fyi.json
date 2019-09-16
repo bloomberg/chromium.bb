@@ -6802,7 +6802,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6832,7 +6832,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6862,7 +6862,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6892,7 +6892,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6922,7 +6922,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "android",
@@ -6959,7 +6959,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -6990,7 +6990,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "android",
@@ -7090,7 +7090,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "android",
@@ -10409,7 +10409,7 @@
           "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
           "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
+          "--enable-features=UseSkiaRenderer,UiGpuRasterization",
           "--use-vulkan=native",
           "--enable-oop-rasterization",
           "--enable-gpu-rasterization",
@@ -10529,7 +10529,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10558,7 +10558,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10587,7 +10587,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10616,7 +10616,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10645,7 +10645,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -10681,7 +10681,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -10708,7 +10708,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
@@ -10750,7 +10750,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -10793,7 +10793,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
@@ -10837,7 +10837,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -10955,7 +10955,7 @@
           "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
           "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
+          "--enable-features=UseSkiaRenderer,UiGpuRasterization",
           "--use-vulkan=native",
           "--enable-oop-rasterization",
           "--enable-gpu-rasterization",
@@ -11075,7 +11075,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11104,7 +11104,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11133,7 +11133,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11162,7 +11162,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11191,7 +11191,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -11227,7 +11227,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -11254,7 +11254,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
@@ -11296,7 +11296,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -11339,7 +11339,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
@@ -11383,7 +11383,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",

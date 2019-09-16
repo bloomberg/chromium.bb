@@ -3288,7 +3288,7 @@
         'args': [
           '--num-retries=3',
           '--additional-driver-flag=--enable-gpu-rasterization',
-          '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--additional-driver-flag=--enable-features=UseSkiaRenderer',
           '--additional-driver-flag=--use-gl=any',
           '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
@@ -3321,7 +3321,7 @@
         'args': [
           '--num-retries=3',
           '--additional-driver-flag=--enable-gpu-rasterization',
-          '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--additional-driver-flag=--enable-features=UseSkiaRenderer',
           '--additional-driver-flag=--use-gl=any',
           '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
@@ -3600,7 +3600,7 @@
           '--test-launcher-bot-mode',
           '--test-launcher-jobs=1',
           '--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter',
-          '--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization',
+          '--enable-features=UseSkiaRenderer,UiGpuRasterization',
           '--use-vulkan=native',
           '--enable-oop-rasterization',
           '--enable-gpu-rasterization',
@@ -3621,7 +3621,7 @@
           '--test-launcher-bot-mode',
           '--test-launcher-jobs=1',
           '--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter',
-          '--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization',
+          '--enable-features=UseSkiaRenderer,UiGpuRasterization',
           '--use-vulkan=swiftshader',
           '--enable-oop-rasterization',
           '--enable-gpu-rasterization',
@@ -3698,7 +3698,7 @@
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
         'precommit_args': [
           # Gerrit issue ID
@@ -3719,23 +3719,23 @@
       },
       'context_lost': {
         'args': [
-          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
       },
       'depth_capture': {
         'args': [
-          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
       },
       'gpu_process': {
         'name': 'gpu_process_launch_tests',
         'args': [
-          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
       },
       'hardware_accelerated_feature': {
         'args': [
-          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
       },
       'maps': {
@@ -3748,13 +3748,13 @@
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
       },
       'screenshot_sync': {
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
       },
     },
@@ -3793,7 +3793,7 @@
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback',
+          '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback',
         ],
         'precommit_args': [
           # Gerrit issue ID
@@ -4632,7 +4632,7 @@
     'skia_renderer_fyi_gtests': {
       'skia_renderer_browser_tests': {
         'args': [
-          '--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--enable-features=UseSkiaRenderer',
           '--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.browser_tests.filter',
         ],
         'swarming': {
@@ -4642,7 +4642,7 @@
       },
       'skia_renderer_content_browsertests': {
         'args': [
-          '--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--enable-features=UseSkiaRenderer',
         ],
         'swarming': {
           'shards': 2,
@@ -4654,7 +4654,7 @@
     'skia_renderer_gtests': {
       'skia_renderer_content_browsertests': {
         'args': [
-          '--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--enable-features=UseSkiaRenderer',
           '--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter',
         ],
         'swarming': {
@@ -4672,7 +4672,7 @@
         'args': [
           '--num-retries=3',
           '--additional-driver-flag=--enable-gpu-rasterization',
-          '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--additional-driver-flag=--enable-features=UseSkiaRenderer',
           '--additional-driver-flag=--use-gl=swiftshader',
           '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
@@ -4699,7 +4699,7 @@
         'args': [
           '--num-retries=3',
           '--additional-driver-flag=--enable-gpu-rasterization',
-          '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--additional-driver-flag=--enable-features=UseSkiaRenderer',
           '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
           '--additional-driver-flag=--use-vulkan=swiftshader',
