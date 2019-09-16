@@ -139,15 +139,20 @@ GOB_ERROR_REASON_CLOSED_CHANGE = 'CLOSED CHANGE'
 
 class GOBError(Exception):
   """Exception class for errors commuicating with the gerrit-on-borg service."""
-  def __init__(self, *args, **kwargs):
-    super(GOBError, self).__init__(*args)
-    self.http_status = kwargs.pop('http_status', None)
-    self.reason = kwargs.pop('reason', None)
+  def __init__(self, http_status=None, reason=None):
+    self.http_status = http_status
+    self.reason = reason
 
-    if self.http_status is not None:
-      self.message += '(http_status): %d' % self.http_status
-    if self.reason is not None:
-      self.message += '(reason): %s' % self.reason
+    message = ''
+    if http_status is not None:
+      message += '(http_status): %d' % (http_status,)
+    if reason is not None:
+      message += '(reason): %s' % (reason,)
+    if not message:
+      message = 'Unknown error'
+
+    super(GOBError, self).__init__(message)
+
 
 class InternalGOBError(GOBError):
   """Exception class for GOB errors with status >= 500"""
@@ -444,7 +449,7 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
   try:
     result = FetchUrlJson(host, path, ignore_404=False)
   except GOBError as e:
-    msg = '%s:\n%s' % (e.message, path)
+    msg = '%s:\n%s' % (e, path)
     raise GOBError(http_status=e.http_status, reason=msg)
   return result
 
