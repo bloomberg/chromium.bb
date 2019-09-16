@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "chrome/browser/chromeos/printing/history/test_print_job_database.h"
+#include "chrome/browser/chromeos/printing/history/test_print_job_history_service_observer.h"
 #include "chrome/browser/chromeos/printing/test_cups_print_job_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -66,18 +67,15 @@ class PrintJobHistoryServiceTest : public ::testing::Test {
 };
 
 TEST_F(PrintJobHistoryServiceTest, SaveObservedCupsPrintJob) {
+  base::RunLoop save_print_job_run_loop;
+  TestPrintJobHistoryServiceObserver observer(
+      print_job_history_service_.get(), save_print_job_run_loop.QuitClosure());
+
   std::unique_ptr<CupsPrintJob> print_job = std::make_unique<CupsPrintJob>(
       chromeos::Printer(), /*job_id=*/0, kTitle, kPagesNumber,
       ::printing::PrintJob::Source::PRINT_PREVIEW,
       /*source_id=*/"", printing::proto::PrintSettings());
   print_job_manager_->CreatePrintJob(print_job.get());
-
-  base::RunLoop save_print_job_run_loop;
-  auto callback = base::BindRepeating(
-      &PrintJobHistoryServiceTest::OnPrintJobSaved, base::Unretained(this),
-      save_print_job_run_loop.QuitClosure());
-  print_job_history_service_->SetOnPrintJobSavedCallbackForTesting(&callback);
-
   print_job_manager_->CancelPrintJob(print_job.get());
   save_print_job_run_loop.Run();
 
@@ -92,6 +90,22 @@ TEST_F(PrintJobHistoryServiceTest, SaveObservedCupsPrintJob) {
   EXPECT_EQ(kPagesNumber, entries_[0].number_of_pages());
   EXPECT_EQ(printing::proto::PrintJobInfo_PrintJobStatus_CANCELED,
             entries_[0].status());
+}
+
+TEST_F(PrintJobHistoryServiceTest, ObserverTest) {
+  base::RunLoop run_loop;
+  TestPrintJobHistoryServiceObserver observer(print_job_history_service_.get(),
+                                              run_loop.QuitClosure());
+
+  std::unique_ptr<CupsPrintJob> print_job = std::make_unique<CupsPrintJob>(
+      chromeos::Printer(), /*job_id=*/0, kTitle, kPagesNumber,
+      ::printing::PrintJob::Source::PRINT_PREVIEW,
+      /*source_id=*/"", printing::proto::PrintSettings());
+  print_job_manager_->CreatePrintJob(print_job.get());
+  print_job_manager_->CancelPrintJob(print_job.get());
+  run_loop.Run();
+
+  EXPECT_EQ(1, observer.num_print_jobs());
 }
 
 }  // namespace chromeos

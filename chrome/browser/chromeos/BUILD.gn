@@ -2747,6 +2747,8 @@ source_set("unit_tests") {
     "printing/history/print_job_info_conversions_unittest.cc",
     "printing/history/test_print_job_database.cc",
     "printing/history/test_print_job_database.h",
+    "printing/history/test_print_job_history_service_observer.cc",
+    "printing/history/test_print_job_history_service_observer.h",
     "printing/ppd_resolution_state_unittest.cc",
     "printing/ppd_resolution_tracker_unittest.cc",
     "printing/print_servers_provider_unittest.cc",

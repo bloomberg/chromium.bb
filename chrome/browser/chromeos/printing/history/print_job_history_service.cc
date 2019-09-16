@@ -13,15 +13,6 @@
 
 namespace chromeos {
 
-namespace {
-
-// This callback is used in unit tests to wait until print job is saved in the
-// database and check whether the operation is successful.
-base::RepeatingCallback<void(bool success)>*
-    g_test_on_print_job_saved_callback = nullptr;
-
-}  // namespace
-
 PrintJobHistoryService::PrintJobHistoryService(
     std::unique_ptr<PrintJobDatabase> print_job_database,
     CupsPrintJobManager* print_job_manager)
@@ -42,9 +33,14 @@ void PrintJobHistoryService::GetPrintJobs(
   print_job_database_->GetPrintJobs(std::move(callback));
 }
 
-void PrintJobHistoryService::SetOnPrintJobSavedCallbackForTesting(
-    base::RepeatingCallback<void(bool success)>* callback) {
-  g_test_on_print_job_saved_callback = callback;
+void PrintJobHistoryService::AddObserver(
+    PrintJobHistoryService::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PrintJobHistoryService::RemoveObserver(
+    PrintJobHistoryService::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void PrintJobHistoryService::OnPrintJobDone(base::WeakPtr<CupsPrintJob> job) {
@@ -63,17 +59,21 @@ void PrintJobHistoryService::OnPrintJobCancelled(
 void PrintJobHistoryService::SavePrintJob(base::WeakPtr<CupsPrintJob> job) {
   if (!job)
     return;
+  printing::proto::PrintJobInfo print_job_info =
+      CupsPrintJobToProto(*job, /*id=*/base::GenerateGUID(), base::Time::Now());
   print_job_database_->SavePrintJob(
-      CupsPrintJobToProto(*job, /*id=*/base::GenerateGUID(), base::Time::Now()),
-      base::BindOnce(&PrintJobHistoryService::OnPrintJobSaved,
-                     base::Unretained(this)));
+      print_job_info, base::BindOnce(&PrintJobHistoryService::OnPrintJobSaved,
+                                     base::Unretained(this), print_job_info));
 }
 
-void PrintJobHistoryService::OnPrintJobSaved(bool success) {
+void PrintJobHistoryService::OnPrintJobSaved(
+    const printing::proto::PrintJobInfo& print_job_info,
+    bool success) {
   base::UmaHistogramBoolean("Printing.CUPS.PrintJobDatabasePrintJobSaved",
                             success);
-  if (g_test_on_print_job_saved_callback)
-    g_test_on_print_job_saved_callback->Run(success);
+  for (auto& observer : observers_) {
+    observer.OnPrintJobFinished(print_job_info);
+  }
 }
 
 }  // namespace chromeos
