@@ -165,6 +165,13 @@ absl::optional<IPEndpoint> StreamSocketPosix::remote_address() const {
   return remote_address_.value();
 }
 
+absl::optional<IPEndpoint> StreamSocketPosix::local_address() const {
+  if (!local_address_.has_value()) {
+    return absl::nullopt;
+  }
+  return local_address_.value().endpoint();
+}
+
 SocketState StreamSocketPosix::state() const {
   return state_;
 }

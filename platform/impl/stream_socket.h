@@ -52,6 +52,9 @@ class StreamSocket {
   // Returns the connected remote address, if socket is connected.
   virtual absl::optional<IPEndpoint> remote_address() const = 0;
 
+  // Returns the local address, if one is assigned.
+  virtual absl::optional<IPEndpoint> local_address() const = 0;
+
   // Returns the state of the socket.
   virtual SocketState state() const = 0;
 

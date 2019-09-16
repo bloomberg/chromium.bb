@@ -53,7 +53,8 @@ struct TraceCategory {
     Any = std::numeric_limits<uint64_t>::max(),
     mDNS = 0x01 << 0,
     Quic = 0x01 << 1,
-    Presentation = 0x01 << 2,
+    SSL = 0x01 << 2,
+    Presentation = 0x01 << 3,
   };
 };
 

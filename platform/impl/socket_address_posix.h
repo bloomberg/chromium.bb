@@ -32,7 +32,8 @@ class SocketAddressPosix {
   struct sockaddr* address();
   const struct sockaddr* address() const;
   socklen_t size() const;
-  IPAddress::Version version() const { return version_; }
+  IPAddress::Version version() const { return endpoint_.address.version(); }
+  IPEndpoint endpoint() const { return endpoint_; }
 
  private:
   // The way the sockaddr_* family works in POSIX is pretty unintuitive. The
@@ -46,7 +47,7 @@ class SocketAddressPosix {
   };
 
   SocketAddressIn internal_address_;
-  IPAddress::Version version_;
+  IPEndpoint endpoint_;
 };
 
 }  // namespace platform

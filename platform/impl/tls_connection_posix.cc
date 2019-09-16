@@ -29,12 +29,12 @@ namespace platform {
 // TODO(jophba, rwkeane): implement reading
 // TODO(jophba, rwkeane): implement write blocking/unblocking
 TlsConnectionPosix::TlsConnectionPosix(IPEndpoint local_address,
-                                       IPEndpoint remote_address,
                                        TaskRunner* task_runner)
-    : TlsConnection(task_runner),
-      local_address_(local_address),
-      remote_address_(remote_address),
-      socket_(std::make_unique<StreamSocketPosix>(local_address)) {}
+    : TlsConnection(task_runner), socket_(local_address) {}
+
+TlsConnectionPosix::TlsConnectionPosix(IPAddress::Version version,
+                                       TaskRunner* task_runner)
+    : TlsConnection(task_runner), socket_(version) {}
 
 TlsConnectionPosix::~TlsConnectionPosix() = default;
 
@@ -44,11 +44,15 @@ void TlsConnectionPosix::Write(const void* data, size_t len) {
 }
 
 const IPEndpoint& TlsConnectionPosix::local_address() const {
-  return local_address_;
+  const absl::optional<IPEndpoint> endpoint = socket_.local_address();
+  OSP_DCHECK(endpoint.has_value());
+  return endpoint.value();
 }
 
 const IPEndpoint& TlsConnectionPosix::remote_address() const {
-  return remote_address_;
+  const absl::optional<IPEndpoint> endpoint = socket_.remote_address();
+  OSP_DCHECK(endpoint.has_value());
+  return endpoint.value();
 }
 
 }  // namespace platform

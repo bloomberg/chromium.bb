@@ -4,6 +4,8 @@
 
 #include "platform/impl/socket_address_posix.h"
 
+#include <vector>
+
 #include "platform/api/logging.h"
 
 namespace openscreen {
@@ -11,24 +13,27 @@ namespace platform {
 
 SocketAddressPosix::SocketAddressPosix(const struct sockaddr& address) {
   if (address.sa_family == AF_INET) {
-    version_ = IPAddress::Version::kV4;
     memcpy(&internal_address_, &address, sizeof(struct sockaddr_in));
+    endpoint_.address = IPAddress(IPAddress::Version::kV4,
+                                  reinterpret_cast<const uint8_t*>(
+                                      &internal_address_.v4.sin_addr.s_addr));
+    endpoint_.port = ntohs(internal_address_.v4.sin_port);
   } else if (address.sa_family == AF_INET6) {
-    version_ = IPAddress::Version::kV6;
     memcpy(&internal_address_, &address, sizeof(struct sockaddr_in6));
+    endpoint_.address = IPAddress(internal_address_.v6.sin6_addr.s6_addr);
+    endpoint_.port = ntohs(internal_address_.v6.sin6_port);
   } else {
     OSP_NOTREACHED() << "Unknown address type";
   }
 }
 
-SocketAddressPosix::SocketAddressPosix(const IPEndpoint& endpoint) {
+SocketAddressPosix::SocketAddressPosix(const IPEndpoint& endpoint)
+    : endpoint_(endpoint) {
   if (endpoint.address.IsV4()) {
     internal_address_.v4.sin_family = AF_INET;
     internal_address_.v4.sin_port = htons(endpoint.port);
     endpoint.address.CopyToV4(
         reinterpret_cast<uint8_t*>(&internal_address_.v4.sin_addr.s_addr));
-
-    version_ = IPAddress::Version::kV4;
   } else {
     OSP_DCHECK(endpoint.address.IsV6());
 
@@ -38,13 +43,11 @@ SocketAddressPosix::SocketAddressPosix(const IPEndpoint& endpoint) {
     internal_address_.v6.sin6_port = htons(endpoint.port);
     endpoint.address.CopyToV6(
         reinterpret_cast<uint8_t*>(&internal_address_.v6.sin6_addr));
-
-    version_ = IPAddress::Version::kV6;
   }
 }
 
 struct sockaddr* SocketAddressPosix::address() {
-  switch (version_) {
+  switch (version()) {
     case IPAddress::Version::kV4:
       return reinterpret_cast<struct sockaddr*>(&internal_address_.v4);
     case IPAddress::Version::kV6:
@@ -56,7 +59,7 @@ struct sockaddr* SocketAddressPosix::address() {
 }
 
 const struct sockaddr* SocketAddressPosix::address() const {
-  switch (version_) {
+  switch (version()) {
     case IPAddress::Version::kV4:
       return reinterpret_cast<const struct sockaddr*>(&internal_address_.v4);
     case IPAddress::Version::kV6:
@@ -68,7 +71,7 @@ const struct sockaddr* SocketAddressPosix::address() const {
 }
 
 socklen_t SocketAddressPosix::size() const {
-  switch (version_) {
+  switch (version()) {
     case IPAddress::Version::kV4:
       return sizeof(struct sockaddr_in);
     case IPAddress::Version::kV6:

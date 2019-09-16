@@ -35,10 +35,10 @@ TEST(SocketAddressPosixTest, IPv6SocketAddressConvertsSuccessfully) {
   EXPECT_EQ(v6_address->sin6_port, ntohs(80));
   EXPECT_EQ(v6_address->sin6_flowinfo, 0u);
 
-  const unsigned char KExpectedAddress[16] = {1, 2,  3,  4,  5,  6,  7,  8,
+  const unsigned char kExpectedAddress[16] = {1, 2,  3,  4,  5,  6,  7,  8,
                                               9, 10, 11, 12, 13, 14, 15, 16};
   EXPECT_THAT(v6_address->sin6_addr.s6_addr,
-              testing::ElementsAreArray(KExpectedAddress));
+              testing::ElementsAreArray(kExpectedAddress));
   EXPECT_EQ(v6_address->sin6_scope_id, 0u);
 
   EXPECT_EQ(address.version(), IPAddress::Version::kV6);
@@ -58,10 +58,12 @@ TEST(SocketAddressPosixTest, IPv4ConvertsSuccessfully) {
   EXPECT_EQ(v4_address->sin_family, address.sin_family);
   EXPECT_EQ(v4_address->sin_port, address.sin_port);
   EXPECT_EQ(v4_address->sin_addr.s_addr, address.sin_addr.s_addr);
+  IPEndpoint expected_address{{1, 2, 3, 4}, 80};
+  EXPECT_EQ(address_posix.endpoint(), expected_address);
 }
 
 TEST(SocketAddressPosixTest, IPv6ConvertsSuccessfully) {
-  const unsigned char KExpectedAddress[16] = {1, 2,  3,  4,  5,  6,  7,  8,
+  const unsigned char kExpectedAddress[16] = {1, 2,  3,  4,  5,  6,  7,  8,
                                               9, 10, 11, 12, 13, 14, 15, 16};
 
   struct sockaddr_in6 address;
@@ -69,7 +71,7 @@ TEST(SocketAddressPosixTest, IPv6ConvertsSuccessfully) {
   address.sin6_port = ntohs(80);
   address.sin6_flowinfo = 0u;
   address.sin6_scope_id = 0u;
-  memcpy(&address.sin6_addr.s6_addr, KExpectedAddress, 16);
+  memcpy(&address.sin6_addr.s6_addr, kExpectedAddress, 16);
 
   struct sockaddr* casted = reinterpret_cast<struct sockaddr*>(&address);
   SocketAddressPosix address_posix(*casted);
@@ -81,7 +83,10 @@ TEST(SocketAddressPosixTest, IPv6ConvertsSuccessfully) {
   EXPECT_EQ(v6_address->sin6_flowinfo, address.sin6_flowinfo);
   EXPECT_EQ(v6_address->sin6_scope_id, address.sin6_scope_id);
   EXPECT_THAT(v6_address->sin6_addr.s6_addr,
-              testing::ElementsAreArray(KExpectedAddress));
+              testing::ElementsAreArray(kExpectedAddress));
+  IPEndpoint expected_address{
+      {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, 80};
+  EXPECT_EQ(address_posix.endpoint(), expected_address);
 }
 
 }  // namespace platform

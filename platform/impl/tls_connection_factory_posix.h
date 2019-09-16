@@ -5,6 +5,7 @@
 #ifndef PLATFORM_IMPL_TLS_CONNECTION_FACTORY_POSIX_H_
 #define PLATFORM_IMPL_TLS_CONNECTION_FACTORY_POSIX_H_
 
+#include <future>
 #include <memory>
 #include <string>
 
@@ -18,7 +19,7 @@ namespace platform {
 class TlsConnectionFactoryPosix : public TlsConnectionFactory {
  public:
   TlsConnectionFactoryPosix(Client* client, TaskRunner* task_runner);
-  ~TlsConnectionFactoryPosix();
+  ~TlsConnectionFactoryPosix() override;
 
   // TlsConnectionFactory overrides
   void Connect(const IPEndpoint& remote_address,
@@ -26,6 +27,22 @@ class TlsConnectionFactoryPosix : public TlsConnectionFactory {
   void Listen(const IPEndpoint& local_address,
               const TlsCredentials& credentials,
               const TlsListenOptions& options) override;
+
+ private:
+  // Ensures that SSL is initialized, then gets a new SSL connection.
+  ErrorOr<bssl::UniquePtr<SSL>> GetSslConnection();
+
+  // Create the shared context used for all SSL connections created by this
+  // factory.
+  void Initialize();
+
+  // Thread-safe mechanism to ensure Initialize() is only called once.
+  std::once_flag initInstanceFlag;
+
+  TaskRunner* task_runner_;
+
+  // SSL context, for creating SSL Connections via BoringSSL.
+  bssl::UniquePtr<SSL_CTX> ssl_context_;
 };
 
 }  // namespace platform
