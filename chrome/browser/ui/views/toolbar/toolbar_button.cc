@@ -141,7 +141,7 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
 void ToolbarButton::SetLabelSideSpacing(int spacing) {
   gfx::Insets label_insets;
   // Add the spacing only if text is non-empty.
-  if (GetText().empty()) {
+  if (!GetText().empty()) {
     // Add spacing to the opposing side.
     if (GetHorizontalAlignment() == gfx::ALIGN_RIGHT) {
       label_insets = gfx::Insets(0, spacing, 0, 0);
