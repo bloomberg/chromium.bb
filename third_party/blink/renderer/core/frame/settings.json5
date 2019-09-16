@@ -883,8 +883,13 @@
     // Dark mode
     //
     {
+      name: "darkModeEnabled",
+      initial: false,
+      invalidate: "Paint",
+    },
+    {
       name: "darkModeInversionAlgorithm",
-      initial: "DarkModeInversionAlgorithm::kOff",
+      initial: "DarkModeInversionAlgorithm::kInvertLightnessLAB",
       type: "DarkModeInversionAlgorithm",
       invalidate: "Paint",
     },

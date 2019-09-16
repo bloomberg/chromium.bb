@@ -39,6 +39,13 @@ bool HasLightBackground(const LayoutView& root) {
          kBrightnessThreshold;
 }
 
+bool IsDarkModeEnabled(const Settings& frame_settings) {
+  static bool isDarkModeEnabledByFeatureFlag =
+      features::kForceDarkInversionMethodParam.Get() !=
+      ForceDarkInversionMethod::kUseBlinkSettings;
+  return isDarkModeEnabledByFeatureFlag || frame_settings.GetDarkModeEnabled();
+}
+
 DarkModeInversionAlgorithm GetMode(const Settings& frame_settings) {
   switch (features::kForceDarkInversionMethodParam.Get()) {
     case ForceDarkInversionMethod::kUseBlinkSettings:
@@ -129,7 +136,8 @@ const DarkModeSettings& GetCachedDisabledSettings() {
 
 DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
                                        const LayoutView& root) {
-  if (ShouldApplyDarkModeFilterToPage(frame_settings.GetDarkModePagePolicy(),
+  if (IsDarkModeEnabled(frame_settings) &&
+      ShouldApplyDarkModeFilterToPage(frame_settings.GetDarkModePagePolicy(),
                                       root)) {
     return GetCachedEnabledSettings(frame_settings);
   }
