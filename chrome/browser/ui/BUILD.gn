@@ -58,8 +58,6 @@ jumbo_split_static_library("ui") {
     "autofill/chrome_autofill_client.h",
     "autofill/payments/autofill_dialog_models.cc",
     "autofill/payments/autofill_dialog_models.h",
-    "autofill/payments/autofill_ui_util.cc",
-    "autofill/payments/autofill_ui_util.h",
     "autofill/payments/create_card_unmask_prompt_view.h",
     "autofill/payments/credit_card_scanner_controller.cc",
     "autofill/payments/credit_card_scanner_controller.h",
