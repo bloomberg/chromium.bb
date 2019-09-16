@@ -35,15 +35,14 @@ from chromite.scripts import cros_set_lsb_release
 
 DESCRIPTION_FILE_VERSION = 2
 
-# See class docs for functionality information. Configured to reserve 32GB and
-# consider each individual task as consuming 10GB. Therefore we won't start a
-# new task unless available memory is about 42GB. We've observed two runs as
-# safe, so that even if we believe we're short, we will default to old behavior.
+# See class docs for functionality information. Configured to reserve 6GB and
+# consider each individual task as consuming 6GB. Therefore we won't start a
+# new task unless available memory is about 12GB (including base utilization).
 _mem_semaphore = utils.MemoryConsumptionSemaphore(
-    system_available_buffer_bytes=2**35,  # 32 GB
-    single_proc_max_bytes=2**33 + 2**31,  # 10 GB
-    quiescence_time_seconds=120,
-    unchecked_acquires=2)
+    system_available_buffer_bytes=2**31 + 2**32,  # 6 GB
+    single_proc_max_bytes=2**31 + 2**32,  # 6 GB
+    quiescence_time_seconds=60.0,
+    unchecked_acquires=4)
 
 
 class Error(Exception):
@@ -519,10 +518,14 @@ class PaygenPayload(object):
     # period of time, the builder kills the process for not outputting any
     # logs. So here we try to acquire the lock with a timeout of ten minutes in
     # a loop and log some output so not to be killed by the builder.
-
-    while not _mem_semaphore.acquire(timeout=self._SEMAPHORE_TIMEOUT):
-      logging.info('Failed to acquire the lock in 10 minutes, trying again ...')
-    logging.info('Successfully acquired the memory requirements lock.')
+    while True:
+      acq_result = _mem_semaphore.acquire(timeout=self._SEMAPHORE_TIMEOUT)
+      if acq_result.result:
+        logging.info('Acquired lock (reason: %s)', acq_result.reason)
+        break
+      else:
+        logging.info('Failed to acquire the lock in 10 minutes (reason: %s)'
+                     ', trying again ...', acq_result.reason)
     try:
       self._RunGeneratorCmd(cmd)
     finally:

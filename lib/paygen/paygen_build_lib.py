@@ -867,11 +867,12 @@ class PaygenBuild(object):
     # for signers, signing payload, etc). The only part that requires special
     # attention is generating an unsigned payload which internally has a
     # massively parallel implementation. So, here we allow multiple processes to
-    # run simultenously and we restrict the number of processes that do the
-    # unsigned payload generation to only two (look at _semaphore in
-    # paygen_payload_lib.py).
+    # run simultaneously and we restrict the number of processes that do the
+    # unsigned payload generation by looking at the available memory and seeing
+    # if additional runs would exceed allowed memory use thresholds (look at
+    # the MemoryConsumptionSemaphore in utils.py).
     parallel.RunTasksInProcessPool(paygen_payload_lib.CreateAndUploadPayload,
-                                   payloads_args, processes=8)
+                                   payloads_args)
 
   def _FindFullTestPayloads(self, channel, version):
     """Returns a list of full test payloads for a given version.

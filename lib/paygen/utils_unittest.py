@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 import time
 import threading
+import multiprocessing
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -75,11 +76,11 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     _semaphore = utils.MemoryConsumptionSemaphore(
         system_available_buffer_bytes=2 ** 64,
         single_proc_max_bytes=2 ** 64,
-        quiescence_time_seconds=0)
+        quiescence_time_seconds=0.0)
 
     # You can't get that much.
     self.assertEqual(_semaphore.acquire(
-        ACQUIRE_SHOULD_BLOCK_TIMEOUT), False)
+        ACQUIRE_SHOULD_BLOCK_TIMEOUT).result, False)
 
   def testNoMemoryConsumptionSemaphore(self):
     """Tests that you can acquire a very little amount of memory."""
@@ -87,10 +88,10 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     _semaphore = utils.MemoryConsumptionSemaphore(
         system_available_buffer_bytes=1,
         single_proc_max_bytes=1,
-        quiescence_time_seconds=0)
+        quiescence_time_seconds=0.0)
 
     # Sure you can have two bytes.
-    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT).result, True)
     _semaphore.release()
 
   def testQuiesceMemoryConsumptionSemaphore(self):
@@ -99,16 +100,16 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     _semaphore = utils.MemoryConsumptionSemaphore(
         system_available_buffer_bytes=1,
         single_proc_max_bytes=1,
-        quiescence_time_seconds=2)
+        quiescence_time_seconds=2.0)
 
     # Should want two bytes, have a whole lot.
     _semaphore._get_system_available = self.mock_get_system_available(2**64)
-    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT).result, True)
     _semaphore.release()
 
     # Should want two bytes, have a whole lot (but you'll block for 2 seconds).
     _semaphore._get_system_available = self.mock_get_system_available(2**64 - 2)
-    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT).result, True)
     _semaphore.release()
 
   def testUncheckedMemoryConsumptionSemaphore(self):
@@ -117,14 +118,14 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     _semaphore = utils.MemoryConsumptionSemaphore(
         system_available_buffer_bytes=2**64,
         single_proc_max_bytes=2**64,
-        quiescence_time_seconds=2,
+        quiescence_time_seconds=2.0,
         unchecked_acquires=2)
 
     # Nothing available, but we expect unchecked_acquires to allow it.
     _semaphore._get_system_available = self.mock_get_system_available(0)
-    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT).result, True)
     _semaphore.release()
-    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT).result, True)
     _semaphore.release()
 
   def testQuiescenceUnblocksMemoryConsumptionSemaphore(self):
@@ -132,18 +133,18 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     _semaphore = utils.MemoryConsumptionSemaphore(
         system_available_buffer_bytes=1,
         single_proc_max_bytes=1,
-        quiescence_time_seconds=2,
+        quiescence_time_seconds=2.0,
         unchecked_acquires=0)
 
     # Make large amount of memory available, but we expect quiescence
     # to block the second task.
     _semaphore._get_system_available = self.mock_get_system_available(2**64)
     start_time = time.time()
-    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT), True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT).result, True)
     _semaphore.release()
 
     # Get the lock or die trying. We spin fast here instead of ACQUIRE_TIMEOUT.
-    while not _semaphore.acquire(1):
+    while not _semaphore.acquire(1).result:
       continue
     _semaphore.release()
 
@@ -168,10 +169,12 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     def sub_mem():
       with lock:
         mem_avail[0] = mem_avail[0] - 1
+        self.assertGreaterEqual(mem_avail[0], 0)
 
     def add_mem():
       with lock:
         mem_avail[0] = mem_avail[0] + 1
+        self.assertGreaterEqual(mem_avail[0], 0)
 
     def get_mem():
       with lock:
@@ -182,16 +185,17 @@ class TestUtils(cros_test_lib.TempDirTestCase):
         system_available_buffer_bytes=1,
         single_proc_max_bytes=1,
         quiescence_time_seconds=0.1,
-        unchecked_acquires=0,
+        unchecked_acquires=1,
         clock=mock_clock)
     _semaphore._get_system_available = get_mem
 
     def hammer_semaphore():
       for _ in range(get_and_releases):
-        while not _semaphore.acquire(0.1):
+        while not _semaphore.acquire(0.1).result:
           continue
         # Simulate 'using the memory'.
         sub_mem()
+        time.sleep(0.1)
         add_mem()
         _semaphore.release()
       with exit_lock:
@@ -217,3 +221,65 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     # indicate a deadlock has been introduced.
     self.assertEqual(initial_memory, get_mem())
     self.assertEqual(good_thread_exits[0], test_threads)
+
+  def testMultiProcessedMemoryConsumptionSemaphore(self):
+    """Test many processes simultaneously using the Semaphore."""
+    initial_memory = 6
+
+    mem_avail = multiprocessing.Value('I', initial_memory, lock=True)
+    good_process_exits = multiprocessing.Value('I', 0, lock=True)
+    n_processes = 8
+
+    # Currently executes in 45 seconds a 2 x Xeon Gold 6154 CPUs
+    get_and_releases = 50
+
+    def sub_mem():
+      with mem_avail.get_lock():
+        mem_avail.value -= 1
+        self.assertGreaterEqual(mem_avail.value, 0)
+
+    def add_mem():
+      with mem_avail.get_lock():
+        mem_avail.value += 1
+        self.assertLessEqual(mem_avail.value, 6)
+
+    def get_mem():
+      with mem_avail.get_lock():
+        return mem_avail.value
+
+    # Ask for two bytes available each time.
+    _semaphore = utils.MemoryConsumptionSemaphore(
+        system_available_buffer_bytes=1,
+        single_proc_max_bytes=1,
+        quiescence_time_seconds=0.1,
+        unchecked_acquires=1)
+
+    _semaphore._get_system_available = get_mem
+
+    def hammer_semaphore():
+      for _ in range(get_and_releases):
+        while not _semaphore.acquire(0.1).result:
+          continue
+        # Simulate 'using the memory'.
+        sub_mem()
+        time.sleep(0.1)
+        add_mem()
+        _semaphore.release()
+      with good_process_exits.get_lock():
+        good_process_exits.value = good_process_exits.value + 1
+
+    processes = [multiprocessing.Process(target=hammer_semaphore)
+                 for _ in range(n_processes)]
+
+    for p in processes:
+      p.daemon = True
+      p.start()
+
+    for p in processes:
+      p.join()
+
+    # If we didn't get here a proc did not exit. This is fatal and may
+    # indicate a deadlock has been introduced.
+    self.assertEqual(initial_memory, get_mem())
+    with good_process_exits.get_lock():
+      self.assertEqual(good_process_exits.value, n_processes)

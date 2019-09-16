@@ -9,10 +9,14 @@ from __future__ import print_function
 
 import os
 import time
-import threading
+import multiprocessing
+
+from collections import namedtuple
 
 # this import exists, linter apparently has an issue.
 import psutil  # pylint: disable=import-error
+
+AcquireResult = namedtuple('AcquireResult', ['result', 'reason'])
 
 def ListdirFullpath(directory):
   """Return all files in a directory with full pathnames.
@@ -160,9 +164,9 @@ class MemoryConsumptionSemaphore(object):
     """
     self.quiescence_time_seconds = quiescence_time_seconds
     self.unchecked_acquires = unchecked_acquires
-    self._timer_future = 0  # epoch.
-    self._lock = threading.RLock()  # single thread may acquire lock twice.
-    self._n_within = 0  # current count holding memory\resources.
+    self._lock = multiprocessing.RLock()  # single proc may acquire lock twice.
+    self._n_within = multiprocessing.RawValue('I', 0)
+    self._timer_future = multiprocessing.RawValue('d', 0)
     self._clock = clock  # injected, primarily useful for testing.
     self._system_available_buffer_bytes = system_available_buffer_bytes
     self._single_proc_max_bytes = single_proc_max_bytes
@@ -174,7 +178,7 @@ class MemoryConsumptionSemaphore(object):
 
   def _timer_blocked(self):
     """Check the timer, if we're past it return true, otherwise false."""
-    if self._clock() >= self._timer_future:
+    if self._clock() >= self._timer_future.value:
       return False
     else:
       return True
@@ -182,17 +186,19 @@ class MemoryConsumptionSemaphore(object):
   def _inc_within(self):
     """Inc the lock."""
     with self._lock:
-      self._n_within += 1
+      self._n_within.value += 1
 
   def _dec_within(self):
     """Dec the lock."""
     with self._lock:
-      self._n_within -= 1
+      self._n_within.value -= 1
 
   def _set_timer(self):
     """Set a time in the future to unblock after."""
-    self._timer_future = max(self._clock() + self.quiescence_time_seconds,
-                             self._timer_future)
+    with self._lock:
+      self._timer_future.value = \
+          max(self._clock() + self.quiescence_time_seconds,
+              self._timer_future.value)
 
   def _allow_consumption(self):
     """Calculate max utilization to determine if another should be allowed.
@@ -200,7 +206,9 @@ class MemoryConsumptionSemaphore(object):
     Returns:
       Boolean if you're allowed to consume (acquire).
     """
-    one_more_total = (self._n_within + 1) * self._single_proc_max_bytes
+    with self._lock:
+      one_more_total = (self._n_within.value + 1) * self._single_proc_max_bytes
+
     total_avail = self._base_available - self._system_available_buffer_bytes
     # If the guessed max plus yourself is above what's available including
     # the buffer then refuse to admit.
@@ -219,21 +227,23 @@ class MemoryConsumptionSemaphore(object):
       timeout (float): Time to block for available memory before return.
 
     Returns:
-      True if you should go, False if you timed out waiting.
+      A tuple (bool, string) bool flags if you should go, and string is a text
+      representation of the reason for the acquire result.
     """
+
     # Remeasure the base.
-    if self._n_within == 0:
+    if self._n_within.value == 0:
       self._base_available = self._get_system_available()
 
     # If you're under the unchecked_acquires go for it, but lock
     # so that we can't race for it.
     with self._lock:
-      if self._n_within < self.unchecked_acquires:
+      if self._n_within.value < self.unchecked_acquires:
         self._set_timer()
         self._inc_within()
-        return True
-
+        return AcquireResult(True, 'Succeeded as unchecked')
     init_time = self._clock()
+
     # If not enough memory or timer is running then block.
     while init_time + timeout > self._clock():
       with self._lock:
@@ -242,12 +252,11 @@ class MemoryConsumptionSemaphore(object):
           if self._allow_consumption():
             self._set_timer()
             self._inc_within()
-            return True
-
+            return AcquireResult(True, 'Allowed due to available memory')
       time.sleep(MemoryConsumptionSemaphore.SYSTEM_POLLING_INTERVAL_SECONDS)
 
     # There was no moment before timeout where we could have ran the task.
-    return False
+    return AcquireResult(False, 'Timed out due to quiescence or avail memory')
 
   def release(self):
     """Releases a single acquire."""
