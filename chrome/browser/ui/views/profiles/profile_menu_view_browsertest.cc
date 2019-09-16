@@ -87,7 +87,8 @@ void AddAccountToProfile(Profile* profile, const char* signed_in_email) {
   ProfileAttributesEntry* entry_signed_in;
   ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile->GetPath(),
                                                    &entry_signed_in));
-  entry_signed_in->SetAuthInfo("12345", base::UTF8ToUTF16(signed_in_email));
+  entry_signed_in->SetAuthInfo("12345", base::UTF8ToUTF16(signed_in_email),
+                               true);
   profile->GetPrefs()->SetString(prefs::kGoogleServicesHostedDomain,
                                  "google.com");
 }
