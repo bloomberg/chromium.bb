@@ -47,7 +47,7 @@ class LoopbackPartitions(object):
   In either case, the same arguments should be passed to init.
   """
 
-  def __init__(self, path, destination=None, part_ids=None, mount_opts=None):
+  def __init__(self, path, destination=None, part_ids=None, mount_opts=('ro',)):
     """Initialize.
 
     Args:

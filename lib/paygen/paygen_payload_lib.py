@@ -18,6 +18,7 @@ from chromite.lib import chroot_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib.paygen import download_cache
@@ -263,8 +264,8 @@ class PaygenPayload(object):
     # TODO(crbug.com/925203): Replace this with image_lib.LoopbackPartition()
     # once the mentioned bug is resolved.
     with osutils.TempDir(base_dir=self.work_dir) as mount_point:
-      with osutils.MountImageContext(image, mount_point,
-                                     (constants.PART_ROOT_A,)):
+      with image_lib.LoopbackPartitions(image, mount_point,
+                                        (constants.PART_ROOT_A,)):
         sysroot_dir = os.path.join(mount_point,
                                    'dir-%s' % constants.PART_ROOT_A)
         lsb_release = utils.ReadLsbRelease(sysroot_dir)
