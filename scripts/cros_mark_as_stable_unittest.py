@@ -89,7 +89,7 @@ class NonClassTests(cros_test_lib.MockTestCase):
     sync_mock.assert_called_with('.', 'gerrit', 'refs/remotes/gerrit/master')
     if not bad_cls:
       push_mock.assert_called_with('merge_branch', '.', dryrun=False,
-                                   staging_branch=None)
+                                   staging_branch=None, auto_merge=True)
       create_mock.assert_called_with('merge_branch', '.',
                                      remote_push_branch=mock.ANY)
 

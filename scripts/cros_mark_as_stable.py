@@ -166,7 +166,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd,
   git.RunGit(cwd, ['commit', '-m', description])
   git.RunGit(cwd, ['config', 'push.default', 'tracking'])
   git.PushBranch(constants.MERGE_BRANCH, cwd, dryrun=dryrun,
-                 staging_branch=staging_branch)
+                 staging_branch=staging_branch, auto_merge=True)
 
 
 class GitBranch(object):
