@@ -494,18 +494,21 @@ void WidgetInputHandlerManager::DidNavigate() {
 void WidgetInputHandlerManager::OnDeferMainFrameUpdatesChanged(bool status) {
   if (status) {
     renderer_deferral_state_ |=
-        (unsigned)RenderingDeferralBits::kDeferMainFrameUpdates;
+        static_cast<uint16_t>(RenderingDeferralBits::kDeferMainFrameUpdates);
   } else {
     renderer_deferral_state_ &=
-        ~(unsigned)RenderingDeferralBits::kDeferMainFrameUpdates;
+        ~static_cast<uint16_t>(RenderingDeferralBits::kDeferMainFrameUpdates);
   }
 }
 
 void WidgetInputHandlerManager::OnDeferCommitsChanged(bool status) {
-  if (status)
-    renderer_deferral_state_ |= (unsigned)RenderingDeferralBits::kDeferCommits;
-  else
-    renderer_deferral_state_ &= ~(unsigned)RenderingDeferralBits::kDeferCommits;
+  if (status) {
+    renderer_deferral_state_ |=
+        static_cast<uint16_t>(RenderingDeferralBits::kDeferCommits);
+  } else {
+    renderer_deferral_state_ &=
+        ~static_cast<uint16_t>(RenderingDeferralBits::kDeferCommits);
+  }
 }
 
 void WidgetInputHandlerManager::InitOnInputHandlingThread(
