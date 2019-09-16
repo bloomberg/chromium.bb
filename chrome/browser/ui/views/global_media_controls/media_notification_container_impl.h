@@ -23,17 +23,31 @@ class MediaNotificationContainerImpl
     : public views::View,
       public media_message_center::MediaNotificationContainer {
  public:
-  explicit MediaNotificationContainerImpl(
+  MediaNotificationContainerImpl(
       MediaDialogView* parent,
       base::WeakPtr<media_message_center::MediaNotificationItem> item);
   ~MediaNotificationContainerImpl() override;
 
   // media_message_center::MediaNotificationContainer:
   void OnExpanded(bool expanded) override;
+  void OnVisibleActionsChanged(
+      const std::set<media_session::mojom::MediaSessionAction>& actions)
+      override;
+  void OnMediaArtworkChanged(const gfx::ImageSkia& image) override;
 
  private:
-  MediaDialogView* parent_;
-  media_message_center::MediaNotificationView view_;
+  // Updates the forced expanded state of |view_|.
+  void ForceExpandedState();
+
+  // The MediaNotificationContainerImpl is owned by the
+  // MediaNotificationListView which is owned by the MediaDialogView, so the raw
+  // pointer is safe here.
+  MediaDialogView* const parent_;
+
+  std::unique_ptr<media_message_center::MediaNotificationView> view_;
+
+  bool has_artwork_ = false;
+  bool has_many_actions_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationContainerImpl);
 };
