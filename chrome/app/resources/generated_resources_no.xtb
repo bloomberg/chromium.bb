@@ -2162,7 +2162,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4146026355784316281">Åpne alltid med systemvisningsprogrammet</translation>
 <translation id="4146785383423576110">Tilbakestill og rydd opp</translation>
 <translation id="4147911968024186208">Prøv på nytt. Hvis du ser denne feilen igjen, kan du kontakte brukerstøtterepresentanten din.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Skjerm</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 fane}other{# faner}}</translation>
 <translation id="4154664944169082762">Fingeravtrykk</translation>
@@ -3514,7 +3513,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6212039847102026977">Vis avanserte nettverksegenskaper</translation>
 <translation id="6212168817037875041">Slå av skjermen</translation>
 <translation id="6212752530110374741">Send linken på e-post</translation>
-<translation id="6214642087594370545">Vis en advarsel når du bruker utrygge passord som har vært en del av et databrudd. Dette er kun tilgjengelig for påloggede brukere.</translation>
 <translation id="6216696360484424239">Logg på automatisk</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> er uten nett. Koble til Internett og prøv på nytt.</translation>
 <translation id="6220413761270491930">Det oppsto en feil under innlastingen av utvidelsen</translation>

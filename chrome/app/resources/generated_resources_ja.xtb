@@ -302,7 +302,7 @@
 <translation id="1444628761356461360">この設定はデバイスの所有者 <ph name="OWNER_EMAIL" /> が管理しています。</translation>
 <translation id="144518587530125858">テーマの「<ph name="IMAGE_PATH" />」を読み込むことができませんでした。</translation>
 <translation id="1445693676523799095">しばらくお待ちください</translation>
-<translation id="1450011005989029586">ご利用のサイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。今すぐ <ph name="ORIGIN" /> の<ph name="BOLD" />ことをおすすめします。</translation>
+<translation id="1450011005989029586">ご利用のサイトまたはアプリでのデータ侵害により、パスワードが流出しました。今すぐ <ph name="ORIGIN" /> の<ph name="BOLD" />ことをおすすめします。</translation>
 <translation id="1451375123200651445">ウェブページ、1 つのファイル</translation>
 <translation id="1451917004835509682">監視対象ユーザーを追加</translation>
 <translation id="1454223536435069390">スクリーンショットを撮る(&amp;A)</translation>
@@ -479,6 +479,7 @@
 <translation id="1698122934742150150">現在のシークレット モード セッションのみ</translation>
 <translation id="1698650002254827833">アプリのリストを読み込めません。もう一度お試しください。</translation>
 <translation id="1701062906490865540">このユーザーを削除</translation>
+<translation id="1703331064825191675">パスワードを気にする必要はありません</translation>
 <translation id="1706586824377653884">管理者により追加</translation>
 <translation id="1706625117072057435">ズームレベル</translation>
 <translation id="1708338024780164500">（無効）</translation>
@@ -528,6 +529,7 @@
 <translation id="1764226536771329714">ベータ版</translation>
 <translation id="176587472219019965">新しいウインドウ(&amp;N)</translation>
 <translation id="1766575458646819543">全画面表示を終了しました</translation>
+<translation id="1766957085594317166">Google アカウントではパスワードが安全に保存されるため、次回以降の入力は不要です。</translation>
 <translation id="1768278914020124551">ログイン サーバーへの接続中に問題が発生しました。ネットワーク接続とドメイン名を確認してもう一度お試しください。</translation>
 <translation id="1769104665586091481">新しいウインドウで開く(&amp;W)</translation>
 <translation id="1773212559869067373">認証証明書がローカルで拒否されました</translation>
@@ -1875,6 +1877,7 @@
 <translation id="3748026146096797577">接続されていません</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">マイ デバイス</translation>
+<translation id="3753033997400164841">一度保存すればどこでも使用可能</translation>
 <translation id="3755411799582650620"><ph name="PHONE_NAME" /> でもこの <ph name="DEVICE_TYPE" /> のロックを解除できるようになりました。</translation>
 <translation id="375636864092143889">サイトでマイクが使用されています</translation>
 <translation id="3757733214359997190">サイトが見つかりません</translation>
@@ -2167,7 +2170,6 @@
 <translation id="4146026355784316281">常にシステム ビューアで開く</translation>
 <translation id="4146785383423576110">リセットとクリーンアップ</translation>
 <translation id="4147911968024186208">もう一度お試しください。このエラーが再び表示される場合は、サポート担当者にお問い合わせください。</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">表示</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個のタブ}other{# 個のタブ}}</translation>
 <translation id="4154664944169082762">指紋</translation>
@@ -2208,6 +2210,7 @@
 <translation id="4232375817808480934">Kerberos の設定</translation>
 <translation id="4235200303672858594">画面全体</translation>
 <translation id="4235965441080806197">ログインをキャンセル</translation>
+<translation id="4242145785130247982">サポートされていないクライアント証明書が複数あります</translation>
 <translation id="4242533952199664413">設定を開く</translation>
 <translation id="4242577469625748426">デバイスにポリシー設定をインストールできませんでした: <ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4244238649050961491">他のタッチペン アプリを探す</translation>
@@ -2666,6 +2669,7 @@
 <translation id="4957949153200969297"><ph name="IDS_SHORT_PRODUCT_NAME" /> 同期に関連する機能のみを有効にします</translation>
 <translation id="4959262764292427323">パスワードは Google アカウントに保存されるため、どのデバイスからでも使用できます</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">このアプリは管理者によってインストールされています。</translation>
 <translation id="4964455510556214366">配置</translation>
 <translation id="4964673849688379040">確認しています...</translation>
 <translation id="4965808351167763748">このデバイスでハングアウト Meet を実行するように設定してもよろしいですか？</translation>
@@ -2923,6 +2927,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5360150013186312835">ツールバーに表示</translation>
 <translation id="5362741141255528695">秘密鍵ファイルを選択します。</translation>
 <translation id="5363109466694494651">Powerwash を実行して以前のバージョンに戻す</translation>
+<translation id="5365716706805792666">Google ではお使いのパスワードがデータ侵害の対象になっていたかを確認できます。これは Google アカウントでログインするとオンになります。</translation>
 <translation id="5365881113273618889">選択したフォルダには、機密ファイルが含まれています。このフォルダに対する永続的な書き込みアクセス権を「<ph name="APP_NAME" />」に付与してもよろしいですか？</translation>
 <translation id="5367091008316207019">ファイルを読み取っています...</translation>
 <translation id="5368720394188453070">スマートフォンがロックされています。ログインするにはロックを解除してしてください。</translation>
@@ -3059,7 +3064,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5543983818738093899">ステータスを確認しています...</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5546865291508181392">検索</translation>
-<translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{「<ph name="TAB_TITLE" />」}=1{「<ph name="TAB_TITLE" />」とその他 1 個のタブ}other{「<ph name="TAB_TITLE" />」とその他 # 個のタブ}}</translation>
+<translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{「<ph name="TAB_TITLE" />」}=1{「<ph name="TAB_TITLE" />」と他 1 個のタブ}other{「<ph name="TAB_TITLE" />」と他 # 個のタブ}}</translation>
 <translation id="5551573675707792127">キーボードとテキスト入力</translation>
 <translation id="5553089923092577885">証明書ポリシーのマッピング</translation>
 <translation id="5554489410841842733">このアイコンは、ページで拡張機能が使用できる場合に表示されます。</translation>
@@ -3519,7 +3524,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="6212039847102026977">ネットワークの詳細プロパティを表示</translation>
 <translation id="6212168817037875041">画面をオフにする</translation>
 <translation id="6212752530110374741">リンクをメールで送信</translation>
-<translation id="6214642087594370545">データ侵害が記録された安全でないパスワードを入力したときに警告を表示します。この機能はログインしているユーザーのみ利用可能です。</translation>
 <translation id="6216696360484424239">自動ログイン</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> はオフラインです。インターネットに接続してもう一度お試しください。</translation>
 <translation id="6220413761270491930">拡張機能の読み込みエラー</translation>
@@ -3876,6 +3880,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="6769712124046837540">プリンタの追加...</translation>
 <translation id="6770664076092644100">NFC を使って確認</translation>
 <translation id="6771503742377376720">認証局である</translation>
+<translation id="6775163072363532304">利用可能なデバイスはここに表示されます。</translation>
 <translation id="6777817260680419853">リダイレクトがブロックされました</translation>
 <translation id="6778737459546443941">保護者がまだサイトを開くことを許可していません</translation>
 <translation id="677965093459947883">極小</translation>
@@ -4337,6 +4342,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7441830548568730290">他のユーザー</translation>
 <translation id="7442465037756169001">Hangouts Meet ハードウェアを設定できます。</translation>
 <translation id="744341768939279100">新しいプロフィールを作成</translation>
+<translation id="7443806024147773267">Google アカウントにログインすれば、いつでもパスワードにアクセスできます。</translation>
 <translation id="7444046173054089907">このサイトはブロックされています</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> を無効にする</translation>
 <translation id="7448430327655618736">アプリの自動インストール</translation>
@@ -4750,6 +4756,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8014154204619229810">現在アップデータを実行中です。しばらくしてから更新して、もう一度ご確認ください。</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> を以前のインストール バージョンに戻せません。デバイスでもう一度 Powerwash を実行してみてください。</translation>
 <translation id="8014210335923519270">システム情報と使用状況が Google に送信され、<ph name="IDS_SHORT_PRODUCT_NAME" /> とそのセキュリティの向上に役立てられます</translation>
+<translation id="8015780634880457457">Google ではお使いのパスワードがデータ侵害の対象になっていたかを確認できます</translation>
 <translation id="8016266267177410919">一時ストレージ</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">ショートカットを編集しました</translation>
@@ -4868,6 +4875,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8188389033983459049">続行するには、デバイスの設定で Bluetooth をオンにしてください</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> に接続中</translation>
 <translation id="8191230140820435481">アプリ、拡張機能、テーマを管理する</translation>
+<translation id="819464600477418284">このアプリは Chrome OS の一部であるため、アンインストールできません。</translation>
 <translation id="8195027750202970175">ディスク上のサイズ</translation>
 <translation id="8198323535106903877">この <ph name="NUMBER_OF_APPS" /> 個のアプリをインストールします</translation>
 <translation id="8199300056570174101">ネットワーク（サービス）とデバイスのプロパティ</translation>
@@ -4928,6 +4936,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
     <ph name="BEGIN_PARAGRAPH2" />この機能をオフにした場合でも、システム アップデートやセキュリティなどの重要なサービスで必要となる情報は、デバイスからこれまでどおり送信されます。<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />デバイスの所有者は、[設定] &gt; [詳細設定] &gt; [診断と使用状況のデータを Google に自動送信する] でこの機能を管理できます。<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />これに加えて、お子様のアカウントで [ウェブとアプリのアクティビティ] の設定もオンにしている場合、このデータはお子様の Google アカウントにも保存される可能性があります。これらの設定の詳細と設定を調整する方法については、families.google.com をご覧ください。<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">クライアント証明書が無効です</translation>
 <translation id="8270242299912238708">PDF ドキュメント</translation>
 <translation id="827097179112817503">ホームボタンを表示する</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 個のブックマークが削除されました}other{# 個のブックマークが削除されました}}</translation>
@@ -5341,6 +5350,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8874184842967597500">未接続</translation>
 <translation id="8876307312329369159">この設定はデモセッションでは変更できません。</translation>
 <translation id="8877448029301136595">[親ディレクトリ]</translation>
+<translation id="8879220587046205278">Google Play のアプリで外部ストレージ デバイスのファイルの読み取りと書き込みを行うには、ファイル システムへのフルアクセスが必要となる場合があります。デバイスで作成したファイルとフォルダは、外部ドライブを使用すれば誰でも閲覧できます。</translation>
 <translation id="8879284080359814990">タブで表示(&amp;S)</translation>
 <translation id="8879921471468674457">ログイン情報を保存する</translation>
 <translation id="8881020143150461183">もう一度お試しください。技術的なサポートについては、<ph name="CARRIER_NAME" /> にお問い合わせください。</translation>
@@ -5410,7 +5420,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8973596347849323817">このデバイスを必要に応じてカスタマイズできます。このユーザー補助機能は後から [設定] で変更できます。</translation>
 <translation id="897414447285476047">接続の問題により、ダウンロードされたファイルは不完全です。</translation>
 <translation id="897525204902889653">検疫サービス</translation>
-<translation id="8975562453115131273">{NUM_OTHER_TABS,plural, =0{「<ph name="TAB_TITLE" />」}=1{「<ph name="TAB_TITLE" />」とその他 1 個のタブ}other{「<ph name="TAB_TITLE" />」とその他 # 個のタブ}}</translation>
+<translation id="8975562453115131273">{NUM_OTHER_TABS,plural, =0{「<ph name="TAB_TITLE" />」}=1{「<ph name="TAB_TITLE" />」と他 1 個のタブ}other{「<ph name="TAB_TITLE" />」と他 # 個のタブ}}</translation>
 <translation id="8976520271376534479">このページの Flash はブロックされました。</translation>
 <translation id="8977811652087512276">パスワードが間違っているか、ファイルが壊れています</translation>
 <translation id="8978154919215542464">オン - すべて同期</translation>

@@ -2162,7 +2162,6 @@
 <translation id="4146026355784316281">始终使用系统查看器打开</translation>
 <translation id="4146785383423576110">重置并清理</translation>
 <translation id="4147911968024186208">请重试。如果系统仍提示此错误，请与您的支持代表联系。</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">显示</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 个标签页}other{# 个标签页}}</translation>
 <translation id="4154664944169082762">指纹</translation>
@@ -3514,7 +3513,6 @@
 <translation id="6212039847102026977">显示高级网络属性</translation>
 <translation id="6212168817037875041">关闭显示屏</translation>
 <translation id="6212752530110374741">通过电子邮件发送链接</translation>
-<translation id="6214642087594370545">如果您使用的密码不安全并可能会导致数据泄露，系统就会向您显示警告。该功能仅适用于已登录帐号的用户。</translation>
 <translation id="6216696360484424239">自动登录</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> 处于离线状态。请连接到互联网，然后重试。</translation>
 <translation id="6220413761270491930">加载扩展程序时出错</translation>

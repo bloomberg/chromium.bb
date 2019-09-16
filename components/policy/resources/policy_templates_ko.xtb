@@ -2877,7 +2877,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6036523166753287175">원격 액세스 호스트의 방화벽 통과 허용</translation>
 <translation id="6038407313189625985">정책이 사용 설정되거나 설정되지 않으면 렌더러 코드 무결성이 사용 설정됩니다. 이 정책은 Chrome의 렌더러 프로세스 내에서 실행되어야 하는 타사 소프트웨어와의 호환성 문제가 발생하는 경우에만 사용 중지해야 합니다.
 
-      이 정책을 사용 중지하면 알려지지 않고 잠재적으로 적대적인 코드가 Chrome의 렌더러 프로세스 내에서 로드될 수 있으므로 Chrome의 보안 및 안정성에 부정적인 영향을 미칩니다. 자세한 내용은 https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies를 참조하세요.</translation>
+      이 정책을 사용 중지하면 알려져 있지 않고 악성일 가능성이 큰 코드가 Chrome의 렌더러 프로세스 내에서 로드될 수 있으므로 Chrome의 보안 및 안정성에 부정적인 영향을 미칩니다. 자세한 내용은 https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies를 참조하세요.</translation>
 <translation id="605475635122964053">PIN 인쇄 모드를 제한합니다. 정책이 설정되지 않으면 제한이 없는 것으로 간주됩니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다. PIN 인쇄 기능은 IPPS, USB 또는 IPP-over-USB 프로토콜을 사용하는 프린터에서만 지원됩니다. </translation>
 <translation id="6070667616071269965">기기 로그인 화면 키보드 레이아웃</translation>
 <translation id="6074963268421707432">모든 사이트에서 데스크톱 알림 표시 허용 안함</translation>
@@ -3262,7 +3262,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책이 설정되지 않으면 MacOS, Android(비공개 DNS 또는 VPN이 사용 설정되지 않은 경우), ChromeOS에서 내장 DNS 클라이언트가 기본으로 사용 설정되며, 사용자는 chrome://flags를 수정하거나 명령줄 플래그를 사용하여 내장 DNS 클라이언트 사용 여부를 변경할 수 있습니다.</translation>
 <translation id="6843296367238757293">지원 중단된 정책입니다. 사용하지 마시기 바랍니다. https://support.google.com/chrome/a/answer/7643500에서 자세히 알아보세요.</translation>
-<translation id="6845546921986645941">정책이 사용 설정되면 <ph name="PRODUCT_NAME" />에서 비밀번호 재사용, 멀웨어 다운로드, 전면 광고, 콘텐츠 규정 미준수와 같은 안전하지 않은 이벤트를 분석을 위해 Google에 보고합니다.  콘텐츠 규정 미준수와 같은 일부 안전하지 않은 이벤트에는 이 검사가 사용 설정된 다른 정책이 적용됩니다.
+<translation id="6845546921986645941">정책이 사용 설정되면 <ph name="PRODUCT_NAME" />에서 비밀번호 재사용, 멀웨어 다운로드, 전면 광고, 콘텐츠 규정 미준수와 같은 안전하지 않은 이벤트를 분석을 위해 Google에 보고합니다.  콘텐츠 규정 미준수와 같은 일부 안전하지 않은 이벤트에는 이 검사를 사용 설정하는 다른 정책에 따라 검사가 적용됩니다.
 
       정책이 사용 중지되거나 설정되지 않으면 <ph name="PRODUCT_NAME" />에서 안전하지 않은 이벤트를 보고하지 않습니다.
       </translation>
@@ -3475,7 +3475,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       <ph name="SECURE_DNS_MODE_OFF" /> 모드는 DNS-over-HTTPS를 사용 중지합니다.
 
-      <ph name="SECURE_DNS_MODE_AUTOMATIC" /> 모드는 DNS-over-HTTPS 서버를 사용할 수 있으며 오류 시 안전하지 않은 쿼리를 보내는 것으로 대체할 수 있는 경우 DNS-over-HTTPS 쿼리를 먼저 전송합니다.
+      <ph name="SECURE_DNS_MODE_AUTOMATIC" /> 모드는 DNS-over-HTTPS 서버를 사용할 수 있는 경우 DNS-over-HTTPS 쿼리를 먼저 전송하며 오류 시 안전하지 않은 쿼리를 보내는 것으로 대체할 수 있습니다.
 
       <ph name="SECURE_DNS_MODE_SECURE" /> 모드는 DNS-over-HTTPS 쿼리만 전송하며 오류 시 리졸브하지 못합니다.
 
@@ -3648,7 +3648,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       </translation>
 <translation id="7360181094056034924">스캔이 필요하다고 결정되는 업로드 및 다운로드된 데이터에 대한 <ph name="PRODUCT_NAME" />의 작동 방식을 제어합니다.  전송이 지연되면 스캔이 완료되고 스캔 평가가 확인될 때까지 <ph name="PRODUCT_NAME" />에서 사용자가 다운로드된 파일에 액세스하거나, 업로드할 파일을 선택하거나, 데이터를 클립보드로부터 붙여넣거나 드래그 앤 드롭하도록 허용하지 않습니다.  이 제한은 검사가 사용 설정된 도메인 목록을 제어하는 정책, <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> 및 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />에서 스캔이 필요하다고 결정하는 파일 또는 데이터에만 적용됩니다.
 
-      정책이 설정되지 않거나 '없음'으로 설정되면 <ph name="PRODUCT_NAME" />에서 파일 업로드 지연, 클립보드로부터 붙여넣기, 데이터 드래그 앤 드롭 또는 다운로드된 파일에 대한 액세스 지연을 사용하지 않습니다.  스캔은 백그라운드에서 진행됩니다.
+      정책이 설정되지 않거나 '없음'으로 설정되면 <ph name="PRODUCT_NAME" />에서 파일 업로드, 클립보드로부터 붙여넣기, 데이터 드래그 앤 드롭 또는 다운로드된 파일에 대한 액세스 지연을 사용하지 않습니다.  스캔은 백그라운드에서 진행됩니다.
 
       정책이 '다운로드 지연'으로 설정되면 사용자는 파일이 스캔되고 스캔 평가가 확인될 때까지 다운로드된 파일에 액세스할 수 없습니다.
 

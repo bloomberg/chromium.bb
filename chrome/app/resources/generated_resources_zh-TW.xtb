@@ -2165,7 +2165,6 @@
 <translation id="4146026355784316281">一律使用系統檢視器開啟</translation>
 <translation id="4146785383423576110">重設與清理</translation>
 <translation id="4147911968024186208">請再試一次。如果這個錯誤再次發生，請與你的產品支援代表聯絡。</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">顯示設定</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個分頁}other{# 個分頁}}</translation>
 <translation id="4154664944169082762">指紋</translation>
@@ -3517,7 +3516,6 @@
 <translation id="6212039847102026977">顯示進階網路屬性</translation>
 <translation id="6212168817037875041">關閉螢幕</translation>
 <translation id="6212752530110374741">透過電子郵件傳送連結</translation>
-<translation id="6214642087594370545">如果你使用的是曾造成資料侵害的不安全密碼，系統會顯示警告訊息。只有已登入的使用者才能使用此功能。</translation>
 <translation id="6216696360484424239">自動登入</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> 目前離線。請連線至網際網路，然後再試一次。</translation>
 <translation id="6220413761270491930">載入擴充功能時發生錯誤</translation>
@@ -4444,7 +4442,7 @@
 <translation id="7625568159987162309">查看各網站的權限及儲存的資料</translation>
 <translation id="7629827748548208700">分頁：<ph name="TAB_NAME" /></translation>
 <translation id="7631014249255418691">已成功備份 Linux 應用程式和檔案</translation>
-<translation id="7631205654593498032">連結裝置即表示你同意讓 <ph name="DEVICE_TYPE" /> 執行以下項目：</translation>
+<translation id="7631205654593498032">連結裝置即表示您同意讓 <ph name="DEVICE_TYPE" /> 執行以下操作：</translation>
 <translation id="7631887513477658702">一律開啟這類檔案(&amp;A)</translation>
 <translation id="7632948528260659758">下列 Kiosk 應用程式更新失敗：</translation>
 <translation id="763632859238619983">不允許任何網站安裝付款處理常式</translation>

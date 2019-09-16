@@ -2167,7 +2167,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4146026355784316281">Öppna alltid med systemets visningsprogram</translation>
 <translation id="4146785383423576110">Återställ och rensa</translation>
 <translation id="4147911968024186208">Försök igen. Kontakta supporten om det här felet återkommer.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Skärm</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 flik}other{# flikar}}</translation>
 <translation id="4154664944169082762">Fingeravtryck</translation>
@@ -3519,7 +3518,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="6212039847102026977">Visa avancerade nätverksinställningar</translation>
 <translation id="6212168817037875041">Stäng av skärmen</translation>
 <translation id="6212752530110374741">Skicka länk via e-post</translation>
-<translation id="6214642087594370545">Visa ett varningsmeddelande när du använder ett osäkert lösenord som röjts vid ett dataintrång. Funktionen är bara tillgänglig för inloggade användare.</translation>
 <translation id="6216696360484424239">Logga in automatiskt</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> är offline. Anslut till internet och försök igen.</translation>
 <translation id="6220413761270491930">Ett fel uppstod när tillägg skulle läsas in</translation>
