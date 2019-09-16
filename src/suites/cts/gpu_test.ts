@@ -10,7 +10,7 @@ export class GPUTest extends Fixture {
     super.init();
     const gpu = getGPU();
     const adapter = await gpu.requestAdapter();
-    this.device = await adapter.requestDevice({});
+    this.device = await adapter.requestDevice();
     this.queue = this.device.getQueue();
 
     this.device.pushErrorScope('out-of-memory');
@@ -28,8 +28,8 @@ export class GPUTest extends Fixture {
 
     const gpuOutOfMemoryError = await this.device.popErrorScope();
     if (gpuOutOfMemoryError !== null) {
-      if (!(gpuOutOfMemoryError instanceof GPUValidationError)) throw new Error();
-      this.fail(`Unexpected out-of-memory error occurred: ${gpuOutOfMemoryError.message}`);
+      if (!(gpuOutOfMemoryError instanceof GPUOutOfMemoryError)) throw new Error();
+      this.fail('Unexpected out-of-memory error occurred');
     }
   }
 
@@ -45,7 +45,7 @@ export class GPUTest extends Fixture {
         usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
       });
 
-      const c = this.device.createCommandEncoder({});
+      const c = this.device.createCommandEncoder();
       c.copyBufferToBuffer(src, 0, dst, 0, size);
 
       this.queue.submit([c.finish()]);

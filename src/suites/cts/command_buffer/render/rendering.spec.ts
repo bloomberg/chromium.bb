@@ -59,7 +59,7 @@ g.test('fullscreen quad', async t => {
     },
   });
 
-  const encoder = t.device.createCommandEncoder({});
+  const encoder = t.device.createCommandEncoder();
   const pass = encoder.beginRenderPass({
     colorAttachments: [
       {

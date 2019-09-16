@@ -22,7 +22,7 @@ g.test('b2b', async t => {
     usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
   });
 
-  const encoder = t.device.createCommandEncoder({});
+  const encoder = t.device.createCommandEncoder();
   encoder.copyBufferToBuffer(src, 0, dst, 0, 4);
   t.device.getQueue().submit([encoder.finish()]);
 
@@ -50,7 +50,7 @@ g.test('b2t2b', async t => {
     usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,
   });
 
-  const encoder = t.device.createCommandEncoder({});
+  const encoder = t.device.createCommandEncoder();
   encoder.copyBufferToTexture(
     { buffer: src, rowPitch: 256, imageHeight: 1 },
     { texture: mid, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
@@ -89,7 +89,7 @@ g.test('b2t2t2b', async t => {
   const mid1 = t.device.createTexture(midDesc);
   const mid2 = t.device.createTexture(midDesc);
 
-  const encoder = t.device.createCommandEncoder({});
+  const encoder = t.device.createCommandEncoder();
   encoder.copyBufferToTexture(
     { buffer: src, rowPitch: 256, imageHeight: 1 },
     { texture: mid1, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
