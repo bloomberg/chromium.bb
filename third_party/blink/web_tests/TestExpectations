@@ -6209,11 +6209,3 @@ crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-targe
 
 # Sheriff 2019-09-12
 crbug.com/1003268 [ Win10 ] fast/harness/internals-observe-gc.html [ Failure ]
-
-# Sheriff 2019-09-16
-crbug.com/1004150 [ Linux ] http/tests/devtools/a11y-axe-core/basic-a11y-test.js [ Pass Failure ]
-crbug.com/1004150 [ Linux ] http/tests/devtools/a11y-axe-core/console-a11y-test.js [ Pass Failure ]
-crbug.com/1004150 [ Linux ] http/tests/devtools/a11y-axe-core/elements/dom-breakpoints-a11y-test.js [ Pass Failure ]
-crbug.com/1004150 [ Linux ] http/tests/devtools/a11y-axe-core/memory/heap-profiler-a11y-test.js [ Pass Failure ]
-crbug.com/1004150 [ Linux ] http/tests/devtools/a11y-axe-core/quick-open-a11y-test.js [ Pass Failure ]
-crbug.com/1004150 [ Linux ] http/tests/devtools/a11y-axe-core/sources/dom-breakpoints-pane-a11y-test.js [ Pass Failure ]
