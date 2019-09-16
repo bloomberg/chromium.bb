@@ -638,7 +638,8 @@ class BBJSONGenerator(object):
                                      test_config):
       return None
     result = {
-      'test': test_name,
+      'name': test_name,
+      'test': test_config.get('test', test_name),
     }
     return result
 
