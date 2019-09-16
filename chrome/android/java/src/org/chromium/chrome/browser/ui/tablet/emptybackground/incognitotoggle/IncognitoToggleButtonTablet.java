@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.incognitotoggle;
+package org.chromium.chrome.browser.ui.tablet.emptybackground.incognitotoggle;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -99,8 +99,8 @@ public class IncognitoToggleButtonTablet extends IncognitoToggleButton {
         post(new Runnable() {
             @Override
             public void run() {
-                setVisibility(mTabModelSelector.getModel(true).getCount() > 0
-                        ? View.VISIBLE : View.GONE);
+                setVisibility(
+                        mTabModelSelector.getModel(true).getCount() > 0 ? View.VISIBLE : View.GONE);
             }
         });
     }

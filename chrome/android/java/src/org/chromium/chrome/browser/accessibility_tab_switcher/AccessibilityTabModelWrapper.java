@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.accessibility;
+package org.chromium.chrome.browser.accessibility_tab_switcher;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -17,11 +17,11 @@ import android.widget.ListView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.accessibility_tab_switcher.AccessibilityTabModelAdapter.AccessibilityTabModelAdapterListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelAdapter.AccessibilityTabModelAdapterListener;
 import org.chromium.ui.widget.ChromeImageView;
 
 /**
@@ -47,17 +47,17 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorObserver mTabModelSelectorObserver =
             new EmptyTabModelSelectorObserver() {
-        @Override
-        public void onChange() {
-            getAdapter().notifyDataSetChanged();
-            updateVisibilityForLayoutOrStackButton();
-        }
+                @Override
+                public void onChange() {
+                    getAdapter().notifyDataSetChanged();
+                    updateVisibilityForLayoutOrStackButton();
+                }
 
-        @Override
-        public void onNewTabCreated(Tab tab) {
-            getAdapter().notifyDataSetChanged();
-        }
-    };
+                @Override
+                public void onNewTabCreated(Tab tab) {
+                    getAdapter().notifyDataSetChanged();
+                }
+            };
 
     // TODO(bauerb): Use View#isAttachedToWindow() as soon as we are guaranteed
     // to run against API version 19.
@@ -84,8 +84,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         super(context, attrs);
     }
 
-    public AccessibilityTabModelWrapper(Context context, AttributeSet attrs,
-            int defStyle) {
+    public AccessibilityTabModelWrapper(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.accessibility;
+package org.chromium.chrome.browser.accessibility_tab_switcher;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,11 +11,11 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.accessibility_tab_switcher.AccessibilityTabModelListItem.AccessibilityTabModelListItemListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelListItem.AccessibilityTabModelListItemListener;
 
 /**
  * An instance of a {@link BaseAdapter} that represents a {@link TabModel}.
@@ -42,53 +42,52 @@ public class AccessibilityTabModelAdapter extends BaseAdapter {
 
     private final AccessibilityTabModelListItemListener mInternalListener =
             new AccessibilityTabModelListItemListener() {
-        @Override
-        public void tabSelected(int tab) {
-            if (mListener != null) mListener.showTab(tab);
-            TabModelUtils.setIndex(mActualTabModel,
-                    TabModelUtils.getTabIndexById(mActualTabModel, tab));
-            notifyDataSetChanged();
-        }
+                @Override
+                public void tabSelected(int tab) {
+                    if (mListener != null) mListener.showTab(tab);
+                    TabModelUtils.setIndex(
+                            mActualTabModel, TabModelUtils.getTabIndexById(mActualTabModel, tab));
+                    notifyDataSetChanged();
+                }
 
-        @Override
-        public void tabClosed(int tab) {
-            if (mActualTabModel.isClosurePending(tab)) {
-                mActualTabModel.commitTabClosure(tab);
-            } else {
-                TabModelUtils.closeTabById(mActualTabModel, tab);
-            }
-            notifyDataSetChanged();
-        }
+                @Override
+                public void tabClosed(int tab) {
+                    if (mActualTabModel.isClosurePending(tab)) {
+                        mActualTabModel.commitTabClosure(tab);
+                    } else {
+                        TabModelUtils.closeTabById(mActualTabModel, tab);
+                    }
+                    notifyDataSetChanged();
+                }
 
-        @Override
-        public boolean hasPendingClosure(int tab) {
-            return mUndoneTabModel.isClosurePending(tab);
-        }
+                @Override
+                public boolean hasPendingClosure(int tab) {
+                    return mUndoneTabModel.isClosurePending(tab);
+                }
 
-        @Override
-        public void schedulePendingClosure(int tab) {
-            mActualTabModel.closeTab(
-                    TabModelUtils.getTabById(mActualTabModel, tab), true, false, true);
-            notifyDataSetChanged();
-        }
+                @Override
+                public void schedulePendingClosure(int tab) {
+                    mActualTabModel.closeTab(
+                            TabModelUtils.getTabById(mActualTabModel, tab), true, false, true);
+                    notifyDataSetChanged();
+                }
 
-        @Override
-        public void cancelPendingClosure(int tab) {
-            mActualTabModel.cancelTabClosure(tab);
-            notifyDataSetChanged();
-        }
+                @Override
+                public void cancelPendingClosure(int tab) {
+                    mActualTabModel.cancelTabClosure(tab);
+                    notifyDataSetChanged();
+                }
 
-        @Override
-        public void tabChanged(int tabId) {
-            notifyDataSetChanged();
-        }
-    };
+                @Override
+                public void tabChanged(int tabId) {
+                    notifyDataSetChanged();
+                }
+            };
 
     /**
      * @param context The Context to use to inflate {@link View}s in.
      */
-    public AccessibilityTabModelAdapter(Context context,
-            AccessibilityTabModelListView listener) {
+    public AccessibilityTabModelAdapter(Context context, AccessibilityTabModelListView listener) {
         mContext = context;
         mCanScrollListener = listener;
     }
@@ -122,8 +121,8 @@ public class AccessibilityTabModelAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return mUndoneTabModel != null
-                ? mUndoneTabModel.getTabAt(position).getId() : Tab.INVALID_TAB_ID;
+        return mUndoneTabModel != null ? mUndoneTabModel.getTabAt(position).getId()
+                                       : Tab.INVALID_TAB_ID;
     }
 
     @Override

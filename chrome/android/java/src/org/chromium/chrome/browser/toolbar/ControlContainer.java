@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.toolbar;
 
 import android.view.View;
 
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
+import org.chromium.chrome.browser.widget.ClipDrawableProgressBar;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**

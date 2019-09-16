@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.emptybackground;
+package org.chromium.chrome.browser.ui.tablet.emptybackground;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.widget.incognitotoggle.IncognitoToggleButtonTablet;
+import org.chromium.chrome.browser.ui.tablet.emptybackground.incognitotoggle.IncognitoToggleButtonTablet;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 /**
@@ -120,8 +120,8 @@ public class EmptyBackgroundViewTablet extends FrameLayout {
     }
 
     private void buildAnimatorSets() {
-        TypedArray a = getContext().getTheme().obtainStyledAttributes(R.style.ToolbarButton,
-                new int[] {android.R.attr.layout_height});
+        TypedArray a = getContext().getTheme().obtainStyledAttributes(
+                R.style.ToolbarButton, new int[] {android.R.attr.layout_height});
         int viewHeight = a.getDimensionPixelSize(0, 0);
         a.recycle();
         View view = findViewById(R.id.empty_layout_button_container);

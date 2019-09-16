@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.findinpage;
+package org.chromium.chrome.browser.findinpage;
 
 import android.animation.Animator;
 import android.annotation.SuppressLint;
@@ -36,9 +36,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.findinpage.FindInPageBridge;
-import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
-import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -153,8 +150,8 @@ public class FindToolbar extends LinearLayout {
         @Override
         public boolean onTextContextMenuItem(int id) {
             if (id == android.R.id.paste) {
-                ClipboardManager clipboard = (ClipboardManager) getContext()
-                        .getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipboardManager clipboard =
+                        (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clipData = clipboard.getPrimaryClip();
                 if (clipData != null) {
                     // Convert the clip data to a simple string
@@ -300,13 +297,10 @@ public class FindToolbar extends LinearLayout {
             }
 
             @Override
-            public void beforeTextChanged(CharSequence s,
-                                          int start, int count, int after) {
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
-            public void afterTextChanged(Editable s) {
-            }
+            public void afterTextChanged(Editable s) {}
         });
         mFindQuery.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -361,8 +355,7 @@ public class FindToolbar extends LinearLayout {
     }
 
     // Overriden by subclasses.
-    protected void findResultSelected(Rect rect) {
-    }
+    protected void findResultSelected(Rect rect) {}
 
     private void hideKeyboardAndStartFinding(boolean forward) {
         if (mFindInPageBridge == null) return;
@@ -463,18 +456,15 @@ public class FindToolbar extends LinearLayout {
         // active match (while counting the matches), as in b/4147049. In such
         // cases it looks less broken to show 0 instead of -1 (as desktop does).
         Context context = getContext();
-        String text = context.getResources().getString(
-                R.string.find_in_page_count,
-                Math.max(result.activeMatchOrdinal, 0),
-                result.numberOfMatches);
+        String text = context.getResources().getString(R.string.find_in_page_count,
+                Math.max(result.activeMatchOrdinal, 0), result.numberOfMatches);
         setStatus(text, result.numberOfMatches == 0);
 
         setPrevNextEnabled(result.numberOfMatches > 0);
 
         // The accessible version will be something like "Result 1 of 9".
         String accessibleText = getAccessibleStatusText(
-                Math.max(result.activeMatchOrdinal, 0),
-                result.numberOfMatches);
+                Math.max(result.activeMatchOrdinal, 0), result.numberOfMatches);
         mFindStatus.setContentDescription(accessibleText);
         announceStatusForAccessibility(accessibleText);
 
@@ -482,12 +472,12 @@ public class FindToolbar extends LinearLayout {
         if (result.numberOfMatches == 0 && result.finalUpdate
                 && !mFindInPageBridge.getPreviousFindText().startsWith(
                         mFindQuery.getText().toString())) {
-            final boolean hapticFeedbackEnabled = Settings.System.getInt(
-                    context.getContentResolver(),
-                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) == 1;
+            final boolean hapticFeedbackEnabled =
+                    Settings.System.getInt(context.getContentResolver(),
+                            Settings.System.HAPTIC_FEEDBACK_ENABLED, 1)
+                    == 1;
             if (hapticFeedbackEnabled) {
-                Vibrator v = (Vibrator) context.getSystemService(
-                        Context.VIBRATOR_SERVICE);
+                Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
                 final long noResultsVibrateDurationMs = 50;
                 v.vibrate(noResultsVibrateDurationMs);
             }
@@ -498,9 +488,7 @@ public class FindToolbar extends LinearLayout {
         Context context = getContext();
         return (numberOfMatches > 0)
                 ? context.getResources().getString(
-                        R.string.accessible_find_in_page_count,
-                        activeMatchOrdinal,
-                        numberOfMatches)
+                        R.string.accessible_find_in_page_count, activeMatchOrdinal, numberOfMatches)
                 : context.getResources().getString(R.string.accessible_find_in_page_no_results);
     }
 
@@ -523,8 +511,7 @@ public class FindToolbar extends LinearLayout {
                 mFindQuery.announceForAccessibility(announcementText);
             }
         };
-        mHandler.postDelayed(mAccessibleAnnouncementRunnable,
-                ACCESSIBLE_ANNOUNCEMENT_DELAY_MILLIS);
+        mHandler.postDelayed(mAccessibleAnnouncementRunnable, ACCESSIBLE_ANNOUNCEMENT_DELAY_MILLIS);
     }
 
     /** The find toolbar's container must provide access to its TabModel. */
@@ -544,8 +531,7 @@ public class FindToolbar extends LinearLayout {
      * Handles updating any visual elements of the find toolbar based on changes to the tab model.
      * @param isIncognito Whether the current tab model is incognito or not.
      */
-    protected void updateVisualsForTabModel(boolean isIncognito) {
-    }
+    protected void updateVisualsForTabModel(boolean isIncognito) {}
 
     /**
      * Sets a custom ActionMode.Callback instance to the FindQuery.  This lets us

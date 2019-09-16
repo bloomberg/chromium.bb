@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.findinpage;
+package org.chromium.chrome.browser.findinpage;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -21,7 +21,6 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.findinpage.FindInPageBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -92,31 +91,26 @@ class FindResultBar extends View {
         super(context);
 
         Resources res = context.getResources();
-        mBackgroundColor = ApiCompatibilityUtils.getColor(res,
-                R.color.find_result_bar_background_color);
-        mBackgroundBorderColor = ApiCompatibilityUtils.getColor(res,
-                R.color.find_result_bar_background_border_color);
-        mResultColor = ApiCompatibilityUtils.getColor(res,
-                R.color.find_result_bar_result_color);
-        mResultBorderColor = ApiCompatibilityUtils.getColor(res,
-                R.color.find_result_bar_result_border_color);
-        mActiveColor = ApiCompatibilityUtils.getColor(res,
-                R.color.find_result_bar_active_color);
-        mActiveBorderColor = ApiCompatibilityUtils.getColor(res,
-                R.color.find_result_bar_active_border_color);
-        mBarTouchWidth = res.getDimensionPixelSize(
-                R.dimen.find_result_bar_touch_width);
+        mBackgroundColor =
+                ApiCompatibilityUtils.getColor(res, R.color.find_result_bar_background_color);
+        mBackgroundBorderColor = ApiCompatibilityUtils.getColor(
+                res, R.color.find_result_bar_background_border_color);
+        mResultColor = ApiCompatibilityUtils.getColor(res, R.color.find_result_bar_result_color);
+        mResultBorderColor =
+                ApiCompatibilityUtils.getColor(res, R.color.find_result_bar_result_border_color);
+        mActiveColor = ApiCompatibilityUtils.getColor(res, R.color.find_result_bar_active_color);
+        mActiveBorderColor =
+                ApiCompatibilityUtils.getColor(res, R.color.find_result_bar_active_border_color);
+        mBarTouchWidth = res.getDimensionPixelSize(R.dimen.find_result_bar_touch_width);
         mBarDrawWidth = res.getDimensionPixelSize(R.dimen.find_result_bar_draw_width)
                 + res.getDimensionPixelSize(R.dimen.find_in_page_separator_width);
         mResultMinHeight = res.getDimensionPixelSize(R.dimen.find_result_bar_result_min_height);
-        mActiveMinHeight = res.getDimensionPixelSize(
-                R.dimen.find_result_bar_active_min_height);
-        mBarVerticalPadding = res.getDimensionPixelSize(
-                R.dimen.find_result_bar_vertical_padding);
-        mMinGapBetweenStacks = res.getDimensionPixelSize(
-                R.dimen.find_result_bar_min_gap_between_stacks);
-        mStackedResultHeight = res.getDimensionPixelSize(
-                R.dimen.find_result_bar_stacked_result_height);
+        mActiveMinHeight = res.getDimensionPixelSize(R.dimen.find_result_bar_active_min_height);
+        mBarVerticalPadding = res.getDimensionPixelSize(R.dimen.find_result_bar_vertical_padding);
+        mMinGapBetweenStacks =
+                res.getDimensionPixelSize(R.dimen.find_result_bar_min_gap_between_stacks);
+        mStackedResultHeight =
+                res.getDimensionPixelSize(R.dimen.find_result_bar_stacked_result_height);
 
         mFillPaint = new Paint();
         mStrokePaint = new Paint();
@@ -131,8 +125,7 @@ class FindResultBar extends View {
         mTab.getContentView().addView(this,
                 new FrameLayout.LayoutParams(
                         mBarTouchWidth, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.END));
-        setTranslationX(
-                MathUtils.flipSignIf(mBarTouchWidth, LocalizationUtils.isLayoutRtl()));
+        setTranslationX(MathUtils.flipSignIf(mBarTouchWidth, LocalizationUtils.isLayoutRtl()));
 
         mVisibilityAnimation = ObjectAnimator.ofFloat(this, TRANSLATION_X, 0);
         mVisibilityAnimation.setDuration(VISIBILITY_ANIMATION_DURATION_MS);
@@ -193,8 +186,8 @@ class FindResultBar extends View {
             KeyboardVisibilityDelegate.getInstance().hideKeyboard(this);
 
             // Identify which drawn tickmark is closest to the user's finger.
-            int closest = Collections.binarySearch(mTickmarks,
-                    new Tickmark(event.getY(), event.getY()));
+            int closest =
+                    Collections.binarySearch(mTickmarks, new Tickmark(event.getY(), event.getY()));
             if (closest < 0) {
                 // No exact match, so must determine nearest.
                 int insertionPoint = -1 - closest;
@@ -203,10 +196,10 @@ class FindResultBar extends View {
                 } else if (insertionPoint == mTickmarks.size()) {
                     closest = mTickmarks.size() - 1;
                 } else {
-                    float distanceA = Math.abs(event.getY()
-                            - mTickmarks.get(insertionPoint - 1).centerY());
-                    float distanceB = Math.abs(event.getY()
-                            - mTickmarks.get(insertionPoint).centerY());
+                    float distanceA =
+                            Math.abs(event.getY() - mTickmarks.get(insertionPoint - 1).centerY());
+                    float distanceB =
+                            Math.abs(event.getY() - mTickmarks.get(insertionPoint).centerY());
                     closest = insertionPoint - (distanceA <= distanceB ? 1 : 0);
                 }
             }
@@ -219,8 +212,7 @@ class FindResultBar extends View {
             // that point (which will usually be the same one).
             mWaitingForActivateAck = true;
             mFindInPageBridge.activateNearestFindResult(
-                    mMatches[closest].centerX(),
-                    mMatches[closest].centerY());
+                    mMatches[closest].centerX(), mMatches[closest].centerY());
         }
         return true; // Consume the event, whether or not we acted upon it.
     }
@@ -241,11 +233,9 @@ class FindResultBar extends View {
         int leftMargin = getLeftMargin();
         mFillPaint.setColor(mBackgroundColor);
         mStrokePaint.setColor(mBackgroundBorderColor);
-        canvas.drawRect(leftMargin, 0,
-                        leftMargin + mBarDrawWidth, getHeight(), mFillPaint);
-        float lineX = LocalizationUtils.isLayoutRtl()
-                ? leftMargin + mBarDrawWidth - 0.5f
-                : leftMargin + 0.5f;
+        canvas.drawRect(leftMargin, 0, leftMargin + mBarDrawWidth, getHeight(), mFillPaint);
+        float lineX = LocalizationUtils.isLayoutRtl() ? leftMargin + mBarDrawWidth - 0.5f
+                                                      : leftMargin + 0.5f;
         canvas.drawLine(lineX, 0, lineX, getHeight(), mStrokePaint);
 
         if (mMatches.length == 0) {
@@ -316,8 +306,8 @@ class FindResultBar extends View {
             i++;
             while (i < mMatches.length) {
                 nextTickmark = tickmarkForRect(mMatches[i], false);
-                if (nextTickmark.mTop <= cluster.get(cluster.size() - 1).mBottom
-                                        + mMinGapBetweenStacks) {
+                if (nextTickmark.mTop
+                        <= cluster.get(cluster.size() - 1).mBottom + mMinGapBetweenStacks) {
                     cluster.add(nextTickmark);
                     i++;
                 } else {
@@ -329,15 +319,15 @@ class FindResultBar extends View {
             int cn = cluster.size();
             float minStart = lastGroupEnd + mMinGapBetweenStacks;
             lastGroupEnd = cluster.get(cn - 1).mBottom;
-            float preferredStart = lastGroupEnd
-                                   - (cn - 1) * mStackedResultHeight
-                                   - mResultMinHeight;
+            float preferredStart =
+                    lastGroupEnd - (cn - 1) * mStackedResultHeight - mResultMinHeight;
             float maxStart = cluster.get(0).mTop;
             float start = Math.round(MathUtils.clamp(preferredStart, minStart, maxStart));
-            float scale = start >= preferredStart ? 1.0f :
-                    (lastGroupEnd - start) / (lastGroupEnd - preferredStart);
-            float spacing = cn == 1 ? 0 : (lastGroupEnd - start
-                    - scale * mResultMinHeight) / (cn - 1);
+            float scale = start >= preferredStart
+                    ? 1.0f
+                    : (lastGroupEnd - start) / (lastGroupEnd - preferredStart);
+            float spacing =
+                    cn == 1 ? 0 : (lastGroupEnd - start - scale * mResultMinHeight) / (cn - 1);
             for (int j = 0; j < cn; j++) {
                 Tickmark tickmark = cluster.get(j);
                 tickmark.mTop = start + j * spacing;
@@ -353,18 +343,16 @@ class FindResultBar extends View {
         // Ratio of results bar height to page height
         float vScale = mBarHeightForWhichTickmarksWereCached - 2 * mBarVerticalPadding;
         Tickmark tickmark = new Tickmark(
-                r.top    * vScale + mBarVerticalPadding,
-                r.bottom * vScale + mBarVerticalPadding);
+                r.top * vScale + mBarVerticalPadding, r.bottom * vScale + mBarVerticalPadding);
         return expandTickmarkToMinHeight(tickmark, active);
     }
 
-    private Tickmark expandTickmarkToMinHeight(Tickmark tickmark,
-                                               boolean active) {
+    private Tickmark expandTickmarkToMinHeight(Tickmark tickmark, boolean active) {
         int minHeight = active ? mActiveMinHeight : mResultMinHeight;
         float missingHeight = minHeight - tickmark.height();
         if (missingHeight > 0) {
-            return new Tickmark(tickmark.mTop    - missingHeight / 2.0f,
-                                tickmark.mBottom + missingHeight / 2.0f);
+            return new Tickmark(
+                    tickmark.mTop - missingHeight / 2.0f, tickmark.mBottom + missingHeight / 2.0f);
         }
         return tickmark;
     }

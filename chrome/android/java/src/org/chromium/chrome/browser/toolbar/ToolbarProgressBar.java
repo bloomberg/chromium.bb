@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.toolbar;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.chrome.browser.widget.ClipDrawableProgressBar;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -37,7 +38,6 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
  * instead of jumping.
  */
 public class ToolbarProgressBar extends ClipDrawableProgressBar {
-
     /**
      * Interface for progress bar animation interpolation logics.
      */
@@ -447,10 +447,10 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
         // The default toolbar has specific colors to use.
         if ((isDefaultTheme || !ColorUtils.isValidThemeColor(color)) && !isIncognito) {
-            setForegroundColor(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.progress_bar_foreground));
-            setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.progress_bar_background));
+            setForegroundColor(ApiCompatibilityUtils.getColor(
+                    getResources(), R.color.progress_bar_foreground));
+            setBackgroundColor(ApiCompatibilityUtils.getColor(
+                    getResources(), R.color.progress_bar_background));
             return;
         }
 
@@ -458,20 +458,20 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
         if (mAnimatingView != null
                 && (ColorUtils.shouldUseLightForegroundOnBackground(color) || isIncognito)) {
-            mAnimatingView.setColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,
-                    ANIMATION_WHITE_FRACTION));
+            mAnimatingView.setColor(
+                    ColorUtils.getColorWithOverlay(color, Color.WHITE, ANIMATION_WHITE_FRACTION));
         }
 
-        setBackgroundColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,
-                THEMED_BACKGROUND_WHITE_FRACTION));
+        setBackgroundColor(ColorUtils.getColorWithOverlay(
+                color, Color.WHITE, THEMED_BACKGROUND_WHITE_FRACTION));
     }
 
     @Override
     public void setForegroundColor(int color) {
         super.setForegroundColor(color);
         if (mAnimatingView != null) {
-            mAnimatingView.setColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,
-                    ANIMATION_WHITE_FRACTION));
+            mAnimatingView.setColor(
+                    ColorUtils.getColorWithOverlay(color, Color.WHITE, ANIMATION_WHITE_FRACTION));
         }
     }
 

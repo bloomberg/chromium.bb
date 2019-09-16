@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.findinpage;
+package org.chromium.chrome.browser.findinpage;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -116,8 +116,9 @@ public class FindToolbarTablet extends FindToolbar {
         boolean makeRoom = false;
         float density = getContext().getResources().getDisplayMetrics().density;
 
-        if (rect != null && rect.intersects((int) (getLeft() / density), 0,
-                (int) (getRight() / density), (int) (getHeight() / density))) {
+        if (rect != null
+                && rect.intersects((int) (getLeft() / density), 0, (int) (getRight() / density),
+                        (int) (getHeight() / density))) {
             makeRoom = true;
         }
 

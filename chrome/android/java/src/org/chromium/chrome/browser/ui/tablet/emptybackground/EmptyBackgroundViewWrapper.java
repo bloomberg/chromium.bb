@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.emptybackground;
+package org.chromium.chrome.browser.ui.tablet.emptybackground;
 
 import android.app.Activity;
 import android.view.View;
@@ -142,7 +142,8 @@ public class EmptyBackgroundViewWrapper {
         if (mBackgroundView != null) return;
 
         mBackgroundView = (EmptyBackgroundViewTablet) ((ViewStub) mActivity.findViewById(
-                R.id.empty_container_stub)).inflate();
+                                                               R.id.empty_container_stub))
+                                  .inflate();
         mBackgroundView.setTabModelSelector(mTabModelSelector);
         mBackgroundView.setTabCreator(mTabCreator);
         if (mMenuHandler != null) mBackgroundView.setMenuOnTouchListener(mMenuHandler);
@@ -153,8 +154,7 @@ public class EmptyBackgroundViewWrapper {
             }
 
             @Override
-            public void onViewAttachedToWindow(View v) {
-            }
+            public void onViewAttachedToWindow(View v) {}
         });
     }
 

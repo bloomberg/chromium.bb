@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.toolbar;
 
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
@@ -24,7 +24,6 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
  * current length of the progress bar only if the progress bar is static for some amount of time.
  */
 public class ToolbarProgressBarAnimatingView extends ImageView {
-
     /** The drawable inside this ImageView. */
     private final ColorDrawable mAnimationDrawable;
 
@@ -179,9 +178,8 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
             mAnimatorSet.start();
 
             // Fade in to look nice on sites that trigger many loads that end quickly.
-            animate().alpha(1.0f)
-                    .setDuration(500)
-                    .setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
+            animate().alpha(1.0f).setDuration(500).setInterpolator(
+                    BakedBezierInterpolator.FADE_IN_CURVE);
         }
     }
 
@@ -214,8 +212,8 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
 
         // Include the width of the animating bar in this computation so it comes from
         // off-screen.
-        float animatingWidth = Math.min(ANIMATING_VIEW_MAX_WIDTH_DP * mDpToPx,
-                mProgressWidth * barScale);
+        float animatingWidth =
+                Math.min(ANIMATING_VIEW_MAX_WIDTH_DP * mDpToPx, mProgressWidth * barScale);
 
         float animatorCenter =
                 ((mProgressWidth + animatingWidth) * bezierProgress) - animatingWidth / 2.0f;

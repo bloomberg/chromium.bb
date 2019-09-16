@@ -8,7 +8,7 @@
  * information on how to write and extend Application tests.
  */
 
-package org.chromium.chrome.browser.widget.findinpage;
+package org.chromium.chrome.browser.findinpage;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -83,13 +83,12 @@ public class FindTest {
                 (TextView) mActivityTestRule.getActivity().findViewById(R.id.find_status);
         Assert.assertNotNull(expectedResult);
         Assert.assertNotNull(findResults);
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(expectedResult, new Callable<CharSequence>() {
-                        @Override
-                        public CharSequence call() {
-                            return findResults.getText();
-                        }
-                    }));
+        CriteriaHelper.pollUiThread(Criteria.equals(expectedResult, new Callable<CharSequence>() {
+            @Override
+            public CharSequence call() {
+                return findResults.getText();
+            }
+        }));
         return findResults.getText().toString();
     }
 

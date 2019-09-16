@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.accessibility;
+package org.chromium.chrome.browser.accessibility_tab_switcher;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -143,8 +143,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     /**
      * Used with the swipe away and blink out animations to bring in the undo view.
      */
-    private final AnimatorListenerAdapter mCloseAnimatorListener =
-            new AnimatorListenerAdapter() {
+    private final AnimatorListenerAdapter mCloseAnimatorListener = new AnimatorListenerAdapter() {
         private boolean mIsCancelled;
 
         @Override
@@ -178,31 +177,31 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
      */
     private final AnimatorListenerAdapter mActuallyCloseAnimatorListener =
             new AnimatorListenerAdapter() {
-        private boolean mIsCancelled;
+                private boolean mIsCancelled;
 
-        @Override
-        public void onAnimationStart(Animator animation) {
-            mIsCancelled = false;
-        }
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    mIsCancelled = false;
+                }
 
-        @Override
-        public void onAnimationCancel(Animator animation) {
-            mIsCancelled = true;
-            mCloseButtonClicked = false;
-        }
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    mIsCancelled = true;
+                    mCloseButtonClicked = false;
+                }
 
-        @Override
-        public void onAnimationEnd(Animator animator) {
-            if (mIsCancelled) return;
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    if (mIsCancelled) return;
 
-            showUndoView(false);
-            setAlpha(1.f);
-            mTabContents.setAlpha(1.f);
-            mUndoContents.setAlpha(1.f);
-            cancelRunningAnimation();
-            mListener.tabClosed(mTab.getId());
-        }
-    };
+                    showUndoView(false);
+                    setAlpha(1.f);
+                    mTabContents.setAlpha(1.f);
+                    mUndoContents.setAlpha(1.f);
+                    cancelRunningAnimation();
+                    mListener.tabClosed(mTab.getId());
+                }
+            };
 
     /**
      * @param context The Context to build this widget in.
@@ -211,8 +210,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     public AccessibilityTabModelListItem(Context context, AttributeSet attrs) {
         super(context, attrs);
         mSwipeGestureDetector = new GestureDetector(context, new SwipeGestureListener());
-        mSwipeCommitDistance =
-                context.getResources().getDimension(R.dimen.swipe_commit_distance);
+        mSwipeCommitDistance = context.getResources().getDimension(R.dimen.swipe_commit_distance);
         mFlingCommitDistance = mSwipeCommitDistance / 3;
 
         mDefaultHeight =
@@ -303,11 +301,11 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
         if (!title.equals(mTitleView.getText())) mTitleView.setText(title);
 
-        String accessibilityString = getContext().getString(R.string.accessibility_tabstrip_tab,
-                title);
+        String accessibilityString =
+                getContext().getString(R.string.accessibility_tabstrip_tab, title);
         if (!accessibilityString.equals(getContentDescription())) {
-            setContentDescription(getContext().getString(R.string.accessibility_tabstrip_tab,
-                    title));
+            setContentDescription(
+                    getContext().getString(R.string.accessibility_tabstrip_tab, title));
             mCloseButton.setContentDescription(
                     getContext().getString(R.string.accessibility_tabstrip_btn_close_tab, title));
         }
@@ -524,8 +522,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
             if (Math.abs(getTranslationX()) < mFlingCommitDistance) return false;
 
             double velocityMagnitude = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
-            long closeTime = (long) Math.abs((getWidth() / velocityMagnitude))
-                    * VELOCITY_SCALING_FACTOR;
+            long closeTime =
+                    (long) Math.abs((getWidth() / velocityMagnitude)) * VELOCITY_SCALING_FACTOR;
             runSwipeAnimation(Math.min(closeTime, mDefaultAnimationDurationMs));
             mCanScrollListener.setCanScroll(true);
             return true;
@@ -555,8 +553,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         cancelRunningAnimation();
         mSwipedAway = getTranslationX();
 
-        ObjectAnimator swipe = ObjectAnimator.ofFloat(this, View.TRANSLATION_X,
-                getTranslationX() > 0 ? getWidth() : -getWidth());
+        ObjectAnimator swipe = ObjectAnimator.ofFloat(
+                this, View.TRANSLATION_X, getTranslationX() > 0 ? getWidth() : -getWidth());
         ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this, View.ALPHA, 0.f);
 
         AnimatorSet set = new AnimatorSet();
@@ -579,8 +577,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
         AnimatorSet set = new AnimatorSet();
         set.playTogether(swipe, fadeIn, scaleX, scaleY, resetHeight);
-        set.setDuration(useCloseAnimationDuration
-                ? mCloseAnimationDurationMs : mDefaultAnimationDurationMs);
+        set.setDuration(useCloseAnimationDuration ? mCloseAnimationDurationMs
+                                                  : mDefaultAnimationDurationMs);
         set.start();
 
         mActiveAnimation = set;
