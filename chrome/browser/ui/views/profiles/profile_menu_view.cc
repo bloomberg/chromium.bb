@@ -115,19 +115,19 @@ bool AreSigninCookiesClearedOnExit(Profile* profile) {
 // needed to make the icon look smaller, otherwise it looks too big compared to
 // the other icons. See crbug.com/951751 for more information.
 gfx::ImageSkia GetGoogleIconForUserMenu(int icon_size) {
-  constexpr int kIconPadding = 2;
+  constexpr gfx::Insets kIconPadding = gfx::Insets(2);
   SkColor icon_color =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_DefaultIconColor);
   // |CreateVectorIcon()| doesn't override colors specified in the .icon file,
   // therefore the image has to be colored manually with |CreateColorMask()|.
-  gfx::ImageSkia google_icon = gfx::CreateVectorIcon(
-      kGoogleGLogoIcon, icon_size - 2 * kIconPadding, gfx::kPlaceholderColor);
+  gfx::ImageSkia google_icon =
+      gfx::CreateVectorIcon(kGoogleGLogoIcon, icon_size - kIconPadding.width(),
+                            gfx::kPlaceholderColor);
   gfx::ImageSkia grey_google_icon =
       gfx::ImageSkiaOperations::CreateColorMask(google_icon, icon_color);
 
-  return gfx::CanvasImageSource::CreatePadded(grey_google_icon,
-                                              gfx::Insets(kIconPadding));
+  return gfx::CanvasImageSource::CreatePadded(grey_google_icon, kIconPadding);
 }
 #endif
 

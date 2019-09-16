@@ -218,13 +218,12 @@ bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
     y_position_on_lbuttondown_ = event.y();
 
     // Schedule a task that will show the menu.
-    const int kMenuTimerDelay = 500;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ToolbarButton::ShowDropDownMenu,
                        show_menu_factory_.GetWeakPtr(),
                        ui::GetMenuSourceTypeForEvent(event)),
-        base::TimeDelta::FromMilliseconds(kMenuTimerDelay));
+        base::TimeDelta::FromMilliseconds(500));
   }
 
   return LabelButton::OnMousePressed(event);

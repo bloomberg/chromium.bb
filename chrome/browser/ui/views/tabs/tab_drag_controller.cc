@@ -69,21 +69,20 @@ static TabDragController* g_tab_drag_controller = NULL;
 
 namespace {
 
-// Delay, in ms, during dragging before we bring a window to front.
-const int kBringToFrontDelay = 750;
-
 // Initial delay before moving tabs when the dragged tab is close to the edge of
 // the stacked tabs.
-const int kMoveAttachedInitialDelay = 600;
+constexpr auto kMoveAttachedInitialDelay =
+    base::TimeDelta::FromMilliseconds(600);
 
 // Delay for moving tabs after the initial delay has passed.
-const int kMoveAttachedSubsequentDelay = 300;
+constexpr auto kMoveAttachedSubsequentDelay =
+    base::TimeDelta::FromMilliseconds(300);
 
 // A dragged window is forced to be a bit smaller than maximized bounds during a
 // drag. This prevents the dragged browser widget from getting maximized at
 // creation and makes it easier to drag tabs out of a restored window that had
 // maximized size.
-const int kMaximizedWindowInset = 10;  // DIPs.
+constexpr int kMaximizedWindowInset = 10;  // DIPs.
 
 #if defined(OS_CHROMEOS)
 
@@ -804,7 +803,7 @@ TabDragController::Liveness TabDragController::ContinueDragging(
   }
   if (current_state_ == DragState::kDraggingWindow) {
     bring_to_front_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kBringToFrontDelay),
+        FROM_HERE, base::TimeDelta::FromMilliseconds(750),
         base::Bind(&TabDragController::BringWindowUnderPointToFront,
                    base::Unretained(this), point_in_screen));
   }
@@ -1020,7 +1019,7 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
 
 void TabDragController::StartMoveStackedTimerIfNecessary(
     const gfx::Point& point_in_screen,
-    int delay_ms) {
+    base::TimeDelta delay) {
   DCHECK(attached_context_);
 
   base::Optional<int> touch_index = attached_context_->GetActiveTouchIndex();
@@ -1032,13 +1031,13 @@ void TabDragController::StartMoveStackedTimerIfNecessary(
   if (attached_context_->ShouldDragToNextStackedTab(
           bounds, *touch_index, mouse_has_ever_moved_right_)) {
     move_stacked_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
+        FROM_HERE, delay,
         base::Bind(&TabDragController::MoveAttachedToNextStackedIndex,
                    base::Unretained(this), point_in_screen));
   } else if (attached_context_->ShouldDragToPreviousStackedTab(
                  bounds, *touch_index, mouse_has_ever_moved_left_)) {
     move_stacked_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
+        FROM_HERE, delay,
         base::Bind(&TabDragController::MoveAttachedToPreviousStackedIndex,
                    base::Unretained(this), point_in_screen));
   }

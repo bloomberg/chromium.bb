@@ -305,9 +305,8 @@ class TabDragController : public views::WidgetObserver {
 
   // If necessary starts the |move_stacked_timer_|. The timer is started if
   // close enough to an edge with stacked tabs.
-  void StartMoveStackedTimerIfNecessary(
-      const gfx::Point& point_in_screen,
-      int delay_ms);
+  void StartMoveStackedTimerIfNecessary(const gfx::Point& point_in_screen,
+                                        base::TimeDelta delay);
 
   // Returns the TabDragContext for the specified window, or NULL if
   // one doesn't exist or isn't compatible.
