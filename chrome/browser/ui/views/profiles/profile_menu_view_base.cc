@@ -80,7 +80,6 @@ std::unique_ptr<views::View> CreateBorderedBoxView(
     std::unique_ptr<views::View> children_container) {
   constexpr int kOuterMargin = 16;
   constexpr int kBorderThickness = 1;
-  constexpr int kCornerRadius = 8;
   const SkColor kBorderColor =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_MenuSeparatorColor);
@@ -89,7 +88,9 @@ std::unique_ptr<views::View> CreateBorderedBoxView(
   children_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   children_container->SetBorder(views::CreateRoundedRectBorder(
-      kBorderThickness, kCornerRadius, kBorderColor));
+      kBorderThickness,
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH),
+      kBorderColor));
 
   // Create outer view with margin.
   // The outer view is needed because |BoxLayout| doesn't support outer
