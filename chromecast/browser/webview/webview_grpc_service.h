@@ -11,6 +11,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/browser/webview/proto/webview.grpc.pb.h"
+#include "chromecast/browser/webview/webview_window_manager.h"
 #include "third_party/grpc/src/include/grpcpp/server.h"
 
 namespace chromecast {
@@ -37,6 +38,8 @@ class WebviewAsyncService : public base::PlatformThread::Delegate {
 
   std::unique_ptr<grpc::ServerCompletionQueue> cq_;
   std::unique_ptr<webview::WebviewService::AsyncService> service_;
+
+  WebviewWindowManager window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewAsyncService);
 };
