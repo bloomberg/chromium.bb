@@ -3980,7 +3980,7 @@ _lou_defaultTableResolver(const char *tableList, const char *base) {
 				_lou_logMessage(LOU_LOG_ERROR, "LOUIS_TABLEPATH=%s", path);
 			free(searchPath);
 			free(tableList_copy);
-			for(unsigned int i = 0; i < sz; i++) free(*(tableFiles+i));
+			for (unsigned int i = 0; i < sz; i++) free(*(tableFiles + i));
 			free(tableFiles);
 			return NULL;
 		}
