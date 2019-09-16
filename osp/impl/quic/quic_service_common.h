@@ -56,8 +56,8 @@ struct ServiceStreamPair {
   ServiceStreamPair(std::unique_ptr<QuicStream> stream,
                     QuicProtocolConnection* protocol_connection);
   ~ServiceStreamPair();
-  ServiceStreamPair(ServiceStreamPair&&);
-  ServiceStreamPair& operator=(ServiceStreamPair&&);
+  ServiceStreamPair(ServiceStreamPair&&) noexcept;
+  ServiceStreamPair& operator=(ServiceStreamPair&&) noexcept;
 
   std::unique_ptr<QuicStream> stream;
   uint64_t connection_id;
@@ -127,9 +127,9 @@ struct ServiceConnectionData {
   explicit ServiceConnectionData(
       std::unique_ptr<QuicConnection> connection,
       std::unique_ptr<ServiceConnectionDelegate> delegate);
-  ServiceConnectionData(ServiceConnectionData&&);
+  ServiceConnectionData(ServiceConnectionData&&) noexcept;
   ~ServiceConnectionData();
-  ServiceConnectionData& operator=(ServiceConnectionData&&);
+  ServiceConnectionData& operator=(ServiceConnectionData&&) noexcept;
 
   std::unique_ptr<QuicConnection> connection;
   std::unique_ptr<ServiceConnectionDelegate> delegate;

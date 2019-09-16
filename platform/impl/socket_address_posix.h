@@ -25,9 +25,9 @@ class SocketAddressPosix {
   explicit SocketAddressPosix(const IPEndpoint& endpoint);
 
   SocketAddressPosix(const SocketAddressPosix&) = default;
-  SocketAddressPosix(SocketAddressPosix&&) = default;
+  SocketAddressPosix(SocketAddressPosix&&) noexcept = default;
   SocketAddressPosix& operator=(const SocketAddressPosix&) = default;
-  SocketAddressPosix& operator=(SocketAddressPosix&&) = default;
+  SocketAddressPosix& operator=(SocketAddressPosix&&) noexcept = default;
 
   struct sockaddr* address();
   const struct sockaddr* address() const;

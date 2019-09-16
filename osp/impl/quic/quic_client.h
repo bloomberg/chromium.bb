@@ -70,9 +70,9 @@ class QuicClient final : public ProtocolConnectionClient,
  private:
   struct PendingConnectionData {
     explicit PendingConnectionData(ServiceConnectionData&& data);
-    PendingConnectionData(PendingConnectionData&&);
+    PendingConnectionData(PendingConnectionData&&) noexcept;
     ~PendingConnectionData();
-    PendingConnectionData& operator=(PendingConnectionData&&);
+    PendingConnectionData& operator=(PendingConnectionData&&) noexcept;
 
     ServiceConnectionData data;
 

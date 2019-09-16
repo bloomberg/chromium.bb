@@ -26,8 +26,8 @@ namespace platform {
 class TlsCredentials {
  public:
   // We are move only due to unique pointers.
-  TlsCredentials(TlsCredentials&&) = default;
-  TlsCredentials& operator=(TlsCredentials&&) = default;
+  TlsCredentials(TlsCredentials&&) noexcept = default;
+  TlsCredentials& operator=(TlsCredentials&&) noexcept = default;
 
   // TlsCredentials generates a self signed certificate given (1) the name
   // to use for the certificate, (2) the length of time the certificate will

@@ -16,8 +16,8 @@ class ReceiverList {
  public:
   ReceiverList();
   ~ReceiverList();
-  ReceiverList(ReceiverList&&) = delete;
-  ReceiverList& operator=(ReceiverList&&) = delete;
+  ReceiverList(ReceiverList&&) noexcept = delete;
+  ReceiverList& operator=(ReceiverList&&) noexcept = delete;
 
   void OnReceiverAdded(const ServiceInfo& info);
 

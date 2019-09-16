@@ -52,10 +52,10 @@ struct DomainName {
   DomainName();
   explicit DomainName(std::vector<uint8_t>&& domain_name);
   DomainName(const DomainName&);
-  DomainName(DomainName&&);
+  DomainName(DomainName&&) noexcept;
   ~DomainName();
   DomainName& operator=(const DomainName&);
-  DomainName& operator=(DomainName&&);
+  DomainName& operator=(DomainName&&) noexcept;
 
   bool operator==(const DomainName& other) const;
   bool operator!=(const DomainName& other) const;

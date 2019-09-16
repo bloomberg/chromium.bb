@@ -22,7 +22,7 @@ class Location {
  public:
   Location();
   Location(const Location&);
-  Location(Location&&);
+  Location(Location&&) noexcept;
 
   // Initializes the program counter
   explicit Location(const void* program_counter);

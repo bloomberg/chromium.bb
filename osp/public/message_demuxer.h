@@ -47,9 +47,9 @@ class MessageDemuxer {
                  bool is_default,
                  uint64_t endpoint_id,
                  msgs::Type message_type);
-    MessageWatch(MessageWatch&&);
+    MessageWatch(MessageWatch&&) noexcept;
     ~MessageWatch();
-    MessageWatch& operator=(MessageWatch&&);
+    MessageWatch& operator=(MessageWatch&&) noexcept;
 
     explicit operator bool() const { return parent_; }
 

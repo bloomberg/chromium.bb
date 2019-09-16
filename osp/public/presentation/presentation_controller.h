@@ -58,7 +58,7 @@ class Controller final : public ServiceListener::Observer,
     ReceiverWatch(Controller* controller,
                   const std::vector<std::string>& urls,
                   ReceiverObserver* observer);
-    ReceiverWatch(ReceiverWatch&&);
+    ReceiverWatch(ReceiverWatch&&) noexcept;
     ~ReceiverWatch();
 
     ReceiverWatch& operator=(ReceiverWatch);
@@ -80,7 +80,7 @@ class Controller final : public ServiceListener::Observer,
                    const std::string& service_id,
                    bool is_reconnect,
                    absl::optional<uint64_t> request_id);
-    ConnectRequest(ConnectRequest&&);
+    ConnectRequest(ConnectRequest&&) noexcept;
     ~ConnectRequest();
 
     ConnectRequest& operator=(ConnectRequest);

@@ -157,9 +157,10 @@ ServiceConnectionData::ServiceConnectionData(
     std::unique_ptr<QuicConnection> connection,
     std::unique_ptr<ServiceConnectionDelegate> delegate)
     : connection(std::move(connection)), delegate(std::move(delegate)) {}
-ServiceConnectionData::ServiceConnectionData(ServiceConnectionData&&) = default;
+ServiceConnectionData::ServiceConnectionData(ServiceConnectionData&&) noexcept =
+    default;
 ServiceConnectionData::~ServiceConnectionData() = default;
 ServiceConnectionData& ServiceConnectionData::operator=(
-    ServiceConnectionData&&) = default;
+    ServiceConnectionData&&) noexcept = default;
 
 }  // namespace openscreen

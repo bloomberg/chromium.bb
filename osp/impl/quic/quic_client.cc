@@ -168,10 +168,10 @@ QuicClient::PendingConnectionData::PendingConnectionData(
     ServiceConnectionData&& data)
     : data(std::move(data)) {}
 QuicClient::PendingConnectionData::PendingConnectionData(
-    PendingConnectionData&&) = default;
+    PendingConnectionData&&) noexcept = default;
 QuicClient::PendingConnectionData::~PendingConnectionData() = default;
 QuicClient::PendingConnectionData& QuicClient::PendingConnectionData::operator=(
-    PendingConnectionData&&) = default;
+    PendingConnectionData&&) noexcept = default;
 
 QuicClient::ConnectRequest QuicClient::CreatePendingConnection(
     const IPEndpoint& endpoint,

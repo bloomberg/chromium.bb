@@ -12,7 +12,7 @@ namespace openscreen {
 
 Location::Location() = default;
 Location::Location(const Location&) = default;
-Location::Location(Location&&) = default;
+Location::Location(Location&&) noexcept = default;
 
 Location::Location(const void* program_counter)
     : program_counter_(program_counter) {}

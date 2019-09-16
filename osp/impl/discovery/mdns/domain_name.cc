@@ -48,7 +48,7 @@ DomainName::DomainName(std::vector<uint8_t>&& domain_name)
   OSP_CHECK_LE(domain_name_.size(), kDomainNameMaxLength);
 }
 DomainName::DomainName(const DomainName&) = default;
-DomainName::DomainName(DomainName&&) = default;
+DomainName::DomainName(DomainName&&) noexcept = default;
 DomainName::~DomainName() = default;
 DomainName& DomainName::operator=(const DomainName& domain_name) = default;
 DomainName& DomainName::operator=(DomainName&& domain_name) = default;
