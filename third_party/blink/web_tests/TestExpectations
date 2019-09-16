@@ -255,10 +255,6 @@ crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.ht
 # MSAN failure
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
 
-# Sheriff 2018/05/25
-crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
-crbug.com/846747 virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
-
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
 # These tests are no longer applicable in BlinkGenPropertyTree mode.
