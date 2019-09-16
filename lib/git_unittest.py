@@ -446,7 +446,7 @@ class GitPushTest(cros_test_lib.RunCommandTestCase):
     git.GitPush('git_path', 'HEAD', git.RemoteRef('origin', 'master'))
     self.assertCommandCalled(['git', 'push', 'origin', 'HEAD:master'],
                              capture_output=True, print_cmd=False,
-                             cwd='git_path')
+                             cwd='git_path', encoding='utf-8')
 
   def testGitPushComplix(self):
     """Test GitPush with some arguments."""
@@ -455,7 +455,7 @@ class GitPushTest(cros_test_lib.RunCommandTestCase):
     self.assertCommandCalled(['git', 'push', 'origin', 'HEAD:master',
                               '--force', '--dry-run'],
                              capture_output=True, print_cmd=False,
-                             cwd='git_path')
+                             cwd='git_path', encoding='utf-8')
 
   def testNonFFPush(self):
     """Non fast-forward push error propagates to the caller."""

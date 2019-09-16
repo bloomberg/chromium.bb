@@ -76,7 +76,7 @@ def IsSubmoduleCheckoutRoot(path, remote, url):
     remote_url = cros_build_lib.run(
         ['git', '--git-dir', path, 'config', 'remote.%s.url' % remote],
         redirect_stdout=True, debug_level=logging.DEBUG,
-        error_code_ok=True).output.strip()
+        error_code_ok=True, encoding='utf-8').output.strip()
     if remote_url == url:
       return True
   return False
@@ -788,6 +788,7 @@ def RunGit(git_repo, cmd, **kwargs):
   kwargs.setdefault('print_cmd', False)
   kwargs.setdefault('cwd', git_repo)
   kwargs.setdefault('capture_output', True)
+  kwargs.setdefault('encoding', 'utf-8')
   return cros_build_lib.run(['git'] + cmd, **kwargs)
 
 
@@ -1131,7 +1132,7 @@ def RmPath(path):
   RunGit(dirname, ['rm', '--', filename])
 
 
-def GetObjectAtRev(git_repo, obj, rev):
+def GetObjectAtRev(git_repo, obj, rev, binary=False):
   """Return the contents of a git object at a particular revision.
 
   This could be used to look at an old version of a file or directory, for
@@ -1141,12 +1142,14 @@ def GetObjectAtRev(git_repo, obj, rev):
     git_repo: Path to a directory in the git repository to query.
     obj: The name of the object to read.
     rev: The revision to retrieve.
+    binary: If true, return bytes instead of decoding as a UTF-8 string.
 
   Returns:
     The content of the object.
   """
   rev_obj = '%s:%s' % (rev, obj)
-  return RunGit(git_repo, ['show', rev_obj]).output
+  encoding = None if binary else 'utf-8'
+  return RunGit(git_repo, ['show', rev_obj], encoding=encoding).output
 
 
 def RevertPath(git_repo, filename, rev):
@@ -1164,7 +1167,8 @@ def RevertPath(git_repo, filename, rev):
 # git. Disable the nags from pylint.
 # pylint: disable=redefined-builtin
 def Log(git_repo, format=None, after=None, until=None,
-        reverse=False, date=None, paths=None):
+        reverse=False, date=None, max_count=None, rev='HEAD',
+        paths=None):
   """Return git log output for the given arguments.
 
   For more detailed description of the parameters, run `git help log`.
@@ -1175,7 +1179,9 @@ def Log(git_repo, format=None, after=None, until=None,
     after: Passed directly to --after flag.
     until: Passed directly to --until flag.
     reverse: If true, set --reverse flag.
-    date: Passed ddirectly to --date flag.
+    date: Passed directly to --date flag.
+    max_count: Passed directly to --max-count flag.
+    rev: Commit (or revision range) to log.
     paths: List of paths to log commits for (enumerated after final -- ).
 
   Returns:
@@ -1192,10 +1198,13 @@ def Log(git_repo, format=None, after=None, until=None,
     cmd.append('--reverse')
   if date:
     cmd.append('--date=%s' % date)
+  if max_count:
+    cmd.append('--max-count=%s' % max_count)
+  cmd.append(rev)
   if paths:
     cmd.append('--')
     cmd.extend(paths)
-  return RunGit(git_repo, cmd).output
+  return RunGit(git_repo, cmd, errors='replace').stdout
 # pylint: enable=redefined-builtin
 
 
@@ -1222,7 +1231,7 @@ def Commit(git_repo, message, amend=False, allow_empty=False,
     cmd.append('--reset-author')
   RunGit(git_repo, cmd)
 
-  log = RunGit(git_repo, ['log', '-n', '1', '--format=format:%B']).output
+  log = Log(git_repo, max_count=1, format='format:%B')
   match = re.search('Change-Id: (?P<ID>I[a-fA-F0-9]*)', log)
   return match.group('ID') if match else None
 

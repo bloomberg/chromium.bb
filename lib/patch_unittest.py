@@ -251,14 +251,19 @@ I am the first commit.
                                      site_params.EXTERNAL_REMOTE),
                           sha1=sha1, **kwargs)
 
-  def _run(self, cmd, cwd=None):
+  def _run(self, cmd, cwd=None, **kwargs):
+    # This is to match git.RunGit behavior.
+    kwargs.setdefault('print_cmd', False)
+    kwargs.setdefault('capture_output', True)
+    kwargs.setdefault('encoding', 'utf-8')
+
     # Note that cwd is intentionally set to a location the user can't write
     # to; this flushes out any bad usage in the tests that would work by
     # fluke of being invoked from w/in a git repo.
     if cwd is None:
       cwd = self.default_cwd
-    return cros_build_lib.run(
-        cmd, cwd=cwd, print_cmd=False, capture_output=True).output.strip()
+
+    return cros_build_lib.run(cmd, cwd=cwd, **kwargs).output.strip()
 
   def _GetSha1(self, cwd, refspec):
     return self._run(['git', 'rev-list', '-n1', refspec], cwd=cwd)
