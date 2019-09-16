@@ -122,6 +122,16 @@ void SysmemBufferWriter::Release(size_t index) {
   buffers_[index].Release();
 }
 
+void SysmemBufferWriter::ReleaseAll() {
+  for (auto& buf : buffers_) {
+    buf.Release();
+  }
+}
+
+size_t SysmemBufferWriter::num_buffers() const {
+  return buffers_.size();
+}
+
 // static
 std::unique_ptr<SysmemBufferWriter> SysmemBufferWriter::Create(
     fuchsia::sysmem::BufferCollectionInfo_2 info) {
