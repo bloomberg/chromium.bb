@@ -2251,6 +2251,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'chell',
       'cheza',
       'cobblepot',
+      'coral',
       'cyan',
       'drallion',
       'edgar',
@@ -2349,7 +2350,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'coral', # crbug.com/995386
       'gale', # http://b/140523449
       'fizz-moblab', # crbug.com/995170
       'guado', # crbug.com/950812
