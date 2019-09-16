@@ -306,7 +306,7 @@ class FakeRecommendAppsFetcher : public RecommendAppsFetcher {
     base::Value app(base::Value::Type::DICTIONARY);
     app.SetKey("package_name", base::Value("test.package"));
     base::Value app_list(base::Value::Type::LIST);
-    app_list.GetList().emplace_back(std::move(app));
+    app_list.Append(std::move(app));
     delegate_->OnLoadSuccess(std::move(app_list));
   }
   void Retry() override { NOTREACHED(); }
