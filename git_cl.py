@@ -488,6 +488,8 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   print_text.append('To see results in browser, run:  git cl web')
   print('\n'.join(print_text))
 
+  return ret_code
+
 
 def fetch_try_jobs(auth_config, changelist, buildbucket_host,
                    patchset=None):
@@ -4737,12 +4739,7 @@ def CMDtry(parser, args):
       return 1
 
   patchset = cl.GetMostRecentPatchset()
-  try:
-    _trigger_try_jobs(auth_config, cl, buckets, options, patchset)
-  except BuildbucketResponseException as ex:
-    print('ERROR: %s' % ex)
-    return 1
-  return 0
+  return _trigger_try_jobs(auth_config, cl, buckets, options, patchset)
 
 
 @metrics.collector.collect_metrics('git cl try-results')
