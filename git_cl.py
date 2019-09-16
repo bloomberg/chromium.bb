@@ -1267,7 +1267,7 @@ class Changelist(object):
     if not os.path.isdir(url):
       logging.error(
           'Remote "%s" for branch "%s" points to "%s", but it doesn\'t exist.',
-          remote, url, self.GetBranch())
+          remote, self.GetBranch(), url)
       return None
 
     cache_path = url

@@ -3158,8 +3158,8 @@ class TestGitCl(TestCase):
       (('os.path.isdir', '/cache/this-dir-doesnt-exist'),
        False),
       (('logging.error',
-        'Remote "origin" for branch "/cache/this-dir-doesnt-exist" points to'
-        ' "master", but it doesn\'t exist.'), None),
+        'Remote "origin" for branch "master" points to'
+        ' "/cache/this-dir-doesnt-exist", but it doesn\'t exist.'), None),
     ]
     cl = git_cl.Changelist(issue=1)
     self.assertIsNone(cl.GetRemoteUrl())
