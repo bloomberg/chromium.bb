@@ -1196,6 +1196,11 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
       tab_url = entry->GetURL();
       tab_referrer_url = entry->GetReferrer().url;
     }
+    RenderFrameHost* top_frame = web_contents->GetMainFrame();
+    if (top_frame) {
+      params->set_network_isolation_key(net::NetworkIsolationKey(
+          top_frame->GetLastCommittedOrigin(), rfh->GetLastCommittedOrigin()));
+    }
   }
 
   DCHECK_EQ(params->url().SchemeIsBlob(), bool{blob_url_loader_factory});

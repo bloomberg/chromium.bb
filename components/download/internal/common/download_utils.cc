@@ -243,6 +243,11 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   request->method = params->method();
   request->url = params->url();
   request->request_initiator = params->initiator();
+  if (!params->network_isolation_key().IsEmpty()) {
+    request->trusted_params = network::ResourceRequest::TrustedParams();
+    request->trusted_params->network_isolation_key =
+        params->network_isolation_key();
+  }
   request->do_not_prompt_for_login = params->do_not_prompt_for_login();
   request->site_for_cookies = params->url();
   request->referrer = params->referrer();
