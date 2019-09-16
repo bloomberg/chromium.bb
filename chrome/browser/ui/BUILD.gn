@@ -1614,6 +1614,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/add_supervision/add_supervision_handler.h",
       "webui/chromeos/add_supervision/add_supervision_handler_utils.cc",
       "webui/chromeos/add_supervision/add_supervision_handler_utils.h",
+      "webui/chromeos/add_supervision/add_supervision_metrics_recorder.cc",
+      "webui/chromeos/add_supervision/add_supervision_metrics_recorder.h",
       "webui/chromeos/add_supervision/add_supervision_ui.cc",
       "webui/chromeos/add_supervision/add_supervision_ui.h",
       "webui/chromeos/add_supervision/confirm_signout_dialog.cc",

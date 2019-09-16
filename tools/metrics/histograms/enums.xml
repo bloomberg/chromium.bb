@@ -1054,6 +1054,14 @@ Unknown properties are collapsed to zero. -->
       label="The user saw the dialog but closed it without adding an engine"/>
 </enum>
 
+<enum name="AddSupervisionEnrollment">
+  <summary>Tracks the state of the Add Supervision dialog process.</summary>
+  <int value="0" label="Initiated"/>
+  <int value="1" label="Completed"/>
+  <int value="2" label="Signed out"/>
+  <int value="3" label="Closed"/>
+</enum>
+
 <enum name="AddToHomescreenTimeoutStatus">
   <obsolete>
     Deprecated in M77.
