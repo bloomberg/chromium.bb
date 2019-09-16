@@ -172,6 +172,7 @@ void ProfileMenuView::BuildMenu() {
   BuildAutofillButtons();
   BuildAccountFeatureButtons();
   BuildSelectableProfiles();
+  BuildProfileFeatureButtons();
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
@@ -463,6 +464,28 @@ void ProfileMenuView::BuildSelectableProfiles() {
         base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
                             base::Unretained(this), profile_entry->GetPath()));
   }
+}
+
+void ProfileMenuView::BuildProfileFeatureButtons() {
+  constexpr float kIconToImageRatio = 0.75;
+
+  AddProfileFeatureButton(
+      ImageForMenu(kUserMenuGuestIcon, kIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_GUEST_PROFILE_BUTTON),
+      base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,
+                          base::Unretained(this)));
+
+  AddProfileFeatureButton(
+      ImageForMenu(vector_icons::kSettingsIcon, kIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON),
+      base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
+                          base::Unretained(this)));
+
+  AddProfileFeatureButton(
+      ImageForMenu(kCloseAllIcon, kIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON),
+      base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
+                          base::Unretained(this)));
 }
 
 void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {

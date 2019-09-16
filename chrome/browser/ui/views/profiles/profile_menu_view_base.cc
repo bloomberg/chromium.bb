@@ -313,6 +313,26 @@ void ProfileMenuViewBase::AddSelectableProfile(const gfx::Image& image,
                                    kImageSize, profiles::SHAPE_CIRCLE);
   views::Button* button = selectable_profiles_container_->AddChildView(
       std::make_unique<HoverButton>(this, sized_image.AsImageSkia(), name));
+
+  RegisterClickAction(button, std::move(action));
+}
+
+void ProfileMenuViewBase::AddProfileFeatureButton(
+    const gfx::ImageSkia& icon,
+    const base::string16& text,
+    base::RepeatingClosure action) {
+  constexpr int kIconSize = 22;
+
+  // Initialize layout if this is the first time a button is added.
+  if (!profile_features_container_->GetLayoutManager()) {
+    profile_features_container_->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical));
+  }
+
+  views::Button* button = profile_features_container_->AddChildView(
+      std::make_unique<HoverButton>(this, SizeImage(icon, kIconSize), text));
+
   RegisterClickAction(button, std::move(action));
 }
 
@@ -426,6 +446,8 @@ void ProfileMenuViewBase::Reset() {
       CreateBorderedBoxView(std::move(bordered_box_container)));
 
   selectable_profiles_container_ =
+      components->AddChildView(std::make_unique<views::View>());
+  profile_features_container_ =
       components->AddChildView(std::make_unique<views::View>());
 
   // Create a scroll view to hold the components.
