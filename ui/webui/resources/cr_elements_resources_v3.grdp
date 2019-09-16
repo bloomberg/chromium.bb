@@ -126,6 +126,11 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_TOAST_MANAGER_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_toast/cr_toast_manager.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_TOGGLE_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_toggle/cr_toggle.m.js"
          use_base_dir="false"

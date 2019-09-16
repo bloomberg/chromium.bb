@@ -161,6 +161,7 @@ group("polymer3_elements") {
     "cr_search_field:cr_search_field_module",
     "cr_search_field:modulize",
     "cr_tabs:cr_tabs_module",
+    "cr_toast:cr_toast_manager_module",
     "cr_toast:cr_toast_module",
     "cr_toggle:cr_toggle_module",
     "cr_toolbar:cr_toolbar_module",
