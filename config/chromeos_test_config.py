@@ -524,10 +524,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'vm_tests':[],
       },
 
-      'chell-chrome-pfq': {
-          'hw_tests': [hw_test_list.AFDORecordTest()]
-      },
-
       'cyan-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
