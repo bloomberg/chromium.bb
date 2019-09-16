@@ -2340,6 +2340,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kefka-kernelnext',
       'kevin-arc64',
       'kumo',
+      'puff',
       'veyron_jerry-kernelnext',
       'veyron_minnie-kernelnext',
       'volteer',
@@ -4026,15 +4027,11 @@ def ApplyCustomOverrides(site_config):
           'sign_types': ['recovery', 'factory'],
       },
 
-      'sarien-release': {
+      'flapjack-release': {
           'sign_types': ['recovery', 'factory'],
       },
 
       'hatch-release': {
-          'sign_types': ['recovery', 'factory'],
-      },
-
-      'flapjack-release': {
           'sign_types': ['recovery', 'factory'],
       },
 
@@ -4046,11 +4043,19 @@ def ApplyCustomOverrides(site_config):
           'sign_types': ['recovery', 'factory'],
       },
 
-      'zork-release': {
+      'puff-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+
+      'sarien-release': {
           'sign_types': ['recovery', 'factory'],
       },
 
       'volteer-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+
+      'zork-release': {
           'sign_types': ['recovery', 'factory'],
       },
 

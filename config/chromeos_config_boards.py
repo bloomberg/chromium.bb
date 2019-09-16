@@ -140,6 +140,7 @@ x86_internal_release_boards = frozenset([
     'octopus',
     'orco',
     'poppy',
+    'puff',
     'pyro',
     'rammus',
     'reef',

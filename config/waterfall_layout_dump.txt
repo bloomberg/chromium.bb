@@ -107,6 +107,7 @@
     nyan_kitty-paladin
     octavius-paladin
     octopus-paladin
+    puff-paladin
     rammus-paladin
     reef-paladin
     romer-paladin
@@ -2470,6 +2471,7 @@
     nyan_kitty-paladin-tryjob
     octavius-paladin-tryjob
     octopus-paladin-tryjob
+    puff-paladin-tryjob
     rammus-paladin-tryjob
     reef-paladin-tryjob
     romer-paladin-tryjob
@@ -2961,6 +2963,23 @@
   poppy-tot-chromium-pfq-informational-tryjob
   poppy-unittest-stress
   pre-cq-launcher-tryjob
+  puff-chrome-pfq-tryjob
+  puff-chromium-pfq-tryjob
+  puff-compile-only-pre-cq
+  puff-full-tryjob
+  puff-llvm-next-toolchain-tryjob
+  puff-llvm-toolchain-tryjob
+  puff-no-vmtest-pre-cq
+  puff-paladin-tryjob
+  puff-payloads-tryjob
+  puff-pre-cq
+  puff-release-afdo-generate-tryjob
+  puff-release-afdo-tryjob
+  puff-release-afdo-use-tryjob
+  puff-release-tryjob
+  puff-tot-chrome-pfq-informational-tryjob
+  puff-tot-chromium-pfq-informational-tryjob
+  puff-unittest-stress
   pyro-chrome-pfq-tryjob
   pyro-chromium-pfq-tryjob
   pyro-compile-only-pre-cq
