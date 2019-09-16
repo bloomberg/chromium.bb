@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">»Programska oprema v računalniku Chromu preprečuje vzpostavitev varne povezave s spletom« (samo računalniki s sistemom Windows)</translation>
 <translation id="1294154142200295408">Različice ukazne vrstice</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
+<translation id="1298536327547837046">Pregledovanje glede zlonamerne programske opreme</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Poskusite izbrisati piškotke<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Zastarele funkcije</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -574,6 +575,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Brez}=1{1 spletno mesto }one{# spletno mesto }two{# spletni mesti }few{# spletna mesta }other{# spletnih mest }}</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="3973234410852337861">Spletno mesto <ph name="HOST_NAME" /> je blokirano</translation>
+<translation id="3981540111851280311">Domena <ph name="ENROLLMENT_DOMAIN" /> je v brskalniku omogočila Chromovo funkcijo zaščite pred grožnjami za podjetja. Chromova funkcija zaščite pred grožnjami za podjetja ima dostop do nekaterih vaših podatkov.</translation>
 <translation id="3987940399970879459">Manj kot 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 spletna stran v bližini}one{# spletna stran v bližini}two{# spletni strani v bližini}few{# spletne strani v bližini}other{# spletnih strani v bližini}}</translation>
 <translation id="4030383055268325496">&amp;Razveljavi dodajanje</translation>
@@ -642,6 +644,7 @@
 <translation id="4277028893293644418">Ponastavi geslo</translation>
 <translation id="4279811152705618813">Vašo napravo <ph name="DEVICE_TYPE" /> upravlja domena <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ta kartica je shranjena v Google Računu}one{Te kartice so shranjene v Google Računu}two{Te kartice so shranjene v Google Računu}few{Te kartice so shranjene v Google Računu}other{Te kartice so shranjene v Google Računu}}</translation>
+<translation id="428847186335018806">Pregledovanje datotek, ki jih prenesete iz Chroma ali naložite vanj.</translation>
 <translation id="42981349822642051">Razširi</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">Preklopi</translation>
@@ -1025,6 +1028,7 @@
 <translation id="6433490469411711332">Uredi informacije o stiku</translation>
 <translation id="6433595998831338502">Spletno mesto <ph name="HOST_NAME" /> ni dovolilo povezave.</translation>
 <translation id="6434309073475700221">Zavrzi</translation>
+<translation id="6435221585574090192">Skrbniku posredujte podatke o varnostnih dogodkih, ki jih je označila Chromova funkcija zaščite pred grožnjami za podjetja. Ti lahko vključujejo URL-je strani, ime datoteke in metapodatke o datoteki, uporabniško ime v napravi in uporabniško ime v Chromu.</translation>
 <translation id="6440503408713884761">Prezrto</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Dodajanje več podatkov</translation>
@@ -1069,6 +1073,7 @@
 <translation id="6671697161687535275">Želite predlog obrazca odstraniti iz Chromiuma?</translation>
 <translation id="6685834062052613830">Odjavite se in dokončajte nastavitev</translation>
 <translation id="6689271823431384964">Chrome ponuja shranjevanje kartic v račun za Google, ker ste prijavljeni. To lahko spremenite v nastavitvah. Ime imetnika računa je iz vašega računa.</translation>
+<translation id="6707256370811247129">Pregled vsebine predpomnilnika in datotek, ki jih prenesete iz Chroma ali naložite vanj.</translation>
 <translation id="6710213216561001401">Nazaj</translation>
 <translation id="6710594484020273272">&lt;Vnesite iskalno poizvedbo&gt;</translation>
 <translation id="671076103358959139">Žeton za včlanitev:</translation>
@@ -1087,6 +1092,7 @@
 <translation id="681021252041861472">Obvezno polje</translation>
 <translation id="6810899417690483278">ID za prilagajanje</translation>
 <translation id="6825578344716086703">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar ima strežnik potrdilo, podpisano s šibkim podpisnim algoritmom (kot je SHA-1). To pomeni, da so varnostne poverilnice, ki jih je poslal strežnik, morda ponarejene in strežnik morda ni tisti, ki ga pričakujete (morda komunicirate z napadalcem).</translation>
+<translation id="6826370046007623921">Preprečevanje izgube podatkov</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6839929833149231406">Območje</translation>
 <translation id="6852204201400771460">Želite znova naložiti aplikacijo?</translation>
@@ -1236,6 +1242,7 @@ Dodatne podrobnosti:
 <translation id="7542995811387359312">Samodejno izpolnjevanje podatkov o kreditni kartici je onemogočeno, ker ta obrazec ne uporablja varne povezave.</translation>
 <translation id="7548892272833184391">Odpravljanje napak s povezavo</translation>
 <translation id="7549584377607005141">Za pravilen prikaz te strani so potrebni podatki, ki ste jih vnesli prej. Podatke lahko pošljete še enkrat, vendar se bodo s tem ponovila vsa prejšnja dejanja strani.</translation>
+<translation id="7550637293666041147">Uporabniško ime v napravi in uporabniško ime v Chromu</translation>
 <translation id="7552846755917812628">Poskusite te nasvete:</translation>
 <translation id="7554791636758816595">Nov zavihek</translation>
 <translation id="7564049878696755256">Izgubite lahko dostop do računa za <ph name="ORG_NAME" /> ali postanete žrtev kraje identitete. Chrome priporoča, da spremenite geslo.</translation>
@@ -1250,6 +1257,7 @@ Dodatne podrobnosti:
 <translation id="7610193165460212391">Vrednost je zunaj obsega <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Veljavnost do: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Podatke, ki so šifrirani z drugo različico gesla za Google Račun, že imate. Geslo vnesite spodaj.</translation>
+<translation id="7625784245512586808">Chromova funkcija zaščite pred grožnjami za podjetja</translation>
 <translation id="7633909222644580952">Podatki o delovanju in poročila o zrušitvah</translation>
 <translation id="7637571805876720304">Želite kreditno kartico odstraniti iz Chromiuma?</translation>
 <translation id="7638605456503525968">Serijska vrata</translation>
@@ -1360,6 +1368,7 @@ Dodatne podrobnosti:
 <translation id="8211406090763984747">Povezava je varna</translation>
 <translation id="8218327578424803826">Dodeljena lokacija:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
+<translation id="8220639454292072926">Poročanje za podjetja</translation>
 <translation id="8225771182978767009">Oseba, ki je nastavila ta računalnik, je blokirala to spletno mesto.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Odpiranje strani v novem zavihku brez beleženja zgodovine.</translation>
@@ -1506,6 +1515,7 @@ Dodatne podrobnosti:
 <translation id="9080712759204168376">Povzetek naročila</translation>
 <translation id="9089260154716455634">Pravilnik za nedejavnost:</translation>
 <translation id="9095388113577226029">Več jezikov …</translation>
+<translation id="9098981495403789647">Skrbnik je v brskalniku omogočil Chromovo funkcijo zaščite pred grožnjami za podjetja. Chromova funkcija zaščite pred grožnjami za podjetja ima dostop do nekaterih vaših podatkov.</translation>
 <translation id="9103872766612412690">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chromium tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to vrnilo nenavadne in nepravilne poverilnice. Do tega lahko pride, če se napadalec lažno predstavlja za spletno mesto <ph name="SITE" /> ali če je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, saj je Chromium pred izmenjavo podatkov prekinil povezavo.</translation>
 <translation id="9106062320799175032">Dodajanje naslova za izstavitev računa</translation>
 <translation id="9114524666733003316">Potrjevanje kartice …</translation>

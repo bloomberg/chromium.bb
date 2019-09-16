@@ -479,6 +479,7 @@
 <translation id="1698122934742150150">Solo a la sesión de incógnito actual</translation>
 <translation id="1698650002254827833">No se ha podido cargar la lista de aplicaciones. Vuelve a intentarlo.</translation>
 <translation id="1701062906490865540">Eliminar este perfil</translation>
+<translation id="1703331064825191675">No vuelvas a preocuparte por tus contraseñas</translation>
 <translation id="1706586824377653884">Añadido por tu administrador</translation>
 <translation id="1706625117072057435">Niveles de zoom</translation>
 <translation id="1708338024780164500">(Inactiva)</translation>
@@ -528,6 +529,7 @@
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;Nueva ventana</translation>
 <translation id="1766575458646819543">Has salido de la pantalla completa</translation>
+<translation id="1766957085594317166">Guarda las contraseñas de forma segura en tu cuenta de Google y no tendrás que escribirlas nunca más.</translation>
 <translation id="1768278914020124551">¡Vaya! No se ha podido establecer conexión con el servidor de inicio de sesión. Comprueba tu conexión de red y el nombre de dominio e inténtalo de nuevo.</translation>
 <translation id="1769104665586091481">Abrir enlace en una &amp;ventana nueva</translation>
 <translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
@@ -1877,6 +1879,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3748026146096797577">No conectado</translation>
 <translation id="3752582316358263300">Aceptar...</translation>
 <translation id="3752673729237782832">Mis dispositivos</translation>
+<translation id="3753033997400164841">Guárdalas una vez. Úsalas en todos sitios.</translation>
 <translation id="3755411799582650620">Tu <ph name="PHONE_NAME" /> ya puede desbloquear este <ph name="DEVICE_TYPE" /> también.</translation>
 <translation id="375636864092143889">El sitio web está usando tu micrófono</translation>
 <translation id="3757733214359997190">No se ha encontrado ningún sitio web</translation>
@@ -2209,6 +2212,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4232375817808480934">Configurar Kerberos</translation>
 <translation id="4235200303672858594">Toda la pantalla</translation>
 <translation id="4235965441080806197">Cancelar inicio de sesión</translation>
+<translation id="4242145785130247982">No están disponibles varios certificados de cliente</translation>
 <translation id="4242533952199664413">Abrir Configuración</translation>
 <translation id="4242577469625748426">Se ha producido un error al instalar la configuración de política en el dispositivo (<ph name="VALIDATION_ERROR" />).</translation>
 <translation id="4244238649050961491">Buscar más aplicaciones para el lápiz óptico</translation>
@@ -2667,6 +2671,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4957949153200969297">Habilita solo las funciones relacionadas con la sincronización de <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="4959262764292427323">Las contraseñas se guardan en tu cuenta de Google para que puedas utilizarlas en cualquier dispositivo</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">Tu administrador ha instalado esta aplicación.</translation>
 <translation id="4964455510556214366">Disposición</translation>
 <translation id="4964673849688379040">Comprobando...</translation>
 <translation id="4965808351167763748">¿Seguro que quieres configurar este dispositivo para que utilice Hangouts Meet?</translation>
@@ -2922,6 +2927,7 @@ Asegúrate de que este sitio web sea de confianza antes de acceder al modo de re
 <translation id="5360150013186312835">Mostrar en la barra de herramientas</translation>
 <translation id="5362741141255528695">Selecciona un archivo de clave privada.</translation>
 <translation id="5363109466694494651">Powerwash y cambio a versión anterior</translation>
+<translation id="5365716706805792666">Google puede comprobar si tus contraseñas se han visto afectadas por una quiebra de seguridad de datos. Esta función se activará cuando inicies sesión con tu cuenta de Google.</translation>
 <translation id="5365881113273618889">La carpeta que has seleccionado contiene archivos confidenciales. ¿Seguro que quieres conceder a "<ph name="APP_NAME" />" acceso de escritura permanente a esta carpeta?</translation>
 <translation id="5367091008316207019">Leyendo archivo...</translation>
 <translation id="5368720394188453070">Tu teléfono está bloqueado. Desbloquéalo para acceder.</translation>
@@ -3876,6 +3882,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6769712124046837540">Añadiendo impresora...</translation>
 <translation id="6770664076092644100">Verificar mediante NFC</translation>
 <translation id="6771503742377376720">Es una entidad emisora de certificados.</translation>
+<translation id="6775163072363532304">Aquí aparecerán los dispositivos disponibles.</translation>
 <translation id="6777817260680419853">Redirección bloqueada</translation>
 <translation id="6778737459546443941">Uno de tus padres aún no lo ha aprobado</translation>
 <translation id="677965093459947883">Muy pequeño</translation>
@@ -4336,6 +4343,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7441830548568730290">Otros usuarios</translation>
 <translation id="7442465037756169001">Ya puedes configurar el hardware de Hangouts Meet.</translation>
 <translation id="744341768939279100">Crear un nuevo perfil</translation>
+<translation id="7443806024147773267">Accede cuando quieras a tus contraseñas con tu cuenta de Google</translation>
 <translation id="7444046173054089907">Este sitio web se ha bloqueado</translation>
 <translation id="7444983668544353857">Inhabilitar <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Instalar aplicaciones automáticamente</translation>
@@ -4380,7 +4388,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7506541170099744506">El dispositivo <ph name="DEVICE_TYPE" /> se ha registrado correctamente para ser administrado por la empresa.</translation>
 <translation id="7507930499305566459">Certificado de respuesta de estado</translation>
 <translation id="7508054832109420082">Conceder acceso a impresoras</translation>
-<translation id="7510943789645525906">Te avisa si una de tus contraseñas se ha visto afectada por una quiebra de seguridad de datos</translation>
+<translation id="7510943789645525906">Te avisa si alguna de tus contraseñas se ha visto afectada por una quiebra de seguridad de datos</translation>
 <translation id="7513029293694390567">Permite iniciar sesión automáticamente en sitios web con credenciales almacenadas. Si esta función está inhabilitada, se te solicitará la confirmación cada vez que intentes iniciar sesión en un sitio web.</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -4749,6 +4757,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8014154204619229810">La herramienta de actualización se está ejecutando en este momento. Actualiza en un minuto para comprobarlo de nuevo.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> no puede volver a la versión instalada previamente. Vuelve a intentarlo para hacer un Powerwash del dispositivo.</translation>
 <translation id="8014210335923519270">Envía información y uso del sistema a Google para mejorar <ph name="IDS_SHORT_PRODUCT_NAME" /> y su seguridad</translation>
+<translation id="8015780634880457457">Google puede comprobar si tus contraseñas se han vistos afectadas por una quiebra de seguridad de datos</translation>
 <translation id="8016266267177410919">Almacenamiento temporal</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Se ha editado el acceso directo</translation>
@@ -4867,6 +4876,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8188389033983459049">Comprueba los ajustes del dispositivo y actívalo para continuar</translation>
 <translation id="8190193592390505034">Conectando con <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Administrar tus aplicaciones, extensiones y temas</translation>
+<translation id="819464600477418284">No se puede desinstalar esta aplicación porque forma parte de Chrome OS.</translation>
 <translation id="8195027750202970175">Tamaño en disco</translation>
 <translation id="8198323535106903877">Vamos a instalarte estas <ph name="NUMBER_OF_APPS" /> aplicaciones</translation>
 <translation id="8199300056570174101">Propiedades de los dispositivos y las redes (servicio)</translation>
@@ -4927,6 +4937,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
     <ph name="BEGIN_PARAGRAPH2" />Si la opción se desactiva, esto no afectará a la capacidad del dispositivo de enviar la información necesaria para recibir servicios esenciales, como actualizaciones del sistema y funciones de seguridad.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />El propietario puede controlar esta función en Ajustes &gt; Configuración avanzada &gt; Enviar automáticamente los datos de uso y diagnóstico a Google.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Si has activado la opción Actividad en la Web y en Aplicaciones, es posible que estos datos se guarden en la cuenta de Google de tu hijo. Consulta más información sobre estos ajustes y sobre cómo configurarlos en families.google.com.<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">Certificado de cliente no válido</translation>
 <translation id="8270242299912238708">Documentos PDF</translation>
 <translation id="827097179112817503">Mostrar el botón de la página de inicio</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Se ha eliminado 1 marcador}other{Se han eliminado # marcadores}}</translation>
@@ -5340,6 +5351,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8874184842967597500">No conectado</translation>
 <translation id="8876307312329369159">Este ajuste no se puede cambiar en una sesión de demostración.</translation>
 <translation id="8877448029301136595">[directorio principal]</translation>
+<translation id="8879220587046205278">Es posible que las aplicaciones de Google Play necesiten acceso completo al sistema de archivos para leer y escribir ficheros en los dispositivos de almacenamiento externo. Los usuarios de la unidad externa podrán ver los archivos y las carpetas que se hayan creado en el dispositivo.</translation>
 <translation id="8879284080359814990">&amp;Mostrar como pestaña</translation>
 <translation id="8879921471468674457">Recordar información de inicio de sesión</translation>
 <translation id="8881020143150461183">Vuelve a intentarlo. Si necesitas asistencia técnica, ponte en contacto con <ph name="CARRIER_NAME" />.</translation>
@@ -5462,6 +5474,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9044646465488564462">Error al establecer conexión con la red: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Envía la dirección web de la página a la que intentas acceder a Google</translation>
 <translation id="9046895021617826162">Error de conexión</translation>
+<translation id="904814878483208983">Ve a Ajustes para permitir que las aplicaciones de Google Play tengan acceso completo al sistema de archivos.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
 <translation id="9052208328806230490">Has registrado tus impresoras en <ph name="CLOUD_PRINT_NAME" /> con la cuenta <ph name="EMAIL" />.</translation>
 <translation id="9052404922357793350">Seguir bloqueando</translation>
