@@ -33,6 +33,7 @@
 
 namespace content {
 
+struct GlobalFrameRoutingId;
 class NavigationUIData;
 class SiteInstanceImpl;
 
@@ -67,6 +68,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsExternalProtocol() override;
   net::Error GetNetErrorCode() override;
   RenderFrameHostImpl* GetRenderFrameHost() override;
+  GlobalFrameRoutingId GetPreviousRenderFrameHostId() override;
   bool IsSameDocument() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;

@@ -277,4 +277,8 @@ const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {
   return navigation_request_->GetProxyServer();
 }
 
+GlobalFrameRoutingId NavigationHandleImpl::GetPreviousRenderFrameHostId() {
+  return navigation_request_->GetPreviousRenderFrameHostId();
+}
+
 }  // namespace content
