@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
@@ -237,10 +238,11 @@ void CheckClientDownloadRequest::MaybeUploadBinary(
       return;
 
     auto request = std::make_unique<DownloadItemRequest>(
-        item_, base::BindOnce(&MaybeReportDownloadDeepScanningVerdict, profile,
-                              item_->GetURL(),
-                              item_->GetTargetFilePath().AsUTF8Unsafe(),
-                              item_->GetHash()));
+        item_,
+        base::BindOnce(
+            &MaybeReportDownloadDeepScanningVerdict, profile, item_->GetURL(),
+            item_->GetTargetFilePath().AsUTF8Unsafe(),
+            base::HexEncode(item_->GetHash().data(), item_->GetHash().size())));
 
     if (upload_for_dlp) {
       DlpDeepScanningClientRequest dlp_request;
