@@ -18013,6 +18013,7 @@ Called by update_net_error_codes.py.-->
   <int value="599" label="DeviceLoginScreenLargeCursorEnabled"/>
   <int value="600" label="DomainsToCheckForMalwareOfUploadedContent"/>
   <int value="601" label="HSTSPolicyBlocklist"/>
+  <int value="604" label="AllowSyncXHRInPageDismissal"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

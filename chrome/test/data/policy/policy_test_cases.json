@@ -2794,6 +2794,12 @@
     ]
   },
 
+  "AllowSyncXHRInPageDismissal": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "AllowSyncXHRInPageDismissal": true },
+    "pref_mappings": [{ "pref": "allow_sync_xhr_in_page_dismissal" }]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

@@ -2150,6 +2150,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           prefs->GetBoolean(prefs::kAllowPopupsDuringPageUnload)) {
         command_line->AppendSwitch(switches::kAllowPopupsDuringPageUnload);
       }
+
+      if (prefs->HasPrefPath(prefs::kAllowSyncXHRInPageDismissal) &&
+          prefs->GetBoolean(prefs::kAllowSyncXHRInPageDismissal)) {
+        command_line->AppendSwitch(switches::kAllowSyncXHRInPageDismissal);
+      }
     }
 
     if (IsAutoReloadEnabled())
