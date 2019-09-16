@@ -213,7 +213,7 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="AdPageLoad">
+<event name="AdPageLoad" singular="True">
   <owner>johnidel@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>
