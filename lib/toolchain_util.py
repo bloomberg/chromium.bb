@@ -1196,8 +1196,8 @@ def CheckAFDOArtifactExists(buildroot, board, target):
       merged_name = _GetCombinedAFDOName(
           os.path.splitext(cwp_afdo)[0], arch,
           os.path.splitext(benchmark_afdo)[0])
-      dest_url = os.path.join(RELEASE_AFDO_GS_URL_VETTED, arch)
-      all_exist &= gs_context.Exists(os.path.join(dest_url, merged_name))
+      all_exist &= gs_context.Exists(
+          os.path.join(RELEASE_AFDO_GS_URL_VETTED, merged_name))
     return all_exist
 
   raise ValueError('Unsupported target %s to check' % target)
