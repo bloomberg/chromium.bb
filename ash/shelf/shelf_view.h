@@ -283,6 +283,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Handles the gesture event. Returns true if |event| has been consumed.
   bool HandleGestureEvent(const ui::GestureEvent* event);
 
+  // Different from ShouldShowTooltipForView, |view| here must be a child view.
+  bool ShouldShowTooltipForChildView(const views::View* child_view) const;
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
@@ -553,9 +556,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Different from GetTitleForView, |view| here must be a child view.
   base::string16 GetTitleForChildView(const views::View* view) const;
-
-  // Different from ShouldShowTooltipForView, |view| here must be a child view.
-  bool ShouldShowTooltipForChildView(const views::View* child_view) const;
 
   // The model; owned by Launcher.
   ShelfModel* model_;

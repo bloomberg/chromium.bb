@@ -568,8 +568,8 @@ void ScrollableShelfView::OnMouseEvent(ui::MouseEvent* event) {
 void ScrollableShelfView::OnGestureEvent(ui::GestureEvent* event) {
   if (ShouldHandleGestures(*event))
     HandleGestureEvent(event);
-  else
-    shelf_view_->HandleGestureEvent(event);
+  else if (shelf_view_->HandleGestureEvent(event))
+    event->StopPropagation();
 }
 
 const char* ScrollableShelfView::GetClassName() const {
@@ -604,6 +604,11 @@ bool ScrollableShelfView::ShouldShowTooltipForView(
     return false;
 
   if (view->parent() != shelf_view_)
+    return false;
+
+  // The shelf item corresponding to |view| may have been removed from the
+  // model.
+  if (!shelf_view_->ShouldShowTooltipForChildView(view))
     return false;
 
   const gfx::Rect screen_bounds = view->GetBoundsInScreen();
@@ -943,10 +948,16 @@ void ScrollableShelfView::UpdateTappableIconIndices() {
 }
 
 views::View* ScrollableShelfView::FindFirstFocusableChild() {
+  if (shelf_view_->view_model()->view_size() == 0)
+    return nullptr;
+
   return shelf_view_->view_model()->view_at(shelf_view_->first_visible_index());
 }
 
 views::View* ScrollableShelfView::FindLastFocusableChild() {
+  if (shelf_view_->view_model()->view_size() == 0)
+    return nullptr;
+
   return shelf_view_->view_model()->view_at(shelf_view_->last_visible_index());
 }
 

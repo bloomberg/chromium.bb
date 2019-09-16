@@ -969,6 +969,19 @@ bool ShelfView::HandleGestureEvent(const ui::GestureEvent* event) {
   return false;
 }
 
+bool ShelfView::ShouldShowTooltipForChildView(
+    const views::View* child_view) const {
+  DCHECK_EQ(this, child_view->parent());
+
+  if (child_view == overflow_button_)
+    return true;
+  // Don't show a tooltip for a view that's currently being dragged.
+  if (child_view == drag_view_)
+    return false;
+
+  return ShelfItemForView(child_view) && !IsShowingMenuForView(child_view);
+}
+
 // static
 void ShelfView::ConfigureChildView(views::View* view) {
   view->SetPaintToLayer();
@@ -2480,17 +2493,6 @@ base::string16 ShelfView::GetTitleForChildView(const views::View* view) const {
 
   const ShelfItem* item = ShelfItemForView(view);
   return item ? item->title : base::string16();
-}
-
-bool ShelfView::ShouldShowTooltipForChildView(
-    const views::View* child_view) const {
-  if (child_view == overflow_button_)
-    return true;
-  // Don't show a tooltip for a view that's currently being dragged.
-  if (child_view == drag_view_)
-    return false;
-
-  return ShelfItemForView(child_view) && !IsShowingMenuForView(child_view);
 }
 
 }  // namespace ash
