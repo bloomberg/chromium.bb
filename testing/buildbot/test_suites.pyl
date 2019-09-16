@@ -4800,6 +4800,11 @@
       'vr_pixeltests': {},
     },
 
+    'weblayer_android_gtests': {
+      'weblayer_instrumentation_test_apk': {
+      },
+    },
+
     # TODO(crbug.com/888429): Port remaining WebRTC tests to swarming.
     'webrtc_chromium_baremetal_gtests': {
       # Run capture unittests as well since our bots have real webcams.
@@ -5761,6 +5766,7 @@
 
     'mojo_android_gtests': [
       'network_service_android_gtests',
+      'weblayer_android_gtests',
     ],
 
     'mojo_chromiumos_fyi_gtests': [
