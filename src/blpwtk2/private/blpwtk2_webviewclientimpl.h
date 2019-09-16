@@ -178,6 +178,9 @@ class WebViewClientImpl final : public WebViewClient
     void loadStatus(int status);
     void moveAck(int x, int y, int w, int h);
 
+    void setParentStatusUpdate(int status, unsigned int parent);
+        // Notify the client if setParent call succeed by value of status
+
     DISALLOW_COPY_AND_ASSIGN(WebViewClientImpl);
 
   public:

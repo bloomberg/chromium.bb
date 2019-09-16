@@ -169,7 +169,7 @@ class WebView
     virtual void hide() = 0;
         // Hide this WebView.
 
-    virtual void setParent(NativeView parent) = 0;
+    virtual int setParent(NativeView parent) = 0;
         // Reparent this WebView into the specified 'parent'.
 
     virtual void move(int left, int top, int width, int height) = 0;

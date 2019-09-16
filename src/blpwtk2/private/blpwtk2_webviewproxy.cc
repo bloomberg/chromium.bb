@@ -335,10 +335,11 @@ void WebViewProxy::hide()
     d_client->proxy()->hide();
 }
 
-void WebViewProxy::setParent(NativeView parent)
+int WebViewProxy::setParent(NativeView parent)
 {
     DCHECK(Statics::isInApplicationMainThread());
     d_client->setParent(parent);
+    return 0;
 }
 
 void WebViewProxy::move(int left, int top, int width, int height)
@@ -779,6 +780,13 @@ void WebViewProxy::devToolsAgentHostDetached()
 {
     if (d_delegate) {
         d_delegate->devToolsAgentHostDetached(this);
+    }
+}
+
+void WebViewProxy::didParentStatus(int status, NativeView parent)
+{
+    if (d_delegate) {
+        d_delegate->didParentStatus(this, status, parent);
     }
 }
 

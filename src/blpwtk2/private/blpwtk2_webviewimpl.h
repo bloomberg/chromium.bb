@@ -104,7 +104,7 @@ class WebViewImpl final : public WebView,
     int d_hostId;
     ui::Compositor* d_gpuCompositor = nullptr;
 
-    void createWidget(blpwtk2::NativeView parent);
+    int createWidget(blpwtk2::NativeView parent);
 
     // blpwtk2::NativeViewWidgetDelegate overrides
     void onDestroyed(NativeViewWidget* source) override;
@@ -247,7 +247,7 @@ class WebViewImpl final : public WebView,
     void setLogicalFocus(bool focused) override;
     void show() override;
     void hide() override;
-    void setParent(NativeView parent) override;
+    int setParent(NativeView parent) override;
     void move(int left, int top, int width, int height) override;
     void cutSelection() override;
     void copySelection() override;

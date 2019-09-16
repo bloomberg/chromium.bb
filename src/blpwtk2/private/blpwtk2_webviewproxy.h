@@ -74,7 +74,7 @@ class WebViewProxy final : public WebView
     void setLogicalFocus(bool focused) override;
     void show() override;
     void hide() override;
-    void setParent(NativeView parent) override;
+    int setParent(NativeView parent) override;
     void move(int left, int top, int width, int height) override;
     void cutSelection() override;
     void copySelection() override;
@@ -148,6 +148,7 @@ class WebViewProxy final : public WebView
                              const StringRef& url) override;
     void devToolsAgentHostAttached() override;
     void devToolsAgentHostDetached() override;
+    void didParentStatus(int status, NativeView parent) override;
 };
 
 }  // close namespace blpwtk2

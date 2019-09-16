@@ -155,7 +155,7 @@ interface WebViewHost {
     clearTooltip();
         // Force clears the tooltip.
 
-    setParent(uint32 window);
+    setParent(uint32 window) => (int32 status, uint32 parent);
         // Reparent the webview under 'window'.
 
     rootWindowCompositionChanged();

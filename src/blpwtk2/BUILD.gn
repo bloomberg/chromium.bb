@@ -446,7 +446,7 @@ group("blpwtk2_all") {
     "//v8:d8",
     "//base:base_unittests",
     "//:blink_tests",
-#    "//content/test:content_unittests",  # fails to build
+    "//content/test:content_unittests",
     "//cc:cc_unittests",
     "//skia:skia_unittests",
   ]
