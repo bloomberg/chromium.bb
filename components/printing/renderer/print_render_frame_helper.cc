@@ -1110,8 +1110,7 @@ void PrintRenderFrameHelper::DidStartNavigation(
   is_loading_ = true;
 }
 
-void PrintRenderFrameHelper::DidFailProvisionalLoad(
-    const blink::WebURLError& error) {
+void PrintRenderFrameHelper::DidFailProvisionalLoad() {
   DidFinishLoad();
 }
 

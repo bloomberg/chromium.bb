@@ -190,7 +190,7 @@ class PrintRenderFrameHelper
   void DidStartNavigation(
       const GURL& url,
       base::Optional<blink::WebNavigationType> navigation_type) override;
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override;
+  void DidFailProvisionalLoad() override;
   void DidFinishLoad() override;
   void ScriptedPrint(bool user_initiated) override;
   bool OnMessageReceived(const IPC::Message& message) override;

@@ -3031,16 +3031,15 @@ void RenderFrameImpl::DidFailProvisionalLoad(const WebURLError& error,
   //       SSL manager can react to the provisional load failure before being
   //       notified the load stopped.
   //
-  NotifyObserversOfFailedProvisionalLoad(error);
+  NotifyObserversOfFailedProvisionalLoad();
 
   // Notify the browser that we failed a provisional load with an error.
   SendFailedProvisionalLoad(http_method.Ascii(), error, frame_);
 }
 
-void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad(
-    const blink::WebURLError& error) {
+void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad() {
   for (auto& observer : observers_)
-    observer.DidFailProvisionalLoad(error);
+    observer.DidFailProvisionalLoad();
 }
 
 void RenderFrameImpl::LoadNavigationErrorPage(
@@ -3838,7 +3837,7 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   if (commit_params->nav_entry_id == 0) {
     // For renderer initiated navigations, we send out a
     // DidFailProvisionalLoad() notification.
-    NotifyObserversOfFailedProvisionalLoad(error);
+    NotifyObserversOfFailedProvisionalLoad();
 
     // |browser_side_navigation_pending_| can be false if we are committing
     // failed navigation in a different process than it was started, e.g.
