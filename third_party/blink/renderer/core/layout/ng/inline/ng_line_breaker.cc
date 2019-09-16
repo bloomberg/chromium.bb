@@ -324,6 +324,10 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
   position_ = line_info->TextIndent();
 
   overflow_item_index_ = 0;
+
+#if DCHECK_IS_ON()
+  last_rewind_from_item_index_ = last_rewind_to_item_index_ = 0;
+#endif
 }
 
 void NGLineBreaker::NextLine(
@@ -1687,6 +1691,9 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
       Rewind(0, line_info);
     state_ = LineBreakState::kContinue;
     overflow_item_index_ = 0;
+#if DCHECK_IS_ON()
+    last_rewind_from_item_index_ = last_rewind_to_item_index_ = 0;
+#endif
     return;
   }
 
@@ -1709,6 +1716,15 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
 }
 
 void NGLineBreaker::Rewind(unsigned new_end, NGLineInfo* line_info) {
+#if DCHECK_IS_ON()
+  // Detect rewind-loop. If we're trying to rewind to the same index twice,
+  // we're in the infinite loop.
+  DCHECK(item_index_ != last_rewind_from_item_index_ ||
+         new_end != last_rewind_to_item_index_);
+  last_rewind_from_item_index_ = item_index_;
+  last_rewind_to_item_index_ = new_end;
+#endif
+
   NGInlineItemResults& item_results = *line_info->MutableResults();
   DCHECK_LT(new_end, item_results.size());
 
