@@ -233,28 +233,17 @@ void WebviewRpcInstance::OnError(const std::string& error_message) {
 }  // namespace
 
 WebviewAsyncService::WebviewAsyncService(
-    scoped_refptr<base::SingleThreadTaskRunner> webview_task_runner)
-    : webview_task_runner_(std::move(webview_task_runner)) {}
-
-WebviewAsyncService::~WebviewAsyncService() {
-  if (server_) {
-    server_->Shutdown();
-    cq_->Shutdown();
-
-    base::PlatformThread::Join(rpc_thread_);
-  }
+    std::unique_ptr<webview::WebviewService::AsyncService> service,
+    std::unique_ptr<grpc::ServerCompletionQueue> cq,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : ui_task_runner_(std::move(ui_task_runner)),
+      cq_(std::move(cq)),
+      service_(std::move(service)) {
+  base::PlatformThread::Create(0, this, &rpc_thread_);
 }
 
-void WebviewAsyncService::StartWithSocket(const base::FilePath& socket_path) {
-  DCHECK(!server_.get());
-
-  grpc::ServerBuilder builder;
-  builder.AddListeningPort("unix:" + socket_path.value(),
-                           grpc::InsecureServerCredentials());
-  builder.RegisterService(&service_);
-  cq_ = builder.AddCompletionQueue();
-  server_ = builder.BuildAndStart();
-  base::PlatformThread::Create(0, this, &rpc_thread_);
+WebviewAsyncService::~WebviewAsyncService() {
+  base::PlatformThread::Join(rpc_thread_);
 }
 
 void WebviewAsyncService::ThreadMain() {
@@ -263,7 +252,7 @@ void WebviewAsyncService::ThreadMain() {
   void* tag;
   bool ok;
   // This self-deletes.
-  new WebviewRpcInstance(&service_, cq_.get(), webview_task_runner_);
+  new WebviewRpcInstance(service_.get(), cq_.get(), ui_task_runner_);
   // This thread is joined when this service is destroyed.
   while (cq_->Next(&tag, &ok)) {
     reinterpret_cast<GrpcCallback*>(tag)->Run(ok);
