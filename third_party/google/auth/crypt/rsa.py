@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Google Compute Engine authentication."""
-
-from google.auth.compute_engine.credentials import Credentials
-from google.auth.compute_engine.credentials import IDTokenCredentials
+"""RSA cryptography signer and verifier."""
 
 
-__all__ = [
-    'Credentials',
-    'IDTokenCredentials',
-]
+try:
+    # Prefer cryptograph-based RSA implementation.
+    from google.auth.crypt import _cryptography_rsa
+
+    RSASigner = _cryptography_rsa.RSASigner
+    RSAVerifier = _cryptography_rsa.RSAVerifier
+except ImportError:  # pragma: NO COVER
+    # Fallback to pure-python RSA implementation if cryptography is
+    # unavailable.
+    from google.auth.crypt import _python_rsa
+
+    RSASigner = _python_rsa.RSASigner
+    RSAVerifier = _python_rsa.RSAVerifier

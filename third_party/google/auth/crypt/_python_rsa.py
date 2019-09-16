@@ -12,35 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Cryptography helpers for verifying and signing messages.
+"""Pure-Python RSA cryptography implementation.
 
 Uses the ``rsa``, ``pyasn1`` and ``pyasn1_modules`` packages
 to parse PEM files storing PKCS#1 or PKCS#8 keys as well as
 certificates. There is no support for p12 files.
-
-The simplest way to verify signatures is using :func:`verify_signature`::
-
-    cert = open('certs.pem').read()
-    valid = crypt.verify_signature(message, signature, cert)
-
-If you're going to verify many messages with the same certificate, you can use
-:class:`RSAVerifier`::
-
-    cert = open('certs.pem').read()
-    verifier = crypt.RSAVerifier.from_string(cert)
-    valid = verifier.verify(message, signature)
-
-
-To sign messages use :class:`RSASigner` with a private key::
-
-    private_key = open('private_key.pem').read()
-    signer = crypt.RSASigner(private_key)
-    signature = signer.sign(message)
-
 """
-import abc
-import io
-import json
+
+from __future__ import absolute_import
 
 from pyasn1.codec.der import decoder
 from pyasn1_modules import pem
@@ -50,6 +29,7 @@ import rsa
 import six
 
 from google.auth import _helpers
+from google.auth.crypt import base
 
 _POW2 = (128, 64, 32, 16, 8, 4, 2, 1)
 _CERTIFICATE_MARKER = b'-----BEGIN CERTIFICATE-----'
@@ -58,8 +38,6 @@ _PKCS1_MARKER = ('-----BEGIN RSA PRIVATE KEY-----',
 _PKCS8_MARKER = ('-----BEGIN PRIVATE KEY-----',
                  '-----END PRIVATE KEY-----')
 _PKCS8_SPEC = PrivateKeyInfo()
-_JSON_FILE_PRIVATE_KEY = 'private_key'
-_JSON_FILE_PRIVATE_KEY_ID = 'private_key_id'
 
 
 def _bit_list_to_bytes(bit_list):
@@ -84,28 +62,7 @@ def _bit_list_to_bytes(bit_list):
     return bytes(byte_vals)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Verifier(object):
-    """Abstract base class for crytographic signature verifiers."""
-
-    @abc.abstractmethod
-    def verify(self, message, signature):
-        """Verifies a message against a cryptographic signature.
-
-        Args:
-            message (Union[str, bytes]): The message to verify.
-            signature (Union[str, bytes]): The cryptography signature to check.
-
-        Returns:
-            bool: True if message was signed by the private key associated
-            with the public key that this object was constructed with.
-        """
-        # pylint: disable=missing-raises-doc,redundant-returns-doc
-        # (pylint doesn't recognize that this is abstract)
-        raise NotImplementedError('Verify must be implemented')
-
-
-class RSAVerifier(Verifier):
+class RSAVerifier(base.Verifier):
     """Verifies RSA cryptographic signatures using public keys.
 
     Args:
@@ -116,7 +73,7 @@ class RSAVerifier(Verifier):
     def __init__(self, public_key):
         self._pubkey = public_key
 
-    @_helpers.copy_docstring(Verifier)
+    @_helpers.copy_docstring(base.Verifier)
     def verify(self, message, signature):
         message = _helpers.to_bytes(message)
         try:
@@ -157,56 +114,7 @@ class RSAVerifier(Verifier):
         return cls(pubkey)
 
 
-def verify_signature(message, signature, certs):
-    """Verify an RSA cryptographic signature.
-
-    Checks that the provided ``signature`` was generated from ``bytes`` using
-    the private key associated with the ``cert``.
-
-    Args:
-        message (Union[str, bytes]): The plaintext message.
-        signature (Union[str, bytes]): The cryptographic signature to check.
-        certs (Union[Sequence, str, bytes]): The certificate or certificates
-            to use to check the signature.
-
-    Returns:
-        bool: True if the signature is valid, otherwise False.
-    """
-    if isinstance(certs, (six.text_type, six.binary_type)):
-        certs = [certs]
-
-    for cert in certs:
-        verifier = RSAVerifier.from_string(cert)
-        if verifier.verify(message, signature):
-            return True
-    return False
-
-
-@six.add_metaclass(abc.ABCMeta)
-class Signer(object):
-    """Abstract base class for cryptographic signers."""
-
-    @abc.abstractproperty
-    def key_id(self):
-        """Optional[str]: The key ID used to identify this private key."""
-        raise NotImplementedError('Key id must be implemented')
-
-    @abc.abstractmethod
-    def sign(self, message):
-        """Signs a message.
-
-        Args:
-            message (Union[str, bytes]): The message to be signed.
-
-        Returns:
-            bytes: The signature of the message.
-        """
-        # pylint: disable=missing-raises-doc,redundant-returns-doc
-        # (pylint doesn't recognize that this is abstract)
-        raise NotImplementedError('Sign must be implemented')
-
-
-class RSASigner(Signer):
+class RSASigner(base.Signer, base.FromServiceAccountMixin):
     """Signs messages with an RSA private key.
 
     Args:
@@ -221,11 +129,11 @@ class RSASigner(Signer):
         self._key_id = key_id
 
     @property
-    @_helpers.copy_docstring(Signer)
+    @_helpers.copy_docstring(base.Signer)
     def key_id(self):
         return self._key_id
 
-    @_helpers.copy_docstring(Signer)
+    @_helpers.copy_docstring(base.Signer)
     def sign(self, message):
         message = _helpers.to_bytes(message)
         return rsa.pkcs1.sign(message, self._key, 'SHA-256')
@@ -266,43 +174,3 @@ class RSASigner(Signer):
             raise ValueError('No key could be detected.')
 
         return cls(private_key, key_id=key_id)
-
-    @classmethod
-    def from_service_account_info(cls, info):
-        """Creates a Signer instance instance from a dictionary containing
-        service account info in Google format.
-
-        Args:
-            info (Mapping[str, str]): The service account info in Google
-                format.
-
-        Returns:
-            google.auth.crypt.Signer: The constructed signer.
-
-        Raises:
-            ValueError: If the info is not in the expected format.
-        """
-        if _JSON_FILE_PRIVATE_KEY not in info:
-            raise ValueError(
-                'The private_key field was not found in the service account '
-                'info.')
-
-        return cls.from_string(
-            info[_JSON_FILE_PRIVATE_KEY],
-            info.get(_JSON_FILE_PRIVATE_KEY_ID))
-
-    @classmethod
-    def from_service_account_file(cls, filename):
-        """Creates a Signer instance from a service account .json file
-        in Google format.
-
-        Args:
-            filename (str): The path to the service account .json file.
-
-        Returns:
-            google.auth.crypt.Signer: The constructed signer.
-        """
-        with io.open(filename, 'r', encoding='utf-8') as json_file:
-            data = json.load(json_file)
-
-        return cls.from_service_account_info(data)

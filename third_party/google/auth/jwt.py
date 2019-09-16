@@ -21,7 +21,7 @@ See `rfc7519`_ for more details on JWTs.
 
 To encode a JWT use :func:`encode`::
 
-    from google.auth import crypto
+    from google.auth import crypt
     from google.auth import jwt
 
     signer = crypt.Signer(private_key)
@@ -40,13 +40,13 @@ You can also skip verification::
 
 """
 
-import base64
 import collections
 import copy
 import datetime
 import json
 
 import cachetools
+import six
 from six.moves import urllib
 
 from google.auth import _helpers
@@ -85,13 +85,19 @@ def encode(signer, payload, header=None, key_id=None):
         header['kid'] = key_id
 
     segments = [
-        base64.urlsafe_b64encode(json.dumps(header).encode('utf-8')),
-        base64.urlsafe_b64encode(json.dumps(payload).encode('utf-8')),
+        _helpers.unpadded_urlsafe_b64encode(
+            json.dumps(header).encode('utf-8')
+        ),
+        _helpers.unpadded_urlsafe_b64encode(
+            json.dumps(payload).encode('utf-8')
+        ),
     ]
 
     signing_input = b'.'.join(segments)
     signature = signer.sign(signing_input)
-    segments.append(base64.urlsafe_b64encode(signature))
+    segments.append(
+        _helpers.unpadded_urlsafe_b64encode(signature)
+    )
 
     return b'.'.join(segments)
 
@@ -101,8 +107,9 @@ def _decode_jwt_segment(encoded_section):
     section_bytes = _helpers.padded_urlsafe_b64decode(encoded_section)
     try:
         return json.loads(section_bytes.decode('utf-8'))
-    except ValueError:
-        raise ValueError('Can\'t parse segment: {0}'.format(section_bytes))
+    except ValueError as caught_exc:
+        new_exc = ValueError('Can\'t parse segment: {0}'.format(section_bytes))
+        six.raise_from(new_exc, caught_exc)
 
 
 def _unverified_decode(token):
@@ -193,7 +200,7 @@ def decode(token, certs=None, verify=True, audience=None):
     Args:
         token (str): The encoded JWT.
         certs (Union[str, bytes, Mapping[str, Union[str, bytes]]]): The
-            certificate used to validate the JWT signatyre. If bytes or string,
+            certificate used to validate the JWT signature. If bytes or string,
             it must the the public key certificate in PEM format. If a mapping,
             it must be a mapping of key IDs to public key certificates in PEM
             format. The mapping must contain the same key ID that's specified
@@ -436,7 +443,7 @@ class Credentials(google.auth.credentials.Signing,
         new_additional_claims = copy.deepcopy(self._additional_claims)
         new_additional_claims.update(additional_claims or {})
 
-        return Credentials(
+        return self.__class__(
             self._signer,
             issuer=issuer if issuer is not None else self._issuer,
             subject=subject if subject is not None else self._subject,
@@ -641,7 +648,7 @@ class OnDemandCredentials(
         new_additional_claims = copy.deepcopy(self._additional_claims)
         new_additional_claims.update(additional_claims or {})
 
-        return OnDemandCredentials(
+        return self.__class__(
             self._signer,
             issuer=issuer if issuer is not None else self._issuer,
             subject=subject if subject is not None else self._subject,
@@ -736,7 +743,7 @@ class OnDemandCredentials(
         parts = urllib.parse.urlsplit(url)
         # Strip query string and fragment
         audience = urllib.parse.urlunsplit(
-            (parts.scheme, parts.netloc, parts.path, None, None))
+            (parts.scheme, parts.netloc, parts.path, "", ""))
         token = self._get_jwt_for_audience(audience)
         self.apply(headers, token=token)
 

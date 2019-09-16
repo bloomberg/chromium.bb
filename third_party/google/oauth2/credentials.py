@@ -31,12 +31,22 @@ Authorization Code grant flow.
 .. _rfc6749 section 4.1: https://tools.ietf.org/html/rfc6749#section-4.1
 """
 
+import io
+import json
+
+import six
+
 from google.auth import _helpers
 from google.auth import credentials
+from google.auth import exceptions
 from google.oauth2 import _client
 
 
-class Credentials(credentials.Scoped, credentials.Credentials):
+# The Google OAuth 2.0 token endpoint. Used for authorized user credentials.
+_GOOGLE_OAUTH2_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token'
+
+
+class Credentials(credentials.ReadOnlyScoped, credentials.Credentials):
     """Credentials using OAuth 2.0 access and refresh tokens."""
 
     def __init__(self, token, refresh_token=None, id_token=None,
@@ -57,10 +67,13 @@ class Credentials(credentials.Scoped, credentials.Credentials):
             client_secret(str): The OAuth 2.0 client secret. Must be specified
                 for refresh, can be left as None if the token can not be
                 refreshed.
-            scopes (Sequence[str]): The scopes that were originally used
-                to obtain authorization. This is a purely informative parameter
-                that can be used by :meth:`has_scopes`. OAuth 2.0 credentials
-                can not request additional scopes after authorization.
+            scopes (Sequence[str]): The scopes used to obtain authorization.
+                This parameter is used by :meth:`has_scopes`. OAuth 2.0
+                credentials can not request additional scopes after
+                authorization. The scopes must be derivable from the refresh
+                token if refresh information is provided (e.g. The refresh
+                token scopes are a superset of this or contain a wild card
+                scope like 'https://www.googleapis.com/auth/any-api').
         """
         super(Credentials, self).__init__()
         self.token = token
@@ -109,23 +122,87 @@ class Credentials(credentials.Scoped, credentials.Credentials):
         the initial token is requested and can not be changed."""
         return False
 
-    def with_scopes(self, scopes):
-        """Unavailable, OAuth 2.0 credentials can not be re-scoped.
-
-        OAuth 2.0 credentials have their scopes set when the initial token is
-        requested and can not be changed.
-        """
-        raise NotImplementedError(
-            'OAuth 2.0 Credentials can not modify their scopes.')
-
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):
+        if (self._refresh_token is None or
+                self._token_uri is None or
+                self._client_id is None or
+                self._client_secret is None):
+            raise exceptions.RefreshError(
+                'The credentials do not contain the necessary fields need to '
+                'refresh the access token. You must specify refresh_token, '
+                'token_uri, client_id, and client_secret.')
+
         access_token, refresh_token, expiry, grant_response = (
             _client.refresh_grant(
                 request, self._token_uri, self._refresh_token, self._client_id,
-                self._client_secret))
+                self._client_secret, self._scopes))
 
         self.token = access_token
         self.expiry = expiry
         self._refresh_token = refresh_token
         self._id_token = grant_response.get('id_token')
+
+        if self._scopes and 'scopes' in grant_response:
+            requested_scopes = frozenset(self._scopes)
+            granted_scopes = frozenset(grant_response['scopes'].split())
+            scopes_requested_but_not_granted = (
+                requested_scopes - granted_scopes)
+            if scopes_requested_but_not_granted:
+                raise exceptions.RefreshError(
+                    'Not all requested scopes were granted by the '
+                    'authorization server, missing scopes {}.'.format(
+                        ', '.join(scopes_requested_but_not_granted)))
+
+    @classmethod
+    def from_authorized_user_info(cls, info, scopes=None):
+        """Creates a Credentials instance from parsed authorized user info.
+
+        Args:
+            info (Mapping[str, str]): The authorized user info in Google
+                format.
+            scopes (Sequence[str]): Optional list of scopes to include in the
+                credentials.
+
+        Returns:
+            google.oauth2.credentials.Credentials: The constructed
+                credentials.
+
+        Raises:
+            ValueError: If the info is not in the expected format.
+        """
+        keys_needed = set(('refresh_token', 'client_id', 'client_secret'))
+        missing = keys_needed.difference(six.iterkeys(info))
+
+        if missing:
+            raise ValueError(
+                'Authorized user info was not in the expected format, missing '
+                'fields {}.'.format(', '.join(missing)))
+
+        return cls(
+            None,  # No access token, must be refreshed.
+            refresh_token=info['refresh_token'],
+            token_uri=_GOOGLE_OAUTH2_TOKEN_ENDPOINT,
+            scopes=scopes,
+            client_id=info['client_id'],
+            client_secret=info['client_secret'])
+
+    @classmethod
+    def from_authorized_user_file(cls, filename, scopes=None):
+        """Creates a Credentials instance from an authorized user json file.
+
+        Args:
+            filename (str): The path to the authorized user json file.
+            scopes (Sequence[str]): Optional list of scopes to include in the
+                credentials.
+
+        Returns:
+            google.oauth2.credentials.Credentials: The constructed
+                credentials.
+
+        Raises:
+            ValueError: If the file is not in the expected format.
+        """
+        with io.open(filename, 'r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+            return cls.from_authorized_user_info(data, scopes)

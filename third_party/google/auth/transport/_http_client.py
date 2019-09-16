@@ -17,6 +17,7 @@
 import logging
 import socket
 
+import six
 from six.moves import http_client
 from six.moves import urllib
 
@@ -94,7 +95,7 @@ class Request(transport.Request):
                 'http.client transport only supports the http scheme, {}'
                 'was specified'.format(parts.scheme))
 
-        connection = http_client.HTTPConnection(parts.netloc)
+        connection = http_client.HTTPConnection(parts.netloc, timeout=timeout)
 
         try:
             _LOGGER.debug('Making request: %s %s', method, url)
@@ -104,8 +105,9 @@ class Request(transport.Request):
             response = connection.getresponse()
             return Response(response)
 
-        except (http_client.HTTPException, socket.error) as exc:
-            raise exceptions.TransportError(exc)
+        except (http_client.HTTPException, socket.error) as caught_exc:
+            new_exc = exceptions.TransportError(caught_exc)
+            six.raise_from(new_exc, caught_exc)
 
         finally:
             connection.close()

@@ -32,11 +32,17 @@ except ImportError:  # pragma: NO COVER
 
 try:
     import urllib3
-except ImportError:  # pragma: NO COVER
-    raise ImportError(
-        'The urllib3 library is not installed, please install the urllib3 '
-        'package to use the urllib3 transport.')
-import urllib3.exceptions
+except ImportError as caught_exc:  # pragma: NO COVER
+    import six
+    six.raise_from(
+        ImportError(
+            'The urllib3 library is not installed, please install the '
+            'urllib3 package to use the urllib3 transport.'
+        ),
+        caught_exc,
+    )
+import six
+import urllib3.exceptions  # pylint: disable=ungrouped-imports
 
 from google.auth import exceptions
 from google.auth import transport
@@ -126,8 +132,9 @@ class Request(transport.Request):
             response = self.http.request(
                 method, url, body=body, headers=headers, **kwargs)
             return _Response(response)
-        except urllib3.exceptions.HTTPError as exc:
-            raise exceptions.TransportError(exc)
+        except urllib3.exceptions.HTTPError as caught_exc:
+            new_exc = exceptions.TransportError(caught_exc)
+            six.raise_from(new_exc, caught_exc)
 
 
 def _make_default_http():
@@ -178,16 +185,22 @@ class AuthorizedHttp(urllib3.request.RequestMethods):
         if http is None:
             http = _make_default_http()
 
-        self.http = http
         self.credentials = credentials
+        self.http = http
         self._refresh_status_codes = refresh_status_codes
         self._max_refresh_attempts = max_refresh_attempts
         # Request instance used by internal methods (for example,
         # credentials.refresh).
         self._request = Request(self.http)
 
+        super(AuthorizedHttp, self).__init__()
+
     def urlopen(self, method, url, body=None, headers=None, **kwargs):
         """Implementation of urllib3's urlopen."""
+        # pylint: disable=arguments-differ
+        # We use kwargs to collect additional args that we don't need to
+        # introspect here. However, we do explicitly collect the two
+        # positional arguments.
 
         # Use a kwarg for this instead of an attribute to maintain
         # thread-safety.

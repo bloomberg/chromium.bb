@@ -26,11 +26,13 @@ For more information about the token endpoint, see
 import datetime
 import json
 
+import six
 from six.moves import http_client
 from six.moves import urllib
 
 from google.auth import _helpers
 from google.auth import exceptions
+from google.auth import jwt
 
 _URLENCODED_CONTENT_TYPE = 'application/x-www-form-urlencoded'
 _JWT_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
@@ -100,13 +102,23 @@ def _token_endpoint_request(request, token_uri, body):
         'content-type': _URLENCODED_CONTENT_TYPE,
     }
 
-    response = request(
-        method='POST', url=token_uri, headers=headers, body=body)
+    retry = 0
+    # retry to fetch token for maximum of two times if any internal failure
+    # occurs.
+    while True:
+        response = request(
+            method='POST', url=token_uri, headers=headers, body=body)
+        response_body = response.data.decode('utf-8')
 
-    response_body = response.data.decode('utf-8')
-
-    if response.status != http_client.OK:
-        _handle_error_response(response_body)
+        if response.status == http_client.OK:
+            break
+        else:
+            error_desc = json.loads(
+                response_body).get('error_description') or ''
+            if error_desc == 'internal_failure' and retry < 1:
+                retry += 1
+                continue
+            _handle_error_response(response_body)
 
     response_data = json.loads(response_body)
 
@@ -144,16 +156,63 @@ def jwt_grant(request, token_uri, assertion):
 
     try:
         access_token = response_data['access_token']
-    except KeyError:
-        raise exceptions.RefreshError(
+    except KeyError as caught_exc:
+        new_exc = exceptions.RefreshError(
             'No access token in response.', response_data)
+        six.raise_from(new_exc, caught_exc)
 
     expiry = _parse_expiry(response_data)
 
     return access_token, expiry, response_data
 
 
-def refresh_grant(request, token_uri, refresh_token, client_id, client_secret):
+def id_token_jwt_grant(request, token_uri, assertion):
+    """Implements the JWT Profile for OAuth 2.0 Authorization Grants, but
+    requests an OpenID Connect ID Token instead of an access token.
+
+    This is a variant on the standard JWT Profile that is currently unique
+    to Google. This was added for the benefit of authenticating to services
+    that require ID Tokens instead of access tokens or JWT bearer tokens.
+
+    Args:
+        request (google.auth.transport.Request): A callable used to make
+            HTTP requests.
+        token_uri (str): The OAuth 2.0 authorization server's token endpoint
+            URI.
+        assertion (str): JWT token signed by a service account. The token's
+            payload must include a ``target_audience`` claim.
+
+    Returns:
+        Tuple[str, Optional[datetime], Mapping[str, str]]:
+            The (encoded) Open ID Connect ID Token, expiration, and additional
+            data returned by the endpoint.
+
+    Raises:
+        google.auth.exceptions.RefreshError: If the token endpoint returned
+            an error.
+    """
+    body = {
+        'assertion': assertion,
+        'grant_type': _JWT_GRANT_TYPE,
+    }
+
+    response_data = _token_endpoint_request(request, token_uri, body)
+
+    try:
+        id_token = response_data['id_token']
+    except KeyError as caught_exc:
+        new_exc = exceptions.RefreshError(
+            'No ID token in response.', response_data)
+        six.raise_from(new_exc, caught_exc)
+
+    payload = jwt.decode(id_token, verify=False)
+    expiry = datetime.datetime.utcfromtimestamp(payload['exp'])
+
+    return id_token, expiry, response_data
+
+
+def refresh_grant(request, token_uri, refresh_token, client_id, client_secret,
+                  scopes=None):
     """Implements the OAuth 2.0 refresh token grant.
 
     For more details, see `rfc678 section 6`_.
@@ -167,6 +226,10 @@ def refresh_grant(request, token_uri, refresh_token, client_id, client_secret):
             token.
         client_id (str): The OAuth 2.0 application's client ID.
         client_secret (str): The Oauth 2.0 appliaction's client secret.
+        scopes (Optional(Sequence[str])): Scopes to request. If present, all
+            scopes must be authorized for the refresh token. Useful if refresh
+            token has a wild card scope (e.g.
+            'https://www.googleapis.com/auth/any-api').
 
     Returns:
         Tuple[str, Optional[str], Optional[datetime], Mapping[str, str]]: The
@@ -185,14 +248,17 @@ def refresh_grant(request, token_uri, refresh_token, client_id, client_secret):
         'client_secret': client_secret,
         'refresh_token': refresh_token,
     }
+    if scopes:
+        body['scope'] = ' '.join(scopes)
 
     response_data = _token_endpoint_request(request, token_uri, body)
 
     try:
         access_token = response_data['access_token']
-    except KeyError:
-        raise exceptions.RefreshError(
+    except KeyError as caught_exc:
+        new_exc = exceptions.RefreshError(
             'No access token in response.', response_data)
+        six.raise_from(new_exc, caught_exc)
 
     refresh_token = response_data.get('refresh_token', refresh_token)
     expiry = _parse_expiry(response_data)
