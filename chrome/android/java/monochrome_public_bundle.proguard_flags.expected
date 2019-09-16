@@ -67,6 +67,17 @@
 # picked up from the library APK at runtime.
 -dontwarn org.chromium.base.library_loader.NativeLibraries
 
+# Workaround for crbug/1002847. Methods of BaseGmsClient are incorrectly
+# removed even though they are required for the derived class GmsClient
+# to correctly implement Api$Client.
+# TODO: remove once crbug/1002847 resolved.
+-keep public class com.google.android.gms.common.internal.BaseGmsClient {
+  public void disconnect();
+  public void dump(java.lang.String,java.io.FileDescriptor,java.io.PrintWriter,java.lang.String[]);
+  public int getMinApkVersion();
+  public boolean requiresSignIn();
+}
+
 ################################################################################
 # ../../android_webview/support_library/boundary_interfaces/proguard.flags
 ################################################################################
@@ -360,6 +371,17 @@
   public <init>();
   public <clinit>();
   *** build() return null;
+}
+
+# Workaround for crbug/1002847. Methods of BaseGmsClient are incorrectly
+# removed even though they are required for the derived class GmsClient
+# to correctly implement Api$Client.
+# TODO: remove once crbug/1002847 resolved.
+-keep public class com.google.android.gms.common.internal.BaseGmsClient {
+  public void disconnect();
+  public void dump(java.lang.String,java.io.FileDescriptor,java.io.PrintWriter,java.lang.String[]);
+  public int getMinApkVersion();
+  public boolean requiresSignIn();
 }
 
 ################################################################################
