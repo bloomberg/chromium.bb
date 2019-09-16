@@ -168,6 +168,11 @@ const char kChromeUIVersionURL[] = "chrome://version/";
 const char kChromeUIWelcomeHost[] = "welcome";
 const char kChromeUIWelcomeURL[] = "chrome://welcome/";
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1003960): Remove when issue is resolved.
+const char kChromeUIWelcomeWin10Host[] = "welcome-win10";
+#endif  // defined(OS_WIN)
+
 #if defined(OS_ANDROID)
 const char kChromeUIExploreSitesInternalsHost[] = "explore-sites-internals";
 const char kChromeUIJavaCrashURL[] = "chrome://java-crash/";

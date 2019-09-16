@@ -170,6 +170,11 @@ extern const char kChromeUIVersionURL[];
 extern const char kChromeUIWelcomeHost[];
 extern const char kChromeUIWelcomeURL[];
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1003960): Remove when issue is resolved.
+extern const char kChromeUIWelcomeWin10Host[];
+#endif  // defined(OS_WIN)
+
 #if defined(OS_ANDROID)
 extern const char kChromeUIExploreSitesInternalsHost[];
 extern const char kChromeUIJavaCrashURL[];
