@@ -82,16 +82,29 @@ void ToolbarButton::Init() {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
-void ToolbarButton::SetHighlightColor(base::Optional<SkColor> color) {
-  if (highlight_color_ == color)
+void ToolbarButton::SetHighlight(const base::string16& highlight_text,
+                                 base::Optional<SkColor> highlight_color) {
+  if (highlight_color_ == highlight_color && GetText() == highlight_text)
     return;
+  if (highlight_text.empty() && !highlight_color.has_value()) {
+    ClearHighlight();
+    return;
+  }
 
-  highlight_color_ = color;
+  LabelButton::SetText(highlight_text);
+  highlight_color_ = highlight_color;
   UpdateHighlightBackgroundAndInsets();
 }
 
 void ToolbarButton::SetText(const base::string16& text) {
-  LabelButton::SetText(text);
+  NOTREACHED() << "Use SetHighlight(text, _) instead of SetText(text)";
+}
+
+void ToolbarButton::ClearHighlight() {
+  DCHECK(!GetText().empty() || highlight_color_.has_value());
+
+  LabelButton::SetText(base::string16());
+  highlight_color_.reset();
   UpdateHighlightBackgroundAndInsets();
 }
 
