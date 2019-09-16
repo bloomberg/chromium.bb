@@ -9,7 +9,7 @@ from __future__ import print_function
 
 import mock
 
-from chromite.api import api_config
+from chromite.api.api_config import ApiConfigMixin
 from chromite.api.controller import packages as packages_controller
 from chromite.api.gen.chromite.api import binhost_pb2
 from chromite.api.gen.chromite.api import packages_pb2
@@ -20,7 +20,7 @@ from chromite.lib import portage_util
 from chromite.service import packages as packages_service
 
 
-class UprevTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
+class UprevTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """Uprev tests."""
 
   _PUBLIC = binhost_pb2.OVERLAYTYPE_PUBLIC
@@ -88,8 +88,7 @@ class UprevTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     self.assertFalse(changed)
 
 
-class UprevVersionedPackageTest(cros_test_lib.MockTestCase,
-                                api_config.ApiConfigMixin):
+class UprevVersionedPackageTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """UprevVersionedPackage tests."""
 
   def setUp(self):
@@ -168,7 +167,7 @@ class UprevVersionedPackageTest(cros_test_lib.MockTestCase,
         [ebuild.path for ebuild in self.response.modified_ebuilds])
 
 
-class GetBestVisibleTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
+class GetBestVisibleTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """GetBestVisible tests."""
 
   def setUp(self):
@@ -224,3 +223,36 @@ class GetBestVisibleTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     self.assertEqual(package_info.category, cpv.category)
     self.assertEqual(package_info.package_name, cpv.package)
     self.assertEqual(package_info.version, cpv.version)
+
+
+class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):
+  """HasChromePrebuilt tests."""
+
+  def setUp(self):
+    self.response = packages_pb2.HasChromePrebuiltResponse()
+
+  def _GetRequest(self, board=None):
+    """Helper to build out a request."""
+    request = packages_pb2.HasChromePrebuiltRequest()
+
+    if board:
+      request.build_target.name = board
+
+    return request
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(packages_service, 'has_prebuilt')
+
+    request = self._GetRequest(board='betty')
+    packages_controller.HasChromePrebuilt(request, self.response,
+                                          self.validate_only_config)
+    patch.assert_not_called()
+
+  def testNoBuildTargetFails(self):
+    """No build target argument should fail."""
+    request = self._GetRequest()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      packages_controller.HasChromePrebuilt(request, self.response,
+                                            self.api_config)

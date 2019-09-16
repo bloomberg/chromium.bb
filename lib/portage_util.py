@@ -2105,7 +2105,7 @@ def HasPrebuilt(atom, board=None):
   emerge = 'emerge-%s' % board if board else 'emerge'
   # Emerge args: binpkg only, no deps, pretend, quiet. --binpkg-respect-use is
   # disabled by default when you use -K, so turn it back on.
-  cmd = [emerge, '-gKOpq' '--binpkg-respect-use=y', '=%s' % best.cpf]
+  cmd = [emerge, '-gKOpq', '--binpkg-respect-use=y', '=%s' % best.cpf]
   result = cros_build_lib.RunCommand(
       cmd, enter_chroot=True, error_code_ok=True, quiet=True)
   return not result.returncode

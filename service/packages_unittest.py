@@ -86,9 +86,17 @@ class UprevsVersionedPackageTest(cros_test_lib.MockTestCase):
       packages.uprev_versioned_package(cpv, [], [], Chroot())
 
 
-class GetBestVisibleTest(cros_test_lib.MockTestCase):
+class GetBestVisibleTest(cros_test_lib.TestCase):
   """get_best_visible tests."""
 
   def test_empty_atom_fails(self):
     with self.assertRaises(AssertionError):
       packages.get_best_visible('')
+
+
+class HasPrebuiltTest(cros_test_lib.TestCase):
+  """has_prebuilt tests."""
+
+  def test_empty_atom_fails(self):
+    with self.assertRaises(AssertionError):
+      packages.has_prebuilt('')

@@ -309,9 +309,23 @@ def get_best_visible(atom, build_target=None):
   Args:
     atom (str): The atom to look up.
     build_target (build_target_util.BuildTarget): The build target whose
-        sysroot should be searched.
+        sysroot should be searched, or the SDK if not provided.
   """
   assert atom
 
   board = build_target.name if build_target else None
   return portage_util.PortageqBestVisible(atom, board=board)
+
+
+def has_prebuilt(atom, build_target=None):
+  """Check if a prebuilt exists.
+
+  Args:
+    atom (str): The package whose prebuilt is being queried.
+    build_target (build_target_util.BuildTarget): The build target whose
+        sysroot should be searched, or the SDK if not provided.
+  """
+  assert atom
+
+  board = build_target.name if build_target else None
+  return portage_util.HasPrebuilt(atom, board=board)

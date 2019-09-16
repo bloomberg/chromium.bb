@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n\x1b\x63hromite/api/packages.proto\x12\x0c\x63hromite.api\x1a\x1a\x63hromite/api/binhost.proto\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"x\n\x15GetBestVisibleRequest\x12\x0c\n\x04\x61tom\x18\x01 \x01(\t\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\x12-\n\x0c\x62uild_target\x18\x03 \x01(\x0b\x32\x17.chromiumos.BuildTarget\"G\n\x16GetBestVisibleResponse\x12-\n\x0cpackage_info\x18\x01 \x01(\x0b\x32\x17.chromiumos.PackageInfo\"l\n\x17GetChromeVersionRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12-\n\x0c\x62uild_target\x18\x02 \x01(\x0b\x32\x17.chromiumos.BuildTarget\"+\n\x18GetChromeVersionResponse\x12\x0f\n\x07version\x18\x01 \x01(\t\"\xaf\x01\n\x14UprevPackagesRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12.\n\rbuild_targets\x18\x02 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12/\n\x0coverlay_type\x18\x03 \x01(\x0e\x32\x19.chromite.api.OverlayType\x12\x12\n\noutput_dir\x18\x04 \x01(\t\"\xa3\x02\n\x1cUprevVersionedPackageRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12-\n\x0cpackage_info\x18\x02 \x01(\x0b\x32\x17.chromiumos.PackageInfo\x12\x43\n\x08versions\x18\x03 \x03(\x0b\x32\x31.chromite.api.UprevVersionedPackageRequest.GitRef\x12.\n\rbuild_targets\x18\x04 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x1a;\n\x06GitRef\x12\x12\n\nrepository\x18\x01 \x01(\t\x12\x0b\n\x03ref\x18\x02 \x01(\t\x12\x10\n\x08revision\x18\x03 \x01(\t\"\x86\x01\n\x15UprevPackagesResponse\x12\x44\n\x10modified_ebuilds\x18\x01 \x03(\x0b\x32*.chromite.api.UprevPackagesResponse.Ebuild\x12\x0f\n\x07version\x18\x02 \x01(\t\x1a\x16\n\x06\x45\x62uild\x12\x0c\n\x04path\x18\x01 \x01(\t2\xae\x03\n\x0ePackageService\x12\x63\n\x0eGetBestVisible\x12#.chromite.api.GetBestVisibleRequest\x1a$.chromite.api.GetBestVisibleResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x12i\n\x10GetChromeVersion\x12%.chromite.api.GetChromeVersionRequest\x1a&.chromite.api.GetChromeVersionResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x12P\n\x05Uprev\x12\".chromite.api.UprevPackagesRequest\x1a#.chromite.api.UprevPackagesResponse\x12h\n\x15UprevVersionedPackage\x12*.chromite.api.UprevVersionedPackageRequest\x1a#.chromite.api.UprevPackagesResponse\x1a\x10\xc2\xed\x1a\x0c\n\x08packages\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n\x1b\x63hromite/api/packages.proto\x12\x0c\x63hromite.api\x1a\x1a\x63hromite/api/binhost.proto\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"x\n\x15GetBestVisibleRequest\x12\x0c\n\x04\x61tom\x18\x01 \x01(\t\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\x12-\n\x0c\x62uild_target\x18\x03 \x01(\x0b\x32\x17.chromiumos.BuildTarget\"G\n\x16GetBestVisibleResponse\x12-\n\x0cpackage_info\x18\x01 \x01(\x0b\x32\x17.chromiumos.PackageInfo\"l\n\x17GetChromeVersionRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12-\n\x0c\x62uild_target\x18\x02 \x01(\x0b\x32\x17.chromiumos.BuildTarget\"+\n\x18GetChromeVersionResponse\x12\x0f\n\x07version\x18\x01 \x01(\t\"m\n\x18HasChromePrebuiltRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12-\n\x0c\x62uild_target\x18\x02 \x01(\x0b\x32\x17.chromiumos.BuildTarget\"1\n\x19HasChromePrebuiltResponse\x12\x14\n\x0chas_prebuilt\x18\x01 \x01(\x08\"\xaf\x01\n\x14UprevPackagesRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12.\n\rbuild_targets\x18\x02 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12/\n\x0coverlay_type\x18\x03 \x01(\x0e\x32\x19.chromite.api.OverlayType\x12\x12\n\noutput_dir\x18\x04 \x01(\t\"\xa3\x02\n\x1cUprevVersionedPackageRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12-\n\x0cpackage_info\x18\x02 \x01(\x0b\x32\x17.chromiumos.PackageInfo\x12\x43\n\x08versions\x18\x03 \x03(\x0b\x32\x31.chromite.api.UprevVersionedPackageRequest.GitRef\x12.\n\rbuild_targets\x18\x04 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x1a;\n\x06GitRef\x12\x12\n\nrepository\x18\x01 \x01(\t\x12\x0b\n\x03ref\x18\x02 \x01(\t\x12\x10\n\x08revision\x18\x03 \x01(\t\"\x86\x01\n\x15UprevPackagesResponse\x12\x44\n\x10modified_ebuilds\x18\x01 \x03(\x0b\x32*.chromite.api.UprevPackagesResponse.Ebuild\x12\x0f\n\x07version\x18\x02 \x01(\t\x1a\x16\n\x06\x45\x62uild\x12\x0c\n\x04path\x18\x01 \x01(\t\"W\n\x1dUprevVersionedPackageResponse\x12\x36\n\tresponses\x18\x01 \x03(\x0b\x32#.chromite.api.UprevPackagesResponse2\xa4\x04\n\x0ePackageService\x12\x63\n\x0eGetBestVisible\x12#.chromite.api.GetBestVisibleRequest\x1a$.chromite.api.GetBestVisibleResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x12i\n\x10GetChromeVersion\x12%.chromite.api.GetChromeVersionRequest\x1a&.chromite.api.GetChromeVersionResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x12l\n\x11HasChromePrebuilt\x12&.chromite.api.HasChromePrebuiltRequest\x1a\'.chromite.api.HasChromePrebuiltResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x12P\n\x05Uprev\x12\".chromite.api.UprevPackagesRequest\x1a#.chromite.api.UprevPackagesResponse\x12p\n\x15UprevVersionedPackage\x12*.chromite.api.UprevVersionedPackageRequest\x1a+.chromite.api.UprevVersionedPackageResponse\x1a\x10\xc2\xed\x1a\x0c\n\x08packages\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_binhost__pb2.DESCRIPTOR,chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -174,6 +174,75 @@ _GETCHROMEVERSIONRESPONSE = _descriptor.Descriptor(
 )
 
 
+_HASCHROMEPREBUILTREQUEST = _descriptor.Descriptor(
+  name='HasChromePrebuiltRequest',
+  full_name='chromite.api.HasChromePrebuiltRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='chroot', full_name='chromite.api.HasChromePrebuiltRequest.chroot', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='build_target', full_name='chromite.api.HasChromePrebuiltRequest.build_target', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=478,
+  serialized_end=587,
+)
+
+
+_HASCHROMEPREBUILTRESPONSE = _descriptor.Descriptor(
+  name='HasChromePrebuiltResponse',
+  full_name='chromite.api.HasChromePrebuiltResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='has_prebuilt', full_name='chromite.api.HasChromePrebuiltResponse.has_prebuilt', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=589,
+  serialized_end=638,
+)
+
+
 _UPREVPACKAGESREQUEST = _descriptor.Descriptor(
   name='UprevPackagesRequest',
   full_name='chromite.api.UprevPackagesRequest',
@@ -221,8 +290,8 @@ _UPREVPACKAGESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=479,
-  serialized_end=654,
+  serialized_start=641,
+  serialized_end=816,
 )
 
 
@@ -266,8 +335,8 @@ _UPREVVERSIONEDPACKAGEREQUEST_GITREF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=889,
-  serialized_end=948,
+  serialized_start=1051,
+  serialized_end=1110,
 )
 
 _UPREVVERSIONEDPACKAGEREQUEST = _descriptor.Descriptor(
@@ -317,8 +386,8 @@ _UPREVVERSIONEDPACKAGEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=657,
-  serialized_end=948,
+  serialized_start=819,
+  serialized_end=1110,
 )
 
 
@@ -348,8 +417,8 @@ _UPREVPACKAGESRESPONSE_EBUILD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1063,
-  serialized_end=1085,
+  serialized_start=1225,
+  serialized_end=1247,
 )
 
 _UPREVPACKAGESRESPONSE = _descriptor.Descriptor(
@@ -385,8 +454,39 @@ _UPREVPACKAGESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=951,
-  serialized_end=1085,
+  serialized_start=1113,
+  serialized_end=1247,
+)
+
+
+_UPREVVERSIONEDPACKAGERESPONSE = _descriptor.Descriptor(
+  name='UprevVersionedPackageResponse',
+  full_name='chromite.api.UprevVersionedPackageResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='responses', full_name='chromite.api.UprevVersionedPackageResponse.responses', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1249,
+  serialized_end=1336,
 )
 
 _GETBESTVISIBLEREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
@@ -394,6 +494,8 @@ _GETBESTVISIBLEREQUEST.fields_by_name['build_target'].message_type = chromiumos_
 _GETBESTVISIBLERESPONSE.fields_by_name['package_info'].message_type = chromiumos_dot_common__pb2._PACKAGEINFO
 _GETCHROMEVERSIONREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
 _GETCHROMEVERSIONREQUEST.fields_by_name['build_target'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
+_HASCHROMEPREBUILTREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
+_HASCHROMEPREBUILTREQUEST.fields_by_name['build_target'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
 _UPREVPACKAGESREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
 _UPREVPACKAGESREQUEST.fields_by_name['build_targets'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
 _UPREVPACKAGESREQUEST.fields_by_name['overlay_type'].enum_type = chromite_dot_api_dot_binhost__pb2._OVERLAYTYPE
@@ -404,13 +506,17 @@ _UPREVVERSIONEDPACKAGEREQUEST.fields_by_name['versions'].message_type = _UPREVVE
 _UPREVVERSIONEDPACKAGEREQUEST.fields_by_name['build_targets'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
 _UPREVPACKAGESRESPONSE_EBUILD.containing_type = _UPREVPACKAGESRESPONSE
 _UPREVPACKAGESRESPONSE.fields_by_name['modified_ebuilds'].message_type = _UPREVPACKAGESRESPONSE_EBUILD
+_UPREVVERSIONEDPACKAGERESPONSE.fields_by_name['responses'].message_type = _UPREVPACKAGESRESPONSE
 DESCRIPTOR.message_types_by_name['GetBestVisibleRequest'] = _GETBESTVISIBLEREQUEST
 DESCRIPTOR.message_types_by_name['GetBestVisibleResponse'] = _GETBESTVISIBLERESPONSE
 DESCRIPTOR.message_types_by_name['GetChromeVersionRequest'] = _GETCHROMEVERSIONREQUEST
 DESCRIPTOR.message_types_by_name['GetChromeVersionResponse'] = _GETCHROMEVERSIONRESPONSE
+DESCRIPTOR.message_types_by_name['HasChromePrebuiltRequest'] = _HASCHROMEPREBUILTREQUEST
+DESCRIPTOR.message_types_by_name['HasChromePrebuiltResponse'] = _HASCHROMEPREBUILTRESPONSE
 DESCRIPTOR.message_types_by_name['UprevPackagesRequest'] = _UPREVPACKAGESREQUEST
 DESCRIPTOR.message_types_by_name['UprevVersionedPackageRequest'] = _UPREVVERSIONEDPACKAGEREQUEST
 DESCRIPTOR.message_types_by_name['UprevPackagesResponse'] = _UPREVPACKAGESRESPONSE
+DESCRIPTOR.message_types_by_name['UprevVersionedPackageResponse'] = _UPREVVERSIONEDPACKAGERESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 GetBestVisibleRequest = _reflection.GeneratedProtocolMessageType('GetBestVisibleRequest', (_message.Message,), dict(
@@ -440,6 +546,20 @@ GetChromeVersionResponse = _reflection.GeneratedProtocolMessageType('GetChromeVe
   # @@protoc_insertion_point(class_scope:chromite.api.GetChromeVersionResponse)
   ))
 _sym_db.RegisterMessage(GetChromeVersionResponse)
+
+HasChromePrebuiltRequest = _reflection.GeneratedProtocolMessageType('HasChromePrebuiltRequest', (_message.Message,), dict(
+  DESCRIPTOR = _HASCHROMEPREBUILTREQUEST,
+  __module__ = 'chromite.api.packages_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.HasChromePrebuiltRequest)
+  ))
+_sym_db.RegisterMessage(HasChromePrebuiltRequest)
+
+HasChromePrebuiltResponse = _reflection.GeneratedProtocolMessageType('HasChromePrebuiltResponse', (_message.Message,), dict(
+  DESCRIPTOR = _HASCHROMEPREBUILTRESPONSE,
+  __module__ = 'chromite.api.packages_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.HasChromePrebuiltResponse)
+  ))
+_sym_db.RegisterMessage(HasChromePrebuiltResponse)
 
 UprevPackagesRequest = _reflection.GeneratedProtocolMessageType('UprevPackagesRequest', (_message.Message,), dict(
   DESCRIPTOR = _UPREVPACKAGESREQUEST,
@@ -478,6 +598,13 @@ UprevPackagesResponse = _reflection.GeneratedProtocolMessageType('UprevPackagesR
 _sym_db.RegisterMessage(UprevPackagesResponse)
 _sym_db.RegisterMessage(UprevPackagesResponse.Ebuild)
 
+UprevVersionedPackageResponse = _reflection.GeneratedProtocolMessageType('UprevVersionedPackageResponse', (_message.Message,), dict(
+  DESCRIPTOR = _UPREVVERSIONEDPACKAGERESPONSE,
+  __module__ = 'chromite.api.packages_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.UprevVersionedPackageResponse)
+  ))
+_sym_db.RegisterMessage(UprevVersionedPackageResponse)
+
 
 DESCRIPTOR._options = None
 
@@ -487,8 +614,8 @@ _PACKAGESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\014\n\010packages\020\002'),
-  serialized_start=1088,
-  serialized_end=1518,
+  serialized_start=1339,
+  serialized_end=1887,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetBestVisible',
@@ -509,9 +636,18 @@ _PACKAGESERVICE = _descriptor.ServiceDescriptor(
     serialized_options=_b('\302\355\032\002\020\001'),
   ),
   _descriptor.MethodDescriptor(
+    name='HasChromePrebuilt',
+    full_name='chromite.api.PackageService.HasChromePrebuilt',
+    index=2,
+    containing_service=None,
+    input_type=_HASCHROMEPREBUILTREQUEST,
+    output_type=_HASCHROMEPREBUILTRESPONSE,
+    serialized_options=_b('\302\355\032\002\020\001'),
+  ),
+  _descriptor.MethodDescriptor(
     name='Uprev',
     full_name='chromite.api.PackageService.Uprev',
-    index=2,
+    index=3,
     containing_service=None,
     input_type=_UPREVPACKAGESREQUEST,
     output_type=_UPREVPACKAGESRESPONSE,
@@ -520,10 +656,10 @@ _PACKAGESERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='UprevVersionedPackage',
     full_name='chromite.api.PackageService.UprevVersionedPackage',
-    index=3,
+    index=4,
     containing_service=None,
     input_type=_UPREVVERSIONEDPACKAGEREQUEST,
-    output_type=_UPREVPACKAGESRESPONSE,
+    output_type=_UPREVVERSIONEDPACKAGERESPONSE,
     serialized_options=None,
   ),
 ])

@@ -107,3 +107,20 @@ def GetChromeVersion(input_proto, output_proto, _config):
 
   # Something like 1.2.3.4_rc -> 1.2.3.4.
   output_proto.version = cpv.version_no_rev.split('_')[0]
+
+
+def _HasChromePrebuiltSuccess(_input_proto, output_proto, _config):
+  """The mock success case for HasChromePrebuilt."""
+  output_proto.has_prebuilt = True
+
+
+@faux.success(_HasChromePrebuiltSuccess)
+@faux.empty_error
+@validate.require('build_target.name')
+@validate.validation_complete
+def HasChromePrebuilt(input_proto, output_proto, _config):
+  """Checks if the most recent version of Chrome has a prebuilt."""
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+  exists = packages.has_prebuilt(constants.CHROME_CP, build_target=build_target)
+
+  output_proto.has_prebuilt = exists
