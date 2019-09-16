@@ -386,6 +386,10 @@
         },
       },
     },
+    'remove_from': [
+      # chromium.linux
+      'Fuchsia x64', # https://crbug.com/961457
+    ]
   },
   'content_browsertests': {
     'remove_from': [

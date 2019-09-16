@@ -2803,6 +2803,11 @@
       'cast_runner_browsertests': {},
       'cast_runner_integration_tests': {},
       'cast_runner_unittests': {},
+      'components_unittests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter',
+        ],
+      },
       'content_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
