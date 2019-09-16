@@ -467,6 +467,14 @@ void RecordReadyToCommitMetrics(
   UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameBrowsingInstance",
                         is_same_browsing_instance);
 
+  UMA_HISTOGRAM_BOOLEAN("Navigation.RequiresDedicatedProcess",
+                        new_rfh->GetSiteInstance()->RequiresDedicatedProcess());
+
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  GURL process_lock = policy->GetOriginLock(new_rfh->GetProcess()->GetID());
+  UMA_HISTOGRAM_BOOLEAN("Navigation.IsLockedProcess", !process_lock.is_empty());
+
   if (common_params.transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
     UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.BackForward",
                           is_same_process);
