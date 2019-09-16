@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_OBSERVER_BRIDGE_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_OBSERVER_BRIDGE_H_
+#ifndef IOS_WEB_PUBLIC_WEB_STATE_OBSERVER_BRIDGE_H_
+#define IOS_WEB_PUBLIC_WEB_STATE_OBSERVER_BRIDGE_H_
 
 #import <Foundation/Foundation.h>
 
@@ -14,7 +14,7 @@
 
 // Observes page lifecyle events from Objective-C. To use as a
 // web::WebStateObserver, wrap in a web::WebStateObserverBridge.
-@protocol CRWWebStateObserver<NSObject>
+@protocol CRWWebStateObserver <NSObject>
 @optional
 
 // Invoked by WebStateObserverBridge::WasShown.
@@ -123,4 +123,4 @@ class WebStateObserverBridge : public web::WebStateObserver {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_OBSERVER_BRIDGE_H_
+#endif  // IOS_WEB_PUBLIC_WEB_STATE_OBSERVER_BRIDGE_H_
