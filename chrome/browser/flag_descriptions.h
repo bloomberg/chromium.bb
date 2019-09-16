@@ -2074,6 +2074,9 @@ extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
 extern const char kSchedulerConfigurationPerformance[];
 
+extern const char kShowBluetoothDebugLogToggleName[];
+extern const char kShowBluetoothDebugLogToggleDescription[];
+
 extern const char kShowBluetoothDeviceBatteryName[];
 extern const char kShowBluetoothDeviceBatteryDescription[];
 

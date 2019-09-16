@@ -36249,6 +36249,7 @@ from previous Chrome versions.
   <int value="-10709540"
       label="OmniboxUIExperimentHideSuggestionUrlScheme:enabled"/>
   <int value="-9599490" label="KernelnextVMs:disabled"/>
+  <int value="-9322265" label="ShowBluetoothDebugLogToggle:enabled"/>
   <int value="-5052940" label="enable-simplified-fullscreen"/>
   <int value="-3093629" label="DcheckIsFatal:disabled"/>
   <int value="-2953333" label="AndroidHistoryManager:disabled"/>
@@ -36450,6 +36451,7 @@ from previous Chrome versions.
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>
   <int value="296215399" label="WindowsMixedReality:disabled"/>
+  <int value="297095559" label="ShowBluetoothDebugLogToggle:disabled"/>
   <int value="299792415" label="OmniboxSuggestionTransparencyOptions:enabled"/>
   <int value="300095239" label="FCMInvalidations:enabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>

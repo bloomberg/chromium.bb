@@ -3478,6 +3478,12 @@ const char kSchedulerConfigurationConservative[] =
 const char kSchedulerConfigurationPerformance[] =
     "Enables Hyper-Threading on relevant CPUs.";
 
+const char kShowBluetoothDebugLogToggleName[] =
+    "Show Bluetooth debug log toggle";
+const char kShowBluetoothDebugLogToggleDescription[] =
+    "Enables a toggle which can enable debug (i.e., verbose) logs for "
+    "Bluetooth";
+
 const char kShowBluetoothDeviceBatteryName[] = "Show Bluetooth device battery";
 const char kShowBluetoothDeviceBatteryDescription[] =
     "Enables showing the battery level of connected and supported Bluetooth "

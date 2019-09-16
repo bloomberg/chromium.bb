@@ -2955,6 +2955,14 @@
     "expiry_milestone": -1
   },
   {
+    "name": "show-bluetooth-debug-log-toggle",
+    "owners": [ "hansberry", "khorimoto", "yshavit" ],
+    // This is a debug tool used to help in the field with Bluetooth issues
+    // caused by specific hardware, noisy environments, etc. Thus, it should not
+    // expire.
+    "expiry_milestone": -1
+  },
+  {
     "name": "show-bluetooth-device-battery",
     "owners": [ "hansberry" ],
     "expiry_milestone": 80
