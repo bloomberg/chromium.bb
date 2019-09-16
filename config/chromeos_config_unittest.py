@@ -11,7 +11,6 @@ import copy
 import json
 import os
 import re
-import unittest
 
 import mock
 
@@ -650,17 +649,40 @@ class CBuildBotTest(ChromeosConfigTestBase):
           'Config %s: is tryjob safe, but defines hw_tests_override.' % \
           build_name)
 
-  # TODO(crbug/871967) Remove expectedFailure once clapper-release* gets its
-  # hwtests back.
-  @unittest.expectedFailure
   def testHWTestsReleaseBuilderRequirement(self):
     """Make sure all release configs run hw tests."""
+    expected_exceptions = set((
+        # See b/140317527.
+        'arkham-release',
+        'gale-release',
+        'mistral-release',
+        'whirlwind-release',
+    ))
+    missing_tests = set()
+    running_tests = set()
     for build_name, config in self.site_config.items():
       if (config.build_type == 'canary' and 'test' in config.images and
           config.upload_hw_test_artifacts and config.hwqual):
-        self.assertTrue(
-            config.hw_tests,
-            'Release builder %s must run hw tests.' % build_name)
+        check_name = build_name
+        # Release tryjobs match their release job.
+        if '-release-tryjob' in check_name:
+          check_name = check_name.replace('-tryjob', '')
+        if check_name.startswith('betty-'):
+          # Betty is vm-only, so never does hardware tests.  See crbug/998427.
+          continue
+        elif check_name not in expected_exceptions:
+          # If it's not listed as an exception, it needs to run hardware tests.
+          if not config.hw_tests:
+            missing_tests.add(build_name)
+        elif config.hw_tests:
+          # It is listed as an exception, and it is running hardware tests.  It
+          # must be removed from the exceptions list.
+          running_tests.add(build_name)
+    # Assert at the end, so that we can print the entire list.
+    self.assertEqual(set(), running_tests,
+                     'Expected no hw_tests, but found them: %s' % running_tests)
+    self.assertEqual(set(), missing_tests,
+                     'Builds must run hardware tests: %s' % missing_tests)
 
   def testHWTestsReleaseBuilderWeakRequirement(self):
     """Make sure most release configs run hw tests."""

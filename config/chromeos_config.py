@@ -3876,6 +3876,7 @@ def ApplyCustomOverrides(site_config):
           'useflags': [],
       },
 
+      # No hw tests for any betty builders.  See crbug/998427.
       'betty-release': {
           'hw_tests': [],
           'hw_tests_override': []
@@ -3906,6 +3907,7 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_override': []
       },
 
+      # No hw_tests for arkham, whirlwind, gale, mistral.  See b/140317527.
       'arkham-release': {
           'hw_tests': [],
           'hw_tests_override': [],
