@@ -3,7 +3,6 @@ setBindGroup validation tests.
 `;
 
 import { TestGroup, pcombine, poptions } from '../../../framework/index.js';
-import GLSL from '../../../tools/glsl.macro.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -16,93 +15,15 @@ class F extends ValidationTest {
     });
   }
 
-  testComputePass(
-    bindGroup: GPUBindGroup,
-    pipelineLayout: GPUPipelineLayout,
-    dynamicOffsets: number[]
-  ): void {
-    const module = this.device.createShaderModule({
-      code: GLSL(
-        'compute',
-        `#version 450
-          layout(std140, set = 0, binding = 0) uniform UniformBuffer {
-              float value1;
-          };
-          layout(std140, set = 0, binding = 1) buffer StorageBuffer {
-              float value2;
-          };
-          void main() {
-          }
-        `
-      ),
-    });
-
-    const pipeline = this.device.createComputePipeline({
-      computeStage: { module, entryPoint: 'main' },
-      layout: pipelineLayout,
-    });
-
+  testComputePass(bindGroup: GPUBindGroup, dynamicOffsets: number[]): void {
     const encoder = this.device.createCommandEncoder();
     const computePass = encoder.beginComputePass();
-    computePass.setPipeline(pipeline);
     computePass.setBindGroup(0, bindGroup, dynamicOffsets);
-    computePass.dispatch(1, 1, 1);
     computePass.endPass();
-
     encoder.finish();
   }
 
-  testRender(
-    bindGroup: GPUBindGroup,
-    pipelineLayout: GPUPipelineLayout,
-    dynamicOffsets: number[],
-    encoder: GPURenderPassEncoder | GPURenderBundleEncoder
-  ): void {
-    const vertexModule = this.device.createShaderModule({
-      code: GLSL(
-        'vertex',
-        `#version 450
-          void main() {
-            gl_Position = vec4(0);
-          }
-        `
-      ),
-    });
-
-    const fragmentModule = this.device.createShaderModule({
-      code: GLSL(
-        'fragment',
-        `#version 450
-          layout(std140, set = 0, binding = 0) uniform UniformBuffer {
-              vec2 value1;
-          };
-          layout(std140, set = 0, binding = 1) buffer StorageBuffer {
-              vec2 value2;
-          };
-          void main() {
-          }
-        `
-      ),
-    });
-
-    const pipeline = this.device.createRenderPipeline({
-      vertexStage: { module: vertexModule, entryPoint: 'main' },
-      fragmentStage: { module: fragmentModule, entryPoint: 'main' },
-      layout: pipelineLayout,
-      primitiveTopology: 'triangle-list',
-      colorStates: [{ format: 'rgba8unorm' }],
-    });
-
-    encoder.setPipeline(pipeline);
-    encoder.setBindGroup(0, bindGroup, dynamicOffsets);
-    encoder.draw(3, 1, 0, 0);
-  }
-
-  testRenderPass(
-    bindGroup: GPUBindGroup,
-    pipelineLayout: GPUPipelineLayout,
-    dynamicOffsets: number[]
-  ): void {
+  testRenderPass(bindGroup: GPUBindGroup, dynamicOffsets: number[]): void {
     const encoder = this.device.createCommandEncoder();
     const renderPass = encoder.beginRenderPass({
       colorAttachments: [
@@ -112,20 +33,16 @@ class F extends ValidationTest {
         },
       ],
     });
-    this.testRender(bindGroup, pipelineLayout, dynamicOffsets, renderPass);
+    renderPass.setBindGroup(0, bindGroup, dynamicOffsets);
     renderPass.endPass();
     encoder.finish();
   }
 
-  testRenderBundle(
-    bindGroup: GPUBindGroup,
-    pipelineLayout: GPUPipelineLayout,
-    dynamicOffsets: number[]
-  ): void {
+  testRenderBundle(bindGroup: GPUBindGroup, dynamicOffsets: number[]): void {
     const encoder = this.device.createRenderBundleEncoder({
       colorFormats: ['rgba8unorm'],
     });
-    this.testRender(bindGroup, pipelineLayout, dynamicOffsets, encoder);
+    encoder.setBindGroup(0, bindGroup, dynamicOffsets);
     encoder.finish();
   }
 }
@@ -223,21 +140,19 @@ g.test('dynamic offsets match expectations in pass encoder', async t => {
     ],
   });
 
-  const pipelineLayout = t.device.createPipelineLayout({ bindGroupLayouts: [bindGroupLayout] });
-
   const { type, dynamicOffsets, success } = t.params;
 
   await t.expectValidationError(() => {
     if (type === 'compute') {
-      t.testComputePass(bindGroup, pipelineLayout, dynamicOffsets);
+      t.testComputePass(bindGroup, dynamicOffsets);
     } else if (type === 'renderpass') {
-      t.testRenderPass(bindGroup, pipelineLayout, dynamicOffsets);
+      t.testRenderPass(bindGroup, dynamicOffsets);
     } else if (type === 'renderbundle') {
-      t.testRenderBundle(bindGroup, pipelineLayout, dynamicOffsets);
+      t.testRenderBundle(bindGroup, dynamicOffsets);
     } else {
       t.fail();
     }
-    t.testComputePass(bindGroup, pipelineLayout, dynamicOffsets);
+    t.testComputePass(bindGroup, dynamicOffsets);
   }, !success);
 }).params(
   pcombine([
