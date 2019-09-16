@@ -236,6 +236,9 @@ class TabDragController : public views::WidgetObserver {
     // Is the tab pinned?
     bool pinned;
 
+    // Stores the group the tab is in, or nullopt if tab is not grouped.
+    base::Optional<TabGroupId> group_id;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(TabDragData);
   };

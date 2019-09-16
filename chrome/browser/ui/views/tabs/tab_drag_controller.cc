@@ -633,10 +633,13 @@ void TabDragController::EndDrag(EndDragReason reason) {
 void TabDragController::InitTabDragData(Tab* tab,
                                         TabDragData* drag_data) {
   TRACE_EVENT0("views", "TabDragController::InitTabDragData");
-  drag_data->source_model_index = source_context_->GetIndexOf(tab);
+  const int source_model_index = source_context_->GetIndexOf(tab);
+  drag_data->source_model_index = source_model_index;
   drag_data->contents = source_context_->GetTabStripModel()->GetWebContentsAt(
       drag_data->source_model_index);
   drag_data->pinned = source_context_->IsTabPinned(tab);
+  drag_data->group_id = source_context_->GetTabStripModel()->GetTabGroupForTab(
+      source_model_index);
 }
 
 void TabDragController::OnWidgetBoundsChanged(views::Widget* widget,
@@ -1669,6 +1672,8 @@ void TabDragController::RevertDragAt(size_t drag_index) {
         data->source_model_index, std::move(data->owned_contents),
         (data->pinned ? TabStripModel::ADD_PINNED : 0));
   }
+  source_context_->GetTabStripModel()->UpdateGroupForDragRevert(
+      data->source_model_index, data->group_id);
 }
 
 void TabDragController::CompleteDrag() {
