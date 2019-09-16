@@ -423,6 +423,7 @@ android_library("chrome_java") {
     "//chrome:signin_metrics_enum_javagen",
     "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser:sharing_device_capability_generated_enum",
+    "//chrome/browser:sharing_dialog_type_generated_enum",
     "//chrome/browser:sharing_send_message_result_generated_enum",
     "//chrome/browser/supervised_user/supervised_user_error_page:enums_srcjar",
     "//chrome/browser/ui:tab_model_enums_java",
