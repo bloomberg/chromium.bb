@@ -6,9 +6,11 @@
 
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/widget/desktop_aura/window_event_filter.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -20,6 +22,12 @@ DesktopWindowTreeHostLinux::DesktopWindowTreeHostLinux(
                                     desktop_native_widget_aura) {}
 
 DesktopWindowTreeHostLinux::~DesktopWindowTreeHostLinux() = default;
+
+void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
+    const Widget::InitParams& params) {
+  AddNonClientEventFilter();
+  DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(params);
+}
 
 void DesktopWindowTreeHostLinux::OnDisplayMetricsChanged(
     const display::Display& display,
@@ -36,6 +44,11 @@ void DesktopWindowTreeHostLinux::OnDisplayMetricsChanged(
     // this.
     OnHostResizedInPixels(GetBoundsInPixels().size());
   }
+}
+
+void DesktopWindowTreeHostLinux::OnClosed() {
+  RemoveNonClientEventFilter();
+  DesktopWindowTreeHostPlatform::OnClosed();
 }
 
 void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
@@ -70,6 +83,27 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
   properties->wm_class_name = params.wm_class_name;
   properties->wm_class_class = params.wm_class_class;
   properties->wm_role_name = params.wm_role_name;
+}
+
+void DesktopWindowTreeHostLinux::AddNonClientEventFilter() {
+  DCHECK(!non_client_window_event_filter_);
+  std::unique_ptr<WindowEventFilter> window_event_filter =
+      std::make_unique<WindowEventFilter>(this);
+  auto* wm_move_resize_handler = GetWmMoveResizeHandler(*platform_window());
+  if (wm_move_resize_handler)
+    window_event_filter->SetWmMoveResizeHandler(
+        GetWmMoveResizeHandler(*(platform_window())));
+
+  non_client_window_event_filter_ = std::move(window_event_filter);
+  window()->AddPreTargetHandler(non_client_window_event_filter_.get());
+}
+
+void DesktopWindowTreeHostLinux::RemoveNonClientEventFilter() {
+  if (!non_client_window_event_filter_)
+    return;
+
+  window()->RemovePreTargetHandler(non_client_window_event_filter_.get());
+  non_client_window_event_filter_.reset();
 }
 
 // As DWTHX11 subclasses DWTHPlatform through DWTHLinux now (during transition
