@@ -34,19 +34,19 @@
 // bars and partially discounts other 0 energy areas.
 #define MIN_ACTIVE_AREA 0.5
 #define MAX_ACTIVE_AREA 1.0
-static double calculate_active_area(const AV1_COMP *cpi,
+static double calculate_active_area(const FRAME_INFO *frame_info,
                                     const FIRSTPASS_STATS *this_frame) {
   const double active_pct =
       1.0 -
       ((this_frame->intra_skip_pct / 2) +
-       ((this_frame->inactive_zone_rows * 2) / (double)cpi->common.mb_rows));
+       ((this_frame->inactive_zone_rows * 2) / (double)frame_info->mb_rows));
   return fclamp(active_pct, MIN_ACTIVE_AREA, MAX_ACTIVE_AREA);
 }
 
 // Calculate a modified Error used in distributing bits between easier and
 // harder frames.
 #define ACT_AREA_CORRECTION 0.5
-static double calculate_modified_err(const AV1_COMP *cpi,
+static double calculate_modified_err(const FRAME_INFO *frame_info,
                                      const TWO_PASS *twopass,
                                      const AV1EncoderConfig *oxcf,
                                      const FIRSTPASS_STATS *this_frame) {
@@ -64,7 +64,7 @@ static double calculate_modified_err(const AV1_COMP *cpi,
   // 0.5N blocks of complexity 2X is a little easier than coding N
   // blocks of complexity X.
   modified_error *=
-      pow(calculate_active_area(cpi, this_frame), ACT_AREA_CORRECTION);
+      pow(calculate_active_area(frame_info, this_frame), ACT_AREA_CORRECTION);
 
   return fclamp(modified_error, twopass->modified_error_min,
                 twopass->modified_error_max);
@@ -366,9 +366,8 @@ static void accumulate_frame_motion_stats(const FIRSTPASS_STATS *stats,
 }
 
 #define BOOST_FACTOR 12.5
-static double baseline_err_per_mb(AV1_COMP *cpi) {
-  const AV1_COMMON *const cm = &cpi->common;
-  unsigned int screen_area = (cm->width * cm->height);
+static double baseline_err_per_mb(const FRAME_INFO *frame_info) {
+  unsigned int screen_area = frame_info->frame_height * frame_info->frame_width;
 
   // Use a different error per mb factor for calculating boost for
   //  different formats.
@@ -379,21 +378,21 @@ static double baseline_err_per_mb(AV1_COMP *cpi) {
   }
 }
 
-static double calc_frame_boost(AV1_COMP *cpi, const FIRSTPASS_STATS *this_frame,
+static double calc_frame_boost(AV1_COMP *cpi, const FRAME_INFO *frame_info,
+                               const FIRSTPASS_STATS *this_frame,
                                double this_frame_mv_in_out, double max_boost) {
   double frame_boost;
   const double lq = av1_convert_qindex_to_q(
-      cpi->rc.avg_frame_qindex[INTER_FRAME], cpi->common.seq_params.bit_depth);
+      cpi->rc.avg_frame_qindex[INTER_FRAME], frame_info->bit_depth);
   const double boost_q_correction = AOMMIN((0.5 + (lq * 0.015)), 1.5);
-  const double active_area = calculate_active_area(cpi, this_frame);
-  int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE) ? cpi->initial_mbs
-                                                       : cpi->common.MBs;
+  const double active_area = calculate_active_area(frame_info, this_frame);
+  int num_mbs = frame_info->num_mbs;
 
   // Correct for any inactive region in the image
   num_mbs = (int)AOMMAX(1, num_mbs * active_area);
 
   // Underlying boost factor is based on inter error ratio.
-  frame_boost = AOMMAX(baseline_err_per_mb(cpi) * num_mbs,
+  frame_boost = AOMMAX(baseline_err_per_mb(frame_info) * num_mbs,
                        this_frame->intra_error * active_area) /
                 DOUBLE_DIVIDE_CHECK(this_frame->coded_error);
   frame_boost = frame_boost * BOOST_FACTOR * boost_q_correction;
@@ -449,9 +448,9 @@ int av1_calc_arf_boost(AV1_COMP *cpi, FRAME_INFO *frame_info, int offset,
                               : decay_accumulator;
     }
 
-    boost_score +=
-        decay_accumulator *
-        calc_frame_boost(cpi, this_frame, this_frame_mv_in_out, GF_MAX_BOOST);
+    boost_score += decay_accumulator *
+                   calc_frame_boost(cpi, frame_info, this_frame,
+                                    this_frame_mv_in_out, GF_MAX_BOOST);
   }
 
   arf_boost = (int)boost_score;
@@ -487,9 +486,9 @@ int av1_calc_arf_boost(AV1_COMP *cpi, FRAME_INFO *frame_info, int offset,
                               : decay_accumulator;
     }
 
-    boost_score +=
-        decay_accumulator *
-        calc_frame_boost(cpi, this_frame, this_frame_mv_in_out, GF_MAX_BOOST);
+    boost_score += decay_accumulator *
+                   calc_frame_boost(cpi, frame_info, this_frame,
+                                    this_frame_mv_in_out, GF_MAX_BOOST);
   }
   arf_boost += (int)boost_score;
 
@@ -857,7 +856,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   }
 
   // Load stats for the current frame.
-  mod_frame_err = calculate_modified_err(cpi, twopass, oxcf, this_frame);
+  mod_frame_err = calculate_modified_err(frame_info, twopass, oxcf, this_frame);
 
   // Note the error of the frame at the start of the group. This will be
   // the GF frame error if we code a normal gf.
@@ -904,7 +903,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     ++i;
 
     // Accumulate error score of frames in this gf group.
-    mod_frame_err = calculate_modified_err(cpi, twopass, oxcf, this_frame);
+    mod_frame_err =
+        calculate_modified_err(frame_info, twopass, oxcf, this_frame);
     gf_group_err += mod_frame_err;
 #if GROUP_ADAPTIVE_MAXQ
     gf_group_raw_error += this_frame->coded_error;
@@ -958,9 +958,9 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     }
 
     // Calculate a boost number for this frame.
-    boost_score +=
-        decay_accumulator *
-        calc_frame_boost(cpi, &next_frame, this_frame_mv_in_out, GF_MAX_BOOST);
+    boost_score += decay_accumulator *
+                   calc_frame_boost(cpi, frame_info, &next_frame,
+                                    this_frame_mv_in_out, GF_MAX_BOOST);
     // If almost totally static, we will not use the the max GF length later,
     // so we can continue for more frames.
     if ((i >= active_max_gf_interval + 1) &&
@@ -1409,7 +1409,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   twopass->kf_group_bits = 0;        // Total bits available to kf group
   twopass->kf_group_error_left = 0;  // Group modified error score.
 
-  kf_mod_err = calculate_modified_err(cpi, twopass, oxcf, this_frame);
+  kf_mod_err = calculate_modified_err(frame_info, twopass, oxcf, this_frame);
 
   // Initialize the decay rates for the recent frames to check
   for (j = 0; j < FRAMES_TO_CHECK_DECAY; ++j) recent_loop_decay[j] = 1.0;
@@ -1419,7 +1419,8 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   while (twopass->stats_in < twopass->stats_in_end &&
          rc->frames_to_key < cpi->oxcf.key_freq) {
     // Accumulate kf group error.
-    kf_group_err += calculate_modified_err(cpi, twopass, oxcf, this_frame);
+    kf_group_err +=
+        calculate_modified_err(frame_info, twopass, oxcf, this_frame);
 
     // Load the next frame's stats.
     last_frame = *this_frame;
@@ -1480,7 +1481,8 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
     // Rescan to get the correct error data for the forced kf group.
     for (i = 0; i < rc->frames_to_key; ++i) {
-      kf_group_err += calculate_modified_err(cpi, twopass, oxcf, &tmp_frame);
+      kf_group_err +=
+          calculate_modified_err(frame_info, twopass, oxcf, &tmp_frame);
       input_stats(twopass, &tmp_frame);
     }
     rc->next_key_frame_forced = 1;
@@ -1494,7 +1496,8 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Special case for the last key frame of the file.
   if (twopass->stats_in >= twopass->stats_in_end) {
     // Accumulate kf group error.
-    kf_group_err += calculate_modified_err(cpi, twopass, oxcf, this_frame);
+    kf_group_err +=
+        calculate_modified_err(frame_info, twopass, oxcf, this_frame);
   }
 
   // Calculate the number of bits that should be assigned to the kf group.
@@ -1548,7 +1551,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     if ((i <= rc->max_gf_interval) ||
         ((i <= (rc->max_gf_interval * 4)) && (decay_accumulator > 0.5))) {
       const double frame_boost =
-          calc_frame_boost(cpi, &next_frame, 0, kf_max_boost);
+          calc_frame_boost(cpi, frame_info, &next_frame, 0, kf_max_boost);
 
       // How fast is prediction quality decaying.
       if (!detect_flash(twopass, 0)) {
@@ -1810,6 +1813,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
 void av1_init_second_pass(AV1_COMP *cpi) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   TWO_PASS *const twopass = &cpi->twopass;
+  FRAME_INFO *const frame_info = &cpi->frame_info;
   double frame_rate;
   FIRSTPASS_STATS *stats;
 
@@ -1848,7 +1852,8 @@ void av1_init_second_pass(AV1_COMP *cpi) {
     twopass->modified_error_max =
         (avg_error * oxcf->two_pass_vbrmax_section) / 100;
     while (s < twopass->stats_in_end) {
-      modified_error_total += calculate_modified_err(cpi, twopass, oxcf, s);
+      modified_error_total +=
+          calculate_modified_err(frame_info, twopass, oxcf, s);
       ++s;
     }
     twopass->modified_error_left = modified_error_total;

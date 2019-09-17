@@ -2889,6 +2889,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   init_config(cpi, oxcf);
   av1_rc_init(&cpi->oxcf, oxcf->pass, &cpi->rc);
 
+  init_frame_info(&cpi->frame_info, cm);
+
   cm->current_frame.frame_number = 0;
   cm->current_frame_id = -1;
   cpi->seq_params_locked = 0;
@@ -4106,14 +4108,6 @@ static void check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
     cpi->initial_height = cm->height;
     cpi->initial_mbs = cm->MBs;
   }
-
-  FRAME_INFO *frame_info = &cpi->frame_info;
-  frame_info->frame_width = cm->width;
-  frame_info->frame_height = cm->height;
-  frame_info->num_mbs = cm->MBs;
-  frame_info->bit_depth = cm->seq_params.bit_depth;
-  frame_info->subsampling_x = subsampling_x;
-  frame_info->subsampling_y = subsampling_y;
 }
 
 // Returns 1 if the assigned width or height was <= 0.
