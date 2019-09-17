@@ -975,9 +975,8 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
 
   // Save a non-sync Gaia password this time.
   const base::string16 gaia_password = base::ASCIIToUTF16("3password");
-  store->SaveGaiaPasswordHash(
-      "other_gaia_username", gaia_password,
-      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  store->SaveGaiaPasswordHash("other_gaia_username", gaia_password,
+                              GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
   base::Optional<PasswordHashData> gaia_password_hash = GetPasswordFromPref(
       "other_gaia_username", /*is_gaia_password=*/true, &prefs);
   ASSERT_TRUE(gaia_password_hash.has_value());
@@ -1035,9 +1034,8 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
 
   // Save a Gmail password this time.
   const base::string16 gmail_password = base::ASCIIToUTF16("gmailpass");
-  store->SaveGaiaPasswordHash(
-      "username@gmail.com", gmail_password,
-      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  store->SaveGaiaPasswordHash("username@gmail.com", gmail_password,
+                              GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
   WaitForPasswordStore();
   EXPECT_TRUE(prefs.HasPrefPath(prefs::kPasswordHashDataList));
   base::Optional<PasswordHashData> gmail_password_hash = GetPasswordFromPref(
@@ -1054,9 +1052,9 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
 
   // Also save another non-sync Gaia password this time.
   const base::string16 non_sync_gaia_password = base::ASCIIToUTF16("3password");
-  store->SaveGaiaPasswordHash(
-      "non_sync_gaia_password@gsuite.com", non_sync_gaia_password,
-      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  store->SaveGaiaPasswordHash("non_sync_gaia_password@gsuite.com",
+                              non_sync_gaia_password,
+                              GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
   base::Optional<PasswordHashData> non_sync_gaia_password_hash =
       GetPasswordFromPref("non_sync_gaia_password@gsuite.com",
                           /*is_gaia_password=*/true, &prefs);
@@ -1120,9 +1118,8 @@ TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
   // Save password.
   const base::string16 sync_password = base::ASCIIToUTF16("password");
   const base::string16 input = base::ASCIIToUTF16("123password");
-  store->SaveGaiaPasswordHash(
-      "sync_username", sync_password,
-      metrics_util::GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
+  store->SaveGaiaPasswordHash("sync_username", sync_password,
+                              GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
 
   store->ReportMetrics("sync_username", false, true);
@@ -1130,7 +1127,7 @@ TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
       name, metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_LIST_PREF, 1);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.SyncPasswordHashChange",
-      metrics_util::GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN, 1);
+      GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN, 1);
   store->ShutdownOnUIThread();
 }
 
@@ -1156,9 +1153,8 @@ TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
   // Save password.
   const base::string16 not_sync_password = base::ASCIIToUTF16("password");
   const base::string16 input = base::ASCIIToUTF16("123password");
-  store->SaveGaiaPasswordHash(
-      "not_sync_username", not_sync_password,
-      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  store->SaveGaiaPasswordHash("not_sync_username", not_sync_password,
+                              GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
   WaitForPasswordStore();
 
   store->ReportMetrics("not_sync_username",
@@ -1169,7 +1165,7 @@ TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
       name, metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_LIST_PREF, 1);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.NonSyncPasswordHashChange",
-      metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE, 1);
+      GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE, 1);
   store->ShutdownOnUIThread();
 }
 

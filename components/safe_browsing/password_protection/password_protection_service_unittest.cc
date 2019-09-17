@@ -878,9 +878,17 @@ TEST_P(PasswordProtectionServiceTest,
                                        expected_response.SerializeAsString());
 
   // Initiate a saved password entry request (w/ no sync password).
+  AccountInfo account_info;
+  account_info.account_id = "account_id";
+  account_info.email = "email";
+  account_info.gaia = "gaia";
+  EXPECT_CALL(*password_protection_service_, GetSignedInNonSyncAccount(_))
+      .WillRepeatedly(Return(account_info));
+
   InitializeAndStartPasswordEntryRequest(
-      PasswordType::SAVED_PASSWORD, {"example.com"},
-      false /* match whitelist */, 10000 /* timeout in ms*/, GetWebContents());
+      PasswordType::OTHER_GAIA_PASSWORD, {"gmail.com"},
+      false /* match whitelist */, 10000 /* timeout in ms*/,
+      GetWebContents());
   password_protection_service_->WaitForResponse();
 
   // UMA: request outcomes
