@@ -177,12 +177,14 @@ void BackForwardCache::StoreDocument(std::unique_ptr<RenderFrameHostImpl> rfh) {
   size_t size_limit = cache_size_limit_for_testing_
                           ? cache_size_limit_for_testing_
                           : kBackForwardCacheLimit;
-
-  // Remove the last recently used document if the BackForwardCache list is
+  // Evict the least recently used documents if the BackForwardCache list is
   // full.
-  if (render_frame_hosts_.size() > size_limit) {
-    // TODO(arthursonzogni): Handle RenderFrame deletion appropriately.
-    render_frame_hosts_.pop_back();
+  size_t available_count = 0;
+  for (auto& frame_host : render_frame_hosts_) {
+    if (frame_host->is_evicted_from_back_forward_cache())
+      continue;
+    if (++available_count > size_limit)
+      frame_host->EvictFromBackForwardCache();
   }
 }
 
