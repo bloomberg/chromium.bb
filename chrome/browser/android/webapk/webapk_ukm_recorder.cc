@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/webapps/webapk_ukm_recorder.h"
+#include "chrome/browser/android/webapk/webapk_ukm_recorder.h"
 
 #include <jni.h>
 
