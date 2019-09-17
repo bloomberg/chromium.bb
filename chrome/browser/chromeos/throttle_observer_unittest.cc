@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
+#include "chrome/browser/chromeos/throttle_observer.h"
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
@@ -10,39 +10,39 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace arc {
+namespace chromeos {
 
-class ArcThrottleObserverTest
+class ThrottleObserverTest
     : public testing::Test,
-      public base::SupportsWeakPtr<ArcThrottleObserverTest> {
+      public base::SupportsWeakPtr<ThrottleObserverTest> {
  public:
-  ArcThrottleObserverTest() {
+  ThrottleObserverTest() {
     observer_.StartObserving(
-        nullptr /* ArcBridgeService* */, nullptr /* content::BrowserContext* */,
-        base::BindRepeating(&ArcThrottleObserverTest::OnObserverStateChanged,
+        nullptr /* content::BrowserContext* */,
+        base::BindRepeating(&ThrottleObserverTest::OnObserverStateChanged,
                             AsWeakPtr()));
   }
 
   void OnObserverStateChanged() { notify_count_++; }
 
  protected:
-  ArcThrottleObserver* observer() { return &observer_; }
+  ThrottleObserver* observer() { return &observer_; }
   size_t notify_count() const { return notify_count_; }
 
  private:
-  ArcThrottleObserver observer_{ArcThrottleObserver::PriorityLevel::LOW,
-                                "TestObserver"};
+  ThrottleObserver observer_{ThrottleObserver::PriorityLevel::LOW,
+                             "TestObserver"};
   size_t notify_count_{0};
 
-  DISALLOW_COPY_AND_ASSIGN(ArcThrottleObserverTest);
+  DISALLOW_COPY_AND_ASSIGN(ThrottleObserverTest);
 };
 
-// Tests that ArcThrottleObserver can be constructed and destructed.
-TEST_F(ArcThrottleObserverTest, TestConstructDestruct) {}
+// Tests that ThrottleObserver can be constructed and destructed.
+TEST_F(ThrottleObserverTest, TestConstructDestruct) {}
 
-// Tests that ArcThrottleObserver notifies observers only when its 'active'
+// Tests that ThrottleObserver notifies observers only when its 'active'
 // state changes
-TEST_F(ArcThrottleObserverTest, TestSetActive) {
+TEST_F(ThrottleObserverTest, TestSetActive) {
   EXPECT_EQ(0U, notify_count());
   EXPECT_FALSE(observer()->active());
 
@@ -59,4 +59,4 @@ TEST_F(ArcThrottleObserverTest, TestSetActive) {
   EXPECT_EQ(2U, notify_count());
 }
 
-}  // namespace arc
+}  // namespace chromeos

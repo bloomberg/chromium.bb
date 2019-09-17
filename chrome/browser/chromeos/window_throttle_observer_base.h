@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_INSTANCE_THROTTLE_WINDOW_THROTTLE_OBSERVER_BASE_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_INSTANCE_THROTTLE_WINDOW_THROTTLE_OBSERVER_BASE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_WINDOW_THROTTLE_OBSERVER_BASE_H_
+#define CHROME_BROWSER_CHROMEOS_WINDOW_THROTTLE_OBSERVER_BASE_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
+#include "chrome/browser/chromeos/throttle_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace content {
@@ -17,21 +17,18 @@ namespace aura {
 class Window;
 }
 
-namespace arc {
-
-class ArcBridgeService;
+namespace chromeos {
 
 // Base class for locks that observe changes in window activation.
-class WindowThrottleObserverBase : public ArcThrottleObserver,
+class WindowThrottleObserverBase : public ThrottleObserver,
                                    public wm::ActivationChangeObserver {
  public:
-  WindowThrottleObserverBase(ArcThrottleObserver::PriorityLevel level,
+  WindowThrottleObserverBase(ThrottleObserver::PriorityLevel level,
                              std::string name);
   ~WindowThrottleObserverBase() override = default;
 
-  // ArcThrottleObserver:
-  void StartObserving(ArcBridgeService* arc_bridge_service,
-                      content::BrowserContext* context,
+  // ThrottleObserver:
+  void StartObserving(content::BrowserContext* context,
                       const ObserverStateChangedCallback& callback) override;
   void StopObserving() override;
 
@@ -51,6 +48,6 @@ class WindowThrottleObserverBase : public ArcThrottleObserver,
   DISALLOW_COPY_AND_ASSIGN(WindowThrottleObserverBase);
 };
 
-}  // namespace arc
+}  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_INSTANCE_THROTTLE_WINDOW_THROTTLE_OBSERVER_BASE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_WINDOW_THROTTLE_OBSERVER_BASE_H_

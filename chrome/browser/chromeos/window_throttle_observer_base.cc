@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/instance_throttle/window_throttle_observer_base.h"
+#include "chrome/browser/chromeos/window_throttle_observer_base.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/window.h"
 #include "ui/wm/public/activation_change_observer.h"
 
-namespace arc {
+namespace chromeos {
 namespace {
 
 // Returns true if the window is in the app list window container.
@@ -63,22 +62,21 @@ bool ShouldIgnoreWindowActivation(
 }  // namespace
 
 WindowThrottleObserverBase::WindowThrottleObserverBase(
-    ArcThrottleObserver::PriorityLevel level,
+    ThrottleObserver::PriorityLevel level,
     std::string name)
-    : ArcThrottleObserver(level, name) {}
+    : ThrottleObserver(level, name) {}
 
 void WindowThrottleObserverBase::StartObserving(
-    ArcBridgeService* arc_bridge_service,
     content::BrowserContext* context,
     const ObserverStateChangedCallback& callback) {
-  ArcThrottleObserver::StartObserving(arc_bridge_service, context, callback);
+  ThrottleObserver::StartObserving(context, callback);
   if (!exo::WMHelper::HasInstance())  // for unit testing
     return;
   exo::WMHelper::GetInstance()->AddActivationObserver(this);
 }
 
 void WindowThrottleObserverBase::StopObserving() {
-  ArcThrottleObserver::StopObserving();
+  ThrottleObserver::StopObserving();
   if (!exo::WMHelper::HasInstance())
     return;
   exo::WMHelper::GetInstance()->RemoveActivationObserver(this);
@@ -92,4 +90,4 @@ void WindowThrottleObserverBase::OnWindowActivated(ActivationReason reason,
   SetActive(ProcessWindowActivation(reason, gained_active, lost_active));
 }
 
-}  // namespace arc
+}  // namespace chromeos
