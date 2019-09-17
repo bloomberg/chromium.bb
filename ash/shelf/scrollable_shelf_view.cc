@@ -257,6 +257,8 @@ void ScrollableShelfView::Init() {
   focus_search_ = std::make_unique<ScrollableShelfFocusSearch>(this);
 
   GetShelf()->tooltip()->set_shelf_tooltip_delegate(this);
+
+  set_context_menu_controller(this);
 }
 
 void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
@@ -579,6 +581,14 @@ const char* ScrollableShelfView::GetClassName() const {
 void ScrollableShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
     ShelfButton* button,
     bool reverse) {}
+
+void ScrollableShelfView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  // |point| is in screen coordinates. So it does not need to transform.
+  shelf_view_->ShowContextMenuForViewImpl(shelf_view_, point, source_type);
+}
 
 void ScrollableShelfView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event,

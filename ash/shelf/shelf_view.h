@@ -207,6 +207,11 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                            const gfx::Vector2d& cursor_offset_from_center,
                            float scale_factor) override;
 
+  // Overridden from views::ContextMenuController:
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
+
   // ash::TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
@@ -509,11 +514,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                          views::InkDrop* ink_drop,
                          ShelfAction action,
                          ShelfItemDelegate::AppMenuItems menu_items);
-
-  // Overridden from views::ContextMenuController:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
 
   // Show either a context or normal click menu of given |menu_model|.
   // If |context_menu| is set, the displayed menu is a context menu and not
