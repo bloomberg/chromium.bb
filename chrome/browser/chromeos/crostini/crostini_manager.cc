@@ -1113,7 +1113,6 @@ void CrostiniManager::StartLxdContainer(std::string vm_name,
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
   request.set_owner_id(owner_id_);
-  request.set_async(true);
   if (auto* integration_service =
           drive::DriveIntegrationServiceFactory::GetForProfile(profile_)) {
     request.set_drivefs_mount_path(
