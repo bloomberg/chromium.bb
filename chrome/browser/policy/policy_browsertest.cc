@@ -2148,24 +2148,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
 }
 
 #if defined(OS_CHROMEOS)
-class DrivePolicyTest : public PolicyTest,
-                        public testing::WithParamInterface<bool> {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PolicyTest::SetUpCommandLine(command_line);
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(chromeos::features::kDriveFs);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(chromeos::features::kDriveFs);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 // Verifies that the download directory can be forced to Google Drive by policy.
-IN_PROC_BROWSER_TEST_P(DrivePolicyTest, DownloadDirectory_Drive) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory_Drive) {
   // Override the download directory with the policy.
   {
     PolicyMap policies;
@@ -2198,11 +2182,6 @@ IN_PROC_BROWSER_TEST_P(DrivePolicyTest, DownloadDirectory_Drive) {
                 .DownloadPath()
                 .StripTrailingSeparators());
 }
-
-INSTANTIATE_TEST_SUITE_P(DrivePolicyTestInstance,
-                         DrivePolicyTest,
-                         testing::Bool());
-
 #endif  // !defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
