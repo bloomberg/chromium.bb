@@ -4308,7 +4308,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebNfc)) {
     registry_->AddInterface<device::mojom::NFC>(base::Bind(
-        &RenderFrameHostImpl::BindNFCRequest, base::Unretained(this)));
+        &RenderFrameHostImpl::BindNFCReceiver, base::Unretained(this)));
   }
 #endif
 
@@ -6293,7 +6293,8 @@ void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
 }
 
 #if defined(OS_ANDROID)
-void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
+void RenderFrameHostImpl::BindNFCReceiver(
+    mojo::PendingReceiver<device::mojom::NFC> receiver) {
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
   if (GetParent()) {
@@ -6302,7 +6303,7 @@ void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
     return;
   }
   if (delegate_)
-    delegate_->GetNFC(std::move(request));
+    delegate_->GetNFC(std::move(receiver));
 }
 #endif
 

@@ -1538,7 +1538,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnMediaInterfaceFactoryConnectionError();
 
 #if defined(OS_ANDROID)
-  void BindNFCRequest(device::mojom::NFCRequest request);
+  void BindNFCReceiver(mojo::PendingReceiver<device::mojom::NFC> receiver);
 #endif
 
 #if !defined(OS_ANDROID)
