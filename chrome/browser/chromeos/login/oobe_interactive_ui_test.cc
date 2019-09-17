@@ -827,7 +827,8 @@ class EphemeralUserOobeTest
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 };
 
-IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, RegularEphemeralUser) {
+// TODO(crbug.com/1004561) Disabled due to flake.
+IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, DISABLED_RegularEphemeralUser) {
   ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver get_auth_token_observer;
 
   WaitForGaiaSignInScreen(test_setup()->arc_state() != ArcState::kNotAvailable);
