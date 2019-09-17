@@ -4,8 +4,6 @@
 
 #include "third_party/blink/public/common/logging/logging_utils.h"
 
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
-
 namespace blink {
 
 logging::LogSeverity ConsoleMessageLevelToLogSeverity(
