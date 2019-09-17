@@ -2281,8 +2281,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'monroe',
       'nami',
       'nocturne',
-      'nyan_big',
-      'nyan_blaze',
       'nyan_kitty',
       'octavius',
       'octopus',
@@ -2441,8 +2439,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kip',
       'mistral',
       'nocturne',
-      'nyan_blaze',
-      'nyan_big',
       'nyan_kitty',
       'octopus',
       'reef',
@@ -2611,7 +2607,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_hwtest_assignments = frozenset([
     # bvt-inline      bvt-cq           bvt-arc             bvt-tast-cq          family
     ('winky',         'kip',           None,               'winky'),            # rambi (BYT)
-    ('nyan_big',      'nyan_kitty',    None,               'nyan_big'),         # nyan (K1)
     ('auron_paine',   'tidus',         'auron_yuna',       'auron_paine'),      # auron (BDW)
     ('veyron_mighty', 'veyron_speedy', 'veyron_minnie',    'veyron_mighty'),    # pinky (RK3288)
     ('wizpig',        'edgar',         'cyan',             'wizpig'),           # strago (BSW)
@@ -2624,7 +2619,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('nocturne',      None,            None,               'nocturne'),         # Nocturne (KBL)
     ('atlas',         None,            None,               'atlas'),            # Atlas (KBL)
     ('octopus',       None,            None,               'octopus'),          # Octopus (GLK unibuild)
-    ('nyan_blaze',    None,            None,               'nyan_blaze'),       # Add for Skylab test
     ('scarlet'   ,    None,            None,               'scarlet'),          # scarlet (RK3399 unibuild)
     ('grunt',         None,            'grunt',            'grunt'),            # grunt (AMD unibuild)
   ])
@@ -3268,7 +3262,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'kevin64',
       'nocturne',
-      'nyan_big',
       'reef',
       'terra',
       'veyron_minnie',

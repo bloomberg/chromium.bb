@@ -64,7 +64,7 @@ class PaygenJsonTests(BasePaygenBuildLibTest):
   """Test cases that require mocking paygen.json fetching."""
 
   def testGetPaygenJsonCaching(self):
-    expected_paygen_size = 1069
+    expected_paygen_size = 1056
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
     self.assertEqual(len(result), expected_paygen_size)
     self.mockGetJson.assert_called_once()

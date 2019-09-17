@@ -27,7 +27,6 @@
     hana-chrome-pfq
     kevin64-chrome-pfq
     nocturne-chrome-pfq
-    nyan_big-chrome-pfq
     reef-chrome-pfq
     scarlet-chromium-pfq
     terra-chrome-pfq
@@ -102,8 +101,6 @@
     monroe-paladin
     nami-paladin
     nocturne-paladin
-    nyan_big-paladin
-    nyan_blaze-paladin
     nyan_kitty-full-compile-paladin
     nyan_kitty-paladin
     octavius-paladin
@@ -2383,7 +2380,6 @@
     hana-chrome-pfq-tryjob
     kevin64-chrome-pfq-tryjob
     nocturne-chrome-pfq-tryjob
-    nyan_big-chrome-pfq-tryjob
     reef-chrome-pfq-tryjob
     scarlet-chromium-pfq-tryjob
     terra-chrome-pfq-tryjob
@@ -2480,8 +2476,6 @@
     monroe-paladin-tryjob
     nami-paladin-tryjob
     nocturne-paladin-tryjob
-    nyan_big-paladin-tryjob
-    nyan_blaze-paladin-tryjob
     nyan_kitty-full-compile-paladin-tryjob
     nyan_kitty-paladin-tryjob
     octavius-paladin-tryjob
