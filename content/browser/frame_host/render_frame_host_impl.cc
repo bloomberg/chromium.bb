@@ -1897,7 +1897,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
 }
 
 void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
-  if (!is_active())
+  if (unload_state_ != UnloadState::NotRun)
     return;
 
   if (render_frame_created_) {
