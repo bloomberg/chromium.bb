@@ -29,6 +29,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(crbug/1004585) Crashes on Android
+#if !defined(OS_ANDROID)
+
 namespace {
 using autofill::AccessoryAction;
 using autofill::AccessorySheetData;
@@ -58,9 +61,6 @@ AccessorySheetData populate_sheet(AccessoryTabType type) {
 }
 
 }  // namespace
-
-// TODO(crbug/1004585) Crashes on Android
-#if !defined(OS_ANDROID)
 
 class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
  public:
