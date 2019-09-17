@@ -198,8 +198,9 @@ class SimpleBuilder(generic_builders.Builder):
     # gather output manually, early slow stages will prevent any output from
     # later stages showing up until it finishes.
     changes = self._GetChangesUnderTest()
+
+    unit_test_stage = [test_stages.UnitTestStage, board]
     stage_list = [
-        [test_stages.UnitTestStage, board],
         [test_stages.DebugInfoTestStage, board],
     ]
 
@@ -207,7 +208,8 @@ class SimpleBuilder(generic_builders.Builder):
     if builder_run.config.compilecheck or builder_run.options.compilecheck:
       board_runattrs = builder_run.GetBoardRunAttrs(board)
       board_runattrs.SetParallel('test_artifacts_uploaded', False)
-      for x in stage_list:
+      stages = [unit_test_stage] + stage_list
+      for x in stages:
         self._RunStage(*x, builder_run=builder_run)
       return
 
@@ -262,6 +264,11 @@ class SimpleBuilder(generic_builders.Builder):
     with self._build_image_lock:
       self._RunStage(build_stages.BuildImageStage, board,
                      builder_run=builder_run, afdo_use=config.afdo_use)
+
+    # Run UnitTestStage in isolation before any of the other parallel stages
+    # as it races with the image construction in the ArchiveStage.
+    # http://crbug.com/1000374
+    self._RunStage(*unit_test_stage, builder_run=builder_run)
 
     parallel.RunParallelSteps([
         lambda: self._RunParallelStages(stage_objs + [archive_stage]),
