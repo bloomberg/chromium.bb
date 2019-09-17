@@ -17,6 +17,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -56,23 +57,24 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
   ~TestStreamProvider() override {
     // If we expected a stream to be acquired, make sure it is so.
     if (stream_)
-      EXPECT_TRUE(binding_);
+      EXPECT_TRUE(receiver_);
   }
 
   void Acquire(
       const media::AudioParameters& params,
       media::mojom::AudioOutputStreamProviderClientPtr provider_client,
       const base::Optional<base::UnguessableToken>& processing_id) override {
-    EXPECT_EQ(binding_, base::nullopt);
+    EXPECT_EQ(receiver_, base::nullopt);
     EXPECT_NE(stream_, nullptr);
     std::swap(provider_client, provider_client_);
-    media::mojom::AudioOutputStreamPtr stream_ptr;
-    binding_.emplace(stream_, mojo::MakeRequest(&stream_ptr));
+    mojo::PendingRemote<media::mojom::AudioOutputStream> stream_pending_remote;
+    receiver_.emplace(stream_,
+                      stream_pending_remote.InitWithNewPipeAndPassReceiver());
     base::CancelableSyncSocket foreign_socket;
     EXPECT_TRUE(
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
     provider_client_->Created(
-        std::move(stream_ptr),
+        std::move(stream_pending_remote),
         {base::in_place, base::UnsafeSharedMemoryRegion::Create(kMemoryLength),
          mojo::WrapPlatformFile(foreign_socket.Release())});
   }
@@ -87,7 +89,7 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
  private:
   media::mojom::AudioOutputStream* stream_;
   media::mojom::AudioOutputStreamProviderClientPtr provider_client_;
-  base::Optional<mojo::Binding<media::mojom::AudioOutputStream>> binding_;
+  base::Optional<mojo::Receiver<media::mojom::AudioOutputStream>> receiver_;
   base::CancelableSyncSocket socket_;
 };
 

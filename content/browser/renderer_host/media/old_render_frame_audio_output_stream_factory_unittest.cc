@@ -20,7 +20,9 @@
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,9 +32,6 @@ namespace content {
 namespace {
 
 using testing::Test;
-using AudioOutputStream = media::mojom::AudioOutputStream;
-using AudioOutputStreamPtr = mojo::InterfacePtr<AudioOutputStream>;
-using AudioOutputStreamRequest = mojo::InterfaceRequest<AudioOutputStream>;
 using AudioOutputStreamProviderClient =
     media::mojom::AudioOutputStreamProviderClient;
 using AudioOutputStreamProviderClientPtr =
@@ -174,10 +173,11 @@ class MockClient : public AudioOutputStreamProviderClient {
     return p;
   }
 
-  void Created(AudioOutputStreamPtr stream,
+  void Created(mojo::PendingRemote<media::mojom::AudioOutputStream> stream,
                media::mojom::ReadWriteAudioDataPipePtr data_pipe) override {
     was_called_ = true;
-    stream_ = std::move(stream);
+    stream_.reset();
+    stream_.Bind(std::move(stream));
   }
 
   bool was_called() { return was_called_; }
@@ -186,7 +186,7 @@ class MockClient : public AudioOutputStreamProviderClient {
 
  private:
   mojo::Binding<AudioOutputStreamProviderClient> provider_client_binding_;
-  AudioOutputStreamPtr stream_;
+  mojo::Remote<media::mojom::AudioOutputStream> stream_;
   bool was_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockClient);
