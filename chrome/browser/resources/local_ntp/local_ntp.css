@@ -1091,6 +1091,7 @@ html[dir=rtl] .menu-option {
   }
 }
 
+#customization-menu.using-mouse-nav,
 .using-mouse-nav .bg-sel-tile:focus {
   outline: none;
 }
