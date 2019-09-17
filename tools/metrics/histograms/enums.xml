@@ -17119,6 +17119,16 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Cound not bind to domain controller."/>
 </enum>
 
+<enum name="EnterpriseCloudReportingResponse">
+  <summary>Result of uploading an enterprise report.</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Network error"/>
+  <int value="2" label="Temporary server error"/>
+  <int value="3" label="DDS concurrency error"/>
+  <int value="4" label="Request too large error"/>
+  <int value="5" label="Other error"/>
+</enum>
+
 <enum name="EnterpriseDeviceManagementStatus">
   <summary>
     Status codes produced by DeviceManagementService for requests made to the
