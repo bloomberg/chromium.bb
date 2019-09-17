@@ -211,11 +211,11 @@ void PDFResource::SetAccessibilityViewportInfo(
 }
 
 void PDFResource::SetAccessibilityPageInfo(
-    PP_PrivateAccessibilityPageInfo* page_info,
-    PP_PrivateAccessibilityTextRunInfo text_runs[],
-    PP_PrivateAccessibilityCharInfo chars[],
-    PP_PrivateAccessibilityLinkInfo links[],
-    PP_PrivateAccessibilityImageInfo images[]) {
+    const PP_PrivateAccessibilityPageInfo* page_info,
+    const PP_PrivateAccessibilityTextRunInfo text_runs[],
+    const PP_PrivateAccessibilityCharInfo chars[],
+    const PP_PrivateAccessibilityLinkInfo links[],
+    const PP_PrivateAccessibilityImageInfo images[]) {
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_run_vector(
       text_runs, text_runs + page_info->text_run_count);
   std::vector<PP_PrivateAccessibilityCharInfo> char_vector(

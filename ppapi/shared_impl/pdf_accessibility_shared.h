@@ -13,6 +13,7 @@
 
 namespace ppapi {
 
+// Needs to stay in sync with PP_PrivateAccessibilityLinkInfo.
 struct PPAPI_SHARED_EXPORT PdfAccessibilityLinkInfo {
   PdfAccessibilityLinkInfo();
   PdfAccessibilityLinkInfo(const PdfAccessibilityLinkInfo& other);
@@ -26,6 +27,7 @@ struct PPAPI_SHARED_EXPORT PdfAccessibilityLinkInfo {
   PP_FloatRect bounds;
 };
 
+// Needs to stay in sync with PP_PrivateAccessibilityImageInfo.
 struct PPAPI_SHARED_EXPORT PdfAccessibilityImageInfo {
   PdfAccessibilityImageInfo();
   PdfAccessibilityImageInfo(const PdfAccessibilityImageInfo& other);

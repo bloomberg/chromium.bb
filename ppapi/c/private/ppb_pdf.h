@@ -81,6 +81,7 @@ struct PP_PrivateAccessibilityCharInfo {
 
 // This holds the link information provided by the PDF and will be used in
 // accessibility to provide the link information.
+// Needs to stay in sync with C++ version.
 struct PP_PrivateAccessibilityLinkInfo {
   // URL of the link.
   const char* url;
@@ -102,6 +103,7 @@ struct PP_PrivateAccessibilityLinkInfo {
 
 // This holds the image information provided by the PDF and will be used in
 // accessibility to provide the image information.
+// Needs to stay in sync with C++ version.
 struct PP_PrivateAccessibilityImageInfo {
   // Alternate text for the image provided by PDF.
   const char* alt_text;
@@ -194,11 +196,11 @@ struct PPB_PDF {
   // accessibility support.
   void (*SetAccessibilityPageInfo)(
       PP_Instance instance,
-      struct PP_PrivateAccessibilityPageInfo* page_info,
-      struct PP_PrivateAccessibilityTextRunInfo text_runs[],
-      struct PP_PrivateAccessibilityCharInfo chars[],
-      struct PP_PrivateAccessibilityLinkInfo links[],
-      struct PP_PrivateAccessibilityImageInfo images[]);
+      const struct PP_PrivateAccessibilityPageInfo* page_info,
+      const struct PP_PrivateAccessibilityTextRunInfo text_runs[],
+      const struct PP_PrivateAccessibilityCharInfo chars[],
+      const struct PP_PrivateAccessibilityLinkInfo links[],
+      const struct PP_PrivateAccessibilityImageInfo images[]);
 
   // Sends information about the PDF's URL and the embedder's URL.
   void (*SetCrashData)(PP_Instance instance,
