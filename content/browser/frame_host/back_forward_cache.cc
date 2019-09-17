@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/page_messages.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
 #include "net/http/http_status_code.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
@@ -91,6 +92,12 @@ bool CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
   return true;
 }
 
+bool IsServiceWorkerSupported() {
+  static constexpr base::FeatureParam<bool> service_worker_supported(
+      &features::kBackForwardCache, "service_worker_supported", false);
+  return service_worker_supported.Get();
+}
+
 uint64_t GetDisallowedFeatures() {
   // TODO(lowell): Finalize disallowed feature list, and test for each
   // disallowed feature.
@@ -120,7 +127,7 @@ uint64_t GetDisallowedFeatures() {
 
   uint64_t result = kAlwaysDisallowedFeatures;
 
-  if (!base::FeatureList::IsEnabled(kBackForwardCacheWithServiceWorker)) {
+  if (!IsServiceWorkerSupported()) {
     result |=
         ToFeatureBit(WebSchedulerTrackedFeature::kServiceWorkerControlledPage);
   }
@@ -128,9 +135,6 @@ uint64_t GetDisallowedFeatures() {
 }
 
 }  // namespace
-
-const base::Feature kBackForwardCacheWithServiceWorker = {
-    "BackForwardCacheWithServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
 
 BackForwardCache::BackForwardCache() : weak_factory_(this) {}
 BackForwardCache::~BackForwardCache() = default;
