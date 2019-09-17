@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
@@ -39,6 +40,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   // Get the last node which AccessibilityPerformAction default action was
   // called from for testing.
   static const AXNode* GetNodeFromLastDefaultAction();
+
+  // Set a global scale factor for testing.
+  static std::unique_ptr<base::AutoReset<float>> SetScaleFactor(float value);
 
   ~TestAXNodeWrapper() override;
 

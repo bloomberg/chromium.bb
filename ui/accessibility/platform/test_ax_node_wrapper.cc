@@ -26,6 +26,9 @@ std::unordered_map<AXNode*, TestAXNodeWrapper*> g_node_to_wrapper_map;
 // A global coordinate offset.
 gfx::Vector2d g_offset;
 
+// A global scale factor.
+float g_scale_factor = 1.0;
+
 // A global map that stores which node is focused on a determined tree.
 //   - If a tree has no node being focused, there shouldn't be any entry on the
 //     map associated with such tree, i.e. a pair {tree, nullptr} is invalid.
@@ -86,6 +89,12 @@ const AXNode* TestAXNodeWrapper::GetNodeFromLastShowContextMenu() {
 // static
 const AXNode* TestAXNodeWrapper::GetNodeFromLastDefaultAction() {
   return g_node_from_last_default_action;
+}
+
+// static
+std::unique_ptr<base::AutoReset<float>> TestAXNodeWrapper::SetScaleFactor(
+    float value) {
+  return std::make_unique<base::AutoReset<float>>(&g_scale_factor, value);
 }
 
 TestAXNodeWrapper::~TestAXNodeWrapper() {
@@ -228,7 +237,8 @@ TestAXNodeWrapper* TestAXNodeWrapper::HitTestSyncInternal(int x, int y) {
 }
 
 gfx::NativeViewAccessible TestAXNodeWrapper::HitTestSync(int x, int y) {
-  TestAXNodeWrapper* wrapper = HitTestSyncInternal(x, y);
+  TestAXNodeWrapper* wrapper =
+      HitTestSyncInternal(x / g_scale_factor, y / g_scale_factor);
   return wrapper ? wrapper->ax_platform_node()->GetNativeViewAccessible()
                  : nullptr;
 }
