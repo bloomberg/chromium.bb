@@ -99,20 +99,10 @@ public class StartSurfaceCoordinator implements StartSurface {
             createAndSetStartSurface();
         }
 
-        StartSurfaceMediator.OverlayVisibilityHandler overlayVisibilityHandler =
-                new StartSurfaceMediator.OverlayVisibilityHandler() {
-                    @Override
-                    // TODO(crbug.com/982018): Consider moving this to LayoutManager.
-                    public void setContentOverlayVisibility(boolean isVisible) {
-                        if (mActivity.getTabModelSelector().getCurrentTab() == null) return;
-                        mActivity.getCompositorViewHolder().setContentOverlayVisibility(
-                                isVisible, true);
-                    }
-                };
         TabSwitcher.Controller controller =
                 mTabSwitcher != null ? mTabSwitcher.getController() : mTasksSurface.getController();
         mStartSurfaceMediator = new StartSurfaceMediator(controller,
-                mActivity.getTabModelSelector(), overlayVisibilityHandler, mPropertyModel,
+                mActivity.getTabModelSelector(), mPropertyModel,
                 mExploreSurfaceCoordinator == null
                         ? null
                         : mExploreSurfaceCoordinator.getFeedSurfaceCreator(),

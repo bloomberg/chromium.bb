@@ -31,15 +31,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 /** The mediator implements the logic to interact with the surfaces and caller. */
 class StartSurfaceMediator
         implements StartSurface.Controller, TabSwitcher.OverviewModeObserver, View.OnClickListener {
-    /** Interface to control overlay visibility. */
-    interface OverlayVisibilityHandler {
-        /**
-         * Set the content overlay visibility.
-         * @param isVisible Whether the content overlay should be visible.
-         */
-        void setContentOverlayVisibility(boolean isVisible);
-    }
-
     /** Interface to initialize a secondary tasks surface for more tabs. */
     interface SecondaryTasksSurfaceInitializer {
         /**
@@ -52,7 +43,6 @@ class StartSurfaceMediator
 
     private final ObserverList<StartSurface.OverviewModeObserver> mObservers = new ObserverList<>();
     private final TabSwitcher.Controller mController;
-    private final OverlayVisibilityHandler mOverlayVisibilityHandler;
     @Nullable
     private final PropertyModel mPropertyModel;
     @Nullable
@@ -65,13 +55,11 @@ class StartSurfaceMediator
     private boolean mIsIncognito;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
-            OverlayVisibilityHandler overlayVisibilityHandler,
             @Nullable PropertyModel propertyModel,
             @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
             @StartSurfaceCoordinator.SurfaceMode int mode) {
         mController = controller;
-        mOverlayVisibilityHandler = overlayVisibilityHandler;
         mPropertyModel = propertyModel;
         mFeedSurfaceCreator = feedSurfaceCreator;
         mSecondaryTasksSurfaceInitializer = secondaryTasksSurfaceInitializer;
@@ -233,12 +221,10 @@ class StartSurfaceMediator
         for (StartSurface.OverviewModeObserver observer : mObservers) {
             observer.finishedShowing();
         }
-        mOverlayVisibilityHandler.setContentOverlayVisibility(false);
     }
 
     @Override
     public void startedHiding() {
-        mOverlayVisibilityHandler.setContentOverlayVisibility(true);
         if (mPropertyModel != null) {
             mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
             destroyFeedSurfaceCoordinator();

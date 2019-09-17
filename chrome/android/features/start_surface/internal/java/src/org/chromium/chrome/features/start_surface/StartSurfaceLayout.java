@@ -194,7 +194,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
     public void startHiding(int nextId, boolean hintAtTabSelection) {
         super.startHiding(nextId, hintAtTabSelection);
 
-        int sourceTabId = mNextTabId;
+        int sourceTabId = nextId;
         if (sourceTabId == Tab.INVALID_TAB_ID) sourceTabId = mTabModelSelector.getCurrentTabId();
         LayoutTab sourceLayoutTab = createLayoutTab(
                 sourceTabId, mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
