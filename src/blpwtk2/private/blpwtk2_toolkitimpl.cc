@@ -73,6 +73,7 @@
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_controller.h>
 #include <third_party/icu/source/common/unicode/locid.h>
+#include <ui/base/ime/init/input_method_initializer.h>
 #include <ui/base/l10n/l10n_util.h>
 
 #include <atomic>
@@ -629,6 +630,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         startRenderer(isHost, channelInfo, pBrowserClientImpl ? pBrowserClientImpl->GetClientInvitation() : nullptr);
     }
 
+    ui::InitializeInputMethod();
     setDefaultLocaleIfWindowsLocaleIsNotSupported();
 }
 
