@@ -123,14 +123,6 @@ class CC_EXPORT LayerTreeHostCommon {
   static void CalculateDrawPropertiesForTesting(
       CalcDrawPropsImplInputsForTesting* inputs);
 
-  template <typename Function>
-  static void CallFunctionForEveryLayer(LayerTreeHost* host,
-                                        const Function& function);
-
-  template <typename Function>
-  static void CallFunctionForEveryLayer(LayerTreeImpl* layer,
-                                        const Function& function);
-
   struct CC_EXPORT ScrollUpdateInfo {
     ElementId element_id;
     gfx::ScrollOffset scroll_delta;
@@ -197,21 +189,6 @@ struct CC_EXPORT ScrollAndScaleSet {
   // touchpad, etc.).
   ManipulationInfo manipulation_info;
 };
-
-// TODO(wangxianzhu): Remove these functions and let callers iterate directly.
-template <typename Function>
-void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeHost* host,
-                                                    const Function& function) {
-  for (auto* layer : *host)
-    function(layer);
-}
-
-template <typename Function>
-void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeImpl* tree_impl,
-                                                    const Function& function) {
-  for (auto* layer : *tree_impl)
-    function(layer);
-}
 
 CC_EXPORT PropertyTrees* GetPropertyTrees(const Layer* layer);
 CC_EXPORT PropertyTrees* GetPropertyTrees(const LayerImpl* layer);
