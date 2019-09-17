@@ -283,10 +283,15 @@ void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
     if (!anchor_element.Href().ProtocolIsInHTTPFamily())
       continue;
 
-    if (anchor_element.VisibleBoundsInVisualViewport().IsEmpty() &&
-        (!anchor_element.GetDocument().GetFrame() ||
-         !GetRootDocument(anchor_element) ||
-         !IsUrlIncrementedByOne(anchor_element))) {
+    // If the anchor doesn't have a valid frame/root document, skip it.
+    if (!anchor_element.GetDocument().GetFrame() ||
+        !GetRootDocument(anchor_element)) {
+      continue;
+    }
+
+    // Only anchors with width/height should be evaluated.
+    if (!anchor_element.GetLayoutObject() ||
+        anchor_element.GetLayoutObject()->AbsoluteBoundingBoxRect().IsEmpty()) {
       continue;
     }
 
