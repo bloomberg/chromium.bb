@@ -239,6 +239,10 @@ std::string GetDocumentMetadata(FPDF_DOCUMENT doc, const std::string& key) {
 
 gin::IsolateHolder* g_isolate_holder = nullptr;
 
+bool IsV8Initialized() {
+  return !!g_isolate_holder;
+}
+
 void SetUpV8() {
   const char* recommended = FPDF_GetRecommendedV8Flags();
   v8::V8::SetFlagsFromString(recommended, strlen(recommended));
@@ -360,13 +364,17 @@ wchar_t SimplifyForSearch(wchar_t c) {
 
 }  // namespace
 
-bool InitializeSDK() {
-  SetUpV8();
-
+bool InitializeSDK(bool enable_v8) {
   FPDF_LIBRARY_CONFIG config;
   config.version = 2;
   config.m_pUserFontPaths = nullptr;
-  config.m_pIsolate = v8::Isolate::GetCurrent();
+
+  if (enable_v8) {
+    SetUpV8();
+    config.m_pIsolate = v8::Isolate::GetCurrent();
+  } else {
+    config.m_pIsolate = nullptr;
+  }
   config.m_v8EmbedderSlot = gin::kEmbedderPDFium;
   FPDF_InitLibraryWithConfig(&config);
 
@@ -381,7 +389,8 @@ bool InitializeSDK() {
 
 void ShutdownSDK() {
   FPDF_DestroyLibrary();
-  TearDownV8();
+  if (IsV8Initialized())
+    TearDownV8();
 }
 
 std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client,
@@ -395,6 +404,9 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client, bool enable_javascript)
       mouse_down_state_(PDFiumPage::NONSELECTABLE_AREA,
                         PDFiumPage::LinkTarget()),
       print_(this) {
+  if (enable_javascript)
+    DCHECK(IsV8Initialized());
+
   find_factory_.Initialize(this);
   password_factory_.Initialize(this);
 

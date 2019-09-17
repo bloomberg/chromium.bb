@@ -29,11 +29,11 @@ class ScopedSdkInitializer {
   }
 
   // Must be called.
-  bool Init() {
+  bool Init(bool enable_v8) {
 #if DCHECK_IS_ON()
     initialized_ = true;
 #endif
-    return IsSDKInitializedViaPepper() || InitializeSDK();
+    return IsSDKInitializedViaPepper() || InitializeSDK(enable_v8);
   }
 
  private:
@@ -63,7 +63,7 @@ bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
                        bool autorotate,
                        bool use_color) {
   ScopedSdkInitializer scoped_sdk_initializer;
-  if (!scoped_sdk_initializer.Init())
+  if (!scoped_sdk_initializer.Init(/*enable_v8=*/true))
     return false;
 
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
@@ -94,7 +94,7 @@ bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                    int* page_count,
                    double* max_page_width) {
   ScopedSdkInitializer scoped_sdk_initializer;
-  if (!scoped_sdk_initializer.Init())
+  if (!scoped_sdk_initializer.Init(/*enable_v8=*/true))
     return false;
 
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
@@ -106,7 +106,7 @@ bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
                            double* width,
                            double* height) {
   ScopedSdkInitializer scoped_sdk_initializer;
-  if (!scoped_sdk_initializer.Init())
+  if (!scoped_sdk_initializer.Init(/*enable_v8=*/true))
     return false;
 
   chrome_pdf::PDFEngineExports* engine_exports =
@@ -125,7 +125,7 @@ bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
                            bool autorotate,
                            bool use_color) {
   ScopedSdkInitializer scoped_sdk_initializer;
-  if (!scoped_sdk_initializer.Init())
+  if (!scoped_sdk_initializer.Init(/*enable_v8=*/true))
     return false;
 
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
@@ -142,7 +142,7 @@ std::vector<uint8_t> ConvertPdfPagesToNupPdf(
     const gfx::Size& page_size,
     const gfx::Rect& printable_area) {
   ScopedSdkInitializer scoped_sdk_initializer;
-  if (!scoped_sdk_initializer.Init())
+  if (!scoped_sdk_initializer.Init(/*enable_v8=*/false))
     return std::vector<uint8_t>();
 
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
@@ -156,7 +156,7 @@ std::vector<uint8_t> ConvertPdfDocumentToNupPdf(
     const gfx::Size& page_size,
     const gfx::Rect& printable_area) {
   ScopedSdkInitializer scoped_sdk_initializer;
-  if (!scoped_sdk_initializer.Init())
+  if (!scoped_sdk_initializer.Init(/*enable_v8=*/false))
     return std::vector<uint8_t>();
 
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
