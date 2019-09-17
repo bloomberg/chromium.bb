@@ -302,9 +302,9 @@ void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
 
     anchor_elements_metrics.push_back(anchor_metric.value().CreateMetricsPtr());
 
-    // Webpages with more than 40 anchors will stop processing at the 40th
+    // Webpages with more than 100 anchors will stop processing at the 100th
     // anchor element.
-    if (anchor_elements_metrics.size() >= 40)
+    if (anchor_elements_metrics.size() >= 100)
       break;
   }
 
