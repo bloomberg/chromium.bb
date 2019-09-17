@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printing/history/print_job_history_service.h"
+#include "chrome/browser/chromeos/printing/history/print_job_history_service_impl.h"
 
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
@@ -25,15 +25,15 @@ const int kPagesNumber = 3;
 
 }  // namespace
 
-class PrintJobHistoryServiceTest : public ::testing::Test {
+class PrintJobHistoryServiceImplTest : public ::testing::Test {
  public:
-  PrintJobHistoryServiceTest() {}
+  PrintJobHistoryServiceImplTest() {}
 
   void SetUp() override {
     std::unique_ptr<PrintJobDatabase> print_job_database =
         std::make_unique<TestPrintJobDatabase>();
     print_job_manager_ = std::make_unique<TestCupsPrintJobManager>(&profile_);
-    print_job_history_service_ = std::make_unique<PrintJobHistoryService>(
+    print_job_history_service_ = std::make_unique<PrintJobHistoryServiceImpl>(
         std::move(print_job_database), print_job_manager_.get());
   }
 
@@ -66,7 +66,7 @@ class PrintJobHistoryServiceTest : public ::testing::Test {
   TestingProfile profile_;
 };
 
-TEST_F(PrintJobHistoryServiceTest, SaveObservedCupsPrintJob) {
+TEST_F(PrintJobHistoryServiceImplTest, SaveObservedCupsPrintJob) {
   base::RunLoop save_print_job_run_loop;
   TestPrintJobHistoryServiceObserver observer(
       print_job_history_service_.get(), save_print_job_run_loop.QuitClosure());
@@ -81,8 +81,8 @@ TEST_F(PrintJobHistoryServiceTest, SaveObservedCupsPrintJob) {
 
   base::RunLoop get_print_jobs_run_loop;
   print_job_history_service_->GetPrintJobs(base::BindOnce(
-      &PrintJobHistoryServiceTest::OnPrintJobsRetrieved, base::Unretained(this),
-      get_print_jobs_run_loop.QuitClosure()));
+      &PrintJobHistoryServiceImplTest::OnPrintJobsRetrieved,
+      base::Unretained(this), get_print_jobs_run_loop.QuitClosure()));
   get_print_jobs_run_loop.Run();
 
   EXPECT_EQ(1u, entries_.size());
@@ -92,7 +92,7 @@ TEST_F(PrintJobHistoryServiceTest, SaveObservedCupsPrintJob) {
             entries_[0].status());
 }
 
-TEST_F(PrintJobHistoryServiceTest, ObserverTest) {
+TEST_F(PrintJobHistoryServiceImplTest, ObserverTest) {
   base::RunLoop run_loop;
   TestPrintJobHistoryServiceObserver observer(print_job_history_service_.get(),
                                               run_loop.QuitClosure());
