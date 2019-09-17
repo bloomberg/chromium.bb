@@ -52,9 +52,12 @@ class LoopbackPartitions(object):
 
     Args:
       path: Path to the backing file.
-      destination: Base path to mount partitions.
-      part_ids: Mount these partitions at context manager entry.
-      mount_opts: Use these mount_opts for mounting |part_ids|.
+      destination: Base path to mount partitions.  If not specified, then
+          calling Mount() will create a temporary directory and use it.
+      part_ids: Mount these partitions at context manager entry.  This is only
+          used during initialization of the context manager.
+      mount_opts: Use these mount_opts for mounting |part_ids|.  This is only
+          used during initialization of the context manager.
     """
     self.path = path
     self.destination = destination
