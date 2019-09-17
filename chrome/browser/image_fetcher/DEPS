@@ -3,4 +3,5 @@ include_rules = [
   "+chrome/android/public/profiles",
 
   "+chrome/lib/util/public",
+  "+content/public/android/java/src/org/chromium/content_public",
 ]

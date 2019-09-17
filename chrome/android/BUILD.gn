@@ -289,9 +289,9 @@ android_library("chrome_java") {
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
     "//chrome/browser/android/thin_webview:factory_java",
     "//chrome/browser/android/thin_webview:java",
+    "//chrome/browser/image_fetcher:java",
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/util/android:java",
-    "//chrome/lib/image_fetcher/public/android:java",
     "//chrome/lib/lifecycle/public/android:java",
     "//chrome/lib/util/public/android:java",
     "//components/autofill/android:autofill_java",
@@ -548,7 +548,7 @@ group("jni_headers") {
     "//chrome/android/features/keyboard_accessory:jni_headers",
     "//chrome/android/features/media_router:jni_headers",
     "//chrome/android/public/profiles:jni_headers",
-    "//chrome/lib/image_fetcher/public/android:jni_headers",
+    "//chrome/browser/image_fetcher:jni_headers",
     "//chrome/lib/util/public/android:jni_headers",
   ]
 }
