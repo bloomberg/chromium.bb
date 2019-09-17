@@ -46,10 +46,6 @@ class TestSuite {
   // Disables checks for process priority. Most tests should not use this.
   void DisableCheckForProcessPriority();
 
-  // Disables checks for thread priority at test end. This may be used for tests
-  // that each run in their own process.
-  void DisableCheckForThreadPriorityAtTestEnd();
-
   // Disables checks for certain global objects being leaked across tests.
   void DisableCheckForLeakedGlobals();
 
@@ -98,7 +94,6 @@ class TestSuite {
 
   bool check_for_leaked_globals_ = true;
   bool check_for_process_priority_ = true;
-  bool check_for_thread_priority_at_test_end_ = true;
 
   bool is_initialized_ = false;
 
