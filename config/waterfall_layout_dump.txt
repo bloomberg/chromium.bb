@@ -46,6 +46,7 @@
     beaglebone-paladin
     betty-arc64-paladin
     betty-arcnext-paladin
+    betty-kernelnext-paladin
     betty-paladin
     betty-pi-arc-paladin
     bob-paladin
@@ -398,6 +399,7 @@
     betty-arc64-release
     betty-arcmaster-release
     betty-arcnext-release
+    betty-kernelnext-release
     betty-nyc-arc-release
     betty-pi-arc-release
     betty-qt-arc-release
@@ -863,6 +865,17 @@
   betty-compile-only-pre-cq
   betty-full-tryjob
   betty-incremental-tryjob
+  betty-kernelnext-chromium-pfq-tryjob
+  betty-kernelnext-compile-only-pre-cq
+  betty-kernelnext-full-tryjob
+  betty-kernelnext-llvm-next-toolchain-tryjob
+  betty-kernelnext-llvm-toolchain-tryjob
+  betty-kernelnext-no-vmtest-pre-cq
+  betty-kernelnext-paladin-tryjob
+  betty-kernelnext-pre-cq
+  betty-kernelnext-release-tryjob
+  betty-kernelnext-tot-chromium-pfq-informational-tryjob
+  betty-kernelnext-unittest-stress
   betty-llvm-next-toolchain-tryjob
   betty-llvm-toolchain-tryjob
   betty-no-vmtest-pre-cq
@@ -2411,6 +2424,7 @@
     beaglebone-paladin-tryjob
     betty-arc64-paladin-tryjob
     betty-arcnext-paladin-tryjob
+    betty-kernelnext-paladin-tryjob
     betty-paladin-tryjob
     betty-pi-arc-paladin-tryjob
     bob-paladin-tryjob
@@ -2529,6 +2543,7 @@
     betty-arc64-release-tryjob
     betty-arcmaster-release-tryjob
     betty-arcnext-release-tryjob
+    betty-kernelnext-release-tryjob
     betty-nyc-arc-release-tryjob
     betty-pi-arc-release-tryjob
     betty-qt-arc-release-tryjob
