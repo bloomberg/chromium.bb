@@ -312,6 +312,10 @@ as required builders.
 
   * Experimental percentage: 5
 
+* [fuchsia-compile-x64-dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/fuchsia-compile-x64-dbg) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/fuchsia-compile-x64-dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+fuchsia-compile-x64-dbg))
+
+  * Experimental percentage: 5
+
 * [ios-device](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/ios-device) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/ios-device)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+ios-device))
 
   https://crbug.com/739556; make this non-experimental ASAP.
