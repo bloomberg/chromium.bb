@@ -170,6 +170,7 @@ void aom_hadamard_32x32_c(const int16_t *src_diff, ptrdiff_t src_stride,
   }
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static void hadamard_highbd_col8_first_pass(const int16_t *src_diff,
                                             ptrdiff_t src_stride,
                                             int16_t *coeff) {
@@ -325,6 +326,7 @@ void aom_highbd_hadamard_32x32_c(const int16_t *src_diff, ptrdiff_t src_stride,
     ++coeff;
   }
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 // coeff: 16 bits, dynamic range [-32640, 32640].
 // length: value range {16, 64, 256, 1024}.

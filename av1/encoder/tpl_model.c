@@ -66,6 +66,7 @@ static AOM_INLINE void get_quantize_error(MACROBLOCK *x, int plane,
 static AOM_INLINE void wht_fwd_txfm(int16_t *src_diff, int bw,
                                     tran_low_t *coeff, TX_SIZE tx_size,
                                     int is_hbd) {
+#if CONFIG_AV1_HIGHBITDEPTH
   if (is_hbd) {
     switch (tx_size) {
       case TX_8X8: aom_highbd_hadamard_8x8(src_diff, bw, coeff); break;
@@ -81,6 +82,15 @@ static AOM_INLINE void wht_fwd_txfm(int16_t *src_diff, int bw,
       default: assert(0);
     }
   }
+#else
+  (void)is_hbd;
+  switch (tx_size) {
+    case TX_8X8: aom_hadamard_8x8(src_diff, bw, coeff); break;
+    case TX_16X16: aom_hadamard_16x16(src_diff, bw, coeff); break;
+    case TX_32X32: aom_hadamard_32x32(src_diff, bw, coeff); break;
+    default: assert(0);
+  }
+#endif
 }
 
 static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,

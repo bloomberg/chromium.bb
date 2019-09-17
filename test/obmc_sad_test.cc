@@ -145,6 +145,7 @@ const ObmcSadTest::ParamType avx2_functions[] = {
 INSTANTIATE_TEST_CASE_P(AVX2, ObmcSadTest, ::testing::ValuesIn(avx2_functions));
 #endif  // HAVE_AVX2
 
+#if CONFIG_AV1_HIGHBITDEPTH
 ////////////////////////////////////////////////////////////////////////////////
 // High bit-depth
 ////////////////////////////////////////////////////////////////////////////////
@@ -262,4 +263,5 @@ ObmcSadHBDTest::ParamType avx2_functions_hbd[] = {
 INSTANTIATE_TEST_CASE_P(AVX2, ObmcSadHBDTest,
                         ::testing::ValuesIn(avx2_functions_hbd));
 #endif  // HAVE_AVX2
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 }  // namespace

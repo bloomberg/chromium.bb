@@ -524,6 +524,7 @@ static void build_masked_compound(
                      mask, block_size_wide[sb_type], w, h, subw, subh);
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static void build_masked_compound_highbd(
     uint8_t *dst_8, int dst_stride, const uint8_t *src0_8, int src0_stride,
     const uint8_t *src1_8, int src1_stride,
@@ -540,6 +541,7 @@ static void build_masked_compound_highbd(
                             src1_stride, mask, block_size_wide[sb_type], w, h,
                             subw, subh, bd);
 }
+#endif
 
 static void build_wedge_inter_predictor_from_buf(
     MACROBLOCKD *xd, int plane, int x, int y, int w, int h, uint8_t *ext_dst0,
@@ -566,7 +568,7 @@ static void build_wedge_inter_predictor_from_buf(
             ext_dst_stride0, ext_dst1, ext_dst_stride1, h, w);
       }
     }
-
+#if CONFIG_AV1_HIGHBITDEPTH
     if (is_hbd) {
       build_masked_compound_highbd(
           dst, dst_buf->stride, CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
@@ -577,6 +579,11 @@ static void build_wedge_inter_predictor_from_buf(
                             ext_dst1, ext_dst_stride1, comp_data, mbmi->sb_type,
                             h, w);
     }
+#else
+    build_masked_compound(dst, dst_buf->stride, ext_dst0, ext_dst_stride0,
+                          ext_dst1, ext_dst_stride1, comp_data, mbmi->sb_type,
+                          h, w);
+#endif
   } else {
 #if CONFIG_AV1_HIGHBITDEPTH
     if (is_hbd) {

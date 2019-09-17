@@ -570,6 +570,7 @@ static AOM_INLINE void build_masked_compound_no_round(
   const int subh = (2 << mi_size_high_log2[sb_type]) == h;
   const int subw = (2 << mi_size_wide_log2[sb_type]) == w;
   const uint8_t *mask = av1_get_compound_type_mask(comp_data, sb_type);
+#if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
     aom_highbd_blend_a64_d16_mask(dst, dst_stride, src0, src0_stride, src1,
                                   src1_stride, mask, block_size_wide[sb_type],
@@ -579,6 +580,12 @@ static AOM_INLINE void build_masked_compound_no_round(
                                  src1_stride, mask, block_size_wide[sb_type], w,
                                  h, subw, subh, conv_params);
   }
+#else
+  (void)xd;
+  aom_lowbd_blend_a64_d16_mask(dst, dst_stride, src0, src0_stride, src1,
+                               src1_stride, mask, block_size_wide[sb_type], w,
+                               h, subw, subh, conv_params);
+#endif
 }
 
 void av1_make_masked_inter_predictor(
@@ -816,7 +823,6 @@ static INLINE void build_obmc_inter_pred_above(MACROBLOCKD *xd, int rel_mi_col,
   (void)above_mi;
   struct obmc_inter_pred_ctxt *ctxt = (struct obmc_inter_pred_ctxt *)fun_ctxt;
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
-  const int is_hbd = is_cur_buf_hbd(xd);
   const int overlap =
       AOMMIN(block_size_high[bsize], block_size_high[BLOCK_64X64]) >> 1;
 
@@ -833,13 +839,18 @@ static INLINE void build_obmc_inter_pred_above(MACROBLOCKD *xd, int rel_mi_col,
     const int tmp_stride = ctxt->adjacent_stride[plane];
     const uint8_t *const tmp = &ctxt->adjacent[plane][plane_col];
     const uint8_t *const mask = av1_get_obmc_mask(bh);
-
+#if CONFIG_AV1_HIGHBITDEPTH
+    const int is_hbd = is_cur_buf_hbd(xd);
     if (is_hbd)
       aom_highbd_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp,
                                  tmp_stride, mask, bw, bh, xd->bd);
     else
       aom_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp, tmp_stride,
                           mask, bw, bh);
+#else
+    aom_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp, tmp_stride, mask,
+                        bw, bh);
+#endif
   }
 }
 
@@ -853,7 +864,6 @@ static INLINE void build_obmc_inter_pred_left(MACROBLOCKD *xd, int rel_mi_row,
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   const int overlap =
       AOMMIN(block_size_wide[bsize], block_size_wide[BLOCK_64X64]) >> 1;
-  const int is_hbd = is_cur_buf_hbd(xd);
 
   for (int plane = 0; plane < num_planes; ++plane) {
     const struct macroblockd_plane *pd = &xd->plane[plane];
@@ -869,12 +879,18 @@ static INLINE void build_obmc_inter_pred_left(MACROBLOCKD *xd, int rel_mi_row,
     const uint8_t *const tmp = &ctxt->adjacent[plane][plane_row * tmp_stride];
     const uint8_t *const mask = av1_get_obmc_mask(bw);
 
+#if CONFIG_AV1_HIGHBITDEPTH
+    const int is_hbd = is_cur_buf_hbd(xd);
     if (is_hbd)
       aom_highbd_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp,
                                  tmp_stride, mask, bw, bh, xd->bd);
     else
       aom_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp, tmp_stride,
                           mask, bw, bh);
+#else
+    aom_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp, tmp_stride, mask,
+                        bw, bh);
+#endif
   }
 }
 
@@ -1065,6 +1081,7 @@ static AOM_INLINE void combine_interintra(
                      interstride, mask, bw, bw, bh, 0, 0);
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static AOM_INLINE void combine_interintra_highbd(
     INTERINTRA_MODE mode, int8_t use_wedge_interintra, int8_t wedge_index,
     int8_t wedge_sign, BLOCK_SIZE bsize, BLOCK_SIZE plane_bsize,
@@ -1092,6 +1109,7 @@ static AOM_INLINE void combine_interintra_highbd(
                             interpred8, interstride, mask, bw, bw, bh, 0, 0,
                             bd);
 }
+#endif
 
 void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
                                                MACROBLOCKD *xd,
@@ -1120,6 +1138,7 @@ void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
   const int ssx = xd->plane[plane].subsampling_x;
   const int ssy = xd->plane[plane].subsampling_y;
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ssx, ssy);
+#if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
     combine_interintra_highbd(
         xd->mi[0]->interintra_mode, xd->mi[0]->use_wedge_interintra,
@@ -1128,6 +1147,7 @@ void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
         inter_pred, inter_stride, intra_pred, intra_stride, xd->bd);
     return;
   }
+#endif
   combine_interintra(
       xd->mi[0]->interintra_mode, xd->mi[0]->use_wedge_interintra,
       xd->mi[0]->interintra_wedge_index, INTERINTRA_WEDGE_SIGN, bsize,
