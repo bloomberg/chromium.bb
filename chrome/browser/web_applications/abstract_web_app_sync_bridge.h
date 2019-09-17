@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_ABSTRACT_WEB_APP_DATABASE_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_ABSTRACT_WEB_APP_DATABASE_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_ABSTRACT_WEB_APP_SYNC_BRIDGE_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_ABSTRACT_WEB_APP_SYNC_BRIDGE_H_
 
 #include <map>
 #include <vector>
@@ -18,20 +18,20 @@ class WebApp;
 
 using Registry = std::map<AppId, std::unique_ptr<WebApp>>;
 
-// An abstract database for the registry persistence.
+// An abstract sync bridge for registry persistence and data updates.
 // Exclusively used from the UI thread.
-class AbstractWebAppDatabase {
+class AbstractWebAppSyncBridge {
  public:
-  virtual ~AbstractWebAppDatabase() = default;
+  virtual ~AbstractWebAppSyncBridge() = default;
 
-  using OnceRegistryOpenedCallback =
-      base::OnceCallback<void(Registry registry)>;
-  // Open existing or create new DB. Read all data and return it via callback.
-  virtual void OpenDatabase(OnceRegistryOpenedCallback callback) = 0;
+  using RegistryOpenedCallback = base::OnceCallback<void(Registry registry)>;
 
   using CompletionCallback = base::OnceCallback<void(bool success)>;
 
   using AppsToWrite = base::flat_set<const WebApp*>;
+
+  // Open existing or create new DB. Read all data and return it via callback.
+  virtual void OpenDatabase(RegistryOpenedCallback callback) = 0;
 
   // |OpenDatabase| must have been called and completed before using any other
   // methods. Otherwise, it fails with DCHECK.
@@ -42,4 +42,4 @@ class AbstractWebAppDatabase {
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_ABSTRACT_WEB_APP_DATABASE_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_ABSTRACT_WEB_APP_SYNC_BRIDGE_H_
