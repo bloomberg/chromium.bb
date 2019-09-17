@@ -29,7 +29,9 @@ runTests([
   function testOriginHeader() {
     // Register two sets of listener. One with extraHeaders and the second one
     // without it.
-    registerListeners([], ['origin'], ['requestHeaders']);
+    // Note: On m78 branch, OOR-CORS is disabled, and 'extraHeaders' is not
+    // needed to observe the origin header.
+    registerListeners(['origin'], [], ['requestHeaders']);
     registerListeners(['origin'], [], ['requestHeaders', 'extraHeaders']);
 
     // Wait for the navigation to complete.
@@ -37,4 +39,3 @@ runTests([
         getServerURL('extensions/api_test/webrequest/cors/fetch.html'));
   }
 ]);
-
