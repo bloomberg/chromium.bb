@@ -16,8 +16,10 @@ import("//chrome/android/modules/chrome_feature_module_tmpl.gni")
 #     a module descriptor.
 template("chrome_bundle") {
   _bundle_target_name = target_name
+  _package_id = 126  # == 0x7e.
   _extra_modules = []
   foreach(_module_desc, invoker.module_descs) {
+    assert(_package_id > 2, "Too many modules, ran out of package IDs!")
     chrome_feature_module(
         "${_bundle_target_name}__${_module_desc.name}_bundle_module") {
       forward_variables_from(invoker,
@@ -34,10 +36,15 @@ template("chrome_bundle") {
       version_name = chrome_version_name
       uncompress_shared_libraries =
           invoker.is_monochrome_or_trichrome || chromium_linker_supported
+
+      # Each module needs a unique resource package ID so that we don't have ID
+      # collisions between feature modules.
+      package_id = _package_id
     }
     _module_desc.module_target =
         ":${_bundle_target_name}__${_module_desc.name}_bundle_module"
     _extra_modules += [ _module_desc ]
+    _package_id -= 1
   }
 
   android_app_bundle(target_name) {
