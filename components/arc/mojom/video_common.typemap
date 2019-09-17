@@ -7,6 +7,7 @@ public_headers = [
   "//components/arc/video_accelerator/video_frame_plane.h",
   "//media/base/decode_status.h",
   "//media/base/video_codecs.h",
+  "//media/base/video_frame.h",
   "//media/base/video_frame_layout.h",
   "//media/base/video_types.h",
   "//ui/gfx/geometry/size.h",
@@ -32,6 +33,7 @@ type_mappings = [
   "arc.mojom.MediaVideoFramePlane=media::VideoFrameLayout::Plane",
   "arc.mojom.Size=gfx::Size",
   "arc.mojom.VideoCodecProfile=media::VideoCodecProfile",
+  "arc.mojom.VideoFrame=scoped_refptr<media::VideoFrame>[nullable_is_same_type]",
 
   # media::VideoFrameLayout doesn't have default constructor, so we cannot
   # convert directly.
