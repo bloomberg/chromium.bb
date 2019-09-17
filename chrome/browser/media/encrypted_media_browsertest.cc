@@ -964,7 +964,8 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
 // save anything to disk. Instead we are only running the tests that actually
 // have the CDM do file access.
 
-IN_PROC_BROWSER_TEST_F(ECKIncognitoEncryptedMediaTest, FileIO) {
+// TODO(crbug.com/999421) Disabled due to flake on all platforms
+IN_PROC_BROWSER_TEST_F(ECKIncognitoEncryptedMediaTest, DISABLED_FileIO) {
   // Try the FileIO test using the default CDM API while running in incognito.
   TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem, kUnitTestSuccess);
 }
