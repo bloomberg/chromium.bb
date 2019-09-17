@@ -496,6 +496,11 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #endif
   }
 
+  if (cfg->rc_resize_mode != RESIZE_NONE &&
+      extra_cfg->aq_mode == CYCLIC_REFRESH_AQ) {
+    ERROR("--aq_mode=3 is only supported for --resize-mode=0.");
+  }
+
   RANGE_CHECK(extra_cfg, max_reference_frames, 3, 7);
   RANGE_CHECK(extra_cfg, enable_reduced_reference_set, 0, 1);
   RANGE_CHECK_HI(extra_cfg, chroma_subsampling_x, 1);
