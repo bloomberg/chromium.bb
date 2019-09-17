@@ -534,9 +534,7 @@ void RenderViewImpl::Initialize(
   if (params->window_was_created_with_opener)
     webview()->SetOpenedByDOM();
 
-  GetWidget()->UpdateWebViewWithDeviceScaleFactor();
   OnSetRendererPrefs(*params->renderer_preferences);
-  GetWidget()->OnSynchronizeVisualProperties(params->visual_properties);
 
   GetContentClient()->renderer()->RenderViewCreated(this);
   page_zoom_level_ = 0;
