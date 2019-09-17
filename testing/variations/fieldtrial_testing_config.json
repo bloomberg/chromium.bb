@@ -5268,6 +5268,27 @@
             ]
         }
     ],
+    "SameSiteCookieMessages": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledLaunch",
+                    "enable_features": [
+                        "CookieDeprecationMessages"
+                    ]
+                }
+            ]
+        }
+    ],
     "SchedulerConfiguration": [
         {
             "platforms": [
