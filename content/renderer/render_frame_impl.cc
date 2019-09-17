@@ -6633,9 +6633,6 @@ void RenderFrameImpl::BeginNavigation(
     sync_navigation_callback_.Cancel();
     mhtml_body_loader_client_.reset();
 
-    for (auto& observer : observers_)
-      observer.DidStartNavigation(url, info->navigation_type);
-
     // First navigation in a frame to an empty document must be handled
     // synchronously.
     bool is_first_real_empty_document_navigation =
@@ -6644,6 +6641,8 @@ void RenderFrameImpl::BeginNavigation(
 
     if (is_first_real_empty_document_navigation &&
         !is_history_navigation_in_new_child_frame) {
+      for (auto& observer : observers_)
+        observer.DidStartNavigation(url, info->navigation_type);
       CommitSyncNavigation(std::move(info));
       return;
     }
@@ -6657,6 +6656,8 @@ void RenderFrameImpl::BeginNavigation(
       if (!frame_->WillStartNavigation(
               *info, false /* is_history_navigation_in_new_child_frame */))
         return;
+      for (auto& observer : observers_)
+        observer.DidStartNavigation(url, info->navigation_type);
       // Only the first navigation in a frame to an empty document must be
       // handled synchronously, the others are required to happen
       // asynchronously. So a PostTask is used.
@@ -7185,6 +7186,8 @@ void RenderFrameImpl::BeginNavigationInternal(
                                    is_history_navigation_in_new_child_frame))
     return;
 
+  for (auto& observer : observers_)
+    observer.DidStartNavigation(info->url_request.Url(), info->navigation_type);
   browser_side_navigation_pending_ = true;
   browser_side_navigation_pending_url_ = info->url_request.Url();
 
