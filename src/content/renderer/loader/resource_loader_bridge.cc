@@ -27,18 +27,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
-namespace {
-constexpr size_t kDataPipeCapacity = 4096;
-
-static MojoCreateDataPipeOptions DataPipeOptions() {
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = kDataPipeCapacity;
-  return options;
-}
-}  // namespace
 
 namespace content {
 ResourceRequestInfoProvider::ResourceRequestInfoProvider() = default;
@@ -210,7 +198,7 @@ void RequestPeerReceiver::OnReceivedResponse(
 
 void RequestPeerReceiver::OnReceivedData(const char* data,
                                         std::size_t data_length) {
-  mojo::DataPipe data_pipe(DataPipeOptions());
+  mojo::DataPipe data_pipe(data_length);
   peer_->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
   uint32_t len = data_length;
   MojoResult result = data_pipe.producer_handle->WriteData(data, &len, MOJO_WRITE_DATA_FLAG_NONE);

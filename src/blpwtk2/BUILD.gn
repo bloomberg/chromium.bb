@@ -424,5 +424,10 @@ group("blpwtk2_all") {
     ":blpwtk2_subprocess",
     "//content/shell:content_shell",
     "//v8:d8",
+    "//base:base_unittests",
+    "//:blink_tests",
+    "//content/test:content_unittests",
+    "//cc:cc_unittests",
+    "//skia:skia_unittests",
   ]
 }

@@ -72,7 +72,7 @@ class WebViewProxy final : public WebView
     void stop() override;
     void show() override;
     void hide() override;
-    void setParent(NativeView parent) override;
+    int setParent(NativeView parent) override;
     void move(int left, int top, int width, int height) override;
     void cutSelection() override;
     void copySelection() override;
@@ -131,6 +131,7 @@ class WebViewProxy final : public WebView
                                const StringRef& url) override;
     void didFailLoadForFrame(int              routingId,
                              const StringRef& url) override;
+    void didParentStatus(int status, NativeView parent) override;
 };
 
 }  // close namespace blpwtk2

@@ -32,7 +32,6 @@
 namespace blpwtk2 {
 
 NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
-                                   blpwtk2::NativeView parent,
                                    NativeViewWidgetDelegate* delegate,
                                    bool rerouteMouseWheelToAnyRelatedWindow)
 : d_delegate(delegate)
@@ -59,7 +58,6 @@ NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
     style &= ~WS_POPUP;  // was added due to TYPE_WINDOW_FRAMELESS
     style |= WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
     ::SetWindowLong(hwnd, GWL_STYLE, style);
-    ::SetParent(hwnd, parent);
 }
 
 NativeViewWidget::~NativeViewWidget()
@@ -88,11 +86,16 @@ void NativeViewWidget::setDelegate(NativeViewWidgetDelegate* delegate)
     d_delegate = delegate;
 }
 
-void NativeViewWidget::setParent(blpwtk2::NativeView parent)
+int NativeViewWidget::setParent(blpwtk2::NativeView parent)
 {
     DCHECK(d_impl);
     HWND hwnd = views::HWNDForWidget(d_impl);
-    ::SetParent(hwnd, parent);
+    int status = 0;
+    if (!::SetParent(hwnd, parent)) {
+        status = ::GetLastError();
+    }
+    LOG(INFO) << "NativeViewWidget::setParent hwnd = " << hwnd << ", parent = " << (void*)parent << ", status = " << status;
+    return status;
 }
 
 void NativeViewWidget::show()

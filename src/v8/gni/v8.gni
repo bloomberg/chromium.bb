@@ -217,6 +217,10 @@ template("v8_component") {
     configs -= v8_remove_configs
     configs += v8_add_configs
     configs += invoker.configs
+    if(defined(remove_dll_export_lines_)) {
+      configs -= [ "//build/config/win:compiler_dll_export_inlines_" ]
+      remove_dll_export_lines_ = true
+    }
   }
 }
 
