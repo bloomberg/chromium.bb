@@ -221,6 +221,8 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
       file_manager::util::GetMyFilesFolderForProfile(profile_);
   base::FilePath android_files(file_manager::util::kAndroidFilesPath);
   base::FilePath removable_media(file_manager::util::kRemovableMediaPath);
+  base::FilePath linux_files =
+      file_manager::util::GetCrostiniMountDirectory(profile_);
   if (my_files == path || my_files.AppendRelativePath(path, &relative_path)) {
     allowed_path = true;
     request.set_storage_location(
@@ -282,6 +284,13 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
     allowed_path = true;
     request.set_storage_location(
         vm_tools::seneschal::SharePathRequest::REMOVABLE);
+  } else if (path == linux_files ||
+             linux_files.AppendRelativePath(path, &relative_path)) {
+    // Allow Linux files and subdirs.
+    allowed_path = true;
+    request.set_storage_location(
+        vm_tools::seneschal::SharePathRequest::LINUX_FILES);
+    request.set_owner_id(crostini::CryptohomeIdForProfile(profile_));
   }
 
   if (!allowed_path) {
