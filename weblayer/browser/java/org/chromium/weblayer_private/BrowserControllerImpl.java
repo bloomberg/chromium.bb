@@ -150,6 +150,12 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         return ObjectWrapper.wrap(mContentViewRenderView);
     }
 
+    @Override
+    public void setSupportsEmbedding(boolean enable) {
+        mContentViewRenderView.requestMode(enable ? ContentViewRenderView.MODE_TEXTURE_VIEW
+                                                  : ContentViewRenderView.MODE_SURFACE_VIEW);
+    }
+
     private static native long nativeCreateBrowserController(long profile);
     private native void nativeSetTopControlsContainerView(
             long nativeBrowserControllerImpl, long nativeTopControlsContainerView);
