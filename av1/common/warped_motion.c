@@ -304,6 +304,7 @@ int av1_get_shear_params(WarpedMotionParams *wm) {
   return 1;
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static INLINE int highbd_error_measure(int err, int bd) {
   const int b = bd - 8;
   const int bmask = (1 << b) - 1;
@@ -503,6 +504,7 @@ static int64_t highbd_segmented_frame_error(
   }
   return sum_error;
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 /* The warp filter for ROTZOOM and AFFINE models works as follows:
    * Split the input into 8x8 blocks
@@ -779,11 +781,15 @@ static int64_t segmented_frame_error(const uint8_t *const ref, int stride,
 
 int64_t av1_frame_error(int use_hbd, int bd, const uint8_t *ref, int stride,
                         uint8_t *dst, int p_width, int p_height, int p_stride) {
+#if CONFIG_AV1_HIGHBITDEPTH
   if (use_hbd) {
     return av1_calc_highbd_frame_error(CONVERT_TO_SHORTPTR(ref), stride,
                                        CONVERT_TO_SHORTPTR(dst), p_width,
                                        p_height, p_stride, bd);
   }
+#endif
+  (void)use_hbd;
+  (void)bd;
   return av1_calc_frame_error(ref, stride, dst, p_width, p_height, p_stride);
 }
 
@@ -792,11 +798,15 @@ int64_t av1_segmented_frame_error(int use_hbd, int bd, const uint8_t *ref,
                                   int p_height, int p_stride,
                                   uint8_t *segment_map,
                                   int segment_map_stride) {
+#if CONFIG_AV1_HIGHBITDEPTH
   if (use_hbd) {
     return highbd_segmented_frame_error(
         CONVERT_TO_SHORTPTR(ref), stride, CONVERT_TO_SHORTPTR(dst), p_width,
         p_height, p_stride, bd, segment_map, segment_map_stride);
   }
+#endif
+  (void)use_hbd;
+  (void)bd;
   return segmented_frame_error(ref, stride, dst, p_width, p_height, p_stride,
                                segment_map, segment_map_stride);
 }
@@ -806,6 +816,7 @@ void av1_warp_plane(WarpedMotionParams *wm, int use_hbd, int bd,
                     uint8_t *pred, int p_col, int p_row, int p_width,
                     int p_height, int p_stride, int subsampling_x,
                     int subsampling_y, ConvolveParams *conv_params) {
+#if CONFIG_AV1_HIGHBITDEPTH
   if (use_hbd)
     highbd_warp_plane(wm, CONVERT_TO_SHORTPTR(ref), width, height, stride,
                       CONVERT_TO_SHORTPTR(pred), p_col, p_row, p_width,
@@ -814,6 +825,12 @@ void av1_warp_plane(WarpedMotionParams *wm, int use_hbd, int bd,
   else
     warp_plane(wm, ref, width, height, stride, pred, p_col, p_row, p_width,
                p_height, p_stride, subsampling_x, subsampling_y, conv_params);
+#else
+  (void)use_hbd;
+  (void)bd;
+  warp_plane(wm, ref, width, height, stride, pred, p_col, p_row, p_width,
+             p_height, p_stride, subsampling_x, subsampling_y, conv_params);
+#endif
 }
 
 #define LS_MV_MAX 256  // max mv in 1/8-pel

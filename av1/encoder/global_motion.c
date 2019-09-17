@@ -161,6 +161,7 @@ static void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype) {
   wm->wmtype = wmtype;
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static int64_t highbd_warp_error(
     WarpedMotionParams *wm, const uint16_t *const ref, int width, int height,
     int stride, const uint16_t *const dst, int p_col, int p_row, int p_width,
@@ -195,6 +196,7 @@ static int64_t highbd_warp_error(
   }
   return gm_sumerr;
 }
+#endif
 
 static int64_t warp_error(WarpedMotionParams *wm, const uint8_t *const ref,
                           int width, int height, int stride,
@@ -242,12 +244,16 @@ int64_t av1_warp_error(WarpedMotionParams *wm, int use_hbd, int bd,
                        uint8_t *segment_map, int segment_map_stride) {
   if (wm->wmtype <= AFFINE)
     if (!av1_get_shear_params(wm)) return INT64_MAX;
+#if CONFIG_AV1_HIGHBITDEPTH
   if (use_hbd)
     return highbd_warp_error(wm, CONVERT_TO_SHORTPTR(ref), width, height,
                              stride, CONVERT_TO_SHORTPTR(dst), p_col, p_row,
                              p_width, p_height, p_stride, subsampling_x,
                              subsampling_y, bd, best_error, segment_map,
                              segment_map_stride);
+#endif
+  (void)use_hbd;
+  (void)bd;
   return warp_error(wm, ref, width, height, stride, dst, p_col, p_row, p_width,
                     p_height, p_stride, subsampling_x, subsampling_y,
                     best_error, segment_map, segment_map_stride);

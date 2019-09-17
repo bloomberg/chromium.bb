@@ -1881,6 +1881,7 @@ int64_t av1_block_error_c(const tran_low_t *coeff, const tran_low_t *dqcoeff,
   return error;
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 int64_t av1_highbd_block_error_c(const tran_low_t *coeff,
                                  const tran_low_t *dqcoeff, intptr_t block_size,
                                  int64_t *ssz, int bd) {
@@ -1901,6 +1902,7 @@ int64_t av1_highbd_block_error_c(const tran_low_t *coeff,
   *ssz = sqcoeff;
   return error;
 }
+#endif
 
 // Get transform block visible dimensions cropped to the MI units.
 static AOM_INLINE void get_txb_dimensions(const MACROBLOCKD *xd, int plane,
@@ -2110,13 +2112,15 @@ static INLINE void dist_block_tx_domain(MACROBLOCK *x, int plane, int block,
   int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-
+#if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd))
     *out_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length, &this_sse,
                                        xd->bd);
   else
     *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
-
+#else
+  *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
+#endif
   *out_dist = RIGHT_SIGNED_SHIFT(*out_dist, shift);
   *out_sse = RIGHT_SIGNED_SHIFT(this_sse, shift);
 }

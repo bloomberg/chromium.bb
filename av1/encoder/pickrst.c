@@ -267,6 +267,7 @@ int64_t av1_lowbd_pixel_proj_error_c(const uint8_t *src8, int width, int height,
   return err;
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 int64_t av1_highbd_pixel_proj_error_c(const uint8_t *src8, int width,
                                       int height, int src_stride,
                                       const uint8_t *dat8, int dat_stride,
@@ -340,6 +341,7 @@ int64_t av1_highbd_pixel_proj_error_c(const uint8_t *src8, int width,
   }
   return err;
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
                                     int src_stride, const uint8_t *dat8,
@@ -349,15 +351,24 @@ static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
                                     const sgr_params_type *params) {
   int xq[2];
   av1_decode_xq(xqd, xq, params);
-  if (!use_highbitdepth) {
-    return av1_lowbd_pixel_proj_error(src8, width, height, src_stride, dat8,
-                                      dat_stride, flt0, flt0_stride, flt1,
-                                      flt1_stride, xq, params);
-  } else {
+
+#if CONFIG_AV1_HIGHBITDEPTH
+  if (use_highbitdepth) {
     return av1_highbd_pixel_proj_error(src8, width, height, src_stride, dat8,
                                        dat_stride, flt0, flt0_stride, flt1,
                                        flt1_stride, xq, params);
+
+  } else {
+    return av1_lowbd_pixel_proj_error(src8, width, height, src_stride, dat8,
+                                      dat_stride, flt0, flt0_stride, flt1,
+                                      flt1_stride, xq, params);
   }
+#else
+  (void)use_highbitdepth;
+  return av1_lowbd_pixel_proj_error(src8, width, height, src_stride, dat8,
+                                    dat_stride, flt0, flt0_stride, flt1,
+                                    flt1_stride, xq, params);
+#endif
 }
 
 #define USE_SGRPROJ_REFINEMENT_SEARCH 1
@@ -777,6 +788,7 @@ void av1_compute_stats_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
   }
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 void av1_compute_stats_highbd_c(int wiener_win, const uint8_t *dgd8,
                                 const uint8_t *src8, int h_start, int h_end,
                                 int v_start, int v_end, int dgd_stride,
@@ -830,6 +842,7 @@ void av1_compute_stats_highbd_c(int wiener_win, const uint8_t *dgd8,
     }
   }
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 static INLINE int wrap_index(int i, int wiener_win) {
   const int wiener_halfwin1 = (wiener_win >> 1) + 1;
@@ -1272,6 +1285,7 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
   int64_t H[WIENER_WIN2 * WIENER_WIN2];
   int32_t vfilter[WIENER_WIN], hfilter[WIENER_WIN];
 
+#if CONFIG_AV1_HIGHBITDEPTH
   const AV1_COMMON *const cm = rsc->cm;
   if (cm->seq_params.use_highbitdepth) {
     av1_compute_stats_highbd(reduced_wiener_win, rsc->dgd_buffer,
@@ -1283,7 +1297,11 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
                       limits->h_start, limits->h_end, limits->v_start,
                       limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
   }
-
+#else
+  av1_compute_stats(reduced_wiener_win, rsc->dgd_buffer, rsc->src_buffer,
+                    limits->h_start, limits->h_end, limits->v_start,
+                    limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
+#endif
   const MACROBLOCK *const x = rsc->x;
   const int64_t bits_none = x->wiener_restore_cost[0];
 

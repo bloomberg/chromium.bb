@@ -272,7 +272,8 @@ list(APPEND AOM_AV1_COMMON_INTRIN_SSE4_1
 
 if(NOT CONFIG_AV1_HIGHBITDEPTH)
   list(REMOVE_ITEM AOM_AV1_COMMON_INTRIN_SSE4_1
-                   "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_sse4.c")
+                   "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_sse4.c"
+                   "${AOM_ROOT}/av1/common/x86/highbd_warp_plane_sse4.c")
 endif()
 
 list(APPEND AOM_AV1_COMMON_INTRIN_AVX2
@@ -308,6 +309,12 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_SSE2
             "${AOM_ROOT}/av1/encoder/x86/highbd_block_error_intrin_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c")
 
+if(NOT CONFIG_AV1_HIGHBITDEPTH)
+  list(
+    REMOVE_ITEM AOM_AV1_ENCODER_INTRIN_SSE2
+                "${AOM_ROOT}/av1/encoder/x86/highbd_block_error_intrin_sse2.c")
+endif()
+
 list(APPEND AOM_AV1_ENCODER_INTRIN_SSE3 "${AOM_ROOT}/av1/encoder/x86/ml_sse3.c")
 
 list(APPEND AOM_AV1_ENCODER_ASM_SSSE3_X86_64
@@ -339,6 +346,12 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_AVX2
             "${AOM_ROOT}/av1/encoder/x86/encodetxb_avx2.c"
             "${AOM_ROOT}/av1/encoder/x86/rdopt_avx2.c"
             "${AOM_ROOT}/av1/encoder/x86/pickrst_avx2.c")
+
+if(NOT CONFIG_AV1_HIGHBITDEPTH)
+  list(
+    REMOVE_ITEM AOM_AV1_ENCODER_INTRIN_AVX2
+                "${AOM_ROOT}/av1/encoder/x86/highbd_block_error_intrin_avx2.c")
+endif()
 
 list(APPEND AOM_AV1_ENCODER_INTRIN_NEON
             "${AOM_ROOT}/av1/encoder/arm/neon/quantize_neon.c"
