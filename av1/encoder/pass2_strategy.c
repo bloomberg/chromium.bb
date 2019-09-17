@@ -583,7 +583,8 @@ static int calculate_boost_factor(int frame_count, int bits,
 // prevent bitrate spikes that may break level constraints.
 // frame_type: 0: keyframe; 1: arf.
 static int adjust_boost_bits_for_target_level(AV1_COMP *const cpi,
-                                              int bits_assigned, int group_bits,
+                                              int bits_assigned,
+                                              int64_t group_bits,
                                               int frame_type) {
   const AV1_COMMON *const cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
