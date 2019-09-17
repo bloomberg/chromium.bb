@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file
 
-#ifndef PLATFORM_API_SOCKET_HANDLE_H_
-#define PLATFORM_API_SOCKET_HANDLE_H_
+#ifndef PLATFORM_IMPL_SOCKET_HANDLE_H_
+#define PLATFORM_IMPL_SOCKET_HANDLE_H_
 
 namespace openscreen {
 namespace platform {
@@ -15,4 +15,4 @@ struct SocketHandle;
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_API_SOCKET_HANDLE_H_
+#endif  // PLATFORM_IMPL_SOCKET_HANDLE_H_

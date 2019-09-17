@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_API_NETWORK_WAITER_H_
-#define PLATFORM_API_NETWORK_WAITER_H_
+#ifndef PLATFORM_IMPL_NETWORK_WAITER_H_
+#define PLATFORM_IMPL_NETWORK_WAITER_H_
 
 #include <memory>
 #include <vector>
 
-#include "platform/api/socket_handle.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
+#include "platform/impl/socket_handle.h"
 
 namespace openscreen {
 namespace platform {
@@ -36,4 +36,4 @@ class NetworkWaiter {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_API_NETWORK_WAITER_H_
+#endif  // PLATFORM_IMPL_NETWORK_WAITER_H_

@@ -9,10 +9,10 @@
 #include <mutex>  // NOLINT
 #include <vector>
 
-#include "platform/api/network_waiter.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
+#include "platform/impl/network_waiter.h"
 
 namespace openscreen {
 namespace platform {

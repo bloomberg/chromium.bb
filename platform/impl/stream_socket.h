@@ -10,11 +10,11 @@
 #include <string>
 
 #include "platform/api/network_interface.h"
-#include "platform/api/socket_handle.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "platform/base/macros.h"
 #include "platform/base/socket_state.h"
+#include "platform/impl/socket_handle.h"
 
 namespace openscreen {
 namespace platform {

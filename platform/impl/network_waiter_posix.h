@@ -11,7 +11,7 @@
 #include <atomic>
 #include <mutex>  // NOLINT
 
-#include "platform/api/network_waiter.h"
+#include "platform/impl/network_waiter.h"
 
 namespace openscreen {
 namespace platform {

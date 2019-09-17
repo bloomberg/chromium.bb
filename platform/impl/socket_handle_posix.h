@@ -5,7 +5,7 @@
 #ifndef PLATFORM_IMPL_SOCKET_HANDLE_POSIX_H_
 #define PLATFORM_IMPL_SOCKET_HANDLE_POSIX_H_
 
-#include "platform/api/socket_handle.h"
+#include "platform/impl/socket_handle.h"
 
 namespace openscreen {
 namespace platform {
