@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.displaystyle;
+package org.chromium.chrome.browser.ui.widget.displaystyle;
 
 /**
  * Gets notified of changes in the display style.
  *
  * @see UiConfig.DisplayStyle
  * @see UiConfig#getCurrentDisplayStyle()
- * @see org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserverAdapter
+ * @see DisplayStyleObserverAdapter
  */
 public interface DisplayStyleObserver {
     void onDisplayStyleChanged(UiConfig.DisplayStyle newDisplayStyle);

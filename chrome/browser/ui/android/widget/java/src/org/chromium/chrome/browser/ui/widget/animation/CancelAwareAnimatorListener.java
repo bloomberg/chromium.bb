@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.animation;
+package org.chromium.chrome.browser.ui.widget.animation;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -41,16 +41,16 @@ public class CancelAwareAnimatorListener extends AnimatorListenerAdapter {
     /**
      * Notifies the start of the animator.
      */
-    public void onStart(Animator animator) { }
+    public void onStart(Animator animator) {}
 
     /**
      * Notifies that the animator was cancelled.
      */
-    public void onCancel(Animator animator) { }
+    public void onCancel(Animator animator) {}
 
     /**
      * Notifies that the animator has finished running. This method will not be called if the
      * animator is canclled.
      */
-    public void onEnd(Animator animator) { }
+    public void onEnd(Animator animator) {}
 }

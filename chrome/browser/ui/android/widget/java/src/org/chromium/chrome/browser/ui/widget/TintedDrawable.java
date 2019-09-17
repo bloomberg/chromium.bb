@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -11,8 +11,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.content.res.AppCompatResources;
-
-import org.chromium.chrome.R;
 
 /**
  * Implementation of BitmapDrawable that allows to tint the color of the drawable for all
