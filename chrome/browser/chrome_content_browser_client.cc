@@ -4492,8 +4492,7 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(
-      base::BindRepeating(&offline_pages::OfflinePageAutoFetcher::Create),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+      base::BindRepeating(&offline_pages::OfflinePageAutoFetcher::Create));
 #endif
 }
 
