@@ -171,9 +171,12 @@ class LoopbackPartitions(object):
     """Is the given partition an ext2 file system?"""
     dev = self.GetPartitionDevName(part_id)
     magic_ofs = offset + 0x438
+    # We shouldn't need the sync here, but we sometimes see flakes with some
+    # kernels where it looks like the metadata written isn't seen when we try
+    # to mount later on.  Adding a sync for 1 byte shouldn't be too bad.
     ret = cros_build_lib.SudoRunCommand(
         ['dd', 'if=%s' % dev, 'skip=%d' % magic_ofs,
-         'conv=notrunc', 'count=2', 'bs=1'],
+         'conv=notrunc,fsync', 'count=2', 'bs=1'],
         debug_level=logging.DEBUG, capture_output=True, error_code_ok=True)
     if ret.returncode:
       return False
@@ -188,9 +191,12 @@ class LoopbackPartitions(object):
       return
     ro_compat_ofs = offset + 0x464 + 3
     logging.info('Enabling RW mount writing 0x00 to %d', ro_compat_ofs)
+    # We shouldn't need the sync here, but we sometimes see flakes with some
+    # kernels where it looks like the metadata written isn't seen when we try
+    # to mount later on.  Adding a sync for 1 byte shouldn't be too bad.
     cros_build_lib.SudoRunCommand(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
-         'conv=notrunc', 'count=1', 'bs=1'],
+         'conv=notrunc,fsync', 'count=1', 'bs=1'],
         input=b'\0', debug_level=logging.DEBUG, redirect_stderr=True)
 
   def DisableRwMount(self, part_id, offset=0):
@@ -202,9 +208,12 @@ class LoopbackPartitions(object):
       return
     ro_compat_ofs = offset + 0x464 + 3
     logging.info('Disabling RW mount writing 0xff to %d', ro_compat_ofs)
+    # We shouldn't need the sync here, but we sometimes see flakes with some
+    # kernels where it looks like the metadata written isn't seen when we try
+    # to mount later on.  Adding a sync for 1 byte shouldn't be too bad.
     cros_build_lib.SudoRunCommand(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
-         'conv=notrunc', 'count=1', 'bs=1'],
+         'conv=notrunc,fsync', 'count=1', 'bs=1'],
         input=b'\xff', debug_level=logging.DEBUG, redirect_stderr=True)
 
   def _Mount(self, part, mount_opts):
