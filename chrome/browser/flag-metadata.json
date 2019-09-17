@@ -566,6 +566,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "darken-websites-checkbox-in-themes-setting",
+    "owners": [ "lazzzis@google.com", "twellington" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "data-saver-server-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.

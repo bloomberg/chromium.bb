@@ -238,6 +238,9 @@ extern const char kCooperativeSchedulingDescription[];
 extern const char kCreditCardAssistName[];
 extern const char kCreditCardAssistDescription[];
 
+extern const char kDarkenWebsitesCheckboxInThemesSettingName[];
+extern const char kDarkenWebsitesCheckboxInThemesSettingDescription[];
+
 extern const char kDataSaverServerPreviewsName[];
 extern const char kDataSaverServerPreviewsDescription[];
 

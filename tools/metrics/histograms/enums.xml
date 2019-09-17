@@ -36260,6 +36260,7 @@ from previous Chrome versions.
   </int>
   <int value="1343197" label="UseSearchClickForRightClick:enabled"/>
   <int value="1558582" label="ResamplingInputEvents:enabled"/>
+  <int value="3826348" label="DarkenWebsitesCheckboxInThemesSetting:disabled"/>
   <int value="5654819" label="CrostiniGpuSupport:disabled"/>
   <int value="7444737" label="NTPSuggestionsStandaloneUI:disabled"/>
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
@@ -37345,6 +37346,8 @@ from previous Chrome versions.
   <int value="1514119870" label="enable-file-manager-touch-mode"/>
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
+  <int value="1526718531"
+      label="DarkenWebsitesCheckboxInThemesSetting:enabled"/>
   <int value="1529979182" label="EnablePasswordSelection:enabled"/>
   <int value="1530113113" label="disable-pushstate-throttle"/>
   <int value="1530177325" label="LanguagesPreference:disabled"/>

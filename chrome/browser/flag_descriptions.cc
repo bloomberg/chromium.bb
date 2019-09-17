@@ -358,6 +358,13 @@ const char kCreditCardAssistName[] = "Credit Card Assisted Filling";
 const char kCreditCardAssistDescription[] =
     "Enable assisted credit card filling on certain sites.";
 
+const char kDarkenWebsitesCheckboxInThemesSettingName[] =
+    "Darken websites checkbox in themes setting";
+const char kDarkenWebsitesCheckboxInThemesSettingDescription[] =
+    "Show a darken websites checkbox in themes settings when system default or "
+    "dark is selected. The checkbox can toggle the auto-darkening web contents "
+    "feature";
+
 const char kDataSaverServerPreviewsName[] = "Data Saver Server Previews";
 const char kDataSaverServerPreviewsDescription[] =
     "Allow the Data Reduction Proxy to serve previews.";
