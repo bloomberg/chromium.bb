@@ -197,7 +197,7 @@ class RenderWebView final : public WebView
 #endif
     void show() override;
     void hide() override;
-    void setParent(NativeView parent) override;
+    int  setParent(NativeView parent) override;
     void move(int left, int top, int width, int height) override;
     void cutSelection() override;
     void copySelection() override;
