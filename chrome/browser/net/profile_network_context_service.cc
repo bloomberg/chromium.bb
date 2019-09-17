@@ -147,9 +147,6 @@ bool ShouldUseBuiltinCertVerifier(Profile* profile) {
   if (builtin_cert_verifier_enabled_pref->IsManaged())
     return builtin_cert_verifier_enabled_pref->GetValue()->GetBool();
 
-  // TODO(https://crbug.com/939344): Also evaluate whether there are
-  // extension-specific certificates to be used, and if yes, enable the built-in
-  // cert verifier.
   return base::FeatureList::IsEnabled(
       net::features::kCertVerifierBuiltinFeature);
 }
