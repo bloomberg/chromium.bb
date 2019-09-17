@@ -41,6 +41,10 @@ const int64_t kDefaultContentValidationLength = 1024;
 // file starting at the offset from the response.
 const int64_t kInvalidFileWriteOffset = -1;
 
+// Default expiration time of download in days. Canceled and interrupted
+// downloads will be deleted after expiration.
+const int kDefaultDownloadExpiredTimeInDays = 90;
+
 void AppendExtraHeaders(net::HttpRequestHeaders* headers,
                         DownloadUrlParameters* params) {
   for (const auto& header : params->request_headers())
@@ -611,4 +615,12 @@ int64_t GetDownloadValidationLengthConfig() {
              ? result
              : kDefaultContentValidationLength;
 }
+
+base::TimeDelta GetExpiredDownloadDeleteTime() {
+  int expired_days = base::GetFieldTrialParamByFeatureAsInt(
+      features::kDeleteExpiredDownloads, kExpiredDownloadDeleteTimeFinchKey,
+      kDefaultDownloadExpiredTimeInDays);
+  return base::TimeDelta::FromDays(expired_days);
+}
+
 }  // namespace download
