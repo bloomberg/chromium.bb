@@ -89,8 +89,8 @@ void PrintJobDatabaseImpl::SavePrintJob(
                      std::move(callback)));
 }
 
-void PrintJobDatabaseImpl::DeletePrintJob(const std::string& id,
-                                          DeletePrintJobCallback callback) {
+void PrintJobDatabaseImpl::DeletePrintJobs(const std::vector<std::string>& ids,
+                                           DeletePrintJobsCallback callback) {
   if (init_status_ == InitStatus::FAILED) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
@@ -100,18 +100,16 @@ void PrintJobDatabaseImpl::DeletePrintJob(const std::string& id,
   // Defer execution if database is uninitialized.
   if (init_status_ != InitStatus::INITIALIZED) {
     deferred_callbacks_.push(base::BindOnce(
-        &PrintJobDatabaseImpl::DeletePrintJob, weak_ptr_factory_.GetWeakPtr(),
-        id, std::move(callback)));
+        &PrintJobDatabaseImpl::DeletePrintJobs, weak_ptr_factory_.GetWeakPtr(),
+        ids, std::move(callback)));
     return;
   }
 
-  auto keys_to_remove = std::make_unique<std::vector<std::string>>();
-  keys_to_remove->push_back(id);
   database_->UpdateEntries(
       /*entries_to_save=*/std::make_unique<EntryVector>(),
-      /*keys_to_remove=*/std::move(keys_to_remove),
+      /*keys_to_remove=*/std::make_unique<std::vector<std::string>>(ids),
       base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobDeleted,
-                     weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), ids, std::move(callback)));
 }
 
 void PrintJobDatabaseImpl::GetPrintJobs(GetPrintJobsCallback callback) {
@@ -197,11 +195,13 @@ void PrintJobDatabaseImpl::OnPrintJobSaved(
       FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
-void PrintJobDatabaseImpl::OnPrintJobDeleted(const std::string& id,
-                                             DeletePrintJobCallback callback,
-                                             bool success) {
+void PrintJobDatabaseImpl::OnPrintJobDeleted(
+    const std::vector<std::string>& ids,
+    DeletePrintJobsCallback callback,
+    bool success) {
   if (success)
-    cache_.erase(id);
+    for (const std::string& id : ids)
+      cache_.erase(id);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), success));
 }

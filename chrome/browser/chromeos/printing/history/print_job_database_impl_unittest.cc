@@ -90,16 +90,16 @@ class PrintJobDatabaseImplTest : public ::testing::Test {
     run_loop.Run();
   }
 
-  void DeletePrintJob(const std::string& id) {
+  void DeletePrintJobs(const std::vector<std::string>& ids) {
     base::RunLoop run_loop;
-    print_job_database_->DeletePrintJob(
-        id, base::BindOnce(&PrintJobDatabaseImplTest::OnPrintJobDeleted,
-                           base::Unretained(this), run_loop.QuitClosure()));
+    print_job_database_->DeletePrintJobs(
+        ids, base::BindOnce(&PrintJobDatabaseImplTest::OnPrintJobsDeleted,
+                            base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 
-  void OnPrintJobDeleted(base::RepeatingClosure run_loop_closure,
-                         bool success) {
+  void OnPrintJobsDeleted(base::RepeatingClosure run_loop_closure,
+                          bool success) {
     EXPECT_TRUE(success);
     run_loop_closure.Run();
   }
@@ -152,13 +152,13 @@ TEST_F(PrintJobDatabaseImplTest, SavePrintJob) {
   EXPECT_EQ(kTitle1, entries[0].title());
 }
 
-TEST_F(PrintJobDatabaseImplTest, DeletePrintJob) {
+TEST_F(PrintJobDatabaseImplTest, DeletePrintJobs) {
   Initialize();
   PrintJobInfo print_job_info1 = ConstructPrintJobInfo(kId1, kTitle1);
   SavePrintJob(print_job_info1);
   PrintJobInfo print_job_info2 = ConstructPrintJobInfo(kId2, kTitle2);
   SavePrintJob(print_job_info2);
-  DeletePrintJob(kId1);
+  DeletePrintJobs({kId1});
   std::vector<PrintJobInfo> entries = GetPrintJobs();
   EXPECT_EQ(1u, entries.size());
   EXPECT_EQ(kId2, entries[0].id());
