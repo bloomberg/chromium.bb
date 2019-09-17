@@ -74,19 +74,19 @@ class LoopbackPartitions(object):
     try:
       cmd = ['losetup', '--show', '-f', self.path]
       ret = cros_build_lib.SudoRunCommand(
-          cmd, print_cmd=False, capture_output=True)
+          cmd, debug_level=logging.DEBUG, capture_output=True)
       self.dev = ret.output.strip()
       cmd = ['partx', '-d', self.dev]
       cros_build_lib.SudoRunCommand(cmd, quiet=True, error_code_ok=True)
       cmd = ['partx', '-a', self.dev]
       ret = cros_build_lib.SudoRunCommand(
-          cmd, print_cmd=False, error_code_ok=True)
+          cmd, debug_level=logging.DEBUG, error_code_ok=True)
       if ret.returncode:
         logging.warning('Adding partitions failed; dumping log & retrying')
         cros_build_lib.RunCommand(['sync'])
         cros_build_lib.RunCommand(['dmesg'])
         cmd = ['partx', '-u', self.dev]
-        cros_build_lib.SudoRunCommand(cmd, print_cmd=False)
+        cros_build_lib.SudoRunCommand(cmd)
 
       self.parts = {}
       part_devs = glob.glob(self.dev + 'p*')
@@ -174,7 +174,7 @@ class LoopbackPartitions(object):
     ret = cros_build_lib.SudoRunCommand(
         ['dd', 'if=%s' % dev, 'skip=%d' % magic_ofs,
          'conv=notrunc', 'count=2', 'bs=1'],
-        capture_output=True, error_code_ok=True)
+        debug_level=logging.DEBUG, capture_output=True, error_code_ok=True)
     if ret.returncode:
       return False
     return ret.output == b'\x53\xef'
@@ -191,7 +191,7 @@ class LoopbackPartitions(object):
     cros_build_lib.SudoRunCommand(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
          'conv=notrunc', 'count=1', 'bs=1'],
-        input=b'\0', redirect_stderr=True)
+        input=b'\0', debug_level=logging.DEBUG, redirect_stderr=True)
 
   def DisableRwMount(self, part_id, offset=0):
     """Disable RW mounts of the specified partition."""
@@ -205,7 +205,7 @@ class LoopbackPartitions(object):
     cros_build_lib.SudoRunCommand(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
          'conv=notrunc', 'count=1', 'bs=1'],
-        input=b'\xff', redirect_stderr=True)
+        input=b'\xff', debug_level=logging.DEBUG, redirect_stderr=True)
 
   def _Mount(self, part, mount_opts):
     if not self.destination:

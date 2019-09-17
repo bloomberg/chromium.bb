@@ -833,7 +833,9 @@ def MountDir(src_path, dst_path, fs_type=None, sudo=True, makedirs=True,
     cmd += ['-n']
   if fs_type:
     cmd += ['-t', fs_type]
-  runcmd(cmd + ['-o', ','.join(mount_opts)], **kwargs)
+  if mount_opts:
+    cmd += ['-o', ','.join(mount_opts)]
+  runcmd(cmd, **kwargs)
 
 
 def MountTmpfsDir(path, name='osutils.tmpfs', size='5G',
@@ -869,7 +871,7 @@ def UmountDir(path, lazy=True, sudo=True, cleanup=True):
   cmd = ['umount', '-d', path]
   if lazy:
     cmd += ['-l']
-  runcmd(cmd, print_cmd=False)
+  runcmd(cmd, debug_level=logging.DEBUG)
 
   if cleanup:
     # We will randomly get EBUSY here even when the umount worked.  Suspect
