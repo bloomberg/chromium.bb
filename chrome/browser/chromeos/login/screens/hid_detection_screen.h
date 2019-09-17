@@ -21,6 +21,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/input_service.mojom.h"
 
 namespace chromeos {
@@ -198,7 +199,7 @@ class HIDDetectionScreen : public BaseScreen,
   // Default bluetooth adapter, used for all operations.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
-  device::mojom::InputDeviceManagerPtr input_device_manager_;
+  mojo::Remote<device::mojom::InputDeviceManager> input_device_manager_;
 
   mojo::AssociatedBinding<device::mojom::InputDeviceManagerClient> binding_;
 

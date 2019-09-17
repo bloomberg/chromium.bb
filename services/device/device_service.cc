@@ -218,7 +218,7 @@ void DeviceService::OnStart() {
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
   registry_.AddInterface<mojom::InputDeviceManager>(base::Bind(
-      &DeviceService::BindInputDeviceManagerRequest, base::Unretained(this)));
+      &DeviceService::BindInputDeviceManagerReceiver, base::Unretained(this)));
 #endif
 }
 
@@ -269,11 +269,11 @@ void DeviceService::BindMtpManagerReceiver(
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
-void DeviceService::BindInputDeviceManagerRequest(
-    mojom::InputDeviceManagerRequest request) {
+void DeviceService::BindInputDeviceManagerReceiver(
+    mojo::PendingReceiver<mojom::InputDeviceManager> receiver) {
   file_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&InputServiceLinux::BindRequest, std::move(request)));
+      base::BindOnce(&InputServiceLinux::BindReceiver, std::move(receiver)));
 }
 #endif
 

@@ -174,8 +174,9 @@ InputServiceLinux::~InputServiceLinux() {
 }
 
 // static
-void InputServiceLinux::BindRequest(mojom::InputDeviceManagerRequest request) {
-  GetInstance()->AddBinding(std::move(request));
+void InputServiceLinux::BindReceiver(
+    mojo::PendingReceiver<mojom::InputDeviceManager> receiver) {
+  GetInstance()->AddReceiver(std::move(receiver));
 }
 
 // static
@@ -199,8 +200,9 @@ void InputServiceLinux::SetForTesting(
   g_input_service_linux = service.release();
 }
 
-void InputServiceLinux::AddBinding(mojom::InputDeviceManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void InputServiceLinux::AddReceiver(
+    mojo::PendingReceiver<mojom::InputDeviceManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void InputServiceLinux::GetDevicesAndSetClient(

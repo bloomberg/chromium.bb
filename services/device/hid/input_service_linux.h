@@ -13,8 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/input_service.mojom.h"
 
 namespace device {
@@ -29,8 +30,9 @@ class InputServiceLinux : public mojom::InputDeviceManager {
   InputServiceLinux();
   ~InputServiceLinux() override;
 
-  // Binds the |request| to an InputServiceLinux instance.
-  static void BindRequest(mojom::InputDeviceManagerRequest request);
+  // Binds the |receiver| to an InputServiceLinux instance.
+  static void BindReceiver(
+      mojo::PendingReceiver<mojom::InputDeviceManager> receiver);
 
   // Returns the InputServiceLinux instance for the current process. Creates one
   // if none has been set.
@@ -46,7 +48,7 @@ class InputServiceLinux : public mojom::InputDeviceManager {
   // current process. |service| will never be deleted.
   static void SetForTesting(std::unique_ptr<InputServiceLinux> service);
 
-  void AddBinding(mojom::InputDeviceManagerRequest request);
+  void AddReceiver(mojo::PendingReceiver<mojom::InputDeviceManager> receiver);
 
   // mojom::InputDeviceManager implementation:
   void GetDevicesAndSetClient(
@@ -64,7 +66,7 @@ class InputServiceLinux : public mojom::InputDeviceManager {
 
  private:
   base::ThreadChecker thread_checker_;
-  mojo::BindingSet<mojom::InputDeviceManager> bindings_;
+  mojo::ReceiverSet<mojom::InputDeviceManager> receivers_;
   mojo::AssociatedInterfacePtrSet<mojom::InputDeviceManagerClient> clients_;
 
   DISALLOW_COPY_AND_ASSIGN(InputServiceLinux);

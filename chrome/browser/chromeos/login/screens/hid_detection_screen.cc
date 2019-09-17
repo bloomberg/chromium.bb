@@ -486,8 +486,8 @@ void HIDDetectionScreen::ConnectToInputDeviceManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   service_manager::Connector* connector = content::GetSystemConnector();
   DCHECK(connector);
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&input_device_manager_));
+  connector->Connect(device::mojom::kServiceName,
+                     input_device_manager_.BindNewPipeAndPassReceiver());
 }
 
 void HIDDetectionScreen::OnGetInputDevicesListForCheck(
