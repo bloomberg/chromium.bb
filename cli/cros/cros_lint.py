@@ -250,7 +250,16 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
   # Instruct shellcheck to run itself from the shell script's dir. Note that
   # 'SCRIPTDIR' is a special string that shellcheck rewrites to the dirname of
   # the given path.
-  cmd = [shellcheck, '--source-path=SCRIPTDIR']
+  extra_checks = [
+      'avoid-nullary-conditions',     # SC2244
+      'check-unassigned-uppercase',   # Include uppercase in SC2154
+      'require-variable-braces',      # SC2250
+  ]
+  if not gentoo_format:
+    extra_checks.append('quote-safe-variables')  # SC2248
+
+  cmd = [shellcheck, '--source-path=SCRIPTDIR',
+         '--enable=%s' % ','.join(extra_checks)]
   if output_format != 'default':
     cmd.extend(SHLINT_OUTPUT_FORMAT_MAP[output_format])
   cmd.append('-x')
