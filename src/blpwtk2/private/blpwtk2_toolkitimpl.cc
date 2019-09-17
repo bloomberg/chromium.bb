@@ -81,6 +81,7 @@
 #include <third_party/icu/source/common/unicode/locid.h>
 #include <third_party/icu/source/common/unicode/unistr.h>
 #include <third_party/icu/source/i18n/unicode/timezone.h>
+#include <ui/base/ime/init/input_method_initializer.h>
 #include <ui/base/l10n/l10n_util.h>
 #include <v8/include/v8.h>
 
@@ -681,6 +682,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         d_isolateHolder->isolate()->Enter();
     }
 
+    ui::InitializeInputMethod();
     setDefaultLocaleIfWindowsLocaleIsNotSupported();
 }
 
