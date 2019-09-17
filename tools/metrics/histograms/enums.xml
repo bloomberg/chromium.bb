@@ -31950,6 +31950,29 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Unknown Reason"/>
 </enum>
 
+<enum name="InstallAttributesUsageEvent">
+  <int value="0" label="Cache read sucess"/>
+  <int value="1" label="First install"/>
+  <int value="2" label="Cache parse failed"/>
+  <int value="3" label="TPM not owned"/>
+  <int value="4" label="TPM invalid state"/>
+  <int value="5" label="NVRAM Space Absent"/>
+  <int value="6" label="NVRAM Invalid"/>
+  <int value="7" label="TPM Unavailable"/>
+  <int value="8" label="TPM Error"/>
+</enum>
+
+<enum name="InstallAttributesValidationEvent">
+  <int value="0" label="Cache write succeeded"/>
+  <int value="1" label="NVRAM read failed"/>
+  <int value="2" label="NVRAM invalid size"/>
+  <int value="3" label="NVRAM decode failed"/>
+  <int value="4" label="Data read failed"/>
+  <int value="5" label="Data verification of size failed"/>
+  <int value="6" label="Data verification of hash failed"/>
+  <int value="7" label="Cache write failed"/>
+</enum>
+
 <enum name="InstallStatus">
   <int value="0" label="FIRST_INSTALL_SUCCESS"/>
   <int value="1" label="INSTALL_REPAIRED"/>
