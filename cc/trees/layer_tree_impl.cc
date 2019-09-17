@@ -1405,14 +1405,6 @@ bool LayerTreeImpl::UpdateDrawProperties(
             occlusion_tracker.GetCurrentOcclusionForContributingSurface(
                 draw_transform);
         render_surface->set_occlusion_in_content_space(occlusion);
-        // Masks are used to draw the contributing surface, so should have
-        // the same occlusion as the surface (nothing inside the surface
-        // occludes them).
-        if (LayerImpl* mask = render_surface->MaskLayer()) {
-          mask->draw_properties().occlusion_in_content_space =
-              occlusion_tracker.GetCurrentOcclusionForContributingSurface(
-                  draw_transform * render_surface->SurfaceScale());
-        }
       }
 
       occlusion_tracker.LeaveLayer(it);
@@ -1556,18 +1548,10 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
 }
 
 void LayerTreeImpl::AddLayer(std::unique_ptr<LayerImpl> layer) {
-  DCHECK(!base::Contains(layer_list_, layer.get()));
-  layer_list_.push_back(layer.get());
-  AddOwnedLayer(std::move(layer));
-}
-
-void LayerTreeImpl::AddMaskLayer(std::unique_ptr<LayerImpl> layer) {
-  AddOwnedLayer(std::move(layer));
-}
-
-void LayerTreeImpl::AddOwnedLayer(std::unique_ptr<LayerImpl> layer) {
-  DCHECK(!base::Contains(layers_, layer));
   DCHECK(layer);
+  DCHECK(!base::Contains(layer_list_, layer.get()));
+  DCHECK(!base::Contains(layers_, layer));
+  layer_list_.push_back(layer.get());
   layers_.push_back(std::move(layer));
   set_needs_update_draw_properties();
 }

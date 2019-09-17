@@ -485,11 +485,6 @@ class CC_EXPORT LayerTreeImpl {
   // Append a layer to the list.
   void AddLayer(std::unique_ptr<LayerImpl> layer);
 
-  // Mask layer is special: it's managed by LayerTreeImpl (in layers_), but
-  // not in layer_list_. TODO(wangxianzhu): Remove this when we switch ui
-  // compositor to property based masks.
-  void AddMaskLayer(std::unique_ptr<LayerImpl> mask_layer);
-
   size_t NumLayers();
 
   void DidBecomeActive();
@@ -677,8 +672,6 @@ class CC_EXPORT LayerTreeImpl {
 
  private:
   friend class LayerTreeHost;
-
-  void AddOwnedLayer(std::unique_ptr<LayerImpl> layer);
 
   TransformNode* PageScaleTransformNode();
   void UpdatePageScaleNode();

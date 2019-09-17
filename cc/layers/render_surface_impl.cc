@@ -121,20 +121,11 @@ float RenderSurfaceImpl::GetDebugBorderWidth() const {
       layer_tree_impl_ ? layer_tree_impl_->device_scale_factor() : 1);
 }
 
-LayerImpl* RenderSurfaceImpl::MaskLayer() {
-  int mask_layer_id = OwningEffectNode()->mask_layer_id;
-  return layer_tree_impl_->LayerById(mask_layer_id);
-}
-
 LayerImpl* RenderSurfaceImpl::BackdropMaskLayer() const {
   ElementId mask_element_id = OwningEffectNode()->backdrop_mask_element_id;
   if (!mask_element_id)
     return nullptr;
   return layer_tree_impl_->LayerByElementId(mask_element_id);
-}
-
-bool RenderSurfaceImpl::HasMask() const {
-  return OwningEffectNode()->mask_layer_id != Layer::INVALID_ID;
 }
 
 bool RenderSurfaceImpl::HasMaskingContributingSurface() const {
@@ -423,13 +414,7 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
                               GetDebugBorderWidth());
   }
 
-  DCHECK(!(MaskLayer() && BackdropMaskLayer()))
-      << "Can't support both a mask_layer and a backdrop_mask_layer";
-  PictureLayerImpl* mask_layer =
-      static_cast<PictureLayerImpl*>(BackdropMaskLayer());
-  if (!mask_layer)
-    mask_layer = static_cast<PictureLayerImpl*>(MaskLayer());
-
+  LayerImpl* mask_layer = BackdropMaskLayer();
   viz::ResourceId mask_resource_id = 0;
   gfx::Size mask_texture_size;
   gfx::RectF mask_uv_rect;

@@ -198,14 +198,12 @@ struct CC_EXPORT ScrollAndScaleSet {
   ManipulationInfo manipulation_info;
 };
 
+// TODO(wangxianzhu): Remove these functions and let callers iterate directly.
 template <typename Function>
 void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeHost* host,
                                                     const Function& function) {
-  for (auto* layer : *host) {
+  for (auto* layer : *host)
     function(layer);
-    if (PictureLayer* mask_layer = layer->mask_layer())
-      function(mask_layer);
-  }
 }
 
 template <typename Function>
@@ -213,10 +211,6 @@ void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeImpl* tree_impl,
                                                     const Function& function) {
   for (auto* layer : *tree_impl)
     function(layer);
-
-  for (int id : tree_impl->property_trees()->effect_tree.mask_layer_ids()) {
-    function(tree_impl->LayerById(id));
-  }
 }
 
 CC_EXPORT PropertyTrees* GetPropertyTrees(const Layer* layer);
