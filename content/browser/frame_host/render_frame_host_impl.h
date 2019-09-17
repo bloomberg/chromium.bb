@@ -1046,6 +1046,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void CreateLockManager(
       mojo::PendingReceiver<blink::mojom::LockManager> receiver);
+  void GetFileChooser(
+      mojo::PendingReceiver<blink::mojom::FileChooser> receiver);
 
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()

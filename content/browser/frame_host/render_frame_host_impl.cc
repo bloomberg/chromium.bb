@@ -572,11 +572,12 @@ class FileChooserImpl : public blink::mojom::FileChooser,
   using FileChooserResult = blink::mojom::FileChooserResult;
 
  public:
-  static void Create(RenderFrameHostImpl* render_frame_host,
-                     blink::mojom::FileChooserRequest request) {
-    mojo::MakeStrongBinding(
+  static void Create(
+      RenderFrameHostImpl* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::FileChooser> receiver) {
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<FileChooserImpl>(render_frame_host),
-        std::move(request));
+        std::move(receiver));
   }
 
   FileChooserImpl(RenderFrameHostImpl* render_frame_host)
@@ -4469,9 +4470,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::BindRepeating(&ContactsManagerImpl::Create,
                                               base::Unretained(this)));
 
-  registry_->AddInterface(
-      base::BindRepeating(&FileChooserImpl::Create, base::Unretained(this)));
-
   registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
                                               base::Unretained(this)));
 
@@ -6356,6 +6354,11 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
         GetProcess()->GetBrowserContext());
   }
   speech_synthesis_impl_->AddReceiver(std::move(receiver));
+}
+
+void RenderFrameHostImpl::GetFileChooser(
+    mojo::PendingReceiver<blink::mojom::FileChooser> receiver) {
+  FileChooserImpl::Create(this, std::move(receiver));
 }
 
 blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {
