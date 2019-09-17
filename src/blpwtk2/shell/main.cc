@@ -880,6 +880,7 @@ int main(int, const char**)
         toolkitParams.disableInProcessRenderer();
     }
 
+    toolkitParams.appendCommandLineSwitch("disable-layout-ng");
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());
     toolkitParams.enablePrintBackgroundGraphics();
     toolkitParams.setDictionaryPath(g_dictDir);

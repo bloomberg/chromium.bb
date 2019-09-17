@@ -72,6 +72,8 @@
 //#include <third_party/blink/public/web/blink.h>
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_controller.h>
+#include <third_party/icu/source/common/unicode/locid.h>
+#include <ui/base/l10n/l10n_util.h>
 
 #include <atomic>
 #include <condition_variable>
@@ -81,7 +83,7 @@
 #include <tuple>
 #include <utility>
 
-
+#include <windows.h>
 
 // patch section: embedder ipc
 
@@ -234,6 +236,35 @@ static void setupDictionaryFiles(const std::string& path)
         base::ThreadRestrictions::ScopedAllowIO allowIO;
         base::PathService::Override(chrome::DIR_APP_DICTIONARIES,
                               base::FilePath::FromUTF8Unsafe(path));
+    }
+}
+
+void setDefaultLocaleIfWindowsLocaleIsNotSupported()
+{
+    // 1. Determine the user's locale
+    WCHAR localeNameW[LOCALE_NAME_MAX_LENGTH] = {};
+    char  localeName[LOCALE_NAME_MAX_LENGTH] = {};
+
+    GetLocaleInfoEx(
+        LOCALE_NAME_USER_DEFAULT,
+        LOCALE_SNAME,
+        localeNameW,
+        LOCALE_NAME_MAX_LENGTH);
+
+    wcstombs(&localeName[0], &localeNameW[0], LOCALE_NAME_MAX_LENGTH);
+
+    // 2. Get the available locales from Chromium
+    const auto& availableLocales = l10n_util::GetAvailableLocales();
+
+    // 3. If the user's locale is not available, fall back to en-US.
+    if (std::find(availableLocales.begin(),
+                  availableLocales.end(),
+                  localeName) == availableLocales.end()) {
+        LOG(INFO)
+            << "Locale '" << localeName << "' not available, using en-US";
+
+        UErrorCode error_code = U_ZERO_ERROR;
+        icu::Locale::setDefault(icu::Locale::getUS(), error_code);
     }
 }
 
@@ -597,6 +628,8 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         ContentBrowserClientImpl* pBrowserClientImpl = d_mainDelegate.GetContentBrowserClientImpl();
         startRenderer(isHost, channelInfo, pBrowserClientImpl ? pBrowserClientImpl->GetClientInvitation() : nullptr);
     }
+
+    setDefaultLocaleIfWindowsLocaleIsNotSupported();
 }
 
 ToolkitImpl::~ToolkitImpl()

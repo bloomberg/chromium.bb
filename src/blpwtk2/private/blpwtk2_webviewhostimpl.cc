@@ -513,9 +513,10 @@ void WebViewHostImpl::clearTooltip()
     d_impl->clearTooltip();
 }
 
-void WebViewHostImpl::setParent(unsigned int window)
+void WebViewHostImpl::setParent(unsigned int window, setParentCallback callback)
 {
-    d_impl->setParent(reinterpret_cast<NativeView>(window));
+    DWORD status = d_impl->setParent(reinterpret_cast<NativeView>(window));
+    std::move(callback).Run(status, window);
 }
 
 }  // close namespace blpwtk2

@@ -55,6 +55,8 @@ void WebViewDelegate::findState(WebView* source,
                                 int activeMatchOrdinal,
                                 bool finalUpdate) {}
 
+void WebViewDelegate::didParentStatus(WebView *source, int status, NativeView parent) {}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
