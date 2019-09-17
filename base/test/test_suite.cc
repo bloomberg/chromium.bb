@@ -37,6 +37,7 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -187,6 +188,31 @@ class CheckProcessPriority : public testing::EmptyTestEventListener {
   DISALLOW_COPY_AND_ASSIGN(CheckProcessPriority);
 };
 #endif  // !defined(OS_IOS)
+
+class CheckThreadPriority : public testing::EmptyTestEventListener {
+ public:
+  CheckThreadPriority(bool check_thread_priority_at_test_end)
+      : check_thread_priority_at_test_end_(check_thread_priority_at_test_end) {
+    CHECK_EQ(base::PlatformThread::GetCurrentThreadPriority(),
+             base::ThreadPriority::NORMAL);
+  }
+
+  void OnTestStart(const testing::TestInfo& test) override {
+    EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriority(),
+              base::ThreadPriority::NORMAL);
+  }
+  void OnTestEnd(const testing::TestInfo& test) override {
+    if (check_thread_priority_at_test_end_) {
+      EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriority(),
+                base::ThreadPriority::NORMAL);
+    }
+  }
+
+ private:
+  const bool check_thread_priority_at_test_end_;
+
+  DISALLOW_COPY_AND_ASSIGN(CheckThreadPriority);
+};
 
 const std::string& GetProfileName() {
   static const NoDestructor<std::string> profile_name([]() {
@@ -381,6 +407,11 @@ void TestSuite::DisableCheckForProcessPriority() {
   check_for_process_priority_ = false;
 }
 
+void TestSuite::DisableCheckForThreadPriorityAtTestEnd() {
+  DCHECK(!is_initialized_);
+  check_for_thread_priority_at_test_end_ = false;
+}
+
 void TestSuite::UnitTestAssertHandler(const char* file,
                                       int line,
                                       const StringPiece summary,
@@ -571,6 +602,8 @@ void TestSuite::Initialize() {
   if (check_for_process_priority_)
     listeners.Append(new CheckProcessPriority);
 #endif
+  listeners.Append(
+      new CheckThreadPriority(check_for_thread_priority_at_test_end_));
 
   AddTestLauncherResultPrinter();
 
