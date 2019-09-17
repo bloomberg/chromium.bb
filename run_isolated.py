@@ -567,7 +567,7 @@ def copy_recursively(src, dst):
       logging.info("Couldn't collect output file %s: %s", src, e)
 
 
-def delete_and_upload(storage, out_dir, leak_temp_dir):
+def upload_then_delete(storage, out_dir, leak_temp_dir):
   """Deletes the temporary run directory and uploads results back.
 
   Returns:
@@ -818,7 +818,7 @@ def map_and_run(data, constant_run_path):
       if out_dir:
         isolated_stats = result['stats'].setdefault('isolated', {})
         result['outputs_ref'], success, isolated_stats['upload'] = (
-            delete_and_upload(data.storage, out_dir, data.leak_temp_dir))
+            upload_then_delete(data.storage, out_dir, data.leak_temp_dir))
       if not success and result['exit_code'] == 0:
         result['exit_code'] = 1
     except Exception as e:
