@@ -5,10 +5,7 @@
 import("//build/config/android/rules.gni")
 
 android_library("java") {
-  java_files = [
-    "java/src/org/chromium/chrome/browser/util/HashUtil.java",
-    "java/src/org/chromium/chrome/browser/util/IntentUtils.java",
-  ]
+  java_files = [ "java/src/org/chromium/chrome/browser/util/HashUtil.java" ]
   deps = [
     "//base:base_java",
     "//content/public/android:content_java",
