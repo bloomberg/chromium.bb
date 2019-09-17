@@ -1175,7 +1175,7 @@ void RenderWebView::hide()
     }
 }
 
-void RenderWebView::setParent(NativeView parent)
+int RenderWebView::setParent(NativeView parent)
 {
     DCHECK(Statics::isInApplicationMainThread());
     DCHECK(d_hwnd.is_valid());
@@ -1201,7 +1201,10 @@ void RenderWebView::setParent(NativeView parent)
             (GetWindowLong(d_hwnd.get(), GWL_STYLE) & ~WS_OVERLAPPED) | WS_CHILD);
     }
 
-    SetParent(d_hwnd.get(), parent);
+    int status = 0;
+    if (!::SetParent(d_hwnd.get(), parent)) {
+        status = ::GetLastError();
+    }
 
     // The window is gaining a parent:
     if (parent && !d_hasParent) {
@@ -1223,6 +1226,7 @@ void RenderWebView::setParent(NativeView parent)
     }
 
     d_hasParent = !!parent;
+    return status;
 }
 
 void RenderWebView::move(int left, int top, int width, int height)
