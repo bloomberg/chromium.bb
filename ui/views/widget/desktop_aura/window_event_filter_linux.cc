@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_aura/window_event_filter.h"
+#include "ui/views/widget/desktop_aura/window_event_filter_linux.h"
 
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -22,12 +22,16 @@
 
 namespace views {
 
-WindowEventFilter::WindowEventFilter(DesktopWindowTreeHost* window_tree_host)
-    : window_tree_host_(window_tree_host) {}
+WindowEventFilterLinux::WindowEventFilterLinux(
+    DesktopWindowTreeHost* window_tree_host,
+    ui::WmMoveResizeHandler* handler)
+    : window_tree_host_(window_tree_host), handler_(handler) {
+  DCHECK(handler_);
+}
 
-WindowEventFilter::~WindowEventFilter() = default;
+WindowEventFilterLinux::~WindowEventFilterLinux() = default;
 
-void WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+void WindowEventFilterLinux::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
     return;
 
@@ -54,14 +58,8 @@ void WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void WindowEventFilter::SetWmMoveResizeHandler(
-    ui::WmMoveResizeHandler* handler) {
-  DCHECK(!handler_);
-  handler_ = handler;
-}
-
-void WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
-                                         int previous_click_component) {
+void WindowEventFilterLinux::OnClickedCaption(ui::MouseEvent* event,
+                                              int previous_click_component) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   LinuxUI* linux_ui = LinuxUI::instance();
 
@@ -112,7 +110,7 @@ void WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
       if (!widget)
         break;
       views::View* view = widget->GetContentsView();
-      if (!view || !view->context_menu_controller())
+      if (!view)
         break;
       gfx::Point location(event->location());
       views::View::ConvertPointToScreen(view, &location);
@@ -122,7 +120,7 @@ void WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
   }
 }
 
-void WindowEventFilter::OnClickedMaximizeButton(ui::MouseEvent* event) {
+void WindowEventFilterLinux::OnClickedMaximizeButton(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   views::Widget* widget = views::Widget::GetWidgetForNativeView(target);
   if (!widget)
@@ -144,26 +142,31 @@ void WindowEventFilter::OnClickedMaximizeButton(ui::MouseEvent* event) {
   }
 }
 
-void WindowEventFilter::ToggleMaximizedState() {
+void WindowEventFilterLinux::ToggleMaximizedState() {
   if (window_tree_host_->IsMaximized())
     window_tree_host_->Restore();
   else
     window_tree_host_->Maximize();
 }
 
-void WindowEventFilter::LowerWindow() {}
+void WindowEventFilterLinux::LowerWindow() {}
 
-void WindowEventFilter::MaybeDispatchHostWindowDragMovement(
+void WindowEventFilterLinux::MaybeDispatchHostWindowDragMovement(
     int hittest,
     ui::MouseEvent* event) {
-  if (handler_ && event->IsLeftMouseButton() &&
-      ui::CanPerformDragOrResize(hittest)) {
+  if (event->IsLeftMouseButton() && ui::CanPerformDragOrResize(hittest)) {
     // Some platforms (eg X11) may require last pointer location not in the
     // local surface coordinates, but rather in the screen coordinates for
     // interactive move/resize.
-    const gfx::Point last_pointer_location =
+    aura::Window* target = static_cast<aura::Window*>(event->target());
+    const auto scale_factor = display::Screen::GetScreen()
+                                  ->GetDisplayNearestWindow(target)
+                                  .device_scale_factor();
+    gfx::Point last_cursor_location_in_dip =
         aura::Env::GetInstance()->last_mouse_location();
-    handler_->DispatchHostWindowDragMovement(hittest, last_pointer_location);
+    handler_->DispatchHostWindowDragMovement(
+        hittest,
+        gfx::ScaleToFlooredPoint(last_cursor_location_in_dip, scale_factor));
     event->StopPropagation();
     return;
   }

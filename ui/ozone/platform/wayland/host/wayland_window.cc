@@ -305,7 +305,7 @@ void WaylandWindow::ApplyPendingBounds() {
 
 void WaylandWindow::DispatchHostWindowDragMovement(
     int hittest,
-    const gfx::Point& pointer_location) {
+    const gfx::Point& pointer_location_in_px) {
   DCHECK(xdg_surface_);
 
   connection_->ResetPointerFlags();

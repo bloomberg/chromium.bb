@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_WINDOW_EVENT_FILTER_H_
-#define UI_VIEWS_WIDGET_DESKTOP_AURA_WINDOW_EVENT_FILTER_H_
+#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_WINDOW_EVENT_FILTER_LINUX_H_
+#define UI_VIEWS_WIDGET_DESKTOP_AURA_WINDOW_EVENT_FILTER_LINUX_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -18,21 +18,16 @@ class WmMoveResizeHandler;
 namespace views {
 class DesktopWindowTreeHost;
 
-// An EventFilter that sets properties on native windows.
-// The downstream effort to add wayland and x11 support with ozone
-// are using this class (to be upstreamed later).
-class VIEWS_EXPORT WindowEventFilter : public ui::EventHandler {
+// An EventFilter that sets properties on native windows. Uses
+// WmMoveResizeHandler to dispatch move/resize requests.
+class VIEWS_EXPORT WindowEventFilterLinux : public ui::EventHandler {
  public:
-  explicit WindowEventFilter(DesktopWindowTreeHost* window_tree_host);
-  ~WindowEventFilter() override;
+  WindowEventFilterLinux(DesktopWindowTreeHost* window_tree_host,
+                         ui::WmMoveResizeHandler* handler);
+  ~WindowEventFilterLinux() override;
 
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
-
-  // Sets a move resize handler. Currently initialized only by ozone platforms.
-  // See WaylandWindow::WaylandWindow in the wayland_window.cc file for an
-  // example.
-  void SetWmMoveResizeHandler(ui::WmMoveResizeHandler* handler);
 
  private:
   // Called when the user clicked the caption area.
@@ -46,14 +41,13 @@ class VIEWS_EXPORT WindowEventFilter : public ui::EventHandler {
   // Dispatches a message to the window manager to tell it to act as if a border
   // or titlebar drag occurred with left mouse click. In case of X11, a
   // _NET_WM_MOVERESIZE message is sent.
-  virtual void MaybeDispatchHostWindowDragMovement(int hittest,
-                                                   ui::MouseEvent* event);
+  void MaybeDispatchHostWindowDragMovement(int hittest, ui::MouseEvent* event);
 
   // A signal to lower an attached to this filter window to the bottom of the
   // stack.
   virtual void LowerWindow();
 
-  DesktopWindowTreeHost* window_tree_host_;
+  DesktopWindowTreeHost* const window_tree_host_;
 
   // The non-client component for the target of a MouseEvent. Mouse events can
   // be destructive to the window tree, which can cause the component of a
@@ -65,11 +59,11 @@ class VIEWS_EXPORT WindowEventFilter : public ui::EventHandler {
   // A handler, which is used for interactive move/resize events if set and
   // unless MaybeDispatchHostWindowDragMovement is overridden by a derived
   // class.
-  ui::WmMoveResizeHandler* handler_ = nullptr;
+  ui::WmMoveResizeHandler* const handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowEventFilter);
+  DISALLOW_COPY_AND_ASSIGN(WindowEventFilterLinux);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_WINDOW_EVENT_FILTER_H_
+#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_WINDOW_EVENT_FILTER_LINUX_H_
