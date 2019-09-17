@@ -17,6 +17,8 @@
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,7 +95,7 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
  public:
   TestRemoteFactory()
       : expect_request_(false),
-        binding_(this, mojo::MakeRequest(&this_proxy_)) {}
+        receiver_(this, this_remote_.BindNewPipeAndPassReceiver()) {}
 
   ~TestRemoteFactory() override {}
 
@@ -146,9 +148,9 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   }
 
   void Disconnect() {
-    binding_.Close();
-    this_proxy_.reset();
-    binding_.Bind(mojo::MakeRequest(&this_proxy_));
+    receiver_.reset();
+    this_remote_.reset();
+    receiver_.Bind(this_remote_.BindNewPipeAndPassReceiver());
     provider_binding_.reset();
     provider_.reset();
     expect_request_ = false;
@@ -159,14 +161,14 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   }
 
  private:
-  mojom::RendererAudioOutputStreamFactory* get() { return this_proxy_.get(); }
+  mojom::RendererAudioOutputStreamFactory* get() { return this_remote_.get(); }
 
   bool expect_request_;
   base::Optional<base::UnguessableToken> expected_session_id_;
   std::string expected_device_id_;
 
-  mojom::RendererAudioOutputStreamFactoryPtr this_proxy_;
-  mojo::Binding<mojom::RendererAudioOutputStreamFactory> binding_;
+  mojo::Remote<mojom::RendererAudioOutputStreamFactory> this_remote_;
+  mojo::Receiver<mojom::RendererAudioOutputStreamFactory> receiver_{this};
   std::unique_ptr<TestStreamProvider> provider_;
   base::Optional<mojo::Binding<media::mojom::AudioOutputStreamProvider>>
       provider_binding_;

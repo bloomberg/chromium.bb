@@ -1523,7 +1523,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateAudioInputStreamFactory(
       mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
   void CreateAudioOutputStreamFactory(
-      mojom::RendererAudioOutputStreamFactoryRequest request);
+      mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver);
 
   void BindMediaInterfaceFactoryRequest(
       media::mojom::InterfaceFactoryRequest request);
