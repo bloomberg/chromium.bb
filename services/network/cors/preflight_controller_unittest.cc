@@ -390,7 +390,7 @@ TEST_F(PreflightControllerTest, CheckTaintedRequest) {
 
 TEST_F(PreflightControllerTest, CheckResponseWithNullHeaders) {
   GURL url = GURL("https://google.com/finullurl");
-  const mojom::URLResponseHead response_head;
+  const ResourceResponseHead response_head;
   ResourceRequest request;
   request.url = url;
   request.request_initiator = url::Origin::Create(request.url);

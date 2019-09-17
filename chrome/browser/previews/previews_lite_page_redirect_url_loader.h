@@ -58,7 +58,7 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader,
   // AvailabilityProber::Delegate:
   bool ShouldSendNextProbe() override;
   bool IsResponseSuccess(net::Error net_error,
-                         const network::mojom::URLResponseHead* head,
+                         const network::ResourceResponseHead* head,
                          std::unique_ptr<std::string> body) override;
 
  private:

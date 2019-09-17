@@ -22,7 +22,6 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -55,11 +54,11 @@ class MockApiCallFlow : public OAuth2ApiCallFlow {
   MOCK_METHOD0(CreateApiCallUrl, GURL());
   MOCK_METHOD0(CreateApiCallBody, std::string());
   MOCK_METHOD2(ProcessApiCallSuccess,
-               void(const network::mojom::URLResponseHead* head,
+               void(const network::ResourceResponseHead* head,
                     std::unique_ptr<std::string> body));
   MOCK_METHOD3(ProcessApiCallFailure,
                void(int net_error,
-                    const network::mojom::URLResponseHead* head,
+                    const network::ResourceResponseHead* head,
                     std::unique_ptr<std::string> body));
   MOCK_METHOD1(ProcessNewAccessToken, void(const std::string& access_token));
   MOCK_METHOD1(ProcessMintAccessTokenFailure,

@@ -19,7 +19,6 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 
 // The maximum number of retries allowed for GET requests.
 constexpr int kMaxRetries = 2;
@@ -80,7 +79,7 @@ DialURLFetcher::~DialURLFetcher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-const network::mojom::URLResponseHead* DialURLFetcher::GetResponseHead() const {
+const network::ResourceResponseHead* DialURLFetcher::GetResponseHead() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return loader_ ? loader_->ResponseInfo() : nullptr;
 }
@@ -149,7 +148,7 @@ void DialURLFetcher::ReportError(int response_code,
 
 void DialURLFetcher::ReportRedirectError(
     const net::RedirectInfo& redirect_info,
-    const network::mojom::URLResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers) {
   // Cancel the request.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -544,7 +544,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
     config_storer_.Run(encoded_config);
 
     // Record timing metrics on successful requests only.
-    const network::mojom::URLResponseHead* info = url_loader_->ResponseInfo();
+    const network::ResourceResponseHead* info = url_loader_->ResponseInfo();
     base::TimeDelta http_request_rtt =
         info->response_start - info->request_start;
     UMA_HISTOGRAM_TIMES("DataReductionProxy.ConfigService.HttpRequestRTT",

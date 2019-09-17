@@ -24,7 +24,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace data_reduction_proxy {
 
@@ -201,14 +200,14 @@ void WarmupURLFetcher::GetWarmupURLWithQueryParam(
 
 void WarmupURLFetcher::OnURLLoadResponseStarted(
     const GURL& final_url,
-    const network::mojom::URLResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   proxy_server_ = response_head.proxy_server;
 }
 
 void WarmupURLFetcher::OnURLLoaderRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::mojom::URLResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   proxy_server_ = response_head.proxy_server;

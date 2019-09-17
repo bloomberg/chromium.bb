@@ -15,7 +15,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -23,6 +22,7 @@ struct RedirectInfo;
 }  // namespace net
 
 namespace network {
+struct ResourceResponseHead;
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
@@ -80,14 +80,14 @@ class CommonNameMismatchHandler {
 
  private:
   void OnSimpleLoaderHandler(const GURL& final_url,
-                             const network::mojom::URLResponseHead* head);
+                             const network::ResourceResponseHead* head);
   void OnSimpleLoaderRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::mojom::URLResponseHead& response_head,
+      const network::ResourceResponseHead& response_head,
       std::vector<std::string>* to_be_removed_headers);
   void OnSimpleLoaderResponseStarted(
       const GURL& final_url,
-      const network::mojom::URLResponseHead& response_head);
+      const network::ResourceResponseHead& response_head);
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Returns true if the check is currently running.

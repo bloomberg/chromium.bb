@@ -77,7 +77,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "ui/base/page_transition_types.h"
@@ -394,7 +393,7 @@ class DevToolsUIBindings::NetworkResourceLoader
 
  private:
   void OnResponseStarted(const GURL& final_url,
-                         const network::mojom::URLResponseHead& response_head) {
+                         const network::ResourceResponseHead& response_head) {
     response_headers_ = response_head.headers;
   }
 

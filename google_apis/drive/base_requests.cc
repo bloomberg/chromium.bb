@@ -30,7 +30,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_util.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
 
@@ -84,7 +83,7 @@ void ParseJsonOnBlockingPool(
 // Returns response headers as a string. Returns a warning message if
 // |response_head| does not contain a valid response. Used only for debugging.
 std::string GetResponseHeadersAsString(
-    const network::mojom::URLResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head) {
   // Check that response code indicates response headers are valid (i.e. not
   // malformed) before we retrieve the headers.
   if (response_head.headers->response_code() == -1)
@@ -395,7 +394,7 @@ void UrlFetchRequestBase::OnUploadProgress(
 
 void UrlFetchRequestBase::OnResponseStarted(
     const GURL& final_url,
-    const network::mojom::URLResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head) {
   DVLOG(1) << "Response headers:\n"
            << GetResponseHeadersAsString(response_head);
   response_content_length_ = response_head.content_length;
@@ -481,7 +480,7 @@ void UrlFetchRequestBase::OnComplete(bool success) {
 
 void UrlFetchRequestBase::OnOutputFileClosed(bool success) {
   DCHECK(download_data_);
-  const network::mojom::URLResponseHead* response_info;
+  const network::ResourceResponseHead* response_info;
   if (url_loader_) {
     response_info = url_loader_->ResponseInfo();
     if (response_info) {
@@ -601,7 +600,7 @@ EntryActionRequest::EntryActionRequest(RequestSender* sender,
 EntryActionRequest::~EntryActionRequest() {}
 
 void EntryActionRequest::ProcessURLFetchResults(
-    const network::mojom::URLResponseHead* response_head,
+    const network::ResourceResponseHead* response_head,
     base::FilePath response_file,
     std::string response_body) {
   callback_.Run(GetErrorCode());
@@ -631,7 +630,7 @@ InitiateUploadRequestBase::InitiateUploadRequestBase(
 InitiateUploadRequestBase::~InitiateUploadRequestBase() {}
 
 void InitiateUploadRequestBase::ProcessURLFetchResults(
-    const network::mojom::URLResponseHead* response_head,
+    const network::ResourceResponseHead* response_head,
     base::FilePath response_file,
     std::string response_body) {
   std::string upload_location;
@@ -699,7 +698,7 @@ std::string UploadRangeRequestBase::GetRequestType() const {
 }
 
 void UploadRangeRequestBase::ProcessURLFetchResults(
-    const network::mojom::URLResponseHead* response_head,
+    const network::ResourceResponseHead* response_head,
     base::FilePath response_file,
     std::string response_body) {
   DriveApiErrorCode code = GetErrorCode();
@@ -1013,7 +1012,7 @@ void DownloadFileRequestBase::GetOutputFilePath(
 }
 
 void DownloadFileRequestBase::ProcessURLFetchResults(
-    const network::mojom::URLResponseHead* response_head,
+    const network::ResourceResponseHead* response_head,
     base::FilePath response_file,
     std::string response_body) {
   download_action_callback_.Run(GetErrorCode(), response_file);

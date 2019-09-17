@@ -112,7 +112,7 @@ class PreviewsLitePageDecider
   // AvailabilityProber::Delegate:
   bool ShouldSendNextProbe() override;
   bool IsResponseSuccess(net::Error net_error,
-                         const network::mojom::URLResponseHead* head,
+                         const network::ResourceResponseHead* head,
                          std::unique_ptr<std::string> body) override;
 
   // The time after which it is ok to send the server more preview requests.

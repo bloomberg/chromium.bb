@@ -21,10 +21,11 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace network {
+
+struct ResourceResponseHead;
 
 namespace cors {
 
@@ -42,7 +43,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   // Creates a PreflightResult for a specified response parameters for testing.
   static std::unique_ptr<PreflightResult> CreatePreflightResultForTesting(
       const GURL& final_url,
-      const mojom::URLResponseHead& head,
+      const ResourceResponseHead& head,
       const ResourceRequest& original_request,
       bool tainted,
       base::Optional<CorsErrorStatus>* detected_error_status);

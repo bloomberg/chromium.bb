@@ -23,7 +23,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace variations {
@@ -174,7 +173,7 @@ bool AppendVariationsHeaderUnknownSignedIn(const GURL& url,
 
 void RemoveVariationsHeaderIfNeeded(
     const net::RedirectInfo& redirect_info,
-    const network::mojom::URLResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers) {
   if (!ShouldAppendVariationsHeader(redirect_info.new_url))
     to_be_removed_headers->push_back(kClientDataHeader);

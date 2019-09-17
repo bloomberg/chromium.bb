@@ -9,7 +9,6 @@
 #include "net/base/url_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace chromeos {
 
@@ -116,7 +115,7 @@ std::string CryptAuthApiCallFlow::GetRequestTypeForBody(
 }
 
 void CryptAuthApiCallFlow::ProcessApiCallSuccess(
-    const network::mojom::URLResponseHead* head,
+    const network::ResourceResponseHead* head,
     std::unique_ptr<std::string> body) {
   if (!body) {
     error_callback_.Run(NetworkRequestError::kResponseMalformed);
@@ -127,7 +126,7 @@ void CryptAuthApiCallFlow::ProcessApiCallSuccess(
 
 void CryptAuthApiCallFlow::ProcessApiCallFailure(
     int net_error,
-    const network::mojom::URLResponseHead* head,
+    const network::ResourceResponseHead* head,
     std::unique_ptr<std::string> body) {
   base::Optional<NetworkRequestError> error;
   std::string error_message;

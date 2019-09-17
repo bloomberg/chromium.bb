@@ -116,7 +116,7 @@ bool PreviewsLitePageRedirectURLLoader::ShouldSendNextProbe() {
 
 bool PreviewsLitePageRedirectURLLoader::IsResponseSuccess(
     net::Error net_error,
-    const network::mojom::URLResponseHead* head,
+    const network::ResourceResponseHead* head,
     std::unique_ptr<std::string> body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Any HTTP response is fine, so long as we got it.

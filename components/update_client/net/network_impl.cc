@@ -15,7 +15,6 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -181,7 +180,7 @@ void NetworkFetcherImpl::DownloadToFile(
 void NetworkFetcherImpl::OnResponseStartedCallback(
     ResponseStartedCallback response_started_callback,
     const GURL& final_url,
-    const network::mojom::URLResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head) {
   std::move(response_started_callback)
       .Run(final_url,
            response_head.headers ? response_head.headers->response_code() : -1,

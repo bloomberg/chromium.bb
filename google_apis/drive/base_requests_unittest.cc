@@ -25,7 +25,6 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_network_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,7 +49,7 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
  protected:
   GURL GetURL() const override { return url_; }
   void ProcessURLFetchResults(
-      const network::mojom::URLResponseHead* response_head,
+      const network::ResourceResponseHead* response_head,
       base::FilePath response_file,
       std::string response_body) override {
     callback_.Run(GetErrorCode());

@@ -28,7 +28,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 
 using net::DefineNetworkTrafficAnnotation;
 
@@ -147,7 +146,7 @@ void GCDApiFlowImpl::OnAccessTokenFetchComplete(
 
 void GCDApiFlowImpl::OnDownloadedToString(
     std::unique_ptr<std::string> response_body) {
-  const network::mojom::URLResponseHead* response_info =
+  const network::ResourceResponseHead* response_info =
       url_loader_->ResponseInfo();
 
   if (url_loader_->NetError() != net::OK || !response_info) {

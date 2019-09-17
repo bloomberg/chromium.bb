@@ -44,7 +44,7 @@ class TestDelegate : public AvailabilityProber::Delegate {
   bool ShouldSendNextProbe() override { return should_send_next_probe_; }
 
   bool IsResponseSuccess(net::Error net_error,
-                         const network::mojom::URLResponseHead* head,
+                         const network::ResourceResponseHead* head,
                          std::unique_ptr<std::string> body) override {
     got_head_ = head;
     return net_error == net::OK && head &&

@@ -20,7 +20,6 @@
 #include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -126,7 +125,7 @@ void DetachedResourceRequest::Start(
 
 void DetachedResourceRequest::OnRedirectCallback(
     const net::RedirectInfo& redirect_info,
-    const network::mojom::URLResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers) {
   redirects_++;
 }
