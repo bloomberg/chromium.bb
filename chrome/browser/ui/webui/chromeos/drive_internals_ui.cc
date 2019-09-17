@@ -453,19 +453,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   }
 
   void UpdateAboutResourceSection() {
-    if (IsDriveFsEnabled()) {
-      // TODO(crbug.com/896123): Maybe worth implementing.
-      SetSectionEnabled("account-information-section", false);
-      return;
-    }
-
-    SetSectionEnabled("account-information-section", true);
-    auto* drive_service = GetDriveService();
-    if (drive_service) {
-      drive_service->GetAboutResource(
-          base::Bind(&DriveInternalsWebUIHandler::OnGetAboutResource,
-                     weak_ptr_factory_.GetWeakPtr()));
-    }
+    // TODO(crbug.com/896123): Maybe worth implementing.
+    SetSectionEnabled("account-information-section", false);
   }
 
   // Called when GetAboutResource() call to DriveService is complete.
@@ -492,19 +481,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   }
 
   void UpdateDeltaUpdateStatusSection() {
-    if (IsDriveFsEnabled()) {
-      // TODO(crbug.com/896123): Maybe worth implementing.
-      SetSectionEnabled("delta-update-status-section", false);
-      return;
-    }
-
-    SetSectionEnabled("delta-update-status-section", true);
-    auto* debug_info_collector = GetDebugInfoCollector();
-    if (debug_info_collector) {
-      debug_info_collector->GetMetadata(base::Bind(
-          &DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate,
-          weak_ptr_factory_.GetWeakPtr()));
-    }
+    // TODO(crbug.com/896123): Maybe worth implementing.
+    SetSectionEnabled("delta-update-status-section", false);
   }
 
   // Callback for DebugInfoCollector::GetMetadata for delta update.
@@ -555,62 +533,12 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   }
 
   void UpdateInFlightOperationsSection() {
-    if (IsDriveFsEnabled()) {
-      // TODO(crbug.com/896123): Maybe worth implementing.
-      SetSectionEnabled("in-flight-operations-section", false);
-      return;
-    }
-
-    SetSectionEnabled("in-flight-operations-section", true);
-    auto* integration_service = GetIntegrationService();
-    if (!integration_service)
-      return;
-    drive::JobListInterface* job_list = integration_service->job_list();
-    if (!job_list)
-      return;
-    std::vector<drive::JobInfo> info_list = job_list->GetJobInfoList();
-
-    base::ListValue in_flight_operations;
-    for (size_t i = 0; i < info_list.size(); ++i) {
-      const drive::JobInfo& info = info_list[i];
-
-      auto dict = std::make_unique<base::DictionaryValue>();
-      dict->SetInteger("id", info.job_id);
-      dict->SetString("type", drive::JobTypeToString(info.job_type));
-      dict->SetString("file_path", info.file_path.AsUTF8Unsafe());
-      dict->SetString("state", drive::JobStateToString(info.state));
-      dict->SetDouble("progress_current", info.num_completed_bytes);
-      dict->SetDouble("progress_total", info.num_total_bytes);
-      in_flight_operations.Append(std::move(dict));
-    }
-
-    MaybeCallJavascript("updateInFlightOperations",
-                        std::move(in_flight_operations));
+    // TODO(crbug.com/896123): Maybe worth implementing.
+    SetSectionEnabled("in-flight-operations-section", false);
   }
 
   void UpdateFileSystemContentsSection() {
-    if (IsDriveFsEnabled()) {
-      SetSectionEnabled("file-system-contents-section", false);
-      return;
-    }
-
-    SetSectionEnabled("file-system-contents-section", true);
-    drive::DebugInfoCollector* debug_info_collector = GetDebugInfoCollector();
-    if (!debug_info_collector)
-      return;
-
-    // Start rendering the file system tree as text.
-    const base::FilePath root_path = drive::util::GetDriveGrandRootPath();
-
-    debug_info_collector->GetResourceEntry(
-        root_path,
-        base::BindOnce(&DriveInternalsWebUIHandler::OnGetResourceEntryByPath,
-                       weak_ptr_factory_.GetWeakPtr(), root_path));
-
-    debug_info_collector->ReadDirectory(
-        root_path,
-        base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
-                   weak_ptr_factory_.GetWeakPtr(), root_path));
+    SetSectionEnabled("file-system-contents-section", false);
   }
 
   // Called when GetResourceEntryByPath() is complete.
@@ -727,8 +655,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     PrefService* pref_service = profile()->GetPrefs();
 
     base::ListValue preferences;
-    AppendKeyValue(&preferences, "DriveFS",
-                   IsDriveFsEnabled() ? "true" : "false");
     for (size_t i = 0; i < base::size(kDriveRelatedPreferences); ++i) {
       const std::string key = kDriveRelatedPreferences[i];
       // As of now, all preferences are boolean.
@@ -772,10 +698,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   }
 
   void UpdateServiceLogSection() {
-    if (!IsDriveFsEnabled()) {
-      SetSectionEnabled("service-log-section", false);
-      return;
-    }
     SetSectionEnabled("service-log-section", true);
 
     if (service_log_file_is_processing_)
@@ -818,20 +740,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   }
 
   void UpdateCacheContentsSection() {
-    if (IsDriveFsEnabled()) {
-      // TODO(crbug.com/896123): Maybe worth implementing.
-      SetSectionEnabled("cache-contents-section", false);
-      return;
-    }
-    SetSectionEnabled("cache-contents-section", true);
-
-    auto* debug_info_collector = GetDebugInfoCollector();
-    if (debug_info_collector) {
-      debug_info_collector->IterateFileCache(
-          base::Bind(&DriveInternalsWebUIHandler::OnUpdateCacheEntry,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::DoNothing());
-    }
+    // TODO(crbug.com/896123): Maybe worth implementing.
+    SetSectionEnabled("cache-contents-section", false);
   }
 
   // Called as the iterator for DebugInfoCollector::IterateFileCache().
@@ -952,11 +862,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     drive::DriveIntegrationService* service = GetIntegrationService();
     return service ? service->debug_info_collector() : NULL;
-  }
-
-  // Whether DriveFS is enabled.
-  bool IsDriveFsEnabled() {
-    return base::FeatureList::IsEnabled(chromeos::features::kDriveFs);
   }
 
   // The last event sent to the JavaScript side.
