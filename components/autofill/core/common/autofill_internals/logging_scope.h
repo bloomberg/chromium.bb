@@ -7,6 +7,8 @@
 
 namespace autofill {
 
+class LogBuffer;
+
 /////////////// Logging Scopes /////////////
 
 // Generator for source code related to logging scopes. Pass a template T which
@@ -32,6 +34,8 @@ enum class LoggingScope {
 
 // Returns the enum value of |scope| as a string (without the leading k).
 const char* LoggingScopeToString(LoggingScope scope);
+
+LogBuffer& operator<<(LogBuffer& buf, LoggingScope scope);
 
 }  // namespace autofill
 

@@ -7,6 +7,8 @@
 
 namespace autofill {
 
+class LogBuffer;
+
 /////////////// Log Messages /////////////
 
 // Generator for log message. If you need to find the call site for a log
@@ -28,6 +30,8 @@ enum class LogMessage {
 const char* LogMessageToString(LogMessage message);
 // Returns the actual string to be presented to the user for |message|.
 const char* LogMessageValue(LogMessage message);
+
+LogBuffer& operator<<(LogBuffer& buf, LogMessage message);
 
 }  // namespace autofill
 
