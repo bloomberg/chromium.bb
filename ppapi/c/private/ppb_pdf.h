@@ -184,13 +184,13 @@ struct PPB_PDF {
   // support.
   void (*SetAccessibilityViewportInfo)(
       PP_Instance instance,
-      struct PP_PrivateAccessibilityViewportInfo* viewport_info);
+      const struct PP_PrivateAccessibilityViewportInfo* viewport_info);
 
   // Sends information about the PDF document to the renderer for accessibility
   // support.
   void (*SetAccessibilityDocInfo)(
       PP_Instance instance,
-      struct PP_PrivateAccessibilityDocInfo* doc_info);
+      const struct PP_PrivateAccessibilityDocInfo* doc_info);
 
   // Sends information about one page in a PDF document to the renderer for
   // accessibility support.

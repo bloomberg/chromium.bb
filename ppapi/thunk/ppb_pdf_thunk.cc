@@ -155,7 +155,7 @@ void GetV8ExternalSnapshotData(PP_Instance instance,
 
 void SetAccessibilityViewportInfo(
     PP_Instance instance,
-    PP_PrivateAccessibilityViewportInfo* viewport_info) {
+    const PP_PrivateAccessibilityViewportInfo* viewport_info) {
   EnterInstanceAPI<PPB_PDF_API> enter(instance);
   if (enter.failed())
     return;
@@ -163,7 +163,7 @@ void SetAccessibilityViewportInfo(
 }
 
 void SetAccessibilityDocInfo(PP_Instance instance,
-                             PP_PrivateAccessibilityDocInfo* doc_info) {
+                             const PP_PrivateAccessibilityDocInfo* doc_info) {
   EnterInstanceAPI<PPB_PDF_API> enter(instance);
   if (enter.failed())
     return;

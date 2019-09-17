@@ -37,9 +37,9 @@ class PPB_PDF_API {
                                          const char** snapshot_data_out,
                                          int* snapshot_size_out) = 0;
   virtual void SetAccessibilityViewportInfo(
-      PP_PrivateAccessibilityViewportInfo* viewport_info) = 0;
+      const PP_PrivateAccessibilityViewportInfo* viewport_info) = 0;
   virtual void SetAccessibilityDocInfo(
-      PP_PrivateAccessibilityDocInfo* doc_info) = 0;
+      const PP_PrivateAccessibilityDocInfo* doc_info) = 0;
   virtual void SetAccessibilityPageInfo(
       const PP_PrivateAccessibilityPageInfo* page_info,
       const PP_PrivateAccessibilityTextRunInfo text_runs[],

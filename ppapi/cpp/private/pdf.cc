@@ -203,7 +203,7 @@ void PDF::GetV8ExternalSnapshotData(const InstanceHandle& instance,
 // static
 void PDF::SetAccessibilityViewportInfo(
     const InstanceHandle& instance,
-    PP_PrivateAccessibilityViewportInfo* viewport_info) {
+    const PP_PrivateAccessibilityViewportInfo* viewport_info) {
   if (has_interface<PPB_PDF>()) {
     get_interface<PPB_PDF>()->SetAccessibilityViewportInfo(
         instance.pp_instance(), viewport_info);
@@ -211,8 +211,9 @@ void PDF::SetAccessibilityViewportInfo(
 }
 
 // static
-void PDF::SetAccessibilityDocInfo(const InstanceHandle& instance,
-                                  PP_PrivateAccessibilityDocInfo* doc_info) {
+void PDF::SetAccessibilityDocInfo(
+    const InstanceHandle& instance,
+    const PP_PrivateAccessibilityDocInfo* doc_info) {
   if (has_interface<PPB_PDF>()) {
     get_interface<PPB_PDF>()->SetAccessibilityDocInfo(instance.pp_instance(),
                                                       doc_info);

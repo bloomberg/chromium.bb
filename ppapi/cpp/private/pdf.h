@@ -86,10 +86,10 @@ class PDF {
                                         int* snapshot_size_out);
   static void SetAccessibilityViewportInfo(
       const InstanceHandle& instance,
-      PP_PrivateAccessibilityViewportInfo* viewport_info);
+      const PP_PrivateAccessibilityViewportInfo* viewport_info);
   static void SetAccessibilityDocInfo(
       const InstanceHandle& instance,
-      PP_PrivateAccessibilityDocInfo* doc_info);
+      const PP_PrivateAccessibilityDocInfo* doc_info);
   static void SetAccessibilityPageInfo(
       const InstanceHandle& instance,
       const PP_PrivateAccessibilityPageInfo* page_info,

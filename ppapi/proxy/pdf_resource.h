@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_PDF_RESOURCE_H_
 #define PPAPI_PROXY_PDF_RESOURCE_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ppapi/c/pp_instance.h"
@@ -57,9 +59,9 @@ class PPAPI_PROXY_EXPORT PDFResource
                                  const char** snapshot_data_out,
                                  int* snapshot_size_out) override;
   void SetAccessibilityViewportInfo(
-      PP_PrivateAccessibilityViewportInfo* viewport_info) override;
+      const PP_PrivateAccessibilityViewportInfo* viewport_info) override;
   void SetAccessibilityDocInfo(
-      PP_PrivateAccessibilityDocInfo* doc_info) override;
+      const PP_PrivateAccessibilityDocInfo* doc_info) override;
   void SetAccessibilityPageInfo(
       const PP_PrivateAccessibilityPageInfo* page_info,
       const PP_PrivateAccessibilityTextRunInfo text_runs[],

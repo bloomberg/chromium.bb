@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <limits>
+#include <utility>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/metrics/histogram.h"
@@ -201,12 +205,12 @@ void PDFResource::GetV8ExternalSnapshotData(const char** natives_data_out,
 }
 
 void PDFResource::SetAccessibilityDocInfo(
-    PP_PrivateAccessibilityDocInfo* doc_info) {
+    const PP_PrivateAccessibilityDocInfo* doc_info) {
   Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityDocInfo(*doc_info));
 }
 
 void PDFResource::SetAccessibilityViewportInfo(
-    PP_PrivateAccessibilityViewportInfo* viewport_info) {
+    const PP_PrivateAccessibilityViewportInfo* viewport_info) {
   Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityViewportInfo(*viewport_info));
 }
 
