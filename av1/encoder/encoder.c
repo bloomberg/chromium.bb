@@ -1260,13 +1260,21 @@ static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
   if (seq->operating_points_cnt_minus_1 == 0) {
     seq->operating_point_idc[0] = 0;
   } else {
-    // Set operating_point_idc[] such that for the i-th operating point the
-    // first (operating_points_cnt-i) spatial layers and the first temporal
-    // layer are decoded Note that highest quality operating point should come
-    // first
-    for (int i = 0; i < seq->operating_points_cnt_minus_1 + 1; i++)
-      seq->operating_point_idc[i] =
-          (~(~0u << (seq->operating_points_cnt_minus_1 + 1 - i)) << 8) | 1;
+    // Set operating_point_idc[] such that the i=0 point corresponds to the
+    // highest quality operating point (all layers), and subsequent
+    // operarting points (i > 0) are lower quality corresponding to
+    // skip decoding enhancement  layers (temporal first).
+    int i = 0;
+    assert(seq->operating_points_cnt_minus_1 ==
+           (int)(cm->number_spatial_layers * cm->number_temporal_layers - 1));
+    for (unsigned int sl = 0; sl < cm->number_spatial_layers; sl++) {
+      for (unsigned int tl = 0; tl < cm->number_temporal_layers; tl++) {
+        seq->operating_point_idc[i] =
+            (~(~0u << (cm->number_spatial_layers - sl)) << 8) |
+            ~(~0u << (cm->number_temporal_layers - tl));
+        i++;
+      }
+    }
   }
 }
 
@@ -2827,7 +2835,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   // This should not be called after the first key frame.
   if (!cpi->seq_params_locked) {
     seq_params->operating_points_cnt_minus_1 =
-        cm->number_spatial_layers > 1 ? cm->number_spatial_layers - 1 : 0;
+        (cm->number_spatial_layers > 1 || cm->number_temporal_layers > 1)
+            ? cm->number_spatial_layers * cm->number_temporal_layers - 1
+            : 0;
     init_seq_coding_tools(&cm->seq_params, cm, oxcf, cpi->use_svc);
   }
 
