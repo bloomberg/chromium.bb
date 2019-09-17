@@ -95,6 +95,10 @@
       status: "stable",
     },
     {
+      name: "AcceleratedSmallCanvases",
+      status: "stable",
+    },
+    {
       name: "AccessibilityObjectModel",
       status: "experimental",
     },

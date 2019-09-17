@@ -867,6 +867,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.scroll_top_left_interop_enabled);
   WebRuntimeFeatures::EnableSurfaceEmbeddingFeatures(
       !prefs.disable_features_depending_on_viz);
+  WebRuntimeFeatures::EnableAcceleratedSmallCanvases(
+      !prefs.disable_accelerated_small_canvases);
 #endif  // defined(OS_ANDROID)
 
   settings->SetForceDarkModeEnabled(prefs.force_dark_mode_enabled);
