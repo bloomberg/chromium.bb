@@ -3486,7 +3486,7 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
   // immediately, but destruction is delayed, so that callers don't have to
   // worry about use-after-free of |this|.
   top_document->is_evicted_from_back_forward_cache_ = true;
-  controller->back_forward_cache().PostTaskToFlushEvictedFrames();
+  controller->back_forward_cache().PostTaskToDestroyEvictedFrames();
 
   if (!is_navigation_to_evicted_frame_in_flight)
     return;

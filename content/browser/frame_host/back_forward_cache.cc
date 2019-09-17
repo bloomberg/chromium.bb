@@ -228,9 +228,9 @@ void BackForwardCache::Flush() {
   render_frame_hosts_.clear();
 }
 
-void BackForwardCache::PostTaskToFlushEvictedFrames() {
+void BackForwardCache::PostTaskToDestroyEvictedFrames() {
   base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&BackForwardCache::FlushEvictedFrames,
+                 base::BindOnce(&BackForwardCache::DestroyEvictedFrames,
                                 weak_factory_.GetWeakPtr()));
 }
 
@@ -260,7 +260,7 @@ RenderFrameHostImpl* BackForwardCache::GetDocument(int navigation_entry_id) {
   return (*matching_rfh).get();
 }
 
-void BackForwardCache::FlushEvictedFrames() {
+void BackForwardCache::DestroyEvictedFrames() {
   if (render_frame_hosts_.empty())
     return;
   render_frame_hosts_.erase(
