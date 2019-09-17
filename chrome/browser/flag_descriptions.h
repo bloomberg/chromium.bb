@@ -160,6 +160,9 @@ extern const char kAutofillUseImprovedLabelDisambiguationDescription[];
 extern const char kAutoScreenBrightnessName[];
 extern const char kAutoScreenBrightnessDescription[];
 
+extern const char kBackForwardCacheName[];
+extern const char kBackForwardCacheDescription[];
+
 extern const char kBrowserTaskSchedulerName[];
 extern const char kBrowserTaskSchedulerDescription[];
 

@@ -34877,6 +34877,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1863962664" label="LockScreenNotifications:enabled"/>
   <int value="-1861814223" label="MidiManagerDynamicInstantiation:enabled"/>
   <int value="-1860481724" label="ChromeHomeExpandButton:enabled"/>
+  <int value="-1859421131" label="BackForwardCache:disabled"/>
   <int value="-1859095876" label="Previews:disabled"/>
   <int value="-1856902397" label="LoadingWithMojo:enabled"/>
   <int value="-1855347512" label="FormControlsRefresh:disabled"/>
@@ -37818,6 +37819,7 @@ from previous Chrome versions.
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
   <int value="2119964154" label="enable-download-resumption"/>
+  <int value="2120659210" label="BackForwardCache:enabled"/>
   <int value="2121056855" label="IncreaseInputAudioBufferSize:disabled"/>
   <int value="2121550859" label="PreferHtmlOverPlugins:enabled"/>
   <int value="2121776031" label="auto-virtual-keyboard"/>

@@ -248,6 +248,12 @@ const char kAutoScreenBrightnessDescription[] =
     "Uses Auto Screen Brightness model to adjust screen brightness based on "
     "ambient light";
 
+const char kBackForwardCacheName[] = "Back-forward cache";
+const char kBackForwardCacheDescription[] =
+    "Enables back-forward cache. NOTE: this feature is highly experimental and "
+    "will lead to various breakages, up to and including user data loss. "
+    "Do not enable unless you work on this feature";
+
 const char kBrowserTaskSchedulerName[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";
