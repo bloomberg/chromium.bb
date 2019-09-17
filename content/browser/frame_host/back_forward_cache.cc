@@ -207,10 +207,6 @@ std::unique_ptr<RenderFrameHostImpl> BackForwardCache::RestoreDocument(
   auto matching_rfh = std::find_if(
       render_frame_hosts_.begin(), render_frame_hosts_.end(),
       [navigation_entry_id](std::unique_ptr<RenderFrameHostImpl>& rfh) {
-        // Never restore evicted frames.
-        if (rfh->is_evicted_from_back_forward_cache())
-          return false;
-
         return rfh->nav_entry_id() == navigation_entry_id;
       });
 
