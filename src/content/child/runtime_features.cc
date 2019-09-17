@@ -367,7 +367,7 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableBuiltInModuleKvStorage(true);
 
   WebRuntimeFeatures::EnableFeatureFromString(
-      "LayoutNG", base::FeatureList::IsEnabled(blink::features::kLayoutNG));
+      "LayoutNG", (!command_line.HasSwitch(switches::kDisableLayoutNG)) && base::FeatureList::IsEnabled(blink::features::kLayoutNG));
 
   WebRuntimeFeatures::EnableLazyInitializeMediaControls(
       base::FeatureList::IsEnabled(features::kLazyInitializeMediaControls));

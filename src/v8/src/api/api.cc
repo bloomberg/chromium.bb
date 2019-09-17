@@ -1007,18 +1007,6 @@ void ResourceConstraints::ConfigureDefaults(uint64_t physical_memory,
   }
 }
 
-void ResourceConstraints::set_max_old_space_size(size_t limit_in_mb) {
-  max_old_space_size_ = limit_in_mb;
-}
-
-void ObjectTemplate::SetIndexedPropertyHandler(
-    IndexedPropertyGetterCallback getter, IndexedPropertySetterCallback setter,
-    IndexedPropertyQueryCallback query, IndexedPropertyDeleterCallback deleter,
-    IndexedPropertyEnumeratorCallback enumerator, Local<Value> data) {
-  SetHandler(IndexedPropertyHandlerConfiguration(getter, setter, query, deleter,
-                                                 enumerator, data));
-}
-
 void SetResourceConstraints(i::Isolate* isolate,
                             const ResourceConstraints& constraints) {
   size_t semi_space_size = constraints.max_semi_space_size_in_kb();
@@ -2038,8 +2026,6 @@ void ObjectTemplate::SetImmutableProto() {
   ENTER_V8_NO_SCRIPT_NO_EXCEPTION(isolate);
   Utils::OpenHandle(this)->set_immutable_proto(true);
 }
-
-EscapableHandleScope::~EscapableHandleScope() = default;
 
 // --- S c r i p t s ---
 
@@ -5294,13 +5280,6 @@ bool v8::String::IsExternalOneByte() const {
   return i::StringShape(*str).IsExternalOneByte();
 }
 
-bool v8::String::ExternalStringResourceBase::IsCacheable() const {
-  return true;
-}
-
-void v8::String::ExternalStringResourceBase::Lock() const {}
-void v8::String::ExternalStringResourceBase::Unlock() const {}
-
 void v8::String::VerifyExternalStringResource(
     v8::String::ExternalStringResource* value) const {
   i::DisallowHeapAllocation no_allocation;
@@ -5347,8 +5326,6 @@ void v8::String::VerifyExternalStringResourceBase(
   CHECK_EQ(expected, value);
   CHECK_EQ(expectedEncoding, encoding);
 }
-
-String::ExternalOneByteStringResource::ExternalOneByteStringResource() = default;
 
 String::ExternalStringResource* String::GetExternalStringResourceSlow() const {
   i::DisallowHeapAllocation no_allocation;
@@ -7973,10 +7950,6 @@ void Isolate::SetPrepareStackTraceCallback(PrepareStackTraceCallback callback) {
   isolate->SetPrepareStackTraceCallback(callback);
 }
 
-Isolate::Scope::~Scope() {
-  isolate_->Exit();
-}
-
 Isolate::DisallowJavascriptExecutionScope::DisallowJavascriptExecutionScope(
     Isolate* isolate,
     Isolate::DisallowJavascriptExecutionScope::OnFailure on_failure)
@@ -10211,8 +10184,6 @@ void EmbedderHeapTracer::TracePrologue(TraceFlags flags) {
 #endif
 }
 
-EmbedderHeapTracer::~EmbedderHeapTracer() = default;
-
 void EmbedderHeapTracer::FinalizeTracing() {
   if (isolate_) {
     i::Isolate* isolate = reinterpret_cast<i::Isolate*>(isolate_);
@@ -10221,11 +10192,6 @@ void EmbedderHeapTracer::FinalizeTracing() {
           i::GarbageCollectionReason::kExternalFinalize);
     }
   }
-}
-
-bool EmbedderHeapTracer::IsRootForNonTracingGC(
-    const v8::TracedGlobal<v8::Value>& handle) {
-  return true;
 }
 
 void EmbedderHeapTracer::GarbageCollectionForTesting(
@@ -10265,6 +10231,7 @@ void EmbedderHeapTracer::IterateTracedGlobalHandles(
   i::DisallowHeapAllocation no_allocation;
   isolate->global_handles()->IterateTracedNodes(visitor);
 }
+
 
 namespace internal {
 
