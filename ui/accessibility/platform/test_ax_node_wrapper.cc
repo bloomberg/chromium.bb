@@ -111,6 +111,10 @@ AXNodePosition::AXPositionInstance TestAXNodeWrapper::CreateTextPositionAt(
       ax::mojom::TextAffinity::kDownstream);
 }
 
+gfx::NativeViewAccessible TestAXNodeWrapper::GetNativeViewAccessible() {
+  return ax_platform_node()->GetNativeViewAccessible();
+}
+
 gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {
   TestAXNodeWrapper* parent_wrapper =
       GetOrCreate(tree_, node_->GetUnignoredParent());

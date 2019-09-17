@@ -284,6 +284,11 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNSWindow() {
   return nullptr;
 }
 
+gfx::NativeViewAccessible
+ViewAXPlatformNodeDelegate::GetNativeViewAccessible() {
+  return GetNativeObject();
+}
+
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetParent() {
   if (view()->parent())
     return view()->parent()->GetNativeViewAccessible();
