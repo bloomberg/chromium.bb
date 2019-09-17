@@ -1123,9 +1123,6 @@ ChromeContentBrowserClient::ChromeContentBrowserClient(
 #endif
 
   extra_parts_.push_back(new ChromeContentBrowserClientPerformanceManagerPart);
-
-  gpu_binder_registry_.AddInterface(
-      base::Bind(&metrics::CallStackProfileCollector::Create));
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
@@ -3883,12 +3880,10 @@ void ChromeContentBrowserClient::BindInterfaceRequestFromWorker(
       interface_name, std::move(interface_pipe), render_process_host, origin);
 }
 
-void ChromeContentBrowserClient::BindInterfaceRequest(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  if (source_info.identity.name() == content::mojom::kGpuServiceName)
-    gpu_binder_registry_.TryBindInterface(interface_name, interface_pipe);
+void ChromeContentBrowserClient::BindGpuHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  if (auto r = receiver.As<metrics::mojom::CallStackProfileCollector>())
+    metrics::CallStackProfileCollector::Create(std::move(r));
 }
 
 void ChromeContentBrowserClient::BindHostReceiverForRenderer(
