@@ -835,6 +835,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->skip_sharp_interp_filter_search = 0;
   sf->prune_comp_type_by_comp_avg = 0;
   sf->disable_interinter_wedge_newmv_search = 0;
+  sf->enable_interinter_diffwtd_newmv_search = 0;
   sf->disable_smooth_interintra = 0;
   sf->prune_motion_mode_level = 0;
   sf->prune_warp_using_wmtype = 0;

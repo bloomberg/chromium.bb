@@ -606,6 +606,10 @@ typedef struct SPEED_FEATURES {
   // Enable/disable ME for interinter wedge search.
   int disable_interinter_wedge_newmv_search;
 
+  // Enable/disable ME for interinter diffwtd search. PSNR BD-rate gain of
+  // ~0.1 on the lowres test set, but ~15% slower computation.
+  int enable_interinter_diffwtd_newmv_search;
+
   // Enable/disable smooth inter-intra mode
   int disable_smooth_interintra;
 
