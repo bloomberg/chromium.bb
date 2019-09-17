@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/seneschal_client.h"
@@ -211,11 +210,8 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
   vm_tools::seneschal::SharePathRequest request;
   base::FilePath drivefs_path;
   base::FilePath relative_path;
-  drive::DriveIntegrationService* integration_service = nullptr;
-  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-    integration_service =
-        drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-  }
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
   base::FilePath drivefs_mount_point_path;
   base::FilePath drivefs_mount_name;
 
@@ -230,8 +226,7 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
     request.set_storage_location(
         vm_tools::seneschal::SharePathRequest::MY_FILES);
     request.set_owner_id(crostini::CryptohomeIdForProfile(profile_));
-  } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
-             integration_service &&
+  } else if (integration_service &&
              (drivefs_mount_point_path =
                   integration_service->GetMountPointPath())
                  .AppendRelativePath(path, &drivefs_path) &&
