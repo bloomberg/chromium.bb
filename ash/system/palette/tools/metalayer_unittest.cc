@@ -68,7 +68,7 @@ class MetalayerToolTest : public AshTestBase {
 }  // namespace
 
 // The metalayer tool is always visible, but only enabled when the user
-// has enabled the metalayer AND the voice interaction framework is ready.
+// has enabled the metalayer AND the Assistant framework is ready.
 TEST_F(MetalayerToolTest, PaletteMenuState) {
   const mojom::AssistantState kStates[] = {mojom::AssistantState::NOT_READY,
                                            mojom::AssistantState::READY};
