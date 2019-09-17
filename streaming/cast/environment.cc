@@ -16,12 +16,16 @@ using platform::UdpSocket;
 namespace cast_streaming {
 
 Environment::Environment(platform::ClockNowFunctionPtr now_function,
-                         platform::TaskRunner* task_runner,
-                         const IPEndpoint& local_endpoint)
+                         platform::TaskRunner* task_runner)
     : now_function_(now_function), task_runner_(task_runner) {
   OSP_DCHECK(now_function_);
   OSP_DCHECK(task_runner_);
+}
 
+Environment::Environment(platform::ClockNowFunctionPtr now_function,
+                         platform::TaskRunner* task_runner,
+                         const IPEndpoint& local_endpoint)
+    : Environment(now_function, task_runner) {
   ErrorOr<std::unique_ptr<UdpSocket>> result =
       UdpSocket::Create(task_runner_, this, local_endpoint);
   const_cast<std::unique_ptr<UdpSocket>&>(socket_) = std::move(result.value());

@@ -21,8 +21,9 @@ class Receiver;
 
 // Handles all network I/O among multiple Receivers meant for synchronized
 // play-out (e.g., one Receiver for audio, one Receiver for video). Incoming
-// traffic is dispatched to the appropriate Receiver, based on its SSRC. Also,
-// all traffic not coming from the same source is filtered-out.
+// traffic is dispatched to the appropriate Receiver, based on its corresponding
+// sender's SSRC. Also, all traffic not coming from the same source is
+// filtered-out.
 class ReceiverPacketRouter final : public Environment::PacketConsumer {
  public:
   explicit ReceiverPacketRouter(Environment* environment);
@@ -32,9 +33,10 @@ class ReceiverPacketRouter final : public Environment::PacketConsumer {
   friend class Receiver;
 
   // Called from a Receiver constructor/destructor to register/deregister a
-  // Receiver instance that processes RTP/RTCP packets for the given |ssrc|.
-  void OnReceiverCreated(Ssrc ssrc, Receiver* receiver);
-  void OnReceiverDestroyed(Ssrc ssrc);
+  // Receiver instance that processes RTP/RTCP packets from a Sender having the
+  // given SSRC.
+  void OnReceiverCreated(Ssrc sender_ssrc, Receiver* receiver);
+  void OnReceiverDestroyed(Ssrc sender_ssrc);
 
   // Called by a Receiver to send a RTCP packet back to the source from which
   // earlier packets were received, or does nothing if OnReceivedPacket() has
@@ -49,9 +51,9 @@ class ReceiverPacketRouter final : public Environment::PacketConsumer {
                         platform::Clock::time_point arrival_time,
                         std::vector<uint8_t> packet) final;
 
-  // Helper to return an iterator pointing to the entry having the given |ssrc|,
-  // or "end" if not found.
-  ReceiverEntries::iterator FindEntry(Ssrc ssrc);
+  // Helper to return an iterator pointing to the entry corresponding to the
+  // given |sender_ssrc|, or "end" if not found.
+  ReceiverEntries::iterator FindEntry(Ssrc sender_ssrc);
 
   Environment* const environment_;
 

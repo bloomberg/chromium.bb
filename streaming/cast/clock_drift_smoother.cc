@@ -65,5 +65,8 @@ void ClockDriftSmoother::Update(Clock::time_point now,
   }
 }
 
+// static
+constexpr std::chrono::seconds ClockDriftSmoother::kDefaultTimeConstant;
+
 }  // namespace cast_streaming
 }  // namespace openscreen

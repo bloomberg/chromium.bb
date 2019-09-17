@@ -16,7 +16,12 @@ namespace cast_streaming {
 // parsing components share a single RtcpSession instance for data consistency.
 class RtcpSession {
  public:
-  RtcpSession(Ssrc sender_ssrc, Ssrc receiver_ssrc);
+  // |start_time| should be the current time, as it is used by NtpTimeConverter
+  // to set a fixed reference point between the local Clock and current "real
+  // world" wall time.
+  RtcpSession(Ssrc sender_ssrc,
+              Ssrc receiver_ssrc,
+              platform::Clock::time_point start_time);
   ~RtcpSession();
 
   Ssrc sender_ssrc() const { return sender_ssrc_; }

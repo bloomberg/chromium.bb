@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "platform/api/time.h"
 #include "streaming/cast/sender_report_parser.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
@@ -22,8 +23,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // each fuzzer test input.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wexit-time-destructors"
-  static RtcpSession session(kSenderSsrcInSeedCorpus,
-                             kReceiverSsrcInSeedCorpus);
+  static RtcpSession session(kSenderSsrcInSeedCorpus, kReceiverSsrcInSeedCorpus,
+                             openscreen::platform::Clock::now());
   static SenderReportParser parser(&session);
 #pragma clang diagnostic pop
 

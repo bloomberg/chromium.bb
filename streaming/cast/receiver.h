@@ -9,11 +9,21 @@
 
 #include <array>
 #include <chrono>
+#include <memory>
 
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "platform/api/time.h"
+#include "streaming/cast/clock_drift_smoother.h"
+#include "streaming/cast/compound_rtcp_builder.h"
 #include "streaming/cast/environment.h"
+#include "streaming/cast/frame_id.h"
+#include "streaming/cast/packet_receive_stats_tracker.h"
+#include "streaming/cast/rtcp_common.h"
+#include "streaming/cast/rtcp_session.h"
+#include "streaming/cast/sender_report_parser.h"
 #include "streaming/cast/ssrc.h"
+#include "util/alarm.h"
 
 namespace openscreen {
 namespace cast_streaming {
@@ -116,7 +126,7 @@ class Receiver {
 
   ~Receiver();
 
-  Ssrc ssrc() const { return receiver_ssrc_; }
+  Ssrc ssrc() const { return rtcp_session_.receiver_ssrc(); }
 
   // Set the Consumer receiving notifications when new frames are ready for
   // consumption. Frames received before this method is called will remain in
@@ -176,8 +186,51 @@ class Receiver {
                             std::vector<uint8_t> packet);
 
  private:
-  Ssrc const receiver_ssrc_;
+  // Get the checkpoint FrameId. This indicates that all of the packets for all
+  // frames up to and including this FrameId have been successfully received (or
+  // otherwise do not need to be re-transmitted).
+  FrameId checkpoint_frame() const { return rtcp_builder_.checkpoint_frame(); }
+
+  // Send an RTCP packet to the Sender immediately, to acknowledge the complete
+  // reception of one or more additional frames, to reply to a Sender Report, or
+  // to request re-transmits. Calling this also schedules additional RTCP
+  // packets to be sent periodically for the life of this Receiver.
+  void SendRtcp();
+
+  const platform::ClockNowFunctionPtr now_;
   ReceiverPacketRouter* const packet_router_;
+  RtcpSession rtcp_session_;
+  SenderReportParser rtcp_parser_;
+  CompoundRtcpBuilder rtcp_builder_;
+  PacketReceiveStatsTracker stats_tracker_;  // Tracks transmission stats.
+
+  // Buffer for serializing/sending RTCP packets.
+  const int rtcp_buffer_capacity_;
+  const std::unique_ptr<uint8_t[]> rtcp_buffer_;
+
+  // Schedules tasks to ensure RTCP reports are sent within a bounded interval.
+  // Not scheduled until after this Receiver has processed the first packet from
+  // the Sender.
+  Alarm rtcp_alarm_;
+  platform::Clock::time_point last_rtcp_send_time_ =
+      platform::Clock::time_point::min();
+
+  // The last Sender Report received and when the packet containing it had
+  // arrived. This contains lip-sync timestamps used as part of the calculation
+  // of playout times for the received frames, as well as ping-pong data bounced
+  // back to the Sender in the Receiver Reports. It is nullopt until the first
+  // parseable Sender Report is received.
+  absl::optional<SenderReportParser::SenderReportWithId> last_sender_report_;
+  platform::Clock::time_point last_sender_report_arrival_time_;
+
+  // Tracks the offset between the Receiver's [local] clock and the Sender's
+  // clock. This is invalid until the first Sender Report has been successfully
+  // processed (i.e., |last_sender_report_| is not nullopt).
+  ClockDriftSmoother smoothed_clock_offset_;
+
+  // The interval between sending ACK/NACK feedback RTCP messages while
+  // incomplete frames exist in the queue.
+  static constexpr std::chrono::milliseconds kNackFeedbackInterval{30};
 };
 
 }  // namespace cast_streaming

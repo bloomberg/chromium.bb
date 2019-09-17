@@ -42,14 +42,14 @@ constexpr NtpTimestamp AssembleNtpTimestamp(NtpSeconds seconds,
 }
 
 // Converts between platform::Clock::time_points and NtpTimestamps. The class is
-// instantiated with platform::Clock::now() and the current wall clock time, and
-// these are used to determine a fixed origin reference point for all
+// instantiated with the current platform::Clock time and the current wall clock
+// time, and these are used to determine a fixed origin reference point for all
 // conversions. Thus, to avoid introducing unintended timing-related behaviors,
 // only one NtpTimeConverter instance should be used for converting all the NTP
 // timestamps in the same streaming session.
 class NtpTimeConverter {
  public:
-  NtpTimeConverter(platform::Clock::time_point now = platform::Clock::now(),
+  NtpTimeConverter(platform::Clock::time_point now,
                    std::chrono::seconds since_unix_epoch =
                        platform::GetWallTimeSinceUnixEpoch());
   ~NtpTimeConverter();

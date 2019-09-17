@@ -25,7 +25,7 @@ class SenderReportTest : public testing::Test {
   }
 
  private:
-  RtcpSession session_{kSenderSsrc, kReceiverSsrc};
+  RtcpSession session_{kSenderSsrc, kReceiverSsrc, platform::Clock::now()};
   SenderReportBuilder builder_{&session_};
   SenderReportParser parser_{&session_};
 };

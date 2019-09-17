@@ -25,7 +25,7 @@ namespace cast_streaming {
 
 // Provides the common environment for operating system resources shared by
 // multiple components.
-class Environment final : public platform::UdpSocket::Client {
+class Environment : public platform::UdpSocket::Client {
  public:
   class PacketConsumer {
    public:
@@ -37,11 +37,14 @@ class Environment final : public platform::UdpSocket::Client {
     virtual ~PacketConsumer();
   };
 
+  // Construct with the given clock source and TaskRunner. Creates and
+  // internally-owns a UdpSocket, and immediately binds it to the given
+  // |local_endpoint|.
   Environment(platform::ClockNowFunctionPtr now_function,
               platform::TaskRunner* task_runner,
               const IPEndpoint& local_endpoint);
 
-  ~Environment() final;
+  ~Environment() override;
 
   platform::ClockNowFunctionPtr now_function() const { return now_function_; }
   platform::TaskRunner* task_runner() const { return task_runner_; }
@@ -79,7 +82,17 @@ class Environment final : public platform::UdpSocket::Client {
 
   // Sends the given |packet| to the remote endpoint, best-effort.
   // set_remote_endpoint() must be called beforehand with a valid IPEndpoint.
-  void SendPacket(absl::Span<const uint8_t> packet);
+  //
+  // Note: This method is virtual to allow unit tests to intercept packets
+  // before they actually head-out through the socket.
+  virtual void SendPacket(absl::Span<const uint8_t> packet);
+
+ protected:
+  // Common constructor that just stores the injected dependencies and does not
+  // create a socket. Subclasses use this to provide an alternative packet
+  // receive/send mechanism (e.g., for testing).
+  Environment(platform::ClockNowFunctionPtr now_function,
+              platform::TaskRunner* task_runner);
 
  private:
   // platform::UdpSocket::Client implementation.

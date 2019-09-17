@@ -22,9 +22,10 @@ ReceiverPacketRouter::~ReceiverPacketRouter() {
   OSP_DCHECK(receivers_.empty());
 }
 
-void ReceiverPacketRouter::OnReceiverCreated(Ssrc ssrc, Receiver* receiver) {
-  OSP_DCHECK(FindEntry(ssrc) == receivers_.end());
-  receivers_.emplace_back(ssrc, receiver);
+void ReceiverPacketRouter::OnReceiverCreated(Ssrc sender_ssrc,
+                                             Receiver* receiver) {
+  OSP_DCHECK(FindEntry(sender_ssrc) == receivers_.end());
+  receivers_.emplace_back(sender_ssrc, receiver);
 
   // If there were no Receiver instances before, resume receiving packets for
   // dispatch. Reset/Clear the remote endpoint, in preparation for later setting
@@ -35,8 +36,8 @@ void ReceiverPacketRouter::OnReceiverCreated(Ssrc ssrc, Receiver* receiver) {
   }
 }
 
-void ReceiverPacketRouter::OnReceiverDestroyed(Ssrc ssrc) {
-  const auto it = FindEntry(ssrc);
+void ReceiverPacketRouter::OnReceiverDestroyed(Ssrc sender_ssrc) {
+  const auto it = FindEntry(sender_ssrc);
   OSP_DCHECK(it != receivers_.end());
   receivers_.erase(it);
 
@@ -94,10 +95,10 @@ void ReceiverPacketRouter::OnReceivedPacket(
 }
 
 ReceiverPacketRouter::ReceiverEntries::iterator ReceiverPacketRouter::FindEntry(
-    Ssrc ssrc) {
+    Ssrc sender_ssrc) {
   return std::find_if(receivers_.begin(), receivers_.end(),
-                      [ssrc](const ReceiverEntries::value_type& entry) {
-                        return entry.first == ssrc;
+                      [sender_ssrc](const ReceiverEntries::value_type& entry) {
+                        return entry.first == sender_ssrc;
                       });
 }
 

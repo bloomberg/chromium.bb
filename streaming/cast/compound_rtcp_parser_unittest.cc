@@ -9,6 +9,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "platform/api/time.h"
 #include "streaming/cast/mock_compound_rtcp_parser_client.h"
 #include "streaming/cast/rtcp_session.h"
 
@@ -31,7 +32,7 @@ class CompoundRtcpParserTest : public testing::Test {
   CompoundRtcpParser* parser() { return &parser_; }
 
  private:
-  RtcpSession session_{kSenderSsrc, kReceiverSsrc};
+  RtcpSession session_{kSenderSsrc, kReceiverSsrc, platform::Clock::now()};
   StrictMock<MockCompoundRtcpParserClient> client_;
   CompoundRtcpParser parser_{&session_, &client_};
 };

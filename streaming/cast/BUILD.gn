@@ -53,6 +53,7 @@ source_set("common") {
 
   deps = [
     "../../platform",
+    "../../util",
   ]
 }
 
@@ -107,6 +108,7 @@ source_set("cast_unittests") {
     "ntp_time_unittest.cc",
     "packet_receive_stats_tracker_unittest.cc",
     "packet_util_unittest.cc",
+    "receiver_unittest.cc",
     "rtcp_common_unittest.cc",
     "rtp_packet_parser_unittest.cc",
     "rtp_packetizer_unittest.cc",
