@@ -50,8 +50,9 @@ MtpDeviceManager::~MtpDeviceManager() {
   VLOG(1) << "MtpDeviceManager Shutdown completed";
 }
 
-void MtpDeviceManager::AddBinding(mojom::MtpManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void MtpDeviceManager::AddReceiver(
+    mojo::PendingReceiver<mojom::MtpManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void MtpDeviceManager::EnumerateStoragesAndSetClient(

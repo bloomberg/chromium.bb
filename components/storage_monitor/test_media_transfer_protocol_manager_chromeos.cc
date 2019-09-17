@@ -28,9 +28,9 @@ TestMediaTransferProtocolManagerChromeOS::
 TestMediaTransferProtocolManagerChromeOS::
     ~TestMediaTransferProtocolManagerChromeOS() {}
 
-void TestMediaTransferProtocolManagerChromeOS::AddBinding(
-    device::mojom::MtpManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void TestMediaTransferProtocolManagerChromeOS::AddReceiver(
+    mojo::PendingReceiver<device::mojom::MtpManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void TestMediaTransferProtocolManagerChromeOS::EnumerateStoragesAndSetClient(

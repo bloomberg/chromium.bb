@@ -17,8 +17,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
 #include "services/device/public/mojom/mtp_manager.mojom.h"
 
@@ -39,7 +40,7 @@ class MtpDeviceManager : public mojom::MtpManager {
   MtpDeviceManager();
   ~MtpDeviceManager() override;
 
-  void AddBinding(mojom::MtpManagerRequest request);
+  void AddReceiver(mojo::PendingReceiver<mojom::MtpManager> receiver);
 
   // Implements mojom::MtpManager.
   void EnumerateStoragesAndSetClient(
@@ -167,7 +168,7 @@ class MtpDeviceManager : public mojom::MtpManager {
   // DBusThreadManager to provide a bus in unit tests.
   scoped_refptr<dbus::Bus> const bus_;
 
-  mojo::BindingSet<mojom::MtpManager> bindings_;
+  mojo::ReceiverSet<mojom::MtpManager> receivers_;
   // MtpManager client who keeps tuned on attachment / detachment events.
   // Currently, storage_monitor::StorageMonitorCros is supposed to be the
   // only client.

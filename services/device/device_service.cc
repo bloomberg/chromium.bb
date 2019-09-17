@@ -213,7 +213,7 @@ void DeviceService::OnStart() {
       base::BindRepeating(&DeviceService::BindBluetoothSystemFactoryReceiver,
                           base::Unretained(this)));
   registry_.AddInterface<mojom::MtpManager>(base::BindRepeating(
-      &DeviceService::BindMtpManagerRequest, base::Unretained(this)));
+      &DeviceService::BindMtpManagerReceiver, base::Unretained(this)));
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
@@ -260,10 +260,11 @@ void DeviceService::BindBluetoothSystemFactoryReceiver(
   BluetoothSystemFactory::CreateFactory(std::move(receiver));
 }
 
-void DeviceService::BindMtpManagerRequest(mojom::MtpManagerRequest request) {
+void DeviceService::BindMtpManagerReceiver(
+    mojo::PendingReceiver<mojom::MtpManager> receiver) {
   if (!mtp_device_manager_)
     mtp_device_manager_ = MtpDeviceManager::Initialize();
-  mtp_device_manager_->AddBinding(std::move(request));
+  mtp_device_manager_->AddReceiver(std::move(receiver));
 }
 #endif
 

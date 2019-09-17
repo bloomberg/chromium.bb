@@ -11,7 +11,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/mtp_manager.mojom.h"
 
 namespace storage_monitor {
@@ -24,7 +25,7 @@ class TestMediaTransferProtocolManagerChromeOS
   TestMediaTransferProtocolManagerChromeOS();
   ~TestMediaTransferProtocolManagerChromeOS() override;
 
-  void AddBinding(device::mojom::MtpManagerRequest request);
+  void AddReceiver(mojo::PendingReceiver<device::mojom::MtpManager> receiver);
 
  private:
   // device::mojom::MtpManager implementation.
@@ -69,7 +70,7 @@ class TestMediaTransferProtocolManagerChromeOS
                     uint32_t object_id,
                     DeleteObjectCallback callback) override;
 
-  mojo::BindingSet<device::mojom::MtpManager> bindings_;
+  mojo::ReceiverSet<device::mojom::MtpManager> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerChromeOS);
 };
