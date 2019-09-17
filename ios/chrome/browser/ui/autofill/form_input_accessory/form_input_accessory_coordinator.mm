@@ -185,6 +185,11 @@
   }
 }
 
+- (void)mediatorDidDetectMovingToBackground:
+    (FormInputAccessoryMediator*)mediator {
+  [self.formInputAccessoryViewController reset];
+}
+
 #pragma mark - ManualFillAccessoryViewControllerDelegate
 
 - (void)keyboardButtonPressed {
