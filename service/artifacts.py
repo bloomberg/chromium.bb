@@ -37,6 +37,13 @@ ARCHIVE_TEST_SUITES = 'test_suites'
 CPE_WARNINGS_FILE_TEMPLATE = 'cpe-warnings-chromeos-%s.txt'
 CPE_RESULT_FILE_TEMPLATE = 'cpe-chromeos-%s.txt'
 
+IMAGE_TARS = {
+    constants.BASE_IMAGE_BIN: constants.BASE_IMAGE_TAR,
+    constants.VM_IMAGE_BIN: constants.VM_IMAGE_TAR,
+    constants.TEST_IMAGE_BIN: constants.TEST_IMAGE_TAR,
+    constants.RECOVERY_IMAGE_BIN: constants.RECOVERY_IMAGE_TAR,
+}
+
 TAST_BUNDLE_NAME = 'tast_bundles.tar.bz2'
 TAST_COMPRESSOR = cros_build_lib.COMP_BZIP2
 
@@ -288,6 +295,30 @@ def ArchiveChromeEbuildEnv(sysroot, output_dir):
     cros_build_lib.CreateTarball(result_path, tempdir)
 
   return result_path
+
+
+def ArchiveImages(image_dir, output_dir):
+  """Create a .tar.xz archive for each image that has been created.
+
+  Args:
+    image_dir (str): The directory where the images are located.
+    output_dir (str): The location where the archives should be created.
+
+  Returns:
+    list[str]: The list of created file names.
+  """
+  files = os.listdir(image_dir)
+
+  archives = []
+  # Filter down to the ones that exist first.
+  images = {img: tar for img, tar in IMAGE_TARS.items() if img in files}
+  for img, tar in images.items():
+    target = os.path.join(output_dir, tar)
+    cros_build_lib.CreateTarball(target, image_dir, inputs=(img,),
+                                 print_cmd=False)
+    archives.append(tar)
+
+  return archives
 
 
 def BundleImageZip(output_dir, image_dir):

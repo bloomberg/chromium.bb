@@ -47,6 +47,22 @@ def _GetImageDir(build_root, target):
 
 
 @faux.all_empty
+@validate.require('build_target.name')
+@validate.exists('output_dir')
+@validate.validation_complete
+def BundleImageArchives(input_proto, output_proto, _config):
+  """Create a .tar.xz archive for each image that has been created."""
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+  output_dir = input_proto.output_dir
+  image_dir = _GetImageDir(constants.SOURCE_ROOT, build_target.name)
+
+  archives = artifacts.ArchiveImages(image_dir, output_dir)
+
+  for archive in archives:
+    output_proto.artifacts.add().path = os.path.join(output_dir, archive)
+
+
+@faux.all_empty
 @validate.require('build_target.name', 'output_dir')
 @validate.exists('output_dir')
 @validate.validation_complete

@@ -25,8 +25,45 @@ from chromite.lib import sysroot_lib
 from chromite.service import artifacts as artifacts_svc
 
 
+class BundleRequestMixin(object):
+  """Mixin to provide bundle request methods."""
+
+  def EmptyRequest(self):
+    return artifacts_pb2.BundleRequest()
+
+  def BuildTargetRequest(self, build_target=None, output_dir=None, chroot=None):
+    """Get a build target format request instance."""
+    request = self.EmptyRequest()
+    if build_target:
+      request.build_target.name = build_target
+    if output_dir:
+      request.output_dir = output_dir
+    if chroot:
+      request.chroot.path = chroot
+
+    return request
+
+  def SysrootRequest(self,
+                     sysroot=None,
+                     build_target=None,
+                     output_dir=None,
+                     chroot=None):
+    """Get a sysroot format request instance."""
+    request = self.EmptyRequest()
+    if sysroot:
+      request.sysroot.path = sysroot
+    if build_target:
+      request.sysroot.build_target.name = build_target
+    if output_dir:
+      request.output_dir = output_dir
+    if chroot:
+      request.chroot.path = chroot
+
+    return request
+
+
 class BundleTestCase(cros_test_lib.MockTempDirTestCase,
-                     api_config.ApiConfigMixin):
+                     api_config.ApiConfigMixin, BundleRequestMixin):
   """Basic setup for all artifacts unittests."""
 
   def setUp(self):
@@ -99,6 +136,48 @@ class BundleTempDirTestCase(cros_test_lib.MockTempDirTestCase,
     self.request.chroot.path = self.chroot_path
     self.request.sysroot.path = self.sysroot_path
     self.response = artifacts_pb2.BundleResponse()
+
+
+class BundleImageArchivesTest(BundleTestCase):
+  """BundleImageArchives tests."""
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(artifacts_svc, 'ArchiveImages')
+    artifacts.BundleImageArchives(self.input_proto, self.output_proto,
+                                  self.validate_only_config)
+    patch.assert_not_called()
+
+  def testNoBuildTarget(self):
+    """Test that no build target fails."""
+    request = self.BuildTargetRequest(output_dir=self.tempdir)
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleImageArchives(request, self.output_proto, self.api_config)
+
+  def testNoOutputDir(self):
+    """Test no output dir fails."""
+    request = self.BuildTargetRequest(build_target='board')
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleImageArchives(request, self.output_proto, self.api_config)
+
+  def testInvalidOutputDir(self):
+    """Test invalid output dir fails."""
+    request = self.BuildTargetRequest(
+        build_target='board', output_dir=os.path.join(self.tempdir, 'DNE'))
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleImageArchives(request, self.output_proto, self.api_config)
+
+  def testOutputHandling(self):
+    """Test the artifact output handling."""
+    expected = [os.path.join(self.output_dir, f) for f in ('a', 'b', 'c')]
+    self.PatchObject(artifacts_svc, 'ArchiveImages', return_value=expected)
+    self.PatchObject(os.path, 'exists', return_value=True)
+
+    artifacts.BundleImageArchives(self.input_proto, self.output_proto,
+                                  self.api_config)
+
+    self.assertItemsEqual(expected,
+                          [a.path for a in self.output_proto.artifacts])
 
 
 class BundleImageZipTest(BundleTestCase):

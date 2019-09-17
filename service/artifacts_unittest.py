@@ -156,6 +156,36 @@ class ArchiveChromeEbuildEnvTest(cros_test_lib.MockTempDirTestCase):
       artifacts.ArchiveChromeEbuildEnv(self.sysroot, self.output_dir)
 
 
+class ArchiveImagesTest(cros_test_lib.TempDirTestCase):
+  """ArchiveImages tests."""
+
+  def setUp(self):
+    self.image_dir = os.path.join(self.tempdir, 'images')
+    osutils.SafeMakedirs(self.image_dir)
+    self.output_dir = os.path.join(self.tempdir, 'output')
+    osutils.SafeMakedirs(self.output_dir)
+
+    self.images = []
+    for img in artifacts.IMAGE_TARS.keys():
+      full_path = os.path.join(self.image_dir, img)
+      self.images.append(full_path)
+      osutils.Touch(full_path)
+
+    osutils.Touch(os.path.join(self.image_dir, 'irrelevant_image.bin'))
+    osutils.Touch(os.path.join(self.image_dir, 'foo.txt'))
+    osutils.Touch(os.path.join(self.image_dir, 'bar'))
+
+  def testNoImages(self):
+    """Test an empty directory handling."""
+    artifacts.ArchiveImages(self.tempdir, self.output_dir)
+    self.assertFalse(os.listdir(self.output_dir))
+
+  def testAllImages(self):
+    """Test each image gets picked up."""
+    created = artifacts.ArchiveImages(self.image_dir, self.output_dir)
+    self.assertItemsEqual(artifacts.IMAGE_TARS.values(), created)
+
+
 class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
   """CreateChromeRoot tests."""
 
