@@ -289,6 +289,15 @@ typedef struct SequenceHeader {
 } SequenceHeader;
 
 typedef struct {
+  int frame_width;
+  int frame_height;
+  int num_mbs;
+  aom_bit_depth_t bit_depth;
+  int subsampling_x;
+  int subsampling_y;
+} FRAME_INFO;
+
+typedef struct {
     int skip_mode_allowed;
     int skip_mode_flag;
     int ref_frame_idx_0;

@@ -27,8 +27,9 @@
 
 // Set parameters for frames between 'start' and 'end' (excluding both).
 static void set_multi_layer_params(AV1_COMP *cpi, GF_GROUP *const gf_group,
-                                   int start, int end, int *frame_ind,
-                                   int arf_ind, int layer_depth) {
+                                   FRAME_INFO *frame_info, int start, int end,
+                                   int *frame_ind, int arf_ind,
+                                   int layer_depth) {
   const int num_frames_to_process = end - start - 1;
   assert(num_frames_to_process >= 0);
   if (num_frames_to_process == 0) return;
@@ -59,11 +60,11 @@ static void set_multi_layer_params(AV1_COMP *cpi, GF_GROUP *const gf_group,
 
     // Get the boost factor for intermediate ARF frames.
     gf_group->arf_boost[*frame_ind] =
-        av1_calc_arf_boost(cpi, m, end - m, m - start);
+        av1_calc_arf_boost(cpi, frame_info, m, end - m, m - start);
     ++(*frame_ind);
 
     // Frames displayed before this internal ARF.
-    set_multi_layer_params(cpi, gf_group, start, m, frame_ind, 1,
+    set_multi_layer_params(cpi, gf_group, frame_info, start, m, frame_ind, 1,
                            layer_depth + 1);
 
     // Overlay for internal ARF.
@@ -75,14 +76,14 @@ static void set_multi_layer_params(AV1_COMP *cpi, GF_GROUP *const gf_group,
     ++(*frame_ind);
 
     // Frames displayed after this internal ARF.
-    set_multi_layer_params(cpi, gf_group, m, end, frame_ind, arf_ind,
-                           layer_depth + 1);
+    set_multi_layer_params(cpi, gf_group, frame_info, m, end, frame_ind,
+                           arf_ind, layer_depth + 1);
   }
 }
 
 static int construct_multi_layer_gf_structure(
-    AV1_COMP *cpi, GF_GROUP *const gf_group, int gf_interval,
-    FRAME_UPDATE_TYPE first_frame_update_type) {
+    AV1_COMP *cpi, GF_GROUP *const gf_group, FRAME_INFO *const frame_info,
+    int gf_interval, FRAME_UPDATE_TYPE first_frame_update_type) {
   int frame_index = 0;
 
   // Keyframe / Overlay frame / Golden frame.
@@ -111,8 +112,8 @@ static int construct_multi_layer_gf_structure(
   }
 
   // Rest of the frames.
-  set_multi_layer_params(cpi, gf_group, 0, gf_interval, &frame_index, 0,
-                         use_altref + 1);
+  set_multi_layer_params(cpi, gf_group, frame_info, 0, gf_interval,
+                         &frame_index, 0, use_altref + 1);
 
   // The end frame will be Overlay frame for an ARF GOP; otherwise set it to
   // be GF, for consistency, which will be updated in the next GOP.
@@ -282,12 +283,14 @@ void av1_gop_setup_structure(AV1_COMP *cpi,
                              const EncodeFrameParams *const frame_params) {
   RATE_CONTROL *const rc = &cpi->rc;
   GF_GROUP *const gf_group = &cpi->gf_group;
+  FRAME_INFO *const frame_info = &cpi->frame_info;
   const int key_frame = (frame_params->frame_type == KEY_FRAME);
   const FRAME_UPDATE_TYPE first_frame_update_type =
       key_frame ? KF_UPDATE
                 : rc->source_alt_ref_active ? OVERLAY_UPDATE : GF_UPDATE;
-  gf_group->size = construct_multi_layer_gf_structure(
-      cpi, gf_group, rc->baseline_gf_interval, first_frame_update_type);
+  gf_group->size = construct_multi_layer_gf_structure(cpi, gf_group, frame_info,
+                                                      rc->baseline_gf_interval,
+                                                      first_frame_update_type);
 
   set_gop_ref_frame_map(gf_group);
 

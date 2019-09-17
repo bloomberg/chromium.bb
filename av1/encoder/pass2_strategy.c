@@ -241,10 +241,9 @@ static int get_twopass_worst_quality(AV1_COMP *cpi, const double section_err,
 #define SR_DIFF_MAX 128.0
 #define NCOUNT_FRAME_II_THRESH 5.0
 
-static double get_sr_decay_rate(const AV1_COMP *cpi,
+static double get_sr_decay_rate(const FRAME_INFO *frame_info,
                                 const FIRSTPASS_STATS *frame) {
-  const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE) ? cpi->initial_mbs
-                                                             : cpi->common.MBs;
+  const int num_mbs = frame_info->num_mbs;
   double sr_diff = (frame->sr_coded_error - frame->coded_error) / num_mbs;
   double sr_decay = 1.0;
   double modified_pct_inter;
@@ -270,18 +269,18 @@ static double get_sr_decay_rate(const AV1_COMP *cpi,
 
 // This function gives an estimate of how badly we believe the prediction
 // quality is decaying from frame to frame.
-static double get_zero_motion_factor(const AV1_COMP *cpi,
+static double get_zero_motion_factor(const FRAME_INFO *frame_info,
                                      const FIRSTPASS_STATS *frame) {
   const double zero_motion_pct = frame->pcnt_inter - frame->pcnt_motion;
-  double sr_decay = get_sr_decay_rate(cpi, frame);
+  double sr_decay = get_sr_decay_rate(frame_info, frame);
   return AOMMIN(sr_decay, zero_motion_pct);
 }
 
 #define ZM_POWER_FACTOR 0.75
 
-static double get_prediction_decay_rate(const AV1_COMP *cpi,
+static double get_prediction_decay_rate(const FRAME_INFO *frame_info,
                                         const FIRSTPASS_STATS *next_frame) {
-  const double sr_decay_rate = get_sr_decay_rate(cpi, next_frame);
+  const double sr_decay_rate = get_sr_decay_rate(frame_info, next_frame);
   const double zero_motion_factor =
       (0.95 * pow((next_frame->pcnt_inter - next_frame->pcnt_motion),
                   ZM_POWER_FACTOR));
@@ -414,7 +413,8 @@ static double calc_frame_boost(AV1_COMP *cpi, const FIRSTPASS_STATS *this_frame,
 #define GF_MAX_BOOST 90.0
 #define MIN_DECAY_FACTOR 0.01
 
-int av1_calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames, int b_frames) {
+int av1_calc_arf_boost(AV1_COMP *cpi, FRAME_INFO *frame_info, int offset,
+                       int f_frames, int b_frames) {
   TWO_PASS *const twopass = &cpi->twopass;
   int i;
   double boost_score = 0.0;
@@ -443,7 +443,7 @@ int av1_calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames, int b_frames) {
 
     // Accumulate the effect of prediction quality decay.
     if (!flash_detected) {
-      decay_accumulator *= get_prediction_decay_rate(cpi, this_frame);
+      decay_accumulator *= get_prediction_decay_rate(frame_info, this_frame);
       decay_accumulator = decay_accumulator < MIN_DECAY_FACTOR
                               ? MIN_DECAY_FACTOR
                               : decay_accumulator;
@@ -481,7 +481,7 @@ int av1_calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames, int b_frames) {
 
     // Cumulative effect of prediction quality decay.
     if (!flash_detected) {
-      decay_accumulator *= get_prediction_decay_rate(cpi, this_frame);
+      decay_accumulator *= get_prediction_decay_rate(frame_info, this_frame);
       decay_accumulator = decay_accumulator < MIN_DECAY_FACTOR
                               ? MIN_DECAY_FACTOR
                               : decay_accumulator;
@@ -807,6 +807,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   FIRSTPASS_STATS next_frame;
   const FIRSTPASS_STATS *const start_pos = twopass->stats_in;
   GF_GROUP *gf_group = &cpi->gf_group;
+  FRAME_INFO *frame_info = &cpi->frame_info;
   int i;
 
   double boost_score = 0.0;
@@ -936,14 +937,15 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     // Accumulate the effect of prediction quality decay.
     if (!flash_detected) {
       last_loop_decay_rate = loop_decay_rate;
-      loop_decay_rate = get_prediction_decay_rate(cpi, &next_frame);
+      loop_decay_rate = get_prediction_decay_rate(frame_info, &next_frame);
 
       decay_accumulator = decay_accumulator * loop_decay_rate;
 
       // Monitor for static sections.
       if ((rc->frames_since_key + i - 1) > 1) {
-        zero_motion_accumulator = AOMMIN(
-            zero_motion_accumulator, get_zero_motion_factor(cpi, &next_frame));
+        zero_motion_accumulator =
+            AOMMIN(zero_motion_accumulator,
+                   get_zero_motion_factor(frame_info, &next_frame));
       }
 
       // Break clause to detect very still sections after motion. For example,
@@ -1103,14 +1105,15 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                                    : AOMMAX(0, rc->frames_to_key - i);
 
     // Calculate the boost for alt ref.
-    rc->gfu_boost =
-        av1_calc_arf_boost(cpi, alt_offset, forward_frames, (i - 1));
+    rc->gfu_boost = av1_calc_arf_boost(cpi, frame_info, alt_offset,
+                                       forward_frames, (i - 1));
     rc->source_alt_ref_pending = 1;
     gf_group->max_layer_depth_allowed = cpi->oxcf.gf_max_pyr_height;
   } else {
     reset_fpf_position(twopass, start_pos);
     rc->gfu_boost =
-        AOMMIN(MAX_GF_BOOST, av1_calc_arf_boost(cpi, alt_offset, (i - 1), 0));
+        AOMMIN(MAX_GF_BOOST,
+               av1_calc_arf_boost(cpi, frame_info, alt_offset, (i - 1), 0));
     rc->source_alt_ref_pending = 0;
     gf_group->max_layer_depth_allowed = 0;
   }
@@ -1358,6 +1361,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &cpi->gf_group;
+  FRAME_INFO *const frame_info = &cpi->frame_info;
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
@@ -1431,7 +1435,8 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
         break;
 
       // How fast is the prediction quality decaying?
-      loop_decay_rate = get_prediction_decay_rate(cpi, twopass->stats_in);
+      loop_decay_rate =
+          get_prediction_decay_rate(frame_info, twopass->stats_in);
 
       // We want to know something about the recent past... rather than
       // as used elsewhere where we are concerned with decay in prediction
@@ -1532,8 +1537,9 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     // Monitor for static sections.
     // For the first frame in kf group, the second ref indicator is invalid.
     if (i > 0) {
-      zero_motion_accumulator = AOMMIN(
-          zero_motion_accumulator, get_zero_motion_factor(cpi, &next_frame));
+      zero_motion_accumulator =
+          AOMMIN(zero_motion_accumulator,
+                 get_zero_motion_factor(frame_info, &next_frame));
     } else {
       zero_motion_accumulator = next_frame.pcnt_inter - next_frame.pcnt_motion;
     }
@@ -1547,7 +1553,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       // How fast is prediction quality decaying.
       if (!detect_flash(twopass, 0)) {
         const double loop_decay_rate =
-            get_prediction_decay_rate(cpi, &next_frame);
+            get_prediction_decay_rate(frame_info, &next_frame);
         decay_accumulator *= loop_decay_rate;
         decay_accumulator = AOMMAX(decay_accumulator, MIN_DECAY_FACTOR);
       }

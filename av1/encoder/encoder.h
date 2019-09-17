@@ -924,6 +924,8 @@ typedef struct AV1_COMP {
 
   int droppable;
 
+  FRAME_INFO frame_info;
+
   int initial_width;
   int initial_height;
   int initial_mbs;  // Number of MBs in the full-size frame; to be used to
