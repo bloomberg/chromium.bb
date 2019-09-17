@@ -18,6 +18,8 @@ class LogBuffer;
   T(Context)                                                           \
   /* Log messages related to the discovery and parsing of forms. */    \
   T(Parsing)                                                           \
+  /* Log messages related to reasons to stop parsing a form. */        \
+  T(AbortParsing)                                                      \
   /* Log messages related to filling of forms. */                      \
   T(Filling)                                                           \
   /* Log messages related to the submission of forms. */               \
