@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_BUFFER_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_BUFFER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_COMMON_LOGGING_LOG_BUFFER_H_
+#define COMPONENTS_AUTOFILL_CORE_COMMON_LOGGING_LOG_BUFFER_H_
 
 #include <string>
 #include <type_traits>
@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 #include "url/gurl.h"
 
 // The desired pattern to generate log messages is to pass a scope, a log
@@ -154,19 +153,6 @@ LogBuffer& operator<<(LogBuffer& buf, LogBuffer&& buffer);
 LogBuffer& operator<<(LogBuffer& buf, const GURL& url);
 
 template <typename T>
-LogBuffer& operator<<(LogBuffer& buf,
-                      const ::google::protobuf::RepeatedField<T>& values) {
-  buf << "[";
-  for (int i = 0; i < values.size(); ++i) {
-    if (i)
-      buf << ", ";
-    buf << values.Get(i);
-  }
-  buf << "]";
-  return buf;
-}
-
-template <typename T>
 LogBuffer& operator<<(LogBuffer& buf, const std::vector<T>& values) {
   buf << "[";
   for (size_t i = 0; i < values.size(); ++i) {
@@ -219,4 +205,4 @@ LogBuffer HighlightValue(base::StringPiece16 haystack,
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_BUFFER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_COMMON_LOGGING_LOG_BUFFER_H_
