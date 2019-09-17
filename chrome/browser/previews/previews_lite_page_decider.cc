@@ -495,7 +495,7 @@ bool PreviewsLitePageDecider::ShouldSendNextProbe() {
 
 bool PreviewsLitePageDecider::IsResponseSuccess(
     net::Error net_error,
-    const network::ResourceResponseHead* head,
+    const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Any HTTP response is fine, so long as we got it.
