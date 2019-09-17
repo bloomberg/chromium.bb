@@ -1017,6 +1017,7 @@ const char kIpcDumpDirectory[] = "ipc-dump-directory";
 const char kIpcFuzzerTestcase[] = "ipc-fuzzer-testcase";
 #endif
 
+const char kDisableLayoutNG[] = "disable-layout-ng";
 // Don't dump stuff here, follow the same order as the header.
 
 }  // namespace switches

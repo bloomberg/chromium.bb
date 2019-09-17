@@ -47,6 +47,18 @@ declare_args() {
   msvc_use_absolute_paths = false
 }
 
+# Add an independent config for /Zc:dllexportInlines- that it is could be 
+# added/removed in different build units
+config("compiler_dll_export_inlines_") {
+  if (is_component_build) {
+    cflags = [
+      # Do not export inline member functions. This makes component builds
+      # faster. This is similar to -fvisibility-inlines-hidden.
+      "/Zc:dllexportInlines-",
+    ]
+  }
+}
+
 # This is included by reference in the //build/config/compiler config that
 # is applied to all targets. It is here to separate out the logic that is
 # Windows-only.
@@ -109,14 +121,6 @@ config("compiler") {
     # be called by code that is built with those checks enabled, such as system
     # libraries.
     cflags += [ "/guard:cf,nochecks" ]
-
-    if (is_component_build) {
-      cflags += [
-        # Do not export inline member functions. This makes component builds
-        # faster. This is similar to -fvisibility-inlines-hidden.
-        "/Zc:dllexportInlines-",
-      ]
-    }
 
     if (current_cpu == "x86") {
       cflags += [ "-m32" ]
