@@ -432,7 +432,7 @@ deps = {
     'packages': [
       {
         'package': 'chromium/chrome/test/data/autofill/captured_sites',
-        'version': 'Us5OlZWKzAUEXqNns8LuFnOqPuU4xo5FfFguzHPVfhAC',
+        'version': '6niw5QrKgpjhu1MvG19isM19ArW-6wNcak5nGbW5I7cC',
       }
     ],
     'condition': 'checkout_chromium_autofill_test_dependencies',
@@ -443,7 +443,7 @@ deps = {
     'packages': [
       {
         'package': 'chromium/chrome/test/data/password/captured_sites',
-        'version': '484POXsN4YniZtOU5CH6WWuVHJK82SmGIjbpxvEHaR0C',
+        'version': 'XxyN4JjdvL2TBSIFThfP0pJhd0-4COvFTOMCt356ht0C',
       }
     ],
     'condition': 'checkout_chromium_password_manager_test_dependencies',
