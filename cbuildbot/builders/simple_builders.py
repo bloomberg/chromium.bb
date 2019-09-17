@@ -198,8 +198,11 @@ class SimpleBuilder(generic_builders.Builder):
     # gather output manually, early slow stages will prevent any output from
     # later stages showing up until it finishes.
     changes = self._GetChangesUnderTest()
-    stage_list = [
+
+    early_stage_list = [
         [test_stages.UnitTestStage, board],
+    ]
+    stage_list = [
         [test_stages.DebugInfoTestStage, board],
     ]
 
@@ -207,7 +210,8 @@ class SimpleBuilder(generic_builders.Builder):
     if builder_run.config.compilecheck or builder_run.options.compilecheck:
       board_runattrs = builder_run.GetBoardRunAttrs(board)
       board_runattrs.SetParallel('test_artifacts_uploaded', False)
-      for x in stage_list:
+      stages = early_stage_list + stage_list
+      for x in stages:
         self._RunStage(*x, builder_run=builder_run)
       return
 
@@ -253,15 +257,27 @@ class SimpleBuilder(generic_builders.Builder):
     if config.run_build_configs_export:
       stage_list += [[artifact_stages.BuildConfigsExportStage, board]]
 
-    stage_list += [[artifact_stages.UploadTestArtifactsStage, board]]
+    early_stage_list += [[artifact_stages.UploadTestArtifactsStage, board]]
 
-    stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
-                  for x in stage_list]
+    early_stage_objs = [
+        self._GetStageInstance(*x, builder_run=builder_run)
+        for x in early_stage_list
+    ]
+
+    stage_objs = [
+        self._GetStageInstance(*x, builder_run=builder_run) for x in stage_list
+    ]
 
     # Build the image first before running the steps.
     with self._build_image_lock:
       self._RunStage(build_stages.BuildImageStage, board,
                      builder_run=builder_run, afdo_use=config.afdo_use)
+
+    # Run UnitTestStage & UploadTestArtifactsStage in a separate pass before
+    # any of the other parallel stages to prevent races with the image
+    # construction in the ArchiveStage.
+    # http://crbug.com/1000374
+    self._RunParallelStages(early_stage_objs)
 
     parallel.RunParallelSteps([
         lambda: self._RunParallelStages(stage_objs + [archive_stage]),
