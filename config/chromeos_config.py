@@ -2291,7 +2291,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'romer',
       'sarien',
       'samus',
-      'samus-kernelnext',
       'scarlet',
       'sentry',
       'sludge',
@@ -2350,12 +2349,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'gale', # http://b/140523449
       'fizz-moblab', # crbug.com/995170
+      'gale', # http://b/140523449
+      'grunt', # crbug.com/984614
       'guado', # crbug.com/950812
       'mistral', # b/140536001
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
-      'grunt', # crbug.com/984614
+      'samus-kernelnext', # https://crbug.com/1004618
       'wizpig', # crbug.com/996944
   ])
 
