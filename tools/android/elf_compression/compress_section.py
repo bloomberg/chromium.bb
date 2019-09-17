@@ -227,12 +227,15 @@ def _MovePhdrToTheEnd(data):
   elf_hdr.PatchData(data)
 
 
-def _SplitLoadSegment(data, l, r):
+def _SplitLoadSegmentAndNullifyRange(data, l, r):
   """Find LOAD segment covering [l, r) and splits it into three segments.
 
   Split is done so one of the LOAD segments contains only [l, r) and nothing
   else. If the range is located at the start or at the end of the segment less
   than three segments may be created.
+
+  The resulting LOAD segment containing [l, r) is edited so it sets the
+  corresponding virtual address range to zeroes, ignoring file content.
   """
   elf_hdr = elf_headers.ElfHeader(data)
 
@@ -284,7 +287,7 @@ def _SplitLoadSegment(data, l, r):
   range_phdr.p_offset = l
   range_phdr.p_vaddr = central_segment_address
   range_phdr.p_paddr = central_segment_address
-  range_phdr.p_filesz = r - l
+  range_phdr.p_filesz = 0
   range_phdr.p_memsz = r - l
 
   elf_hdr.PatchData(data)
@@ -314,7 +317,7 @@ def main():
 
   _CopyRangeIntoCompressedSection(data, left_range, right_range)
   _MovePhdrToTheEnd(data)
-  _SplitLoadSegment(data, left_range, right_range)
+  _SplitLoadSegmentAndNullifyRange(data, left_range, right_range)
 
   with open(args.output, 'wb') as f:
     f.write(data)
