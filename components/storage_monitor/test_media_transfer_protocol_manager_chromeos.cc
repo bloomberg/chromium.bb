@@ -34,7 +34,7 @@ void TestMediaTransferProtocolManagerChromeOS::AddReceiver(
 }
 
 void TestMediaTransferProtocolManagerChromeOS::EnumerateStoragesAndSetClient(
-    device::mojom::MtpManagerClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedRemote<device::mojom::MtpManagerClient> client,
     EnumerateStoragesAndSetClientCallback callback) {
   std::move(callback).Run(std::vector<device::mojom::MtpStorageInfoPtr>());
 }

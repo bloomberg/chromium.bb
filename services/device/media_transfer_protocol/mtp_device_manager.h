@@ -17,7 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
@@ -44,7 +45,7 @@ class MtpDeviceManager : public mojom::MtpManager {
 
   // Implements mojom::MtpManager.
   void EnumerateStoragesAndSetClient(
-      mojom::MtpManagerClientAssociatedPtrInfo client,
+      mojo::PendingAssociatedRemote<mojom::MtpManagerClient> client,
       EnumerateStoragesAndSetClientCallback callback) override;
   void GetStorageInfo(const std::string& storage_name,
                       GetStorageInfoCallback callback) override;
@@ -172,7 +173,7 @@ class MtpDeviceManager : public mojom::MtpManager {
   // MtpManager client who keeps tuned on attachment / detachment events.
   // Currently, storage_monitor::StorageMonitorCros is supposed to be the
   // only client.
-  mojom::MtpManagerClientAssociatedPtr client_;
+  mojo::AssociatedRemote<mojom::MtpManagerClient> client_;
 
   // Map to keep track of attached storages by name.
   base::flat_map<std::string, mojom::MtpStorageInfo> storage_info_map_;

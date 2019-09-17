@@ -56,7 +56,7 @@ void MtpDeviceManager::AddReceiver(
 }
 
 void MtpDeviceManager::EnumerateStoragesAndSetClient(
-    mojom::MtpManagerClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedRemote<mojom::MtpManagerClient> client,
     EnumerateStoragesAndSetClientCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
