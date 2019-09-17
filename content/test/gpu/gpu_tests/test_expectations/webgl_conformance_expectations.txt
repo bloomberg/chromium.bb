@@ -113,6 +113,7 @@ crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/extensions/oes-te
 crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
 crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 
 # Win / NVIDIA / Passthrough command decoder / D3D11
 crbug.com/751849 [ win7 debug nvidia d3d11 passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
