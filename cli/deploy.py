@@ -720,10 +720,10 @@ print(json.dumps(pkg_info))
 
     num_updates = 0
     listed_installs = []
-    for cpv, _, listed, update in installs.values():
+    for cpv, _, listed, isupdate in installs.values():
       if listed:
         listed_installs.append(cpv)
-      if update:
+      if isupdate:
         num_updates += 1
 
     logging.info('Processed %d package(s), %d will be installed, %d are '

@@ -125,16 +125,16 @@ def GetConfigContent(opts):
   return json.dumps(conf)
 
 
-def PrepareImage(image, content, domain=None):
+def PrepareImage(path, content, domain=None):
   """Prepares a recovery image for OOBE autoconfiguration.
 
   Args:
-    image: Path to the recovery image.
+    path: Path to the recovery image.
     content: The content of the OOBE autoconfiguration.
     domain: Which domain to enroll to.
   """
   with osutils.TempDir() as tmp, \
-    image_lib.LoopbackPartitions(image, tmp) as image:
+    image_lib.LoopbackPartitions(path, tmp) as image:
     stateful_mnt = image.Mount((constants.CROS_PART_STATEFUL,),
                                mount_opts=('rw',))[0]
 

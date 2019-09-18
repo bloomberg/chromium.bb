@@ -220,20 +220,20 @@ def FindSymbolFiles(tempdir, paths):
     if o.scheme:
       # Support globs of filenames.
       ctx = gs.GSContext()
-      for p in ctx.LS(p):
-        logging.info('processing files inside %s', p)
-        o = urllib.parse.urlparse(p)
+      for gspath in ctx.LS(p):
+        logging.info('processing files inside %s', gspath)
+        o = urllib.parse.urlparse(gspath)
         key = ('%s%s' % (o.netloc, o.path)).split('/')
         # The common cache will not be LRU, removing the need to hold a read
         # lock on the cached gsutil.
         ref = tar_cache.Lookup(key)
         try:
-          ref.SetDefault(p)
+          ref.SetDefault(gspath)
         except cros_build_lib.RunCommandError as e:
-          logging.warning('ignoring %s\n%s', p, e)
+          logging.warning('ignoring %s\n%s', gspath, e)
           continue
-        for p in FindSymbolFiles(tempdir, [ref.path]):
-          yield p
+        for sym in FindSymbolFiles(tempdir, [ref.path]):
+          yield sym
 
     elif os.path.isdir(p):
       for root, _, files in os.walk(p):
@@ -249,8 +249,8 @@ def FindSymbolFiles(tempdir, paths):
       logging.info('processing files inside %s', p)
       tardir = tempfile.mkdtemp(dir=tempdir)
       cache.Untar(os.path.realpath(p), tardir)
-      for p in FindSymbolFiles(tardir, [tardir]):
-        yield p
+      for sym in FindSymbolFiles(tardir, [tardir]):
+        yield sym
 
     else:
       yield SymbolFile(display_path=p, file_name=p)

@@ -2986,10 +2986,10 @@ def FindFilesWithPattern(pattern, target='./', cwd=os.curdir, exclude_dirs=()):
   os.chdir(cwd)
 
   matches = []
-  for target, _, filenames in os.walk(target):
-    if not any(target.startswith(e) for e in exclude_dirs):
+  for root, _, filenames in os.walk(target):
+    if not any(root.startswith(e) for e in exclude_dirs):
       for filename in fnmatch.filter(filenames, pattern):
-        matches.append(os.path.join(target, filename))
+        matches.append(os.path.join(root, filename))
 
   # Restore the working directory
   os.chdir(old_cwd)
