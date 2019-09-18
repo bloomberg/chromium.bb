@@ -1247,6 +1247,7 @@ jumbo_component("platform") {
     "p2p/network_manager_uma.h",
     "p2p/port_allocator.cc",
     "p2p/port_allocator.h",
+    "p2p/socket_client.h",
     "p2p/socket_client_delegate.h",
     "p2p/socket_client_impl.cc",
     "p2p/socket_client_impl.h",
