@@ -1068,12 +1068,6 @@ class ArchivingStageMixin(object):
     """Local path where archives are kept for this run."""
     return self.archive.archive_path
 
-  # TODO(mtennant): Rename base_archive_path.
-  @property
-  def bot_archive_root(self):
-    """Path of directory one level up from self.archive_path."""
-    return os.path.dirname(self.archive_path)
-
   @property
   def upload_url(self):
     """The GS location where artifacts should be uploaded for this run."""

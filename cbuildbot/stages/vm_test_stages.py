@@ -255,7 +255,6 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
           os.path.join(test_results_dir, 'test_harness'),
           test_config=test_config,
           whitelist_chrome_crashes=self._chrome_rev is None,
-          archive_dir=self.bot_archive_root,
           ssh_private_key=ssh_private_key,
           ssh_port=self._ssh_port)
 
@@ -382,7 +381,6 @@ class GCETestStage(VMTestStage):
         os.path.join(test_results_dir, 'test_harness'),
         test_config=test_config,
         whitelist_chrome_crashes=self._chrome_rev is None,
-        archive_dir=self.bot_archive_root,
         ssh_private_key=ssh_private_key,
         ssh_port=self._ssh_port)
 
@@ -782,14 +780,13 @@ def RunTestSuite(buildroot,
                  results_dir,
                  test_config,
                  whitelist_chrome_crashes,
-                 archive_dir,
                  ssh_private_key=None,
                  ssh_port=9228):
   """Runs the test harness suite."""
   if (test_config.use_ctest or
       test_config.test_type != constants.VM_SUITE_TEST_TYPE):
     _RunTestSuiteUsingCtest(buildroot, board, image_path, results_dir,
-                            test_config, whitelist_chrome_crashes, archive_dir,
+                            test_config, whitelist_chrome_crashes,
                             ssh_private_key, ssh_port)
   else:
     _RunTestSuiteUsingChromite(board, image_path, results_dir, test_config,
@@ -848,7 +845,6 @@ def _RunTestSuiteUsingCtest(buildroot,
                             results_dir,
                             test_config,
                             whitelist_chrome_crashes,
-                            archive_dir,
                             ssh_private_key=None,
                             ssh_port=9228):
   """Runs the test harness suite using the ctest code path."""
@@ -872,9 +868,7 @@ def _RunTestSuiteUsingCtest(buildroot,
   if test_type not in constants.VALID_VM_TEST_TYPES:
     raise AssertionError('Unrecognized test type %r' % test_type)
 
-  if test_type == constants.FULL_AU_TEST_TYPE:
-    cmd.append('--archive_dir=%s' % archive_dir)
-  elif test_type in [
+  if test_type in [
       constants.VM_SUITE_TEST_TYPE, constants.GCE_SUITE_TEST_TYPE
   ]:
     cmd.append('--ssh_port=%s' % ssh_port)

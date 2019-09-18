@@ -150,13 +150,6 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         os.path.join(image_dir, constants.TEST_KEY_PRIVATE), makedirs=True)
     return stage
 
-  def testFullTests(self):
-    """Tests if full unit and cros_au_test_harness tests are run correctly."""
-    self._run.config['vm_tests'] = [
-        config_lib.VMTestConfig(constants.FULL_AU_TEST_TYPE)
-    ]
-    self.RunStage()
-
   def testQuickTests(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
     self._run.config['vm_tests'] = [
@@ -192,7 +185,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testReportTestResults(self):
     """Test trybot with reporting function."""
     self._run.config['vm_tests'] = [
-        config_lib.VMTestConfig(constants.FULL_AU_TEST_TYPE)
+        config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)
     ]
     self._run.config['vm_test_report_to_dashboards'] = True
     self.RunStage()
@@ -427,7 +420,6 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
         self.TEST_BOARD,
         self.TEST_IMAGE_OUTSIDE_CHROOT,
         self.RESULTS_DIR,
-        archive_dir=self.BUILD_ROOT,
         whitelist_chrome_crashes=whitelist_chrome_crashes,
         test_config=test_config,
         ssh_private_key=self.PRIVATE_KEY_OUTSIDE_CHROOT,
@@ -451,13 +443,6 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
       ])
       self.assertCommandContains(enter_chroot=True)
       self.assertCommandContains(error_code_ok=True)
-
-  def testFull(self):
-    """Test running FULL config."""
-    config = config_lib.VMTestConfig(constants.FULL_AU_TEST_TYPE)
-    self._RunTestSuite(config)
-    self.assertCommandContains(['--quick'], expected=False)
-    self.assertCommandContains(['--only_verify'], expected=False)
 
   def testSimple(self):
     """Test SIMPLE config."""

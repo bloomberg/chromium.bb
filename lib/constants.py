@@ -840,15 +840,18 @@ JOB_KEYVAL_BRANCH = 'branch'
 # How many total test retries should be done for a suite.
 VM_TEST_MAX_RETRIES = 5
 # Defines VM Test types.
-FULL_AU_TEST_TYPE = 'full_suite'
 SIMPLE_AU_TEST_TYPE = 'pfq_suite'
 VM_SUITE_TEST_TYPE = 'vm_suite'
 GCE_SUITE_TEST_TYPE = 'gce_suite'
 CROS_VM_TEST_TYPE = 'cros_vm_test'
 DEV_MODE_TEST_TYPE = 'dev_mode_test'
-VALID_VM_TEST_TYPES = [FULL_AU_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
-                       VM_SUITE_TEST_TYPE, GCE_SUITE_TEST_TYPE,
-                       CROS_VM_TEST_TYPE, DEV_MODE_TEST_TYPE]
+VALID_VM_TEST_TYPES = [
+    SIMPLE_AU_TEST_TYPE,
+    VM_SUITE_TEST_TYPE,
+    GCE_SUITE_TEST_TYPE,
+    CROS_VM_TEST_TYPE,
+    DEV_MODE_TEST_TYPE
+]
 VALID_GCE_TEST_SUITES = ['gce-smoke', 'gce-sanity']
 # MoblabVM tests are suites of tests used to validate a moblab image via
 # VMTests.
