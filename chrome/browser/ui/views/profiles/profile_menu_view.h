@@ -48,7 +48,8 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
     kSignoutButton = 12,
     kOtherProfileButton = 13,
     kCookiesClearedOnExitLink = 14,
-    kMaxValue = kCookiesClearedOnExitLink,
+    kAddNewProfileButton = 15,
+    kMaxValue = kAddNewProfileButton,
   };
 
   ProfileMenuView(views::Button* anchor_button,
@@ -85,6 +86,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void OnSignoutButtonClicked();
   void OnOtherProfileSelected(const base::FilePath& profile_path);
   void OnCookiesClearedOnExitLinkClicked();
+  void OnAddNewProfileButtonClicked();
 
   // Should be called inside each button/link action.
   void RecordClick(ActionableItem item);

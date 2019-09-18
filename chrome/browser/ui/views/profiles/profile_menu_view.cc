@@ -377,6 +377,12 @@ void ProfileMenuView::OnCookiesClearedOnExitLinkClicked() {
                                              chrome::kCookieSettingsSubPage);
 }
 
+void ProfileMenuView::OnAddNewProfileButtonClicked() {
+  RecordClick(ActionableItem::kAddNewProfileButton);
+  UserManager::Show(/*profile_path_to_focus=*/base::FilePath(),
+                    profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
+}
+
 void ProfileMenuView::RecordClick(ActionableItem item) {
   base::UmaHistogramEnumeration("Profile.Menu.ClickedActionableItem", item);
 }
@@ -510,6 +516,12 @@ void ProfileMenuView::BuildProfileFeatureButtons() {
       ImageForMenu(vector_icons::kSettingsIcon, kIconToImageRatio),
       l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON),
       base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
+                          base::Unretained(this)));
+
+  AddProfileFeatureButton(
+      ImageForMenu(kAddIcon, kIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_ADD_USER_BUTTON),
+      base::BindRepeating(&ProfileMenuView::OnAddNewProfileButtonClicked,
                           base::Unretained(this)));
 
   AddProfileFeatureButton(

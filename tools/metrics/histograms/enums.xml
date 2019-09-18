@@ -50293,6 +50293,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Sign-out button"/>
   <int value="13" label="Switch to another profile button"/>
   <int value="14" label="Cookies cleared on exit link"/>
+  <int value="15" label="Add new profile button"/>
 </enum>
 
 <enum name="ProfileNetUserCount">
