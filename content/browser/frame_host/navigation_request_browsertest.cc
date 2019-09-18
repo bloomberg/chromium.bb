@@ -10,7 +10,6 @@
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "content/browser/frame_host/debug_urls.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -95,41 +94,38 @@ class TestNavigationThrottle : public NavigationThrottle {
  private:
   // NavigationThrottle implementation.
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
-    NavigationHandleImpl* navigation_handle_impl =
-        static_cast<NavigationHandleImpl*>(navigation_handle());
+    NavigationRequest* navigation_request =
+        NavigationRequest::From(navigation_handle());
     CHECK_NE(blink::mojom::RequestContextType::UNSPECIFIED,
-             navigation_handle_impl->request_context_type());
-    request_context_type_ = navigation_handle_impl->request_context_type();
+             navigation_request->request_context_type());
+    request_context_type_ = navigation_request->request_context_type();
 
     base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_start_);
     return will_start_result_;
   }
 
   NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override {
-    NavigationHandleImpl* navigation_handle_impl =
-        static_cast<NavigationHandleImpl*>(navigation_handle());
-    CHECK_EQ(request_context_type_,
-             navigation_handle_impl->request_context_type());
+    NavigationRequest* navigation_request =
+        NavigationRequest::From(navigation_handle());
+    CHECK_EQ(request_context_type_, navigation_request->request_context_type());
 
     base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_redirect_);
     return will_redirect_result_;
   }
 
   NavigationThrottle::ThrottleCheckResult WillFailRequest() override {
-    NavigationHandleImpl* navigation_handle_impl =
-        static_cast<NavigationHandleImpl*>(navigation_handle());
-    CHECK_EQ(request_context_type_,
-             navigation_handle_impl->request_context_type());
+    NavigationRequest* navigation_request =
+        NavigationRequest::From(navigation_handle());
+    CHECK_EQ(request_context_type_, navigation_request->request_context_type());
 
     base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_fail_);
     return will_fail_result_;
   }
 
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
-    NavigationHandleImpl* navigation_handle_impl =
-        static_cast<NavigationHandleImpl*>(navigation_handle());
-    CHECK_EQ(request_context_type_,
-             navigation_handle_impl->request_context_type());
+    NavigationRequest* navigation_request =
+        NavigationRequest::From(navigation_handle());
+    CHECK_EQ(request_context_type_, navigation_request->request_context_type());
 
     base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_process_);
     return will_process_result_;
@@ -433,7 +429,7 @@ void ExpectChildFrameCollapsed(Shell* shell,
 
 }  // namespace
 
-class NavigationHandleImplBrowserTest : public ContentBrowserTest {
+class NavigationRequestBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -473,11 +469,11 @@ class NavigationHandleImplBrowserTest : public ContentBrowserTest {
   }
 };
 
-class NavigationHandleImplDownloadBrowserTest
-    : public NavigationHandleImplBrowserTest {
+class NavigationRequestDownloadBrowserTest
+    : public NavigationRequestBrowserTest {
  protected:
   void SetUpOnMainThread() override {
-    NavigationHandleImplBrowserTest::SetUpOnMainThread();
+    NavigationRequestBrowserTest::SetUpOnMainThread();
 
     // Set up a test download directory, in order to prevent prompting for
     // handling downloads.
@@ -496,7 +492,7 @@ class NavigationHandleImplDownloadBrowserTest
 };
 
 // Ensure that PageTransition is properly set on the NavigationHandle.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyPageTransition) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, VerifyPageTransition) {
   {
     // Test browser initiated navigation, which should have a PageTransition as
     // if it came from the omnibox.
@@ -540,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyPageTransition) {
 // Ensure that the following methods on NavigationHandle behave correctly:
 // * IsInMainFrame
 // * IsParentMainFrame
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyFrameTree) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, VerifyFrameTree) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
   GURL b_url(embedded_test_server()->GetURL(
@@ -585,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyFrameTree) {
 }
 
 // Ensure that the WasRedirected() method on NavigationHandle behaves correctly.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyRedirect) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, VerifyRedirect) {
   {
     GURL url(embedded_test_server()->GetURL("/title1.html"));
     NavigationHandleObserver observer(shell()->web_contents(), url);
@@ -613,8 +609,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyRedirect) {
 
 // Ensure that a certificate error results in a committed navigation with
 // the appropriate error code on the handle.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
-                       VerifyCertErrorFailure) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, VerifyCertErrorFailure) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   ASSERT_TRUE(https_server.Start());
@@ -631,8 +626,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
 // Ensure that the IsRendererInitiated() method on NavigationHandle behaves
 // correctly.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
-                       VerifyRendererInitiated) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, VerifyRendererInitiated) {
   {
     // Test browser initiated navigation.
     GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -698,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
 // Ensure that methods on NavigationHandle behave correctly with an iframe that
 // navigates to its srcdoc attribute.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySrcdoc) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, VerifySrcdoc) {
   GURL url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_srcdoc_frame.html"));
   NavigationHandleObserver observer(shell()->web_contents(),
@@ -713,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySrcdoc) {
 
 // Ensure that the IsSameDocument() method on NavigationHandle behaves
 // correctly.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySameDocument) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, VerifySameDocument) {
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a())"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -779,7 +773,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySameDocument) {
 
 // Ensure that a NavigationThrottle can cancel the navigation at navigation
 // start.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleCancelStart) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ThrottleCancelStart) {
   GURL start_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
@@ -803,8 +797,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleCancelStart) {
 
 // Ensure that a NavigationThrottle can cancel the navigation when a navigation
 // is redirected.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
-                       ThrottleCancelRedirect) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ThrottleCancelRedirect) {
   GURL start_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
@@ -845,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 }
 
 // Ensure that a NavigationThrottle can respond CANCEL when a navigation fails.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleCancelFailure) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ThrottleCancelFailure) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   ASSERT_TRUE(https_server.Start());
@@ -916,8 +909,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleCancelFailure) {
 
 // Ensure that a NavigationThrottle can cancel the navigation when the response
 // is received.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
-                       ThrottleCancelResponse) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ThrottleCancelResponse) {
   GURL start_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
@@ -941,7 +933,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
 // Ensure that a NavigationThrottle can defer and resume the navigation at
 // navigation start, navigation redirect and response received.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDefer) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ThrottleDefer) {
   GURL start_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
@@ -992,7 +984,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDefer) {
 
 // Ensure that a NavigationThrottle can defer and resume the navigation at
 // navigation start and navigation failure.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDeferFailure) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ThrottleDeferFailure) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   ASSERT_TRUE(https_server.Start());
@@ -1034,8 +1026,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDeferFailure) {
 // Ensure that a NavigationThrottle can block the navigation and collapse the
 // frame owner both on request start as well as after a redirect. Plus, ensure
 // that the frame is restored on the subsequent non-error-page navigation.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
-                       ThrottleBlockAndCollapse) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ThrottleBlockAndCollapse) {
   const char kChildFrameId[] = "child0";
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_one_frame.html"));
@@ -1130,7 +1121,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
 // BLOCK_REQUEST_AND_COLLAPSE should block the navigation in legacy <frame>'s,
 // but should not collapse the <frame> element itself for legacy reasons.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        ThrottleBlockAndCollapse_LegacyFrameNotCollapsed) {
   const char kChildFrameId[] = "child0";
   GURL main_url(embedded_test_server()->GetURL(
@@ -1175,7 +1166,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 }
 
 // Checks that the RequestContextType value is properly set.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        VerifyRequestContextTypeForFrameTree) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
@@ -1231,7 +1222,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 }
 
 // Checks that the RequestContextType value is properly set for an hyper-link.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        VerifyHyperlinkRequestContextType) {
   GURL link_url(embedded_test_server()->GetURL("/title2.html"));
   GURL document_url(embedded_test_server()->GetURL("/simple_links.html"));
@@ -1267,7 +1258,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 }
 
 // Checks that the RequestContextType value is properly set for an form (POST).
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        VerifyFormRequestContextType) {
   GURL document_url(
       embedded_test_server()->GetURL("/session_history/form.html"));
@@ -1302,7 +1293,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
 // Checks that the error code is properly set on the NavigationHandle when a
 // NavigationThrottle cancels.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        ErrorCodeOnThrottleCancelNavigation) {
   const GURL kUrl = embedded_test_server()->GetURL("/title1.html");
   const GURL kRedirectingUrl =
@@ -1382,9 +1373,9 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, observer.net_error_code());
 }
 
-// Checks that there's no UAF if NavigationHandleImpl::WillStartRequest cancels
-// the navigation.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+// Checks that there's no UAF if NavigationRequest::WillStartRequest cancels the
+// navigation.
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        CancelNavigationInWillStartRequest) {
   const GURL kUrl1 = embedded_test_server()->GetURL("/title1.html");
   const GURL kUrl2 = embedded_test_server()->GetURL("/title2.html");
@@ -1395,7 +1386,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
   // To take the path that doesn't run beforeunload, so that
   // NavigationControllerImpl::NavigateToPendingEntry is on the botttom of the
-  // stack when NavigationHandleImpl::WillStartRequest is called.
+  // stack when NavigationRequest::WillStartRequest is called.
   CrashTab(shell()->web_contents());
 
   // Set up a NavigationThrottle that will cancel the navigation in
@@ -1411,7 +1402,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 // Verify that a cross-process navigation in a frame for which the current
 // renderer process is not live will not result in leaking a
 // RenderProcessHost. See https://crbug.com/949977.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        NoLeakFromStartingSiteInstance) {
   GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -1490,8 +1481,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
 // Specialized test that verifies the NavigationHandle gets the HTTPS upgraded
 // URL from the very beginning of the navigation.
-class NavigationHandleImplHttpsUpgradeBrowserTest
-    : public NavigationHandleImplBrowserTest {
+class NavigationRequestHttpsUpgradeBrowserTest
+    : public NavigationRequestBrowserTest {
  public:
   void CheckHttpsUpgradedIframeNavigation(const GURL& start_url,
                                           const GURL& iframe_secure_url) {
@@ -1527,7 +1518,7 @@ class NavigationHandleImplHttpsUpgradeBrowserTest
 };
 
 // Tests that the start URL is HTTPS upgraded for a same site navigation.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplHttpsUpgradeBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestHttpsUpgradeBrowserTest,
                        StartUrlIsHttpsUpgradedSameSite) {
   GURL start_url(embedded_test_server()->GetURL(
       "example.com", "/https_upgrade_same_site.html"));
@@ -1544,7 +1535,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplHttpsUpgradeBrowserTest,
 }
 
 // Tests that the start URL is HTTPS upgraded for a cross site navigation.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplHttpsUpgradeBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestHttpsUpgradeBrowserTest,
                        StartUrlIsHttpsUpgradedCrossSite) {
   GURL start_url(
       embedded_test_server()->GetURL("/https_upgrade_cross_site.html"));
@@ -1555,7 +1546,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplHttpsUpgradeBrowserTest,
 
 // Ensure that browser-initiated same-document navigations are detected and
 // don't issue network requests.  See crbug.com/663777.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        SameDocumentBrowserInitiatedNoReload) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   GURL url_fragment_1(embedded_test_server()->GetURL("/title1.html#id_1"));
@@ -1666,7 +1657,7 @@ class NavigationLogger : public WebContentsObserver {
 // a NavigationHandle mismatch and a new NavigationHandle creation to commit
 // the error page. This test makes sure that only one NavigationHandle is used
 // for committing the error page. See https://crbug.com/695421
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, BlockedOnRedirect) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, BlockedOnRedirect) {
   const GURL kUrl = embedded_test_server()->GetURL("/title1.html");
   const GURL kRedirectingUrl =
       embedded_test_server()->GetURL("/server-redirect?" + kUrl.spec());
@@ -1695,14 +1686,13 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, BlockedOnRedirect) {
 
 // Tests that when a navigation starts while there's an existing one, the first
 // one has the right error code set on its navigation handle.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorCodeOnCancel) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ErrorCodeOnCancel) {
   GURL slow_url = embedded_test_server()->GetURL("/slow?60");
   NavigationHandleObserver observer(shell()->web_contents(), slow_url);
   shell()->LoadURL(slow_url);
 
   GURL url2(embedded_test_server()->GetURL("/title1.html"));
-  TestNavigationObserver same_tab_observer(
-      shell()->web_contents(), 1);
+  TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
   shell()->LoadURL(url2);
   same_tab_observer.Wait();
 
@@ -1711,7 +1701,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorCodeOnCancel) {
 
 // Tests that when a renderer-initiated request redirects to a URL that the
 // renderer can't access, the right error code is set on the NavigationHandle.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorCodeOnRedirect) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ErrorCodeOnRedirect) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -1729,7 +1719,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorCodeOnRedirect) {
 // Test to verify that error pages caused by NavigationThrottle blocking a
 // request in the main frame from being made are properly committed in a
 // separate error page process.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        ErrorPageBlockedNavigation) {
   GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   GURL blocked_url(embedded_test_server()->GetURL("bar.com", "/title2.html"));
@@ -1885,7 +1875,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 // Test to verify that error pages caused by network error or other
 // recoverable error are properly committed in the process for the
 // destination URL.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorPageNetworkError) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ErrorPageNetworkError) {
   GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   GURL error_url(embedded_test_server()->GetURL("/close-socket"));
   EXPECT_NE(start_url.host(), error_url.host());
@@ -1922,8 +1912,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorPageNetworkError) {
 // blocked (net::ERR_BLOCKED_BY_CLIENT) while departing from a privileged WebUI
 // page (chrome://gpu). It is a security risk for the error page to commit in
 // the privileged process.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
-                       BlockedRequestAfterWebUI) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, BlockedRequestAfterWebUI) {
   GURL web_ui_url(GetWebUIURL("gpu"));
   WebContents* web_contents = shell()->web_contents();
 
@@ -1957,7 +1946,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
 // Redirects to renderer debug URLs caused problems.
 // See https://crbug.com/728398.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        RedirectToRendererDebugUrl) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -2003,7 +1992,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
 // Check that iframe with embedded credentials are blocked.
 // See https://crbug.com/755892.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        BlockCredentialedSubresources) {
   if (!base::FeatureList::IsEnabled(features::kBlockCredentialedSubresources))
     return;
@@ -2108,7 +2097,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, StartToCommitMetrics) {
   enum class FrameType {
     kMain,
     kSub,
@@ -2269,7 +2258,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
 
 // Verify that the TimeToReadyToCommit2 metrics are correctly logged for
 // SameProcess vs CrossProcess as well as MainFrame vs Subframe cases.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        TimeToReadyToCommitMetrics) {
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/hello.html")));
@@ -2339,7 +2328,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, IsDownload) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestDownloadBrowserTest, IsDownload) {
   GURL url(embedded_test_server()->GetURL("/download-test1.lib"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
   EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), url));
@@ -2347,7 +2336,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, IsDownload) {
   EXPECT_TRUE(observer.is_download());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestDownloadBrowserTest,
                        DownloadFalseForHtmlResponse) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
@@ -2356,7 +2345,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   EXPECT_FALSE(observer.is_download());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestDownloadBrowserTest,
                        DownloadFalseFor404) {
   GURL url(embedded_test_server()->GetURL("/page404.html"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
@@ -2365,7 +2354,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   EXPECT_FALSE(observer.is_download());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestDownloadBrowserTest,
                        DownloadFalseForFailedNavigation) {
   GURL url(embedded_test_server()->GetURL("/download-test1.lib"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
@@ -2380,7 +2369,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   EXPECT_FALSE(observer.is_download());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestDownloadBrowserTest,
                        RedirectToDownload) {
   GURL redirect_url(
       embedded_test_server()->GetURL("/cross-site/bar.com/download-test1.lib"));
@@ -2391,7 +2380,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   EXPECT_TRUE(observer.is_download());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestDownloadBrowserTest,
                        RedirectToDownloadFails) {
   GURL redirect_url(
       embedded_test_server()->GetURL("/cross-site/bar.com/download-test1.lib"));
@@ -2411,14 +2400,13 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
 
 // Set of tests that check the various NavigationThrottle events can be used
 // with custom error pages.
-class NavigationHandleImplThrottleResultWithErrorPageBrowserTest
-    : public NavigationHandleImplBrowserTest,
+class NavigationRequestThrottleResultWithErrorPageBrowserTest
+    : public NavigationRequestBrowserTest,
       public ::testing::WithParamInterface<NavigationThrottle::ThrottleAction> {
 };
 
-IN_PROC_BROWSER_TEST_P(
-    NavigationHandleImplThrottleResultWithErrorPageBrowserTest,
-    WillStartRequest) {
+IN_PROC_BROWSER_TEST_P(NavigationRequestThrottleResultWithErrorPageBrowserTest,
+                       WillStartRequest) {
   NavigationThrottle::ThrottleAction action = GetParam();
 
   if (action == NavigationThrottle::CANCEL_AND_IGNORE) {
@@ -2447,9 +2435,8 @@ IN_PROC_BROWSER_TEST_P(
       url, action, TestNavigationThrottleInstaller::WILL_START_REQUEST);
 }
 
-IN_PROC_BROWSER_TEST_P(
-    NavigationHandleImplThrottleResultWithErrorPageBrowserTest,
-    WillRedirectRequest) {
+IN_PROC_BROWSER_TEST_P(NavigationRequestThrottleResultWithErrorPageBrowserTest,
+                       WillRedirectRequest) {
   NavigationThrottle::ThrottleAction action = GetParam();
 
   if (action == NavigationThrottle::CANCEL_AND_IGNORE) {
@@ -2478,9 +2465,8 @@ IN_PROC_BROWSER_TEST_P(
       url, action, TestNavigationThrottleInstaller::WILL_REDIRECT_REQUEST);
 }
 
-IN_PROC_BROWSER_TEST_P(
-    NavigationHandleImplThrottleResultWithErrorPageBrowserTest,
-    WillFailRequest) {
+IN_PROC_BROWSER_TEST_P(NavigationRequestThrottleResultWithErrorPageBrowserTest,
+                       WillFailRequest) {
   NavigationThrottle::ThrottleAction action = GetParam();
 
   if (action == NavigationThrottle::PROCEED ||
@@ -2505,9 +2491,8 @@ IN_PROC_BROWSER_TEST_P(
       url, action, TestNavigationThrottleInstaller::WILL_FAIL_REQUEST);
 }
 
-IN_PROC_BROWSER_TEST_P(
-    NavigationHandleImplThrottleResultWithErrorPageBrowserTest,
-    WillProcessResponse) {
+IN_PROC_BROWSER_TEST_P(NavigationRequestThrottleResultWithErrorPageBrowserTest,
+                       WillProcessResponse) {
   NavigationThrottle::ThrottleAction action = GetParam();
 
   if (action == NavigationThrottle::CANCEL_AND_IGNORE) {
@@ -2535,14 +2520,14 @@ IN_PROC_BROWSER_TEST_P(
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    NavigationHandleImplThrottleResultWithErrorPageBrowserTest,
+    NavigationRequestThrottleResultWithErrorPageBrowserTest,
     testing::Range(NavigationThrottle::ThrottleAction::FIRST,
                    NavigationThrottle::ThrottleAction::LAST));
 
 // The set of tests...
-// * NavigationHandleImplDownloadBrowserTest.AllowedResourceDownloaded
-// * NavigationHandleImplDownloadBrowserTest.AllowedResourceNotDownloaded
-// * NavigationHandleImplDownloadBrowserTest.Disallowed
+// * NavigationRequestDownloadBrowserTest.AllowedResourceDownloaded
+// * NavigationRequestDownloadBrowserTest.AllowedResourceNotDownloaded
+// * NavigationRequestDownloadBrowserTest.Disallowed
 //
 // ...covers every combination of possible states for:
 // * CommonNavigationParams::download_policy (allow vs disallow)
@@ -2550,7 +2535,7 @@ INSTANTIATE_TEST_SUITE_P(
 //
 // Download policies that enumerate allowed / disallowed options are not tested
 // here.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestDownloadBrowserTest,
                        AllowedResourceDownloaded) {
   GURL simple_url(embedded_test_server()->GetURL("/simple_page.html"));
 
@@ -2572,8 +2557,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   EXPECT_FALSE(handle_observer.is_download());
 }
 
-// See NavigationHandleImplDownloadBrowserTest.AllowedResourceNotDownloaded
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+// See NavigationRequestDownloadBrowserTest.AllowedResourceNotDownloaded
+IN_PROC_BROWSER_TEST_F(NavigationRequestDownloadBrowserTest,
                        AllowedResourceNotDownloaded) {
   GURL download_url(embedded_test_server()->GetURL("/download-test1.lib"));
 
@@ -2596,8 +2581,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   EXPECT_TRUE(handle_observer.is_download());
 }
 
-// See NavigationHandleImplDownloadBrowserTest.AllowedResourceNotDownloaded
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, Disallowed) {
+// See NavigationRequestDownloadBrowserTest.AllowedResourceNotDownloaded
+IN_PROC_BROWSER_TEST_F(NavigationRequestDownloadBrowserTest, Disallowed) {
   GURL download_url(embedded_test_server()->GetURL("/download-test1.lib"));
 
   // An URL is allowed to be a download iff it is not a view-source URL.
@@ -2626,12 +2611,12 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, Disallowed) {
   EXPECT_FALSE(handle_observer.is_download());
 }
 
-class NavigationHandleImplBackForwardBrowserTest
-    : public NavigationHandleImplBrowserTest,
+class NavigationRequestBackForwardBrowserTest
+    : public NavigationRequestBrowserTest,
       public WebContentsObserver {
  protected:
   void SetUpOnMainThread() override {
-    NavigationHandleImplBrowserTest::SetUpOnMainThread();
+    NavigationRequestBrowserTest::SetUpOnMainThread();
 
     WebContentsObserver::Observe(shell()->web_contents());
   }
@@ -2645,7 +2630,7 @@ class NavigationHandleImplBackForwardBrowserTest
   std::vector<int64_t> offsets_;
 };
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBackForwardBrowserTest,
                        NavigationEntryOffsets) {
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
   const GURL url2(embedded_test_server()->GetURL("/title2.html"));
@@ -2702,7 +2687,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
   EXPECT_THAT(offsets_, testing::ElementsAre(1, 0, 1, 1, -1, -1, 1));
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBackForwardBrowserTest,
                        NavigationEntryOffsetsForSubframes) {
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
   const GURL url1_fragment1(
@@ -2781,7 +2766,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
               testing::ElementsAre(1, 1, 1, 0, 1, 1, -1, 1, -1, -1, -1, 4));
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBackForwardBrowserTest,
                        NavigationEntryLimit) {
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
 
@@ -2797,7 +2782,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
   EXPECT_THAT(offsets_, testing::ElementsAre(1, 1, 1, 1, 1));
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationRequestBackForwardBrowserTest,
                        LocationReplace) {
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
 
@@ -2819,7 +2804,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
 
 // Tests that the correct net::AuthChallengeInfo is exposed from the
 // NavigationHandle when the page requests authentication.
-IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, AuthChallengeInfo) {
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, AuthChallengeInfo) {
   GURL url(embedded_test_server()->GetURL("/auth-basic"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
   EXPECT_TRUE(NavigateToURL(shell(), url));
