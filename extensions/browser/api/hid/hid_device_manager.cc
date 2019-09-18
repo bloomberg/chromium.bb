@@ -175,7 +175,7 @@ void HidDeviceManager::Connect(const std::string& device_guid,
   hid_manager_->Connect(
       device_guid, mojo::PendingRemote<device::mojom::HidConnectionClient>(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
-                                                  nullptr));
+                                                  mojo::NullRemote()));
 }
 
 bool HidDeviceManager::HasPermission(

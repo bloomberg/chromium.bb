@@ -11,7 +11,8 @@
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/hid/hid_connection_impl.h"
 
 namespace device {
@@ -84,15 +85,15 @@ void HidManagerImpl::CreateConnection(
     mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
     scoped_refptr<HidConnection> connection) {
   if (!connection) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
 
-  mojom::HidConnectionPtr client;
+  mojo::PendingRemote<mojom::HidConnection> client;
   auto connection_impl = std::make_unique<HidConnectionImpl>(
       connection, std::move(connection_client));
-  mojo::MakeStrongBinding(std::move(connection_impl),
-                          mojo::MakeRequest(&client));
+  mojo::MakeSelfOwnedReceiver(std::move(connection_impl),
+                              client.InitWithNewPipeAndPassReceiver());
   std::move(callback).Run(std::move(client));
 }
 

@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/hid/hid_manager_impl.h"
@@ -47,8 +48,8 @@ class MockHidManagerClient : public mojom::HidManagerClient {
     std::move(quit_closure_).Run();
   }
 
-  void SetConnection(mojom::HidConnectionPtr hid_connection) {
-    hid_connection_ = std::move(hid_connection);
+  void SetConnection(mojo::PendingRemote<mojom::HidConnection> hid_connection) {
+    hid_connection_.Bind(std::move(hid_connection));
   }
 
   mojom::HidConnection* GetConnection() { return hid_connection_.get(); }
@@ -61,7 +62,7 @@ class MockHidManagerClient : public mojom::HidManagerClient {
 
  private:
   mojo::AssociatedReceiver<mojom::HidManagerClient> receiver_{this};
-  mojom::HidConnectionPtr hid_connection_;
+  mojo::Remote<mojom::HidConnection> hid_connection_;
   base::OnceClosure quit_closure_;
   std::string expect_guid_;
 
@@ -78,7 +79,7 @@ void OnGetDevices(base::OnceClosure quit_closure,
 
 void OnConnect(base::OnceClosure quit_closure,
                MockHidManagerClient* client,
-               mojom::HidConnectionPtr connection) {
+               mojo::PendingRemote<mojom::HidConnection> connection) {
   DCHECK(client);
   DCHECK(connection);
   client->SetConnection(std::move(connection));

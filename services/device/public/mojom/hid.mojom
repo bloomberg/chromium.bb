@@ -328,7 +328,7 @@ interface HidManager {
   // notified when input reports are received.
   Connect(string device_guid,
           pending_remote<HidConnectionClient>? connection_client)
-      => (HidConnection? connection);
+      => (pending_remote<HidConnection>? connection);
 };
 
 // Provides an interface for communication with a HID device. The HID spec

@@ -8,7 +8,8 @@
 #include <utility>
 
 #include "base/guid.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace device {
 
@@ -120,14 +121,14 @@ void FakeHidManager::Connect(
     mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
     ConnectCallback callback) {
   if (!base::Contains(devices_, device_guid)) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
 
-  mojom::HidConnectionPtr connection;
-  mojo::MakeStrongBinding(
+  mojo::PendingRemote<mojom::HidConnection> connection;
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<FakeHidConnection>(devices_[device_guid]->Clone()),
-      mojo::MakeRequest(&connection));
+      connection.InitWithNewPipeAndPassReceiver());
   std::move(callback).Run(std::move(connection));
 }
 
