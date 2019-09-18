@@ -252,7 +252,7 @@ def filter_tests(tests, filters):
         for test in tests:
             include = include_by_default
             for glob in sorted(globs, key=glob_sort_key):
-                if not glob[:-1]:
+                if (glob.startswith('-') and not glob[1:]) or not glob:
                     raise ValueError('Empty glob filter "%s"' % (filter,))
                 if '*' in glob[:-1]:
                     raise ValueError('Bad test filter "%s" specified; '
