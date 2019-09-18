@@ -653,9 +653,14 @@ float GM2TabStyle::GetThrobValue() const {
 }
 
 int GM2TabStyle::GetStrokeThickness(bool should_paint_as_active) const {
-  return (tab_->IsActive() || should_paint_as_active)
-             ? tab_->controller()->GetStrokeThickness()
-             : 0;
+  base::Optional<SkColor> group_color = tab_->GetGroupColor();
+  if (group_color.has_value() && tab_->IsActive())
+    return 2;
+
+  if (tab_->IsActive() || should_paint_as_active)
+    return tab_->controller()->GetStrokeThickness();
+
+  return 0;
 }
 
 bool GM2TabStyle::ShouldPaintTabBackgroundColor(
@@ -678,20 +683,6 @@ bool GM2TabStyle::ShouldPaintTabBackgroundColor(
 SkColor GM2TabStyle::GetTabBackgroundColor(TabActive active) const {
   SkColor color = tab_->controller()->GetTabBackgroundColor(
       active, BrowserNonClientFrameView::kUseCurrent);
-
-  base::Optional<SkColor> group_color = tab_->GetGroupColor();
-  if (group_color.has_value()) {
-    if (tab_->IsActive()) {
-      color = group_color.value();
-    } else {
-      // Tint with group color. With a dark scheme, the tint needs a higher
-      // contrast to stand out effectively.
-      const float target_contrast = color_utils::IsDark(color) ? 1.8f : 1.2f;
-      color = color_utils::BlendForMinContrast(
-                  color, color, group_color.value(), target_contrast)
-                  .color;
-    }
-  }
 
   return color;
 }
@@ -728,11 +719,14 @@ void GM2TabStyle::PaintTabBackground(gfx::Canvas* canvas,
   // |y_inset| is only set when |fill_id| is being used.
   DCHECK(!y_inset || fill_id.has_value());
 
+  base::Optional<SkColor> group_color = tab_->GetGroupColor();
+
   PaintTabBackgroundFill(canvas, active,
                          active == TabActive::kInactive && IsHoverActive(),
                          fill_id, y_inset);
-  PaintBackgroundStroke(canvas, active,
-                        tab_->controller()->GetToolbarTopSeparatorColor());
+  PaintBackgroundStroke(
+      canvas, active,
+      group_color.value_or(tab_->controller()->GetToolbarTopSeparatorColor()));
   PaintSeparators(canvas);
 }
 

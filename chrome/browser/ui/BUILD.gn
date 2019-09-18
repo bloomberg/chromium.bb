@@ -3102,6 +3102,8 @@ jumbo_split_static_library("ui") {
       "views/tabs/tab_group_editor_bubble_view.h",
       "views/tabs/tab_group_header.cc",
       "views/tabs/tab_group_header.h",
+      "views/tabs/tab_group_underline.cc",
+      "views/tabs/tab_group_underline.h",
       "views/tabs/tab_hover_card_bubble_view.cc",
       "views/tabs/tab_hover_card_bubble_view.h",
       "views/tabs/tab_icon.cc",
