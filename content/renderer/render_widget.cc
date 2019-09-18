@@ -798,25 +798,10 @@ void RenderWidget::OnSynchronizeVisualProperties(
       delegate()->ApplyNewDisplayModeForWidget(visual_properties.display_mode);
     }
 
-    bool auto_resize_mode_changed =
-        auto_resize_mode_ != visual_properties.auto_resize_enabled;
-    auto_resize_mode_ = visual_properties.auto_resize_enabled;
-    min_size_for_auto_resize_ = visual_properties.min_size_for_auto_resize;
-    max_size_for_auto_resize_ = visual_properties.max_size_for_auto_resize;
-
-    if (auto_resize_mode_) {
-      gfx::Size min_auto_size = min_size_for_auto_resize_;
-      gfx::Size max_auto_size = max_size_for_auto_resize_;
-      if (compositor_deps_->IsUseZoomForDSFEnabled()) {
-        min_auto_size = gfx::ScaleToCeiledSize(
-            min_auto_size, visual_properties.screen_info.device_scale_factor);
-        max_auto_size = gfx::ScaleToCeiledSize(
-            max_auto_size, visual_properties.screen_info.device_scale_factor);
-      }
-      delegate()->ApplyAutoResizeLimitsForWidget(min_auto_size, max_auto_size);
-    } else if (auto_resize_mode_changed) {
-      delegate()->DisableAutoResizeForWidget();
-    }
+    SetAutoResizeMode(visual_properties.auto_resize_enabled,
+                      visual_properties.min_size_for_auto_resize,
+                      visual_properties.max_size_for_auto_resize,
+                      visual_properties.screen_info.device_scale_factor);
 
     browser_controls_shrink_blink_size_ =
         visual_properties.browser_controls_shrink_blink_size;
@@ -886,7 +871,7 @@ void RenderWidget::OnSynchronizeVisualProperties(
       visual_properties.bottom_controls_height,
       visual_properties.browser_controls_shrink_blink_size);
 
-  if (!visual_properties.auto_resize_enabled) {
+  if (!auto_resize_mode_) {
     if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_) {
       is_fullscreen_granted_ = visual_properties.is_fullscreen_granted;
       if (is_fullscreen_granted_)
@@ -990,6 +975,31 @@ void RenderWidget::OnEnableDeviceEmulation(
     screen_metrics_emulator_->Apply();
   } else {
     screen_metrics_emulator_->ChangeEmulationParams(params);
+  }
+}
+
+void RenderWidget::SetAutoResizeMode(bool auto_resize,
+                                     const gfx::Size& min_size_before_dsf,
+                                     const gfx::Size& max_size_before_dsf,
+                                     float device_scale_factor) {
+  bool was_changed = auto_resize_mode_ != auto_resize;
+  auto_resize_mode_ = auto_resize;
+
+  min_size_for_auto_resize_ = min_size_before_dsf;
+  max_size_for_auto_resize_ = max_size_before_dsf;
+
+  if (auto_resize) {
+    gfx::Size min_auto_size = min_size_for_auto_resize_;
+    gfx::Size max_auto_size = max_size_for_auto_resize_;
+    if (compositor_deps_->IsUseZoomForDSFEnabled()) {
+      min_auto_size =
+          gfx::ScaleToCeiledSize(min_auto_size, device_scale_factor);
+      max_auto_size =
+          gfx::ScaleToCeiledSize(max_auto_size, device_scale_factor);
+    }
+    delegate()->ApplyAutoResizeLimitsForWidget(min_auto_size, max_auto_size);
+  } else if (was_changed) {
+    delegate()->DisableAutoResizeForWidget();
   }
 }
 
@@ -1710,7 +1720,7 @@ void RenderWidget::SynchronizeVisualProperties(
   // but not others.
 
   gfx::Rect new_compositor_viewport_pixel_rect =
-      visual_properties.auto_resize_enabled
+      auto_resize_mode_
           ? gfx::Rect(gfx::ScaleToCeiledSize(
                 size_, visual_properties.screen_info.device_scale_factor))
           : visual_properties.compositor_viewport_pixel_rect;
@@ -1740,7 +1750,7 @@ void RenderWidget::SynchronizeVisualProperties(
     }
   }
 
-  if (!visual_properties.auto_resize_enabled) {
+  if (!auto_resize_mode_) {
     visible_viewport_size_ = visual_properties.visible_viewport_size;
     display_mode_ = visual_properties.display_mode;
     size_ = visual_properties.new_size;
@@ -3836,43 +3846,23 @@ void RenderWidget::SetWindowRectSynchronouslyForTesting(
 
 void RenderWidget::EnableAutoResizeForTesting(const gfx::Size& min_size,
                                               const gfx::Size& max_size) {
-  VisualProperties visual_properties;
-  visual_properties.auto_resize_enabled = true;
-  visual_properties.min_size_for_auto_resize = min_size;
-  visual_properties.max_size_for_auto_resize = max_size;
-  visual_properties.local_surface_id_allocation =
-      base::Optional<viz::LocalSurfaceIdAllocation>(
-          viz::LocalSurfaceIdAllocation(
-              viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()),
-              base::TimeTicks::Now()));
-  OnSynchronizeVisualProperties(visual_properties);
+  SetAutoResizeMode(true, min_size, max_size,
+                    page_properties_->GetDeviceScaleFactor());
 }
 
 void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   if (!auto_resize_mode_)
     return;
 
-  VisualProperties visual_properties;
-  visual_properties.auto_resize_enabled = false;
-  visual_properties.screen_info = page_properties_->GetScreenInfo();
-  visual_properties.new_size = new_size;
-  visual_properties.compositor_viewport_pixel_rect = CompositorViewportRect();
-  visual_properties.browser_controls_shrink_blink_size =
-      browser_controls_shrink_blink_size_;
-  visual_properties.top_controls_height = top_controls_height_;
-  visual_properties.visible_viewport_size = visible_viewport_size_;
-  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
-  visual_properties.display_mode = display_mode_;
+  SetAutoResizeMode(false, gfx::Size(), gfx::Size(),
+                    page_properties_->GetDeviceScaleFactor());
 
-  if (new_size.IsEmpty()) {
-    // The |new_size| is empty when resetting auto resize in between tests. In
-    // this case the current size should just be preserved.
-    visual_properties.new_size = size_;
-  } else {
-    visual_properties.new_size = new_size;
+  // The |new_size| is empty when resetting auto resize in between tests. In
+  // this case the current size should just be preserved.
+  if (!new_size.IsEmpty()) {
+    size_ = new_size;
+    ResizeWebWidget();
   }
-
-  OnSynchronizeVisualProperties(visual_properties);
 }
 
 blink::WebLocalFrame* RenderWidget::GetFocusedWebLocalFrameInWidget() const {

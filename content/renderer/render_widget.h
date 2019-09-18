@@ -752,6 +752,13 @@ class CONTENT_EXPORT RenderWidget
   gfx::Size GetSizeForWebWidget() const;
   void ResizeWebWidget();
 
+  // Enable or disable auto-resize. This is part of
+  // OnSynchronizeVisualProperties though tests may call to it more directly.
+  void SetAutoResizeMode(bool auto_resize,
+                         const gfx::Size& min_size_before_dsf,
+                         const gfx::Size& max_size_before_dsf,
+                         float device_scale_factor);
+
   // Helper method to get the device_viewport_rect() from the compositor, which
   // is always in physical pixels.
   gfx::Rect CompositorViewportRect() const;
