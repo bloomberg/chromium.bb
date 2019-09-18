@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/p2p/ipc_socket_factory.h"
+#include "third_party/blink/renderer/platform/p2p/ipc_socket_factory.h"
 
 #include <stddef.h>
 
@@ -18,16 +18,17 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
-#include "content/renderer/p2p/host_address_request.h"
-#include "content/renderer/p2p/socket_client_impl.h"
-#include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/utils.h"
 #include "net/base/ip_address.h"
-#include "third_party/blink/public/platform/modules/p2p/socket_client_delegate.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
+#include "third_party/blink/renderer/platform/p2p/host_address_request.h"
+#include "third_party/blink/renderer/platform/p2p/socket_client_delegate.h"
+#include "third_party/blink/renderer/platform/p2p/socket_client_impl.h"
+#include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -125,7 +126,7 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
       const network::P2PSendPacketMetrics& send_metrics) override;
   void OnError() override;
   void OnDataReceived(const net::IPEndPoint& address,
-                      const std::vector<int8_t>& data,
+                      const Vector<int8_t>& data,
                       const base::TimeTicks& timestamp) override;
 
  private:
@@ -221,7 +222,7 @@ class AsyncAddressResolverImpl : public rtc::AsyncResolverInterface {
   void Destroy(bool wait) override;
 
  private:
-  virtual void OnAddressResolved(const net::IPAddressList& addresses);
+  virtual void OnAddressResolved(const Vector<net::IPAddress>& addresses);
 
   scoped_refptr<P2PAsyncAddressResolver> resolver_;
 
@@ -247,8 +248,7 @@ IpcPacketSocket::IpcPacketSocket()
 }
 
 IpcPacketSocket::~IpcPacketSocket() {
-  if (state_ == IS_OPENING || state_ == IS_OPEN ||
-      state_ == IS_ERROR) {
+  if (state_ == IS_OPENING || state_ == IS_OPEN || state_ == IS_ERROR) {
     Close();
   }
 
@@ -293,8 +293,7 @@ bool IpcPacketSocket::Init(network::P2PSocketType type,
   state_ = IS_OPENING;
 
   net::IPEndPoint local_endpoint;
-  if (!jingle_glue::SocketAddressToIPEndPoint(
-          local_address, &local_endpoint)) {
+  if (!jingle_glue::SocketAddressToIPEndPoint(local_address, &local_endpoint)) {
     return false;
   }
 
@@ -350,13 +349,15 @@ rtc::SocketAddress IpcPacketSocket::GetRemoteAddress() const {
   return remote_address_;
 }
 
-int IpcPacketSocket::Send(const void *data, size_t data_size,
+int IpcPacketSocket::Send(const void* data,
+                          size_t data_size,
                           const rtc::PacketOptions& options) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return SendTo(data, data_size, remote_address_, options);
 }
 
-int IpcPacketSocket::SendTo(const void *data, size_t data_size,
+int IpcPacketSocket::SendTo(const void* data,
+                            size_t data_size,
                             const rtc::SocketAddress& address,
                             const rtc::PacketOptions& options) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -388,8 +389,7 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
 
   if (data_size > send_bytes_available_) {
     TRACE_EVENT_INSTANT1("p2p", "MaxPendingBytesWouldBlock",
-                         TRACE_EVENT_SCOPE_THREAD,
-                         "id",
+                         TRACE_EVENT_SCOPE_THREAD, "id",
                          client_->GetSocketID());
     if (!writable_signal_expected_) {
       blink::WebRtcLogMessage(base::StringPrintf(
@@ -552,8 +552,8 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& local_address,
       // |remote_address| could be unresolved if the connection is behind a
       // proxy.
       if (!remote_address.address().empty() &&
-          jingle_glue::IPEndPointToSocketAddress(
-              remote_address, &jingle_socket_address)) {
+          jingle_glue::IPEndPointToSocketAddress(remote_address,
+                                                 &jingle_socket_address)) {
         // Set only the IP address.
         remote_address_.SetResolvedIP(jingle_socket_address.ipaddr());
       }
@@ -625,7 +625,7 @@ void IpcPacketSocket::OnError() {
 }
 
 void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
-                                     const std::vector<int8_t>& data,
+                                     const Vector<int8_t>& data,
                                      const base::TimeTicks& timestamp) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -650,8 +650,7 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
 
 AsyncAddressResolverImpl::AsyncAddressResolverImpl(
     P2PSocketDispatcher* dispatcher)
-    : resolver_(new P2PAsyncAddressResolver(dispatcher)) {
-}
+    : resolver_(new P2PAsyncAddressResolver(dispatcher)) {}
 
 AsyncAddressResolverImpl::~AsyncAddressResolverImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -669,11 +668,12 @@ void AsyncAddressResolverImpl::Start(const rtc::SocketAddress& addr) {
 }
 
 bool AsyncAddressResolverImpl::GetResolvedAddress(
-    int family, rtc::SocketAddress* addr) const {
+    int family,
+    rtc::SocketAddress* addr) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (addresses_.empty())
-   return false;
+    return false;
 
   for (size_t i = 0; i < addresses_.size(); ++i) {
     if (family == addresses_[i].family()) {
@@ -699,7 +699,7 @@ void AsyncAddressResolverImpl::Destroy(bool wait) {
 }
 
 void AsyncAddressResolverImpl::OnAddressResolved(
-    const net::IPAddressList& addresses) {
+    const Vector<net::IPAddress>& addresses) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (size_t i = 0; i < addresses.size(); ++i) {
     rtc::SocketAddress socket_address;
@@ -720,8 +720,7 @@ IpcPacketSocketFactory::IpcPacketSocketFactory(
     : socket_dispatcher_(socket_dispatcher),
       traffic_annotation_(traffic_annotation) {}
 
-IpcPacketSocketFactory::~IpcPacketSocketFactory() {
-}
+IpcPacketSocketFactory::~IpcPacketSocketFactory() {}
 
 rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateUdpSocket(
     const rtc::SocketAddress& local_address,
@@ -788,11 +787,10 @@ rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
   return socket.release();
 }
 
-rtc::AsyncResolverInterface*
-IpcPacketSocketFactory::CreateAsyncResolver() {
+rtc::AsyncResolverInterface* IpcPacketSocketFactory::CreateAsyncResolver() {
   std::unique_ptr<AsyncAddressResolverImpl> resolver(
       new AsyncAddressResolverImpl(socket_dispatcher_));
   return resolver.release();
 }
 
-}  // namespace content
+}  // namespace blink

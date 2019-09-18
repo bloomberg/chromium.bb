@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_P2P_MDNS_RESPONDER_ADAPTER_H_
-#define CONTENT_RENDERER_P2P_MDNS_RESPONDER_ADAPTER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_MDNS_RESPONDER_ADAPTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_MDNS_RESPONDER_ADAPTER_H_
 
-#include "services/network/public/mojom/mdns_responder.mojom.h"
+#include "services/network/public/mojom/mdns_responder.mojom-blink.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/rtc_base/mdns_responder_interface.h"
 
 namespace rtc {
 class IPAddress;
 }  // namespace rtc
 
-namespace content {
+namespace blink {
 
 // This class is created on the main thread but is used only on the WebRTC
 // worker threads. The MdnsResponderAdapter implements the WebRTC mDNS responder
 // interface via the MdnsResponder service in Chromium, and is used to register
 // and resolve mDNS hostnames to conceal local IP addresses.
-class MdnsResponderAdapter : public webrtc::MdnsResponderInterface {
+class PLATFORM_EXPORT MdnsResponderAdapter
+    : public webrtc::MdnsResponderInterface {
  public:
   // The adapter should be created on the main thread to have access to the
   // connector to the service manager.
@@ -32,11 +34,12 @@ class MdnsResponderAdapter : public webrtc::MdnsResponderInterface {
                             NameRemovedCallback callback) override;
 
  private:
-  scoped_refptr<network::mojom::ThreadSafeMdnsResponderPtr> thread_safe_client_;
+  scoped_refptr<network::mojom::blink::ThreadSafeMdnsResponderPtr>
+      thread_safe_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MdnsResponderAdapter);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_P2P_MDNS_RESPONDER_ADAPTER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_MDNS_RESPONDER_ADAPTER_H_

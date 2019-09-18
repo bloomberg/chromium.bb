@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 
 #include <string>
 
-#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "content/common/content_export.h"
-#include "ipc/ipc_platform_file.h"
 #include "third_party/blink/public/platform/modules/peerconnection/stun_field_trial.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
 
@@ -36,21 +34,18 @@ class Thread;
 }
 
 namespace blink {
+
 class IpcNetworkManager;
+class IpcPacketSocketFactory;
+class MdnsResponderAdapter;
+class P2PSocketDispatcher;
 class WebLocalFrame;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebRtcAudioDeviceImpl;
-}
-
-namespace content {
-
-class IpcPacketSocketFactory;
-class MdnsResponderAdapter;
-class P2PSocketDispatcher;
 
 // Object factory for RTC PeerConnections.
-class CONTENT_EXPORT PeerConnectionDependencyFactory
+class BLINK_MODULES_EXPORT PeerConnectionDependencyFactory
     : base::MessageLoopCurrent::DestructionObserver {
  public:
   PeerConnectionDependencyFactory(bool create_p2p_socket_dispatcher);
@@ -69,8 +64,8 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   CreateVideoTrackSourceProxy(webrtc::VideoTrackSourceInterface* source);
 
   // Asks the PeerConnection factory to create a Local MediaStream object.
-  virtual scoped_refptr<webrtc::MediaStreamInterface>
-      CreateLocalMediaStream(const std::string& label);
+  virtual scoped_refptr<webrtc::MediaStreamInterface> CreateLocalMediaStream(
+      const std::string& label);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object.
   virtual scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
@@ -125,7 +120,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
  protected:
   virtual const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&
-      GetPcFactory();
+  GetPcFactory();
   virtual bool PeerConnectionFactoryCreated();
 
   // Helper method to create a WebRtcAudioDeviceImpl.
@@ -150,8 +145,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
       media::GpuVideoAcceleratorFactories* gpu_factories,
       base::WaitableEvent* event);
 
-  void InitializeWorkerThread(rtc::Thread** thread,
-                              base::WaitableEvent* event);
+  void InitializeWorkerThread(rtc::Thread** thread, base::WaitableEvent* event);
 
   void CreateIpcNetworkManagerOnWorkerThread(
       base::WaitableEvent* event,
@@ -185,6 +179,6 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionDependencyFactory);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_

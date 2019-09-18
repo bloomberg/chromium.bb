@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_P2P_IPC_SOCKET_FACTORY_H_
-#define CONTENT_RENDERER_P2P_IPC_SOCKET_FACTORY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_IPC_SOCKET_FACTORY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_IPC_SOCKET_FACTORY_H_
 
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "content/common/content_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/packet_socket_factory.h"
 
-namespace content {
+namespace blink {
 
 class P2PSocketDispatcher;
 
@@ -25,7 +25,7 @@ class P2PSocketDispatcher;
 // created on.
 class IpcPacketSocketFactory : public rtc::PacketSocketFactory {
  public:
-  CONTENT_EXPORT explicit IpcPacketSocketFactory(
+  PLATFORM_EXPORT explicit IpcPacketSocketFactory(
       P2PSocketDispatcher* socket_dispatcher,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~IpcPacketSocketFactory() override;
@@ -54,6 +54,6 @@ class IpcPacketSocketFactory : public rtc::PacketSocketFactory {
   DISALLOW_COPY_AND_ASSIGN(IpcPacketSocketFactory);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_P2P_IPC_SOCKET_FACTORY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_IPC_SOCKET_FACTORY_H_
