@@ -32,8 +32,9 @@ struct EncodeFrameParams;
 void av1_gop_setup_structure(
     struct AV1_COMP *cpi, const struct EncodeFrameParams *const frame_params);
 
-int av1_calc_arf_boost(AV1_COMP *cpi, FRAME_INFO *frame_info, int offset,
-                       int f_frames, int b_frames);
+int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
+                       FRAME_INFO *frame_info, int offset, int f_frames,
+                       int b_frames);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

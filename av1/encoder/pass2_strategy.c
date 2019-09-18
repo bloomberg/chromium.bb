@@ -378,12 +378,13 @@ static double baseline_err_per_mb(const FRAME_INFO *frame_info) {
   }
 }
 
-static double calc_frame_boost(AV1_COMP *cpi, const FRAME_INFO *frame_info,
+static double calc_frame_boost(const RATE_CONTROL *rc,
+                               const FRAME_INFO *frame_info,
                                const FIRSTPASS_STATS *this_frame,
                                double this_frame_mv_in_out, double max_boost) {
   double frame_boost;
-  const double lq = av1_convert_qindex_to_q(
-      cpi->rc.avg_frame_qindex[INTER_FRAME], frame_info->bit_depth);
+  const double lq = av1_convert_qindex_to_q(rc->avg_frame_qindex[INTER_FRAME],
+                                            frame_info->bit_depth);
   const double boost_q_correction = AOMMIN((0.5 + (lq * 0.015)), 1.5);
   const double active_area = calculate_active_area(frame_info, this_frame);
   int num_mbs = frame_info->num_mbs;
@@ -412,9 +413,9 @@ static double calc_frame_boost(AV1_COMP *cpi, const FRAME_INFO *frame_info,
 #define GF_MAX_BOOST 90.0
 #define MIN_DECAY_FACTOR 0.01
 
-int av1_calc_arf_boost(AV1_COMP *cpi, FRAME_INFO *frame_info, int offset,
-                       int f_frames, int b_frames) {
-  TWO_PASS *const twopass = &cpi->twopass;
+int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
+                       FRAME_INFO *frame_info, int offset, int f_frames,
+                       int b_frames) {
   int i;
   double boost_score = 0.0;
   double mv_ratio_accumulator = 0.0;
@@ -449,7 +450,7 @@ int av1_calc_arf_boost(AV1_COMP *cpi, FRAME_INFO *frame_info, int offset,
     }
 
     boost_score += decay_accumulator *
-                   calc_frame_boost(cpi, frame_info, this_frame,
+                   calc_frame_boost(rc, frame_info, this_frame,
                                     this_frame_mv_in_out, GF_MAX_BOOST);
   }
 
@@ -487,7 +488,7 @@ int av1_calc_arf_boost(AV1_COMP *cpi, FRAME_INFO *frame_info, int offset,
     }
 
     boost_score += decay_accumulator *
-                   calc_frame_boost(cpi, frame_info, this_frame,
+                   calc_frame_boost(rc, frame_info, this_frame,
                                     this_frame_mv_in_out, GF_MAX_BOOST);
   }
   arf_boost += (int)boost_score;
@@ -959,7 +960,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
     // Calculate a boost number for this frame.
     boost_score += decay_accumulator *
-                   calc_frame_boost(cpi, frame_info, &next_frame,
+                   calc_frame_boost(rc, frame_info, &next_frame,
                                     this_frame_mv_in_out, GF_MAX_BOOST);
     // If almost totally static, we will not use the the max GF length later,
     // so we can continue for more frames.
@@ -1105,15 +1106,15 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                                    : AOMMAX(0, rc->frames_to_key - i);
 
     // Calculate the boost for alt ref.
-    rc->gfu_boost = av1_calc_arf_boost(cpi, frame_info, alt_offset,
+    rc->gfu_boost = av1_calc_arf_boost(twopass, rc, frame_info, alt_offset,
                                        forward_frames, (i - 1));
     rc->source_alt_ref_pending = 1;
     gf_group->max_layer_depth_allowed = cpi->oxcf.gf_max_pyr_height;
   } else {
     reset_fpf_position(twopass, start_pos);
-    rc->gfu_boost =
-        AOMMIN(MAX_GF_BOOST,
-               av1_calc_arf_boost(cpi, frame_info, alt_offset, (i - 1), 0));
+    rc->gfu_boost = AOMMIN(
+        MAX_GF_BOOST,
+        av1_calc_arf_boost(twopass, rc, frame_info, alt_offset, (i - 1), 0));
     rc->source_alt_ref_pending = 0;
     gf_group->max_layer_depth_allowed = 0;
   }
@@ -1551,7 +1552,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     if ((i <= rc->max_gf_interval) ||
         ((i <= (rc->max_gf_interval * 4)) && (decay_accumulator > 0.5))) {
       const double frame_boost =
-          calc_frame_boost(cpi, frame_info, &next_frame, 0, kf_max_boost);
+          calc_frame_boost(rc, frame_info, &next_frame, 0, kf_max_boost);
 
       // How fast is prediction quality decaying.
       if (!detect_flash(twopass, 0)) {
