@@ -652,13 +652,6 @@ RendererBlinkPlatformImpl::GetAudioSourceLatencyType(
   return AudioDeviceFactory::GetSourceLatencyType(source_type);
 }
 
-blink::WebRtcAudioDeviceImpl*
-RendererBlinkPlatformImpl::GetWebRtcAudioDevice() {
-  auto* pc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  return pc_dependency_factory->GetWebRtcAudioDevice();
-}
-
 base::Optional<std::string>
 RendererBlinkPlatformImpl::GetWebRTCAudioProcessingConfiguration() {
   return GetContentClient()
