@@ -826,11 +826,6 @@ class CONTENT_EXPORT RenderWidget
   // our state.
   void SetHidden(bool hidden);
 
-  // Sets the fullscreen state for the WebView.
-  // TODO(danakj): This is currently located on RenderWidget but is a page/view
-  // state, and should move to RenderView.
-  void SetIsFullscreen(bool fullscreen);
-
   // Returns a rect that the compositor needs to raster. For a main frame this
   // is always the entire viewport, but for out-of-process iframes this can be
   // constrained to limit overdraw.
@@ -885,8 +880,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Used to force the size of a window when running web tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
-
-  void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);
 
   // A variant of Send but is fatal if it fails. The browser may
   // be waiting for this IPC Message and if the send fails the browser will

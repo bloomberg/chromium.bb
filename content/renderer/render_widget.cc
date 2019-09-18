@@ -839,6 +839,65 @@ void RenderWidget::OnSynchronizeVisualProperties(
       ignore_resize_ipc = true;
   }
 
+  if (for_frame()) {
+    // TODO(danakj): This should not need to go through RenderFrame to set
+    // Page-level properties.
+    blink::WebFrameWidget* frame_widget = GetFrameWidget();
+    DCHECK(frame_widget);
+    RenderFrameImpl* render_frame =
+        RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
+
+    bool zoom_level_changed =
+        render_frame->SetZoomLevelOnRenderView(visual_properties.zoom_level);
+    if (zoom_level_changed) {
+      // Hide popups when the zoom changes.
+      blink::WebView* web_view = frame_widget->LocalRoot()->View();
+      web_view->CancelPagePopup();
+
+      // Propagate changes down to child local root RenderWidgets and
+      // BrowserPlugins in other frame trees/processes.
+      for (auto& observer : render_frame_proxies_)
+        observer.OnZoomLevelChanged(visual_properties.zoom_level);
+      for (auto& plugin : browser_plugins_)
+        plugin.OnZoomLevelChanged(visual_properties.zoom_level);
+    }
+
+    bool capture_sequence_number_changed =
+        visual_properties.capture_sequence_number !=
+        last_capture_sequence_number_;
+    if (capture_sequence_number_changed) {
+      last_capture_sequence_number_ = visual_properties.capture_sequence_number;
+
+      // Propagate changes down to child local root RenderWidgets and
+      // BrowserPlugins in other frame trees/processes.
+      for (auto& observer : render_frame_proxies_) {
+        observer.UpdateCaptureSequenceNumber(
+            visual_properties.capture_sequence_number);
+      }
+      for (auto& observer : browser_plugins_) {
+        observer.UpdateCaptureSequenceNumber(
+            visual_properties.capture_sequence_number);
+      }
+    }
+  }
+
+  layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
+      visual_properties.top_controls_height,
+      visual_properties.bottom_controls_height,
+      visual_properties.browser_controls_shrink_blink_size);
+
+  if (!visual_properties.auto_resize_enabled) {
+    if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_) {
+      is_fullscreen_granted_ = visual_properties.is_fullscreen_granted;
+      if (is_fullscreen_granted_)
+        GetWebWidget()->DidEnterFullscreen();
+      else
+        GetWebWidget()->DidExitFullscreen();
+    }
+  }
+
+  gfx::Size old_visible_viewport_size = visible_viewport_size_;
+
   // When controlling the size in the renderer, we should ignore sizes given by
   // the browser IPC here.
   // TODO(danakj): There are many things also being ignored that aren't the
@@ -863,6 +922,8 @@ void RenderWidget::OnSynchronizeVisualProperties(
       screen_metrics_emulator_->OnSynchronizeVisualProperties(
           visual_properties);
     } else {
+      SynchronizeVisualProperties(visual_properties);
+
       if (!delegate()) {
         // The main frame controls the page scale factor, from blink. For other
         // frame widgets, the page scale is received from its parent as part of
@@ -896,16 +957,13 @@ void RenderWidget::OnSynchronizeVisualProperties(
               visual_properties.is_pinch_gesture_active);
         }
       }
-
-      gfx::Size old_visible_viewport_size = visible_viewport_size_;
-      SynchronizeVisualProperties(visual_properties);
-      if (old_visible_viewport_size != visible_viewport_size_) {
-        for (auto& render_frame : render_frames_)
-          render_frame.ResetHasScrolledFocusedEditableIntoView();
-      }
     }
   }
 
+  if (old_visible_viewport_size != visible_viewport_size_) {
+    for (auto& render_frame : render_frames_)
+      render_frame.ResetHasScrolledFocusedEditableIntoView();
+  }
   // TODO(crbug.com/939118): ScrollFocusedNodeIntoViewForWidget does not work
   // when the focused node is inside an OOPIF. This code path where
   // scroll_focused_node_into_view is set is used only for WebView, crbug
@@ -1646,6 +1704,11 @@ gfx::Rect RenderWidget::CompositorViewportRect() const {
 
 void RenderWidget::SynchronizeVisualProperties(
     const VisualProperties& visual_properties) {
+  // This method needs to handle changes to the screen_info, new_size, and
+  // visible_viewport_size fields in |visual_properties|, as this method is
+  // called from the |screen_metrics_emulator_| and it changes those fields
+  // but not others.
+
   gfx::Rect new_compositor_viewport_pixel_rect =
       visual_properties.auto_resize_enabled
           ? gfx::Rect(gfx::ScaleToCeiledSize(
@@ -1655,36 +1718,16 @@ void RenderWidget::SynchronizeVisualProperties(
       visual_properties.local_surface_id_allocation.value_or(
           viz::LocalSurfaceIdAllocation()),
       new_compositor_viewport_pixel_rect, visual_properties.screen_info);
-  UpdateCaptureSequenceNumber(visual_properties.capture_sequence_number);
-  layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
-      visual_properties.top_controls_height,
-      visual_properties.bottom_controls_height,
-      visual_properties.browser_controls_shrink_blink_size);
 
   if (for_frame()) {
     // TODO(danakj): This should not need to go through RenderFrame to set
     // Page-level properties.
     blink::WebFrameWidget* frame_widget = GetFrameWidget();
-    // TODO(danakj): Stop sending/receiving visual properties while undead, and
-    // change this to a DCHECK.
+    // TODO(danakj): Stop doing SynchronizeVisualProperties() (due to emulation)
+    // while undead, and change this to a DCHECK.
     if (frame_widget) {
       RenderFrameImpl* render_frame =
           RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
-
-      bool zoom_level_changed =
-          render_frame->SetZoomLevelOnRenderView(visual_properties.zoom_level);
-      if (zoom_level_changed) {
-        // Hide popups when the zoom changes.
-        blink::WebView* web_view = frame_widget->LocalRoot()->View();
-        web_view->CancelPagePopup();
-
-        // Propagate changes down to child local root RenderWidgets and
-        // BrowserPlugins in other frame trees/processes.
-        for (auto& observer : render_frame_proxies_)
-          observer.OnZoomLevelChanged(visual_properties.zoom_level);
-        for (auto& plugin : browser_plugins_)
-          plugin.OnZoomLevelChanged(visual_properties.zoom_level);
-      }
 
       // This causes compositing state to be modified which dirties the document
       // lifecycle. Android Webview relies on the document lifecycle being clean
@@ -1715,9 +1758,6 @@ void RenderWidget::SynchronizeVisualProperties(
     // viewport is updated through the RenderView.
     if (delegate())
       delegate()->ResizeVisualViewportForWidget(visual_viewport_size);
-
-    // NOTE: We may have entered fullscreen mode without changing our size.
-    SetIsFullscreen(visual_properties.is_fullscreen_granted);
   }
 }
 
@@ -2305,20 +2345,6 @@ void RenderWidget::SetWindowRectSynchronously(
   }
 }
 
-void RenderWidget::UpdateCaptureSequenceNumber(
-    uint32_t capture_sequence_number) {
-  if (capture_sequence_number == last_capture_sequence_number_)
-    return;
-  last_capture_sequence_number_ = capture_sequence_number;
-
-  // Propagate changes down to child local root RenderWidgets and BrowserPlugins
-  // in other frame trees/processes.
-  for (auto& observer : render_frame_proxies_)
-    observer.UpdateCaptureSequenceNumber(capture_sequence_number);
-  for (auto& observer : browser_plugins_)
-    observer.UpdateCaptureSequenceNumber(capture_sequence_number);
-}
-
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   if (auto* frame = GetFocusedWebLocalFrameInWidget())
     frame->SetTextDirection(direction);
@@ -2586,26 +2612,6 @@ void RenderWidget::SetHidden(bool hidden) {
     widget_input_handler_manager_->InvokeInputProcessedCallback();
 
   StartStopCompositor();
-}
-
-void RenderWidget::SetIsFullscreen(bool fullscreen) {
-  // TODO:(https://crbug.com/995981): If there is no WebWidget, then the
-  // RenderWidget should also be destroyed, and this conditional should not be
-  // necessary.
-  // We intentionally avoid setting internal state so that the next time visual
-  // properties are synchronized, state will be correctly propagated to the
-  // WebWidget.
-  if (!GetWebWidget())
-    return;
-
-  if (fullscreen == is_fullscreen_granted_)
-    return;
-  is_fullscreen_granted_ = fullscreen;
-  if (is_fullscreen_granted_) {
-    GetWebWidget()->DidEnterFullscreen();
-  } else {
-    GetWebWidget()->DidExitFullscreen();
-  }
 }
 
 void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
