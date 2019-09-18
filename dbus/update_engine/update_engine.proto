@@ -59,4 +59,7 @@ message StatusResult {
 
   // Indication of install for DLC(s).
   bool is_install = 7;
+
+  // The end-of-life date of the device in the number of days since Unix Epoch.
+  int64 eol_date = 8;
 }
