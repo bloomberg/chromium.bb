@@ -700,7 +700,8 @@ class TestPlanStage(generic_stages.BoardSpecificBuilderStage):
     # Whereas, an empty array will act as a comprehensive filter.
     if model.test_suites is None or suite_config.suite in model.test_suites:
       stage_class = None
-      if suite_config.async:
+      # Python 3.7+ made async a reserved keyword.
+      if getattr(suite_config, 'async'):
         stage_class = ASyncSkylabHWTestStage
       else:
         stage_class = SkylabHWTestStage

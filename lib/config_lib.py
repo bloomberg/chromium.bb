@@ -586,7 +586,6 @@ class HWTestConfig(object):
                suite,
                pool=constants.HWTEST_MACH_POOL,
                timeout=SHARED_HW_TEST_TIMEOUT,
-               async=False,
                warn_only=False,
                critical=False,
                blocking=False,
@@ -599,16 +598,20 @@ class HWTestConfig(object):
                suite_args=None,
                offload_failures_only=False,
                enable_skylab=True,
-               quota_account=None):
+               quota_account=None,
+               **kwargs):
     """Constructor -- see members above."""
+    # Python 3.7+ made async a reserved keyword.
+    asynchronous = kwargs.pop('async', False)
+    setattr(self, 'async', asynchronous)
+    assert not kwargs, 'Excess kwargs found: %s' % (kwargs,)
 
-    assert not async or not blocking, '%s is async and blocking' % suite
+    assert not asynchronous or not blocking, '%s is async and blocking' % suite
     assert not warn_only or not critical
     self.suite = suite
     self.pool = pool
     self.timeout = timeout
     self.blocking = blocking
-    self.async = async
     self.warn_only = warn_only
     self.critical = critical
     self.file_bugs = file_bugs

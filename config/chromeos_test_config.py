@@ -129,8 +129,10 @@ class HWTestList(object):
       *kwargs: overrides for the configs
     """
     afdo_dict = dict(pool=constants.HWTEST_SUITES_POOL,
-                     timeout=120 * 60, async=True, retry=False,
+                     timeout=120 * 60, retry=False,
                      max_retries=None)
+    # Python 3.7+ made async a reserved keyword.
+    afdo_dict['async'] = True
     afdo_dict.update(kwargs)
     return [config_lib.HWTestConfig('perf_v2', **afdo_dict)]
 
@@ -314,9 +316,11 @@ class HWTestList(object):
 
   def ToolchainTestFull(self, machine_pool, **kwargs):
     """Return full set of HWTESTConfigs to run toolchain correctness tests."""
-    default_dict = dict(pool=machine_pool, async=False,
+    default_dict = dict(pool=machine_pool,
                         file_bugs=False,
                         priority=constants.HWTEST_DEFAULT_PRIORITY)
+    # Python 3.7+ made async a reserved keyword.
+    default_dict['async'] = False
     default_dict.update(kwargs)
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
                                     **default_dict),
@@ -337,9 +341,11 @@ class HWTestList(object):
     Since the kernel is not built with LLVM, it makes no sense for the
     toolchain to run kernel tests on LLVM builds.
     """
-    default_dict = dict(pool=machine_pool, async=False,
+    default_dict = dict(pool=machine_pool,
                         file_bugs=False,
                         priority=constants.HWTEST_DEFAULT_PRIORITY)
+    # Python 3.7+ made async a reserved keyword.
+    default_dict['async'] = False
     default_dict.update(kwargs)
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
                                     **default_dict),
@@ -357,16 +363,18 @@ class HWTestList(object):
         pool=constants.HWTEST_CTS_POOL,
         timeout=config_lib.HWTestConfig.CTS_QUAL_HW_TEST_TIMEOUT,
         priority=constants.HWTEST_CTS_PRIORITY,
-        async=True,
         enable_skylab=False)
+    # Python 3.7+ made async a reserved keyword.
+    cts_config['async'] = True
     cts_config.update(kwargs)
 
     gts_config = dict(
         pool=constants.HWTEST_GTS_POOL,
         timeout=config_lib.HWTestConfig.GTS_QUAL_HW_TEST_TIMEOUT,
         priority=constants.HWTEST_GTS_PRIORITY,
-        async=True,
         enable_skylab=False)
+    # Python 3.7+ made async a reserved keyword.
+    gts_config['async'] = True
     gts_config.update(kwargs)
 
     return [config_lib.HWTestConfig(constants.HWTEST_CTS_QUAL_SUITE,

@@ -391,7 +391,8 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
         if build['status'] == constants.BUILDER_STATUS_PASSED:
           continue
         for suite_config in self._run.config.hw_tests:
-          if not suite_config.async:
+          # Python 3.7+ made async a reserved keyword.
+          if not getattr(suite_config, 'async'):
             if self._run.config.enable_skylab_hw_tests:
               commands.AbortSkylabHWTests(
                   build='%s/%s' % (self._run.config.name, old_version),
