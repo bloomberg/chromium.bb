@@ -287,7 +287,7 @@ static void set_good_speed_features_framesize_independent(
         (frame_is_intra_only(&cpi->common) || (cm->allow_screen_content_tools))
             ? 0
             : (boosted ? 1 : 2);
-    sf->intra_cnn_split = (speed == 1);
+    sf->intra_cnn_split = 1;
 
     sf->enable_sgr_ep_pruning = 1;
     sf->inter_tx_size_search_init_depth_rect = 1;
