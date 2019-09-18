@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import base64
 import os
 import shutil
 import socket
@@ -421,7 +422,8 @@ class SignerPayloadsClientIntegrationTest(cros_test_lib.TempDirTestCase):
            'c83702179f69f5c6eca4630807fbc4ab6241017e0942b15feada0b240e9729bf'
            '33bf456bd419da63302477e147963550a45c6cf60925ff48ad7b309fa158dcb2',))
 
-      expected_sigs = [[sig[0].decode('hex')] for sig in expected_sigs_hex]
+      expected_sigs = [[base64.b16decode(x[0], True)]
+                       for x in expected_sigs_hex]
 
       all_signatures = self.client.GetHashSignatures(hashes, keysets)
 

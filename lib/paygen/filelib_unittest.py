@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import base64
 import os
 
 from chromite.lib import cros_build_lib
@@ -23,24 +24,25 @@ class TestFileLib(cros_test_lib.TempDirTestCase):
   hashlib bug break both the code and the tests.
   """
 
-  def _SHA1Sum(self, file_path):
-    """Use sha1sum utility to get SHA1 of a file."""
-    # The sha1sum utility gives SHA1 in base 16 encoding.  We need base 64.
-    hash16 = cros_build_lib.RunCommand(
-        ['sha1sum', file_path], redirect_stdout=True).output.split(' ')[0]
-    return hash16.decode('hex').encode('base64').rstrip()
+  @staticmethod
+  def _ShaSum(util, file_path):
+    """Use external shasum utility to get hash of a file.
 
-  def _SHA256Sum(self, file_path):
-    """Use sha256 utility to get SHA256 of a file."""
-    # The sha256sum utility gives SHA256 in base 16 encoding.  We need base 64.
+    We use the external utility rather than hashlib as our filelib module is
+    based on hashlib, and we'd like to have an independent implementation to
+    compare against (rather than the two modules be bug-for-bug compatible).
+    """
+    # The shasum utility returns hashes in base 16 encoding.  We need base 64.
     hash16 = cros_build_lib.RunCommand(
-        ['sha256sum', file_path], redirect_stdout=True).output.split(' ')[0]
-    return hash16.decode('hex').encode('base64').rstrip()
+        [util, file_path], redirect_stdout=True).output.split(' ')[0]
+    hashbytes = base64.b16decode(hash16, True)
+    hash64 = base64.b64encode(hashbytes)
+    return hash64.rstrip().decode('utf-8')
 
   def testShaSums(self):
     file_path = os.path.abspath(__file__)
-    expected_sha1 = self._SHA1Sum(file_path)
-    expected_sha256 = self._SHA256Sum(file_path)
+    expected_sha1 = self._ShaSum('sha1sum', file_path)
+    expected_sha256 = self._ShaSum('sha256sum', file_path)
     sha1, sha256 = filelib.ShaSums(file_path)
     self.assertEqual(expected_sha1, sha1)
     self.assertEqual(expected_sha256, sha256)

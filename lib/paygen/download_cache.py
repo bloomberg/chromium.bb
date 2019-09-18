@@ -132,7 +132,7 @@ class DownloadCache(object):
     # conditions around directories.
     m = hashlib.md5()
     m.update(uri)
-    return os.path.join(self._file_dir, m.digest().encode('hex'))
+    return os.path.join(self._file_dir, m.hexdigest())
 
   def _PurgeLock(self, blocking=False, shared=False):
     """Acquire a lock on the cache as a whole.
