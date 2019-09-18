@@ -10354,7 +10354,7 @@
       }
     ]
   },
-  "linux-bfcache-rel": {
+  "linux-bfcache-debug": {
     "gtest_tests": [
       {
         "args": [

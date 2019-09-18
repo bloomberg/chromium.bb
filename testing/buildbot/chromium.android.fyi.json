@@ -93,7 +93,7 @@
       }
     ]
   },
-  "android-bfcache-rel": {
+  "android-bfcache-debug": {
     "gtest_tests": [
       {
         "args": [

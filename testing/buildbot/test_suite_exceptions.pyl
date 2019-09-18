@@ -1752,7 +1752,7 @@
           'shards': 1,
         },
       },
-      'linux-bfcache-rel': {
+      'linux-bfcache-debug': {
         'args': [
           '--additional-driver-flag=--enable-features=BackForwardCache',
         ],
