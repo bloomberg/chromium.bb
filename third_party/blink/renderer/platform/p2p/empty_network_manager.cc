@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "third_party/blink/public/platform/modules/p2p/network_manager_uma.h"
+#include "third_party/blink/renderer/platform/p2p/network_manager_uma.h"
 
 namespace blink {
 
