@@ -213,7 +213,8 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
       dst_frame = CreatePlatformVideoFrame(
           dst_layout.format(), dst_layout.coded_size(),
           src_frame->visible_rect(), src_frame->visible_rect().size(),
-          src_frame->timestamp(), gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+          src_frame->timestamp(),
+          gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
       break;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     case VideoFrame::STORAGE_OWNED_MEMORY:
