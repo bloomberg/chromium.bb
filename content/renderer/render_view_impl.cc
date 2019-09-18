@@ -1095,7 +1095,7 @@ void RenderViewImpl::CancelPagePopupForWidget() {
 }
 
 void RenderViewImpl::ApplyNewDisplayModeForWidget(
-    const blink::WebDisplayMode& new_display_mode) {
+    blink::WebDisplayMode new_display_mode) {
   webview()->SetDisplayMode(new_display_mode);
 }
 
