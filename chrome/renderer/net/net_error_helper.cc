@@ -110,7 +110,6 @@ bool IsOfflineContentOnNetErrorFeatureEnabled() {
 
 #if defined(OS_ANDROID)
 bool IsAutoFetchFeatureEnabled() {
-  // Disabled for touchless builds.
   return base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage) &&
          offline_pages::IsOfflinePagesEnabled();
 }

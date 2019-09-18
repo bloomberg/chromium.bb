@@ -2253,9 +2253,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_NOTIFICATION_WEBAPK_INSTALLED" desc="Indicates that a WebAPK has been successfully added to Home screen.">
         Added to Home screen
       </message>
-      <message name="IDS_ADDED_TO_APPS" desc="Text that confirms a site or app has been added to the apps screen.">
-        <ph name="APP_NAME">%1$s<ex>Zomato</ex></ph> added to my apps
-      </message>
 
       <!-- Page info popup -->
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">

@@ -142,17 +142,6 @@ if (enable_feed_in_chrome) {
   }
 }
 
-if (notouch_build) {
-  android_resources("chrome_touchless_java_resources") {
-    resource_dirs = [ "//chrome/android/touchless/java/res" ]
-    deps = [
-      ":chrome_app_java_resources",
-      "//chrome/android/touchless:touchless_strings_grd",
-    ]
-    custom_package = "org.chromium.chrome.touchless"
-  }
-}
-
 android_resources("chrome_download_java_resources") {
   resource_dirs = [ "//chrome/android/java/res_download" ]
   deps = [
@@ -474,9 +463,6 @@ android_library("chrome_java") {
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
   if (enable_feed_in_chrome) {
     deps += [ ":chrome_feed_java_resources" ]
-  }
-  if (notouch_build) {
-    deps += [ ":chrome_touchless_java_resources" ]
   }
 
   # Add the actual implementation where necessary so that downstream targets
