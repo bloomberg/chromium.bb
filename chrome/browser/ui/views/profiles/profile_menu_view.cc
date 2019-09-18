@@ -169,6 +169,7 @@ void ProfileMenuView::BuildMenu() {
     return;
   }
   BuildIdentity();
+  BuildSyncInfo();
   BuildAutofillButtons();
   BuildAccountFeatureButtons();
   BuildSelectableProfiles();
@@ -420,6 +421,36 @@ void ProfileMenuView::BuildAutofillButtons() {
       l10n_util::GetStringUTF16(IDS_PROFILES_ADDRESSES_LINK),
       base::BindRepeating(&ProfileMenuView::OnAddressesButtonClicked,
                           base::Unretained(this)));
+}
+
+void ProfileMenuView::BuildSyncInfo() {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+
+  if (identity_manager->HasPrimaryAccount()) {
+    // TODO(crbug.com/995720): Implement sync-is-on state.
+    return;
+  }
+
+  // Show sync promos.
+  CoreAccountInfo unconsented_account =
+      identity_manager->GetUnconsentedPrimaryAccountInfo();
+  base::Optional<AccountInfo> account_info =
+      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
+          unconsented_account);
+
+  if (account_info.has_value()) {
+    SetSyncInfo(
+        /*description=*/base::string16(),
+        l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
+        base::BindRepeating(&ProfileMenuView::OnSigninAccountButtonClicked,
+                            base::Unretained(this), account_info.value()));
+  } else {
+    SetSyncInfo(l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO),
+                l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
+                base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
+                                    base::Unretained(this)));
+  }
 }
 
 void ProfileMenuView::BuildAccountFeatureButtons() {

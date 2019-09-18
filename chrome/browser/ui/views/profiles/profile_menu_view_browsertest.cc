@@ -669,10 +669,11 @@ class ProfileMenuClickTest_MultipleProfiles : public ProfileMenuClickTest {
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[9] =
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[10] =
       {ProfileMenuView::ActionableItem::kPasswordsButton,
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
+       ProfileMenuView::ActionableItem::kSigninButton,
        ProfileMenuView::ActionableItem::kOtherProfileButton,
        ProfileMenuView::ActionableItem::kOtherProfileButton,
        ProfileMenuView::ActionableItem::kGuestProfileButton,
@@ -764,10 +765,11 @@ class ProfileMenuClickTest_WithUnconsentedPrimaryAccount
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[9] =
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[10] =
       {ProfileMenuView::ActionableItem::kPasswordsButton,
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
+       ProfileMenuView::ActionableItem::kSigninAccountButton,
        ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
        ProfileMenuView::ActionableItem::kSignoutButton,
        ProfileMenuView::ActionableItem::kGuestProfileButton,
