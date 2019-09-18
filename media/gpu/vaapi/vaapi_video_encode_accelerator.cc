@@ -510,8 +510,11 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
     scoped_refptr<VideoFrame> frame,
     bool force_keyframe) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
-  if (native_input_mode_ != frame->HasDmaBufs()) {
-    NOTIFY_ERROR(kPlatformFailureError, "Unexpected storage");
+  if (native_input_mode_ &&
+      frame->storage_type() != VideoFrame::STORAGE_DMABUFS &&
+      frame->storage_type() != VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    NOTIFY_ERROR(kPlatformFailureError,
+                 "Unexpected storage: " << frame->storage_type());
     return nullptr;
   }
 
