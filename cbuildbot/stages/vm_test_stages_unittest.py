@@ -448,7 +448,7 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
     """Test SIMPLE config."""
     config = config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)
     self._RunTestSuite(config)
-    self.assertCommandContains(['--quick_update'])
+    self.assertCommandContains(['--only_verify'])
 
   def testSmoke(self):
     """Test SMOKE config."""

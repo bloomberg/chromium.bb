@@ -872,10 +872,9 @@ def _RunTestSuiteUsingCtest(buildroot,
       constants.VM_SUITE_TEST_TYPE, constants.GCE_SUITE_TEST_TYPE
   ]:
     cmd.append('--ssh_port=%s' % ssh_port)
-    cmd.append('--only_verify')
     cmd.append('--suite=%s' % test_config.test_suite)
-  else:
-    cmd.append('--quick_update')
+
+  cmd.append('--only_verify')
 
   if whitelist_chrome_crashes:
     cmd.append('--whitelist_chrome_crashes')
