@@ -54,6 +54,7 @@ public class SafetyTipInfoBar extends ConfirmInfoBar {
     @Override
     public void createContent(InfoBarLayout layout) {
         super.createContent(layout);
+        layout.setIsUsingBigIcon();
         layout.getMessageLayout().addDescription(mDescription);
     }
 }
