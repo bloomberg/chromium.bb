@@ -3168,7 +3168,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // TODO(any): Experiment with variance and mean based thresholds
   int use_transform_domain_distortion =
       (x->use_transform_domain_distortion > 0) &&
-      (block_mse_q8 >= cpi->tx_domain_dist_threshold) &&
+      (block_mse_q8 >= x->tx_domain_dist_threshold) &&
       // Any 64-pt transforms only preserves half the coefficients.
       // Therefore transform domain distortion is not valid for these
       // transform sizes.

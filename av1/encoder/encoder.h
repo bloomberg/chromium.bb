@@ -998,14 +998,39 @@ typedef struct AV1_COMP {
   int max_comp_type_rd_threshold_mul;
   int max_comp_type_rd_threshold_div;
 
-  unsigned int tx_domain_dist_threshold;
+  // Threshold of transform domain distortion
+  // Index 0: Default mode evaluation, Winner mode processing is not applicable
+  // (Eg : IntraBc).
+  // Index 1: Mode evaluation.
+  // Index 2: Winner mode evaluation.
+  // Index 1 and 2 are applicable when enable_winner_mode_for_use_tx_domain_dist
+  // speed feature is ON
+  unsigned int tx_domain_dist_threshold[MODE_EVAL_TYPES];
 
   // Factor to control R-D optimization of coeffs based on block
   // mse.
-  // Index 0 corresponds to the modes where winner mode processing is not
-  // applicable (Eg : IntraBc). Index 1 corresponds to the mode evaluation and
-  // is applicable when enable_winner_mode_for_coeff_opt speed feature is ON
-  unsigned int coeff_opt_dist_threshold[2];
+  // Index 0: Default mode evaluation, Winner mode processing is not applicable
+  // (Eg : IntraBc). Index 1: Mode evaluation.
+  // Index 2: Winner mode evaluation
+  // Index 1 and 2 are applicable when enable_winner_mode_for_coeff_opt speed
+  // feature is ON
+  unsigned int coeff_opt_dist_threshold[MODE_EVAL_TYPES];
+
+  // Transform size to be used in transform search
+  // Index 0: Default mode evaluation, Winner mode processing is not applicable
+  // (Eg : IntraBc).
+  // Index 1: Mode evaluation. Index 2: Winner mode evaluation
+  // Index 1 and 2 are applicable when enable_winner_mode_for_tx_size_srch speed
+  // feature is ON
+  TX_SIZE_SEARCH_METHOD tx_size_search_methods[MODE_EVAL_TYPES];
+
+  // Transform domain distortion levels
+  // Index 0: Default mode evaluation, Winner mode processing is not applicable
+  // (Eg : IntraBc).
+  // Index 1: Mode evaluation. Index 2: Winner mode evaluation
+  // Index 1 and 2 are applicable when enable_winner_mode_for_use_tx_domain_dist
+  // speed feature is ON
+  unsigned int use_transform_domain_distortion[MODE_EVAL_TYPES];
 
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;

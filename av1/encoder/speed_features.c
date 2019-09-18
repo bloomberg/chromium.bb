@@ -48,21 +48,50 @@ static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
 
 // Threshold values to be used for pruning the txfm_domain_distortion
 // based on block MSE
+// Index 0: Default mode evaluation, Winner mode processing is not
+// applicable (Eg : IntraBc). Index 1: Mode evaluation.
+// Index 2: Winner mode evaluation. Index 1 and 2 are applicable when
+// enable_winner_mode_for_use_tx_domain_dist speed feature is ON
 // TODO(any): Experiment the threshold logic based on variance metric
-static unsigned int tx_domain_dist_thresholds[MAX_TX_DOMAIN_EVAL_SPEED + 1] = {
-  UINT_MAX, 22026, 22026, 22026, 22026, 0
+static unsigned int tx_domain_dist_thresholds[3][MODE_EVAL_TYPES] = {
+  { UINT_MAX, UINT_MAX, UINT_MAX }, { 22026, 22026, 22026 }, { 0, 0, 0 }
 };
+
+// Transform domain distortion type to be used for default, mode and winner mode
+// evaluation Index 0: Default mode evaluation, Winner mode processing is not
+// applicable (Eg : IntraBc). Index 1: Mode evaluation. Index 2: Winner mode
+// evaluation. Index 1 and 2 are applicable when
+// enable_winner_mode_for_use_tx_domain_dist speed feature is ON
+static unsigned int tx_domain_dist_types[3][MODE_EVAL_TYPES] = { { 0, 2, 0 },
+                                                                 { 1, 2, 0 },
+                                                                 { 2, 2, 0 } };
+
 // Threshold values to be used for disabling coeff RD-optimization
 // based on block MSE
 // TODO(any): Experiment the threshold logic based on variance metric
-// Index 0 corresponds to the modes where winner mode processing is not
-// applicable (Eg : IntraBc). Index 1 corresponds to the mode evaluation and is
-// applicable when enable_winner_mode_for_coeff_opt speed feature is ON
-static unsigned int coeff_opt_dist_thresholds[5][2] = { { UINT_MAX, UINT_MAX },
-                                                        { 442413, 36314 },
-                                                        { 162754, 36314 },
-                                                        { 22026, 22026 },
-                                                        { 22026, 22026 } };
+// Index 0: Default mode evaluation, Winner mode processing is not applicable
+// (Eg : IntraBc) Index 1: Mode evaluation. Index 2: Winner mode evaluation.
+// Index 1 and 2 are applicable when enable_winner_mode_for_coeff_opt speed
+// feature is ON
+static unsigned int coeff_opt_dist_thresholds[5][MODE_EVAL_TYPES] = {
+  { UINT_MAX, UINT_MAX, UINT_MAX },
+  { 442413, 36314, UINT_MAX },
+  { 162754, 36314, UINT_MAX },
+  { 22026, 22026, UINT_MAX },
+  { 22026, 22026, UINT_MAX }
+};
+
+// Transform size to be used for default, mode and winner mode evaluation
+// Index 0: Default mode evaluation, Winner mode processing is not applicable
+// (Eg : IntraBc) Index 1: Mode evaluation. Index 2: Winner mode evaluation.
+// Index 1 and 2 are applicable when enable_winner_mode_for_tx_size_srch speed
+// feature is ON
+static TX_SIZE_SEARCH_METHOD tx_size_search_methods[3][MODE_EVAL_TYPES] = {
+  { USE_FULL_RD, USE_LARGESTALL, USE_FULL_RD },
+  { USE_FAST_RD, USE_LARGESTALL, USE_FULL_RD },
+  { USE_LARGESTALL, USE_LARGESTALL, USE_FULL_RD }
+};
+
 // scaling values to be used for gating wedge/compound segment based on best
 // approximate rd
 static int comp_type_rd_threshold_mul[3] = { 1, 11, 12 };
@@ -281,7 +310,8 @@ static void set_good_speed_features_framesize_independent(
     sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
     sf->disable_adaptive_warp_error_thresh = 0;
     sf->cb_pred_filter_search = 1;
-    sf->use_transform_domain_distortion = boosted ? 1 : 2;
+    sf->tx_domain_dist_level = boosted ? 1 : 2;
+    sf->tx_domain_dist_thres_level = 1;
     sf->perform_coeff_opt = boosted ? 1 : 2;
     sf->prune_ref_frame_for_rect_partitions =
         (frame_is_intra_only(&cpi->common) || (cm->allow_screen_content_tools))
@@ -413,7 +443,8 @@ static void set_good_speed_features_framesize_independent(
     //     : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
     //     FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR |
     //     FLAG_EARLY_TERMINATE;
-    // sf->use_transform_domain_distortion = 2;
+    // sf->tx_domain_dist_level = 2;
+    sf->tx_domain_dist_thres_level = 2;
     sf->simple_motion_search_prune_agg = 2;
   }
 }
@@ -500,7 +531,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->prune_motion_mode_level = 2;
     sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
     sf->cb_pred_filter_search = 1;
-    sf->use_transform_domain_distortion = boosted ? 0 : 1;
+    sf->tx_domain_dist_level = boosted ? 0 : 1;
+    sf->tx_domain_dist_thres_level = 1;
   }
 
   if (speed >= 2) {
@@ -532,14 +564,14 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
   if (speed >= 3) {
     sf->selective_ref_frame = 4;
-    sf->tx_size_search_method = boosted ? USE_FULL_RD : USE_LARGESTALL;
+    sf->tx_size_search_level = boosted ? 0 : 2;
     sf->less_rectangular_check_level = 2;
     // adaptive_motion_search breaks encoder multi-thread tests.
     // The values in x->pred_mv[] differ for single and multi-thread cases.
     // See aomedia:1778.
     // sf->adaptive_motion_search = 1;
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
-    sf->use_transform_domain_distortion = 1;
+    sf->tx_domain_dist_level = 1;
     sf->use_accurate_subpel_search = USE_2_TAPS;
     sf->adaptive_rd_thresh = 2;
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
@@ -558,8 +590,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_mb_rd_hash = 0;
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_type_search.fast_inter_tx_type_search = 1;
-    sf->tx_size_search_method =
-        frame_is_intra_only(cm) ? USE_FULL_RD : USE_LARGESTALL;
+    sf->tx_size_search_level = frame_is_intra_only(cm) ? 0 : 2;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->adaptive_mode_search = 1;
     sf->alt_ref_search_fp = 1;
@@ -574,7 +605,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V_CFL;
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
-    sf->tx_size_search_method = USE_LARGESTALL;
+    sf->tx_size_search_level = 2;
     sf->mv.search_method = BIGDIA;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->adaptive_rd_thresh = 4;
@@ -587,7 +618,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->disable_filter_search_var_thresh = 200;
     sf->use_fast_coef_costing = 1;
     sf->partition_search_breakout_rate_thr = 300;
-    sf->use_transform_domain_distortion = 2;
+    sf->tx_domain_dist_level = 2;
+    sf->tx_domain_dist_thres_level = 2;
   }
 
   if (speed >= 6) {
@@ -611,7 +643,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_real_time_ref_set = 1;
     // Can't use LARGEST TX mode with pre-calculated partition
     // and disabled TX64
-    if (!cpi->oxcf.enable_tx64) sf->tx_size_search_method = USE_FAST_RD;
+    if (!cpi->oxcf.enable_tx64) sf->tx_size_search_level = 1;
     sf->use_comp_ref_nonrd = 0;
     sf->inter_mode_rd_model_estimation = 2;
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;
@@ -629,7 +661,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_real_time_ref_set = 1;
     // Can't use LARGEST TX mode with pre-calculated partition
     // and disabled TX64
-    if (!cpi->oxcf.enable_tx64) sf->tx_size_search_method = USE_FAST_RD;
+    if (!cpi->oxcf.enable_tx64) sf->tx_size_search_level = 1;
     sf->use_nonrd_pick_mode = 1;
     sf->use_comp_ref_nonrd = 0;
     sf->inter_mode_rd_model_estimation = 2;
@@ -639,7 +671,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   if (speed >= 8) {
     sf->use_fast_nonrd_pick_mode = 1;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
-    sf->tx_size_search_method = USE_FAST_RD;
+    sf->tx_size_search_level = 1;
     sf->estimate_motion_for_var_based_partition = 0;
     sf->short_circuit_low_temp_var = 3;
 // TODO(kyslov) Enable when better model is available
@@ -723,7 +755,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->adaptive_rd_thresh = 0;
   // TODO(sarahparker) Pair this with a speed setting once experiments are done
   sf->trellis_eob_fast = 0;
-  sf->tx_size_search_method = cpi->oxcf.tx_size_search_method;
   sf->inter_tx_size_search_init_depth_sqr = 0;
   sf->inter_tx_size_search_init_depth_rect = 0;
   sf->intra_tx_size_search_init_depth_rect = 0;
@@ -817,7 +848,9 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->intra_cnn_split = 0;
 
   // Set this at the appropriate speed levels
-  sf->use_transform_domain_distortion = 0;
+  sf->tx_size_search_level = cpi->oxcf.tx_size_search_method;
+  sf->tx_domain_dist_level = 0;
+  sf->tx_domain_dist_thres_level = 0;
   sf->gm_search_type = GM_FULL_SEARCH;
   sf->gm_disable_recode = 0;
   sf->use_fast_interpolation_filter_search = 0;
@@ -932,8 +965,18 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
       comp_type_rd_threshold_mul[sf->prune_comp_type_by_comp_avg];
   cpi->max_comp_type_rd_threshold_div =
       comp_type_rd_threshold_div[sf->prune_comp_type_by_comp_avg];
-  const int tx_domain_speed = AOMMIN(speed, MAX_TX_DOMAIN_EVAL_SPEED);
-  cpi->tx_domain_dist_threshold = tx_domain_dist_thresholds[tx_domain_speed];
+
+  // assert ensures that tx_domain_dist_level is accessed correctly
+  assert(cpi->sf.tx_domain_dist_thres_level >= 0 &&
+         cpi->sf.tx_domain_dist_thres_level < 3);
+  memcpy(cpi->tx_domain_dist_threshold,
+         tx_domain_dist_thresholds[cpi->sf.tx_domain_dist_thres_level],
+         sizeof(cpi->tx_domain_dist_threshold));
+
+  assert(cpi->sf.tx_domain_dist_level >= 0 && cpi->sf.tx_domain_dist_level < 3);
+  memcpy(cpi->use_transform_domain_distortion,
+         tx_domain_dist_types[cpi->sf.tx_domain_dist_level],
+         sizeof(cpi->use_transform_domain_distortion));
 
   // assert ensures that coeff_opt_dist_thresholds is accessed correctly
   assert(cpi->sf.perform_coeff_opt >= 0 && cpi->sf.perform_coeff_opt < 5);
@@ -941,8 +984,19 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
          coeff_opt_dist_thresholds[cpi->sf.perform_coeff_opt],
          sizeof(cpi->coeff_opt_dist_threshold));
 
+  // Override speed feature setting for user config
+  if (cpi->oxcf.tx_size_search_method != USE_FULL_RD) {
+    cpi->sf.enable_winner_mode_for_tx_size_srch = 0;
+    cpi->sf.tx_size_search_level = cpi->oxcf.tx_size_search_method;
+  }
+  // assert ensures that tx_size_search_level is accessed correctly
+  assert(cpi->sf.tx_size_search_level >= 0 && cpi->sf.tx_size_search_level < 3);
+  memcpy(cpi->tx_size_search_methods,
+         tx_size_search_methods[cpi->sf.tx_size_search_level],
+         sizeof(cpi->tx_size_search_methods));
+
 #if CONFIG_DIST_8X8
-  if (sf->use_transform_domain_distortion > 0) cpi->oxcf.using_dist_8x8 = 0;
+  if (sf->tx_domain_dist_level > 0) cpi->oxcf.using_dist_8x8 = 0;
 
   if (cpi->oxcf.using_dist_8x8) x->min_partition_size = BLOCK_8X8;
 #endif  // CONFIG_DIST_8X8

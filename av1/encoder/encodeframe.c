@@ -4823,7 +4823,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   cm->coded_lossless = is_coded_lossless(cm, xd);
   cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
 
-  cm->tx_mode = select_tx_mode(cpi, cpi->sf.tx_size_search_method);
+  cm->tx_mode = get_eval_tx_mode(cpi, DEFAULT_EVAL);
 
   // Fix delta q resolution for the moment
   cm->delta_q_info.delta_q_res = 0;

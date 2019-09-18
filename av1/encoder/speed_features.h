@@ -320,11 +320,6 @@ typedef struct SPEED_FEATURES {
   // mode to be evaluated. A high value means we will be faster.
   int adaptive_rd_thresh;
 
-  // Determine which method we use to determine transform size. We can choose
-  // between options like full rd, largest for prediction size, largest
-  // for intra and model coefs for the rest.
-  TX_SIZE_SEARCH_METHOD tx_size_search_method;
-
   // Init search depth for square and rectangular transform partitions.
   // Values:
   // 0 - search full tree, 1: search 1 level, 2: search the highest level only
@@ -507,7 +502,10 @@ typedef struct SPEED_FEATURES {
   // 1: use transform domain in tx_type search, and use image domain for
   // RD_STATS
   // 2: use transform domain
-  int use_transform_domain_distortion;
+  int tx_domain_dist_level;
+
+  // Transform domain distortion threshold level
+  int tx_domain_dist_thres_level;
 
   GM_SEARCH_TYPE gm_search_type;
 
@@ -680,6 +678,13 @@ typedef struct SPEED_FEATURES {
   // Flag used to control the winner mode processing for transform size
   // search method
   int enable_winner_mode_for_tx_size_srch;
+
+  // Control transform size search level
+  // Eval type: Default       Mode        Winner
+  // Level 0  : FULL RD     LARGEST ALL   FULL RD
+  // Level 1  : FAST RD     LARGEST ALL   FULL RD
+  // Level 2  : LARGEST ALL LARGEST ALL   FULL RD
+  int tx_size_search_level;
 
   // Flag used to control the winner mode processing for use transform
   // domain distortion

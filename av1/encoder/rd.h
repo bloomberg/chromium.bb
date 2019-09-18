@@ -50,6 +50,17 @@ extern "C" {
 // Factor to weigh the rate for switchable interp filters.
 #define SWITCHABLE_INTERP_RATE_FACTOR 1
 
+enum {
+  // Default initialization
+  DEFAULT_EVAL = 0,
+  // Initialization for default mode evaluation
+  MODE_EVAL,
+  // Initialization for winner mode evaluation
+  WINNER_MODE_EVAL,
+  // All mode evaluation types
+  MODE_EVAL_TYPES,
+} UENUM1BYTE(MODE_EVAL_TYPE);
+
 typedef struct RD_OPT {
   // Thresh_mult is used to set a threshold for the rd score. A higher value
   // means that we will accept the best mode so far more often. This number
@@ -260,7 +271,7 @@ static INLINE uint32_t get_rd_opt_coeff_thresh(
     const uint32_t *const coeff_opt_dist_threshold,
     int enable_winner_mode_for_coeff_opt, int is_winner_mode) {
   // Default initialization of threshold
-  uint32_t coeff_opt_thresh = coeff_opt_dist_threshold[0];
+  uint32_t coeff_opt_thresh = coeff_opt_dist_threshold[DEFAULT_EVAL];
   // TODO(any): Experiment with coeff_opt_dist_threshold values when
   // enable_winner_mode_for_coeff_opt is ON
   // TODO(any): Skip the winner mode processing for blocks with lower residual
@@ -270,9 +281,9 @@ static INLINE uint32_t get_rd_opt_coeff_thresh(
     // Use conservative threshold during mode decision and perform R-D
     // optimization of coeffs always for winner modes
     if (is_winner_mode)
-      coeff_opt_thresh = UINT32_MAX;
+      coeff_opt_thresh = coeff_opt_dist_threshold[WINNER_MODE_EVAL];
     else
-      coeff_opt_thresh = coeff_opt_dist_threshold[1];
+      coeff_opt_thresh = coeff_opt_dist_threshold[MODE_EVAL];
   }
   return coeff_opt_thresh;
 }
