@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest, TestEnrollUsingToken) {
 
 // Check that HID detection screen is shown if it is not specified by
 // configuration.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, TestShowHID) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, TestLeaveWelcomeScreen) {
   LoadConfiguration();
   OobeScreenWaiter(HIDDetectionView::kScreenId).Wait();
 }
