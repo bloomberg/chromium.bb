@@ -6,11 +6,18 @@ source_set("channel") {
   sources = [
     "cast_auth_util.cc",
     "cast_auth_util.h",
+    "cast_framer.cc",
+    "cast_framer.h",
   ]
 
   deps = [
-    "../../../platform",
+    "../../../util",
     "proto",
+  ]
+
+  public_deps = [
+    "../../../platform",
+    "../../../third_party/abseil",
   ]
 }
 
@@ -18,12 +25,14 @@ source_set("unittests") {
   testonly = true
   sources = [
     "cast_auth_util_unittest.cc",
+    "cast_framer_unittest.cc",
   ]
 
   deps = [
     ":channel",
     "../../../platform",
     "../../../third_party/googletest:gtest",
+    "../../../util",
     "../../common/certificate/proto:unittest_proto",
     "proto",
   ]

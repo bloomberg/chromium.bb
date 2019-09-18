@@ -143,6 +143,17 @@ class Error {
     kCastV2DigestUnsupported,
     kCastV2SignatureEmpty,
 
+    // Cast channel errors.
+    kCastV2ChannelNotOpen,
+    kCastV2AuthenticationError,
+    kCastV2ConnectError,
+    kCastV2CastSocketError,
+    kCastV2TransportError,
+    kCastV2InvalidMessage,
+    kCastV2InvalidChannelId,
+    kCastV2ConnectTimeout,
+    kCastV2PingTimeout,
+
     // Generic errors.
     kUnknownError,
     kNotImplemented,

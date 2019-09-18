@@ -27,8 +27,7 @@ namespace channel {
 class AuthResponse;
 class CastMessage;
 
-template <typename T>
-using ErrorOr = openscreen::ErrorOr<T>;
+using openscreen::ErrorOr;
 using CastDeviceCertPolicy = certificate::CastDeviceCertPolicy;
 
 class AuthContext {
