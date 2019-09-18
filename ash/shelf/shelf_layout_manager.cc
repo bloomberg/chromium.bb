@@ -1419,7 +1419,8 @@ void ShelfLayoutManager::CalculateTargetBounds(
 
   // This needs to happen after calling UpdateTargetBoundsForGesture(), because
   // that can change the size of the shelf.
-  if (chromeos::switches::ShouldShowScrollableShelf()) {
+  const bool showing_login_shelf = !state.IsActiveSessionState();
+  if (chromeos::switches::ShouldShowScrollableShelf() && !showing_login_shelf) {
     target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
         gfx::Rect(target_bounds->nav_bounds_in_shelf.right(), 0,
                   shelf_width - status_size.width() -
