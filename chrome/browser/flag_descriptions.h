@@ -1324,6 +1324,9 @@ extern const char kWebXrPlaneDetectionDescription[];
 extern const char kZeroCopyName[];
 extern const char kZeroCopyDescription[];
 
+extern const char kEnableVulkanName[];
+extern const char kEnableVulkanDescription[];
+
 // Android --------------------------------------------------------------------
 
 #if defined(OS_ANDROID)

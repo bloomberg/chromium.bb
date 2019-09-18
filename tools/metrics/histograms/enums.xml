@@ -34877,6 +34877,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains:enabled"/>
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
+  <int value="-1927080237" label="Vulkan:enabled"/>
   <int value="-1925117279" label="disable-quic-https"/>
   <int value="-1925106340" label="CameraSystemWebApp:disabled"/>
   <int value="-1919199528"
@@ -37109,6 +37110,7 @@ from previous Chrome versions.
   <int value="1090377940" label="enable-quic-https"/>
   <int value="1091631619" label="disable-accelerated-video-encode"/>
   <int value="1092896354" label="EnableFullscreenAppList:disabled"/>
+  <int value="1094095931" label="enable-vulkan"/>
   <int value="1094506652" label="UseGoogleLocalNtp:enabled"/>
   <int value="1095061640" label="enable-prominent-url-app-flow"/>
   <int value="1096477444" label="AssistantVoiceMatch:enabled"/>
@@ -37185,6 +37187,7 @@ from previous Chrome versions.
   <int value="1198839129" label="OfflinePagesLivePageSharing:enabled"/>
   <int value="1201008500"
       label="EnableAmbientAuthenticationInIncognito:enabled"/>
+  <int value="1203821857" label="Vulkan:disabled"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
   <int value="1209221384" label="enable-experimental-accessibility-features"/>
   <int value="1210343926" label="enable-drop-sync-credential"/>

@@ -1849,6 +1849,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "enable-vulkan",
+    "owners": [ "penghuang" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-web-authentication-ble-support",
     "owners": [ "webauthn-team@google.com" ],
     "expiry_milestone": 82
@@ -1978,7 +1983,7 @@
     "owners": [ "wensh@microsoft.com" ],
     "expiry_milestone": 80
   },
-  {
+ {
     "name": "enable-zero-copy",
     "owners": [ "ccameron", "chrome-gpu@google.com" ],
     // This flag is commonly used when asking users to help gather debug info.
