@@ -1,4 +1,3 @@
-# @GEN_HEADER@
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,6 +6,14 @@ import os.path
 
 from .model import Distribution
 
+
+class ConfigError(Exception):
+
+    def __init__(self, attr_name):
+        super(Exception, self).__init__(
+            'Missing CodeSignConfig attribute "{}"'.format(attr_name))
+
+
 class CodeSignConfig(object):
     """Code sign base configuration object.
 
@@ -14,10 +21,14 @@ class CodeSignConfig(object):
     to locate products for code signing and options that control the code
     signing process.
 
-    The base configuration is produced from variable injection during the build
-    process. Derived configurations are created for internal signing artifacts
-    and when using |model.Distribution| objects.
+    There is a class hierarchy of CodeSignConfig objects, with the
+    build_props_config.BuildPropsConfig containing injected variables from the
+    build process. Configs for Chromium and Google Chrome subclass that to
+    control signing options further. ANd then derived configurations are
+    created for internal signing artifacts and when using |model.Distribution|
+    objects.
     """
+
     def __init__(self,
                  identity,
                  keychain=None,
@@ -88,7 +99,7 @@ class CodeSignConfig(object):
         """Returns the product name that is used for the outer .app bundle.
         This is displayed to the user in Finder.
         """
-        return '@PRODUCT_FULLNAME@'
+        raise ConfigError('app_product')
 
     @property
     def product(self):
@@ -99,19 +110,19 @@ class CodeSignConfig(object):
         the build system, while |app_product| is used when customizing for
         |model.Distribution| objects.
         """
-        return '@PRODUCT_FULLNAME@'
+        raise ConfigError('product')
 
     @property
     def version(self):
         """Returns the version of the application."""
-        return '@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
+        raise ConfigError('version')
 
     @property
     def base_bundle_id(self):
         """Returns the base CFBundleIdentifier that is used for the outer app
         bundle, and to which sub-component identifiers are appended.
         """
-        return '@MAC_BUNDLE_ID@'
+        raise ConfigError('base_bundle_id')
 
     @property
     def optional_parts(self):
@@ -119,9 +130,7 @@ class CodeSignConfig(object):
         signing the contents of the bundle. The part names should reflect the
         part short name keys in the dictionary returned by signing.get_parts().
         """
-        # This part requires src-internal, so it is not required for a Chromium
-        # build signing.
-        return set(('libwidevinecdm.dylib',))
+        raise ConfigError('optional_parts')
 
     @property
     def codesign_requirements_basic(self):
@@ -144,7 +153,7 @@ class CodeSignConfig(object):
         outer app bundle. This file with a .provisionprofile extension is
         located in the |packaging_dir|.
         """
-        return None
+        raise ConfigError('provisioning_profile_basename')
 
     @property
     def packaging_basename(self):
@@ -181,7 +190,8 @@ class CodeSignConfig(object):
     @property
     def framework_dir(self):
         """Returns the path to the app's framework directory."""
-        return '{0.app_dir}/Contents/Frameworks/{0.product} Framework.framework'.format(self)
+        return '{0.app_dir}/Contents/Frameworks/{0.product} Framework.framework'.format(
+            self)
 
     @property
     def packaging_dir(self):
