@@ -759,31 +759,6 @@ class TestListFiles(cros_test_lib.TempDirTestCase):
 class HelperMethodSimpleTests(cros_test_lib.OutputTestCase):
   """Tests for various helper methods without using mocks."""
 
-  def _TestChromeosVersion(self, test_str, expected=None):
-    actual = cros_build_lib.GetChromeosVersion(test_str)
-    self.assertEqual(expected, actual)
-
-  def testGetChromeosVersionWithValidVersionReturnsValue(self):
-    expected = '0.8.71.2010_09_10_1530'
-    test_str = ' CHROMEOS_VERSION_STRING=0.8.71.2010_09_10_1530 '
-    self._TestChromeosVersion(test_str, expected)
-
-  def testGetChromeosVersionWithMultipleVersionReturnsFirstMatch(self):
-    expected = '0.8.71.2010_09_10_1530'
-    test_str = (' CHROMEOS_VERSION_STRING=0.8.71.2010_09_10_1530 '
-                ' CHROMEOS_VERSION_STRING=10_1530 ')
-    self._TestChromeosVersion(test_str, expected)
-
-  def testGetChromeosVersionWithInvalidVersionReturnsDefault(self):
-    test_str = ' CHROMEOS_VERSION_STRING=invalid_version_string '
-    self._TestChromeosVersion(test_str)
-
-  def testGetChromeosVersionWithEmptyInputReturnsDefault(self):
-    self._TestChromeosVersion('')
-
-  def testGetChromeosVersionWithNoneInputReturnsDefault(self):
-    self._TestChromeosVersion(None)
-
   def testUserDateTime(self):
     """Test with a raw time value."""
     expected = 'Mon, 16 Jun 1980 05:03:20 -0700 (PDT)'

@@ -761,26 +761,6 @@ def AssertOutsideChroot():
     Die('%s: please run outside the chroot', os.path.basename(sys.argv[0]))
 
 
-def GetChromeosVersion(str_obj):
-  """Helper method to parse output for CHROMEOS_VERSION_STRING.
-
-  Args:
-    str_obj: a string, which may contain Chrome OS version info.
-
-  Returns:
-    A string, value of CHROMEOS_VERSION_STRING environment variable set by
-      chromeos_version.sh. Or None if not found.
-  """
-  if str_obj is not None:
-    match = re.search(r'CHROMEOS_VERSION_STRING=([0-9_.]+)', str_obj)
-    if match and match.group(1):
-      logging.info('CHROMEOS_VERSION_STRING = %s', match.group(1))
-      return match.group(1)
-
-  logging.info('CHROMEOS_VERSION_STRING NOT found')
-  return None
-
-
 def GetHostName(fully_qualified=False):
   """Return hostname of current machine, with domain if |fully_qualified|."""
   hostname = socket.gethostname()
