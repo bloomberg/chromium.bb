@@ -6,8 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_LOGGING_LOGGING_UTILS_H_
 
 #include "base/logging.h"
-#include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-forward.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace blink {
 
