@@ -1206,28 +1206,6 @@ def NoOpContextManager():
   yield
 
 
-def AllowDisabling(enabled, functor, *args, **kwargs):
-  """Context Manager wrapper that can be used to enable/disable usage.
-
-  This is mainly useful to control whether or not a given Context Manager
-  is used.
-
-  For example:
-
-  with AllowDisabling(options.timeout <= 0, Timeout, options.timeout):
-    ... do code w/in a timeout context..
-
-  If options.timeout is a positive integer, then the_Timeout context manager is
-  created and ran.  If it's zero or negative, then the timeout code is disabled.
-
-  While Timeout *could* handle this itself, it's redundant having each
-  implementation do this, thus the generic wrapper.
-  """
-  if enabled:
-    return functor(*args, **kwargs)
-  return NoOpContextManager()
-
-
 class ContextManagerStack(object):
   """Context manager that is designed to safely allow nesting and stacking.
 
