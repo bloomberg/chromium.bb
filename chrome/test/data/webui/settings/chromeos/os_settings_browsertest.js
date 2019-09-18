@@ -171,6 +171,27 @@ const OSSettingsAppManagementBrowserTest = class extends OSSettingsBrowserTest {
   }
 };
 
+// Text fixture for the app management dom switch element.
+// eslint-disable-next-line no-var
+var OSSettingsAppManagementDomSwitchTest =
+    class extends OSSettingsAppManagementBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'app_management/dom_switch.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'app_management/dom_switch_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAppManagementDomSwitchTest', 'All', function() {
+  mocha.run();
+});
+
 // Test fixture for the app management settings page.
 // eslint-disable-next-line no-var
 var OSSettingsAppManagementPageTest =
