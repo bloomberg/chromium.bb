@@ -248,6 +248,8 @@ crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html
 crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
 crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
 
+crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.html [ Pass Failure ]
+
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 
