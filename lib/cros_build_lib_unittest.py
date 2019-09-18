@@ -708,54 +708,6 @@ class TestTimedSection(cros_test_lib.TestCase):
     self.assertIsInstance(timer.delta, datetime.timedelta)
 
 
-class TestListFiles(cros_test_lib.TempDirTestCase):
-  """Tests of ListFiles funciton."""
-
-  def _CreateNestedDir(self, dir_structure):
-    for entry in dir_structure:
-      full_path = os.path.join(os.path.join(self.tempdir, entry))
-      # ensure dirs are created
-      try:
-        os.makedirs(os.path.dirname(full_path))
-        if full_path.endswith('/'):
-          # we only want to create directories
-          return
-      except OSError as err:
-        if err.errno == errno.EEXIST:
-          # we don't care if the dir already exists
-          pass
-        else:
-          raise
-      # create dummy files
-      tmp = open(full_path, 'w')
-      tmp.close()
-
-  def testTraverse(self):
-    """Test that we are traversing the directory properly."""
-    dir_structure = ['one/two/test.txt', 'one/blah.py',
-                     'three/extra.conf']
-    self._CreateNestedDir(dir_structure)
-
-    files = cros_build_lib.ListFiles(self.tempdir)
-    for f in files:
-      f = f.replace(self.tempdir, '').lstrip('/')
-      if f not in dir_structure:
-        self.fail('%s was not found in %s' % (f, dir_structure))
-
-  def testEmptyFilePath(self):
-    """Test that we return nothing when directories are empty."""
-    dir_structure = ['one/', 'two/', 'one/a/']
-    self._CreateNestedDir(dir_structure)
-    files = cros_build_lib.ListFiles(self.tempdir)
-    self.assertEqual(files, [])
-
-  def testNoSuchDir(self):
-    try:
-      cros_build_lib.ListFiles(os.path.join(self.tempdir, 'missing'))
-    except OSError as err:
-      self.assertEqual(err.errno, errno.ENOENT)
-
-
 class HelperMethodSimpleTests(cros_test_lib.OutputTestCase):
   """Tests for various helper methods without using mocks."""
 

@@ -402,10 +402,12 @@ def GrabLocalPackageIndex(package_path):
 
   # List all debug symbols available in package_path.
   symbols = set()
-  for f in cros_build_lib.ListFiles(package_path):
-    if f.endswith('.debug.tbz2'):
-      f = os.path.relpath(f, package_path)[:-len('.debug.tbz2')]
-      symbols.add(f)
+  for root, _, files in os.walk(package_path):
+    for f in files:
+      if f.endswith('.debug.tbz2'):
+        full_path = os.path.join(root, f)
+        f = os.path.relpath(full_path, package_path)[:-len('.debug.tbz2')]
+        symbols.add(f)
 
   for p in pkgindex.packages:
     # If the Packages file has DEBUG_SYMBOLS set but no debug symbols are

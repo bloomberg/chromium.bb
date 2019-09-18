@@ -715,30 +715,6 @@ def GetSysrootToolPath(sysroot, tool_name):
   return os.path.join(sysroot, 'build', 'bin', tool_name)
 
 
-def ListFiles(base_dir):
-  """Recursively list files in a directory.
-
-  Args:
-    base_dir: directory to start recursively listing in.
-
-  Returns:
-    A list of files relative to the base_dir path or
-    An empty list of there are no files in the directories.
-  """
-  directories = [base_dir]
-  files_list = []
-  while directories:
-    directory = directories.pop()
-    for name in os.listdir(directory):
-      fullpath = os.path.join(directory, name)
-      if os.path.isfile(fullpath):
-        files_list.append(fullpath)
-      elif os.path.isdir(fullpath):
-        directories.append(fullpath)
-
-  return files_list
-
-
 def IsInsideChroot():
   """Returns True if we are inside chroot."""
   return os.path.exists('/etc/cros_chroot_version')
