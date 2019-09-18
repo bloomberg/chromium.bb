@@ -12,7 +12,6 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "third_party/blink/public/platform/modules/peerconnection/stun_field_trial.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
@@ -39,6 +38,7 @@ class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class MdnsResponderAdapter;
 class P2PSocketDispatcher;
+class StunProberTrial;
 class WebLocalFrame;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;

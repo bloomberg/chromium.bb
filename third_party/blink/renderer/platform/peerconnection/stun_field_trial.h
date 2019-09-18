@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_STUN_FIELD_TRIAL_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_STUN_FIELD_TRIAL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_STUN_FIELD_TRIAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_STUN_FIELD_TRIAL_H_
 
 #include <memory>
 #include <string>
@@ -14,7 +14,7 @@
 #include "base/timer/timer.h"
 #include "third_party/blink/public/platform/modules/p2p/network_list_manager.h"
 #include "third_party/blink/public/platform/modules/p2p/network_list_observer.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
 #include "third_party/webrtc/rtc_base/network.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
@@ -32,13 +32,11 @@ namespace blink {
 // stun probe.
 static const int kExperimentStartDelayMs = 30000;
 
-// TODO(crbug.com/787254): Move this class out of the Blink exposed API when
-// all users of it have been Onion souped. Also migrate away from std::vector
-// and std::string.
+// TODO(crbug.com/787254): Migrate away from std::vector and std::string.
 class StunProberTrial : public stunprober::StunProber::Observer,
                         public sigslot::has_slots<> {
  public:
-  struct BLINK_PLATFORM_EXPORT Param {
+  struct PLATFORM_EXPORT Param {
     Param();
     ~Param();
     int requests_per_ip = 0;
@@ -49,9 +47,9 @@ class StunProberTrial : public stunprober::StunProber::Observer,
     std::vector<rtc::SocketAddress> servers;
   };
 
-  BLINK_PLATFORM_EXPORT StunProberTrial(rtc::NetworkManager* network_manager,
-                                        const std::string& params,
-                                        rtc::PacketSocketFactory* factory);
+  PLATFORM_EXPORT StunProberTrial(rtc::NetworkManager* network_manager,
+                                  const std::string& params,
+                                  rtc::PacketSocketFactory* factory);
   ~StunProberTrial() override;
 
  private:
@@ -61,9 +59,8 @@ class StunProberTrial : public stunprober::StunProber::Observer,
   void OnNetworksChanged();
 
   // Parsing function to decode the '/' separated parameter string |params|.
-  static BLINK_PLATFORM_EXPORT bool ParseParameters(
-      const std::string& param_line,
-      Param* params);
+  static PLATFORM_EXPORT bool ParseParameters(const std::string& param_line,
+                                              Param* params);
 
   // stunprober::StunProber::Observer:
   void OnPrepared(stunprober::StunProber* prober,
@@ -103,4 +100,4 @@ class StunProberTrial : public stunprober::StunProber::Observer,
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_STUN_FIELD_TRIAL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_STUN_FIELD_TRIAL_H_

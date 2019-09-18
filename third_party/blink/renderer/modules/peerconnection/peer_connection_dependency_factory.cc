@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/p2p/mdns_responder_adapter.h"
 #include "third_party/blink/renderer/platform/p2p/port_allocator.h"
 #include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
+#include "third_party/blink/renderer/platform/peerconnection/stun_field_trial.h"
 #include "third_party/webrtc/api/call/call_factory_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtc_event_log/rtc_event_log_factory.h"

@@ -1272,6 +1272,7 @@ jumbo_component("platform") {
     "peerconnection/rtc_video_encoder_factory.h",
     "peerconnection/rtc_void_request.h",
     "peerconnection/stun_field_trial.cc",
+    "peerconnection/stun_field_trial.h",
     "peerconnection/transmission_encoding_info_handler.cc",
     "peerconnection/transmission_encoding_info_handler.h",
     "peerconnection/video_codec_factory.cc",
