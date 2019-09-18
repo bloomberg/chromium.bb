@@ -46,7 +46,8 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
 };
 
 DistillabilityDriver::DistillabilityDriver(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      latest_result_(base::nullopt) {
   if (!web_contents)
     return;
   frame_interfaces_.AddInterface(
@@ -73,6 +74,7 @@ void DistillabilityDriver::AddObserver(DistillabilityObserver* observer) {
 
 void DistillabilityDriver::OnDistillability(
     const DistillabilityResult& result) {
+  latest_result_ = result;
   for (auto& observer : observers_)
     observer.OnResult(result);
 }
