@@ -1809,12 +1809,6 @@
           '--additional-driver-flag=--disable-blink-features=LayoutNG',
         ],
       },
-      # chromium.android.fyi
-      'android-bfcache-rel': {
-        'args': [
-          '--additional-driver-flag=--enable-features=BackForwardCache',
-        ],
-      },
       # chromium.linux
       'Fuchsia x64': {
         'args': [
