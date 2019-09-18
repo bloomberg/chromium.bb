@@ -2098,6 +2098,8 @@ source_set("chromeos") {
     "system_logs/single_log_file_log_source.h",
     "system_logs/touch_log_source.cc",
     "system_logs/touch_log_source.h",
+    "system_token_cert_db_initializer.cc",
+    "system_token_cert_db_initializer.h",
     "tether/fake_tether_service.cc",
     "tether/fake_tether_service.h",
     "tether/tether_service.cc",
