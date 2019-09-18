@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/input/web_mouse_wheel_event_traits.h"
+#include "content/renderer/render_widget.h"
 #include "content/shell/test_runner/mock_spell_check.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/web_test_delegate.h"
@@ -1811,32 +1812,29 @@ void EventSender::TextZoomOut() {
 }
 
 void EventSender::ZoomPageIn() {
-  const std::vector<WebViewTestProxy*>& window_list =
-      interfaces()->GetWindowList();
-
-  for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->webview()->SetZoomLevel(
-        window_list.at(i)->webview()->ZoomLevel() + 1);
+  for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
+    // TODO(danakj): Child frame widgets in other frame trees (ie OOPIFs) won't
+    // get the zoom level though. So this only works in tests with a single
+    // origin.
+    view_proxy->SetZoomLevel(view_proxy->webview()->ZoomLevel() + 1);
   }
 }
 
 void EventSender::ZoomPageOut() {
-  const std::vector<WebViewTestProxy*>& window_list =
-      interfaces()->GetWindowList();
-
-  for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->webview()->SetZoomLevel(
-        window_list.at(i)->webview()->ZoomLevel() - 1);
+  for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
+    // TODO(danakj): Child frame widgets in other frame trees (ie OOPIFs) won't
+    // get the zoom level though. So this only works in tests with a single
+    // origin.
+    view_proxy->SetZoomLevel(view_proxy->webview()->ZoomLevel() - 1);
   }
 }
 
 void EventSender::SetPageZoomFactor(double zoom_factor) {
-  const std::vector<WebViewTestProxy*>& window_list =
-      interfaces()->GetWindowList();
-
-  for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->webview()->SetZoomLevel(std::log(zoom_factor) /
-                                               std::log(1.2));
+  for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
+    // TODO(danakj): Child frame widgets in other frame trees (ie OOPIFs) won't
+    // get the zoom level though. So this only works in tests with a single
+    // origin.
+    view_proxy->SetZoomLevel(std::log(zoom_factor) / std::log(1.2));
   }
 }
 

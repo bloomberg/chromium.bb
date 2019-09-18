@@ -425,10 +425,6 @@ class RenderViewImplTest : public RenderViewTest {
     return view()->preferred_size_;
   }
 
-  void SetZoomLevel(double level) { view()->UpdateZoomLevel(level); }
-
-  double GetZoomLevel() { return view()->page_zoom_level(); }
-
   int GetScrollbarWidth() {
     blink::WebView* webview = view()->webview();
     return webview->MainFrameWidget()->Size().width -
@@ -2351,7 +2347,7 @@ TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
   gfx::Size size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(400 + scrollbar_width, 400), size);
 
-  SetZoomLevel(ZoomFactorToZoomLevel(2.0));
+  EXPECT_TRUE(view()->SetZoomLevel(ZoomFactorToZoomLevel(2.0)));
   size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(800 + scrollbar_width, 800), size);
 }
@@ -2732,13 +2728,12 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
 }
 
 TEST_F(RenderViewImplTest, ZoomLevelUpdate) {
-  // 0 is the default zoom level, nothing will change.
-  SetZoomLevel(0);
-  EXPECT_NEAR(0.0, GetZoomLevel(), 0.01);
+  // 0 will use the minimum zoom level, which is the default, nothing will
+  // change.
+  EXPECT_FALSE(view()->SetZoomLevel(0));
 
   // Change the zoom level to 25% and check if the view gets the change.
-  SetZoomLevel(content::ZoomFactorToZoomLevel(0.25));
-  EXPECT_NEAR(content::ZoomFactorToZoomLevel(0.25), GetZoomLevel(), 0.01);
+  EXPECT_TRUE(view()->SetZoomLevel(content::ZoomFactorToZoomLevel(0.25)));
 }
 
 #endif
