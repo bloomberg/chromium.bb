@@ -1644,6 +1644,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/cellular_setup/mobile_setup_ui.h",
       "webui/chromeos/certificate_manager_dialog_ui.cc",
       "webui/chromeos/certificate_manager_dialog_ui.h",
+      "webui/chromeos/crostini_installer/crostini_installer_dialog.cc",
+      "webui/chromeos/crostini_installer/crostini_installer_dialog.h",
       "webui/chromeos/crostini_installer/crostini_installer_page_handler.cc",
       "webui/chromeos/crostini_installer/crostini_installer_page_handler.h",
       "webui/chromeos/crostini_installer/crostini_installer_ui.cc",
