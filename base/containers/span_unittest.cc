@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "base/containers/checked_iterators.h"
@@ -1316,6 +1317,16 @@ TEST(SpanTest, Sort) {
   EXPECT_THAT(array, ElementsAre(1, 2, 3, 4, 5));
   std::sort(static_span.begin(), static_span.end(), std::greater<>());
   EXPECT_THAT(array, ElementsAre(5, 4, 3, 2, 1));
+}
+
+TEST(SpanTest, IteratorConversions) {
+  static_assert(std::is_convertible<span<int>::iterator,
+                                    span<int>::const_iterator>::value,
+                "Error: iterator should be convertible to const_iterator");
+
+  static_assert(!std::is_convertible<span<int>::const_iterator,
+                                     span<int>::iterator>::value,
+                "Error: const_iterator should not be convertible to iterator");
 }
 
 }  // namespace base
