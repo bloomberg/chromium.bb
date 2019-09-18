@@ -20,6 +20,7 @@ import time
 from xml.etree import ElementTree
 from xml.dom import minidom
 
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import patch_series
@@ -259,7 +260,7 @@ class BootstrapStage(PatchChangesStage):
 
   @classmethod
   def FilterArgsForTargetCbuildbot(cls, buildroot, cbuildbot_path, options):
-    _, minor = cros_build_lib.GetTargetChromiteApiVersion(buildroot)
+    _, minor = commands.GetTargetChromiteApiVersion(buildroot)
     args = [cbuildbot_path]
     args.append(options.build_config_name)
     args.extend(cls._FilterArgsForApi(options.parsed_args, minor))

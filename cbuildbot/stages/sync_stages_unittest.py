@@ -17,6 +17,7 @@ import tempfile
 
 import mock
 
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
@@ -35,7 +36,6 @@ from chromite.lib import cl_messages
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cq_config
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import failures_lib
@@ -63,8 +63,7 @@ class BootstrapStageTest(generic_stages_unittest.AbstractStageTestCase,
   def setUp(self):
     # Pretend API version is always current.
     self.PatchObject(
-        cros_build_lib,
-        'GetTargetChromiteApiVersion',
+        commands, 'GetTargetChromiteApiVersion',
         return_value=(constants.REEXEC_API_MAJOR, constants.REEXEC_API_MINOR))
 
     self._Prepare()

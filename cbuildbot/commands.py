@@ -3893,3 +3893,54 @@ def VerifyAFDOArtifacts(buildroot, board, target, build_api):
   output = CallBuildApiWithInputProto(buildroot, build_api, input_proto)
 
   return output['status']
+
+
+class ApiMismatchError(Exception):
+  """Raised by GetTargetChromiteApiVersion."""
+
+
+class NoChromiteError(Exception):
+  """Raised when an expected chromite installation was missing."""
+
+
+def GetTargetChromiteApiVersion(buildroot, validate_version=True):
+  """Get the re-exec API version of the target chromite.
+
+  Args:
+    buildroot: The directory containing the chromite to check.
+    validate_version: If set to true, checks the target chromite for
+      compatibility, and raises an ApiMismatchError when there is an
+      incompatibility.
+
+  Returns:
+    The version number in (major, minor) tuple.
+
+  Raises:
+    May raise an ApiMismatchError if validate_version is set.
+  """
+  try:
+    api = cros_build_lib.RunCommand(
+        [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
+        cwd=buildroot, error_code_ok=True, capture_output=True)
+  except cros_build_lib.RunCommandError:
+    # Although error_code_ok=True was used, this exception will still be raised
+    # if the executible did not exist.
+    full_cbuildbot_path = os.path.join(buildroot, constants.PATH_TO_CBUILDBOT)
+    if not os.path.exists(full_cbuildbot_path):
+      raise NoChromiteError('No cbuildbot found in buildroot %s, expected to '
+                            'find %s. ' % (buildroot, full_cbuildbot_path))
+    raise
+
+  # If the command failed, then we're targeting a cbuildbot that lacks the
+  # option; assume 0:0 (ie, initial state).
+  major = minor = 0
+  if api.returncode == 0:
+    major, minor = (int(x) for x in api.output.strip().split('.', 1))
+
+  if validate_version and major != constants.REEXEC_API_MAJOR:
+    raise ApiMismatchError(
+        'The targeted version of chromite in buildroot %s requires '
+        'api version %i, but we are api version %i.  We cannot proceed.'
+        % (buildroot, major, constants.REEXEC_API_MAJOR))
+
+  return major, minor
