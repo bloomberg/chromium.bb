@@ -273,10 +273,10 @@
   resolved "https://registry.yarnpkg.com/@types/sizzle/-/sizzle-2.3.2.tgz#a811b8c18e2babab7d542b3365887ae2e4d9de47"
   integrity sha512-7EJYyKTL7tFR8+gDbB6Wwz/arpGa0Mywk1TJbNzKzHtzbwVmY4HR9WqS5VV7dsBUKQmPNr192jHr/VpBluj/hg==
 
-"@webgpu/glslang@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@webgpu/glslang/-/glslang-0.0.6.tgz#959b9cfc0a40d0a17d3d6ce48b47894b861591a3"
-  integrity sha512-MZqO8zYc7fnpaNxstz801Ju393rw07X3XFpm64JulmPnJJcBvWJs7d5zgRZvd4rz5lTuWaG3ZnQNs0qiQciS7Q==
+"@webgpu/glslang@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@webgpu/glslang/-/glslang-0.0.8.tgz#174d803a0eb4c6e121a590d1d98d98446512c782"
+  integrity sha512-HqGv36jd87zwv6q5v5+GnzQe2pNT3eML8Ln1RG6NfS0OGN1cmNrt2FamiNin+bXChcGCjDTjSyOc1tEpi07jRg==
 
 "@webgpu/types@0.0.12":
   version "0.0.12"
