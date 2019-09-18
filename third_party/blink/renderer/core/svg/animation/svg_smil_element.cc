@@ -618,10 +618,6 @@ void SVGSMILElement::SetTargetElement(SVGElement* target) {
     return;
   WillChangeAnimationTarget();
 
-  // Clear values that may depend on the previous target.
-  if (target_element_)
-    DisconnectSyncBaseConditions();
-
   // If the animation state is not Inactive, always reset to a clear state
   // before leaving the old target element.
   if (GetActiveState() != kInactive)
@@ -1089,13 +1085,12 @@ bool SVGSMILElement::IsContributing(SMILTime elapsed) const {
 // this checks if there are any further calculations needed
 // to continue and makes sure the intervals are correct.
 bool SVGSMILElement::NeedsToProgress(SMILTime elapsed) {
-  // Check we're connected to something.
+  // Check we're connected to something and that our conditions have been
+  // "connected".
   DCHECK(time_container_);
+  DCHECK(sync_base_conditions_connected_);
   // Check that we have some form of start or are prepared to find it.
   DCHECK(is_waiting_for_first_interval_ || interval_.IsResolved());
-
-  if (!sync_base_conditions_connected_)
-    ConnectSyncBaseConditions();
 
   // Check if we need updating, otherwise just return.
   if (!interval_.IsResolved()) {
