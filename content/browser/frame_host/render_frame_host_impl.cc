@@ -2151,13 +2151,9 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
   const FrameTreeNode* current = frame_tree_node_->parent();
   bool ancestors_are_same_site = true;
   while (current && ancestors_are_same_site) {
-    // Skip over srcdoc documents, as they are always same-origin with their
-    // closest non-srcdoc parent.
-    while (current->current_url().IsAboutSrcdoc())
-      current = current->parent();
-
     if (!net::registry_controlled_domains::SameDomainOrHost(
-            top_document_url, current->current_url(),
+            top_document_url,
+            current->current_frame_host()->GetLastCommittedOrigin(),
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
       ancestors_are_same_site = false;
     }

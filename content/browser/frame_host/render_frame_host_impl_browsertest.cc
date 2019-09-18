@@ -2633,8 +2633,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   {
     WebContentsImpl* wc =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    RenderFrameHostImpl* main_frame =
-        static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+    RenderFrameHostImpl* main_frame = wc->GetMainFrame();
 
     EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
     ASSERT_EQ(2u, main_frame->child_count());
@@ -2772,6 +2771,87 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   }
 
   SetBrowserClientForTesting(old_client);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeSiteForCookiesForNavigationSandbox) {
+  GURL url = embedded_test_server()->GetURL(
+      "a.com",
+      "/cross_site_iframe_factory.html?a(a{sandbox-allow-scripts}(a),"
+      "a{sandbox-allow-scripts,sandbox-allow-same-origin}(a))");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+
+  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
+
+  ASSERT_EQ(2u, main_frame->child_count());
+  FrameTreeNode* child_a = main_frame->child_at(0);
+  EXPECT_EQ("a.com", child_a->current_url().host());
+  EXPECT_TRUE(child_a->current_frame_host()->GetLastCommittedOrigin().opaque());
+
+  ASSERT_EQ(1u, child_a->child_count());
+  FrameTreeNode* child_aa = child_a->child_at(0);
+  EXPECT_EQ("a.com", child_aa->current_url().host());
+  EXPECT_TRUE(
+      child_aa->current_frame_host()->GetLastCommittedOrigin().opaque());
+
+  FrameTreeNode* child_a2 = main_frame->child_at(1);
+  EXPECT_EQ("a.com", child_a2->current_url().host());
+  EXPECT_FALSE(
+      child_a2->current_frame_host()->GetLastCommittedOrigin().opaque());
+
+  ASSERT_EQ(1u, child_a2->child_count());
+  FrameTreeNode* child_a2a = child_a2->child_at(0);
+  EXPECT_EQ("a.com", child_a2a->current_url().host());
+  EXPECT_FALSE(
+      child_a2a->current_frame_host()->GetLastCommittedOrigin().opaque());
+
+  // |child_aa| frame navigation should be cross-site since its parent is
+  // sandboxed without allow-same-origin
+  EXPECT_TRUE(child_aa->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(url)
+                  .is_empty());
+
+  // |child_a2a| frame navigation should be same-site since its sandboxed parent
+  // is sandbox-same-origin.
+  EXPECT_EQ("a.com", child_a2a->current_frame_host()
+                         ->ComputeSiteForCookiesForNavigation(url)
+                         .host());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeSiteForCookiesForNavigationAboutBlank) {
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/page_with_blank_iframe_tree.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = wc->GetMainFrame();
+
+  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
+
+  ASSERT_EQ(1u, main_frame->child_count());
+  FrameTreeNode* child_a = main_frame->child_at(0);
+  EXPECT_TRUE(child_a->current_url().IsAboutBlank());
+  EXPECT_EQ("a.com",
+            child_a->current_frame_host()->GetLastCommittedOrigin().host());
+
+  ASSERT_EQ(1u, child_a->child_count());
+  FrameTreeNode* child_aa = child_a->child_at(0);
+  EXPECT_TRUE(child_aa->current_url().IsAboutBlank());
+  EXPECT_EQ("a.com",
+            child_aa->current_frame_host()->GetLastCommittedOrigin().host());
+
+  // navigating the nested about:blank iframe to a.com is fine, since the origin
+  // is inherited.
+  EXPECT_EQ("a.com", child_aa->current_frame_host()
+                         ->ComputeSiteForCookiesForNavigation(url)
+                         .host());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
