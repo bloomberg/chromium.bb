@@ -1525,8 +1525,8 @@
   },
   {
     "name": "enable-quic",
-    "owners": [ "rch" ],
-    "expiry_milestone": 78
+    "owners": [ "//net/quic/OWNERS" ],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-reader-mode",
