@@ -391,9 +391,8 @@ static bool DeviceScaleEnsuresTextQuality(float device_scale_factor) {
 #endif
 }
 
-static bool ComputePreferCompositingToLCDText(
-    CompositorDependencies* compositor_deps,
-    float device_scale_factor) {
+static bool PreferCompositingToLCDText(CompositorDependencies* compositor_deps,
+                                       float device_scale_factor) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisablePreferCompositingToLCDText))
@@ -787,9 +786,6 @@ void RenderWidget::OnSynchronizeVisualProperties(
   if (delegate()) {
     if (size_ != visual_properties.new_size) {
       // Only hide popups when the size changes. Eg https://crbug.com/761908.
-      // TODO(danakj): If OnSynchronizeVisualProperties doesn't happen on an
-      // undead widget then this can go through the WebFrameWidget->WebView
-      // instead of through the delegate, letting us delete that delegate API.
       delegate()->CancelPagePopupForWidget();
     }
 
@@ -824,29 +820,9 @@ void RenderWidget::OnSynchronizeVisualProperties(
       ignore_resize_ipc = true;
   }
 
+  UpdateZoom(visual_properties.zoom_level);
+
   if (for_frame()) {
-    // TODO(danakj): This should not need to go through RenderFrame to set
-    // Page-level properties.
-    blink::WebFrameWidget* frame_widget = GetFrameWidget();
-    DCHECK(frame_widget);
-    RenderFrameImpl* render_frame =
-        RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
-
-    bool zoom_level_changed =
-        render_frame->SetZoomLevelOnRenderView(visual_properties.zoom_level);
-    if (zoom_level_changed) {
-      // Hide popups when the zoom changes.
-      blink::WebView* web_view = frame_widget->LocalRoot()->View();
-      web_view->CancelPagePopup();
-
-      // Propagate changes down to child local root RenderWidgets and
-      // BrowserPlugins in other frame trees/processes.
-      for (auto& observer : render_frame_proxies_)
-        observer.OnZoomLevelChanged(visual_properties.zoom_level);
-      for (auto& plugin : browser_plugins_)
-        plugin.OnZoomLevelChanged(visual_properties.zoom_level);
-    }
-
     bool capture_sequence_number_changed =
         visual_properties.capture_sequence_number !=
         last_capture_sequence_number_;
@@ -1712,6 +1688,27 @@ gfx::Rect RenderWidget::CompositorViewportRect() const {
   return layer_tree_view_->layer_tree_host()->device_viewport_rect();
 }
 
+void RenderWidget::UpdateZoom(double zoom_level) {
+  blink::WebFrameWidget* frame_widget = GetFrameWidget();
+  if (!frame_widget)
+    return;
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
+
+  // Return early if zoom level is unchanged.
+  if (render_frame->GetZoomLevel() == zoom_level) {
+    return;
+  }
+
+  render_frame->SetZoomLevel(zoom_level);
+
+  for (auto& observer : render_frame_proxies_)
+    observer.OnZoomLevelChanged(zoom_level);
+
+  for (auto& plugin : browser_plugins_)
+    plugin.OnZoomLevelChanged(zoom_level);
+}
+
 void RenderWidget::SynchronizeVisualProperties(
     const VisualProperties& visual_properties) {
   // This method needs to handle changes to the screen_info, new_size, and
@@ -2048,6 +2045,24 @@ void RenderWidget::CloseWebWidget() {
   close_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
+void RenderWidget::UpdateWebViewWithDeviceScaleFactor() {
+  blink::WebFrameWidget* frame_widget = GetFrameWidget();
+  blink::WebFrame* current_frame =
+      frame_widget ? frame_widget->LocalRoot() : nullptr;
+  blink::WebView* webview = current_frame ? current_frame->View() : nullptr;
+  if (webview) {
+    if (compositor_deps_->IsUseZoomForDSFEnabled())
+      webview->SetZoomFactorForDeviceScaleFactor(
+          page_properties_->GetDeviceScaleFactor());
+    else
+      webview->SetDeviceScaleFactor(page_properties_->GetDeviceScaleFactor());
+
+    webview->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+        PreferCompositingToLCDText(compositor_deps_,
+                                   page_properties_->GetDeviceScaleFactor()));
+  }
+}
+
 blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
   // TODO(danakj): Remove this check and don't call this method for non-frames.
   if (!for_frame())
@@ -2275,6 +2290,9 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
           new_screen_info.orientation_angle ||
       page_properties_->GetScreenInfo().orientation_type !=
           new_screen_info.orientation_type;
+  bool web_device_scale_factor_changed =
+      page_properties_->GetScreenInfo().device_scale_factor !=
+      new_screen_info.device_scale_factor;
   ScreenInfo previous_original_screen_info = GetOriginalScreenInfo();
 
   local_surface_id_allocation_from_parent_ = new_local_surface_id_allocation;
@@ -2296,35 +2314,17 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   if (orientation_changed)
     OnOrientationChange();
 
-  if (for_frame()) {
-    // TODO(danakj): This should not need to go through RenderFrame to set
-    // Page-level properties.
-    blink::WebFrameWidget* frame_widget = GetFrameWidget();
-    // TODO(danakj): Stop sending/receiving visual properties while undead, and
-    // change this to a DCHECK.
-    if (frame_widget) {
-      RenderFrameImpl* render_frame =
-          RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
-      // TODO(danakj): RenderWidget knows the DSF and could avoid calling into
-      // blink when it hasn't changed, but it sets an initial |screen_info_|
-      // during construction, so it is hard to tell if the value is not the
-      // default value once we get to OnSynchronizeVisualProperties. Thus we
-      // call into blink unconditionally and let it early out if it's already
-      // set.
-      render_frame->SetDeviceScaleFactorOnRenderView(
-          compositor_deps_->IsUseZoomForDSFEnabled(),
-          page_properties_->GetDeviceScaleFactor());
-    }
-  }
-
-  // Propagate changes down to child local root RenderWidgets and BrowserPlugins
-  // in other frame trees/processes.
   if (previous_original_screen_info != GetOriginalScreenInfo()) {
     for (auto& observer : render_frame_proxies_)
       observer.OnScreenInfoChanged(GetOriginalScreenInfo());
+
+    // Notify all embedded BrowserPlugins of the updated ScreenInfo.
     for (auto& observer : browser_plugins_)
       observer.ScreenInfoChanged(GetOriginalScreenInfo());
   }
+
+  if (web_device_scale_factor_changed)
+    UpdateWebViewWithDeviceScaleFactor();
 }
 
 void RenderWidget::SetWindowRectSynchronously(
@@ -3811,15 +3811,6 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   DCHECK(delegate()) << "Resizing the viewport for a cross-process subframe "
                         "must be done via the RenderView.";
   delegate()->ResizeVisualViewportForWidget(visible_viewport_size);
-
-  // TODO(danakj): This should not need to go through RenderFrame to set
-  // Page-level properties.
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
-  RenderFrameImpl* render_frame =
-      RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
-  render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
-      ComputePreferCompositingToLCDText(
-          compositor_deps_, page_properties_->GetDeviceScaleFactor()));
 
   // Make sure the DSF override stays for future VisualProperties updates, and
   // that includes overriding the VisualProperties'

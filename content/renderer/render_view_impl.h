@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/flat_map.h"
 #include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -167,26 +166,12 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
 
-  // Stores a map of url to zoom level, specified by the browser.
-  void SetHostZoomLevel(const GURL& url, double zoom_level);
+  // Sets the zoom level and notifies observers.
+  void SetZoomLevel(double zoom_level);
 
-  // When the main frame commits, the zoom level may need to be changed.
-  void UpdateZoomLevelForNavigationCommitOfMainFrame(const GURL& loading_url);
-
-  // Sets the zoom level and notifies observers. Returns true if the zoom level
-  // changed. A value of 0 means the default zoom level.
-  bool SetZoomLevel(double zoom_level);
-
-  // Passes along the prefer compositing preference to the WebView's settings.
-  void SetPreferCompositingToLCDTextEnabled(bool prefer);
-
-  // Passes along the device scale factor to the WebView.
-  void SetDeviceScaleFactor(bool use_zoom_for_dsf, float device_scale_factor);
-
-  // Passes along the page zoom to the WebView to set it on a newly attached
-  // LocalFrame.
-  void PropagatePageZoomToNewlyAttachedFrame(bool use_zoom_for_dsf,
-                                             float device_scale_factor);
+  double page_zoom_level() {
+    return page_zoom_level_;
+  }
 
   // Sets page-level focus in this view and notifies plugins and Blink's
   // FocusController.
@@ -317,6 +302,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool renderer_wide_named_frame_lookup() {
     return renderer_wide_named_frame_lookup_;
   }
+  void UpdateZoomLevel(double zoom_level);
 
  protected:
   RenderViewImpl(CompositorDependencies* compositor_deps,
@@ -658,9 +644,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Used to indicate the zoom level to be used during subframe loads, since
   // they should match page zoom level.
   double page_zoom_level_ = 0;
-
-  // A map of urls to zoom levels specified by the browser.
-  base::flat_map<GURL, double> host_zoom_levels_;
 
   // Helper objects ------------------------------------------------------------
 
