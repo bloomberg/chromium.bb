@@ -2664,6 +2664,9 @@ if (is_linux || is_mac || is_win) {
     data_deps = [
       "//chrome",
     ]
+    if (is_win) {
+      data_deps += [ "//chrome/installer/mini_installer" ]
+    }
   }
 }
 
