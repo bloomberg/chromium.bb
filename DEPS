@@ -23,7 +23,7 @@
 #  # in origin/master. The path for the dep should start with src/.
 #  roll-dep src/third_party/foo_package/src foo_package.git
 #  # You should now have a modified DEPS file; commit and upload as normal
-#  git commit -a
+#  git commit -aspv_he
 #  git cl upload
 
 gclient_gn_args_file = 'src/build/config/gclient_args.gni'
@@ -281,11 +281,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': 'ad7f2c5c4c7f51360e9e079109a9217aa5ba5cc0',
+  'spv_tools_revision': '36c1c0e22fab67f8f30aa7877f7a372629ede8de',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_headers_revision': '123dc278f204f8e833e1a88d31c46d0edf81d4b2',
+  'spv_headers_revision': '601d738723ac381741311c6c98c36d6170be14a2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
