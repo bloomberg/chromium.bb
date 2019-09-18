@@ -134,12 +134,18 @@ SLOW_TESTS = {
     'cli/cros/cros_branch_unittest': SKIP,
 }
 
+# These are tests that are safe to run under Python 3 too.  Add to this list to
+# prevent regressions with Python 3.
+PYTHON3_TESTS = {
+}
 
-def RunTest(test, cmd, tmpfile, finished, total):
+
+def RunTest(test, interp, cmd, tmpfile, finished, total):
   """Run |test| with the |cmd| line and save output to |tmpfile|.
 
   Args:
     test: The human readable name for this test.
+    interp: Which Python version to use.
     cmd: The full command line to run the test.
     tmpfile: File to write test output to.
     finished: Counter to update when this test finishes running.
@@ -148,7 +154,7 @@ def RunTest(test, cmd, tmpfile, finished, total):
   Returns:
     The exit code of the test.
   """
-  logging.info('Starting %s', test)
+  logging.info('Starting %s %s', interp, test)
 
   with cros_build_lib.TimedSection() as timer:
     ret = cros_build_lib.RunCommand(
@@ -164,7 +170,8 @@ def RunTest(test, cmd, tmpfile, finished, total):
     else:
       func = logging.info
       msg = 'Finished'
-    func('%s [%i/%i] %s (%s)', msg, finished.value, total, test, timer.delta)
+    func('%s [%i/%i] %s %s (%s)', msg, finished.value, total, interp, test,
+         timer.delta)
 
     # Save the timing for this test run for future usage.
     seconds = timer.delta.total_seconds()
@@ -248,7 +255,8 @@ def SortTests(tests, jobs=1, timing_cache_file=None):
   return ret
 
 
-def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1):
+def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
+                  pyver=None):
   """Build the tests to execute.
 
   Take care of special test handling like whether it needs to be inside or
@@ -260,13 +268,23 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1):
     network: Whether to execute network tests.
     config_skew: Whether to execute config skew tests.
     jobs: How many jobs will we run in parallel.
+    pyver: Which versions of Python to test against.
 
   Returns:
     List of tests to execute and their full command line.
   """
   testsets = []
-  for test in SortTests(tests, jobs=jobs):
-    cmd = [test]
+
+  def PythonWrappers(tests):
+    for test in tests:
+      if pyver is None or pyver == 'py2':
+        yield (test, 'python2')
+      if pyver is None or pyver == 'py3':
+        if test in PYTHON3_TESTS:
+          yield (test, 'python3')
+
+  for (test, interp) in PythonWrappers(SortTests(tests, jobs=jobs)):
+    cmd = [interp, test]
 
     # See if this test requires special consideration.
     status = SPECIAL_TESTS.get(test)
@@ -278,7 +296,8 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1):
         if not chroot_available:
           logging.info('Skipping %s: chroot not available', test)
           continue
-        cmd = ['cros_sdk', '--', os.path.join('..', '..', 'chromite', test)]
+        cmd = ['cros_sdk', '--', interp,
+               os.path.join('..', '..', 'chromite', test)]
     elif status is OUTSIDE:
       if cros_build_lib.IsInsideChroot():
         logging.info('Skipping %s: must be outside the chroot', test)
@@ -302,13 +321,13 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1):
     cmd = ['timeout', '--preserve-status', '-k', '%sm' % TEST_SIG_TIMEOUT,
            '%sm' % TEST_TIMEOUT] + cmd
 
-    testsets.append((test, cmd, tempfile.TemporaryFile()))
+    testsets.append((test, interp, cmd, tempfile.TemporaryFile()))
 
   return testsets
 
 
 def RunTests(tests, jobs=1, chroot_available=True, network=False,
-             config_skew=False, dryrun=False, failfast=False):
+             config_skew=False, dryrun=False, failfast=False, pyver=None):
   """Execute |paths| with |jobs| in parallel (including |network| tests).
 
   Args:
@@ -319,6 +338,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
     config_skew: Whether to run config skew tests.
     dryrun: Do everything but execute the test.
     failfast: Stop on first failure
+    pyver: Which versions of Python to test against.
 
   Returns:
     True if all tests pass, else False.
@@ -337,10 +357,10 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
   try:
     # Build up the testsets.
     testsets = BuildTestSets(tests, chroot_available, network,
-                             config_skew, jobs=jobs)
+                             config_skew, jobs=jobs, pyver=pyver)
 
     # Fork each test and add it to the list.
-    for test, cmd, tmpfile in testsets:
+    for test, interp, cmd, tmpfile in testsets:
       if failed and failfast:
         logging.error('failure detected; stopping new tests')
         break
@@ -357,7 +377,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
             logging.info('Would have run: %s', cros_build_lib.CmdToStr(cmd))
             ret = 0
           else:
-            ret = RunTest(test, cmd, tmpfile, finished, len(testsets))
+            ret = RunTest(test, interp, cmd, tmpfile, finished, len(testsets))
         except KeyboardInterrupt:
           pass
         except BaseException:
@@ -379,14 +399,20 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
     CleanupChildren(pids)
 
   # Walk through the results.
+  passed_tests = []
   failed_tests = []
-  for test, cmd, tmpfile in testsets:
+  for test, interp, cmd, tmpfile in testsets:
     tmpfile.seek(0)
     output = tmpfile.read()
     if output:
-      failed_tests.append(test)
+      failed_tests.append('[%s] %s' % (interp, test))
       logging.error('### LOG: %s\n%s\n', test, output.rstrip())
+    else:
+      passed_tests.append('[%s] %s' % (interp, test))
 
+  if passed_tests:
+    logging.debug('The following %i tests passed:\n  %s', len(passed_tests),
+                  '\n  '.join(sorted(passed_tests)))
   if failed_tests:
     logging.error('The following %i tests failed:\n  %s', len(failed_tests),
                   '\n  '.join(sorted(failed_tests)))
@@ -512,6 +538,10 @@ def GetParser():
   parser.add_argument('--config_skew', default=False, action='store_true',
                       help='Run tests that check if new config matches legacy '
                            'config')
+  parser.add_argument('--py2', dest='pyver', action='store_const', const='py2',
+                      help='Only run Python 2 unittests.')
+  parser.add_argument('--py3', dest='pyver', action='store_const', const='py3',
+                      help='Only run Python 3 unittests.')
   parser.add_argument('tests', nargs='*', default=None, help='Tests to run')
   return parser
 
@@ -568,7 +598,7 @@ def main(argv):
       result = RunTests(
           tests, jobs=jobs, chroot_available=ChrootAvailable(),
           network=opts.network, config_skew=opts.config_skew,
-          dryrun=opts.dryrun, failfast=opts.failfast)
+          dryrun=opts.dryrun, failfast=opts.failfast, pyver=opts.pyver)
 
     if result:
       logging.info('All tests succeeded! (%s total)', timer.delta)
