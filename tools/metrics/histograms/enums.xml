@@ -32380,6 +32380,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Not started - No refresh token"/>
 </enum>
 
+<enum name="InvalidBookmarkSpecificsError">
+  <int value="0" label="Empty specifics"/>
+  <int value="1" label="Invalid URL"/>
+  <int value="2" label="icon_url with missing favicon"/>
+  <int value="3" label="Invalid icon_url"/>
+  <int value="4" label="Non-unique meta_info keys"/>
+</enum>
+
 <enum name="InvalidOriginReason">
   <int value="0" label="Opaque Origin"/>
   <int value="1" label="Empty URL"/>
