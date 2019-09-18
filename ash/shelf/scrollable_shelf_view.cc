@@ -61,9 +61,14 @@ int GetGestureDragThreshold() {
 
 // Returns the padding between the app icon and the end of the ScrollableShelf.
 int GetAppIconEndPadding() {
-  if (Shell::Get()->tablet_mode_controller()->InTabletMode())
-    return 4;
-  return 0;
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+
+  // TabletModeController is destructed before ScrollableShelfView.
+  if (!tablet_mode_controller || !tablet_mode_controller->InTabletMode())
+    return 0;
+
+  return 4;
 }
 
 // Calculates the padding for overflow.
