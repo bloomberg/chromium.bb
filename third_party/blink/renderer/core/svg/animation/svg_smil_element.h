@@ -185,7 +185,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   enum IntervalSelector { kFirstInterval, kNextInterval };
 
   SMILInterval ResolveInterval(IntervalSelector) const;
-  void ResolveFirstInterval();
+  bool ResolveFirstInterval();
   base::Optional<SMILInterval> ResolveNextInterval();
   SMILTime ResolveActiveEnd(SMILTime resolved_begin,
                             SMILTime resolved_end) const;

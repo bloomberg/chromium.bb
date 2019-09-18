@@ -857,17 +857,14 @@ SMILInterval SVGSMILElement::ResolveInterval(
   return SMILInterval(SMILTime::Unresolved(), SMILTime::Unresolved());
 }
 
-void SVGSMILElement::ResolveFirstInterval() {
+bool SVGSMILElement::ResolveFirstInterval() {
   SMILInterval first_interval = ResolveInterval(kFirstInterval);
   DCHECK(!first_interval.begin.IsIndefinite());
-
-  if (!first_interval.begin.IsUnresolved() && first_interval != interval_) {
-    interval_ = first_interval;
-    NotifyDependentsIntervalChanged(interval_);
-
-    if (time_container_)
-      time_container_->NotifyIntervalsChanged();
-  }
+  if (!first_interval.IsResolved() || first_interval == interval_)
+    return false;
+  interval_ = first_interval;
+  NotifyDependentsIntervalChanged(interval_);
+  return true;
 }
 
 base::Optional<SMILInterval> SVGSMILElement::ResolveNextInterval() {
@@ -1113,7 +1110,8 @@ bool SVGSMILElement::NeedsToProgress(SMILTime elapsed) {
 
   if (is_waiting_for_first_interval_) {
     is_waiting_for_first_interval_ = false;
-    ResolveFirstInterval();
+    if (ResolveFirstInterval())
+      time_container_->NotifyIntervalsChanged();
   }
   return true;
 }
