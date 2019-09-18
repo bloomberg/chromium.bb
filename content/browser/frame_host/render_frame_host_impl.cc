@@ -5305,8 +5305,7 @@ void RenderFrameHostImpl::CommitNavigation(
         std::move(common_params), std::move(commit_params),
         base::BindOnce(&RenderFrameHostImpl::OnSameDocumentCommitProcessed,
                        base::Unretained(this),
-                       same_document_navigation_request_->navigation_handle()
-                           ->GetNavigationId(),
+                       same_document_navigation_request_->GetNavigationId(),
                        should_replace_current_entry));
   } else {
     // Pass the controller service worker info if we have one.
@@ -5490,7 +5489,7 @@ void RenderFrameHostImpl::FailedNavigation(
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
   DCHECK(navigation_request && navigation_request->navigation_handle() &&
-         navigation_request->navigation_handle()->GetNetErrorCode() != net::OK);
+         navigation_request->GetNetErrorCode() != net::OK);
 }
 
 void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {
@@ -6682,8 +6681,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     // commit in the old renderer process.  This may be true for subframe
     // navigations even when error page isolation is enabled for main frames.
     if (navigation_request &&
-        navigation_request->navigation_handle()->GetNetErrorCode() ==
-            net::ERR_BLOCKED_BY_CLIENT) {
+        navigation_request->GetNetErrorCode() == net::ERR_BLOCKED_BY_CLIENT) {
       bypass_checks_for_error_page = true;
     }
   }
@@ -6913,8 +6911,7 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
   // If the NavigationRequest was deleted, another navigation commit started to
   // be processed. Let the latest commit go through and stop doing anything.
   if (!same_document_navigation_request_ ||
-      same_document_navigation_request_->navigation_handle()
-              ->GetNavigationId() != navigation_id) {
+      same_document_navigation_request_->GetNavigationId() != navigation_id) {
     return;
   }
 
@@ -7539,7 +7536,7 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
     // one at commit time.
     scoped_refptr<SiteInstance> dest_instance =
         frame_tree_node_->render_manager()->GetSiteInstanceForNavigationRequest(
-            *navigation_request);
+            navigation_request);
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString(
             "does_recomputed_site_instance_match",
