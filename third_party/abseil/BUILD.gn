@@ -9,6 +9,7 @@ if (build_with_chromium) {
     public_deps = [
       "//third_party/abseil-cpp/absl/strings",
       "//third_party/abseil-cpp/absl/types:optional",
+      "//third_party/abseil-cpp/absl/types:variant",
     ]
   }
 } else {
