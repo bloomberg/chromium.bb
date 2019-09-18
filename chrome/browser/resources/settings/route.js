@@ -465,8 +465,11 @@ cr.define('settings', function() {
         loadTimeData.getBoolean('showCrostini')) {
       r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
       r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
-      r.CROSTINI_EXPORT_IMPORT =
-          r.CROSTINI_DETAILS.createChild('/crostini/exportImport');
+      if (loadTimeData.valueExists('showCrostiniExportImport') &&
+          loadTimeData.getBoolean('showCrostiniExportImport')) {
+        r.CROSTINI_EXPORT_IMPORT =
+            r.CROSTINI_DETAILS.createChild('/crostini/exportImport');
+      }
       r.CROSTINI_SHARED_PATHS =
           r.CROSTINI_DETAILS.createChild('/crostini/sharedPaths');
       r.CROSTINI_SHARED_USB_DEVICES =
