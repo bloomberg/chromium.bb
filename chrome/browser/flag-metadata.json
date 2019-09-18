@@ -2841,6 +2841,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "prominent-dark-mode-active-tab-title",
+    "owners": [ "dfried" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "pull-to-refresh",
     "owners": [ "afakhry" ],
     "expiry_milestone": 83

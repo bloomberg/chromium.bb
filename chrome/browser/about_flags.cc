@@ -3006,6 +3006,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabOutlinesInLowContrastThemesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabOutlinesInLowContrastThemes)},
 
+    {"prominent-dark-mode-active-tab-title",
+     flag_descriptions::kProminentDarkModeActiveTabTitleName,
+     flag_descriptions::kProminentDarkModeActiveTabTitleDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kProminentDarkModeActiveTabTitle)},
+
 #if defined(OS_ANDROID)
     {"enable-reader-mode-in-cct", flag_descriptions::kReaderModeInCCTName,
      flag_descriptions::kReaderModeInCCTDescription, kOsAndroid,

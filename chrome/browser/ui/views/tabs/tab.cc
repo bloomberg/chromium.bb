@@ -180,6 +180,7 @@ Tab::Tab(TabController* controller)
   title_->SetHandlesTooltips(false);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetText(CoreTabHelper::GetDefaultTitle());
+  title_->SetFontList(tab_style_->GetFontList());
   AddChildView(title_);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
@@ -738,6 +739,7 @@ bool Tab::IsActive() const {
 void Tab::ActiveStateChanged() {
   UpdateTabIconNeedsAttentionBlocked();
   UpdateForegroundColors();
+  title_->SetFontList(tab_style_->GetFontList());
   Layout();
 }
 

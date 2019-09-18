@@ -1622,6 +1622,13 @@ const char kPrintPreviewRegisterPromosName[] =
 const char kPrintPreviewRegisterPromosDescription[] =
     "Enable registering unregistered cloud printers from print preview.";
 
+const char kProminentDarkModeActiveTabTitleName[] =
+    "Prominent Dark Mode Active Tab Titles";
+const char kProminentDarkModeActiveTabTitleDescription[] =
+    "Makes the active tab title in dark mode bolder so the active tab is "
+    "easier "
+    "to identify.";
+
 const char kPullToRefreshName[] = "Pull-to-refresh gesture";
 const char kPullToRefreshDescription[] =
     "Pull-to-refresh gesture in response to vertical overscroll.";
