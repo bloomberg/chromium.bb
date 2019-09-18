@@ -10680,6 +10680,16 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Host prefix"/>
 </enum>
 
+<enum name="CookieSameSiteString">
+  <int value="0" label="No SameSite attribute is present."/>
+  <int value="1" label="SameSite attribute is specified but has no value."/>
+  <int value="2" label="SameSite attribute value is unrecognized."/>
+  <int value="3" label="Lax"/>
+  <int value="4" label="Strict"/>
+  <int value="5" label="None"/>
+  <int value="6" label="Extended"/>
+</enum>
+
 <enum name="CookieSourceScheme">
   <int value="0" label="Secure cookie, source scheme is cryptographic"/>
   <int value="1" label="Secure cookie, source scheme is not cryptographic"/>

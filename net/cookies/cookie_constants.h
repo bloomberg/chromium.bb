@@ -41,6 +41,24 @@ enum class CookieSameSite {
   LAX_MODE_ALLOW_UNSAFE = 4,  // Allowed for effective SameSite only.
 };
 
+// Used for histograms only. Do not renumber. Keep in sync with enums.xml.
+enum class CookieSameSiteString {
+  // No SameSite attribute is present.
+  kUnspecified = 0,
+  // The SameSite attribute is present but has no value.
+  kEmptyString = 1,
+  // The SameSite attribute has an unrecognized value.
+  kUnrecognized = 2,
+  // The SameSite attribute has a recognized value.
+  kLax = 3,
+  kStrict = 4,
+  kNone = 5,
+  kExtended = 6,
+
+  // Keep last, update if adding new value.
+  kMaxValue = kExtended
+};
+
 // What rules to apply when determining when whether access to a particular
 // cookie is allowed.
 // TODO(crbug.com/978172): Machinery to read the content setting and set the
@@ -71,8 +89,15 @@ NET_EXPORT std::string CookieSameSiteToString(CookieSameSite same_site);
 
 // Converts the Set-Cookie header SameSite token |same_site| to a
 // CookieSameSite. Defaults to CookieSameSite::UNSPECIFIED for empty or
-// unrecognized strings.
-NET_EXPORT CookieSameSite StringToCookieSameSite(const std::string& same_site);
+// unrecognized strings. Returns an appropriate value of CookieSameSiteString in
+// |samesite_string| to indicate what type of string was parsed as the SameSite
+// attribute value, if a pointer is provided.
+NET_EXPORT CookieSameSite
+StringToCookieSameSite(const std::string& same_site,
+                       CookieSameSiteString* samesite_string = nullptr);
+
+NET_EXPORT void RecordCookieSameSiteAttributeValueHistogram(
+    CookieSameSiteString value);
 
 NET_EXPORT bool IsValidSameSiteValue(CookieSameSite value);
 NET_EXPORT bool IsValidEffectiveSameSiteValue(CookieSameSite value);

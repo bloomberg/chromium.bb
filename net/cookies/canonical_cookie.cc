@@ -288,11 +288,14 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   if (!status->IsInclude())
     return nullptr;
 
+  CookieSameSiteString samesite_string = CookieSameSiteString::kUnspecified;
+  CookieSameSite samesite = parsed_cookie.SameSite(&samesite_string);
+  RecordCookieSameSiteAttributeValueHistogram(samesite_string);
+
   std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
       parsed_cookie.Name(), parsed_cookie.Value(), cookie_domain, cookie_path,
       creation_time, cookie_expires, creation_time, parsed_cookie.IsSecure(),
-      parsed_cookie.IsHttpOnly(), parsed_cookie.SameSite(),
-      parsed_cookie.Priority()));
+      parsed_cookie.IsHttpOnly(), samesite, parsed_cookie.Priority()));
 
   DCHECK(cc->IsCanonical());
 

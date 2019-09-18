@@ -5,6 +5,7 @@
 #include "net/cookies/cookie_constants.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 
 namespace net {
@@ -71,18 +72,38 @@ std::string CookieSameSiteToString(CookieSameSite same_site) {
   }
 }
 
-CookieSameSite StringToCookieSameSite(const std::string& same_site) {
+CookieSameSite StringToCookieSameSite(const std::string& same_site,
+                                      CookieSameSiteString* samesite_string) {
+  // Put a value on the stack so that we can assign to |*samesite_string|
+  // instead of having to null-check it all the time.
+  CookieSameSiteString ignored = CookieSameSiteString::kUnspecified;
+  if (!samesite_string)
+    samesite_string = &ignored;
+
+  *samesite_string = CookieSameSiteString::kUnrecognized;
   CookieSameSite samesite = CookieSameSite::UNSPECIFIED;
-  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteNone))
+
+  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteNone)) {
     samesite = CookieSameSite::NO_RESTRICTION;
-  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteLax))
+    *samesite_string = CookieSameSiteString::kNone;
+  } else if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteLax)) {
     samesite = CookieSameSite::LAX_MODE;
-  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteStrict))
+    *samesite_string = CookieSameSiteString::kLax;
+  } else if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteStrict)) {
     samesite = CookieSameSite::STRICT_MODE;
-  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteExtended))
+    *samesite_string = CookieSameSiteString::kStrict;
+  } else if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteExtended)) {
     samesite = CookieSameSite::EXTENDED_MODE;
+    *samesite_string = CookieSameSiteString::kExtended;
+  } else if (same_site == "") {
+    *samesite_string = CookieSameSiteString::kEmptyString;
+  }
   DCHECK(IsValidSameSiteValue(samesite));
   return samesite;
+}
+
+void RecordCookieSameSiteAttributeValueHistogram(CookieSameSiteString value) {
+  UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteAttributeValue", value);
 }
 
 bool IsValidSameSiteValue(CookieSameSite value) {
