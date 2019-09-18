@@ -19,6 +19,25 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 
+def _PredicateSplit(func, iterable):
+  """Splits an iterable into two groups based on a predicate return value.
+
+  Args:
+    func: A functor that takes an item as its argument and returns a boolean
+      value indicating which group the item belongs.
+    iterable: The collection to split.
+
+  Returns:
+    A tuple containing two lists, the first containing items that func()
+    returned True for, and the second containing items that func() returned
+    False for.
+  """
+  trues, falses = [], []
+  for x in iterable:
+    (trues if func(x) else falses).append(x)
+  return trues, falses
+
+
 class Comparator(object):
   """Base class for all comparators."""
 
@@ -291,7 +310,7 @@ class MockedCallResults(object):
       kwargs = {}
 
     params = self.Params(args=args, kwargs=kwargs)
-    dup, filtered = cros_build_lib.PredicateSplit(
+    dup, filtered = _PredicateSplit(
         lambda mc: mc.params == params, self.mocked_calls)
 
     new = self.MockedCall(params=params, strict=strict, result=result,
@@ -346,7 +365,7 @@ class MockedCallResults(object):
       kwargs = {}
 
     params = self.Params(args, kwargs)
-    matched, _ = cros_build_lib.PredicateSplit(filter_fn, self.mocked_calls)
+    matched, _ = _PredicateSplit(filter_fn, self.mocked_calls)
     if len(matched) > 1:
       raise AssertionError(
           '%s: args %r matches more than one mock:\n%s'

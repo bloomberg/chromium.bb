@@ -1293,25 +1293,6 @@ def iflatten_instance(iterable, terminate_on_kls=six.string_types):
         yield subitem
 
 
-def PredicateSplit(func, iterable):
-  """Splits an iterable into two groups based on a predicate return value.
-
-  Args:
-    func: A functor that takes an item as its argument and returns a boolean
-      value indicating which group the item belongs.
-    iterable: The collection to split.
-
-  Returns:
-    A tuple containing two lists, the first containing items that func()
-    returned True for, and the second containing items that func() returned
-    False for.
-  """
-  trues, falses = [], []
-  for x in iterable:
-    (trues if func(x) else falses).append(x)
-  return trues, falses
-
-
 @contextlib.contextmanager
 def Open(obj, mode='r'):
   """Convenience ctx that accepts a file path or an already open file object."""
