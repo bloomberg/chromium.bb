@@ -78,6 +78,16 @@ void UdpSocketPosix::Close() {
 ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(TaskRunner* task_runner,
                                               Client* client,
                                               const IPEndpoint& endpoint) {
+  static std::atomic_bool in_create{false};
+  const bool in_create_local = in_create.exchange(true);
+  OSP_DCHECK_EQ(in_create_local, false)
+      << "Another UdpSocket::Create call is in progress. Calls to this method "
+         "must be seralized.";
+
+  if (in_create_local) {
+    return Error::Code::kAgain;
+  }
+
   int domain;
   switch (endpoint.address.version()) {
     case Version::kV4:
@@ -89,10 +99,14 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(TaskRunner* task_runner,
   }
   const ErrorOr<int> fd = CreateNonBlockingUdpSocket(domain);
   if (!fd) {
+    in_create = false;
     return fd.error();
   }
-  return UdpSocketUniquePtr(static_cast<UdpSocket*>(new UdpSocketPosix(
+
+  auto socket = UdpSocketUniquePtr(static_cast<UdpSocket*>(new UdpSocketPosix(
       task_runner, client, SocketHandle(fd.value()), endpoint)));
+  in_create = false;
+  return socket;
 }
 
 Error UdpSocketPosix::CreateError(Error::Code code) {
