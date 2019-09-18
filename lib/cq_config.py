@@ -12,7 +12,6 @@ import os
 from six.moves import configparser
 
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 
@@ -287,7 +286,7 @@ class CQConfigParser(object):
     """
     affected_paths = [os.path.join(git_repo, path)
                       for path in change.GetDiffStatus(git_repo)]
-    return cros_build_lib.GetCommonPathPrefix(affected_paths)
+    return os.path.dirname(os.path.commonprefix(affected_paths))
 
   @classmethod
   def GetCommonConfigFileForChange(cls, build_root, change):
