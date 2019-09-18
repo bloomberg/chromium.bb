@@ -1512,7 +1512,7 @@ void RenderFrameImpl::CreateFrame(
     const base::UnguessableToken& devtools_frame_token,
     const FrameReplicationState& replicated_state,
     CompositorDependencies* compositor_deps,
-    const mojom::CreateFrameWidgetParams& widget_params,
+    const mojom::CreateFrameWidgetParams* widget_params,
     const FrameOwnerProperties& frame_owner_properties,
     bool has_committed_real_load) {
   // TODO(danakj): Split this method into two pieces. The first block makes a
@@ -1621,12 +1621,14 @@ void RenderFrameImpl::CreateFrame(
     // For a main frame, we use the RenderWidget already attached to the
     // RenderView (this is being changed by https://crbug.com/419087).
 
-    // Main frames are always local roots, so they should always have a routing
-    // id. Surprisingly, this routing id is *not* used though, as the routing id
-    // on the existing RenderWidget is not changed. (I don't know why.)
+    // Main frames are always local roots, so they should always have a
+    // |widget_params| (and it always comes with a routing id). Surprisingly,
+    // this routing id is *not* used though, as the routing id on the existing
+    // RenderWidget is not changed. (I don't know why.)
     // TODO(crbug.com/888105): It's a bug that the RenderWidget is not using
     // this routing id.
-    DCHECK_NE(widget_params.routing_id, MSG_ROUTING_NONE);
+    DCHECK(widget_params);
+    DCHECK_NE(widget_params->routing_id, MSG_ROUTING_NONE);
 
     // The RenderViewImpl and its RenderWidget already exist by the time we
     // get here (we get them from the RenderFrameProxy).
@@ -1652,7 +1654,8 @@ void RenderFrameImpl::CreateFrame(
 
     render_frame->render_widget_ = render_widget;
     DCHECK(!render_frame->owned_render_widget_);
-  } else if (widget_params.routing_id != MSG_ROUTING_NONE) {
+  } else if (widget_params) {
+    DCHECK(widget_params->routing_id != MSG_ROUTING_NONE);
     // This frame is a child local root, so we require a separate RenderWidget
     // for it from any other frames in the frame tree. Each local root defines
     // a separate context/coordinate space/world for compositing, painting,
@@ -1669,7 +1672,7 @@ void RenderFrameImpl::CreateFrame(
     // local root with a new compositing, painting, and input coordinate
     // space/context.
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
-        widget_params.routing_id, compositor_deps,
+        widget_params->routing_id, compositor_deps,
         render_view->page_properties(), blink::kWebDisplayModeUndefined,
         /*is_undead=*/false, /*never_visible=*/false);
 
@@ -1689,7 +1692,7 @@ void RenderFrameImpl::CreateFrame(
     render_frame->owned_render_widget_ = std::move(render_widget);
   }
 
-  if (widget_params.routing_id != MSG_ROUTING_NONE) {
+  if (widget_params) {
     DCHECK(render_frame->render_widget_);
     // The RenderWidget should start with valid VisualProperties, including a
     // non-zero size. While RenderWidget would not normally receive IPCs and
@@ -1697,7 +1700,7 @@ void RenderFrameImpl::CreateFrame(
     // we need at least one update to them in order to meet expectations in the
     // renderer, and that update comes as part of the CreateFrame message.
     render_frame->render_widget_->OnSynchronizeVisualProperties(
-        widget_params.visual_properties);
+        widget_params->visual_properties);
   }
 
   if (has_committed_real_load)
