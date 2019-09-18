@@ -157,6 +157,12 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
     self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.run,
                       ['/does/not/exist'], error_code_ok=True)
 
+  def testInputBytes(self):
+    """Verify input argument when it is bytes."""
+    for data in (b'', b'foo', b'bar\nhigh'):
+      result = cros_build_lib.run(['cat'], input=data)
+      self.assertEqual(result.output, data)
+
   def testInputString(self):
     """Verify input argument when it is a string."""
     for data in ('', 'foo', 'bar\nhigh'):
@@ -180,6 +186,40 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
     with open(__file__) as f:
       result = cros_build_lib.run(['cat'], input=f.fileno())
       self.assertEqual(result.output, osutils.ReadFile(__file__))
+
+  def testMixedEncodingCommand(self):
+    """Verify cmd can mix bytes & strings."""
+    result = cros_build_lib.run([b'echo', 'hi', u'ß'], capture_output=True,
+                                encoding='utf-8')
+    self.assertEqual(result.stdout, u'hi ß\n')
+
+  def testEncodingBinaryOutpt(self):
+    """Verify encoding=None output handling."""
+    result = cros_build_lib.run(b'echo o\xff ut; echo e\xff rr >&2',
+                                shell=True, capture_output=True)
+    self.assertEqual(result.stdout, b'o\xff ut\n')
+    self.assertEqual(result.stderr, b'e\xff rr\n')
+
+  def testEncodingUtf8Output(self):
+    """Verify encoding='utf-8' output handling."""
+    result = cros_build_lib.run(['echo', u'ß'], capture_output=True,
+                                encoding='utf-8')
+    self.assertEqual(result.stdout, u'ß\n')
+
+  def testEncodingStrictInvalidUtf8Output(self):
+    """Verify encoding='utf-8' output with invalid content."""
+    with self.assertRaises(UnicodeDecodeError):
+      cros_build_lib.run(['echo', b'\xff'], capture_output=True,
+                         encoding='utf-8')
+    with self.assertRaises(UnicodeDecodeError):
+      cros_build_lib.run(['echo', b'\xff'], capture_output=True,
+                         encoding='utf-8', errors='strict')
+
+  def testEncodingReplaceInvalidUtf8Output(self):
+    """Verify encoding='utf-8' errors='replace' output with invalid content."""
+    result = cros_build_lib.run(['echo', b'S\xffE'], capture_output=True,
+                                encoding='utf-8', errors='replace')
+    self.assertEqual(result.stdout, u'S\ufffdE\n')
 
 
 def _ForceLoggingLevel(functor):

@@ -506,7 +506,7 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
         append_to_file=False, chroot_args=None, debug_level=logging.INFO,
         check=True, int_timeout=1, kill_timeout=1,
         log_output=False, capture_output=False,
-        quiet=False, mute_output=None, **kwargs):
+        quiet=False, mute_output=None, encoding=None, errors=None, **kwargs):
   """Runs a command.
 
   Args:
@@ -556,6 +556,10 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
       |combine_stdout_stderr| to True.
     mute_output: Mute subprocess printing to parent stdout/stderr. Defaults to
       None, which bases muting on |debug_level|.
+    encoding: Encoding for stdin/stdout/stderr, otherwise bytes are used.  Most
+      users want 'utf-8' here for string data.
+    errors: How to handle errors when |encoding| is used.  Defaults to 'strict',
+      but 'ignore' and 'replace' are common settings.
 
   Returns:
     A CommandResult object.
@@ -576,6 +580,9 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
     # logging.warning('run: error_code_ok= is renamed/inverted to check=')
     check = not kwargs.pop('error_code_ok')
   assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
+
+  if encoding is not None and errors is None:
+    errors = 'strict'
 
   # Set default for variables.
   stdout = None
@@ -629,8 +636,15 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
 
   # If input is a string, we'll create a pipe and send it through that.
   # Otherwise we assume it's a file object that can be read from directly.
-  if isinstance(input, six.string_types):
+  if isinstance(input, (six.string_types, six.binary_type)):
     stdin = subprocess.PIPE
+    # Allow people to always pass in bytes.
+    # Linter can't see that we're using |input| as a var, not a builtin.
+    # pylint: disable=input-builtin
+    if encoding and isinstance(input, six.binary_type):
+      input = input.encode(encoding, errors)
+    elif not encoding and isinstance(input, six.string_types):
+      input = input.encode('utf-8')
   elif input is not None:
     stdin = input
     input = None
@@ -739,6 +753,13 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
         logging.log(debug_level, '(stdout):\n%s', cmd_result.stdout)
       if cmd_result.stderr:
         logging.log(debug_level, '(stderr):\n%s', cmd_result.stderr)
+
+    # Convert after logging so we have the original binary output.
+    if encoding:
+      if cmd_result.stdout is not None:
+        cmd_result.stdout = cmd_result.stdout.decode(encoding, errors)
+      if cmd_result.stderr is not None:
+        cmd_result.stderr = cmd_result.stderr.decode(encoding, errors)
 
     if check and proc.returncode:
       msg = 'cmd=%s' % cmd
