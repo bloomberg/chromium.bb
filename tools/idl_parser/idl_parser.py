@@ -415,8 +415,7 @@ class IDLParser(object):
   def p_ConstValue(self, p):
     """ConstValue : BooleanLiteral
                   | FloatLiteral
-                  | integer
-                  | null"""
+                  | integer"""
     if type(p[1]) == str:
       p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'integer'),
                             self.BuildAttribute('VALUE', p[1]))
