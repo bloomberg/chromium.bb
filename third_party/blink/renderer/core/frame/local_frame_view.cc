@@ -545,6 +545,11 @@ void LocalFrameView::AdjustViewSizeAndLayout() {
   }
 }
 
+void LocalFrameView::UpdateAcceleratedCompositingSettings() {
+  if (auto* layout_view = GetLayoutView())
+    layout_view->Compositor()->UpdateAcceleratedCompositingSettings();
+}
+
 void LocalFrameView::UpdateCountersAfterStyleChange() {
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);

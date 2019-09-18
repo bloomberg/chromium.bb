@@ -1543,79 +1543,14 @@ void RenderViewImpl::DetachWebFrameWidget() {
   render_widget_->SetWebWidgetInternal(nullptr);
 }
 
-void RenderViewImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
-  // TODO(wjmaclean): We should see if this restriction is really necessary,
-  // since it isn't enforced in other parts of the page zoom system (e.g.
-  // when a users changes the zoom of a currently displayed page). Android
-  // has no UI for this, so in theory the following code would normally just use
-  // the default zoom anyways.
-#if !defined(OS_ANDROID)
-  // On Android, page zoom isn't used, and in case of WebView, text zoom is used
-  // for legacy WebView text scaling emulation. Thus, the code that resets
-  // the zoom level from this map will be effectively resetting text zoom level.
-  host_zoom_levels_[url] = zoom_level;
-#endif
-}
-
-void RenderViewImpl::UpdateZoomLevelForNavigationCommitOfMainFrame(
-    const GURL& loading_url) {
-  // Reset the zoom limits in case a plugin had changed them previously. This
-  // will also call us back via ZoomLimitsChanged() which will cause us to send
-  // a message to update WebContentsImpl.
-  webview()->ZoomLimitsChanged(ZoomFactorToZoomLevel(kMinimumZoomFactor),
-                               ZoomFactorToZoomLevel(kMaximumZoomFactor));
-
-  auto host_zoom_it = host_zoom_levels_.find(loading_url);
-
-  // Full-page plugin documents always use the default zoom level. Otherwise,
-  // apply the zoom level specified by the browser in the |host_zoom_levels_|
-  // map, if present.
-  WebFrame* main_frame = webview()->MainFrame();
-  if (main_frame->IsWebLocalFrame() &&
-      main_frame->ToWebLocalFrame()->GetDocument().IsPluginDocument()) {
-    SetZoomLevel(0);
-  } else if (host_zoom_it != host_zoom_levels_.end()) {
-    SetZoomLevel(host_zoom_it->second);
-  }
-
-  // This zoom level was merely recorded transiently for a single navigation.
-  // We can erase it now. On another navigation/reload, the browser will another
-  // zoom level.
-  host_zoom_levels_.clear();
-}
-
-bool RenderViewImpl::SetZoomLevel(double zoom_level) {
-  if (zoom_level == page_zoom_level_)
-    return false;
-
+void RenderViewImpl::SetZoomLevel(double zoom_level) {
   // If we change the zoom level for the view, make sure any subsequent subframe
   // loads reflect the current zoom level.
   page_zoom_level_ = zoom_level;
+
   webview()->SetZoomLevel(zoom_level);
   for (auto& observer : observers_)
     observer.OnZoomLevelChanged();
-  return true;
-}
-
-void RenderViewImpl::SetPreferCompositingToLCDTextEnabled(bool prefer) {
-  webview()->GetSettings()->SetPreferCompositingToLCDTextEnabled(prefer);
-}
-
-void RenderViewImpl::SetDeviceScaleFactor(bool use_zoom_for_dsf,
-                                          float device_scale_factor) {
-  if (use_zoom_for_dsf)
-    webview()->SetZoomFactorForDeviceScaleFactor(device_scale_factor);
-  else
-    webview()->SetDeviceScaleFactor(device_scale_factor);
-}
-
-void RenderViewImpl::PropagatePageZoomToNewlyAttachedFrame(
-    bool use_zoom_for_dsf,
-    float device_scale_factor) {
-  if (use_zoom_for_dsf)
-    webview()->SetZoomFactorForDeviceScaleFactor(device_scale_factor);
-  else
-    webview()->SetZoomLevel(page_zoom_level_);
 }
 
 void RenderViewImpl::SetValidationMessageDirection(
@@ -1940,6 +1875,11 @@ void RenderViewImpl::OnSetPageScale(float page_scale_factor) {
   if (!webview())
     return;
   webview()->SetPageScaleFactor(page_scale_factor);
+}
+
+void RenderViewImpl::UpdateZoomLevel(double zoom_level) {
+  webview()->CancelPagePopup();
+  SetZoomLevel(zoom_level);
 }
 
 void RenderViewImpl::ApplyPageHidden(bool hidden, bool initial_setting) {

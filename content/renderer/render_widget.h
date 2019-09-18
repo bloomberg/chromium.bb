@@ -675,11 +675,14 @@ class CONTENT_EXPORT RenderWidget
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);
   void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
-  void SetPageZoomLevelForTesting(double zoom_level);
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
   void EnableAutoResizeForTesting(const gfx::Size& min_size,
                                   const gfx::Size& max_size);
   void DisableAutoResizeForTesting(const gfx::Size& new_size);
+
+  // Update the WebView's device scale factor.
+  // TODO(ajwong): This should be moved into RenderView.
+  void UpdateWebViewWithDeviceScaleFactor();
 
   // Forces a redraw and invokes the callback once the frame's been displayed
   // to the user.
@@ -903,6 +906,8 @@ class CONTENT_EXPORT RenderWidget
                                     bool reply_to_request);
 
   gfx::ColorSpace GetRasterColorSpace() const;
+
+  void UpdateZoom(double zoom_level);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Returns the focused pepper plugin, if any, inside the WebWidget. That is
