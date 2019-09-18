@@ -605,6 +605,7 @@ void Layer::SetMaskLayer(scoped_refptr<PictureLayer> mask_layer) {
     // The mask layer should not have any children.
     DCHECK(mask_layer->children().empty());
 
+    mask_layer->inputs_.position = gfx::PointF();
     mask_layer->SetIsDrawable(true);
     mask_layer->SetBlendMode(SkBlendMode::kDstIn);
     mask_layer->SetIsMask(true);
@@ -818,6 +819,14 @@ void Layer::SetContentsOpaque(bool opaque) {
 }
 
 void Layer::SetPosition(const gfx::PointF& position) {
+  // The mask layer should always be at the same location as the masked layer
+  // which is its parent, so its position should be always zero.
+  if (parent() && parent()->inputs_.mask_layer == this) {
+    DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
+    DCHECK(inputs_.position.IsOrigin());
+    return;
+  }
+
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.position == position)
     return;
@@ -1387,8 +1396,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
                "Layer::PushPropertiesTo");
   DCHECK(layer_tree_host_);
 
-  if (inputs_.mask_layer)
+  if (inputs_.mask_layer) {
     DCHECK_EQ(bounds(), inputs_.mask_layer->bounds());
+    DCHECK(inputs_.mask_layer->position().IsOrigin());
+  }
 
   // The element id should be set first because other setters may
   // depend on it. Referencing element id on a layer is
