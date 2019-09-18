@@ -2,16 +2,16 @@
 @WAIT-FOR:done
 -->
 <div>
-  <div>Cats</div>
-  <div id="block" style="display:none;">
+  Cats
+  <span id="collapsed" style="visibility:visible;">
       <input type="checkbox" aria-label="checkbox">
-  </div>
+  </span>
   <div><code>pending</code></div>
 </div>
 
 <script>
   setTimeout(()=> {
-    document.getElementById('block').style.display = 'block';
+    document.getElementById('collapsed').style.visibility = 'collapsed';
     document.querySelector('code').innerText = 'done';
-  }, 100);
+  }, 200);
 </script>
