@@ -860,7 +860,7 @@ android_library("browser_java") {
   ]
   deps = [
     ":common_commandline_java",
-    ":common_crash_info_java",
+    ":common_crash_java",
 
     # This includes AwResource, which may be called via JNI. We're including it
     # here because there's currently no good way to enforce that it gets included
@@ -1010,9 +1010,11 @@ android_library("platform_service_bridge_upstream_implementation_java") {
   ]
 }
 
-android_library("common_crash_info_java") {
-  java_files =
-      [ "java/src/org/chromium/android_webview/common/crash/CrashInfo.java" ]
+android_library("common_crash_java") {
+  java_files = [
+    "java/src/org/chromium/android_webview/common/crash/CrashInfo.java",
+    "java/src/org/chromium/android_webview/common/crash/SystemWideCrashDirectories.java",
+  ]
 
   deps = [
     "//base:base_java",
@@ -1063,7 +1065,7 @@ android_library("services_java") {
   ]
   deps = [
     ":common_commandline_java",
-    ":common_crash_info_java",
+    ":common_crash_java",
     ":common_platform_services_java",
     ":common_variations_utils_java",
     ":system_webview_manifest",
