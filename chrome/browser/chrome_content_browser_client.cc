@@ -4227,10 +4227,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(std::move(google_password_manager_throttle));
 #endif
 
-  std::unique_ptr<content::NavigationThrottle> previews_lite_page_throttle =
-      PreviewsLitePageDecider::MaybeCreateThrottleFor(handle);
-  if (previews_lite_page_throttle)
-    throttles.push_back(std::move(previews_lite_page_throttle));
   if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
     throttles.push_back(
         std::make_unique<safe_browsing::SafeBrowsingNavigationThrottle>(
@@ -4240,7 +4236,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   std::unique_ptr<content::NavigationThrottle> browser_switcher_throttle =
-      browser_switcher::BrowserSwitcherNavigationThrottle ::
+      browser_switcher::BrowserSwitcherNavigationThrottle::
           MaybeCreateThrottleFor(handle);
   if (browser_switcher_throttle)
     throttles.push_back(std::move(browser_switcher_throttle));
