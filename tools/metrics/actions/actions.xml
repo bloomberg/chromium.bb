@@ -21530,9 +21530,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_NewTab">
-  <obsolete>Deprecated due to removal.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <description>
+    User selected New Tab to the Right from the tabstrip context menu.
+  </description>
 </action>
 
 <action name="TabContextMenu_OpenTabsLeftToRight">

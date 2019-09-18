@@ -36,6 +36,8 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
           ? tab_strip->selection_model().selected_indices()
           : std::vector<int>{index};
   int num_affected_tabs = affected_indices.size();
+  AddItemWithStringId(TabStripModel::CommandNewTabToRight,
+                      IDS_TAB_CXMENU_NEWTABTORIGHT);
   if (base::FeatureList::IsEnabled(features::kTabGroups)) {
     AddItemWithStringId(TabStripModel::CommandAddToNewGroup,
                         IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP);
@@ -56,9 +58,8 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
         break;
       }
     }
-
-    AddSeparator(ui::NORMAL_SEPARATOR);
   }
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,
                       IDS_TAB_CXMENU_DUPLICATE);
