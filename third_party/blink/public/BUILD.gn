@@ -153,7 +153,6 @@ source_set("blink_headers") {
     "platform/modules/peerconnection/rtc_event_log_output_sink.h",
     "platform/modules/peerconnection/rtc_event_log_output_sink_proxy_util.h",
     "platform/modules/peerconnection/two_keys_adapter_map.h",
-    "platform/modules/peerconnection/video_codec_factory.h",
     "platform/modules/peerconnection/webrtc_audio_sink.h",
     "platform/modules/peerconnection/webrtc_util.h",
     "platform/modules/peerconnection/webrtc_video_track_source.h",

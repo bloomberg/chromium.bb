@@ -1281,6 +1281,7 @@ jumbo_component("platform") {
     "peerconnection/transmission_encoding_info_handler.cc",
     "peerconnection/transmission_encoding_info_handler.h",
     "peerconnection/video_codec_factory.cc",
+    "peerconnection/video_codec_factory.h",
     "peerconnection/webrtc_audio_sink.cc",
     "peerconnection/webrtc_video_track_source.cc",
     "prerender.cc",
