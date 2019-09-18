@@ -3262,6 +3262,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'kevin64',
       'nocturne',
+      'nyan_kitty',
       'reef',
       'terra',
       'veyron_minnie',

@@ -27,6 +27,7 @@
     hana-chrome-pfq
     kevin64-chrome-pfq
     nocturne-chrome-pfq
+    nyan_kitty-chrome-pfq
     reef-chrome-pfq
     scarlet-chromium-pfq
     terra-chrome-pfq
@@ -2380,6 +2381,7 @@
     hana-chrome-pfq-tryjob
     kevin64-chrome-pfq-tryjob
     nocturne-chrome-pfq-tryjob
+    nyan_kitty-chrome-pfq-tryjob
     reef-chrome-pfq-tryjob
     scarlet-chromium-pfq-tryjob
     terra-chrome-pfq-tryjob
