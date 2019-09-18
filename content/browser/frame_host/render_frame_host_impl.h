@@ -901,7 +901,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   service_manager::BinderRegistry& BinderRegistryForTesting() {
     return *registry_;
   }
-  blink::mojom::FileChooserPtr BindFileChooserForTesting();
+
+  mojo::Remote<blink::mojom::FileChooser> BindFileChooserForTesting();
 
   // Called when the WebAudio AudioContext given by |audio_context_id| has
   // started (or stopped) playing audible audio.

@@ -178,6 +178,9 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -202,6 +205,7 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
@@ -6357,9 +6361,10 @@ void RenderFrameHostImpl::GetFileChooser(
   FileChooserImpl::Create(this, std::move(receiver));
 }
 
-blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {
-  blink::mojom::FileChooserPtr chooser;
-  FileChooserImpl::Create(this, mojo::MakeRequest(&chooser));
+mojo::Remote<blink::mojom::FileChooser>
+RenderFrameHostImpl::BindFileChooserForTesting() {
+  mojo::Remote<blink::mojom::FileChooser> chooser;
+  FileChooserImpl::Create(this, chooser.BindNewPipeAndPassReceiver());
   return chooser;
 }
 
