@@ -271,7 +271,6 @@ interface MyIFaceBig {
 /** TREE
  *Interface(MyIFaceSpecials)
  *  Operation(set)
- *    CREATOR: True
  *    SETTER: True
  *    Arguments()
  *      Argument(property)
@@ -289,7 +288,7 @@ interface MyIFaceBig {
  *      PrimitiveType(double)
  */
 interface MyIFaceSpecials {
-  setter creator void set(DOMString property);
+  setter void set(DOMString property);
   getter double (DOMString property);
 };
 

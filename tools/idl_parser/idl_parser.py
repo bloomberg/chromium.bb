@@ -271,14 +271,12 @@ class IDLParser(object):
     """ArgumentNameKeyword : ATTRIBUTE
                            | CALLBACK
                            | CONST
-                           | CREATOR
                            | DELETER
                            | DICTIONARY
                            | ENUM
                            | GETTER
                            | INCLUDES
                            | INHERIT
-                           | LEGACYCALLER
                            | NAMESPACE
                            | PARTIAL
                            | SETTER
@@ -509,41 +507,34 @@ class IDLParser(object):
       p[0] = p[1]
 
   def p_Operation(self, p):
-    """Operation : ReturnType OperationRest
+    """Operation : RegularOperation
                  | SpecialOperation"""
-    if len(p) == 3:
-      p[2].AddChildren(p[1])
-      p[0] = p[2]
-    else:
-      p[0] = p[1]
+    p[0] = p[1]
+
+  def p_RegularOperation(self, p):
+    """RegularOperation : ReturnType OperationRest"""
+    p[2].AddChildren(p[1])
+    p[0] = p[2]
 
   def p_SpecialOperation(self, p):
-    """SpecialOperation : Special Specials ReturnType OperationRest"""
-    p[4].AddChildren(ListFromConcat(p[1], p[2], p[3]))
-    p[0] = p[4]
-
-  def p_Specials(self, p):
-    """Specials : Special Specials
-                | """
-    if len(p) > 1:
-      p[0] = ListFromConcat(p[1], p[2])
+    """SpecialOperation : Special RegularOperation"""
+    p[2].AddChildren(p[1])
+    p[0] = p[2]
 
   def p_Special(self, p):
     """Special : GETTER
                | SETTER
-               | CREATOR
-               | DELETER
-               | LEGACYCALLER"""
+               | DELETER"""
     p[0] = self.BuildTrue(p[1].upper())
 
   def p_OperationRest(self, p):
-    """OperationRest : OptionalIdentifier '(' ArgumentList ')' ';'"""
+    """OperationRest : OptionalOperationName '(' ArgumentList ')' ';'"""
     arguments = self.BuildProduction('Arguments', p, 2, p[3])
     p[0] = self.BuildNamed('Operation', p, 1, arguments)
 
-  def p_OptionalIdentifier(self, p):
-    """OptionalIdentifier : identifier
-                          |"""
+  def p_OptionalOperationName(self, p):
+    """OptionalOperationName : identifier
+                             |"""
     if len(p) > 1:
       p[0] = p[1]
     else:
