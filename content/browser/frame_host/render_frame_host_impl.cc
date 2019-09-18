@@ -1103,6 +1103,10 @@ void RenderFrameHostImpl::EnterBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK(!is_in_back_forward_cache_);
   is_in_back_forward_cache_ = true;
+  // Pages in the back-forward cache are automatically evicted after a certain
+  // time.
+  if (!GetParent())
+    StartBackForwardCacheEvictionTimer();
   for (auto& child : children_)
     child->current_frame_host()->EnterBackForwardCache();
 }
@@ -1112,8 +1116,26 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK(is_in_back_forward_cache_);
   is_in_back_forward_cache_ = false;
+  if (back_forward_cache_eviction_timer_.IsRunning())
+    back_forward_cache_eviction_timer_.Stop();
   for (auto& child : children_)
     child->current_frame_host()->LeaveBackForwardCache();
+}
+
+void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
+  DCHECK(is_in_back_forward_cache_);
+  base::TimeDelta evict_after =
+      BackForwardCache::GetTimeToLiveInBackForwardCache();
+  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
+      frame_tree_node_->navigator()->GetController());
+
+  back_forward_cache_eviction_timer_.SetTaskRunner(
+      controller->back_forward_cache().GetTaskRunner());
+
+  back_forward_cache_eviction_timer_.Start(
+      FROM_HERE, evict_after,
+      base::BindOnce(&RenderFrameHostImpl::EvictFromBackForwardCache,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
@@ -3452,6 +3474,9 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
 
 void RenderFrameHostImpl::EvictFromBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
+
+  if (is_evicted_from_back_forward_cache_)
+    return;
 
   bool in_back_forward_cache = is_in_back_forward_cache();
 

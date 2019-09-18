@@ -917,6 +917,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // occurs immediately before a restored document is committed.
   void LeaveBackForwardCache();
 
+  // Start a timer that will evict this RenderFrameHost from the
+  // BackForwardCache after time to live.
+  void StartBackForwardCacheEvictionTimer();
+
   bool is_in_back_forward_cache() { return is_in_back_forward_cache_; }
 
   bool is_evicted_from_back_forward_cache() {
@@ -2326,6 +2330,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
   bool is_evicted_from_back_forward_cache_ = false;
+  base::OneShotTimer back_forward_cache_eviction_timer_;
 
   blink::mojom::FrameVisibility visibility_ =
       blink::mojom::FrameVisibility::kRenderedInViewport;
