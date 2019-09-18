@@ -4396,7 +4396,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   if (command_line->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     registry_->AddInterface(
-        base::BindRepeating(&RenderFrameHostImpl::BindSerialServiceRequest,
+        base::BindRepeating(&RenderFrameHostImpl::BindSerialServiceReceiver,
                             base::Unretained(this)));
     registry_->AddInterface(
         base::BindRepeating(&HidService::Create, base::Unretained(this)));
@@ -6307,8 +6307,8 @@ void RenderFrameHostImpl::BindNFCReceiver(
 #endif
 
 #if !defined(OS_ANDROID)
-void RenderFrameHostImpl::BindSerialServiceRequest(
-    blink::mojom::SerialServiceRequest request) {
+void RenderFrameHostImpl::BindSerialServiceReceiver(
+    mojo::PendingReceiver<blink::mojom::SerialService> receiver) {
   if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kSerial)) {
     mojo::ReportBadMessage("Feature policy blocks access to Serial.");
     return;
@@ -6317,7 +6317,7 @@ void RenderFrameHostImpl::BindSerialServiceRequest(
   if (!serial_service_)
     serial_service_ = std::make_unique<SerialService>(this);
 
-  serial_service_->Bind(std::move(request));
+  serial_service_->Bind(std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindAuthenticatorRequest(

@@ -1543,7 +1543,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif
 
 #if !defined(OS_ANDROID)
-  void BindSerialServiceRequest(blink::mojom::SerialServiceRequest request);
+  void BindSerialServiceReceiver(
+      mojo::PendingReceiver<blink::mojom::SerialService> receiver);
   void BindAuthenticatorRequest(
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 #endif
