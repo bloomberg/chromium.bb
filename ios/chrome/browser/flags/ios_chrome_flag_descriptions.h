@@ -167,10 +167,10 @@ extern const char kFillOnAccountSelectHttpDescription[];
 extern const char kFindInPageiFrameName[];
 extern const char kFindInPageiFrameDescription[];
 
-// Title and description for the command line switch used to determine the
-// active fullscreen viewport adjustment mode.
-extern const char kFullscreenViewportAdjustmentExperimentName[];
-extern const char kFullscreenViewportAdjustmentExperimentDescription[];
+// Title and description for the flag to update the web view's insets for scroll
+// events.
+extern const char kFullscreenSmoothScrollingName[];
+extern const char kFullscreenSmoothScrollingDescription[];
 
 // Title and description for the flag to ignore viewport scale limits.
 extern const char kIgnoresViewportScaleLimitsName[];
@@ -188,10 +188,6 @@ extern const char kInProductHelpDemoModeDescription[];
 // Title and description for the flag to enable the language settings page.
 extern const char kLanguageSettingsName[];
 extern const char kLanguageSettingsDescription[];
-
-// Title and description for the flag to lock the bottom toolbar into place.
-extern const char kLockBottomToolbarName[];
-extern const char kLockBottomToolbarDescription[];
 
 // Title, description, and options for the MarkHttpAs setting that controls
 // display of omnibox warnings about non-secure pages.
