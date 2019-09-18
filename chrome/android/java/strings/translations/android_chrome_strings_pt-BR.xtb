@@ -67,7 +67,7 @@
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1409426117486808224">Versão simplificada das guias abertas</translation>
 <translation id="1409879593029778104">O download de <ph name="FILE_NAME" /> foi impedido porque o arquivo já existe.</translation>
-<translation id="1413136574162415971">O Google pode verificar se suas senhas estavam em uma violação de dados. Isso será ativado quando você fizer login com sua Conta Google e ativar a sincronização.</translation>
+<translation id="1413136574162415971">O Google pode verificar se suas senhas foram afetadas por uma violação de dados. Isso será ativado quando você fizer login com sua Conta Google e ativar a sincronização.</translation>
 <translation id="1414981605391750300">Entrando em contato com o Google. Isso pode levar um minuto…</translation>
 <translation id="1416550906796893042">Versão do aplicativo</translation>
 <translation id="1430915738399379752">Imprimir</translation>
@@ -968,7 +968,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8007176423574883786">Desativado neste dispositivo</translation>
 <translation id="8013372441983637696">Limpar também seus dados do Chrome deste dispositivo</translation>
 <translation id="8015452622527143194">Retornar tudo na página para o tamanho padrão</translation>
-<translation id="8015780634880457457">O Google pode verificar se suas senhas estavam em uma violação de dados</translation>
+<translation id="8015780634880457457">O Google pode verificar se suas senhas foram afetadas em uma violação de dados</translation>
 <translation id="802154636333426148">Falha no download</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8035133914807600019">Nova pasta...</translation>

@@ -1510,7 +1510,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Odmestitveni program za Linux</translation>
 <translation id="3220586366024592812">Proces priključka <ph name="CLOUD_PRINT_NAME" /> se je zrušil. Ga želite znova zagnati?</translation>
-<translation id="3221634914176615296">Vsebino naprav raziščite v aplikaciji Datoteke.</translation>
 <translation id="3222066309010235055">Vnaprejšnje upodabljanje: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Privzeti vijoličasti avatar</translation>
 <translation id="3225319735946384299">Podpisovanje kode</translation>
@@ -5476,7 +5475,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9044646465488564462">Z omrežjem se ni bilo mogoče povezati: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Pošlje spletni naslov strani, ki jo želite odpreti, Googlu</translation>
 <translation id="9046895021617826162">Vzpostavljanje povezave ni uspelo</translation>
-<translation id="904814878483208983">Če želite aplikacijam v Googlu Play omogočiti popoln dostop do datotečnega sistema, odprite nastavitve.</translation>
 <translation id="9050666287014529139">Geslo</translation>
 <translation id="9052208328806230490">Tiskalnike ste registrirali za uporabo storitve <ph name="CLOUD_PRINT_NAME" /> z računom <ph name="EMAIL" />.</translation>
 <translation id="9052404922357793350">Blokiraj še naprej</translation>

@@ -1510,7 +1510,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linux-sovelluksen poisto-ohjelma</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" />-yhteysohjelman prosessi keskeytyi. Käynnistetäänkö uudelleen?</translation>
-<translation id="3221634914176615296">Tutustu laitteen sisältöön Tiedostot-sovelluksen kautta.</translation>
 <translation id="3222066309010235055">Esihahmonna: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Violetti oletusavatar</translation>
 <translation id="3225319735946384299">Koodin allekirjoitus</translation>
@@ -5472,7 +5471,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9044646465488564462">Yhteyden muodostaminen verkkoon epäonnistui: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Lähettää Googlelle etsimäsi sivun verkko-osoitteen</translation>
 <translation id="9046895021617826162">Yhdistäminen epäonnistui</translation>
-<translation id="904814878483208983">Jos haluat antaa Google Playn sovelluksille täydet tiedostojärjestelmän käyttöoikeudet, siirry asetuksiin.</translation>
 <translation id="9050666287014529139">Tunnuslause</translation>
 <translation id="9052208328806230490">Olet rekisteröinyt tulostimesi palveluun <ph name="CLOUD_PRINT_NAME" /> tilin <ph name="EMAIL" /> avulla</translation>
 <translation id="9052404922357793350">Estä edelleen</translation>

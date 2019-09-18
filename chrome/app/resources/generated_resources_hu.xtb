@@ -1510,7 +1510,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linuxos eltávolító program</translation>
 <translation id="3220586366024592812">A <ph name="CLOUD_PRINT_NAME" /> csatlakozó folyamat összeomlott. Újraindítja?</translation>
-<translation id="3221634914176615296">Fedezze fel az eszköz tartalmát a Fájlok alkalmazással.</translation>
 <translation id="3222066309010235055">Előmegjelenítés: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Alapértelmezett lila avatar</translation>
 <translation id="3225319735946384299">Kódaláírás</translation>
@@ -5475,7 +5474,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="9044646465488564462">Nem sikerült csatlakozni a hálózathoz: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Elküldi az elérni kívánt oldal internetcímét a Google-nak</translation>
 <translation id="9046895021617826162">Csatlakozás sikertelen</translation>
-<translation id="904814878483208983">Ha teljes fájlrendszeri hozzáférést szeretne biztosítani a Google Playből származó alkalmazásoknak, nyissa meg a Beállításokat.</translation>
 <translation id="9050666287014529139">Összetett jelszó</translation>
 <translation id="9052208328806230490">Nyomtatóit regisztrálta a(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatásra a következő fiókkal: <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Letiltás fenntartása</translation>

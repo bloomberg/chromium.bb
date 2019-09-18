@@ -1510,7 +1510,6 @@
 <translation id="321799795901478485">ที่เก็บ ZIP ถาวร</translation>
 <translation id="321834671654278338">โปรแกรมถอนการติดตั้ง Linux</translation>
 <translation id="3220586366024592812">การทำงานของตัวเชื่อมต่อ <ph name="CLOUD_PRINT_NAME" /> ขัดข้อง จะรีสตาร์ทหรือไม่</translation>
-<translation id="3221634914176615296">สำรวจเนื้อหาของอุปกรณ์ในแอป Files</translation>
 <translation id="3222066309010235055">Prerender: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">รูปโปรไฟล์เริ่มต้นสีม่วง</translation>
 <translation id="3225319735946384299">การรับรองโค้ด</translation>
@@ -5474,7 +5473,6 @@
 <translation id="9044646465488564462">ไม่สามารถเชื่อมต่อเครือข่าย: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">ส่งที่อยู่เว็บของหน้าที่คุณพยายามเข้าถึงให้กับ Google</translation>
 <translation id="9046895021617826162">การเชื่อมต่อล้มเหลว</translation>
-<translation id="904814878483208983">หากต้องการให้สิทธิ์เข้าถึงระบบไฟล์โดยสมบูรณ์แก่แอปต่างๆ จาก Google Play ให้ไปที่ "การตั้งค่า"</translation>
 <translation id="9050666287014529139">ข้อความรหัสผ่าน</translation>
 <translation id="9052208328806230490">คุณได้ลงทะเบียนเครื่องพิมพ์กับ <ph name="CLOUD_PRINT_NAME" /> โดยใช้บัญชี <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">บล็อกต่อไป</translation>

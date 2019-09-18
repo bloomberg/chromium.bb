@@ -1510,7 +1510,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Program de dezinstalare Linux</translation>
 <translation id="3220586366024592812">Procesul conectorului <ph name="CLOUD_PRINT_NAME" /> s-a blocat. Repornești?</translation>
-<translation id="3221634914176615296">Explorează conținutul dispozitivului în aplicația Fișiere.</translation>
 <translation id="3222066309010235055">Program de redare în avans: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Avatar violet prestabilit</translation>
 <translation id="3225319735946384299">Semnarea codului</translation>
@@ -5474,7 +5473,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9044646465488564462">Conectarea la rețea nu s-a realizat: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Trimite la Google adresa web a paginii pe care încerci să o accesezi</translation>
 <translation id="9046895021617826162">Conectare nereușită</translation>
-<translation id="904814878483208983">Pentru a permite aplicațiilor din Google Play acces deplin la sistemul de fișiere, accesează Setări.</translation>
 <translation id="9050666287014529139">Expresie de acces</translation>
 <translation id="9052208328806230490">Ai înregistrat imprimantele la <ph name="CLOUD_PRINT_NAME" /> utilizând contul <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Continuă blocarea</translation>

@@ -1510,7 +1510,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linuxov program za deinstalaciju</translation>
 <translation id="3220586366024592812">Pao je proces konektora <ph name="CLOUD_PRINT_NAME" />. Pokrenuti ponovo?</translation>
-<translation id="3221634914176615296">Istražite sadržaj ovog uređaja u aplikaciji Datoteke.</translation>
 <translation id="3222066309010235055">Iscrtavanje unaprijed: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Zadani ljubičasti avatar</translation>
 <translation id="3225319735946384299">Kodno potpisivanje</translation>
@@ -5474,7 +5473,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="9044646465488564462">Povezivanje s mrežom nije uspjelo: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Googleu se šalje web-adresa stranice koju pokušavate otvoriti.</translation>
 <translation id="9046895021617826162">Neuspjelo povezivanje</translation>
-<translation id="904814878483208983">Da biste aplikacijama iz Google Playa omogućili potpuni pristup sustavu datoteka, otvorite Postavke.</translation>
 <translation id="9050666287014529139">Zaporka</translation>
 <translation id="9052208328806230490">Registrirali ste pisače kod <ph name="CLOUD_PRINT_NAME" /> putem računa <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Nastavi blokirati</translation>

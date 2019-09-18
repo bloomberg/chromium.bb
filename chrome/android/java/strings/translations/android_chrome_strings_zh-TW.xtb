@@ -176,6 +176,7 @@
 <translation id="2154484045852737596">編輯卡片資訊</translation>
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">如要將手機上的內容分享至另一台裝置，你必須在這兩台裝置的 Chrome 設定中開啟同步功能</translation>
 <translation id="2170088579611075216">允許並進入 VR</translation>
 <translation id="218608176142494674">共用</translation>
 <translation id="2227444325776770048">以「<ph name="USER_FULL_NAME" />」的身分繼續</translation>
@@ -533,7 +534,7 @@
 <translation id="4962975101802056554">撤銷裝置的所有權限</translation>
 <translation id="4970824347203572753">你所在的地區無法使用這項功能</translation>
 <translation id="497421865427891073">往前</translation>
-<translation id="4988210275050210843">正在下載檔案 (<ph name="MEGABYTES" /> MB)。</translation>
+<translation id="4988210275050210843">正在下載檔案 (<ph name="MEGABYTES" />)。</translation>
 <translation id="4988526792673242964">網頁</translation>
 <translation id="4994033804516042629">找不到任何聯絡人</translation>
 <translation id="4996978546172906250">分享方式：</translation>
@@ -1082,6 +1083,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> (分頁)</translation>
 <translation id="885701979325669005">儲存空間</translation>
+<translation id="889338405075704026">前往 Chrome 設定</translation>
 <translation id="8901170036886848654">找不到符合條件的書籤</translation>
 <translation id="8909135823018751308">分享…</translation>
 <translation id="8912362522468806198">Google 帳戶</translation>
@@ -1100,6 +1102,7 @@
 <translation id="8993760627012879038">在無痕模式下開啟新分頁</translation>
 <translation id="8998729206196772491">您即將使用由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶登入，並授權該網域的管理員控管您的 Chrome 資料。您的資料會與這個帳戶建立永久連結。登出 Chrome 後，系統會將您的資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
 <translation id="9019902583201351841">你的家長已停用這項功能</translation>
+<translation id="9028914725102941583">開啟同步功能即可將內容分享至其他裝置</translation>
 <translation id="9029323097866369874">要允許 <ph name="DOMAIN" /> 進入 VR 模式嗎？</translation>
 <translation id="9040142327097499898">允許顯示通知。這部裝置的定位功能已關閉。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 部影片}other{# 部影片}}</translation>

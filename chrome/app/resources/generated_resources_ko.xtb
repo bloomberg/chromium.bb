@@ -1510,7 +1510,6 @@
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linux 제거 프로그램</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> 커넥터 프로세스가 중단되었습니다. 다시 시작하시겠습니까?</translation>
-<translation id="3221634914176615296">파일 앱에서 기기의 콘텐츠를 탐색합니다.</translation>
 <translation id="3222066309010235055">사전 렌더링: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">기본 보라색 아바타</translation>
 <translation id="3225319735946384299">코드 서명</translation>
@@ -5472,7 +5471,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="9044646465488564462">네트워크 연결 실패: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">사용자가 접속하려는 페이지의 웹 주소를 Google에 전송</translation>
 <translation id="9046895021617826162">연결 실패</translation>
-<translation id="904814878483208983">Google Play의 앱에 완전한 파일 시스템 액세스를 허용하려면 설정으로 이동하세요.</translation>
 <translation id="9050666287014529139">암호</translation>
 <translation id="9052208328806230490"><ph name="EMAIL" /> 계정을 사용하여 프린터를 <ph name="CLOUD_PRINT_NAME" />에 등록했습니다.</translation>
 <translation id="9052404922357793350">차단 계속</translation>

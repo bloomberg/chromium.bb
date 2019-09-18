@@ -1508,7 +1508,6 @@
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Программа удаления приложения Linux</translation>
 <translation id="3220586366024592812">Процесс коннектора <ph name="CLOUD_PRINT_NAME" /> завершился с ошибкой. Перезапустить?</translation>
-<translation id="3221634914176615296">Просмотрите содержимое устройства в приложении "Файлы".</translation>
 <translation id="3222066309010235055">Предварительная обработка: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Аватар по умолчанию (фиолетовый)</translation>
 <translation id="3225319735946384299">Подписывание кода</translation>
@@ -5471,7 +5470,6 @@
 <translation id="9044646465488564462">Не удалось подключиться к сети: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Отправлять в Google адреса веб-страниц, которые вы пытаетесь открыть</translation>
 <translation id="9046895021617826162">Сбой подключения</translation>
-<translation id="904814878483208983">Чтобы разрешить приложениям из Google Play полный доступ к файловой системе, откройте приложение "Настройки".</translation>
 <translation id="9050666287014529139">Кодовая фраза</translation>
 <translation id="9052208328806230490">Вы зарегистрировали принтеры в <ph name="CLOUD_PRINT_NAME" /> с использованием аккаунта <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Продолжать блокировать</translation>

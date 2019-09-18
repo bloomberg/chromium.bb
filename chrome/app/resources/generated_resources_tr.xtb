@@ -1510,7 +1510,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linux yükleme kaldırma aracı</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> bağlayıcı işlemi kilitlendi. Tekrar başlatılsın mı?</translation>
-<translation id="3221634914176615296">Cihazın içeriğini Dosyalar uygulamasında keşfedin.</translation>
 <translation id="3222066309010235055">Ön oluşturucu: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Varsayılan mor avatar</translation>
 <translation id="3225319735946384299">Kod İmzalama</translation>
@@ -5474,7 +5473,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9044646465488564462">Şu ağa bağlanamadı: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Erişmeye çalıştığınız sayfanın web adresini Google'a gönderir</translation>
 <translation id="9046895021617826162">Bağlantı başarısız oldu</translation>
-<translation id="904814878483208983">Google Play'deki uygulamalara tam dosya sistemi erişim izni vermek için Ayarlar'a gidin.</translation>
 <translation id="9050666287014529139">Parola</translation>
 <translation id="9052208328806230490">Yazıcılarınızı, <ph name="EMAIL" /> hesabını kullanarak <ph name="CLOUD_PRINT_NAME" /> hizmetine kaydettirdiniz.</translation>
 <translation id="9052404922357793350">Engellemeye devam et</translation>

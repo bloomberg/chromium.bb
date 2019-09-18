@@ -1510,7 +1510,6 @@ Pretende pará-lo?</translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Desinstalador para o Linux</translation>
 <translation id="3220586366024592812">O processo do conector <ph name="CLOUD_PRINT_NAME" /> falhou. Reiniciar?</translation>
-<translation id="3221634914176615296">Explore o conteúdo do dispositivo na aplicação Ficheiros.</translation>
 <translation id="3222066309010235055">Pré-renderizar: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Avatar roxo predefinido</translation>
 <translation id="3225319735946384299">Assinatura de código</translation>
@@ -5474,7 +5473,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9044646465488564462">Não foi possível ligar à rede: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Envia o endereço Web da página a que está a tentar aceder para a Google.</translation>
 <translation id="9046895021617826162">A ligação falhou</translation>
-<translation id="904814878483208983">Para permitir que as aplicações do Google Play tenham acesso completo ao sistema de ficheiros, aceda às Definições.</translation>
 <translation id="9050666287014529139">Frase de acesso</translation>
 <translation id="9052208328806230490">Registou as suas impressoras com <ph name="CLOUD_PRINT_NAME" /> utilizando a conta <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Continuar a bloquear</translation>

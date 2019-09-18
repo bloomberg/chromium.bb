@@ -1510,7 +1510,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Programa de desinstalación de Linux</translation>
 <translation id="3220586366024592812">Se ha producido un error en el proceso de conector de <ph name="CLOUD_PRINT_NAME" />. ¿Reiniciar?</translation>
-<translation id="3221634914176615296">Explora el contenido del dispositivo con la aplicación Archivos.</translation>
 <translation id="3222066309010235055">Preprocesador: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Avatar morado predeterminado</translation>
 <translation id="3225319735946384299">Code Signing</translation>
@@ -5473,7 +5472,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9044646465488564462">Error al establecer conexión con la red: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Envía la dirección web de la página a la que intentas acceder a Google</translation>
 <translation id="9046895021617826162">Error de conexión</translation>
-<translation id="904814878483208983">Ve a Ajustes para permitir que las aplicaciones de Google Play tengan acceso completo al sistema de archivos.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
 <translation id="9052208328806230490">Has registrado tus impresoras en <ph name="CLOUD_PRINT_NAME" /> con la cuenta <ph name="EMAIL" />.</translation>
 <translation id="9052404922357793350">Seguir bloqueando</translation>

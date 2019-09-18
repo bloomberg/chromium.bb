@@ -2438,7 +2438,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
           Wenn Sie diese Richtlinie konfigurieren, können Nutzer sie vorübergehend überschreiben, indem sie den großen Cursor aktivieren oder deaktivieren. Die Nutzerauswahl wird jedoch nicht beibehalten und die Standardeinstellung wird wiederhergestellt, sobald die Anmeldeseite neu angezeigt wird oder der Nutzer auf der Anmeldeseite eine Minute lang inaktiv ist.
 
-          Wenn diese Richtlinie nicht konfiguriert wird, ist der große Cursor deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können den großen Cursor jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.
+          Wenn diese Richtlinie nicht konfiguriert wird, ist der große Cursor deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können den großen Cursor jederzeit aktivieren oder deaktivieren. Dieser Status wird gespeichert und bleibt erhalten, bis sich ein Nutzer mit anderen Einstellungen anmeldet.
 
           Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" />" diese Richtlinie.</translation>
 <translation id="538108065117008131">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>

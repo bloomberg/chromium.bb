@@ -1510,7 +1510,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Programme de désinstallation de Linux</translation>
 <translation id="3220586366024592812">Le processus du connecteur <ph name="CLOUD_PRINT_NAME" /> est bloqué. Voulez-vous le redémarrer ?</translation>
-<translation id="3221634914176615296">Explorer le contenu de l'appareil dans l'application Fichiers</translation>
 <translation id="3222066309010235055">Pré-rendu : <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Avatar violet par défaut</translation>
 <translation id="3225319735946384299">Signature du code</translation>
@@ -5475,7 +5474,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9044646465488564462">Échec de la connexion au réseau : <ph name="DETAILS" />.</translation>
 <translation id="9045430190527754450">Envoie l'adresse Web de la page que vous essayez d'ouvrir à Google</translation>
 <translation id="9046895021617826162">Échec de la connexion</translation>
-<translation id="904814878483208983">Pour accorder aux applications Google Play un accès complet au système de fichiers, accédez aux paramètres.</translation>
 <translation id="9050666287014529139">Phrase secrète</translation>
 <translation id="9052208328806230490">Vous avez enregistré vos imprimantes sur <ph name="CLOUD_PRINT_NAME" /> via le compte <ph name="EMAIL" />.</translation>
 <translation id="9052404922357793350">Continuer de bloquer</translation>

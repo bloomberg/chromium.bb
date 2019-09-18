@@ -783,7 +783,7 @@
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> जैसा लगता है</translation>
 <translation id="2156283799932971644">आप Google को कुछ 'सिस्टम जानकारी' और 'पेज सामग्री' भेजकर 'सुरक्षित ब्राउज़िंग' को बेहतर बना सकते हैं.</translation>
 <translation id="2156294658807918600">सर्विस वर्कर: <ph name="SCRIPT_URL" /></translation>
-<translation id="2157474325782140681">ज़्यादा सुविधाएं पाने के लिए, Dell डॉकिंग स्टेशन इस्तेमाल करें जिसे इस Chromebook के साथ काम करने के लिए बनाया गया हो.</translation>
+<translation id="2157474325782140681">ज़्यादा सुविधाएं पाने के लिए, ऐसा Dell डॉकिंग स्टेशन इस्तेमाल करें जिसे इस Chromebook के साथ काम करने के लिए बनाया गया हो.</translation>
 <translation id="215753907730220065">फ़ुल स्क्रीन से बाहर निकलें</translation>
 <translation id="2157875535253991059">यह पेज अब फ़ुल स्‍क्रीन है.</translation>
 <translation id="216169395504480358">वाई-फ़ाई  जोड़ें...</translation>
@@ -1510,7 +1510,6 @@
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linux अनइंस्टॉलर</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> कनेक्‍टर प्रक्रिया क्रैश हो गई है. फिर से प्रारंभ करें?</translation>
-<translation id="3221634914176615296">Files ऐप्लिकेशन में डिवाइस की सामग्री देखें.</translation>
 <translation id="3222066309010235055">प्रीरेंडर: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">डिफ़ॉल्ट बैंगनी अवतार</translation>
 <translation id="3225319735946384299">कोड हस्ताक्षर</translation>
@@ -5472,7 +5471,6 @@
 <translation id="9044646465488564462">नेटवर्क से कनेक्ट करने में विफल रहा: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">आप जिस पेज पर जाने की कोशिश कर रहे हैं उसका वेब पता Google को भेजती है</translation>
 <translation id="9046895021617826162">कनेक्ट करना विफल</translation>
-<translation id="904814878483208983">Google Play के ऐप्लिकेशन पर फ़ाइल सिस्टम का पूरा ऐक्सेस देने के लिए, 'सेटिंग' पर जाएं.</translation>
 <translation id="9050666287014529139">पासफ़्रेज़ (लंबा पासवर्ड)</translation>
 <translation id="9052208328806230490">आपने अपने प्रिंटर को खाता <ph name="EMAIL" /> का उपयोग करके <ph name="CLOUD_PRINT_NAME" /> के साथ पंजीकृत किया है </translation>
 <translation id="9052404922357793350">ब्लॉक करना जारी रखें</translation>

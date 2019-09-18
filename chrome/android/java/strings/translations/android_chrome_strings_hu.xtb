@@ -176,6 +176,7 @@
 <translation id="2154484045852737596">Kártya szerkesztése</translation>
 <translation id="2154710561487035718">URL másolása</translation>
 <translation id="2156074688469523661">A többi webhely (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Ha szeretne megosztani valamit a telefonjáról egy másik eszközre, kapcsolja be a szinkronizálást a Chrome beállításaiban mindkét eszközön</translation>
 <translation id="2170088579611075216">Engedélyezés, és belépés VR-módba</translation>
 <translation id="218608176142494674">Megosztás</translation>
 <translation id="2227444325776770048">Folytatás mint <ph name="USER_FULL_NAME" /></translation>
@@ -1082,6 +1083,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> lap</translation>
 <translation id="885701979325669005">Tárolás</translation>
+<translation id="889338405075704026">Ugrás a Chrome beállításaira</translation>
 <translation id="8901170036886848654">Nem találtunk könyvjelzőket</translation>
 <translation id="8909135823018751308">Megosztás...</translation>
 <translation id="8912362522468806198">Google Fiókjába</translation>
@@ -1100,6 +1102,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8993760627012879038">Új lap megnyitása inkognitómódban</translation>
 <translation id="8998729206196772491">Egy <ph name="MANAGED_DOMAIN" /> által felügyelt fiókkal jelentkezik be, és engedélyezi az adminisztrátor számára a Chrome-adatok kezelését. Adatai állandó jelleggel ehhez a fiókhoz lesznek társítva. A Chrome-ból való kijelentkezéssel törli adatait erről az eszközről, de Google-fiókjában továbbra is megmaradnak.</translation>
 <translation id="9019902583201351841">Szülők által kezelt</translation>
+<translation id="9028914725102941583">Szinkronizálás bekapcsolása az eszközök közötti megosztáshoz</translation>
 <translation id="9029323097866369874">Engedélyezi a(z) <ph name="DOMAIN" /> számára a VR-mód aktiválását?</translation>
 <translation id="9040142327097499898">Az értesítések engedélyezve vannak. A helyhozzáférés ki van kapcsolva az eszköznél.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# videó}other{# videó}}</translation>

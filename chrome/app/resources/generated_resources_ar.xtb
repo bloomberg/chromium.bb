@@ -1510,7 +1510,6 @@
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">‏أداة إزالة نظام التشغيل Linux</translation>
 <translation id="3220586366024592812">تعطلت عملية موصل <ph name="CLOUD_PRINT_NAME" /> . هل تريد إعادة التشغيل؟</translation>
-<translation id="3221634914176615296">استكشاف محتوى الجهاز في تطبيق الملفات.</translation>
 <translation id="3222066309010235055">Prerender: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">الصورة الرمزية التلقائية الأرجوانية</translation>
 <translation id="3225319735946384299">التوقيع بالرمز</translation>
@@ -5472,7 +5471,6 @@
 <translation id="9044646465488564462">تعذّر الاتصال بالشبكة: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">‏يتم إرسال عنوان ويب الصفحة التي تحاول الوصول إليها إلى Google.</translation>
 <translation id="9046895021617826162">تعذّر الاتصال</translation>
-<translation id="904814878483208983">‏للسماح بالوصول الكامل إلى نظام الملفات للتطبيقات من Google Play، يُرجى الانتقال إلى "الإعدادات".</translation>
 <translation id="9050666287014529139">عبارة المرور</translation>
 <translation id="9052208328806230490">لقد سجّلت طابعاتك في <ph name="CLOUD_PRINT_NAME" /> باستخدام الحساب <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">متابعة الحظر</translation>

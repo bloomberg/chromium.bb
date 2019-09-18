@@ -1507,7 +1507,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Avinstallasjonsprogram for Linux</translation>
 <translation id="3220586366024592812">Programstopp for kontaktprosessen for <ph name="CLOUD_PRINT_NAME" />. Vil du starte på nytt?</translation>
-<translation id="3221634914176615296">Utforsk innholdet på enheten via Filer-appen.</translation>
 <translation id="3222066309010235055">Forhåndsgjengivelse: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Fiolett standardbrukerbilde</translation>
 <translation id="3225319735946384299">Signering med kode</translation>
@@ -5469,7 +5468,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9044646465488564462">Kunne ikke koble til nettverket: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Sender Google nettadressen til siden du prøver å åpne</translation>
 <translation id="9046895021617826162">Tilkoblingen mislyktes</translation>
-<translation id="904814878483208983">For å gi full tilgang til filsystemet for apper fra Google Play, gå til Innstillinger.</translation>
 <translation id="9050666287014529139">Passordfrase</translation>
 <translation id="9052208328806230490">Du har registrert skriverne dine med <ph name="CLOUD_PRINT_NAME" /> ved hjelp av konto <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Fortsett blokkering</translation>

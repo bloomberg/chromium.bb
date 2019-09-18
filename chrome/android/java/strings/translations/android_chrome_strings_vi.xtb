@@ -176,6 +176,7 @@
 <translation id="2154484045852737596">Chỉnh sửa thẻ</translation>
 <translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="2156074688469523661">Số trang web còn lại (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Để chia sẻ nội dung trên điện thoại với một thiết bị khác, hãy bật tính năng đồng bộ hóa trong phần Cài đặt của Chrome trên cả hai thiết bị</translation>
 <translation id="2170088579611075216">Cho phép và chuyển sang thực tế ảo</translation>
 <translation id="218608176142494674">Chia sẻ</translation>
 <translation id="2227444325776770048">Tiếp tục bằng <ph name="USER_FULL_NAME" /></translation>
@@ -1082,6 +1083,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Tab <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Bộ nhớ</translation>
+<translation id="889338405075704026">Chuyển đến phần Cài đặt của Chrome</translation>
 <translation id="8901170036886848654">Không tìm thấy dấu trang</translation>
 <translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>
@@ -1100,6 +1102,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8993760627012879038">Mở tab mới trong chế độ Ẩn danh</translation>
 <translation id="8998729206196772491">Bạn đang đăng nhập bằng tài khoản do <ph name="MANAGED_DOMAIN" /> quản lý và cấp cho quản trị viên quyền kiểm soát dữ liệu Chrome của bạn. Dữ liệu của bạn sẽ được liên kết vĩnh viễn với tài khoản này. Việc đăng xuất khỏi Chrome sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
 <translation id="9019902583201351841">Do cha mẹ của bạn quản lý</translation>
+<translation id="9028914725102941583">Bật tính năng đồng bộ hóa để chia sẻ giữa các thiết bị</translation>
 <translation id="9029323097866369874">Cho phép <ph name="DOMAIN" /> vào chế độ thực tế ảo?</translation>
 <translation id="9040142327097499898">Cho phép thông báo. Đã tắt vị trí đối với thiết bị này.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video}}</translation>

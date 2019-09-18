@@ -1510,7 +1510,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linux uninstaller</translation>
 <translation id="3220586366024592812">The <ph name="CLOUD_PRINT_NAME" /> connector process has crashed. Restart?</translation>
-<translation id="3221634914176615296">Explore the device's content in the Files app.</translation>
 <translation id="3222066309010235055">Prerender: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Default purple avatar</translation>
 <translation id="3225319735946384299">Code Signing</translation>
@@ -5474,7 +5473,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9044646465488564462">Failed to connect to network: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Sends the web address of the page that you're trying to reach to Google</translation>
 <translation id="9046895021617826162">Connection failed</translation>
-<translation id="904814878483208983">To allow full file system access for apps from Google Play, go to Settings.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9052208328806230490">You have registered your printers with <ph name="CLOUD_PRINT_NAME" />, using the account <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Continue blocking</translation>

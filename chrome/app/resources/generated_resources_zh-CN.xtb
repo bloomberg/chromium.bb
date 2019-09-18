@@ -1506,7 +1506,6 @@
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linux 卸载程序</translation>
 <translation id="3220586366024592812">该 <ph name="CLOUD_PRINT_NAME" /> 连接器进程已崩溃。是否重新启动？</translation>
-<translation id="3221634914176615296">在“文件”应用中浏览此设备上的内容。</translation>
 <translation id="3222066309010235055">预渲染：<ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">默认的紫色头像</translation>
 <translation id="3225319735946384299">代码签名</translation>
@@ -5468,7 +5467,6 @@
 <translation id="9044646465488564462">无法连接到网络：<ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">将您尝试访问的网页的网址发送至 Google</translation>
 <translation id="9046895021617826162">连接失败</translation>
-<translation id="904814878483208983">若想向 Google Play 中的应用授予完整的文件系统访问权限，请转到“设置”。</translation>
 <translation id="9050666287014529139">密码</translation>
 <translation id="9052208328806230490">您已使用帐号 <ph name="EMAIL" /> 将您的打印机注册为<ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9052404922357793350">继续拦截</translation>

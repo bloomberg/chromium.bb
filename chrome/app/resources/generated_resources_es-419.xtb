@@ -1507,7 +1507,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Desinstalador de Linux</translation>
 <translation id="3220586366024592812">Se ha producido un bloqueo en el proceso del conector de <ph name="CLOUD_PRINT_NAME" />. ¿Deseas reiniciarlo?</translation>
-<translation id="3221634914176615296">Explora el contenido del dispositivo en la aplicación Archivos.</translation>
 <translation id="3222066309010235055">Renderizar previamente: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Avatar púrpura predeterminado</translation>
 <translation id="3225319735946384299">Firma de código</translation>
@@ -5471,7 +5470,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9044646465488564462">Error al establecer conexión con la red: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Envía a Google la dirección web de la página a la que intentas acceder</translation>
 <translation id="9046895021617826162">No se pudo conectar</translation>
-<translation id="904814878483208983">Para permitir que las apps Google Play accedan a todo el sistema de archivos, ve a la Configuración.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
 <translation id="9052208328806230490">Registraste tus impresoras con <ph name="CLOUD_PRINT_NAME" /> utilizando la cuenta <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Seguir bloqueando</translation>

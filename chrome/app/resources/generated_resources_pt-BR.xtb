@@ -1510,7 +1510,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Desinstalador do Linux</translation>
 <translation id="3220586366024592812">Houve uma falha no processo de conexão de <ph name="CLOUD_PRINT_NAME" />. Quer reiniciá-lo?</translation>
-<translation id="3221634914176615296">Explorar o conteúdo do dispositivo no aplicativo Arquivos.</translation>
 <translation id="3222066309010235055">Pré-processar: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Avatar roxo padrão</translation>
 <translation id="3225319735946384299">Assinatura do código</translation>
@@ -2928,7 +2927,7 @@ Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5360150013186312835">Mostrar na barra de ferramentas</translation>
 <translation id="5362741141255528695">Selecionar arquivo de chave privada.</translation>
 <translation id="5363109466694494651">Realizar Powerwash e reverter</translation>
-<translation id="5365716706805792666">O Google pode verificar se suas senhas estavam em uma violação de dados. Isso será ativado quando você fizer login com sua Conta Google.</translation>
+<translation id="5365716706805792666">O Google pode verificar se suas senhas foram afetadas por uma violação de dados. O recurso será ativado quando você fizer login com sua Conta Google.</translation>
 <translation id="5365881113273618889">A pasta selecionada contém arquivos confidenciais. Tem certeza de que quer conceder acesso permanente de gravação nessa pasta ao "<ph name="APP_NAME" />"?</translation>
 <translation id="5367091008316207019">Lendo arquivo...</translation>
 <translation id="5368720394188453070">Seu smartphone está bloqueado. Desbloqueie-o para entrar.</translation>
@@ -4759,7 +4758,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8014154204619229810">O atualizador está sendo executado no momento. Aguarde um minuto e atualize para verificar novamente.</translation>
 <translation id="8014206674403687691">Não foi possível reverter o produto <ph name="IDS_SHORT_PRODUCT_NAME" /> para a versão anteriormente instalada. Tente executar novamente o Powerwash no seu dispositivo.</translation>
 <translation id="8014210335923519270">Melhore o <ph name="IDS_SHORT_PRODUCT_NAME" /> e a segurança dele enviando informações do sistema e sobre o uso para o Google</translation>
-<translation id="8015780634880457457">O Google pode verificar se suas senhas estavam em uma violação de dados</translation>
+<translation id="8015780634880457457">O Google pode verificar se suas senhas foram afetadas em uma violação de dados</translation>
 <translation id="8016266267177410919">Armazenamento temporário</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Atalho editado</translation>
@@ -5476,7 +5475,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="9044646465488564462">Falha na conexão à rede: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Envia ao Google o endereço da Web da página que você está tentando acessar</translation>
 <translation id="9046895021617826162">Falha na conexão</translation>
-<translation id="904814878483208983">Para permitir total acesso ao sistema de arquivos para aplicativos do Google Play, vá para Configurações.</translation>
 <translation id="9050666287014529139">Senha</translation>
 <translation id="9052208328806230490">Você registrou suas impressoras com <ph name="CLOUD_PRINT_NAME" /> utilizando a conta <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Continuar bloqueando</translation>

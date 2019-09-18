@@ -829,6 +829,15 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="2454228136871844693">Privilégier la stabilité.</translation>
 <translation id="2463034609187171371">Activer des suites de chiffrement DHE dans TLS</translation>
 <translation id="2463365186486772703">Paramètres régionaux de l'application</translation>
+<translation id="2464012905766911533">Cette règle permet à un administrateur de spécifier qu'une page peut envoyer des requêtes XHR synchrones pendant sa fermeture.
+
+      Lorsque la règle est activée, les pages sont autorisées à envoyer des requêtes XHR synchrones pendant leur fermeture.
+
+      Lorsque la règle est désactivée ou n'est pas définie, les pages ne sont pas autorisées à envoyer des requêtes XHR synchrones pendant leur fermeture.
+
+      Cette règle sera supprimée dans Chrome 82.
+
+      Pour en savoir plus, consultez l'article à l'adresse https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">L'authentification de portail captif ignore le proxy</translation>
 <translation id="2466697858869282874">Permet de configurer la disponibilité et le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1532,6 +1541,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Si cette règle n'est pas définie, la fonctionnalité Sélectionner pour prononcer est initialement désactivée, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="3591527072193107424">Activer la fonctionnalité Legacy Browser Support.</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
+<translation id="3617743504695003280">Autorise une page à exécuter des requêtes XHR synchrones pendant sa fermeture.</translation>
 <translation id="3627678165642179114">Activer ou désactiver le service Web de correction orthographique</translation>
 <translation id="3628480121685794414">Activer l'impression recto</translation>
 <translation id="3631099945620529777">Si cette règle est définie sur "false", le bouton "Arrêter le processus" est désactivé dans le gestionnaire de tâches.

@@ -176,6 +176,7 @@
 <translation id="2154484045852737596">Изменение данных карты</translation>
 <translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2156074688469523661">Прочие сайты (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Чтобы поделиться контентом, откройте настройки Chrome на своем телефоне и другом устройстве, а затем включите синхронизацию.</translation>
 <translation id="2170088579611075216">Разрешить и войти в VR-режим</translation>
 <translation id="218608176142494674">Совместный доступ</translation>
 <translation id="2227444325776770048">Продолжить как <ph name="USER_FULL_NAME" /></translation>
@@ -1082,6 +1083,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Хранилище</translation>
+<translation id="889338405075704026">Открыть настройки Chrome</translation>
 <translation id="8901170036886848654">Ничего не найдено</translation>
 <translation id="8909135823018751308">Поделиться...</translation>
 <translation id="8912362522468806198">Аккаунт Google</translation>
@@ -1100,6 +1102,7 @@
 <translation id="8993760627012879038">Открыть новое окно в режиме инкогнито</translation>
 <translation id="8998729206196772491">Вы входите в аккаунт, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Он может контролировать ваши данные Chrome, которые теперь будут связаны с управляемым аккаунтом. При выходе из системы все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="9019902583201351841">Управляется вашими родителями</translation>
+<translation id="9028914725102941583">Включите синхронизацию для обмена файлами</translation>
 <translation id="9029323097866369874">Разрешить сайту <ph name="DOMAIN" /> входить в виртуальную реальность?</translation>
 <translation id="9040142327097499898">Отправка уведомлений разрешена, но определение местоположения отключено.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# видеофайл}one{# видеофайл}few{# видеофайла}many{# видеофайлов}other{# видеофайла}}</translation>

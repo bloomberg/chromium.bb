@@ -827,6 +827,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="2454228136871844693">안정성에 최적화합니다.</translation>
 <translation id="2463034609187171371">TLS에서 DHE 암호화 기술을 사용 설정합니다.</translation>
 <translation id="2463365186486772703">애플리케이션 언어</translation>
+<translation id="2464012905766911533">이 정책은 관리자가 페이지를 닫는 중에 페이지에서 동기 XHR 요청을 전송할 수 있음을 지정하도록 허용합니다.
+
+      정책을 사용 설정하면 페이지를 닫는 중에 페이지에서 동기 XHR 요청을 전송할 수 있습니다.
+
+      정책이 사용 중지되거나 설정되지 않으면 페이지를 닫는 중에 페이지에서 동기 XHR 요청을 전송할 수 없습니다.
+
+      이 정책은 Chrome 82에서 삭제됩니다.
+
+      https://www.chromestatus.com/feature/4664843055398912을 참조하세요.</translation>
 <translation id="2466131534462628618">캡티브 포털 승인에서 프록시를 무시함</translation>
 <translation id="2466697858869282874"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트 기능의 사용 가능 여부 및 동작을 설정합니다.
 
@@ -1534,6 +1543,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           정책이 설정되지 않으면 처음에는 텍스트 읽어주기가 사용 중지되지만 사용자가 언제든 기능을 사용 설정할 수 있습니다.</translation>
 <translation id="3591527072193107424">이전 브라우저 지원 기능을 사용 설정합니다.</translation>
 <translation id="3591584750136265240">로그인 인증 동작 설정</translation>
+<translation id="3617743504695003280">페이지를 닫는 중에 페이지에서 동기 XHR 요청을 실행하도록 허용합니다.</translation>
 <translation id="3627678165642179114">맞춤법 검사 웹 서비스 사용 또는 사용 중지</translation>
 <translation id="3628480121685794414">단면 인쇄 사용 설정</translation>
 <translation id="3631099945620529777">false로 설정되면 '프로세스 종료' 버튼이 작업 관리자에서 사용 중지됩니다.

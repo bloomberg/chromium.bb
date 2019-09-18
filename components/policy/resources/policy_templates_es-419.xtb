@@ -802,6 +802,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2454228136871844693">Optimiza la estabilidad.</translation>
 <translation id="2463034609187171371">Permitir los paquetes de encriptación DHE en TLS</translation>
 <translation id="2463365186486772703">Configuración regional de la aplicación</translation>
+<translation id="2464012905766911533">Esta política permite que un administrador especifique si una página puede enviar solicitudes XHR síncronas cuando el usuario la abandona (la cierra o pasa a otra página).
+
+      Si se habilita la política, cuando el usuario abandona las páginas, estas podrán enviar solicitudes XHR síncronas.
+
+      Si se inhabilita o no se establece, cuando el usuario abandona las páginas, estas no podrán enviar estas solicitudes.
+
+      Se quitará esta política en Chrome 82.
+
+      Consulta https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">La autenticación de portal cautivo ignora el proxy</translation>
 <translation id="2466697858869282874">Configura la disponibilidad y el comportamiento de la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1331,7 +1340,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="332771718998993005">Determina el nombre anunciado como un destino de <ph name="PRODUCT_NAME" />.
 
           Si esta política se establece con una string no vacía, esa string se usará como el nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo, y el propietario del dispositivo (o un usuario del dominio que administre el dispositivo) podrá cambiarlo. El nombre tiene un límite máximo de 24 caracteres.</translation>
-<translation id="3331950121151548952">Indica una lista de dominios en los que es necesario revisar las cargas para detectar software malicioso.  Se utiliza esta política únicamente si se establece <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> con un valor que permite la revisión de las cargas para detectar software malicioso o la aplica de manera forzosa.
+<translation id="3331950121151548952">Indica una lista de dominios en los que es necesario revisar las cargas para detectar software malicioso.  Se utiliza esta política únicamente si se establece <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> con un valor que permite la revisión de las cargas para detectar software malicioso o si se la aplica de manera forzosa.
 
       Si no se establece esta política o se establece como una lista vacía de dominios, no se revisarán las cargas para detectar si hay software malicioso.
       </translation>
@@ -1488,6 +1497,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si no la estableces, la función estará inicialmente inhabilitada, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="3591527072193107424">Habilitar la función "Compatibilidad con navegadores heredados"</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
+<translation id="3617743504695003280">Permite que una página realice solicitudes XHR síncronas cuando el usuario la abandona</translation>
 <translation id="3627678165642179114">Habilita o inhabilita el servicio web de revisión ortográfica.</translation>
 <translation id="3628480121685794414">Permitir impresión simple</translation>
 <translation id="3631099945620529777">Si se configura como falsa, se inhabilitará el botón "Finalizar proceso" en el Administrador de tareas.
@@ -2490,7 +2500,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si configuras esta política, los usuarios no podrán modificarla ni anularla.
 
       Si no se configura esta política, los usuarios podrán elegir la imagen del fondo de pantalla del escritorio y de la pantalla de acceso.</translation>
-<translation id="5437214086679373363">Controla si se permite a los usuarios cargar o descargar archivos protegidos con contraseña cuando sea necesario analizarlos.  Esta restricción solo se aplica a los archivos que deban analizarse conforme a lo determinado en <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> y las políticas que controlan la lista de dominios en los que se hayan habilitado las comprobaciones.
+<translation id="5437214086679373363">Controla si se permite a los usuarios cargar o descargar archivos protegidos con contraseña cuando sea necesario analizarlos.  Esta restricción solo se aplica a los archivos que deban analizarse conforme a lo determinado en <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> y las políticas que controlan la lista de dominios en los que se hayan habilitado los controles.
 
       Si se configura esta política como "Ninguno", <ph name="PRODUCT_NAME" /> evitará que el usuario cargue o descargue archivos protegidos por contraseña.
 
@@ -3433,7 +3443,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si la política no se configura, el usuario puede tomar su propia decisión.</translation>
 <translation id="7145335384492396213">Modo de impresión con PIN predeterminado</translation>
-<translation id="7149042336307555519"> Esta política controla los tipos de conexiones permitidos en las actualizaciones del SO. Es posible que el tamaño de las actualizaciones del SO sobrecargue la conexión, lo que podría generar costos adicionales para el usuario. Por lo tanto, no están habilitadas de forma predeterminada en conexiones que se consideren costosas (actualmente, solo "cellular").
+<translation id="7149042336307555519"> Esta política controla los tipos de conexiones permitidos en las actualizaciones del SO. Es posible que el tamaño de las actualizaciones del SO sobrecargue la conexión, lo que podría generar costos adicionales para el usuario. Por lo tanto, no están habilitadas de forma predeterminada en conexiones que se consideren costosas (actualmente, solo "celular").
 
       Los identificadores de tipos de conexión son <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> y <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Controla el modo del agente de resolución de DNS sobre HTTPS. Ten en cuenta que esta política solo establecerá el modo predeterminado para cada consulta. Se puede anular el modo en tipos de solicitudes especiales, como las que se usan para resolver el nombre de host de un servidor con el protocolo DNS sobre HTTPS.
@@ -4348,7 +4358,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8800453707696044281">Establecer el porcentaje del nivel de la batería en el que se debe detener la carga</translation>
 <translation id="8801680448782904838">Notificar a un usuario que se recomienda o es obligatorio reiniciar el navegador o el dispositivo</translation>
-<translation id="8802816494059596691">Los nombres de host que se especifican en esta lista no se incluirán en la revisión de la política de HSTS que podría mejorar las solicitudes de http a https. En esta política, solo se permiten nombres de host con una sola etiqueta. Los nombres de host deben estar canonicalizados: debe convertirse cualquier IDN a su formato de etiqueta A y deben estar en minúscula todas las letras en formato ASCII. Esta política solo se aplica a los nombres de host específicos de la lista; no se aplica a los subdominios de estos nombres.</translation>
+<translation id="8802816494059596691">Los nombres de host que se especifican en esta lista no se incluirán en la revisión de la política de HSTS que podría mejorar las solicitudes de http a https. En esta política, solo se permiten nombres de host con una sola etiqueta. Los nombres de host deben estar canonicalizados: debe convertirse cualquier IDN a su formato de etiqueta A y todas las letras en formato ASCII deben estar en minúscula. Esta política solo se aplica a los nombres de host específicos de la lista; no se aplica a los subdominios de estos nombres.</translation>
 <translation id="8818173863808665831">Informa la ubicación geográfica del dispositivo.
 
      Si no se configura la política, ni se establece como falsa, no se informará la ubicación.</translation>
@@ -4517,7 +4527,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si se establece esta política, se aplicará el modo de carga de la batería (cuando lo admita el dispositivo).
 
-          Si no se establece esta política (y el dispositivo no la admite), se aplicará el modo estándar de carga de la batería, y el usuario no podrá cambiarlo.
+          Si no se establece esta política (y el dispositivo la admite), se aplicará el modo estándar de carga de la batería, y el usuario no podrá cambiarlo.
 
           Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="9054012305936267950">Esta política controla el comportamiento de acceso en el navegador. Te permite especificar si el usuario puede acceder a <ph name="PRODUCT_NAME" /> con su cuenta y usar los servicios relacionados, como la "Sincronización de Chrome".

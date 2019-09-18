@@ -1510,7 +1510,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="321799795901478485">Zip arhivētājs</translation>
 <translation id="321834671654278338">Linux atinstalēšanas programma</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> savienotāja process ir avarējis. Vai restartēt?</translation>
-<translation id="3221634914176615296">Pārlūkojiet ierīces saturu lietotnē Faili.</translation>
 <translation id="3222066309010235055">Iepriekšēja atveide: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Noklusējuma iemiesojums violetā krāsā</translation>
 <translation id="3225319735946384299">Koda parakstīšana</translation>
@@ -5473,7 +5472,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="9044646465488564462">Neizdevās izveidot savienojumu ar tīklu: <ph name="DETAILS" />.</translation>
 <translation id="9045430190527754450">Sūta Google serveriem tās lapas tīmekļa adresi, kuru mēģināt sasniegt.</translation>
 <translation id="9046895021617826162">Savienojums neizdevās</translation>
-<translation id="904814878483208983">Lai sniegtu Google Play lietotnēm pilnīgu piekļuvi failu sistēmai, pārejiet uz iestatījumu lapu.</translation>
 <translation id="9050666287014529139">Ieejas frāze</translation>
 <translation id="9052208328806230490">Jūs esat reģistrējis savus printerus ar nosaukumu <ph name="CLOUD_PRINT_NAME" />, izmantojot kontu <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Turpināt bloķēt</translation>

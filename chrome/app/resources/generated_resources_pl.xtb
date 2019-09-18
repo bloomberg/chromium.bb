@@ -1510,7 +1510,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Dezinstalator aplikacji na Linuksa</translation>
 <translation id="3220586366024592812">Proces oprogramowania sprzęgającego usługi <ph name="CLOUD_PRINT_NAME" /> uległ awarii. Uruchomić go ponownie?</translation>
-<translation id="3221634914176615296">Przeglądaj zawartość urządzenia w aplikacji Pliki.</translation>
 <translation id="3222066309010235055">Wstępne renderowanie: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Domyślny fioletowy awatar</translation>
 <translation id="3225319735946384299">Podpisywanie kodu</translation>
@@ -5474,7 +5473,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="9044646465488564462">Nie udało się połączyć z siecią: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Wysyła do Google adres internetowy strony, którą próbujesz otworzyć</translation>
 <translation id="9046895021617826162">Łączenie nie powiodło się</translation>
-<translation id="904814878483208983">Aby przyznać aplikacjom z Google Play pełny dostęp do systemu plików, otwórz Ustawienia.</translation>
 <translation id="9050666287014529139">Hasło</translation>
 <translation id="9052208328806230490">Zarejestrowano drukarki w usłudze <ph name="CLOUD_PRINT_NAME" /> przy użyciu konta <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Nadal blokuj</translation>

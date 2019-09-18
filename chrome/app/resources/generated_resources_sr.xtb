@@ -1507,7 +1507,6 @@
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linux програм за деинсталирање</translation>
 <translation id="3220586366024592812">Процес конектора за <ph name="CLOUD_PRINT_NAME" /> је отказао. Желите ли поново да га покренете?</translation>
-<translation id="3221634914176615296">Истражите садржај уређаја у апликацији Датотеке.</translation>
 <translation id="3222066309010235055">Претприказивање: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Подразумевани љубичасти аватар</translation>
 <translation id="3225319735946384299">Потписивање кода</translation>
@@ -5473,7 +5472,6 @@
 <translation id="9044646465488564462">Повезивање са мрежом није успело: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Шаље Google-у веб-адресу странице којој покушавате да приступите</translation>
 <translation id="9046895021617826162">Повезивање није успело</translation>
-<translation id="904814878483208983">Идите у Подешавања да бисте апликацијама са Google Play-а дозволили потпуни приступ датотекама.</translation>
 <translation id="9050666287014529139">Приступна фраза</translation>
 <translation id="9052208328806230490">Регистровали сте штампаче за <ph name="CLOUD_PRINT_NAME" /> помоћу налога <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Настави са блокирањем</translation>

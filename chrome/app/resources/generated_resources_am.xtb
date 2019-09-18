@@ -1509,7 +1509,6 @@
 <translation id="321799795901478485">የዚህ ማህደር ሰሪ</translation>
 <translation id="321834671654278338">Linux አራጋፊ</translation>
 <translation id="3220586366024592812">የ<ph name="CLOUD_PRINT_NAME" /> አገናኙ ተሰናክሏል። ዳግም ይጀመር?</translation>
-<translation id="3221634914176615296">የመሣሪያውን ይዘት በፋይሎች መተግበሪያው ውስጥ ያስሱት።</translation>
 <translation id="3222066309010235055">ቅድሚያ አሳይ፦ <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">ነባሪ ሐምራዊ አምሳያ</translation>
 <translation id="3225319735946384299">ኮድ መፈረም</translation>
@@ -5475,7 +5474,6 @@ nil</translation>
 <translation id="9044646465488564462">ከአውታረ መረብ ጋር መገናኘት አልተሳካም፦ <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">ለመድረስ እየሞከሩት ያለው የገጽ ድር አድራሻ ወደ Google ይልካል</translation>
 <translation id="9046895021617826162">ማገናኘት አልተሳካም</translation>
-<translation id="904814878483208983">ሙሉ የፋይል ሥርዓት መዳረሻ ለመተግበሪያዎች ከ Google Play ለመፍቀድ፣ ወደ ቅንብሮች ይሂዱ።</translation>
 <translation id="9050666287014529139">የይለፍ ሐረግ</translation>
 <translation id="9052208328806230490"><ph name="EMAIL" />ን ተጠቅመው አታሚዎችዎን በ<ph name="CLOUD_PRINT_NAME" /> መዝግበዋል።</translation>
 <translation id="9052404922357793350">ማገድን ቀጥል</translation>

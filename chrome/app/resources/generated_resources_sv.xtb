@@ -1510,7 +1510,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Avinstallationsprogram för Linux</translation>
 <translation id="3220586366024592812">Anslutningen till <ph name="CLOUD_PRINT_NAME" /> har kraschat. Vill du starta om?</translation>
-<translation id="3221634914176615296">Utforska innehållet på den här enheten i appen Filer.</translation>
 <translation id="3222066309010235055">För-renderare <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Lila standardavatar</translation>
 <translation id="3225319735946384299">Kodsignering</translation>
@@ -5474,7 +5473,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9044646465488564462">Det gick inte att ansluta till nätverket: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Skickar webbadresserna till sidor som du försöker nå till Google</translation>
 <translation id="9046895021617826162">Kunde inte ansluta</translation>
-<translation id="904814878483208983">Öppna inställningarna om du vill tillåta fullständig åtkomst till filsystemet för appar från Google Play.</translation>
 <translation id="9050666287014529139">Lösenfras</translation>
 <translation id="9052208328806230490">Du har registrerat dina skrivare med <ph name="CLOUD_PRINT_NAME" /> och du använde kontot <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Fortsätt blockera</translation>

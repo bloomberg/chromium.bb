@@ -176,6 +176,7 @@
 <translation id="2154484045852737596">카드 수정</translation>
 <translation id="2154710561487035718">URL 복사</translation>
 <translation id="2156074688469523661">남은 사이트(<ph name="NUMBER_OF_SITES" />개)</translation>
+<translation id="2157851137955077194">스마트폰에서 다른 기기와 공유하려면 두 기기의 Chrome 설정에서 동기화를 사용 설정하세요.</translation>
 <translation id="2170088579611075216">허용 및 VR 시작</translation>
 <translation id="218608176142494674">공유</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" />(으)로 계속</translation>
@@ -1082,6 +1083,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, 탭</translation>
 <translation id="885701979325669005">저장소</translation>
+<translation id="889338405075704026">Chrome 설정으로 이동</translation>
 <translation id="8901170036886848654">북마크가 없습니다.</translation>
 <translation id="8909135823018751308">공유…</translation>
 <translation id="8912362522468806198">Google 계정</translation>
@@ -1100,6 +1102,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8993760627012879038">시크릿 모드로 새 탭 열기</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="9019902583201351841">부모님이 관리합니다.</translation>
+<translation id="9028914725102941583">동기화를 사용 설정하여 모든 기기에 공유하기</translation>
 <translation id="9029323097866369874"><ph name="DOMAIN" />에서 VR로 들어가도록 허용하시겠습니까?</translation>
 <translation id="9040142327097499898">알림이 허용되었습니다. 이 기기에서 위치가 사용 중지되었습니다.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{동영상 #개}other{동영상 #개}}</translation>

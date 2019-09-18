@@ -793,6 +793,15 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2454228136871844693">Mengoptimalkan untuk stabilitas.</translation>
 <translation id="2463034609187171371">Mengaktifkan paket penyandian DHE di TLS</translation>
 <translation id="2463365186486772703">Lokal aplikasi</translation>
+<translation id="2464012905766911533">Kebijakan ini memungkinkan admin untuk menentukan bahwa halaman dapat mengirimkan permintaan XHR sinkron saat menutup halaman.
+
+      Ketika kebijakan ditetapkan ke aktif, halaman diizinkan untuk mengirimkan permintaan XHR sinkron saat menutup halaman.
+
+      Ketika kebijakan ditetapkan ke tidak aktif atau tidak ditetapkan, halaman tidak diizinkan untuk mengirimkan permintaan XHR sinkron saat menutup halaman.
+
+      Kebijakan ini akan dihapus pada Chrome 82.
+
+      Buka https://www.chromestatus.com/feature/4664843055398912 .</translation>
 <translation id="2466131534462628618">Autentikasi portal tawanan mengabaikan proxy</translation>
 <translation id="2466697858869282874">Mengonfigurasi ketersediaan dan perilaku fungsionalitas update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1483,6 +1492,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
           Jika kebijakan ini tidak ditetapkan, fitur klik untuk diucapkan mula-mula dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="3591527072193107424">Mengaktifkan fitur Dukungan Browser Lama.</translation>
 <translation id="3591584750136265240">Mengonfigurasi perilaku autentikasi proses masuk</translation>
+<translation id="3617743504695003280">Mengizinkan halaman untuk melakukan permintaan XHR sinkron saat menutup halaman.</translation>
 <translation id="3627678165642179114">Mengaktifkan atau menonaktifkan layanan web memeriksa ejaan</translation>
 <translation id="3628480121685794414">Aktifkan pencetakan simpleks</translation>
 <translation id="3631099945620529777">Jika ditetapkan ke False, tombol 'Akhiri proses' akan dinonaktifkan di Pengelola Tugas.

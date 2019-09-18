@@ -1510,7 +1510,6 @@
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Файл видалення Linux</translation>
 <translation id="3220586366024592812">Відбулося аварійне завершення процесу для функції підключення  <ph name="CLOUD_PRINT_NAME" />. Перезапустити?</translation>
-<translation id="3221634914176615296">Перегляньте вміст пристрою в додатку Файли.</translation>
 <translation id="3222066309010235055">Візуалізатор: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Стандартний фіолетовий аватар</translation>
 <translation id="3225319735946384299">Підписування коду</translation>
@@ -5474,7 +5473,6 @@
 <translation id="9044646465488564462">Помилка під’єднання до мережі: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Надсилає в Google веб-адресу сторінки, яку ви намагаєтеся відкрити</translation>
 <translation id="9046895021617826162">Помилка з'єднання</translation>
-<translation id="904814878483208983">Щоб дозволити повний системний доступ до файлів для додатків із Google Play, перейдіть у Налаштування.</translation>
 <translation id="9050666287014529139">Парольна фраза</translation>
 <translation id="9052208328806230490">Ви зареєстрували свої принтери в <ph name="CLOUD_PRINT_NAME" />, використавши обліковий запис <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Продовжити блокування</translation>

@@ -787,6 +787,15 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2454228136871844693">Ottimizza per aumentare la stabilità.</translation>
 <translation id="2463034609187171371">Attiva i pacchetti di crittografia DHE in TLS</translation>
 <translation id="2463365186486772703">Lingua dell'applicazione</translation>
+<translation id="2464012905766911533">Questo criterio consente a un amministratore di specificare che una pagina potrebbe inviare richieste XHR sincrone durante l'uscita dalla pagina.
+
+      Quando il criterio viene attivato, le pagine possono inviare richieste XHR sincrone durante l'uscita dalle pagine.
+
+      Quando il criterio viene disattivato o non viene impostato, le pagine non possono inviare richieste XHR sincrone durante l'uscita dalle pagine.
+
+      Nella versione 82 di Chrome, questo criterio verrà rimosso.
+
+      Consulta https://www.chromestatus.com/feature/4664843055398912 .</translation>
 <translation id="2466131534462628618">L'autenticazione tramite captive portal ignora il proxy</translation>
 <translation id="2466697858869282874">Consente di configurare disponibilità e comportamento della funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1472,6 +1481,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Se questo criterio non viene impostato, inizialmente la funzione Seleziona per ascoltare è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="3591527072193107424">Attiva la funzionalità Supporto dei browser precedenti.</translation>
 <translation id="3591584750136265240">Configura il comportamento di autenticazione dell'accesso</translation>
+<translation id="3617743504695003280">Consente a una pagina di fare richieste XHR sincrone durante l'uscita dalla pagina.</translation>
 <translation id="3627678165642179114">Attiva o disattiva il servizio web di controllo ortografico</translation>
 <translation id="3628480121685794414">Attiva stampa su un lato</translation>
 <translation id="3631099945620529777">Se la norma è impostata su false, il pulsante "Termina processo" in Task Manager viene disattivato.

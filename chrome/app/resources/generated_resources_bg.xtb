@@ -1507,7 +1507,6 @@
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Деинсталираща програма за Linux</translation>
 <translation id="3220586366024592812">Процесът за връзка с <ph name="CLOUD_PRINT_NAME" /> претърпя срив. Да се рестартира ли?</translation>
-<translation id="3221634914176615296">Преглеждайте съдържанието на устройството в приложението Файлове.</translation>
 <translation id="3222066309010235055">Предварително изобразяване: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Стандартен виолетов аватар</translation>
 <translation id="3225319735946384299">Подписване на код</translation>
@@ -5474,7 +5473,6 @@
 <translation id="9044646465488564462">Свързването с мрежата не бе успешно: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Изпраща до Google уеб адреса на страницата, която искате да посетите</translation>
 <translation id="9046895021617826162">Свързването не бе успешно</translation>
-<translation id="904814878483208983">За да разрешите пълен достъп до файловата система за приложения от Google Play, отворете настройките.</translation>
 <translation id="9050666287014529139">Парола</translation>
 <translation id="9052208328806230490">Регистрирахте принтерите си в <ph name="CLOUD_PRINT_NAME" />, използвайки профила <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Продължаване на блокирането</translation>

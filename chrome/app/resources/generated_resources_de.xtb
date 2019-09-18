@@ -1506,7 +1506,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linux-Deinstallationsprogramm</translation>
 <translation id="3220586366024592812">Der <ph name="CLOUD_PRINT_NAME" />-Connector-Prozess ist abgestürzt. Neu starten?</translation>
-<translation id="3221634914176615296">Geräteinhalte in der App "Dateien" ansehen</translation>
 <translation id="3222066309010235055">Vorab rendern: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Lila Standardavatar</translation>
 <translation id="3225319735946384299">Codesignatur</translation>
@@ -4555,7 +4554,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7776701556330691704">Keine Stimmen gefunden</translation>
 <translation id="7781335840981796660">Alle Benutzerkonten und lokalen Daten werden entfernt.</translation>
 <translation id="7782102568078991263">Keine weiteren Vorschläge von Google</translation>
-<translation id="7782717250816686129">Persistente Daten auf dem Anmeldebildschirm speichern und Anmeldedaten für die Sitzung eingeben.</translation>
+<translation id="7782717250816686129">Vom Nutzer auf dem Anmeldebildschirm angegebene Daten speichern und mit anderen Erweiterungen in der Nutzersitzung teilen.</translation>
 <translation id="778330624322499012"><ph name="PLUGIN_NAME" /> konnte nicht geladen werden</translation>
 <translation id="7784067724422331729">Diese Datei wurde von den Sicherheitseinstellungen auf Ihrem Computer blockiert.</translation>
 <translation id="7784796923038949829">Daten der Website können nicht gelesen oder geändert werden</translation>
@@ -5470,7 +5469,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9044646465488564462">Fehler beim Herstellen einer Verbindung mit dem Netzwerk: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Die Webadresse der Seite, die Sie aufrufen möchten, wird an Google gesendet</translation>
 <translation id="9046895021617826162">Verbindungsaufbau fehlgeschlagen</translation>
-<translation id="904814878483208983">Sie können den vollständigen Zugriff auf Ihr Dateisystem für Google Play-Apps in den Einstellungen aktivieren.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9052208328806230490">Sie haben Ihre Drucker unter dem Konto <ph name="EMAIL" /> bei <ph name="CLOUD_PRINT_NAME" /> registriert.</translation>
 <translation id="9052404922357793350">Weiterhin blockieren</translation>

@@ -1510,7 +1510,6 @@
 <translation id="321799795901478485">Zip アーカイブ ツール</translation>
 <translation id="321834671654278338">Linux アンインストーラ</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> コネクタのプロセスで問題が発生しました。再起動しますか？</translation>
-<translation id="3221634914176615296">ファイル アプリでデバイスのコンテンツを検索します。</translation>
 <translation id="3222066309010235055">事前レンダリング: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">デフォルトの紫のアバター</translation>
 <translation id="3225319735946384299">コード署名</translation>
@@ -5475,7 +5474,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="9044646465488564462">ネットワークに接続できませんでした: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">アクセスしようとしているページのウェブアドレスを Google に送信します</translation>
 <translation id="9046895021617826162">接続に失敗しました</translation>
-<translation id="904814878483208983">Google Play でアプリにファイル システムへのフルアクセスを許可するには、[設定] に移動します。</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>
 <translation id="9052208328806230490"><ph name="CLOUD_PRINT_NAME" /> に、アカウント <ph name="EMAIL" /> を使ってプリンタを登録しました</translation>
 <translation id="9052404922357793350">引き続きブロックする</translation>

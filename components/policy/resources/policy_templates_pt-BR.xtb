@@ -1863,7 +1863,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 
           Observação: <ph name="CHARGE_START_TIME_FIELD_NAME" /> precisa ser menor que <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
-          Observação: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em <ph name="CHARGE_START_TIME_FIELD_NAME" /> e <ph name="CHARGE_END_TIME_FIELD_NAME" /> são 0, 15, 30 e 45.</translation>
+          Observação: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em "<ph name="CHARGE_START_TIME_FIELD_NAME" />" e "<ph name="CHARGE_END_TIME_FIELD_NAME" />" são 0, 15, 30 e 45.</translation>
 <translation id="4224610387358583899">Tempo de espera para bloqueio de tela</translation>
 <translation id="423797045246308574">Permite que você defina uma lista de padrões de URL que especificam sites que não têm permissão para usar a geração de chaves. Se um padrão de URL estiver na política "KeygenAllowedForUrls", ela substituirá essas exceções.
 
@@ -3409,7 +3409,7 @@ Se esta política não for definida, não haverá restrições quanto aos usuár
 
           Se esta política não for configurada ou estiver indefinida, a economia de energia no período de pico sempre estará desativada.
 
-          Observação: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> e <ph name="CHARGE_START_TIME_FIELD_NAME" /> são 0, 15, 30 e 45.</translation>
+          Observação: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em "<ph name="START_TIME_FIELD_NAME" />", "<ph name="END_TIME_FIELD_NAME" />" e "<ph name="CHARGE_START_TIME_FIELD_NAME" />" são 0, 15, 30 e 45.</translation>
 <translation id="7138678301420049075">Outro</translation>
 <translation id="7139809614375682935">Configurar a parada personalizada do carregamento da bateria, em porcentagem.
 

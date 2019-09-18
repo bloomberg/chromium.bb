@@ -176,6 +176,7 @@
 <translation id="2154484045852737596">Modifica la carta</translation>
 <translation id="2154710561487035718">Copia URL</translation>
 <translation id="2156074688469523661">Siti rimanenti (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Per condividere contenuti dal tuo telefono con un altro dispositivo, attiva la sincronizzazione nelle impostazioni di Chrome su entrambi i dispositivi</translation>
 <translation id="2170088579611075216">Consenti ed entra nella VR</translation>
 <translation id="218608176142494674">Condivisione</translation>
 <translation id="2227444325776770048">Continua come <ph name="USER_FULL_NAME" /></translation>
@@ -1082,6 +1083,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, scheda</translation>
 <translation id="885701979325669005">Dati memorizzati dai siti</translation>
+<translation id="889338405075704026">Apri le impostazioni di Chrome</translation>
 <translation id="8901170036886848654">Nessun preferito trovato</translation>
 <translation id="8909135823018751308">Condividi…</translation>
 <translation id="8912362522468806198">Google Account</translation>
@@ -1100,6 +1102,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8993760627012879038">Apri nuova scheda in mod. di navigaz. in incognito</translation>
 <translation id="8998729206196772491">Stai per eseguire l'accesso con un account gestito da <ph name="MANAGED_DOMAIN" /> e consentire al relativo amministratore di avere il controllo dei tuoi dati di Chrome. I tuoi dati verranno associati definitivamente a questo account. Se esci da Chrome, i dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo Account Google.</translation>
 <translation id="9019902583201351841">Gestito dai genitori</translation>
+<translation id="9028914725102941583">Attiva la sincronizzazione per la condivisione tra dispositivi</translation>
 <translation id="9029323097866369874">Consentire a <ph name="DOMAIN" /> di accedere alla VR?</translation>
 <translation id="9040142327097499898">Le notifiche sono consentite. La geolocalizzazione non è attiva per questo dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video}}</translation>

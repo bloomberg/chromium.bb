@@ -176,6 +176,7 @@
 <translation id="2154484045852737596">Redigera kortet</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Om du vill dela något från telefonen till en annan enhet aktiverar du synkronisering i Chrome-inställningarna på båda enheterna</translation>
 <translation id="2170088579611075216">Tillåt och aktivera VR</translation>
 <translation id="218608176142494674">Delar</translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
@@ -1082,6 +1083,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, flik</translation>
 <translation id="885701979325669005">Lagring</translation>
+<translation id="889338405075704026">Öppna Chrome-inställningarna</translation>
 <translation id="8901170036886848654">Inga bokmärken hittades</translation>
 <translation id="8909135823018751308">Dela …</translation>
 <translation id="8912362522468806198">Google-konto</translation>
@@ -1100,6 +1102,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8993760627012879038">Öppna en ny flik i inkognitoläge</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
+<translation id="9028914725102941583">Aktivera synkronisering om du vill dela mellan enheter</translation>
 <translation id="9029323097866369874">Vill du tillåta att <ph name="DOMAIN" /> aktiverar VR?</translation>
 <translation id="9040142327097499898">Aviseringar tillåts. Plats har inaktiverats på enheten.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videor}}</translation>

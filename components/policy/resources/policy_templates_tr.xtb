@@ -816,6 +816,15 @@
 <translation id="2454228136871844693">Kararlı çalışma için optimize et.</translation>
 <translation id="2463034609187171371">TLS'deki şifre paketlerini etkinleştir</translation>
 <translation id="2463365186486772703">Uygulama yerel ayarı</translation>
+<translation id="2464012905766911533">Bu politika, bir yöneticinin sayfa kapatma işlemi sırasında bir sayfanın eş zamanlı XHR istekleri gönderebileceğini belirtmesini sağlar.
+
+      Bu politika etkin olarak ayarlandığında sayfa kapatma işlemi sırasında sayfaların eş zamanlı XHR istekleri göndermelerine izin verilir.
+
+      Bu politika devre dışı olarak ayarlanırsa veya ayarlanmadan bırakılırsa sayfa kapatma işlemi sırasında sayfaların eş zamanlı XHR istekleri göndermelerine izin verilmez.
+
+      Bu politika, Chrome 82 sürümünde kaldırılacaktır.
+
+      https://www.chromestatus.com/feature/4664843055398912 adresine bakın.</translation>
 <translation id="2466131534462628618">Giriş portalı kimlik doğrulaması, proxy'yi yoksayar</translation>
 <translation id="2466697858869282874"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımını güncelleme işlevinin kullanılabilirliğini ve davranışını yapılandırır.
 
@@ -1362,7 +1371,7 @@
 <translation id="332771718998993005"><ph name="PRODUCT_NAME" /> hedefi olarak tanıtılan adı belirleyin.
 
           Bu politika boş olmayan bir dizeye ayarlanırsa, söz konusu dize <ph name="PRODUCT_NAME" /> hedefinin adı olarak kullanılır. Aksi halde hedef adı cihaz adı olur. Bu politika ayarlanmazsa hedef adı cihaz adı olur ve cihaz sahibi (veya alandan cihazı yöneten bir kullanıcı), adı değiştirme iznine sahip olur. Ad, 24 karakterle sınırlıdır.</translation>
-<translation id="3331950121151548952">Yüklenen içeriğin kötü amaçlı yazılım için denetlenmesini gerektiren alan adlarının listesi.  Bu politika yalnızca <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> yüklemeler için kötü amaçlı yazılım yüklemelerini kontrol etmeye izin veren veya zorunlu kılan bir değere ayarlanmışsa kullanılır.
+<translation id="3331950121151548952">Yüklenen içeriğin kötü amaçlı yazılım için denetlenmesini gerektiren alan adlarının listesi.  Bu politika yalnızca <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, yüklemeler için kötü amaçlı yazılım yüklemelerini kontrol etmeye izin veren veya zorunlu kılan bir değere ayarlanmışsa kullanılır.
 
       Bu politika ayarlanmazsa veya alan adları listesi boş olarak ayarlanırsa yüklenen hiçbir içeriğin kötü amaçlı yazılım olup olmadığı denetlenmez.
       </translation>
@@ -1433,7 +1442,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
          Bu politika Yanlış seçeneğine ayarlanır veya ayarlanmadan bırakılırsa güç yönetimi gecikmeleri ve oturum süresi sınırı oturumun başında hemen çalışmaya başlar.</translation>
 <translation id="3478024346823118645">Çıkışta kullanıcı verilerini sil</translation>
 <translation id="3480961938508521469">Pili standart bir hızda tam olarak şarj et.</translation>
-<translation id="3483729306380590354">Pil şarjı için özel şarj başlatma değerini yüzde olarak ayarlayın.
+<translation id="3483729306380590354">Pil şarjı için özel şarj başlatma değerini yüzde olarak ayarlar.
 
           Pil şarjı için özel şarj başlatma değerine ulaşıldığında pil şarj olmaya başlar.
 
@@ -1519,6 +1528,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
           Bu politika ayarlanmadan bırakılırsa, Seç ve Dinle başlangıçta devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
 <translation id="3591527072193107424">Eski Tarayıcı Desteği özelliğini etkinleştir.</translation>
 <translation id="3591584750136265240">Giriş için kimlik doğrulama yöntemini yapılandır</translation>
+<translation id="3617743504695003280">Sayfa kapatma işlemi sırasında bir sayfanın eş zamanlı XHR istekleri gerçekleştirmesine izin verir.</translation>
 <translation id="3627678165642179114">Yazım denetimi Web hizmetini etkinleştir veya devre dışı bırak</translation>
 <translation id="3628480121685794414">Tek yönlü yazdırmayı etkinleştir</translation>
 <translation id="3631099945620529777">False (yanlış) değerine ayarlanırsa Görev Yöneticisi'nde "İşlemi sonlandır" düğmesi devre dışı bırakılır.
@@ -1887,7 +1897,7 @@ politikayı geçersiz kılamaz.
           Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
 
           Bu politika ayarlanmadan bırakılırsa otomatik tıklama başlangıçta devre dışıdır ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
-<translation id="4215197846797661927">Gelişmiş pil şarj modu gün yapılandırmasını ayarla.
+<translation id="4215197846797661927">Gelişmiş pil şarj modu gün yapılandırmasını ayarlar.
 
           Bu politika sadece <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> ayarı true (doğru) değerine ayarlanmışsa kullanılır.
 
@@ -1967,7 +1977,7 @@ politikayı geçersiz kılamaz.
 
       "Kullanıcıların indirdiklerini tarama için gönder" seçeneğine ayarlanırsa kullanıcıların indirdikleri dosyalar kötü amaçlı yazılım taraması için ağ üzerinden Güvenli Tarama'ya gönderilir.
 
-      "Kullanıcıların yükledikleri tarama için gönder" seçeneğine ayarlanırsa kullanıcıların yükledikleri dosyalar kötü amaçlı yazılım taraması için ağ üzerinden Güvenli Tarama'ya gönderilir.
+      "Kullanıcıların yüklediklerini tarama için gönder" seçeneğine ayarlanırsa kullanıcıların yükledikleri dosyalar kötü amaçlı yazılım taraması için ağ üzerinden Güvenli Tarama'ya gönderilir.
 
       "Kullanıcının yüklediklerini ve indirdiklerini tarama için gönder" seçeneğine ayarlanırsa "Kullanıcının yüklediklerini tarama için gönder" ve "Kullanıcının indirdiklerini tarama için gönder" ayarlarında açıklanan kurallara göre davranır.
 
@@ -3500,7 +3510,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
           Not: <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> ve <ph name="CHARGE_START_TIME_FIELD_NAME" /> içinde <ph name="MINUTE_FIELD_NAME" /> alanı için izin verilen değerler 0, 15, 30, 45'tir.</translation>
 <translation id="7138678301420049075">Diğer</translation>
-<translation id="7139809614375682935">Pil şarjı için özel şarj durdurma değerini yüzde olarak ayarlayın.
+<translation id="7139809614375682935">Pil şarjı için özel şarj durdurma değerini yüzde olarak ayarlar.
 
           Özel şarj durma değerine ulaştığında pilin şarj edilmesi durur.
 
@@ -4206,7 +4216,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 
           Bu politika ayarlanmadan bırakılırsa ayar etkinleştirilir.</translation>
 <translation id="8382184662529825177">Cihazda içerik koruma için uzak onay kullanımını etkinleştir</translation>
-<translation id="8382693763260501307">Gelişmiş pil şarj modu güç yönetim politikasını etkinleştir.
+<translation id="8382693763260501307">Gelişmiş pil şarj modu güç yönetim politikasını etkinleştirir.
 
           Gelişmiş Pil Şarj Modu, kullanıcının pil sağlığını maksimuma çıkarmasına olanak verir. Gelişmiş Şarj Modu'nda, sistem pil sağlığını maksimuma çıkarmak için mesai saatleri dışında standart şarj algoritmasını ve diğer teknikleri kullanır. Mesai saatlerinde ise bir hızlı şarj yöntemi kullanılır. Bu hızlı şarj, pilin daha hızlı şarj edilmesini sağlar; dolayısıyla pil kısa sürede tam şarj kapasitesine ulaşır. Her gün için, sistemin en yoğun şekilde kullanılacağı zaman başlangıç saati ve süre ile belirtilir.
 

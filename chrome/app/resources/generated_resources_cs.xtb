@@ -1509,7 +1509,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Odinstalační program Linuxu</translation>
 <translation id="3220586366024592812">Proces konektoru služby <ph name="CLOUD_PRINT_NAME" /> selhal. Restartovat?</translation>
-<translation id="3221634914176615296">Prozkoumejte obsah zařízení v aplikaci Soubory.</translation>
 <translation id="3222066309010235055">Předběžně vykreslit: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Výchozí nachový avatar</translation>
 <translation id="3225319735946384299">Podepisování kódu</translation>
@@ -5471,7 +5470,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9044646465488564462">Připojení k síti se nezdařilo: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Odesílá do Googlu webovou adresu stránky, na kterou se pokoušíte přejít</translation>
 <translation id="9046895021617826162">Připojení selhalo</translation>
-<translation id="904814878483208983">Chcete-li aplikacím z Google Play povolit úplný přístup k systému souborů, přejděte do Nastavení.</translation>
 <translation id="9050666287014529139">Heslová fráze</translation>
 <translation id="9052208328806230490">Registrovali jste tiskárny ve službě <ph name="CLOUD_PRINT_NAME" /> pomocí účtu <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Pokračovat v blokování</translation>
