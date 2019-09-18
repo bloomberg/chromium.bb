@@ -1467,17 +1467,17 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       render_view->page_properties(), params->visual_properties.display_mode,
       /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
       params->never_visible);
-  render_view->GetWidget()->set_delegate(render_view);
 
   RenderWidget* render_widget = render_view->GetWidget();
+  render_widget->set_delegate(render_view);
 
   // Non-owning pointer that is self-referencing and destroyed by calling
   // Close(). The RenderViewImpl has a RenderWidget already, but not a
   // WebFrameWidget, which is now attached here.
-  auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
-      render_view->GetWidget(), web_frame);
+  auto* web_frame_widget =
+      blink::WebFrameWidget::CreateForMainFrame(render_widget, web_frame);
 
-  render_widget->Init(std::move(show_callback), web_frame_widget);
+  render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget);
   render_view->AttachWebFrameWidget(web_frame_widget);
 
   render_widget->OnSynchronizeVisualProperties(params->visual_properties);

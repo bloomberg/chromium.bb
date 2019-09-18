@@ -509,11 +509,20 @@ void RenderWidget::InitForPopup(ShowCallback show_callback,
   Init(std::move(show_callback), web_page_popup);
 }
 
+void RenderWidget::InitForPepperFullscreen(ShowCallback show_callback,
+                                           blink::WebWidget* web_widget) {
+  pepper_fullscreen_ = true;
+  Init(std::move(show_callback), web_widget);
+}
+
+void RenderWidget::InitForMainFrame(ShowCallback show_callback,
+                                    blink::WebFrameWidget* web_frame_widget) {
+  Init(std::move(show_callback), web_frame_widget);
+}
+
 void RenderWidget::InitForChildLocalRoot(
     blink::WebFrameWidget* web_frame_widget) {
   for_child_local_root_frame_ = true;
-  // Init() increments the reference count on |this|, making it
-  // self-referencing.
   Init(base::NullCallback(), web_frame_widget);
 }
 

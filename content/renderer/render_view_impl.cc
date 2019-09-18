@@ -511,18 +511,12 @@ void RenderViewImpl::Initialize(
     render_widget_ = RenderWidget::CreateForFrame(
         params->main_frame_widget_routing_id, compositor_deps,
         page_properties(), params->visual_properties.display_mode,
-        /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
-        params->never_visible);
-    GetWidget()->set_delegate(this);
-    // Note: The GetWidget->Init() call causes an AddRef() to itself meaning
-    // that IPC system has taken conceptual ownership of the object. Though it
-    // is tempting to have RenderView retain the RenderWidget(), this lifecycle
-    // only requires single ownership and adding scoped_refptr<RenderWidget>
-    // muddies this unnecessarily -- especially since this RenderWidget should
-    // ultimately be own by the main frame.
+        /*is_undead=*/true, params->never_visible);
+    render_widget_->set_delegate(this);
     // We intentionally pass in a null webwidget since it shouldn't be needed
     // for remote frames.
-    GetWidget()->Init(std::move(show_callback), nullptr);
+    render_widget_->InitForMainFrame(std::move(show_callback),
+                                     /*web_frame_widget=*/nullptr);
 
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
@@ -1023,7 +1017,7 @@ RenderViewImpl* RenderViewImpl::Create(
 }
 
 void RenderViewImpl::Destroy() {
-  GetWidget()->PrepareForClose();
+  render_widget_->PrepareForClose();
 
   webview_->Close();
   // The webview_ is already destroyed by the time we get here, remove any
@@ -1031,7 +1025,12 @@ void RenderViewImpl::Destroy() {
   g_view_map.Get().erase(webview_);
   webview_ = nullptr;
 
-  GetWidget()->Close(std::move(render_widget_));
+  // We pass ownership of |render_widget_| to itself. Grab a raw pointer to call
+  // the Close() method on so we don't have to be a C++ expert to know whether
+  // we will end up with a nullptr where we didn't intend due to order of
+  // execution.
+  RenderWidget* closing_widget = render_widget_.get();
+  closing_widget->Close(std::move(render_widget_));
 
   g_routing_id_view_map.Get().erase(GetRoutingID());
 
@@ -1069,7 +1068,7 @@ bool RenderViewImpl::RenderWidgetWillHandleMouseEventForWidget(
     const blink::WebMouseEvent& event) {
   // If the mouse is locked, only the current owner of the mouse lock can
   // process mouse events.
-  return GetWidget()->mouse_lock_dispatcher()->WillHandleMouseEvent(event);
+  return render_widget_->mouse_lock_dispatcher()->WillHandleMouseEvent(event);
 }
 
 void RenderViewImpl::SetActiveForWidget(bool active) {
@@ -1415,7 +1414,7 @@ WebView* RenderViewImpl::CreateView(
                      base::Unretained(creator_frame), opened_by_user_gesture);
 
   RenderViewImpl* view = RenderViewImpl::Create(
-      GetWidget()->compositor_deps(), std::move(view_params),
+      render_widget_->compositor_deps(), std::move(view_params),
       std::move(show_callback),
       creator->GetTaskRunner(blink::TaskType::kInternalDefault));
 
@@ -1448,7 +1447,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // state off it for the popup.
   // TODO(crbug.com/419087): This should probably be using the local root's
   // RenderWidget for the frame making the popup.
-  RenderWidget* view_render_widget = GetWidget();
+  RenderWidget* view_render_widget = render_widget_.get();
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, view_render_widget->compositor_deps(),
@@ -1512,14 +1511,14 @@ base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
 
 void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
   RenderFrameImpl::FromWebFrame(frame)->ScriptedPrint(
-      GetWidget()->input_handler().handling_input_event());
+      render_widget_->input_handler().handling_input_event());
 }
 
 void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
   // The previous WebFrameWidget must already be detached by CloseForFrame().
   DCHECK(!frame_widget_);
   frame_widget_ = frame_widget;
-  GetWidget()->SetWebWidgetInternal(frame_widget);
+  render_widget_->SetWebWidgetInternal(frame_widget);
 
   // Initialization for the WebFrameWidget that should only occur for the main
   // frame, and that uses types not allowed in blink. This should maybe be
@@ -1534,13 +1533,14 @@ void RenderViewImpl::DetachWebFrameWidget() {
   // We should detach when making the RenderWidget undead so we don't expect it
   // to be undead already. But when it is recycled for a provisional frame, then
   // we can detach when closing the provisional frame.
-  DCHECK(GetWidget()->IsUndeadOrProvisional() || GetWidget()->is_closing());
+  DCHECK(render_widget_->IsUndeadOrProvisional() ||
+         render_widget_->is_closing());
   DCHECK(frame_widget_);
   frame_widget_->Close();
   frame_widget_ = nullptr;
 
   // This just clears the webwidget_internal_ member from RenderWidget.
-  GetWidget()->SetWebWidgetInternal(nullptr);
+  render_widget_->SetWebWidgetInternal(nullptr);
 }
 
 void RenderViewImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
@@ -1768,9 +1768,8 @@ void RenderViewImpl::UpdateBrowserControlsState(
   TRACE_EVENT_INSTANT1("renderer", "is_animated", TRACE_EVENT_SCOPE_THREAD,
                        "animated", animate);
 
-  if (GetWidget() && GetWidget()->layer_tree_view()) {
-    GetWidget()
-        ->layer_tree_view()
+  if (render_widget_ && render_widget_->layer_tree_view()) {
+    render_widget_->layer_tree_view()
         ->layer_tree_host()
         ->UpdateBrowserControlsState(ContentToCc(constraints),
                                      ContentToCc(current), animate);
@@ -1814,11 +1813,11 @@ bool RenderViewImpl::CanUpdateLayout() {
 
 void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
                                                    const std::string& value) {
-  GetWidget()->SetEditCommandForNextKeyEvent(name, value);
+  render_widget_->SetEditCommandForNextKeyEvent(name, value);
 }
 
 void RenderViewImpl::ClearEditCommands() {
-  GetWidget()->ClearEditCommands();
+  render_widget_->ClearEditCommands();
 }
 
 const std::string& RenderViewImpl::GetAcceptLanguages() {
@@ -1886,7 +1885,7 @@ bool RenderViewImpl::Send(IPC::Message* message) {
   CHECK_NE(message->routing_id(), MSG_ROUTING_NONE);
 
   // Don't send any messages after the browser has told us to close.
-  if (GetWidget()->is_closing()) {
+  if (render_widget_->is_closing()) {
     delete message;
     return false;
   }
@@ -1910,7 +1909,7 @@ int RenderViewImpl::GetRoutingID() {
 }
 
 gfx::Size RenderViewImpl::GetSize() {
-  return GetWidget()->size();
+  return render_widget_->size();
 }
 
 float RenderViewImpl::GetDeviceScaleFactor() {
@@ -2175,7 +2174,7 @@ void RenderViewImpl::PageImportanceSignalsChanged() {
 }
 
 void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {
-  GetWidget()->DidAutoResize(newSize);
+  render_widget_->DidAutoResize(newSize);
 }
 
 void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
@@ -2259,16 +2258,16 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
   if (webview()->MainFrame()->IsWebRemoteFrame())
     return;
 
-  if (enable == GetWidget()->has_focus())
+  if (enable == render_widget_->has_focus())
     return;
 
   if (enable) {
     SetActiveForWidget(true);
     // Fake an IPC message so go through the IPC handler.
-    GetWidget()->OnSetFocus(true);
+    render_widget_->OnSetFocus(true);
   } else {
     // Fake an IPC message so go through the IPC handler.
-    GetWidget()->OnSetFocus(false);
+    render_widget_->OnSetFocus(false);
     SetActiveForWidget(false);
   }
 }
