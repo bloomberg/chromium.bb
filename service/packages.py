@@ -369,17 +369,17 @@ def uprev_chrome(build_targets, refs, chroot):
 
   uprev_manager = uprev_lib.UprevChromeManager(
       chrome_version, build_targets=build_targets, chroot=chroot)
+  result = UprevVersionedPackageResult()
   # Start with chrome itself, as we can't do anything else unless chrome
   # uprevs successfully.
   if not uprev_manager.uprev(constants.CHROME_CP):
-    return []
+    return result
 
   # With a successful chrome rev, also uprev related packages.
   for package in constants.OTHER_CHROME_PACKAGES:
     uprev_manager.uprev(package)
 
-  return UprevVersionedPackageResult().add_result(
-      chrome_version, uprev_manager.modified_ebuilds)
+  return result.add_result(chrome_version, uprev_manager.modified_ebuilds)
 
 
 def get_best_visible(atom, build_target=None):
