@@ -2850,7 +2850,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="[20 to 40)"/>
   <int value="2" label="[40 to 60)"/>
   <int value="3" label="[60 to 80)"/>
-  <int value="4" label="[80 to 100) (warmest)"/>
+  <int value="4" label="[80 to 100] (warmest)"/>
 </enum>
 
 <enum name="AshPipEvents">
