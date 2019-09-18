@@ -245,51 +245,54 @@ class DatarateTestSVC
         if (layer_id->spatial_layer_id == 0) {
           // Reference LAST.
           // Set all buffer_idx to 0.
-          // Set GOLDEN to slot 3 and update slot 3.
+          // Set GOLDEN to slot 5 and update slot 5.
           for (int i = 0; i < 7; i++) ref_frame_config->ref_idx[i] = 0;
-          ref_frame_config->ref_idx[3] = 3;
-          ref_frame_config->refresh[3] = 1;
+          ref_frame_config->ref_idx[3] = 5;
+          ref_frame_config->refresh[5] = 1;
           layer_flags |= AOM_EFLAG_NO_REF_GF;
         } else if (layer_id->spatial_layer_id == 1) {
           // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 1,
-          // GOLDEN (and all other refs) to slot 3.
-          // Set LAST2 to slot and Update slot 4.
-          for (int i = 0; i < 7; i++) ref_frame_config->ref_idx[i] = 3;
+          // GOLDEN (and all other refs) to slot 5.
+          // Set LAST2 to slot 6 and update slot 6.
+          for (int i = 0; i < 7; i++) ref_frame_config->ref_idx[i] = 5;
           ref_frame_config->ref_idx[0] = 1;
-          ref_frame_config->ref_idx[2] = 4;
-          ref_frame_config->refresh[4] = 1;
+          ref_frame_config->ref_idx[2] = 6;
+          ref_frame_config->refresh[6] = 1;
         } else if (layer_id->spatial_layer_id == 2) {
           // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 2,
-          // GOLDEN (and all other refs) to slot 4.
-          // Set LAST2 to slot 5 and update slot 5.
-          for (int i = 0; i < 7; i++) ref_frame_config->ref_idx[i] = 4;
+          // GOLDEN (and all other refs) to slot 6.
+          // Set LAST2 to slot 6 and update slot 7.
+          for (int i = 0; i < 7; i++) ref_frame_config->ref_idx[i] = 6;
           ref_frame_config->ref_idx[0] = 2;
-          ref_frame_config->ref_idx[2] = 5;
-          ref_frame_config->refresh[5] = 1;
+          ref_frame_config->ref_idx[2] = 7;
+          ref_frame_config->refresh[7] = 1;
         }
       } else if ((superframe_cnt_ - 3) % 4 == 0) {
         // Second top temporal enhancement layer.
         layer_id->temporal_layer_id = 2;
         if (layer_id->spatial_layer_id == 0) {
-          // Set LAST to slot 3 and reference LAST.
+          // Set LAST to slot 5 and reference LAST.
+          // Set GOLDEN to slot 3 and update slot 3.
           // Set all other buffer_idx to 0.
           for (int i = 0; i < 7; i++) ref_frame_config->ref_idx[i] = 0;
-          ref_frame_config->ref_idx[0] = 3;
+          ref_frame_config->ref_idx[0] = 5;
+          ref_frame_config->ref_idx[3] = 3;
           ref_frame_config->refresh[3] = 1;
           layer_flags |= AOM_EFLAG_NO_REF_GF;
         } else if (layer_id->spatial_layer_id == 1) {
-          // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 4,
-          // GOLDEN to slot 3, and update slot 4.
+          // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 6,
+          // GOLDEN to slot 3. Set LAST2 to slot 4 and update slot 4.
           for (int i = 0; i < 7; i++) ref_frame_config->ref_idx[i] = 0;
-          ref_frame_config->ref_idx[0] = 4;
+          ref_frame_config->ref_idx[0] = 6;
           ref_frame_config->ref_idx[3] = 3;
+          ref_frame_config->ref_idx[1] = 4;
           ref_frame_config->refresh[4] = 1;
         } else if (layer_id->spatial_layer_id == 2) {
-          // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 5,
+          // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 7,
           // GOLDEN to slot 4. No update.
           for (int i = 0; i < 7; i++) ref_frame_config->ref_idx[i] = 0;
+          ref_frame_config->ref_idx[0] = 7;
           ref_frame_config->ref_idx[3] = 4;
-          ref_frame_config->ref_idx[0] = 5;
         }
       }
     }
