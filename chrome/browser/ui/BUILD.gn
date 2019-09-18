@@ -1597,6 +1597,8 @@ jumbo_split_static_library("ui") {
       "views/touch_selection_menu_chromeos.h",
       "views/touch_selection_menu_runner_chromeos.cc",
       "views/touch_selection_menu_runner_chromeos.h",
+      "webui/chromeos/account_manager_error_ui.cc",
+      "webui/chromeos/account_manager_error_ui.h",
       "webui/chromeos/account_manager_welcome_dialog.cc",
       "webui/chromeos/account_manager_welcome_dialog.h",
       "webui/chromeos/account_manager_welcome_ui.cc",
