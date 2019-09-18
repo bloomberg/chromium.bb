@@ -161,9 +161,15 @@ void WindowEventFilter::MaybeDispatchHostWindowDragMovement(
     // Some platforms (eg X11) may require last pointer location not in the
     // local surface coordinates, but rather in the screen coordinates for
     // interactive move/resize.
-    const gfx::Point last_pointer_location =
+    aura::Window* target = static_cast<aura::Window*>(event->target());
+    const auto scale_factor = display::Screen::GetScreen()
+                                  ->GetDisplayNearestWindow(target)
+                                  .device_scale_factor();
+    gfx::Point last_cursor_location_in_dip =
         aura::Env::GetInstance()->last_mouse_location();
-    handler_->DispatchHostWindowDragMovement(hittest, last_pointer_location);
+    handler_->DispatchHostWindowDragMovement(
+        hittest,
+        gfx::ScaleToFlooredPoint(last_cursor_location_in_dip, scale_factor));
     event->StopPropagation();
     return;
   }
