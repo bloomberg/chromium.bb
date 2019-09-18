@@ -103,4 +103,17 @@ suite('Tab', function() {
         faviconElement.style.backgroundImage,
         getFaviconForPageURL(expectedPageUrl, false));
   });
+
+  test('setting dragging state toggles an attribute', () => {
+    tabElement.setDragging(true);
+    assertTrue(tabElement.hasAttribute('dragging'));
+    tabElement.setDragging(false);
+    assertFalse(tabElement.hasAttribute('dragging'));
+  });
+
+  test('getting the drag image grabs the contents', () => {
+    assertEquals(
+        tabElement.getDragImage(),
+        tabElement.shadowRoot.querySelector('#dragImage'));
+  });
 });

@@ -26,6 +26,7 @@ export class TestTabsApiProxy extends TestBrowserProxy {
       'activateTab',
       'closeTab',
       'getCurrentWindow',
+      'moveTab',
     ]);
 
     this.callbackRouter = {
@@ -52,6 +53,11 @@ export class TestTabsApiProxy extends TestBrowserProxy {
   getCurrentWindow() {
     this.methodCalled('getCurrentWindow');
     return Promise.resolve(this.currentWindow_);
+  }
+
+  moveTab(tabId, newIndex) {
+    this.methodCalled('moveTab', [tabId, newIndex]);
+    return Promise.resolve();
   }
 
   setCurrentWindow(currentWindow) {

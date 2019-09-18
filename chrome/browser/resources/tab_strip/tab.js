@@ -22,6 +22,11 @@ export class TabElement extends CustomElement {
         /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#close'));
 
     /** @private {!HTMLElement} */
+    this.dragImage_ =
+        /** @type {!HTMLElement} */ (
+            this.shadowRoot.querySelector('#dragImage'));
+
+    /** @private {!HTMLElement} */
     this.faviconEl_ =
         /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#favicon'));
 
@@ -46,6 +51,10 @@ export class TabElement extends CustomElement {
 
     this.addEventListener('click', this.onClick_.bind(this));
     this.closeButtonEl_.addEventListener('click', this.onClose_.bind(this));
+  }
+
+  connectedCallback() {
+    this.setAttribute('draggable', 'true');
   }
 
   /** @return {!Tab} */
@@ -82,6 +91,13 @@ export class TabElement extends CustomElement {
   }
 
   /**
+   * @return {!HTMLElement}
+   */
+  getDragImage() {
+    return this.dragImage_;
+  }
+
+  /**
    * @param {string} imgData
    */
   updateThumbnail(imgData) {
@@ -108,6 +124,13 @@ export class TabElement extends CustomElement {
 
     event.stopPropagation();
     this.tabsApi_.closeTab(this.tab_.id);
+  }
+
+  /**
+   * @param {boolean} dragging
+   */
+  setDragging(dragging) {
+    this.toggleAttribute('dragging', dragging);
   }
 
   /**

@@ -1,18 +1,24 @@
 <style>
   :host {
-    border-radius: var(--tabstrip-card-border-radius);
-    box-shadow: var(--tabstrip-elevation-box-shadow);
     cursor: pointer;
-    display: flex;
-    flex-direction: column;
     height: 230px;
-    overflow: hidden;
+    position: relative;
     width: 280px;
   }
 
-  :host([active]) {
+  :host([active]) #dragImage {
     box-shadow: 0 0 0 2px var(--tabstrip-focus-color);
     outline: none;
+  }
+
+  #dragImage {
+    border-radius: var(--tabstrip-card-border-radius);
+    box-shadow: var(--tabstrip-elevation-box-shadow);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    width: 100%;
   }
 
   #title {
@@ -75,6 +81,7 @@
   #thumbnailImg {
     height: 100%;
     object-fit: contain;
+    pointer-events: none;
     width: 100%;
   }
 
@@ -94,16 +101,39 @@
   :host([pinned]) #thumbnail {
     display: none;
   }
+
+  :host([dragging]) #dragPlaceholder {
+    background: rgba(var(--google-grey-200-rgb));
+    border-radius: var(--tabstrip-card-border-radius);
+    height: 100%;
+    width: 100%;
+  }
+
+  :host([dragging][active]) #dragPlaceholder {
+    box-shadow: 0 0 0 2px var(--tabstrip-focus-color);
+  }
+
+  /* When being dragged, the contents of the drag image needs to be off-screen
+   * with nothing else on top or below obscuring it. */
+  :host([dragging]) #dragImage {
+    box-shadow: none;
+    position: absolute;
+    top: -999px;
+  }
 </style>
 
-<header id="title">
-  <span id="favicon"></span>
-  <h2 id="titleText"></h2>
-  <button id="close">
-    <span id="closeIcon"></span>
-  </button>
-</header>
+<div id="dragPlaceholder"></div>
 
-<div id="thumbnail">
-  <img id="thumbnailImg">
+<div id="dragImage">
+  <header id="title">
+    <span id="favicon"></span>
+    <h2 id="titleText"></h2>
+    <button id="close">
+      <span id="closeIcon"></span>
+    </button>
+  </header>
+
+  <div id="thumbnail">
+    <img id="thumbnailImg">
+  </div>
 </div>
