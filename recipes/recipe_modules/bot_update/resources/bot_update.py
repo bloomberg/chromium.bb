@@ -846,20 +846,20 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   for solution_name in list(solution_dirs):
     gc_revisions[solution_name] = 'unmanaged'
 
-  with git_config_if_not_set('user.name', 'chrome-bot'), \
-       git_config_if_not_set('user.email', 'chrome-bot@chromium.org'):
-    # Let gclient do the DEPS syncing.
-    # The branch-head refspec is a special case because it's possible Chrome
-    # src, which contains the branch-head refspecs, is DEPSed in.
-    gclient_output = gclient_sync(
-        BRANCH_HEADS_REFSPEC in refs,
-        TAGS_REFSPEC in refs,
-        gc_revisions,
-        break_repo_locks,
-        disable_syntax_validation,
-        patch_refs,
-        gerrit_reset,
-        gerrit_rebase_patch_ref)
+  with git_config_if_not_set('user.name', 'chrome-bot'):
+    with git_config_if_not_set('user.email', 'chrome-bot@chromium.org'):
+      # Let gclient do the DEPS syncing.
+      # The branch-head refspec is a special case because its possible Chrome
+      # src, which contains the branch-head refspecs, is DEPSed in.
+      gclient_output = gclient_sync(
+          BRANCH_HEADS_REFSPEC in refs,
+          TAGS_REFSPEC in refs,
+          gc_revisions,
+          break_repo_locks,
+          disable_syntax_validation,
+          patch_refs,
+          gerrit_reset,
+          gerrit_rebase_patch_ref)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.
@@ -1154,14 +1154,21 @@ def main():
 
   solutions_printer(git_slns)
 
+  # Creating hardlinks during a build can interact with git reset in
+  # unfortunate ways if git's index isn't refreshed beforehand. (See
+  # crbug.com/330461#c13 for an explanation.)
+  try:
+    call_gclient('recurse', '-v', 'git', 'update-index', '--refresh')
+  except SubprocessFailed:
+    # Failure here (and nowhere else) may have adverse effects on the
+    # compile time of the build but shouldn't affect its ability to
+    # successfully complete.
+    print 'WARNING: Failed to update git indices.'
+
   try:
     # Dun dun dun, the main part of bot_update.
-    # gn creates hardlinks during the build. By default, this makes
-    # `git reset` overwrite the sources of the hardlinks, which causes
-    # unnecessary rebuilds. (See crbug.com/330461#c13 for an explanation.)
-    with git_config_if_not_set('core.trustctime', 'false'):
-      revisions, step_text = prepare(options, git_slns, active)
-      checkout(options, git_slns, specs, revisions, step_text)
+    revisions, step_text = prepare(options, git_slns, active)
+    checkout(options, git_slns, specs, revisions, step_text)
 
   except PatchFailed as e:
     # Return a specific non-zero exit code for patch failure (because it is
