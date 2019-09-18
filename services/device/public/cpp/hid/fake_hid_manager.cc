@@ -104,9 +104,7 @@ void FakeHidManager::GetDevicesAndSetClient(
     GetDevicesCallback callback) {
   GetDevices(std::move(callback));
 
-  mojom::HidManagerClientAssociatedPtr client_ptr;
-  client_ptr.Bind(std::move(client));
-  clients_.AddPtr(std::move(client_ptr));
+  clients_.Add(std::move(client));
 }
 
 void FakeHidManager::GetDevices(GetDevicesCallback callback) {
@@ -184,17 +182,15 @@ void FakeHidManager::AddDevice(mojom::HidDeviceInfoPtr device) {
   devices_[guid] = std::move(device);
 
   mojom::HidDeviceInfo* device_info = devices_[guid].get();
-  clients_.ForAllPtrs([device_info](mojom::HidManagerClient* client) {
+  for (auto& client : clients_)
     client->DeviceAdded(device_info->Clone());
-  });
 }
 
 void FakeHidManager::RemoveDevice(const std::string& guid) {
   if (base::Contains(devices_, guid)) {
     mojom::HidDeviceInfo* device_info = devices_[guid].get();
-    clients_.ForAllPtrs([device_info](mojom::HidManagerClient* client) {
+    for (auto& client : clients_)
       client->DeviceRemoved(device_info->Clone());
-    });
     devices_.erase(guid);
   }
 }

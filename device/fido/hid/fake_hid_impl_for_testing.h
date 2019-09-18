@@ -14,9 +14,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "device/fido/fido_constants.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -122,7 +122,7 @@ class FakeFidoHidManager : public device::mojom::HidManager {
  private:
   std::map<std::string, device::mojom::HidDeviceInfoPtr> devices_;
   std::map<std::string, device::mojom::HidConnectionPtr> connections_;
-  mojo::AssociatedInterfacePtrSet<device::mojom::HidManagerClient> clients_;
+  mojo::AssociatedRemoteSet<device::mojom::HidManagerClient> clients_;
   mojo::ReceiverSet<device::mojom::HidManager> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFidoHidManager);

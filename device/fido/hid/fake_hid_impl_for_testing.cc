@@ -156,9 +156,7 @@ void FakeFidoHidManager::GetDevicesAndSetClient(
     GetDevicesCallback callback) {
   GetDevices(std::move(callback));
 
-  device::mojom::HidManagerClientAssociatedPtr client_ptr;
-  client_ptr.Bind(std::move(client));
-  clients_.AddPtr(std::move(client_ptr));
+  clients_.Add(std::move(client));
 }
 
 void FakeFidoHidManager::GetDevices(GetDevicesCallback callback) {
@@ -185,9 +183,8 @@ void FakeFidoHidManager::Connect(
 
 void FakeFidoHidManager::AddDevice(device::mojom::HidDeviceInfoPtr device) {
   device::mojom::HidDeviceInfo* device_info = device.get();
-  clients_.ForAllPtrs([device_info](device::mojom::HidManagerClient* client) {
+  for (auto& client : clients_)
     client->DeviceAdded(device_info->Clone());
-  });
 
   devices_[device->guid] = std::move(device);
 }
@@ -205,9 +202,8 @@ void FakeFidoHidManager::RemoveDevice(const std::string device_guid) {
     return;
 
   device::mojom::HidDeviceInfo* device_info = it->second.get();
-  clients_.ForAllPtrs([device_info](device::mojom::HidManagerClient* client) {
+  for (auto& client : clients_)
     client->DeviceRemoved(device_info->Clone());
-  });
   devices_.erase(it);
 }
 

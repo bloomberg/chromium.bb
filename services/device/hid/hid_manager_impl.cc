@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/hid/hid_connection_impl.h"
 
@@ -50,23 +51,21 @@ void HidManagerImpl::GetDevicesAndSetClient(
 }
 
 void HidManagerImpl::GetDevices(GetDevicesCallback callback) {
-  hid_service_->GetDevices(base::BindOnce(&HidManagerImpl::CreateDeviceList,
-                                          weak_factory_.GetWeakPtr(),
-                                          std::move(callback), nullptr));
+  hid_service_->GetDevices(base::BindOnce(
+      &HidManagerImpl::CreateDeviceList, weak_factory_.GetWeakPtr(),
+      std::move(callback), mojo::NullAssociatedRemote()));
 }
 
 void HidManagerImpl::CreateDeviceList(
     GetDevicesCallback callback,
-    mojom::HidManagerClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedRemote<mojom::HidManagerClient> client,
     std::vector<mojom::HidDeviceInfoPtr> devices) {
   std::move(callback).Run(std::move(devices));
 
   if (!client.is_valid())
     return;
 
-  mojom::HidManagerClientAssociatedPtr client_ptr;
-  client_ptr.Bind(std::move(client));
-  clients_.AddPtr(std::move(client_ptr));
+  clients_.Add(std::move(client));
 }
 
 void HidManagerImpl::Connect(
@@ -98,17 +97,13 @@ void HidManagerImpl::CreateConnection(
 }
 
 void HidManagerImpl::OnDeviceAdded(mojom::HidDeviceInfoPtr device) {
-  mojom::HidDeviceInfo* device_info = device.get();
-  clients_.ForAllPtrs([device_info](mojom::HidManagerClient* client) {
-    client->DeviceAdded(device_info->Clone());
-  });
+  for (auto& client : clients_)
+    client->DeviceAdded(device->Clone());
 }
 
 void HidManagerImpl::OnDeviceRemoved(mojom::HidDeviceInfoPtr device) {
-  mojom::HidDeviceInfo* device_info = device.get();
-  clients_.ForAllPtrs([device_info](mojom::HidManagerClient* client) {
-    client->DeviceRemoved(device_info->Clone());
-  });
+  for (auto& client : clients_)
+    client->DeviceRemoved(device->Clone());
 }
 
 }  // namespace device
