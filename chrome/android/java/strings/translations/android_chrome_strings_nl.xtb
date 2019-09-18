@@ -176,6 +176,7 @@
 <translation id="2154484045852737596">Pas bewerken</translation>
 <translation id="2154710561487035718">URL kopiëren</translation>
 <translation id="2156074688469523661">Resterende sites (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Als je iets op je telefoon wilt delen met een ander apparaat, schakel je de synchronisatie in de Chrome-instellingen op beide apparaten in</translation>
 <translation id="2170088579611075216">VR toestaan en openen</translation>
 <translation id="218608176142494674">Delen</translation>
 <translation id="2227444325776770048">Doorgaan als <ph name="USER_FULL_NAME" /></translation>
@@ -1082,6 +1083,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tabblad</translation>
 <translation id="885701979325669005">Opslag</translation>
+<translation id="889338405075704026">Naar Chrome-instellingen</translation>
 <translation id="8901170036886848654">Geen bladwijzers gevonden</translation>
 <translation id="8909135823018751308">Delen</translation>
 <translation id="8912362522468806198">Google-account</translation>
@@ -1100,6 +1102,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8993760627012879038">Een nieuw venster openen in de incognitomodus</translation>
 <translation id="8998729206196772491">Je logt in met een account dat wordt beheerd door <ph name="MANAGED_DOMAIN" /> waarmee je de eigenaar beheer geeft over je Chrome-gegevens. Je gegevens worden permanent gekoppeld aan dit account. Als je uitlogt van Chrome, worden je gegevens van dit apparaat verwijderd. Ze blijven echter opgeslagen in je Google-account.</translation>
 <translation id="9019902583201351841">Beheerd door je ouders</translation>
+<translation id="9028914725102941583">Schakel de synchronisatie in om content op apparaten te delen</translation>
 <translation id="9029323097866369874"><ph name="DOMAIN" /> toestaan om VR te activeren?</translation>
 <translation id="9040142327097499898">Meldingen zijn toegestaan. Locatie is uitgeschakeld voor dit apparaat.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video's}}</translation>

@@ -302,7 +302,7 @@
 <translation id="1444628761356461360">此设置由设备所有者<ph name="OWNER_EMAIL" />管理。</translation>
 <translation id="144518587530125858">无法加载主题背景的路径“<ph name="IMAGE_PATH" />”。</translation>
 <translation id="1445693676523799095">该过程可能需要一点时间</translation>
-<translation id="1450011005989029586">您使用的某个网站或应用发生了数据泄露，导致您的密码被外泄。Chrome 建议您立即在 <ph name="ORIGIN" /> 上<ph name="BOLD" />。</translation>
+<translation id="1450011005989029586">您使用的某个网站或应用发生了数据泄露，导致您的密码外泄。Chrome 建议您立即在 <ph name="ORIGIN" /> 上<ph name="BOLD" />。</translation>
 <translation id="1451375123200651445">网页（单个文件）</translation>
 <translation id="1451917004835509682">添加受监管用户</translation>
 <translation id="1454223536435069390">屏幕截图(&amp;A)</translation>
@@ -4383,7 +4383,7 @@
 <translation id="7506541170099744506">您的 <ph name="DEVICE_TYPE" /> 已成功注册企业管理服务。</translation>
 <translation id="7507930499305566459">状态响应程序证书</translation>
 <translation id="7508054832109420082">授予对打印机的使用期限</translation>
-<translation id="7510943789645525906">如果您使用的某个密码属于已遭泄露的数据，就会向您发出警告</translation>
+<translation id="7510943789645525906">如有密码遭遇数据泄露就会向您发出警告</translation>
 <translation id="7513029293694390567">使用存储的凭据自动登录网站。停用该功能后，系统会在您每次登录网站时要求您进行确认。</translation>
 <translation id="7514365320538308">下载</translation>
 <translation id="7521387064766892559">JavaScript</translation>

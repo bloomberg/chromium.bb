@@ -540,7 +540,7 @@
 <translation id="1781502536226964113">開啟新分頁</translation>
 <translation id="1781771911845953849">帳戶與同步處理</translation>
 <translation id="1782196717298160133">搜尋你的手機</translation>
-<translation id="1784707308176068866">合作內建應用程式提出要求時在背景執行</translation>
+<translation id="1784707308176068866">合作原生應用程式提出要求時在背景執行</translation>
 <translation id="1784849162047402014">裝置磁碟空間即將用盡</translation>
 <translation id="1790194216133135334">傳送連結到「<ph name="DEVICE_NAME" />」</translation>
 <translation id="1790976235243700817">移除存取權</translation>
@@ -2758,7 +2758,7 @@
 <translation id="5087926280563932024">無法驗證帳戶。請再試一次，或重新啟動 Chromebook。</translation>
 <translation id="5088172560898466307">伺服器主機名稱</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 (使用 RSA 加密)</translation>
-<translation id="5094721898978802975">與合作內建應用程式建立連線</translation>
+<translation id="5094721898978802975">與合作原生應用程式建立連線</translation>
 <translation id="5097002363526479830">無法連線至「<ph name="NAME" />」：<ph name="DETAILS" /></translation>
 <translation id="5101042277149003567">開啟所有書籤</translation>
 <translation id="5101839224773798795">游標停止時自動點擊</translation>

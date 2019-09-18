@@ -803,6 +803,15 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2454228136871844693">Otimiza a estabilidade.</translation>
 <translation id="2463034609187171371">Ativar pacotes de criptografia DHE em TLS</translation>
 <translation id="2463365186486772703">Localidade do aplicativo</translation>
+<translation id="2464012905766911533">Esta política permite que um administrador especifique que uma página pode enviar solicitações XHR síncronas durante a dispensa de páginas.
+
+      Quando a política for definida como ativada, as páginas poderão enviar solicitações XHR síncronas durante a dispensa de páginas.
+
+      Quando a política for definida como desativada ou não for definida, as páginas não poderão enviar solicitações XHR síncronas durante a dispensa de páginas.
+
+      Essa política será removida no Chrome 82.
+
+      Consulte https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">A autenticação de portal cativo ignora o proxy</translation>
 <translation id="2466697858869282874">Configura a disponibilidade e o comportamento da funcionalidade de atualização do firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1486,6 +1495,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se esta política não for definida, o "Selecionar para ouvir" será desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="3591527072193107424">Ativa o recurso "Suporte a navegadores legados".</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
+<translation id="3617743504695003280">Permite que uma página execute solicitações XHR síncronas durante a dispensa de páginas.</translation>
 <translation id="3627678165642179114">Ativar ou desativar serviço da web de verificação ortográfica</translation>
 <translation id="3628480121685794414">Ativar impressão simplex</translation>
 <translation id="3631099945620529777">Se definida como falsa, o botão "Encerrar processo" será desativado no Gerenciador de tarefas.

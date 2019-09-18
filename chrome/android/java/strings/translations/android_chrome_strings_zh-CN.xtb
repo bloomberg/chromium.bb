@@ -891,7 +891,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7494974237137038751">已节省的流量</translation>
 <translation id="7498271377022651285">请稍候…</translation>
-<translation id="7510943789645525906">如果您使用的某个密码属于已遭泄露的数据，就会向您发出警告</translation>
+<translation id="7510943789645525906">如有密码遭遇数据泄露就会向您发出警告</translation>
 <translation id="7514365320538308">下载</translation>
 <translation id="751961395872307827">无法连接到该网站</translation>
 <translation id="7521387064766892559">JavaScript</translation>

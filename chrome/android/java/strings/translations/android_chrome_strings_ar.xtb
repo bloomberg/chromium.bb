@@ -176,6 +176,7 @@
 <translation id="2154484045852737596">تعديل البطاقة</translation>
 <translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2156074688469523661">المواقع المتبقية (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">‏لمشاركة محتوى من هاتفك مع جهاز آخر، يُرجى تفعيل المزامنة في إعدادات Chrome على كلا الجهازين.</translation>
 <translation id="2170088579611075216">السماح بالواقع الافتراضي والدخول إليه</translation>
 <translation id="218608176142494674">المشاركة</translation>
 <translation id="2227444325776770048">المتابعة باسم <ph name="USER_FULL_NAME" /></translation>
@@ -1082,6 +1083,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">التخزين</translation>
+<translation id="889338405075704026">‏الانتقال إلى إعدادات Chrome</translation>
 <translation id="8901170036886848654">ما مِن إشارات مرجعية مطابقة</translation>
 <translation id="8909135823018751308">مشاركة…</translation>
 <translation id="8912362522468806198">‏حساب Google‏</translation>
@@ -1100,6 +1102,7 @@
 <translation id="8993760627012879038">فتح علامة تبويب جديدة في وضع التصفّح المتخفّي</translation>
 <translation id="8998729206196772491">‏يتم تسجيل دخولك باستخدام حساب تتم إدارته من خلال <ph name="MANAGED_DOMAIN" /> ومنح مشرفه الحق في التحكم في بياناتك على Chrome. سيؤدي ذلك إلى جعل بياناتك مرتبطة دائمًا بهذا الحساب. كما سيؤدي الخروج من Chrome إلى حذف بياناتك من هذا الجهاز، ولكن ستظل هذه البيانات مخزَّنة على حسابك في Google.</translation>
 <translation id="9019902583201351841">يديره والداك</translation>
+<translation id="9028914725102941583">تفعيل المزامنة للمشاركة في جميع الأجهزة</translation>
 <translation id="9029323097866369874">هل تريد السماح للموقع الإلكتروني <ph name="DOMAIN" /> بالانتقال إلى وضع "الواقع الافتراضي"؟</translation>
 <translation id="9040142327097499898">الإشعارات مسموح بها. وتحديد الموقع الجغرافي متوقف لهذا الجهاز.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{فيديو واحد (#)}zero{# فيديو}two{فيديوهان (#)}few{# فيديوهات}many{# فيديو}other{# فيديو}}</translation>

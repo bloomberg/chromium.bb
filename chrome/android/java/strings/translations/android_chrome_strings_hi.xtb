@@ -67,6 +67,7 @@
 <translation id="1407135791313364759">सभी बुकमार्क खोलें</translation>
 <translation id="1409426117486808224">खुले टैब के लिए सरल बनाया गया व्यू</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> डाउनलोड को रोका गया क्‍योंकि फ़ाइल पहले से मौजूद है.</translation>
+<translation id="1413136574162415971">Google यह जांच कर सकता है कि आपके पासवर्ड डेटा का उल्लंघन कर रहे थे या नहीं. जब आप अपने Google खाते से साइन इन करके सिंक करने की सुविधा चालू करेंगे, तब इसे चालू कर दिया जाएगा.</translation>
 <translation id="1414981605391750300">Google से संपर्क किया जा रहा है. इसमें कुछ समय लग सकता है…</translation>
 <translation id="1416550906796893042">ऐप्‍लिकेशन वर्शन</translation>
 <translation id="1430915738399379752">प्रिंट करें</translation>
@@ -161,6 +162,7 @@
 <translation id="2091887806945687916">आवाज़</translation>
 <translation id="2096012225669085171">सभी डिवाइस में सिंक करना और मनमुताबिक बनाना</translation>
 <translation id="2100273922101894616">अपने आप साइन इन करने की सुविधा</translation>
+<translation id="2100314319871056947">टेक्स्ट को छोटे-छोटे हिस्सों में शेयर करने की कोशिश करें</translation>
 <translation id="2107397443965016585">साइटों को सुरक्षित सामग्री चलाने देने से पहले पूछें (ऐसा करने का सुझाव दिया जाता है)</translation>
 <translation id="2111511281910874386">पेज पर जाएं</translation>
 <translation id="2122601567107267586">ऐप्लिकेशन नहीं खोला जा सका</translation>
@@ -255,6 +257,7 @@
 <translation id="2836148919159985482">फ़ुल स्क्रीन से बाहर निकलने के लिए वापस जाएं बटन स्पर्श करें.</translation>
 <translation id="2842985007712546952">मूल फ़ोल्‍डर</translation>
 <translation id="2858138569776157458">मुख्य साइटें</translation>
+<translation id="2860954141821109167">पक्का करें कि इस डिवाइस पर फ़ोन ऐप्लिकेशन चालू है</translation>
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2874939134665556319">पिछला ट्रैक</translation>
 <translation id="2876369937070532032">आपकी सुरक्षा को खतरा होने पर उन पेज के यूआरएल भेजे जाते हैं जिन पर आप Google के ज़रिए जाते हैं.</translation>
@@ -279,6 +282,7 @@
 <translation id="2996291259634659425">'पासफ़्रेज़' बनाएं</translation>
 <translation id="2996809686854298943">URL ज़रूरी है</translation>
 <translation id="300526633675317032">इससे वेबसाइट की पूरी <ph name="SIZE_IN_KB" /> मेमोरी साफ़ हो जाएगी.</translation>
+<translation id="3016635187733453316">पक्का करें कि इस डिवाइस को इंटरनेट से कनेक्ट किया गया है</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> केबी डाउनलोड किया गया</translation>
 <translation id="3029704984691124060">पासफ़्रेज़ मिलान नहीं करते</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />सहायता पाएं<ph name="END_LINK" /></translation>
@@ -847,6 +851,7 @@
 <translation id="723171743924126238">फ़ोटो चुनें</translation>
 <translation id="7233236755231902816">वेब को अपनी भाषा में देखने के लिए, Chrome का नया वर्शन पाएं</translation>
 <translation id="7243308994586599757">विकल्‍प स्‍क्रीन के नीचे उपलब्‍ध हैं</translation>
+<translation id="7248069434667874558">पक्का करें कि <ph name="TARGET_DEVICE_NAME" /> पर Chrome में सिंक करने की सुविधा चालू है</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> चुने गए</translation>
 <translation id="7274013316676448362">अवरोधित साइट</translation>
 <translation id="7290209999329137901">नाम बदलने की सुविधा उपलब्ध नहीं है</translation>
@@ -961,6 +966,7 @@
 <translation id="8007176423574883786">इस डिवाइस के लिए बंद कर दिया गया है</translation>
 <translation id="8013372441983637696">इस डिवाइस से अपना Chrome डेटा भी हटाएं</translation>
 <translation id="8015452622527143194">पेज पर सब कुछ वापस डिफ़ॉल्ट आकार में लाएं</translation>
+<translation id="8015780634880457457">Google यह जांच कर सकता है कि आपके पासवर्ड डेटा का उल्लंघन कर रहे थे या नहीं</translation>
 <translation id="802154636333426148">डाउनलोड विफल रहा</translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8035133914807600019">नया फ़ोल्‍डर…</translation>
@@ -1024,6 +1030,7 @@
 <translation id="8445448999790540984">पासवर्ड निर्यात नहीं कर सकते</translation>
 <translation id="8447861592752582886">डिवाइस अनुमति निरस्त करें</translation>
 <translation id="8461694314515752532">सिंक किए गए डेटा को अपने खुद के सिंक लंबे पासवर्ड से सुरक्षित करें</translation>
+<translation id="8466613982764129868">पक्का करें कि <ph name="TARGET_DEVICE_NAME" /> को इंटरनेट से कनेक्ट किया गया है</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">ऑफ़लाइन उपलब्ध है</translation>
 <translation id="8489271220582375723">इतिहास पेज खोलें</translation>
@@ -1114,6 +1121,7 @@
 <translation id="9188680907066685419">प्रबंधित खाते से प्रस्थान करें</translation>
 <translation id="9204836675896933765">1 फ़ाइल बची है</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">कॉल नहीं कर पा रहे</translation>
 <translation id="9219103736887031265">इमेज</translation>
 <translation id="926205370408745186">'डिजिटल वेलबीइंग' से अपनी Chrome गतिविधि हटाएं</translation>
 <translation id="932327136139879170">होम बटन</translation>

@@ -2509,7 +2509,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4722920479021006856"><ph name="APP_NAME" /> comparteix la vostra pantalla.</translation>
 <translation id="4724450788351008910">Ha canviat l'afiliació</translation>
 <translation id="4725511304875193254">Corgi</translation>
-<translation id="4725851834065990915">La teva contrasenya ha quedat al descobert a causa de la violació de les dades en un lloc web o una aplicació que fas servir. Chrome et recomana que comprovis les contrasenyes desades.</translation>
+<translation id="4725851834065990915">La teva contrasenya ha quedat exposada a causa de la violació de les dades en un lloc web o una aplicació que fas servir. Chrome et recomana que comprovis les contrasenyes desades.</translation>
 <translation id="4726710629007580002">S'han produït advertiments en provar d'instal·lar aquesta extensió:</translation>
 <translation id="4727847987444062305">Sessió de convidat gestionada</translation>
 <translation id="4728558894243024398">Plataforma</translation>
@@ -3914,7 +3914,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> no pot executar-se com a arrel.</translation>
 <translation id="6812841287760418429">Mantén els canvis</translation>
 <translation id="6817174620439930047">Pregunta'm quan un lloc web vulgui utilitzar els missatges exclusius del sistema per accedir a dispositius MIDI (opció recomanada)</translation>
-<translation id="6819440013020405090">La teva contrasenya ha quedat al descobert a causa de la violació de les dades en un lloc web o una aplicació que fas servir. Chrome et recomana que comprovis les contrasenyes desades i que canviïs la contrasenya del lloc web <ph name="ORIGIN" />.</translation>
+<translation id="6819440013020405090">La teva contrasenya ha quedat exposada a causa de la violació de les dades en un lloc web o una aplicació que fas servir. Chrome et recomana que comprovis les contrasenyes desades i que canviïs la contrasenya del lloc web <ph name="ORIGIN" />.</translation>
 <translation id="682123305478866682">Emet l'escriptori</translation>
 <translation id="6823506025919456619">Inicieu la sessió a Chrome per poder veure els vostres dispositius</translation>
 <translation id="6824564591481349393">Copi&amp;a l'adreça electrònica</translation>

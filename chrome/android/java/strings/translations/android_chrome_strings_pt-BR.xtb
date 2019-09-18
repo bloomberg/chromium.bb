@@ -176,6 +176,7 @@
 <translation id="2154484045852737596">Editar cartão</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Para compartilhar conteúdo do seu smartphone com outro dispositivo, ative a sincronização nas configurações do Chrome nos dois dispositivos</translation>
 <translation id="2170088579611075216">Permitir e entrar na RV</translation>
 <translation id="218608176142494674">Compartilhamento</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
@@ -1083,6 +1084,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, guia</translation>
 <translation id="885701979325669005">Armazenamento</translation>
+<translation id="889338405075704026">Acesse as configurações do Chrome</translation>
 <translation id="8901170036886848654">Nenhum favorito encontrado</translation>
 <translation id="8909135823018751308">Compartilhar...</translation>
 <translation id="8912362522468806198">Conta do Google</translation>
@@ -1101,6 +1103,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8993760627012879038">Abrir uma nova guia no modo de navegação anônima</translation>
 <translation id="8998729206196772491">Você está fazendo login com uma conta gerenciada por <ph name="MANAGED_DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chrome, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chrome, seus dados serão excluídos desse dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
+<translation id="9028914725102941583">Ative a sincronização para compartilhar entre dispositivos</translation>
 <translation id="9029323097866369874">Permitir que <ph name="DOMAIN" /> entre na RV?</translation>
 <translation id="9040142327097499898">As notificações são permitidas. A localização está desativada neste dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vídeo}one{# vídeo}other{# vídeos}}</translation>
