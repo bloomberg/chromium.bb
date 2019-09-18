@@ -13,9 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/input_service.mojom.h"
 
 namespace device {
@@ -52,7 +53,7 @@ class InputServiceLinux : public mojom::InputDeviceManager {
 
   // mojom::InputDeviceManager implementation:
   void GetDevicesAndSetClient(
-      mojom::InputDeviceManagerClientAssociatedPtrInfo client,
+      mojo::PendingAssociatedRemote<mojom::InputDeviceManagerClient> client,
       GetDevicesCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
 
@@ -67,7 +68,7 @@ class InputServiceLinux : public mojom::InputDeviceManager {
  private:
   base::ThreadChecker thread_checker_;
   mojo::ReceiverSet<mojom::InputDeviceManager> receivers_;
-  mojo::AssociatedInterfacePtrSet<mojom::InputDeviceManagerClient> clients_;
+  mojo::AssociatedRemoteSet<mojom::InputDeviceManagerClient> clients_;
 
   DISALLOW_COPY_AND_ASSIGN(InputServiceLinux);
 };
