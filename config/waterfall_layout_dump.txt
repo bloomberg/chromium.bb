@@ -357,7 +357,7 @@
     betty-arc64-nyc-android-pfq
     betty-nyc-android-pfq
     gandof-nyc-android-pfq
-    veyron_jerry-nyc-android-pfq
+    veyron_mighty-nyc-android-pfq
     veyron_tiger-nyc-android-pfq
 
 == pi_android_pfq ==
@@ -2408,7 +2408,7 @@
     betty-arc64-nyc-android-pfq-tryjob
     betty-nyc-android-pfq-tryjob
     gandof-nyc-android-pfq-tryjob
-    veyron_jerry-nyc-android-pfq-tryjob
+    veyron_mighty-nyc-android-pfq-tryjob
     veyron_tiger-nyc-android-pfq-tryjob
   master-paladin-tryjob
     amd64-generic-paladin-tryjob
@@ -3480,7 +3480,6 @@
   veyron_jerry-llvm-next-toolchain-tryjob
   veyron_jerry-llvm-toolchain-tryjob
   veyron_jerry-no-vmtest-pre-cq
-  veyron_jerry-nyc-android-pfq-tryjob
   veyron_jerry-paladin-tryjob
   veyron_jerry-payloads-tryjob
   veyron_jerry-pre-cq
@@ -3519,6 +3518,7 @@
   veyron_mighty-llvm-next-toolchain-tryjob
   veyron_mighty-llvm-toolchain-tryjob
   veyron_mighty-no-vmtest-pre-cq
+  veyron_mighty-nyc-android-pfq-tryjob
   veyron_mighty-paladin-tryjob
   veyron_mighty-payloads-tryjob
   veyron_mighty-pre-cq
