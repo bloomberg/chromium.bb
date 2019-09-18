@@ -703,7 +703,7 @@ void Display::DidReceivePresentationFeedback(
       "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
   for (auto& presentation_helper : presentation_helper_list) {
-    presentation_helper->DidPresent(feedback);
+    presentation_helper->DidPresent(copy_feedback);
   }
   pending_surfaces_with_presentation_helpers_.pop_front();
 }
