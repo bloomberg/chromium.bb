@@ -10,6 +10,7 @@ from __future__ import print_function
 
 import multiprocessing
 import os
+import re
 import socket
 import sys
 import tempfile
@@ -224,6 +225,31 @@ def GenerateUpdateId(target, src, key, for_vm):
   return update_id
 
 
+def GetIPv4Address(dev=None, global_ip=True):
+  """Returns any global/host IP address or the IP address of the given device.
+
+  socket.gethostname() is insufficient for machines where the host files are
+  not set up "correctly."  Since some of our builders may have this issue,
+  this method gives you a generic way to get the address so you are reachable
+  either via a VM or remote machine on the same network.
+
+  Args:
+    dev: Get the IP address of the device (e.g. 'eth0').
+    global_ip: If set True, returns a globally valid IP address. Otherwise,
+      returns a local IP address (default: True).
+  """
+  cmd = ['ip', 'addr', 'show']
+  cmd += ['scope', 'global' if global_ip else 'host']
+  cmd += [] if dev is None else ['dev', dev]
+
+  result = cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
+  matches = re.findall(r'\binet (\d+\.\d+\.\d+\.\d+).*', result.output)
+  if matches:
+    return matches[0]
+  logging.warning('Failed to find ip address in %r', result.output)
+  return None
+
+
 class DevServerException(Exception):
   """Base exception class of devserver errors."""
 
@@ -308,7 +334,7 @@ class DevServerWrapper(multiprocessing.Process):
       port: Port number of devserver.
       sub_dir: The subdirectory of the devserver url.
     """
-    ip = cros_build_lib.GetIPv4Address() if not ip else ip
+    ip = GetIPv4Address() if not ip else ip
     # If port number is not given, assume 8080 for backward
     # compatibility.
     port = DEFAULT_PORT if not port else port
