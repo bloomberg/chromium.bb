@@ -242,6 +242,10 @@ bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
     LogInvalidSpecifics(InvalidBookmarkSpecificsError::kEmptySpecifics);
     is_valid = false;
   }
+  if (!base::IsValidGUID(specifics.guid()) && !specifics.guid().empty()) {
+    DLOG(ERROR) << "Invalid bookmark: invalid GUID in the specifics.";
+    return false;
+  }
   if (!is_folder) {
     if (!GURL(specifics.url()).is_valid()) {
       DLOG(ERROR) << "Invalid bookmark: invalid url in the specifics.";
