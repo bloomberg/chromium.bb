@@ -148,7 +148,6 @@ ScrollNode& CreateScrollNodeInternal(LayerType* layer, int parent_id) {
 template <typename LayerType, typename MaskLayerType>
 void SetupMaskPropertiesInternal(LayerType* masked_layer,
                                  MaskLayerType* mask_layer) {
-  mask_layer->SetIsMask(true);
   if (!GetEffectNode(masked_layer)->backdrop_filters.IsEmpty())
     mask_layer->SetIsBackdropFilterMask(true);
   mask_layer->SetBounds(masked_layer->bounds());

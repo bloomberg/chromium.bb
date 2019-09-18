@@ -1177,7 +1177,7 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   EXPECT_EQ(mask->num_tilings(), 1u);
 }
 
-TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
+TEST_F(PictureLayerImplTest, HugeBackdropFilterMasksGetScaledDown) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
   gfx::Size layer_bounds(1000, 1000);
@@ -1186,10 +1186,12 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
       FakeRasterSource::CreateFilled(layer_bounds);
   SetupPendingTree(valid_raster_source);
 
-  CreateEffectNode(pending_layer());
+  CreateEffectNode(pending_layer())
+      .backdrop_filters.Append(FilterOperation::CreateInvertFilter(1.0));
   auto* pending_mask = AddLayer<FakePictureLayerImpl>(
       host_impl()->pending_tree(), valid_raster_source);
   SetupMaskProperties(pending_layer(), pending_mask);
+  ASSERT_TRUE(pending_mask->is_backdrop_filter_mask());
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   UpdateDrawProperties(host_impl()->pending_tree());
@@ -1301,7 +1303,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   EXPECT_EQ(0u, pending_mask->num_tilings());
 }
 
-TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
+TEST_F(PictureLayerImplTest, ScaledBackdropFilterMaskLayer) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
   gfx::Size layer_bounds(1000, 1000);
@@ -1312,10 +1314,12 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
       FakeRasterSource::CreateFilled(layer_bounds);
   SetupPendingTree(valid_raster_source);
 
-  CreateEffectNode(pending_layer());
+  CreateEffectNode(pending_layer())
+      .backdrop_filters.Append(FilterOperation::CreateInvertFilter(1.0));
   auto* pending_mask = AddLayer<FakePictureLayerImpl>(
       host_impl()->pending_tree(), valid_raster_source);
   SetupMaskProperties(pending_layer(), pending_mask);
+  ASSERT_TRUE(pending_mask->is_backdrop_filter_mask());
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   UpdateDrawProperties(host_impl()->pending_tree());
@@ -1345,6 +1349,51 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
       gfx::ScaleToCeiledSize(active_mask->bounds(), 1.3f);
   EXPECT_EQ(mask_texture_size, expected_mask_texture_size);
   EXPECT_EQ(gfx::SizeF(1.0f, 1.0f), mask_uv_size);
+}
+
+TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
+  host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
+
+  gfx::Size layer_bounds(1000, 1000);
+
+  SetInitialDeviceScaleFactor(1.3f);
+
+  scoped_refptr<FakeRasterSource> valid_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+  SetupPendingTree(valid_raster_source);
+
+  CreateEffectNode(pending_layer());
+  auto* pending_mask = AddLayer<FakePictureLayerImpl>(
+      host_impl()->pending_tree(), valid_raster_source);
+  SetupMaskProperties(pending_layer(), pending_mask);
+  ASSERT_FALSE(pending_mask->is_backdrop_filter_mask());
+
+  host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
+  UpdateDrawProperties(host_impl()->pending_tree());
+
+  // Masks are scaled, and do not have a low res tiling.
+  EXPECT_EQ(1.3f, pending_mask->HighResTiling()->contents_scale_key());
+  EXPECT_EQ(1u, pending_mask->num_tilings());
+
+  host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(
+      pending_mask->HighResTiling()->AllTilesForTesting());
+
+  ActivateTree();
+
+  FakePictureLayerImpl* active_mask = static_cast<FakePictureLayerImpl*>(
+      host_impl()->active_tree()->LayerById(pending_mask->id()));
+
+  // Non-backdrop-filter mask layers are tiled normally.
+  EXPECT_EQ(36u, active_mask->HighResTiling()->AllTilesForTesting().size());
+  // And don't have mask resources.
+  viz::ResourceId mask_resource_id;
+  gfx::Size mask_texture_size;
+  gfx::SizeF mask_uv_size;
+  active_mask->GetContentsResourceId(&mask_resource_id, &mask_texture_size,
+                                     &mask_uv_size);
+  EXPECT_EQ(0u, mask_resource_id);
+  EXPECT_EQ(gfx::Size(), mask_texture_size);
+  EXPECT_EQ(gfx::SizeF(), mask_uv_size);
 }
 
 TEST_F(PictureLayerImplTest, ReleaseTileResources) {

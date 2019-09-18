@@ -608,7 +608,6 @@ void Layer::SetMaskLayer(scoped_refptr<PictureLayer> mask_layer) {
     mask_layer->inputs_.position = gfx::PointF();
     mask_layer->SetIsDrawable(true);
     mask_layer->SetBlendMode(SkBlendMode::kDstIn);
-    mask_layer->SetIsMask(true);
     AddChild(mask_layer);
   }
   inputs_.mask_layer = mask_layer.get();
