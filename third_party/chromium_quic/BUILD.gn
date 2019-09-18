@@ -56,7 +56,7 @@ source_set("chromium_quic") {
   ]
 }
 
-executable("demo_client") {
+executable("quic_demo_client") {
   sources = [
     "demo/client.cc",
     "demo/delegates.cc",
@@ -69,7 +69,7 @@ executable("demo_client") {
   configs += [ ":chromium_quic_config" ]
 }
 
-executable("demo_server") {
+executable("quic_demo_server") {
   sources = [
     "demo/delegates.cc",
     "demo/delegates.h",

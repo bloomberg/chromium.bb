@@ -147,7 +147,7 @@ source_set("default_logger") {
   ]
 }
 
-source_set("platform_unittests") {
+source_set("unittests") {
   testonly = true
 
   sources = [

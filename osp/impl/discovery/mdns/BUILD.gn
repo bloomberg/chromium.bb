@@ -18,7 +18,7 @@ source_set("mdns_interface") {
   ]
 }
 
-source_set("mdns_unittests") {
+source_set("unittests") {
   testonly = true
 
   sources = [
@@ -38,9 +38,9 @@ source_set("mdns_unittests") {
 }
 
 if (use_mdns_responder) {
-  executable("embedder_demo") {
+  executable("mdns_demo") {
     sources = [
-      "embedder_demo.cc",
+      "mdns_demo.cc",
     ]
 
     deps = [

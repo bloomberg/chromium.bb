@@ -10,10 +10,17 @@ import("osp/build/config/services.gni")
 group("gn_all") {
   deps = [
     "cast/common:mdns",
+    "cast/common/certificate",
+    "cast/sender/channel",
     "osp",
     "osp/msgs",
     "platform",
+    "platform:default_logger",
+    "streaming/cast:receiver",
+    "streaming/cast:sender",
     "third_party/abseil",
+    "third_party/boringssl",
+    "third_party/jsoncpp",
     "third_party/protobuf:protoc",
     "third_party/tinycbor",
     "third_party/zlib",
@@ -22,41 +29,45 @@ group("gn_all") {
   ]
 
   if (use_mdns_responder) {
-    deps += [ "osp/impl/discovery/mdns:embedder_demo" ]
+    deps += [ "osp/impl/discovery/mdns:mdns_demo" ]
   }
 
   if (use_chromium_quic) {
     deps += [
       "third_party/chromium_quic",
-      "third_party/chromium_quic:demo_client",
-      "third_party/chromium_quic:demo_server",
+      "third_party/chromium_quic:quic_demo_client",
+      "third_party/chromium_quic:quic_demo_server",
     ]
+  }
+
+  if (use_chromium_quic && use_mdns_responder) {
+    deps += [ "osp:osp_demo" ]
   }
 }
 
 executable("openscreen_unittests") {
   testonly = true
   deps = [
-    "cast/common:mdns_unittests",
+    "cast/common:unittests",
     "cast/common/certificate:unittests",
     "cast/sender/channel:unittests",
-    "osp:osp_unittests",
-    "osp/impl/discovery/mdns:mdns_unittests",
+    "osp:unittests",
+    "osp/impl/discovery/mdns:unittests",
     "osp/msgs:unittests",
-    "platform:platform_unittests",
-    "streaming/cast:cast_unittests",
+    "platform:unittests",
+    "streaming/cast:unittests",
     "third_party/abseil",
     "third_party/googletest:gtest_main",
-    "util:util_unittests",
+    "util:unittests",
   ]
 }
 
+# Note: Remove this after demo is removed from the build recipe.
 if (use_chromium_quic && use_mdns_responder) {
   executable("demo") {
     sources = [
-      "osp/demo/demo.cc",
+      "osp/demo/osp_demo.cc",
     ]
-
     deps = [
       "//osp:osp_with_chromium_quic",
       "//osp/impl/discovery/mdns",

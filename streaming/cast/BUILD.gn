@@ -95,7 +95,7 @@ source_set("sender") {
   ]
 }
 
-source_set("cast_unittests") {
+source_set("unittests") {
   testonly = true
 
   sources = [
@@ -206,7 +206,7 @@ if (build_with_chromium) {
 # standalone, non-embedder //platform implementation; since they *are* the whole
 # application.
 if (!build_with_chromium) {
-  executable("receiver_demo") {
+  executable("streaming_receiver_demo") {
     sources = [
       "receiver_demo/main.cc",
     ]

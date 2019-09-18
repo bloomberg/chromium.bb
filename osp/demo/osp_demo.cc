@@ -594,7 +594,7 @@ InputArgs GetInputArgs(int argc, char** argv) {
 int main(int argc, char** argv) {
   using openscreen::platform::LogLevel;
 
-  std::cout << "Usage: demo [-v] [friendly_name]" << std::endl
+  std::cout << "Usage: osp_demo [-v] [friendly_name]" << std::endl
             << "-v: enable more verbose logging" << std::endl
             << "friendly_name: server name, runs the publisher demo."
             << std::endl

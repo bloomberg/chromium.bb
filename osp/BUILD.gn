@@ -25,7 +25,7 @@ if (use_chromium_quic) {
   }
 }
 
-source_set("osp_unittests") {
+source_set("unittests") {
   testonly = true
 
   sources = [
@@ -52,12 +52,25 @@ source_set("osp_unittests") {
     "impl",
     "impl/quic:test_support",
     "impl/testing",
-    "impl/testing:fakes_unittests",
     "public",
     "public:test_support",
   ]
 
   if (use_mdns_responder) {
     sources += [ "impl/mdns_responder_service_unittest.cc" ]
+  }
+}
+
+if (use_chromium_quic && use_mdns_responder) {
+  executable("osp_demo") {
+    sources = [
+      "demo/osp_demo.cc",
+    ]
+    deps = [
+      ":osp_with_chromium_quic",
+      "//osp/impl/discovery/mdns",
+      "//platform",
+      "//util",
+    ]
   }
 }

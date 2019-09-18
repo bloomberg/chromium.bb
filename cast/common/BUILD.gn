@@ -30,7 +30,7 @@ source_set("mdns") {
   configs += [ "../../build:allow_build_from_embedder" ]
 }
 
-source_set("mdns_unittests") {
+source_set("unittests") {
   testonly = true
 
   sources = [

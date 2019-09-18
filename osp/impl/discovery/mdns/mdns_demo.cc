@@ -23,7 +23,7 @@
 // This file contains a demo of our mDNSResponder wrapper code.  It can both
 // listen for mDNS services and advertise an mDNS service.  The command-line
 // usage is:
-//   embedder_demo [service_type] [service_instance_name]
+//   mdns_demo [service_type] [service_instance_name]
 // service_type defaults to '_openscreen._udp' and service_instance_name
 // defaults to ''.  service_type determines services the program listens for and
 // when service_instance_name is not empty, a service of
