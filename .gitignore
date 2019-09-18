@@ -33,6 +33,7 @@
 /.subversion
 
 # Ignore locations where third-party tools are placed during bootstrapping.
+/bootstrap*_bin
 /python*_bin
 /python_bin_reldir.txt
 /python3_bin_reldir.txt

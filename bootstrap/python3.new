@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+base_dir=$(dirname "$0")
+
+PYTHON3_BIN_RELDIR="$(cat $base_dir/python3_bin_reldir.txt | xargs echo)"
+PATH="${PYTHON3_BIN_RELDIR}":"${PYTHON3_BIN_RELDIR}/Scripts":"$PATH"
+"$base_dir/${PYTHON3_BIN_RELDIR}/python3" "$@"

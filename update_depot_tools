@@ -45,7 +45,7 @@ fi
 
 # We want to update the bundled tools even under MinGW.
 if [ $MINGW = 0 ]; then
-  $COMSPEC /c `cygpath -w "$base_dir/bootstrap/win/win_tools.bat"`
+  $COMSPEC /c `cygpath -w "$base_dir/bootstrap/win_tools.bat"`
   case $? in
     123)
       # msys environment was upgraded, need to quit.
@@ -118,10 +118,15 @@ if [ "X$DEPOT_TOOLS_UPDATE" != "X0" ]; then
     cd - > /dev/null
   fi
 
-  # Sync CIPD and CIPD client tools.
+  # Sync CIPD-boostrapped packages.
   source "$base_dir/cipd_bin_setup.sh"
   cipd_bin_setup
 
-  find "$base_dir" | grep -i ".*\.pyc" | xargs rm -f;
+  # Don't bootstrap Python 3 on windows, since it is already done by
+  # bootstrap/win_tools.bat.
+  if [ "X$MINGW" != "X0" -a "X$DEPOT_TOOLS_BOOTSTRAP_PYTHON3" != "X0" ]; then
+    source "$base_dir/bootstrap_python3"
+    bootstrap_python3
+  fi
 fi
 
