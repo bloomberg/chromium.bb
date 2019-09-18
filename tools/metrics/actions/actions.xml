@@ -2319,6 +2319,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ApplicationShortcut.NewIncognitoSearchPressed">
+  <owner>pschaffner@chromium.com</owner>
+  <description>
+    Force pressed on a springboard shortcut and tapped Incognito Search in
+    Chrome for iOS.
+  </description>
+</action>
+
+<action name="ApplicationShortcut.NewSearchPressed">
+  <owner>pschaffner@chromium.com</owner>
+  <description>
+    Force pressed on a springboard shortcut and tapped New Search in Chrome for
+    iOS.
+  </description>
+</action>
+
 <action name="AppList_AutoLaunchCanceled">
   <obsolete>Voice search in Launcher is not supported anymore.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>

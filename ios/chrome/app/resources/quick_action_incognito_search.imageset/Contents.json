@@ -3,12 +3,12 @@
         {
             "idiom": "universal",
             "scale": "2x",
-            "filename": "quick_action_new_tab@2x.png"
+            "filename": "quick_action_incognito_search@2x.png"
         },
         {
             "idiom": "universal",
             "scale": "3x",
-            "filename": "quick_action_new_tab@3x.png"
+            "filename": "quick_action_incognito_search@3x.png"
         }
     ],
     "info": {
