@@ -18,7 +18,7 @@
 #include "media/base/media_permission.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/p2p/empty_network_manager.h"
+#include "third_party/blink/renderer/platform/p2p/empty_network_manager.h"
 #include "third_party/webrtc/rtc_base/ip_address.h"
 
 using NetworkList = rtc::NetworkManager::NetworkList;
