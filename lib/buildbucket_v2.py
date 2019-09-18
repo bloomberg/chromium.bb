@@ -251,7 +251,7 @@ class BuildbucketV2(object):
     if build_with_properties.output.HasField('properties'):
       build_properties = build_with_properties.output.properties
       if ('killed_child_builds' in build_properties and
-          build_properties['killed_child_builds'] is not 'None'):
+          build_properties['killed_child_builds'] is not None):
         return ast.literal_eval(build_properties['killed_child_builds'])
 
   def GetBuildStages(self, buildbucket_id):
@@ -332,7 +332,7 @@ class BuildbucketV2(object):
       build_properties = build_with_properties.output.properties
       for property_name, status_name in CIDB_TO_BB_PROPERTIES_MAP.items():
         if (property_name in build_properties and
-            build_properties[property_name] is not 'None'):
+            build_properties[property_name] is not None):
           build_status[status_name] = str(build_properties[property_name])
         else:
           build_status[status_name] = None
