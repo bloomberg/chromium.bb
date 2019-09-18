@@ -2446,6 +2446,17 @@ bool ChromeContentBrowserClient::AllowSharedWorker(
   return allow;
 }
 
+bool ChromeContentBrowserClient::DoesSchemeAllowCrossOriginSharedWorker(
+    const std::string& scheme) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Extensions are allowed to start cross-origin shared workers.
+  if (scheme == extensions::kExtensionScheme)
+    return true;
+#endif
+
+  return false;
+}
+
 bool ChromeContentBrowserClient::AllowSignedExchange(
     content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
