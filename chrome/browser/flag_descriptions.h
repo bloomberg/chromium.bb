@@ -873,9 +873,6 @@ extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[];
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[];
 
-extern const char kOmniboxUIShowPlaceholderWhenCaretShowingName[];
-extern const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[];
-
 extern const char kOmniboxUIShowSuggestionFaviconsName[];
 extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
 

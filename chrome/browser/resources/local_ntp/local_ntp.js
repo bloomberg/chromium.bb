@@ -98,8 +98,6 @@ const CLASSES = {
   SHOW_ELEMENT: 'show-element',
   // When the realbox has matches to show.
   SHOW_MATCHES: 'show-matches',
-  // Applied when the fakebox placeholder text should not be hidden on focus.
-  SHOW_PLACEHOLDER: 'show-placeholder',
   URL_ICON: 'url-icon',  // Global/favicon/url icon.
   // Applied when the doodle notifier should be shown instead of the doodle.
   USE_NOTIFIER: 'use-notifier',
@@ -747,8 +745,6 @@ function init() {
     if (configData.realboxEnabled) {
       const realboxEl = $(IDS.REALBOX);
       realboxEl.placeholder = configData.translatedStrings.searchboxPlaceholder;
-      realboxEl.classList.toggle(
-          CLASSES.SHOW_PLACEHOLDER, configData.showPlaceholderOnFocus);
       realboxEl.addEventListener('copy', onRealboxCutCopy);
       realboxEl.addEventListener('cut', onRealboxCutCopy);
       realboxEl.addEventListener('input', onRealboxInput);
@@ -767,10 +763,6 @@ function init() {
 
       utils.disableOutlineOnMouseClick($(IDS.REALBOX_MICROPHONE));
     } else {
-      if (configData.showPlaceholderOnFocus) {
-        $(IDS.FAKEBOX_TEXT).classList.add(CLASSES.SHOW_PLACEHOLDER);
-      }
-
       // Set up the fakebox (which only exists on the Google NTP).
       ntpApiHandle.oninputstart = onInputStart;
       ntpApiHandle.oninputcancel = onInputCancel;

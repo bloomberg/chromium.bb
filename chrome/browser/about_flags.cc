@@ -4151,12 +4151,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCookiesWithoutSameSiteMustBeSecureDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kCookiesWithoutSameSiteMustBeSecure)},
 
-    {"omnibox-ui-show-placeholder-when-caret-showing",
-     flag_descriptions::kOmniboxUIShowPlaceholderWhenCaretShowingName,
-     flag_descriptions::kOmniboxUIShowPlaceholderWhenCaretShowingDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentShowPlaceholderWhenCaretShowing)},
-
 #if !defined(OS_ANDROID)
     {"enterprise-reporting-in-browser",
      flag_descriptions::kEnterpriseReportingInBrowserName,

@@ -177,7 +177,7 @@ body.hide-fakebox #fakebox {
   color: rgb(117, 117, 117);
 }
 
-#realbox:not(.show-placeholder):focus::placeholder {
+#realbox:focus::placeholder {
   color: transparent;
 }
 
@@ -389,8 +389,8 @@ html[dir=rtl] .microphone-icon {
   }
 }
 
-body.fakebox-drag-focused #fakebox-text:not(.show-placeholder),
-body.fakebox-focused #fakebox-text:not(.show-placeholder) {
+body.fakebox-drag-focused #fakebox-text,
+body.fakebox-focused #fakebox-text {
   visibility: hidden;
 }
 

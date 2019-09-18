@@ -2679,11 +2679,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-ui-show-placeholder-when-caret-showing",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "omnibox-ui-show-suggestion-favicons",
     "owners": [ "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 79

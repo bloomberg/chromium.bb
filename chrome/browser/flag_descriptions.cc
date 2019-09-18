@@ -1443,12 +1443,6 @@ const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[] =
     "updated right when the user presses Enter, the user may go to a "
     "surprising destination.";
 
-const char kOmniboxUIShowPlaceholderWhenCaretShowingName[] =
-    "Omnibox UI Show Placeholder When Caret Showing";
-const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[] =
-    "Shows the \"Search Google or type a URL\" placeholder text in the "
-    "omnibox when it's focused / the caret cursor is showing.";
-
 const char kOmniboxUIShowSuggestionFaviconsName[] =
     "Omnibox UI Show Suggestion Favicons";
 const char kOmniboxUIShowSuggestionFaviconsDescription[] =
