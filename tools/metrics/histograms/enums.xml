@@ -5586,6 +5586,17 @@ Unknown properties are collapsed to zero. -->
   <int value="24" label="From out-of-scope app window to popup."/>
 </enum>
 
+<enum name="BookmarkGUIDSource">
+  <summary>
+    Whether a GUID came from BookmarkSpecifics, or, in case it was missing,
+    whether an originator_client_item_id of valid GUID format replaced it or it
+    was left empty.
+  </summary>
+  <int value="0" label="Specifics have a GUID"/>
+  <int value="1" label="originator_client_item_id is a valid GUID"/>
+  <int value="2" label="GUID field left empty"/>
+</enum>
+
 <enum name="BookmarkLaunchLocation">
   <int value="0" label="Attached bookmark bar"/>
   <int value="1" label="Detached (floating) bookmark bar"/>
