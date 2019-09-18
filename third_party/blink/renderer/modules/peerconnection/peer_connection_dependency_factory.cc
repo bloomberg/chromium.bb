@@ -126,6 +126,13 @@ PeerConnectionDependencyFactory::~PeerConnectionDependencyFactory() {
   DCHECK(!pc_factory_);
 }
 
+PeerConnectionDependencyFactory*
+PeerConnectionDependencyFactory::GetInstance() {
+  DEFINE_STATIC_LOCAL(PeerConnectionDependencyFactory, instance,
+                      (/*create_p2p_socket_dispatcher= */ true));
+  return &instance;
+}
+
 std::unique_ptr<blink::WebRTCPeerConnectionHandler>
 PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client,

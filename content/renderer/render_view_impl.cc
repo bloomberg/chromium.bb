@@ -124,7 +124,6 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
-#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
