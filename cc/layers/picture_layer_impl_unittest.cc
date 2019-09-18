@@ -28,7 +28,7 @@
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_layer_tree_host_base.h"
 #include "cc/test/test_paint_worklet_input.h"
@@ -1235,7 +1235,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
 
   SetupPendingTree(huge_raster_source);
   pending_mask->SetBounds(huge_bounds);
-  pending_mask->SetRasterSourceOnPending(huge_raster_source, Region());
+  pending_mask->SetRasterSource(huge_raster_source, Region());
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   UpdateDrawProperties(host_impl()->pending_tree());
@@ -1291,7 +1291,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
 
   SetupPendingTree(extra_huge_raster_source);
   pending_mask->SetBounds(extra_huge_bounds);
-  pending_mask->SetRasterSourceOnPending(extra_huge_raster_source, Region());
+  pending_mask->SetRasterSource(extra_huge_raster_source, Region());
 
   EXPECT_FALSE(pending_mask->CanHaveTilings());
 
@@ -2268,7 +2268,7 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   auto* raw_pending_layer = pending_layer.get();
   SetupRootProperties(raw_pending_layer);
   pending_tree->SetRootLayerForTesting(std::move(pending_layer));
-  LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(pending_tree);
+  PrepareForUpdateDrawProperties(pending_tree);
 
   // Set some state on the pending layer, make sure it is not clobbered
   // by a sync from the active layer.  This could happen because if the
@@ -3270,7 +3270,7 @@ TEST_F(PictureLayerImplTest, Occlusion) {
   gfx::Size layer_bounds(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
@@ -3287,8 +3287,7 @@ TEST_F(PictureLayerImplTest, Occlusion) {
     gfx::Rect occluded;
     impl.AppendQuadsWithOcclusion(active_layer(), occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
-                                                 gfx::Rect(layer_bounds));
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect(layer_bounds));
     EXPECT_EQ(100u, impl.quad_list().size());
   }
 
@@ -3297,7 +3296,7 @@ TEST_F(PictureLayerImplTest, Occlusion) {
     gfx::Rect occluded(active_layer()->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(active_layer(), occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
     EXPECT_EQ(impl.quad_list().size(), 0u);
   }
 
@@ -3307,8 +3306,8 @@ TEST_F(PictureLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(active_layer(), occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(
-        impl.quad_list(), occluded, &partially_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                           &partially_occluded_count);
     // The layer outputs one quad, which is partially occluded.
     EXPECT_EQ(100u - 10u, impl.quad_list().size());
     EXPECT_EQ(10u + 10u, partially_occluded_count);
@@ -3319,7 +3318,7 @@ TEST_F(PictureLayerImplTest, OcclusionOnSolidColorPictureLayer) {
   gfx::Size layer_bounds(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
@@ -3335,8 +3334,7 @@ TEST_F(PictureLayerImplTest, OcclusionOnSolidColorPictureLayer) {
     impl.AppendQuadsWithOcclusion(active_layer(), occluded);
 
     size_t partial_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(impl.quad_list(), occluded,
-                                            &partial_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded, &partial_occluded_count);
     // Because of the implementation of test helper AppendQuadsWithOcclusion,
     // the occlusion will have a scale transform resulted from the device scale
     // factor. A single partially overlapped DrawQuad of 500x500 will be added.
@@ -3349,7 +3347,7 @@ TEST_F(PictureLayerImplTest, IgnoreOcclusionOnSolidColorMask) {
   gfx::Size layer_bounds(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
@@ -3365,8 +3363,8 @@ TEST_F(PictureLayerImplTest, IgnoreOcclusionOnSolidColorMask) {
     impl.AppendQuadsWithOcclusion(active_layer(), occluded);
 
     size_t partial_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(impl.quad_list(), gfx::Rect(),
-                                            &partial_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), gfx::Rect(),
+                           &partial_occluded_count);
     // None of the quads shall be occluded because mask layers ignores
     // occlusion.
     EXPECT_EQ(1u, impl.quad_list().size());
@@ -5231,7 +5229,7 @@ TEST_F(PictureLayerImplTest, CompositedImageIgnoreIdealContentsScale) {
   host_impl()->ActivateSyncTree();
 
   FakePictureLayerImpl* active_layer = static_cast<FakePictureLayerImpl*>(
-      host_impl()->active_tree()->root_layer_for_testing());
+      host_impl()->active_tree()->root_layer());
   SetupDrawPropertiesAndUpdateTiles(
       active_layer, suggested_ideal_contents_scale, device_scale_factor,
       page_scale_factor, animation_contents_scale, animation_contents_scale,

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/trees/draw_property_utils.h"
+
 #include <stddef.h>
 
 #include <memory>
@@ -19,7 +21,6 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/layer_tree_json_parser.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/test/paths.h"
@@ -32,9 +33,9 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class LayerTreeHostCommonPerfTest : public LayerTreeTest {
+class DrawPropertyUtilsPerfTest : public LayerTreeTest {
  public:
-  LayerTreeHostCommonPerfTest()
+  DrawPropertyUtilsPerfTest()
       : timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {}
@@ -76,7 +77,7 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
   std::unique_ptr<perf_test::PerfResultReporter> reporter_;
 };
 
-class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
+class CalcDrawPropsTest : public DrawPropertyUtilsPerfTest {
  public:
   void RunCalcDrawProps() { RunTest(CompositorMode::SINGLE_THREADED); }
 
@@ -84,36 +85,15 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     timer_.Reset();
-    LayerTreeImpl* active_tree = host_impl->active_tree();
 
     do {
-      int max_texture_size = 8096;
-      DoCalcDrawPropertiesImpl(max_texture_size, active_tree, host_impl);
-
+      RenderSurfaceList render_surface_list;
+      draw_property_utils::CalculateDrawProperties(host_impl->active_tree(),
+                                                   &render_surface_list);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     EndTest();
-  }
-
-  void DoCalcDrawPropertiesImpl(int max_texture_size,
-                                LayerTreeImpl* active_tree,
-                                LayerTreeHostImpl* host_impl) {
-    RenderSurfaceList update_list;
-    LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        active_tree->root_layer_for_testing(), active_tree->GetDeviceViewport(),
-        host_impl->DrawTransform(), active_tree->device_scale_factor(),
-        active_tree->current_page_scale_factor(),
-        active_tree->InnerViewportContainerLayer(),
-        active_tree->InnerViewportScrollLayer(),
-        active_tree->OuterViewportScrollLayer(),
-        active_tree->elastic_overscroll()->Current(active_tree->IsActiveTree()),
-        active_tree->OverscrollElasticityElementId(), max_texture_size,
-        &update_list, active_tree->property_trees(),
-        active_tree->property_trees()->transform_tree.Node(
-            active_tree->InnerViewportContainerLayer()
-                ->transform_tree_index()));
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 };
 

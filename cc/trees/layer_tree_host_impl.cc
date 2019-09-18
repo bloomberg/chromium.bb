@@ -79,12 +79,12 @@
 #include "cc/trees/image_animation_controller.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_frame_sink.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/presentation_time_callback_buffer.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
+#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
@@ -1164,8 +1164,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // must compute all damage tracking before drawing anything, so that we know
   // the root damage rect. The root damage rect is then used to scissor each
   // surface.
-  DamageTracker::UpdateDamageTracking(active_tree_.get(),
-                                      active_tree_->GetRenderSurfaceList());
+  DamageTracker::UpdateDamageTracking(active_tree_.get());
 
   if (HasDamage()) {
     consecutive_frame_with_damage_count_++;
@@ -2663,8 +2662,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
       CanDraw()) {
     bool ok = active_tree()->UpdateDrawProperties();
     DCHECK(ok);
-    DamageTracker::UpdateDamageTracking(active_tree_.get(),
-                                        active_tree_->GetRenderSurfaceList());
+    DamageTracker::UpdateDamageTracking(active_tree_.get());
     bool has_damage = HasDamage();
     // Animations are updated after we attempt to draw. If the frame is aborted,
     // update animations now.
@@ -5153,8 +5151,8 @@ void LayerTreeHostImpl::CollectScrollbarUpdates(
     ScrollAndScaleSet* scroll_info) const {
   scroll_info->scrollbars.reserve(scrollbar_animation_controllers_.size());
   for (auto& pair : scrollbar_animation_controllers_) {
-    scroll_info->scrollbars.push_back(LayerTreeHostCommon::ScrollbarsUpdateInfo(
-        pair.first, pair.second->ScrollbarsHidden()));
+    scroll_info->scrollbars.push_back(
+        {pair.first, pair.second->ScrollbarsHidden()});
   }
 }
 
