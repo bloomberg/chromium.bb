@@ -15,7 +15,7 @@
 namespace base {
 
 template <typename T>
-class CheckedRandomAccessIterator {
+class CheckedContiguousIterator {
  public:
   using difference_type = std::ptrdiff_t;
   using value_type = std::remove_cv_t<T>;
@@ -25,18 +25,17 @@ class CheckedRandomAccessIterator {
 
   // Required for converting constructor below.
   template <typename U>
-  friend class CheckedRandomAccessIterator;
+  friend class CheckedContiguousIterator;
 
-  CheckedRandomAccessIterator() = default;
-  CheckedRandomAccessIterator(T* start, const T* end)
-      : CheckedRandomAccessIterator(start, start, end) {}
-  CheckedRandomAccessIterator(const T* start, T* current, const T* end)
+  CheckedContiguousIterator() = default;
+  CheckedContiguousIterator(T* start, const T* end)
+      : CheckedContiguousIterator(start, start, end) {}
+  CheckedContiguousIterator(const T* start, T* current, const T* end)
       : start_(start), current_(current), end_(end) {
     CHECK(start <= current);
     CHECK(current <= end);
   }
-  CheckedRandomAccessIterator(const CheckedRandomAccessIterator& other) =
-      default;
+  CheckedContiguousIterator(const CheckedContiguousIterator& other) = default;
 
   // Converting constructor allowing conversions like CRAI<T> to CRAI<const T>,
   // but disallowing CRAI<const T> to CRAI<T> or CRAI<Derived> to CRAI<Base>,
@@ -46,7 +45,7 @@ class CheckedRandomAccessIterator {
   template <
       typename U,
       std::enable_if_t<std::is_convertible<U (*)[], T (*)[]>::value>* = nullptr>
-  CheckedRandomAccessIterator(const CheckedRandomAccessIterator<U>& other)
+  CheckedContiguousIterator(const CheckedContiguousIterator<U>& other)
       : start_(other.start_), current_(other.current_), end_(other.end_) {
     // We explicitly don't delegate to the 3-argument constructor here. Its
     // CHECKs would be redundant, since we expect |other| to maintain its own
@@ -55,66 +54,66 @@ class CheckedRandomAccessIterator {
     DCHECK(other.current_ <= other.end_);
   }
 
-  ~CheckedRandomAccessIterator() = default;
+  ~CheckedContiguousIterator() = default;
 
-  CheckedRandomAccessIterator& operator=(
-      const CheckedRandomAccessIterator& other) = default;
+  CheckedContiguousIterator& operator=(const CheckedContiguousIterator& other) =
+      default;
 
-  bool operator==(const CheckedRandomAccessIterator& other) const {
+  bool operator==(const CheckedContiguousIterator& other) const {
     CheckComparable(other);
     return current_ == other.current_;
   }
 
-  bool operator!=(const CheckedRandomAccessIterator& other) const {
+  bool operator!=(const CheckedContiguousIterator& other) const {
     CheckComparable(other);
     return current_ != other.current_;
   }
 
-  bool operator<(const CheckedRandomAccessIterator& other) const {
+  bool operator<(const CheckedContiguousIterator& other) const {
     CheckComparable(other);
     return current_ < other.current_;
   }
 
-  bool operator<=(const CheckedRandomAccessIterator& other) const {
+  bool operator<=(const CheckedContiguousIterator& other) const {
     CheckComparable(other);
     return current_ <= other.current_;
   }
 
-  bool operator>(const CheckedRandomAccessIterator& other) const {
+  bool operator>(const CheckedContiguousIterator& other) const {
     CheckComparable(other);
     return current_ > other.current_;
   }
 
-  bool operator>=(const CheckedRandomAccessIterator& other) const {
+  bool operator>=(const CheckedContiguousIterator& other) const {
     CheckComparable(other);
     return current_ >= other.current_;
   }
 
-  CheckedRandomAccessIterator& operator++() {
+  CheckedContiguousIterator& operator++() {
     CHECK(current_ != end_);
     ++current_;
     return *this;
   }
 
-  CheckedRandomAccessIterator operator++(int) {
-    CheckedRandomAccessIterator old = *this;
+  CheckedContiguousIterator operator++(int) {
+    CheckedContiguousIterator old = *this;
     ++*this;
     return old;
   }
 
-  CheckedRandomAccessIterator& operator--() {
+  CheckedContiguousIterator& operator--() {
     CHECK(current_ != start_);
     --current_;
     return *this;
   }
 
-  CheckedRandomAccessIterator& operator--(int) {
-    CheckedRandomAccessIterator old = *this;
+  CheckedContiguousIterator& operator--(int) {
+    CheckedContiguousIterator old = *this;
     --*this;
     return old;
   }
 
-  CheckedRandomAccessIterator& operator+=(difference_type rhs) {
+  CheckedContiguousIterator& operator+=(difference_type rhs) {
     if (rhs > 0) {
       CHECK_LE(rhs, end_ - current_);
     } else {
@@ -124,13 +123,13 @@ class CheckedRandomAccessIterator {
     return *this;
   }
 
-  CheckedRandomAccessIterator operator+(difference_type rhs) const {
-    CheckedRandomAccessIterator it = *this;
+  CheckedContiguousIterator operator+(difference_type rhs) const {
+    CheckedContiguousIterator it = *this;
     it += rhs;
     return it;
   }
 
-  CheckedRandomAccessIterator& operator-=(difference_type rhs) {
+  CheckedContiguousIterator& operator-=(difference_type rhs) {
     if (rhs < 0) {
       CHECK_LE(rhs, end_ - current_);
     } else {
@@ -140,14 +139,14 @@ class CheckedRandomAccessIterator {
     return *this;
   }
 
-  CheckedRandomAccessIterator operator-(difference_type rhs) const {
-    CheckedRandomAccessIterator it = *this;
+  CheckedContiguousIterator operator-(difference_type rhs) const {
+    CheckedContiguousIterator it = *this;
     it -= rhs;
     return it;
   }
 
-  friend difference_type operator-(const CheckedRandomAccessIterator& lhs,
-                                   const CheckedRandomAccessIterator& rhs) {
+  friend difference_type operator-(const CheckedContiguousIterator& lhs,
+                                   const CheckedContiguousIterator& rhs) {
     CHECK(lhs.start_ == rhs.start_);
     CHECK(lhs.end_ == rhs.end_);
     return lhs.current_ - rhs.current_;
@@ -169,9 +168,9 @@ class CheckedRandomAccessIterator {
     return current_[rhs];
   }
 
-  static bool IsRangeMoveSafe(const CheckedRandomAccessIterator& from_begin,
-                              const CheckedRandomAccessIterator& from_end,
-                              const CheckedRandomAccessIterator& to)
+  static bool IsRangeMoveSafe(const CheckedContiguousIterator& from_begin,
+                              const CheckedContiguousIterator& from_end,
+                              const CheckedContiguousIterator& to)
       WARN_UNUSED_RESULT {
     if (from_end < from_begin)
       return false;
@@ -186,7 +185,7 @@ class CheckedRandomAccessIterator {
   }
 
  private:
-  void CheckComparable(const CheckedRandomAccessIterator& other) const {
+  void CheckComparable(const CheckedContiguousIterator& other) const {
     CHECK_EQ(start_, other.start_);
     CHECK_EQ(end_, other.end_);
   }
@@ -197,7 +196,7 @@ class CheckedRandomAccessIterator {
 };
 
 template <typename T>
-using CheckedRandomAccessConstIterator = CheckedRandomAccessIterator<const T>;
+using CheckedContiguousConstIterator = CheckedContiguousIterator<const T>;
 
 }  // namespace base
 

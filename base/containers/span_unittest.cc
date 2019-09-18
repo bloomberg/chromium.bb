@@ -1260,47 +1260,47 @@ TEST(SpanTest, IteratorIsRangeMoveSafe) {
 
   // Overlapping ranges.
   for (const int dest_start_index : kOverlappingStartIndexes) {
-    EXPECT_FALSE(CheckedRandomAccessIterator<const int>::IsRangeMoveSafe(
+    EXPECT_FALSE(CheckedContiguousIterator<const int>::IsRangeMoveSafe(
         span.begin(), span.end(),
-        CheckedRandomAccessIterator<const int>(
+        CheckedContiguousIterator<const int>(
             span.data() + dest_start_index,
             span.data() + dest_start_index + kNumElements)));
-    EXPECT_FALSE(CheckedRandomAccessConstIterator<const int>::IsRangeMoveSafe(
+    EXPECT_FALSE(CheckedContiguousConstIterator<const int>::IsRangeMoveSafe(
         span.cbegin(), span.cend(),
-        CheckedRandomAccessConstIterator<const int>(
+        CheckedContiguousConstIterator<const int>(
             span.data() + dest_start_index,
             span.data() + dest_start_index + kNumElements)));
   }
 
   // Non-overlapping ranges.
   for (const int dest_start_index : kNonOverlappingStartIndexes) {
-    EXPECT_TRUE(CheckedRandomAccessIterator<const int>::IsRangeMoveSafe(
+    EXPECT_TRUE(CheckedContiguousIterator<const int>::IsRangeMoveSafe(
         span.begin(), span.end(),
-        CheckedRandomAccessIterator<const int>(
+        CheckedContiguousIterator<const int>(
             span.data() + dest_start_index,
             span.data() + dest_start_index + kNumElements)));
-    EXPECT_TRUE(CheckedRandomAccessConstIterator<const int>::IsRangeMoveSafe(
+    EXPECT_TRUE(CheckedContiguousConstIterator<const int>::IsRangeMoveSafe(
         span.cbegin(), span.cend(),
-        CheckedRandomAccessConstIterator<const int>(
+        CheckedContiguousConstIterator<const int>(
             span.data() + dest_start_index,
             span.data() + dest_start_index + kNumElements)));
   }
 
   // IsRangeMoveSafe is true if the length to be moved is 0.
-  EXPECT_TRUE(CheckedRandomAccessIterator<const int>::IsRangeMoveSafe(
+  EXPECT_TRUE(CheckedContiguousIterator<const int>::IsRangeMoveSafe(
       span.begin(), span.begin(),
-      CheckedRandomAccessIterator<const int>(span.data(), span.data())));
-  EXPECT_TRUE(CheckedRandomAccessConstIterator<const int>::IsRangeMoveSafe(
+      CheckedContiguousIterator<const int>(span.data(), span.data())));
+  EXPECT_TRUE(CheckedContiguousConstIterator<const int>::IsRangeMoveSafe(
       span.cbegin(), span.cbegin(),
-      CheckedRandomAccessConstIterator<const int>(span.data(), span.data())));
+      CheckedContiguousConstIterator<const int>(span.data(), span.data())));
 
   // IsRangeMoveSafe is false if end < begin.
-  EXPECT_FALSE(CheckedRandomAccessIterator<const int>::IsRangeMoveSafe(
+  EXPECT_FALSE(CheckedContiguousIterator<const int>::IsRangeMoveSafe(
       span.end(), span.begin(),
-      CheckedRandomAccessIterator<const int>(span.data(), span.data())));
-  EXPECT_FALSE(CheckedRandomAccessConstIterator<const int>::IsRangeMoveSafe(
+      CheckedContiguousIterator<const int>(span.data(), span.data())));
+  EXPECT_FALSE(CheckedContiguousConstIterator<const int>::IsRangeMoveSafe(
       span.cend(), span.cbegin(),
-      CheckedRandomAccessConstIterator<const int>(span.data(), span.data())));
+      CheckedContiguousConstIterator<const int>(span.data(), span.data())));
 }
 
 TEST(SpanTest, Sort) {
