@@ -73,7 +73,10 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                 return implContext.getResources();
             }
         };
-        mWindowAndroid = new ActivityWindowAndroid(context);
+        // Use false to disable listening to activity state.
+        // TODO: this should *not* use ActivityWindowAndroid as that relies on Activity, and this
+        // code should not assume it is supplied an Activity.
+        mWindowAndroid = new ActivityWindowAndroid(context, false);
         mContentViewRenderView = new ContentViewRenderView(context);
 
         mContentViewRenderView.onNativeLibraryLoaded(
