@@ -17,7 +17,6 @@ import getpass
 import hashlib
 import inspect
 import os
-import pprint
 import re
 import signal
 import socket
@@ -25,7 +24,6 @@ import subprocess
 import sys
 import tempfile
 import time
-import traceback
 import types
 
 import six
@@ -1723,92 +1721,6 @@ def MachineDetails():
       'TIMESTAMP=%s' % UserDateTimeFormat(),
       'RANDOM_JUNK=%s' % GetRandomString(),
   )) + '\n'
-
-
-def FormatDetailedTraceback(exc_info=None):
-  """Generate a traceback including details like local variables.
-
-  Args:
-    exc_info: The exception tuple to format; defaults to sys.exc_info().
-      See the help on that function for details on the type.
-
-  Returns:
-    A string of the formatted |exc_info| details.
-  """
-  if exc_info is None:
-    exc_info = sys.exc_info()
-
-  ret = []
-  try:
-    # pylint: disable=unpacking-non-sequence
-    exc_type, exc_value, exc_tb = exc_info
-
-    if exc_type:
-      ret += [
-          'Traceback (most recent call last):\n',
-          'Note: Call args reflect *current* state, not *entry* state\n',
-      ]
-
-    while exc_tb:
-      frame = exc_tb.tb_frame
-
-      ret += traceback.format_tb(exc_tb, 1)
-      args = inspect.getargvalues(frame)
-      _, _, fname, _ = traceback.extract_tb(exc_tb, 1)[0]
-      ret += [
-          '    Call: %s%s\n' % (fname, inspect.formatargvalues(*args)),
-          '    Locals:\n',
-      ]
-      if frame.f_locals:
-        keys = sorted(frame.f_locals.keys(), key=str.lower)
-        keylen = max(len(x) for x in keys)
-        typelen = max(len(str(type(x))) for x in frame.f_locals.values())
-        for key in keys:
-          val = frame.f_locals[key]
-          ret += ['      %-*s: %-*s %s\n' %
-                  (keylen, key, typelen, type(val), pprint.saferepr(val))]
-      exc_tb = exc_tb.tb_next
-
-    if exc_type:
-      ret += traceback.format_exception_only(exc_type, exc_value)
-  finally:
-    # Help python with its circular references.
-    del exc_tb
-
-  return ''.join(ret)
-
-
-def PrintDetailedTraceback(exc_info=None, file=None):
-  """Print a traceback including details like local variables.
-
-  Args:
-    exc_info: The exception tuple to format; defaults to sys.exc_info().
-      See the help on that function for details on the type.
-    file: The file object to write the details to; defaults to sys.stderr.
-  """
-  # We use |file| to match the existing traceback API.
-  # pylint: disable=redefined-builtin
-  if exc_info is None:
-    exc_info = sys.exc_info()
-  if file is None:
-    file = sys.stderr
-
-  # Try to print out extended details on the current exception.
-  # If that fails, still fallback to the normal exception path.
-  curr_exc_info = exc_info
-  try:
-    output = FormatDetailedTraceback()
-    if output:
-      print(output, file=file)
-  except Exception:
-    print('Could not decode extended exception details:', file=file)
-    traceback.print_exc(file=file)
-    print(file=file)
-    traceback.print_exception(*curr_exc_info, file=sys.stdout)
-  finally:
-    # Help python with its circular references.
-    del exc_info
-    del curr_exc_info
 
 
 class _FdCapturer(object):
