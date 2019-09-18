@@ -3836,7 +3836,7 @@ void ChromeContentBrowserClient::BindCredentialManagerReceiver(
                                                      render_frame_host);
 }
 
-bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
+bool ChromeContentBrowserClient::BindAssociatedReceiverFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle* handle) {
@@ -3850,8 +3850,8 @@ bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
   if (interface_name == autofill::mojom::PasswordManagerDriver::Name_) {
     password_manager::ContentPasswordManagerDriverFactory::
         BindPasswordManagerDriver(
-            autofill::mojom::PasswordManagerDriverAssociatedRequest(
-                std::move(*handle)),
+            mojo::PendingAssociatedReceiver<
+                autofill::mojom::PasswordManagerDriver>(std::move(*handle)),
             render_frame_host);
     return true;
   }

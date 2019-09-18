@@ -949,10 +949,10 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) {}
 
-  // Content was unable to bind a request for this associated interface, so the
+  // Content was unable to bind a receiver for this associated interface, so the
   // embedder should try. Returns true if the |handle| was actually taken and
   // bound; false otherwise.
-  virtual bool BindAssociatedInterfaceRequestFromFrame(
+  virtual bool BindAssociatedReceiverFromFrame(
       RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle);
