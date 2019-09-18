@@ -26,7 +26,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "content/app/strings/grit/content_strings.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/builtin_service_manifests.h"
 #include "content/browser/child_process_launcher.h"
@@ -85,6 +84,7 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/tracing_service.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/ui_base_features.h"
 
