@@ -683,6 +683,29 @@ class TestCase(unittest.TestCase):
     else:
       return 'no differences'
 
+  # Upstream deprecated these in Python 3, but left them in Python 2.
+  # Deprecate them ourselves to help with migration.  We can delete these
+  # once upstream drops them.
+  def _disable(deprecated, replacement):  # pylint: disable=no-self-argument
+    def disable_func(*_args, **_kwargs):
+      raise RuntimeError('%s() is removed in Python 3; use %s() instead' %
+                         (deprecated, replacement))
+    return disable_func
+
+  assertEquals = _disable('assertEquals', 'assertEqual')
+  assertNotEquals = _disable('assertNotEquals', 'assertNotEqual')
+  assertAlmostEquals = _disable('assertAlmostEquals', 'assertAlmostEqual')
+  assertNotAlmostEquals = _disable('assertNotAlmostEquals',
+                                   'assertNotAlmostEqual')
+  assert_ = _disable('assert_', 'assertTrue')
+  failUnlessEqual = _disable('failUnlessEqual', 'assertEqual')
+  failIfEqual = _disable('failIfEqual', 'assertNotEqual')
+  failUnlessAlmostEqual = _disable('failUnlessAlmostEqual', 'assertAlmostEqual')
+  failIfAlmostEqual = _disable('failIfAlmostEqual', 'assertNotAlmostEqual')
+  failUnless = _disable('failUnless', 'assertTrue')
+  failUnlessRaises = _disable('failUnlessRaises', 'assertRaises')
+  failIf = _disable('failIf', 'assertFalse')
+
 
 class LoggingTestCase(TestCase):
   """Base class for logging capturer test cases."""
