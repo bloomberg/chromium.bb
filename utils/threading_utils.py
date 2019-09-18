@@ -419,7 +419,7 @@ class IOAutoRetryThreadPool(AutoRetryThreadPool):
   """
   # Initial and maximum number of worker threads.
   INITIAL_WORKERS = 2
-  MAX_WORKERS = 16 if sys.maxsize > 2**32 else 8
+  MAX_WORKERS = 64 if sys.maxsize > 2**32 else 32
   RETRIES = 5
 
   def __init__(self):
