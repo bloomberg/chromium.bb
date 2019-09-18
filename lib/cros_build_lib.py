@@ -1342,26 +1342,6 @@ def iflatten_instance(iterable, terminate_on_kls=six.string_types):
         yield subitem
 
 
-# TODO: Remove this once we move to snakeoil.
-def load_module(name):
-  """load a module
-
-  Args:
-    name: python dotted namespace path of the module to import
-
-  Returns:
-    imported module
-
-  Raises:
-    FailedImport if importing fails
-  """
-  m = __import__(name)
-  # __import__('foo.bar') returns foo, so...
-  for bit in name.split('.')[1:]:
-    m = getattr(m, bit)
-  return m
-
-
 def PredicateSplit(func, iterable):
   """Splits an iterable into two groups based on a predicate return value.
 

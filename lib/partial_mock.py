@@ -450,10 +450,13 @@ class PartialMock(object):
     if not all([self.TARGET, self.ATTRS]):
       return
 
-    chunks = self.TARGET.rsplit('.', 1)
-    module = cros_build_lib.load_module(chunks[0])
+    name, member = self.TARGET.rsplit('.', 1)
+    module = __import__(name)
+    # __import__('foo.bar') returns foo, so...
+    for bit in name.split('.')[1:]:
+      module = getattr(module, bit)
 
-    cls = getattr(module, chunks[1])
+    cls = getattr(module, member)
     for attr in self.ATTRS:  # pylint: disable=not-an-iterable
       self.backup[attr] = getattr(cls, attr)
       src_attr = '_target%s' % attr if attr.startswith('__') else attr
