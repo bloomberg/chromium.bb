@@ -10,7 +10,6 @@ from __future__ import print_function
 import contextlib
 import datetime
 import difflib
-import errno
 import functools
 import itertools
 import os
@@ -22,11 +21,9 @@ import mock
 from six.moves import builtins
 
 from chromite.lib import constants
-from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import signals as cros_signals
 
@@ -875,148 +872,6 @@ class TestContextManagerStack(cros_test_lib.TestCase):
       stack.Add(_mk_kls(exception_kls=IndexError))
       stack.Add(_mk_kls())
     self.assertEqual(invoked, list(range(5, -1, -1)))
-
-
-class TestManifestCheckout(cros_test_lib.TempDirTestCase):
-  """Tests for ManifestCheckout functionality."""
-
-  def setUp(self):
-    self.manifest_dir = os.path.join(self.tempdir, '.repo', 'manifests')
-
-    # Initialize a repo instance here.
-    local_repo = os.path.join(constants.SOURCE_ROOT, '.repo/repo/.git')
-
-    # TODO(evanhernandez): This is a hack. Find a way to simplify this test.
-    # We used to use the current checkout's manifests.git, but that caused
-    # problems in production environemnts.
-    remote_manifests = os.path.join(self.tempdir, 'remote', 'manifests.git')
-    osutils.SafeMakedirs(remote_manifests)
-    git.Init(remote_manifests)
-    default_manifest = os.path.join(remote_manifests, 'default.xml')
-    osutils.WriteFile(
-        default_manifest,
-        '<?xml version="1.0" encoding="UTF-8"?><manifest></manifest>')
-    git.AddPath(default_manifest)
-    git.Commit(remote_manifests, 'dummy commit', allow_empty=True)
-    git.CreateBranch(remote_manifests, 'default')
-    git.CreateBranch(remote_manifests, 'release-R23-2913.B')
-    git.CreateBranch(remote_manifests, 'firmware-link-')
-
-    # Create a copy of our existing manifests.git, but rewrite it so it
-    # looks like a remote manifests.git.  This is to avoid hitting the
-    # network, and speeds things up in general.
-    local_manifests = 'file://%s' % remote_manifests
-    temp_manifests = os.path.join(self.tempdir, 'manifests.git')
-    git.RunGit(self.tempdir, ['clone', '-n', '--bare', local_manifests])
-    git.RunGit(temp_manifests,
-               ['fetch', '-f', '-u', local_manifests,
-                'refs/remotes/origin/*:refs/heads/*'])
-    git.RunGit(temp_manifests, ['branch', '-D', 'default'])
-    repo = repository.RepoRepository(
-        temp_manifests, self.tempdir,
-        repo_url='file://%s' % local_repo, repo_branch='default')
-    repo.Initialize()
-
-    self.active_manifest = os.path.realpath(
-        os.path.join(self.tempdir, '.repo', 'manifest.xml'))
-
-  def testManifestInheritance(self):
-    osutils.WriteFile(self.active_manifest, """
-        <manifest>
-          <include name="include-target.xml" />
-          <include name="empty.xml" />
-          <project name="monkeys" path="baz" remote="foon" revision="master" />
-        </manifest>""")
-    # First, verify it properly explodes if the include can't be found.
-    self.assertRaises(EnvironmentError,
-                      git.ManifestCheckout, self.tempdir)
-
-    # Next, verify it can read an empty manifest; this is to ensure
-    # that we can point Manifest at the empty manifest without exploding,
-    # same for ManifestCheckout; this sort of thing is primarily useful
-    # to ensure no step of an include assumes everything is yet assembled.
-    empty_path = os.path.join(self.manifest_dir, 'empty.xml')
-    osutils.WriteFile(empty_path, '<manifest/>')
-    git.Manifest(empty_path)
-    git.ManifestCheckout(self.tempdir, manifest_path=empty_path)
-
-    # Next, verify include works.
-    osutils.WriteFile(
-        os.path.join(self.manifest_dir, 'include-target.xml'),
-        """
-        <manifest>
-          <remote name="foon" fetch="http://localhost" />
-        </manifest>""")
-    manifest = git.ManifestCheckout(self.tempdir)
-    self.assertEqual(list(manifest.checkouts_by_name), ['monkeys'])
-    self.assertEqual(list(manifest.remotes), ['foon'])
-
-  def testGetManifestsBranch(self):
-    # pylint: disable=protected-access
-    func = git.ManifestCheckout._GetManifestsBranch
-    manifest = self.manifest_dir
-    repo_root = self.tempdir
-
-    # pylint: disable=unused-argument
-    def reconfig(merge='master', origin='origin'):
-      if merge is not None:
-        merge = 'refs/heads/%s' % merge
-      for key in ('merge', 'origin'):
-        val = locals()[key]
-        key = 'branch.default.%s' % key
-        if val is None:
-          git.RunGit(manifest, ['config', '--unset', key], error_code_ok=True)
-        else:
-          git.RunGit(manifest, ['config', key, val])
-
-    # First, verify our assumptions about a fresh repo init are correct.
-    self.assertEqual('default', git.GetCurrentBranch(manifest))
-    self.assertEqual('master', func(repo_root))
-
-    # Ensure we can handle a missing origin; this can occur jumping between
-    # branches, and can be worked around.
-    reconfig(origin=None)
-    self.assertEqual('default', git.GetCurrentBranch(manifest))
-    self.assertEqual('master', func(repo_root))
-
-    def assertExcept(message, **kwargs):
-      reconfig(**kwargs)
-      self.assertRaises2(OSError, func, repo_root, ex_msg=message,
-                         check_attrs={'errno': errno.ENOENT})
-
-    # No merge target means the configuration isn't usable, period.
-    assertExcept('git tracking configuration for that branch is broken',
-                 merge=None)
-
-    # Ensure we detect if we're on the wrong branch, even if it has
-    # tracking setup.
-    git.RunGit(manifest, ['checkout', '-t', 'origin/master', '-b', 'test'])
-    assertExcept("It should be checked out to 'default'")
-
-    # Ensure we handle detached HEAD w/ an appropriate exception.
-    git.RunGit(manifest, ['checkout', '--detach', 'test'])
-    assertExcept("It should be checked out to 'default'")
-
-    # Finally, ensure that if the default branch is non-existant, we still throw
-    # a usable exception.
-    git.RunGit(manifest, ['branch', '-d', 'default'])
-    assertExcept("It should be checked out to 'default'")
-
-  def testGitMatchBranchName(self):
-    git_repo = os.path.join(self.tempdir, '.repo', 'manifests')
-
-    branches = git.MatchBranchName(git_repo, 'default', namespace='')
-    self.assertEqual(branches, ['refs/heads/default'])
-
-    branches = git.MatchBranchName(git_repo, 'default', namespace='refs/heads/')
-    self.assertEqual(branches, ['default'])
-
-    branches = git.MatchBranchName(git_repo, 'origin/f.*link',
-                                   namespace='refs/remotes/')
-    self.assertTrue('firmware-link-' in branches[0])
-
-    branches = git.MatchBranchName(git_repo, 'r23')
-    self.assertEqual(branches, ['refs/remotes/origin/release-R23-2913.B'])
 
 
 class Test_iflatten_instance(cros_test_lib.TestCase):
