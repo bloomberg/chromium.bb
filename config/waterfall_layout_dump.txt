@@ -38,12 +38,17 @@
 == cq ==
   master-paladin
     amd64-generic-paladin
+    arkham-paladin
     arm-generic-paladin
     arm64-generic-paladin
+    asuka-paladin
     atlas-paladin
     auron_paine-paladin
     auron_yuna-paladin
+    banjo-paladin
+    banon-paladin
     beaglebone-paladin
+    beaglebone_servo-paladin
     betty-arc64-paladin
     betty-arcnext-paladin
     betty-kernelnext-paladin
@@ -51,10 +56,13 @@
     betty-pi-arc-paladin
     bob-paladin
     bubs-paladin
+    buddy-paladin
+    candy-paladin
     capri-paladin
     capri-zfpga-paladin
     caroline-paladin
     cave-paladin
+    celes-paladin
     chell-nowithdebug-paladin
     chell-paladin
     cheza-paladin
@@ -64,9 +72,12 @@
     drallion-paladin
     edgar-paladin
     elm-paladin
+    enguarde-paladin
     eve-arcnext-paladin
     eve-paladin
     excelsior-paladin
+    expresso-paladin
+    falco_li-paladin
     fizz-accelerator-paladin
     fizz-moblab-paladin
     fizz-paladin
@@ -74,6 +85,7 @@
     gale-paladin
     gandof-paladin
     glados-paladin
+    gnawty-paladin
     gonzo-paladin
     grunt-paladin
     grunt-unittest-only-paladin
@@ -81,10 +93,12 @@
     guado-paladin
     hana-paladin
     hatch-paladin
+    heli-paladin
     incremental-paladin
     jacuzzi-paladin
     kalista-paladin
     kefka-kernelnext-paladin
+    kefka-paladin
     kevin-arc64-paladin
     kevin-arcnext-paladin
     kevin-paladin
@@ -95,34 +109,54 @@
     lakitu-gpu-paladin
     lakitu-paladin
     lakitu-st-paladin
+    lars-paladin
     lasilla-ground-paladin
     littlejoe-paladin
+    lulu-paladin
     mistral-paladin
     moblab-generic-vm-paladin
     monroe-paladin
     nami-paladin
+    nautilus-paladin
+    ninja-paladin
     nocturne-paladin
+    novato-arc64-paladin
+    novato-paladin
     nyan_kitty-full-compile-paladin
     nyan_kitty-paladin
     octavius-paladin
     octopus-paladin
+    orco-paladin
     puff-paladin
+    pyro-paladin
     rammus-paladin
     reef-paladin
+    reks-paladin
+    relm-paladin
+    rikku-paladin
     romer-paladin
     samus-kernelnext-paladin
     samus-paladin
+    sand-paladin
     sarien-paladin
     scarlet-paladin
     sentry-paladin
+    setzer-paladin
     sludge-paladin
+    snappy-paladin
+    soraka-paladin
+    sumo-paladin
+    swanky-paladin
     tael-paladin
     tatl-paladin
     terra-paladin
     tidus-paladin
+    ultima-paladin
+    veyron_fievel-paladin
     veyron_jaq-paladin
     veyron_jerry-kernelnext-paladin
     veyron_jerry-paladin
+    veyron_mickey-paladin
     veyron_mighty-paladin
     veyron_minnie-kernelnext-paladin
     veyron_minnie-paladin
@@ -2403,12 +2437,17 @@
     veyron_tiger-nyc-android-pfq-tryjob
   master-paladin-tryjob
     amd64-generic-paladin-tryjob
+    arkham-paladin-tryjob
     arm-generic-paladin-tryjob
     arm64-generic-paladin-tryjob
+    asuka-paladin-tryjob
     atlas-paladin-tryjob
     auron_paine-paladin-tryjob
     auron_yuna-paladin-tryjob
+    banjo-paladin-tryjob
+    banon-paladin-tryjob
     beaglebone-paladin-tryjob
+    beaglebone_servo-paladin-tryjob
     betty-arc64-paladin-tryjob
     betty-arcnext-paladin-tryjob
     betty-kernelnext-paladin-tryjob
@@ -2416,10 +2455,13 @@
     betty-pi-arc-paladin-tryjob
     bob-paladin-tryjob
     bubs-paladin-tryjob
+    buddy-paladin-tryjob
+    candy-paladin-tryjob
     capri-paladin-tryjob
     capri-zfpga-paladin-tryjob
     caroline-paladin-tryjob
     cave-paladin-tryjob
+    celes-paladin-tryjob
     chell-nowithdebug-paladin-tryjob
     chell-paladin-tryjob
     cheza-paladin-tryjob
@@ -2429,9 +2471,12 @@
     drallion-paladin-tryjob
     edgar-paladin-tryjob
     elm-paladin-tryjob
+    enguarde-paladin-tryjob
     eve-arcnext-paladin-tryjob
     eve-paladin-tryjob
     excelsior-paladin-tryjob
+    expresso-paladin-tryjob
+    falco_li-paladin-tryjob
     fizz-accelerator-paladin-tryjob
     fizz-moblab-paladin-tryjob
     fizz-paladin-tryjob
@@ -2439,6 +2484,7 @@
     gale-paladin-tryjob
     gandof-paladin-tryjob
     glados-paladin-tryjob
+    gnawty-paladin-tryjob
     gonzo-paladin-tryjob
     grunt-paladin-tryjob
     grunt-unittest-only-paladin-tryjob
@@ -2446,10 +2492,12 @@
     guado-paladin-tryjob
     hana-paladin-tryjob
     hatch-paladin-tryjob
+    heli-paladin-tryjob
     incremental-paladin-tryjob
     jacuzzi-paladin-tryjob
     kalista-paladin-tryjob
     kefka-kernelnext-paladin-tryjob
+    kefka-paladin-tryjob
     kevin-arc64-paladin-tryjob
     kevin-arcnext-paladin-tryjob
     kevin-paladin-tryjob
@@ -2460,34 +2508,54 @@
     lakitu-gpu-paladin-tryjob
     lakitu-paladin-tryjob
     lakitu-st-paladin-tryjob
+    lars-paladin-tryjob
     lasilla-ground-paladin-tryjob
     littlejoe-paladin-tryjob
+    lulu-paladin-tryjob
     mistral-paladin-tryjob
     moblab-generic-vm-paladin-tryjob
     monroe-paladin-tryjob
     nami-paladin-tryjob
+    nautilus-paladin-tryjob
+    ninja-paladin-tryjob
     nocturne-paladin-tryjob
+    novato-arc64-paladin-tryjob
+    novato-paladin-tryjob
     nyan_kitty-full-compile-paladin-tryjob
     nyan_kitty-paladin-tryjob
     octavius-paladin-tryjob
     octopus-paladin-tryjob
+    orco-paladin-tryjob
     puff-paladin-tryjob
+    pyro-paladin-tryjob
     rammus-paladin-tryjob
     reef-paladin-tryjob
+    reks-paladin-tryjob
+    relm-paladin-tryjob
+    rikku-paladin-tryjob
     romer-paladin-tryjob
     samus-kernelnext-paladin-tryjob
     samus-paladin-tryjob
+    sand-paladin-tryjob
     sarien-paladin-tryjob
     scarlet-paladin-tryjob
     sentry-paladin-tryjob
+    setzer-paladin-tryjob
     sludge-paladin-tryjob
+    snappy-paladin-tryjob
+    soraka-paladin-tryjob
+    sumo-paladin-tryjob
+    swanky-paladin-tryjob
     tael-paladin-tryjob
     tatl-paladin-tryjob
     terra-paladin-tryjob
     tidus-paladin-tryjob
+    ultima-paladin-tryjob
+    veyron_fievel-paladin-tryjob
     veyron_jaq-paladin-tryjob
     veyron_jerry-kernelnext-paladin-tryjob
     veyron_jerry-paladin-tryjob
+    veyron_mickey-paladin-tryjob
     veyron_mighty-paladin-tryjob
     veyron_minnie-kernelnext-paladin-tryjob
     veyron_minnie-paladin-tryjob
