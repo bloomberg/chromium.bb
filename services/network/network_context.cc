@@ -1739,8 +1739,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   session_params.allow_default_credentials = params_->allow_default_credentials;
 
-  session_params.http_09_on_non_default_ports_enabled =
-      params_->http_09_on_non_default_ports_enabled;
   session_params.disable_idle_sockets_close_on_memory_pressure =
       params_->disable_idle_sockets_close_on_memory_pressure;
 
