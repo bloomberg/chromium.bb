@@ -29,9 +29,6 @@
 
 namespace {
 
-// The left-hand margin used for rows.
-static constexpr int kMarginLeft = 4;
-
 // TODO(dschuyler): Perhaps this should be based on the font size
 // instead of hardcoded to 2 dp (e.g. by adding a space in an
 // appropriate font to the beginning of the description, then reducing
@@ -48,26 +45,10 @@ static constexpr int kNewAnswerImageSize = 24;
 static constexpr int kEntityImageSize = 32;
 static constexpr int kEntityImageCornerRadius = 4;
 
-// The margin height of a one-line suggestion row.
-static constexpr int kOneLineRowMarginHeight = 8;
-
-// The margin height of a two-line suggestion row.
-static constexpr int kTwoLineRowMarginHeight = 4;
-
 // Returns the padding width between elements.
 int HorizontalPadding() {
   return GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
          GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).width() / 2;
-}
-
-// Returns the margins that should appear around the result.
-// |is_two_line| indicates whether the vertical margin is for a type of
-// suggestion that uses two lines (e.g. answers).
-gfx::Insets GetMarginInsets(int text_height, bool is_two_line) {
-  int vertical_margin =
-      is_two_line ? kTwoLineRowMarginHeight : kOneLineRowMarginHeight;
-  return gfx::Insets(vertical_margin, kMarginLeft, vertical_margin,
-                     OmniboxMatchCellView::kMarginRight);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -314,16 +295,14 @@ const char* OmniboxMatchCellView::GetClassName() const {
   return "OmniboxMatchCellView";
 }
 
-void OmniboxMatchCellView::Layout() {
-  // Update the margins. Avoid re-creating the border if the insets haven't
-  // changed, because SetBorder invalidates the layout.
-  gfx::Insets insets =
-      GetMarginInsets(content()->GetLineHeight(),
-                      layout_style_ != LayoutStyle::ONE_LINE_SUGGESTION);
-  if (insets != GetInsets())
-    SetBorder(views::CreateEmptyBorder(insets));
+gfx::Insets OmniboxMatchCellView::GetInsets() const {
+  const bool single_line = layout_style_ == LayoutStyle::ONE_LINE_SUGGESTION;
+  const int vertical_margin = single_line ? 8 : 4;
+  return gfx::Insets(vertical_margin, 4, vertical_margin,
+                     OmniboxMatchCellView::kMarginRight);
+}
 
-  // Layout children *after* updating the margins.
+void OmniboxMatchCellView::Layout() {
   views::View::Layout();
 
   const int icon_view_width = kImageBoxSize;

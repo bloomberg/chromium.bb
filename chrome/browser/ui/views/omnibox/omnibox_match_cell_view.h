@@ -40,6 +40,7 @@ class OmniboxMatchCellView : public views::View {
 
   // views::View:
   const char* GetClassName() const override;
+  gfx::Insets GetInsets() const override;
   void Layout() override;
   bool CanProcessEventsWithinSubtree() const override;
   gfx::Size CalculatePreferredSize() const override;
