@@ -13,7 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace dom_distiller {
 
@@ -60,10 +60,10 @@ DistillabilityDriver::~DistillabilityDriver() {
 }
 
 void DistillabilityDriver::CreateDistillabilityService(
-    mojom::DistillabilityServiceRequest request) {
-  mojo::MakeStrongBinding(
+    mojo::PendingReceiver<mojom::DistillabilityService> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<DistillabilityServiceImpl>(weak_factory_.GetWeakPtr()),
-      std::move(request));
+      std::move(receiver));
 }
 
 void DistillabilityDriver::AddObserver(DistillabilityObserver* observer) {

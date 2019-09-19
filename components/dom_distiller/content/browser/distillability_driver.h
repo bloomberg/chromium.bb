@@ -15,7 +15,7 @@
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace dom_distiller {
@@ -26,7 +26,8 @@ class DistillabilityDriver
       public content::WebContentsUserData<DistillabilityDriver> {
  public:
   ~DistillabilityDriver() override;
-  void CreateDistillabilityService(mojom::DistillabilityServiceRequest request);
+  void CreateDistillabilityService(
+      mojo::PendingReceiver<mojom::DistillabilityService> receiver);
 
   void AddObserver(DistillabilityObserver* observer);
   base::Optional<DistillabilityResult> GetLatestResult() const {
