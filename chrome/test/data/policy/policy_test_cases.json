@@ -4027,6 +4027,9 @@
   "DeviceLoginScreenDefaultSpokenFeedbackEnabled" : {
   },
 
+  "DeviceLoginScreenSpokenFeedbackEnabled" : {
+  },
+
   "DeviceLoginScreenDefaultHighContrastEnabled" : {
   },
 
