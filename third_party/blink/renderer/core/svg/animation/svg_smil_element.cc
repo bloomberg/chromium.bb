@@ -923,13 +923,13 @@ void SVGSMILElement::EndListChanged(SMILTime) {
     time_container_->NotifyIntervalsChanged();
 }
 
-bool SVGSMILElement::CheckAndUpdateInterval(SMILTime elapsed) {
+void SVGSMILElement::CheckAndUpdateInterval(SMILTime elapsed) {
   DCHECK(!is_waiting_for_first_interval_);
   DCHECK(interval_.BeginsBefore(elapsed));
 
   Restart restart = GetRestart();
   if (restart == kRestartNever)
-    return false;
+    return;
 
   base::Optional<SMILInterval> new_interval;
   if (restart == kRestartAlways && interval_.EndsAfter(elapsed)) {
@@ -945,15 +945,11 @@ bool SVGSMILElement::CheckAndUpdateInterval(SMILTime elapsed) {
     new_interval = ResolveNextInterval();
   }
 
-  // Track "restarts" to handle active -> active transitions.
-  bool interval_restart = (new_interval && *new_interval != interval_);
-
   if (new_interval) {
     previous_interval_ = interval_;
     interval_ = *new_interval;
     interval_has_changed_ = true;
   }
-  return interval_restart;
 }
 
 const SMILInterval& SVGSMILElement::GetActiveInterval(SMILTime elapsed) const {
@@ -1100,10 +1096,16 @@ void SVGSMILElement::UpdateSyncBases() {
   NotifyDependentsIntervalChanged(interval_);
 }
 
-void SVGSMILElement::UpdateActiveState(SMILTime elapsed,
-                                       bool interval_restart) {
+void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
   ActiveState old_active_state = GetActiveState();
   active_state_ = DetermineActiveState(elapsed);
+
+  // TODO(fs): This should really only need to cover the case where we have a
+  // new interval and the previous interval ended at the same time as the
+  // current interval began. It seems this is prevented by the way dependent
+  // interval notifications can end up clobbering the current interval.
+  const bool interval_restart =
+      interval_has_changed_ && previous_interval_ != interval_;
 
   if (IsContributing(elapsed)) {
     if (old_active_state == kInactive || interval_restart) {

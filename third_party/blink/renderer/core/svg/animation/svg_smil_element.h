@@ -87,9 +87,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   bool NeedsToProgress(SMILTime elapsed);
   // Check if the current interval is still current, and if not compute the
-  // next interval. Returns true if the interval was restarted.
-  bool CheckAndUpdateInterval(SMILTime elapsed);
-  void UpdateActiveState(SMILTime elapsed, bool interval_restart);
+  // next interval.
+  void CheckAndUpdateInterval(SMILTime elapsed);
+  void UpdateActiveState(SMILTime elapsed);
   void UpdateSyncBases();
 
   SMILTime NextInterestingTime(SMILTime elapsed) const;
