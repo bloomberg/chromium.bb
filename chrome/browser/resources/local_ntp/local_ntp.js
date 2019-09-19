@@ -90,7 +90,6 @@ const CLASSES = {
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
-  RTL: 'rtl',                  // Right-to-left language text.
   SEARCH_ICON: 'search-icon',  // Magnifying glass/search icon.
   SELECTED: 'selected',  // A selected (via up/down arrow key) realbox match.
   SHOW_ELEMENT: 'show-element',
@@ -831,13 +830,6 @@ function init() {
 
   if (searchboxApiHandle.rtl) {
     $(IDS.NOTIFICATION).dir = 'rtl';
-    // Grabbing the root HTML element. TODO(dbeam): could this just be <html ...
-    // dir="$i18n{textdirection}"> in the .html file instead? It could result in
-    // less flicker for RTL users (as HTML/CSS can render before JavaScript has
-    // the chance to run).
-    document.documentElement.setAttribute('dir', 'rtl');
-    // Add class for setting alignments based on language directionality.
-    document.documentElement.classList.add(CLASSES.RTL);
   }
 
   if (!iframesAndVoiceSearchDisabledForTesting) {
