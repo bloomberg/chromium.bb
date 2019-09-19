@@ -111,6 +111,7 @@ class ConfigSkewTest(cros_test_lib.TestCase):
   def _to_utf8(self, strings):
     return [string.decode('UTF-8') for string in strings]
 
+  @cros_test_lib.ConfigSkewTest()
   def testPostsubmitBuildTargets(self):
     master_postsubmit_children = self._to_utf8(
         self._get_old_config_slaves('master-postsubmit'))
@@ -119,6 +120,7 @@ class ConfigSkewTest(cros_test_lib.TestCase):
       self.fail('Postsubmit build targets should not be in '
                 'chromeos_config.py: %s' % set(master_postsubmit_children))
 
+  @cros_test_lib.ConfigSkewTest()
   def testPostsubmitBuildTargetsCriticality(self):
     # Exclude the special builders that old config is not expected to have.
     importance_mismatch = {}
@@ -137,6 +139,7 @@ class ConfigSkewTest(cros_test_lib.TestCase):
     if len(importance_mismatch) > 0:
       self.fail('Criticality difference in configs: %s' % importance_mismatch)
 
+  @cros_test_lib.ConfigSkewTest()
   def testCqBuildTargetsCriticality(self):
     # Exclude the special builders that old config is not expected to have.
     importance_mismatch = {}
@@ -155,6 +158,7 @@ class ConfigSkewTest(cros_test_lib.TestCase):
     if len(importance_mismatch) > 0:
       self.fail('Criticality difference in configs: %s' % importance_mismatch)
 
+  @cros_test_lib.ConfigSkewTest()
   def testCqBuildTargets(self):
     master_cq_children = self._to_utf8(
         self._get_old_config_slaves('master-paladin',
