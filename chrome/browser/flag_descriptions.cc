@@ -41,6 +41,12 @@ const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[] =
     "that do not have CanSignHttpExchangesDraft extension. Warning: Enabling "
     "this may pose a security risk.";
 
+const char kAllowSyncXHRInPageDismissalName[] =
+    "Allows synchronous XHR requests in page dismissal";
+const char kAllowSyncXHRInPageDismissalDescription[] =
+    "Allows synchronous XHR requests during page dismissal when the page is "
+    "being navigated away or closed by the user.";
+
 const char kEnableSignedExchangeSubresourcePrefetchName[] =
     "Enable Signed Exchange subresource prefetching";
 const char kEnableSignedExchangeSubresourcePrefetchDescription[] =
@@ -1075,12 +1081,6 @@ const char kFillOnAccountSelectHttpName[] =
 const char kFillOnAccountSelectHttpDescription[] =
     "Filling of passwords when an account is explicitly selected by the user "
     "rather than autofilling credentials on page load on HTTP origins.";
-
-const char kForbidSyncXHRInPageDismissalName[] =
-    "Forbid synchronous XHR requests in page dismissal";
-const char kForbidSyncXHRInPageDismissalDescription[] =
-    "Disallow synchronous XHR requests during page dismissal when the page is "
-    "being navigated away or closed by the user.";
 
 const char kForceTextDirectionName[] = "Force text direction";
 const char kForceTextDirectionDescription[] =
