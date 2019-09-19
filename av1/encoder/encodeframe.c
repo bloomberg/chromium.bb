@@ -4061,7 +4061,8 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   // Code each SB in the row
   for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
        mi_col < tile_info->mi_col_end; mi_col += mib_size, sb_col_in_tile++) {
-    memset(x->mbmi_ext, 0, sb_mi_size * sizeof(*x->mbmi_ext));
+    if (!cpi->sf.use_fast_nonrd_pick_mode)
+      memset(x->mbmi_ext, 0, sb_mi_size * sizeof(*x->mbmi_ext));
     (*(cpi->row_mt_sync_read_ptr))(&tile_data->row_mt_sync, sb_row,
                                    sb_col_in_tile);
     if (tile_data->allow_update_cdf && (cpi->row_mt == 1) &&
