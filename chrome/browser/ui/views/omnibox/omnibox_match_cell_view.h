@@ -24,7 +24,6 @@ class OmniboxMatchCellView : public views::View {
   ~OmniboxMatchCellView() override;
 
   views::ImageView* icon() { return icon_view_; }
-  views::ImageView* answer_image() { return answer_image_view_; }
   OmniboxTextView* content() { return content_view_; }
   OmniboxTextView* description() { return description_view_; }
   OmniboxTextView* separator() { return separator_view_; }
@@ -51,8 +50,6 @@ class OmniboxMatchCellView : public views::View {
     TWO_LINE_SUGGESTION,
   };
 
-  void LayoutTwoLineSuggestion();
-  void LayoutOneLineSuggestion(int icon_view_width, int text_indent);
   void SetTailSuggestCommonPrefixWidth(const base::string16& common_prefix);
 
   bool is_rich_suggestion_ = false;
