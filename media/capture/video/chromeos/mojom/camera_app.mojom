@@ -69,6 +69,9 @@ interface CameraAppHelper {
   // as a byte array.
   OnIntentHandled(uint32 intent_id, bool is_success,
                   array<uint8> captured_data);
+
+  // Checks if device is under tablet mode currently.
+  IsTabletMode() => (bool is_tablet_mode);
 };
 
 // Inner interface that used to communicate between browser process (Remote) and

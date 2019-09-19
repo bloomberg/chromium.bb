@@ -169,6 +169,7 @@ copy("chrome_camera_app_js_models") {
 
 copy("chrome_camera_app_js_mojo") {
   sources = [
+    "src/js/mojo/chrome_helper.js",
     "src/js/mojo/device_operator.js",
     "src/js/mojo/image_capture.js",
   ]

@@ -130,6 +130,7 @@ RESOURCES = \
 	src/js/models/gallery.js \
 	src/js/models/result_saver.js \
 	src/js/models/video_saver.js \
+	src/js/mojo/chrome_helper.js \
 	src/js/mojo/device_operator.js \
 	src/js/mojo/image_capture.js \
 	src/js/nav.js \

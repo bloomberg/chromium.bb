@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_VIDEO_CHROMEOS_CAMERA_APP_HELPER_IMPL_H_
-#define MEDIA_CAPTURE_VIDEO_CHROMEOS_CAMERA_APP_HELPER_IMPL_H_
+#ifndef COMPONENTS_CHROMEOS_CAMERA_CAMERA_APP_HELPER_IMPL_H_
+#define COMPONENTS_CHROMEOS_CAMERA_CAMERA_APP_HELPER_IMPL_H_
 
-#include <string>
 #include <vector>
 
-#include "media/capture/capture_export.h"
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
-namespace media {
+namespace chromeos_camera {
 
-class CAPTURE_EXPORT CameraAppHelperImpl : public cros::mojom::CameraAppHelper {
+class CameraAppHelperImpl : public cros::mojom::CameraAppHelper {
  public:
   using IntentCallback = base::RepeatingCallback<
       void(uint32_t, bool, const std::vector<uint8_t>&)>;
@@ -26,6 +23,7 @@ class CAPTURE_EXPORT CameraAppHelperImpl : public cros::mojom::CameraAppHelper {
   void OnIntentHandled(uint32_t intent_id,
                        bool is_success,
                        const std::vector<uint8_t>& captured_data) override;
+  void IsTabletMode(IsTabletModeCallback callback) override;
 
  private:
   IntentCallback intent_callback_;
@@ -33,6 +31,6 @@ class CAPTURE_EXPORT CameraAppHelperImpl : public cros::mojom::CameraAppHelper {
   DISALLOW_COPY_AND_ASSIGN(CameraAppHelperImpl);
 };
 
-}  // namespace media
+}  // namespace chromeos_camera
 
-#endif  // MEDIA_CAPTURE_VIDEO_CHROMEOS_CAMERA_APP_HELPER_IMPL_H_
+#endif  // COMPONENTS_CHROMEOS_CAMERA_CAMERA_APP_HELPER_IMPL_H_
