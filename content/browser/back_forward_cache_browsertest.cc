@@ -1376,11 +1376,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
 
-  // TODO(https://crbug.com/1000324): This shouldn't be deleted. Fix this bug
-  // and re-enable the rest of this test.
-  delete_observer_rfh_a.WaitUntilDeleted();
-  return;
-
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
