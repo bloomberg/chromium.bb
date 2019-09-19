@@ -853,7 +853,8 @@ def GeneralTemplates(site_config):
       tast_vm_tests=[
           config_lib.TastVMTestConfig(
               'tast_vm_paladin',
-              ['(!disabled && !"group:*" && !informational)'])],
+              ['(!disabled && ("group:mainline" || !"group:*") && '
+               '!informational)'])],
   )
   # The expression specified here matches the union of the
   # tast.critical-{android,chrome} Autotest server tests, which are executed by
@@ -863,8 +864,8 @@ def GeneralTemplates(site_config):
       tast_vm_tests=[
           config_lib.TastVMTestConfig(
               'tast_vm_chrome_pfq',
-              ['(!disabled && !"group:*" && !informational && '
-               '("dep:android*" || "dep:chrome"))'])],
+              ['(!disabled && ("group:mainline" || !"group:*") && '
+               '!informational && ("dep:android*" || "dep:chrome"))'])],
   )
   # The expression specified here matches the tast.critical-android Autotest
   # server test, which is executed by the bvt-tast-android-pfq suite on real
@@ -874,8 +875,8 @@ def GeneralTemplates(site_config):
       tast_vm_tests=[
           config_lib.TastVMTestConfig(
               'tast_vm_android_pfq',
-              ['(!disabled && !"group:*" && !informational && '
-               '"dep:android*")'])],
+              ['(!disabled && ("group:mainline" || !"group:*") && '
+               '!informational && "dep:android*")'])],
   )
   # The expression specified here matches the union of the tast.critical-* and
   # tast.informational-* Autotest server tests, which are executed by the
@@ -883,7 +884,8 @@ def GeneralTemplates(site_config):
   site_config.AddTemplate(
       'tast_vm_canary_tests',
       tast_vm_tests=[config_lib.TastVMTestConfig(
-          'tast_vm_canary', ['(!disabled && !"group:*")'])],
+          'tast_vm_canary',
+          ['(!disabled && ("group:mainline" || !"group:*"))'])],
   )
 
   site_config.AddTemplate(
