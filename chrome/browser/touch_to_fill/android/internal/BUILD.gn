@@ -13,5 +13,8 @@ android_library("java") {
     "//ui/android:ui_java",
   ]
 
-  java_files = [ "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillCoordinator.java" ]
+  java_files = [
+    "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillBridge.java",
+    "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillCoordinator.java",
+  ]
 }
