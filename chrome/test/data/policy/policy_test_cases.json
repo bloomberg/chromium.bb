@@ -4033,6 +4033,9 @@
   "DeviceLoginScreenDefaultHighContrastEnabled" : {
   },
 
+  "DeviceLoginScreenHighContrastEnabled" : {
+  },
+
   "DeviceLoginScreenDefaultScreenMagnifierType" : {
   },
 

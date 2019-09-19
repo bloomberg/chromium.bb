@@ -643,6 +643,7 @@
         'DeviceLoginScreenDefaultScreenMagnifierType',
         'DeviceLoginScreenLargeCursorEnabled',
         'DeviceLoginScreenSpokenFeedbackEnabled',
+        'DeviceLoginScreenHighContrastEnabled',
       ],
     },
     {
@@ -10217,7 +10218,34 @@
 
           If you set this policy, users can temporarily override it by enabling or disabling high contrast mode. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
-          If this policy is left unset, high contrast mode is disabled when the login screen is first shown. Users can enable or disable high contrast mode anytime and its status on the login screen is persisted between users.''',
+          If this policy is left unset, high contrast mode is disabled when the login screen is first shown. Users can enable or disable high contrast mode anytime and its status on the login screen is persisted between users.
+
+          Note: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME">DeviceLoginScreenHighContrastEnabled</ph> overrides this policy if the former is specified.''',
+    },
+    {
+      'name': 'DeviceLoginScreenHighContrastEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 606,
+      'caption': '''Enable the high contrast on the login screen''',
+      'tags': [],
+      'desc': '''Enable the high contrast accessibility feature on the login screen.
+
+          If this policy is set to true, the high contrast will always be enabled on the login screen.
+
+          If this policy is set to false, the high contrast will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the high contrast is disabled on the login screen initially but can be enabled by the user anytime.''',
     },
     {
       'name': 'DeviceLoginScreenDefaultVirtualKeyboardEnabled',
@@ -18022,6 +18050,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenSpokenFeedbackEnabled': 'accessibility_settings.login_screen_spoken_feedback_enabled',
     'DeviceLoginScreenDefaultSpokenFeedbackEnabled': 'accessibility_settings.login_screen_default_spoken_feedback_enabled',
     'DeviceLoginScreenDefaultHighContrastEnabled': 'accessibility_settings.login_screen_default_high_contrast_enabled',
+    'DeviceLoginScreenHighContrastEnabled': 'accessibility_settings.login_screen_high_contrast_enabled',
     'DeviceLoginScreenDefaultScreenMagnifierType': 'accessibility_settings.login_screen_default_screen_magnifier_type',
     'DeviceLoginScreenDefaultVirtualKeyboardEnabled': 'accessibility_settings.login_screen_default_virtual_keyboard_enabled',
     'AttestationEnabledForDevice': 'attestation_settings.attestation_enabled',
@@ -18524,6 +18553,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 605,
+  'highest_id_currently_used': 606,
   'highest_atomic_group_id_currently_used': 37
 }

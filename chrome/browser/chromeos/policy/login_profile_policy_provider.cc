@@ -41,6 +41,7 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
      key::kAutoSelectCertificateForUrls},
     {key::kDeviceLoginScreenLargeCursorEnabled, key::kLargeCursorEnabled},
     {key::kDeviceLoginScreenSpokenFeedbackEnabled, key::kSpokenFeedbackEnabled},
+    {key::kDeviceLoginScreenHighContrastEnabled, key::kHighContrastEnabled},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {

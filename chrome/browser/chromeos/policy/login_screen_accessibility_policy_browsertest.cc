@@ -318,4 +318,90 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
             GetPrefValue(ash::prefs::kAccessibilitySpokenFeedbackEnabled));
 }
 
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenHighContrastEnabled) {
+  // Verifies that the state of the high contrast accessibility feature on the
+  // login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
+
+  // Manually enable the high contrast.
+  accessibility_manager->EnableHighContrast(true);
+  EXPECT_TRUE(accessibility_manager->IsHighContrastEnabled());
+
+  // Disable the high contrast through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_high_contrast_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityHighContrastEnabled);
+
+  // Verify that the pref which controls the high contrast in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityHighContrastEnabled));
+
+  // Verify that the high contrast cannot be enabled manually anymore.
+  accessibility_manager->EnableHighContrast(true);
+  EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       HighContrastEnabledOverridesDefaultPolicy) {
+  // Verifies that the state of the high contrast accessibility feature on the
+  // login screen will be controlled only through
+  // DeviceLoginScreenHighContrastEnabled device policy if both of
+  // DeviceLoginScreenHighContrastEnabled and
+  // DeviceLoginScreenDefaultHighContrastEnabled have been set.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
+
+  // Enable the high contrast through DeviceLoginScreenHighContrastEnabled
+  // device policy, and disable it through
+  // DeviceLoginScreenDefaultHighContrastEnabled; then wait for the change to
+  // take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_high_contrast_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_high_contrast_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_default_high_contrast_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityHighContrastEnabled);
+
+  // Verify that the pref which controls the high contrast in the login
+  // profile is managed by the policy and is enabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityHighContrastEnabled));
+
+  // Disable the high contrast through DeviceLoginScreenHighContrastEnabled
+  // device policy, and enable it through
+  // DeviceLoginScreenDefaultHighContrastEnabled; then wait for the change to
+  // take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_high_contrast_enabled(false);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_high_contrast_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_default_high_contrast_enabled(true);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityHighContrastEnabled);
+
+  // Verify that the pref which controls the high contrast in the login
+  // profile is managed by the policy and is disabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityHighContrastEnabled));
+}
+
 }  // namespace policy
