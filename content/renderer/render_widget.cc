@@ -922,9 +922,11 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
         // (such as in RenderViewHost) and distribute it to each frame-hosted
         // RenderWidget from there.
         for (auto& child_proxy : render_frame_proxies_) {
-          child_proxy.OnPageScaleFactorChanged(
-              visual_properties.page_scale_factor,
-              visual_properties.is_pinch_gesture_active);
+          if (!is_undead_) {
+            child_proxy.OnPageScaleFactorChanged(
+                visual_properties.page_scale_factor,
+                visual_properties.is_pinch_gesture_active);
+          }
         }
       }
     }
@@ -1698,6 +1700,7 @@ gfx::Rect RenderWidget::CompositorViewportRect() const {
 }
 
 void RenderWidget::UpdateZoom(double zoom_level) {
+  DCHECK(!is_undead_);
   blink::WebFrameWidget* frame_widget = GetFrameWidget();
   if (!frame_widget)
     return;
@@ -1713,7 +1716,6 @@ void RenderWidget::UpdateZoom(double zoom_level) {
 
   for (auto& observer : render_frame_proxies_)
     observer.OnZoomLevelChanged(zoom_level);
-
   for (auto& plugin : browser_plugins_)
     plugin.OnZoomLevelChanged(zoom_level);
 }
@@ -2303,8 +2305,10 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     OnOrientationChange();
 
   if (previous_original_screen_info != GetOriginalScreenInfo()) {
-    for (auto& observer : render_frame_proxies_)
-      observer.OnScreenInfoChanged(GetOriginalScreenInfo());
+    for (auto& observer : render_frame_proxies_) {
+      if (!is_undead_)
+        observer.OnScreenInfoChanged(GetOriginalScreenInfo());
+    }
 
     // Notify all embedded BrowserPlugins of the updated ScreenInfo.
     for (auto& observer : browser_plugins_)
@@ -3416,8 +3420,10 @@ void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
   // the message to their child RenderWidgets (through their proxy child
   // frames).
   for (auto& observer : render_frame_proxies_) {
-    observer.OnPageScaleFactorChanged(page_scale_factor,
-                                      is_pinch_gesture_active);
+    if (!is_undead_) {
+      observer.OnPageScaleFactorChanged(page_scale_factor,
+                                        is_pinch_gesture_active);
+    }
   }
   // Store the value to give to any new RenderFrameProxy that is registered.
   page_scale_factor_from_mainframe_ = page_scale_factor;
