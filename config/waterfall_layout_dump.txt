@@ -398,7 +398,6 @@
     betty-arcmaster-release
     betty-arcnext-release
     betty-kernelnext-release
-    betty-nyc-arc-release
     betty-pi-arc-release
     betty-qt-arc-release
     betty-release
@@ -878,17 +877,6 @@
   betty-llvm-toolchain-tryjob
   betty-no-vmtest-pre-cq
   betty-nyc-android-pfq-tryjob
-  betty-nyc-arc-chromium-pfq-tryjob
-  betty-nyc-arc-compile-only-pre-cq
-  betty-nyc-arc-full-tryjob
-  betty-nyc-arc-llvm-next-toolchain-tryjob
-  betty-nyc-arc-llvm-toolchain-tryjob
-  betty-nyc-arc-no-vmtest-pre-cq
-  betty-nyc-arc-paladin-tryjob
-  betty-nyc-arc-pre-cq
-  betty-nyc-arc-release-tryjob
-  betty-nyc-arc-tot-chromium-pfq-informational-tryjob
-  betty-nyc-arc-unittest-stress
   betty-paladin-tryjob
   betty-payloads-tryjob
   betty-pi-arc-chrome-pfq-tryjob
@@ -2540,7 +2528,6 @@
     betty-arcmaster-release-tryjob
     betty-arcnext-release-tryjob
     betty-kernelnext-release-tryjob
-    betty-nyc-arc-release-tryjob
     betty-pi-arc-release-tryjob
     betty-qt-arc-release-tryjob
     betty-release-tryjob

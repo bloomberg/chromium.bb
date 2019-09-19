@@ -194,18 +194,6 @@
       ]
     },
     {
-      "name": "betty-nyc-arc",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "vm builds",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "betty-pi-arc",
       "configs": [
         {
