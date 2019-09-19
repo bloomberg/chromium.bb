@@ -4627,6 +4627,9 @@
     "PreventDownloadsWithSamePath": [
         {
             "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
                 "windows"
             ],
             "experiments": [
