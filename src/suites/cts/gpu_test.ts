@@ -1,6 +1,12 @@
 import { getGPU } from '../../framework/gpu/implementation.js';
 import { Fixture } from '../../framework/index.js';
 
+type glslang = typeof import('@webgpu/glslang/dist/web-devel/glslang');
+type Glslang = import('@webgpu/glslang/dist/web-devel/glslang').Glslang;
+type ShaderStage = import('@webgpu/glslang/dist/web-devel/glslang').ShaderStage;
+
+let glslangInstance: Glslang = undefined!;
+
 // TODO: Should this gain some functionality currently only in UnitTest?
 export class GPUTest extends Fixture {
   device: GPUDevice = undefined!;
@@ -31,6 +37,31 @@ export class GPUTest extends Fixture {
       if (!(gpuOutOfMemoryError instanceof GPUOutOfMemoryError)) throw new Error();
       this.fail('Unexpected out-of-memory error occurred');
     }
+  }
+
+  async initGLSL(): Promise<void> {
+    if (!glslangInstance) {
+      const glslangPath = '../../glslang.js';
+      const glslangModule = ((await import(glslangPath)) as glslang).default;
+      await new Promise(resolve => {
+        glslangModule().then((glslang: Glslang) => {
+          glslangInstance = glslang;
+          resolve();
+        });
+      });
+    }
+  }
+
+  makeShaderModule(stage: ShaderStage, source: string): GPUShaderModule {
+    if (!glslangInstance) {
+      throw new Error('GLSL is not instanciated. Run `await initGLSL()` first');
+    }
+    return this.device.createShaderModule({ code: this.compile(stage, source) });
+  }
+
+  private compile(stage: ShaderStage, source: string): Uint32Array {
+    const data = glslangInstance.compileGLSL(source, stage, false);
+    return data;
   }
 
   // TODO: add an expectContents for textures, which logs data: uris on failure

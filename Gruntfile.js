@@ -28,7 +28,16 @@ module.exports = function(grunt) {
       },
       'build-out': {
         cmd: 'node',
-        args: ['node_modules/@babel/cli/bin/babel', '--source-maps', 'true', '--extensions', '.ts', '--out-dir', 'out/', 'src/'],
+        args: [
+          'node_modules/@babel/cli/bin/babel',
+          '--source-maps',
+          'true',
+          '--extensions',
+          '.ts',
+          '--out-dir',
+          'out/',
+          'src/',
+        ],
       },
       'gts-check': {
         cmd: 'node',
@@ -41,6 +50,16 @@ module.exports = function(grunt) {
     },
 
     copy: {
+      glslang: {
+        files: [
+          {
+            expand: true,
+            cwd: 'node_modules/@webgpu/glslang/dist/web-devel',
+            src: 'glslang.{js,wasm}',
+            dest: 'out/',
+          },
+        ],
+      },
       'out-wpt': {
         files: [
           { expand: true, cwd: 'wpt', src: 'cts.html', dest: 'out-wpt/' },
@@ -91,6 +110,7 @@ module.exports = function(grunt) {
   registerTaskAndAddToHelp('build', 'Build out/ (without type checking)', [
     'clean',
     'mkdir:out',
+    'copy:glslang',
     'run:build-out',
     'run:generate-version',
     'run:generate-listings',
