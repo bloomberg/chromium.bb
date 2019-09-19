@@ -1876,7 +1876,9 @@ def GroupBoardsByBuilder(board_list):
   builder_to_boards_dict = {}
 
   for b in board_list:
-    for config in b[CONFIG_TEMPLATE_CONFIGS]:
+    # Invalid build configs being written out with no configs array, thus the
+    # default. See https://crbug.com/1005803.
+    for config in b.get(CONFIG_TEMPLATE_CONFIGS, []):
       builder = config[CONFIG_TEMPLATE_BUILDER]
       if builder not in builder_to_boards_dict:
         builder_to_boards_dict[builder] = set()
