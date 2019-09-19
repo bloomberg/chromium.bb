@@ -1434,6 +1434,9 @@ if (!is_android) {
         "//chrome/test/data/webui:browser_tests_js_mojo_lite_webui",
         "//chrome/test/data/webui:browser_tests_js_webui",
       ]
+      if (is_chromeos) {
+        deps += [ "//chromeos/components/media_app_ui:browser_tests_js" ]
+      }
     }
 
     if (!is_fuchsia) {
