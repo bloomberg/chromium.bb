@@ -158,7 +158,8 @@ class DeviceService : public service_manager::Service {
       mojo::PendingReceiver<mojom::HidManager> receiver);
   void BindNFCProviderReceiver(
       mojo::PendingReceiver<mojom::NFCProvider> receiver);
-  void BindVibrationManagerRequest(mojom::VibrationManagerRequest request);
+  void BindVibrationManagerReceiver(
+      mojo::PendingReceiver<mojom::VibrationManager> receiver);
 #endif
 
 #if defined(OS_CHROMEOS)

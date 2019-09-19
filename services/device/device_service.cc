@@ -186,7 +186,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::NFCProvider>(base::Bind(
       &DeviceService::BindNFCProviderReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::VibrationManager>(base::Bind(
-      &DeviceService::BindVibrationManagerRequest, base::Unretained(this)));
+      &DeviceService::BindVibrationManagerReceiver, base::Unretained(this)));
 #endif
 
 #if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
@@ -248,9 +248,9 @@ void DeviceService::BindNFCProviderReceiver(
   NOTREACHED();
 }
 
-void DeviceService::BindVibrationManagerRequest(
-    mojom::VibrationManagerRequest request) {
-  VibrationManagerImpl::Create(std::move(request));
+void DeviceService::BindVibrationManagerReceiver(
+    mojo::PendingReceiver<mojom::VibrationManager> receiver) {
+  VibrationManagerImpl::Create(std::move(receiver));
 }
 #endif
 
