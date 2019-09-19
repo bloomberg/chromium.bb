@@ -4351,7 +4351,7 @@ class MockMojoProxyResolverFactory
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<MockMojoProxyResolverFactory>(),
         remote.InitWithNewPipeAndPassReceiver());
-    return remote;
+    return std::move(remote);
   }
 
  private:
