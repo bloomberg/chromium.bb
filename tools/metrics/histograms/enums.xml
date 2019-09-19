@@ -24709,7 +24709,7 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FeaturePolicyFeature">
-<!-- Generated from third_party/blink/public/mojom/feature_policy/feature_policy.mojom.-->
+<!-- Generated from third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.-->
 
 <!-- Obsolete / deprecated features in this enum should be prefixed with
 "Deprecated: " -->
