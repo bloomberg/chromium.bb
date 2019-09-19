@@ -2476,12 +2476,14 @@ crbug.com/666657 external/wpt/css/css-text/hanging-punctuation [ Skip ]
 
 crbug.com/909597 external/wpt/css/css-ui/text-overflow-ruby.html [ Failure ]
 
-
 crbug.com/492664 external/wpt/css/css-writing-modes/inline-block-alignment-003.xht [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes/inline-block-alignment-005.xht [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes/inline-block-alignment-007.xht [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes/inline-table-alignment-003.xht [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes/inline-table-alignment-005.xht [ Failure ]
+
+crbug.com/1005518 external/wpt/css/css-writing-modes/direction-upright-001.html [ Failure ]
+crbug.com/1005518 external/wpt/css/css-writing-modes/direction-upright-002.html [ Failure ]
 
 crbug.com/637055 fast/css/outline-offset-large.html [ Skip ]
 
@@ -3257,9 +3259,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-grid/subgrid/grid-gap-004.html [ F
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/subgrid/grid-gap-006.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/subgrid/grid-gap-006.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/subgrid/grid-gap-006.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/direction-upright-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/direction-upright-002.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/direction-upright-002.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/subgrid/line-names-006.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/subgrid/line-names-006.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/subgrid/line-names-006.html [ Failure ]
@@ -3296,9 +3295,6 @@ crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-003.html [ Fail
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/subgrid/grid-gap-smaller-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/subgrid/grid-gap-smaller-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/subgrid/grid-gap-smaller-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-writing-modes/direction-upright-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-writing-modes/direction-upright-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/direction-upright-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-006.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-006.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-006.html [ Failure ]
