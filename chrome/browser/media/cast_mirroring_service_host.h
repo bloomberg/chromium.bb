@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -49,17 +50,20 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
                                        public content::WebContentsObserver {
  public:
-  static void GetForTab(content::WebContents* target_contents,
-                        mojom::MirroringServiceHostRequest request);
+  static void GetForTab(
+      content::WebContents* target_contents,
+      mojo::PendingReceiver<mojom::MirroringServiceHost> receiver);
 
-  static void GetForDesktop(content::WebContents* initiator_contents,
-                            const std::string& desktop_stream_id,
-                            mojom::MirroringServiceHostRequest request);
+  static void GetForDesktop(
+      content::WebContents* initiator_contents,
+      const std::string& desktop_stream_id,
+      mojo::PendingReceiver<mojom::MirroringServiceHost> receiver);
 
-  static void GetForOffscreenTab(content::BrowserContext* context,
-                                 const GURL& presentation_url,
-                                 const std::string& presentation_id,
-                                 mojom::MirroringServiceHostRequest request);
+  static void GetForOffscreenTab(
+      content::BrowserContext* context,
+      const GURL& presentation_url,
+      const std::string& presentation_id,
+      mojo::PendingReceiver<mojom::MirroringServiceHost> receiver);
 
   // |source_media_id| indicates the mirroring source.
   explicit CastMirroringServiceHost(content::DesktopMediaID source_media_id);

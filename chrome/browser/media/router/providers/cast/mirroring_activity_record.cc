@@ -68,8 +68,8 @@ MirroringActivityRecord::MirroringActivityRecord(
   mirroring_tab_id_ = target_tab_id;
 
   // Get a reference to the mirroring service host.
-  media_router->GetMirroringServiceHostForTab(target_tab_id,
-                                              mojo::MakeRequest(&host_));
+  media_router->GetMirroringServiceHostForTab(
+      target_tab_id, host_.BindNewPipeAndPassReceiver());
 
   // Create Mojo bindings for the interfaces this object implements.
   SessionObserverPtr observer_ptr;

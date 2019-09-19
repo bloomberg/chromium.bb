@@ -90,7 +90,7 @@ class MirroringActivityRecord : public ActivityRecord,
 
   void StopMirroring();
 
-  mirroring::mojom::MirroringServiceHostPtr host_;
+  mojo::Remote<mirroring::mojom::MirroringServiceHost> host_;
 
   // Sends Cast messages from the mirroring receiver to the mirroring service.
   mirroring::mojom::CastMessageChannelPtr channel_to_service_;

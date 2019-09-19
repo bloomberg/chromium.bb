@@ -35,7 +35,6 @@
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/viz/public/mojom/gpu.mojom.h"
 #include "ui/display/display.h"
@@ -122,13 +121,13 @@ base::Optional<gfx::Size> GetScreenResolution() {
 // static
 void CastMirroringServiceHost::GetForTab(
     content::WebContents* target_contents,
-    mojom::MirroringServiceHostRequest request) {
+    mojo::PendingReceiver<mojom::MirroringServiceHost> receiver) {
   if (target_contents) {
     const content::DesktopMediaID media_id =
         BuildMediaIdForWebContents(target_contents);
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<CastMirroringServiceHost>(media_id),
-        std::move(request));
+        std::move(receiver));
   }
 }
 
@@ -136,7 +135,7 @@ void CastMirroringServiceHost::GetForTab(
 void CastMirroringServiceHost::GetForDesktop(
     content::WebContents* initiator_contents,
     const std::string& desktop_stream_id,
-    mojom::MirroringServiceHostRequest request) {
+    mojo::PendingReceiver<mojom::MirroringServiceHost> receiver) {
   DCHECK(!desktop_stream_id.empty());
   if (initiator_contents) {
     std::string original_extension_name;
@@ -147,9 +146,9 @@ void CastMirroringServiceHost::GetForDesktop(
             initiator_contents->GetMainFrame()->GetRoutingID(),
             initiator_contents->GetVisibleURL().GetOrigin(),
             &original_extension_name, content::kRegistryStreamTypeDesktop);
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<CastMirroringServiceHost>(media_id),
-        std::move(request));
+        std::move(receiver));
   }
 }
 
@@ -158,12 +157,12 @@ void CastMirroringServiceHost::GetForOffscreenTab(
     content::BrowserContext* context,
     const GURL& presentation_url,
     const std::string& presentation_id,
-    mojom::MirroringServiceHostRequest request) {
+    mojo::PendingReceiver<mojom::MirroringServiceHost> receiver) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto host =
       std::make_unique<CastMirroringServiceHost>(content::DesktopMediaID());
   host->OpenOffscreenTab(context, presentation_url, presentation_id);
-  mojo::MakeStrongBinding(std::move(host), std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(host), std::move(receiver));
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
