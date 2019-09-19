@@ -123,10 +123,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->frame_tree_node();
   }
 
-  NavigationType navigation_type() {
-    return navigation_request_->navigation_type();
-  }
-
  private:
   friend class NavigationRequest;
 
