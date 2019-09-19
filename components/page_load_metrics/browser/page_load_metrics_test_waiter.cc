@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 
 #include "base/logging.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "testing/gtest/include/gtest/gtest.h"

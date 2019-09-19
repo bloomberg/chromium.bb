@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "chrome/browser/page_load_metrics/resource_tracker.h"
+#include "components/page_load_metrics/browser/resource_tracker.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "content/public/browser/global_request_id.h"
 #include "testing/gtest/include/gtest/gtest.h"

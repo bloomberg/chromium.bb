@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_EMBEDDER_INTERFACE_H_
-#define CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_EMBEDDER_INTERFACE_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_EMBEDDER_INTERFACE_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_EMBEDDER_INTERFACE_H_
 
 #include <memory>
 
@@ -22,7 +22,7 @@ namespace page_load_metrics {
 class PageLoadTracker;
 
 // This class serves as a functional interface to various chrome// features.
-// Impl version is defined in chrome/browser/page_load_metrics.
+// Impl version is defined in components/page_load_metrics/browser.
 class PageLoadMetricsEmbedderInterface {
  public:
   virtual ~PageLoadMetricsEmbedderInterface() {}
@@ -35,4 +35,4 @@ class PageLoadMetricsEmbedderInterface {
 
 }  // namespace page_load_metrics
 
-#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_EMBEDDER_INTERFACE_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_EMBEDDER_INTERFACE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/protocol_util.h"
+#include "components/page_load_metrics/browser/protocol_util.h"
 
 namespace page_load_metrics {
 

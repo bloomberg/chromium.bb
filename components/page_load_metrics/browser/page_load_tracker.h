@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_TRACKER_H_
-#define CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_TRACKER_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_TRACKER_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_TRACKER_H_
 
 #include <memory>
 #include <vector>
@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
-#include "chrome/browser/page_load_metrics/resource_tracker.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
+#include "components/page_load_metrics/browser/page_load_metrics_update_dispatcher.h"
+#include "components/page_load_metrics/browser/resource_tracker.h"
 #include "components/page_load_metrics/common/page_end_reason.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/global_request_id.h"
@@ -462,4 +462,4 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
 }  // namespace page_load_metrics
 
-#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_TRACKER_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_TRACKER_H_

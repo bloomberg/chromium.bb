@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
+#include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace page_load_metrics {

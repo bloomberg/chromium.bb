@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_RESOURCE_TRACKER_H_
-#define CHROME_BROWSER_PAGE_LOAD_METRICS_RESOURCE_TRACKER_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_BROWSER_RESOURCE_TRACKER_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_RESOURCE_TRACKER_H_
 
 #include <map>
 #include <memory>
@@ -66,4 +66,4 @@ class ResourceTracker {
 
 }  // namespace page_load_metrics
 
-#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_RESOURCE_TRACKER_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_BROWSER_RESOURCE_TRACKER_H_

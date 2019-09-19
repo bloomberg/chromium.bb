@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UPDATE_DISPATCHER_H_
-#define CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UPDATE_DISPATCHER_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_UPDATE_DISPATCHER_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_UPDATE_DISPATCHER_H_
 
 #include <map>
 #include <memory>
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 
 namespace content {
@@ -229,4 +229,4 @@ class PageLoadMetricsUpdateDispatcher {
 
 }  // namespace page_load_metrics
 
-#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UPDATE_DISPATCHER_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_UPDATE_DISPATCHER_H_
