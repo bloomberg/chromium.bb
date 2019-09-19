@@ -4691,7 +4691,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
     // Cancel any pending navigations, to avoid their navigation commit/fail
     // event from wiping out the is_waiting_for_beforeunload_ack_ state.
     if (frame_tree_node_->navigation_request() &&
-        frame_tree_node_->navigation_request()->navigation_handle()) {
+        frame_tree_node_->navigation_request()->IsNavigationStarted()) {
       frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
     }
     frame_tree_node_->ResetNavigationRequest(false, true);
@@ -5527,7 +5527,7 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
-  DCHECK(navigation_request && navigation_request->navigation_handle() &&
+  DCHECK(navigation_request && navigation_request->IsNavigationStarted() &&
          navigation_request->GetNetErrorCode() != net::OK);
 }
 
@@ -6906,7 +6906,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   }
 
   DCHECK(navigation_request);
-  DCHECK(navigation_request->navigation_handle());
+  DCHECK(navigation_request->IsNavigationStarted());
 
   // Update the page transition. For subframe navigations, the renderer process
   // only gives the correct page transition at commit time.
@@ -7133,16 +7133,16 @@ void RenderFrameHostImpl::DidCommitNavigation(
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
         validated_params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
-  NavigationHandleImpl* navigation_handle;
+  NavigationRequest* request;
   if (committing_navigation_request) {
-    navigation_handle = committing_navigation_request->navigation_handle();
+    request = committing_navigation_request.get();
   } else {
-    navigation_handle = GetNavigationHandle();
+    request = navigation_request();
   }
 
-  if (navigation_handle) {
+  if (request && request->IsNavigationStarted()) {
     main_frame_request_ids_ = {validated_params->request_id,
-                               navigation_handle->GetGlobalRequestID()};
+                               request->GetGlobalRequestID()};
     if (deferred_main_frame_load_info_)
       ResourceLoadComplete(std::move(deferred_main_frame_load_info_));
   }
@@ -7528,27 +7528,26 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
                                           base::debug::CrashKeySize::Size256),
       last_successful_url().GetOrigin().spec());
 
-  if (navigation_request && navigation_request->navigation_handle()) {
-    NavigationHandleImpl* handle = navigation_request->navigation_handle();
+  if (navigation_request && navigation_request->IsNavigationStarted()) {
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_renderer_initiated",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsRendererInitiated()));
+        bool_to_crash_key(navigation_request->IsRendererInitiated()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_server_redirect",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->WasServerRedirect()));
+        bool_to_crash_key(navigation_request->WasServerRedirect()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_form_submission",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsFormSubmission()));
+        bool_to_crash_key(navigation_request->IsFormSubmission()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_error_page",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsErrorPage()));
+        bool_to_crash_key(navigation_request->IsErrorPage()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("from_begin_navigation",
@@ -7563,14 +7562,14 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("initiator_origin",
                                             base::debug::CrashKeySize::Size64),
-        handle->GetInitiatorOrigin()
-            ? handle->GetInitiatorOrigin()->GetDebugString()
+        navigation_request->GetInitiatorOrigin()
+            ? navigation_request->GetInitiatorOrigin()->GetDebugString()
             : "none");
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("starting_site_instance",
                                             base::debug::CrashKeySize::Size64),
-        handle->GetStartingSiteInstance()->GetSiteURL().spec());
+        navigation_request->GetStartingSiteInstance()->GetSiteURL().spec());
 
     // Recompute the target SiteInstance to see if it matches the current
     // one at commit time.
@@ -7630,39 +7629,38 @@ void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
                                           base::debug::CrashKeySize::Size32),
       bool_to_crash_key(IsCrossProcessSubframe()));
 
-  if (navigation_request && navigation_request->navigation_handle()) {
-    NavigationHandleImpl* handle = navigation_request->navigation_handle();
+  if (navigation_request && navigation_request->IsNavigationStarted()) {
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_renderer_initiated",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsRendererInitiated()));
+        bool_to_crash_key(navigation_request->IsRendererInitiated()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_server_redirect",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->WasServerRedirect()));
+        bool_to_crash_key(navigation_request->WasServerRedirect()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_form_submission",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsFormSubmission()));
+        bool_to_crash_key(navigation_request->IsFormSubmission()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_error_page",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsErrorPage()));
+        bool_to_crash_key(navigation_request->IsErrorPage()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("initiator_origin",
                                             base::debug::CrashKeySize::Size64),
-        handle->GetInitiatorOrigin()
-            ? handle->GetInitiatorOrigin()->GetDebugString()
+        navigation_request->GetInitiatorOrigin()
+            ? navigation_request->GetInitiatorOrigin()->GetDebugString()
             : "none");
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("starting_site_instance",
                                             base::debug::CrashKeySize::Size64),
-        handle->GetStartingSiteInstance()->GetSiteURL().spec());
+        navigation_request->GetStartingSiteInstance()->GetSiteURL().spec());
   }
 }
 
