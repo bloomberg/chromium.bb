@@ -112,7 +112,7 @@ const SEARCH_HISTORY_MATCH_TYPES = [
  * @type {string}
  * @const
  */
-const DARK_MODE_BACKGROUND_COLOR = 'rgba(50,54,57,1)';
+const DARK_MODE_BACKGROUND_COLOR = 'rgba(53,54,58,1)';
 
 /**
  * The period of time (ms) before transitions can be applied to a toast
@@ -227,7 +227,7 @@ const NOTIFICATION_TIMEOUT = 10000;
  */
 const NTP_DESIGN = {
   backgroundColor: [255, 255, 255, 255],
-  darkBackgroundColor: [50, 54, 57, 255],
+  darkBackgroundColor: [53, 54, 58, 255],
   iconBackgroundColor: [241, 243, 244, 255],  /** GG100 */
   iconDarkBackgroundColor: [32, 33, 36, 255], /** GG900 */
   numTitleLines: 1,
