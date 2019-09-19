@@ -1579,6 +1579,21 @@
             ]
         }
     ],
+    "ChromeosVideoDecoder": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeosVideoDecoder"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClickToCall": [
         {
             "platforms": [
