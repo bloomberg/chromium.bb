@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -39,6 +40,7 @@
 #endif
 
 using chrome_test_util::CancelButton;
+using chrome_test_util::StaticTextWithAccessibilityLabelId;
 
 namespace {
 
@@ -109,6 +111,12 @@ id<GREYMatcher> AddCreditCardsMatcher() {
 // Returns a matcher for the credit card settings collection view.
 id<GREYMatcher> CreditCardSettingsMatcher() {
   return grey_accessibilityID(kAutofillCreditCardTableViewId);
+}
+
+// Matcher for the not secure website alert.
+id<GREYMatcher> NotSecureWebsiteAlert() {
+  return StaticTextWithAccessibilityLabelId(
+      IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
 }
 
 // Returns a matcher for the CreditCardTableView window.
@@ -557,6 +565,16 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testCreditCardLocalNumberDoesntInjectOnHttp {
   [self verifyCreditCardButtonWithTitle:kLocalNumberObfuscated
                         doesInjectValue:@""];
+}
+
+// Tests an alert is shown warning the user when trying to fill a credit card
+// number in an HTTP form.
+- (void)testCreditCardLocalNumberShowsWarningOnHttp {
+  [self verifyCreditCardButtonWithTitle:kLocalNumberObfuscated
+                        doesInjectValue:@""];
+  // Look for the alert.
+  [[EarlGrey selectElementWithMatcher:NotSecureWebsiteAlert()]
+      assertWithMatcher:grey_not(grey_nil())];
 }
 
 // Tests that credit card cardholder is injected.
