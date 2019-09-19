@@ -12352,8 +12352,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12377,8 +12376,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12403,8 +12401,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12426,8 +12423,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12448,8 +12444,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12470,8 +12465,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12489,8 +12483,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12512,8 +12505,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12531,8 +12523,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12563,8 +12554,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12593,8 +12583,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12623,8 +12612,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12653,8 +12641,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12687,8 +12674,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12724,8 +12710,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12769,8 +12754,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12801,8 +12785,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12831,8 +12814,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12863,8 +12845,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12894,8 +12875,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12925,8 +12905,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -14038,8 +14017,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.13.6"
             }
           ],
           "expiration": 21600,
