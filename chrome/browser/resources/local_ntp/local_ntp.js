@@ -302,6 +302,24 @@ let ntpApiHandle;
 // Helper methods.
 
 /**
+ * @param {number} style
+ * @return {!Array<string>}
+ */
+function classificationStyleToClasses(style) {
+  const classes = [];
+  if (style & ACMatchClassificationStyle.DIM) {
+    classes.push('dim');
+  }
+  if (style & ACMatchClassificationStyle.MATCH) {
+    classes.push('match');
+  }
+  if (style & ACMatchClassificationStyle.URL) {
+    classes.push('url');
+  }
+  return classes;
+}
+
+/**
  * Converts an Array of color components into RGBA format "rgba(R,G,B,A)".
  * @param {Array<number>} color Array of rgba color components.
  * @return {string} CSS color in RGBA format.
@@ -1645,24 +1663,6 @@ function spanWithClasses(text, classes) {
   span.classList.add(...classes);
   span.textContent = text;
   return span;
-}
-
-/**
- * @param {number} style
- * @return {!Array<string>}
- */
-function classificationStyleToClasses(style) {
-  const classes = [];
-  if (style & ACMatchClassificationStyle.DIM) {
-    classes.push('dim');
-  }
-  if (style & ACMatchClassificationStyle.MATCH) {
-    classes.push('match');
-  }
-  if (style & ACMatchClassificationStyle.URL) {
-    classes.push('url');
-  }
-  return classes;
 }
 
 /** @param {!RealboxOutputUpdate} update */
