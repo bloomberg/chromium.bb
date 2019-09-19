@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/header_modification_delegate_on_ui_thread_impl.h"
+#include "chrome/browser/signin/header_modification_delegate_impl.h"
 
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -21,15 +21,13 @@
 
 namespace signin {
 
-HeaderModificationDelegateOnUIThreadImpl::
-    HeaderModificationDelegateOnUIThreadImpl(Profile* profile)
+HeaderModificationDelegateImpl::HeaderModificationDelegateImpl(Profile* profile)
     : profile_(profile),
       cookie_settings_(CookieSettingsFactory::GetForProfile(profile_)) {}
 
-HeaderModificationDelegateOnUIThreadImpl::
-    ~HeaderModificationDelegateOnUIThreadImpl() = default;
+HeaderModificationDelegateImpl::~HeaderModificationDelegateImpl() = default;
 
-bool HeaderModificationDelegateOnUIThreadImpl::ShouldInterceptNavigation(
+bool HeaderModificationDelegateImpl::ShouldInterceptNavigation(
     content::NavigationUIData* navigation_ui_data) {
   if (profile_->IsOffTheRecord())
     return false;
@@ -52,7 +50,7 @@ bool HeaderModificationDelegateOnUIThreadImpl::ShouldInterceptNavigation(
   return true;
 }
 
-void HeaderModificationDelegateOnUIThreadImpl::ProcessRequest(
+void HeaderModificationDelegateImpl::ProcessRequest(
     ChromeRequestAdapter* request_adapter,
     const GURL& redirect_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -76,7 +74,7 @@ void HeaderModificationDelegateOnUIThreadImpl::ProcessRequest(
       cookie_settings_.get());
 }
 
-void HeaderModificationDelegateOnUIThreadImpl::ProcessResponse(
+void HeaderModificationDelegateImpl::ProcessResponse(
     ResponseAdapter* response_adapter,
     const GURL& redirect_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_ON_UI_THREAD_IMPL_H_
-#define CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_ON_UI_THREAD_IMPL_H_
+#ifndef CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_IMPL_H_
+#define CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_IMPL_H_
 
 #include "chrome/browser/signin/header_modification_delegate.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -16,11 +16,10 @@ namespace signin {
 // This class wraps the FixAccountConsistencyRequestHeader and
 // ProcessAccountConsistencyResponseHeaders in the HeaderModificationDelegate
 // interface.
-class HeaderModificationDelegateOnUIThreadImpl
-    : public HeaderModificationDelegate {
+class HeaderModificationDelegateImpl : public HeaderModificationDelegate {
  public:
-  explicit HeaderModificationDelegateOnUIThreadImpl(Profile* profile);
-  ~HeaderModificationDelegateOnUIThreadImpl() override;
+  explicit HeaderModificationDelegateImpl(Profile* profile);
+  ~HeaderModificationDelegateImpl() override;
 
   // HeaderModificationDelegate
   bool ShouldInterceptNavigation(
@@ -34,9 +33,9 @@ class HeaderModificationDelegateOnUIThreadImpl
   Profile* profile_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
-  DISALLOW_COPY_AND_ASSIGN(HeaderModificationDelegateOnUIThreadImpl);
+  DISALLOW_COPY_AND_ASSIGN(HeaderModificationDelegateImpl);
 };
 
 }  // namespace signin
 
-#endif  // CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_ON_UI_THREAD_IMPL_H_
+#endif  // CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_IMPL_H_

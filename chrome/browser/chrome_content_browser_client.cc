@@ -127,7 +127,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
-#include "chrome/browser/signin/header_modification_delegate_on_ui_thread_impl.h"
+#include "chrome/browser/signin/header_modification_delegate_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
@@ -4620,8 +4620,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 #endif
 
   auto delegate =
-      std::make_unique<signin::HeaderModificationDelegateOnUIThreadImpl>(
-          profile);
+      std::make_unique<signin::HeaderModificationDelegateImpl>(profile);
   auto signin_throttle = signin::URLLoaderThrottle::MaybeCreate(
       std::move(delegate), navigation_ui_data, wc_getter);
   if (signin_throttle)
