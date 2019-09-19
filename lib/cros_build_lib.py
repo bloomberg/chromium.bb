@@ -80,7 +80,24 @@ def ShellQuote(s):
   Returns:
     A safely (possibly quoted) string.
   """
-  s = s.encode('utf-8')
+  if sys.version_info.major < 3:
+    # This is a bit of a hack.  Python 2 will display strings with u prefixes
+    # when logging which makes things harder to work with.  Writing bytes to
+    # stdout will be interpreted as UTF-8 content implicitly.
+    if isinstance(s, six.string_types):
+      try:
+        s = s.encode('utf-8')
+      except UnicodeDecodeError:
+        # We tried our best.  Let Python's automatic mixed encoding kick in.
+        pass
+    else:
+      return repr(s)
+  else:
+    # If callers pass down bad types, don't blow up.
+    if isinstance(s, six.binary_type):
+      s = s.decode('utf-8', 'backslashreplace')
+    elif not isinstance(s, six.string_types):
+      return repr(s)
 
   # See if no quoting is needed so we can return the string as-is.
   for c in s:
@@ -178,8 +195,12 @@ def CmdToStr(cmd):
   Returns:
     String representing full command.
   """
-  # Use str before repr to translate unicode strings to regular strings.
-  return ' '.join(ShellQuote(arg) for arg in cmd)
+  # If callers pass down bad types, triage it a bit.
+  if isinstance(cmd, (list, tuple)):
+    return ' '.join(ShellQuote(arg) for arg in cmd)
+  else:
+    raise ValueError('cmd must be list or tuple, not %s: %r' %
+                     (type(cmd), repr(cmd)))
 
 
 class CommandResult(object):
@@ -227,7 +248,10 @@ class CommandResult(object):
   @property
   def cmdstr(self):
     """Return self.cmd as a space-separated string, useful for log messages."""
-    return CmdToStr(self.args or '')
+    if self.args is None:
+      return ''
+    else:
+      return CmdToStr(self.args)
 
   def check_returncode(self):
     """Raise RunCommandError if the exit code is non-zero."""
@@ -247,8 +271,8 @@ class RunCommandError(Exception):
 
   def __init__(self, msg, result=None, exception=None):
     if exception is not None and not isinstance(exception, Exception):
-      raise ValueError('exception must be an exception instance; got %r'
-                       % (exception,))
+      raise TypeError('exception must be an exception instance; got %r'
+                      % (exception,))
 
     # This makes mocking tests easier.
     if result is None:
@@ -611,13 +635,22 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
     stdin = input
     input = None
 
-  if isinstance(cmd, six.string_types):
+  # Sanity check the command.  This helps when RunCommand is deep in the call
+  # chain, but the command itself was constructed along the way.
+  if isinstance(cmd, (six.string_types, six.binary_type)):
     if not shell:
-      raise Exception('Cannot run a string command without a shell')
+      raise ValueError('Cannot run a string command without a shell')
     cmd = ['/bin/bash', '-c', cmd]
     shell = False
   elif shell:
-    raise Exception('Cannot run an array command with a shell')
+    raise ValueError('Cannot run an array command with a shell')
+  elif not cmd:
+    raise ValueError('Missing command to run')
+  elif not isinstance(cmd, (list, tuple)):
+    raise TypeError('cmd must be list or tuple, not %s: %r' %
+                    (type(cmd), repr(cmd)))
+  elif not all(isinstance(x, (six.binary_type, six.string_types)) for x in cmd):
+    raise TypeError('All command elements must be bytes/strings: %r' % (cmd,))
 
   # If we are using enter_chroot we need to use enterchroot pass env through
   # to the final command.

@@ -62,14 +62,13 @@ class CmdToStrTest(cros_test_lib.TestCase):
 
   def _assertEqual(self, func, test_input, test_output, result):
     """Like assertEqual but with built in diff support."""
-    diff = '\n'.join(list(self.differ.compare([test_output], [result])))
-    msg = ('Expected %s to translate %r to %r, but got %r\n%s' %
-           (func, test_input, test_output, result, diff))
+    msg = ('Expected %s to translate %r to %r, but got %r' %
+           (func, test_input, test_output, result))
     self.assertEqual(test_output, result, msg)
 
   def _testData(self, functor, tests, check_type=True):
-    """Process a dict of test data."""
-    for test_output, test_input in tests.items():
+    """Process an iterable of test data."""
+    for test_output, test_input in tests:
       result = functor(test_input)
       self._assertEqual(functor.__name__, test_input, test_output, result)
 
@@ -80,31 +79,36 @@ class CmdToStrTest(cros_test_lib.TestCase):
 
   def testShellQuote(self):
     """Basic ShellQuote tests."""
-    # Dict of expected output strings to input lists.
-    tests_quote = {
-        "''": '',
-        'a': u'a',
-        "'a b c'": u'a b c',
-        "'a\tb'": 'a\tb',
-        "'/a$file'": '/a$file',
-        "'/a#file'": '/a#file',
-        """'b"c'""": 'b"c',
-        "'a@()b'": 'a@()b',
-        'j%k': 'j%k',
+    # Tuples of (expected output string, input data).
+    tests_quote = (
+        ("''", ''),
+        ('a', u'a'),
+        ("'a b c'", u'a b c'),
+        ("'a\tb'", 'a\tb'),
+        ("'/a$file'", '/a$file'),
+        ("'/a#file'", '/a#file'),
+        ("""'b"c'""", 'b"c'),
+        ("'a@()b'", 'a@()b'),
+        ('j%k', 'j%k'),
         # pylint: disable=invalid-triple-quote
         # https://github.com/edaniszewski/pylint-quotes/issues/20
-        r'''"s'a\$va\\rs"''': r"s'a$va\rs",
-        r'''"\\'\\\""''': r'''\'\"''',
-        r'''"'\\\$"''': r"""'\$""",
-    }
+        (r'''"s'a\$va\\rs"''', r"s'a$va\rs"),
+        (r'''"\\'\\\""''', r'''\'\"'''),
+        (r'''"'\\\$"''', r"""'\$"""),
+        # Since we allow passing bytes down, quote them too.
+        ('bytes', b'bytes'),
+        ("'by tes'", b'by tes'),
+        ('bytes', u'bytes'),
+        ("'by tes'", u'by tes'),
+    )
 
     # Expected input output specific to ShellUnquote. This string cannot be
     # produced by ShellQuote but is still a valid bash escaped string.
-    tests_unquote = {
+    tests_unquote = (
         # pylint: disable=invalid-triple-quote
         # https://github.com/edaniszewski/pylint-quotes/issues/20
-        r'''\$''': r'''"\\$"''',
-    }
+        (r'''\$''', r'''"\\$"'''),
+    )
 
     def aux(s):
       return cros_build_lib.ShellUnquote(cros_build_lib.ShellQuote(s))
@@ -113,21 +117,28 @@ class CmdToStrTest(cros_test_lib.TestCase):
     self._testData(cros_build_lib.ShellUnquote, tests_unquote)
 
     # Test that the operations are reversible.
-    self._testData(aux, {k: k for k in tests_quote.values()}, False)
-    self._testData(aux, {k: k for k in tests_quote.keys()}, False)
+    self._testData(aux, [(x, x) for x, _ in tests_quote], False)
+    self._testData(aux, [(x, x) for _, x in tests_quote], False)
+
+  def testShellQuoteOjbects(self):
+    """Test objects passed to ShellQuote."""
+    self.assertEqual('None', cros_build_lib.ShellQuote(None))
+    self.assertNotEqual('', cros_build_lib.ShellQuote(object))
 
   def testCmdToStr(self):
     # Dict of expected output strings to input lists.
-    tests = {
-        r'a b': ['a', 'b'],
-        r"'a b' c": ['a b', 'c'],
+    tests = (
+        (r'a b', ['a', 'b']),
+        (r"'a b' c", ['a b', 'c']),
         # pylint: disable=invalid-triple-quote
         # https://github.com/edaniszewski/pylint-quotes/issues/20
-        r'''a "b'c"''': ['a', "b'c"],
-        r'''a "/'\$b" 'a b c' "xy'z"''':
-            [u'a', "/'$b", 'a b c', "xy'z"],
-        '': [],
-    }
+        (r'''a "b'c"''', ['a', "b'c"]),
+        (r'''a "/'\$b" 'a b c' "xy'z"''',
+         [u'a', "/'$b", 'a b c', "xy'z"]),
+        ('', []),
+        ('a b c', [b'a', 'b', u'c']),
+        ('bad None cmd', ['bad', None, 'cmd']),
+    )
     self._testData(cros_build_lib.CmdToStr, tests)
 
 
