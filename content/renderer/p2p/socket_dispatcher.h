@@ -18,10 +18,12 @@
 // P2PSocketDispatcher receives and dispatches messages on the
 // IO thread.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_SOCKET_DISPATCHER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_SOCKET_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_
+#define CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_
 
 #include <stdint.h>
+
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
@@ -29,15 +31,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
-#include "services/network/public/mojom/p2p.mojom-blink.h"
-#include "third_party/blink/renderer/platform/p2p/network_list_manager.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "services/network/public/mojom/p2p.mojom.h"
+#include "third_party/blink/public/platform/modules/p2p/network_list_manager.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -47,14 +48,14 @@ namespace blink {
 class NetworkListObserver;
 }
 
-namespace blink {
+namespace content {
 
 // This class is created on the main thread, but is used primarily on the
 // WebRTC worker threads.
-class PLATFORM_EXPORT P2PSocketDispatcher
+class CONTENT_EXPORT P2PSocketDispatcher
     : public base::RefCountedThreadSafe<P2PSocketDispatcher>,
       public blink::NetworkListManager,
-      public network::mojom::blink::P2PNetworkNotificationClient {
+      public network::mojom::P2PNetworkNotificationClient {
  public:
   P2PSocketDispatcher();
 
@@ -64,7 +65,7 @@ class PLATFORM_EXPORT P2PSocketDispatcher
   void RemoveNetworkListObserver(
       blink::NetworkListObserver* network_list_observer) override;
 
-  scoped_refptr<network::mojom::blink::ThreadSafeP2PSocketManagerPtr>
+  scoped_refptr<network::mojom::ThreadSafeP2PSocketManagerPtr>
   GetP2PSocketManager();
 
  private:
@@ -72,9 +73,9 @@ class PLATFORM_EXPORT P2PSocketDispatcher
 
   ~P2PSocketDispatcher() override;
 
-  // network::mojom::blink::P2PNetworkNotificationClient interface.
+  // network::mojom::P2PNetworkNotificationClient interface.
   void NetworkListChanged(
-      const Vector<net::NetworkInterface>& networks,
+      const std::vector<net::NetworkInterface>& networks,
       const net::IPAddress& default_ipv4_local_address,
       const net::IPAddress& default_ipv6_local_address) override;
 
@@ -85,27 +86,25 @@ class PLATFORM_EXPORT P2PSocketDispatcher
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  // TODO(crbug.com/787254): When moving NetworkListObserver to Oilpan,
-  // thread-safety needs to be taken into account.
   scoped_refptr<base::ObserverListThreadSafe<blink::NetworkListObserver>>
       network_list_observers_;
 
-  network::mojom::blink::P2PSocketManagerRequest p2p_socket_manager_request_;
-  scoped_refptr<network::mojom::blink::ThreadSafeP2PSocketManagerPtr>
+  network::mojom::P2PSocketManagerRequest p2p_socket_manager_request_;
+  scoped_refptr<network::mojom::ThreadSafeP2PSocketManagerPtr>
       thread_safe_p2p_socket_manager_;
   base::Lock p2p_socket_manager_lock_;
 
   // Cached from last |NetworkListChanged| call.
-  Vector<net::NetworkInterface> networks_;
+  std::vector<net::NetworkInterface> networks_;
   net::IPAddress default_ipv4_local_address_;
   net::IPAddress default_ipv6_local_address_;
 
-  mojo::Receiver<network::mojom::blink::P2PNetworkNotificationClient>
+  mojo::Receiver<network::mojom::P2PNetworkNotificationClient>
       network_notification_client_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };
 
-}  // namespace blink
+}  // namespace content
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_SOCKET_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_

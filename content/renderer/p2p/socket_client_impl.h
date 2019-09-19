@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_SOCKET_CLIENT_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_SOCKET_CLIENT_IMPL_H_
+#ifndef CONTENT_RENDERER_P2P_SOCKET_CLIENT_IMPL_H_
+#define CONTENT_RENDERER_P2P_SOCKET_CLIENT_IMPL_H_
 
 #include <stdint.h>
+
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -14,15 +16,14 @@
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
-#include "services/network/public/mojom/p2p.mojom-blink.h"
-#include "third_party/blink/renderer/platform/p2p/socket_client.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "services/network/public/mojom/p2p.mojom.h"
+#include "third_party/blink/public/platform/modules/p2p/socket_client.h"
 
 namespace base {
 class TimeTicks;
 }  // namespace base
 
-namespace blink {
+namespace content {
 
 class P2PSocketDispatcher;
 
@@ -30,7 +31,7 @@ class P2PSocketDispatcher;
 //
 // The object runs on the WebRTC worker thread.
 class P2PSocketClientImpl : public blink::P2PSocketClient,
-                            public network::mojom::blink::P2PSocketClient {
+                            public network::mojom::P2PSocketClient {
  public:
   P2PSocketClientImpl(
       P2PSocketDispatcher* dispatcher,
@@ -50,7 +51,7 @@ class P2PSocketClientImpl : public blink::P2PSocketClient,
   // Send the |data| to the |address| using Differentiated Services Code Point
   // |dscp|. Return value is the unique packet_id for this packet.
   uint64_t Send(const net::IPEndPoint& address,
-                const Vector<int8_t>& data,
+                const std::vector<int8_t>& data,
                 const rtc::PacketOptions& options) override;
 
   // Setting socket options.
@@ -78,20 +79,20 @@ class P2PSocketClientImpl : public blink::P2PSocketClient,
   // Helper function to be called by Send to handle different threading
   // condition.
   void SendWithPacketId(const net::IPEndPoint& address,
-                        const Vector<int8_t>& data,
+                        const std::vector<int8_t>& data,
                         const rtc::PacketOptions& options,
                         uint64_t packet_id);
 
-  // network::mojom::blink::P2PSocketClient interface.
+  // network::mojom::P2PSocketClient interface.
   void SocketCreated(const net::IPEndPoint& local_address,
                      const net::IPEndPoint& remote_address) override;
   void SendComplete(const network::P2PSendPacketMetrics& send_metrics) override;
   void IncomingTcpConnection(
       const net::IPEndPoint& socket_address,
-      network::mojom::blink::P2PSocketPtr socket,
-      network::mojom::blink::P2PSocketClientRequest client_request) override;
+      network::mojom::P2PSocketPtr socket,
+      network::mojom::P2PSocketClientRequest client_request) override;
   void DataReceived(const net::IPEndPoint& socket_address,
-                    const Vector<int8_t>& data,
+                    const std::vector<int8_t>& data,
                     base::TimeTicks timestamp) override;
 
   void OnConnectionError();
@@ -107,12 +108,12 @@ class P2PSocketClientImpl : public blink::P2PSocketClient,
   uint32_t random_socket_id_;
   uint32_t next_packet_id_;
 
-  network::mojom::blink::P2PSocketPtr socket_;
-  mojo::Binding<network::mojom::blink::P2PSocketClient> binding_;
+  network::mojom::P2PSocketPtr socket_;
+  mojo::Binding<network::mojom::P2PSocketClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketClientImpl);
 };
 
-}  // namespace blink
+}  // namespace content
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_SOCKET_CLIENT_IMPL_H_
+#endif  // CONTENT_RENDERER_P2P_SOCKET_CLIENT_IMPL_H_
