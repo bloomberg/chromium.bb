@@ -449,9 +449,19 @@ gfx::Size GetPdfPageSize(const gfx::Size& page_size, int dpi) {
 }
 
 bool FitToPageEnabled(const base::DictionaryValue& job_settings) {
-  bool fit_to_paper_size = false;
-  if (!job_settings.GetBoolean(kSettingFitToPageEnabled, &fit_to_paper_size)) {
+  bool fit_to_page_size = false;
+  if (!job_settings.GetBoolean(kSettingFitToPageEnabled, &fit_to_page_size)) {
     NOTREACHED();
+  }
+  return fit_to_page_size;
+}
+
+bool FitToPaperEnabled(const base::DictionaryValue& job_settings) {
+  bool fit_to_paper_size = false;
+  if (!job_settings.GetBoolean(kSettingFitToPaperEnabled, &fit_to_paper_size)) {
+    // TODO(dhoss): Bug 989978: Should be NOTREACHED(). Will fix when
+    // |job_settings| contains a "fitToPaperEnabled" boolean field.
+    return false;
   }
   return fit_to_paper_size;
 }
@@ -480,12 +490,20 @@ blink::WebPrintScalingOption GetPrintScalingOption(
     return blink::kWebPrintScalingOptionSourceSize;
 
   if (!source_is_html) {
-    if (!FitToPageEnabled(job_settings))
+    bool fit_to_page = FitToPageEnabled(job_settings);
+    bool fit_to_paper = FitToPaperEnabled(job_settings);
+
+    // The following conditions are ordered for an optimization that avoids
+    // calling PDFShouldDisableScaling(), which has to make a call using PPAPI.
+    if (!fit_to_page && !fit_to_paper)
       return blink::kWebPrintScalingOptionNone;
 
     bool no_plugin_scaling = PDFShouldDisableScaling(frame, node, params, true);
     if (params.is_first_request && no_plugin_scaling)
       return blink::kWebPrintScalingOptionNone;
+
+    if (fit_to_paper)
+      return blink::kWebPrintScalingOptionFitToPaper;
   }
   return blink::kWebPrintScalingOptionFitToPrintableArea;
 }
