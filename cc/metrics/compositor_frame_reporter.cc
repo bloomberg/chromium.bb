@@ -51,22 +51,21 @@ static_assert(sizeof(kReportTypeNames) / sizeof(kReportTypeNames[0]) ==
 // This value should be recalculate in case of changes to the number of values
 // in CompositorFrameReporter::MissedFrameReportTypes or in
 // CompositorFrameReporter::StageType
-constexpr int kMaxHistogramIndex = 2 * kMissedFrameReportTypeCount *
+constexpr int kMaxHistogramIndex = kMissedFrameReportTypeCount *
                                    kFrameSequenceTrackerTypeCount *
                                    kStageTypeCount;
 constexpr int kHistogramMin = 1;
 constexpr int kHistogramMax = 350000;
 constexpr int kHistogramBucketCount = 50;
 
-std::string HistogramName(const char* compositor_type,
-                          const int report_type_index,
+std::string HistogramName(const int report_type_index,
                           const int frame_sequence_tracker_type_index,
                           const int stage_type_index) {
   std::string tracker_type_name = FrameSequenceTracker::
       kFrameSequenceTrackerTypeNames[frame_sequence_tracker_type_index];
   if (!tracker_type_name.empty())
     tracker_type_name += ".";
-  return base::StrCat({compositor_type, "CompositorLatency.",
+  return base::StrCat({"CompositorLatency.",
                        kReportTypeNames[report_type_index], tracker_type_name,
                        kStageNames[stage_type_index]});
 }
@@ -192,12 +191,10 @@ void CompositorFrameReporter::ReportHistogram(
   const int frame_sequence_tracker_type_index =
       static_cast<int>(frame_sequence_tracker_type);
   const int histogram_index =
-      ((stage_type_index * kFrameSequenceTrackerTypeCount +
-        frame_sequence_tracker_type_index) *
-           kMissedFrameReportTypeCount +
-       report_type_index) *
-          2 +
-      (is_single_threaded_ ? 1 : 0);
+      (stage_type_index * kFrameSequenceTrackerTypeCount +
+       frame_sequence_tracker_type_index) *
+          kMissedFrameReportTypeCount +
+      report_type_index;
 
   CHECK_LT(stage_type_index, kStageTypeCount);
   CHECK_GE(stage_type_index, 0);
@@ -206,16 +203,14 @@ void CompositorFrameReporter::ReportHistogram(
   CHECK_LT(histogram_index, kMaxHistogramIndex);
   CHECK_GE(histogram_index, 0);
 
-  const char* compositor_type = is_single_threaded_ ? "SingleThreaded" : "";
-
   STATIC_HISTOGRAM_POINTER_GROUP(
-      HistogramName(compositor_type, report_type_index,
-                    frame_sequence_tracker_type_index, stage_type_index),
+      HistogramName(report_type_index, frame_sequence_tracker_type_index,
+                    stage_type_index),
       histogram_index, kMaxHistogramIndex,
       AddTimeMicrosecondsGranularity(time_delta),
       base::Histogram::FactoryGet(
-          HistogramName(compositor_type, report_type_index,
-                        frame_sequence_tracker_type_index, stage_type_index),
+          HistogramName(report_type_index, frame_sequence_tracker_type_index,
+                        stage_type_index),
           kHistogramMin, kHistogramMax, kHistogramBucketCount,
           base::HistogramBase::kUmaTargetedHistogramFlag));
 }
