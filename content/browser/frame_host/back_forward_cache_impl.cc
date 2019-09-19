@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/frame_host/back_forward_cache.h"
+#include "content/browser/frame_host/back_forward_cache_impl.h"
 
 #include <unordered_set>
 
@@ -139,21 +139,24 @@ uint64_t GetDisallowedFeatures() {
 
 }  // namespace
 
-BackForwardCache::BackForwardCache() : weak_factory_(this) {}
-BackForwardCache::~BackForwardCache() = default;
+BackForwardCacheImpl::BackForwardCacheImpl() : weak_factory_(this) {}
+BackForwardCacheImpl::~BackForwardCacheImpl() = default;
 
-base::TimeDelta BackForwardCache::GetTimeToLiveInBackForwardCache() {
+base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
   return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
       features::kBackForwardCache, "TimeToLiveInBackForwardCacheInSeconds",
       kDefaultTimeToLiveInBackForwardCacheInSeconds));
 }
 
-bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
+bool BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
   // Use the BackForwardCache only for the main frame.
   if (rfh->GetParent())
     return false;
 
   if (!IsBackForwardCacheEnabled() || is_disabled_for_testing_)
+    return false;
+
+  if (rfh->is_back_forward_cache_disallowed())
     return false;
 
   // Two pages in the same BrowsingInstance can script each other. When a page
@@ -181,7 +184,8 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   return CanStoreRenderFrameHost(rfh, GetDisallowedFeatures());
 }
 
-void BackForwardCache::StoreDocument(std::unique_ptr<RenderFrameHostImpl> rfh) {
+void BackForwardCacheImpl::StoreDocument(
+    std::unique_ptr<RenderFrameHostImpl> rfh) {
   DCHECK(CanStoreDocument(rfh.get()));
 
   rfh->EnterBackForwardCache();
@@ -201,7 +205,7 @@ void BackForwardCache::StoreDocument(std::unique_ptr<RenderFrameHostImpl> rfh) {
   }
 }
 
-void BackForwardCache::Freeze(RenderFrameHostImpl* main_rfh) {
+void BackForwardCacheImpl::Freeze(RenderFrameHostImpl* main_rfh) {
   // Several RenderFrameHost can live under the same RenderViewHost.
   // |frozen_render_view_hosts| keeps track of the ones that freezing has been
   // applied to.
@@ -209,14 +213,14 @@ void BackForwardCache::Freeze(RenderFrameHostImpl* main_rfh) {
   SetPageFrozenImpl(main_rfh, /*frozen = */ true, &frozen_render_view_hosts);
 }
 
-void BackForwardCache::Resume(RenderFrameHostImpl* main_rfh) {
+void BackForwardCacheImpl::Resume(RenderFrameHostImpl* main_rfh) {
   // |unfrozen_render_view_hosts| keeps track of the ones that resuming has
   // been applied to.
   std::unordered_set<RenderViewHostImpl*> unfrozen_render_view_hosts;
   SetPageFrozenImpl(main_rfh, /*frozen = */ false, &unfrozen_render_view_hosts);
 }
 
-std::unique_ptr<RenderFrameHostImpl> BackForwardCache::RestoreDocument(
+std::unique_ptr<RenderFrameHostImpl> BackForwardCacheImpl::RestoreDocument(
     int navigation_entry_id) {
   // Select the RenderFrameHostImpl matching the navigation entry.
   auto matching_rfh = std::find_if(
@@ -239,17 +243,25 @@ std::unique_ptr<RenderFrameHostImpl> BackForwardCache::RestoreDocument(
   return rfh;
 }
 
-void BackForwardCache::Flush() {
+void BackForwardCacheImpl::Flush() {
   render_frame_hosts_.clear();
 }
 
-void BackForwardCache::PostTaskToDestroyEvictedFrames() {
+void BackForwardCacheImpl::PostTaskToDestroyEvictedFrames() {
   base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&BackForwardCache::DestroyEvictedFrames,
+                 base::BindOnce(&BackForwardCacheImpl::DestroyEvictedFrames,
                                 weak_factory_.GetWeakPtr()));
 }
 
-void BackForwardCache::DisableForTesting(DisableForTestingReason reason) {
+void BackForwardCacheImpl::DisableForRenderFrameHost(GlobalFrameRoutingId id,
+                                                     std::string_view reason) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* rfh = RenderFrameHostImpl::FromID(id);
+  if (rfh)
+    rfh->DisallowBackForwardCache();
+}
+
+void BackForwardCacheImpl::DisableForTesting(DisableForTestingReason reason) {
   is_disabled_for_testing_ = true;
 
   // This could happen if a test populated some pages in the cache, then
@@ -258,7 +270,8 @@ void BackForwardCache::DisableForTesting(DisableForTestingReason reason) {
   DCHECK(render_frame_hosts_.empty());
 }
 
-RenderFrameHostImpl* BackForwardCache::GetDocument(int navigation_entry_id) {
+RenderFrameHostImpl* BackForwardCacheImpl::GetDocument(
+    int navigation_entry_id) {
   auto matching_rfh = std::find_if(
       render_frame_hosts_.begin(), render_frame_hosts_.end(),
       [navigation_entry_id](std::unique_ptr<RenderFrameHostImpl>& rfh) {
@@ -275,7 +288,7 @@ RenderFrameHostImpl* BackForwardCache::GetDocument(int navigation_entry_id) {
   return (*matching_rfh).get();
 }
 
-void BackForwardCache::DestroyEvictedFrames() {
+void BackForwardCacheImpl::DestroyEvictedFrames() {
   if (render_frame_hosts_.empty())
     return;
   render_frame_hosts_.erase(

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_H_
-#define CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_H_
+#ifndef CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_IMPL_H_
+#define CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_IMPL_H_
 
 #include <list>
 #include <memory>
@@ -15,6 +15,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/back_forward_cache.h"
+#include "content/public/browser/global_routing_id.h"
 
 namespace content {
 
@@ -26,10 +28,10 @@ class RenderFrameHostImpl;
 // frozen state and is kept in this object. They can potentially be reused
 // after an history navigation. Reusing a document means swapping it back with
 // the current_frame_host.
-class CONTENT_EXPORT BackForwardCache {
+class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
  public:
-  BackForwardCache();
-  ~BackForwardCache();
+  BackForwardCacheImpl();
+  ~BackForwardCacheImpl();
 
   // Returns true when a RenderFrameHost can be stored into the
   // BackForwardCache. Depends on the |render_frame_host| and its children's
@@ -145,6 +147,10 @@ class CONTENT_EXPORT BackForwardCache {
     cache_size_limit_for_testing_ = cache_size_limit_for_testing;
   }
 
+  // BackForwardCache:
+  void DisableForRenderFrameHost(GlobalFrameRoutingId id,
+                                 std::string_view reason) override;
+
  private:
   // Destroys all evicted frames in the BackForwardCache.
   void DestroyEvictedFrames();
@@ -167,11 +173,11 @@ class CONTENT_EXPORT BackForwardCache {
   // browser tests and for timing control.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_testing_;
 
-  base::WeakPtrFactory<BackForwardCache> weak_factory_;
+  base::WeakPtrFactory<BackForwardCacheImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BackForwardCache);
+  DISALLOW_COPY_AND_ASSIGN(BackForwardCacheImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_H_
+#endif  // CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_IMPL_H_

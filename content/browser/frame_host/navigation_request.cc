@@ -604,7 +604,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
         static_cast<NavigationControllerImpl*>(
             frame_tree_node->navigator()->GetController());
     rfh_restored_from_back_forward_cache =
-        controller->back_forward_cache().GetDocument(entry->GetUniqueID());
+        controller->GetBackForwardCache().GetDocument(entry->GetUniqueID());
   }
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1554,7 +1554,7 @@ void NavigationRequest::OnResponseStarted(
         static_cast<NavigationControllerImpl*>(
             frame_tree_node_->navigator()->GetController());
     render_frame_host_ =
-        controller->back_forward_cache().GetDocument(nav_entry_id_);
+        controller->GetBackForwardCache().GetDocument(nav_entry_id_);
 
     // The only time GetDocument can return nullptr here, is if the document was
     // evicted from the BackForwardCache since this navigation started.
@@ -2249,7 +2249,7 @@ void NavigationRequest::CommitNavigation() {
             frame_tree_node_->navigator()->GetController());
 
     std::unique_ptr<RenderFrameHostImpl> restored_rfh =
-        controller->back_forward_cache().RestoreDocument(nav_entry_id_);
+        controller->GetBackForwardCache().RestoreDocument(nav_entry_id_);
 
     // The only time restored_rfh can be nullptr here, is if the
     // document was evicted from the BackForwardCache since this navigation
