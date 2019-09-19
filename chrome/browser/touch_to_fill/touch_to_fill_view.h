@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_TOUCH_TO_FILL_VIEW_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_TOUCH_TO_FILL_VIEW_H_
+#ifndef CHROME_BROWSER_TOUCH_TO_FILL_TOUCH_TO_FILL_VIEW_H_
+#define CHROME_BROWSER_TOUCH_TO_FILL_TOUCH_TO_FILL_VIEW_H_
 
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
@@ -38,4 +38,4 @@ class TouchToFillView {
   virtual void OnDismiss() = 0;
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_TOUCH_TO_FILL_VIEW_H_
+#endif  // CHROME_BROWSER_TOUCH_TO_FILL_TOUCH_TO_FILL_VIEW_H_
