@@ -52850,6 +52850,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Safety Tip for lookalike URL"/>
 </enum>
 
+<enum name="SameSiteCookieContext">
+  <summary>
+    The SameSiteCookieContext of a request describes the relation between the
+    cookie request and the navigational environment.
+  </summary>
+  <int value="0" label="Cross-site"/>
+  <int value="1" label="Lax method unsafe"/>
+  <int value="2" label="Laxly same-site"/>
+  <int value="3" label="Strictly same-site"/>
+</enum>
+
 <enum name="SamlInSessionPasswordChangeEvent">
   <summary>
     Track how often we try to guide users through the in-session flow to change
