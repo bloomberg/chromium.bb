@@ -15,6 +15,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "ui/gfx/favicon_size.h"
@@ -225,6 +226,13 @@ void UpdateBookmarkNodeFromSpecifics(
   DCHECK(node);
   DCHECK(model);
   DCHECK(favicon_service);
+  // We shouldn't try to update the properties of the BookmarkNode before
+  // resolving any conflict in GUID. Either GUIDs are the same, or the GUID in
+  // specifics is invalid, and hence we can ignore it.
+  DCHECK(specifics.guid() == node->guid() ||
+         !base::IsValidGUID(specifics.guid()) ||
+         !base::FeatureList::IsEnabled(
+             switches::kUpdateBookmarkGUIDWithNodeReplacement));
 
   if (!node->is_folder()) {
     model->SetURL(node, GURL(specifics.url()));
@@ -233,6 +241,35 @@ void UpdateBookmarkNodeFromSpecifics(
   model->SetTitle(node, NodeTitleFromSpecificsTitle(specifics.title()));
   model->SetNodeMetaInfoMap(node, GetBookmarkMetaInfo(specifics));
   SetBookmarkFaviconFromSpecifics(specifics, node, favicon_service);
+}
+
+// TODO(crbug.com/1005219): Replace this function to move children between
+// parent nodes more efficiently.
+const bookmarks::BookmarkNode* ReplaceBookmarkNodeGUID(
+    const bookmarks::BookmarkNode* node,
+    const std::string& guid,
+    bookmarks::BookmarkModel* model) {
+  if (!base::FeatureList::IsEnabled(
+          switches::kUpdateBookmarkGUIDWithNodeReplacement)) {
+    return node;
+  }
+  const bookmarks::BookmarkNode* new_node;
+  DCHECK(base::IsValidGUID(guid));
+  if (node->is_folder()) {
+    new_node =
+        model->AddFolder(node->parent(), node->parent()->GetIndexOf(node),
+                         node->GetTitle(), node->GetMetaInfoMap(), guid);
+  } else {
+    new_node = model->AddURL(node->parent(), node->parent()->GetIndexOf(node),
+                             node->GetTitle(), node->url(),
+                             node->GetMetaInfoMap(), node->date_added(), guid);
+  }
+  for (size_t i = node->children().size(); i > 0; --i) {
+    model->Move(node->children()[i - 1].get(), new_node, 0);
+  }
+  model->Remove(node);
+
+  return new_node;
 }
 
 bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
