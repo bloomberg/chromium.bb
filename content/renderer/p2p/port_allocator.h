@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_PORT_ALLOCATOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_PORT_ALLOCATOR_H_
+#ifndef CONTENT_RENDERER_P2P_PORT_ALLOCATOR_H_
+#define CONTENT_RENDERER_P2P_PORT_ALLOCATOR_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/p2p/client/basic_port_allocator.h"
 #include "url/gurl.h"
 
-namespace blink {
+namespace content {
 
 class P2PSocketDispatcher;
 
-class PLATFORM_EXPORT P2PPortAllocator : public cricket::BasicPortAllocator {
+class P2PPortAllocator : public cricket::BasicPortAllocator {
  public:
   struct Config {
     // Enable non-proxied UDP-based transport when set to true. When set to
@@ -57,6 +56,6 @@ class PLATFORM_EXPORT P2PPortAllocator : public cricket::BasicPortAllocator {
   DISALLOW_COPY_AND_ASSIGN(P2PPortAllocator);
 };
 
-}  // namespace blink
+}  // namespace content
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_PORT_ALLOCATOR_H_
+#endif  // CONTENT_RENDERER_P2P_PORT_ALLOCATOR_H_

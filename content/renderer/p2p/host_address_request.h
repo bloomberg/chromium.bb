@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_HOST_ADDRESS_REQUEST_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_HOST_ADDRESS_REQUEST_H_
+#ifndef CONTENT_RENDERER_P2P_HOST_ADDRESS_REQUEST_H_
+#define CONTENT_RENDERER_P2P_HOST_ADDRESS_REQUEST_H_
 
 #include <stdint.h>
+
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "content/common/content_export.h"
 #include "net/base/ip_address.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/rtc_base/async_resolver_interface.h"
 
-namespace blink {
+namespace content {
 
 class P2PSocketDispatcher;
 
@@ -24,7 +26,7 @@ class P2PSocketDispatcher;
 class P2PAsyncAddressResolver
     : public base::RefCountedThreadSafe<P2PAsyncAddressResolver> {
  public:
-  using DoneCallback = base::OnceCallback<void(const Vector<net::IPAddress>&)>;
+  using DoneCallback = base::OnceCallback<void(const net::IPAddressList&)>;
 
   P2PAsyncAddressResolver(P2PSocketDispatcher* dispatcher);
   // Start address resolve process.
@@ -45,7 +47,7 @@ class P2PAsyncAddressResolver
 
   virtual ~P2PAsyncAddressResolver();
 
-  void OnResponse(const Vector<net::IPAddress>& address);
+  void OnResponse(const net::IPAddressList& address);
 
   P2PSocketDispatcher* dispatcher_;
   THREAD_CHECKER(thread_checker_);
@@ -57,6 +59,6 @@ class P2PAsyncAddressResolver
   DISALLOW_COPY_AND_ASSIGN(P2PAsyncAddressResolver);
 };
 
-}  // namespace blink
+}  // namespace content
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_HOST_ADDRESS_REQUEST_H_
+#endif  // CONTENT_RENDERER_P2P_HOST_ADDRESS_REQUEST_H_

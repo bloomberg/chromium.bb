@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/p2p/mdns_responder_adapter.h"
+#include "content/renderer/p2p/mdns_responder_adapter.h"
 
 #include <string>
 
@@ -12,20 +12,19 @@
 #include "net/base/ip_endpoint.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/rtc_base/ip_address.h"
 
-namespace blink {
+namespace content {
 
 namespace {
 
 void OnNameCreatedForAddress(
     webrtc::MdnsResponderInterface::NameCreatedCallback callback,
     const rtc::IPAddress& addr,
-    const String& name,
+    const std::string& name,
     bool announcement_scheduled) {
   // We currently ignore whether there is an announcement sent for the name.
-  callback(addr, name.Utf8());
+  callback(addr, name);
 }
 
 void OnNameRemovedForAddress(
@@ -39,11 +38,10 @@ void OnNameRemovedForAddress(
 }  // namespace
 
 MdnsResponderAdapter::MdnsResponderAdapter() {
-  network::mojom::blink::MdnsResponderPtr client;
+  network::mojom::MdnsResponderPtr client;
   auto request = mojo::MakeRequest(&client);
   thread_safe_client_ =
-      network::mojom::blink::ThreadSafeMdnsResponderPtr::Create(
-          std::move(client));
+      network::mojom::ThreadSafeMdnsResponderPtr::Create(std::move(client));
   blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
       std::move(request));
 }
@@ -64,4 +62,4 @@ void MdnsResponderAdapter::RemoveNameForAddress(const rtc::IPAddress& addr,
       base::BindOnce(&OnNameRemovedForAddress, callback));
 }
 
-}  // namespace blink
+}  // namespace content

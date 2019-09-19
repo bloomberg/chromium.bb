@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 
 #include <stddef.h>
 
@@ -15,8 +15,15 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/renderer/p2p/ipc_socket_factory.h"
+#include "content/renderer/p2p/mdns_responder_adapter.h"
+#include "content/renderer/p2p/port_allocator.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 #include "crypto/openssl_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/media_permission.h"
@@ -24,7 +31,11 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
+#include "third_party/blink/public/platform/modules/p2p/empty_network_manager.h"
+#include "third_party/blink/public/platform/modules/p2p/filtering_network_manager.h"
+#include "third_party/blink/public/platform/modules/p2p/ipc_network_manager.h"
 #include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
+#include "third_party/blink/public/platform/modules/peerconnection/video_codec_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
@@ -38,15 +49,6 @@
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/renderer/platform/p2p/empty_network_manager.h"
-#include "third_party/blink/renderer/platform/p2p/filtering_network_manager.h"
-#include "third_party/blink/renderer/platform/p2p/ipc_network_manager.h"
-#include "third_party/blink/renderer/platform/p2p/ipc_socket_factory.h"
-#include "third_party/blink/renderer/platform/p2p/mdns_responder_adapter.h"
-#include "third_party/blink/renderer/platform/p2p/port_allocator.h"
-#include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
-#include "third_party/blink/renderer/platform/peerconnection/stun_field_trial.h"
-#include "third_party/blink/renderer/platform/peerconnection/video_codec_factory.h"
 #include "third_party/webrtc/api/call/call_factory_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtc_event_log/rtc_event_log_factory.h"
@@ -60,7 +62,7 @@
 #include "third_party/webrtc/rtc_base/ssl_adapter.h"
 #include "third_party/webrtc_overrides/task_queue_factory.h"
 
-namespace blink {
+namespace content {
 
 namespace {
 
@@ -124,13 +126,6 @@ PeerConnectionDependencyFactory::~PeerConnectionDependencyFactory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "~PeerConnectionDependencyFactory()";
   DCHECK(!pc_factory_);
-}
-
-PeerConnectionDependencyFactory*
-PeerConnectionDependencyFactory::GetInstance() {
-  DEFINE_STATIC_LOCAL(PeerConnectionDependencyFactory, instance,
-                      (/*create_p2p_socket_dispatcher= */ true));
-  return &instance;
 }
 
 std::unique_ptr<blink::WebRTCPeerConnectionHandler>
@@ -339,7 +334,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
 }
 
 bool PeerConnectionDependencyFactory::PeerConnectionFactoryCreated() {
-  return !!pc_factory_;
+  return pc_factory_.get() != nullptr;
 }
 
 scoped_refptr<webrtc::PeerConnectionInterface>
@@ -436,14 +431,8 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
     }
   }
 
-  // Now that this file is within Blink, it can not rely on WebURL's
-  // GURL() operator directly. Hence, as per the comment on gurl.h, the
-  // following GURL ctor is used instead.
-  WebURL document_url = web_frame->GetDocument().Url();
   const GURL& requesting_origin =
-      GURL(document_url.GetString().Utf8(), document_url.GetParsed(),
-           document_url.IsValid())
-          .GetOrigin();
+      GURL(web_frame->GetDocument().Url()).GetOrigin();
 
   std::unique_ptr<rtc::NetworkManager> network_manager;
   if (port_config.enable_multiple_routes) {
@@ -502,9 +491,10 @@ PeerConnectionDependencyFactory::CreateSessionDescription(
 }
 
 webrtc::IceCandidateInterface*
-PeerConnectionDependencyFactory::CreateIceCandidate(const std::string& sdp_mid,
-                                                    int sdp_mline_index,
-                                                    const std::string& sdp) {
+PeerConnectionDependencyFactory::CreateIceCandidate(
+    const std::string& sdp_mid,
+    int sdp_mline_index,
+    const std::string& sdp) {
   return webrtc::CreateIceCandidate(sdp_mid, sdp_mline_index, sdp, nullptr);
 }
 
@@ -644,4 +634,4 @@ PeerConnectionDependencyFactory::GetReceiverCapabilities(
   return nullptr;
 }
 
-}  // namespace blink
+}  // namespace content
