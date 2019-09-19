@@ -15,11 +15,12 @@
 namespace cc {
 namespace {
 
+using StageType = CompositorFrameReporter::StageType;
+
 constexpr int kMissedFrameReportTypeCount =
     static_cast<int>(CompositorFrameReporter::MissedFrameReportTypes::
                          kMissedFrameReportTypeCount);
-constexpr int kStageTypeCount =
-    static_cast<int>(CompositorFrameReporter::StageType::kStageTypeCount);
+constexpr int kStageTypeCount = static_cast<int>(StageType::kStageTypeCount);
 // For each possible FrameSequenceTrackerType there will be a UMA histogram
 // plus one for general case.
 constexpr int kFrameSequenceTrackerTypeCount =
@@ -27,15 +28,21 @@ constexpr int kFrameSequenceTrackerTypeCount =
 
 // Names for CompositorFrameReporter::StageType, which should be updated in case
 // of changes to the enum.
-constexpr const char* kStageNames[]{
-    "BeginImplFrameToSendBeginMainFrame",
-    "SendBeginMainFrameToCommit",
-    "Commit",
-    "EndCommitToActivation",
-    "Activation",
-    "EndActivateToSubmitCompositorFrame",
-    "SubmitCompositorFrameToPresentationCompositorFrame",
-    "TotalLatency"};
+constexpr const char* kStageNames[] = {
+    [static_cast<int>(StageType::kBeginImplFrameToSendBeginMainFrame)] =
+        "BeginImplFrameToSendBeginMainFrame",
+    [static_cast<int>(StageType::kSendBeginMainFrameToCommit)] =
+        "SendBeginMainFrameToCommit",
+    [static_cast<int>(StageType::kCommit)] = "Commit",
+    [static_cast<int>(StageType::kEndCommitToActivation)] =
+        "EndCommitToActivation",
+    [static_cast<int>(StageType::kActivation)] = "Activation",
+    [static_cast<int>(StageType::kEndActivateToSubmitCompositorFrame)] =
+        "EndActivateToSubmitCompositorFrame",
+    [static_cast<int>(
+        StageType::kSubmitCompositorFrameToPresentationCompositorFrame)] =
+        "SubmitCompositorFrameToPresentationCompositorFrame",
+    [static_cast<int>(StageType::kTotalLatency)] = "TotalLatency"};
 static_assert(sizeof(kStageNames) / sizeof(kStageNames[0]) == kStageTypeCount,
               "Compositor latency stages has changed.");
 
@@ -61,12 +68,14 @@ constexpr int kHistogramBucketCount = 50;
 std::string HistogramName(const int report_type_index,
                           const int frame_sequence_tracker_type_index,
                           const int stage_type_index) {
-  std::string tracker_type_name = FrameSequenceTracker::
+  DCHECK_LE(frame_sequence_tracker_type_index,
+            FrameSequenceTrackerType::kMaxType);
+  const char* tracker_type_name = FrameSequenceTracker::
       kFrameSequenceTrackerTypeNames[frame_sequence_tracker_type_index];
-  if (!tracker_type_name.empty())
-    tracker_type_name += ".";
+  DCHECK(tracker_type_name);
   return base::StrCat({"CompositorLatency.",
                        kReportTypeNames[report_type_index], tracker_type_name,
+                       *tracker_type_name ? "." : "",
                        kStageNames[stage_type_index]});
 }
 }  // namespace
