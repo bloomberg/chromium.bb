@@ -13,7 +13,8 @@ declare_args() {
 declare_args() {
   # Determines if we're running tests on VMs or on devices.
   # TODO(crbug.com/866062): Is there a better way to do this?
-  cros_is_vm = cros_board == "amd64-generic" || cros_board == "betty"
+  cros_is_vm = cros_board == "amd64-generic" || cros_board == "betty" ||
+               cros_board == "betty-pi-arc"
 }
 
 # Ensure that if one is set, the other is as well.
