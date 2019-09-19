@@ -193,6 +193,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "address_view_controller_egtest.mm",
     "card_view_controller_egtest.mm",
     "fallback_coordinator_egtest.mm",
     "fallback_view_controller_egtest.mm",
