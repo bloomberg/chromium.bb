@@ -1456,28 +1456,6 @@
             ]
         }
     ],
-    "CacheStorageParallelOps": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled16_v1",
-                    "params": {
-                        "max_shared_ops": "16"
-                    },
-                    "enable_features": [
-                        "CacheStorageParallelOps"
-                    ]
-                }
-            ]
-        }
-    ],
     "CacheStorageSequence": [
         {
             "platforms": [
