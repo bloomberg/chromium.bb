@@ -47,7 +47,7 @@ namespace {
 constexpr int kShelfBlurRadius = 30;
 // The maximum size of the opaque layer during an "overshoot" (drag away from
 // the screen edge).
-constexpr int kShelfMaxOvershootHeight = 32;
+constexpr int kShelfMaxOvershootHeight = 40;
 constexpr float kShelfBlurQuality = 0.33f;
 
 // Return the first or last focusable child of |root|.
