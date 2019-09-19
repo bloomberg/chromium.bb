@@ -15,6 +15,19 @@ var cca = cca || {};
 cca.views = cca.views || {};
 
 /**
+ * Thrown when app window suspended during stream reconfiguration.
+ */
+cca.views.CameraSuspendedError = class extends Error {
+  /**
+   * @param {string=} message Error message.
+   */
+  constructor(message = 'Camera suspended.') {
+    super(message);
+    this.name = 'CameraSuspendedError';
+  }
+};
+
+/**
  * Creates the camera-view controller.
  * @param {cca.models.ResultSaver} resultSaver
  * @param {cca.device.DeviceInfoUpdater} infoUpdater
@@ -115,11 +128,13 @@ cca.views.Camera = function(
   this.retryStartTimeout_ = null;
 
   /**
-   * Promise for the operation that starts camera.
-   * @type {Promise}
+   * Promise for the camera stream configuration process. It's resolved to
+   * boolean for whether the configuration is failed and kick out another round
+   * of reconfiguration. Sets to null once the configuration is completed.
+   * @type {?Promise<boolean>}
    * @private
    */
-  this.started_ = null;
+  this.configuring_ = null;
 
   /**
    * Promise for the current take of photo or recording.
@@ -154,11 +169,19 @@ cca.views.Camera = function(
   });
   chrome.app.window.current().onMinimized.addListener(() => this.restart());
 
-  this.start_();
+  this.configuring_ = this.start_();
 };
 
 cca.views.Camera.prototype = {
   __proto__: cca.views.View.prototype,
+
+  /**
+   * Whether app window is suspended.
+   * @return {boolean}
+   */
+  get suspended() {
+    return this.locked_ || chrome.app.window.current().isMinimized();
+  },
 };
 
 /**
@@ -169,7 +192,7 @@ cca.views.Camera.prototype.focus = function() {
     const values = await new Promise((resolve) => {
       cca.proxy.browserProxy.localStorageGet(['isIntroShown'], resolve);
     });
-    await this.started_;
+    await this.configuring_;
     if (!values.isIntroShown) {
       cca.proxy.browserProxy.localStorageSet({isIntroShown: true});
       cca.util.animateOnce(this.banner_);
@@ -243,22 +266,29 @@ cca.views.Camera.prototype.handlingKey = function(key) {
 
 /**
  * Stops camera and tries to start camera stream again if possible.
- * @return {!Promise} Promise for the start-camera operation.
+ * @return {!Promise<boolean>} Promise resolved to whether restart camera
+ *     successfully.
  */
-cca.views.Camera.prototype.restart = function() {
-  // Wait for ongoing 'start' and 'capture' done before restarting camera.
-  return Promise
-      .all([
-        this.started_,
-        Promise.resolve(!cca.state.get('taking') || this.endTake_()),
-      ])
-      .finally(async () => {
-        // We should close all mojo connections since any communication to a
-        // closed stream should be avoided.
-        this.preview_.stop();
-        this.start_();
-        return this.started_;
-      });
+cca.views.Camera.prototype.restart = async function() {
+  // To prevent multiple callers enter this function at the same time, wait
+  // until previous caller resets configuring to null.
+  while (this.configuring_ !== null) {
+    if (!await this.configuring_) {
+      // Retry will be kicked out soon.
+      return false;
+    }
+  }
+  this.configuring_ = (async () => {
+    try {
+      if (cca.state.get('taking')) {
+        await this.endTake_();
+      }
+    } finally {
+      this.preview_.stop();
+    }
+    return this.start_();
+  })();
+  return this.configuring_;
 };
 
 /**
@@ -327,33 +357,38 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
 };
 
 /**
- * Starts camera if the camera stream was stopped.
+ * Starts camera configuration process.
+ * @return {!Promise<boolean>} Resolved to boolean for whether the configuration
+ *     is succeeded or kicks out another round of reconfiguration.
  * @private
  */
-cca.views.Camera.prototype.start_ = function() {
-  var suspend = this.locked_ || chrome.app.window.current().isMinimized();
-  this.started_ =
-      this.infoUpdater_
-          .lockDeviceInfo(async () => {
-            if (!suspend) {
-              for (const id of await this.options_.videoDeviceIds()) {
-                if (await this.startWithDevice_(id)) {
-                  return;
-                }
-              }
-            }
-            throw new Error('suspend');
-          })
-          .catch((error) => {
-            if (error && error.message != 'suspend') {
-              console.error(error);
-              cca.nav.open('warning', 'no-camera');
-            }
-            // Schedule to retry.
-            if (this.retryStartTimeout_) {
-              clearTimeout(this.retryStartTimeout_);
-              this.retryStartTimeout_ = null;
-            }
-            this.retryStartTimeout_ = setTimeout(this.start_.bind(this), 100);
-          });
+cca.views.Camera.prototype.start_ = async function() {
+  try {
+    await this.infoUpdater_.lockDeviceInfo(async () => {
+      if (!this.suspended) {
+        for (const id of await this.options_.videoDeviceIds()) {
+          if (await this.startWithDevice_(id)) {
+            return;
+          }
+        }
+      }
+      throw new cca.views.CameraSuspendedError();
+    });
+    this.configuring_ = null;
+    return true;
+  } catch (error) {
+    if (!(error instanceof cca.views.CameraSuspendedError)) {
+      console.error(error);
+      cca.nav.open('warning', 'no-camera');
+    }
+    // Schedule to retry.
+    if (this.retryStartTimeout_) {
+      clearTimeout(this.retryStartTimeout_);
+      this.retryStartTimeout_ = null;
+    }
+    this.retryStartTimeout_ = setTimeout(() => {
+      this.configuring_ = this.start_();
+    }, 100);
+    return false;
+  }
 };
