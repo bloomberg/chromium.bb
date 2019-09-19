@@ -83,8 +83,7 @@ export class TabElement extends CustomElement {
     this.setAttribute('data-tab-id', tab.id);
 
     if (!this.tab_ || this.tab_.id !== tab.id) {
-      // Request thumbnail updates
-      chrome.send('addTrackedTab', [tab.id]);
+      this.tabsApi_.trackThumbnailForTab(tab.id);
     }
 
     this.tab_ = Object.freeze(tab);

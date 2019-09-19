@@ -27,6 +27,7 @@ export class TestTabsApiProxy extends TestBrowserProxy {
       'closeTab',
       'getCurrentWindow',
       'moveTab',
+      'trackThumbnailForTab',
     ]);
 
     this.callbackRouter = {
@@ -62,5 +63,9 @@ export class TestTabsApiProxy extends TestBrowserProxy {
 
   setCurrentWindow(currentWindow) {
     this.currentWindow_ = currentWindow;
+  }
+
+  trackThumbnailForTab(tabId) {
+    this.methodCalled('trackThumbnailForTab', tabId);
   }
 }

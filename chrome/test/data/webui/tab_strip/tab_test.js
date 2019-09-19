@@ -104,6 +104,24 @@ suite('Tab', function() {
         getFaviconForPageURL(expectedPageUrl, false));
   });
 
+  test('hides the thumbnail if there is no source yet', () => {
+    const thumbnailImage = tabElement.shadowRoot.querySelector('#thumbnailImg');
+    assertFalse(thumbnailImage.hasAttribute('src'));
+    assertEquals(window.getComputedStyle(thumbnailImage).display, 'none');
+  });
+
+  test('tracks and updates the thumbnail source', async () => {
+    const requestedTabId =
+        await testTabsApiProxy.whenCalled('trackThumbnailForTab');
+    assertEquals(requestedTabId, tab.id);
+
+    const thumbnailSource = 'data:mock-thumbnail-source';
+    tabElement.updateThumbnail(thumbnailSource);
+    assertEquals(
+        tabElement.shadowRoot.querySelector('#thumbnailImg').src,
+        thumbnailSource);
+  });
+
   test('setting dragging state toggles an attribute', () => {
     tabElement.setDragging(true);
     assertTrue(tabElement.hasAttribute('dragging'));

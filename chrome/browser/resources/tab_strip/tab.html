@@ -1,9 +1,13 @@
 <style>
   :host {
+    --tabstrip-tab-height: 230px;
+    --tabstrip-tab-width: 280px;
+    --tabstrip-tab-title-height: 40px;
+
     cursor: pointer;
-    height: 230px;
+    height: var(--tabstrip-tab-height);
     position: relative;
-    width: 280px;
+    width: var(--tabstrip-tab-width);
   }
 
   :host([active]) #dragImage {
@@ -27,7 +31,7 @@
     border-block-end: 1px solid var(--tabstrip-separator-color);
     box-sizing: border-box;
     display: flex;
-    height: 40px;
+    height: var(--tabstrip-tab-title-height);
     justify-content: center;
     margin: 0;
     padding-inline-end: 4px;
@@ -74,13 +78,21 @@
   }
 
   #thumbnail {
+    align-items: center;
     background: var(--tabstrip-card-background-color);
+    display: flex;
     flex: 1;
+    justify-content: center;
   }
 
   #thumbnailImg {
-    height: 100%;
+    height: calc(var(--tabstrip-tab-height) - var(--tabstrip-tab-title-height));
     object-fit: contain;
+    width: var(--tabstrip-tab-width);
+  }
+
+  #thumbnailImg:not([src]) {
+    display: none;
     pointer-events: none;
     width: 100%;
   }
