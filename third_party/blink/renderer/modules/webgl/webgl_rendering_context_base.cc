@@ -3364,9 +3364,10 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
           "invalid parameter name, OES_vertex_array_object not enabled");
       return ScriptValue::CreateNull(script_state);
     case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:  // EXT_texture_filter_anisotropic
-      if (ExtensionEnabled(kEXTTextureFilterAnisotropicName))
-        return GetUnsignedIntParameter(script_state,
-                                       GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+      if (ExtensionEnabled(kEXTTextureFilterAnisotropicName)) {
+        return GetFloatParameter(script_state,
+                                 GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+      }
       SynthesizeGLError(
           GL_INVALID_ENUM, "getParameter",
           "invalid parameter name, EXT_texture_filter_anisotropic not enabled");
