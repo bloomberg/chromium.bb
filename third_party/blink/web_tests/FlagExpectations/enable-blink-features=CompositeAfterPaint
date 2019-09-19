@@ -253,8 +253,6 @@ Bug(none) virtual/threaded/compositing/visibility/layer-visible-content.html [ F
 Bug(none) virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
 Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Timeout Pass ]
 
-Bug(none) fast/block/float/float-change-composited-scrolling.html [ Failure ]
-
 # Failures due to an extra layer caused by a scroll hit test layer. Most of
 # these should pass once compositing reasons are correct in CompositeAfterPaint.
 crbug.com/738613 compositing/dont-composite-text-input-elements.html [ Failure ]
@@ -555,16 +553,9 @@ crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to
 crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-window.html [ Timeout ]
 crbug.com/966981 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Failure ]
 
-crbug.com/985388 fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
-crbug.com/985388 virtual/scroll_customization/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
-crbug.com/985388 virtual/threaded/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
-
 # Added to land BGPT-fixes
 crbug.com/979002 virtual/threaded/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]
 crbug.com/981749 virtual/threaded/fast/scrolling/scroll-chaining-from-position-fixed.html [ Failure ]
-
-
-crbug.com/989673 svg/foreignObject/mask.html [ Failure ]
 
 # These tests are failing due to subpixel differences but can't be rebaselined.
 Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/select/select-multiple-appearance-basic.html [ Failure ]
