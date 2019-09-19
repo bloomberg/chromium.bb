@@ -17,10 +17,12 @@
 #include "streaming/cast/clock_drift_smoother.h"
 #include "streaming/cast/compound_rtcp_builder.h"
 #include "streaming/cast/environment.h"
+#include "streaming/cast/frame_collector.h"
 #include "streaming/cast/frame_id.h"
 #include "streaming/cast/packet_receive_stats_tracker.h"
 #include "streaming/cast/rtcp_common.h"
 #include "streaming/cast/rtcp_session.h"
+#include "streaming/cast/rtp_packet_parser.h"
 #include "streaming/cast/sender_report_parser.h"
 #include "streaming/cast/ssrc.h"
 #include "util/alarm.h"
@@ -186,10 +188,27 @@ class Receiver {
                             std::vector<uint8_t> packet);
 
  private:
-  // Get the checkpoint FrameId. This indicates that all of the packets for all
-  // frames up to and including this FrameId have been successfully received (or
-  // otherwise do not need to be re-transmitted).
+  // An entry in the circular queue (see |pending_frames_|).
+  struct PendingFrame {
+    FrameCollector collector;
+
+    // The Receiver's [local] Clock time when this frame was originally captured
+    // at the Sender. This is computed and assigned when the RTP packet with ID
+    // 0 is processed. Add the target playout delay to this to get the target
+    // playout time.
+    absl::optional<platform::Clock::time_point> estimated_capture_time;
+
+    PendingFrame();
+    ~PendingFrame();
+  };
+
+  // Get/Set the checkpoint FrameId. This indicates that all of the packets for
+  // all frames up to and including this FrameId have been successfully received
+  // (or otherwise do not need to be re-transmitted).
   FrameId checkpoint_frame() const { return rtcp_builder_.checkpoint_frame(); }
+  void set_checkpoint_frame(FrameId frame_id) {
+    rtcp_builder_.SetCheckpointFrame(frame_id);
+  }
 
   // Send an RTCP packet to the Sender immediately, to acknowledge the complete
   // reception of one or more additional frames, to reply to a Sender Report, or
@@ -197,12 +216,23 @@ class Receiver {
   // packets to be sent periodically for the life of this Receiver.
   void SendRtcp();
 
+  // Helper to map the given |frame_id| to the element in the |pending_frames_|
+  // circular queue.
+  PendingFrame* GetQueueEntry(FrameId frame_id);
+
+  // Called when the checkpoint frame has moved forward. This will record the
+  // |new_checkpoint| and immediately send an RTCP packet to the Sender to
+  // inform it of the new checkpoint.
+  void AdvanceCheckpointTo(FrameId new_checkpoint);
+
   const platform::ClockNowFunctionPtr now_;
   ReceiverPacketRouter* const packet_router_;
   RtcpSession rtcp_session_;
   SenderReportParser rtcp_parser_;
   CompoundRtcpBuilder rtcp_builder_;
   PacketReceiveStatsTracker stats_tracker_;  // Tracks transmission stats.
+  RtpPacketParser rtp_parser_;
+  const int rtp_timebase_;  // RTP timestamp ticks per second.
 
   // Buffer for serializing/sending RTCP packets.
   const int rtcp_buffer_capacity_;
@@ -227,6 +257,28 @@ class Receiver {
   // clock. This is invalid until the first Sender Report has been successfully
   // processed (i.e., |last_sender_report_| is not nullopt).
   ClockDriftSmoother smoothed_clock_offset_;
+
+  // The ID of the latest frame whose existence is known to this Receiver. This
+  // value must always be greater than or equal to |checkpoint_frame()|.
+  FrameId latest_frame_expected_ = FrameId::first() - 1;
+
+  // The ID of the last frame consumed. This value must always be less than or
+  // equal to |checkpoint_frame()|, since it's impossible to consume incomplete
+  // frames!
+  FrameId last_frame_consumed_ = FrameId::first() - 1;
+
+  // The frame queue (circular), which tracks which frames are in-flight, stores
+  // data for partially-received frames, and holds onto completed frames until
+  // the consumer consumes them.
+  //
+  // Use GetQueueEntry() to access a slot. The currently-active slots are those
+  // for the frames after |last_frame_consumed_| and up-to/including
+  // |latest_frame_expected_|.
+  std::array<PendingFrame, kMaxUnackedFrames> pending_frames_{};
+
+  // The consumer to notify when there are one or more frames completed and
+  // ready to be consumed.
+  Consumer* consumer_ = nullptr;
 
   // The interval between sending ACK/NACK feedback RTCP messages while
   // incomplete frames exist in the queue.
