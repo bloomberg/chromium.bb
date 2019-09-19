@@ -4210,8 +4210,10 @@ static void dr_prediction_z2_HxW_avx2(int H, int W, uint8_t *dst,
         mask256 = _mm256_cmpgt_epi16(min_base_y256, base_y_c256);
 
         base_y_c256 = _mm256_blendv_epi8(base_y_c256, min_base_y256, mask256);
-        int16_t min_y = _mm256_extract_epi16(base_y_c256, 15);
-        int16_t max_y = _mm256_extract_epi16(base_y_c256, 0);
+        int16_t min_y =
+            _mm_extract_epi16(_mm256_extracti128_si256(base_y_c256, 1), 7);
+        int16_t max_y =
+            _mm_extract_epi16(_mm256_castsi256_si128(base_y_c256), 0);
         int16_t offset_diff = max_y - min_y;
 
         if (offset_diff < 16) {
