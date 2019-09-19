@@ -2219,6 +2219,18 @@ if (public_android_sdk) {
   }
 }
 
+group("chrome_public_wpt") {
+  testonly = true
+  data_deps = [
+    ":chrome_public_apk",
+    "//build/android:test_runner_py",
+  ]
+  set_sources_assignment_filter([ "#*" ])
+  sources = read_file("//testing/scripts/run_android_wpt.pydeps", "list lines")
+  data = sources
+  data += [ "//third_party/blink/web_tests/external/" ]
+}
+
 chrome_bundle("chrome_modern_public_bundle") {
   base_module_target = ":chrome_modern_public_base_bundle_module"
   bundle_name = "ChromeModernPublic"
