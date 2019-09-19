@@ -161,7 +161,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::SensorProvider>(base::Bind(
       &DeviceService::BindSensorProviderRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::TimeZoneMonitor>(base::Bind(
-      &DeviceService::BindTimeZoneMonitorRequest, base::Unretained(this)));
+      &DeviceService::BindTimeZoneMonitorReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
       &DeviceService::BindWakeLockProviderReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::UsbDeviceManager>(base::Bind(
@@ -341,11 +341,11 @@ void DeviceService::BindSensorProviderRequest(
   sensor_provider_->Bind(std::move(request));
 }
 
-void DeviceService::BindTimeZoneMonitorRequest(
-    mojom::TimeZoneMonitorRequest request) {
+void DeviceService::BindTimeZoneMonitorReceiver(
+    mojo::PendingReceiver<mojom::TimeZoneMonitor> receiver) {
   if (!time_zone_monitor_)
     time_zone_monitor_ = TimeZoneMonitor::Create(file_task_runner_);
-  time_zone_monitor_->Bind(std::move(request));
+  time_zone_monitor_->Bind(std::move(receiver));
 }
 
 void DeviceService::BindWakeLockProviderReceiver(

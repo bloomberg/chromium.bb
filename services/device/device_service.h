@@ -180,7 +180,8 @@ class DeviceService : public service_manager::Service {
 
   void BindSensorProviderRequest(mojom::SensorProviderRequest request);
 
-  void BindTimeZoneMonitorRequest(mojom::TimeZoneMonitorRequest request);
+  void BindTimeZoneMonitorReceiver(
+      mojo::PendingReceiver<mojom::TimeZoneMonitor> receiver);
 
   void BindWakeLockProviderReceiver(
       mojo::PendingReceiver<mojom::WakeLockProvider> receiver);
