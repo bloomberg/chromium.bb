@@ -4677,6 +4677,17 @@
       },
     },
 
+    # Very small set of test that exercise SkiaRenderer and produce pixels.
+    'skia_renderer_gpu_telemetry_tests': {
+      'skia_renderer_screenshot_sync': {
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
+        ],
+        'telemetry_test_name': 'screenshot_sync',
+      },
+    },
+
     'skia_renderer_gtests': {
       'skia_renderer_content_browsertests': {
         'args': [
@@ -5463,6 +5474,7 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
+      'skia_renderer_gpu_telemetry_tests',
     ],
 
     'gpu_dawn_deps_isolated_scripts': [
