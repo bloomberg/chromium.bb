@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.IBinder;
 
 import org.chromium.base.process_launcher.ChildProcessService;
+import org.chromium.content_public.app.ChildProcessServiceFactory;
 
 /**
  * Service implementation which calls through to a ChildProcessService that uses the content
@@ -33,8 +34,7 @@ public class ContentChildProcessService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mService = new ChildProcessService(
-                new ContentChildProcessServiceDelegate(), this, getApplicationContext());
+        mService = ChildProcessServiceFactory.create(this, getApplicationContext());
         mService.onCreate();
     }
 

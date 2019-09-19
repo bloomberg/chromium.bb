@@ -52,10 +52,11 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         ResourceBundle.setNoAvailableLocalePaks();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
 
-        ChildProcessCreationParams.set(implContext.getPackageName(), true /* isExternalService */,
+        ChildProcessCreationParams.set(application.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCaller */,
-                false /* ignoreVisibilityForImportance */, null /* privilegedServicesName */,
-                null /* sandboxedServicesName */);
+                false /* ignoreVisibilityForImportance */,
+                "org.chromium.weblayer.ChildProcessService$Privileged",
+                "org.chromium.weblayer.ChildProcessService$Sandboxed");
 
         if (!CommandLine.isInitialized()) {
             CommandLine.initFromFile(COMMAND_LINE_FILE);

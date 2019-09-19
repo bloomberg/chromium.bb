@@ -30,5 +30,29 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- The following service entries exist in order to allow us to
+             start more than one sandboxed process. -->
+
+        <!-- NOTE: If you change the values of "android:process" for any of the below services,
+             you also need to update kHelperProcessExecutableName in chrome_constants.cc. -->
+        {% set num_sandboxed_services = 40 %}
+        <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
+                   android:value="{{ num_sandboxed_services }}"/>
+        {% for i in range(num_sandboxed_services) %}
+        <service android:name="org.chromium.weblayer.ChildProcessService$Sandboxed{{ i }}"
+                 android:process=":sandboxed_process{{ i }}"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        {% endfor %}
+
+        {% set num_privileged_services = 5 %}
+        <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
+                   android:value="{{ num_privileged_services }}"/>
+        {% for i in range(num_privileged_services) %}
+        <service android:name="org.chromium.weblayer.ChildProcessService$Privileged{{ i }}"
+                 android:process=":privileged_process{{ i }}"
+                 android:isolatedProcess="false"
+                 android:exported="false" />
+        {% endfor %}
     </application>
 </manifest>

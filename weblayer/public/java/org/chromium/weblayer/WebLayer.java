@@ -31,8 +31,6 @@ public final class WebLayer {
     private static WebLayer sInstance;
     private IWebLayer mImpl;
 
-    private Application mApplication;
-
     public static WebLayer getInstance() {
         if (sInstance == null) {
             sInstance = new WebLayer();
@@ -43,7 +41,6 @@ public final class WebLayer {
     WebLayer() {}
 
     public void init(Application application) {
-        mApplication = application;
         try {
             // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
             // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
@@ -61,7 +58,7 @@ public final class WebLayer {
             WebViewDelegate delegate = (WebViewDelegate) constructor.newInstance();
             delegate.addWebViewAssetPath(application);
 
-            Context remoteContext = createRemoteContext();
+            Context remoteContext = createRemoteContext(application);
             mImpl = IWebLayer.Stub.asInterface(
                     (IBinder) remoteContext.getClassLoader()
                             .loadClass("org.chromium.weblayer_private.WebLayerImpl")
@@ -96,9 +93,11 @@ public final class WebLayer {
     /**
      * Creates a Context for the remote (weblayer implementation) side.
      */
-    Context createRemoteContext() {
+    static Context createRemoteContext(Context localContext) {
         try {
-            return mApplication.createPackageContext(
+            // TODO(cduvall): Might want to cache the remote context so we don't need to call into
+            // package manager more than we need to.
+            return localContext.createPackageContext(
                     PACKAGE_NAME, Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
         } catch (NameNotFoundException e) {
             throw new AndroidRuntimeException(e);
