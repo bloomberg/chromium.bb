@@ -1316,6 +1316,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
 
 void ChromeLauncherController::ReleaseProfile() {
   app_updaters_.clear();
+  app_icon_loaders_.clear();
 
   pref_change_registrar_.RemoveAll();
 
