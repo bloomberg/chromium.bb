@@ -26,6 +26,7 @@
 #include "ui/gfx/render_text.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/layout/layout_provider.h"
 
 namespace {
 
@@ -37,7 +38,6 @@ static constexpr int kAnswerImageSize = 24;
 
 // The edge length of the entity suggestions images.
 static constexpr int kEntityImageSize = 32;
-static constexpr int kEntityImageCornerRadius = 4;
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlaceholderImageSource:
@@ -68,9 +68,10 @@ void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
   flags.setColor(color_);
+  const int corner_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MEDIUM);
   canvas->sk_canvas()->drawRoundRect(gfx::RectToSkRect(gfx::Rect(size_)),
-                                     kEntityImageCornerRadius,
-                                     kEntityImageCornerRadius, flags);
+                                     corner_radius, corner_radius, flags);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -135,8 +136,10 @@ class RoundedCornerImageView : public views::ImageView {
 
 void RoundedCornerImageView::OnPaint(gfx::Canvas* canvas) {
   SkPath mask;
-  mask.addRoundRect(gfx::RectToSkRect(GetImageBounds()),
-                    kEntityImageCornerRadius, kEntityImageCornerRadius);
+  const int corner_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MEDIUM);
+  mask.addRoundRect(gfx::RectToSkRect(GetImageBounds()), corner_radius,
+                    corner_radius);
   canvas->ClipPath(mask, true);
   ImageView::OnPaint(canvas);
 }
