@@ -5768,6 +5768,8 @@ static_library("test_support") {
     sources += [
       "extensions/fake_safe_browsing_database_manager.cc",
       "extensions/fake_safe_browsing_database_manager.h",
+      "safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.cc",
+      "safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h",
     ]
   }
 
