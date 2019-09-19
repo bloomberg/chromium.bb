@@ -68,6 +68,8 @@ source_set("platform") {
       "impl/text_trace_logging_platform.cc",
       "impl/text_trace_logging_platform.h",
       "impl/time.cc",
+      "impl/tls_write_buffer.cc",
+      "impl/tls_write_buffer.h",
     ]
 
     if (is_linux) {
