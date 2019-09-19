@@ -230,6 +230,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   arc_test().app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
                                        arc_test().fake_apps().begin() + 1));
+  AppServiceTest().WaitForAppService();
   const std::string app_id = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
   const std::string app_name = arc_test().fake_apps()[0].name;
 
@@ -261,6 +262,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   CreateArcWindow(window_app_id1);
   arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0],
                                              std::string());
+  AppServiceTest().WaitForAppService();
 
   item_delegate = model()->GetShelfItemDelegate(shelf_id);
   ASSERT_TRUE(item_delegate);
@@ -284,6 +286,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   CreateArcWindow(window_app_id2);
   arc_test().app_instance()->SendTaskCreated(2, arc_test().fake_apps()[1],
                                              std::string());
+  AppServiceTest().WaitForAppService();
   const ash::ShelfID shelf_id2(app_id2);
   const ash::ShelfItem* item2 = controller()->GetItem(shelf_id2);
   ASSERT_TRUE(item2);
@@ -310,6 +313,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   shortcuts[0].intent_uri +=
       ";S.org.chromium.arc.shelf_group_id=arc_test_shelf_group;end";
   arc_test().app_instance()->SendInstallShortcuts(shortcuts);
+  AppServiceTest().WaitForAppService();
   const std::string app_id3 =
       arc::ArcAppShelfId("arc_test_shelf_group",
                          ArcAppTest::GetAppId(arc_test().fake_apps()[2]))
@@ -328,6 +332,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
     arc_test().app_instance()->SendTaskDescription(
         task_id, GetAppNameInShelfGroup(task_id),
         std::string() /* icon_png_data_as_string */);
+    AppServiceTest().WaitForAppService();
     const ash::ShelfID shelf_id3(app_id3);
     const ash::ShelfItem* item3 = controller()->GetItem(shelf_id3);
     ASSERT_TRUE(item3);
