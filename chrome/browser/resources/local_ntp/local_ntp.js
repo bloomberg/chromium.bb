@@ -647,7 +647,7 @@ function handlePostMessage(event) {
         $(IDS.SUGGESTIONS).style.visibility = 'visible';
       }
       if ($(IDS.PROMO)) {
-        $(IDS.PROMO).classList.add(CLASSES.SHOW_ELEMENT);
+        showPromoIfNotOverlappingAndTrackResizes();
       }
       if (customLinksEnabled()) {
         $(customize.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
@@ -927,7 +927,7 @@ function injectPromo(promo) {
 
   // The the MV tiles are already loaded show the promo immediately.
   if (tilesAreLoaded) {
-    promoContainer.classList.add(CLASSES.SHOW_ELEMENT);
+    showPromoIfNotOverlappingAndTrackResizes();
   }
 }
 
@@ -967,6 +967,71 @@ function isFakeboxClick(event) {
 function isFakeboxFocused() {
   return document.body.classList.contains(CLASSES.FAKEBOX_FOCUS) ||
       document.body.classList.contains(CLASSES.FAKEBOX_DRAG_FOCUS);
+}
+
+/** @return {boolean} */
+function isPromoOverlapping() {
+  const MARGIN = 10;
+
+  /**
+   * @param {string} id
+   * @return {DOMRect}
+   */
+  const rect = id => $(id).getBoundingClientRect();
+
+  const promoRect = $(IDS.PROMO).querySelector('div').getBoundingClientRect();
+
+  if (promoRect.top - MARGIN <= rect(IDS.USER_CONTENT).bottom) {
+    return true;
+  }
+
+  if (window.chrome.embeddedSearch.searchBox.rtl) {
+    const attributionRect = rect(IDS.ATTRIBUTION);
+    if (attributionRect.width > 0 &&
+        promoRect.left - MARGIN <= attributionRect.right) {
+      return true;
+    }
+
+    const editBgRect = rect(customize.IDS.EDIT_BG);
+    assert(editBgRect.width > 0);
+    if (promoRect.left - 2 * MARGIN <= editBgRect.right) {
+      return true;
+    }
+
+    const customAttributionsRect = rect(customize.IDS.ATTRIBUTIONS);
+    if (customAttributionsRect.width > 0 &&
+        promoRect.right + MARGIN >= customAttributionsRect.left) {
+      return true;
+    }
+  } else {
+    const customAttributionsRect = rect(customize.IDS.ATTRIBUTIONS);
+    if (customAttributionsRect.width > 0 &&
+        promoRect.left - MARGIN <= customAttributionsRect.right) {
+      return true;
+    }
+
+    const editBgRect = rect(customize.IDS.EDIT_BG);
+    assert(editBgRect.width > 0);
+    if (promoRect.right + 2 * MARGIN >= editBgRect.left) {
+      return true;
+    }
+
+    const attributionEl = $(IDS.ATTRIBUTION);
+    const attributionRect = attributionEl.getBoundingClientRect();
+    if (attributionRect.width > 0) {
+      const attributionOnLeft =
+          attributionEl.classList.contains(CLASSES.LEFT_ALIGN_ATTRIBUTION);
+      if (attributionOnLeft) {
+        if (promoRect.left - MARGIN <= attributionRect.right) {
+          return true;
+        }
+      } else if (promoRect.right + MARGIN >= attributionRect.left) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 /** Binds event listeners. */
@@ -1270,6 +1335,9 @@ function onThemeChange() {
   renderTheme();
   renderOneGoogleBarTheme();
   sendThemeInfoToMostVisitedIframe();
+  if ($(IDS.PROMO)) {
+    showPromoIfNotOverlapping();
+  }
 }
 
 /**
@@ -1651,6 +1719,18 @@ function showNotification(msg) {
       configData.translatedStrings.restoreThumbnailsShort;
   floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
   $(IDS.UNDO_LINK).focus();
+}
+
+function showPromoIfNotOverlapping() {
+  $(IDS.PROMO).style.visibility = isPromoOverlapping() ? 'hidden' : 'visible';
+}
+
+function showPromoIfNotOverlappingAndTrackResizes() {
+  showPromoIfNotOverlapping();
+  // The removal before addition is to ensure only 1 event listener is ever
+  // active at the same time.
+  window.removeEventListener('resize', showPromoIfNotOverlapping);
+  window.addEventListener('resize', showPromoIfNotOverlapping);
 }
 
 /**
