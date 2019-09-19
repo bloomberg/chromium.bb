@@ -179,7 +179,8 @@ class FrameNodeObserver {
       const InterventionPolicy& previous_value) = 0;
 
   // Invoked when the URL property changes.
-  virtual void OnURLChanged(const FrameNode* frame_node) = 0;
+  virtual void OnURLChanged(const FrameNode* frame_node,
+                            const GURL& previous_value) = 0;
 
   // Invoked when the IsAdFrame property changes.
   virtual void OnIsAdFrameChanged(const FrameNode* frame_node) = 0;
@@ -214,7 +215,8 @@ class FrameNode::ObserverDefaultImpl : public FrameNodeObserver {
   void OnOriginTrialFreezePolicyChanged(
       const FrameNode* frame_node,
       const InterventionPolicy& previous_value) override {}
-  void OnURLChanged(const FrameNode* frame_node) override {}
+  void OnURLChanged(const FrameNode* frame_node,
+                    const GURL& previous_value) override {}
   void OnIsAdFrameChanged(const FrameNode* frame_node) override {}
   void OnNonPersistentNotificationCreated(
       const FrameNode* frame_node) override {}

@@ -63,7 +63,8 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnOriginTrialFreezePolicyChanged(
       const performance_manager::FrameNode* frame_node,
       const InterventionPolicy& previous_value) override {}
-  void OnURLChanged(const performance_manager::FrameNode* frame_node) override;
+  void OnURLChanged(const performance_manager::FrameNode* frame_node,
+                    const GURL& previous_value) override;
   // Ignored.
   void OnIsAdFrameChanged(
       const performance_manager::FrameNode* frame_node) override {}
