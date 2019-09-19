@@ -1367,12 +1367,13 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   return q;
 }
 
-int av1_rc_pick_q_and_bounds(AV1_COMP *cpi, int width, int height, int gf_index,
-                             int *bottom_index, int *top_index) {
+int av1_rc_pick_q_and_bounds(const AV1_COMP *cpi, RATE_CONTROL *rc, int width,
+                             int height, int gf_index, int *bottom_index,
+                             int *top_index) {
   int q;
   // TODO(sarahparker) merge onepass vbr and altref q computation
   // with two pass
-  GF_GROUP *gf_group = &cpi->gf_group;
+  const GF_GROUP *gf_group = &cpi->gf_group;
   if ((cpi->oxcf.rc_mode != AOM_Q ||
        gf_group->update_type[gf_index] == ARF_UPDATE) &&
       cpi->oxcf.pass == 0) {
@@ -1393,7 +1394,7 @@ int av1_rc_pick_q_and_bounds(AV1_COMP *cpi, int width, int height, int gf_index,
     q = rc_pick_q_and_bounds_two_pass(cpi, width, height, gf_index,
                                       bottom_index, top_index, &arf_q);
   }
-  if (gf_group->update_type[gf_index] == ARF_UPDATE) cpi->rc.arf_q = q;
+  if (gf_group->update_type[gf_index] == ARF_UPDATE) rc->arf_q = q;
 
   return q;
 }

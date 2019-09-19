@@ -222,8 +222,9 @@ void av1_rc_compute_frame_size_bounds(const struct AV1_COMP *cpi,
                                       int *frame_over_shoot_limit);
 
 // Picks q and q bounds given the target for bits
-int av1_rc_pick_q_and_bounds(struct AV1_COMP *cpi, int width, int height,
-                             int gf_index, int *bottom_index, int *top_index);
+int av1_rc_pick_q_and_bounds(const struct AV1_COMP *cpi, RATE_CONTROL *rc,
+                             int width, int height, int gf_index,
+                             int *bottom_index, int *top_index);
 
 // Estimates q to achieve a target bits per frame
 int av1_rc_regulate_q(const struct AV1_COMP *cpi, int target_bits_per_frame,

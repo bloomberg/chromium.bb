@@ -792,8 +792,9 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
     cpi->refresh_bwd_ref_frame = this_frame_params.refresh_bwd_ref_frame;
     cpi->refresh_alt_ref_frame = this_frame_params.refresh_alt_ref_frame;
 
-    gf_group->q_val[gf_index] = av1_rc_pick_q_and_bounds(
-        cpi, cm->width, cm->height, gf_index, &bottom_index, &top_index);
+    gf_group->q_val[gf_index] =
+        av1_rc_pick_q_and_bounds(cpi, &cpi->rc, cm->width, cm->height, gf_index,
+                                 &bottom_index, &top_index);
 
     cm->current_frame.frame_type = INTER_FRAME;
   }
