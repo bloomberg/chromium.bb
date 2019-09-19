@@ -28,6 +28,7 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -357,12 +358,9 @@ TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletesOnDelete) {
 // tablet mode with a system modal window open, and that it hides once
 // the user exits tablet mode.
 TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
-  // TODO(jonross): When CreateTestWindow*() have been unified, use the
-  // appropriate method to replace this setup. (crbug.com/483503)
-  std::unique_ptr<aura::Window> window = window_factory::NewWindow();
+  std::unique_ptr<aura::Window> window =
+      CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_NORMAL);
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-  window->Init(ui::LAYER_TEXTURED);
   window->Show();
   ParentWindowInPrimaryRootWindow(window.get());
 

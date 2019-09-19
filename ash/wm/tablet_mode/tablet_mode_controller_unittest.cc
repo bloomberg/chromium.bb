@@ -1465,15 +1465,16 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
 }
 
-// Test that if overview is triggered on entering tablet mode, then the app list
-// can still be successfully shown and actually seen.
-TEST_F(TabletModeControllerTest, AppListWorksAfterEnteringTabletForOverview) {
+// Test that when entering tablet mode with a left snapped window, the applist
+// is not visible because overview is shown.
+TEST_F(TabletModeControllerTest,
+       AppListNotSeenAfterEnteringTabletModeWithLeftSnappedWindow) {
   AppListControllerImpl* app_list_controller =
       Shell::Get()->app_list_controller();
   std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
   tablet_mode_controller()->SetEnabledForTest(true);
   app_list_controller->ShowAppList();
-  EXPECT_TRUE(app_list_controller->IsVisible());
+  EXPECT_FALSE(app_list_controller->IsVisible());
 }
 
 // Test that if both the active window and the previous window are snapped on
