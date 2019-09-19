@@ -154,6 +154,9 @@ extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 extern const char kAutofillRichMetadataQueriesName[];
 extern const char kAutofillRichMetadataQueriesDescription[];
 
+extern const char kAutofillSaveAndFillVPAName[];
+extern const char kAutofillSaveAndFillVPADescription[];
+
 extern const char kAutofillSettingsSplitByCardTypeName[];
 extern const char kAutofillSettingsSplitByCardTypeDescription[];
 

@@ -4488,6 +4488,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"password-leak-detection", flag_descriptions::kPasswordLeakDetectionName,
      flag_descriptions::kPasswordLeakDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kLeakDetection)},
+    {"enable-autofill-upi-vpa", flag_descriptions::kAutofillSaveAndFillVPAName,
+     flag_descriptions::kAutofillSaveAndFillVPADescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveAndFillVPA)},
 
     {"quiet-notification-prompts",
      flag_descriptions::kQuietNotificationPromptsName,
