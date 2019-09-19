@@ -48,6 +48,7 @@
                                             passwordInfoBarDelegate
                                    type:(InfobarType)infobarType {
   self = [super initWithInfoBarDelegate:passwordInfoBarDelegate
+                           badgeSupport:YES
                                    type:infobarType];
   if (self) {
     _passwordInfoBarDelegate = passwordInfoBarDelegate;

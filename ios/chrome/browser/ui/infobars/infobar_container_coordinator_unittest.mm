@@ -111,6 +111,7 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
         new TestInfoBarDelegate(@"Title");
     coordinator_ = [[InfobarConfirmCoordinator alloc]
         initWithInfoBarDelegate:test_infobar_delegate
+                   badgeSupport:YES
                            type:InfobarType::kInfobarTypeConfirm];
     infobar_delegate_ =
         std::unique_ptr<ConfirmInfoBarDelegate>(test_infobar_delegate);
@@ -154,6 +155,7 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
         new TestInfoBarDelegate(@"Title 2");
     second_coordinator_ = [[InfobarConfirmCoordinator alloc]
         initWithInfoBarDelegate:test_infobar_delegate
+                   badgeSupport:YES
                            type:InfobarType::kInfobarTypePasswordSave];
     std::unique_ptr<ConfirmInfoBarDelegate> infobar_delegate =
         std::unique_ptr<ConfirmInfoBarDelegate>(test_infobar_delegate);

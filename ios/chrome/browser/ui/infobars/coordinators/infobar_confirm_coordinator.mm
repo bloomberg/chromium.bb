@@ -35,8 +35,10 @@
 
 - (instancetype)initWithInfoBarDelegate:
                     (ConfirmInfoBarDelegate*)confirmInfoBarDelegate
+                           badgeSupport:(BOOL)badgeSupport
                                    type:(InfobarType)infobarType {
   self = [super initWithInfoBarDelegate:confirmInfoBarDelegate
+                           badgeSupport:badgeSupport
                                    type:infobarType];
   if (self) {
     _confirmInfobarDelegate = confirmInfoBarDelegate;
