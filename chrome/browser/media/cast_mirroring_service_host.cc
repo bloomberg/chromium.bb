@@ -181,8 +181,8 @@ CastMirroringServiceHost::~CastMirroringServiceHost() {}
 void CastMirroringServiceHost::Start(
     mojom::SessionParametersPtr session_params,
     mojom::SessionObserverPtr observer,
-    mojom::CastMessageChannelPtr outbound_channel,
-    mojom::CastMessageChannelRequest inbound_channel) {
+    mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
+    mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel) {
   // Start() should not be called in the middle of a mirroring session.
   if (mirroring_service_) {
     LOG(WARNING) << "Unexpected Start() call during an active"

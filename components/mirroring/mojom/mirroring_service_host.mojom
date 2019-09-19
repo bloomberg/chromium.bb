@@ -18,8 +18,8 @@ interface MirroringServiceHost {
   // To stop the session, just close the message pipe.
   Start(SessionParameters params,
         SessionObserver observer,
-        CastMessageChannel outbound_channel,
-        CastMessageChannel& inbound_channel);
+        pending_remote<CastMessageChannel> outbound_channel,
+        pending_receiver<CastMessageChannel> inbound_channel);
 
   // TODO(xjz): Add interfaces to get the streaming events/stats and mirroring
   // logs.

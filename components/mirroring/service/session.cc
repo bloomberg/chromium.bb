@@ -373,13 +373,14 @@ class Session::AudioCapturingCallback final
   DISALLOW_COPY_AND_ASSIGN(AudioCapturingCallback);
 };
 
-Session::Session(mojom::SessionParametersPtr session_params,
-                 const gfx::Size& max_resolution,
-                 mojom::SessionObserverPtr observer,
-                 mojom::ResourceProviderPtr resource_provider,
-                 mojom::CastMessageChannelPtr outbound_channel,
-                 mojom::CastMessageChannelRequest inbound_channel,
-                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+Session::Session(
+    mojom::SessionParametersPtr session_params,
+    const gfx::Size& max_resolution,
+    mojom::SessionObserverPtr observer,
+    mojom::ResourceProviderPtr resource_provider,
+    mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
+    mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : session_params_(*session_params),
       state_(MIRRORING),
       observer_(std::move(observer)),

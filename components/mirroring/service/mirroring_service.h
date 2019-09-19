@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "components/mirroring/mojom/mirroring_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace mirroring {
@@ -28,8 +29,9 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MirroringService final
              const gfx::Size& max_resolution,
              mojom::SessionObserverPtr observer,
              mojom::ResourceProviderPtr resource_provider,
-             mojom::CastMessageChannelPtr outbound_channel,
-             mojom::CastMessageChannelRequest inbound_channel) override;
+             mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
+             mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel)
+      override;
 
   mojo::Receiver<mojom::MirroringService> receiver_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

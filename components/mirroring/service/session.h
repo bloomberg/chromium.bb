@@ -64,8 +64,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
           const gfx::Size& max_resolution,
           mojom::SessionObserverPtr observer,
           mojom::ResourceProviderPtr resource_provider,
-          mojom::CastMessageChannelPtr outbound_channel,
-          mojom::CastMessageChannelRequest inbound_channel,
+          mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
+          mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel,
           scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   ~Session() override;

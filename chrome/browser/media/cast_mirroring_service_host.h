@@ -20,6 +20,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -73,8 +74,9 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   // mojom::MirroringServiceHost implementation.
   void Start(mojom::SessionParametersPtr session_params,
              mojom::SessionObserverPtr observer,
-             mojom::CastMessageChannelPtr outbound_channel,
-             mojom::CastMessageChannelRequest inbound_channel) override;
+             mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
+             mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel)
+      override;
 
  private:
   friend class CastMirroringServiceHostBrowserTest;

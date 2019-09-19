@@ -27,6 +27,7 @@
 #include "components/cast_channel/proto/cast_channel.pb.h"
 #include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_address.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
@@ -34,7 +35,6 @@ using blink::mojom::PresentationConnectionMessagePtr;
 using cast_channel::Result;
 using media_router::mojom::MediaRouteProvider;
 using media_router::mojom::MediaRouter;
-using mirroring::mojom::CastMessageChannelPtr;
 using mirroring::mojom::SessionError;
 using mirroring::mojom::SessionObserverPtr;
 using mirroring::mojom::SessionParameters;
@@ -74,8 +74,8 @@ MirroringActivityRecord::MirroringActivityRecord(
   // Create Mojo bindings for the interfaces this object implements.
   SessionObserverPtr observer_ptr;
   observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
-  CastMessageChannelPtr channel_ptr;
-  channel_binding_.Bind(mojo::MakeRequest(&channel_ptr));
+  mojo::PendingRemote<mirroring::mojom::CastMessageChannel> channel_remote;
+  channel_receiver_.Bind(channel_remote.InitWithNewPipeAndPassReceiver());
 
   // Derive session type from capabilities.
   const bool has_audio = (cast_data.capabilities &
@@ -94,8 +94,8 @@ MirroringActivityRecord::MirroringActivityRecord(
       base::Unretained(host_.get()),
       SessionParameters::New(session_type, cast_data.ip_endpoint.address(),
                              cast_data.model_name),
-      std::move(observer_ptr), std::move(channel_ptr),
-      mojo::MakeRequest(&channel_to_service_));
+      std::move(observer_ptr), std::move(channel_remote),
+      channel_to_service_.BindNewPipeAndPassReceiver());
 }
 
 MirroringActivityRecord::~MirroringActivityRecord() = default;

@@ -21,6 +21,7 @@
 #include "media/cast/test/utility/net_utility.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
@@ -78,8 +79,7 @@ class SessionTest : public mojom::ResourceProvider,
   SessionTest()
       : receiver_endpoint_(media::cast::test::GetFreeLocalPort()),
         resource_provider_binding_(this),
-        session_observer_binding_(this),
-        outbound_channel_binding_(this) {}
+        session_observer_binding_(this) {}
 
   ~SessionTest() override { task_environment_.RunUntilIdle(); }
 
@@ -204,10 +204,11 @@ class SessionTest : public mojom::ResourceProvider,
     cast_mode_ = "mirroring";
     mojom::ResourceProviderPtr resource_provider_ptr;
     mojom::SessionObserverPtr session_observer_ptr;
-    mojom::CastMessageChannelPtr outbound_channel_ptr;
+    mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel_remote;
     resource_provider_binding_.Bind(mojo::MakeRequest(&resource_provider_ptr));
     session_observer_binding_.Bind(mojo::MakeRequest(&session_observer_ptr));
-    outbound_channel_binding_.Bind(mojo::MakeRequest(&outbound_channel_ptr));
+    outbound_channel_receiver_.Bind(
+        outbound_channel_remote.InitWithNewPipeAndPassReceiver());
     // Expect to send OFFER message when session is created.
     EXPECT_CALL(*this, OnGetNetworkContext()).Times(1);
     EXPECT_CALL(*this, OnError(_)).Times(0);
@@ -215,8 +216,8 @@ class SessionTest : public mojom::ResourceProvider,
     session_ = std::make_unique<Session>(
         std::move(session_params), gfx::Size(1920, 1080),
         std::move(session_observer_ptr), std::move(resource_provider_ptr),
-        std::move(outbound_channel_ptr), mojo::MakeRequest(&inbound_channel_),
-        nullptr);
+        std::move(outbound_channel_remote),
+        inbound_channel_.BindNewPipeAndPassReceiver(), nullptr);
     task_environment_.RunUntilIdle();
     Mock::VerifyAndClear(this);
   }
@@ -342,8 +343,8 @@ class SessionTest : public mojom::ResourceProvider,
   const net::IPEndPoint receiver_endpoint_;
   mojo::Binding<mojom::ResourceProvider> resource_provider_binding_;
   mojo::Binding<mojom::SessionObserver> session_observer_binding_;
-  mojo::Binding<mojom::CastMessageChannel> outbound_channel_binding_;
-  mojom::CastMessageChannelPtr inbound_channel_;
+  mojo::Receiver<mojom::CastMessageChannel> outbound_channel_receiver_{this};
+  mojo::Remote<mojom::CastMessageChannel> inbound_channel_;
   SessionType session_type_ = SessionType::AUDIO_AND_VIDEO;
   mojo::Remote<media::mojom::Remoter> remoter_;
   MockRemotingSource remoting_source_;

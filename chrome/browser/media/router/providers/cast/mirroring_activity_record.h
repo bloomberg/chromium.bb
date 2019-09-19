@@ -18,6 +18,8 @@
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
 #include "components/mirroring/mojom/session_observer.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media_router {
 
@@ -93,13 +95,13 @@ class MirroringActivityRecord : public ActivityRecord,
   mojo::Remote<mirroring::mojom::MirroringServiceHost> host_;
 
   // Sends Cast messages from the mirroring receiver to the mirroring service.
-  mirroring::mojom::CastMessageChannelPtr channel_to_service_;
+  mojo::Remote<mirroring::mojom::CastMessageChannel> channel_to_service_;
 
   mojo::Binding<mirroring::mojom::SessionObserver> observer_binding_{this};
 
   // To handle Cast messages from the mirroring service to the mirroring
   // receiver.
-  mojo::Binding<mirroring::mojom::CastMessageChannel> channel_binding_{this};
+  mojo::Receiver<mirroring::mojom::CastMessageChannel> channel_receiver_{this};
 
   const int channel_id_;
   const MirroringType mirroring_type_;
