@@ -47,13 +47,11 @@ class OmniboxMatchCellView : public views::View {
 
  private:
   enum class LayoutStyle {
-    OLD_ANSWER,
     ONE_LINE_SUGGESTION,
     TWO_LINE_SUGGESTION,
   };
 
-  void LayoutOldStyleAnswer(int icon_view_width, int text_indent);
-  void LayoutNewStyleTwoLineSuggestion();
+  void LayoutTwoLineSuggestion();
   void LayoutOneLineSuggestion(int icon_view_width, int text_indent);
   void SetTailSuggestCommonPrefixWidth(const base::string16& common_prefix);
 

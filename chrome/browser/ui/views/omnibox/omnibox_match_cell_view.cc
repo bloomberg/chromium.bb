@@ -29,27 +29,15 @@
 
 namespace {
 
-// TODO(dschuyler): Perhaps this should be based on the font size
-// instead of hardcoded to 2 dp (e.g. by adding a space in an
-// appropriate font to the beginning of the description, then reducing
-// the additional padding here to zero).
-static constexpr int kAnswerIconToTextPadding = 2;
-
 // The edge length of the layout image area.
 static constexpr int kImageBoxSize = 40;
 
-// The diameter of the new answer layout images.
-static constexpr int kNewAnswerImageSize = 24;
+// The diameter of the answer layout images.
+static constexpr int kAnswerImageSize = 24;
 
 // The edge length of the entity suggestions images.
 static constexpr int kEntityImageSize = 32;
 static constexpr int kEntityImageCornerRadius = 4;
-
-// Returns the padding width between elements.
-int HorizontalPadding() {
-  return GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-         GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).width() / 2;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlaceholderImageSource:
@@ -192,8 +180,6 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
   // Decide layout style once before Layout, while match data is available.
   if (is_rich_suggestion_ || match.ShouldShowTabMatchButton() || match.pedal) {
     layout_style_ = LayoutStyle::TWO_LINE_SUGGESTION;
-  } else if (!!match.answer) {
-    layout_style_ = LayoutStyle::OLD_ANSWER;
   } else {
     layout_style_ = LayoutStyle::ONE_LINE_SUGGESTION;
   }
@@ -214,13 +200,11 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     const auto& icon = gfx::CreateVectorIcon(vector_icon, SK_ColorWHITE);
     answer_image_view_->SetImage(
         gfx::CanvasImageSource::MakeImageSkia<EncircledImageSource>(
-            kNewAnswerImageSize / 2, gfx::kGoogleBlue600, icon));
+            kAnswerImageSize / 2, gfx::kGoogleBlue600, icon));
   };
   if (match.type == AutocompleteMatchType::CALCULATOR) {
     apply_vector_icon(omnibox::kAnswerCalculatorIcon);
   } else if (!is_rich_suggestion_) {
-    // An old style answer entry may use the answer_image_view_. But
-    // it's set when the image arrives (later).
     answer_image_view_->SetImage(gfx::ImageSkia());
     answer_image_view_->SetSize(gfx::Size());
   } else {
@@ -255,7 +239,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
       // Always set the image size so that downloaded images get the correct
       // size (such as Weather answers).
       answer_image_view_->SetImageSize(
-          gfx::Size(kNewAnswerImageSize, kNewAnswerImageSize));
+          gfx::Size(kAnswerImageSize, kAnswerImageSize));
     } else {
       SkColor color = result_view->GetColor(OmniboxPart::RESULTS_BACKGROUND);
       extensions::image_util::ParseHexColorString(match.image_dominant_color,
@@ -308,15 +292,12 @@ void OmniboxMatchCellView::Layout() {
   const int icon_view_width = kImageBoxSize;
   const int text_indent = GetTextIndent();
   switch (layout_style_) {
-    case LayoutStyle::OLD_ANSWER:
-      LayoutOldStyleAnswer(icon_view_width, text_indent);
-      break;
     case LayoutStyle::ONE_LINE_SUGGESTION:
       LayoutOneLineSuggestion(icon_view_width,
                               text_indent + tail_suggest_common_prefix_width_);
       break;
     case LayoutStyle::TWO_LINE_SUGGESTION:
-      LayoutNewStyleTwoLineSuggestion();
+      LayoutTwoLineSuggestion();
       break;
   }
 }
@@ -328,19 +309,6 @@ bool OmniboxMatchCellView::CanProcessEventsWithinSubtree() const {
 gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
   int height = 0;
   switch (layout_style_) {
-    case LayoutStyle::OLD_ANSWER: {
-      int icon_width = icon_view_->width();
-      int answer_image_size =
-          answer_image_view_->GetImage().isNull()
-              ? 0
-              : answer_image_view_->height() + kAnswerIconToTextPadding;
-      int deduction =
-          icon_width + (HorizontalPadding() * 3) + answer_image_size;
-      int description_width = std::max(width() - deduction, 0);
-      height = content_view_->GetLineHeight() +
-               description_view_->GetHeightForWidth(description_width);
-      break;
-    }
     case LayoutStyle::ONE_LINE_SUGGESTION: {
       height = content_view_->GetLineHeight();
       break;
@@ -356,34 +324,7 @@ gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
   return gfx::Size(0, height);
 }
 
-void OmniboxMatchCellView::LayoutOldStyleAnswer(int icon_view_width,
-                                                int text_indent) {
-  // TODO(dschuyler): Remove this layout once rich layouts are enabled by
-  // default.
-  gfx::Rect child_area = GetContentsBounds();
-  const int text_height = content_view_->GetLineHeight();
-  int x = child_area.x();
-  int y = child_area.y();
-  icon_view_->SetBounds(x, y, icon_view_width, text_height);
-  x += text_indent;
-  content_view_->SetBounds(x, y, width() - x, text_height);
-  y += text_height;
-  if (!answer_image_view_->GetImage().isNull()) {
-    constexpr int kImageEdgeLength = 24;
-    constexpr int kImagePadding = 2;
-    answer_image_view_->SetBounds(x, y + kImagePadding, kImageEdgeLength,
-                                  kImageEdgeLength);
-    answer_image_view_->SetImageSize(
-        gfx::Size(kImageEdgeLength, kImageEdgeLength));
-    x += answer_image_view_->width() + kAnswerIconToTextPadding;
-  }
-  int description_width = width() - x;
-  description_view_->SetBounds(
-      x, y, description_width,
-      description_view_->GetHeightForWidth(description_width));
-}
-
-void OmniboxMatchCellView::LayoutNewStyleTwoLineSuggestion() {
+void OmniboxMatchCellView::LayoutTwoLineSuggestion() {
   gfx::Rect child_area = GetContentsBounds();
   int x = child_area.x();
   int y = child_area.y();
