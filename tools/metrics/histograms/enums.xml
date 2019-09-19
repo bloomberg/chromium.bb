@@ -10617,6 +10617,13 @@ Called by update_net_error_codes.py.-->
   </int>
 </enum>
 
+<enum name="CookieEffectiveSameSite">
+  <int value="0" label="No restriction"/>
+  <int value="1" label="Lax mode"/>
+  <int value="2" label="Strict mode"/>
+  <int value="3" label="Lax mode allow unsafe"/>
+</enum>
+
 <enum name="CookieLoadProblem">
   <int value="0" label="Entry decryption failed"/>
   <int value="1" label="Entry decryption taking over a minute"/>
