@@ -597,6 +597,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // The webState of the active tab.
 @property(nonatomic, readonly) web::WebState* currentWebState;
 
+// Whether the safe area insets should be used to adjust the viewport.
+@property(nonatomic, readonly) BOOL usesSafeInsetsForViewportAdjustments;
+
 // Whether the keyboard observer helper is viewed
 @property(nonatomic, strong) KeyboardObserverHelper* observer;
 
@@ -1067,6 +1070,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return self.tabModel.webStateList
              ? self.tabModel.webStateList->GetActiveWebState()
              : nullptr;
+}
+
+- (BOOL)usesSafeInsetsForViewportAdjustments {
+  fullscreen::features::ViewportAdjustmentExperiment viewportExperiment =
+      fullscreen::features::GetActiveViewportExperiment();
+  return viewportExperiment ==
+             fullscreen::features::ViewportAdjustmentExperiment::SAFE_AREA ||
+         viewportExperiment ==
+             fullscreen::features::ViewportAdjustmentExperiment::HYBRID;
 }
 
 - (BubblePresenter*)bubblePresenter {
@@ -1674,7 +1686,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.secondaryToolbarNoFullscreenHeightConstraint.constant =
       [self secondaryToolbarHeightWithInset];
   [self updateFootersForFullscreenProgress:self.footerFullscreenProgress];
-  if (self.currentWebState) {
+  if (!self.usesSafeInsetsForViewportAdjustments && self.currentWebState) {
     UIEdgeInsets contentPadding =
         self.currentWebState->GetWebViewProxy().contentInset;
     contentPadding.bottom = AlignValueToPixel(
@@ -3816,6 +3828,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Translates the footer view up and down according to |progress|, where a
 // progress of 1.0 fully shows the footer and a progress of 0.0 fully hides it.
 - (void)updateFootersForFullscreenProgress:(CGFloat)progress {
+  // If the bottom toolbar is locked into place, reset |progress| to 1.0.
+  if (base::FeatureList::IsEnabled(fullscreen::features::kLockBottomToolbar))
+    progress = 1.0;
 
   self.footerFullscreenProgress = progress;
 
@@ -3858,10 +3873,26 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // safe area, so the unsafe top height must be added.
   CGFloat top = AlignValueToPixel(
       self.headerHeight + (progress - 1.0) * [self primaryToolbarHeightDelta]);
-  CGFloat bottom =
-      AlignValueToPixel(progress * [self secondaryToolbarHeightWithInset]);
+  // If the bottom toolbar is locked into place, use 1.0 instead of |progress|.
+  CGFloat bottomProgress =
+      base::FeatureList::IsEnabled(fullscreen::features::kLockBottomToolbar)
+          ? 1.0
+          : progress;
+  CGFloat bottom = AlignValueToPixel(bottomProgress *
+                                     [self secondaryToolbarHeightWithInset]);
 
-  [self updateContentPaddingForTopToolbarHeight:top bottomToolbarHeight:bottom];
+  if (self.usesSafeInsetsForViewportAdjustments) {
+    if (fullscreen::features::GetActiveViewportExperiment() ==
+        fullscreen::features::ViewportAdjustmentExperiment::HYBRID) {
+      [self updateWebViewFrameForBottomOffset:bottom];
+    }
+
+    [self updateBrowserSafeAreaForTopToolbarHeight:top
+                               bottomToolbarHeight:bottom];
+  } else {
+    [self updateContentPaddingForTopToolbarHeight:top
+                              bottomToolbarHeight:bottom];
+  }
 }
 
 // Updates the frame of the web view so that it's |offset| from the bottom of
