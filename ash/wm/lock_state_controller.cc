@@ -205,7 +205,10 @@ void LockStateController::OnLockScreenHide(base::OnceClosure callback) {
 void LockStateController::SetLockScreenDisplayedCallback(
     base::OnceClosure callback) {
   DCHECK(lock_screen_displayed_callback_.is_null());
-  lock_screen_displayed_callback_ = std::move(callback);
+  if (system_is_locked_ && !animating_lock_)
+    std::move(callback).Run();
+  else
+    lock_screen_displayed_callback_ = std::move(callback);
 }
 
 void LockStateController::OnHostCloseRequested(aura::WindowTreeHost* host) {
