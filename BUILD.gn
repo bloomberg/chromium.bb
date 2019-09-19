@@ -53,6 +53,7 @@ executable("openscreen_unittests") {
     "cast/sender/channel:unittests",
     "osp:unittests",
     "osp/impl/discovery/mdns:unittests",
+    "osp/impl/testing:unittests",
     "osp/msgs:unittests",
     "platform:unittests",
     "streaming/cast:unittests",
@@ -60,19 +61,4 @@ executable("openscreen_unittests") {
     "third_party/googletest:gtest_main",
     "util:unittests",
   ]
-}
-
-# Note: Remove this after demo is removed from the build recipe.
-if (use_chromium_quic && use_mdns_responder) {
-  executable("demo") {
-    sources = [
-      "osp/demo/osp_demo.cc",
-    ]
-    deps = [
-      "//osp:osp_with_chromium_quic",
-      "//osp/impl/discovery/mdns",
-      "//platform",
-      "//util",
-    ]
-  }
 }
