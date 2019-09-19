@@ -377,7 +377,7 @@ Session::Session(
     mojom::SessionParametersPtr session_params,
     const gfx::Size& max_resolution,
     mojo::PendingRemote<mojom::SessionObserver> observer,
-    mojom::ResourceProviderPtr resource_provider,
+    mojo::PendingRemote<mojom::ResourceProvider> resource_provider,
     mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
     mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)

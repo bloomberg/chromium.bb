@@ -21,7 +21,7 @@ interface MirroringService {
   Start(SessionParameters params,
         gfx.mojom.Size max_resolution,
         pending_remote<SessionObserver> observer,
-        ResourceProvider resource_provider,
+        pending_remote<ResourceProvider> resource_provider,
         pending_remote<CastMessageChannel> outbound_channel,
         pending_receiver<CastMessageChannel> inbound_channel);
 };

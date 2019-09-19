@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -124,8 +125,8 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   // Describes the media source for this mirroring session.
   content::DesktopMediaID source_media_id_;
 
-  // The binding to this mojom::ResourceProvider implementation.
-  mojo::Binding<mojom::ResourceProvider> resource_provider_binding_;
+  // The receiver to this mojom::ResourceProvider implementation.
+  mojo::Receiver<mojom::ResourceProvider> resource_provider_receiver{this};
 
   // Connection to the remote mojom::MirroringService implementation.
   mojo::Remote<mojom::MirroringService> mirroring_service_;

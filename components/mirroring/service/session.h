@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   Session(mojom::SessionParametersPtr session_params,
           const gfx::Size& max_resolution,
           mojo::PendingRemote<mojom::SessionObserver> observer,
-          mojom::ResourceProviderPtr resource_provider,
+          mojo::PendingRemote<mojom::ResourceProvider> resource_provider,
           mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
           mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel,
           scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
@@ -158,7 +158,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   } state_;
 
   mojo::Remote<mojom::SessionObserver> observer_;
-  mojom::ResourceProviderPtr resource_provider_;
+  mojo::Remote<mojom::ResourceProvider> resource_provider_;
   MirrorSettings mirror_settings_;
 
   MessageDispatcher message_dispatcher_;

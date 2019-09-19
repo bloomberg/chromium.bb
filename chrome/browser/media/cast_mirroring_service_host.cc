@@ -169,7 +169,6 @@ void CastMirroringServiceHost::GetForOffscreenTab(
 CastMirroringServiceHost::CastMirroringServiceHost(
     content::DesktopMediaID source_media_id)
     : source_media_id_(source_media_id),
-      resource_provider_binding_(this),
       gpu_client_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {
   // Observe the target WebContents for Tab mirroring.
   if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS)
@@ -198,8 +197,8 @@ void CastMirroringServiceHost::Start(
           .WithDisplayName("Mirroring Service")
           .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
           .Pass());
-  mojom::ResourceProviderPtr provider;
-  resource_provider_binding_.Bind(mojo::MakeRequest(&provider));
+  mojo::PendingRemote<mojom::ResourceProvider> provider;
+  resource_provider_receiver.Bind(provider.InitWithNewPipeAndPassReceiver());
   mirroring_service_->Start(
       std::move(session_params), GetCaptureResolutionConstraint(),
       std::move(observer), std::move(provider), std::move(outbound_channel),

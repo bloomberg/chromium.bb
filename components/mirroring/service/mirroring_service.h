@@ -28,7 +28,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MirroringService final
   void Start(mojom::SessionParametersPtr params,
              const gfx::Size& max_resolution,
              mojo::PendingRemote<mojom::SessionObserver> observer,
-             mojom::ResourceProviderPtr resource_provider,
+             mojo::PendingRemote<mojom::ResourceProvider> resource_provider,
              mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
              mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel)
       override;
