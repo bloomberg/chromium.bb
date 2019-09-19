@@ -33,6 +33,7 @@
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/ukm_manager.h"
+#include "components/viz/common/display/de_jelly.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -3207,6 +3208,15 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
       !cmd.HasSwitch(switches::kDisableImageAnimationResync);
 
   settings.send_compositor_frame_ack = false;
+
+  // Renderer can de-jelly, browser UI can not. We do not know whether we are
+  // going to apply de-jelly until we draw a frame in the Viz process. Because
+  // of this, all changes in the renderer are based on whether de-jelly may be
+  // active (viz::DeJellyEnabled) vs whether it is currently active
+  // (viz::DeJellyActive).
+  settings.allow_de_jelly_effect = viz::DeJellyEnabled();
+  // Disable occlusion if de-jelly effect is enabled.
+  settings.enable_occlusion &= !settings.allow_de_jelly_effect;
 
   return settings;
 }
