@@ -742,7 +742,6 @@ HWTEST_MOBLAB_SUITE = 'moblab'
 HWTEST_MOBLAB_QUICK_SUITE = 'moblab_quick'
 HWTEST_SANITY_SUITE = 'sanity'
 HWTEST_TOOLCHAIN_SUITE = 'toolchain-tests'
-HWTEST_PROVISION_SUITE = 'provision'
 HWTEST_CTS_QUAL_SUITE = 'arc-cts-qual'
 HWTEST_GTS_QUAL_SUITE = 'arc-gts-qual'
 # Non-blocking informational hardware tests for Chrome, run throughout the

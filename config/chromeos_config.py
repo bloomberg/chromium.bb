@@ -2554,7 +2554,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     if board in _paladin_jetstream_hwtest_boards:
       customizations.update(
           hw_tests=[
-              hw_test_list.DefaultListCQ()[0],
               config_lib.HWTestConfig(
                   constants.HWTEST_JETSTREAM_COMMIT_SUITE,
                   pool=constants.HWTEST_QUOTA_POOL,
@@ -2662,8 +2661,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # pylint: enable=bad-continuation, bad-whitespace, line-too-long
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
-  # Run provision suite first everywhere.
-  default_tests = [sharded_hw_tests.pop(0)]
   config_default_reset = set()
   for board_assignments in _paladin_hwtest_assignments:
     assert len(board_assignments) == len(sharded_hw_tests)
@@ -2679,7 +2676,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
         continue
 
       if config_name not in config_default_reset:
-        site_config[config_name]['hw_tests'] = default_tests[:]
+        site_config[config_name]['hw_tests'] = []
         config_default_reset.add(config_name)
 
       site_config[config_name]['hw_tests'] += [suite]

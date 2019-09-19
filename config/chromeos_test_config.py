@@ -146,11 +146,6 @@ class HWTestList(object):
     # entries in _paladin_hwtest_assignments, below.  If you change the
     # ordering here you must also change the ordering there.
     return [
-        config_lib.HWTestConfig(
-            constants.HWTEST_PROVISION_SUITE,
-            blocking=True,
-            suite_args={'num_required': 1},
-            **kwargs),
         config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
                                 **kwargs),
         config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
