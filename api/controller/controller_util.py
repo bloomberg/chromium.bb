@@ -47,6 +47,10 @@ def ParseChroot(chroot_message):
   if use_flags:
     env['USE'] = ' '.join(use_flags)
 
+  # Make sure it'll use the local source to build chrome when we have it.
+  if chrome_root:
+    env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
+
   # TODO(saklein) Remove the default when fully integrated in recipes.
   env['FEATURES'] = 'separatedebug'
   if features:

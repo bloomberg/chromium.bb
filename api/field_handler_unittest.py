@@ -24,7 +24,7 @@ class ChrootHandlerTest(cros_test_lib.TestCase):
     self.path = '/chroot/dir'
     self.cache_dir = '/cache/dir'
     self.chrome_dir = '/chrome/dir'
-    self.env = {'FEATURES': 'thing'}
+    self.env = {'FEATURES': 'thing', 'CHROME_ORIGIN': 'LOCAL_SOURCE'}
     self.expected_chroot = chroot_lib.Chroot(path=self.path,
                                              cache_dir=self.cache_dir,
                                              chrome_root=self.chrome_dir,

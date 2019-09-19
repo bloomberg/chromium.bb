@@ -27,7 +27,8 @@ class ParseChrootTest(cros_test_lib.TestCase):
     use_flags = [{'flag': 'useflag1'}, {'flag': 'useflag2'}]
     features = [{'feature': 'feature1'}, {'feature': 'feature2'}]
     expected_env = {'USE': 'useflag1 useflag2',
-                    'FEATURES': 'feature1 feature2'}
+                    'FEATURES': 'feature1 feature2',
+                    'CHROME_ORIGIN': 'LOCAL_SOURCE'}
 
     chroot_message = common_pb2.Chroot(path=path, cache_dir=cache_dir,
                                        chrome_dir=chrome_root,
