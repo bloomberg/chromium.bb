@@ -205,10 +205,41 @@ def Chown(path, user=None, group=None):
                             redirect_stderr=True, redirect_stdout=True)
 
 
-def ReadFile(path, mode='r'):
-  """Read a given file on disk.  Primarily useful for one off small files."""
-  with open(path, mode) as f:
-    return f.read()
+def ReadFile(path, mode='r', encoding=None, errors=None):
+  """Read a given file on disk.  Primarily useful for one off small files.
+
+  The defaults are geared towards reading UTF-8 encoded text.
+
+  Args:
+    path: The file to read.
+    mode: The mode to use when opening the file.  'r' is for text files (see the
+      following settings) and 'rb' is for binary files.
+    encoding: The encoding of the file content.  Text files default to 'utf-8'.
+    errors: How to handle encoding errors.  Text files default to 'strict'.
+
+  Returns:
+    The content of the file, either as bytes or a string (with the specified
+    encoding).
+  """
+  if mode not in ('r', 'rb'):
+    raise ValueError('mode may only be "r" or "rb", not "%s"' % (mode,))
+
+  if 'b' in mode:
+    if encoding is not None or errors is not None:
+      raise ValueError('binary mode does not use encoding/errors')
+  else:
+    if encoding is None:
+      encoding = 'utf-8'
+    if errors is None:
+      errors = 'strict'
+
+  with open(path, 'rb') as f:
+    # TODO(vapier): We can merge encoding/errors into the open call once we are
+    # Python 3 only.  Until then, we have to handle it ourselves.
+    ret = f.read()
+    if 'b' not in mode:
+      ret = ret.decode(encoding, errors)
+    return ret
 
 
 def SafeSymlink(source, dest, sudo=False):

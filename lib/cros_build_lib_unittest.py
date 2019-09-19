@@ -175,7 +175,8 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
     self.assertEqual(result.output, '')
 
     result = cros_build_lib.run(['cat'], input=open(__file__))
-    self.assertEqual(result.output, osutils.ReadFile(__file__))
+    self.assertEqual(result.stdout,
+                     osutils.ReadFile(__file__, mode='rb'))
 
   def testInputFileDescriptor(self):
     """Verify input argument when it is a file descriptor."""
@@ -185,7 +186,8 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
 
     with open(__file__) as f:
       result = cros_build_lib.run(['cat'], input=f.fileno())
-      self.assertEqual(result.output, osutils.ReadFile(__file__))
+      self.assertEqual(result.stdout,
+                       osutils.ReadFile(__file__, mode='rb'))
 
   def testMixedEncodingCommand(self):
     """Verify cmd can mix bytes & strings."""
