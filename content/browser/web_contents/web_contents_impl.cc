@@ -2977,27 +2977,28 @@ void WebContentsImpl::CreateNewWindow(
   }
 }
 
-void WebContentsImpl::CreateNewWidget(
-    int32_t render_process_id,
-    int32_t widget_route_id,
-    mojo::PendingRemote<mojom::Widget> widget) {
+void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
+                                      int32_t widget_route_id,
+                                      mojo::PendingRemote<mojom::Widget> widget,
+                                      RenderViewHostImpl* render_view_host) {
   CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/false,
-                  std::move(widget));
+                  std::move(widget), render_view_host);
 }
 
 void WebContentsImpl::CreateNewFullscreenWidget(
     int32_t render_process_id,
     int32_t widget_route_id,
-    mojo::PendingRemote<mojom::Widget> widget) {
+    mojo::PendingRemote<mojom::Widget> widget,
+    RenderViewHostImpl* render_view_host) {
   CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/true,
-                  std::move(widget));
+                  std::move(widget), render_view_host);
 }
 
-void WebContentsImpl::CreateNewWidget(
-    int32_t render_process_id,
-    int32_t route_id,
-    bool is_fullscreen,
-    mojo::PendingRemote<mojom::Widget> widget) {
+void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
+                                      int32_t route_id,
+                                      bool is_fullscreen,
+                                      mojo::PendingRemote<mojom::Widget> widget,
+                                      RenderViewHostImpl* render_view_host) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
   // A message to create a new widget can only come from an active process for
   // this WebContentsImpl instance. If any other process sends the request,
@@ -3009,6 +3010,8 @@ void WebContentsImpl::CreateNewWidget(
 
   RenderWidgetHostImpl* widget_host = new RenderWidgetHostImpl(
       this, process, route_id, std::move(widget), IsHidden());
+  widget_host->BindVisualPropertiesManager(
+      render_view_host->GetVisualPropertiesManager());
 
   RenderWidgetHostViewBase* widget_view =
       static_cast<RenderWidgetHostViewBase*>(

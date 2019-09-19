@@ -670,8 +670,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_SetIsInert, OnSetIsInert)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetInheritedEffectiveTouchAction,
                         OnSetInheritedEffectiveTouchAction)
-    IPC_MESSAGE_HANDLER(WidgetMsg_SynchronizeVisualProperties,
-                        OnSynchronizeVisualProperties)
     IPC_MESSAGE_HANDLER(WidgetMsg_UpdateRenderThrottlingStatus,
                         OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
@@ -763,9 +761,10 @@ void RenderWidget::PrepareForClose() {
   CloseWebWidget();
 }
 
-void RenderWidget::OnSynchronizeVisualProperties(
+void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
     const VisualProperties& visual_properties_from_browser) {
-  TRACE_EVENT0("renderer", "RenderWidget::OnSynchronizeVisualProperties");
+  TRACE_EVENT0("renderer",
+               "RenderWidget::SynchronizeVisualPropertiesFromRenderView");
 
   VisualProperties visual_properties = visual_properties_from_browser;
   // Web tests can override the device scale factor in the renderer.

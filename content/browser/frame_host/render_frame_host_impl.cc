@@ -923,6 +923,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       owned_render_widget_host_ = RenderWidgetHostFactory::Create(
           frame_tree_->render_widget_delegate(), GetProcess(),
           widget_routing_id, std::move(widget), /*hidden=*/true);
+      owned_render_widget_host_->BindVisualPropertiesManager(
+          render_view_host_->GetVisualPropertiesManager());
       owned_render_widget_host_->set_owned_by_render_frame_host(true);
     }
 
