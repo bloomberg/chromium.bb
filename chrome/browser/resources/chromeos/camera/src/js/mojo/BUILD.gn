@@ -8,7 +8,6 @@ js_type_check("closure_compile") {
   deps = [
     ":device_operator",
     ":image_capture",
-    ":mojo_connector",
   ]
 }
 
@@ -26,11 +25,4 @@ js_library("image_capture") {
     "//media/capture/mojom:image_capture_js_library_for_compile",
   ]
   externs_list = [ "$externs_path/pending.js" ]
-}
-
-js_library("mojo_connector") {
-  deps = [
-    ":device_operator",
-    "//media/capture/video/chromeos/mojom:cros_camera_js_library_for_compile",
-  ]
 }
