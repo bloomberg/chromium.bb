@@ -33,7 +33,7 @@ REPO_REV = 'stable'
 # limitations under the License.
 
 # increment this whenever we make important changes to this script
-VERSION = (1, 26)
+VERSION = (1, 25)
 
 # increment this if the MAINTAINER_KEYS block is modified
 KEYRING_VERSION = (1, 5)
@@ -570,7 +570,7 @@ def _CheckGitVersion():
     raise CloneFailure()
 
   if ver_act is None:
-    print('fatal: unable to detect git version', file=sys.stderr)
+    print('error: "%s" unsupported' % ver_str, file=sys.stderr)
     raise CloneFailure()
 
   if ver_act < MIN_GIT_VERSION:
@@ -632,7 +632,7 @@ def SetupGnuPG(quiet):
       print(file=sys.stderr)
     return False
 
-  proc.stdin.write(MAINTAINER_KEYS.encode('utf-8'))
+  proc.stdin.write(MAINTAINER_KEYS)
   proc.stdin.close()
 
   if proc.wait() != 0:
@@ -711,7 +711,6 @@ def _DownloadBundle(url, local, quiet):
       cwd=local,
       stdout=subprocess.PIPE)
   for line in proc.stdout:
-    line = line.decode('utf-8')
     m = re.compile(r'^url\.(.*)\.insteadof (.*)$').match(line)
     if m:
       new_url = m.group(1)
@@ -804,7 +803,7 @@ def _Verify(cwd, branch, quiet):
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE,
                           cwd=cwd)
-  cur = proc.stdout.read().strip().decode('utf-8')
+  cur = proc.stdout.read().strip()
   proc.stdout.close()
 
   proc.stderr.read()
@@ -836,10 +835,10 @@ def _Verify(cwd, branch, quiet):
                           stderr=subprocess.PIPE,
                           cwd=cwd,
                           env=env)
-  out = proc.stdout.read().decode('utf-8')
+  out = proc.stdout.read()
   proc.stdout.close()
 
-  err = proc.stderr.read().decode('utf-8')
+  err = proc.stderr.read()
   proc.stderr.close()
 
   if proc.wait() != 0:
@@ -989,7 +988,7 @@ def _SetDefaultsTo(gitdir):
                            'HEAD'],
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE)
-  REPO_REV = proc.stdout.read().strip().decode('utf-8')
+  REPO_REV = proc.stdout.read().strip()
   proc.stdout.close()
 
   proc.stderr.read()
