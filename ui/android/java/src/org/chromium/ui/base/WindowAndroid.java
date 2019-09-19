@@ -37,6 +37,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.compat.ApiHelperForOMR1;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -195,9 +196,8 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
                 return;
             }
             if (mNativeWindowAndroid != 0) {
-                nativeOnVSync(mNativeWindowAndroid,
-                              vsyncTimeMicros,
-                              mVSyncMonitor.getVSyncPeriodInMicroseconds());
+                WindowAndroidJni.get().onVSync(mNativeWindowAndroid, WindowAndroid.this,
+                        vsyncTimeMicros, mVSyncMonitor.getVSyncPeriodInMicroseconds());
             }
         }
     };
@@ -207,14 +207,16 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
                 @Override
                 public void onCursorVisibilityChanged(boolean visible) {
                     if (mNativeWindowAndroid != 0) {
-                        nativeOnCursorVisibilityChanged(mNativeWindowAndroid, visible);
+                        WindowAndroidJni.get().onCursorVisibilityChanged(
+                                mNativeWindowAndroid, WindowAndroid.this, visible);
                     }
                 }
 
                 @Override
                 public void onFallbackCursorModeToggled(boolean isOn) {
                     if (mNativeWindowAndroid != 0) {
-                        nativeOnFallbackCursorModeToggled(mNativeWindowAndroid, isOn);
+                        WindowAndroidJni.get().onFallbackCursorModeToggled(
+                                mNativeWindowAndroid, WindowAndroid.this, isOn);
                     }
                 }
             };
@@ -568,7 +570,8 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      */
     public void onVisibilityChanged(boolean visible) {
         if (mNativeWindowAndroid == 0) return;
-        nativeOnVisibilityChanged(mNativeWindowAndroid, visible);
+        WindowAndroidJni.get().onVisibilityChanged(
+                mNativeWindowAndroid, WindowAndroid.this, visible);
     }
 
     /**
@@ -577,7 +580,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      */
     protected void onActivityStopped() {
         if (mNativeWindowAndroid == 0) return;
-        nativeOnActivityStopped(mNativeWindowAndroid);
+        WindowAndroidJni.get().onActivityStopped(mNativeWindowAndroid, WindowAndroid.this);
     }
 
     /**
@@ -586,7 +589,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      */
     protected void onActivityStarted() {
         if (mNativeWindowAndroid == 0) return;
-        nativeOnActivityStarted(mNativeWindowAndroid);
+        WindowAndroidJni.get().onActivityStarted(mNativeWindowAndroid, WindowAndroid.this);
     }
 
     protected void onActivityPaused() {
@@ -686,7 +689,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     public void destroy() {
         if (mNativeWindowAndroid != 0) {
             // Native code clears |mNativeWindowAndroid|.
-            nativeDestroy(mNativeWindowAndroid);
+            WindowAndroidJni.get().destroy(mNativeWindowAndroid, WindowAndroid.this);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -704,9 +707,11 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     @CalledByNative
     private long getNativePointer() {
         if (mNativeWindowAndroid == 0) {
-            mNativeWindowAndroid = nativeInit(mDisplayAndroid.getDisplayId(),
-                    getMouseWheelScrollFactor(), getWindowIsWideColorGamut());
-            nativeSetVSyncPaused(mNativeWindowAndroid, mVSyncPaused);
+            mNativeWindowAndroid =
+                    WindowAndroidJni.get().init(WindowAndroid.this, mDisplayAndroid.getDisplayId(),
+                            getMouseWheelScrollFactor(), getWindowIsWideColorGamut());
+            WindowAndroidJni.get().setVSyncPaused(
+                    mNativeWindowAndroid, WindowAndroid.this, mVSyncPaused);
         }
         return mNativeWindowAndroid;
     }
@@ -893,13 +898,18 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         if (mVSyncPaused == paused) return;
         mVSyncPaused = paused;
         if (!mVSyncPaused && mPendingVSyncRequest) requestVSyncUpdate();
-        if (mNativeWindowAndroid != 0) nativeSetVSyncPaused(mNativeWindowAndroid, paused);
+        if (mNativeWindowAndroid != 0) {
+            WindowAndroidJni.get().setVSyncPaused(mNativeWindowAndroid, WindowAndroid.this, paused);
+        }
     }
 
     @Override
     public void onRefreshRateChanged(float refreshRate) {
         mVSyncMonitor.updateRefreshRate(refreshRate);
-        if (mNativeWindowAndroid != 0) nativeOnUpdateRefreshRate(mNativeWindowAndroid, refreshRate);
+        if (mNativeWindowAndroid != 0) {
+            WindowAndroidJni.get().onUpdateRefreshRate(
+                    mNativeWindowAndroid, WindowAndroid.this, refreshRate);
+        }
     }
 
     @Override
@@ -945,8 +955,8 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         if (changed) {
             mSupportedRefreshRateModes = supportedRefreshRateModes;
             if (mNativeWindowAndroid != 0) {
-                nativeOnSupportedRefreshRatesUpdated(
-                        mNativeWindowAndroid, getSupportedRefreshRates());
+                WindowAndroidJni.get().onSupportedRefreshRatesUpdated(
+                        mNativeWindowAndroid, WindowAndroid.this, getSupportedRefreshRates());
             }
         }
     }
@@ -1012,19 +1022,23 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         return preferredMode.getModeId();
     }
 
-    private native long nativeInit(
-            int displayId, float scrollFactor, boolean windowIsWideColorGamut);
-    private native void nativeOnVSync(long nativeWindowAndroid,
-                                      long vsyncTimeMicros,
-                                      long vsyncPeriodMicros);
-    private native void nativeOnVisibilityChanged(long nativeWindowAndroid, boolean visible);
-    private native void nativeOnActivityStopped(long nativeWindowAndroid);
-    private native void nativeOnActivityStarted(long nativeWindowAndroid);
-    private native void nativeSetVSyncPaused(long nativeWindowAndroid, boolean paused);
-    private native void nativeOnUpdateRefreshRate(long nativeWindowAndroid, float refreshRate);
-    private native void nativeDestroy(long nativeWindowAndroid);
-    private native void nativeOnCursorVisibilityChanged(long nativeWindowAndroid, boolean visible);
-    private native void nativeOnFallbackCursorModeToggled(long nativeWindowAndroid, boolean isOn);
-    private native void nativeOnSupportedRefreshRatesUpdated(
-            long nativeWindowAndroid, float[] supportedRefreshRates);
+    @NativeMethods
+    interface Natives {
+        long init(WindowAndroid caller, int displayId, float scrollFactor,
+                boolean windowIsWideColorGamut);
+        void onVSync(long nativeWindowAndroid, WindowAndroid caller, long vsyncTimeMicros,
+                long vsyncPeriodMicros);
+        void onVisibilityChanged(long nativeWindowAndroid, WindowAndroid caller, boolean visible);
+        void onActivityStopped(long nativeWindowAndroid, WindowAndroid caller);
+        void onActivityStarted(long nativeWindowAndroid, WindowAndroid caller);
+        void setVSyncPaused(long nativeWindowAndroid, WindowAndroid caller, boolean paused);
+        void onUpdateRefreshRate(long nativeWindowAndroid, WindowAndroid caller, float refreshRate);
+        void destroy(long nativeWindowAndroid, WindowAndroid caller);
+        void onCursorVisibilityChanged(
+                long nativeWindowAndroid, WindowAndroid caller, boolean visible);
+        void onFallbackCursorModeToggled(
+                long nativeWindowAndroid, WindowAndroid caller, boolean isOn);
+        void onSupportedRefreshRatesUpdated(
+                long nativeWindowAndroid, WindowAndroid caller, float[] supportedRefreshRates);
+    }
 }
