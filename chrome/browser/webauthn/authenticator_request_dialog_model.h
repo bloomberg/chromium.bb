@@ -209,6 +209,10 @@ class AuthenticatorRequestDialogModel {
   // UI instead.
   void HideDialogAndDispatchToNativeWindowsApi();
 
+  // StartPhonePairing triggers the display of a QR code for pairing a new
+  // phone.
+  void StartPhonePairing();
+
   // Ensures that the Bluetooth adapter is powered before proceeding to |step|.
   //  -- If the adapter is powered, advanced directly to |step|.
   //  -- If the adapter is not powered, but Chrome can turn it automatically,
@@ -427,6 +431,7 @@ class AuthenticatorRequestDialogModel {
 
   void set_cable_transport_info(
       bool cable_extension_provided,
+      bool has_paired_phones,
       base::Optional<device::QRGeneratorKey> qr_generator_key);
 
   const std::string& relying_party_id() const { return relying_party_id_; }
@@ -514,6 +519,9 @@ class AuthenticatorRequestDialogModel {
   // cable_extension_provided_ indicates whether the request included a caBLE
   // extension.
   bool cable_extension_provided_ = false;
+  // have_paired_phones_ indicates whether this profile knows of any paired
+  // phones.
+  bool have_paired_phones_ = false;
   base::Optional<device::QRGeneratorKey> qr_generator_key_;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
