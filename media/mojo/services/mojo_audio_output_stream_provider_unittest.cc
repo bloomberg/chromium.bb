@@ -44,8 +44,10 @@ class FakeObserver : public mojom::AudioOutputStreamObserver {
 
 class FakeDelegate : public AudioOutputDelegate {
  public:
-  explicit FakeDelegate(mojom::AudioOutputStreamObserverPtr observer)
-      : observer_(std::move(observer)) {}
+  explicit FakeDelegate(
+      mojo::PendingRemote<media::mojom::AudioOutputStreamObserver>
+          pending_observer)
+      : observer_(std::move(pending_observer)) {}
   ~FakeDelegate() override = default;
 
   int GetStreamId() override { return 0; }
@@ -55,14 +57,15 @@ class FakeDelegate : public AudioOutputDelegate {
   void OnSetVolume(double) override {}
 
  private:
-  mojom::AudioOutputStreamObserverPtr observer_;
+  mojo::PendingRemote<media::mojom::AudioOutputStreamObserver> observer_;
 };
 
 std::unique_ptr<AudioOutputDelegate> CreateFakeDelegate(
     const AudioParameters& params,
-    mojom::AudioOutputStreamObserverPtr observer,
+    mojo::PendingRemote<media::mojom::AudioOutputStreamObserver>
+        pending_observer,
     AudioOutputDelegate::EventHandler*) {
-  return std::make_unique<FakeDelegate>(std::move(observer));
+  return std::make_unique<FakeDelegate>(std::move(pending_observer));
 }
 
 }  // namespace

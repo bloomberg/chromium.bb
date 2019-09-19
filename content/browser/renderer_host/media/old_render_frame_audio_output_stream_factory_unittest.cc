@@ -129,7 +129,8 @@ class MockContext : public RendererAudioOutputStreamFactoryContext {
       int render_frame_id,
       int stream_id,
       const media::AudioParameters& params,
-      media::mojom::AudioOutputStreamObserverPtr stream_observer,
+      mojo::PendingRemote<media::mojom::AudioOutputStreamObserver>
+          stream_observer,
       media::AudioOutputDelegate::EventHandler* handler) override {
     EXPECT_NE(nullptr, delegate_);
     EXPECT_NE(nullptr, delegate_event_handler_location_);

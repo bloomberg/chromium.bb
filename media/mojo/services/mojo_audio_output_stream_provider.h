@@ -14,6 +14,8 @@
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_audio_output_stream.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace media {
 
@@ -24,7 +26,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
   using CreateDelegateCallback =
       base::OnceCallback<std::unique_ptr<AudioOutputDelegate>(
           const AudioParameters& params,
-          mojom::AudioOutputStreamObserverPtr observer,
+          mojo::PendingRemote<mojom::AudioOutputStreamObserver>,
           AudioOutputDelegate::EventHandler*)>;
   using DeleterCallback = base::OnceCallback<void(AudioOutputStreamProvider*)>;
 
@@ -59,7 +61,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
   CreateDelegateCallback create_delegate_callback_;
   DeleterCallback deleter_callback_;
   std::unique_ptr<mojom::AudioOutputStreamObserver> observer_;
-  mojo::Binding<mojom::AudioOutputStreamObserver> observer_binding_;
+  mojo::Receiver<mojom::AudioOutputStreamObserver> observer_receiver_;
   base::Optional<MojoAudioOutputStream> audio_output_;
   mojom::AudioOutputStreamProviderClientPtr provider_client_;
 

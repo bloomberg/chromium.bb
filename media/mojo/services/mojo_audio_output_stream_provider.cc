@@ -22,7 +22,7 @@ MojoAudioOutputStreamProvider::MojoAudioOutputStreamProvider(
       create_delegate_callback_(std::move(create_delegate_callback)),
       deleter_callback_(std::move(deleter_callback)),
       observer_(std::move(observer)),
-      observer_binding_(observer_.get()) {
+      observer_receiver_(observer_.get()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Unretained is safe since |this| owns |binding_|.
   binding_.set_connection_error_handler(
@@ -60,12 +60,12 @@ void MojoAudioOutputStreamProvider::Acquire(
 
   provider_client_ = std::move(provider_client);
 
-  mojom::AudioOutputStreamObserverPtr observer_ptr;
-  observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
+  mojo::PendingRemote<mojom::AudioOutputStreamObserver> pending_observer;
+  observer_receiver_.Bind(pending_observer.InitWithNewPipeAndPassReceiver());
   // Unretained is safe since |this| owns |audio_output_|.
   audio_output_.emplace(
       base::BindOnce(std::move(create_delegate_callback_), params,
-                     std::move(observer_ptr)),
+                     std::move(pending_observer)),
       base::BindOnce(&mojom::AudioOutputStreamProviderClient::Created,
                      base::Unretained(provider_client_.get())),
       base::BindOnce(&MojoAudioOutputStreamProvider::CleanUp,
