@@ -45,15 +45,15 @@ static int vc4_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 	drv_bo_from_format(bo, stride, height, format);
 
 	memset(&bo_create, 0, sizeof(bo_create));
-	bo_create.size = bo->total_size;
+	bo_create.size = bo->meta.total_size;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VC4_CREATE_BO, &bo_create);
 	if (ret) {
-		drv_log("DRM_IOCTL_VC4_GEM_CREATE failed (size=%zu)\n", bo->total_size);
+		drv_log("DRM_IOCTL_VC4_GEM_CREATE failed (size=%zu)\n", bo->meta.total_size);
 		return -errno;
 	}
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		bo->handles[plane].u32 = bo_create.handle;
 
 	return 0;
@@ -73,8 +73,8 @@ static void *vc4_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t m
 		return MAP_FAILED;
 	}
 
-	vma->length = bo->total_size;
-	return mmap(NULL, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	vma->length = bo->meta.total_size;
+	return mmap(NULL, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    bo_map.offset);
 }
 

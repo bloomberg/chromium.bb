@@ -24,10 +24,10 @@
 #define I915_CACHELINE_MASK (I915_CACHELINE_SIZE - 1)
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR16161616F, DRM_FORMAT_ABGR2101010,
-						  DRM_FORMAT_ABGR8888,      DRM_FORMAT_ARGB1555,
+						  DRM_FORMAT_ABGR8888,	    DRM_FORMAT_ARGB1555,
 						  DRM_FORMAT_ARGB2101010,   DRM_FORMAT_ARGB8888,
-						  DRM_FORMAT_RGB565,        DRM_FORMAT_XBGR2101010,
-						  DRM_FORMAT_XBGR8888,      DRM_FORMAT_XRGB1555,
+						  DRM_FORMAT_RGB565,	    DRM_FORMAT_XBGR2101010,
+						  DRM_FORMAT_XBGR8888,	    DRM_FORMAT_XRGB1555,
 						  DRM_FORMAT_XRGB2101010,   DRM_FORMAT_XRGB8888 };
 
 static const uint32_t tileable_texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8,
@@ -256,7 +256,7 @@ static int i915_align_dimensions(struct bo *bo, uint32_t tiling, uint32_t *strid
 		break;
 	}
 
-	*aligned_height = ALIGN(bo->height, vertical_alignment);
+	*aligned_height = ALIGN(bo->meta.height, vertical_alignment);
 	if (i915->gen > 3) {
 		*stride = ALIGN(*stride, horizontal_alignment);
 	} else {
@@ -334,20 +334,20 @@ static int i915_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 		uint32_t stride = drv_stride_from_format(format, width, plane);
 		uint32_t plane_height = drv_height_from_format(format, height, plane);
 
-		if (bo->tiling != I915_TILING_NONE)
+		if (bo->meta.tiling != I915_TILING_NONE)
 			assert(IS_ALIGNED(offset, pagesize));
 
-		ret = i915_align_dimensions(bo, bo->tiling, &stride, &plane_height);
+		ret = i915_align_dimensions(bo, bo->meta.tiling, &stride, &plane_height);
 		if (ret)
 			return ret;
 
-		bo->strides[plane] = stride;
-		bo->sizes[plane] = stride * plane_height;
-		bo->offsets[plane] = offset;
-		offset += bo->sizes[plane];
+		bo->meta.strides[plane] = stride;
+		bo->meta.sizes[plane] = stride * plane_height;
+		bo->meta.offsets[plane] = offset;
+		offset += bo->meta.sizes[plane];
 	}
 
-	bo->total_size = ALIGN(offset, pagesize);
+	bo->meta.total_size = ALIGN(offset, pagesize);
 
 	return 0;
 }
@@ -362,17 +362,17 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 
 	switch (modifier) {
 	case DRM_FORMAT_MOD_LINEAR:
-		bo->tiling = I915_TILING_NONE;
+		bo->meta.tiling = I915_TILING_NONE;
 		break;
 	case I915_FORMAT_MOD_X_TILED:
-		bo->tiling = I915_TILING_X;
+		bo->meta.tiling = I915_TILING_X;
 		break;
 	case I915_FORMAT_MOD_Y_TILED:
-		bo->tiling = I915_TILING_Y;
+		bo->meta.tiling = I915_TILING_Y;
 		break;
 	}
 
-	bo->format_modifiers[0] = modifier;
+	bo->meta.format_modifiers[0] = modifier;
 
 	if (format == DRM_FORMAT_YVU420_ANDROID) {
 		/*
@@ -390,7 +390,7 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 	}
 
 	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.size = bo->total_size;
+	gem_create.size = bo->meta.total_size;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_CREATE, &gem_create);
 	if (ret) {
@@ -398,13 +398,13 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 		return -errno;
 	}
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		bo->handles[plane].u32 = gem_create.handle;
 
 	memset(&gem_set_tiling, 0, sizeof(gem_set_tiling));
 	gem_set_tiling.handle = bo->handles[0].u32;
-	gem_set_tiling.tiling_mode = bo->tiling;
-	gem_set_tiling.stride = bo->strides[0];
+	gem_set_tiling.tiling_mode = bo->meta.tiling;
+	gem_set_tiling.stride = bo->meta.strides[0];
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_SET_TILING, &gem_set_tiling);
 	if (ret) {
@@ -473,7 +473,7 @@ static int i915_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 		return ret;
 	}
 
-	bo->tiling = gem_get_tiling.tiling_mode;
+	bo->meta.tiling = gem_get_tiling.tiling_mode;
 	return 0;
 }
 
@@ -482,7 +482,7 @@ static void *i915_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t 
 	int ret;
 	void *addr;
 
-	if (bo->tiling == I915_TILING_NONE) {
+	if (bo->meta.tiling == I915_TILING_NONE) {
 		struct drm_i915_gem_mmap gem_map;
 		memset(&gem_map, 0, sizeof(gem_map));
 
@@ -494,14 +494,14 @@ static void *i915_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t 
 		 * For now, care must be taken not to use WC mappings for
 		 * Renderscript and camera use cases, as they're
 		 * performance-sensitive. */
-		if ((bo->use_flags & BO_USE_SCANOUT) &&
-		    !(bo->use_flags &
+		if ((bo->meta.use_flags & BO_USE_SCANOUT) &&
+		    !(bo->meta.use_flags &
 		      (BO_USE_RENDERSCRIPT | BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE)))
 			gem_map.flags = I915_MMAP_WC;
 
 		gem_map.handle = bo->handles[0].u32;
 		gem_map.offset = 0;
-		gem_map.size = bo->total_size;
+		gem_map.size = bo->meta.total_size;
 
 		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_MMAP, &gem_map);
 		if (ret) {
@@ -522,8 +522,8 @@ static void *i915_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t 
 			return MAP_FAILED;
 		}
 
-		addr = mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
-			    gem_map.offset);
+		addr = mmap(0, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED,
+			    bo->drv->fd, gem_map.offset);
 	}
 
 	if (addr == MAP_FAILED) {
@@ -531,7 +531,7 @@ static void *i915_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t 
 		return addr;
 	}
 
-	vma->length = bo->total_size;
+	vma->length = bo->meta.total_size;
 	return addr;
 }
 
@@ -542,7 +542,7 @@ static int i915_bo_invalidate(struct bo *bo, struct mapping *mapping)
 
 	memset(&set_domain, 0, sizeof(set_domain));
 	set_domain.handle = bo->handles[0].u32;
-	if (bo->tiling == I915_TILING_NONE) {
+	if (bo->meta.tiling == I915_TILING_NONE) {
 		set_domain.read_domains = I915_GEM_DOMAIN_CPU;
 		if (mapping->vma->map_flags & BO_MAP_WRITE)
 			set_domain.write_domain = I915_GEM_DOMAIN_CPU;
@@ -564,7 +564,7 @@ static int i915_bo_invalidate(struct bo *bo, struct mapping *mapping)
 static int i915_bo_flush(struct bo *bo, struct mapping *mapping)
 {
 	struct i915_device *i915 = bo->drv->priv;
-	if (!i915->has_llc && bo->tiling == I915_TILING_NONE)
+	if (!i915->has_llc && bo->meta.tiling == I915_TILING_NONE)
 		i915_clflush(mapping->vma->addr, mapping->vma->length);
 
 	return 0;

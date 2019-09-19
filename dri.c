@@ -193,7 +193,7 @@ int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t forma
 	int ret, dri_format, stride, offset;
 	struct dri_driver *dri = bo->drv->priv;
 
-	assert(bo->num_planes == 1);
+	assert(bo->meta.num_planes == 1);
 	dri_format = drm_format_to_dri_format(format);
 
 	/* Gallium drivers require shared to get the handle and stride. */
@@ -226,10 +226,10 @@ int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t forma
 		goto close_handle;
 	}
 
-	bo->strides[0] = stride;
-	bo->sizes[0] = stride * height;
-	bo->offsets[0] = offset;
-	bo->total_size = offset + bo->sizes[0];
+	bo->meta.strides[0] = stride;
+	bo->meta.sizes[0] = stride * height;
+	bo->meta.offsets[0] = offset;
+	bo->meta.total_size = offset + bo->meta.sizes[0];
 	return 0;
 
 close_handle:
@@ -244,11 +244,12 @@ int dri_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	int ret;
 	struct dri_driver *dri = bo->drv->priv;
 
-	assert(bo->num_planes == 1);
+	assert(bo->meta.num_planes == 1);
 
 	// clang-format off
 	bo->priv = dri->image_extension->createImageFromFds(dri->device, data->width, data->height,
-							    data->format, data->fds, bo->num_planes,
+							    data->format, data->fds,
+							    bo->meta.num_planes,
 							    (int *)data->strides,
 							    (int *)data->offsets, NULL);
 	// clang-format on
@@ -289,9 +290,9 @@ void *dri_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flag
 	struct dri_driver *dri = bo->drv->priv;
 
 	/* GBM flags and DRI flags are the same. */
-	vma->addr =
-	    dri->image_extension->mapImage(dri->context, bo->priv, 0, 0, bo->width, bo->height,
-					   map_flags, (int *)&vma->map_strides[plane], &vma->priv);
+	vma->addr = dri->image_extension->mapImage(dri->context, bo->priv, 0, 0, bo->meta.width,
+						   bo->meta.height, map_flags,
+						   (int *)&vma->map_strides[plane], &vma->priv);
 	if (!vma->addr)
 		return MAP_FAILED;
 

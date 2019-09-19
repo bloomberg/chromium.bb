@@ -69,7 +69,7 @@ static uint32_t translate_format(uint32_t drm_fourcc)
 static int virtio_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 				 uint64_t use_flags)
 {
-	if (bo->format != DRM_FORMAT_R8) {
+	if (bo->meta.format != DRM_FORMAT_R8) {
 		width = ALIGN(width, MESA_LLVMPIPE_TILE_SIZE);
 		height = ALIGN(height, MESA_LLVMPIPE_TILE_SIZE);
 	}
@@ -133,14 +133,14 @@ static int virtio_virgl_bo_create(struct bo *bo, uint32_t width, uint32_t height
 	res_create.last_level = 0;
 	res_create.nr_samples = 0;
 
-	res_create.size = ALIGN(bo->total_size, PAGE_SIZE); // PAGE_SIZE = 0x1000
+	res_create.size = ALIGN(bo->meta.total_size, PAGE_SIZE); // PAGE_SIZE = 0x1000
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_RESOURCE_CREATE, &res_create);
 	if (ret) {
 		drv_log("DRM_IOCTL_VIRTGPU_RESOURCE_CREATE failed with %s\n", strerror(errno));
 		return ret;
 	}
 
-	for (uint32_t plane = 0; plane < bo->num_planes; plane++)
+	for (uint32_t plane = 0; plane < bo->meta.num_planes; plane++)
 		bo->handles[plane].u32 = res_create.bo_handle;
 
 	return 0;
@@ -160,8 +160,8 @@ static void *virtio_virgl_bo_map(struct bo *bo, struct vma *vma, size_t plane, u
 		return MAP_FAILED;
 	}
 
-	vma->length = bo->total_size;
-	return mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	vma->length = bo->meta.total_size;
+	return mmap(0, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    gem_map.offset);
 }
 
@@ -266,7 +266,7 @@ static int virtio_gpu_bo_invalidate(struct bo *bo, struct mapping *mapping)
 	// Unfortunately, the kernel doesn't actually pass the guest layer_stride and
 	// guest stride to the host (compare virtio_gpu.h and virtgpu_drm.h). We can use
 	// the level to work around this.
-	xfer.level = bo->strides[0];
+	xfer.level = bo->meta.strides[0];
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_TRANSFER_FROM_HOST, &xfer);
 	if (ret) {
@@ -300,7 +300,7 @@ static int virtio_gpu_bo_flush(struct bo *bo, struct mapping *mapping)
 	// Unfortunately, the kernel doesn't actually pass the guest layer_stride and
 	// guest stride to the host (compare virtio_gpu.h and virtgpu_drm.h). We can use
 	// the level to work around this.
-	xfer.level = bo->strides[0];
+	xfer.level = bo->meta.strides[0];
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_TRANSFER_TO_HOST, &xfer);
 	if (ret) {

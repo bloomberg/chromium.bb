@@ -63,13 +63,13 @@ static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 	const uint32_t body_plane_offset = ALIGN(header_plane_size, body_plane_alignment);
 	const uint32_t total_size = body_plane_offset + body_plane_size;
 
-	bo->strides[0] = width_in_blocks * block_width * pixel_size;
-	bo->sizes[0] = total_size;
-	bo->offsets[0] = 0;
+	bo->meta.strides[0] = width_in_blocks * block_width * pixel_size;
+	bo->meta.sizes[0] = total_size;
+	bo->meta.offsets[0] = 0;
 
-	bo->total_size = total_size;
+	bo->meta.total_size = total_size;
 
-	bo->format_modifiers[0] = DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC;
+	bo->meta.format_modifiers[0] = DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC;
 
 	return 0;
 }
@@ -180,7 +180,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 		 * drv_bo_from_format updates total_size. Add an extra data space for rockchip video
 		 * driver to store motion vectors.
 		 */
-		bo->total_size += w_mbs * h_mbs * 128;
+		bo->meta.total_size += w_mbs * h_mbs * 128;
 	} else if (width <= 2560 &&
 		   drv_has_modifier(modifiers, count, DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)) {
 		/* If the caller has decided they can use AFBC, always
@@ -210,7 +210,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	}
 
 	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.size = bo->total_size;
+	gem_create.size = bo->meta.total_size;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_ROCKCHIP_GEM_CREATE, &gem_create);
 
@@ -220,7 +220,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 		return -errno;
 	}
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		bo->handles[plane].u32 = gem_create.handle;
 
 	return 0;
@@ -242,7 +242,7 @@ static void *rockchip_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint3
 
 	/* We can only map buffers created with SW access flags, which should
 	 * have no modifiers (ie, not AFBC). */
-	if (bo->format_modifiers[0] == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)
+	if (bo->meta.format_modifiers[0] == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)
 		return MAP_FAILED;
 
 	memset(&gem_map, 0, sizeof(gem_map));
@@ -254,14 +254,14 @@ static void *rockchip_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint3
 		return MAP_FAILED;
 	}
 
-	void *addr = mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	void *addr = mmap(0, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 			  gem_map.offset);
 
-	vma->length = bo->total_size;
+	vma->length = bo->meta.total_size;
 
-	if (bo->use_flags & BO_USE_RENDERSCRIPT) {
+	if (bo->meta.use_flags & BO_USE_RENDERSCRIPT) {
 		priv = calloc(1, sizeof(*priv));
-		priv->cached_addr = calloc(1, bo->total_size);
+		priv->cached_addr = calloc(1, bo->meta.total_size);
 		priv->gem_addr = addr;
 		vma->priv = priv;
 		addr = priv->cached_addr;
@@ -287,7 +287,7 @@ static int rockchip_bo_invalidate(struct bo *bo, struct mapping *mapping)
 {
 	if (mapping->vma->priv) {
 		struct rockchip_private_map_data *priv = mapping->vma->priv;
-		memcpy(priv->cached_addr, priv->gem_addr, bo->total_size);
+		memcpy(priv->cached_addr, priv->gem_addr, bo->meta.total_size);
 	}
 
 	return 0;
@@ -297,7 +297,7 @@ static int rockchip_bo_flush(struct bo *bo, struct mapping *mapping)
 {
 	struct rockchip_private_map_data *priv = mapping->vma->priv;
 	if (priv && (mapping->vma->map_flags & BO_MAP_WRITE))
-		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
+		memcpy(priv->gem_addr, priv->cached_addr, bo->meta.total_size);
 
 	return 0;
 }

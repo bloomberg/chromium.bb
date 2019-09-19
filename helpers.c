@@ -255,18 +255,19 @@ int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, 
 	 *    is 32 bytes aligned.
 	 */
 	if (format == DRM_FORMAT_YVU420_ANDROID) {
-		assert(aligned_height == bo->height);
+		assert(aligned_height == bo->meta.height);
 		assert(stride == ALIGN(stride, 32));
 	}
 
 	for (p = 0; p < num_planes; p++) {
-		bo->strides[p] = subsample_stride(stride, format, p);
-		bo->sizes[p] = drv_size_from_format(format, bo->strides[p], aligned_height, p);
-		bo->offsets[p] = offset;
-		offset += bo->sizes[p];
+		bo->meta.strides[p] = subsample_stride(stride, format, p);
+		bo->meta.sizes[p] =
+		    drv_size_from_format(format, bo->meta.strides[p], aligned_height, p);
+		bo->meta.offsets[p] = offset;
+		offset += bo->meta.sizes[p];
 	}
 
-	bo->total_size = offset;
+	bo->meta.total_size = offset;
 	return 0;
 }
 
@@ -289,7 +290,7 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 		 *
 		 * HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not
 		 * be aligned. */
-		aligned_height = 3 * DIV_ROUND_UP(bo->height, 2);
+		aligned_height = 3 * DIV_ROUND_UP(bo->meta.height, 2);
 		break;
 	case DRM_FORMAT_YVU420:
 	case DRM_FORMAT_NV12:
@@ -314,10 +315,10 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 
 	drv_bo_from_format(bo, create_dumb.pitch, height, format);
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		bo->handles[plane].u32 = create_dumb.handle;
 
-	bo->total_size = create_dumb.size;
+	bo->meta.total_size = create_dumb.size;
 	return 0;
 }
 
@@ -344,7 +345,7 @@ int drv_gem_bo_destroy(struct bo *bo)
 	int ret, error = 0;
 	size_t plane, i;
 
-	for (plane = 0; plane < bo->num_planes; plane++) {
+	for (plane = 0; plane < bo->meta.num_planes; plane++) {
 		for (i = 0; i < plane; i++)
 			if (bo->handles[i].u32 == bo->handles[plane].u32)
 				break;
@@ -372,7 +373,7 @@ int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	size_t plane;
 	struct drm_prime_handle prime_handle;
 
-	for (plane = 0; plane < bo->num_planes; plane++) {
+	for (plane = 0; plane < bo->meta.num_planes; plane++) {
 		memset(&prime_handle, 0, sizeof(prime_handle));
 		prime_handle.fd = data->fds[plane];
 
@@ -387,7 +388,7 @@ int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 			 * plane that failed, so GEM close will be called on
 			 * planes before that plane.
 			 */
-			bo->num_planes = plane;
+			bo->meta.num_planes = plane;
 			drv_gem_bo_destroy(bo);
 			return -errno;
 		}
@@ -413,9 +414,9 @@ void *drv_dumb_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map
 		return MAP_FAILED;
 	}
 
-	for (i = 0; i < bo->num_planes; i++)
+	for (i = 0; i < bo->meta.num_planes; i++)
 		if (bo->handles[i].u32 == bo->handles[plane].u32)
-			vma->length += bo->sizes[i];
+			vma->length += bo->meta.sizes[i];
 
 	return mmap(0, vma->length, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    map_dumb.offset);
@@ -439,7 +440,7 @@ int drv_mapping_destroy(struct bo *bo)
 	 */
 
 	idx = 0;
-	for (plane = 0; plane < bo->num_planes; plane++) {
+	for (plane = 0; plane < bo->meta.num_planes; plane++) {
 		while (idx < drv_array_size(bo->drv->mappings)) {
 			mapping = (struct mapping *)drv_array_at_idx(bo->drv->mappings, idx);
 			if (mapping->vma->handle != bo->handles[plane].u32) {

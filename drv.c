@@ -233,13 +233,13 @@ struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint3
 		return NULL;
 
 	bo->drv = drv;
-	bo->width = width;
-	bo->height = height;
-	bo->format = format;
-	bo->use_flags = use_flags;
-	bo->num_planes = drv_num_planes_from_format(format);
+	bo->meta.width = width;
+	bo->meta.height = height;
+	bo->meta.format = format;
+	bo->meta.use_flags = use_flags;
+	bo->meta.num_planes = drv_num_planes_from_format(format);
 
-	if (!bo->num_planes) {
+	if (!bo->meta.num_planes) {
 		free(bo);
 		return NULL;
 	}
@@ -268,9 +268,9 @@ struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height, ui
 
 	pthread_mutex_lock(&drv->driver_lock);
 
-	for (plane = 0; plane < bo->num_planes; plane++) {
+	for (plane = 0; plane < bo->meta.num_planes; plane++) {
 		if (plane > 0)
-			assert(bo->offsets[plane] >= bo->offsets[plane - 1]);
+			assert(bo->meta.offsets[plane] >= bo->meta.offsets[plane - 1]);
 
 		drv_increment_reference_count(drv, bo, plane);
 	}
@@ -306,9 +306,9 @@ struct bo *drv_bo_create_with_modifiers(struct driver *drv, uint32_t width, uint
 
 	pthread_mutex_lock(&drv->driver_lock);
 
-	for (plane = 0; plane < bo->num_planes; plane++) {
+	for (plane = 0; plane < bo->meta.num_planes; plane++) {
 		if (plane > 0)
-			assert(bo->offsets[plane] >= bo->offsets[plane - 1]);
+			assert(bo->meta.offsets[plane] >= bo->meta.offsets[plane - 1]);
 
 		drv_increment_reference_count(drv, bo, plane);
 	}
@@ -326,10 +326,10 @@ void drv_bo_destroy(struct bo *bo)
 
 	pthread_mutex_lock(&drv->driver_lock);
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		drv_decrement_reference_count(drv, bo, plane);
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		total += drv_get_reference_count(drv, bo, plane);
 
 	pthread_mutex_unlock(&drv->driver_lock);
@@ -360,16 +360,16 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 		return NULL;
 	}
 
-	for (plane = 0; plane < bo->num_planes; plane++) {
+	for (plane = 0; plane < bo->meta.num_planes; plane++) {
 		pthread_mutex_lock(&bo->drv->driver_lock);
 		drv_increment_reference_count(bo->drv, bo, plane);
 		pthread_mutex_unlock(&bo->drv->driver_lock);
 	}
 
-	for (plane = 0; plane < bo->num_planes; plane++) {
-		bo->strides[plane] = data->strides[plane];
-		bo->offsets[plane] = data->offsets[plane];
-		bo->format_modifiers[plane] = data->format_modifiers[plane];
+	for (plane = 0; plane < bo->meta.num_planes; plane++) {
+		bo->meta.strides[plane] = data->strides[plane];
+		bo->meta.offsets[plane] = data->offsets[plane];
+		bo->meta.format_modifiers[plane] = data->format_modifiers[plane];
 
 		seek_end = lseek(data->fds[plane], 0, SEEK_END);
 		if (seek_end == (off_t)(-1)) {
@@ -378,17 +378,17 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 		}
 
 		lseek(data->fds[plane], 0, SEEK_SET);
-		if (plane == bo->num_planes - 1 || data->offsets[plane + 1] == 0)
-			bo->sizes[plane] = seek_end - data->offsets[plane];
+		if (plane == bo->meta.num_planes - 1 || data->offsets[plane + 1] == 0)
+			bo->meta.sizes[plane] = seek_end - data->offsets[plane];
 		else
-			bo->sizes[plane] = data->offsets[plane + 1] - data->offsets[plane];
+			bo->meta.sizes[plane] = data->offsets[plane + 1] - data->offsets[plane];
 
-		if ((int64_t)bo->offsets[plane] + bo->sizes[plane] > seek_end) {
+		if ((int64_t)bo->meta.offsets[plane] + bo->meta.sizes[plane] > seek_end) {
 			drv_log("buffer size is too large.\n");
 			goto destroy_bo;
 		}
 
-		bo->total_size += bo->sizes[plane];
+		bo->meta.total_size += bo->meta.sizes[plane];
 	}
 
 	return bo;
@@ -411,7 +411,7 @@ void *drv_bo_map(struct bo *bo, const struct rectangle *rect, uint32_t map_flags
 	assert(rect->y + rect->height <= drv_bo_get_height(bo));
 	assert(BO_MAP_READ_WRITE & map_flags);
 	/* No CPU access for protected buffers. */
-	assert(!(bo->use_flags & BO_USE_PROTECTED));
+	assert(!(bo->meta.use_flags & BO_USE_PROTECTED));
 
 	memset(&mapping, 0, sizeof(mapping));
 	mapping.rect = *rect;
@@ -446,7 +446,7 @@ void *drv_bo_map(struct bo *bo, const struct rectangle *rect, uint32_t map_flags
 	}
 
 	mapping.vma = calloc(1, sizeof(*mapping.vma));
-	memcpy(mapping.vma->map_strides, bo->strides, sizeof(mapping.vma->map_strides));
+	memcpy(mapping.vma->map_strides, bo->meta.strides, sizeof(mapping.vma->map_strides));
 	addr = bo->drv->backend->bo_map(bo, mapping.vma, plane, map_flags);
 	if (addr == MAP_FAILED) {
 		*map_data = NULL;
@@ -520,7 +520,7 @@ int drv_bo_flush_or_unmap(struct bo *bo, struct mapping *mapping)
 	assert(mapping->vma);
 	assert(mapping->refcount > 0);
 	assert(mapping->vma->refcount > 0);
-	assert(!(bo->use_flags & BO_USE_PROTECTED));
+	assert(!(bo->meta.use_flags & BO_USE_PROTECTED));
 
 	if (bo->drv->backend->bo_flush)
 		ret = bo->drv->backend->bo_flush(bo, mapping);
@@ -532,22 +532,22 @@ int drv_bo_flush_or_unmap(struct bo *bo, struct mapping *mapping)
 
 uint32_t drv_bo_get_width(struct bo *bo)
 {
-	return bo->width;
+	return bo->meta.width;
 }
 
 uint32_t drv_bo_get_height(struct bo *bo)
 {
-	return bo->height;
+	return bo->meta.height;
 }
 
 uint32_t drv_bo_get_stride_or_tiling(struct bo *bo)
 {
-	return bo->tiling ? bo->tiling : drv_bo_get_plane_stride(bo, 0);
+	return bo->meta.tiling ? bo->meta.tiling : drv_bo_get_plane_stride(bo, 0);
 }
 
 size_t drv_bo_get_num_planes(struct bo *bo)
 {
-	return bo->num_planes;
+	return bo->meta.num_planes;
 }
 
 union bo_handle drv_bo_get_plane_handle(struct bo *bo, size_t plane)
@@ -563,7 +563,7 @@ int drv_bo_get_plane_fd(struct bo *bo, size_t plane)
 {
 
 	int ret, fd;
-	assert(plane < bo->num_planes);
+	assert(plane < bo->meta.num_planes);
 
 	ret = drmPrimeHandleToFD(bo->drv->fd, bo->handles[plane].u32, DRM_CLOEXEC | DRM_RDWR, &fd);
 
@@ -576,31 +576,31 @@ int drv_bo_get_plane_fd(struct bo *bo, size_t plane)
 
 uint32_t drv_bo_get_plane_offset(struct bo *bo, size_t plane)
 {
-	assert(plane < bo->num_planes);
-	return bo->offsets[plane];
+	assert(plane < bo->meta.num_planes);
+	return bo->meta.offsets[plane];
 }
 
 uint32_t drv_bo_get_plane_size(struct bo *bo, size_t plane)
 {
-	assert(plane < bo->num_planes);
-	return bo->sizes[plane];
+	assert(plane < bo->meta.num_planes);
+	return bo->meta.sizes[plane];
 }
 
 uint32_t drv_bo_get_plane_stride(struct bo *bo, size_t plane)
 {
-	assert(plane < bo->num_planes);
-	return bo->strides[plane];
+	assert(plane < bo->meta.num_planes);
+	return bo->meta.strides[plane];
 }
 
 uint64_t drv_bo_get_plane_format_modifier(struct bo *bo, size_t plane)
 {
-	assert(plane < bo->num_planes);
-	return bo->format_modifiers[plane];
+	assert(plane < bo->meta.num_planes);
+	return bo->meta.format_modifiers[plane];
 }
 
 uint32_t drv_bo_get_format(struct bo *bo)
 {
-	return bo->format;
+	return bo->meta.format;
 }
 
 uint32_t drv_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags)
@@ -616,7 +616,7 @@ uint32_t drv_num_buffers_per_bo(struct bo *bo)
 	uint32_t count = 0;
 	size_t plane, p;
 
-	for (plane = 0; plane < bo->num_planes; plane++) {
+	for (plane = 0; plane < bo->meta.num_planes; plane++) {
 		for (p = 0; p < plane; p++)
 			if (bo->handles[p].u32 == bo->handles[plane].u32)
 				break;

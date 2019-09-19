@@ -114,7 +114,7 @@ static int mediatek_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	drv_bo_from_format(bo, stride, height, format);
 
 	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.size = bo->total_size;
+	gem_create.size = bo->meta.total_size;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MTK_GEM_CREATE, &gem_create);
 	if (ret) {
@@ -122,7 +122,7 @@ static int mediatek_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 		return -errno;
 	}
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		bo->handles[plane].u32 = gem_create.handle;
 
 	return 0;
@@ -157,17 +157,17 @@ static void *mediatek_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint3
 		return MAP_FAILED;
 	}
 
-	void *addr = mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	void *addr = mmap(0, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 			  gem_map.offset);
 
-	vma->length = bo->total_size;
+	vma->length = bo->meta.total_size;
 
 	priv = calloc(1, sizeof(*priv));
 	priv->prime_fd = prime_fd;
 	vma->priv = priv;
 
-	if (bo->use_flags & BO_USE_RENDERSCRIPT) {
-		priv->cached_addr = calloc(1, bo->total_size);
+	if (bo->meta.use_flags & BO_USE_RENDERSCRIPT) {
+		priv->cached_addr = calloc(1, bo->meta.total_size);
 		priv->gem_addr = addr;
 		addr = priv->cached_addr;
 	}
@@ -213,7 +213,7 @@ static int mediatek_bo_invalidate(struct bo *bo, struct mapping *mapping)
 			drv_log("poll prime_fd failed\n");
 
 		if (priv->cached_addr)
-			memcpy(priv->cached_addr, priv->gem_addr, bo->total_size);
+			memcpy(priv->cached_addr, priv->gem_addr, bo->meta.total_size);
 	}
 
 	return 0;
@@ -223,7 +223,7 @@ static int mediatek_bo_flush(struct bo *bo, struct mapping *mapping)
 {
 	struct mediatek_private_map_data *priv = mapping->vma->priv;
 	if (priv && priv->cached_addr && (mapping->vma->map_flags & BO_MAP_WRITE))
-		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
+		memcpy(priv->gem_addr, priv->cached_addr, bo->meta.total_size);
 
 	return 0;
 }

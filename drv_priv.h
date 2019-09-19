@@ -14,20 +14,24 @@
 
 #include "drv.h"
 
-struct bo {
-	struct driver *drv;
+struct bo_metadata {
 	uint32_t width;
 	uint32_t height;
 	uint32_t format;
 	uint32_t tiling;
 	size_t num_planes;
-	union bo_handle handles[DRV_MAX_PLANES];
 	uint32_t offsets[DRV_MAX_PLANES];
 	uint32_t sizes[DRV_MAX_PLANES];
 	uint32_t strides[DRV_MAX_PLANES];
 	uint64_t format_modifiers[DRV_MAX_PLANES];
 	uint64_t use_flags;
 	size_t total_size;
+};
+
+struct bo {
+	struct driver *drv;
+	struct bo_metadata meta;
+	union bo_handle handles[DRV_MAX_PLANES];
 	void *priv;
 };
 

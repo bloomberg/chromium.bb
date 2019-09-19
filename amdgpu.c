@@ -183,7 +183,7 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	drv_bo_from_format(bo, stride, height, format);
 
 	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.in.bo_size = bo->total_size;
+	gem_create.in.bo_size = bo->meta.total_size;
 	gem_create.in.alignment = 256;
 	gem_create.in.domain_flags = 0;
 
@@ -200,7 +200,7 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	if (ret < 0)
 		return ret;
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		bo->handles[plane].u32 = gem_create.out.handle;
 
 	return 0;
@@ -244,9 +244,9 @@ static void *amdgpu_map_bo(struct bo *bo, struct vma *vma, size_t plane, uint32_
 		return MAP_FAILED;
 	}
 
-	vma->length = bo->total_size;
+	vma->length = bo->meta.total_size;
 
-	return mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	return mmap(0, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    gem_map.out.addr_ptr);
 }
 
