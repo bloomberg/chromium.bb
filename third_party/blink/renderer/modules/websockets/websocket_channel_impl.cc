@@ -81,7 +81,7 @@ enum WebSocketOpCode {
 }  // namespace
 
 class WebSocketChannelImpl::BlobLoader final
-    : public GarbageCollectedFinalized<WebSocketChannelImpl::BlobLoader>,
+    : public GarbageCollected<WebSocketChannelImpl::BlobLoader>,
       public FileReaderLoaderClient {
  public:
   BlobLoader(scoped_refptr<BlobDataHandle>,
@@ -105,7 +105,7 @@ class WebSocketChannelImpl::BlobLoader final
 };
 
 class WebSocketChannelImpl::Message final
-    : public GarbageCollectedFinalized<WebSocketChannelImpl::Message> {
+    : public GarbageCollected<WebSocketChannelImpl::Message> {
  public:
   Message(const std::string&, base::OnceClosure completion_callback);
   explicit Message(scoped_refptr<BlobDataHandle>);
