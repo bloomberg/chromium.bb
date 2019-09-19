@@ -72,8 +72,6 @@ const CLASSES = {
   CLOCK_ICON: 'clock-icon',
   // Applies styles to dialogs used in customization.
   CUSTOMIZE_DIALOG: 'customize-dialog',
-  DARK: 'dark',
-  DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
   // Extended and elevated style for customization entry point.
   ENTRY_POINT_ENHANCED: 'ep-enhanced',
@@ -1390,8 +1388,6 @@ function renderTheme() {
     return;
   }
 
-  $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, info.isNtpBackgroundDark);
-
   // Update dark mode styling.
   isDarkModeEnabled = window.matchMedia('(prefers-color-scheme: dark)').matches;
   document.body.classList.toggle('light-chip', !getUseDarkChips(info));
@@ -1584,9 +1580,6 @@ function setCustomThemeStyle(themeInfo) {
     textColorLight = convertToRGBAColor(themeInfo.textColorLightRgba);
     mvxFilter = 'drop-shadow(0 0 0 ' + textColor + ')';
   }
-
-  $(IDS.NTP_CONTENTS)
-      .classList.toggle(CLASSES.DEFAULT_THEME, themeInfo.usingDefaultTheme);
 
   document.body.style.setProperty('--text-color', textColor);
   document.body.style.setProperty('--text-color-light', textColorLight);

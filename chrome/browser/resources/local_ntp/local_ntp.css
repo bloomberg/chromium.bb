@@ -539,7 +539,7 @@ body.fakebox-focused #fakebox-cursor {
 }
 
 @media (prefers-color-scheme: dark) {
-  body:not(.light-chip) .default-theme.dark #mv-msg {
+  body:not(.light-chip) #mv-msg {
     color: rgb(var(--GG200-rgb));
   }
 }
