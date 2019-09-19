@@ -25,7 +25,9 @@
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -65,7 +67,8 @@ content::DesktopMediaID BuildMediaIdForTabMirroring(
 class MockVideoCaptureObserver final
     : public media::mojom::VideoCaptureObserver {
  public:
-  explicit MockVideoCaptureObserver(media::mojom::VideoCaptureHostPtr host)
+  explicit MockVideoCaptureObserver(
+      mojo::PendingRemote<media::mojom::VideoCaptureHost> host)
       : host_(std::move(host)) {}
   MOCK_METHOD1(OnBufferCreatedCall, void(int buffer_id));
   MOCK_METHOD1(OnBufferReadyCall, void(int buffer_id));
@@ -109,7 +112,7 @@ class MockVideoCaptureObserver final
   void RequestRefreshFrame() { host_->RequestRefreshFrame(device_id_); }
 
  private:
-  media::mojom::VideoCaptureHostPtr host_;
+  mojo::Remote<media::mojom::VideoCaptureHost> host_;
   mojo::Receiver<media::mojom::VideoCaptureObserver> receiver_{this};
   base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;
   base::flat_map<int, media::mojom::VideoFrameInfoPtr> frame_infos_;
@@ -149,9 +152,10 @@ class CastMirroringServiceHostBrowserTest
   }
 
   void GetVideoCaptureHost() {
-    media::mojom::VideoCaptureHostPtr video_capture_host;
+    mojo::PendingRemote<media::mojom::VideoCaptureHost> video_capture_host;
     static_cast<mojom::ResourceProvider*>(host_.get())
-        ->GetVideoCaptureHost(mojo::MakeRequest(&video_capture_host));
+        ->GetVideoCaptureHost(
+            video_capture_host.InitWithNewPipeAndPassReceiver());
     video_frame_receiver_ = std::make_unique<MockVideoCaptureObserver>(
         std::move(video_capture_host));
   }

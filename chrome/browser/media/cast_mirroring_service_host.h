@@ -84,7 +84,7 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   // ResourceProvider implementation.
   void BindGpu(mojo::PendingReceiver<viz::mojom::Gpu> receiver) override;
   void GetVideoCaptureHost(
-      media::mojom::VideoCaptureHostRequest request) override;
+      mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) override;
   void GetNetworkContext(
       mojo::PendingReceiver<network::mojom::NetworkContext> receiver) override;
   void CreateAudioStream(

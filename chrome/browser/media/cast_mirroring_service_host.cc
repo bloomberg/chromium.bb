@@ -34,6 +34,7 @@
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/viz/public/mojom/gpu.mojom.h"
@@ -49,22 +50,23 @@ constexpr gfx::Size kMaxResolution(1920, 1080);
 
 namespace {
 
-void CreateVideoCaptureHostOnIO(const std::string& device_id,
-                                blink::mojom::MediaStreamType type,
-                                media::mojom::VideoCaptureHostRequest request) {
+void CreateVideoCaptureHostOnIO(
+    const std::string& device_id,
+    blink::mojom::MediaStreamType type,
+    mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner =
       base::CreateSingleThreadTaskRunner(
           {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<SingleClientVideoCaptureHost>(
           device_id, type,
           base::BindRepeating(&content::VideoCaptureDeviceLauncher::
                                   CreateInProcessVideoCaptureDeviceLauncher,
                               std::move(device_task_runner))),
-      std::move(request));
+      std::move(receiver));
 }
 
 blink::mojom::MediaStreamType ConvertVideoStreamType(
@@ -254,12 +256,12 @@ void CastMirroringServiceHost::BindGpu(
 }
 
 void CastMirroringServiceHost::GetVideoCaptureHost(
-    media::mojom::VideoCaptureHostRequest request) {
+    mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) {
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CreateVideoCaptureHostOnIO, source_media_id_.ToString(),
                      ConvertVideoStreamType(source_media_id_.type),
-                     std::move(request)));
+                     std::move(receiver)));
 }
 
 void CastMirroringServiceHost::GetNetworkContext(

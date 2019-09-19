@@ -20,6 +20,7 @@
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/net_utility.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
@@ -116,8 +117,8 @@ class SessionTest : public mojom::ResourceProvider,
   // mojom::ResourceProvider implemenation.
   void BindGpu(mojo::PendingReceiver<viz::mojom::Gpu> receiver) override {}
   void GetVideoCaptureHost(
-      media::mojom::VideoCaptureHostRequest request) override {
-    video_host_ = std::make_unique<FakeVideoCaptureHost>(std::move(request));
+      mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) override {
+    video_host_ = std::make_unique<FakeVideoCaptureHost>(std::move(receiver));
     OnGetVideoCaptureHost();
   }
 
