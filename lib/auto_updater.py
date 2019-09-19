@@ -1078,7 +1078,6 @@ class ChromiumOSUpdater(BaseUpdater):
         self._RetryCommand(['touch', touch_path], **self._cmd_kwargs)
 
     self._ResetUpdateEngine()
-    self.ResetStatefulPartition()
 
   def PostCheckStatefulUpdate(self):
     """Post-check for stateful update for CrOS host."""
@@ -1139,6 +1138,7 @@ class ChromiumOSUpdater(BaseUpdater):
     logging.warning('Restoring the stateful partition.')
     self.PreSetupStatefulUpdate()
     self.TransferStatefulUpdate()
+    self.ResetStatefulPartition()
     use_original_build = bool(self.original_payload_dir)
     self.UpdateStateful(use_original_build=use_original_build)
     self.PostCheckStatefulUpdate()

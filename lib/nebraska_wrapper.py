@@ -321,5 +321,4 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
           logging.warning(e2.result.error)
           raise NebraskaStartupError(e.result.error)
 
-      error_msg = e.result.error.splitlines()[-1]
-      raise NebraskaStartupError(error_msg)
+      raise NebraskaStartupError(str(e))
