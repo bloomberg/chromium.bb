@@ -1148,7 +1148,7 @@ class ArchivingStageMixin(object):
       return True
     return False
 
-  def _GetUploadUrls(self, filename, builder_run=None, prefix=None):
+  def _GetUploadUrls(self, filename, builder_run=None):
     """Returns a list of all urls for which to upload filename to.
 
     Args:
@@ -1179,12 +1179,10 @@ class ArchivingStageMixin(object):
           if self._FilterBuildFromMoblab(url, bot_id):
             continue
           urls.append('/'.join([url, bot_id, self.version]))
-    if prefix:
-      urls = [u + '/' + prefix for u in urls]
     return urls
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
-  def UploadArtifact(self, path, archive=True, strict=True, prefix=None):
+  def UploadArtifact(self, path, archive=True, strict=True):
     """Upload generated artifact to Google Storage.
 
     Args:
@@ -1193,12 +1191,11 @@ class ArchivingStageMixin(object):
         in self.archive_path.
       archive: Whether to automatically copy files to the archive dir.
       strict: Whether to treat upload errors as fatal.
-      prefix: When not None, add an additional directory prefix by this value.
     """
     filename = path
     if archive:
       filename = commands.ArchiveFile(path, self.archive_path)
-    upload_urls = self._GetUploadUrls(filename, prefix)
+    upload_urls = self._GetUploadUrls(filename)
     try:
       commands.UploadArchivedFile(
           self.archive_path,
