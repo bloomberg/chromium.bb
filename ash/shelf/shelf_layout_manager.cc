@@ -1719,9 +1719,12 @@ bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
   if (!window)
     return false;
   const aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
+  const aura::Window* navigation_window =
+      shelf_widget_->navigation_widget()->GetNativeWindow();
   const aura::Window* hotseat_window =
       shelf_widget_->hotseat_widget()->GetNativeWindow();
   return (shelf_window && shelf_window->Contains(window)) ||
+         (navigation_window && navigation_window->Contains(window)) ||
          (hotseat_window && hotseat_window->Contains(window));
 }
 
