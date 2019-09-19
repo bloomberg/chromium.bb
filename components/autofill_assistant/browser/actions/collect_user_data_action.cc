@@ -64,6 +64,9 @@ CollectUserDataAction::~CollectUserDataAction() {
                                                   action_successful_);
     Metrics::RecordPaymentRequestAutofillChanged(personal_data_changed_,
                                                  action_successful_);
+    Metrics::RecordPaymentRequestMandatoryPostalCode(
+        proto_.collect_user_data().require_billing_postal_code(),
+        initial_card_has_billing_postal_code_, action_successful_);
   }
 }
 
@@ -191,7 +194,7 @@ void CollectUserDataAction::ShowToUser(
   // Gather info for UMA histograms.
   if (!shown_to_user_) {
     shown_to_user_ = true;
-    initially_prefilled = IsInitialAutofillDataComplete(
+    initially_prefilled = CheckInitialAutofillDataComplete(
         delegate_->GetPersonalDataManager(), *collect_user_data_options);
     delegate_->GetPersonalDataManager()->AddObserver(this);
   }
@@ -258,6 +261,10 @@ void CollectUserDataAction::OnGetUserData(
         delegate_->GetClientMemory()->set_selected_address(
             contact_details_proto.contact_details_name(),
             std::make_unique<autofill::AutofillProfile>(contact_profile));
+      }
+
+      if (contact_details_proto.request_payer_name()) {
+        Metrics::RecordPaymentRequestFirstNameOnly(parts.family.empty());
       }
     }
 
@@ -409,9 +416,9 @@ CollectUserDataAction::CreateOptionsFromProto() {
   return collect_user_data_options;
 }
 
-bool CollectUserDataAction::IsInitialAutofillDataComplete(
+bool CollectUserDataAction::CheckInitialAutofillDataComplete(
     autofill::PersonalDataManager* personal_data_manager,
-    const CollectUserDataOptions& collect_user_data_options) const {
+    const CollectUserDataOptions& collect_user_data_options) {
   bool request_contact = collect_user_data_options.request_payer_name ||
                          collect_user_data_options.request_payer_email ||
                          collect_user_data_options.request_payer_phone;
@@ -430,9 +437,9 @@ bool CollectUserDataAction::IsInitialAutofillDataComplete(
 
     if (collect_user_data_options.request_shipping) {
       auto completeAddressIter = std::find_if(
-          profiles.begin(), profiles.end(),
-          [&collect_user_data_options](const auto* profile) {
-            return IsCompleteAddress(*profile, collect_user_data_options);
+          profiles.begin(), profiles.end(), [](const auto* profile) {
+            return IsCompleteAddress(*profile,
+                                     /* require_postal_code = */ false);
           });
       if (completeAddressIter == profiles.end()) {
         return false;
@@ -444,11 +451,16 @@ bool CollectUserDataAction::IsInitialAutofillDataComplete(
     auto credit_cards = personal_data_manager->GetCreditCards();
     auto completeCardIter = std::find_if(
         credit_cards.begin(), credit_cards.end(),
-        [&collect_user_data_options](const auto* credit_card) {
-          return IsCompleteCreditCard(*credit_card, collect_user_data_options);
+        [&collect_user_data_options,
+         personal_data_manager](const auto* credit_card) {
+          return IsCompleteCreditCard(personal_data_manager, *credit_card,
+                                      collect_user_data_options);
         });
     if (completeCardIter == credit_cards.end()) {
       return false;
+    }
+    if (collect_user_data_options.require_billing_postal_code) {
+      initial_card_has_billing_postal_code_ = true;
     }
   }
   return true;
@@ -476,17 +488,22 @@ bool CollectUserDataAction::IsCompleteContact(
 
 bool CollectUserDataAction::IsCompleteAddress(
     const autofill::AutofillProfile& profile,
-    const CollectUserDataOptions& collect_user_data_options) {
-  if (!collect_user_data_options.request_shipping) {
-    return true;
-  }
-
+    bool require_postal_code) {
   auto address_data = autofill::i18n::CreateAddressDataFromAutofillProfile(
       profile, base::android::GetDefaultLocaleString());
-  return autofill::addressinput::HasAllRequiredFields(*address_data);
+  if (!autofill::addressinput::HasAllRequiredFields(*address_data)) {
+    return false;
+  }
+
+  if (require_postal_code && address_data->postal_code.empty()) {
+    return false;
+  }
+
+  return true;
 }
 
 bool CollectUserDataAction::IsCompleteCreditCard(
+    autofill::PersonalDataManager* personal_data_manager,
     const autofill::CreditCard& credit_card,
     const CollectUserDataOptions& collect_user_data_options) {
   if (credit_card.record_type() != autofill::CreditCard::MASKED_SERVER_CARD &&
@@ -498,6 +515,15 @@ bool CollectUserDataAction::IsCompleteCreditCard(
 
   if (!credit_card.HasValidExpirationDate() ||
       credit_card.billing_address_id().empty()) {
+    return false;
+  }
+
+  auto* address_profile =
+      personal_data_manager->GetProfileByGUID(credit_card.billing_address_id());
+  if (!address_profile ||
+      !IsCompleteAddress(
+          *address_profile,
+          collect_user_data_options.require_billing_postal_code)) {
     return false;
   }
 

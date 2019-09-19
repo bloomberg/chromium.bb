@@ -3619,6 +3619,14 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Not changed &amp; Failure"/>
 </enum>
 
+<enum name="AutofillAssistantPaymentRequestMandatoryPostalCode">
+  <int value="0" label="Required &amp; initially wrong &amp; success"/>
+  <int value="1" label="Required &amp; initially wrong &amp; failure"/>
+  <int value="2" label="Required &amp; initially right &amp; success"/>
+  <int value="3" label="Required &amp; initially right &amp; failure"/>
+  <int value="4" label="Not required"/>
+</enum>
+
 <enum name="AutofillAssistantPaymentRequestPrefilled">
   <int value="0" label="Initially complete &amp; Success"/>
   <int value="1" label="Initially incomplete &amp; Success"/>

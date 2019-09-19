@@ -64,16 +64,17 @@ class CollectUserDataAction : public Action,
   // Creates a new instance of |CollectUserDataOptions| from |proto_|.
   std::unique_ptr<CollectUserDataOptions> CreateOptionsFromProto();
 
-  bool IsInitialAutofillDataComplete(
+  // Will update |initial_card_has_billing_postal_code_|.
+  bool CheckInitialAutofillDataComplete(
       autofill::PersonalDataManager* personal_data_manager,
-      const CollectUserDataOptions& collect_user_data_options) const;
+      const CollectUserDataOptions& collect_user_data_options);
   static bool IsCompleteContact(
       const autofill::AutofillProfile& profile,
       const CollectUserDataOptions& collect_user_data_options);
-  static bool IsCompleteAddress(
-      const autofill::AutofillProfile& profile,
-      const CollectUserDataOptions& collect_user_data_options);
+  static bool IsCompleteAddress(const autofill::AutofillProfile& profile,
+                                bool require_postal_code);
   static bool IsCompleteCreditCard(
+      autofill::PersonalDataManager* personal_data_manager,
       const autofill::CreditCard& credit_card,
       const CollectUserDataOptions& collect_user_data_options);
 
@@ -81,6 +82,7 @@ class CollectUserDataAction : public Action,
   bool initially_prefilled = false;
   bool personal_data_changed_ = false;
   bool action_successful_ = false;
+  bool initial_card_has_billing_postal_code_ = false;
   ProcessActionCallback callback_;
 
   // Maps login choice identifiers to the corresponding login details.
