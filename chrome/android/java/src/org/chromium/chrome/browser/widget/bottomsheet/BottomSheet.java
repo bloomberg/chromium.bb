@@ -942,6 +942,7 @@ public class BottomSheet
     @Override
     public void setSheetOffset(float offset, boolean shouldAnimate) {
         cancelAnimation();
+        if (mSheetContent == null) return;
 
         if (shouldAnimate) {
             float velocityY = getCurrentOffsetPx() - offset;
