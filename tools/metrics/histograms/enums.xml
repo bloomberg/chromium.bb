@@ -62874,6 +62874,19 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Abandoned"/>
 </enum>
 
+<enum name="WebAuthenticationCableV1Event">
+  <int value="0" label="Flow started"/>
+  <int value="1" label="BLE hardware found"/>
+  <int value="2" label="BLE hardware already powered on"/>
+  <int value="3" label="User prompted to allow Chrome to power BLE"/>
+  <int value="4" label="User prompted to enable BLE in settings"/>
+  <int value="5"
+      label="Transmitting caBLE advert after prompting user to power on
+             device"/>
+  <int value="6" label="Success"/>
+  <int value="7" label="Timeout"/>
+</enum>
+
 <enum name="WebAuthenticationFidoTransport">
   <int value="0" label="USB HID"/>
   <int value="1" label="Near Field Communication"/>

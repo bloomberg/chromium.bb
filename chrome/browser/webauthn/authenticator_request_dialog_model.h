@@ -386,6 +386,9 @@ class AuthenticatorRequestDialogModel {
   // |responses()|.
   void OnAccountSelected(size_t index);
 
+  // OnSuccess is called when a WebAuthn operation completes successfully.
+  void OnSuccess(AuthenticatorTransport transport);
+
   void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
   ObservableAuthenticatorList& saved_authenticators() {
@@ -523,6 +526,9 @@ class AuthenticatorRequestDialogModel {
   // phones.
   bool have_paired_phones_ = false;
   base::Optional<device::QRGeneratorKey> qr_generator_key_;
+  // did_cable_broadcast_ is true if a caBLE v1 extension was provided and
+  // BLE adverts were broadcast.
+  bool did_cable_broadcast_ = false;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 
