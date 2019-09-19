@@ -7,12 +7,12 @@
 
 from __future__ import print_function
 
-import os
-
 from chromite.lib import cros_logging
 from chromite.scripts import parallel_emerge_new as NEW_WRAPPER
 
-_USE_NEW = os.environ.get('USE_NEW_PARALLEL_EMERGE', '1') == '1'
+# TODO(crbug.com/1000374): revert this once we have a proper fix for
+# ArchiveStage's race on deleting portage tmpdir.
+_USE_NEW = False  # os.environ.get('USE_NEW_PARALLEL_EMERGE', '1') == '1'
 
 # parallel_emerge_old.py runs code at import time, so only import it if we
 # intend to use it. This avoids getting a mix of the old and new behaviors.
