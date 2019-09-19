@@ -43566,6 +43566,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="None"/>
 </enum>
 
+<enum name="NetworkIsolationKeyPresent">
+  <int value="0" label="Network Isolation Key Not Present. Cacheable Request."/>
+  <int value="1"
+      label="Network Isolation Key Not Present. Non-Cacheable Request."/>
+  <int value="2" label="Network Isolation Key Present."/>
+</enum>
+
 <enum name="NetworkLocationRequestEvent">
   <int value="0" label="REQUEST_START"/>
   <int value="1" label="REQUEST_CANCEL"/>
