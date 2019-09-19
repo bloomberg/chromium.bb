@@ -211,6 +211,7 @@ source_set("eg_tests") {
     "//components/autofill/ios/browser",
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/passwords",

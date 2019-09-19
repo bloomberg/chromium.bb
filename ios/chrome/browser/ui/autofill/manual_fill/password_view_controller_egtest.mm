@@ -18,10 +18,12 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/all_password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -38,6 +40,7 @@
 
 using chrome_test_util::CancelButton;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::StaticTextWithAccessibilityLabelId;
 
 namespace {
 
@@ -96,6 +99,11 @@ id<GREYMatcher> UsernameButtonMatcher() {
   return grey_buttonTitle(base::SysUTF8ToNSString(kExampleUsername));
 }
 
+// Returns a matcher for the example password in the list.
+id<GREYMatcher> PasswordButtonMatcher() {
+  return grey_buttonTitle(kMaskedPasswordTitle);
+}
+
 // Returns a matcher for the password settings collection view.
 id<GREYMatcher> PasswordSettingsMatcher() {
   return grey_accessibilityID(kPasswordsTableViewId);
@@ -104,6 +112,12 @@ id<GREYMatcher> PasswordSettingsMatcher() {
 // Returns a matcher for the search bar in password settings.
 id<GREYMatcher> PasswordSettingsSearchMatcher() {
   return grey_accessibilityID(kPasswordsSearchBarId);
+}
+
+// Matcher for the not secure website alert.
+id<GREYMatcher> NotSecureWebsiteAlert() {
+  return StaticTextWithAccessibilityLabelId(
+      IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
 }
 
 // Returns a matcher for the PasswordTableView window.
@@ -688,6 +702,36 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
           @"window.frames[0].document.getElementById('%s').value === '%s'",
           kFormElementUsername, kExampleUsername];
   XCTAssertTrue(WaitForJavaScriptCondition(javaScriptCondition));
+}
+
+// Tests that an alert is shown when trying to fill a password in an unsecure
+// field.
+- (void)testPasswordControllerPresentsUnsecureAlert {
+  const GURL URL = self.testServer->GetURL(kFormHTMLFile);
+  SaveLocalPasswordForm(URL);
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Wait for the accessory icon to appear.
+  [GREYKeyboard waitForKeyboardToAppear];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Select a password.
+  [[EarlGrey selectElementWithMatcher:PasswordButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Look for the alert.
+  [[EarlGrey selectElementWithMatcher:NotSecureWebsiteAlert()]
+      assertWithMatcher:grey_not(grey_nil())];
 }
 
 // Tests that the password icon is hidden when no passwords are available.
