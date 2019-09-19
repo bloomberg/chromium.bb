@@ -4177,18 +4177,18 @@ AtkAttributes AXPlatformNodeAuraLinux::ComputeTextAttributes() const {
     case ax::mojom::TextDirection::kNone:
       break;
     case ax::mojom::TextDirection::kLtr:
-      AddTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, "ltr", &attributes);
+      AddTextAttributeToSet(ATK_TEXT_ATTR_DIRECTION, "ltr", &attributes);
       break;
     case ax::mojom::TextDirection::kRtl:
-      AddTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, "rtl", &attributes);
+      AddTextAttributeToSet(ATK_TEXT_ATTR_DIRECTION, "rtl", &attributes);
       break;
     case ax::mojom::TextDirection::kTtb:
       // Not listed in the ATK docs.
-      AddTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, "ttb", &attributes);
+      AddTextAttributeToSet(ATK_TEXT_ATTR_DIRECTION, "ttb", &attributes);
       break;
     case ax::mojom::TextDirection::kBtt:
       // Not listed in the ATK docs.
-      AddTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, "btt", &attributes);
+      AddTextAttributeToSet(ATK_TEXT_ATTR_DIRECTION, "btt", &attributes);
       break;
   }
 
