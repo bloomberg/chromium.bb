@@ -5357,6 +5357,7 @@ crbug.com/818324 [ Mac ] external/wpt/content-security-policy/embedded-enforceme
 
 # S13N Sheriff 2018-7-11
 crbug.com/862643 http/tests/serviceworker/navigation_preload/use-counter.html [ Failure Pass ]
+crbug.com/862643 virtual/omt-service-worker-startup/http/tests/serviceworker/navigation_preload/use-counter.html [ Failure Pass ]
 
 # Sheriff 2018-7-13
 crbug.com/863599 [ Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
