@@ -3671,18 +3671,6 @@
           ],
         },
       },
-      # This builder doesn't run anywhere. It exists to let mac-rel mirror a bot.
-      'mac-dummy-rel': {
-        'mixins': [
-            'mac_10.13',
-            'no_gpu',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-          'scripts': 'chromium_mac_scripts',
-        },
-      },
       'mac-jumbo-rel': {
         'additional_compile_targets': [
           'all'
