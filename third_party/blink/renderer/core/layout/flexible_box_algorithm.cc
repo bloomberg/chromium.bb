@@ -596,6 +596,7 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
   // when percentages are involved, so for now don't apply min-height: auto
   // in such cases. (This is only a problem if the child has a definite height)
   const LayoutBlock* child_block = DynamicTo<LayoutBlock>(child);
+  AutoClearOverrideHeight clear(const_cast<LayoutBlock*>(child_block));
   if (IsColumnFlow() && child_block &&
       child_block->HasPercentHeightDescendants() &&
       child_block->HasDefiniteLogicalHeight())

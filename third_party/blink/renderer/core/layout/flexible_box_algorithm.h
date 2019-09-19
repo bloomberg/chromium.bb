@@ -65,6 +65,27 @@ enum class TransformedWritingMode {
 
 typedef Vector<FlexItem, 8> FlexItemVector;
 
+class AutoClearOverrideHeight {
+ public:
+  explicit AutoClearOverrideHeight(LayoutBlock* block)
+      : block_(block), old_override_height_(-1) {
+    if (block_ && block_->HasOverrideLogicalHeight()) {
+      old_override_height_ = block_->OverrideLogicalHeight();
+      block_->ClearOverrideLogicalHeight();
+    }
+  }
+  ~AutoClearOverrideHeight() {
+    if (old_override_height_ != LayoutUnit(-1)) {
+      DCHECK(block_);
+      block_->SetOverrideLogicalHeight(old_override_height_);
+    }
+  }
+
+ private:
+  LayoutBlock* block_;
+  LayoutUnit old_override_height_;
+};
+
 class FlexItem {
   DISALLOW_NEW();
 
