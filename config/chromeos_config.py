@@ -864,7 +864,7 @@ def GeneralTemplates(site_config):
           config_lib.TastVMTestConfig(
               'tast_vm_chrome_pfq',
               ['(!disabled && !"group:*" && !informational && '
-               '("dep:android" || "dep:android_all" || "dep:chrome"))'])],
+               '("dep:android*" || "dep:chrome"))'])],
   )
   # The expression specified here matches the tast.critical-android Autotest
   # server test, which is executed by the bvt-tast-android-pfq suite on real
@@ -875,7 +875,7 @@ def GeneralTemplates(site_config):
           config_lib.TastVMTestConfig(
               'tast_vm_android_pfq',
               ['(!disabled && !"group:*" && !informational && '
-               '("dep:android" || "dep:android_all"))'])],
+               '"dep:android*")'])],
   )
   # The expression specified here matches the union of the tast.critical-* and
   # tast.informational-* Autotest server tests, which are executed by the
