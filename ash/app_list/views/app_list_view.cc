@@ -968,6 +968,13 @@ void AppListView::UpdateDrag(const gfx::Point& location) {
 }
 
 void AppListView::EndDrag(const gfx::Point& location) {
+  // |is_in_drag_| might have been cleared if the app list was dismissed while
+  // drag was still in progress. Nothing to do here in that case.
+  if (!is_in_drag_) {
+    DCHECK_EQ(ash::AppListViewState::kClosed, app_list_state_);
+    return;
+  }
+
   base::AutoReset<bool> auto_reset(&ending_drag_, true);
   SetIsInDrag(false);
 
@@ -1325,6 +1332,10 @@ void AppListView::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 void AppListView::OnMouseEvent(ui::MouseEvent* event) {
+  // Ignore events if the app list is closing or closed.
+  if (app_list_state_ == ash::AppListViewState::kClosed)
+    return;
+
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       event->SetHandled();
@@ -1374,6 +1385,10 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void AppListView::OnGestureEvent(ui::GestureEvent* event) {
+  // Ignore events if the app list is closing or closed.
+  if (app_list_state_ == ash::AppListViewState::kClosed)
+    return;
+
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_LONG_PRESS:
@@ -1552,6 +1567,9 @@ void AppListView::SetState(ash::AppListViewState new_state) {
   ash::AppListViewState new_state_override = new_state;
   ConvertAppListStateToFullscreenEquivalent(&new_state_override);
   MaybeCreateAccessibilityEvent(new_state_override);
+  // Clear the drag state before closing the view.
+  if (new_state_override == ash::AppListViewState::kClosed)
+    SetIsInDrag(false);
   SetChildViewsForStateTransition(new_state_override);
   StartAnimationForState(new_state_override);
   MaybeIncreaseAssistantPrivacyInfoRowShownCount(new_state_override);
@@ -1831,12 +1849,12 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
   if (is_in_drag == is_in_drag_)
     return;
 
-  is_in_drag_ = is_in_drag;
-
   // Don't allow dragging to interrupt the close animation, it probably is not
   // intentional.
   if (app_list_state_ == ash::AppListViewState::kClosed)
     return;
+
+  is_in_drag_ = is_in_drag;
 
   if (is_in_drag && !is_tablet_mode_) {
     presentation_time_recorder_.reset();

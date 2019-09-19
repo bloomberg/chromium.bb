@@ -1492,6 +1492,85 @@ TEST_P(AppListPresenterDelegateTest, LongUpwardDragInFullscreenShouldNotClose) {
     GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 }
 
+// Tests closing the app list during drag, and verifies the bounds get properly
+// updated when the app list is shown again..
+TEST_P(AppListPresenterDelegateTest, CloseAppListDuringDrag) {
+  const bool test_mouse_event = TestMouseEventParam();
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  const gfx::Point drag_start = GetAppListView()->GetBoundsInScreen().origin();
+
+  // Start drag and press escape to close the app list view.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  if (test_mouse_event) {
+    generator->MoveMouseTo(drag_start);
+    generator->PressLeftButton();
+    generator->MoveMouseBy(0, -10);
+  } else {
+    generator->MoveTouch(drag_start);
+    generator->PressTouch();
+    generator->MoveTouch(drag_start + gfx::Vector2d(0, -10));
+  }
+
+  EXPECT_TRUE(GetAppListView()->is_in_drag());
+  generator->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+  EXPECT_FALSE(GetAppListView()->is_in_drag());
+
+  // Show the app list and verify the app list returns to peeking position.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  EXPECT_EQ(drag_start, GetAppListView()->GetBoundsInScreen().origin());
+}
+
+// Tests closing the app list during drag, and verifies that drag updates are
+// ignored while the app list is closing.
+TEST_P(AppListPresenterDelegateTest, DragUpdateWhileAppListClosing) {
+  const bool test_mouse_event = TestMouseEventParam();
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  const gfx::Point drag_start = GetAppListView()->GetBoundsInScreen().origin();
+
+  // Set up non zero animation duration to ensure app list is not closed
+  // immediately.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  app_list::AppListView::SetShortAnimationForTesting(false);
+
+  // Start drag and press escape to close the app list view.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  if (test_mouse_event) {
+    generator->MoveMouseTo(drag_start);
+    generator->PressLeftButton();
+    generator->MoveMouseBy(0, -10);
+  } else {
+    generator->MoveTouch(drag_start);
+    generator->PressTouch();
+    generator->MoveTouch(drag_start + gfx::Vector2d(0, -10));
+  }
+  EXPECT_TRUE(GetAppListView()->is_in_drag());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
+
+  // Update the drag before running the loop that waits for the close animation
+  // to finish,
+  if (test_mouse_event) {
+    generator->MoveMouseBy(0, -10);
+  } else {
+    generator->MoveTouch(drag_start + gfx::Vector2d(0, -20));
+  }
+
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+  LOG(ERROR) << "AHA";
+  EXPECT_FALSE(GetAppListView()->is_in_drag());
+
+  // Show the app list and verify the app list returns to peeking position.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  EXPECT_EQ(drag_start, GetAppListView()->GetBoundsInScreen().origin());
+}
+
 // Tests that a drag can not make the app list smaller than the shelf height.
 TEST_F(AppListPresenterDelegateTest, LauncherCannotGetSmallerThanShelf) {
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
