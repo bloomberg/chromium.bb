@@ -23,6 +23,9 @@ Polymer({
     addButtonVisible_: Boolean,
 
     /** @private */
+    cancelButtonDisabled_: Boolean,
+
+    /** @private */
     cancelButtonVisible_: Boolean,
 
     /** @private */
@@ -48,6 +51,9 @@ Polymer({
     enrollments_: Array,
 
     /** @private */
+    okButtonDisabled_: Boolean,
+
+    /** @private */
     okButtonVisible_: Boolean,
   },
 
@@ -65,8 +71,9 @@ Polymer({
     this.addWebUIListener(
         'security-keys-bio-enroll-status', this.onEnrolling_.bind(this));
     this.browserProxy_ = settings.SecurityKeysBioEnrollProxyImpl.getInstance();
-    this.browserProxy_.startBioEnroll().then(
-        this.collectPIN_.bind(this), () => {});
+    this.browserProxy_.startBioEnroll().then(() => {
+      this.collectPIN_();
+    });
   },
 
   /** @private */
@@ -95,9 +102,10 @@ Polymer({
         return;
       }
 
-      this.browserProxy_.enumerateEnrollments().then(
-          this.onEnrollments_.bind(this));
-    }, () => {});
+      this.browserProxy_.enumerateEnrollments().then((enrollments) => {
+        this.onEnrollments_(enrollments);
+      });
+    });
   },
 
   /**
@@ -155,12 +163,12 @@ Polymer({
 
     this.maxSamples_ = -1;  // Reset maxSamples_ before enrolling starts.
     this.$.arc.reset();
-    this.cancelButtonVisible_ = true;
-    this.okButtonVisible_ = false;
 
     this.dialogPage_ = 'enroll';
-    this.browserProxy_.startEnrolling().then(
-        this.onEnrolling_.bind(this), () => {});
+
+    this.browserProxy_.startEnrolling().then((response) => {
+      this.onEnrolling_(response);
+    });
   },
 
   /**
@@ -202,13 +210,17 @@ Polymer({
 
   /** @private */
   okButtonClick_: function() {
+    // Disable the OK button while PIN verification or template enumeration is
+    // pending. Resetting |dialogPage_| will re-enable it.
+    this.okButtonDisabled_ = true;
     switch (this.dialogPage_) {
       case 'pinPrompt':
         this.submitPIN_();
         break;
       case 'enroll':
-        this.browserProxy_.enumerateEnrollments().then(
-            this.onEnrollments_.bind(this), () => {});
+        this.browserProxy_.enumerateEnrollments().then((enrollments) => {
+          this.onEnrollments_(enrollments);
+        });
         break;
       default:
         assertNotReached();
@@ -218,9 +230,13 @@ Polymer({
   /** @private */
   cancel_: function() {
     if (this.dialogPage_ == 'enroll') {
-      // Causes the pending enumerateEnrollments() promise to be resolved.
+      // Cancel an ongoing enrollment.  Will cause the pending
+      // enumerateEnrollments() promise to be resolved and proceed to the
+      // enrollments page.
+      this.cancelButtonDisabled_ = true;
       this.browserProxy_.cancelEnrollment();
     } else {
+      // On any other screen, simply close the dialog.
       this.done_();
     }
   },
