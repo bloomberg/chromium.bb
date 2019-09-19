@@ -32396,6 +32396,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="icon_url with missing favicon"/>
   <int value="3" label="Invalid icon_url"/>
   <int value="4" label="Non-unique meta_info keys"/>
+  <int value="5" label="Invalid GUID"/>
 </enum>
 
 <enum name="InvalidOriginReason">

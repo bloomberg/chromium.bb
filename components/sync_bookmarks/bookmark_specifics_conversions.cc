@@ -37,8 +37,9 @@ enum class InvalidBookmarkSpecificsError {
   kIconURLWithoutFavicon = 2,
   kInvalidIconURL = 3,
   kNonUniqueMetaInfoKeys = 4,
+  kInvalidGUID = 5,
 
-  kMaxValue = kNonUniqueMetaInfoKeys,
+  kMaxValue = kInvalidGUID,
 };
 
 void LogInvalidSpecifics(InvalidBookmarkSpecificsError error) {
@@ -244,7 +245,8 @@ bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
   }
   if (!base::IsValidGUID(specifics.guid()) && !specifics.guid().empty()) {
     DLOG(ERROR) << "Invalid bookmark: invalid GUID in the specifics.";
-    return false;
+    LogInvalidSpecifics(InvalidBookmarkSpecificsError::kInvalidGUID);
+    is_valid = false;
   }
   if (!is_folder) {
     if (!GURL(specifics.url()).is_valid()) {
