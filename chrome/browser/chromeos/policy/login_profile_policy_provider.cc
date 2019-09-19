@@ -42,6 +42,8 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
     {key::kDeviceLoginScreenLargeCursorEnabled, key::kLargeCursorEnabled},
     {key::kDeviceLoginScreenSpokenFeedbackEnabled, key::kSpokenFeedbackEnabled},
     {key::kDeviceLoginScreenHighContrastEnabled, key::kHighContrastEnabled},
+    {key::kDeviceLoginScreenVirtualKeyboardEnabled,
+     key::kVirtualKeyboardEnabled},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {

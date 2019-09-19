@@ -4042,6 +4042,9 @@
   "DeviceLoginScreenDefaultVirtualKeyboardEnabled" : {
   },
 
+  "DeviceLoginScreenVirtualKeyboardEnabled" : {
+  },
+
   "DeviceLoginScreenLocales" : {
   },
 

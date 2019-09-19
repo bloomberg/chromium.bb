@@ -404,4 +404,90 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
             GetPrefValue(ash::prefs::kAccessibilityHighContrastEnabled));
 }
 
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenVirtualKeyboardEnabled) {
+  // Verifies that the state of the virtual keyboard accessibility feature on
+  // the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
+
+  // Manually enable the virtual keyboard.
+  accessibility_manager->EnableVirtualKeyboard(true);
+  EXPECT_TRUE(accessibility_manager->IsVirtualKeyboardEnabled());
+
+  // Disable the virtual keyboard through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_virtual_keyboard_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled);
+
+  // Verify that the pref which controls the virtual keyboard in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+
+  // Verify that the virtual keyboard cannot be enabled manually anymore.
+  accessibility_manager->EnableVirtualKeyboard(true);
+  EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       VirtualKeyboardEnabledOverridesDefaultPolicy) {
+  // Verifies that the state of the virtual keyboard accessibility feature on
+  // the login screen will be controlled only through
+  // DeviceLoginScreenVirtualKeyboardEnabled device policy if both of
+  // DeviceLoginScreenVirtualKeyboardEnabled and
+  // DeviceLoginScreenDefaultVirtualKeyboardEnabled have been set.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
+
+  // Enable the virtual keyboard through DeviceLoginScreenVirtualKeyboardEnabled
+  // device policy, and disable it through
+  // DeviceLoginScreenDefaultVirtualKeyboardEnabled; then wait for the change to
+  // take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_virtual_keyboard_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_virtual_keyboard_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_default_virtual_keyboard_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled);
+
+  // Verify that the pref which controls the virtual keyboard in the login
+  // profile is managed by the policy and is enabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+
+  // Disable the virtual keyboard through
+  // DeviceLoginScreenVirtualKeyboardEnabled device policy, and enable it
+  // through DeviceLoginScreenDefaultVirtualKeyboardEnabled; then wait for the
+  // change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_virtual_keyboard_enabled(false);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_virtual_keyboard_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_default_virtual_keyboard_enabled(true);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled);
+
+  // Verify that the pref which controls the virtual keyboard in the login
+  // profile is managed by the policy and is disabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+}
+
 }  // namespace policy

@@ -644,6 +644,7 @@
         'DeviceLoginScreenLargeCursorEnabled',
         'DeviceLoginScreenSpokenFeedbackEnabled',
         'DeviceLoginScreenHighContrastEnabled',
+        'DeviceLoginScreenVirtualKeyboardEnabled',
       ],
     },
     {
@@ -10269,7 +10270,34 @@
 
           If you set this policy, users can temporarily override it by enabling or disabling the on-screen keyboard. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
-          If this policy is left unset, the on-screen keyboard is disabled when the login screen is first shown. Users can enable or disable the on-screen keyboard anytime and its status on the login screen is persisted between users.''',
+          If this policy is left unset, the on-screen keyboard is disabled when the login screen is first shown. Users can enable or disable the on-screen keyboard anytime and its status on the login screen is persisted between users.
+
+          Note: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME">DeviceLoginScreenVirtualKeyboardEnabled</ph> overrides this policy if the former is specified.''',
+    },
+    {
+      'name': 'DeviceLoginScreenVirtualKeyboardEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 607,
+      'caption': '''Enable the virtual keyboard on the login screen''',
+      'tags': [],
+      'desc': '''Enable the virtual keyboard accessibility feature on the login screen.
+
+          If this policy is set to true, the virtual keyboard will always be enabled on the login screen.
+
+          If this policy is set to false, the virtual keyboard will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the virtual keyboard is disabled on the login screen initially but can be enabled by the user anytime.''',
     },
     {
       'name': 'DeviceLoginScreenDefaultScreenMagnifierType',
@@ -18053,6 +18081,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenHighContrastEnabled': 'accessibility_settings.login_screen_high_contrast_enabled',
     'DeviceLoginScreenDefaultScreenMagnifierType': 'accessibility_settings.login_screen_default_screen_magnifier_type',
     'DeviceLoginScreenDefaultVirtualKeyboardEnabled': 'accessibility_settings.login_screen_default_virtual_keyboard_enabled',
+    'DeviceLoginScreenVirtualKeyboardEnabled': 'accessibility_settings.login_screen_virtual_keyboard_enabled',
     'AttestationEnabledForDevice': 'attestation_settings.attestation_enabled',
     'AttestationForContentProtectionEnabled': 'attestation_settings.content_protection_enabled',
     'SystemTimezone': 'system_timezone.timezone',
@@ -18553,6 +18582,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 606,
+  'highest_id_currently_used': 607,
   'highest_atomic_group_id_currently_used': 37
 }
