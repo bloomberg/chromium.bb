@@ -78,8 +78,7 @@ class SessionTest : public mojom::ResourceProvider,
  public:
   SessionTest()
       : receiver_endpoint_(media::cast::test::GetFreeLocalPort()),
-        resource_provider_binding_(this),
-        session_observer_binding_(this) {}
+        resource_provider_binding_(this) {}
 
   ~SessionTest() override { task_environment_.RunUntilIdle(); }
 
@@ -203,10 +202,11 @@ class SessionTest : public mojom::ResourceProvider,
     session_params->receiver_model_name = "Chromecast";
     cast_mode_ = "mirroring";
     mojom::ResourceProviderPtr resource_provider_ptr;
-    mojom::SessionObserverPtr session_observer_ptr;
+    mojo::PendingRemote<mojom::SessionObserver> session_observer_remote;
     mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel_remote;
     resource_provider_binding_.Bind(mojo::MakeRequest(&resource_provider_ptr));
-    session_observer_binding_.Bind(mojo::MakeRequest(&session_observer_ptr));
+    session_observer_receiver_.Bind(
+        session_observer_remote.InitWithNewPipeAndPassReceiver());
     outbound_channel_receiver_.Bind(
         outbound_channel_remote.InitWithNewPipeAndPassReceiver());
     // Expect to send OFFER message when session is created.
@@ -215,7 +215,7 @@ class SessionTest : public mojom::ResourceProvider,
     EXPECT_CALL(*this, OnOutboundMessage("OFFER")).Times(1);
     session_ = std::make_unique<Session>(
         std::move(session_params), gfx::Size(1920, 1080),
-        std::move(session_observer_ptr), std::move(resource_provider_ptr),
+        std::move(session_observer_remote), std::move(resource_provider_ptr),
         std::move(outbound_channel_remote),
         inbound_channel_.BindNewPipeAndPassReceiver(), nullptr);
     task_environment_.RunUntilIdle();
@@ -342,7 +342,7 @@ class SessionTest : public mojom::ResourceProvider,
   base::test::TaskEnvironment task_environment_;
   const net::IPEndPoint receiver_endpoint_;
   mojo::Binding<mojom::ResourceProvider> resource_provider_binding_;
-  mojo::Binding<mojom::SessionObserver> session_observer_binding_;
+  mojo::Receiver<mojom::SessionObserver> session_observer_receiver_{this};
   mojo::Receiver<mojom::CastMessageChannel> outbound_channel_receiver_{this};
   mojo::Remote<mojom::CastMessageChannel> inbound_channel_;
   SessionType session_type_ = SessionType::AUDIO_AND_VIDEO;

@@ -24,7 +24,6 @@
 #include "media/capture/video_capture_types.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -130,8 +129,8 @@ class CastMirroringServiceHostBrowserTest
       public mojom::CastMessageChannel,
       public mojom::AudioStreamCreatorClient {
  public:
-  CastMirroringServiceHostBrowserTest() : observer_binding_(this) {}
-  ~CastMirroringServiceHostBrowserTest() override {}
+  CastMirroringServiceHostBrowserTest() = default;
+  ~CastMirroringServiceHostBrowserTest() override = default;
 
  protected:
   // Starts a tab mirroring session.
@@ -141,8 +140,8 @@ class CastMirroringServiceHostBrowserTest
     ASSERT_TRUE(web_contents);
     host_ = std::make_unique<CastMirroringServiceHost>(
         BuildMediaIdForTabMirroring(web_contents));
-    mojom::SessionObserverPtr observer;
-    observer_binding_.Bind(mojo::MakeRequest(&observer));
+    mojo::PendingRemote<mojom::SessionObserver> observer;
+    observer_receiver_.Bind(observer.InitWithNewPipeAndPassReceiver());
     mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel;
     outbound_channel_receiver_.Bind(
         outbound_channel.InitWithNewPipeAndPassReceiver());
@@ -230,7 +229,7 @@ class CastMirroringServiceHostBrowserTest
     OnAudioStreamCreated();
   }
 
-  mojo::Binding<mojom::SessionObserver> observer_binding_;
+  mojo::Receiver<mojom::SessionObserver> observer_receiver_{this};
   mojo::Receiver<mojom::CastMessageChannel> outbound_channel_receiver_{this};
   mojo::Receiver<mojom::AudioStreamCreatorClient> audio_client_receiver_{this};
   mojo::Remote<mojom::CastMessageChannel> inbound_channel_;

@@ -36,7 +36,6 @@ using cast_channel::Result;
 using media_router::mojom::MediaRouteProvider;
 using media_router::mojom::MediaRouter;
 using mirroring::mojom::SessionError;
-using mirroring::mojom::SessionObserverPtr;
 using mirroring::mojom::SessionParameters;
 using mirroring::mojom::SessionType;
 
@@ -71,9 +70,9 @@ MirroringActivityRecord::MirroringActivityRecord(
   media_router->GetMirroringServiceHostForTab(
       target_tab_id, host_.BindNewPipeAndPassReceiver());
 
-  // Create Mojo bindings for the interfaces this object implements.
-  SessionObserverPtr observer_ptr;
-  observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
+  // Bind Mojo receivers for the interfaces this object implements.
+  mojo::PendingRemote<mirroring::mojom::SessionObserver> observer_remote;
+  observer_receiver_.Bind(observer_remote.InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<mirroring::mojom::CastMessageChannel> channel_remote;
   channel_receiver_.Bind(channel_remote.InitWithNewPipeAndPassReceiver());
 
@@ -94,7 +93,7 @@ MirroringActivityRecord::MirroringActivityRecord(
       base::Unretained(host_.get()),
       SessionParameters::New(session_type, cast_data.ip_endpoint.address(),
                              cast_data.model_name),
-      std::move(observer_ptr), std::move(channel_remote),
+      std::move(observer_remote), std::move(channel_remote),
       channel_to_service_.BindNewPipeAndPassReceiver());
 }
 

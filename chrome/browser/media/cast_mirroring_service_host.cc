@@ -180,7 +180,7 @@ CastMirroringServiceHost::~CastMirroringServiceHost() {}
 
 void CastMirroringServiceHost::Start(
     mojom::SessionParametersPtr session_params,
-    mojom::SessionObserverPtr observer,
+    mojo::PendingRemote<mojom::SessionObserver> observer,
     mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
     mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel) {
   // Start() should not be called in the middle of a mirroring session.

@@ -73,7 +73,7 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
 
   // mojom::MirroringServiceHost implementation.
   void Start(mojom::SessionParametersPtr session_params,
-             mojom::SessionObserverPtr observer,
+             mojo::PendingRemote<mojom::SessionObserver> observer,
              mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
              mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel)
       override;

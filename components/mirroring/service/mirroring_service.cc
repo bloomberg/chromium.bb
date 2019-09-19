@@ -22,7 +22,7 @@ MirroringService::~MirroringService() = default;
 void MirroringService::Start(
     mojom::SessionParametersPtr params,
     const gfx::Size& max_resolution,
-    mojom::SessionObserverPtr observer,
+    mojo::PendingRemote<mojom::SessionObserver> observer,
     mojom::ResourceProviderPtr resource_provider,
     mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
     mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel) {

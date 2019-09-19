@@ -17,7 +17,6 @@
 #include "components/mirroring/mojom/cast_message_channel.mojom.h"
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
 #include "components/mirroring/mojom/session_observer.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -97,7 +96,7 @@ class MirroringActivityRecord : public ActivityRecord,
   // Sends Cast messages from the mirroring receiver to the mirroring service.
   mojo::Remote<mirroring::mojom::CastMessageChannel> channel_to_service_;
 
-  mojo::Binding<mirroring::mojom::SessionObserver> observer_binding_{this};
+  mojo::Receiver<mirroring::mojom::SessionObserver> observer_receiver_{this};
 
   // To handle Cast messages from the mirroring service to the mirroring
   // receiver.
