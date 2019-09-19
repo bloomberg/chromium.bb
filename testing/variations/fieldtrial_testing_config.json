@@ -666,7 +666,9 @@
                         "timeout_seconds": "180"
                     },
                     "enable_features": [
-                        "AudioServiceOutOfProcessKillAtHang"
+                        "AudioServiceOutOfProcessKillAtHang",
+                        "AudioServiceSandbox",
+                        "WebRtcApmInAudioService"
                     ]
                 }
             ]
