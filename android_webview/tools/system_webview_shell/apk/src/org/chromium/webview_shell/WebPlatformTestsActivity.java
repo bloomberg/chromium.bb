@@ -164,6 +164,7 @@ public class WebPlatformTestsActivity extends Activity {
         settings.setSupportMultipleWindows(true);
         // Respect "viewport" HTML meta tag. This is false by default, but set to false to be clear.
         settings.setUseWideViewPort(false);
+        settings.setDomStorageEnabled(true);
     }
 
     private void setUpMainWebView(String url) {
