@@ -114,7 +114,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // Called on the initiator thread.
   void StartWorkerContextOnInitiatorThread(
       std::unique_ptr<blink::WebEmbeddedWorker> worker,
-      const blink::WebEmbeddedWorkerStartData& start_data);
+      const blink::WebEmbeddedWorkerStartData& start_data,
+      mojo::ScopedMessagePipeHandle content_settings_handle);
   // Called on the initiator thread.
   blink::WebEmbeddedWorker& worker();
 

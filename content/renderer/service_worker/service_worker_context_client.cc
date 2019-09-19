@@ -171,10 +171,12 @@ ServiceWorkerContextClient::~ServiceWorkerContextClient() {
 
 void ServiceWorkerContextClient::StartWorkerContextOnInitiatorThread(
     std::unique_ptr<blink::WebEmbeddedWorker> worker,
-    const blink::WebEmbeddedWorkerStartData& start_data) {
+    const blink::WebEmbeddedWorkerStartData& start_data,
+    mojo::ScopedMessagePipeHandle content_settings_handle) {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   worker_ = std::move(worker);
-  worker_->StartWorkerContext(start_data, initiator_thread_task_runner_);
+  worker_->StartWorkerContext(start_data, std::move(content_settings_handle),
+                              initiator_thread_task_runner_);
 }
 
 blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {

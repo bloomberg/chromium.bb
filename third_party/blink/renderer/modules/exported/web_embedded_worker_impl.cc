@@ -75,17 +75,11 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
     WebServiceWorkerContextClient* client,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
         installed_scripts_manager_params,
-    mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle cache_storage,
     mojo::ScopedMessagePipeHandle interface_provider,
     mojo::ScopedMessagePipeHandle browser_interface_broker) {
   return std::make_unique<WebEmbeddedWorkerImpl>(
       std::move(client), std::move(installed_scripts_manager_params),
-      std::make_unique<ServiceWorkerContentSettingsProxy>(
-          // Chrome doesn't use interface versioning.
-          // TODO(falken): Is that comment about versioning correct?
-          mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
-              std::move(content_settings_handle), 0u)),
       mojo::PendingRemote<mojom::blink::CacheStorage>(
           std::move(cache_storage), mojom::blink::CacheStorage::Version_),
       service_manager::mojom::blink::InterfaceProviderPtrInfo(
@@ -103,8 +97,6 @@ std::unique_ptr<WebEmbeddedWorkerImpl> WebEmbeddedWorkerImpl::CreateForTesting(
         installed_scripts_manager) {
   auto worker_impl = std::make_unique<WebEmbeddedWorkerImpl>(
       client, nullptr /* installed_scripts_manager_params */,
-      std::make_unique<ServiceWorkerContentSettingsProxy>(
-          mojo::NullRemote() /* host_info */),
       mojo::NullRemote() /* cache_storage */,
       nullptr /* interface_provider_info */,
       mojo::NullRemote() /* browser_interface_broker */);
@@ -117,14 +109,12 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     WebServiceWorkerContextClient* client,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
         installed_scripts_manager_params,
-    std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
         interface_provider_info,
     mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
         browser_interface_broker)
     : worker_context_client_(client),
-      content_settings_client_(std::move(content_settings_client)),
       cache_storage_remote_(std::move(cache_storage_remote)),
       interface_provider_info_(std::move(interface_provider_info)),
       browser_interface_broker_(std::move(browser_interface_broker)) {
@@ -156,6 +146,7 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
 
 void WebEmbeddedWorkerImpl::StartWorkerContext(
     const WebEmbeddedWorkerStartData& data,
+    mojo::ScopedMessagePipeHandle content_settings_handle,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   DCHECK(!asked_to_terminate_);
   worker_start_data_ = data;
@@ -177,7 +168,13 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
 
   devtools_worker_token_ = data.devtools_worker_token;
   wait_for_debugger_mode_ = worker_start_data_.wait_for_debugger_mode;
-  StartWorkerThread(std::move(initiator_thread_task_runner));
+  StartWorkerThread(
+      std::make_unique<ServiceWorkerContentSettingsProxy>(
+          // Chrome doesn't use interface versioning.
+          // TODO(falken): Is that comment about versioning correct?
+          mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
+              std::move(content_settings_handle), 0u)),
+      std::move(initiator_thread_task_runner));
 }
 
 void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
@@ -202,6 +199,7 @@ void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
 }
 
 void WebEmbeddedWorkerImpl::StartWorkerThread(
+    std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_proxy,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   DCHECK(!asked_to_terminate_);
 
@@ -255,7 +253,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
       worker_start_data_.user_agent, std::move(web_worker_fetch_context),
       Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
       starter_origin.get(), starter_secure_context, starter_https_state,
-      nullptr /* worker_clients */, std::move(content_settings_client_),
+      nullptr /* worker_clients */, std::move(content_settings_proxy),
       base::nullopt /* response_address_space */,
       nullptr /* OriginTrialTokens */, devtools_worker_token_,
       std::move(worker_settings),
