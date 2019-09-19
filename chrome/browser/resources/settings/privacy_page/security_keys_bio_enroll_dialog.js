@@ -168,6 +168,14 @@ Polymer({
    * @param {!EnrollmentStatus} response
    */
   onEnrolling_: function(response) {
+    if (response.code == Ctap2Status.ERR_KEEPALIVE_CANCEL) {
+      // The user clicked cancel. Return to the overview dialog page.
+      this.browserProxy_.enumerateEnrollments().then((enrollments) => {
+        this.onEnrollments_(enrollments);
+      });
+      return;
+    }
+
     if (this.maxSamples_ == -1 && response.status != null) {
       if (response.status == 0) {
         // If the first sample is valid, remaining is one less than max samples
@@ -210,19 +218,11 @@ Polymer({
   /** @private */
   cancel_: function() {
     if (this.dialogPage_ == 'enroll') {
-      this.browserProxy_.cancelEnrollment().then(
-          this.cancelEnroll_.bind(this), () => {});
+      // Causes the pending enumerateEnrollments() promise to be resolved.
+      this.browserProxy_.cancelEnrollment();
     } else {
       this.done_();
     }
-  },
-
-  /** @private */
-  cancelEnroll_: function() {
-    // Cancelling from the enrolling screen redirects to the enrollments
-    // list, so request another enumeration to display.
-    this.browserProxy_.enumerateEnrollments().then(
-        this.onEnrollments_.bind(this), () => {});
   },
 
   /** @private */
