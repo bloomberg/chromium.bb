@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/p2p/port_allocator.h"
+#include "third_party/blink/renderer/platform/p2p/port_allocator.h"
 
 #include <stdint.h>
 
 #include <memory>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "content/public/common/content_switches.h"
-#include "content/renderer/p2p/socket_dispatcher.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
 
-namespace content {
+namespace blink {
 
 P2PPortAllocator::P2PPortAllocator(
     const scoped_refptr<P2PSocketDispatcher>& socket_dispatcher,
@@ -44,9 +43,8 @@ P2PPortAllocator::P2PPortAllocator(
   }
   set_flags(flags);
   set_allow_tcp_listen(false);
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   bool enable_webrtc_stun_origin =
-      cmd_line->HasSwitch(switches::kEnableWebRtcStunOrigin);
+      Platform::Current()->IsWebRtcStunOriginEnabled();
   if (enable_webrtc_stun_origin) {
     set_origin(origin_.spec());
   }
@@ -59,4 +57,4 @@ void P2PPortAllocator::Initialize() {
   network_manager_->Initialize();
 }
 
-}  // namespace content
+}  // namespace blink
