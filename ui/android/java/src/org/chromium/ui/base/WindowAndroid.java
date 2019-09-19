@@ -11,7 +11,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -221,24 +220,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
             };
 
     /**
-     * Extract the activity if the given Context either is or wraps one.
-     * Only retrieve the base context if the supplied context is a {@link ContextWrapper} but not
-     * an Activity, given that Activity is already a subclass of ContextWrapper.
-     * @param context The context to check.
-     * @return The {@link Activity} that is extracted through the given Context.
-     */
-    public static Activity activityFromContext(Context context) {
-        if (context instanceof Activity) {
-            return ((Activity) context);
-        } else if (context instanceof ContextWrapper) {
-            context = ((ContextWrapper) context).getBaseContext();
-            return activityFromContext(context);
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * @return true if onVSync handler is executing.
      *
      * @see org.chromium.ui.VSyncMonitor#isInsideVSync()
@@ -291,7 +272,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         // 8.0.0, even when they don't actually support wide color gamut.
         // TODO(boliu): Observe configuration changes to update the value of isScreenWideColorGamut.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !Build.VERSION.RELEASE.equals("8.0.0")
-                && activityFromContext(context) != null) {
+                && ContextUtils.activityFromContext(context) != null) {
             Configuration configuration = context.getResources().getConfiguration();
             boolean isScreenWideColorGamut = ApiHelperForO.isScreenWideColorGamut(configuration);
             display.updateIsDisplayServerWideColorGamut(isScreenWideColorGamut);
@@ -649,8 +630,9 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     @CalledByNative
     private void onSelectionHandlesStateChanged(boolean active) {
         mSelectionHandlesActive = active;
-        for (SelectionHandlesObserver observer : mSelectionHandlesObservers)
+        for (SelectionHandlesObserver observer : mSelectionHandlesObservers) {
             observer.onSelectionHandlesStateChanged(active);
+        }
     }
 
     /**
@@ -749,7 +731,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     // Helper to get the android Window. Always null for application context. Need to null check
     // result returning value.
     private Window getWindow() {
-        Activity activity = activityFromContext(mContextRef.get());
+        Activity activity = ContextUtils.activityFromContext(mContextRef.get());
         if (activity == null) return null;
         return activity.getWindow();
     }
@@ -982,8 +964,9 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         if (mSupportedRefreshRateModes == null) return null;
 
         float[] supportedRefreshRates = new float[mSupportedRefreshRateModes.size()];
-        for (int i = 0; i < mSupportedRefreshRateModes.size(); ++i)
+        for (int i = 0; i < mSupportedRefreshRateModes.size(); ++i) {
             supportedRefreshRates[i] = mSupportedRefreshRateModes.get(i).getRefreshRate();
+        }
         return supportedRefreshRates;
     }
 
