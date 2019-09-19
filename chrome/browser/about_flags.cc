@@ -2520,6 +2520,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPassiveEventListenersDueToFlingName,
      flag_descriptions::kPassiveEventListenersDueToFlingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPassiveEventListenersDueToFling)},
+#if defined(OS_WIN)
+    {"enable-experimental-fling-animation",
+     flag_descriptions::kExperimentalFlingAnimationName,
+     flag_descriptions::kExperimentalFlingAnimationDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kExperimentalFlingAnimation)},
+#endif
     {"per-method-can-make-payment-quota",
      flag_descriptions::kPerMethodCanMakePaymentQuotaName,
      flag_descriptions::kPerMethodCanMakePaymentQuotaDescription, kOsAll,

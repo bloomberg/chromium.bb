@@ -1194,6 +1194,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-experimental-fling-animation",
+    "owners": [ "sarsha@microsoft.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-experimental-kernel-vm-support",
     "owners": [ "jflat", "zwisler" ],
     "expiry_milestone": 78

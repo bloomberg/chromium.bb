@@ -1749,6 +1749,9 @@ extern const char kD3D11VideoDecoderDescription[];
 extern const char kEnableGpuAppcontainerName[];
 extern const char kEnableGpuAppcontainerDescription[];
 
+extern const char kExperimentalFlingAnimationName[];
+extern const char kExperimentalFlingAnimationDescription[];
+
 extern const char kGdiTextPrinting[];
 extern const char kGdiTextPrintingDescription[];
 

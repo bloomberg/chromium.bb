@@ -36277,6 +36277,7 @@ from previous Chrome versions.
   <int value="-79327236" label="ModeSpecificPowerButton:enabled"/>
   <int value="-78035185" label="custom_summary"/>
   <int value="-77872983" label="BookmarkAppsMac:disabled"/>
+  <int value="-77084779" label="ExperimentalFlingAnimation:enabled"/>
   <int value="-76953963" label="CloseTabSuggestionsStale:enabled"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
   <int value="-76445689" label="WasmCodeCache:enabled"/>
@@ -36538,6 +36539,7 @@ from previous Chrome versions.
   <int value="288012253" label="CrostiniFiles:enabled"/>
   <int value="288755982"
       label="AutofillEnableLocalCardMigrationForNonSyncUser:enabled"/>
+  <int value="291482671" label="ExperimentalFlingAnimation:disabled"/>
   <int value="292560715" label="ViewsCastDialog:disabled"/>
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>
