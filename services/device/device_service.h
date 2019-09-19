@@ -168,7 +168,8 @@ class DeviceService : public service_manager::Service {
       mojo::PendingReceiver<mojom::MtpManager> receiver);
 #endif
 
-  void BindPowerMonitorRequest(mojom::PowerMonitorRequest request);
+  void BindPowerMonitorReceiver(
+      mojo::PendingReceiver<mojom::PowerMonitor> receiver);
 
   void BindPublicIpAddressGeolocationProviderReceiver(
       mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider>

@@ -151,7 +151,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::GeolocationControl>(base::Bind(
       &DeviceService::BindGeolocationControlReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::PowerMonitor>(base::Bind(
-      &DeviceService::BindPowerMonitorRequest, base::Unretained(this)));
+      &DeviceService::BindPowerMonitorReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::PublicIpAddressGeolocationProvider>(
       base::Bind(&DeviceService::BindPublicIpAddressGeolocationProviderReceiver,
                  base::Unretained(this)));
@@ -298,13 +298,13 @@ void DeviceService::BindGeolocationControlReceiver(
       std::move(receiver));
 }
 
-void DeviceService::BindPowerMonitorRequest(
-    mojom::PowerMonitorRequest request) {
+void DeviceService::BindPowerMonitorReceiver(
+    mojo::PendingReceiver<mojom::PowerMonitor> receiver) {
   if (!power_monitor_message_broadcaster_) {
     power_monitor_message_broadcaster_ =
         std::make_unique<PowerMonitorMessageBroadcaster>();
   }
-  power_monitor_message_broadcaster_->Bind(std::move(request));
+  power_monitor_message_broadcaster_->Bind(std::move(receiver));
 }
 
 void DeviceService::BindPublicIpAddressGeolocationProviderReceiver(
