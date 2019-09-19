@@ -2325,6 +2325,7 @@ source_set("net_deps") {
       public_deps += [
         "//third_party/fuchsia-sdk/sdk:hardware_ethernet",
         "//third_party/fuchsia-sdk/sdk:netstack",
+        "//third_party/fuchsia-sdk/sdk:sys_cpp",
       ]
     }
 
