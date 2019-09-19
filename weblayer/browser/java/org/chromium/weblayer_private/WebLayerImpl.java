@@ -54,7 +54,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         ChildProcessCreationParams.set(implContext.getPackageName(), true /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCaller */,
-                false /* ignoreVisibilityForImportance */);
+                false /* ignoreVisibilityForImportance */, null /* privilegedServicesName */,
+                null /* sandboxedServicesName */);
 
         if (!CommandLine.isInitialized()) {
             CommandLine.initFromFile(COMMAND_LINE_FILE);
