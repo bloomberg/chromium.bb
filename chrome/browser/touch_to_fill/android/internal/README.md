@@ -41,3 +41,30 @@ requests to show new credentials:
 3. The view renders the changed credential list.
     1. The view may apply style, RTL settings and event handlers for click events.
 
+
+## Model
+
+The model holds state and event listeners connected to the view. An MCP
+automatically notifies listener about any change made to a property. To automate
+this Observer structure, the model is a `PropertyModel` as defined in
+`//src/ui/android/java/src/org/chromium/ui/modelutil/`. It is build by defining
+readable and writable properties and constructing a model with them. The
+properties (and a simple factory method for the model) are located in the static
+`TouchToFillProperties` class.
+
+The model contains writable and readable properties.The readable properties are
+guaranteed to never change for the lifetime of the Touch To Fill component:
+
+ * **VIEW_EVENT_LISTENER** which is the listener that reacts to view events. The
+   mediator implements this interface.
+ * **CREDENTIAL_LIST** which is the set of displayed credentials. The list
+   itself will be modified (credentials will be added and removed) but the
+   object remains the same which allows to permanently bind it to a list
+   adapter.
+
+The writable properties change over the course of the components lifetime:
+
+ * **VISIBLE** which will trigger the component to render the bottom sheet or
+   hide it, if it was visible.
+ * **FORMATTED_URL** which is displayed as subtitle for the bottom sheet.
+
