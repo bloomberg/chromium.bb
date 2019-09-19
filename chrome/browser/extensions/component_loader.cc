@@ -576,13 +576,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
   Add(IDR_CRYPTOTOKEN_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("cryptotoken")));
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // TODO(https://crbug.com/1005083): Force the off the record profile to be
-  // created to allow the virtual keyboard to work in guest mode.
-  if (!IsNormalSession())
-    ExtensionsBrowserClient::Get()->GetOffTheRecordContext(profile_);
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void ComponentLoader::
