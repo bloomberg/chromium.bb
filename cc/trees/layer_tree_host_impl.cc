@@ -2356,15 +2356,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
         active_tree()->TakeForceSendMetadataRequest());
   }
 
-  metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
-  ui::LatencyInfo& new_latency_info = metadata.latency_info.back();
-  if (CommitToActiveTree()) {
-    new_latency_info.AddLatencyNumberWithTimestamp(
-        ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, frame_time);
-  } else {
-    new_latency_info.AddLatencyNumberWithTimestamp(
-        ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, frame_time);
-
+  if (!CommitToActiveTree()) {
     base::TimeTicks draw_time = base::TimeTicks::Now();
     for (auto& latency : metadata.latency_info) {
       latency.AddLatencyNumberWithTimestamp(
