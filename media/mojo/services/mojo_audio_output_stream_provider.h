@@ -13,7 +13,7 @@
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_audio_output_stream.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -35,7 +35,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
   // this class should be removed (stream ended/error). |deleter_callback| is
   // required to destroy |this| synchronously.
   MojoAudioOutputStreamProvider(
-      mojom::AudioOutputStreamProviderRequest request,
+      mojo::PendingReceiver<mojom::AudioOutputStreamProvider> pending_receiver,
       CreateDelegateCallback create_delegate_callback,
       DeleterCallback deleter_callback,
       std::unique_ptr<mojom::AudioOutputStreamObserver> observer);
@@ -57,7 +57,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  mojo::Binding<AudioOutputStreamProvider> binding_;
+  mojo::Receiver<AudioOutputStreamProvider> receiver_;
   CreateDelegateCallback create_delegate_callback_;
   DeleterCallback deleter_callback_;
   std::unique_ptr<mojom::AudioOutputStreamObserver> observer_;
