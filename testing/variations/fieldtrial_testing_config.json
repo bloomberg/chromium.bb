@@ -4028,8 +4028,8 @@
                 {
                     "name": "Enabled_20190804",
                     "params": {
-                        "min_top_host_engagement_score_threshold": "3.0",
-                        "top_host_blacklist_size_multiplier": "2.0"
+                        "min_top_host_engagement_score_threshold": "2.0",
+                        "top_host_blacklist_size_multiplier": "3.0"
                     },
                     "enable_features": [
                         "OptimizationHintsFetching"
