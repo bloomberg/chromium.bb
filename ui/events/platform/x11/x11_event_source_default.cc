@@ -22,6 +22,22 @@ namespace ui {
 
 namespace {
 
+Event::Properties GetEventPropertiesFromXKeyEvent(const XKeyEvent& xev) {
+  using Values = std::vector<uint8_t>;
+  Event::Properties properties;
+
+  // Keyboard group
+  uint8_t group = XkbGroupForCoreState(xev.state);
+  properties.emplace(kPropertyKeyboardGroup, Values{group});
+
+  // IBus-gtk specific flags
+  uint8_t ibus_flags = (xev.state >> kPropertyKeyboardIBusFlagOffset) &
+                       kPropertyKeyboardIBusFlagMask;
+  properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
+
+  return properties;
+}
+
 std::unique_ptr<TouchEvent> CreateTouchEvent(EventType event_type,
                                              const XEvent& xev) {
   std::unique_ptr<TouchEvent> event = std::make_unique<TouchEvent>(
@@ -108,10 +124,13 @@ std::unique_ptr<ui::Event> TranslateXEventToEvent(const XEvent& xev) {
                                           EventTimeFromXEvent(xev), flags, 0);
 
     case KeyPress:
-    case KeyRelease:
-      return std::make_unique<KeyEvent>(EventTypeFromXEvent(xev),
-                                        KeyboardCodeFromXKeyEvent(&xev), flags);
-
+    case KeyRelease: {
+      auto key_event = std::make_unique<KeyEvent>(
+          EventTypeFromXEvent(xev), KeyboardCodeFromXKeyEvent(&xev), flags);
+      // Attach keyboard group to |key_event|'s properties
+      key_event->SetProperties(GetEventPropertiesFromXKeyEvent(xev.xkey));
+      return key_event;
+    }
     case ButtonPress:
     case ButtonRelease: {
       switch (EventTypeFromXEvent(xev)) {

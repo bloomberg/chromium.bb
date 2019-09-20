@@ -366,8 +366,9 @@ Event::Event(const PlatformEvent& native_event, EventType type, int flags)
   }
 #endif
 #if defined(USE_OZONE)
-  source_device_id_ =
-      static_cast<const Event*>(native_event)->source_device_id();
+  source_device_id_ = native_event->source_device_id();
+  if (auto* properties = native_event->properties())
+    properties_ = std::make_unique<Properties>(*properties);
 #endif
 }
 
