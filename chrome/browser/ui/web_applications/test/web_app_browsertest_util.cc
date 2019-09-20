@@ -8,6 +8,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
@@ -15,9 +16,30 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper.h"
+#include "chrome/common/web_application_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace web_app {
+
+AppId InstallWebApp(Profile* profile,
+                    std::unique_ptr<WebApplicationInfo> web_app_info) {
+  AppId app_id;
+  base::RunLoop run_loop;
+  auto* provider = WebAppProviderBase::GetProviderBase(profile);
+  DCHECK(provider);
+  provider->install_manager().InstallWebAppFromInfo(
+      std::move(web_app_info), ForInstallableSite::kYes,
+      WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+            app_id = installed_app_id;
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+  return app_id;
+}
 
 Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
   EXPECT_TRUE(

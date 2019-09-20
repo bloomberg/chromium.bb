@@ -42,7 +42,7 @@ class WebAppControllerBrowserTestBase
 
   AppId InstallPWA(const GURL& app_url);
 
-  AppId InstallWebApp(std::unique_ptr<WebApplicationInfo>&& web_app_info);
+  AppId InstallWebApp(std::unique_ptr<WebApplicationInfo> web_app_info);
 
   // Launches the app as a window and returns the browser.
   Browser* LaunchWebAppBrowser(const AppId&);

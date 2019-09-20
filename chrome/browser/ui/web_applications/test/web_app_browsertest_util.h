@@ -5,15 +5,20 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_WEB_APP_BROWSERTEST_UTIL_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_WEB_APP_BROWSERTEST_UTIL_H_
 
+#include <memory>
+
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 class Browser;
 class Profile;
+struct WebApplicationInfo;
 
 namespace web_app {
 
 struct ExternalInstallOptions;
 enum class InstallResultCode;
+
+AppId InstallWebApp(Profile* profile, std::unique_ptr<WebApplicationInfo>);
 
 // Launches a new app window for |app| in |profile|.
 Browser* LaunchWebAppBrowser(Profile*, const AppId&);
