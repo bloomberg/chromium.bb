@@ -6343,6 +6343,21 @@
             ]
         }
     ],
+    "UseFluentLanguageModel": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseFluentLanguageModel"
+                    ]
+                }
+            ]
+        }
+    ],
     "UsePdfCompositorServiceForPrint": [
         {
             "platforms": [
