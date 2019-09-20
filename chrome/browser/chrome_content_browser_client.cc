@@ -3276,6 +3276,23 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             [effective_connection_type.value()] = value;
       }
     }
+
+    pairs.clear();
+    base::SplitStringIntoKeyValuePairs(
+        base::GetFieldTrialParamValueByFeature(features::kLazyImageLoading,
+                                               "lazy_image_first_k_fully_load"),
+        ':', ',', &pairs);
+
+    for (const auto& pair : pairs) {
+      base::Optional<net::EffectiveConnectionType> effective_connection_type =
+          net::GetEffectiveConnectionTypeForName(pair.first);
+      int value = 0;
+      if (effective_connection_type && base::StringToInt(pair.second, &value)) {
+        web_prefs
+            ->lazy_image_first_k_fully_load[effective_connection_type.value()] =
+            value;
+      }
+    }
   }
 
   if (base::FeatureList::IsEnabled(

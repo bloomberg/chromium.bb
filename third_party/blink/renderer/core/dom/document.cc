@@ -8436,8 +8436,10 @@ NavigationInitiatorImpl& Document::NavigationInitiator() {
 }
 
 LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
-  if (!lazy_load_image_observer_)
-    lazy_load_image_observer_ = MakeGarbageCollected<LazyLoadImageObserver>();
+  if (!lazy_load_image_observer_) {
+    lazy_load_image_observer_ =
+        MakeGarbageCollected<LazyLoadImageObserver>(*this);
+  }
   return *lazy_load_image_observer_;
 }
 
