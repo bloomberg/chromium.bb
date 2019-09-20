@@ -332,6 +332,65 @@ suite('TabList', () => {
     assertEquals(fakeScroller.scrollLeft, activeTab.offsetLeft - scrollPadding);
   });
 
+  test('attaching a tab creates a new tab element', async () => {
+    const attachedTab = {
+      index: 2,
+      id: 9001,
+      title: 'My new tab',
+      windowId: currentWindow.id,
+    };
+    testTabsApiProxy.setTab(attachedTab);
+    callbackRouter.onAttached.dispatchEvent(attachedTab.id, {
+      newPosition: attachedTab.index,
+      newWindowId: attachedTab.windowId,
+    });
+
+    const tabId = await testTabsApiProxy.whenCalled('getTab');
+    assertEquals(tabId, attachedTab.id);
+    assertEquals(getUnpinnedTabs().length, currentWindow.tabs.length + 1);
+    assertEquals(getUnpinnedTabs()[attachedTab.index].tab, attachedTab);
+  });
+
+  test('detaching a tab removes the tab element', () => {
+    const detachedTab = currentWindow.tabs[1];
+    callbackRouter.onDetached.dispatchEvent(detachedTab.id, {
+      oldPosition: 1,
+      oldWindowId: currentWindow.id,
+    });
+    assertEquals(getUnpinnedTabs().length, currentWindow.tabs.length - 1);
+  });
+
+  test(
+      'respects the last attached/detached event when multiple events are ' +
+          'dispatched for the same tab',
+      async () => {
+        const attachedTab = {
+          index: 2,
+          id: 9001,
+          title: 'My new tab',
+          windowId: currentWindow.id,
+        };
+        testTabsApiProxy.setTab(attachedTab);
+        callbackRouter.onAttached.dispatchEvent(attachedTab.id, {
+          newPosition: attachedTab.index,
+          newWindowId: attachedTab.windowId,
+        });
+        callbackRouter.onDetached.dispatchEvent(attachedTab.id, {
+          oldPosition: attachedTab.index,
+          oldWindowId: attachedTab.windowId,
+        });
+        callbackRouter.onAttached.dispatchEvent(attachedTab.id, {
+          newPosition: attachedTab.index,
+          newWindowId: attachedTab.windowId,
+        });
+        callbackRouter.onDetached.dispatchEvent(attachedTab.id, {
+          oldPosition: attachedTab.index,
+          oldWindowId: attachedTab.windowId,
+        });
+        await testTabsApiProxy.whenCalled('getTab');
+        assertEquals(getUnpinnedTabs().length, currentWindow.tabs.length);
+      });
+
   test('dragstart sets a drag image offset by the event coordinates', () => {
     const draggedTab = getUnpinnedTabs()[0];
     const mockDataTransfer = new MockDataTransfer();

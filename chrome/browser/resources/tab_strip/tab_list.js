@@ -46,6 +46,17 @@ class TabListElement extends CustomElement {
     this.animationPromises = Promise.resolve();
 
     /**
+     * Attach and detach callbacks require async requests and therefore may
+     * cause race conditions in which the async requests complete after another
+     * event has been dispatched. Therefore, this object is necessary to keep
+     * track of the recent attached or detached state of each tab to ensure
+     * elements are not created when they should not be. A truthy value
+     * signifies the tab is attached to the current window.
+     * @private {!Object<number, boolean>}
+     */
+    this.attachmentStates_ = {};
+
+    /**
      * The TabElement that is currently being dragged.
      * @private {!TabElement|undefined}
      */
@@ -114,12 +125,21 @@ class TabListElement extends CustomElement {
         }
       }
 
+      this.tabsApiHandler_.onAttached.addListener(
+          (tabId, attachedInfo) => this.onTabAttached_(tabId, attachedInfo));
       this.tabsApiHandler_.onActivated.addListener(
-          this.onTabActivated_.bind(this));
-      this.tabsApiHandler_.onCreated.addListener(this.onTabCreated_.bind(this));
-      this.tabsApiHandler_.onMoved.addListener(this.onTabMoved_.bind(this));
-      this.tabsApiHandler_.onRemoved.addListener(this.onTabRemoved_.bind(this));
-      this.tabsApiHandler_.onUpdated.addListener(this.onTabUpdated_.bind(this));
+          (activeInfo) => this.onTabActivated_(activeInfo));
+      this.tabsApiHandler_.onCreated.addListener(
+          (tab) => this.onTabCreated_(tab));
+      this.tabsApiHandler_.onDetached.addListener(
+          (tabId, detachInfo) => this.onTabDetached_(tabId, detachInfo));
+      this.tabsApiHandler_.onMoved.addListener(
+          (tabId, moveInfo) => this.onTabMoved_(tabId, moveInfo));
+      this.tabsApiHandler_.onRemoved.addListener(
+          (tabId, removeInfo) => this.onTabRemoved_(tabId, removeInfo));
+      this.tabsApiHandler_.onUpdated.addListener(
+          (tabId, changeInfo, tab) =>
+              this.onTabUpdated_(tabId, changeInfo, tab));
     });
   }
 
@@ -267,6 +287,24 @@ class TabListElement extends CustomElement {
   }
 
   /**
+   * @param {number} tabId
+   * @param {!TabAttachedInfo} attachInfo
+   * @private
+   */
+  async onTabAttached_(tabId, attachInfo) {
+    if (attachInfo.newWindowId !== this.windowId_) {
+      return;
+    }
+
+    this.attachmentStates_[tabId] = true;
+    const tab = await this.tabsApi_.getTab(tabId);
+    if (this.attachmentStates_[tabId] && !this.findTabElement_(tabId)) {
+      const tabElement = this.createTabElement_(tab);
+      this.insertTabOrMoveTo_(tabElement, attachInfo.newPosition);
+    }
+  }
+
+  /**
    * @param {!Tab} tab
    * @private
    */
@@ -278,6 +316,23 @@ class TabListElement extends CustomElement {
     const tabElement = this.createTabElement_(tab);
     this.insertTabOrMoveTo_(tabElement, tab.index);
     this.addAnimationPromise_(tabElement.slideIn());
+  }
+
+  /**
+   * @param {number} tabId
+   * @param {!TabDetachedInfo} detachInfo
+   * @private
+   */
+  onTabDetached_(tabId, detachInfo) {
+    if (detachInfo.oldWindowId !== this.windowId_) {
+      return;
+    }
+
+    this.attachmentStates_[tabId] = false;
+    const tabElement = this.findTabElement_(tabId);
+    if (tabElement) {
+      tabElement.remove();
+    }
   }
 
   /**
