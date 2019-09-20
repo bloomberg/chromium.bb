@@ -174,7 +174,7 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     case ThemeProperties::COLOR_OMNIBOX_TEXT:
       return SK_ColorWHITE;
     case ThemeProperties::COLOR_OMNIBOX_BACKGROUND:
-      return SkColorSetRGB(0x28, 0x2C, 0x2F);
+      return gfx::kGoogleGrey900;
     default:
       return base::nullopt;
   }
