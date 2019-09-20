@@ -1254,7 +1254,8 @@ void AppListControllerImpl::NotifyAppListVisibilityChanged(bool visible,
 
   // Skip adjacent same changes.
   if (last_visible_ == real_visibility &&
-      last_visible_display_id_ == display_id) {
+      (display::kInvalidDisplayId == display_id ||
+       last_visible_display_id_ == display_id)) {
     return;
   }
 
