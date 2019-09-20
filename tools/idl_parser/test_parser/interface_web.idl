@@ -436,6 +436,12 @@ interface MyIfacePromise {
  *      PrimitiveType(long long)
  *      ExtAttributes()
  *        ExtAttribute(EnforceRange)
+ *  Iterable()
+ *    ASYNC: True
+ *    Type()
+ *      PrimitiveType(double)
+ *    Type()
+ *      StringType(DOMString)
  */
 interface MyIfaceIterable {
   iterable<long>;
@@ -444,6 +450,7 @@ interface MyIfaceIterable {
   iterable<[TreatNullAs=EmptyString] DOMString>;
   iterable<[Clamp, XAttr] long>;
   iterable<[Clamp] long, [EnforceRange] long long>;
+  async iterable<double, DOMString>;
 };
 
 /** TREE

@@ -268,7 +268,8 @@ class IDLParser(object):
     p[0] = self.BuildError(p, 'Definition')
 
   def p_ArgumentNameKeyword(self, p):
-    """ArgumentNameKeyword : ATTRIBUTE
+    """ArgumentNameKeyword : ASYNC
+                           | ATTRIBUTE
                            | CALLBACK
                            | CONST
                            | DELETER
@@ -368,6 +369,7 @@ class IDLParser(object):
                               | Stringifier
                               | StaticMember
                               | Iterable
+                              | AsyncIterable
                               | ReadonlyMember
                               | ReadWriteAttribute
                               | ReadWriteMaplike
@@ -495,7 +497,8 @@ class IDLParser(object):
     p[0] = p[1]
 
   def p_AttributeNameKeyword(self, p):
-    """AttributeNameKeyword : REQUIRED"""
+    """AttributeNameKeyword : ASYNC
+                            | REQUIRED"""
     p[0] = p[1]
 
   def p_ReadOnly(self, p):
@@ -661,6 +664,12 @@ class IDLParser(object):
                     |"""
     if len(p) > 1:
       p[0] = p[2]
+
+  def p_AsyncIterable(self, p):
+    """AsyncIterable : ASYNC ITERABLE '<' TypeWithExtendedAttributes ',' TypeWithExtendedAttributes '>' ';'"""
+    childlist = ListFromConcat(p[4], p[6])
+    p[0] = self.BuildProduction('Iterable', p, 2, childlist)
+    p[0].AddChildren(self.BuildTrue('ASYNC'))
 
   def p_ReadWriteMaplike(self, p):
     """ReadWriteMaplike : MaplikeRest"""

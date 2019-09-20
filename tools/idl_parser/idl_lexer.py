@@ -54,6 +54,7 @@ class IDLLexer(object):
   # if the token is actually a keyword.
   keywords = {
     'any' : 'ANY',
+    'async' : 'ASYNC',
     'attribute' : 'ATTRIBUTE',
     'boolean' : 'BOOLEAN',
     'byte' : 'BYTE',
