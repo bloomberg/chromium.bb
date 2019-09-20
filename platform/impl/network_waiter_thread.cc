@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/impl/network_reader_thread.h"
+#include "platform/impl/network_waiter_thread.h"
 
 namespace openscreen {
 namespace platform {
 
-NetworkReaderThread::NetworkReaderThread()
-    : thread_(&NetworkReader::RunUntilStopped, &network_reader_) {}
+NetworkWaiterThread::NetworkWaiterThread()
+    : thread_(&NetworkWaiterPosix::RunUntilStopped, &network_waiter_) {}
 
-NetworkReaderThread::~NetworkReaderThread() {
-  network_reader_.RequestStopSoon();
+NetworkWaiterThread::~NetworkWaiterThread() {
+  network_waiter_.RequestStopSoon();
   thread_.join();
 }
 

@@ -18,17 +18,31 @@ namespace platform {
 
 class NetworkWaiterPosix : public NetworkWaiter {
  public:
+  using SocketHandleRef = NetworkWaiter::SocketHandleRef;
+
   NetworkWaiterPosix();
-  ~NetworkWaiterPosix();
-  ErrorOr<std::vector<SocketHandle>> AwaitSocketsReadable(
-      const std::vector<SocketHandle>& socket_handles,
-      const Clock::duration& timeout);
+  ~NetworkWaiterPosix() override;
 
   // TODO(rwkeane): Move this to a platform-specific util library.
   static struct timeval ToTimeval(const Clock::duration& timeout);
 
+  // Runs the Wait function in a loop until the below RequestStopSoon function
+  // is called.
+  void RunUntilStopped();
+
+  // Signals for the RunUntilStopped loop to cease running.
+  void RequestStopSoon();
+
+ protected:
+  ErrorOr<std::vector<SocketHandleRef>> AwaitSocketsReadable(
+      const std::vector<SocketHandleRef>& socket_fds,
+      const Clock::duration& timeout) override;
+
  private:
   fd_set read_handles_;
+
+  // Atomic so that we can perform atomic exchanges.
+  std::atomic_bool is_running_;
 };
 
 }  // namespace platform

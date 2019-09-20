@@ -21,8 +21,9 @@ NetworkWaiterPosix::NetworkWaiterPosix() = default;
 
 NetworkWaiterPosix::~NetworkWaiterPosix() = default;
 
-ErrorOr<std::vector<SocketHandle>> NetworkWaiterPosix::AwaitSocketsReadable(
-    const std::vector<SocketHandle>& socket_handles,
+ErrorOr<std::vector<NetworkWaiterPosix::SocketHandleRef>>
+NetworkWaiterPosix::AwaitSocketsReadable(
+    const std::vector<SocketHandleRef>& socket_handles,
     const Clock::duration& timeout) {
   int max_fd = -1;
   FD_ZERO(&read_handles_);
@@ -48,9 +49,9 @@ ErrorOr<std::vector<SocketHandle>> NetworkWaiterPosix::AwaitSocketsReadable(
     return Error::Code::kAgain;
   }
 
-  std::vector<SocketHandle> changed_handles;
-  for (const SocketHandle& handle : socket_handles) {
-    if (FD_ISSET(handle.fd, &read_handles_)) {
+  std::vector<SocketHandleRef> changed_handles;
+  for (const SocketHandleRef& handle : socket_handles) {
+    if (FD_ISSET(handle.get().fd, &read_handles_)) {
       changed_handles.push_back(handle);
     }
   }
@@ -74,6 +75,20 @@ struct timeval NetworkWaiterPosix::ToTimeval(const Clock::duration& timeout) {
                    .count();
 
   return tv;
+}
+
+void NetworkWaiterPosix::RunUntilStopped() {
+  const bool was_running = is_running_.exchange(true);
+  OSP_CHECK(!was_running);
+
+  constexpr Clock::duration kHandleReadyTimeout = std::chrono::milliseconds(50);
+  while (is_running_) {
+    ProcessHandles(kHandleReadyTimeout);
+  }
+}
+
+void NetworkWaiterPosix::RequestStopSoon() {
+  is_running_.store(false);
 }
 
 }  // namespace platform

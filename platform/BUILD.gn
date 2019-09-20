@@ -57,8 +57,7 @@ source_set("platform") {
     sources += [
       "impl/network_reader.cc",
       "impl/network_reader.h",
-      "impl/network_reader_thread.cc",
-      "impl/network_reader_thread.h",
+      "impl/network_waiter.cc",
       "impl/network_waiter.h",
       "impl/socket_handle.h",
       "impl/task_runner.cc",
@@ -87,6 +86,8 @@ source_set("platform") {
       sources += [
         "impl/network_waiter_posix.cc",
         "impl/network_waiter_posix.h",
+        "impl/network_waiter_thread.cc",
+        "impl/network_waiter_thread.h",
         "impl/scoped_pipe.h",
         "impl/scoped_wake_lock_posix.cc",
         "impl/scoped_wake_lock_posix.h",

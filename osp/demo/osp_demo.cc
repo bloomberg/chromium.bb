@@ -31,7 +31,7 @@
 #include "platform/api/time.h"
 #include "platform/api/trace_logging.h"
 #include "platform/impl/network_reader.h"
-#include "platform/impl/network_reader_thread.h"
+#include "platform/impl/network_waiter_thread.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/task_runner_thread.h"
 #include "platform/impl/text_trace_logging_platform.h"
@@ -425,9 +425,9 @@ void ListenerDemo() {
   SignalThings();
 
   platform::TaskRunnerThread task_runner_thread(platform::Clock::now);
-  platform::NetworkReaderThread network_reader_thread;
-  platform::UdpSocket::SetLifetimeObserver(
-      network_reader_thread.network_reader());
+  platform::NetworkWaiterThread network_waiter_thread;
+  platform::NetworkReader reader(network_waiter_thread.network_waiter());
+  platform::UdpSocket::SetLifetimeObserver(&reader);
 
   ListenerObserver listener_observer;
   MdnsServiceListenerConfig listener_config;
@@ -516,9 +516,9 @@ void PublisherDemo(absl::string_view friendly_name) {
   constexpr uint16_t server_port = 6667;
 
   platform::TaskRunnerThread task_runner_thread(platform::Clock::now);
-  platform::NetworkReaderThread network_reader_thread;
-  platform::UdpSocket::SetLifetimeObserver(
-      network_reader_thread.network_reader());
+  platform::NetworkWaiterThread network_waiter_thread;
+  platform::NetworkReader reader(network_waiter_thread.network_waiter());
+  platform::UdpSocket::SetLifetimeObserver(&reader);
 
   PublisherObserver publisher_observer;
   // TODO(btolsch): aggregate initialization probably better?

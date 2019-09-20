@@ -13,9 +13,6 @@ namespace platform {
 struct SocketHandle {
   explicit SocketHandle(int descriptor);
   int fd;
-
-  bool operator==(const SocketHandle& other) const;
-  bool operator!=(const SocketHandle& other) const;
 };
 
 }  // namespace platform

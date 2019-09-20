@@ -8,6 +8,7 @@
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "platform/impl/network_reader.h"
+#include "platform/impl/network_waiter_thread.h"
 #include "platform/impl/task_runner.h"
 #include "streaming/cast/constants.h"
 #include "streaming/cast/environment.h"
@@ -77,9 +78,10 @@ int main(int argc, const char* argv[]) {
   openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kInfo);
   const auto now_function = &openscreen::platform::Clock::now;
   openscreen::platform::TaskRunnerImpl task_runner(now_function);
-  openscreen::platform::NetworkReader network_reader;
-  std::thread network_reader_thread(
-      &openscreen::platform::NetworkReader::RunUntilStopped, &network_reader);
+  openscreen::platform::NetworkWaiterThread network_waiter_thread;
+  openscreen::platform::NetworkReader network_reader(
+      network_waiter_thread.network_waiter());
+  openscreen::platform::UdpSocket::SetLifetimeObserver(&network_reader);
 
   // Create the Environment that holds the required injected dependencies
   // (clock, task runner) used throughout the system, and owns the UDP socket
@@ -120,9 +122,5 @@ int main(int argc, const char* argv[]) {
   // window is closed, a SIGTERM is intercepted, or whatever other appropriate
   // user indication that shutdown is requested).
   task_runner.RunUntilStopped();
-
-  // Normal shutdown.
-  network_reader.RequestStopSoon();
-  network_reader_thread.join();
   return 0;
 }
