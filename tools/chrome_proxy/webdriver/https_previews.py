@@ -11,6 +11,7 @@ from common import TestDriver
 from common import IntegrationTest
 from decorators import AndroidOnly
 from decorators import ChromeVersionEqualOrAfterM
+from decorators import ChromeVersionBeforeM
 
 from selenium.common.exceptions import TimeoutException
 
@@ -153,6 +154,7 @@ class HttpsPreviewsBaseClass():
 
   # Verifies that a Lite Page pageload sends a DRP pingback.
   @ChromeVersionEqualOrAfterM(74)
+  @ChromeVersionBeforeM(79)
   def testPingbackSent(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-data-reduction-proxy-force-pingback')
