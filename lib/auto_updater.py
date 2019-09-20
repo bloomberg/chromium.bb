@@ -18,15 +18,12 @@ ChromiumOSUpdater includes:
   * Check functions, including kernel/version/cgpt check.
 
   ----Precheck---
-  * Pre-check payload's existence before auto-update.
   * Pre-check if the device can run its nebraska.
   * Pre-check for stateful/rootfs update/whole update.
 
   ----Tranfer----
-  * Transfer update-utils (nebraska, et. al.) package at first.
-  * Transfer rootfs update files if rootfs update is required.
-  * Transfer stateful update files if stateful update is required.
-  * @retry to all transfer functions.
+  * This step is carried out by Transfer subclasses in
+    auto_updater_transfer.py.
 
   ----Auto-Update---
   * Do rootfs partition update if it's required.
@@ -45,7 +42,6 @@ import glob
 import json
 import os
 import re
-import shutil
 import tempfile
 import time
 
@@ -57,7 +53,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import nebraska_wrapper
 from chromite.lib import operation
 from chromite.lib import osutils
-from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
@@ -69,8 +64,6 @@ from chromite.utils import key_value_store
 #   File on remote host with slash: REMOTE_XXX_FILE_PATH
 #   Path on remote host with slash: REMOTE_XXX_PATH
 #   File on local server without slash: LOCAL_XXX_FILENAME
-#   File on local server with slash: LOCAL_XXX_FILE_PATH
-#   Path on local server: LOCAL_XXX_PATH
 
 # Update Status for remote device.
 UPDATE_STATUS_IDLE = 'UPDATE_STATUS_IDLE'
@@ -128,8 +121,6 @@ class BaseUpdater(object):
 class ChromiumOSUpdater(BaseUpdater):
   """Used to update DUT with image."""
   # Stateful update files.
-  LOCAL_STATEFUL_UPDATE_FILENAME = 'stateful_update'
-  LOCAL_CHROOT_STATEFUL_UPDATE_PATH = '/usr/bin/stateful_update'
   REMOTE_STATEFUL_UPDATE_PATH = '/usr/local/bin/stateful_update'
 
   # Nebraska files.
@@ -174,8 +165,8 @@ class ChromiumOSUpdater(BaseUpdater):
                clobber_stateful=True, local_devserver=False, yes=False,
                do_rootfs_update=True, do_stateful_update=True,
                reboot=True, disable_verification=False,
-               send_payload_in_parallel=False,
-               payload_filename=None, experimental_au=False):
+               send_payload_in_parallel=False, payload_filename=None,
+               experimental_au=False, transfer_obj=None):
     """Initialize a ChromiumOSUpdater for auto-update a chromium OS device.
 
     Args:
@@ -214,6 +205,10 @@ class ChromiumOSUpdater(BaseUpdater):
           in parallel. The default is False.
       experimental_au: Use experimental features of auto updater instead. It
           should be deprecated once crbug.com/872441 is fixed.
+      transfer_obj: An instance of the subclass of
+          auto_updater_transfer.Transfer. If transfer_obj is None, then an
+          instance of auto_updater_transfer.LocalTransfer will be used by
+          default.
     """
     super(ChromiumOSUpdater, self).__init__(device, payload_dir)
 
@@ -257,7 +252,20 @@ class ChromiumOSUpdater(BaseUpdater):
       }
       self._cmd_kwargs.update(log_kwargs)
       self._cmd_kwargs_omit_error.update(log_kwargs)
-
+    if transfer_obj:
+      self._transfer_obj = transfer_obj
+    else:
+      self._transfer_obj = auto_updater_transfer.LocalTransfer(
+          device=self.device, payload_dir=self.payload_dir,
+          tempdir=self.tempdir, device_restore_dir=self.device_restore_dir,
+          payload_name=self._GetRootFsPayloadFileName(),
+          cmd_kwargs=self._cmd_kwargs,
+          device_payload_dir=self.device_payload_dir,
+          dev_dir=self.dev_dir,
+          payload_mode=self.payload_mode,
+          original_payload_dir=self.original_payload_dir,
+          transfer_rootfs_update=self._do_rootfs_update,
+          transfer_stateful_update=self._do_rootfs_update)
 
   @property
   def is_au_endtoendtest(self):
@@ -268,23 +276,11 @@ class ChromiumOSUpdater(BaseUpdater):
     return payload + '.json'
 
   def CheckPayloads(self):
-    """Verify that all required payloads are in |self.payload_dir|."""
-    logging.debug('Checking if payloads have been stored in directory %s...',
-                  self.payload_dir)
-    filenames = []
-    payload_name = self._GetRootFsPayloadFileName()
+    """DEPRECATED.  Use auto_updater_transfer.Transfer Class instead.
 
-    if self._do_rootfs_update:
-      filenames += [payload_name,
-                    self.GetPayloadPropertiesFileName(payload_name)]
-
-    if self._do_stateful_update:
-      filenames += [auto_updater_transfer.STATEFUL_FILENAME]
-
-    for fname in filenames:
-      payload = os.path.join(self.payload_dir, fname)
-      if not os.path.exists(payload):
-        raise ChromiumOSUpdateError('Payload %s does not exist!' % payload)
+    Verify that all required payloads are in |self.payload_dir|.
+    """
+    self._transfer_obj.CheckPayloads()
 
   def CheckRestoreStateful(self):
     """Check whether to restore stateful."""
@@ -366,40 +362,6 @@ class ChromiumOSUpdater(BaseUpdater):
     logging.debug('Current root device is %s', rootdev)
     return rootdev
 
-  def _GetStatefulUpdateScript(self):
-    """Returns the path to the stateful_update_bin on the target.
-
-    Returns:
-      <need_transfer, path>:
-      need_transfer is True if stateful_update_bin is found in local path,
-      False if we directly use stateful_update_bin on the host.
-      path: If need_transfer is True, it represents the local path of
-      stateful_update_bin, and is used for further transferring. Otherwise,
-      it refers to the host path.
-    """
-    # We attempt to load the local stateful update path in 2 different
-    # ways. If this doesn't exist, we attempt to use the Chromium OS
-    # Chroot path to the installed script. If all else fails, we use the
-    # stateful update script on the host.
-    stateful_update_path = path_util.FromChrootPath(
-        self.LOCAL_CHROOT_STATEFUL_UPDATE_PATH)
-
-    if not os.path.exists(stateful_update_path):
-      logging.warning('Could not find chroot stateful_update script in %s, '
-                      'falling back to the client copy.', stateful_update_path)
-      stateful_update_path = os.path.join(self.dev_dir,
-                                          self.LOCAL_STATEFUL_UPDATE_FILENAME)
-      if os.path.exists(stateful_update_path):
-        logging.debug('Use stateful_update script in devserver path: %s',
-                      stateful_update_path)
-        return True, stateful_update_path
-
-      logging.debug('Cannot find stateful_update script, will use the script '
-                    'on the host')
-      return False, self.REMOTE_STATEFUL_UPDATE_PATH
-    else:
-      return True, stateful_update_path
-
   def _StartUpdateEngineIfNotRunning(self, device):
     """Starts update-engine service if it is not running.
 
@@ -451,14 +413,6 @@ class ChromiumOSUpdater(BaseUpdater):
 
     return third_party_host_dir
 
-  def _EnsureDeviceDirectory(self, directory):
-    """Mkdir the directory no matther whether this directory exists on host.
-
-    Args:
-      directory: the directory to be made on the device.
-    """
-    self.device.RunCommand(['mkdir', '-p', directory], **self._cmd_kwargs)
-
   def _GetRootFsPayloadFileName(self):
     """Get the correct RootFs payload filename.
 
@@ -469,73 +423,6 @@ class ChromiumOSUpdater(BaseUpdater):
       return self.payload_filename
     else:
       return auto_updater_transfer.ROOTFS_FILENAME
-
-  def _TransferUpdateUtilsPackage(self):
-    """Transfer update-utils package to work directory of the remote device."""
-    files_to_copy = (nebraska_wrapper.NEBRASKA_SOURCE_FILE,)
-    logging.info('Copying these files to device: %s', files_to_copy)
-    source_dir = os.path.join(self.tempdir, 'src')
-    osutils.SafeMakedirs(source_dir)
-    for f in files_to_copy:
-      shutil.copy2(f, source_dir)
-
-    # Make sure the device.work_dir exist after any installation and reboot.
-    self._EnsureDeviceDirectory(self.device.work_dir)
-    # Python packages are plain text files so we chose rsync --compress.
-    self.device.CopyToWorkDir(source_dir, mode='rsync', log_output=True,
-                              **self._cmd_kwargs)
-
-  def _TransferRootfsUpdate(self):
-    """Transfer files for rootfs update.
-
-    Copy the update payload to the remote device for rootfs update.
-    """
-    self._EnsureDeviceDirectory(self.device_payload_dir)
-    logging.info('Copying rootfs payload to device...')
-    payload_name = self._GetRootFsPayloadFileName()
-    payload = os.path.join(self.payload_dir, payload_name)
-    self.device.CopyToWorkDir(payload, self.PAYLOAD_DIR_NAME,
-                              mode=self.payload_mode,
-                              log_output=True, **self._cmd_kwargs)
-    payload_properties_path = self.GetPayloadPropertiesFileName(payload)
-    self.device.CopyToWorkDir(payload_properties_path, self.PAYLOAD_DIR_NAME,
-                              mode=self.payload_mode,
-                              log_output=True, **self._cmd_kwargs)
-
-  def _TransferStatefulUpdate(self):
-    """Transfer files for stateful update.
-
-    The stateful update bin and the corresponding payloads are copied to the
-    target remote device for stateful update.
-    """
-    logging.debug('Checking whether file stateful_update_bin needs to be '
-                  'transferred to device...')
-    need_transfer, stateful_update_bin = self._GetStatefulUpdateScript()
-    if need_transfer:
-      logging.info('Copying stateful_update binary to device...')
-      # stateful_update is a tiny uncompressed text file, so use rsync.
-      self.device.CopyToWorkDir(stateful_update_bin, mode='rsync',
-                                log_output=True, **self._cmd_kwargs)
-      self.stateful_update_bin = os.path.join(
-          self.device.work_dir, os.path.basename(
-              self.LOCAL_CHROOT_STATEFUL_UPDATE_PATH))
-    else:
-      self.stateful_update_bin = stateful_update_bin
-
-    if self.original_payload_dir:
-      logging.info('Copying original stateful payload to device...')
-      original_payload = os.path.join(
-          self.original_payload_dir, auto_updater_transfer.STATEFUL_FILENAME)
-      self._EnsureDeviceDirectory(self.device_restore_dir)
-      self.device.CopyToDevice(original_payload, self.device_restore_dir,
-                               mode=self.payload_mode, log_output=True,
-                               **self._cmd_kwargs)
-
-    logging.info('Copying target stateful payload to device...')
-    payload = os.path.join(self.payload_dir,
-                           auto_updater_transfer.STATEFUL_FILENAME)
-    self.device.CopyToWorkDir(payload, mode=self.payload_mode,
-                              log_output=True, **self._cmd_kwargs)
 
   def ResetStatefulPartition(self):
     """Clear any pending stateful update request."""
@@ -756,8 +643,21 @@ class ChromiumOSUpdater(BaseUpdater):
     3. Do root updating.
     """
     self.SetupRootfsUpdate()
+
+    # Any call to self._transfer_obj.TransferRootfsUpdate() must be preceeded by
+    # a conditional call to self._FixPayloadPropertiesFile() as this handles the
+    # usecase in reported in crbug.com/1012520. Whenever
+    # self._FixPayloadPropertiesFile() gets deprecated, this call can be safely
+    # removed. For more details on TODOs, refer to self.TransferRootfsUpdate()
+    # docstrings.
+
+    if self.is_au_endtoendtest:
+      self._FixPayloadPropertiesFile()
+
     # Copy payload for rootfs update.
-    self.TransferRootfsUpdate()
+
+    self._transfer_obj.TransferRootfsUpdate()
+
     self.UpdateRootfs()
 
   def RunUpdateStateful(self):
@@ -766,7 +666,7 @@ class ChromiumOSUpdater(BaseUpdater):
     1. Copy files to remote device needed by stateful update.
     2. Do stateful update.
     """
-    self.TransferStatefulUpdate()
+    self.stateful_update_bin = self._transfer_obj.TransferStatefulUpdate()
     self.UpdateStateful()
 
   def RebootAndVerify(self):
@@ -837,7 +737,7 @@ class ChromiumOSUpdater(BaseUpdater):
 
   def RunUpdate(self):
     """Update the device with image of specific version."""
-    self.TransferUpdateUtilsPackage()
+    self._transfer_obj.TransferUpdateUtilsPackage()
 
     restore_stateful = self.CheckRestoreStateful()
     if restore_stateful:
@@ -1085,26 +985,40 @@ class ChromiumOSUpdater(BaseUpdater):
         cmd, delay_sec=DELAY_SEC_FOR_RETRY, **kwargs)
 
   # TODO(crbug.com/872441): cros_autoupdate in platform/dev-utils package still
-  # calls this function, but in fact it needs to call
-  # TransferUpdateUtilsPackage() instead. So delete this function once all the
-  # callers have been moved.
+  # calls this function, but in fact it needs to call the
+  # auto_updater_transfer.Transfer Class's TransferUpdateUtilsPackage() instead.
+  # So delete this function once all the callers have been moved.
   def TransferDevServerPackage(self):
     """DEPRECATED."""
-    self.TransferUpdateUtilsPackage()
+    self._transfer_obj.TransferUpdateUtilsPackage()
 
   def TransferUpdateUtilsPackage(self):
-    """Transfer update-utils package to work directory of the remote device."""
-    retry_util.RetryException(
-        cros_build_lib.RunCommandError,
-        MAX_RETRY,
-        self._TransferUpdateUtilsPackage,
-        delay_sec=DELAY_SEC_FOR_RETRY)
+    """DEPRECATED. Use auto_updater_transfer.Transfer Class instead.
+
+    TODO (sanikak): Once this method is removed, remove corresponding tests in
+    chromite.lib.auto_updater_unittest.
+    """
+    self._transfer_obj.TransferUpdateUtilsPackage()
 
   def TransferRootfsUpdate(self):
     """Transfer files for rootfs update.
 
     The corresponding payload are copied to the remote device for rootfs
     update.
+
+    DEPRECATED. Use auto_updater_transfer.Transfer Class instead. Until the
+    TODOs below are addressed, new calls to
+    self._transfer_obj.TransferRootfsUpdate() must be preceded with a
+    conditional call to self._FixPayloadPropertiesFile().
+
+    TODO (sanikak): src.platform.dev.cros_updater.py calls
+    self.TransferRootfsUpdate() independently. Once the code flow in
+    cros_updater.py is cleaned up so that it calls self.RunUpdate(),
+    self.TransferRootfsUpdate() can be deprecated fully in favor of
+    self.auto_updater_transfer.TransferRootfsUpdate().
+
+    TODO (sanikak): Once this method is removed, remove corresponding tests in
+    chromite.lib.auto_updater_unittest.
     """
     # TODO(ahassani): This is not the ideal place to do this, but since any
     # changes to this needs to be reflected in cros_update.py too, just do it
@@ -1112,23 +1026,20 @@ class ChromiumOSUpdater(BaseUpdater):
     if self.is_au_endtoendtest:
       self._FixPayloadPropertiesFile()
 
-    retry_util.RetryException(
-        cros_build_lib.RunCommandError,
-        MAX_RETRY,
-        self._TransferRootfsUpdate,
-        delay_sec=DELAY_SEC_FOR_RETRY)
+    self._transfer_obj.TransferRootfsUpdate()
 
   def TransferStatefulUpdate(self):
-    """Transfer files for stateful update.
+    """DEPRECATED. Use auto_updater_transfer.Transfer Class instead.
+
+    Transfer files for stateful update.
 
     The stateful update bin and the corresponding payloads are copied to the
     target remote device for stateful update.
+
+    TODO (sanikak): Once this method is removed, remove corresponding tests in
+    chromite.lib.auto_updater_unittest.
     """
-    retry_util.RetryException(
-        cros_build_lib.RunCommandError,
-        MAX_RETRY,
-        self._TransferStatefulUpdate,
-        delay_sec=DELAY_SEC_FOR_RETRY)
+    self.stateful_update_bin = self._transfer_obj.TransferStatefulUpdate()
 
   def PreSetupCrOSUpdate(self):
     """Pre-setup for whole auto-update process for cros_host.
@@ -1201,7 +1112,8 @@ class ChromiumOSUpdater(BaseUpdater):
       if not self.device.IfFileExists(
           nebraska_bin, **self._cmd_kwargs_omit_error):
         logging.info('Nebraska files not found on device. Resending them...')
-        self.TransferUpdateUtilsPackage()
+
+        self._transfer_obj.TransferUpdateUtilsPackage()
 
       return True
     except cros_build_lib.RunCommandError as e:
@@ -1224,7 +1136,7 @@ class ChromiumOSUpdater(BaseUpdater):
     """Restore stateful partition for device."""
     logging.warning('Restoring the stateful partition.')
     self.PreSetupStatefulUpdate()
-    self.TransferStatefulUpdate()
+    self.stateful_update_bin = self._transfer_obj.TransferStatefulUpdate()
     self.ResetStatefulPartition()
     use_original_build = bool(self.original_payload_dir)
     self.UpdateStateful(use_original_build=use_original_build)
@@ -1357,5 +1269,4 @@ class ChromiumOSUpdater(BaseUpdater):
     if not self.device.AwaitReboot(old_boot_id):
       raise RebootVerificationError('Device has not rebooted from %s' %
                                     old_boot_id)
-
     return True

@@ -12,7 +12,7 @@ import os
 import mock
 
 from chromite.cli import flash
-from chromite.lib import auto_updater
+from chromite.lib import auto_updater_transfer
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -95,8 +95,8 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
   def testMissingPayloads(self):
     """Tests we raise FlashError when payloads are missing."""
     with mock.patch('os.path.exists', return_value=False):
-      self.assertRaises(auto_updater.ChromiumOSUpdateError, flash.Flash,
-                        self.DEVICE, self.IMAGE)
+      self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
+                        flash.Flash, self.DEVICE, self.IMAGE)
 
   def testFullPayload(self):
     """Tests that we download full_payload and stateful using xBuddy."""
