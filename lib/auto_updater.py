@@ -41,6 +41,7 @@ ChromiumOSUpdater includes:
 
 from __future__ import print_function
 
+import glob
 import json
 import os
 import re
@@ -753,6 +754,35 @@ class ChromiumOSUpdater(BaseUpdater):
             'Failed to boot into the new version. Possibly there was a '
             'signing problem, or an automated rollback occurred because '
             'your new image failed to boot.')
+
+  def ResolveAPPIDMismatchIfAny(self):
+    """Resolves and APP ID mismatch between the payload and device.
+
+    If the APP ID of the payload is different than the device, then the nebraska
+    will fail. We empty the payload's AppID so nebraska can do partial APP ID
+    matching.
+    """
+    if not self.device.app_id:
+      logging.warn('Device does not a propper APP ID!')
+      return
+
+    # Just catch the first json file and assume it is a payload property file.
+    prop_file = glob.glob(os.path.join(self.payload_dir, '*.json'))[0]
+    prop_file = os.path.join(self.payload_dir, prop_file)
+
+    content = json.loads(osutils.ReadFile(prop_file))
+    payload_app_id = content.get('appid', '')
+    if not payload_app_id:
+      # Payload's App ID is empty, we don't care, it is already partial match.
+      return
+
+    if self.device.app_id != payload_app_id:
+      logging.warn('You are installing an image with a different release '
+                   'App ID than the device (%s vs %s), we are forcing the '
+                   'install!', payload_app_id, self.device.app_id)
+      # Override the properties file with the new empty APP ID.
+      content['appid'] = ''
+      osutils.WriteFile(prop_file, json.dumps(content))
 
   def RunUpdate(self):
     """Update the device with image of specific version."""

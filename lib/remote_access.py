@@ -24,6 +24,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import timeout_util
+from chromite.scripts import cros_set_lsb_release
 from chromite.utils import memoize
 
 
@@ -1187,7 +1188,12 @@ class ChromiumOSDevice(RemoteDevice):
   @property
   def board(self):
     """The board name of the device."""
-    return self.lsb_release.get('CHROMEOS_RELEASE_BOARD', '')
+    return self.lsb_release.get(cros_set_lsb_release.LSB_KEY_BOARD, '')
+
+  @property
+  def app_id(self):
+    """The App ID of the device."""
+    return self.lsb_release.get(cros_set_lsb_release.LSB_KEY_APPID_RELEASE, '')
 
   def _RemountRootfsAsWritable(self):
     """Attempts to Remount the root partition."""

@@ -15,12 +15,15 @@ The main parts of unittest include:
 
 from __future__ import print_function
 
+import os
+
 import mock
 
 from chromite.lib import auto_updater
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import nebraska_wrapper
+from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
 
@@ -84,7 +87,7 @@ class ChromiumOSPreCheckMock(partial_mock.PartialCmdMock):
     """Mock out _CheckNebraskaCanRun."""
 
 
-class ChromiumOSUpdaterBaseTest(cros_test_lib.MockTestCase):
+class ChromiumOSUpdaterBaseTest(cros_test_lib.MockTempDirTestCase):
   """The base class for ChromiumOSUpdater test.
 
   In the setup, device, all transfer and update functions are mocked.
@@ -206,6 +209,24 @@ class ChromiumOSUpdaterRunTest(ChromiumOSUpdaterBaseTest):
           self.base_updater_mock.patched['SetupRootfsUpdate'].called)
       self.assertFalse(self.base_updater_mock.patched['UpdateRootfs'].called)
       self.assertTrue(self.base_updater_mock.patched['UpdateStateful'].called)
+
+  def testMismatchAppId(self):
+    """Tests that we correctly set the payload App ID to empty when mismatch."""
+    self.payload_dir = self.tempdir
+
+    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self.payload_dir)
+      prop_file = os.path.join(self.payload_dir, 'payload.json')
+      osutils.WriteFile(prop_file, '{"appid": "helloworld!"}')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'app_id',
+                       return_value='different')
+      CrOS_AU.ResolveAPPIDMismatchIfAny()
+      self.assertEqual(osutils.ReadFile(prop_file), '{"appid": ""}')
+
+      osutils.WriteFile(prop_file, '{"appid": "same"}')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'app_id',
+                       return_value='same')
+      self.assertEqual(osutils.ReadFile(prop_file), '{"appid": "same"}')
 
 
 class ChromiumOSUpdaterVerifyTest(ChromiumOSUpdaterBaseTest):

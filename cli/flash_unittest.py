@@ -30,7 +30,7 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   """Mock out RemoteDeviceUpdater."""
   TARGET = 'chromite.lib.auto_updater.ChromiumOSUpdater'
   ATTRS = ('UpdateStateful', 'UpdateRootfs', 'SetupRootfsUpdate',
-           'RebootAndVerify')
+           'RebootAndVerify', 'ResolveAPPIDMismatchIfAny')
 
   def __init__(self):
     partial_mock.PartialCmdMock.__init__(self)
@@ -47,6 +47,8 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   def RebootAndVerify(self, _inst, *_args, **_kwargs):
     """Mock out RebootAndVerify."""
 
+  def ResolveAPPIDMismatchIfAny(self, _inst, *_args, **_kwargs):
+    """Mock out ResolveAPPIDMismatchIfAny."""
 
 class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
   """Test the flow of flash.Flash() with RemoteDeviceUpdater."""

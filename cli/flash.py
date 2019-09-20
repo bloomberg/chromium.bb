@@ -487,6 +487,7 @@ class RemoteDeviceUpdater(object):
               send_payload_in_parallel=self.send_payload_in_parallel,
               experimental_au=self.experimental_au)
           chromeos_AU.CheckPayloads()
+          chromeos_AU.ResolveAPPIDMismatchIfAny()
           chromeos_AU.RunUpdate()
 
         except Exception:
