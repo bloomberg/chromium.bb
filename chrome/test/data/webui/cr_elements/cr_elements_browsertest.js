@@ -283,29 +283,6 @@ GEN('#if defined(OS_CHROMEOS)');
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
-function CrPolicyNetworkBehaviorTest() {}
-
-CrPolicyNetworkBehaviorTest.prototype = {
-  __proto__: CrElementsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings/internet_page/internet_page.html',
-
-  /** @override */
-  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    'cr_policy_strings.js',
-    'cr_policy_network_behavior_tests.js',
-  ]),
-};
-
-TEST_F('CrPolicyNetworkBehaviorTest', 'All', function() {
-  mocha.run();
-});
-
-/**
- * @constructor
- * @extends {CrElementsBrowserTest}
- */
 function CrPolicyNetworkBehaviorMojoTest() {}
 
 CrPolicyNetworkBehaviorMojoTest.prototype = {

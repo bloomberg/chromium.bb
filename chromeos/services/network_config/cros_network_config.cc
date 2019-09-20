@@ -941,14 +941,14 @@ mojom::ManagedCertificatePatternPtr GetManagedCertificatePattern(
 
 mojom::ManagedEAPPropertiesPtr GetManagedEAPProperties(const base::Value* dict,
                                                        const char* key) {
+  auto eap = mojom::ManagedEAPProperties::New();
   const base::Value* eap_dict = dict->FindKey(key);
   if (!eap_dict)
-    return nullptr;
+    return eap;
   if (!eap_dict->is_dict()) {
     NET_LOG(ERROR) << "Expected dictionary, found: " << *eap_dict;
-    return nullptr;
+    return eap;
   }
-  auto eap = mojom::ManagedEAPProperties::New();
   eap->anonymous_identity =
       GetManagedString(eap_dict, ::onc::eap::kAnonymousIdentity);
   eap->client_cert_pattern = GetManagedCertificatePattern(
@@ -979,14 +979,14 @@ mojom::ManagedEAPPropertiesPtr GetManagedEAPProperties(const base::Value* dict,
 mojom::ManagedIPSecPropertiesPtr GetManagedIPSecProperties(
     const base::Value* dict,
     const char* key) {
+  auto ipsec = mojom::ManagedIPSecProperties::New();
   const base::Value* ipsec_dict = dict->FindKey(key);
   if (!ipsec_dict)
-    return nullptr;
+    return ipsec;
   if (!ipsec_dict->is_dict()) {
     NET_LOG(ERROR) << "Expected dictionary, found: " << *ipsec_dict;
-    return nullptr;
+    return ipsec;
   }
-  auto ipsec = mojom::ManagedIPSecProperties::New();
   ipsec->authentication_type =
       GetManagedString(ipsec_dict, ::onc::ipsec::kAuthenticationType);
   ipsec->client_cert_pattern = GetManagedCertificatePattern(
@@ -1013,14 +1013,14 @@ mojom::ManagedIPSecPropertiesPtr GetManagedIPSecProperties(
 mojom::ManagedL2TPPropertiesPtr GetManagedL2TPProperties(
     const base::Value* dict,
     const char* key) {
+  auto l2tp = mojom::ManagedL2TPProperties::New();
   const base::Value* l2tp_dict = dict->FindKey(key);
   if (!l2tp_dict)
-    return nullptr;
+    return l2tp;
   if (!l2tp_dict->is_dict()) {
     NET_LOG(ERROR) << "Expected dictionary, found: " << *l2tp_dict;
-    return nullptr;
+    return l2tp;
   }
-  auto l2tp = mojom::ManagedL2TPProperties::New();
   l2tp->lcp_echo_disabled =
       GetManagedBoolean(l2tp_dict, ::onc::l2tp::kLcpEchoDisabled);
   l2tp->password = GetManagedString(l2tp_dict, ::onc::l2tp::kPassword);
@@ -1033,14 +1033,14 @@ mojom::ManagedL2TPPropertiesPtr GetManagedL2TPProperties(
 mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
     const base::Value* dict,
     const char* key) {
+  auto openvpn = mojom::ManagedOpenVPNProperties::New();
   const base::Value* openvpn_dict = dict->FindKey(key);
   if (!openvpn_dict)
-    return nullptr;
+    return openvpn;
   if (!openvpn_dict->is_dict()) {
     NET_LOG(ERROR) << "Expected dictionary, found: " << *openvpn_dict;
-    return nullptr;
+    return openvpn;
   }
-  auto openvpn = mojom::ManagedOpenVPNProperties::New();
   openvpn->auth = GetManagedString(openvpn_dict, ::onc::openvpn::kAuth);
   openvpn->auth_retry =
       GetManagedString(openvpn_dict, ::onc::openvpn::kAuthRetry);

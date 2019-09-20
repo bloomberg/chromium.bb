@@ -18,6 +18,7 @@ js_type_check("closure_compile") {
       ":cr_policy_network_behavior",
       ":cr_policy_network_behavior_mojo",
       ":cr_policy_network_indicator",
+      ":cr_policy_network_indicator_mojo",
     ]
   }
 }
