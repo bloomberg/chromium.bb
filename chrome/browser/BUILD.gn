@@ -1378,7 +1378,6 @@ jumbo_split_static_library("browser") {
     "previews/previews_lite_page_infobar_delegate.h",
     "previews/previews_lite_page_navigation_throttle.cc",
     "previews/previews_lite_page_navigation_throttle.h",
-    "previews/previews_lite_page_navigation_throttle_manager.h",
     "previews/previews_lite_page_predictor.cc",
     "previews/previews_lite_page_predictor.h",
     "previews/previews_lite_page_redirect_url_loader.cc",

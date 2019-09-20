@@ -105,7 +105,7 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
 previews::PreviewsUserData::ServerLitePageInfo*
 PreviewsLitePageNavigationThrottle::GetOrCreateServerLitePageInfo(
     content::NavigationHandle* navigation_handle,
-    PreviewsLitePageNavigationThrottleManager* manager) {
+    PreviewsLitePageDecider* decider) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
   if (!ui_tab_helper)
@@ -146,7 +146,7 @@ PreviewsLitePageNavigationThrottle::GetOrCreateServerLitePageInfo(
   // The page id may not be set in some corner cases (like forward navigation),
   // so make sure it gets set here.
   if (info->page_id == 0U)
-    info->page_id = manager->GeneratePageID();
+    info->page_id = decider->GeneratePageID();
 
   return info;
 }

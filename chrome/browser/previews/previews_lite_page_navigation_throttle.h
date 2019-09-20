@@ -13,7 +13,7 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-class PreviewsLitePageNavigationThrottleManager;
+class PreviewsLitePageDecider;
 
 // If the given URL is a LitePage Preview URL, this returns true but does not
 // change the |url|. This will set |update_virtual_url_with_url| on
@@ -41,9 +41,8 @@ class PreviewsLitePageNavigationThrottle {
   // initialized with metadata from navigation_handle() and |this| that is owned
   // by the PreviewsUserData associated with navigation_handle().
   static previews::PreviewsUserData::ServerLitePageInfo*
-  GetOrCreateServerLitePageInfo(
-      content::NavigationHandle* navigation_handle,
-      PreviewsLitePageNavigationThrottleManager* manager);
+  GetOrCreateServerLitePageInfo(content::NavigationHandle* navigation_handle,
+                                PreviewsLitePageDecider* manager);
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageNavigationThrottle);
 };
