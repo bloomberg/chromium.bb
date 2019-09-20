@@ -57,7 +57,8 @@ class GitMock(partial_mock.PartialCmdMock):
                       kwargs=None, strict=False, side_effect=None):
     """Adds git command and results."""
     cwd = self.cwd if cwd is None else cwd
-    result = self.CmdResult(returncode, output, error)
+    result = cros_build_lib.CommandResult(
+        returncode=returncode, output=output, error=error)
     if returncode != 0 and not side_effect:
       side_effect = cros_build_lib.RunCommandError('non-zero returncode',
                                                    result)

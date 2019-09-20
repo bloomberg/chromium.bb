@@ -557,9 +557,6 @@ class PartialCmdMock(PartialMock):
   'returncode', 'output', 'error'.
   """
 
-  CmdResult = collections.namedtuple(
-      'MockResult', ['returncode', 'output', 'error'])
-
   DEFAULT_ATTR = None
 
   @CheckAttr
@@ -574,7 +571,8 @@ class PartialCmdMock(PartialMock):
       side_effect: See MockedCallResults.AddResultForParams
       mock_attr: Which attributes's mock is being referenced.
     """
-    result = self.CmdResult(returncode, output, error)
+    result = cros_build_lib.CommandResult(
+        returncode=returncode, output=output, error=error)
     self._results[mock_attr].SetDefaultResult(result, side_effect)
 
   @CheckAttr
@@ -592,7 +590,8 @@ class PartialCmdMock(PartialMock):
       side_effect: See MockedCallResults.AddResultForParams
       mock_attr: Which attributes's mock is being referenced.
     """
-    result = self.CmdResult(returncode, output, error)
+    result = cros_build_lib.CommandResult(
+        returncode=returncode, output=output, error=error)
     self._results[mock_attr].AddResultForParams(
         (cmd,), result, kwargs=kwargs, side_effect=side_effect, strict=strict)
 
