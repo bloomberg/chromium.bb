@@ -675,15 +675,14 @@ class CONTENT_EXPORT RenderWidget
 
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);
+  void SetZoomLevelForTesting(double zoom_level);
+  void ResetZoomLevelForTesting();
   void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
+  void SetPageZoomLevelForTesting(double zoom_level);
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
   void EnableAutoResizeForTesting(const gfx::Size& min_size,
                                   const gfx::Size& max_size);
   void DisableAutoResizeForTesting(const gfx::Size& new_size);
-
-  // Update the WebView's device scale factor.
-  // TODO(ajwong): This should be moved into RenderView.
-  void UpdateWebViewWithDeviceScaleFactor();
 
   // Forces a redraw and invokes the callback once the frame's been displayed
   // to the user.
@@ -762,6 +761,10 @@ class CONTENT_EXPORT RenderWidget
                          const gfx::Size& min_size_before_dsf,
                          const gfx::Size& max_size_before_dsf,
                          float device_scale_factor);
+
+  // Sets the zoom level on the RenderView. This is part of
+  // OnSynchronizeVisualProperties though tests may call to it more directly.
+  void SetZoomLevel(double zoom_level);
 
   // Helper method to get the device_viewport_rect() from the compositor, which
   // is always in physical pixels.
@@ -909,8 +912,6 @@ class CONTENT_EXPORT RenderWidget
 
   gfx::ColorSpace GetRasterColorSpace() const;
 
-  void UpdateZoom(double zoom_level);
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Returns the focused pepper plugin, if any, inside the WebWidget. That is
   // the pepper plugin which is focused inside a frame which belongs to the
@@ -965,7 +966,11 @@ class CONTENT_EXPORT RenderWidget
   // Web tests override the device scale factor in the renderer with this. We
   // store it to keep the override if the browser passes along VisualProperties
   // with the real device scale factor. A value of 0.f means this is ignored.
-  float device_scale_factor_for_testing_ = 0.f;
+  float device_scale_factor_for_testing_ = 0;
+  // Web tests override the zoom factor in the renderer with this. We store it
+  // to keep the override if the browser passes along VisualProperties with the
+  // real device scale factor. A value of -INFINITY means this is ignored.
+  double zoom_level_for_testing_ = -INFINITY;
 
   // The size of the RenderWidget in DIPs. This may differ from the viewport
   // set in the compositor, as the viewport can be a subset of the RenderWidget
