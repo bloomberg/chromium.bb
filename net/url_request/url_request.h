@@ -582,9 +582,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // URL but has not yet initiated the new request.
   bool is_redirecting() const { return is_redirecting_; }
 
-  // Returns a globally unique identifier for this request.
-  uint64_t identifier() const { return identifier_; }
-
   // This method is called to start the request.  The delegate will receive
   // a OnResponseStarted callback when the request is started.  The request
   // must have a delegate set before this method is called.
@@ -904,15 +901,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // ClientSocketPool use this to determine which URLRequest to
   // allocate sockets to first.
   RequestPriority priority_;
-
-  // TODO(battre): The only consumer of the identifier_ is currently the
-  // web request API. We need to match identifiers of requests between the
-  // web request API and the web navigation API. As the URLRequest does not
-  // exist when the web navigation API is triggered, the tracking probably
-  // needs to be done outside of the URLRequest anyway. Therefore, this
-  // identifier should be deleted here. http://crbug.com/89321
-  // A globally unique identifier for this request.
-  const uint64_t identifier_;
 
   // If |calling_delegate_| is true, the event type of the delegate being
   // called.
