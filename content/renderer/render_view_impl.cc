@@ -1512,7 +1512,7 @@ void RenderViewImpl::DoDeferredClose() {
 
 void RenderViewImpl::CloseWindowSoon() {
   DCHECK(RenderThread::IsMainThread());
-  if (render_widget_->IsUndeadOrProvisional()) {
+  if (!render_widget_ || render_widget_->IsUndeadOrProvisional()) {
     // Ask the RenderViewHost with a local main frame to initiate close.  We
     // could be called from deep in Javascript.  If we ask the RenderViewHost to
     // close now, the window could be closed before the JS finishes executing,
