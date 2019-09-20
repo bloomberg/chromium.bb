@@ -155,21 +155,6 @@ id<GREYMatcher> InvalidCardExpiryDateAlert() {
                                    grey_not(grey_enabled()), nil)];
 }
 
-// Tests that the 'Add' button in the top toolbar is enabled when any text is
-// typed and disabled when there is no text.
-- (void)testAddButtonEnabledDisabledOnModifyingTextField {
-  [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
-      performAction:grey_typeText(@"1234")];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(), grey_enabled(),
-                                   nil)];
-  [[EarlGrey selectElementWithMatcher:CardNumberField()]
-      performAction:grey_clearText()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
-                                   grey_not(grey_enabled()), nil)];
-}
-
 // Tests that the 'Cancel' button dismisses the screen.
 - (void)testCancelButtonDismissesScreen {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
