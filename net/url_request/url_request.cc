@@ -207,7 +207,7 @@ void URLRequest::set_upload(std::unique_ptr<UploadDataStream> upload) {
   upload_data_stream_ = std::move(upload);
 }
 
-const UploadDataStream* URLRequest::get_upload() const {
+const UploadDataStream* URLRequest::get_upload_for_testing() const {
   return upload_data_stream_.get();
 }
 
@@ -513,12 +513,6 @@ void URLRequest::SetReferrer(const std::string& referrer) {
 void URLRequest::set_referrer_policy(ReferrerPolicy referrer_policy) {
   DCHECK(!is_pending_);
   referrer_policy_ = referrer_policy;
-}
-
-void URLRequest::set_delegate(Delegate* delegate) {
-  DCHECK(!delegate_);
-  DCHECK(delegate);
-  delegate_ = delegate;
 }
 
 void URLRequest::set_allow_credentials(bool allow_credentials) {

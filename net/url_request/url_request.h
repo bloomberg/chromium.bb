@@ -373,11 +373,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   ReferrerPolicy referrer_policy() const { return referrer_policy_; }
   void set_referrer_policy(ReferrerPolicy referrer_policy);
 
-  // Sets the delegate of the request.  This is only to allow creating a request
-  // before creating its delegate.  |delegate| must be non-NULL and the request
-  // must not yet have a Delegate set.
-  void set_delegate(Delegate* delegate);
-
   // Sets whether credentials are allowed.
   // If credentials are allowed, the request will send and save HTTP
   // cookies, as well as authentication to the origin server. If not,
@@ -392,7 +387,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   void set_upload(std::unique_ptr<UploadDataStream> upload);
 
   // Gets the upload data.
-  const UploadDataStream* get_upload() const;
+  const UploadDataStream* get_upload_for_testing() const;
 
   // Returns true if the request has a non-empty message body to upload.
   bool has_upload() const;
