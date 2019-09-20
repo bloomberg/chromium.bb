@@ -817,8 +817,9 @@ class IDLParser(object):
     p[0].AddChildren(p[1])
 
   def p_SingleType(self, p):
-    """SingleType : NonAnyType
-                  | ANY"""
+    """SingleType : DistinguishableType
+                  | ANY
+                  | PromiseType"""
     if p[1] != 'any':
       p[0] = p[1]
     else:
@@ -830,7 +831,7 @@ class IDLParser(object):
     p[0] = self.BuildProduction('UnionType', p, 1, members)
 
   def p_UnionMemberType(self, p):
-    """UnionMemberType : ExtendedAttributeList NonAnyType
+    """UnionMemberType : ExtendedAttributeList DistinguishableType
                        | UnionType Null"""
     if p[1] is None:
       p[0] = self.BuildProduction('Type', p, 1, p[2])
@@ -849,13 +850,12 @@ class IDLParser(object):
   # Moving all built-in types into PrimitiveType makes it easier to
   # differentiate between them and 'identifier', since p[1] would be a string in
   # both cases.
-  def p_NonAnyType(self, p):
-    """NonAnyType : PrimitiveType Null
-                  | PromiseType Null
-                  | identifier Null
-                  | SEQUENCE '<' TypeWithExtendedAttributes '>' Null
-                  | FROZENARRAY '<' TypeWithExtendedAttributes '>' Null
-                  | RecordType Null"""
+  def p_DistinguishableType(self, p):
+    """DistinguishableType : PrimitiveType Null
+                           | identifier Null
+                           | SEQUENCE '<' TypeWithExtendedAttributes '>' Null
+                           | FROZENARRAY '<' TypeWithExtendedAttributes '>' Null
+                           | RecordType Null"""
     if len(p) == 3:
       if type(p[1]) == str:
         typeref = self.BuildNamed('Typeref', p, 1)
