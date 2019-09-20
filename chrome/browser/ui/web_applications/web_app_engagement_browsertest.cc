@@ -9,10 +9,11 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -22,7 +23,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "extensions/common/extension.h"
 #include "url/gurl.h"
 
 namespace {
@@ -36,19 +36,6 @@ void NavigateToURLAndWait(Browser* browser, const GURL& url) {
   NavigateParams params(browser, url, ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params);
   observer.WaitForNavigationFinished();
-}
-
-// TODO(loyso): Merge this with PendingBookmarkAppManagerBrowserTest's
-// implementation in some test_support library.
-web_app::ExternalInstallOptions CreateInstallOptions(const GURL& url) {
-  web_app::ExternalInstallOptions install_options(
-      url, web_app::LaunchContainer::kWindow,
-      web_app::ExternalInstallSource::kInternalDefault);
-  // Avoid creating real shortcuts in tests.
-  install_options.add_to_applications_menu = false;
-  install_options.add_to_desktop = false;
-  install_options.add_to_quick_launch_bar = false;
-  return install_options;
 }
 
 GURL GetUrlForSuffix(const std::string& prefix, int suffix) {
@@ -134,10 +121,12 @@ void ExpectTotalCounts(const base::HistogramTester& tester,
 
 }  // namespace
 
-class BookmarkAppTest : public web_app::WebAppControllerBrowserTestBase {
+namespace web_app {
+
+class WebAppEngagementBrowserTest : public WebAppControllerBrowserTestBase {
  public:
-  BookmarkAppTest() = default;
-  ~BookmarkAppTest() override = default;
+  WebAppEngagementBrowserTest() = default;
+  ~WebAppEngagementBrowserTest() override = default;
 
   void TestEngagementEventWebAppLaunch(const base::HistogramTester& tester,
                                        const Histograms& histograms) {
@@ -181,63 +170,43 @@ class BookmarkAppTest : public web_app::WebAppControllerBrowserTestBase {
 
  protected:
   void CountUserInstalledApps() {
-    web_app::WebAppMetrics* web_app_metrics =
-        web_app::WebAppMetrics::Get(profile());
+    WebAppMetrics* web_app_metrics = WebAppMetrics::Get(profile());
     web_app_metrics->CountUserInstalledAppsForTesting();
   }
 
-  const extensions::Extension* InstallBookmarkAppAndCountApps(
-      WebApplicationInfo info) {
-    const extensions::Extension* app =
-        ExtensionBrowserTest::InstallBookmarkApp(std::move(info));
+  AppId InstallWebAppAndCountApps(
+      std::unique_ptr<WebApplicationInfo> web_app_info) {
+    AppId app_id = InstallWebApp(std::move(web_app_info));
     CountUserInstalledApps();
-    return app;
+    return app_id;
   }
 
-  // TODO(loyso): Merge this method with
-  // PendingBookmarkAppManagerBrowserTest::InstallApp in some
-  // test_support library.
-  void InstallDefaultAppAndCountApps(
-      web_app::ExternalInstallOptions install_options) {
-    base::RunLoop run_loop;
-
-    web_app::WebAppProvider::Get(browser()->profile())
-        ->pending_app_manager()
-        .Install(std::move(install_options),
-                 base::BindLambdaForTesting(
-                     [this, &run_loop](const GURL& provided_url,
-                                       web_app::InstallResultCode code) {
-                       result_code_ = code;
-                       run_loop.Quit();
-                     }));
-    run_loop.Run();
-    ASSERT_TRUE(result_code_.has_value());
+  void InstallDefaultAppAndCountApps(ExternalInstallOptions install_options) {
+    result_code_ = InstallApp(browser()->profile(), std::move(install_options));
     CountUserInstalledApps();
   }
 
-  base::Optional<web_app::InstallResultCode> result_code_;
+  base::Optional<InstallResultCode> result_code_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BookmarkAppTest);
+  DISALLOW_COPY_AND_ASSIGN(WebAppEngagementBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramForAppInWindow) {
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppInWindow) {
   base::HistogramTester tester;
 
   const GURL example_url = GURL("http://example.org/");
 
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = example_url;
-  web_app_info.scope = example_url;
-  web_app_info.open_as_window = true;
-  const extensions::Extension* app =
-      InstallBookmarkAppAndCountApps(web_app_info);
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = example_url;
+  web_app_info->scope = example_url;
+  web_app_info->open_as_window = true;
+  AppId app_id = InstallWebAppAndCountApps(std::move(web_app_info));
 
-  Browser* app_browser = LaunchAppBrowser(app);
+  Browser* app_browser = LaunchWebAppBrowser(app_id);
   NavigateToURLAndWait(app_browser, example_url);
 
-  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
-            app->id());
+  EXPECT_EQ(GetAppIdFromApplicationName(app_browser->app_name()), app_id);
 
   Histograms histograms;
   histograms[kHistogramInWindow] = true;
@@ -249,19 +218,18 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramForAppInWindow) {
   TestEngagementEventsAfterLaunch(histograms, app_browser);
 }
 
-IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramForAppInTab) {
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppInTab) {
   base::HistogramTester tester;
 
   const GURL example_url = GURL("http://example.org/");
 
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = example_url;
-  web_app_info.scope = example_url;
-  web_app_info.open_as_window = false;
-  const extensions::Extension* app =
-      InstallBookmarkAppAndCountApps(web_app_info);
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = example_url;
+  web_app_info->scope = example_url;
+  web_app_info->open_as_window = false;
+  AppId app_id = InstallWebAppAndCountApps(std::move(web_app_info));
 
-  Browser* browser = LaunchBrowserForAppInTab(app);
+  Browser* browser = LaunchBrowserForWebAppInTab(app_id);
   EXPECT_FALSE(browser->app_controller());
   NavigateToURLAndWait(browser, example_url);
 
@@ -275,24 +243,22 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramForAppInTab) {
   TestEngagementEventsAfterLaunch(histograms, browser);
 }
 
-IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramAppWithoutScope) {
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppWithoutScope) {
   base::HistogramTester tester;
 
   const GURL example_url = GURL("http://example.org/");
 
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = example_url;
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = example_url;
   // If app has no scope then UrlHandlers::GetUrlHandlers are empty. Therefore,
   // the app is counted as installed via the Create Shortcut button.
-  web_app_info.scope = GURL();
-  web_app_info.open_as_window = true;
-  const extensions::Extension* app =
-      InstallBookmarkAppAndCountApps(web_app_info);
+  web_app_info->scope = GURL();
+  web_app_info->open_as_window = true;
+  AppId app_id = InstallWebAppAndCountApps(std::move(web_app_info));
 
-  Browser* browser = LaunchAppBrowser(app);
+  Browser* browser = LaunchWebAppBrowser(app_id);
 
-  EXPECT_EQ(web_app::GetAppIdFromApplicationName(browser->app_name()),
-            app->id());
+  EXPECT_EQ(GetAppIdFromApplicationName(browser->app_name()), app_id);
   EXPECT_TRUE(browser->app_controller());
   NavigateToURLAndWait(browser, example_url);
 
@@ -306,41 +272,38 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramAppWithoutScope) {
   TestEngagementEventsAfterLaunch(histograms, browser);
 }
 
-IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramTwoApps) {
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, TwoApps) {
   base::HistogramTester tester;
 
   const GURL example_url1 = GURL("http://example.org/");
   const GURL example_url2 = GURL("http://example.com/");
 
-  const extensions::Extension *app1, *app2;
+  AppId app_id1, app_id2;
 
   // Install two apps.
   {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = example_url1;
-    web_app_info.scope = example_url1;
-    app1 = InstallBookmarkAppAndCountApps(web_app_info);
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = example_url1;
+    web_app_info->scope = example_url1;
+    app_id1 = InstallWebAppAndCountApps(std::move(web_app_info));
   }
   {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = example_url2;
-    web_app_info.scope = example_url2;
-    app2 = InstallBookmarkAppAndCountApps(web_app_info);
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = example_url2;
+    web_app_info->scope = example_url2;
+    app_id2 = InstallWebAppAndCountApps(std::move(web_app_info));
   }
 
   // Launch them three times. This ensures that each launch only logs once.
   // (Since all apps receive the notification on launch, there is a danger that
   // we might log too many times.)
-  Browser* app_browser1 = LaunchAppBrowser(app1);
-  Browser* app_browser2 = LaunchAppBrowser(app1);
-  Browser* app_browser3 = LaunchAppBrowser(app2);
+  Browser* app_browser1 = LaunchWebAppBrowser(app_id1);
+  Browser* app_browser2 = LaunchWebAppBrowser(app_id1);
+  Browser* app_browser3 = LaunchWebAppBrowser(app_id2);
 
-  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser1->app_name()),
-            app1->id());
-  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser2->app_name()),
-            app1->id());
-  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser3->app_name()),
-            app2->id());
+  EXPECT_EQ(GetAppIdFromApplicationName(app_browser1->app_name()), app_id1);
+  EXPECT_EQ(GetAppIdFromApplicationName(app_browser2->app_name()), app_id1);
+  EXPECT_EQ(GetAppIdFromApplicationName(app_browser3->app_name()), app_id2);
 
   Histograms histograms;
   histograms[kHistogramInWindow] = true;
@@ -354,30 +317,29 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramTwoApps) {
   ExpectTotalCounts(tester, ~histograms, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramManyUserApps) {
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, ManyUserApps) {
   base::HistogramTester tester;
 
   // More than 3 user-installed apps:
   const int num_user_apps = 4;
 
-  std::vector<const extensions::Extension*> apps;
+  std::vector<AppId> app_ids;
 
   // Install apps.
   const std::string base_url = "http://example";
   for (int i = 0; i < num_user_apps; ++i) {
     const GURL url = GetUrlForSuffix(base_url, i);
 
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = url;
-    web_app_info.scope = url;
-    const extensions::Extension* app =
-        InstallBookmarkAppAndCountApps(web_app_info);
-    apps.push_back(app);
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = url;
+    web_app_info->scope = url;
+    AppId app_id = InstallWebAppAndCountApps(std::move(web_app_info));
+    app_ids.push_back(app_id);
   }
 
   // Launch apps in windows.
   for (int i = 0; i < num_user_apps; ++i) {
-    Browser* browser = LaunchAppBrowser(apps[i]);
+    Browser* browser = LaunchWebAppBrowser(app_ids[i]);
 
     const GURL url = GetUrlForSuffix(base_url, i);
     NavigateToURLAndWait(browser, url);
@@ -395,22 +357,20 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramManyUserApps) {
   ExpectTotalCounts(tester, ~histograms, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramDefaultApp) {
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, DefaultApp) {
   base::HistogramTester tester;
 
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL example_url(
       embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
   InstallDefaultAppAndCountApps(CreateInstallOptions(example_url));
-  ASSERT_EQ(web_app::InstallResultCode::kSuccessNewInstall,
-            result_code_.value());
+  ASSERT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
 
-  const extensions::Extension* app = extensions::util::GetInstalledPwaForUrl(
-      browser()->profile(), example_url);
-  ASSERT_TRUE(app);
-  EXPECT_TRUE(app->was_installed_by_default());
+  base::Optional<AppId> app_id = FindAppWithUrlInScope(example_url);
+  ASSERT_TRUE(app_id);
+  // TODO(ericwilligers): Assert app_id was installed by default.
 
-  Browser* browser = LaunchAppBrowser(app);
+  Browser* browser = LaunchWebAppBrowser(*app_id);
   NavigateToURLAndWait(browser, example_url);
 
   Histograms histograms;
@@ -422,19 +382,17 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramDefaultApp) {
   TestEngagementEventsAfterLaunch(histograms, browser);
 }
 
-IN_PROC_BROWSER_TEST_P(BookmarkAppTest,
-                       EngagementHistogramNavigateAwayFromAppTab) {
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, NavigateAwayFromAppTab) {
   const GURL app_url = GURL("http://example.org/app/");
   const GURL outer_url = GURL("http://example.org/");
 
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = app_url;
-  web_app_info.scope = app_url;
-  web_app_info.open_as_window = false;
-  const extensions::Extension* app =
-      InstallBookmarkAppAndCountApps(web_app_info);
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = app_url;
+  web_app_info->scope = app_url;
+  web_app_info->open_as_window = false;
+  AppId app_id = InstallWebAppAndCountApps(std::move(web_app_info));
 
-  Browser* browser = LaunchBrowserForAppInTab(app);
+  Browser* browser = LaunchBrowserForWebAppInTab(app_id);
   EXPECT_FALSE(browser->app_controller());
 
   NavigateToURLAndWait(browser, app_url);
@@ -456,7 +414,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramRecordedForNonApps) {
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, RecordedForNonApps) {
   base::HistogramTester tester;
   CountUserInstalledApps();
 
@@ -477,7 +435,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramRecordedForNonApps) {
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    BookmarkAppTest,
-    ::testing::Values(
-        web_app::ControllerType::kHostedAppController,
-        web_app::ControllerType::kUnifiedControllerWithBookmarkApp));
+    WebAppEngagementBrowserTest,
+    ::testing::Values(ControllerType::kHostedAppController,
+                      ControllerType::kUnifiedControllerWithBookmarkApp));
+
+}  // namespace web_app
