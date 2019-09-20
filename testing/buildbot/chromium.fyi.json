@@ -838,6 +838,22 @@
           "shards": 2
         },
         "test": "content_browsertests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "weblayer_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "weblayer_browsertests"
       }
     ]
   },
@@ -897,6 +913,17 @@
           "can_use_on_swarming_builders": true
         },
         "test": "services_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "weblayer_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "weblayer_browsertests"
       }
     ]
   },

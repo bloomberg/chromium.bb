@@ -4346,6 +4346,9 @@
         },
         'test': 'browser_tests',
       },
+      'weblayer_browsertests': {
+        'test': 'weblayer_browsertests',
+      },
     },
 
     'network_service_gtests': {

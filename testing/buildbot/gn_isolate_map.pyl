@@ -2982,6 +2982,10 @@
     "label": "//services/device/usb:webusb_descriptors_fuzzer",
     "type": "fuzzer",
   },
+  "weblayer_browsertests": {
+    "label": "//weblayer/test:weblayer_browsertests",
+    "type": "windowed_test_launcher",
+  },
   "webview_cts_tests": {
     "args": [
       "--logdog-bin-cmd",
