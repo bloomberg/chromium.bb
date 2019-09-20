@@ -32,7 +32,7 @@ MediaToolbarButtonView::MediaToolbarButtonView(
       browser_->profile());
 
   button_controller()->set_notify_action(
-      views::ButtonController::NotifyAction::NOTIFY_ON_PRESS);
+      views::ButtonController::NotifyAction::kOnPress);
   EnableCanvasFlippingForRTLUI(false);
   SetTooltipText(
       l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_ICON_TOOLTIP_TEXT));
