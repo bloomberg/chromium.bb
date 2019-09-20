@@ -3060,8 +3060,6 @@ jumbo_split_static_library("browser") {
       "enterprise_reporting/request_timer.h",
       "feedback/feedback_dialog_utils.cc",
       "feedback/feedback_dialog_utils.h",
-      "feedback/feedback_profile_observer.cc",
-      "feedback/feedback_profile_observer.h",
       "feedback/feedback_uploader_chrome.cc",
       "feedback/feedback_uploader_chrome.h",
       "feedback/feedback_uploader_factory_chrome.cc",
