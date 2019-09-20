@@ -52,6 +52,8 @@ class ClickToCallUiController
   base::string16 GetEducationWindowTitleText() const override;
   void OnHelpTextClicked(SharingDialogType dialog_type) override;
   int GetHeaderImageId() const override;
+  std::unique_ptr<views::StyledLabel> GetHelpTextLabel(
+      views::StyledLabelListener* listener) override;
 
  protected:
   explicit ClickToCallUiController(content::WebContents* web_contents);

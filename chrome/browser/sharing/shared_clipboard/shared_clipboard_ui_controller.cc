@@ -121,4 +121,11 @@ base::string16 SharedClipboardUiController::GetEducationWindowTitleText()
   return base::string16();
 }
 
+// There is no Help Text for Shared Clipboard feature.
+std::unique_ptr<views::StyledLabel>
+SharedClipboardUiController::GetHelpTextLabel(
+    views::StyledLabelListener* listener) {
+  return nullptr;
+}
+
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SharedClipboardUiController)

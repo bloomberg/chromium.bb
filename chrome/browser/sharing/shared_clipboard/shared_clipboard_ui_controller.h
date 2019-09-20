@@ -44,6 +44,8 @@ class SharedClipboardUiController
   base::string16 GetTextForTooltipAndAccessibleName() const override;
   SharingFeatureName GetFeatureMetricsPrefix() const override;
   base::string16 GetEducationWindowTitleText() const override;
+  std::unique_ptr<views::StyledLabel> GetHelpTextLabel(
+      views::StyledLabelListener* listener) override;
 
  protected:
   explicit SharedClipboardUiController(content::WebContents* web_contents);

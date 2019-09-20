@@ -21,6 +21,8 @@
 #include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/styled_label_listener.h"
 
 class BrowserWindow;
 class SharingDialog;
@@ -73,6 +75,10 @@ class SharingUiController {
 
   // Called by the SharingDialog when it is being closed.
   virtual void OnDialogClosed(SharingDialog* dialog);
+
+  // Get the help text label for the help dialog.
+  virtual std::unique_ptr<views::StyledLabel> GetHelpTextLabel(
+      views::StyledLabelListener* listener) = 0;
 
   // Closes the current dialog and resets all state.
   void ClearLastDialog();
