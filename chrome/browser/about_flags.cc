@@ -4534,10 +4534,17 @@ const FeatureEntry kFeatureEntries[] = {
          password_manager::features::kEnablePasswordsAccountStorage)},
 
 #if !defined(OS_ANDROID)
-    {"improved-cookie-controls",
-     flag_descriptions::kEnableImprovedCookieControlsName,
-     flag_descriptions::kEnableImprovedCookieControlsDescription, kOsDesktop,
+    {"improved-cookie-controls", flag_descriptions::kImprovedCookieControlsName,
+     flag_descriptions::kImprovedCookieControlsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},
+
+    {"improved-cookie-controls-for-third-party-cookie-blocking",
+     flag_descriptions::kImprovedCookieControlsForThirdPartyCookieBlockingName,
+     flag_descriptions::
+         kImprovedCookieControlsForThirdPartyCookieBlockingDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)

@@ -34724,6 +34724,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:enabled"/>
   <int value="-2124685253" label="USBGuard:enabled"/>
   <int value="-2123795624" label="ArcSmartTextSelection:enabled"/>
+  <int value="-2122206114"
+      label="ImprovedCookieControlsForThirdPartyCookieBlocking:disabled"/>
   <int value="-2122048316"
       label="DisplayPersistenceToggleInPermissionPrompts:enabled"/>
   <int value="-2119958901" label="WebXRAnchors:disabled"/>
@@ -35030,6 +35032,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1766791501" label="WebUITabStrip:enabled"/>
   <int value="-1766648764" label="OmniboxShortBookmarkSuggestions:disabled"/>
   <int value="-1766129470" label="DataSaverLiteModeRebranding:disabled"/>
+  <int value="-1760624380"
+      label="ImprovedCookieControlsForThirdPartyCookieBlocking:enabled"/>
   <int value="-1758468685" label="DownloadHomeV2:disabled"/>
   <int value="-1755301960" label="ClearOldBrowsingData:enabled"/>
   <int value="-1753458842" label="OfflinePagesLivePageSharing:disabled"/>

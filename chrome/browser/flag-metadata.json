@@ -2272,6 +2272,11 @@
     "expiry_milestone": 84
   },
   {
+    "name": "improved-cookie-controls-for-third-party-cookie-blocking",
+    "owners": [ "dullweber", "huanzhong" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "in-product-help-demo-mode-choice",
     "owners": [ "dtrainor", "nyquist" ],
     // This flag is used by teams as they develop in-product help integrations,

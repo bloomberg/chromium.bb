@@ -2832,11 +2832,15 @@ const char kNtpRealboxDescription[] =
     "directly (i.e. not be a \"fake\" box). Search results will show below the "
     "non-fake input (\"realbox\").";
 
-const char kEnableImprovedCookieControlsName[] =
-    "Enable improved cookie controls UI";
-const char kEnableImprovedCookieControlsDescription[] =
-    "Improved UI in Incognito mode for the existing third-party cookie "
-    "blocking.";
+const char kImprovedCookieControlsName[] =
+    "Enable improved cookie controls UI in incognito mode";
+const char kImprovedCookieControlsDescription[] =
+    "Improved UI in Incognito mode for third-party cookie blocking.";
+
+const char kImprovedCookieControlsForThirdPartyCookieBlockingName[] =
+    "Enable improved UI for third-party cookie blocking";
+const char kImprovedCookieControlsForThirdPartyCookieBlockingDescription[] =
+    "Enables an improved UI for existing third-party cookie blocking users.";
 
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =

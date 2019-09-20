@@ -1667,8 +1667,12 @@ extern const char kNtpDisableInitialMostVisitedFadeInDescription[];
 extern const char kNtpRealboxName[];
 extern const char kNtpRealboxDescription[];
 
-extern const char kEnableImprovedCookieControlsName[];
-extern const char kEnableImprovedCookieControlsDescription[];
+extern const char kImprovedCookieControlsName[];
+extern const char kImprovedCookieControlsDescription[];
+
+extern const char kImprovedCookieControlsForThirdPartyCookieBlockingName[];
+extern const char
+    kImprovedCookieControlsForThirdPartyCookieBlockingDescription[];
 
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
