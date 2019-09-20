@@ -375,6 +375,7 @@
           'idempotent': False,  # https://crbug.com/923426#c27
         },
       },
+      'color_unittests': {},
       'cros_browser_sanity_test': {},
       'crypto_unittests': {},
       'display_unittests': {},
@@ -2283,6 +2284,7 @@
         ],
       },
       'cast_unittests': {},
+      'color_unittests': {},
       'components_browsertests': {},
       'components_unittests': {
         'android_swarming': {
