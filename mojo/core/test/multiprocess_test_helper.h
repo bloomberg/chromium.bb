@@ -34,9 +34,6 @@ class MultiprocessTestHelper {
     // Launch the child process as an unrelated peer process in the mojo system.
     PEER,
 
-    // Same as CHILD but uses the newer async channel handshake.
-    ASYNC,
-
 #if !defined(OS_FUCHSIA)
     // Launch the child process as a child in the mojo system, using a named
     // pipe.
