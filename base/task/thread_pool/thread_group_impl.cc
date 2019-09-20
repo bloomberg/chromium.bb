@@ -41,25 +41,6 @@
 #include "base/win/windows_version.h"
 #endif  // defined(OS_WIN)
 
-// Data from deprecated UMA histograms:
-//
-// ThreadPool.NumTasksBetweenWaits.(Browser/Renderer).Foreground, August 2019
-//   Number of tasks between two waits by a foreground worker thread in a
-//   browser/renderer process.
-//
-//  Windows (browser/renderer)
-//    1 at 87th percentile / 92th percentile
-//    2 at 95th percentile / 98th percentile
-//    5 at 99th percentile / 100th percentile
-//  Mac (browser/renderer)
-//    1 at 81th percentile / 90th percentile
-//    2 at 92th percentile / 97th percentile
-//    5 at 98th percentile / 100th percentile
-//  Android (browser/renderer)
-//    1 at 92th percentile / 96th percentile
-//    2 at 97th percentile / 98th percentile
-//    5 at 99th percentile / 100th percentile
-
 namespace base {
 namespace internal {
 
