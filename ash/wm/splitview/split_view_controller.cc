@@ -284,7 +284,6 @@ SplitViewController::SplitViewController() {
 
 SplitViewController::~SplitViewController() {
   display::Screen::GetScreen()->RemoveObserver(this);
-  Shell::Get()->accessibility_controller()->RemoveObserver(this);
   EndSplitView();
 }
 
@@ -325,7 +324,6 @@ void SplitViewController::SnapWindow(aura::Window* window,
     Shell::Get()->AddShellObserver(this);
     Shell::Get()->overview_controller()->AddObserver(this);
     Shell::Get()->activation_client()->AddObserver(this);
-    Shell::Get()->NotifySplitViewModeStarting();
 
     // If there is pre-set |divider_position_|, use it. It can happen during
     // tablet <-> clamshell transition or multi-user transition.
@@ -1186,6 +1184,10 @@ void SplitViewController::OnAccessibilityStatusChanged() {
   // they are compatible.
   if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
     EndSplitView();
+}
+
+void SplitViewController::OnAccessibilityControllerShutdown() {
+  Shell::Get()->accessibility_controller()->RemoveObserver(this);
 }
 
 void SplitViewController::StartObserving(aura::Window* window) {
