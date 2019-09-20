@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_CONTROLLER_OBSERVER_H_
-#define ASH_APP_LIST_APP_LIST_CONTROLLER_OBSERVER_H_
+#ifndef ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CONTROLLER_OBSERVER_H_
+#define ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CONTROLLER_OBSERVER_H_
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "base/observer_list_types.h"
 
 namespace ash {
 
-class ASH_EXPORT AppListControllerObserver : public base::CheckedObserver {
+class ASH_PUBLIC_EXPORT AppListControllerObserver
+    : public base::CheckedObserver {
  public:
   // Called when the AppList target visibility changes.
   virtual void OnAppListTargetVisibilityChanged(bool shown,
@@ -22,4 +23,4 @@ class ASH_EXPORT AppListControllerObserver : public base::CheckedObserver {
 
 }  // namespace ash
 
-#endif  // ASH_APP_LIST_APP_LIST_CONTROLLER_OBSERVER_H_
+#endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CONTROLLER_OBSERVER_H_

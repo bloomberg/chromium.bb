@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "ash/app_list/app_list_controller_observer.h"
 #include "ash/ash_export.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
+#include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
