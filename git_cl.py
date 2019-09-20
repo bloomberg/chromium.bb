@@ -71,6 +71,8 @@ GIT_HASH_RE = re.compile(r'\b([a-f0-9]{6})[a-f0-9]{34}\b', flags=re.I)
 # Used to redact the cookies from the gitcookies file.
 GITCOOKIES_REDACT_RE = re.compile(r'1/.*')
 
+MAX_ATTEMPTS = 3
+
 # The maximum number of traces we will keep. Multiplied by 3 since we store
 # 3 files per trace.
 MAX_TRACES = 3 * 10
@@ -341,6 +343,8 @@ def _get_properties_from_options(options):
   return properties
 
 
+# TODO(crbug.com/976104): Remove this function once git-cl try-results has
+# migrated to use buildbucket v2
 def _buildbucket_retry(operation_name, http, *args, **kwargs):
   """Retries requests to buildbucket service and returns parsed json content."""
   try_count = 0
@@ -379,6 +383,38 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
   assert False, 'unreachable'
 
 
+def _call_buildbucket(http, buildbucket_host, method, request=None):
+  """Calls a buildbucket v2 method and returns the parsed json response."""
+  headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  }
+  request = json.dumps(request)
+  url = 'https://%s/prpc/buildbucket.v2.Builds/%s' % (buildbucket_host, method)
+
+  logging.info('POST %s with %s' % (url, request))
+
+  attempts = 1
+  time_to_sleep = 1
+  while True:
+    response, content = http.request(url, 'POST', body=request, headers=headers)
+    if response.status == 200:
+      return json.loads(content[4:])
+    if attempts >= MAX_ATTEMPTS or 400 <= response.status < 500:
+      msg = '%s error when calling POST %s with %s: %s' % (
+          response.status, url, request, content)
+      raise BuildbucketResponseException(msg)
+    logging.debug(
+        '%s error when calling POST %s with %s. '
+        'Sleeping for %d seconds and retrying...' % (
+            response.status, url, request, time_to_sleep))
+    time.sleep(time_to_sleep)
+    time_to_sleep *= 2
+    attempts += 1
+
+  assert False, 'unreachable'
+
+
 def _get_bucket_map(changelist, options, option_parser):
   """Returns a dict mapping bucket names to builders and tests,
   for triggering tryjobs.
@@ -407,6 +443,21 @@ def _get_bucket_map(changelist, options, option_parser):
       'Please specify the bucket, e.g. "-B luci.chromium.try".')
 
 
+def _parse_bucket(bucket):
+  if '/' in bucket:
+    return tuple(bucket.split('/', 1))
+  # Legacy buckets.
+  print('WARNING Please specify buckets as <project>/<bucket>.')
+  # Assume luci.<project>.<bucket>.
+  if bucket.startswith('luci.'):
+    return tuple(bucket[len('luci.'):].split('.', 1))
+  # Otherwise, assume prefix is also the project name.
+  if '.' in bucket:
+    project = bucket.split('.')[0]
+    return project, bucket
+  return None, None
+
+
 def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   """Sends a request to Buildbucket to trigger tryjobs for a changelist.
 
@@ -416,81 +467,76 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
     buckets: A nested dict mapping bucket names to builders to tests.
     options: Command-line options.
   """
-  assert changelist.GetIssue(), 'CL must be uploaded first'
-  codereview_url = changelist.GetCodereviewServer()
-  assert codereview_url, 'CL must be uploaded first'
-  patchset = patchset or changelist.GetMostRecentPatchset()
-  assert patchset, 'CL must be uploaded first'
+  print('Scheduling jobs on:')
+  for bucket, builders_and_tests in sorted(buckets.iteritems()):
+    print('Bucket:', bucket)
+    print('\n'.join(
+        '  %s: %s' % (builder, tests)
+        for builder, tests in sorted(builders_and_tests.iteritems())))
+  print('To see results here, run:        git cl try-results')
+  print('To see results in browser, run:  git cl web')
 
+  gerrit_changes = [changelist.GetGerritChange()]
+  shared_properties = {
+      'category': options.category,
+  }
+  if options.clobber:
+    shared_properties['clobber'] = True
+  shared_properties.update(_get_properties_from_options(options) or {})
+
+  requests = []
+  for raw_bucket, builders_and_tests in sorted(buckets.iteritems()):
+    project, bucket = _parse_bucket(raw_bucket)
+    if not project or not bucket:
+      print('WARNING Could not parse bucket "%s". Skipping.' % raw_bucket)
+      continue
+
+    for builder, tests in sorted(builders_and_tests.iteritems()):
+      properties = shared_properties.copy()
+      if 'presubmit' in builder.lower():
+        properties['dry_run'] = 'true'
+      if tests:
+        properties['testfilter'] = tests
+
+      requests.append({
+          'scheduleBuild': {
+              'requestId': str(uuid.uuid4()),
+              'builder': {
+                  'project': options.project or project,
+                  'bucket': bucket,
+                  'builder': builder,
+              },
+              'gerritChanges': gerrit_changes,
+              'properties': properties,
+              'tags': [
+                  {'key': 'builder', 'value': builder},
+                  {'key': 'user_agent', 'value': 'git_cl_try'},
+              ],
+          }
+      })
+
+  if not requests:
+    return
+
+  codereview_url = changelist.GetCodereviewServer()
   codereview_host = urlparse.urlparse(codereview_url).hostname
-  # Cache the buildbucket credentials under the codereview host key, so that
-  # users can use different credentials for different buckets.
+
   authenticator = auth.get_authenticator_for_host(codereview_host, auth_config)
   http = authenticator.authorize(httplib2.Http())
   http.force_exception_to_status_code = True
 
-  buildbucket_put_url = (
-      'https://{hostname}/_ah/api/buildbucket/v1/builds/batch'.format(
-          hostname=options.buildbucket_host))
-  buildset = 'patch/gerrit/{hostname}/{issue}/{patch}'.format(
-      hostname=codereview_host,
-      issue=changelist.GetIssue(),
-      patch=patchset)
+  batch_request = {'requests': requests}
+  batch_response = _call_buildbucket(
+      http, options.buildbucket_host, 'Batch', request=batch_request)
 
-  shared_parameters_properties = changelist.GetTryJobProperties(patchset)
-  shared_parameters_properties['category'] = options.category
-  if options.clobber:
-    shared_parameters_properties['clobber'] = True
-  extra_properties = _get_properties_from_options(options)
-  if extra_properties:
-    shared_parameters_properties.update(extra_properties)
-
-  batch_req_body = {'builds': []}
-  print_text = []
-  print_text.append('Tried jobs on:')
-  for bucket, builders_and_tests in sorted(buckets.iteritems()):
-    print_text.append('Bucket: %s' % bucket)
-    for builder, tests in sorted(builders_and_tests.iteritems()):
-      print_text.append('  %s: %s' % (builder, tests))
-      parameters = {
-          'builder_name': builder,
-          'changes': [{
-              'author': {'email': changelist.GetIssueOwner()},
-              'revision': options.revision,
-          }],
-          'properties': shared_parameters_properties.copy(),
-      }
-      if 'presubmit' in builder.lower():
-        parameters['properties']['dry_run'] = 'true'
-      if tests:
-        parameters['properties']['testfilter'] = tests
-
-      tags = [
-          'builder:%s' % builder,
-          'buildset:%s' % buildset,
-          'user_agent:git_cl_try',
-      ]
-
-      batch_req_body['builds'].append(
-          {
-              'bucket': bucket,
-              'parameters_json': json.dumps(parameters),
-              'client_operation_id': str(uuid.uuid4()),
-              'tags': tags,
-          }
-      )
-
-  _buildbucket_retry(
-      'triggering tryjobs',
-      http,
-      buildbucket_put_url,
-      'PUT',
-      body=json.dumps(batch_req_body),
-      headers={'Content-Type': 'application/json'}
-  )
-  print_text.append('To see results here, run:        git cl try-results')
-  print_text.append('To see results in browser, run:  git cl web')
-  print('\n'.join(print_text))
+  errors = [
+      '  ' + response['error']['message']
+      for response in batch_response.get('responses', [])
+      if 'error' in response
+  ]
+  if errors:
+    raise BuildbucketResponseException(
+        'Failed to schedule builds for some bots:\n%s' % '\n'.join(errors))
 
 
 def fetch_try_jobs(auth_config, changelist, buildbucket_host,
@@ -2690,26 +2736,27 @@ class Changelist(object):
     if data['status'] in ('ABANDONED', 'MERGED'):
       return 'CL %s is closed' % self.GetIssue()
 
-  def GetTryJobProperties(self, patchset=None):
-    """Returns dictionary of properties to launch a tryjob."""
-    data = self._GetChangeDetail(['ALL_REVISIONS'])
+  def GetGerritChange(self, patchset=None):
+    """Returns a buildbucket.v2.GerritChange message for the current issue."""
+    host = urlparse.urlparse(self.GetCodereviewServer()).hostname
+    issue = self.GetIssue()
     patchset = int(patchset or self.GetPatchset())
-    assert patchset
-    revision_data = None  # Pylint wants it to be defined.
-    for revision_data in data['revisions'].itervalues():
-      if int(revision_data['_number']) == patchset:
-        break
-    else:
+    data = self._GetChangeDetail(['ALL_REVISIONS'])
+
+    assert host and issue and patchset, 'CL must be uploaded first'
+
+    has_patchset = any(
+        int(revision_data['_number']) == patchset
+        for revision_data in data['revisions'].itervalues())
+    if not has_patchset:
       raise Exception('Patchset %d is not known in Gerrit change %d' %
                       (patchset, self.GetIssue()))
+
     return {
-      'patch_issue': self.GetIssue(),
-      'patch_set': patchset or self.GetPatchset(),
-      'patch_project': data['project'],
-      'patch_storage': 'gerrit',
-      'patch_ref': revision_data['fetch']['http']['ref'],
-      'patch_repository_url': revision_data['fetch']['http']['url'],
-      'patch_gerrit_url': self.GetCodereviewServer(),
+        'host': host,
+        'change': issue,
+        'project': data['project'],
+        'patchset': patchset,
     }
 
   def GetIssueOwner(self):

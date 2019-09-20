@@ -2378,7 +2378,20 @@ class TestGitCl(TestCase):
         'Scheduling CQ dry run on: '
         'https://chromium-review.googlesource.com/123456\n')
 
-  def test_git_cl_try_buildbucket_with_properties_gerrit(self):
+  def test_parse_bucket(self):
+    self.assertEqual(git_cl._parse_bucket('chromium/try'), ('chromium', 'try'))
+    self.assertEqual(
+        git_cl._parse_bucket('luci.chromium.try'), ('chromium', 'try'))
+    self.assertEqual(git_cl._parse_bucket('not-a-bucket'), (None, None))
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.assertEqual(
+        git_cl._parse_bucket('skia.primary'),
+        ('skia', 'skia.primary'))
+    self.assertIn(
+        'WARNING Please specify buckets',
+        git_cl.sys.stdout.getvalue())
+
+  def test_git_cl_try_buildbucket_with_wrong_bucket(self):
     self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda _: 7)
     self.mock(git_cl.uuid, 'uuid4', lambda: 'uuid4')
 
@@ -2410,53 +2423,93 @@ class TestGitCl(TestCase):
             },
           },
         }),
+        ((['git', 'config', 'branch.feature.gerritpatchset'],), '7'),
     ]
 
-    def _buildbucket_retry(*_, **kw):
-      # self.maxDiff = 10000
-      body = json.loads(kw['body'])
-      self.assertEqual(len(body['builds']), 1)
-      build = body['builds'][0]
-      params = json.loads(build.pop('parameters_json'))
-      self.assertEqual(params, {
-        u'builder_name': u'win',
-        u'changes': [{u'author': {u'email': u'owner@e.mail'},
-                      u'revision': None}],
-        u'properties': {
-          u'category': u'git_cl_try',
-           u'key': u'val',
-           u'json': [{u'a': 1}, None],
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.assertEqual(0, git_cl.main([
+        'try', '-B', 'not-a-bucket', '-b', 'win',
+        '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
+    self.assertIn(
+        'Could not parse bucket "not-a-bucket"',
+        git_cl.sys.stdout.getvalue())
 
-           u'patch_gerrit_url':
-             u'https://chromium-review.googlesource.com',
-           u'patch_issue': 123456,
-           u'patch_project': u'depot_tools',
-           u'patch_ref': u'refs/changes/56/123456/7',
-           u'patch_repository_url':
-             u'https://chromium.googlesource.com/depot_tools',
-           u'patch_set': 7,
-           u'patch_storage': u'gerrit',
-        }
-      })
-      self.assertEqual(build, {
-        u'bucket': u'luci.chromium.try',
-        u'client_operation_id': u'uuid4',
-        u'tags': [
-          u'builder:win',
-          u'buildset:patch/gerrit/chromium-review.googlesource.com/123456/7',
-          u'user_agent:git_cl_try',
-        ],
-      })
+  def test_git_cl_try_buildbucket_with_properties_gerrit(self):
+    def _mock_call_buildbucket(_http, buildbucket_host, method, request=None):
+      bb_request = {
+          "requests": [{
+              "scheduleBuild": {
+                  "requestId": "uuid4",
+                  "builder": {
+                      "project": "chromium",
+                      "builder": "win",
+                      "bucket": "try",
+                  },
+                  "gerritChanges": [{
+                      "project": "depot_tools",
+                      "host": "chromium-review.googlesource.com",
+                      "patchset": 7,
+                      "change": 123456,
+                  }],
+                  "properties": {
+                      "category": "git_cl_try",
+                      "json": [{"a": 1}, None],
+                      "key": "val",
+                  },
+                  "tags": [
+                      {"value": "win", "key": "builder"},
+                      {"value": "git_cl_try", "key": "user_agent"},
+                  ],
+              },
+          }],
+      }
+      self.assertEqual(method, 'Batch')
+      self.assertEqual(buildbucket_host, 'cr-buildbucket.appspot.com')
+      self.assertEqual(request, bb_request)
+      return {}
 
-    self.mock(git_cl, '_buildbucket_retry', _buildbucket_retry)
+    self.mock(git_cl, '_call_buildbucket', _mock_call_buildbucket)
+    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda _: 7)
+    self.mock(git_cl.uuid, 'uuid4', lambda: 'uuid4')
+
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
+        ((['git', 'config', 'branch.feature.gerritserver'],),
+         'https://chromium-review.googlesource.com'),
+        ((['git', 'config', 'branch.feature.merge'],), 'feature'),
+        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
+        ((['git', 'config', 'remote.origin.url'],),
+         'https://chromium.googlesource.com/depot_tools'),
+        (('GetChangeDetail', 'chromium-review.googlesource.com',
+          'depot_tools~123456',
+         ['DETAILED_ACCOUNTS', 'ALL_REVISIONS', 'CURRENT_COMMIT']), {
+          'project': 'depot_tools',
+          'status': 'OPEN',
+          'owner': {'email': 'owner@e.mail'},
+          'revisions': {
+            'deadbeaf': {
+              '_number': 6,
+            },
+            'beeeeeef': {
+              '_number': 7,
+              'fetch': {'http': {
+                'url': 'https://chromium.googlesource.com/depot_tools',
+                'ref': 'refs/changes/56/123456/7'
+              }},
+            },
+          },
+        }),
+        ((['git', 'config', 'branch.feature.gerritpatchset'],), '7'),
+    ]
 
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.assertEqual(0, git_cl.main([
         'try', '-B', 'luci.chromium.try', '-b', 'win',
         '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
-    self.assertRegexpMatches(
-        git_cl.sys.stdout.getvalue(),
-        'Tried jobs on:\nBucket: luci.chromium.try')
+    self.assertIn(
+        'Scheduling jobs on:\nBucket: luci.chromium.try',
+        git_cl.sys.stdout.getvalue())
 
   def _common_GerritCommitMsgHookCheck(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
