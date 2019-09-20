@@ -47,7 +47,7 @@ enum class AnimationChangeType;
 class PanelLayoutManagerTest;
 class Shelf;
 class ShelfLayoutManagerObserver;
-class ShelfLayoutManagerTest;
+class ShelfLayoutManagerTestBase;
 class ShelfWidget;
 
 // ShelfLayoutManager is the layout manager responsible for the shelf and
@@ -231,6 +231,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   bool updating_bounds() const { return updating_bounds_; }
   bool is_app_list_visible() const { return is_app_list_visible_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
+  HotseatState hotseat_state() const { return state_.hotseat_state; }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
@@ -257,7 +258,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
  private:
   class UpdateShelfObserver;
   friend class PanelLayoutManagerTest;
-  friend class ShelfLayoutManagerTest;
+  friend class ShelfLayoutManagerTestBase;
   friend class NotificationTrayTest;
 
   struct TargetBounds {
@@ -312,8 +313,8 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Gets the target HotseatState based on the current state of HomeLauncher,
   // Overview, Shelf, and any active gestures.
-  HotseatState GetHotseatState(ShelfVisibilityState visibility_state,
-                               ShelfAutoHideState auto_hide_state);
+  HotseatState CalculateHotseatState(ShelfVisibilityState visibility_state,
+                                     ShelfAutoHideState auto_hide_state);
 
   // Returns shelf visibility state based on current value of auto hide
   // behavior setting.
