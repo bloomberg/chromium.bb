@@ -4184,11 +4184,10 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
     WebContentDecryptionModule* initial_cdm,
     const blink::WebString& sink_id) {
-  const cc::LayerTreeSettings& settings =
-      GetLocalRootRenderWidget()->layer_tree_view()->GetLayerTreeSettings();
   return media_factory_.CreateMediaPlayer(
       source, client, inspector_context, encrypted_client, initial_cdm, sink_id,
-      GetLocalRootRenderWidget()->GetFrameSinkId(), settings);
+      GetLocalRootRenderWidget()->GetFrameSinkId(),
+      GetLocalRootRenderWidget()->layer_tree_host()->GetSettings());
 }
 
 std::unique_ptr<blink::WebContentSettingsClient>
@@ -4803,7 +4802,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     // represents a new UKM source.
     // Note that this is only done for the main frame since the metrics for all
     // frames are keyed to the main frame's URL.
-    GetLocalRootRenderWidget()->layer_tree_view()->SetSourceURL(
+    GetLocalRootRenderWidget()->layer_tree_host()->SetSourceURL(
         frame_->GetDocument().GetUkmSourceId(), GetLoadingUrl());
   }
 

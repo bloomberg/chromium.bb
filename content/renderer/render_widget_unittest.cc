@@ -435,7 +435,6 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
   EXPECT_EQ(allocator.GetCurrentLocalSurfaceIdAllocation(),
             widget()->local_surface_id_allocation_from_parent());
   EXPECT_FALSE(widget()
-                   ->layer_tree_view()
                    ->layer_tree_host()
                    ->new_local_surface_id_request_for_testing());
 
@@ -444,7 +443,6 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
   EXPECT_EQ(allocator.GetCurrentLocalSurfaceIdAllocation(),
             widget()->local_surface_id_allocation_from_parent());
   EXPECT_TRUE(widget()
-                  ->layer_tree_view()
                   ->layer_tree_host()
                   ->new_local_surface_id_request_for_testing());
 }
@@ -557,7 +555,7 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
 // Tests that the value of VisualProperties::is_pinch_gesture_active is
 // propagated to the LayerTreeHost when properties are synced for subframes.
 TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
-  auto* layer_tree_host = widget()->layer_tree_view()->layer_tree_host();
+  cc::LayerTreeHost* layer_tree_host = widget()->layer_tree_host();
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
   content::VisualProperties visual_properties;
 
@@ -663,7 +661,7 @@ TEST(RenderWidgetTest, LargeScreensUseMoreMemory) {
 
 #if defined(OS_ANDROID)
 TEST_F(RenderWidgetUnittest, ForceSendMetadataOnInput) {
-  auto* layer_tree_host = widget()->layer_tree_view()->layer_tree_host();
+  cc::LayerTreeHost* layer_tree_host = widget()->layer_tree_host();
   // We should not have any force send metadata requests at start.
   EXPECT_FALSE(layer_tree_host->TakeForceSendMetadataRequest());
   // ShowVirtualKeyboard will trigger a text input state update.
@@ -681,15 +679,14 @@ class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
     viz::ParentLocalSurfaceIdAllocator allocator;
     widget()->layer_tree_view()->SetVisible(true);
     allocator.GenerateId();
-    widget()->layer_tree_view()->SetViewportRectAndScale(
+    widget()->layer_tree_host()->SetViewportRectAndScale(
         gfx::Rect(200, 100), 1.f,
         allocator.GetCurrentLocalSurfaceIdAllocation());
 
     auto root_layer = cc::SolidColorLayer::Create();
     root_layer->SetBounds(gfx::Size(200, 100));
     root_layer->SetBackgroundColor(SK_ColorGREEN);
-    widget()->layer_tree_view()->layer_tree_host()->SetNonBlinkManagedRootLayer(
-        root_layer);
+    widget()->layer_tree_host()->SetNonBlinkManagedRootLayer(root_layer);
 
     auto color_layer = cc::SolidColorLayer::Create();
     color_layer->SetBounds(gfx::Size(100, 100));
@@ -726,9 +723,8 @@ class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
             presentation_run_loop.QuitClosure()));
 
     // Composite and wait for the swap to complete.
-    widget()->layer_tree_view()->layer_tree_host()->Composite(
-        base::TimeTicks::Now(),
-        /*raster=*/true);
+    widget()->layer_tree_host()->Composite(base::TimeTicks::Now(),
+                                           /*raster=*/true);
     swap_run_loop.Run();
 
     // Present and wait for it to complete.

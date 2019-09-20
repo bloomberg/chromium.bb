@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "cc/paint/element_id.h"
+#include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/input/input_event_ack.h"
@@ -369,10 +370,11 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   swap_latency_info.AddLatencyNumber(
       ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
-  if (widget_->layer_tree_view()) {
+  if (widget_->layer_tree_host()) {
     latency_info_swap_promise_monitor =
-        widget_->layer_tree_view()->CreateLatencyInfoSwapPromiseMonitor(
-            &swap_latency_info);
+        std::make_unique<cc::LatencyInfoSwapPromiseMonitor>(
+            &swap_latency_info,
+            widget_->layer_tree_host()->GetSwapPromiseManager(), nullptr);
   }
 
   bool prevent_default = false;
@@ -666,10 +668,11 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
     }
 
     std::unique_ptr<cc::SwapPromiseMonitor> swap_promise_monitor;
-    if (widget_->layer_tree_view()) {
+    if (widget_->layer_tree_host()) {
       swap_promise_monitor =
-          widget_->layer_tree_view()->CreateLatencyInfoSwapPromiseMonitor(
-              &scrollbar_latency_info);
+          std::make_unique<cc::LatencyInfoSwapPromiseMonitor>(
+              &scrollbar_latency_info,
+              widget_->layer_tree_host()->GetSwapPromiseManager(), nullptr);
     }
 
     std::unique_ptr<WebGestureEvent> gesture_event =

@@ -851,7 +851,7 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
     }
   }
 
-  layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
+  layer_tree_host_->SetBrowserControlsHeight(
       visual_properties.top_controls_height,
       visual_properties.bottom_controls_height,
       visual_properties.browser_controls_shrink_blink_size);
@@ -900,7 +900,7 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
         // the visual properties here. While blink doesn't need to know this
         // page scale factor outside the main frame, the compositor does in
         // order to produce its output at the correct scale.
-        layer_tree_view_->SetExternalPageScaleFactor(
+        layer_tree_host_->SetExternalPageScaleFactor(
             visual_properties.page_scale_factor,
             visual_properties.is_pinch_gesture_active);
         // Store the value to give to any new RenderFrameProxy that is
@@ -1029,7 +1029,7 @@ void RenderWidget::OnWasShown(
 
   SetHidden(false);
   if (record_tab_switch_time_request) {
-    layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
+    layer_tree_host_->RequestPresentationTimeForNextFrame(
         tab_switch_time_recorder_.TabWasShown(
             false /* has_saved_frames */,
             record_tab_switch_time_request.value(), show_request_timestamp));
@@ -1055,9 +1055,8 @@ void RenderWidget::OnForceRedraw(int snapshot_id) {
 }
 
 void RenderWidget::RequestPresentation(PresentationTimeCallback callback) {
-  layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
-      std::move(callback));
-  layer_tree_view_->layer_tree_host()->SetNeedsCommitWithForcedRedraw();
+  layer_tree_host_->RequestPresentationTimeForNextFrame(std::move(callback));
+  layer_tree_host_->SetNeedsCommitWithForcedRedraw();
 }
 
 void RenderWidget::DidPresentForceDrawFrame(
@@ -1072,7 +1071,7 @@ viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::PointF& point,
 }
 
 bool RenderWidget::HasPendingPageScaleAnimation() const {
-  return layer_tree_view_->layer_tree_host()->HasPendingPageScaleAnimation();
+  return layer_tree_host_->HasPendingPageScaleAnimation();
 }
 
 bool RenderWidget::HandleInputEvent(
@@ -1263,7 +1262,7 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
       std::make_unique<RenderFrameMetadataObserverImpl>(
           observer_remote.InitWithNewPipeAndPassReceiver(),
           std::move(client_remote));
-  layer_tree_view_->SetRenderFrameObserver(
+  layer_tree_host_->SetRenderFrameObserver(
       std::move(render_frame_metadata_observer));
   GURL url = GetWebWidget()->GetURLForDebugTrace();
   // The |url| is not always available, fallback to a fixed string.
@@ -1313,75 +1312,68 @@ void RenderWidget::DidCompletePageScaleAnimation() {
 
 void RenderWidget::SetLayerTreeMutator(
     std::unique_ptr<cc::LayerTreeMutator> mutator) {
-  layer_tree_view_->layer_tree_host()->SetLayerTreeMutator(std::move(mutator));
+  layer_tree_host_->SetLayerTreeMutator(std::move(mutator));
 }
 
 void RenderWidget::SetPaintWorkletLayerPainterClient(
     std::unique_ptr<cc::PaintWorkletLayerPainter> client) {
-  layer_tree_view_->layer_tree_host()->SetPaintWorkletLayerPainter(
-      std::move(client));
+  layer_tree_host_->SetPaintWorkletLayerPainter(std::move(client));
 }
 
 void RenderWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  layer_tree_view_->layer_tree_host()->SetRootLayer(std::move(layer));
+  layer_tree_host_->SetRootLayer(std::move(layer));
 }
 
 void RenderWidget::ScheduleAnimation() {
   // This call is not needed in single thread mode for tests without a
   // scheduler, but they override this method in order to schedule a synchronous
   // composite task themselves.
-  layer_tree_view_->SetNeedsBeginFrame();
+  layer_tree_host_->SetNeedsAnimate();
 }
 
 void RenderWidget::SetShowFPSCounter(bool show) {
-  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
-  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_fps_counter = show;
-  host->SetDebugState(debug_state);
+  layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidget::SetShowLayoutShiftRegions(bool show) {
-  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
-  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_layout_shift_regions = show;
-  host->SetDebugState(debug_state);
+  layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidget::SetShowPaintRects(bool show) {
-  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
-  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_paint_rects = show;
-  host->SetDebugState(debug_state);
+  layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidget::SetShowDebugBorders(bool show) {
-  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
-  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   if (show)
     debug_state.show_debug_borders.set();
   else
     debug_state.show_debug_borders.reset();
-  host->SetDebugState(debug_state);
+  layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidget::SetShowScrollBottleneckRects(bool show) {
-  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
-  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_touch_event_handler_rects = show;
   debug_state.show_wheel_event_handler_rects = show;
   debug_state.show_non_fast_scrollable_rects = show;
-  host->SetDebugState(debug_state);
+  layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidget::SetShowHitTestBorders(bool show) {
-  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
-  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_hit_test_borders = show;
-  host->SetDebugState(debug_state);
+  layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidget::SetBackgroundColor(SkColor color) {
-  layer_tree_view_->layer_tree_host()->set_background_color(color);
+  layer_tree_host_->set_background_color(color);
 }
 
 void RenderWidget::UpdateVisualState() {
@@ -1639,7 +1631,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     // new RenderFrameMetadata, as the IME will need this info to be updated.
     // TODO(ericrk): Consider folding the above IPC into RenderFrameMetadata.
     // https://crbug.com/912309
-    layer_tree_view_->RequestForceSendMetadata();
+    layer_tree_host_->RequestForceSendMetadata();
 #endif
   }
 }
@@ -1696,7 +1688,7 @@ gfx::Size RenderWidget::GetSizeForWebWidget() const {
 }
 
 gfx::Rect RenderWidget::CompositorViewportRect() const {
-  return layer_tree_view_->layer_tree_host()->device_viewport_rect();
+  return layer_tree_host_->device_viewport_rect();
 }
 
 void RenderWidget::UpdateZoom(double zoom_level) {
@@ -1822,10 +1814,9 @@ void RenderWidget::QueueMessage(std::unique_ptr<IPC::Message> msg) {
   std::unique_ptr<cc::SwapPromise> swap_promise =
       QueueMessageImpl(std::move(msg), frame_swap_message_queue_.get(),
                        RenderThreadImpl::current()->sync_message_filter(),
-                       layer_tree_view_->GetSourceFrameNumber());
+                       layer_tree_host_->SourceFrameNumber());
   if (swap_promise) {
-    layer_tree_view_->layer_tree_host()->QueueSwapPromise(
-        std::move(swap_promise));
+    layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
   }
 }
 
@@ -1894,6 +1885,7 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
                                 page_properties_->GetScreenInfo().rect.size(),
                                 page_properties_->GetDeviceScaleFactor()),
       compositor_deps_->CreateUkmRecorderFactory());
+  layer_tree_host_ = layer_tree_view_->layer_tree_host();
 
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(),
@@ -1934,7 +1926,7 @@ void RenderWidget::StartStopCompositor() {
     // but we don't expect to use this RenderWidget again until some possible
     // future navigation. This brings us a bit closer to emulating deleting the
     // RenderWidget instead of just stopping the compositor.
-    layer_tree_view_->ReleaseLayerTreeFrameSink();
+    layer_tree_host_->ReleaseLayerTreeFrameSink();
   } else if (is_hidden_) {
     layer_tree_view_->SetVisible(false);
   } else {
@@ -2291,14 +2283,14 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
 
   // Note carefully that the DSF specified in |new_screen_info| is not the
   // DSF used by the compositor during device emulation!
-  layer_tree_view_->SetViewportRectAndScale(
+  layer_tree_host_->SetViewportRectAndScale(
       compositor_viewport_pixel_rect,
       GetOriginalScreenInfo().device_scale_factor,
       local_surface_id_allocation_from_parent_);
   // The ViewportVisibleRect derives from the LayerTreeView's viewport size,
   // which is set above.
-  layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
-  layer_tree_view_->SetRasterColorSpace(
+  layer_tree_host_->SetViewportVisibleRect(ViewportVisibleRect());
+  layer_tree_host_->SetRasterColorSpace(
       page_properties_->GetScreenInfo().color_space.GetRasterColorSpace());
 
   if (orientation_changed)
@@ -2334,7 +2326,7 @@ void RenderWidget::SetWindowRectSynchronously(
       local_surface_id_allocation_from_parent_;
   // We are resizing the window from the renderer, so allocate a new
   // viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  layer_tree_view_->RequestNewLocalSurfaceId();
+  layer_tree_host_->RequestNewLocalSurfaceId();
   SynchronizeVisualProperties(visual_properties);
 
   widget_screen_rect_ = new_window_rect;
@@ -2371,7 +2363,7 @@ void RenderWidget::OnSetViewportIntersection(
     compositor_visible_rect_ = compositor_visible_rect;
     frame_widget->SetRemoteViewportIntersection(viewport_intersection,
                                                 occlusion_state);
-    layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
+    layer_tree_host_->SetViewportVisibleRect(ViewportVisibleRect());
   }
 }
 
@@ -2724,7 +2716,7 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     // |size_| from the compositor's viewport size. Also note that the
     // calculation of |new_compositor_viewport_pixel_rect| does not appear to
     // take into account device emulation.
-    layer_tree_view_->RequestNewLocalSurfaceId();
+    layer_tree_host_->RequestNewLocalSurfaceId();
     gfx::Rect new_compositor_viewport_pixel_rect =
         gfx::Rect(gfx::ScaleToCeiledSize(
             size_, page_properties_->GetDeviceScaleFactor()));
@@ -2845,7 +2837,7 @@ void RenderWidget::DidOverscroll(
 #endif
   input_handler_->DidOverscrollFromBlink(
       overscroll_delta, accumulated_overscroll, position, velocity,
-      layer_tree_view_->layer_tree_host()->overscroll_behavior());
+      layer_tree_host_->overscroll_behavior());
 }
 
 void RenderWidget::InjectGestureScrollEvent(
@@ -2860,7 +2852,7 @@ void RenderWidget::InjectGestureScrollEvent(
 
 void RenderWidget::SetOverscrollBehavior(
     const cc::OverscrollBehavior& behavior) {
-  layer_tree_view_->layer_tree_host()->SetOverscrollBehavior(behavior);
+  layer_tree_host_->SetOverscrollBehavior(behavior);
 }
 
 // static
@@ -3340,8 +3332,7 @@ void RenderWidget::SetHasTouchEventHandlers(bool has_handlers) {
 }
 
 void RenderWidget::SetHaveScrollEventHandlers(bool have_handlers) {
-  layer_tree_view_->layer_tree_host()->SetHaveScrollEventHandlers(
-      have_handlers);
+  layer_tree_host_->SetHaveScrollEventHandlers(have_handlers);
 }
 
 void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
@@ -3372,11 +3363,11 @@ void RenderWidget::ZoomToFindInPageRectInMainFrame(
 }
 
 void RenderWidget::RegisterViewportLayers(const cc::ViewportLayers& layers) {
-  layer_tree_view_->layer_tree_host()->RegisterViewportLayers(layers);
+  layer_tree_host_->RegisterViewportLayers(layers);
 }
 
 void RenderWidget::RegisterSelection(const cc::LayerSelection& selection) {
-  layer_tree_view_->layer_tree_host()->RegisterSelection(selection);
+  layer_tree_host_->RegisterSelection(selection);
 }
 
 void RenderWidget::FallbackCursorModeLockCursor(bool left,
@@ -3392,16 +3383,15 @@ void RenderWidget::FallbackCursorModeSetCursorVisibility(bool visible) {
 }
 
 void RenderWidget::SetAllowGpuRasterization(bool allow_gpu_raster) {
-  layer_tree_view_->layer_tree_host()->SetHasGpuRasterizationTrigger(
-      allow_gpu_raster);
+  layer_tree_host_->SetHasGpuRasterizationTrigger(allow_gpu_raster);
 }
 
 void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
                                               bool is_pinch_gesture_active,
                                               float minimum,
                                               float maximum) {
-  layer_tree_view_->layer_tree_host()->SetPageScaleFactorAndLimits(
-      page_scale_factor, minimum, maximum);
+  layer_tree_host_->SetPageScaleFactorAndLimits(page_scale_factor, minimum,
+                                                maximum);
 
   // Only continue if this is a mainframe, or something's actually changed.
   if (!delegate() ||
@@ -3434,18 +3424,17 @@ void RenderWidget::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                            bool use_anchor,
                                            float new_page_scale,
                                            base::TimeDelta duration) {
-  layer_tree_view_->layer_tree_host()->StartPageScaleAnimation(
-      target_offset, use_anchor, new_page_scale, duration);
+  layer_tree_host_->StartPageScaleAnimation(target_offset, use_anchor,
+                                            new_page_scale, duration);
 }
 
 void RenderWidget::ForceRecalculateRasterScales() {
-  layer_tree_view_->layer_tree_host()->SetNeedsRecalculateRasterScales();
+  layer_tree_host_->SetNeedsRecalculateRasterScales();
 }
 
 void RenderWidget::RequestDecode(const cc::PaintImage& image,
                                  base::OnceCallback<void(bool)> callback) {
-  layer_tree_view_->layer_tree_host()->QueueImageDecode(image,
-                                                        std::move(callback));
+  layer_tree_host_->QueueImageDecode(image, std::move(callback));
 }
 
 // Enables measuring and reporting both presentation times and swap times in
@@ -3582,47 +3571,44 @@ void RenderWidget::NotifySwapTime(ReportTimeCallback callback) {
 void RenderWidget::SetEventListenerProperties(
     cc::EventListenerClass event_class,
     cc::EventListenerProperties properties) {
-  layer_tree_view_->layer_tree_host()->SetEventListenerProperties(event_class,
-                                                                  properties);
+  layer_tree_host_->SetEventListenerProperties(event_class, properties);
 }
 
 cc::EventListenerProperties RenderWidget::EventListenerProperties(
     cc::EventListenerClass event_class) const {
-  return layer_tree_view_->layer_tree_host()->event_listener_properties(
-      event_class);
+  return layer_tree_host_->event_listener_properties(event_class);
 }
 
 std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
 RenderWidget::DeferMainFrameUpdate() {
-  return layer_tree_view_->layer_tree_host()->DeferMainFrameUpdate();
+  return layer_tree_host_->DeferMainFrameUpdate();
 }
 
 void RenderWidget::StartDeferringCommits(base::TimeDelta timeout) {
-  layer_tree_view_->layer_tree_host()->StartDeferringCommits(timeout);
+  layer_tree_host_->StartDeferringCommits(timeout);
 }
 
 void RenderWidget::StopDeferringCommits(cc::PaintHoldingCommitTrigger trigger) {
-  layer_tree_view_->layer_tree_host()->StopDeferringCommits(trigger);
+  layer_tree_host_->StopDeferringCommits(trigger);
 }
 
 void RenderWidget::RequestBeginMainFrameNotExpected(bool request) {
-  layer_tree_view_->layer_tree_host()->RequestBeginMainFrameNotExpected(
-      request);
+  layer_tree_host_->RequestBeginMainFrameNotExpected(request);
 }
 
 int RenderWidget::GetLayerTreeId() const {
-  return layer_tree_view_->layer_tree_host()->GetId();
+  return layer_tree_host_->GetId();
 }
 
 void RenderWidget::SetBrowserControlsShownRatio(float ratio) {
-  layer_tree_view_->layer_tree_host()->SetBrowserControlsShownRatio(ratio);
+  layer_tree_host_->SetBrowserControlsShownRatio(ratio);
 }
 
 void RenderWidget::SetBrowserControlsHeight(float top_height,
                                             float bottom_height,
                                             bool shrink_viewport) {
-  layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
-      top_height, bottom_height, shrink_viewport);
+  layer_tree_host_->SetBrowserControlsHeight(top_height, bottom_height,
+                                             shrink_viewport);
 }
 
 viz::FrameSinkId RenderWidget::GetFrameSinkId() {
@@ -3632,12 +3618,11 @@ viz::FrameSinkId RenderWidget::GetFrameSinkId() {
 void RenderWidget::NotifySwapAndPresentationTime(
     ReportTimeCallback swap_time_callback,
     ReportTimeCallback presentation_time_callback) {
-  cc::LayerTreeHost* layer_tree_host = layer_tree_view_->layer_tree_host();
   // When the WebWidget is closed we cancel any pending SwapPromise that would
   // call back into blink, so we use |close_weak_ptr_factory_|.
-  layer_tree_host->QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
+  layer_tree_host_->QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
       std::move(swap_time_callback), std::move(presentation_time_callback),
-      layer_tree_host->GetTaskRunnerProvider()->MainThreadTaskRunner(),
+      layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner(),
       close_weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -3753,7 +3738,7 @@ void RenderWidget::DidNavigate() {
   DCHECK(widget_input_handler_manager_);
   widget_input_handler_manager_->DidNavigate();
 
-  layer_tree_view_->ClearCachesOnNextCommit();
+  layer_tree_host_->ClearCachesOnNextCommit();
 }
 
 blink::WebInputMethodController* RenderWidget::GetInputMethodController()
@@ -3795,7 +3780,7 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
 
   // We are changing the device scale factor from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  layer_tree_view_->RequestNewLocalSurfaceId();
+  layer_tree_host_->RequestNewLocalSurfaceId();
 
   ScreenInfo info = page_properties_->GetScreenInfo();
   info.device_scale_factor = factor;
@@ -3825,7 +3810,7 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
     const gfx::ColorSpace& color_space) {
   // We are changing the device color space from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  layer_tree_view_->RequestNewLocalSurfaceId();
+  layer_tree_host_->RequestNewLocalSurfaceId();
 
   ScreenInfo info = page_properties_->GetScreenInfo();
   info.color_space = color_space;

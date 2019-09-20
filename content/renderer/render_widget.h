@@ -532,6 +532,7 @@ class CONTENT_EXPORT RenderWidget
       float initial_device_scale_factor);
 
   LayerTreeView* layer_tree_view() const { return layer_tree_view_.get(); }
+  cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   WidgetInputHandlerManager* widget_input_handler_manager() {
     return widget_input_handler_manager_.get();
   }
@@ -955,6 +956,8 @@ class CONTENT_EXPORT RenderWidget
 
   // This is lazily constructed and must not outlive webwidget_.
   std::unique_ptr<LayerTreeView> layer_tree_view_;
+  // This is valid while |layer_tree_view_| is valid.
+  cc::LayerTreeHost* layer_tree_host_ = nullptr;
 
   // The rect where this view should be initially shown.
   gfx::Rect initial_rect_;
