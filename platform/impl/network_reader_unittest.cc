@@ -73,6 +73,8 @@ class MockTaskRunner final : public TaskRunner {
     t();
   }
 
+  bool IsRunningOnTaskRunner() override { return true; }
+
   uint32_t tasks_posted;
   uint32_t delayed_tasks_posted;
 };

@@ -43,7 +43,12 @@ void TaskRunnerImpl::PostPackagedTaskWithDelay(Task task,
   }
 }
 
+bool TaskRunnerImpl::IsRunningOnTaskRunner() {
+  return task_runner_thread_id_ == std::this_thread::get_id();
+}
+
 void TaskRunnerImpl::RunUntilStopped() {
+  task_runner_thread_id_ = std::this_thread::get_id();
   const bool was_running = is_running_.exchange(true);
   OSP_CHECK(!was_running);
 
@@ -115,6 +120,7 @@ void TaskRunnerImpl::RunTasksUntilStopped() {
     ScheduleDelayedTasks();
     RunCurrentTasksBlocking();
   }
+  task_runner_thread_id_ = std::thread::id();
 }
 
 void TaskRunnerImpl::ScheduleDelayedTasks() {
