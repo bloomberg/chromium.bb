@@ -102,6 +102,7 @@ void GotMojoSessionStorageUsage(
 }  // namespace
 
 scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
+    service_manager::Connector* connector,
     const base::FilePath& profile_path,
     const base::FilePath& local_partition_path,
     storage::SpecialStoragePolicy* special_storage_policy) {
@@ -128,15 +129,15 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
   base::FilePath new_localstorage_path =
       profile_path.empty()
           ? base::FilePath()
-          : base::FilePath().AppendASCII(kLocalStorageDirectory);
+          : local_partition_path.AppendASCII(kLocalStorageDirectory);
   LocalStorageContextMojo* mojo_local_state = new LocalStorageContextMojo(
-      data_path, mojo_task_runner,
+      mojo_task_runner, connector,
       new DOMStorageWorkerPoolTaskRunner(std::move(primary_sequence),
                                          std::move(commit_sequence)),
       legacy_localstorage_path, new_localstorage_path, special_storage_policy);
   SessionStorageContextMojo* mojo_session_state = nullptr;
   mojo_session_state = new SessionStorageContextMojo(
-      data_path, mojo_task_runner,
+      mojo_task_runner, connector,
 #if defined(OS_ANDROID)
       // On Android there is no support for session storage restoring, and
       // since the restoring code is responsible for database cleanup, we must
@@ -147,7 +148,7 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
           ? SessionStorageContextMojo::BackingMode::kNoDisk
           : SessionStorageContextMojo::BackingMode::kRestoreDiskState,
 #endif
-      std::string(kSessionStorageDirectory));
+      local_partition_path, std::string(kSessionStorageDirectory));
 
   return base::WrapRefCounted(new DOMStorageContextWrapper(
       std::move(legacy_localstorage_path), mojo_task_runner, mojo_local_state,

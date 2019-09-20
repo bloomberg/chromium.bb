@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/content/public/cpp/manifest.h"
+#include "services/file/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace content {
@@ -279,6 +280,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireInterfaceFilterCapability_Deprecated(
               mojom::kRendererServiceName, "navigation:frame", "browser")
           .PackageService(content::GetManifest())
+          .PackageService(file::GetManifest())
           .Build()};
   return *manifest;
   // clang-format on

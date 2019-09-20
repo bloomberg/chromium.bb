@@ -29,6 +29,8 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "services/file/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -97,14 +99,15 @@ void SessionStorageErrorResponse(base::OnceClosure callback,
 }  // namespace
 
 SessionStorageContextMojo::SessionStorageContextMojo(
-    const base::FilePath& partition_directory,
     scoped_refptr<base::SequencedTaskRunner> memory_dump_task_runner,
+    service_manager::Connector* connector,
     BackingMode backing_mode,
+    base::FilePath local_partition_directory,
     std::string leveldb_name)
-    : backing_mode_(backing_mode),
+    : connector_(connector ? connector->Clone() : nullptr),
+      backing_mode_(backing_mode),
+      partition_directory_path_(std::move(local_partition_directory)),
       leveldb_name_(std::move(leveldb_name)),
-      force_in_memory_only_(partition_directory.empty()),
-      file_service_(partition_directory),
       memory_dump_id_(base::StringPrintf("SessionStorage/0x%" PRIXPTR,
                                          reinterpret_cast<uintptr_t>(this))),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()) {
@@ -516,10 +519,6 @@ bool SessionStorageContextMojo::OnMemoryDump(
   return true;
 }
 
-void SessionStorageContextMojo::PretendToConnectForTesting() {
-  OnDatabaseOpened(false, leveldb::mojom::DatabaseError::OK);
-}
-
 void SessionStorageContextMojo::SetDatabaseForTesting(
     mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database) {
   DCHECK_EQ(connection_state_, NO_CONNECTION);
@@ -702,22 +701,29 @@ void SessionStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
 
 void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
+  // Unit tests might not always have a Connector, use in-memory only if that
+  // happens.
+  if (!connector_) {
+    OnDatabaseOpened(false, leveldb::mojom::DatabaseError::OK);
+    return;
+  }
 
-  if (backing_mode_ != BackingMode::kNoDisk && !in_memory_only &&
-      !force_in_memory_only_) {
+  if (backing_mode_ != BackingMode::kNoDisk && !in_memory_only) {
     // We were given a subdirectory to write to. Get it and use a disk backed
     // database.
-    if (!file_system_)
-      file_service_.BindFileSystem(file_system_.BindNewPipeAndPassReceiver());
+    file_system_.reset();
+    connector_->Connect(file::mojom::kServiceName,
+                        file_system_.BindNewPipeAndPassReceiver());
     file_system_->GetSubDirectory(
-        {}, MakeRequest(&partition_directory_),
+        partition_directory_path_.AsUTF8Unsafe(),
+        MakeRequest(&partition_directory_),
         base::BindOnce(&SessionStorageContextMojo::OnDirectoryOpened,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
     // We were not given a subdirectory. Use a memory backed database.
     leveldb_service_.reset();
-    file_service_.BindLevelDBService(
-        leveldb_service_.BindNewPipeAndPassReceiver());
+    connector_->Connect(file::mojom::kServiceName,
+                        leveldb_service_.BindNewPipeAndPassReceiver());
 
     database_.reset();
     leveldb_service_->OpenInMemory(
@@ -742,8 +748,8 @@ void SessionStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
   // Now that we have a directory, connect to the LevelDB service and get our
   // database.
   leveldb_service_.reset();
-  file_service_.BindLevelDBService(
-      leveldb_service_.BindNewPipeAndPassReceiver());
+  connector_->Connect(file::mojom::kServiceName,
+                      leveldb_service_.BindNewPipeAndPassReceiver());
 
   // We might still need to use the directory, so create a clone.
   filesystem::mojom::DirectoryPtr partition_directory_clone;

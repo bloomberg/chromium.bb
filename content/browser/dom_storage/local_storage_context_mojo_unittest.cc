@@ -20,6 +20,7 @@
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/test/fake_leveldb_database_error_on_write.h"
 #include "content/browser/dom_storage/test/fake_leveldb_service.h"
+#include "content/browser/dom_storage/test/mojo_test_with_file_service.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -32,7 +33,8 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
-#include "services/file/file_service.h"
+#include "services/file/public/mojom/constants.mojom.h"
+#include "services/file/user_id_map.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -118,16 +120,13 @@ class LocalStorageContextMojoTest : public testing::Test {
   ~LocalStorageContextMojoTest() override {
     if (context_)
       ShutdownContext();
-
-    EXPECT_TRUE(temp_path_.Delete());
   }
 
   LocalStorageContextMojo* context() {
     if (!context_) {
       context_ = new LocalStorageContextMojo(
-          temp_path_.GetPath(), base::ThreadTaskRunnerHandle::Get(),
-          task_runner_, temp_path_.GetPath(),
-          base::FilePath(FILE_PATH_LITERAL("leveldb")),
+          base::ThreadTaskRunnerHandle::Get(), nullptr, task_runner_,
+          temp_path_.GetPath(), base::FilePath(FILE_PATH_LITERAL("leveldb")),
           special_storage_policy());
       mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_remote;
       auto receiver =
@@ -184,70 +183,9 @@ class LocalStorageContextMojoTest : public testing::Test {
 
   void CloseBinding() { db_receiver_.reset(); }
 
-  const base::FilePath& temp_path() const { return temp_path_.GetPath(); }
-  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
-
-  void DoTestPut(LocalStorageContextMojo* context,
-                 const std::vector<uint8_t>& key,
-                 const std::vector<uint8_t>& value) {
-    mojo::Remote<blink::mojom::StorageArea> area;
-    bool success = false;
-    base::RunLoop run_loop;
-    context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              area.BindNewPipeAndPassReceiver());
-    area->Put(key, value, base::nullopt, "source",
-              test::MakeSuccessCallback(run_loop.QuitClosure(), &success));
-    run_loop.Run();
-    EXPECT_TRUE(success);
-    area.reset();
-    RunUntilIdle();
-  }
-
-  bool DoTestGet(LocalStorageContextMojo* context,
-                 const std::vector<uint8_t>& key,
-                 std::vector<uint8_t>* result) {
-    mojo::Remote<blink::mojom::StorageArea> area;
-    context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              area.BindNewPipeAndPassReceiver());
-
-    base::RunLoop run_loop;
-    std::vector<blink::mojom::KeyValuePtr> data;
-    bool success = false;
-    bool done = false;
-    area->GetAll(
-        test::GetAllCallback::CreateAndBind(&done, run_loop.QuitClosure()),
-        test::MakeGetAllCallback(&success, &data));
-    run_loop.Run();
-    EXPECT_TRUE(done);
-    EXPECT_TRUE(success);
-
-    for (auto& entry : data) {
-      if (key == entry->key) {
-        *result = std::move(entry->value);
-        return true;
-      }
-    }
-    result->clear();
-    return false;
-  }
-
-  base::FilePath FirstEntryInDir() {
-    base::FileEnumerator enumerator(
-        temp_path(), false /* recursive */,
-        base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
-    return enumerator.Next();
-  }
+  base::FilePath TempPath() { return temp_path_.GetPath(); }
 
  private:
-  // testing::Test:
-  void TearDown() override {
-    // Some of these tests close message pipes which serve as master interfaces
-    // to other associated interfaces; this in turn schedules tasks to invoke
-    // the associated interfaces' error handlers, and local storage code relies
-    // on those handlers running in order to avoid memory leaks at shutdown.
-    RunUntilIdle();
-  }
-
   BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_path_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
@@ -680,7 +618,7 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   key2.push_back(0xd83d);
   key2.push_back(0xde00);
 
-  base::FilePath old_db_path = temp_path().Append(
+  base::FilePath old_db_path = TempPath().Append(
       LocalStorageContextMojo::LegacyDatabaseFileNameFromOrigin(origin1));
   {
     DOMStorageDatabase db(old_db_path);
@@ -829,9 +767,80 @@ TEST_F(LocalStorageContextMojoTest, ShutdownClearsData) {
   }
 }
 
-TEST_F(LocalStorageContextMojoTest, InMemory) {
+class LocalStorageContextMojoTestWithService
+    : public test::MojoTestWithFileService {
+ public:
+  LocalStorageContextMojoTestWithService() {}
+  ~LocalStorageContextMojoTestWithService() override {}
+
+ protected:
+  void DoTestPut(LocalStorageContextMojo* context,
+                 const std::vector<uint8_t>& key,
+                 const std::vector<uint8_t>& value) {
+    mojo::Remote<blink::mojom::StorageArea> area;
+    bool success = false;
+    base::RunLoop run_loop;
+    context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
+                              area.BindNewPipeAndPassReceiver());
+    area->Put(key, value, base::nullopt, "source",
+              test::MakeSuccessCallback(run_loop.QuitClosure(), &success));
+    run_loop.Run();
+    EXPECT_TRUE(success);
+    area.reset();
+    RunUntilIdle();
+  }
+
+  bool DoTestGet(LocalStorageContextMojo* context,
+                 const std::vector<uint8_t>& key,
+                 std::vector<uint8_t>* result) {
+    mojo::Remote<blink::mojom::StorageArea> area;
+    context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
+                              area.BindNewPipeAndPassReceiver());
+
+    base::RunLoop run_loop;
+    std::vector<blink::mojom::KeyValuePtr> data;
+    bool success = false;
+    bool done = false;
+    area->GetAll(
+        test::GetAllCallback::CreateAndBind(&done, run_loop.QuitClosure()),
+        test::MakeGetAllCallback(&success, &data));
+    run_loop.Run();
+    EXPECT_TRUE(done);
+    EXPECT_TRUE(success);
+
+    for (auto& entry : data) {
+      if (key == entry->key) {
+        *result = std::move(entry->value);
+        return true;
+      }
+    }
+    result->clear();
+    return false;
+  }
+
+  base::FilePath FirstEntryInDir() {
+    base::FileEnumerator enumerator(
+        temp_path(), false /* recursive */,
+        base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+    return enumerator.Next();
+  }
+
+ private:
+  // testing::Test:
+  void TearDown() override {
+    // Some of these tests close message pipes which serve as master interfaces
+    // to other associated interfaces; this in turn schedules tasks to invoke
+    // the associated interfaces' error handlers, and local storage code relies
+    // on those handlers running in order to avoid memory leaks at shutdown.
+    RunUntilIdle();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(LocalStorageContextMojoTestWithService);
+};
+
+TEST_F(LocalStorageContextMojoTestWithService, InMemory) {
   auto* context = new LocalStorageContextMojo(
-      base::FilePath(), base::ThreadTaskRunnerHandle::Get(), nullptr,
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
       base::FilePath(), base::FilePath(), nullptr);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
@@ -852,16 +861,16 @@ TEST_F(LocalStorageContextMojoTest, InMemory) {
   EXPECT_TRUE(FirstEntryInDir().empty());
 
   // Re-opening should get fresh data.
-  context = new LocalStorageContextMojo(
-      base::FilePath(), base::ThreadTaskRunnerHandle::Get(), nullptr,
-      base::FilePath(), base::FilePath(), nullptr);
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
+                                        base::FilePath(), nullptr);
   EXPECT_FALSE(DoTestGet(context, key, &result));
   context->ShutdownAndDelete();
 }
 
-TEST_F(LocalStorageContextMojoTest, InMemoryInvalidPath) {
+TEST_F(LocalStorageContextMojoTestWithService, InMemoryInvalidPath) {
   auto* context = new LocalStorageContextMojo(
-      base::FilePath(), base::ThreadTaskRunnerHandle::Get(), nullptr,
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("../../")), nullptr);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
@@ -883,10 +892,10 @@ TEST_F(LocalStorageContextMojoTest, InMemoryInvalidPath) {
   EXPECT_TRUE(FirstEntryInDir().empty());
 }
 
-TEST_F(LocalStorageContextMojoTest, OnDisk) {
+TEST_F(LocalStorageContextMojoTestWithService, OnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
   auto* context = new LocalStorageContextMojo(
-      temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
       base::FilePath(), test_path, nullptr);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
@@ -904,20 +913,20 @@ TEST_F(LocalStorageContextMojoTest, OnDisk) {
   EXPECT_EQ(test_path, FirstEntryInDir().BaseName());
 
   // Should be able to re-open.
-  context = new LocalStorageContextMojo(
-      temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
-      base::FilePath(), test_path, nullptr);
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
+                                        test_path, nullptr);
   EXPECT_TRUE(DoTestGet(context, key, &result));
   EXPECT_EQ(value, result);
   context->ShutdownAndDelete();
 }
 
-TEST_F(LocalStorageContextMojoTest, InvalidVersionOnDisk) {
+TEST_F(LocalStorageContextMojoTestWithService, InvalidVersionOnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
 
   // Create context and add some data to it.
   auto* context = new LocalStorageContextMojo(
-      temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
       base::FilePath(), test_path, nullptr);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
@@ -944,10 +953,8 @@ TEST_F(LocalStorageContextMojoTest, InvalidVersionOnDisk) {
   }
 
   // Make sure data is gone.
-  context = new LocalStorageContextMojo(temp_path(),
-                                        base::ThreadTaskRunnerHandle::Get(),
-                                        nullptr, base::FilePath(),
-
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
                                         test_path, nullptr);
   EXPECT_FALSE(DoTestGet(context, key, &result));
 
@@ -959,20 +966,20 @@ TEST_F(LocalStorageContextMojoTest, InvalidVersionOnDisk) {
   RunUntilIdle();
 
   // Data should have been preserved now.
-  context = new LocalStorageContextMojo(
-      temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
-      base::FilePath(), test_path, nullptr);
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
+                                        test_path, nullptr);
   EXPECT_TRUE(DoTestGet(context, key, &result));
   EXPECT_EQ(value, result);
   context->ShutdownAndDelete();
 }
 
-TEST_F(LocalStorageContextMojoTest, CorruptionOnDisk) {
+TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
 
   // Create context and add some data to it.
   auto* context = new LocalStorageContextMojo(
-      temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
       base::FilePath(), test_path, nullptr);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
@@ -997,9 +1004,9 @@ TEST_F(LocalStorageContextMojoTest, CorruptionOnDisk) {
   }
 
   // Make sure data is gone.
-  context = new LocalStorageContextMojo(
-      temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
-      base::FilePath(), test_path, nullptr);
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
+                                        test_path, nullptr);
   EXPECT_FALSE(DoTestGet(context, key, &result));
 
   // Write data again.
@@ -1010,25 +1017,26 @@ TEST_F(LocalStorageContextMojoTest, CorruptionOnDisk) {
   RunUntilIdle();
 
   // Data should have been preserved now.
-  context = new LocalStorageContextMojo(
-      temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
-      base::FilePath(), test_path, nullptr);
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
+                                        test_path, nullptr);
   EXPECT_TRUE(DoTestGet(context, key, &result));
   EXPECT_EQ(value, result);
   context->ShutdownAndDelete();
 }
 
-TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
-  std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
-  base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
-  auto* context = new LocalStorageContextMojo(
-      temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
-      base::FilePath(), test_path, nullptr);
-
+TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
   FakeLevelDBService mock_leveldb_service;
-  context->GetFileServiceForTesting()->OverrideLevelDBBinderForTesting(
+  file_service()->GetBinderMapForTesting().Add(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&mock_leveldb_service)));
+
+  std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
+
+  base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
+  auto* context = new LocalStorageContextMojo(
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
+      base::FilePath(), test_path, nullptr);
 
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
@@ -1166,18 +1174,19 @@ TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
   }
 }
 
-TEST_F(LocalStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
+TEST_F(LocalStorageContextMojoTestWithService,
+       DontRecreateOnRepeatedCommitFailure) {
+  FakeLevelDBService mock_leveldb_service;
+  file_service()->GetBinderMapForTesting().Add(
+      base::BindRepeating(&test::FakeLevelDBService::Bind,
+                          base::Unretained(&mock_leveldb_service)));
+
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
 
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
   auto* context = new LocalStorageContextMojo(
-      temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
       base::FilePath(), test_path, nullptr);
-
-  FakeLevelDBService mock_leveldb_service;
-  context->GetFileServiceForTesting()->OverrideLevelDBBinderForTesting(
-      base::BindRepeating(&test::FakeLevelDBService::Bind,
-                          base::Unretained(&mock_leveldb_service)));
 
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");

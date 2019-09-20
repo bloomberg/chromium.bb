@@ -12,7 +12,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
@@ -24,9 +23,9 @@
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/browser/dom_storage/test/fake_leveldb_database_error_on_write.h"
 #include "content/browser/dom_storage/test/fake_leveldb_service.h"
+#include "content/browser/dom_storage/test/mojo_test_with_file_service.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/browser/session_storage_usage_info.h"
-#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/core/embedder/embedder.h"
@@ -35,7 +34,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
-#include "services/file/file_service.h"
+#include "services/file/public/mojom/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -57,19 +56,13 @@ void GetStorageUsageCallback(base::OnceClosure callback,
   std::move(callback).Run();
 }
 
-class SessionStorageContextMojoTest : public testing::Test {
+class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
  public:
-  SessionStorageContextMojoTest() { CHECK(temp_dir_.CreateUniqueTempDir()); }
+  SessionStorageContextMojoTest() {}
 
   ~SessionStorageContextMojoTest() override {
     if (context_)
       ShutdownContext();
-
-    // There may be pending tasks to clean up files in the temp dir. Make sure
-    // they run so temp dir deletion can succeed.
-    task_environment_.RunUntilIdle();
-
-    EXPECT_TRUE(temp_dir_.Delete());
   }
 
   void SetUp() override {
@@ -104,8 +97,8 @@ class SessionStorageContextMojoTest : public testing::Test {
   SessionStorageContextMojo* context() {
     if (!context_) {
       context_ = new SessionStorageContextMojo(
-          temp_path(), base::SequencedTaskRunnerHandle::Get(), backing_mode_,
-          kSessionStorageDirectory);
+          base::SequencedTaskRunnerHandle::Get(), connector(), backing_mode_,
+          base::FilePath(), kSessionStorageDirectory);
     }
     return context_;
   }
@@ -170,14 +163,9 @@ class SessionStorageContextMojoTest : public testing::Test {
   }
 
  protected:
-  const base::FilePath& temp_path() const { return temp_dir_.GetPath(); }
-  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
-
   bool bad_message_called_ = false;
 
  private:
-  BrowserTaskEnvironment task_environment_;
-  base::ScopedTempDir temp_dir_;
   TestBrowserContext browser_context_;
   SessionStorageContextMojo::BackingMode backing_mode_ =
       SessionStorageContextMojo::BackingMode::kRestoreDiskState;
@@ -655,7 +643,7 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   url::Origin origin3 = url::Origin::Create(GURL("http://example.com"));
 
   test::FakeLevelDBService fake_leveldb_service;
-  context()->GetFileServiceForTesting()->OverrideLevelDBBinderForTesting(
+  file_service()->GetBinderMapForTesting().Add(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&fake_leveldb_service)));
 
@@ -793,7 +781,7 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
 
   test::FakeLevelDBService fake_leveldb_service;
-  context()->GetFileServiceForTesting()->OverrideLevelDBBinderForTesting(
+  file_service()->GetBinderMapForTesting().Add(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&fake_leveldb_service)));
 
