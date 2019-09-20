@@ -85,6 +85,9 @@ typedef NS_ENUM(NSInteger, TableViewTextEditItemIconType) {
 // trailing position of the Cell.
 @property(nonatomic, readonly, strong) UIButton* identifyingIconButton;
 
+// UIImageView containing the icon indicating that |textField| is editable.
+@property(nonatomic, strong) UIImageView* iconView;
+
 // Sets |self.identifyingIconButton| icon.
 - (void)setIdentifyingIcon:(UIImage*)icon;
 

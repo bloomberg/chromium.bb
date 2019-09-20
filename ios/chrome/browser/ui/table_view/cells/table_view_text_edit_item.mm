@@ -83,11 +83,17 @@ const CGFloat kEditIconLength = 18;
       cell.textField.textColor = UIColor.cr_secondaryLabelColor;
     }
     if (cell.textField.editing && cell.textField.text.length > 0) {
+      cell.iconView.accessibilityIdentifier =
+          [NSString stringWithFormat:@"%@_noIcon", self.textFieldName];
       [cell setIcon:TableViewTextEditItemIconTypeNone];
     } else if (!self.hasValidText) {
+      cell.iconView.accessibilityIdentifier =
+          [NSString stringWithFormat:@"%@_errorIcon", self.textFieldName];
       cell.textField.textColor = [UIColor colorNamed:kRedColor];
       [cell setIcon:TableViewTextEditItemIconTypeError];
     } else {
+      cell.iconView.accessibilityIdentifier =
+          [NSString stringWithFormat:@"%@_editIcon", self.textFieldName];
       [cell setIcon:TableViewTextEditItemIconTypeEdit];
     }
   }
@@ -162,8 +168,6 @@ const CGFloat kEditIconLength = 18;
 // another line. They conflict with the |standardConstraints|.
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* accessibilityConstraints;
-// UIImageView containing the icon indicating that |textField| is editable.
-@property(nonatomic, strong) UIImageView* iconView;
 
 @end
 
