@@ -61,9 +61,10 @@ DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {
 
 void DeviceMediaToMojoAdapter::Start(
     const media::VideoCaptureParams& requested_settings,
-    mojom::ReceiverPtr receiver) {
+    mojo::PendingRemote<mojom::Receiver> receiver_pending_remote) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  receiver.set_connection_error_handler(
+  mojo::Remote<mojom::Receiver> receiver(std::move(receiver_pending_remote));
+  receiver.set_disconnect_handler(
       base::Bind(&DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose,
                  weak_factory_.GetWeakPtr()));
 
