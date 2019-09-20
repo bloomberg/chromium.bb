@@ -1078,6 +1078,8 @@ bool RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
+  if (closing_)
+    return false;
   if (IsUndeadOrProvisional())
     return false;
   input_handler_->HandleInputEvent(input_event, latency_info,
