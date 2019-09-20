@@ -9,9 +9,6 @@ import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
 import {TabsApiProxy} from './tabs_api_proxy.js';
 
-/** @const {number} */
-const GHOST_PINNED_TAB_COUNT = 3;
-
 /**
  * The amount of padding to leave between the edge of the screen and the active
  * tab when auto-scrolling. This should leave some room to show the previous or
@@ -174,15 +171,6 @@ class TabListElement extends CustomElement {
   }
 
   /**
-   * @return {number}
-   * @private
-   */
-  getPinnedTabsCount_() {
-    return this.pinnedTabsContainerElement_.childElementCount -
-        GHOST_PINNED_TAB_COUNT;
-  }
-
-  /**
    * @param {!TabElement} tabElement
    * @param {number} index
    * @private
@@ -197,12 +185,11 @@ class TabListElement extends CustomElement {
     } else {
       // Pinned tabs are in their own container, so the index of non-pinned
       // tabs need to be offset by the number of pinned tabs
-      const offsetIndex = index - this.getPinnedTabsCount_();
+      const offsetIndex =
+          index - this.pinnedTabsContainerElement_.childElementCount;
       this.tabsContainerElement_.insertBefore(
           tabElement, this.tabsContainerElement_.childNodes[offsetIndex]);
     }
-
-    this.updatePinnedTabsState_();
   }
 
   /**
@@ -234,13 +221,10 @@ class TabListElement extends CustomElement {
       return;
     }
 
-    let dragOverIndex =
-        Array.from(dragOverItem.parentNode.children).indexOf(dragOverItem);
     event.dataTransfer.dropEffect = 'move';
-    if (!dragOverItem.tab.pinned) {
-      dragOverIndex += this.getPinnedTabsCount_();
-    }
 
+    const dragOverIndex =
+        Array.from(dragOverItem.parentNode.children).indexOf(dragOverItem);
     this.tabsApi_.moveTab(this.draggedItem_.tab.id, dragOverIndex);
   }
 
@@ -368,7 +352,6 @@ class TabListElement extends CustomElement {
     if (tabElement) {
       this.addAnimationPromise_(new Promise(async resolve => {
         await tabElement.slideOut();
-        this.updatePinnedTabsState_();
         resolve();
       }));
     }
@@ -435,14 +418,6 @@ class TabListElement extends CustomElement {
     if (tab) {
       tab.updateThumbnail(imgData);
     }
-  }
-
-  /** @private */
-  updatePinnedTabsState_() {
-    this.pinnedTabsContainerElement_.toggleAttribute(
-        'empty',
-        this.pinnedTabsContainerElement_.childElementCount ===
-            GHOST_PINNED_TAB_COUNT);
   }
 }
 
