@@ -1551,7 +1551,7 @@ void WebContentsImpl::SetAudioMuted(bool mute) {
     observer.DidUpdateAudioMutingState(mute);
 
   // Notification for UI updates in response to the changed muting state.
-  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_AUDIO);
 }
 
 bool WebContentsImpl::IsCurrentlyAudible() {
@@ -1652,7 +1652,7 @@ bool WebContentsImpl::IsBeingDestroyed() {
 void WebContentsImpl::NotifyNavigationStateChanged(
     InvalidateTypes changed_flags) {
   // Notify the media observer of potential audibility changes.
-  if (changed_flags & INVALIDATE_TYPE_TAB) {
+  if (changed_flags & INVALIDATE_TYPE_AUDIO) {
     media_web_contents_observer_->MaybeUpdateAudibleState();
   }
 
@@ -1694,7 +1694,7 @@ void WebContentsImpl::OnAudioStateChanged() {
       new PageMsg_AudioStateChanged(MSG_ROUTING_NONE, is_currently_audible_));
 
   // Notification for UI updates in response to the changed audio state.
-  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_AUDIO);
 
   // Ensure that audio state changes propagate from innermost to outermost
   // WebContents.
