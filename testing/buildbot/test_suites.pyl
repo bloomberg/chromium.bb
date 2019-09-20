@@ -4052,11 +4052,7 @@
           '--driver-logging',
           '--ignore-default-expectations',
           '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
-          # TODO(crbug.com/984815): Use --isolated-script-test-filter to select
-          # webgpu tests, instead of just the file path, so retries (which just
-          # append the specific test path to the end of this command line) work
-          # correctly instead of also running the whole rest of the test suite.
-          'external/wpt/webgpu/',
+          '--isolated-script-test-filter=external/wpt/webgpu/*',
         ],
         'linux_args': [ '--no-xvfb' ],
         'merge': {
@@ -4079,11 +4075,7 @@
           '--ignore-default-expectations',
           '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
           '-t', 'Release_x64',
-          # TODO(crbug.com/984815): Use --isolated-script-test-filter to select
-          # webgpu tests, instead of just the file path, so retries (which just
-          # append the specific test path to the end of this command line) work
-          # correctly instead of also running the whole rest of the test suite.
-          'external/wpt/webgpu/',
+          '--isolated-script-test-filter=external/wpt/webgpu/*',
         ],
         'merge': {
           'args': [
