@@ -94,7 +94,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidSearchEngineChoiceNotification,
     &kAndroidSetupSearchEngine,
     &kAndroidSiteSettingsUIRefresh,
-    &kBackgroundTaskSchedulerForBackgroundSync,
     &kBookmarksShowInFolder,
     &kCastDeviceFilter,
     &kCloseTabSuggestionsStale,
@@ -284,10 +283,6 @@ const base::Feature kAndroidSiteSettingsUIRefresh{
 
 const base::Feature kBackgroundTaskComponentUpdate{
     "BackgroundTaskComponentUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kBackgroundTaskSchedulerForBackgroundSync{
-    "BackgroundTaskSchedulerForBackgroundSync",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kBookmarksShowInFolder{"BookmarksShowInFolder",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
