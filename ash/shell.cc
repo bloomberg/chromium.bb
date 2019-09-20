@@ -493,16 +493,6 @@ void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
     root_window_controller->UpdateAfterLoginStatusChange(status);
 }
 
-void Shell::NotifySplitViewModeStarted() {
-  for (auto& observer : shell_observers_)
-    observer.OnSplitViewModeStarted();
-}
-
-void Shell::NotifySplitViewModeEnded() {
-  for (auto& observer : shell_observers_)
-    observer.OnSplitViewModeEnded();
-}
-
 void Shell::NotifyFullscreenStateChanged(bool is_fullscreen,
                                          aura::Window* container) {
   for (auto& observer : shell_observers_)

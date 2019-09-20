@@ -1235,16 +1235,16 @@ void SplitViewController::UpdateSplitViewStateAndNotifyObservers() {
     state_ = SplitViewState::kNoSnap;
 
   // We still notify observers even if |state_| doesn't change as it's possible
-  // to snap a window to a position that already has a snapped window.
+  // to snap a window to a position that already has a snapped window. However,
+  // |previous_state| and |state_| cannot both be |SplitViewState::kNoSnap|.
+  // When |previous_state| is |SplitViewState::kNoSnap|, it indicates to
+  // observers that split view mode started. Likewise, when |state_| is
+  // |SplitViewState::kNoSnap|, it indicates to observers that split view mode
+  // ended.
+  DCHECK(previous_state != SplitViewState::kNoSnap ||
+         state_ != SplitViewState::kNoSnap);
   for (auto& observer : observers_)
     observer.OnSplitViewStateChanged(previous_state, state_);
-
-  if (previous_state != state_) {
-    if (previous_state == SplitViewState::kNoSnap)
-      Shell::Get()->NotifySplitViewModeStarted();
-    else if (state_ == SplitViewState::kNoSnap)
-      Shell::Get()->NotifySplitViewModeEnded();
-  }
 }
 
 void SplitViewController::NotifyDividerPositionChanged() {

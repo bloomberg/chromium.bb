@@ -323,10 +323,12 @@ ShelfLayoutManager::~ShelfLayoutManager() {
     Shell::Get()->app_list_controller()->RemoveObserver(this);
   if (Shell::Get()->overview_controller())
     Shell::Get()->overview_controller()->RemoveObserver(this);
+  Shell::Get()->split_view_controller()->RemoveObserver(this);
 }
 
 void ShelfLayoutManager::InitObservers() {
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->split_view_controller()->AddObserver(this);
   Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()
@@ -759,12 +761,12 @@ void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnSplitViewModeStarted() {
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
-}
-
-void ShelfLayoutManager::OnSplitViewModeEnded() {
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+void ShelfLayoutManager::OnSplitViewStateChanged(SplitViewState previous_state,
+                                                 SplitViewState state) {
+  if (previous_state == SplitViewState::kNoSnap ||
+      state == SplitViewState::kNoSnap) {
+    MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  }
 }
 
 void ShelfLayoutManager::OnOverviewModeStarting() {

@@ -11,6 +11,7 @@
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/session/session_observer.h"
@@ -60,6 +61,7 @@ class ShelfWidget;
 class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                                       public HomeLauncherGestureHandlerObserver,
                                       public ShellObserver,
+                                      public SplitViewObserver,
                                       public OverviewObserver,
                                       public ::wm::ActivationChangeObserver,
                                       public LockStateObserver,
@@ -170,8 +172,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
   void OnUserWorkAreaInsetsChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
-  void OnSplitViewModeStarted() override;
-  void OnSplitViewModeEnded() override;
+
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewState previous_state,
+                               SplitViewState state) override;
 
   // OverviewObserver:
   void OnOverviewModeStarting() override;
