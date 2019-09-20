@@ -50,7 +50,7 @@ void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
   IPAddress::Version version = remote_address.address.version();
   std::unique_ptr<TlsConnectionPosix> connection =
       std::make_unique<TlsConnectionPosix>(version, task_runner_);
-  Error connect_error = connection->socket_.Connect(remote_address);
+  Error connect_error = connection->socket_->Connect(remote_address);
   if (!connect_error.ok()) {
     TRACE_SET_RESULT(connect_error.error());
     OnConnectionFailed(remote_address);
@@ -64,7 +64,7 @@ void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
   }
 
   bssl::UniquePtr<SSL> ssl = std::move(ssl_or_error.value());
-  if (!SSL_set_fd(ssl.get(), connection->socket_.socket_handle().fd)) {
+  if (!SSL_set_fd(ssl.get(), connection->socket_->socket_handle().fd)) {
     OnConnectionFailed(remote_address);
     TRACE_SET_RESULT(Error(Error::Code::kSocketBindFailure));
     return;

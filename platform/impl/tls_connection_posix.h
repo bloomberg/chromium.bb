@@ -26,6 +26,8 @@ class TlsConnectionPosix : public TlsConnection,
  public:
   TlsConnectionPosix(IPEndpoint local_address, TaskRunner* task_runner);
   TlsConnectionPosix(IPAddress::Version version, TaskRunner* task_runner);
+  TlsConnectionPosix(std::unique_ptr<StreamSocket> socket,
+                     TaskRunner* task_runner);
   ~TlsConnectionPosix();
 
   // TlsConnection overrides.
@@ -37,7 +39,7 @@ class TlsConnectionPosix : public TlsConnection,
   void NotifyWriteBufferFill(double fraction) override;
 
  private:
-  StreamSocketPosix socket_;
+  std::unique_ptr<StreamSocket> socket_;
   bssl::UniquePtr<SSL> ssl_;
 
   std::atomic_bool is_buffer_blocked_{false};

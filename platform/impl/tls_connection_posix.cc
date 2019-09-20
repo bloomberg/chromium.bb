@@ -30,11 +30,19 @@ namespace platform {
 // TODO(jophba, rwkeane): implement write blocking/unblocking
 TlsConnectionPosix::TlsConnectionPosix(IPEndpoint local_address,
                                        TaskRunner* task_runner)
-    : TlsConnection(task_runner), socket_(local_address), buffer_(this) {}
+    : TlsConnection(task_runner),
+      socket_(std::make_unique<StreamSocketPosix>(local_address)),
+      buffer_(this) {}
 
 TlsConnectionPosix::TlsConnectionPosix(IPAddress::Version version,
                                        TaskRunner* task_runner)
-    : TlsConnection(task_runner), socket_(version), buffer_(this) {}
+    : TlsConnection(task_runner),
+      socket_(std::make_unique<StreamSocketPosix>(version)),
+      buffer_(this) {}
+
+TlsConnectionPosix::TlsConnectionPosix(std::unique_ptr<StreamSocket> socket,
+                                       TaskRunner* task_runner)
+    : TlsConnection(task_runner), socket_(std::move(socket)), buffer_(this) {}
 
 TlsConnectionPosix::~TlsConnectionPosix() = default;
 
@@ -44,13 +52,13 @@ void TlsConnectionPosix::Write(const void* data, size_t len) {
 }
 
 const IPEndpoint& TlsConnectionPosix::local_address() const {
-  const absl::optional<IPEndpoint> endpoint = socket_.local_address();
+  const absl::optional<IPEndpoint> endpoint = socket_->local_address();
   OSP_DCHECK(endpoint.has_value());
   return endpoint.value();
 }
 
 const IPEndpoint& TlsConnectionPosix::remote_address() const {
-  const absl::optional<IPEndpoint> endpoint = socket_.remote_address();
+  const absl::optional<IPEndpoint> endpoint = socket_->remote_address();
   OSP_DCHECK(endpoint.has_value());
   return endpoint.value();
 }
