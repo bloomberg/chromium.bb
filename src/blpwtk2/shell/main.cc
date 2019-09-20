@@ -1304,7 +1304,6 @@ int main(int, const char**)
         toolkitParams.appendSideLoadedFontInProcess(g_sideLoadedFonts[i]);
     }
 
-    toolkitParams.appendCommandLineSwitch("disable-layout-ng");
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());
     toolkitParams.enablePrintBackgroundGraphics();
     toolkitParams.setDictionaryPath(g_dictDir);
