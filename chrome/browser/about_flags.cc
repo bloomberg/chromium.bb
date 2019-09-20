@@ -3286,12 +3286,12 @@ const FeatureEntry kFeatureEntries[] = {
                                     kStartSurfaceAndroidVariations,
                                     "StartSurfaceAndroid")},
 
-    {"enable-close-tab-suggestions-stale",
-     flag_descriptions::kCloseTabSuggestionsStaleName,
-     flag_descriptions::kCloseTabSuggestionsStaleDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kCloseTabSuggestionsStale,
+    {"enable-close-tab-suggestions",
+     flag_descriptions::kCloseTabSuggestionsName,
+     flag_descriptions::kCloseTabSuggestionsDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kCloseTabSuggestions,
                                     kCloseTabSuggestionsStaleVariations,
-                                    "CloseSuggestionsStaleTab")},
+                                    "CloseSuggestionsTab")},
 
     {"enable-horizontal-tab-switcher",
      flag_descriptions::kHorizontalTabSwitcherAndroidName,

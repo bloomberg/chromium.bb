@@ -1065,7 +1065,7 @@
     "expiry_milestone": 79
   },
   {
-    "name": "enable-close-tab-suggestions-stale",
+    "name": "enable-close-tab-suggestions",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 82
   },
