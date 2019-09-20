@@ -12,6 +12,9 @@
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/preferences/public/cpp/lib/util.h"
 
 namespace prefs {
@@ -80,7 +83,7 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
  public:
   Connection(PersistentPrefStoreImpl* pref_store,
              mojom::PersistentPrefStoreRequest request,
-             mojom::PrefStoreObserverPtr observer,
+             mojo::PendingRemote<mojom::PrefStoreObserver> observer,
              ObservedPrefs observed_keys)
       : pref_store_(pref_store),
         binding_(this, std::move(request)),
@@ -90,7 +93,7 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
         base::Bind(&PersistentPrefStoreImpl::Connection::OnConnectionError,
                    base::Unretained(this));
     binding_.set_connection_error_handler(error_callback);
-    observer_.set_connection_error_handler(error_callback);
+    observer_.set_disconnect_handler(error_callback);
   }
 
   ~Connection() override = default;
@@ -150,7 +153,7 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
   PersistentPrefStoreImpl* const pref_store_;
 
   mojo::Binding<mojom::PersistentPrefStore> binding_;
-  mojom::PrefStoreObserverPtr observer_;
+  mojo::Remote<mojom::PrefStoreObserver> observer_;
   const ObservedPrefs observed_keys_;
 
   // If true then a write is in progress and any update notifications should be
@@ -185,9 +188,9 @@ PersistentPrefStoreImpl::CreateConnection(ObservedPrefs observed_prefs) {
         backing_pref_store_->ReadOnly());
   }
   mojom::PersistentPrefStorePtrInfo pref_store_info;
-  mojom::PrefStoreObserverPtr observer;
-  mojom::PrefStoreObserverRequest observer_request =
-      mojo::MakeRequest(&observer);
+  mojo::PendingRemote<mojom::PrefStoreObserver> observer;
+  mojo::PendingReceiver<mojom::PrefStoreObserver> observer_receiver =
+      observer.InitWithNewPipeAndPassReceiver();
   auto values = FilterPrefs(backing_pref_store_->GetValues(), observed_prefs);
   auto connection = std::make_unique<Connection>(
       this, mojo::MakeRequest(&pref_store_info), std::move(observer),
@@ -195,7 +198,7 @@ PersistentPrefStoreImpl::CreateConnection(ObservedPrefs observed_prefs) {
   auto* connection_ptr = connection.get();
   connections_.insert(std::make_pair(connection_ptr, std::move(connection)));
   return mojom::PersistentPrefStoreConnection::New(
-      mojom::PrefStoreConnection::New(std::move(observer_request),
+      mojom::PrefStoreConnection::New(std::move(observer_receiver),
                                       std::move(*values), true),
       std::move(pref_store_info), backing_pref_store_->GetReadError(),
       backing_pref_store_->ReadOnly());

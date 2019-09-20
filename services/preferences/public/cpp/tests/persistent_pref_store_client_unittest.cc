@@ -16,7 +16,8 @@
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/preferences/public/cpp/dictionary_value_update.h"
 #include "services/preferences/public/cpp/scoped_pref_update.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
@@ -41,7 +42,7 @@ class PersistentPrefStoreClientTest : public testing::Test,
         base::MakeRefCounted<PersistentPrefStoreClient>(
             mojom::PersistentPrefStoreConnection::New(
                 mojom::PrefStoreConnection::New(
-                    mojom::PrefStoreObserverRequest(),
+                    mojo::PendingReceiver<mojom::PrefStoreObserver>(),
                     base::Value(base::Value::Type::DICTIONARY), true),
                 std::move(store_proxy_info),
                 ::PersistentPrefStore::PREF_READ_ERROR_NONE, false));

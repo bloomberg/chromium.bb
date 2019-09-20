@@ -45,7 +45,7 @@ interface PrefStoreObserver {
 // store and a handle to receive notifications on.
 struct PrefStoreConnection {
   // Handle to receive updates on.
-  PrefStoreObserver& observer;
+  pending_receiver<PrefStoreObserver> observer;
 
   // Initial values of the PrefStore. These will not be communicated through
   // OnPrefChanged.

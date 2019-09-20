@@ -15,7 +15,9 @@
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/preferences/persistent_pref_store_impl.h"
 #include "services/preferences/public/cpp/dictionary_value_update.h"
 #include "services/preferences/public/cpp/persistent_pref_store_client.h"
@@ -52,13 +54,14 @@ class PrefServiceConnection : public mojom::PrefStoreObserver,
                               public mojom::PersistentPrefStore {
  public:
   explicit PrefServiceConnection(PersistentPrefStoreImpl* pref_store)
-      : observer_binding_(this), pref_store_binding_(this) {
+      : pref_store_binding_(this) {
     auto connection = pref_store->CreateConnection({
         kKey, kOtherDictionaryKey, kDictionaryKey,
     });
-    observer_binding_.Bind(
+    observer_receiver_.Bind(
         std::move(connection->pref_store_connection->observer));
-    connection->pref_store_connection->observer = mojo::MakeRequest(&observer_);
+    connection->pref_store_connection->observer =
+        observer_.BindNewPipeAndPassReceiver();
 
     pref_store_.Bind(std::move(connection->pref_store));
     pref_store_binding_.Bind(mojo::MakeRequest(&connection->pref_store));
@@ -79,7 +82,7 @@ class PrefServiceConnection : public mojom::PrefStoreObserver,
   }
 
   ~PrefServiceConnection() override {
-    observer_binding_.FlushForTesting();
+    observer_receiver_.FlushForTesting();
     pref_store_binding_.FlushForTesting();
     EXPECT_TRUE(writes_.empty());
     EXPECT_TRUE(updates_.empty());
@@ -171,9 +174,9 @@ class PrefServiceConnection : public mojom::PrefStoreObserver,
  private:
   scoped_refptr<PersistentPrefStoreClient> pref_store_client_;
   std::unique_ptr<PrefService> pref_service_;
-  mojom::PrefStoreObserverPtr observer_;
+  mojo::Remote<mojom::PrefStoreObserver> observer_;
   mojom::PersistentPrefStorePtr pref_store_;
-  mojo::Binding<mojom::PrefStoreObserver> observer_binding_;
+  mojo::Receiver<mojom::PrefStoreObserver> observer_receiver_{this};
   mojo::Binding<mojom::PersistentPrefStore> pref_store_binding_;
 
   base::OnceClosure stop_;
