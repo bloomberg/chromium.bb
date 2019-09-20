@@ -75,9 +75,8 @@ gfx::Size AppsContainerView::GetNonAppsGridSize() {
           ? 0
           : kAppsGridMinimumMargin * 2;
 
-  // Enlarge with the apps grid view insets and margin.
-  size.Enlarge(min_grid_horizontal_margin,
-               AppsGridView::kFadeoutZoneHeight * 2);
+  // Enlarge with the apps grid view horizontal margin.
+  size.Enlarge(min_grid_horizontal_margin, 0);
 
   // Enlarge with suggestion chips.
   size.Enlarge(0, kSuggestionChipFullscreenY + kSuggestionChipContainerHeight);
@@ -282,7 +281,7 @@ void AppsContainerView::Layout() {
       // fullscreen and peeking state to avoid resizing the view during
       // animation and dragging, which is an expensive operation.
       rect.set_y(chip_container_rect.bottom());
-      rect.set_height(rect.height() - kSuggestionChipFullscreenY -
+      rect.set_height(rect.height() - GetSuggestionChipContainerFullscreenY() -
                       kSuggestionChipContainerHeight);
 
       const int page_switcher_width =
@@ -564,7 +563,18 @@ int AppsContainerView::GetExpectedSuggestionChipY(float progress) {
   // Currently transition progress is between peeking and fullscreen
   // state.
   return gfx::Tween::IntValueBetween(progress - 1, kSuggestionChipPeekingY,
-                                     kSuggestionChipFullscreenY);
+                                     GetSuggestionChipContainerFullscreenY());
+}
+
+int AppsContainerView::GetSuggestionChipContainerFullscreenY() const {
+  // For small screen sizes, account for the search box size diff (48 - > 40),
+  // and reduce the margin between the search box and suggestion chips (24 ->
+  // 8).
+  if (GetContentsBounds().height() < kAppsGridMarginSmallWidthThreshold &&
+      !app_list_features::IsScalableAppListEnabled()) {
+    return kSuggestionChipFullscreenY - 24;
+  }
+  return kSuggestionChipFullscreenY;
 }
 
 bool AppsContainerView::ShouldSwitchColsAndRows() const {
