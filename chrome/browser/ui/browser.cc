@@ -2822,9 +2822,8 @@ bool Browser::MaybeCreateBackgroundContents(
   }
 
   // Passed all the checks, so this should be created as a BackgroundContents.
-  BackgroundContents* contents = nullptr;
   if (allow_js_access) {
-    contents = service->CreateBackgroundContents(
+    service->CreateBackgroundContents(
         source_site_instance, opener, route_id, main_frame_route_id,
         main_frame_widget_route_id, profile_, frame_name, extension->id(),
         partition_id, session_storage_namespace);
@@ -2833,7 +2832,7 @@ bool Browser::MaybeCreateBackgroundContents(
     // new SiteInstance, so that a separate process is used. We must not use any
     // of the passed-in routing IDs, as they are objects in the opener's
     // process.
-    contents = service->CreateBackgroundContents(
+    BackgroundContents* contents = service->CreateBackgroundContents(
         content::SiteInstance::Create(
             source_site_instance->GetBrowserContext()),
         nullptr, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, profile_,
@@ -2841,12 +2840,10 @@ bool Browser::MaybeCreateBackgroundContents(
 
     // When a separate process is used, the original renderer cannot access the
     // new window later, thus we need to navigate the window now.
-    if (contents) {
-      contents->web_contents()->GetController().LoadURL(
-          target_url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
-          std::string());  // No extra headers.
-    }
+    contents->web_contents()->GetController().LoadURL(
+        target_url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
+        std::string());  // No extra headers.
   }
 
-  return contents != NULL;
+  return true;
 }
