@@ -11,7 +11,6 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
@@ -80,8 +79,9 @@ PageActionIconType ClickToCallUiController::GetIconType() {
   return PageActionIconType::kClickToCall;
 }
 
-int ClickToCallUiController::GetRequiredDeviceCapabilities() {
-  return static_cast<int>(SharingDeviceCapability::kClickToCall);
+sync_pb::SharingSpecificFields::EnabledFeatures
+ClickToCallUiController::GetRequiredFeature() {
+  return sync_pb::SharingSpecificFields::CLICK_TO_CALL;
 }
 
 void ClickToCallUiController::DoUpdateApps(UpdateAppsCallback callback) {

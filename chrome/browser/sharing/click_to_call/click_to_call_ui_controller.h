@@ -41,7 +41,7 @@ class ClickToCallUiController
   // Overridden from SharingUiController:
   base::string16 GetTitle() override;
   PageActionIconType GetIconType() override;
-  int GetRequiredDeviceCapabilities() override;
+  sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature() override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
   void OnDialogClosed(SharingDialog* dialog) override;

@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "components/sync_device_info/device_info.h"
@@ -50,8 +49,9 @@ PageActionIconType SharedClipboardUiController::GetIconType() {
   return PageActionIconType::kSharedClipboard;
 }
 
-int SharedClipboardUiController::GetRequiredDeviceCapabilities() {
-  return static_cast<int>(SharingDeviceCapability::kSharedClipboard);
+sync_pb::SharingSpecificFields::EnabledFeatures
+SharedClipboardUiController::GetRequiredFeature() {
+  return sync_pb::SharingSpecificFields::SHARED_CLIPBOARD;
 }
 
 // No need for apps for shared clipboard feature
