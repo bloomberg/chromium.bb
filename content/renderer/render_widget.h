@@ -318,12 +318,7 @@ class CONTENT_EXPORT RenderWidget
   // is in a nested message loop and will unwind back up to javascript (from
   // plugins). So this will be true between those two things, to avoid work
   // when the RenderWidget will be closed.
-  // Additionally, as an optimization, this is true after we know the renderer
-  // has asked the browser to close this RenderWidget.
-  //
-  // TODO(crbug.com/545684): Once RenderViewImpl and RenderWidget are split,
-  // attempt to combine two states so the shutdown logic is cleaner.
-  bool is_closing() const { return host_will_close_this_ || closing_; }
+  bool is_closing() const { return closing_; }
 
   // Manage edit commands to be used for the next keyboard event.
   const EditCommands& edit_commands() const { return edit_commands_; }
@@ -1012,9 +1007,6 @@ class CONTENT_EXPORT RenderWidget
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.
   bool closing_ = false;
-
-  // True if it is known that the host is in the process of being shut down.
-  bool host_will_close_this_ = false;
 
   // A RenderWidget is undead if it is the RenderWidget attached to the
   // RenderViewImpl for its main frame, but there is a proxy main frame in

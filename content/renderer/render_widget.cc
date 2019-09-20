@@ -1273,11 +1273,10 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
   // widgets for provisional frames do start their compositor.
   DCHECK(!is_undead_);
 
-  if (is_closing()) {
-    // In this case, we drop the request which means the compositor waits
-    // forever, which is fine since we're going to destroy it.
+  // If we early out, we drop the request which means the compositor waits
+  // forever, which is fine since we're going to destroy it soon.
+  if (closing_)
     return;
-  }
 
   // TODO:(https://crbug.com/995981): If there is no WebWidget, then the
   // RenderWidget should also be destroyed, and this DCHECK should not be
@@ -1994,13 +1993,6 @@ void RenderWidget::ClosePopupWidgetSoon() {
 
 void RenderWidget::CloseWidgetSoon() {
   DCHECK(RenderThread::IsMainThread());
-  // Prevent compositor from setting up new IPC channels, since we know a
-  // WidgetMsg_Close is coming. We do this immediately, not in DoDeferredClose,
-  // as the caller (eg WebPagePopupImpl) may start tearing down things after
-  // calling this method, including detaching the frame from this RenderWidget.
-  // Then trying to make a LayerTreeFrameSink would crash.
-  // https://crbug.com/906340
-  host_will_close_this_ = true;
 
   // If a page calls window.close() twice, we'll end up here twice, but that's
   // OK.  It is safe to send multiple Close messages.
