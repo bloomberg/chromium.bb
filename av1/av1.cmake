@@ -401,14 +401,17 @@ endif()
 
 if(CONFIG_REALTIME_ONLY)
   list(REMOVE_ITEM AOM_AV1_ENCODER_SOURCES
+                   "${AOM_ROOT}/av1/encoder/cnn.c"
+                   "${AOM_ROOT}/av1/encoder/cnn.h"
                    "${AOM_ROOT}/av1/encoder/firstpass.c"
                    "${AOM_ROOT}/av1/encoder/firstpass.h"
                    "${AOM_ROOT}/av1/encoder/gop_structure.c"
                    "${AOM_ROOT}/av1/encoder/gop_structure.h"
-                   "${AOM_ROOT}/av1/encoder/pass2_strategy.c"
                    "${AOM_ROOT}/av1/encoder/mbgraph.c"
                    "${AOM_ROOT}/av1/encoder/mbgraph.h"
+                   "${AOM_ROOT}/av1/encoder/partition_cnn_weights.h"
                    "${AOM_ROOT}/av1/encoder/partition_model_weights.h"
+                   "${AOM_ROOT}/av1/encoder/pass2_strategy.c"
                    "${AOM_ROOT}/av1/encoder/temporal_filter.c"
                    "${AOM_ROOT}/av1/encoder/temporal_filter.h"
                    "${AOM_ROOT}/av1/encoder/temporal_filter_constants.h"
