@@ -35433,6 +35433,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1256747007"
       label="OminboxUIExperimentUseGenericSearchEngineIcon:disabled"/>
   <int value="-1255427595" label="HomePageButtonForceEnabled:enabled"/>
+  <int value="-1254640444"
+      label="OmniboxEnableClipboardProviderTextSuggestions:disabled"/>
   <int value="-1254070521" label="enable-slimming-paint-invalidation"/>
   <int value="-1253608371" label="IncognitoStrings:disabled"/>
   <int value="-1252976780" label="ShillSandboxing:disabled"/>
@@ -35728,6 +35730,8 @@ from previous Chrome versions.
   <int value="-879055117" label="ClipboardContentSetting:enabled"/>
   <int value="-879031960" label="FetchKeepaliveTimeoutSetting:disabled"/>
   <int value="-876148583" label="ArcBootCompletedBroadcast:disabled"/>
+  <int value="-875217114"
+      label="OmniboxEnableClipboardProviderTextSuggestions:enabled"/>
   <int value="-874602599" label="HorizontalTabSwitcherAndroid:enabled"/>
   <int value="-872764392" label="ContextualSuggestionsBottomSheet:disabled"/>
   <int value="-872302695" label="PeriodicBackgroundSync:enabled"/>

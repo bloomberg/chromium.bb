@@ -4581,6 +4581,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kAndroidSetupSearchEngine)},
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+    {"enable-clipboard-provider-text-suggestions",
+     flag_descriptions::kEnableClipboardProviderTextSuggestionsName,
+     flag_descriptions::kEnableClipboardProviderTextSuggestionsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kEnableClipboardProviderTextSuggestions)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -1065,6 +1065,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "enable-clipboard-provider-text-suggestions",
+    "owners": [ "gangwu", "chromium-omnibox-team"],
+    "expiry_milestone": 84
+  },
+  {
     "name": "enable-close-tab-suggestions",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 82
