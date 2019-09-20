@@ -44,7 +44,7 @@ export class TestGroup<F extends Fixture> implements RunCaseIterable {
     }
 
     if (this.seen.has(name)) {
-      throw new Error('Duplicate test name');
+      throw new Error(`Duplicate test name: ${name}`);
     }
     this.seen.add(name);
   }
