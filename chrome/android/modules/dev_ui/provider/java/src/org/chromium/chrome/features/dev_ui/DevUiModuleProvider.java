@@ -7,7 +7,6 @@ package org.chromium.chrome.features.dev_ui;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.annotations.UsedByReflection;
 
 /** Helpers for DevUI DFM installation. */
@@ -33,8 +32,7 @@ public class DevUiModuleProvider {
         DevUiModule.install((success) -> {
             Log.i(TAG, "Install status: %s", success);
             if (mNativeDevUiModuleProvider != 0) {
-                DevUiModuleProviderJni.get().onInstallResult(
-                        mNativeDevUiModuleProvider, DevUiModuleProvider.this, success);
+                nativeOnInstallResult(mNativeDevUiModuleProvider, success);
             }
         });
     }
@@ -44,9 +42,5 @@ public class DevUiModuleProvider {
         mNativeDevUiModuleProvider = 0;
     }
 
-    @NativeMethods
-    interface Natives {
-        void onInstallResult(
-                long nativeDevUiModuleProvider, DevUiModuleProvider caller, boolean success);
-    }
+    private native void nativeOnInstallResult(long nativeDevUiModuleProvider, boolean success);
 }

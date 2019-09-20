@@ -12,7 +12,6 @@ import androidx.annotation.NonNull;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.io.UnsupportedEncodingException;
@@ -77,7 +76,7 @@ public class UrlUtilities {
      * @return True if the URI's scheme is one that ContentView can handle.
      */
     public static boolean isAcceptedScheme(String uri) {
-        return UrlUtilitiesJni.get().isAcceptedScheme(uri);
+        return nativeIsAcceptedScheme(uri);
     }
 
     /**
@@ -86,7 +85,7 @@ public class UrlUtilities {
      * @return True if the URI is valid for Intent fallback navigation.
      */
     public static boolean isValidForIntentFallbackNavigation(String uri) {
-        return UrlUtilitiesJni.get().isValidForIntentFallbackNavigation(uri);
+        return nativeIsValidForIntentFallbackNavigation(uri);
     }
 
     /**
@@ -95,7 +94,7 @@ public class UrlUtilities {
      * @return True if the URI's scheme is one that Chrome can download.
      */
     public static boolean isDownloadableScheme(String uri) {
-        return UrlUtilitiesJni.get().isDownloadable(uri);
+        return nativeIsDownloadable(uri);
     }
 
     /**
@@ -146,8 +145,7 @@ public class UrlUtilities {
      */
     public static boolean sameDomainOrHost(
             String primaryUrl, String secondaryUrl, boolean includePrivateRegistries) {
-        return UrlUtilitiesJni.get().sameDomainOrHost(
-                primaryUrl, secondaryUrl, includePrivateRegistries);
+        return nativeSameDomainOrHost(primaryUrl, secondaryUrl, includePrivateRegistries);
     }
 
     /**
@@ -164,27 +162,27 @@ public class UrlUtilities {
      */
     public static String getDomainAndRegistry(String uri, boolean includePrivateRegistries) {
         if (TextUtils.isEmpty(uri)) return uri;
-        return UrlUtilitiesJni.get().getDomainAndRegistry(uri, includePrivateRegistries);
+        return nativeGetDomainAndRegistry(uri, includePrivateRegistries);
     }
 
     /** Returns whether a URL is within another URL's scope. */
     @VisibleForTesting
     public static boolean isUrlWithinScope(String url, String scopeUrl) {
-        return UrlUtilitiesJni.get().isUrlWithinScope(url, scopeUrl);
+        return nativeIsUrlWithinScope(url, scopeUrl);
     }
 
     /** @return whether two URLs match, ignoring the #fragment. */
     @VisibleForTesting
     public static boolean urlsMatchIgnoringFragments(String url, String url2) {
         if (TextUtils.equals(url, url2)) return true;
-        return UrlUtilitiesJni.get().urlsMatchIgnoringFragments(url, url2);
+        return nativeUrlsMatchIgnoringFragments(url, url2);
     }
 
     /** @return whether the #fragmant differs in two URLs. */
     @VisibleForTesting
     public static boolean urlsFragmentsDiffer(String url, String url2) {
         if (TextUtils.equals(url, url2)) return false;
-        return UrlUtilitiesJni.get().urlsFragmentsDiffer(url, url2);
+        return nativeUrlsFragmentsDiffer(url, url2);
     }
 
     /**
@@ -360,28 +358,23 @@ public class UrlUtilities {
         return noScheme;
     }
 
-    @NativeMethods
-    public interface Natives {
-        boolean isDownloadable(String url);
-        boolean isValidForIntentFallbackNavigation(String url);
-        boolean isAcceptedScheme(String url);
-        boolean sameDomainOrHost(
-                String primaryUrl, String secondaryUrl, boolean includePrivateRegistries);
-        String getDomainAndRegistry(String url, boolean includePrivateRegistries);
-        /** Returns whether the given URL uses the Google.com domain. */
-        boolean isGoogleDomainUrl(String url, boolean allowNonStandardPort);
+    private static native boolean nativeIsDownloadable(String url);
+    private static native boolean nativeIsValidForIntentFallbackNavigation(String url);
+    private static native boolean nativeIsAcceptedScheme(String url);
+    private static native boolean nativeSameDomainOrHost(
+            String primaryUrl, String secondaryUrl, boolean includePrivateRegistries);
+    private static native String nativeGetDomainAndRegistry(
+            String url, boolean includePrivateRegistries);
+    /** Returns whether the given URL uses the Google.com domain. */
+    public static native boolean nativeIsGoogleDomainUrl(String url, boolean allowNonStandardPort);
+    /** Returns whether the given URL is a Google.com domain or sub-domain. */
+    public static native boolean nativeIsGoogleSubDomainUrl(String url);
+    /** Returns whether the given URL is a Google.com Search URL. */
+    public static native boolean nativeIsGoogleSearchUrl(String url);
+    /** Returns whether the given URL is the Google Web Search URL. */
+    public static native boolean nativeIsGoogleHomePageUrl(String url);
 
-        /** Returns whether the given URL is a Google.com domain or sub-domain. */
-        boolean isGoogleSubDomainUrl(String url);
-
-        /** Returns whether the given URL is a Google.com Search URL. */
-        boolean isGoogleSearchUrl(String url);
-
-        /** Returns whether the given URL is the Google Web Search URL. */
-        boolean isGoogleHomePageUrl(String url);
-
-        boolean isUrlWithinScope(String url, String scopeUrl);
-        boolean urlsMatchIgnoringFragments(String url, String url2);
-        boolean urlsFragmentsDiffer(String url, String url2);
-    }
+    private static native boolean nativeIsUrlWithinScope(String url, String scopeUrl);
+    private static native boolean nativeUrlsMatchIgnoringFragments(String url, String url2);
+    private static native boolean nativeUrlsFragmentsDiffer(String url, String url2);
 }

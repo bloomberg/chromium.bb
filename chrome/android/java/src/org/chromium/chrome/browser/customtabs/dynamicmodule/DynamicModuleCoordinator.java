@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.util.UrlUtilitiesJni;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -423,7 +422,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         if (!UrlConstants.HTTPS_SCHEME.equals(scheme)) {
             return false;
         }
-        if (!UrlUtilitiesJni.get().isGoogleDomainUrl(url, sAllowNonStandardPortNumber)) {
+        if (!UrlUtilities.nativeIsGoogleDomainUrl(url, sAllowNonStandardPortNumber)) {
             return false;
         }
         return true;
