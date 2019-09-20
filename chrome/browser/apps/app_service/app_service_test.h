@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_APP_SERVICE_APP_SERVICE_TEST_H_
-#define CHROME_BROWSER_UI_APP_LIST_APP_SERVICE_APP_SERVICE_TEST_H_
+#ifndef CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_TEST_H_
+#define CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_TEST_H_
 
 #include <memory>
 #include <string>
@@ -17,11 +17,11 @@ class Connector;
 class Service;
 }  // namespace service_manager
 
-namespace apps {
-class AppServiceProxy;
-}
-
 class Profile;
+
+namespace apps {
+
+class AppServiceProxy;
 
 // Helper class to initialize AppService in unit tests.
 class AppServiceTest {
@@ -39,7 +39,7 @@ class AppServiceTest {
 
  private:
   service_manager::Connector* app_service_proxy_connector_ = nullptr;
-  apps::AppServiceProxy* app_service_proxy_ = nullptr;
+  AppServiceProxy* app_service_proxy_ = nullptr;
 
   service_manager::TestConnectorFactory test_connector_factory_;
   std::unique_ptr<service_manager::Service> app_service_;
@@ -47,4 +47,6 @@ class AppServiceTest {
   DISALLOW_COPY_AND_ASSIGN(AppServiceTest);
 };
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_APP_SERVICE_APP_SERVICE_TEST_H_
+}  // namespace apps
+
+#endif  // CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_TEST_H_

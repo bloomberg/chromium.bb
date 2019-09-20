@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/app_service/app_service_test.h"
+#include "chrome/browser/apps/app_service/app_service_test.h"
 
 #include "base/run_loop.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -10,7 +10,8 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/app_service.h"
 #include "chrome/services/app_service/public/mojom/constants.mojom.h"
-#include "testing/gtest/include/gtest/gtest.h"
+
+namespace apps {
 
 AppServiceTest::AppServiceTest() = default;
 
@@ -38,3 +39,5 @@ void AppServiceTest::FlushMojoCallsForAppService() {
     app_service_proxy_->FlushMojoCallsForTesting();
   }
 }
+
+}  // namespace apps
