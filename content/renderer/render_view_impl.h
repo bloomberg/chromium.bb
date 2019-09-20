@@ -142,7 +142,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::WebView* webview();
   const blink::WebView* webview() const;
 
-  // Returns the RenderWidget for this RenderView.
+  // Returns the RenderWidget owned by this RenderView. Can be nullptr if the
+  // RenderView does not own a RenderWidget [e.g. for remote main frame in
+  // future].
   RenderWidget* GetWidget();
   const RenderWidget* GetWidget() const;
 
