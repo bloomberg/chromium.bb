@@ -83,8 +83,7 @@ public class LoadStatusRecorder {
 
     private void recordWithProcessType(int sample) {
         if (mProcessType == LibraryProcessType.PROCESS_BROWSER
-                || mProcessType == LibraryProcessType.PROCESS_WEBVIEW
-                || mProcessType == LibraryProcessType.PROCESS_WEBLAYER) {
+                || mProcessType == LibraryProcessType.PROCESS_WEBVIEW) {
             sample |= LoadLibraryStatus.IS_BROWSER;
         }
         mHistogramSample.record(sample);

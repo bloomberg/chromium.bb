@@ -5,11 +5,9 @@
 #ifndef WEBLAYER_APP_JNI_ONLOAD_H_
 #define WEBLAYER_APP_JNI_ONLOAD_H_
 
-#include <string>
-
 namespace weblayer {
 
-bool OnJNIOnLoadInit(const std::string& pak_name);
+bool OnJNIOnLoadInit();
 
 }  // namespace weblayer
 

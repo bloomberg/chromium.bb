@@ -7,7 +7,6 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "chrome/app/android/chrome_jni_onload.h"
-#include "weblayer/app/jni_onload.h"
 
 namespace {
 
@@ -20,10 +19,6 @@ bool NativeInit(base::android::LibraryProcessType library_process_type) {
     case base::android::PROCESS_BROWSER:
     case base::android::PROCESS_CHILD:
       return android::OnJNIOnLoadInit();
-      break;
-    case base::android::PROCESS_WEBLAYER:
-    case base::android::PROCESS_WEBLAYER_CHILD:
-      return weblayer::OnJNIOnLoadInit("resources.pak");
       break;
     default:
       NOTREACHED();
