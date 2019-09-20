@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/layout/flex_layout_types_internal.h"
+#include "ui/views/layout/normalized_geometry.h"
 
 #include <algorithm>
 #include <tuple>
@@ -16,7 +16,7 @@
 #include "ui/views/layout/flex_layout_types.h"
 
 namespace views {
-namespace internal {
+namespace layout {
 
 namespace {
 
@@ -379,5 +379,5 @@ gfx::Rect Denormalize(LayoutOrientation orientation,
                    Denormalize(orientation, bounds.size()));
 }
 
-}  // namespace internal
+}  // namespace layout
 }  // namespace views

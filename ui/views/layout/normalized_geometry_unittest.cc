@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/layout/flex_layout_types_internal.h"
+#include "ui/views/layout/normalized_geometry.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace views {
-namespace internal {
+namespace layout {
 
 TEST(NormalizedRectTest, Inset_NormalizedInsets) {
   NormalizedRect rect(1, 2, 10, 11);
@@ -46,5 +46,5 @@ TEST(NormalizedRectTest, Inset_Negative) {
   EXPECT_EQ(17, rect.size_cross());
 }
 
-}  // namespace internal
+}  // namespace layout
 }  // namespace views

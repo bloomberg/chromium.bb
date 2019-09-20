@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/layout/animating_layout_manager.h"
+#include "ui/views/layout/animating_layout_manager.h"
 
 #include <utility>
 #include <vector>
@@ -10,7 +10,6 @@
 #include "base/scoped_observer.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/views/layout/interpolating_layout_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_test_api.h"
 #include "ui/views/layout/flex_layout.h"
@@ -19,23 +18,7 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
-// TODO(dfried): Remove these using statements when we migrate this class to
-// ui/views.
-using views::FlexLayout;
-using views::FlexSpecification;
-using views::kFlexBehaviorKey;
-using views::kMarginsKey;
-using views::LayoutAlignment;
-using views::LayoutManager;
-using views::LayoutManagerBase;
-using views::LayoutOrientation;
-using views::MaximumFlexSizeRule;
-using views::MinimumFlexSizeRule;
-using views::SizeBounds;
-using views::View;
-using views::ViewObserver;
-using views::ViewsTestBase;
-using views::Widget;
+namespace views {
 
 using ProposedLayout = LayoutManagerBase::ProposedLayout;
 
@@ -222,7 +205,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
   ProposedLayout expected =
-      InterpolatingLayoutManager::Interpolate(0.25, layout1(), layout2());
+      LayoutManagerBase::Interpolate(0.25, layout1(), layout2());
   EXPECT_TRUE(layout()->is_animating());
   EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
@@ -230,7 +213,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance again.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  expected = InterpolatingLayoutManager::Interpolate(0.5, layout1(), layout2());
+  expected = LayoutManagerBase::Interpolate(0.5, layout1(), layout2());
   EXPECT_TRUE(layout()->is_animating());
   EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
@@ -343,14 +326,14 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->Layout();
   ProposedLayout expected =
-      InterpolatingLayoutManager::Interpolate(0.25, layout1(), layout2());
+      LayoutManagerBase::Interpolate(0.25, layout1(), layout2());
   EXPECT_TRUE(layout()->is_animating());
   EnsureLayout(expected);
 
   // Advance again.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->Layout();
-  expected = InterpolatingLayoutManager::Interpolate(0.5, layout1(), layout2());
+  expected = LayoutManagerBase::Interpolate(0.5, layout1(), layout2());
   EXPECT_TRUE(layout()->is_animating());
   EnsureLayout(expected);
 
@@ -394,8 +377,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.25, initial_layout, final_layout);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.25, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[1].child_view, child(1));
   expected.child_layouts[1].visible = true;
   expected.child_layouts[1].bounds = {
@@ -411,8 +394,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
-                                                     final_layout);
+  expected = LayoutManagerBase::Interpolate(0.5, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[1].child_view, child(1));
   expected.child_layouts[1].visible = true;
   expected.child_layouts[1].bounds = {
@@ -428,8 +410,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  expected = InterpolatingLayoutManager::Interpolate(0.75, initial_layout,
-                                                     final_layout);
+  expected = LayoutManagerBase::Interpolate(0.75, initial_layout, final_layout);
   // At this point the layout is still animating but the middle view is below
   // zero in size so it will disappear.
   EXPECT_TRUE(layout()->is_animating());
@@ -476,8 +457,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.25, initial_layout, final_layout);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.25, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[1].child_view, child(1));
   expected.child_layouts[1].visible = true;
   expected.child_layouts[1].bounds = {
@@ -493,8 +474,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
-                                                     final_layout);
+  expected = LayoutManagerBase::Interpolate(0.5, initial_layout, final_layout);
   // At this point the layout is still animating but the middle view is below
   // its minimum size so it will disappear.
   EXPECT_TRUE(layout()->is_animating());
@@ -541,8 +521,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.25, initial_layout, final_layout);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.25, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[0].child_view, child(0));
   expected.child_layouts[0].visible = true;
   expected.child_layouts[0].bounds = {
@@ -556,8 +536,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
-                                                     final_layout);
+  expected = LayoutManagerBase::Interpolate(0.5, initial_layout, final_layout);
   // At this point the layout is still animating but the middle view is below
   // its minimum size so it will disappear.
   EXPECT_TRUE(layout()->is_animating());
@@ -605,8 +584,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->SetSize(view()->GetPreferredSize());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.5, initial_layout, final_layout);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.5, initial_layout, final_layout);
   // At this point the layout is still animating but the middle view is below
   // its minimum size so it will not be visible.
   EXPECT_TRUE(layout()->is_animating());
@@ -616,8 +595,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  expected = InterpolatingLayoutManager::Interpolate(0.75, initial_layout,
-                                                     final_layout);
+  expected = LayoutManagerBase::Interpolate(0.75, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[2].child_view, child(2));
   expected.child_layouts[2].visible = true;
   expected.child_layouts[2].bounds = {
@@ -670,8 +648,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.25, initial_layout, final_layout);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.25, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[2].child_view, child(2));
   expected.child_layouts[2].visible = true;
   expected.child_layouts[2].bounds = {
@@ -687,8 +665,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->SetSize(view()->GetPreferredSize());
-  expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
-                                                     final_layout);
+  expected = LayoutManagerBase::Interpolate(0.5, initial_layout, final_layout);
   // At this point the layout is still animating but the middle view is below
   // its minimum size so it will disappear.
   EXPECT_TRUE(layout()->is_animating());
@@ -735,8 +712,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->Layout();
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.25, initial_layout, final_layout);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.25, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[2].child_view, child(2));
   expected.child_layouts[2].visible = true;
   expected.child_layouts[2].bounds = {
@@ -751,8 +728,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->Layout();
-  expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
-                                                     final_layout);
+  expected = LayoutManagerBase::Interpolate(0.5, initial_layout, final_layout);
   // At this point the layout is still animating but the middle view is below
   // its minimum size so it will disappear.
   EXPECT_TRUE(layout()->is_animating());
@@ -1053,8 +1029,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeOutOnVisibilitySet) {
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.5, expected_start, expected_end);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.5, expected_start, expected_end);
   expected.child_layouts[0].visible = true;
   expected.child_layouts[0].bounds = expected_start.child_layouts[0].bounds;
   expected.child_layouts[0].bounds.set_width(
@@ -1110,8 +1086,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeInOnVisibilitySet) {
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.5, expected_start, expected_end);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.5, expected_start, expected_end);
   expected.child_layouts[0].visible = true;
   expected.child_layouts[0].bounds = expected_end.child_layouts[0].bounds;
   expected.child_layouts[0].bounds.set_width(
@@ -1172,7 +1148,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeInOnAdded) {
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
   ProposedLayout expected =
-      InterpolatingLayoutManager::Interpolate(0.5, after_add, expected_end);
+      LayoutManagerBase::Interpolate(0.5, after_add, expected_end);
   expected.child_layouts[0].visible = true;
   expected.child_layouts[0].bounds = expected_end.child_layouts[0].bounds;
   expected.child_layouts[0].bounds.set_width(
@@ -1228,8 +1204,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeIn) {
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.5, expected_start, expected_end);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.5, expected_start, expected_end);
   expected.child_layouts[0].visible = true;
   expected.child_layouts[0].bounds = expected_end.child_layouts[0].bounds;
   expected.child_layouts[0].bounds.set_width(
@@ -1284,8 +1260,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeOut) {
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.5, expected_start, expected_end);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.5, expected_start, expected_end);
   expected.child_layouts[0].visible = true;
   expected.child_layouts[0].bounds = expected_start.child_layouts[0].bounds;
   expected.child_layouts[0].bounds.set_width(
@@ -1347,7 +1323,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeOut_NoCrashOnRemove) {
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
   ProposedLayout expected =
-      InterpolatingLayoutManager::Interpolate(0.5, after_remove, expected_end);
+      LayoutManagerBase::Interpolate(0.5, after_remove, expected_end);
   EnsureLayout(expected);
 
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
@@ -1398,8 +1374,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeOut_IgnoreChildView) {
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.5, expected_start, expected_end);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.5, expected_start, expected_end);
   EnsureLayout(expected);
 
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
@@ -1444,15 +1420,14 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_SlideAfterViewHidden) {
 
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.0, expected_start, expected_end);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.0, expected_start, expected_end);
   EnsureLayout(expected);
 
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  expected = InterpolatingLayoutManager::Interpolate(0.5, expected_start,
-                                                     expected_end);
+  expected = LayoutManagerBase::Interpolate(0.5, expected_start, expected_end);
   EnsureLayout(expected);
 
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
@@ -1497,15 +1472,14 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_SlideAfterViewRemoved) {
 
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.0, expected_start, expected_end);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.0, expected_start, expected_end);
   EnsureLayout(expected);
 
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  expected = InterpolatingLayoutManager::Interpolate(0.5, expected_start,
-                                                     expected_end);
+  expected = LayoutManagerBase::Interpolate(0.5, expected_start, expected_end);
   EnsureLayout(expected);
 
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
@@ -1555,8 +1529,8 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_RedirectAnimation) {
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.5, expected_start, expected_end1);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.5, expected_start, expected_end1);
   EnsureLayout(expected);
 
   child(2)->SetVisible(false);
@@ -1564,8 +1538,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_RedirectAnimation) {
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  expected =
-      InterpolatingLayoutManager::Interpolate(0.5, expected, expected_end2);
+  expected = LayoutManagerBase::Interpolate(0.5, expected, expected_end2);
   EnsureLayout(expected);
 
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
@@ -1615,22 +1588,20 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_ResetAnimation) {
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(900));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
-      0.9, expected_start, expected_end1);
+  ProposedLayout expected =
+      LayoutManagerBase::Interpolate(0.9, expected_start, expected_end1);
   EnsureLayout(expected);
 
   child(2)->SetVisible(false);
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  expected =
-      InterpolatingLayoutManager::Interpolate(0.0, expected, expected_end2);
+  expected = LayoutManagerBase::Interpolate(0.0, expected, expected_end2);
   EnsureLayout(expected);
 
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
-  expected =
-      InterpolatingLayoutManager::Interpolate(0.5, expected, expected_end2);
+  expected = LayoutManagerBase::Interpolate(0.5, expected, expected_end2);
   EnsureLayout(expected);
 
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
@@ -2389,3 +2360,5 @@ TEST_F(AnimatingLayoutManagerSequenceTest,
 }
 
 #endif  // !defined(OS_MACOSX)
+
+}  // namespace views

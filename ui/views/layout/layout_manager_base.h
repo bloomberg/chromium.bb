@@ -87,6 +87,13 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   int GetPreferredHeightForWidth(const View* host, int width) const override;
   void Layout(View* host) override;
 
+  // Returns a layout that's linearly interpolated between |start| and |target|
+  // by |value|, which should be between 0 and 1. See
+  // gfx::Tween::LinearIntValueBetween() for the exact math involved.
+  static ProposedLayout Interpolate(double value,
+                                    const ProposedLayout& start,
+                                    const ProposedLayout& target);
+
  protected:
   LayoutManagerBase();
 

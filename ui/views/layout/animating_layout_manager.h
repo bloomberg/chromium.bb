@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_LAYOUT_ANIMATING_LAYOUT_MANAGER_H_
-#define CHROME_BROWSER_UI_VIEWS_LAYOUT_ANIMATING_LAYOUT_MANAGER_H_
+#ifndef UI_VIEWS_LAYOUT_ANIMATING_LAYOUT_MANAGER_H_
+#define UI_VIEWS_LAYOUT_ANIMATING_LAYOUT_MANAGER_H_
 
 #include <memory>
 #include <utility>
@@ -13,10 +13,13 @@
 #include "base/time/time.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/layout/layout_manager_base.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class AnimationContainer;
 }  // namespace gfx
+
+namespace views {
 
 // Layout manager which explicitly animates its child views and/or its preferred
 // size when the target layout changes (the target layout being provided by a
@@ -45,7 +48,7 @@ class AnimationContainer;
 //       std::make_unique<FlexLayout>());
 //   flex_layout->SetOrientation(LayoutOrientation::kHorizontal)
 //              .SetCollapseMargins(true)
-//              .SetDefault(views::kMarginsKey, gfx::Insets(5));
+//              .SetDefault(kMarginsKey, gfx::Insets(5));
 //
 // Now, when you want to add (or remove) a button and animate, you just call:
 //
@@ -59,9 +62,9 @@ class AnimationContainer;
 // being added to a widget will not result in animation. If initial setup of the
 // host view happens after being added to a widget, you can call ResetLayout()
 // to prevent changes made during setup from animating.
-class AnimatingLayoutManager : public views::LayoutManagerBase {
+class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
  public:
-  class Observer : public base::CheckedObserver {
+  class VIEWS_EXPORT Observer : public base::CheckedObserver {
    public:
     virtual void OnLayoutIsAnimatingChanged(AnimatingLayoutManager* source,
                                             bool is_animating) = 0;
@@ -106,8 +109,8 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   gfx::Tween::Type tween_type() const { return tween_type_; }
   AnimatingLayoutManager& SetTweenType(gfx::Tween::Type tween_type);
 
-  views::LayoutOrientation orientation() const { return orientation_; }
-  AnimatingLayoutManager& SetOrientation(views::LayoutOrientation orientation);
+  LayoutOrientation orientation() const { return orientation_; }
+  AnimatingLayoutManager& SetOrientation(LayoutOrientation orientation);
 
   FadeInOutMode default_fade_mode() const { return default_fade_mode_; }
   AnimatingLayoutManager& SetDefaultFadeMode(FadeInOutMode default_fade_mode);
@@ -133,25 +136,23 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   // Causes the specified child view to fade out and become hidden. Alternative
   // to directly hiding the view (which will have the same effect, but could
   // cause visual flicker if the view paints before it can re-layout.
-  void FadeOut(views::View* child_view);
+  void FadeOut(View* child_view);
 
   // Causes the specified child view to fade in and become visible. Alternative
   // to directly showing the view (which will have the same effect, but could
   // cause visual flicker if the view paints before it can re-layout.
-  void FadeIn(views::View* child_view);
+  void FadeIn(View* child_view);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   bool HasObserver(Observer* observer) const;
 
   // LayoutManagerBase:
-  gfx::Size GetPreferredSize(const views::View* host) const override;
-  gfx::Size GetMinimumSize(const views::View* host) const override;
-  int GetPreferredHeightForWidth(const views::View* host,
-                                 int width) const override;
-  void Layout(views::View* host) override;
-  std::vector<views::View*> GetChildViewsInPaintOrder(
-      const views::View* host) const override;
+  gfx::Size GetPreferredSize(const View* host) const override;
+  gfx::Size GetMinimumSize(const View* host) const override;
+  int GetPreferredHeightForWidth(const View* host, int width) const override;
+  void Layout(View* host) override;
+  std::vector<View*> GetChildViewsInPaintOrder(const View* host) const override;
 
   // Queues an action to take place after the current animation completes.
   // Must be called during an animation. If |delayed_action| needs access to
@@ -176,8 +177,8 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
  protected:
   // LayoutManagerBase:
   ProposedLayout CalculateProposedLayout(
-      const views::SizeBounds& size_bounds) const override;
-  void OnInstalled(views::View* host) override;
+      const SizeBounds& size_bounds) const override;
+  void OnInstalled(View* host) override;
   void OnLayoutChanged() override;
 
  private:
@@ -242,7 +243,7 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   gfx::Tween::Type tween_type_ = gfx::Tween::EASE_IN_OUT;
 
   // The layout orientation, used for side and scale fades.
-  views::LayoutOrientation orientation_ = views::LayoutOrientation::kHorizontal;
+  LayoutOrientation orientation_ = LayoutOrientation::kHorizontal;
 
   // The default fade mode.
   FadeInOutMode default_fade_mode_ = FadeInOutMode::kHide;
@@ -277,4 +278,6 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   DISALLOW_COPY_AND_ASSIGN(AnimatingLayoutManager);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_LAYOUT_ANIMATING_LAYOUT_MANAGER_H_
+}  // namespace views
+
+#endif  // UI_VIEWS_LAYOUT_ANIMATING_LAYOUT_MANAGER_H_

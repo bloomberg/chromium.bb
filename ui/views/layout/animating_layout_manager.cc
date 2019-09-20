@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/layout/animating_layout_manager.h"
+#include "ui/views/layout/animating_layout_manager.h"
 
 #include <algorithm>
 #include <map>
@@ -11,46 +11,44 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "chrome/browser/ui/views/layout/interpolating_layout_manager.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/animation/animation_delegate_views.h"
-#include "ui/views/layout/flex_layout_types_internal.h"
+#include "ui/views/layout/normalized_geometry.h"
 #include "ui/views/view.h"
 
-// TODO(dfried): move AnimatingLayoutManager into ui/views and change
-// flex_layout_types_internal to layout_types_internal so that these internal
-// classes are appropriately used.
-using views::internal::Denormalize;
-using views::internal::Normalize;
-using views::internal::NormalizedInsets;
-using views::internal::NormalizedRect;
-using views::internal::NormalizedSize;
+namespace views {
+
+using layout::Denormalize;
+using layout::Normalize;
+using layout::NormalizedInsets;
+using layout::NormalizedRect;
+using layout::NormalizedSize;
 
 // Holds data about a view that is fading in or out as part of an animation.
 struct AnimatingLayoutManager::LayoutFadeInfo {
   // Whether the view is fading in or out.
   bool fading_in = false;
   // The child view which is fading.
-  views::View* child_view = nullptr;
+  View* child_view = nullptr;
   // The view previous (leading side) to the fading view which is in both the
   // starting and target layout, or null if none.
-  views::View* prev_view = nullptr;
+  View* prev_view = nullptr;
   // The view next (trailing side) to the fading view which is in both the
   // starting and target layout, or null if none.
-  views::View* next_view = nullptr;
+  View* next_view = nullptr;
   // The full-size bounds, normalized to the orientation of the layout manaer,
   // that |child_view| starts with, if fading out, or ends with, if fading in.
   NormalizedRect reference_bounds;
   // The offset from the end of |prev_view| and the start of |next_view|. Insets
   // may be negative if the views overlap.
-  views::Inset1D offsets;
+  Inset1D offsets;
 };
 
 // Manages the animation and various callbacks from the animation system that
 // are required to update the layout during animations.
 class AnimatingLayoutManager::AnimationDelegate
-    : public views::AnimationDelegateViews {
+    : public AnimationDelegateViews {
  public:
   explicit AnimationDelegate(AnimatingLayoutManager* layout_manager);
   ~AnimationDelegate() override = default;
@@ -80,16 +78,16 @@ class AnimatingLayoutManager::AnimationDelegate
 
  private:
   // Observer used to watch for the host view being parented to a widget.
-  class ViewWidgetObserver : public views::ViewObserver {
+  class ViewWidgetObserver : public ViewObserver {
    public:
     explicit ViewWidgetObserver(AnimationDelegate* animation_delegate)
         : animation_delegate_(animation_delegate) {}
 
-    void OnViewAddedToWidget(views::View* observed_view) override {
+    void OnViewAddedToWidget(View* observed_view) override {
       animation_delegate_->MakeReadyForAnimation();
     }
 
-    void OnViewIsDeleting(views::View* observed_view) override {
+    void OnViewIsDeleting(View* observed_view) override {
       if (animation_delegate_->scoped_observer_.IsObserving(observed_view))
         animation_delegate_->scoped_observer_.Remove(observed_view);
     }
@@ -109,8 +107,7 @@ class AnimatingLayoutManager::AnimationDelegate
   AnimatingLayoutManager* const target_layout_manager_;
   std::unique_ptr<gfx::SlideAnimation> animation_;
   ViewWidgetObserver view_widget_observer_{this};
-  ScopedObserver<views::View, views::ViewObserver> scoped_observer_{
-      &view_widget_observer_};
+  ScopedObserver<View, ViewObserver> scoped_observer_{&view_widget_observer_};
 };
 
 AnimatingLayoutManager::AnimationDelegate::AnimationDelegate(
@@ -119,7 +116,7 @@ AnimatingLayoutManager::AnimationDelegate::AnimationDelegate(
       target_layout_manager_(layout_manager),
       animation_(std::make_unique<gfx::SlideAnimation>(this)) {
   animation_->SetContainer(new gfx::AnimationContainer());
-  views::View* const host_view = layout_manager->host_view();
+  View* const host_view = layout_manager->host_view();
   DCHECK(host_view);
   if (host_view->GetWidget())
     MakeReadyForAnimation();
@@ -208,7 +205,7 @@ AnimatingLayoutManager& AnimatingLayoutManager::SetTweenType(
 }
 
 AnimatingLayoutManager& AnimatingLayoutManager::SetOrientation(
-    views::LayoutOrientation orientation) {
+    LayoutOrientation orientation) {
   if (orientation_ != orientation) {
     orientation_ = orientation;
     ResetLayout();
@@ -242,7 +239,7 @@ void AnimatingLayoutManager::ResetLayout() {
   set_cached_layout_size(target_size);
 }
 
-void AnimatingLayoutManager::FadeOut(views::View* child_view) {
+void AnimatingLayoutManager::FadeOut(View* child_view) {
   DCHECK(child_view);
   DCHECK(child_view->parent());
   DCHECK_EQ(host_view(), child_view->parent());
@@ -257,7 +254,7 @@ void AnimatingLayoutManager::FadeOut(views::View* child_view) {
                                                        false);
 }
 
-void AnimatingLayoutManager::FadeIn(views::View* child_view) {
+void AnimatingLayoutManager::FadeIn(View* child_view) {
   DCHECK(child_view);
   DCHECK(child_view->parent());
   DCHECK_EQ(host_view(), child_view->parent());
@@ -285,8 +282,7 @@ bool AnimatingLayoutManager::HasObserver(Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
-gfx::Size AnimatingLayoutManager::GetPreferredSize(
-    const views::View* host) const {
+gfx::Size AnimatingLayoutManager::GetPreferredSize(const View* host) const {
   if (!target_layout_manager())
     return gfx::Size();
   return should_animate_bounds_
@@ -294,8 +290,7 @@ gfx::Size AnimatingLayoutManager::GetPreferredSize(
              : target_layout_manager()->GetPreferredSize(host);
 }
 
-gfx::Size AnimatingLayoutManager::GetMinimumSize(
-    const views::View* host) const {
+gfx::Size AnimatingLayoutManager::GetMinimumSize(const View* host) const {
   if (!target_layout_manager())
     return gfx::Size();
   // TODO(dfried): consider cases where the minimum size might not be just the
@@ -303,7 +298,7 @@ gfx::Size AnimatingLayoutManager::GetMinimumSize(
   return target_layout_manager()->GetMinimumSize(host);
 }
 
-int AnimatingLayoutManager::GetPreferredHeightForWidth(const views::View* host,
+int AnimatingLayoutManager::GetPreferredHeightForWidth(const View* host,
                                                        int width) const {
   if (!target_layout_manager())
     return 0;
@@ -313,7 +308,7 @@ int AnimatingLayoutManager::GetPreferredHeightForWidth(const views::View* host,
              : target_layout_manager()->GetPreferredHeightForWidth(host, width);
 }
 
-void AnimatingLayoutManager::Layout(views::View* host) {
+void AnimatingLayoutManager::Layout(View* host) {
   DCHECK_EQ(host_view(), host);
   // Changing the size of a view directly will lead to a layout call rather
   // than an invalidation. This should reset the layout (but see the note in
@@ -335,15 +330,15 @@ void AnimatingLayoutManager::Layout(views::View* host) {
   }
 }
 
-std::vector<views::View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(
-    const views::View* host) const {
+std::vector<View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(
+    const View* host) const {
   DCHECK_EQ(host_view(), host);
 
   if (!is_animating())
     return LayoutManagerBase::GetChildViewsInPaintOrder(host);
 
-  std::vector<views::View*> result;
-  std::set<views::View*> fading;
+  std::vector<View*> result;
+  std::set<View*> fading;
 
   // Put all fading views to the front of the list (back of the Z-order).
   for (const LayoutFadeInfo& fade_info : fade_infos_) {
@@ -352,7 +347,7 @@ std::vector<views::View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(
   }
 
   // Add the result of the views.
-  for (views::View* child : host->children()) {
+  for (View* child : host->children()) {
     if (!base::Contains(fading, child))
       result.push_back(child);
   }
@@ -386,16 +381,16 @@ void AnimatingLayoutManager::EnableAnimationForTesting() {
   DCHECK(animation_delegate_->ready_to_animate());
 }
 
-views::LayoutManagerBase::ProposedLayout
+LayoutManagerBase::ProposedLayout
 AnimatingLayoutManager::CalculateProposedLayout(
-    const views::SizeBounds& size_bounds) const {
+    const SizeBounds& size_bounds) const {
   // This class directly overrides Layout() so GetProposedLayout() and
   // CalculateProposedLayout() are not called.
   NOTREACHED();
   return ProposedLayout();
 }
 
-void AnimatingLayoutManager::OnInstalled(views::View* host) {
+void AnimatingLayoutManager::OnInstalled(View* host) {
   DCHECK(!animation_delegate_);
   animation_delegate_ = std::make_unique<AnimationDelegate>(this);
 }
@@ -487,13 +482,12 @@ void AnimatingLayoutManager::RunDelayedActions() {
 void AnimatingLayoutManager::UpdateCurrentLayout(double percent) {
   // This drops out any child view elements that don't exist in the target
   // layout. We'll add them back in later.
-  current_layout_ = InterpolatingLayoutManager::Interpolate(
-      percent, starting_layout_, target_layout_);
+  current_layout_ = Interpolate(percent, starting_layout_, target_layout_);
 
   if (default_fade_mode_ == FadeInOutMode::kHide || fade_infos_.empty())
     return;
 
-  std::map<const views::View*, size_t> view_indices;
+  std::map<const View*, size_t> view_indices;
   for (size_t i = 0; i < current_layout_.child_layouts.size(); ++i)
     view_indices.emplace(current_layout_.child_layouts[i].child_view, i);
 
@@ -574,13 +568,13 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
     bool target_visible = false;
   };
 
-  std::map<views::View*, ChildInfo> child_to_info;
-  std::map<int, views::View*> start_leading_edges;
-  std::map<int, views::View*> target_leading_edges;
+  std::map<View*, ChildInfo> child_to_info;
+  std::map<int, View*> start_leading_edges;
+  std::map<int, View*> target_leading_edges;
 
   // Collect some bookkeping info to prevent linear searches later.
 
-  for (views::View* child : host_view()->children()) {
+  for (View* child : host_view()->children()) {
     if (IsChildIncludedInLayout(child, /* include hidden */ true))
       child_to_info.emplace(child, ChildInfo());
   }
@@ -605,7 +599,7 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
     }
   }
 
-  for (views::View* child : host_view()->children()) {
+  for (View* child : host_view()->children()) {
     const auto& index = child_to_info[child];
     if (index.start_visible && index.target_visible) {
       start_leading_edges.emplace(index.start_bounds.origin_main(), child);
@@ -620,7 +614,7 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
   const NormalizedSize target_host_size =
       Normalize(orientation(), target_layout_.host_size);
 
-  for (views::View* child : host_view()->children()) {
+  for (View* child : host_view()->children()) {
     const auto& current = child_to_info[child];
     if (current.start_visible && !current.target_visible) {
       LayoutFadeInfo fade_info;
@@ -682,12 +676,12 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
   }
 }
 
-views::LayoutManagerBase::ChildLayout
-AnimatingLayoutManager::CalculateScaleFade(const LayoutFadeInfo& fade_info,
-                                           base::Optional<size_t> prev_index,
-                                           base::Optional<size_t> next_index,
-                                           double scale_percent,
-                                           bool scale_from_zero) const {
+LayoutManagerBase::ChildLayout AnimatingLayoutManager::CalculateScaleFade(
+    const LayoutFadeInfo& fade_info,
+    base::Optional<size_t> prev_index,
+    base::Optional<size_t> next_index,
+    double scale_percent,
+    bool scale_from_zero) const {
   ChildLayout child_layout;
 
   int leading_reference_point = 0;
@@ -732,12 +726,12 @@ AnimatingLayoutManager::CalculateScaleFade(const LayoutFadeInfo& fade_info,
   return child_layout;
 }
 
-views::LayoutManagerBase::ChildLayout
-AnimatingLayoutManager::CalculateSlideFade(const LayoutFadeInfo& fade_info,
-                                           base::Optional<size_t> prev_index,
-                                           base::Optional<size_t> next_index,
-                                           double scale_percent,
-                                           bool slide_from_leading) const {
+LayoutManagerBase::ChildLayout AnimatingLayoutManager::CalculateSlideFade(
+    const LayoutFadeInfo& fade_info,
+    base::Optional<size_t> prev_index,
+    base::Optional<size_t> next_index,
+    double scale_percent,
+    bool slide_from_leading) const {
   // Fall back to kScaleFromMinimum if there is no edge to slide out from.
   if (!prev_index.has_value() && !next_index.has_value()) {
     return CalculateScaleFade(fade_info, prev_index, next_index, scale_percent,
@@ -796,3 +790,5 @@ AnimatingLayoutManager::CalculateSlideFade(const LayoutFadeInfo& fade_info,
 
   return child_layout;
 }
+
+}  // namespace views

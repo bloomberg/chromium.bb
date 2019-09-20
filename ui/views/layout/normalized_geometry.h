@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_LAYOUT_FLEX_LAYOUT_TYPES_INTERNAL_H_
-#define UI_VIEWS_LAYOUT_FLEX_LAYOUT_TYPES_INTERNAL_H_
+#ifndef UI_VIEWS_LAYOUT_NORMALIZED_GEOMETRY_H_
+#define UI_VIEWS_LAYOUT_NORMALIZED_GEOMETRY_H_
 
 #include <string>
 
@@ -22,10 +22,12 @@ namespace views {
 
 class SizeBounds;
 
-namespace internal {
+// NOTE: Types in this file are intended for use by layout managers, preferably
+// only in ui/views/layout. They are marked as VIEWS_EXPORT for use in unit
+// tests as well as experimental layout managers currently not in the Views
+// library.
 
-// NOTE: classes in this namespace are marked as VIEWS_EXPORT for unit testing
-// purposes only and should not be used outside the views library.
+namespace layout {
 
 // Represents a point in layout space - that is, a point on the main and cross
 // axes of the layout (regardless of whether it is vertically or horizontally
@@ -283,7 +285,7 @@ NormalizedRect VIEWS_EXPORT Normalize(LayoutOrientation orientation,
 gfx::Rect VIEWS_EXPORT Denormalize(LayoutOrientation orientation,
                                    const NormalizedRect& rect);
 
-}  // namespace internal
+}  // namespace layout
 }  // namespace views
 
-#endif  // UI_VIEWS_LAYOUT_FLEX_LAYOUT_TYPES_INTERNAL_H_
+#endif  // UI_VIEWS_LAYOUT_NORMALIZED_GEOMETRY_H_
