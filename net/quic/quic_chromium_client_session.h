@@ -752,7 +752,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void HistogramAndLogMigrationFailure(const NetLogWithSource& net_log,
                                        QuicConnectionMigrationStatus status,
                                        quic::QuicConnectionId connection_id,
-                                       const std::string& reason);
+                                       const char* reason);
   void HistogramAndLogMigrationSuccess(const NetLogWithSource& net_log,
                                        quic::QuicConnectionId connection_id);
 
