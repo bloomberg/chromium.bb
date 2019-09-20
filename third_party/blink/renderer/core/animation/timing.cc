@@ -195,13 +195,15 @@ Timing::CalculatedTiming Timing::CalculateTimings(
     DCHECK_GE(start_offset, 0);
     const base::Optional<double> offset_active_time =
         CalculateOffsetActiveTime(active_duration, active_time, start_offset);
-    const base::Optional<double> iteration_time = CalculateIterationTime(
-        iteration_duration, active_duration, offset_active_time, start_offset,
-        current_phase, *this);
+    const base::Optional<AnimationTimeDelta> iteration_time =
+        CalculateIterationTime(iteration_duration, active_duration,
+                               offset_active_time, start_offset, current_phase,
+                               *this);
     if (iteration_time) {
       // active_time cannot be null if iteration_time is not null.
       DCHECK(active_time);
-      time_to_next_iteration = iteration_duration - iteration_time.value();
+      time_to_next_iteration =
+          iteration_duration - iteration_time->InSecondsF();
       if (active_duration - active_time.value() < time_to_next_iteration)
         time_to_next_iteration = std::numeric_limits<double>::infinity();
     }

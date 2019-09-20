@@ -339,7 +339,7 @@ static inline base::Optional<double> CalculateOffsetActiveTime(
 // the time until the next iteration to optimize scheduling.
 //
 // [0] https://drafts.csswg.org/web-animations-1/#iteration-time-space
-static inline base::Optional<double> CalculateIterationTime(
+static inline base::Optional<AnimationTimeDelta> CalculateIterationTime(
     double iteration_duration,
     double active_duration,
     base::Optional<double> offset_active_time,
@@ -363,7 +363,7 @@ static inline base::Optional<double> CalculateIterationTime(
        specified.iteration_count &&
        EndsOnIterationBoundary(specified.iteration_count,
                                specified.iteration_start)))
-    return iteration_duration;
+    return AnimationTimeDelta::FromSecondsD(iteration_duration);
 
   DCHECK(std::isfinite(offset_active_time.value()));
   double iteration_time = fmod(offset_active_time.value(), iteration_duration);
@@ -372,9 +372,9 @@ static inline base::Optional<double> CalculateIterationTime(
   // https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration-progress
   if (iteration_time == 0 && phase == Timing::kPhaseAfter &&
       active_duration != 0 && offset_active_time != 0)
-    return iteration_duration;
+    return AnimationTimeDelta::FromSecondsD(iteration_duration);
 
-  return iteration_time;
+  return AnimationTimeDelta::FromSecondsD(iteration_time);
 }
 
 }  // namespace blink

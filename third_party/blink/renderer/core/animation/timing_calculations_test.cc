@@ -110,17 +110,21 @@ TEST(AnimationTimingCalculationsTest, IterationTime) {
 
   // if (complex-conditions)...
   EXPECT_EQ(
-      12, CalculateIterationTime(12, 12, 12, 0, Timing::kPhaseActive, timing));
+      AnimationTimeDelta::FromSecondsD(12),
+      CalculateIterationTime(12, 12, 12, 0, Timing::kPhaseActive, timing));
 
   // otherwise
   timing.iteration_count = 10;
   EXPECT_EQ(
-      5, CalculateIterationTime(10, 100, 25, 4, Timing::kPhaseActive, timing));
+      AnimationTimeDelta::FromSecondsD(5),
+      CalculateIterationTime(10, 100, 25, 4, Timing::kPhaseActive, timing));
   EXPECT_EQ(
-      7, CalculateIterationTime(11, 110, 29, 1, Timing::kPhaseActive, timing));
+      AnimationTimeDelta::FromSecondsD(7),
+      CalculateIterationTime(11, 110, 29, 1, Timing::kPhaseActive, timing));
   timing.iteration_start = 1.1;
   EXPECT_EQ(
-      8, CalculateIterationTime(12, 120, 20, 7, Timing::kPhaseActive, timing));
+      AnimationTimeDelta::FromSecondsD(8),
+      CalculateIterationTime(12, 120, 20, 7, Timing::kPhaseActive, timing));
 
   // Edge case for offset_active_time being within epsilon of (active_duration
   // + start_offset). https://crbug.com/962138
@@ -132,7 +136,7 @@ TEST(AnimationTimingCalculationsTest, IterationTime) {
               CalculateIterationTime(iteration_duration, active_duration,
                                      offset_active_time, 0,
                                      Timing::kPhaseActive, timing)
-                  .value(),
+                  ->InSecondsF(),
               std::numeric_limits<float>::epsilon());
 }
 
