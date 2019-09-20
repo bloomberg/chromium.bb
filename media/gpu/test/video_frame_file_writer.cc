@@ -109,7 +109,6 @@ void VideoFrameFileWriter::ProcessVideoFrameTask(
   base::SStringPrintf(&filename, FILE_PATH_LITERAL("frame_%04zu_%dx%d"),
                       frame_index, visible_size.width(), visible_size.height());
 
-#if defined(OS_CHROMEOS)
   // Create VideoFrameMapper if not yet created. The decoder's output pixel
   // format is not known yet when creating the VideoFrameWriter. We can only
   // create the VideoFrameMapper upon receiving the first video frame.
@@ -118,7 +117,6 @@ void VideoFrameFileWriter::ProcessVideoFrameTask(
         VideoFrameMapperFactory::CreateMapper(video_frame->format());
     LOG_ASSERT(video_frame_mapper_) << "Failed to create VideoFrameMapper";
   }
-#endif
 
   switch (output_format_) {
     case OutputFormat::kPNG:
@@ -141,7 +139,7 @@ void VideoFrameFileWriter::WriteVideoFramePNG(
   DCHECK(video_frame_mapper_);
 
   auto mapped_frame = video_frame;
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   if (video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS)
     mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
 #endif
@@ -183,7 +181,7 @@ void VideoFrameFileWriter::WriteVideoFrameYUV(
   DCHECK(video_frame_mapper_);
 
   auto mapped_frame = video_frame;
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   if (video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS)
     mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
 #endif
