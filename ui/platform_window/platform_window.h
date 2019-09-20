@@ -11,6 +11,7 @@
 #include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace gfx {
@@ -82,6 +83,10 @@ class PlatformWindow : public PropertyHandler {
   // implementation always returns ZOrderLevel::kNormal value.
   virtual void SetZOrderLevel(ZOrderLevel order);
   virtual ZOrderLevel GetZOrderLevel() const;
+
+  // Asks the PlatformWindow to stack itself on top of |widget|.
+  virtual void StackAbove(gfx::AcceleratedWidget widget);
+  virtual void StackAtTop();
 };
 
 }  // namespace ui

@@ -71,6 +71,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   gfx::Rect GetRestoredBoundsInPixels() const override;
   void SetZOrderLevel(ZOrderLevel order) override;
   ZOrderLevel GetZOrderLevel() const override;
+  void StackAbove(gfx::AcceleratedWidget widget) override;
+  void StackAtTop() override;
 
  protected:
   PlatformWindowDelegateLinux* platform_window_delegate() const {

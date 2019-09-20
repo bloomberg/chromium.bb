@@ -158,6 +158,14 @@ ZOrderLevel WinWindow::GetZOrderLevel() const {
   return ZOrderLevel::kNormal;
 }
 
+void WinWindow::StackAbove(gfx::AcceleratedWidget widget) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WinWindow::StackAtTop() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 LRESULT WinWindow::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
   MSG msg = {hwnd(),
              message,

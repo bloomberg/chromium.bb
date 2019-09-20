@@ -81,25 +81,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostX11*,
 
 namespace {
 
-// Returns the whole path from |window| to the root.
-std::vector<::Window> GetParentsList(XDisplay* xdisplay, ::Window window) {
-  ::Window parent_win, root_win;
-  Window* child_windows;
-  unsigned int num_child_windows;
-  std::vector<::Window> result;
-
-  while (window) {
-    result.push_back(window);
-    if (!XQueryTree(xdisplay, window, &root_win, &parent_win, &child_windows,
-                    &num_child_windows))
-      break;
-    if (child_windows)
-      XFree(child_windows);
-    window = parent_win;
-  }
-  return result;
-}
-
 class SwapWithNewSizeObserverHelper : public ui::CompositorObserver {
  public:
   using HelperCallback = base::RepeatingCallback<void(const gfx::Size&)>;
@@ -317,44 +298,6 @@ void DesktopWindowTreeHostX11::SetSize(const gfx::Size& requested_size) {
     OnHostResizedInPixels(size_in_pixels);
     ResetWindowRegion();
   }
-}
-
-void DesktopWindowTreeHostX11::StackAbove(aura::Window* window) {
-  XDisplay* display = GetXWindow()->display();
-  ::Window xwindow = GetXWindow()->window();
-
-  if (window && window->GetRootWindow()) {
-    ::Window window_below = window->GetHost()->GetAcceleratedWidget();
-    // Find all parent windows up to the root.
-    std::vector<::Window> window_below_parents =
-        GetParentsList(display, window_below);
-    std::vector<::Window> window_above_parents =
-        GetParentsList(display, xwindow);
-
-    // Find their common ancestor.
-    auto it_below_window = window_below_parents.rbegin();
-    auto it_above_window = window_above_parents.rbegin();
-    for (; it_below_window != window_below_parents.rend() &&
-           it_above_window != window_above_parents.rend() &&
-           *it_below_window == *it_above_window;
-         ++it_below_window, ++it_above_window) {
-    }
-
-    if (it_below_window != window_below_parents.rend() &&
-        it_above_window != window_above_parents.rend()) {
-      // First stack |xwindow| below so Z-order of |window| stays the same.
-      ::Window windows[] = {*it_below_window, *it_above_window};
-      if (XRestackWindows(display, windows, 2) == 0) {
-        // Now stack them properly.
-        std::swap(windows[0], windows[1]);
-        XRestackWindows(display, windows, 2);
-      }
-    }
-  }
-}
-
-void DesktopWindowTreeHostX11::StackAtTop() {
-  GetXWindow()->StackAtTop();
 }
 
 void DesktopWindowTreeHostX11::GetWindowPlacement(

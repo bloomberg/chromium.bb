@@ -102,8 +102,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
             const gfx::Rect& restore_bounds) override;
   bool IsVisible() const override;
   void SetSize(const gfx::Size& requested_size) override;
-  void StackAbove(aura::Window* window) override;
-  void StackAtTop() override;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const override;
   gfx::Rect GetRestoredBounds() const override;

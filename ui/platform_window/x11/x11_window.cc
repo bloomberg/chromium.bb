@@ -238,6 +238,14 @@ ZOrderLevel X11Window::GetZOrderLevel() const {
                               : ui::ZOrderLevel::kNormal;
 }
 
+void X11Window::StackAbove(gfx::AcceleratedWidget widget) {
+  XWindow::StackXWindowAbove(static_cast<::Window>(widget));
+}
+
+void X11Window::StackAtTop() {
+  XWindow::StackXWindowAtTop();
+}
+
 bool X11Window::CanDispatchEvent(const PlatformEvent& xev) {
 #if defined(USE_X11)
   return XWindow::IsTargetedBy(*xev);

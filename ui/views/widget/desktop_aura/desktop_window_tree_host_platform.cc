@@ -290,11 +290,14 @@ void DesktopWindowTreeHostPlatform::SetSize(const gfx::Size& size) {
 }
 
 void DesktopWindowTreeHostPlatform::StackAbove(aura::Window* window) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  if (!window || !window->GetRootWindow())
+    return;
+
+  platform_window()->StackAbove(window->GetHost()->GetAcceleratedWidget());
 }
 
 void DesktopWindowTreeHostPlatform::StackAtTop() {
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->StackAtTop();
 }
 
 void DesktopWindowTreeHostPlatform::CenterWindow(const gfx::Size& size) {

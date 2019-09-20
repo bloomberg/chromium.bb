@@ -52,6 +52,8 @@ class WIN_WINDOW_EXPORT WinWindow : public PlatformWindow,
   gfx::Rect GetRestoredBoundsInPixels() const override;
   void SetZOrderLevel(ZOrderLevel order) override;
   ZOrderLevel GetZOrderLevel() const override;
+  void StackAbove(gfx::AcceleratedWidget widget) override;
+  void StackAtTop() override;
 
   CR_BEGIN_MSG_MAP_EX(WinWindow)
     CR_MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
