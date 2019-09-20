@@ -66,14 +66,6 @@ bool HandlePreviewsLitePageURLRewriteReverse(
 }
 
 // static
-void PreviewsLitePageNavigationThrottle::LogIneligibleReason(
-    IneligibleReason reason) {
-  UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.IneligibleReasons",
-
-                            reason);
-}
-
-// static
 GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
     const GURL& original_url) {
   DCHECK(original_url.is_valid());
