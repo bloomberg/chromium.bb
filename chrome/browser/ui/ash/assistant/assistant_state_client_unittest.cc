@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
+#include "chrome/browser/ui/ash/assistant/assistant_state_client.h"
 
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -18,14 +19,12 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace arc {
-
-class VoiceInteractionControllerClientTest : public ChromeAshTestBase {
+class AssistantStateClientTest : public ChromeAshTestBase {
  public:
-  VoiceInteractionControllerClientTest()
+  AssistantStateClientTest()
       : fake_user_manager_(
             std::make_unique<chromeos::FakeChromeUserManager>()) {}
-  ~VoiceInteractionControllerClientTest() override = default;
+  ~AssistantStateClientTest() override = default;
 
   void SetUp() override {
     ChromeAshTestBase::SetUp();
@@ -38,34 +37,33 @@ class VoiceInteractionControllerClientTest : public ChromeAshTestBase {
     profile_ = profile_builder.Build();
 
     // Setup dependencies
-    arc_session_manager_ =
-        std::make_unique<ArcSessionManager>(std::make_unique<ArcSessionRunner>(
-            base::BindRepeating(FakeArcSession::Create)));
+    arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
+        std::make_unique<arc::ArcSessionRunner>(
+            base::BindRepeating(arc::FakeArcSession::Create)));
     const AccountId account_id(AccountId::FromUserEmailGaiaId(
         profile()->GetProfileUserName(), "1234567890"));
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
 
-    voice_interaction_controller_client_ =
-        std::make_unique<VoiceInteractionControllerClient>();
-    voice_interaction_controller_client_->SetProfile(profile_.get());
+    assistant_state_client_ = std::make_unique<AssistantStateClient>();
+    assistant_state_client_->SetProfile(profile_.get());
   }
 
   void TearDown() override {
-    voice_interaction_controller_client_.reset();
+    assistant_state_client_.reset();
     profile_.reset();
     arc_session_manager_->Shutdown();
     arc_session_manager_.reset();
     ChromeAshTestBase::TearDown();
   }
 
-  VoiceInteractionControllerClient* voice_interaction_controller_client() {
-    return voice_interaction_controller_client_.get();
+  AssistantStateClient* assistant_state_client() {
+    return assistant_state_client_.get();
   }
 
   Profile* profile() { return profile_.get(); }
 
-  ArcSessionManager* arc_session_manager() {
+  arc::ArcSessionManager* arc_session_manager() {
     return arc_session_manager_.get();
   }
 
@@ -78,12 +76,11 @@ class VoiceInteractionControllerClientTest : public ChromeAshTestBase {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
   user_manager::ScopedUserManager fake_user_manager_;
-  std::unique_ptr<ArcSessionManager> arc_session_manager_;
-  std::unique_ptr<VoiceInteractionControllerClient>
-      voice_interaction_controller_client_;
+  std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
+  std::unique_ptr<AssistantStateClient> assistant_state_client_;
 };
 
-TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
+TEST_F(AssistantStateClientTest, LocaleChanged) {
   PrefService* prefs = profile()->GetPrefs();
 
   ASSERT_EQ("", prefs->GetString(language::prefs::kApplicationLocale));
@@ -92,4 +89,12 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
   EXPECT_EQ("en-CA", ash::AssistantState::Get()->locale());
 }
 
-}  // namespace arc
+TEST_F(AssistantStateClientTest, ArcPlayStoreEnabled) {
+  ASSERT_TRUE(ash::AssistantState::Get()->arc_play_store_enabled().has_value());
+  ASSERT_FALSE(ash::AssistantState::Get()->arc_play_store_enabled().value());
+
+  arc_session_manager()->NotifyArcPlayStoreEnabledChanged(true);
+
+  ASSERT_TRUE(ash::AssistantState::Get()->arc_play_store_enabled().has_value());
+  ASSERT_TRUE(ash::AssistantState::Get()->arc_play_store_enabled().value());
+}
