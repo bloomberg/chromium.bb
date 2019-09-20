@@ -38,8 +38,7 @@ public class HelpAndFeedback {
     /**
      * Returns the singleton instance of HelpAndFeedback, creating it if needed.
      */
-    // TODO(chouinard): Remove unused context parameter.
-    public static HelpAndFeedback getInstance(Context context) {
+    public static HelpAndFeedback getInstance() {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
             sInstance = AppHooks.get().createHelpAndFeedback();
