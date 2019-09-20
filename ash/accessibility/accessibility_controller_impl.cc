@@ -358,6 +358,9 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
 void AccessibilityControllerImpl::Shutdown() {
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
+
+  for (auto& observer : observers_)
+    observer.OnAccessibilityControllerShutdown();
 }
 
 void AccessibilityControllerImpl::SetHighContrastAcceleratorDialogAccepted() {

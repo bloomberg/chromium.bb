@@ -337,7 +337,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // Used to force the backlights off to darken the screen.
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_backlights_forced_off_;
 
-  base::ObserverList<AccessibilityObserver>::Unchecked observers_;
+  base::ObserverList<AccessibilityObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerImpl);
 };
