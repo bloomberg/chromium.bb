@@ -38,6 +38,20 @@ Event::Properties GetEventPropertiesFromXKeyEvent(const XKeyEvent& xev) {
   return properties;
 }
 
+std::unique_ptr<KeyEvent> CreateKeyEvent(const XEvent& xev) {
+  base::TimeTicks timestamp = EventTimeFromXEvent(xev);
+  ValidateEventTimeClock(&timestamp);
+
+  auto key_event = std::make_unique<KeyEvent>(
+      EventTypeFromXEvent(xev), KeyboardCodeFromXKeyEvent(&xev),
+      CodeFromXEvent(&xev), EventFlagsFromXEvent(xev),
+      GetDomKeyFromXEvent(&xev), timestamp);
+
+  // Attach keyboard group to |key_event|'s properties
+  key_event->SetProperties(GetEventPropertiesFromXKeyEvent(xev.xkey));
+  return key_event;
+}
+
 std::unique_ptr<TouchEvent> CreateTouchEvent(EventType event_type,
                                              const XEvent& xev) {
   std::unique_ptr<TouchEvent> event = std::make_unique<TouchEvent>(
@@ -57,10 +71,11 @@ std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
   EventType event_type = EventTypeFromXEvent(xev);
   switch (event_type) {
     case ET_KEY_PRESSED:
-    case ET_KEY_RELEASED:
-      return std::make_unique<KeyEvent>(event_type,
-                                        KeyboardCodeFromXKeyEvent(&xev),
-                                        EventFlagsFromXEvent(xev));
+    case ET_KEY_RELEASED: {
+      XEvent xkeyevent = {0};
+      InitXKeyEventFromXIDeviceEvent(xev, &xkeyevent);
+      return CreateKeyEvent(xkeyevent);
+    }
     case ET_MOUSE_PRESSED:
     case ET_MOUSE_MOVED:
     case ET_MOUSE_DRAGGED:
@@ -124,13 +139,8 @@ std::unique_ptr<ui::Event> TranslateXEventToEvent(const XEvent& xev) {
                                           EventTimeFromXEvent(xev), flags, 0);
 
     case KeyPress:
-    case KeyRelease: {
-      auto key_event = std::make_unique<KeyEvent>(
-          EventTypeFromXEvent(xev), KeyboardCodeFromXKeyEvent(&xev), flags);
-      // Attach keyboard group to |key_event|'s properties
-      key_event->SetProperties(GetEventPropertiesFromXKeyEvent(xev.xkey));
-      return key_event;
-    }
+    case KeyRelease:
+      return CreateKeyEvent(xev);
     case ButtonPress:
     case ButtonRelease: {
       switch (EventTypeFromXEvent(xev)) {

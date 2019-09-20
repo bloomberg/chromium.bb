@@ -908,9 +908,9 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
 
 #if defined(USE_X11)
   NormalizeFlags();
+  key_ = GetDomKeyFromXEvent(native_event);
   SetProperties(GetKeyEventPropertiesFromXKeyEvent(native_event->xkey));
-#endif
-#if defined(OS_WIN)
+#elif defined(OS_WIN)
   // Only Windows has native character events.
   if (is_char_) {
     key_ = DomKey::FromCharacter(static_cast<int32_t>(native_event.wParam));
@@ -1006,11 +1006,6 @@ void KeyEvent::ApplyLayout() const {
 // Native Windows character events always have is_char_ == true,
 // so this is a synthetic or native keystroke event.
 // Therefore, perform only the fallback action.
-#elif defined(USE_X11)
-  if (native_event()) {
-    key_ = GetDomKeyFromXEvent(native_event());
-    return;
-  }
 #elif defined(USE_OZONE)
   if (KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
           code, flags(), &key_, &dummy_key_code)) {
