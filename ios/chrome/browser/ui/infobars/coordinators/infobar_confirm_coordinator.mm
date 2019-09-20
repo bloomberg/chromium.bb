@@ -53,6 +53,7 @@
     self.started = YES;
     self.bannerViewController =
         [[InfobarBannerViewController alloc] initWithDelegate:self
+                                                presentsModal:self.hasBadge
                                                          type:self.infobarType];
     self.bannerViewController.titleText =
         base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());

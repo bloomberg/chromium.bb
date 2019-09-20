@@ -2,30 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/showcase/infobars/sc_infobar_banner_coordinator.h"
+#import "ios/showcase/infobars/sc_infobar_banner_no_modal_coordinator.h"
 
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
-#import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
-#import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
-#import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
 #import "ios/showcase/infobars/sc_infobar_container_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface SCInfobarBannerCoordinator () <InfobarBannerDelegate,
-                                          InfobarModalDelegate>
+#pragma mark - SCInfobarBannerNoModalCoordinator
+
+@interface SCInfobarBannerNoModalCoordinator () <InfobarBannerDelegate>
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
 @property(nonatomic, strong) ContainerViewController* containerViewController;
-@property(nonatomic, strong)
-    InfobarModalTransitionDriver* modalTransitionDriver;
-@property(nonatomic, strong) InfobarModalViewController* modalViewController;
 @end
 
-@implementation SCInfobarBannerCoordinator
+@implementation SCInfobarBannerNoModalCoordinator
 @synthesize baseViewController = _baseViewController;
 
 - (void)start {
@@ -36,7 +32,7 @@
 
   self.bannerViewController = [[InfobarBannerViewController alloc]
       initWithDelegate:self
-         presentsModal:YES
+         presentsModal:NO
                   type:InfobarType::kInfobarTypeConfirm];
   self.bannerViewController.titleText = kInfobarBannerTitleLabel;
   self.bannerViewController.subTitleText = kInfobarBannerSubtitleLabel;
@@ -58,21 +54,7 @@
 }
 
 - (void)presentInfobarModalFromBanner {
-  self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
-      initWithTransitionMode:InfobarModalTransitionBanner];
-  self.modalTransitionDriver.modalPositioner = self.containerViewController;
-  self.modalViewController =
-      [[InfobarModalViewController alloc] initWithModalDelegate:self];
-  self.modalViewController.title = kInfobarBannerPresentedModalLabel;
-
-  UINavigationController* navController = [[UINavigationController alloc]
-      initWithRootViewController:self.modalViewController];
-  navController.transitioningDelegate = self.modalTransitionDriver;
-  navController.modalPresentationStyle = UIModalPresentationCustom;
-
-  [self.bannerViewController presentViewController:navController
-                                          animated:YES
-                                        completion:nil];
+  // NO-OP.
 }
 
 - (void)dismissInfobarBanner:(id)sender
@@ -85,22 +67,6 @@
 
 - (void)infobarBannerWasDismissed {
   self.bannerViewController = nil;
-}
-
-#pragma mark InfobarModalDelegate
-
-- (void)modalInfobarButtonWasAccepted:(id)sender {
-  [self dismissInfobarModal:sender animated:YES completion:nil];
-}
-
-- (void)dismissInfobarModal:(UIButton*)sender
-                   animated:(BOOL)animated
-                 completion:(ProceduralBlock)completion {
-  [self.baseViewController dismissViewControllerAnimated:animated
-                                              completion:nil];
-}
-
-- (void)modalInfobarWasDismissed:(id)sender {
 }
 
 @end
