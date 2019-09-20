@@ -155,7 +155,7 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
   supported_config_map[VideoDecoderImplementation::kAlternate] =
       *d3d11_supported_configs_;
 
-#elif defined(OS_CHROMEOS)
+#elif defined(USE_CHROMEOS_MEDIA_ACCELERATION)
   if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
     if (!cros_supported_configs_) {
       cros_supported_configs_ =
@@ -165,7 +165,7 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
         *cros_supported_configs_;
     return supported_config_map;
   }
-#endif  // defined(OS_WIN)
+#endif
 
   auto& default_configs =
       supported_config_map[VideoDecoderImplementation::kDefault];
