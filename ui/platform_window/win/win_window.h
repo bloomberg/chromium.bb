@@ -27,7 +27,7 @@ class WIN_WINDOW_EXPORT WinWindow : public PlatformWindow,
   void Destroy();
 
   // PlatformWindow:
-  void Show(bool inactive) override;
+  void Show() override;
   void Hide() override;
   void Close() override;
   void PrepareForShutdown() override;
