@@ -41,8 +41,10 @@ void TlsDataRouterPosix::OnSocketDestroyed(StreamSocketPosix* socket) {
 }
 
 void TlsDataRouterPosix::ReadAll() {
-  // TODO(jophba, rwkeane): implement this method.
-  OSP_UNIMPLEMENTED();
+  std::lock_guard<std::mutex> lock(connections_mutex_);
+  for (TlsConnectionPosix* connection : connections_) {
+    connection->TryReceiveMessage();
+  }
 }
 
 void TlsDataRouterPosix::WriteAll() {

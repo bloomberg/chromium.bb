@@ -42,14 +42,14 @@ void TlsConnection::OnError(Error error) {
   });
 }
 
-void TlsConnection::OnRead(std::vector<uint8_t> message) {
+void TlsConnection::OnRead(std::vector<uint8_t> block) {
   if (!client_) {
     return;
   }
 
-  task_runner_->PostTask([m = std::move(message), this]() mutable {
+  task_runner_->PostTask([b = std::move(block), this]() mutable {
     // TODO(issues/71): |this| may be invalid at this point.
-    this->client_->OnRead(this, std::move(m));
+    this->client_->OnRead(this, std::move(b));
   });
 }
 

@@ -33,11 +33,11 @@ class TlsConnection {
     virtual void OnWriteUnblocked(TlsConnection* connection) = 0;
 
     // Called when |connection| experiences an error, such as a read error.
-    virtual void OnError(TlsConnection* socket, Error error) = 0;
+    virtual void OnError(TlsConnection* connection, Error error) = 0;
 
-    // Called when a |packet| arrives on |socket|.
-    virtual void OnRead(TlsConnection* socket,
-                        std::vector<uint8_t> message) = 0;
+    // Called when a |block| arrives on |connection|.
+    virtual void OnRead(TlsConnection* connection,
+                        std::vector<uint8_t> block) = 0;
 
    protected:
     virtual ~Client() = default;
