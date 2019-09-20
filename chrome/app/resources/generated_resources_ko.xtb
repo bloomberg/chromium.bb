@@ -173,6 +173,7 @@
 <translation id="1235458158152011030">알려진 네트워크</translation>
 <translation id="123578888592755962">디스크가 가득 참</translation>
 <translation id="1238191093934674082">공개 VPN</translation>
+<translation id="1239594683407221485">파일 앱에서 기기의 콘텐츠를 탐색하세요.</translation>
 <translation id="124116460088058876">다른 언어</translation>
 <translation id="1241753985463165747">호출할 경우 현재 웹사이트에 있는 모든 데이터를 읽고 변경합니다.</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />에서 설정을 재설정하려 합니다.</translation>
@@ -312,6 +313,7 @@
 <translation id="146220085323579959">인터넷 연결이 끊겼습니다. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="1463112138205428654">고급 보호 기능이 <ph name="FILE_NAME" />을(를) 차단했습니다.</translation>
 <translation id="1464258312790801189">내 계정</translation>
+<translation id="1464781208867302907">기기 환경설정을 보려면 설정으로 이동하세요.</translation>
 <translation id="1465176863081977902">오디오 주소 복사(&amp;O)</translation>
 <translation id="1465827627707997754">피자 조각</translation>
 <translation id="1468571364034902819">이 프로필을 사용할 수 없음</translation>
@@ -743,6 +745,7 @@
 <translation id="2099686503067610784">서버 인증서 '<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="2100273922101894616">자동 로그인</translation>
 <translation id="2101225219012730419">버전:</translation>
+<translation id="2111670510994270194">오른쪽에 새 탭 열기</translation>
 <translation id="21133533946938348">탭 고정</translation>
 <translation id="2113479184312716848">파일 열기(&amp;F)...</translation>
 <translation id="2113921862428609753">기관 정보 액세스</translation>
@@ -2323,6 +2326,7 @@
 <translation id="4416582610654027550">유효한 URL을 입력하세요.</translation>
 <translation id="4419409365248380979"><ph name="HOST" />에서 항상 쿠키를 설정하도록 허용</translation>
 <translation id="4419610272958564173">알 수 없는 기기(공급업체: <ph name="VENDOR_ID" />, 제품: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">연결하는 중에 문제가 발생했습니다. <ph name="CARRIER_NAME" />에 지원을 요청하세요.</translation>
 <translation id="4421932782753506458">복실이</translation>
 <translation id="4423376891418188461">설정 복원</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />님, 관리자가 비밀번호 변경을 요청했습니다.</translation>
@@ -3293,6 +3297,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5869948122057593679">모든 창 닫기</translation>
 <translation id="5870086504539785141">접근성 메뉴 닫기</translation>
 <translation id="5870155679953074650">하드 결함</translation>
+<translation id="5876851302954717356">오른쪽에 새 탭 열기</translation>
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
 <translation id="5877584842898320529">선택한 프린터가 사용할 수 없거나 제대로 설치되어 있지 않습니다. <ph name="BR" /> 프린터를 확인하거나 다른 프린터를 선택해 보세요.</translation>
 <translation id="5882919346125742463">알려진 네트워크</translation>
@@ -4554,6 +4559,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="7773726648746946405">세션 저장소</translation>
 <translation id="7774365994322694683">새</translation>
 <translation id="7776701556330691704">음성을 찾을 수 없음</translation>
+<translation id="7780252971640011240">연결하는 중에 문제가 발생했습니다. 이동통신사에 지원을 요청하세요.</translation>
 <translation id="7781335840981796660">모든 사용자 계정과 로컬 데이터가 삭제됩니다.</translation>
 <translation id="7782102568078991263">Google의 추천 단어 없음</translation>
 <translation id="7782717250816686129">로그인 화면의 지속 데이터를 저장하고 세션에 사용자 인증 정보를 삽입합니다.</translation>

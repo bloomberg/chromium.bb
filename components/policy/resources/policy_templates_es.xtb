@@ -819,6 +819,15 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2454228136871844693">Optimizar para una mejor estabilidad.</translation>
 <translation id="2463034609187171371">Habilita los conjuntos de cifrado DHE en TLS</translation>
 <translation id="2463365186486772703">Configuración regional de la aplicación</translation>
+<translation id="2464012905766911533">Esta política permite que un administrador especifique si las páginas pueden enviar solicitudes XHR síncronas durante el cierre de la página.
+
+      Si la política se habilita, las páginas podrán enviar solicitudes XHR síncronas durante el cierre de la página.
+
+      Si se inhabilita o no se le asigna ningún valor, las páginas no podrán enviar solicitudes XHR síncronas durante el cierre de la página.
+
+      Esta política se eliminará en la versión 82 de Chrome.
+
+      Consulta https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">La autenticación del portal cautivo ignora el proxy</translation>
 <translation id="2466697858869282874">Configura la disponibilidad y el comportamiento de la función de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1527,6 +1536,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si no se le asigna ningún valor, la función Enunciar Selección se inhabilitará al inicio, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="3591527072193107424">Habilitar la función de compatibilidad con navegadores antiguos.</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de la autenticación de inicio de sesión</translation>
+<translation id="3617743504695003280">Permite que las páginas realicen solicitudes XHR síncronas durante el cierre de la página.</translation>
 <translation id="3627678165642179114">Habilitar o inhabilitar el servicio web de corrección ortográfica</translation>
 <translation id="3628480121685794414">Habilitar impresión por una cara</translation>
 <translation id="3631099945620529777">Si se asigna el valor "False" a esta política, se inhabilita el botón Finalizar proceso en el administrador de tareas.

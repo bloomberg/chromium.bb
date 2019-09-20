@@ -173,6 +173,7 @@
 <translation id="1235458158152011030">Znana omrežja</translation>
 <translation id="123578888592755962">Disk je poln</translation>
 <translation id="1238191093934674082">Open VPN</translation>
+<translation id="1239594683407221485">Vsebino naprave raziščite v aplikaciji Datoteke.</translation>
 <translation id="124116460088058876">Več jezikov</translation>
 <translation id="1241753985463165747">Branje in spreminjanje vseh vaših podatkov na trenutnem spletnem mestu, če je zagnano</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> želi ponastaviti nastavitve.</translation>
@@ -312,6 +313,7 @@
 <translation id="146220085323579959">Prekinjena povezava z internetom. Preverite internetno povezavo in poskusite znova.</translation>
 <translation id="1463112138205428654">Datoteko <ph name="FILE_NAME" /> je blokirala dodatna zaščita.</translation>
 <translation id="1464258312790801189">Vaši računi</translation>
+<translation id="1464781208867302907">Za nastavitve naprave odprite nastavitve.</translation>
 <translation id="1465176863081977902">Kopiraj naslov zvoka</translation>
 <translation id="1465827627707997754">Rezina pice</translation>
 <translation id="1468571364034902819">Tega profila ni mogoče uporabiti</translation>
@@ -743,6 +745,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2099686503067610784">Ali želite izbrisati strežniško potrdilo »<ph name="CERTIFICATE_NAME" />«?</translation>
 <translation id="2100273922101894616">Samodejna prijava</translation>
 <translation id="2101225219012730419">Različica:</translation>
+<translation id="2111670510994270194">Novi zavihek na desni</translation>
 <translation id="21133533946938348">Pripni zavihek</translation>
 <translation id="2113479184312716848">Odpri &amp;datoteko ...</translation>
 <translation id="2113921862428609753">Dostop do informacij urada</translation>
@@ -2325,6 +2328,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4416582610654027550">Vnesite veljaven URL</translation>
 <translation id="4419409365248380979">Vedno dovoli, da <ph name="HOST" /> nastavi piškotke</translation>
 <translation id="4419610272958564173">Neznana naprava (ponudnik: <ph name="VENDOR_ID" />, izdelek: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Težave pri povezovanju. Pomoč poiščite pri operaterju <ph name="CARRIER_NAME" />.</translation>
 <translation id="4421932782753506458">Puhek</translation>
 <translation id="4423376891418188461">Obnovi nastavitve</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, skrbnik zahteva, da spremenite geslo.</translation>
@@ -3297,6 +3301,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5869948122057593679">Zapri vsa okna</translation>
 <translation id="5870086504539785141">Zapiranje menija s funkcijami za ljudi s posebnimi potrebami</translation>
 <translation id="5870155679953074650">Težke napake</translation>
+<translation id="5876851302954717356">Novi zavihek na desni</translation>
 <translation id="5877064549588274448">Kanal spremenjen. Znova zaženite napravo, da uveljavite spremembe.</translation>
 <translation id="5877584842898320529">Izbrani tiskalnik ni na voljo ali ni pravilno nameščen. <ph name="BR" /> Preverite tiskalnik ali izberite drugega.</translation>
 <translation id="5882919346125742463">Znana omrežja</translation>
@@ -4558,6 +4563,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7773726648746946405">Shramba seje</translation>
 <translation id="7774365994322694683">Ptica</translation>
 <translation id="7776701556330691704">Najden ni bil noben glas</translation>
+<translation id="7780252971640011240">Težave pri povezovanju. Pomoč poiščite pri operaterju.</translation>
 <translation id="7781335840981796660">Odstranjeni bodo vsi uporabniški računi in lokalni podatki.</translation>
 <translation id="7782102568078991263">Nič več Googlovih predlogov</translation>
 <translation id="7782717250816686129">Shrani trajne podatke na zaslonu za prijavo in vstavi poverilnice v sejo.</translation>

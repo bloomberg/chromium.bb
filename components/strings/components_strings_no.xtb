@@ -575,7 +575,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ingen}=1{Fra 1 nettsted }other{Fra # nettsteder }}</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokkert</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> har slått på Chrome Enterprise trusselbeskyttelse i nettleseren din. Chrome Enterprise trusselbeskyttelse har tilgang til noen av dataene dine.</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> har slått på beskyttelsesfunksjoner for bedrifter i Chrome-nettleseren din. Beskyttelsesfunksjoner for bedrifter i Chrome har tilgang til noen av dataene dine.</translation>
 <translation id="3987940399970879459">Under 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Like ved-nettside}other{# Like ved-nettsider}}</translation>
 <translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
@@ -1028,7 +1028,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6433490469411711332">Endre kontaktinformasjonen</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avviste tilkoblingsforsøket.</translation>
 <translation id="6434309073475700221">Forkast</translation>
-<translation id="6435221585574090192">Del data om sikkerhetshendelser som er rapport av Chrome Enterprise trusselbeskyttelse, med administratoren. Dette kan blant annet være nettsideadresser, filnavn og -metadata samt brukernavnet ditt på enheten og i Chrome.</translation>
+<translation id="6435221585574090192">Del data om sikkerhetshendelser som er rapportert av beskyttelsesfunksjoner for bedrifter i Chrome, med administratoren din. Dette kan inkludere nettadresser, filnavn eller -metadata samt brukernavnet ditt på enheten og i Chrome.</translation>
 <translation id="6440503408713884761">Ignorert</translation>
 <translation id="6446163441502663861">Kahu (konvolutt)</translation>
 <translation id="6446608382365791566">Legg til mer informasjon</translation>
@@ -1256,7 +1256,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Utløpsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har allerede data som er kryptert med en annen versjon av Google-kontopassordet ditt. Skriv det inn nedenfor.</translation>
-<translation id="7625784245512586808">Chrome Enterprise trusselbeskyttelse</translation>
+<translation id="7625784245512586808">Beskyttelsesfunksjoner for bedrifter i Chrome</translation>
 <translation id="7633909222644580952">Ytelsesdata og programstopprapporter</translation>
 <translation id="7637571805876720304">Vil du fjerne kredittkortet fra Chromium?</translation>
 <translation id="7638605456503525968">Serielle porter</translation>
@@ -1367,7 +1367,7 @@ brukere av denne nettleseren.</translation>
 <translation id="8211406090763984747">Tilkoblingen er sikker</translation>
 <translation id="8218327578424803826">Tilordnet posisjon:</translation>
 <translation id="8220146938470311105">C7/C6 (konvolutt)</translation>
-<translation id="8220639454292072926">Enterprise-rapportering</translation>
+<translation id="8220639454292072926">Bedriftsrapportering</translation>
 <translation id="8225771182978767009">Personen som konfigurerte denne datamaskinen, har valgt å blokkere dette nettstedet.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Åpne siden i et nytt inkognitovindu</translation>
@@ -1514,7 +1514,7 @@ Mer informasjon:
 <translation id="9080712759204168376">Bestillingssammendrag</translation>
 <translation id="9089260154716455634">Regler for bruk utenom arbeidstiden:</translation>
 <translation id="9095388113577226029">Flere språk</translation>
-<translation id="9098981495403789647">Administratoren har slått på Chrome Enterprise trusselbeskyttelse i nettleseren din. Chrome Enterprise trusselbeskyttelse har tilgang til noen av dataene dine.</translation>
+<translation id="9098981495403789647">Administratoren har slått på beskyttelsesfunksjoner for bedrifter i Chrome-nettleseren din. Beskyttelsesfunksjoner for bedrifter i Chrome har tilgang til noen av dataene dine.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>
 <translation id="9114524666733003316">Bekrefter kortet …</translation>

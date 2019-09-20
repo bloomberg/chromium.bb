@@ -173,6 +173,7 @@
 <translation id="1235458158152011030">Відомі мережі</translation>
 <translation id="123578888592755962">Диск заповнено</translation>
 <translation id="1238191093934674082">Відкрити VPN</translation>
+<translation id="1239594683407221485">Перегляньте контент пристрою в додатку Файли.</translation>
 <translation id="124116460088058876">Інші мови</translation>
 <translation id="1241753985463165747">Читати та змінювати всі ваші дані на поточному веб-сайті, коли він викликається</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> хоче скинути ваші налаштування.</translation>
@@ -312,6 +313,7 @@
 <translation id="146220085323579959">З’єднання з Інтернетом розірвано. Перевірте з’єднання з Інтернетом і повторіть спробу.</translation>
 <translation id="1463112138205428654">Файл <ph name="FILE_NAME" /> заблоковано Додатковим захистом.</translation>
 <translation id="1464258312790801189">Ваші облікові записи</translation>
+<translation id="1464781208867302907">Щоб перейти до параметрів пристрою, відкрийте налаштування.</translation>
 <translation id="1465176863081977902">Копіювати адресу аудіо</translation>
 <translation id="1465827627707997754">Шматок піци</translation>
 <translation id="1468571364034902819">Цей профіль вимкнено</translation>
@@ -529,7 +531,7 @@
 <translation id="1764226536771329714">бета-версія</translation>
 <translation id="176587472219019965">&amp;Нове вікно</translation>
 <translation id="1766575458646819543">Ви вийшли з повноекранного режиму</translation>
-<translation id="1766957085594317166">Надійно зберігайте паролі в обліковому записі Google: так вам не доведеться знову вводити їх вручну</translation>
+<translation id="1766957085594317166">Надійно зберігайте паролі в обліковому записі Google: так вам не доведеться постійно вводити їх вручну</translation>
 <translation id="1768278914020124551">На жаль, не вдалося зв’язатися із сервером для входу. Перевірте з’єднання з Інтернетом і доменне ім’я та повторіть спробу.</translation>
 <translation id="1769104665586091481">Відкрити посилання в новому &amp;вікні</translation>
 <translation id="1773212559869067373">Сертифікат автентифікації відхилений локально</translation>
@@ -743,6 +745,7 @@
 <translation id="2099686503067610784">Видалити сертифікат сервера "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Автоматичний вхід</translation>
 <translation id="2101225219012730419">Версія:</translation>
+<translation id="2111670510994270194">Нова вкладка праворуч</translation>
 <translation id="21133533946938348">Закріпити вкладку</translation>
 <translation id="2113479184312716848">Відкрити &amp;файл...</translation>
 <translation id="2113921862428609753">Доступ до відомостей про центри сертифікації</translation>
@@ -2325,6 +2328,7 @@
 <translation id="4416582610654027550">Введіть дійсну URL-адресу</translation>
 <translation id="4419409365248380979">Завжди дозволяти хосту <ph name="HOST" /> створювати файли cookie</translation>
 <translation id="4419610272958564173">Невідомий пристрій (постачальник: <ph name="VENDOR_ID" />, продукт: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Помилка з'єднання. Зверніться по допомогу до представника <ph name="CARRIER_NAME" />.</translation>
 <translation id="4421932782753506458">Киця</translation>
 <translation id="4423376891418188461">Відновити налаштування</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, ваш адміністратор просить змінити пароль.</translation>
@@ -3295,6 +3299,7 @@
 <translation id="5869948122057593679">Закрити всі вікна</translation>
 <translation id="5870086504539785141">Закрити меню доступності</translation>
 <translation id="5870155679953074650">Тривалі затримки</translation>
+<translation id="5876851302954717356">Нова вкладка праворуч</translation>
 <translation id="5877064549588274448">Канал змінено. Перезапустіть пристрій, щоб застосувати зміни.</translation>
 <translation id="5877584842898320529">Вибраний принтер недоступний або неправильно встановлений. <ph name="BR" /> Перевірте принтер або спробуйте вибрати інший.</translation>
 <translation id="5882919346125742463">Відомі мережі</translation>
@@ -4556,6 +4561,7 @@
 <translation id="7773726648746946405">Пам’ять сеансу</translation>
 <translation id="7774365994322694683">Птах</translation>
 <translation id="7776701556330691704">Голосів не знайдено</translation>
+<translation id="7780252971640011240">Помилка з'єднання. Зверніться по допомогу до оператора.</translation>
 <translation id="7781335840981796660">Усі облікові записи користувачів і локальні дані буде видалено.</translation>
 <translation id="7782102568078991263">Більше немає пропозицій від Google</translation>
 <translation id="7782717250816686129">Зберігати постійні дані на екрані входу та вводити облікові дані для сеансу.</translation>

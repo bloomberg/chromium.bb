@@ -173,6 +173,7 @@
 <translation id="1235458158152011030">Известни мрежи</translation>
 <translation id="123578888592755962">Дискът е пълен</translation>
 <translation id="1238191093934674082">Отворена VPN</translation>
+<translation id="1239594683407221485">Прегледайте съдържанието на устройството в приложението „Файлове“.</translation>
 <translation id="124116460088058876">Още езици</translation>
 <translation id="1241753985463165747">Четене и промяна на всичките ви данни в текущия уебсайт (при извикване)</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> иска да нулира настройките ви.</translation>
@@ -312,6 +313,7 @@
 <translation id="146220085323579959">Няма връзка с интернет. Моля, проверете връзката си с мрежата и опитайте отново.</translation>
 <translation id="1463112138205428654">Файлът <ph name="FILE_NAME" /> бе блокиран от функцията за разширена защита.</translation>
 <translation id="1464258312790801189">Вашите профили</translation>
+<translation id="1464781208867302907">За предпочитания за устройството отворете „Настройки“</translation>
 <translation id="1465176863081977902">К&amp;опиране на адреса на аудиозаписа</translation>
 <translation id="1465827627707997754">Парче пица</translation>
 <translation id="1468571364034902819">Не можете да използвате този потребителски профил</translation>
@@ -740,6 +742,7 @@
 <translation id="2099686503067610784">Да се изтрие ли сертификатът на сървър „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="2100273922101894616">Автоматичен вход</translation>
 <translation id="2101225219012730419">Версия:</translation>
+<translation id="2111670510994270194">Нов раздел отдясно</translation>
 <translation id="21133533946938348">Фиксиране на раздела</translation>
 <translation id="2113479184312716848">&amp;Отваряне на файл...</translation>
 <translation id="2113921862428609753">Достъп до информация за органа</translation>
@@ -2324,6 +2327,7 @@
 <translation id="4416582610654027550">Въведете валиден URL адрес</translation>
 <translation id="4419409365248380979">Да се разреши на <ph name="HOST" /> винаги да задава „бисквитки“</translation>
 <translation id="4419610272958564173">Неизвестно устройство (производител: <ph name="VENDOR_ID" />, продукт: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Има проблеми със свързването. Моля, обърнете се към <ph name="CARRIER_NAME" /> за съдействие.</translation>
 <translation id="4421932782753506458">Пухчо</translation>
 <translation id="4423376891418188461">Възстановяване на настройките</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, администраторът ви изисква да промените паролата си.</translation>
@@ -3295,6 +3299,7 @@
 <translation id="5869948122057593679">Затваряне на всички прозорци</translation>
 <translation id="5870086504539785141">Затваряне на менюто за достъпност</translation>
 <translation id="5870155679953074650">Съществени грешки</translation>
+<translation id="5876851302954717356">Нов раздел отдясно</translation>
 <translation id="5877064549588274448">Каналът бе променен. Рестартирайте устройството си, за да се приложат промените.</translation>
 <translation id="5877584842898320529">Избраният принтер не е налице или не е инсталиран правилно.<ph name="BR" /> Проверете го или опитайте да изберете друг.</translation>
 <translation id="5882919346125742463">Известни мрежи</translation>
@@ -4556,6 +4561,7 @@
 <translation id="7773726648746946405">Хранилище за сесията</translation>
 <translation id="7774365994322694683">Птица</translation>
 <translation id="7776701556330691704">Няма намерени гласове</translation>
+<translation id="7780252971640011240">Има проблеми със свързването. Моля, обърнете се към оператора си за съдействие.</translation>
 <translation id="7781335840981796660">Всички профили на потребители и локални данни ще бъдат премахнати.</translation>
 <translation id="7782102568078991263">Няма повече предложения от Google</translation>
 <translation id="7782717250816686129">Съхраняване на устойчивите данни на екрана за вход и инжектиране на идентификационните данни в сесията.</translation>

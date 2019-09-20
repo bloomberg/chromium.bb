@@ -815,6 +815,15 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2454228136871844693">Für eine optimale Stabilität.</translation>
 <translation id="2463034609187171371">DHE-Verschlüsselungssammlungen in TLS aktivieren</translation>
 <translation id="2463365186486772703">Gebietsschema der App</translation>
+<translation id="2464012905766911533">Mit dieser Richtlinie kann ein Administrator festlegen, ob eine Seite beim Schließen eine synchrone XHR-Anfrage senden darf.
+
+      Wenn die Richtlinie aktiviert ist, dürfen die Seiten beim Schließen synchrone XHR-Anfragen senden.
+
+      Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, dürfen Seiten beim Schließen keine synchronen XHR-Anfragen senden.
+
+      Diese Richtlinie wird in Chrome 82 entfernt.
+
+      Siehe https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">Captive-Portal-Authentifizierung ignoriert Proxy</translation>
 <translation id="2466697858869282874">Hiermit werden Verfügbarkeit und Verhalten der Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfiguriert.
 
@@ -1500,6 +1509,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
           Wird sie nicht konfiguriert, so ist die Funktion "Vorlesen" anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="3591527072193107424">Funktion für die Unterstützung älterer Browser aktivieren.</translation>
 <translation id="3591584750136265240">Verhalten der Log-in-Authentifizierung konfigurieren</translation>
+<translation id="3617743504695003280">Einer Seite erlauben, während des Schließens synchrone XHR-Anfragen auszuführen.</translation>
 <translation id="3627678165642179114">Webdienst für die Rechtschreibprüfung aktivieren oder deaktivieren</translation>
 <translation id="3628480121685794414">Simplexdruck aktivieren</translation>
 <translation id="3631099945620529777">Wenn diese Richtlinie auf "false" gesetzt ist, ist die Schaltfläche "Prozess beenden" im Task-Manager deaktiviert.

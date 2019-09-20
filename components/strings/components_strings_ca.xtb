@@ -634,7 +634,7 @@
 <translation id="4277028893293644418">Restableix la contrasenya</translation>
 <translation id="4279811152705618813"><ph name="ENROLLMENT_DOMAIN" /> gestiona el dispositiu <ph name="DEVICE_TYPE" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Aquesta targeta s'ha desat al Compte de Google}other{Aquestes targetes s'han desat al Compte de Google}}</translation>
-<translation id="428847186335018806">Escaneja els fitxers que baixes o penges a Chrome.</translation>
+<translation id="428847186335018806">Escaneja els fitxers que baixes de Chrome o que hi penges.</translation>
 <translation id="42981349822642051">Desplega</translation>
 <translation id="4302965934281694568">Chou3 (sobre)</translation>
 <translation id="4305817255990598646">Canvia</translation>
@@ -1062,7 +1062,7 @@
 <translation id="6671697161687535275">Voleu suprimir el suggeriment de formulari de Chromium?</translation>
 <translation id="6685834062052613830">Tanqueu la sessió i completeu la configuració</translation>
 <translation id="6689271823431384964">Chrome t'està oferint desar les targetes al Compte de Google perquè tens la sessió iniciada. Pots canviar aquest comportament a la configuració. El nom del titular de la targeta s'obté del teu compte.</translation>
-<translation id="6707256370811247129">Escaneja el contingut de la memòria cau i dels fitxers que baixis o pengis a Chrome.</translation>
+<translation id="6707256370811247129">Escaneja el contingut de la memòria cau i els fitxers que baixis de Chrome o que hi pengis.</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6710594484020273272">&lt;Escriviu el terme de cerca&gt;</translation>
 <translation id="671076103358959139">Testimoni d'inscripció:</translation>

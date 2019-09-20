@@ -173,6 +173,7 @@
 <translation id="1235458158152011030">Zināmie tīkli</translation>
 <translation id="123578888592755962">Disks ir pilns.</translation>
 <translation id="1238191093934674082">Atvērt VPN</translation>
+<translation id="1239594683407221485">Pārlūkojiet ierīces saturu lietotnē Faili.</translation>
 <translation id="124116460088058876">Citas valodas…</translation>
 <translation id="1241753985463165747">Lasīt un mainīt visus jūsu datus pašreizējā vietnē, kad aktivizēts</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> vēlas atiestatīt jūsu iestatījumus.</translation>
@@ -312,6 +313,7 @@
 <translation id="146220085323579959">Internets atvienots. Pārbaudiet interneta savienojumu un mēģiniet vēlreiz.</translation>
 <translation id="1463112138205428654">Fails <ph name="FILE_NAME" /> tika bloķēts ar papildu aizsardzības funkcijām.</translation>
 <translation id="1464258312790801189">Jūsu konti</translation>
+<translation id="1464781208867302907">Lai skatītu ierīces preferences, pārejiet uz sadaļu Iestatījumi.</translation>
 <translation id="1465176863081977902">Kopēt audio adresi</translation>
 <translation id="1465827627707997754">Picas šķēle</translation>
 <translation id="1468571364034902819">Nevar izmantot šo profilu</translation>
@@ -743,6 +745,7 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2099686503067610784">Vai dzēst servera sertifikātu “<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="2100273922101894616">Automātiski pierakstīties</translation>
 <translation id="2101225219012730419">versija:</translation>
+<translation id="2111670510994270194">Jauna cilne pa labi</translation>
 <translation id="21133533946938348">Piespraust cilni</translation>
 <translation id="2113479184312716848">Atvērt failu...</translation>
 <translation id="2113921862428609753">Piekļuve izdevējiestādes datiem</translation>
@@ -2325,6 +2328,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4416582610654027550">Ievadiet derīgu URL.</translation>
 <translation id="4419409365248380979">Vienmēr var <ph name="HOST" /> iestatīt sīkfailus</translation>
 <translation id="4419610272958564173">Nezināma ierīce (pakalpojumu sniedzējs: <ph name="VENDOR_ID" />, produkts: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Neizdevās izveidot savienojumu. Lai saņemtu palīdzību, lūdzu, sazinieties ar mobilo sakaru operatoru <ph name="CARRIER_NAME" />.</translation>
 <translation id="4421932782753506458">Minka</translation>
 <translation id="4423376891418188461">Atjaunot iestatījumus</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, jūsu administrators pieprasa paroles maiņu.</translation>
@@ -3295,6 +3299,7 @@ Aktivizējiet VR režīmu tikai tad, ja esat pārliecināts, ka šī vietne ir 
 <translation id="5869948122057593679">Aizvērt visus manus logus</translation>
 <translation id="5870086504539785141">Aizvērt pieejamības izvēlni</translation>
 <translation id="5870155679953074650">Nopietnas kļūdas</translation>
+<translation id="5876851302954717356">Jauna cilne pa labi</translation>
 <translation id="5877064549588274448">Kanāls tika mainīts. Lai lietotu izmaiņas, restartējiet ierīci.</translation>
 <translation id="5877584842898320529">Atlasītais printeris nav pieejams vai nav instalēts pareizi. <ph name="BR" /> Pārbaudiet savu printeri vai pamēģiniet atlasīt citu printeri.</translation>
 <translation id="5882919346125742463">Zināmie tīkli</translation>
@@ -4556,6 +4561,7 @@ Aktivizējiet VR režīmu tikai tad, ja esat pārliecināts, ka šī vietne ir 
 <translation id="7773726648746946405">Sesijas saglabāšana</translation>
 <translation id="7774365994322694683">Putns</translation>
 <translation id="7776701556330691704">Nav atrasta neviena balss</translation>
+<translation id="7780252971640011240">Neizdevās izveidot savienojumu. Lai saņemtu palīdzību, lūdzu, sazinieties ar mobilo sakaru operatoru.</translation>
 <translation id="7781335840981796660">Visi lietotāju konti un vietējie dati tiks dzēsti.</translation>
 <translation id="7782102568078991263">Vairāk ieteikumu no Google nav pieejams</translation>
 <translation id="7782717250816686129">Glabājiet pastāvīgos datus pieteikšanās ekrānā un ievadiet akreditācijas datus sesijā.</translation>

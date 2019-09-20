@@ -821,6 +821,15 @@
 <translation id="2454228136871844693">Tối ưu hóa cho độ ổn định.</translation>
 <translation id="2463034609187171371">Bật bộ thuật toán mật mã DHE trong TLS</translation>
 <translation id="2463365186486772703">Ngôn ngữ của ứng dụng</translation>
+<translation id="2464012905766911533">Chính sách này cho phép quản trị viên chỉ định rằng một trang có thể gửi các yêu cầu XHR đồng bộ trong khi đóng trang.
+
+      Khi bạn đặt chính sách này thành bật, các trang sẽ được phép gửi các yêu cầu XHR đồng bộ trong khi đóng trang.
+
+      Khi bạn không đặt chính sách này hoặc đặt thành tắt, các trang sẽ không được phép gửi các yêu cầu XHR đồng bộ trong khi đóng trang.
+
+      Chính sách này sẽ bị xóa trong Chrome 82.
+
+      Vui lòng xem tại https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">Xác thực cổng cố định bỏ qua proxy</translation>
 <translation id="2466697858869282874">Định cấu hình tính sẵn sàng và hành vi của chức năng cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1526,6 +1535,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng chọn để nói sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="3591527072193107424">Bật tính năng Hỗ trợ trình duyệt cũ.</translation>
 <translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
+<translation id="3617743504695003280">Cho phép một trang thực hiện các yêu cầu XHR đồng bộ trong khi đóng trang.</translation>
 <translation id="3627678165642179114">Bật hoặc tắt dịch vụ web kiểm tra lỗi chính tả</translation>
 <translation id="3628480121685794414">Bật chế độ in một mặt</translation>
 <translation id="3631099945620529777">Nếu bạn đặt chính sách này thành false thì nút 'Kết thúc quá trình' sẽ bị tắt trong Trình quản lý tác vụ.

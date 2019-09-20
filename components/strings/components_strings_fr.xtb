@@ -71,7 +71,7 @@
 <translation id="1292701964462482250">Un logiciel installé sur votre ordinateur empêche Chrome de se connecter au Web de manière sécurisée (sous Windows uniquement)</translation>
 <translation id="1294154142200295408">Variations de ligne de commande</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
-<translation id="1298536327547837046">Analyse à la recherche de logiciels malveillants</translation>
+<translation id="1298536327547837046">Détection des logiciels malveillants</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Essayez de supprimer les cookies.<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Fonctionnalités obsolètes</translation>
 <translation id="1320233736580025032">Prc1 (enveloppe)</translation>
@@ -565,7 +565,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Aucun}=1{De 1 site }one{De # site }other{De # sites }}</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> est bloqué</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> a activé la fonctionnalité de protection Chrome Enterprise contre les menaces dans votre navigateur. Cette fonctionnalité a accès à certaines de vos données.</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> a activé la protection contre les menaces de Chrome Enterprise dans votre navigateur. Cette fonctionnalité a accès à certaines de vos données.</translation>
 <translation id="3987940399970879459">Moins de 1 Mo</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 page Web à proximité}one{# page Web à proximité}other{# pages Web à proximité}}</translation>
 <translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
@@ -1017,7 +1017,7 @@
 <translation id="6433490469411711332">Modifier les coordonnées</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> n'autorise pas la connexion.</translation>
 <translation id="6434309073475700221">Annuler</translation>
-<translation id="6435221585574090192">Transmettez à votre administrateur les données sur les événements liés à la sécurité qui ont été signalés par la fonctionnalité de protection contre les menaces disponible dans Chrome Enterprise. Il peut s'agir d'URL de pages, de noms et de métadonnées de fichiers, de votre nom d'utilisateur Chrome et de celui lié à votre appareil.</translation>
+<translation id="6435221585574090192">Transmettez à votre administrateur les données sur les événements liés à la sécurité signalés par la protection contre les menaces de Chrome Enterprise. Il peut s'agir d'URL de pages, de noms et de métadonnées de fichiers, de votre nom d'utilisateur Chrome et de celui lié à votre appareil.</translation>
 <translation id="6440503408713884761">Ignoré</translation>
 <translation id="6446163441502663861">Kahu (enveloppe)</translation>
 <translation id="6446608382365791566">Ajouter d'autres informations</translation>
@@ -1243,7 +1243,7 @@ Informations supplémentaires :
 <translation id="7610193165460212391">La valeur <ph name="VALUE" /> est hors limites.</translation>
 <translation id="7613889955535752492">Date d'expiration : <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Vous disposez déjà de données chiffrées à l'aide d'une autre version de votre mot de passe de compte Google. Veuillez saisir celui-ci ci-dessous.</translation>
-<translation id="7625784245512586808">Protection Chrome Enterprise contre les menaces</translation>
+<translation id="7625784245512586808">Protection contre les menaces de Chrome Enterprise</translation>
 <translation id="7633909222644580952">Données relatives aux performances et rapports d'erreur</translation>
 <translation id="7637571805876720304">Supprimer les données de carte de paiement de Chromium ?</translation>
 <translation id="7638605456503525968">Ports série</translation>
@@ -1501,7 +1501,7 @@ Informations supplémentaires :
 <translation id="9080712759204168376">Récapitulatif de la commande</translation>
 <translation id="9089260154716455634">Règle en heures creuses :</translation>
 <translation id="9095388113577226029">Plus de langues…</translation>
-<translation id="9098981495403789647">Votre administrateur a activé la fonctionnalité de protection Chrome Enterprise contre les menaces dans votre navigateur. Cette fonctionnalité a accès à certaines de vos données.</translation>
+<translation id="9098981495403789647">Votre administrateur a activé la protection contre les menaces de Chrome Enterprise dans votre navigateur. Cette fonctionnalité a accès à certaines de vos données.</translation>
 <translation id="9103872766612412690">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="9106062320799175032">Ajouter une adresse de facturation</translation>
 <translation id="9114524666733003316">Validation de la carte…</translation>

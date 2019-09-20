@@ -173,6 +173,7 @@
 <translation id="1235458158152011030">شبکه‌های شناخته‌شده</translation>
 <translation id="123578888592755962">دیسک پر است</translation>
 <translation id="1238191093934674082">‏باز کردن VPN</translation>
+<translation id="1239594683407221485">‏محتوای دستگاه را در برنامه Files کاوش کنید.</translation>
 <translation id="124116460088058876">زبان‌های بیشتر</translation>
 <translation id="1241753985463165747">خواندن و تغییر همه داده‌های شما در وب‌سایت کنونی هنگام فراخوانی</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> می‌خواهد تنظیمات شما را بازنشانی کند.</translation>
@@ -312,6 +313,7 @@
 <translation id="146220085323579959">اتصال اینترنت قطع شد. لطفاً اتصال اینترنت خود را بررسی کنید و دوباره سعی کنید.</translation>
 <translation id="1463112138205428654"><ph name="FILE_NAME" /> توسط «محافظت پیشرفته» مسدود شده است.</translation>
 <translation id="1464258312790801189">حساب‌های شما</translation>
+<translation id="1464781208867302907">برای تنظیمات برگزیده دستگاه، به «تنظیمات» بروید</translation>
 <translation id="1465176863081977902">کپی آدرس صوت</translation>
 <translation id="1465827627707997754">تکه پیتزا</translation>
 <translation id="1468571364034902819">نمی‌توان از این نمایه استفاده کرد</translation>
@@ -740,6 +742,7 @@
 <translation id="2099686503067610784">مجوز سرور "<ph name="CERTIFICATE_NAME" />" حذف شود؟</translation>
 <translation id="2100273922101894616">ورود به سیستم خودکار</translation>
 <translation id="2101225219012730419">نسخه:</translation>
+<translation id="2111670510994270194">برگه جدید در راست</translation>
 <translation id="21133533946938348">کوچک کردن برگه</translation>
 <translation id="2113479184312716848">باز کردن &amp;فایل...</translation>
 <translation id="2113921862428609753">دسترسی به اطلاعات اعتبار</translation>
@@ -2322,6 +2325,7 @@
 <translation id="4416582610654027550">نشانی وب معتبری تایپ کنید</translation>
 <translation id="4419409365248380979">همیشه به <ph name="HOST" /> اجازه دهید کوکی‌ها را تنظیم کند</translation>
 <translation id="4419610272958564173">دستگاه نامشخص (فروشنده: <ph name="VENDOR_ID" />، محصول: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">مشکلی در برقراری ارتباط وجود دارد. برای دریافت راهنمایی با <ph name="CARRIER_NAME" /> تماس بگیرید.</translation>
 <translation id="4421932782753506458">پشمالو</translation>
 <translation id="4423376891418188461">بازیابی تنظیمات</translation>
 <translation id="442397852638519243">سرپرستتان (<ph name="USER_NAME" />)، از شما می‌خواهد که گذرواژه‌تان را عوض کنید.</translation>
@@ -3292,6 +3296,7 @@
 <translation id="5869948122057593679">بستن همه پنجره‌ها</translation>
 <translation id="5870086504539785141">منوی دسترس‌پذیری نزدیک</translation>
 <translation id="5870155679953074650">خطاهای سخت‌افزاری</translation>
+<translation id="5876851302954717356">برگه جدید در راست</translation>
 <translation id="5877064549588274448">کانال تغییر کرد. برای اعمال تغییرات دستگاه خود را مجدداً راه‌اندازی کنید.</translation>
 <translation id="5877584842898320529">چاپگر انتخابی موجود نیست یا به‌درستی نصب نشده است. <ph name="BR" /> چاپگر خود را بررسی کنید یا چاپگر دیگری را انتخاب کنید.</translation>
 <translation id="5882919346125742463">شبکه‌های شناخته‌شده</translation>
@@ -4553,6 +4558,7 @@
 <translation id="7773726648746946405">ذخیره جلسه</translation>
 <translation id="7774365994322694683">پرنده</translation>
 <translation id="7776701556330691704">صدایی پیدا نشد</translation>
+<translation id="7780252971640011240">مشکلی در برقراری ارتباط وجود دارد. لطفاً برای دریافت راهنمایی با شرکت مخابراتی خود تماس بگیرید.</translation>
 <translation id="7781335840981796660">همه حساب‌های کاربر و داده‌های محلی حذف می‌شوند.</translation>
 <translation id="7782102568078991263">‏پیشنهاد دیگری از Google وجود ندارد</translation>
 <translation id="7782717250816686129">داده‌های دائمی در صفحه ورود به سیستم ذخیره شود و اطلاعات کاربری در جلسه تزریق شود.</translation>

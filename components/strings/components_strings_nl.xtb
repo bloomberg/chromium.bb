@@ -629,7 +629,7 @@
 <translation id="4277028893293644418">Wachtwoord opnieuw instellen</translation>
 <translation id="4279811152705618813">Je <ph name="DEVICE_TYPE" /> wordt beheerd door <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Deze pas is opgeslagen in je Google-account}other{Deze passen zijn opgeslagen in je Google-account}}</translation>
-<translation id="428847186335018806">Bestanden scannen die je downloadt of uploadt in Chrome.</translation>
+<translation id="428847186335018806">Scan de bestanden die je downloadt of uploadt in Chrome.</translation>
 <translation id="42981349822642051">Uitvouwen</translation>
 <translation id="4302965934281694568">Chou3 (envelop)</translation>
 <translation id="4305817255990598646">Overschakelen</translation>
@@ -1011,7 +1011,7 @@
 <translation id="6433490469411711332">Contactgegevens bewerken</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> heeft de verbinding geweigerd.</translation>
 <translation id="6434309073475700221">Annuleren</translation>
-<translation id="6435221585574090192">Gegevens over beveiligingsgebeurtenissen die zijn gemarkeerd door Chrome Enterprise Threat Protection, delen met je beheerder. Dit kunnen pagina-URL's, bestandsnamen, bestandsmetadata, de gebruikersnaam van je apparaat en je Chrome-gebruikersnaam zijn.</translation>
+<translation id="6435221585574090192">Deel gegevens over beveiligingsgebeurtenissen die zijn gemarkeerd door Chrome Enterprise Threat Protection met je beheerder. Dit kunnen pagina-URL's, bestandsnamen, bestandsmetadata, de gebruikersnaam van je apparaat en je Chrome-gebruikersnaam zijn.</translation>
 <translation id="6440503408713884761">Genegeerd</translation>
 <translation id="6446163441502663861">Kahu (envelop)</translation>
 <translation id="6446608382365791566">Meer informatie toevoegen</translation>
@@ -1056,7 +1056,7 @@
 <translation id="6671697161687535275">Formuliersuggestie verwijderen uit Chromium?</translation>
 <translation id="6685834062052613830">Uitloggen en configuratie voltooien</translation>
 <translation id="6689271823431384964">Chrome biedt aan je kaarten in je Google-account op te slaan omdat je bent ingelogd. Je kunt dit wijzigen in de instellingen. De naam van de kaarthouder is afkomstig uit je account.</translation>
-<translation id="6707256370811247129">De content van het cachegeheugen en de bestanden die je downloadt of uploadt in Chrome scannen.</translation>
+<translation id="6707256370811247129">Scan de content van het cachegeheugen en de bestanden die je downloadt of uploadt in Chrome.</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="6710594484020273272">&lt;Typ een zoekterm&gt;</translation>
 <translation id="671076103358959139">Inschrijftoken:</translation>

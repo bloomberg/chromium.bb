@@ -571,7 +571,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Nincs}=1{ 1 webhelytől }other{# webhelytől }}</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3973234410852337861">A(z) <ph name="HOST_NAME" /> le van tiltva</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> engedélyezte a Chrome Enterprise fenyegetések elleni védelme szolgáltatást a böngészőben. A Chrome Enterprise fenyegetések elleni védelme hozzáfér az Ön bizonyos adataihoz.</translation>
+<translation id="3981540111851280311">A(z) <ph name="ENROLLMENT_DOMAIN" /> engedélyezte a Chrome Enterprise fenyegetések elleni védelmét a böngészőben. A Chrome Enterprise fenyegetések elleni védelme hozzáfér az Ön bizonyos adataihoz.</translation>
 <translation id="3987940399970879459">Kevesebb mint 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 közeli weboldal}other{# közeli weboldal}}</translation>
 <translation id="4030383055268325496">&amp;Hozzáadás visszavonása</translation>
@@ -1237,7 +1237,7 @@ További részletek:
 <translation id="7542995811387359312">Az automatikus bankkártya-kitöltés le van tiltva, mivel ez az űrlap nem biztonságos kapcsolatot használ.</translation>
 <translation id="7548892272833184391">A kapcsolódási hibák elhárítása</translation>
 <translation id="7549584377607005141">Ez a weboldal korábban megadott adatokat kér ahhoz, hogy megfelelően jelenjen meg. Az adatokat újra elküldheti, de ezzel meg fog ismételni minden olyan műveletet, amelyet ez az oldal korábban végrehajtott.</translation>
-<translation id="7550637293666041147">Az Ön, eszközhöz és a Chrome-hoz tartozó felhasználóneve</translation>
+<translation id="7550637293666041147">Az Ön eszközhöz és Chrome-hoz tartozó felhasználóneve</translation>
 <translation id="7552846755917812628">Próbálja ki az alábbi tippeket:</translation>
 <translation id="7554791636758816595">Új lap</translation>
 <translation id="7564049878696755256">Elveszítheti hozzáférést <ph name="ORG_NAME" />-fiókjához, vagy visszaélhetnek személyes adataival. A Chrome azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
@@ -1511,7 +1511,7 @@ További részletek:
 <translation id="9080712759204168376">Megrendelés összegzése</translation>
 <translation id="9089260154716455634">Házirend figyelmen kívül hagyása:</translation>
 <translation id="9095388113577226029">További nyelvek…</translation>
-<translation id="9098981495403789647">Az adminisztrátor engedélyezte a Chrome Enterprise fenyegetések elleni védelme szolgáltatást a böngészőben. A Chrome Enterprise fenyegetések elleni védelme hozzáfér az Ön bizonyos adataihoz.</translation>
+<translation id="9098981495403789647">Az adminisztrátor engedélyezte a Chrome Enterprise fenyegetések elleni védelmét a böngészőben. A Chrome Enterprise fenyegetések elleni védelme hozzáfér az Ön bizonyos adataihoz.</translation>
 <translation id="9103872766612412690">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor a Chromium most csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan és helytelen hitelesítési adatokat küldött vissza.Ez olyankor fordulhat elő, amikor egy támadó megpróbálja magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi-bejelentkezési képernyő megszakította a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chromium még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="9106062320799175032">Számlázási cím hozzáadása</translation>
 <translation id="9114524666733003316">Kártya ellenőrzése…</translation>

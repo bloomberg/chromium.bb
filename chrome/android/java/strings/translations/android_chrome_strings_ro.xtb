@@ -67,7 +67,7 @@
 <translation id="1407135791313364759">Deschideți-le pe toate</translation>
 <translation id="1409426117486808224">Afișare simplificată pentru filele deschise</translation>
 <translation id="1409879593029778104">Descărcarea fișierului <ph name="FILE_NAME" /> a fost împiedicată, deoarece fișierul există deja.</translation>
-<translation id="1413136574162415971">Google poate verifica dacă parolele tale fac parte dintr-o încălcare a securității datelor. Opțiunea va fi activată atunci când te conectezi cu Contul Google și activezi sincronizarea.</translation>
+<translation id="1413136574162415971">Google poate verifica dacă parolele tale fac parte dintr-o încălcare a securității datelor. Opțiunea va fi activată atunci când te conectezi folosind Contul Google și activezi sincronizarea.</translation>
 <translation id="1414981605391750300">Se contactează Google. Poate dura un minut...</translation>
 <translation id="1416550906796893042">Versiunea aplicației</translation>
 <translation id="1430915738399379752">Printează</translation>
@@ -1121,6 +1121,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="9139068048179869749">Întreabă înainte de a permite site-urilor să trimită notificări (recomandat)</translation>
 <translation id="9139318394846604261">Cumpărături</translation>
 <translation id="9155898266292537608">De asemenea, poți căuta atingând scurt un cuvânt</translation>
+<translation id="9169507124922466868">Istoricul de navigare este pe jumătate deschis</translation>
 <translation id="9188680907066685419">Deconectează-te de la contul gestionat</translation>
 <translation id="9204836675896933765">1 fișier rămas</translation>
 <translation id="9206873250291191720">A</translation>

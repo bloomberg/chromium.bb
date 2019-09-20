@@ -173,6 +173,7 @@
 <translation id="1235458158152011030">Mitandao inayojulikana</translation>
 <translation id="123578888592755962">Diski imejaa</translation>
 <translation id="1238191093934674082">VPN ya Wazi</translation>
+<translation id="1239594683407221485">Gundua maudhui ya kifaa katika programu ya Faili.</translation>
 <translation id="124116460088058876">Lugha zaidi</translation>
 <translation id="1241753985463165747">Soma na ubadilishe data yako yote kwenye tovuti unayovinjari sasa inapotumwa</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> inataka kuweka upya mipangilio yako.</translation>
@@ -312,6 +313,7 @@
 <translation id="146220085323579959">Mtandao umekatizwa. Tafadhali kagua muunganisho wako wa mtandao na ujaribu tena.</translation>
 <translation id="1463112138205428654"><ph name="FILE_NAME" /> imezuiwa na mipangilio ya Ulinzi wa Hali ya Juu.</translation>
 <translation id="1464258312790801189">Akaunti Zako</translation>
+<translation id="1464781208867302907">Ili upate mapendeleo ya kifaa, nenda kwenye Mipangilio.</translation>
 <translation id="1465176863081977902">Nakili Anwani ya Sauti</translation>
 <translation id="1465827627707997754">Kipande cha piza</translation>
 <translation id="1468571364034902819">Haiwezi kutumia wasifu huu</translation>
@@ -740,6 +742,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2099686503067610784">Futa cheti cha seva "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Ingia katika Akaunti Kiotomatiki</translation>
 <translation id="2101225219012730419">Toleo:</translation>
+<translation id="2111670510994270194">Kichupo kipya kulia</translation>
 <translation id="21133533946938348">Bandikiza Kichupo</translation>
 <translation id="2113479184312716848">Fungua Faili...</translation>
 <translation id="2113921862428609753">Upatikanaji wa Maelezo kwa Mamlaka</translation>
@@ -2320,6 +2323,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4416582610654027550">Andika URL sahihi</translation>
 <translation id="4419409365248380979">Kila mara ruhusu <ph name="HOST" /> kuweka vidakuzi</translation>
 <translation id="4419610272958564173">Kifaa Kisichojulikana (Muuzaji: <ph name="VENDOR_ID" />, Bidhaa: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Tatizo la kuunganisha. Tafadhali wasiliana na <ph name="CARRIER_NAME" /> kwa usaidizi.</translation>
 <translation id="4421932782753506458">Kibonge</translation>
 <translation id="4423376891418188461">Rejesha Mipangilio</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, msimamizi wako anakuhitaji ubadilishe nenosiri lako.</translation>
@@ -3289,6 +3293,7 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="5869948122057593679">Funga Madirisha Yako Yote</translation>
 <translation id="5870086504539785141">Funga menyu ya ufikiaji</translation>
 <translation id="5870155679953074650">Mabadiliko ya hifadhi</translation>
+<translation id="5876851302954717356">Kichupo Kipya Kulia</translation>
 <translation id="5877064549588274448">Kituo kimebadilishwa. Zima na uwashe kifaa chako ili mabadiliko yaanze kutumika.</translation>
 <translation id="5877584842898320529">Printa iliyochaguliwa haipatikani au haijasakinishwa vizuri. <ph name="BR" />Angalia printa yako au ujaribu kuchagua printa nyingine.</translation>
 <translation id="5882919346125742463">Mitandao Inayojulikana</translation>
@@ -4550,6 +4555,7 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="7773726648746946405">Hifadhi ya kipindi</translation>
 <translation id="7774365994322694683">Ndege</translation>
 <translation id="7776701556330691704">Haikupata sauti zozote</translation>
+<translation id="7780252971640011240">Tatizo la kuunganisha. Tafadhali wasiliana na mtoa huduma wako kwa usaidizi.</translation>
 <translation id="7781335840981796660">Akaunti zote za mtumiaji na data ya ndani itaondolewa.</translation>
 <translation id="7782102568078991263">Hakuna mapendekezo zaidi kutoka katika Google</translation>
 <translation id="7782717250816686129">Ihifadhi data inayotumika mara kwa mara kwenye skrini ya kuingia na iweke maelezo ya kitambulisho katika kipindi.</translation>

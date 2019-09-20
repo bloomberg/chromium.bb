@@ -643,7 +643,7 @@
 <translation id="4277028893293644418">Poništi zaporku</translation>
 <translation id="4279811152705618813">Vašim uređajem <ph name="DEVICE_TYPE" /> upravlja <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ova je kartica spremljena na vašem Google računu}one{Ove su kartice spremljene na vašem Google računu}few{Ove su kartice spremljene na vašem Google računu}other{Ove su kartice spremljene na vašem Google računu}}</translation>
-<translation id="428847186335018806">Pregledajte datoteke koje preuzimate iz Chromea ili prenosite u Chrome.</translation>
+<translation id="428847186335018806">Pregledajte datoteke koje preuzimate s Chromea ili prenosite na Chrome.</translation>
 <translation id="42981349822642051">Proširi</translation>
 <translation id="4302965934281694568">Chou3 (omotnica)</translation>
 <translation id="4305817255990598646">Prebaci</translation>
@@ -1072,7 +1072,7 @@
 <translation id="6671697161687535275">Želite li ukloniti prijedlog iz Chromiuma?</translation>
 <translation id="6685834062052613830">Odjavite se i dovršite postavljanje</translation>
 <translation id="6689271823431384964">Chrome vam nudi spremanje vaših kartica na vaš Google račun jer ste prijavljeni. To ponašanje možete promijeniti u postavkama. Ime nositelja kartice preuzeto je s vašeg računa.</translation>
-<translation id="6707256370811247129">Pregledajte sadržaj predmemorije i datoteka koje preuzimate iz Chromea ili prenosite u Chrome.</translation>
+<translation id="6707256370811247129">Pregledajte sadržaj predmemorije i datoteka koje preuzimate s Chromea ili prenosite na Chrome.</translation>
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="6710594484020273272">&lt;Upišite pojam za pretraživanje&gt;</translation>
 <translation id="671076103358959139">Oznaka za prijavu:</translation>
