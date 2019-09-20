@@ -2778,9 +2778,10 @@ std::unique_ptr<net::ClientCertIdentity> AutoSelectCertificate(
   return nullptr;
 }
 
-void AddDataReductionProxyBinding(
+void AddDataReductionProxyReceiver(
     int render_process_id,
-    data_reduction_proxy::mojom::DataReductionProxyRequest request) {
+    mojo::PendingReceiver<data_reduction_proxy::mojom::DataReductionProxy>
+        receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* rph = content::RenderProcessHost::FromID(render_process_id);
   if (!rph)
@@ -2792,7 +2793,7 @@ void AddDataReductionProxyBinding(
   if (!drp_settings)
     return;
 
-  drp_settings->data_reduction_proxy_service()->Clone(std::move(request));
+  drp_settings->data_reduction_proxy_service()->Clone(std::move(receiver));
 }
 
 }  // namespace
@@ -3762,7 +3763,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
 #endif
 
   if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    registry->AddInterface(base::BindRepeating(&AddDataReductionProxyBinding,
+    registry->AddInterface(base::BindRepeating(&AddDataReductionProxyReceiver,
                                                render_process_host->GetID()),
                            ui_task_runner);
   }
