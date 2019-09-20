@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/data_saver/data_saver_top_host_provider.h"
+#include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
 
 #include "base/test/simple_test_clock.h"
 #include "base/time/default_clock.h"
@@ -26,15 +26,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Class to test the TopHostProvider and the HintsFetcherTopHostBlacklist.
-class DataSaverTopHostProviderTest : public ChromeRenderViewHostTestHarness {
+class OptimizationGuideTopHostProviderTest
+    : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     // Advance by 1-day to avoid running into null checks.
     test_clock_.Advance(base::TimeDelta::FromDays(1));
 
-    top_host_provider_ =
-        std::make_unique<DataSaverTopHostProvider>(profile(), &test_clock_);
+    top_host_provider_ = std::make_unique<OptimizationGuideTopHostProvider>(
+        profile(), &test_clock_);
 
     service_ = SiteEngagementService::Get(profile());
     pref_service_ = profile()->GetPrefs();
@@ -129,7 +130,8 @@ class DataSaverTopHostProviderTest : public ChromeRenderViewHostTestHarness {
   void SimulateNavigation(GURL url) {
     std::unique_ptr<content::MockNavigationHandle> test_handle_ =
         std::make_unique<content::MockNavigationHandle>(url, main_rfh());
-    DataSaverTopHostProvider::MaybeUpdateTopHostBlacklist(test_handle_.get());
+    OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlacklist(
+        test_handle_.get());
   }
 
   void RemoveHostsFromBlacklist(size_t num_hosts_navigated) {
@@ -165,26 +167,26 @@ class DataSaverTopHostProviderTest : public ChromeRenderViewHostTestHarness {
                 kHintsFetcherDataSaverTopHostBlacklistState));
   }
 
-  DataSaverTopHostProvider* top_host_provider() {
+  OptimizationGuideTopHostProvider* top_host_provider() {
     return top_host_provider_.get();
   }
 
   base::SimpleTestClock test_clock_;
 
  private:
-  std::unique_ptr<DataSaverTopHostProvider> top_host_provider_;
+  std::unique_ptr<OptimizationGuideTopHostProvider> top_host_provider_;
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       drp_test_context_;
   SiteEngagementService* service_;
   PrefService* pref_service_;
 };
 
-TEST_F(DataSaverTopHostProviderTest, CreateIfAllowedNonDataSaverUser) {
+TEST_F(OptimizationGuideTopHostProviderTest, CreateIfAllowedNonDataSaverUser) {
   SetDataSaverEnabled(false);
-  ASSERT_FALSE(DataSaverTopHostProvider::CreateIfAllowed(profile()));
+  ASSERT_FALSE(OptimizationGuideTopHostProvider::CreateIfAllowed(profile()));
 }
 
-TEST_F(DataSaverTopHostProviderTest,
+TEST_F(OptimizationGuideTopHostProviderTest,
        CreateIfAllowedDataSaverUserInfobarNotSeen) {
   SetDataSaverEnabled(true);
 
@@ -198,10 +200,11 @@ TEST_F(DataSaverTopHostProviderTest,
   decider->OnSettingsInitialized();
   EXPECT_TRUE(decider->NeedsToNotifyUser());
 
-  ASSERT_FALSE(DataSaverTopHostProvider::CreateIfAllowed(profile()));
+  ASSERT_FALSE(OptimizationGuideTopHostProvider::CreateIfAllowed(profile()));
 }
 
-TEST_F(DataSaverTopHostProviderTest, CreateIfAllowedDataSaverUserInfobarSeen) {
+TEST_F(OptimizationGuideTopHostProviderTest,
+       CreateIfAllowedDataSaverUserInfobarSeen) {
   SetDataSaverEnabled(true);
 
   // Navigate so infobar is shown.
@@ -214,10 +217,10 @@ TEST_F(DataSaverTopHostProviderTest, CreateIfAllowedDataSaverUserInfobarSeen) {
       ->NavigateAndCommit(GURL("http://whatever.com"));
   EXPECT_FALSE(decider->NeedsToNotifyUser());
 
-  ASSERT_TRUE(DataSaverTopHostProvider::CreateIfAllowed(profile()));
+  ASSERT_TRUE(OptimizationGuideTopHostProvider::CreateIfAllowed(profile()));
 }
 
-TEST_F(DataSaverTopHostProviderTest, GetTopHostsMaxSites) {
+TEST_F(OptimizationGuideTopHostProviderTest, GetTopHostsMaxSites) {
   SetTopHostBlacklistState(optimization_guide::prefs::
                                HintsFetcherTopHostBlacklistState::kInitialized);
   size_t engaged_hosts = 5;
@@ -230,7 +233,7 @@ TEST_F(DataSaverTopHostProviderTest, GetTopHostsMaxSites) {
   EXPECT_EQ(max_top_hosts, hosts.size());
 }
 
-TEST_F(DataSaverTopHostProviderTest,
+TEST_F(OptimizationGuideTopHostProviderTest,
        GetTopHostsFiltersPrivacyBlackedlistedHosts) {
   SetTopHostBlacklistState(optimization_guide::prefs::
                                HintsFetcherTopHostBlacklistState::kInitialized);
@@ -247,7 +250,8 @@ TEST_F(DataSaverTopHostProviderTest,
   EXPECT_EQ(hosts.size(), engaged_hosts - num_hosts_blacklisted);
 }
 
-TEST_F(DataSaverTopHostProviderTest, GetTopHostsInitializeBlacklistState) {
+TEST_F(OptimizationGuideTopHostProviderTest,
+       GetTopHostsInitializeBlacklistState) {
   EXPECT_EQ(GetCurrentTopHostBlacklistState(),
             optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
                 kNotInitialized);
@@ -264,7 +268,7 @@ TEST_F(DataSaverTopHostProviderTest, GetTopHostsInitializeBlacklistState) {
                 kInitialized);
 }
 
-TEST_F(DataSaverTopHostProviderTest,
+TEST_F(OptimizationGuideTopHostProviderTest,
        GetTopHostsBlacklistStateNotInitializedToInitialized) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
@@ -287,7 +291,7 @@ TEST_F(DataSaverTopHostProviderTest,
                 kInitialized);
 }
 
-TEST_F(DataSaverTopHostProviderTest,
+TEST_F(OptimizationGuideTopHostProviderTest,
        GetTopHostsBlacklistStateNotInitializedToEmpty) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
@@ -310,7 +314,7 @@ TEST_F(DataSaverTopHostProviderTest,
       optimization_guide::prefs::HintsFetcherTopHostBlacklistState::kEmpty);
 }
 
-TEST_F(DataSaverTopHostProviderTest,
+TEST_F(OptimizationGuideTopHostProviderTest,
        MaybeUpdateTopHostBlacklistNavigationsOnBlacklist) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
@@ -330,7 +334,7 @@ TEST_F(DataSaverTopHostProviderTest,
   EXPECT_EQ(hosts.size(), num_top_hosts);
 }
 
-TEST_F(DataSaverTopHostProviderTest,
+TEST_F(OptimizationGuideTopHostProviderTest,
        MaybeUpdateTopHostBlacklistEmptyBlacklist) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
@@ -351,7 +355,7 @@ TEST_F(DataSaverTopHostProviderTest,
   EXPECT_EQ(hosts.size(), num_top_hosts);
 }
 
-TEST_F(DataSaverTopHostProviderTest,
+TEST_F(OptimizationGuideTopHostProviderTest,
        HintsFetcherTopHostBlacklistNonHTTPOrHTTPSHost) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
@@ -383,7 +387,8 @@ TEST_F(DataSaverTopHostProviderTest,
   EXPECT_FALSE(IsHostBlacklisted(http_url.host()));
 }
 
-TEST_F(DataSaverTopHostProviderTest, IntializeTopHostBlacklistWithMaxTopSites) {
+TEST_F(OptimizationGuideTopHostProviderTest,
+       IntializeTopHostBlacklistWithMaxTopSites) {
   size_t engaged_hosts =
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
   size_t max_top_hosts =
@@ -414,7 +419,8 @@ TEST_F(DataSaverTopHostProviderTest, IntializeTopHostBlacklistWithMaxTopSites) {
   EXPECT_FALSE(IsHostBlacklisted(base::StringPrintf("domain%u.com", 1u)));
 }
 
-TEST_F(DataSaverTopHostProviderTest, TopHostsFilteredByEngagementThreshold) {
+TEST_F(OptimizationGuideTopHostProviderTest,
+       TopHostsFilteredByEngagementThreshold) {
   size_t engaged_hosts =
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
 
@@ -478,7 +484,7 @@ TEST_F(DataSaverTopHostProviderTest, TopHostsFilteredByEngagementThreshold) {
             hosts.end());
 }
 
-TEST_F(DataSaverTopHostProviderTest,
+TEST_F(OptimizationGuideTopHostProviderTest,
        TopHostsFilteredByEngagementThreshold_NumPoints) {
   size_t engaged_hosts =
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
@@ -519,7 +525,7 @@ TEST_F(DataSaverTopHostProviderTest,
             hosts.end());
 }
 
-TEST_F(DataSaverTopHostProviderTest,
+TEST_F(OptimizationGuideTopHostProviderTest,
        TopHostsFilteredByEngagementThreshold_LowScore) {
   size_t engaged_hosts =
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() - 2;

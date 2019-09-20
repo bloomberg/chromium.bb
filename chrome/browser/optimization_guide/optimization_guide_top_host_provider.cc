@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/data_saver/data_saver_top_host_provider.h"
+#include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
 
 #include <algorithm>
 
@@ -57,17 +57,17 @@ bool IsPermittedToUseTopHostProvider(content::BrowserContext* browser_context) {
 }  // namespace
 
 // static
-std::unique_ptr<DataSaverTopHostProvider>
-DataSaverTopHostProvider::CreateIfAllowed(
+std::unique_ptr<OptimizationGuideTopHostProvider>
+OptimizationGuideTopHostProvider::CreateIfAllowed(
     content::BrowserContext* browser_context) {
   if (IsPermittedToUseTopHostProvider(browser_context)) {
-    return std::make_unique<DataSaverTopHostProvider>(
+    return std::make_unique<OptimizationGuideTopHostProvider>(
         browser_context, base::DefaultClock::GetInstance());
   }
   return nullptr;
 }
 
-DataSaverTopHostProvider::DataSaverTopHostProvider(
+OptimizationGuideTopHostProvider::OptimizationGuideTopHostProvider(
     content::BrowserContext* browser_context,
     base::Clock* time_clock)
     : browser_context_(browser_context),
@@ -75,9 +75,10 @@ DataSaverTopHostProvider::DataSaverTopHostProvider(
       pref_service_(Profile::FromBrowserContext(browser_context_)->GetPrefs()) {
 }
 
-DataSaverTopHostProvider::~DataSaverTopHostProvider() {}
+OptimizationGuideTopHostProvider::~OptimizationGuideTopHostProvider() {}
 
-void DataSaverTopHostProvider::InitializeHintsFetcherTopHostBlacklist() {
+void OptimizationGuideTopHostProvider::
+    InitializeHintsFetcherTopHostBlacklist() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(browser_context_);
@@ -155,7 +156,7 @@ void DataSaverTopHostProvider::InitializeHintsFetcherTopHostBlacklist() {
 }
 
 // static
-void DataSaverTopHostProvider::MaybeUpdateTopHostBlacklist(
+void OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlacklist(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return;
@@ -192,7 +193,7 @@ void DataSaverTopHostProvider::MaybeUpdateTopHostBlacklist(
 }
 
 optimization_guide::prefs::HintsFetcherTopHostBlacklistState
-DataSaverTopHostProvider::GetCurrentBlacklistState() const {
+OptimizationGuideTopHostProvider::GetCurrentBlacklistState() const {
   return static_cast<
       optimization_guide::prefs::HintsFetcherTopHostBlacklistState>(
       pref_service_->GetInteger(
@@ -200,7 +201,7 @@ DataSaverTopHostProvider::GetCurrentBlacklistState() const {
               kHintsFetcherDataSaverTopHostBlacklistState));
 }
 
-void DataSaverTopHostProvider::UpdateCurrentBlacklistState(
+void OptimizationGuideTopHostProvider::UpdateCurrentBlacklistState(
     optimization_guide::prefs::HintsFetcherTopHostBlacklistState new_state) {
   optimization_guide::prefs::HintsFetcherTopHostBlacklistState current_state =
       GetCurrentBlacklistState();
@@ -238,7 +239,7 @@ void DataSaverTopHostProvider::UpdateCurrentBlacklistState(
       static_cast<int>(new_state));
 }
 
-std::vector<std::string> DataSaverTopHostProvider::GetTopHosts(
+std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts(
     size_t max_sites) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

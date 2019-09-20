@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DATA_SAVER_DATA_SAVER_TOP_HOST_PROVIDER_H_
-#define CHROME_BROWSER_DATA_SAVER_DATA_SAVER_TOP_HOST_PROVIDER_H_
+#ifndef CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_TOP_HOST_PROVIDER_H_
+#define CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_TOP_HOST_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -26,19 +26,20 @@ class NavigationHandle;
 // An implementation of the optimization_guide::TopHostProvider for getting the
 // top sites based on site engagement scores. This is the mechanism that has
 // been approved for users that have Data Saver (aka Lite Mode) enabled.
-class DataSaverTopHostProvider : public optimization_guide::TopHostProvider {
+class OptimizationGuideTopHostProvider
+    : public optimization_guide::TopHostProvider {
  public:
   // TODO(sophiechang): Make this constructor private when
   // OptimizationGuideKeyedService is fully rolled out. All future callers
   // should be using the CreateIfAllowed() factory method instead, which
   // validates if the user has the proper permissions to use this class.
-  DataSaverTopHostProvider(content::BrowserContext* BrowserContext,
-                           base::Clock* time_clock);
-  ~DataSaverTopHostProvider() override;
+  OptimizationGuideTopHostProvider(content::BrowserContext* BrowserContext,
+                                   base::Clock* time_clock);
+  ~OptimizationGuideTopHostProvider() override;
 
   // Creates a DataSaverTopHostProvider if the user is a Data Saver user and has
   // also seen the notification.
-  static std::unique_ptr<DataSaverTopHostProvider> CreateIfAllowed(
+  static std::unique_ptr<OptimizationGuideTopHostProvider> CreateIfAllowed(
       content::BrowserContext* browser_context);
 
   // Update the HintsFetcherTopHostBlacklist by attempting to remove the host
@@ -82,7 +83,7 @@ class DataSaverTopHostProvider : public optimization_guide::TopHostProvider {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(DataSaverTopHostProvider);
+  DISALLOW_COPY_AND_ASSIGN(OptimizationGuideTopHostProvider);
 };
 
-#endif  // CHROME_BROWSER_DATA_SAVER_DATA_SAVER_TOP_HOST_PROVIDER_H_
+#endif  // CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_TOP_HOST_PROVIDER_H_
