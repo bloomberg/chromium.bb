@@ -597,13 +597,24 @@ void AppListFolderView::UpdatePreferredBounds() {
   preferred_bounds_ = gfx::Rect(GetPreferredSize());
   preferred_bounds_ += (icon_bounds_in_container.CenterPoint() -
                         preferred_bounds_.CenterPoint());
+
   gfx::Rect container_bounds = container_view_->GetContentsBounds();
-  container_bounds.Inset(
-      0,
-      GetAppListConfig().search_box_fullscreen_top_padding() +
-          search_box::kSearchBoxPreferredHeight +
-          SearchBoxView::GetFocusRingSpacing(),
-      0, 0);
+  // Adjust for apps container margins.
+  if (app_list_features::IsScalableAppListEnabled()) {
+    container_bounds.Inset(container_view_->CalculateMarginsForAvailableBounds(
+        container_bounds,
+        contents_view_->GetSearchBoxSize(ash::AppListState::kStateApps),
+        true /*for_full_container_bounds*/));
+  } else {
+    container_bounds.Inset(
+        0, GetAppListConfig().search_box_fullscreen_top_padding(), 0, 0);
+  }
+  // Avoid overlap with the search box widget.
+  container_bounds.Inset(0,
+                         search_box::kSearchBoxPreferredHeight +
+                             SearchBoxView::GetFocusRingSpacing(),
+                         0, 0);
+
   preferred_bounds_.AdjustToFit(container_bounds);
 
   // Calculate the folder icon's bounds relative to this view.
