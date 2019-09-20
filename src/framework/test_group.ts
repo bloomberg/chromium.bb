@@ -6,7 +6,7 @@ import { ParamSpecIterable, ParamsAny, paramsEquals } from './params/index.js';
 
 export interface RunCase {
   readonly id: TestCaseID;
-  run(): Promise<LiveTestCaseResult>;
+  run(debug?: boolean): Promise<LiveTestCaseResult>;
 }
 
 export interface RunCaseIterable {
@@ -108,9 +108,9 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
     this.fn = fn;
   }
 
-  async run(): Promise<LiveTestCaseResult> {
+  async run(debug: boolean): Promise<LiveTestCaseResult> {
     const [rec, res] = this.recorder.record(this.id.test, this.id.params);
-    rec.start();
+    rec.start(debug);
     try {
       const inst = new this.fixture(rec, this.id.params || {});
       await inst.init();

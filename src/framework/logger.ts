@@ -54,16 +54,18 @@ export class TestCaseRecorder {
   private warned = false;
   private startTime = -1;
   private logs: string[] = [];
+  private debugging = false;
 
   constructor(result: LiveTestCaseResult) {
     this.result = result;
   }
 
-  start(): void {
+  start(debug: boolean = false): void {
     this.startTime = now();
     this.logs = [];
     this.failed = false;
     this.warned = false;
+    this.debugging = debug;
   }
 
   finish(): void {
@@ -76,6 +78,14 @@ export class TestCaseRecorder {
     this.result.status = this.failed ? 'fail' : this.warned ? 'warn' : 'pass';
 
     this.result.logs = this.logs;
+    this.debugging = false;
+  }
+
+  debug(msg: string): void {
+    if (!this.debugging) {
+      return;
+    }
+    this.log('DEBUG: ' + msg);
   }
 
   log(msg: string): void {

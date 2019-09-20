@@ -43,9 +43,15 @@ npx grunt build
 To test in a browser under the standalone harness, run `grunt serve`, then
 open:
 
-* http://localhost:8080/ (defaults to ?runnow=0&q=cts)
-* http://localhost:8080/?runnow=1&q=unittests:
-* http://localhost:8080/?runnow=1&q=unittests:basic:&q=unittests:params:
+- http://localhost:8080/ (defaults to ?runnow=0&q=cts)
+- http://localhost:8080/?runnow=1&q=unittests:
+- http://localhost:8080/?runnow=1&q=unittests:basic:&q=unittests:params:
+
+### Debug
+
+To see debug logs in a browser, use the `debug=1` query string:
+
+- http://localhost:8080/?q=cts:validation&debug=1
 
 ### Making Changes
 

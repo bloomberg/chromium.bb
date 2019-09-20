@@ -84,3 +84,21 @@ g.test('fail', t => {
   t.expect(res.status === 'fail');
   t.expect(res.timems >= 0);
 });
+
+g.test('debug', t => {
+  const { debug, logsCount } = t.params;
+
+  const mylog = new Logger();
+  const [testrec] = mylog.record({ suite: '', path: '' });
+  const [rec, res] = testrec.record('baz', null);
+
+  rec.start(debug);
+  rec.debug('hello');
+  rec.finish();
+  t.expect(res.status === 'pass');
+  t.expect(res.timems >= 0);
+  t.expect(res.logs!.length === logsCount);
+}).params([
+  { debug: true, logsCount: 1 }, // ()
+  { debug: false, logsCount: 0 },
+]);

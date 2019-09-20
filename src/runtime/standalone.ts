@@ -48,7 +48,12 @@ function makeTest(spec: TestSpecID, description: string): HTMLElement {
   return testcases[0];
 }
 
-function mkCase(testcasesVis: HTMLElement, query: string, t: RunCase): () => Promise<void> {
+function mkCase(
+  testcasesVis: HTMLElement,
+  query: string,
+  t: RunCase,
+  debug: boolean
+): () => Promise<void> {
   const testcase = $('<div>')
     .addClass('testcase')
     .appendTo(testcasesVis);
@@ -71,7 +76,7 @@ function mkCase(testcasesVis: HTMLElement, query: string, t: RunCase): () => Pro
   const caselogs = $('<div>', { class: 'caselogs' }).appendTo(testcase);
 
   const runCase = async () => {
-    const res = await t.run();
+    const res = await t.run(debug);
 
     casetime.text(res.timems.toFixed(4) + ' ms');
 
@@ -100,6 +105,7 @@ function mkCase(testcasesVis: HTMLElement, query: string, t: RunCase): () => Pro
 (async () => {
   const url = new URL(window.location.toString());
   const runnow = url.searchParams.get('runnow') === '1';
+  const debug = url.searchParams.get('debug') === '1';
 
   const loader = new TestLoader();
 
@@ -119,7 +125,7 @@ function mkCase(testcasesVis: HTMLElement, query: string, t: RunCase): () => Pro
     const [tRec] = log.record(f.id);
     for (const t of f.spec.g.iterate(tRec)) {
       const query = makeQueryString(f.id, t.id);
-      const runCase = mkCase(testcasesVis, query, t);
+      const runCase = mkCase(testcasesVis, query, t, debug);
       runCaseList.push(runCase);
     }
   }

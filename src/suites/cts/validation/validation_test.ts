@@ -25,6 +25,8 @@ export class ValidationTest extends GPUTest {
       const gpuValidationError = await this.device.popErrorScope();
       if (!gpuValidationError) {
         this.fail('Validation error was expected.');
+      } else if (gpuValidationError instanceof GPUValidationError) {
+        this.debug(`Captured validation error - ${gpuValidationError.message}`);
       }
     });
   }

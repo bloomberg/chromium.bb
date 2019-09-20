@@ -18,6 +18,10 @@ export class Fixture {
   // we need to be able to ergonomically override it in subclasses.
   async init(): Promise<void> {}
 
+  debug(msg: string): void {
+    this.rec.debug(msg);
+  }
+
   log(msg: string): void {
     this.rec.log(msg);
   }
