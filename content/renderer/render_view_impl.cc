@@ -1466,18 +1466,12 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   RenderWidget::ShowCallback opener_callback = base::BindOnce(
       &RenderViewImpl::ShowCreatedPopupWidget, weak_ptr_factory_.GetWeakPtr());
 
-  // The RenderWidget associated with the RenderView. This should be the
-  // RenderWidget for the main frame, but may be a zombie RenderWidget when
-  // the main frame is remote (we don't need a RenderWidget for it then).
-  // However for now (https://crbug.com/419087) we know it exists and grab
-  // state off it for the popup.
-  // TODO(crbug.com/419087): This should probably be using the local root's
-  // RenderWidget for the frame making the popup.
-  RenderWidget* view_render_widget = render_widget_.get();
+  RenderWidget* render_widget =
+      RenderFrameImpl::FromWebFrame(creator)->GetLocalRootRenderWidget();
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
-      widget_routing_id, view_render_widget->compositor_deps(),
-      page_properties(), blink::kWebDisplayModeUndefined,
+      widget_routing_id, render_widget->compositor_deps(), page_properties(),
+      blink::kWebDisplayModeUndefined,
       /*hidden=*/false,
       /*never_visible=*/false, std::move(widget_channel_receiver));
 
@@ -1498,7 +1492,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // Devtools emulation, which may be currently applied to the
   // |view_render_widget|, should also apply to the new popup. This doesn't
   // happen automatically.
-  popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(view_render_widget);
+  popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(render_widget);
 
   return popup_web_widget;
 }
