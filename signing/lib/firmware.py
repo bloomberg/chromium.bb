@@ -16,6 +16,7 @@ import tempfile
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.signing.lib import signer
 
@@ -361,7 +362,7 @@ def _MountImagePartition(image_file, part_id, destination, gpt_table=None,
     part_id: A partition name or number.
     destination: A path to the mount point.
     gpt_table: A list of PartitionInfo objects. See
-      cros_build_lib.GetImageDiskPartitionInfo.
+      image_lib.GetImageDiskPartitionInfo.
     sudo: Same as MountDir.
     makedirs: Same as MountDir.
     mount_opts: Same as MountDir.
@@ -369,7 +370,7 @@ def _MountImagePartition(image_file, part_id, destination, gpt_table=None,
   """
 
   if gpt_table is None:
-    gpt_table = cros_build_lib.GetImageDiskPartitionInfo(image_file)
+    gpt_table = image_lib.GetImageDiskPartitionInfo(image_file)
 
   for part in gpt_table:
     if part_id == part.name or part_id == part.number:

@@ -13,6 +13,7 @@ import tempfile
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import image_lib
 from chromite.lib import path_util
 
 from chromite.lib.paygen import filelib
@@ -30,7 +31,7 @@ def ExtractPartition(filename, partition, out_part):
     partition: The partition name. e.g. ROOT or KERNEL.
     out_part: The output partition file.
   """
-  parts = cros_build_lib.GetImageDiskPartitionInfo(filename)
+  parts = image_lib.GetImageDiskPartitionInfo(filename)
   part_info = [p for p in parts if p.name == partition][0]
 
   offset = int(part_info.start)
@@ -146,7 +147,7 @@ def IsExt4Image(image):
 def IsGptImage(image):
   """Returns true if the image is a GPT image."""
   try:
-    return bool(cros_build_lib.GetImageDiskPartitionInfo(image))
+    return bool(image_lib.GetImageDiskPartitionInfo(image))
   except cros_build_lib.RunCommandError:
     return False
 

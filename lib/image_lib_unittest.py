@@ -32,29 +32,29 @@ FAKE_PATH = '/imaginary/file'
 LOOP_DEV = '/dev/loop9999'
 LOOP_PART_COUNT = 12
 LOOP_PARTITION_INFO = [
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         1, 2928640, 2957311, 28672, 14680064, 'STATE', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         2, 20480, 53247, 32768, 16777216, 'KERN-A', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         3, 286720, 2928639, 2641920, 1352663040, 'ROOT-A', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         4, 53248, 86015, 32768, 16777216, 'KERN-B', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         5, 282624, 286719, 4096, 2097152, 'ROOT-B', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         6, 16448, 16448, 1, 512, 'KERN-C', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         7, 16449, 16449, 1, 512, 'ROOT-C', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         8, 86016, 118783, 32768, 16777216, 'OEM', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         9, 16450, 16450, 1, 512, 'reserved', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         10, 16451, 16451, 1, 512, 'reserved', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         11, 64, 16447, 16384, 8388608, 'RWFW', ''),
-    cros_build_lib.PartitionInfo(
+    image_lib.PartitionInfo(
         12, 249856, 282623, 32768, 16777216, 'EFI-SYSTEM', ''),
 ]
 LOOP_PARTS_DICT = {
@@ -88,7 +88,7 @@ class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
       self.destination = osutils.TempDir()
     if part_count:
       self._gpt_table = [
-          cros_build_lib.PartitionInfo(num, 0, 0, 0, '', 'my-%d' % num, '')
+          image_lib.PartitionInfo(num, 0, 0, 0, '', 'my-%d' % num, '')
           for num in range(1, part_count + 1)]
     else:
       self._gpt_table = LOOP_PARTITION_INFO
@@ -128,7 +128,7 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
     self.rc_mock.SetDefaultCmdResult()
     self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
 
-    self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
+    self.PatchObject(image_lib, 'GetImageDiskPartitionInfo',
                      return_value=LOOP_PARTITION_INFO)
     self.PatchObject(glob, 'glob', return_value=LOOP_PARTS_LIST)
     self.mount_mock = self.PatchObject(osutils, 'MountDir')
@@ -461,3 +461,118 @@ class SecurityTestConfigTest(cros_test_lib.RunCommandTempDirTestCase):
     check2 = os.path.join(self.config._checks_dir, 'ensure_check2.sh')
     config2 = os.path.join(self.baselines, 'ensure_check2.config')
     self.assertCommandContains([check2, self.image, config2])
+
+
+class GetImageDiskPartitionInfoTests(cros_test_lib.RunCommandTestCase):
+  """Tests the GetImageDiskPartitionInfo function."""
+
+  SAMPLE_PARTED = """/foo/chromiumos_qemu_image.bin:\
+2271240192B:file:512:512:gpt::;
+11:32768B:8421375B:8388608B::RWFW:;
+6:8421376B:8421887B:512B::KERN-C:;
+7:8421888B:8422399B:512B::ROOT-C:;
+9:8422400B:8422911B:512B::reserved:;
+10:8422912B:8423423B:512B::reserved:;
+2:10485760B:27262975B:16777216B::KERN-A:;
+4:27262976B:44040191B:16777216B::KERN-B:;
+8:44040192B:60817407B:16777216B:ext4:OEM:msftdata;
+12:127926272B:161480703B:33554432B:fat16:EFI-SYSTEM:boot, esp;
+5:161480704B:163577855B:2097152B::ROOT-B:;
+3:163577856B:2260729855B:2097152000B:ext2:ROOT-A:;
+1:2260729856B:2271215615B:10485760B:ext2:STATE:msftdata;
+"""
+
+  SAMPLE_CGPT = """
+       start        size    part  contents
+           0           1          PMBR (Boot GUID: 88FB7EB8-2B3F-B943-B933-\
+EEC571FFB6E1)
+           1           1          Pri GPT header
+           2          32          Pri GPT table
+     1921024     2097152       1  Label: "STATE"
+                                  Type: Linux data
+                                  UUID: EEBD83BE-397E-BD44-878B-0DDDD5A5C510
+       20480       32768       2  Label: "KERN-A"
+                                  Type: ChromeOS kernel
+                                  UUID: 7007C2F3-08E5-AB40-A4BC-FF5B01F5460D
+                                  Attr: priority=15 tries=15 successful=1
+     1101824      819200       3  Label: "ROOT-A"
+                                  Type: ChromeOS rootfs
+                                  UUID: F4C5C3AD-027F-894B-80CD-3DEC57932948
+       53248       32768       4  Label: "KERN-B"
+                                  Type: ChromeOS kernel
+                                  UUID: C85FB478-404C-8741-ADB8-11312A35880D
+                                  Attr: priority=0 tries=0 successful=0
+      282624      819200       5  Label: "ROOT-B"
+                                  Type: ChromeOS rootfs
+                                  UUID: A99F4231-1EC3-C542-AC0C-DF3729F5DB07
+       16448           1       6  Label: "KERN-C"
+                                  Type: ChromeOS kernel
+                                  UUID: 81F0E336-FAC9-174D-A08C-864FE627B637
+                                  Attr: priority=0 tries=0 successful=0
+       16449           1       7  Label: "ROOT-C"
+                                  Type: ChromeOS rootfs
+                                  UUID: 9E127FCA-30C1-044E-A5F2-DF74E6932692
+       86016       32768       8  Label: "OEM"
+                                  Type: Linux data
+                                  UUID: 72986347-A37C-684F-9A19-4DBAF41C55A9
+       16450           1       9  Label: "reserved"
+                                  Type: ChromeOS reserved
+                                  UUID: BA85A0A7-1850-964D-8EF8-6707AC106C3A
+       16451           1      10  Label: "reserved"
+                                  Type: ChromeOS reserved
+                                  UUID: 16C9EC9B-50FA-DD46-98DC-F781360817B4
+          64       16384      11  Label: "RWFW"
+                                  Type: ChromeOS firmware
+                                  UUID: BE8AECB9-4F78-7C44-8F23-5A9273B7EC8F
+      249856       32768      12  Label: "EFI-SYSTEM"
+                                  Type: EFI System Partition
+                                  UUID: 88FB7EB8-2B3F-B943-B933-EEC571FFB6E1
+     4050847          32          Sec GPT table
+     4050879           1          Sec GPT header
+"""
+
+  def testCgpt(self):
+    """Tests that we can list all partitions with `cgpt` correctly."""
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_CGPT)
+    partitions = image_lib.GetImageDiskPartitionInfo('...')
+    part_dict = {p.name: p for p in partitions}
+    self.assertEqual(part_dict['STATE'].start, 983564288)
+    self.assertEqual(part_dict['STATE'].size, 1073741824)
+    self.assertEqual(part_dict['STATE'].number, 1)
+    self.assertEqual(part_dict['STATE'].name, 'STATE')
+    self.assertEqual(part_dict['EFI-SYSTEM'].start, 249856 * 512)
+    self.assertEqual(part_dict['EFI-SYSTEM'].size, 32768 * 512)
+    self.assertEqual(part_dict['EFI-SYSTEM'].number, 12)
+    self.assertEqual(part_dict['EFI-SYSTEM'].name, 'EFI-SYSTEM')
+    self.assertEqual(12, len(partitions))
+
+  def testNormalPath(self):
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
+    partitions = image_lib.GetImageDiskPartitionInfo('_ignored')
+    part_dict = {p.name: p for p in partitions}
+    self.assertEqual(12, len(partitions))
+    self.assertEqual(1, part_dict['STATE'].number)
+    self.assertEqual(2097152000, part_dict['ROOT-A'].size)
+
+  def testKeyedByNumber(self):
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
+    partitions = image_lib.GetImageDiskPartitionInfo(
+        '_ignored'
+    )
+    part_dict = {p.number: p for p in partitions}
+    self.assertEqual(12, len(part_dict))
+    self.assertEqual('STATE', part_dict[1].name)
+    self.assertEqual(2097152000, part_dict[3].size)
+    self.assertEqual('reserved', part_dict[9].name)
+    self.assertEqual('reserved', part_dict[10].name)
+
+  def testChangeUnitInsideChroot(self):
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_CGPT)
+    partitions = image_lib.GetImageDiskPartitionInfo('_ignored')
+    part_dict = {p.name: p for p in partitions}
+    self.assertEqual(part_dict['STATE'].start, 983564288)
+    self.assertEqual(part_dict['STATE'].size, 1073741824)

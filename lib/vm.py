@@ -20,6 +20,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import device
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import remote_access
@@ -40,7 +41,7 @@ def VMIsUpdatable(path):
   Returns:
     True if VM is updatable; False otherwise.
   """
-  table = {p.name: p for p in cros_build_lib.GetImageDiskPartitionInfo(path)}
+  table = {p.name: p for p in image_lib.GetImageDiskPartitionInfo(path)}
   # Assume if size of the two root partitions match, the image
   # is updatable.
   return table['ROOT-B'].size == table['ROOT-A'].size

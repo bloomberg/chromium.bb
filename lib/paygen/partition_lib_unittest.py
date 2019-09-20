@@ -11,10 +11,11 @@ import os
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
-
 from chromite.lib.paygen import partition_lib
+
 
 class PartitionLibTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test partition_lib functions."""
@@ -61,10 +62,10 @@ Block count: %d
     part_a = os.path.join(self.tempdir, 'a.bin')
 
     fake_partitions = (
-        cros_build_lib.PartitionInfo(1, 0, 4, 4, 'fs', 'PART-A', ''),
-        cros_build_lib.PartitionInfo(2, 4, 8, 4, 'fs', 'PART-B', ''),
+        image_lib.PartitionInfo(1, 0, 4, 4, 'fs', 'PART-A', ''),
+        image_lib.PartitionInfo(2, 4, 8, 4, 'fs', 'PART-B', ''),
     )
-    self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
+    self.PatchObject(image_lib, 'GetImageDiskPartitionInfo',
                      return_value=fake_partitions)
 
     partition_lib.ExtractPartition(image, 'PART-A', part_a)
@@ -108,8 +109,7 @@ Block count: %d
     """Tests we correctly identify an Gpt image."""
     # Tests correct arguments are passed and Gpt image is correctly identified.
     image = '/foo/image'
-    part_info_mock = self.PatchObject(cros_build_lib,
-                                      'GetImageDiskPartitionInfo')
+    part_info_mock = self.PatchObject(image_lib, 'GetImageDiskPartitionInfo')
     self.assertTrue(partition_lib.IsGptImage(image))
     part_info_mock.assert_called_once_with(image)
 

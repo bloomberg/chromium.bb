@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import collections
 import contextlib
 from datetime import datetime
 import email.utils
@@ -1484,115 +1483,6 @@ def TimedSection():
   finally:
     times.finish = datetime.now()
     times.delta = times.finish - times.start
-
-
-PartitionInfo = collections.namedtuple(
-    'PartitionInfo',
-    ['number', 'start', 'end', 'size', 'file_system', 'name', 'flags']
-)
-
-
-def _ParseParted(lines):
-  """Returns partition information from `parted print` output."""
-  ret = []
-  # Sample output (partition #, start, end, size, file system, name, flags):
-  #   /foo/chromiumos_qemu_image.bin:3360MB:file:512:512:gpt:;
-  #   11:0.03MB:8.42MB:8.39MB::RWFW:;
-  #   6:8.42MB:8.42MB:0.00MB::KERN-C:;
-  #   7:8.42MB:8.42MB:0.00MB::ROOT-C:;
-  #   9:8.42MB:8.42MB:0.00MB::reserved:;
-  #   10:8.42MB:8.42MB:0.00MB::reserved:;
-  #   2:10.5MB:27.3MB:16.8MB::KERN-A:;
-  #   4:27.3MB:44.0MB:16.8MB::KERN-B:;
-  #   8:44.0MB:60.8MB:16.8MB:ext4:OEM:;
-  #   12:128MB:145MB:16.8MB:fat16:EFI-SYSTEM:boot;
-  #   5:145MB:2292MB:2147MB::ROOT-B:;
-  #   3:2292MB:4440MB:2147MB:ext2:ROOT-A:;
-  #   1:4440MB:7661MB:3221MB:ext4:STATE:;
-  pattern = re.compile(r'(([^:]*:){6}[^:]*);')
-  for line in lines:
-    match = pattern.match(line)
-    if match:
-      d = dict(zip(PartitionInfo._fields, match.group(1).split(':')))
-      # Disregard any non-numeric partition number (e.g. the file path).
-      if d['number'].isdigit():
-        d['number'] = int(d['number'])
-        for key in ['start', 'end', 'size']:
-          d[key] = float(d[key][:-1])
-        ret.append(PartitionInfo(**d))
-  return ret
-
-
-def _ParseCgpt(lines):
-  """Returns partition information from `cgpt show` output."""
-  #   start        size    part  contents
-  # 1921024     2097152       1  Label: "STATE"
-  #                              Type: Linux data
-  #                              UUID: EEBD83BE-397E-BD44-878B-0DDDD5A5C510
-  #   20480       32768       2  Label: "KERN-A"
-  #                              Type: ChromeOS kernel
-  #                              UUID: 7007C2F3-08E5-AB40-A4BC-FF5B01F5460D
-  #                              Attr: priority=15 tries=15 successful=1
-  # pylint: disable=invalid-triple-quote
-  # https://github.com/edaniszewski/pylint-quotes/issues/20
-  start_pattern = re.compile(r'''\s+(\d+)\s+(\d+)\s+(\d+)\s+Label: "(.+)"''')
-  ret = []
-  line_no = 0
-  while line_no < len(lines):
-    line = lines[line_no]
-    line_no += 1
-    m = start_pattern.match(line)
-    if not m:
-      continue
-
-    start, size, number, label = m.groups()
-    number = int(number)
-    start = int(start) * 512
-    size = int(size) * 512
-    end = start + size
-
-    ret.append(PartitionInfo(number=number, start=start, end=end, size=size,
-                             name=label, file_system='', flags=''))
-
-  return ret
-
-
-def GetImageDiskPartitionInfo(image_path):
-  """Returns the disk partition table of an image.
-
-  Args:
-    image_path: Path to the image file.
-
-  Returns:
-    A list of ParitionInfo items.
-  """
-
-  if IsInsideChroot():
-    # Inside chroot, use `cgpt`.
-    cmd = ['cgpt', 'show', image_path]
-    func = _ParseCgpt
-  else:
-    # Outside chroot, use `parted`. Parted 3.2 and earlier has a bug where it
-    # will complain that partitions are overlapping even when they are not. It
-    # does this in a specific case: when inserting a one-sector partition into
-    # a layout where that partition is snug in between two other partitions
-    # that have smaller partition numbers. With disk_layout_v2.json, this
-    # happens when inserting partition 10, KERN-A, since the blank padding
-    # before it was removed.
-    # Work around this by telling parted to ignore this "failure" interactively.
-    # Yes, the three dashes are correct, and yes, it _is_ weird.
-    cmd = ['parted', '---pretend-input-tty', '-m', image_path, 'unit', 'B',
-           'print']
-    func = _ParseParted
-
-  # The 'I' input tells parted to ignore its supposed concern about overlapping
-  # partitions. Cgpt simply ignores the input.
-  lines = RunCommand(
-      cmd,
-      extra_env={'PATH': '/sbin:%s' % os.environ['PATH'], 'LC_ALL': 'C'},
-      capture_output=True,
-      input='I').output.splitlines()
-  return func(lines)
 
 
 def GetRandomString(length=20):
