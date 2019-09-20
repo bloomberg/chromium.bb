@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -25,13 +25,11 @@ import android.widget.ImageView;
 import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
 
-import org.chromium.ui.R;
-
 /**
  * A custom {@link ImageView} that is able to render bitmaps and colors with rounded off corners.
  * The corner radii should be set through attributes. E.g.
  *
- *   <org.chromium.ui.widget.RoundedCornerImageView
+ *   <org.chromium.chrome.browser.ui.widget.RoundedCornerImageView
  *      app:cornerRadiusTopStart="8dp"
  *      app:cornerRadiusTopEnd="8dp"
  *      app:cornerRadiusBottomStart="8dp"
