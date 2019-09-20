@@ -24713,6 +24713,7 @@ Called by update_net_error_codes.py.-->
   <int value="3033" label="ThirdPartyBroadcastChannel"/>
   <int value="3034"
       label="MediaSourceGroupEndTimestampDecreaseWithinMediaSegment"/>
+  <int value="3035" label="TextFragmentAnchorTapToDismiss"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

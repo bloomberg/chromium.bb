@@ -1722,6 +1722,14 @@ void LocalFrameView::InvokeFragmentAnchor() {
     fragment_anchor_ = nullptr;
 }
 
+void LocalFrameView::DismissFragmentAnchor() {
+  if (!fragment_anchor_)
+    return;
+
+  if (fragment_anchor_->Dismiss())
+    fragment_anchor_ = nullptr;
+}
+
 bool LocalFrameView::UpdatePlugins() {
   // This is always called from UpdatePluginsTimerFired.
   // update_plugins_timer should only be scheduled if we have FrameViews to
