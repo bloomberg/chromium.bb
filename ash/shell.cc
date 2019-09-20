@@ -980,7 +980,6 @@ void Shell::Init(
   accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
 
   shelf_config_ = std::make_unique<ShelfConfig>();
-  shelf_config_->Init();
   shelf_controller_ = std::make_unique<ShelfController>();
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
@@ -1068,6 +1067,9 @@ void Shell::Init(
   // |app_list_controller_| as they are used in its constructor.
   app_list_controller_ = std::make_unique<AppListControllerImpl>();
   home_screen_controller_->SetDelegate(app_list_controller_.get());
+
+  // The |shelf_config_| needs |app_list_controller_| to initialize itself.
+  shelf_config_->Init();
 
   autoclick_controller_ = std::make_unique<AutoclickController>();
 
