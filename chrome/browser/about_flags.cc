@@ -4567,6 +4567,13 @@ const FeatureEntry kFeatureEntries[] = {
                                     kBackForwardCacheVariations,
                                     "BackForwardCache")},
 
+#if defined(OS_ANDROID)
+    {"android-setup-search-engine",
+     flag_descriptions::kAndroidSetupSearchEngineName,
+     flag_descriptions::kAndroidSetupSearchEngineDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidSetupSearchEngine)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

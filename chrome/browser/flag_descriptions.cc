@@ -2274,6 +2274,10 @@ const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";
 
+const char kAndroidSetupSearchEngineName[] = "Android setup search engine";
+const char kAndroidSetupSearchEngineDescription[] =
+    "Enables search engine selection at Android setup.";
+
 const char kAndroidSurfaceControl[] = "Use Android SurfaceControl";
 const char kAndroidSurfaceControlDescription[] =
     "Use the SurfaceControl API for supporting overlays on Android";
