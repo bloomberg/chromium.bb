@@ -1877,7 +1877,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
 #endif
       autoplay_configuration_binding_(this),
       frame_binding_(this),
-      host_zoom_binding_(this),
       frame_bindings_control_binding_(this),
       frame_navigation_control_receiver_(this),
       fullscreen_binding_(this),
@@ -4059,13 +4058,6 @@ void RenderFrameImpl::BindDevToolsAgent(
   frame_->BindDevToolsAgent(host.PassHandle(), receiver.PassHandle());
 }
 
-// mojom::HostZoom implementation ----------------------------------------------
-
-void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
-  DCHECK(is_main_frame_);
-  render_view_->SetHostZoomLevel(url, zoom_level);
-}
-
 // blink::WebLocalFrameClient implementation
 // ----------------------------------------
 blink::BrowserInterfaceBrokerProxy*
@@ -6149,11 +6141,6 @@ void RenderFrameImpl::UpdateStateForCommit(
     internal_data->set_must_reset_scroll_and_scale_state(false);
   }
   if (!frame_->Parent()) {  // Only for top frames.
-    // TODO(danakj): This seems redundant, the RenderWidget has the zoom set
-    // already via VisualProperties. Remove it.
-    render_view_->UpdateZoomLevelForNavigationCommitOfMainFrame(
-        GetLoadingUrl());
-
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
     if (render_thread_impl) {  // Can be NULL in tests.
       render_thread_impl->histogram_customizer()->RenderViewNavigatedToHost(
@@ -7428,19 +7415,6 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindMhtmlFileWriter, base::Unretained(this)));
-
-  if (!frame_->Parent()) {
-    // Host zoom is per-page, so only added on the main frame.
-    GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
-        &RenderFrameImpl::OnHostZoomClientRequest, weak_factory_.GetWeakPtr()));
-  }
-}
-
-void RenderFrameImpl::OnHostZoomClientRequest(
-    mojom::HostZoomAssociatedRequest request) {
-  DCHECK(!host_zoom_binding_.is_bound());
-  host_zoom_binding_.Bind(std::move(request),
-                          GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindMhtmlFileWriter(

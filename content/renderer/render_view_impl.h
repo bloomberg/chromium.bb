@@ -167,12 +167,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
 
-  // Stores a map of url to zoom level, specified by the browser.
-  void SetHostZoomLevel(const GURL& url, double zoom_level);
-
-  // When the main frame commits, the zoom level may need to be changed.
-  void UpdateZoomLevelForNavigationCommitOfMainFrame(const GURL& loading_url);
-
   // Sets the zoom level and notifies observers. Returns true if the zoom level
   // changed. A value of 0 means the default zoom level.
   bool SetZoomLevel(double zoom_level);
@@ -273,7 +267,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::WebString AcceptLanguages() override;
   int HistoryBackListCount() override;
   int HistoryForwardListCount() override;
-  void ZoomLimitsChanged(double minimum_level, double maximum_level) override;
   void PageScaleFactorChanged(float page_scale_factor) override;
   void DidUpdateTextAutosizerPageInfo(
       const blink::WebTextAutosizerPageInfo& page_info) override;
@@ -662,9 +655,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Used to indicate the zoom level to be used during subframe loads, since
   // they should match page zoom level.
   double page_zoom_level_ = 0;
-
-  // A map of urls to zoom levels specified by the browser.
-  base::flat_map<GURL, double> host_zoom_levels_;
 
   // Helper objects ------------------------------------------------------------
 

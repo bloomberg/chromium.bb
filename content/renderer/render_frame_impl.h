@@ -35,7 +35,6 @@
 #include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_delete_intention.h"
-#include "content/common/host_zoom.mojom.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/renderer.mojom.h"
@@ -185,7 +184,6 @@ class CONTENT_EXPORT RenderFrameImpl
       mojom::Frame,
       mojom::FrameNavigationControl,
       mojom::FullscreenVideoElementHandler,
-      mojom::HostZoom,
       mojom::FrameBindingsControl,
       mojom::MhtmlFileWriter,
       public blink::WebLocalFrameClient,
@@ -657,9 +655,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;
-
-  // mojom::HostZoom implementation:
-  void SetHostZoomLevel(const GURL& url, double zoom_level) override;
 
   // mojom::MhtmlFileWriter implementation:
   void SerializeAsMHTML(const mojom::SerializeAsMHTMLParamsPtr params,
@@ -1331,8 +1326,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void RegisterMojoInterfaces();
 
-  void OnHostZoomClientRequest(mojom::HostZoomAssociatedRequest request);
-
   void InitializeBlameContext(RenderFrameImpl* parent_frame);
 
   // service_manager::mojom::InterfaceProvider:
@@ -1688,7 +1681,6 @@ class CONTENT_EXPORT RenderFrameImpl
   mojo::AssociatedBinding<blink::mojom::AutoplayConfigurationClient>
       autoplay_configuration_binding_;
   mojo::Binding<mojom::Frame> frame_binding_;
-  mojo::AssociatedBinding<mojom::HostZoom> host_zoom_binding_;
   mojo::AssociatedBinding<mojom::FrameBindingsControl>
       frame_bindings_control_binding_;
   mojo::AssociatedReceiver<mojom::FrameNavigationControl>
