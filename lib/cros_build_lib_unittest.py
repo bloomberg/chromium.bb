@@ -19,14 +19,13 @@ import socket
 import sys
 
 import mock
-import six
 from six.moves import builtins
 
 from chromite.lib import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -1073,76 +1072,6 @@ class SafeRunTest(cros_test_lib.TestCase):
     f_list = [functools.partial(self._raise_exception, Exception())] * 3
     self.assertRaises(RuntimeError, cros_build_lib.SafeRun, f_list,
                       combine_exceptions=True)
-
-
-class FrozenAttributesTest(cros_test_lib.TestCase):
-  """Tests FrozenAttributesMixin functionality."""
-
-  class DummyClass(object):
-    """Any class that does not override __setattr__."""
-
-  class SetattrClass(object):
-    """Class that does override __setattr__."""
-    SETATTR_OFFSET = 10
-    def __setattr__(self, attr, value):
-      """Adjust value here to later confirm that this code ran."""
-      object.__setattr__(self, attr, self.SETATTR_OFFSET + value)
-
-  def _TestBasics(self, cls):
-    # pylint: disable=attribute-defined-outside-init
-    def _Expected(val):
-      return getattr(cls, 'SETATTR_OFFSET', 0) + val
-
-    obj = cls()
-    obj.a = 1
-    obj.b = 2
-    self.assertEqual(_Expected(1), obj.a)
-    self.assertEqual(_Expected(2), obj.b)
-
-    obj.Freeze()
-    self.assertRaises(cros_build_lib.AttributeFrozenError, setattr, obj, 'a', 3)
-    self.assertEqual(_Expected(1), obj.a)
-
-    self.assertRaises(cros_build_lib.AttributeFrozenError, setattr, obj, 'c', 3)
-    self.assertFalse(hasattr(obj, 'c'))
-
-  def testFrozenByMetaclass(self):
-    """Test attribute freezing with FrozenAttributesClass."""
-    @six.add_metaclass(cros_build_lib.FrozenAttributesClass)
-    class DummyByMeta(self.DummyClass):
-      """Class that freezes DummyClass using metaclass construct."""
-
-    self._TestBasics(DummyByMeta)
-
-    @six.add_metaclass(cros_build_lib.FrozenAttributesClass)
-    class SetattrByMeta(self.SetattrClass):
-      """Class that freezes SetattrClass using metaclass construct."""
-
-    self._TestBasics(SetattrByMeta)
-
-  def testFrozenByMixinFirst(self):
-    """Test attribute freezing with FrozenAttributesMixin first in hierarchy."""
-    class Dummy(cros_build_lib.FrozenAttributesMixin, self.DummyClass):
-      """Class that freezes DummyClass using mixin construct."""
-
-    self._TestBasics(Dummy)
-
-    class Setattr(cros_build_lib.FrozenAttributesMixin, self.SetattrClass):
-      """Class that freezes SetattrClass using mixin construct."""
-
-    self._TestBasics(Setattr)
-
-  def testFrozenByMixinLast(self):
-    """Test attribute freezing with FrozenAttributesMixin last in hierarchy."""
-    class Dummy(self.DummyClass, cros_build_lib.FrozenAttributesMixin):
-      """Class that freezes DummyClass using mixin construct."""
-
-    self._TestBasics(Dummy)
-
-    class Setattr(self.SetattrClass, cros_build_lib.FrozenAttributesMixin):
-      """Class that freezes SetattrClass using mixin construct."""
-
-    self._TestBasics(Setattr)
 
 
 class TestGetHostname(cros_test_lib.MockTestCase):

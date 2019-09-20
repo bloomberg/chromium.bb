@@ -33,6 +33,7 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import terminal
+from chromite.utils import attrs_freezer
 
 
 DEVICE_SCHEME_FILE = 'file'
@@ -670,21 +671,20 @@ class BaseParser(object):
     return path_util.FindCacheDir()
 
 
-@six.add_metaclass(cros_build_lib.FrozenAttributesClass)
+@six.add_metaclass(attrs_freezer.Class)
 class ArgumentNamespace(argparse.Namespace):
   """Class to mimic argparse.Namespace with value freezing support."""
   _FROZEN_ERR_MSG = 'Option values are frozen, cannot alter %s.'
 
 
 # Note that because optparse.Values is not a new-style class this class
-# must use the mixin FrozenAttributesMixin rather than the metaclass
-# FrozenAttributesClass.
-class OptionValues(cros_build_lib.FrozenAttributesMixin, optparse.Values):
+# must use the mixin rather than the metaclass.
+class OptionValues(attrs_freezer.Mixin, optparse.Values):
   """Class to mimic optparse.Values with value freezing support."""
   _FROZEN_ERR_MSG = 'Option values are frozen, cannot alter %s.'
 
   def __init__(self, defaults, *args, **kwargs):
-    cros_build_lib.FrozenAttributesMixin.__init__(self)
+    attrs_freezer.Mixin.__init__(self)
     optparse.Values.__init__(self, defaults, *args, **kwargs)
 
     # Used by FilteringParser.
