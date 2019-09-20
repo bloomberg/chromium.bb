@@ -1528,8 +1528,11 @@ base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
 }
 
 void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
-  RenderFrameImpl::FromWebFrame(frame)->ScriptedPrint(
-      render_widget_->input_handler().handling_input_event());
+  RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
+  RenderWidget* render_widget = render_frame->GetLocalRootRenderWidget();
+
+  render_frame->ScriptedPrint(
+      render_widget->input_handler().handling_input_event());
 }
 
 void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
@@ -1785,9 +1788,6 @@ bool RenderViewImpl::CanUpdateLayout() {
   return true;
 }
 
-// blink::WebLocalFrameClient
-// -----------------------------------------------------
-
 void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
                                                    const std::string& value) {
   render_widget_->SetEditCommandForNextKeyEvent(name, value);
@@ -1860,12 +1860,6 @@ bool RenderViewImpl::Send(IPC::Message* message) {
   // No messages sent through RenderView come without a routing id, yay. Let's
   // keep that up.
   CHECK_NE(message->routing_id(), MSG_ROUTING_NONE);
-
-  // Don't send any messages after the browser has told us to close.
-  if (render_widget_->is_closing()) {
-    delete message;
-    return false;
-  }
   return RenderThread::Get()->Send(message);
 }
 
