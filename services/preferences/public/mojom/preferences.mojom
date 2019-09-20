@@ -192,7 +192,7 @@ struct TrackedPersistentPrefStoreConfiguration {
   string registry_seed;
   mojo_base.mojom.String16 registry_path;
   TrackedPreferenceValidationDelegate? validation_delegate;
-  ResetOnLoadObserver? reset_on_load_observer;
+  pending_remote<ResetOnLoadObserver>? reset_on_load_observer;
 };
 
 struct TrackedPreferenceMetadata {
