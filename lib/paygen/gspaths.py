@@ -101,6 +101,9 @@ class Image(utils.RestrictedAttrDict):
   def __init__(self, *args, **kwargs):
     super(Image, self).__init__(*args, **kwargs)
 
+    # Pylint isn't able to follow utils.RestrictedAttrDict & _slots trickery.
+    # pylint: disable=access-member-before-definition
+
     # If these match defaults, set to None.
     if self.build:
       self._clear_if_default('image_channel', self.build.channel)
@@ -191,6 +194,9 @@ class Payload(utils.RestrictedAttrDict):
   def __init__(self, exists=False, *args, **kwargs):
     kwargs.update(exists=exists)
     super(Payload, self).__init__(*args, **kwargs)
+
+    # Pylint isn't able to follow utils.RestrictedAttrDict & _slots trickery.
+    # pylint: disable=access-member-before-definition
 
     # If there was no build passed, set the target image's build as the default.
     if not self.build and self.tgt_image.build:
