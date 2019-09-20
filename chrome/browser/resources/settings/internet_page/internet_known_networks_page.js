@@ -201,13 +201,15 @@ Polymer({
 
   /** @private */
   onRemovePreferredTap_: function() {
-    this.setProperties_({priority: {value: 0}});
+    assert(this.networkType !== undefined);
+    this.setProperties_({type: this.networkType, priority: {value: 0}});
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 
   /** @private */
   onAddPreferredTap_: function() {
-    this.setProperties_({priority: {value: 1}});
+    assert(this.networkType !== undefined);
+    this.setProperties_({type: this.networkType, priority: {value: 1}});
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 

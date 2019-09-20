@@ -389,7 +389,7 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    const config = {};
+    const config = this.getDefaultConfigProperties_();
     config.autoConnect = {value: !!this.autoConnectPref_.value};
     this.setMojoNetworkProperties_(config);
   },
@@ -441,7 +441,7 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    const config = {};
+    const config = this.getDefaultConfigProperties_();
     config.priority = {value: this.preferNetwork_ ? 1 : 0};
     this.setMojoNetworkProperties_(config);
   },
@@ -556,6 +556,14 @@ Polymer({
       return undefined;
     }
     return OncMojo.managedPropertiesToNetworkState(properties);
+  },
+
+  /**
+   * @return {!mojom.ConfigProperties}
+   * @private
+   */
+  getDefaultConfigProperties_: function() {
+    return {type: this.managedProperties_.type};
   },
 
   /**
@@ -1134,7 +1142,7 @@ Polymer({
     }
     const field = e.detail.field;
     const value = e.detail.value;
-    const config = {};
+    const config = this.getDefaultConfigProperties_();
     const valueType = typeof value;
     if (valueType != 'string' && valueType != 'number' &&
         valueType != 'boolean' && !Array.isArray(value)) {
@@ -1160,8 +1168,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
+    const config = this.getDefaultConfigProperties_();
     const apn = event.detail;
-    const config = {cellular: {apn: apn}};
+    config.cellular = {apn: apn};
     this.setMojoNetworkProperties_(config);
   },
 
@@ -1194,7 +1203,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    this.setMojoNetworkProperties_({proxySettings: event.detail});
+    const config = this.getDefaultConfigProperties_();
+    config.proxySetings = event.detail;
+    this.setMojoNetworkProperties_(config);
   },
 
   /**

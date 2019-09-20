@@ -887,7 +887,7 @@ class OncMojo {
     }
 
     // Set ONC IP config properties to existing values + new values.
-    const config = {};
+    const config = {type: managedProperties.type};
     config.ipAddressConfigType = ipConfigType;
     config.nameServersConfigType = nsConfigType;
     if (ipConfigType == 'Static') {

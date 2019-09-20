@@ -248,13 +248,33 @@ class CrosNetworkConfigTest : public testing::Test {
     cros_network_config()->SetProperties(
         guid, std::move(properties),
         base::BindOnce(
-            [](bool* successp, base::OnceClosure quit_closure, bool success) {
+            [](bool* successp, base::OnceClosure quit_closure, bool success,
+               const std::string& message) {
               *successp = success;
               std::move(quit_closure).Run();
             },
             &success, run_loop.QuitClosure()));
     run_loop.Run();
     return success;
+  }
+
+  std::string ConfigureNetwork(mojom::ConfigPropertiesPtr properties,
+                               bool shared) {
+    std::string guid;
+    base::RunLoop run_loop;
+    cros_network_config()->ConfigureNetwork(
+        std::move(properties), shared,
+        base::BindOnce(
+            [](std::string* guidp, base::OnceClosure quit_closure,
+               const base::Optional<std::string>& guid,
+               const std::string& message) {
+              if (guid)
+                *guidp = *guid;
+              std::move(quit_closure).Run();
+            },
+            &guid, run_loop.QuitClosure()));
+    run_loop.Run();
+    return guid;
   }
 
   bool SetCellularSimState(const std::string& current_pin_or_puk,
@@ -637,6 +657,7 @@ TEST_F(CrosNetworkConfigTest, SetProperties) {
 
   // Set priority.
   auto config = mojom::ConfigProperties::New();
+  config->type = mojom::NetworkType::kWiFi;
   config->priority = mojom::PriorityConfig::New();
   config->priority->value = 1;
   bool success = SetProperties(kGUID, std::move(config));
@@ -651,6 +672,7 @@ TEST_F(CrosNetworkConfigTest, SetProperties) {
 
   // Set auto connect only. Priority should remain unchanged.
   config = mojom::ConfigProperties::New();
+  config->type = mojom::NetworkType::kWiFi;
   config->auto_connect = mojom::AutoConnectConfig::New();
   config->auto_connect->value = true;
   success = SetProperties(kGUID, std::move(config));
@@ -663,6 +685,28 @@ TEST_F(CrosNetworkConfigTest, SetProperties) {
   EXPECT_TRUE(properties->wifi->auto_connect->active_value);
   ASSERT_TRUE(properties->priority);
   EXPECT_EQ(1, properties->priority->active_value);
+}
+
+TEST_F(CrosNetworkConfigTest, ConfigureNetwork) {
+  // Note: shared = false requires a UserManager instance.
+  bool shared = true;
+  const std::string ssid = "new_wifi_ssid";
+  // Configure a new wifi network.
+  auto config = mojom::ConfigProperties::New();
+  config->type = mojom::NetworkType::kWiFi;
+  config->wifi = mojom::WiFiConfigProperties::New();
+  config->wifi->ssid = ssid;
+  std::string guid = ConfigureNetwork(std::move(config), shared);
+  EXPECT_FALSE(guid.empty());
+
+  // Verify the configuration.
+  mojom::NetworkStatePropertiesPtr network = GetNetworkState(guid);
+  ASSERT_TRUE(network);
+  EXPECT_EQ(guid, network->guid);
+  EXPECT_EQ(mojom::NetworkType::kWiFi, network->type);
+  EXPECT_EQ(mojom::OncSource::kDevice, network->source);
+  ASSERT_TRUE(network->wifi);
+  EXPECT_EQ(ssid, network->wifi->ssid);
 }
 
 TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
