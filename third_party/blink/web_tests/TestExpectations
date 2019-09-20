@@ -6169,7 +6169,8 @@ crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.ht
 
 crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
 
-crbug.com/1000051 [ Mac ] virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
+crbug.com/1000051 media/controls/volume-slider.html [ Failure Timeout Pass ]
+crbug.com/1000051 virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
 
 # Sheriff 2019-09-03
 crbug.com/999799 [ Mac Linux ] external/wpt/html/rendering/dimension-attributes.html [ Pass Timeout ]
