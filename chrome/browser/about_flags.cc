@@ -1711,7 +1711,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
     {"shelf-scrollable", flag_descriptions::kShelfScrollableName,
      flag_descriptions::kShelfScrollableDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kShelfScrollable)},
+     FEATURE_VALUE_TYPE(chromeos::features::kShelfScrollable)},
     {"show-bluetooth-debug-log-toggle",
      flag_descriptions::kShowBluetoothDebugLogToggleName,
      flag_descriptions::kShowBluetoothDebugLogToggleDescription, kOsCrOS,
