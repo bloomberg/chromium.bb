@@ -247,8 +247,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
   deps = [
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_deps:androidx_test_monitor_java",
-    "//third_party/android_deps:androidx_test_runner_java",
+    "//third_party/android_support_test_runner:runner_java",
   ]
   java_files = [
     "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
