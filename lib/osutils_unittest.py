@@ -724,61 +724,6 @@ NAME="sdc2" RM="1" TYPE="part" SIZE="6.4G"
     self.assertEqual(osutils.GetDeviceSize('/dev/sdc'), '7.4G')
 
 
-class MountImagePartitionTests(cros_test_lib.MockTestCase):
-  """Tests for MountImagePartition."""
-
-  def setUp(self):
-    self._gpt_table = [
-        cros_build_lib.PartitionInfo(3, 1, 3, 2, 'fs', 'Label', 'flag')
-    ]
-
-  def testWithCacheOkay(self):
-    mount_dir = self.PatchObject(osutils, 'MountDir')
-    osutils.MountImagePartition('image_file', 3, 'destination',
-                                self._gpt_table)
-    opts = ['loop', 'offset=1', 'sizelimit=2', 'ro']
-    mount_dir.assert_called_with('image_file', 'destination', makedirs=True,
-                                 skip_mtab=False, sudo=True, mount_opts=opts)
-
-  def testWithCacheFail(self):
-    self.assertRaises(ValueError, osutils.MountImagePartition,
-                      'image_file', 404, 'destination', self._gpt_table)
-
-  def testWithoutCache(self):
-    self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
-                     return_value=self._gpt_table)
-    mount_dir = self.PatchObject(osutils, 'MountDir')
-    osutils.MountImagePartition('image_file', 3, 'destination')
-    opts = ['loop', 'offset=1', 'sizelimit=2', 'ro']
-    mount_dir.assert_called_with(
-        'image_file', 'destination', makedirs=True, skip_mtab=False,
-        sudo=True, mount_opts=opts
-    )
-
-  def testNameWithCacheOkay(self):
-    mount_dir = self.PatchObject(osutils, 'MountDir')
-    osutils.MountImagePartition('image_file', 'Label', 'destination',
-                                self._gpt_table)
-    opts = ['loop', 'offset=1', 'sizelimit=2', 'ro']
-    mount_dir.assert_called_with('image_file', 'destination', makedirs=True,
-                                 skip_mtab=False, sudo=True, mount_opts=opts)
-
-  def testNameWithCacheFail(self):
-    self.assertRaises(ValueError, osutils.MountImagePartition,
-                      'image_file', 'Missing', 'destination', self._gpt_table)
-
-  def testNameWithoutCache(self):
-    self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
-                     return_value=self._gpt_table)
-    mount_dir = self.PatchObject(osutils, 'MountDir')
-    osutils.MountImagePartition('image_file', 'Label', 'destination')
-    opts = ['loop', 'offset=1', 'sizelimit=2', 'ro']
-    mount_dir.assert_called_with(
-        'image_file', 'destination', makedirs=True, skip_mtab=False,
-        sudo=True, mount_opts=opts
-    )
-
-
 class ChdirTests(cros_test_lib.MockTempDirTestCase):
   """Tests for ChdirContext."""
 
