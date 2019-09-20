@@ -81,7 +81,7 @@ Polymer({
     strings: Object,
   },
 
-  /** @type {Array<Animation>} */
+  /** @type {Array<!Animation>} */
   expandAnimations_: null,
 
   /** @param {Event} e */
@@ -103,7 +103,8 @@ Polymer({
   /** @private */
   updateExpandedStateAndFinishAnimations_: function() {
     this.updateExpandedState_();
-    for (const animation of this.expandAnimations_) {
+    for (const animation of /** @type {!Array<!Animation>} */ (
+             this.expandAnimations_)) {
       animation.finish();
     }
   },

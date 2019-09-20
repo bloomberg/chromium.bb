@@ -2,19 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Note: Redefining this type here, to work around the fact that ink externs
-// are only available on Chrome OS, so the targets that contain them cannot be
-// built on other platforms.
-
-/**
- * @typedef {{
- *   tool: string,
- *   size: number,
- *   color: (string|null),
- * }}
- */
-let AnnotationTool;
-
 (function() {
 Polymer({
   is: 'viewer-pdf-toolbar',
