@@ -478,4 +478,6 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramRecordedForNonApps) {
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BookmarkAppTest,
-    ::testing::Values(web_app::ControllerType::kHostedAppController));
+    ::testing::Values(
+        web_app::ControllerType::kHostedAppController,
+        web_app::ControllerType::kUnifiedControllerWithBookmarkApp));
