@@ -4032,9 +4032,7 @@ void RenderFrameHostImpl::CreateNewWindow(
     // with calling renderer.
     was_consumed = frame_tree_node_->UpdateUserActivationState(
         blink::UserActivationUpdateType::kConsumeTransientActivation);
-  }
-
-  if (!can_create_window) {
+  } else {
     std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
     return;
   }
@@ -4070,15 +4068,8 @@ void RenderFrameHostImpl::CreateNewWindow(
   // means the current renderer process will not be able to route messages to
   // it. Because of this, we will immediately show and navigate the window
   // in OnCreateNewWindowOnUI, using the params provided here.
-  int render_view_route_id = MSG_ROUTING_NONE;
-  int main_frame_route_id = MSG_ROUTING_NONE;
-  int main_frame_widget_route_id = MSG_ROUTING_NONE;
-  int render_process_id = GetProcess()->GetID();
-  if (!params->opener_suppressed && !no_javascript_access) {
-    render_view_route_id = GetProcess()->GetNextRoutingID();
-    main_frame_route_id = GetProcess()->GetNextRoutingID();
-    main_frame_widget_route_id = GetProcess()->GetNextRoutingID();
-  }
+  bool is_new_browsing_instance =
+      params->opener_suppressed || no_javascript_access;
 
   DCHECK(IsRenderFrameLive());
 
@@ -4086,35 +4077,20 @@ void RenderFrameHostImpl::CreateNewWindow(
   if (base::FeatureList::IsEnabled(features::kUserActivationV2))
     opened_by_user_activation = was_consumed;
 
-  delegate_->CreateNewWindow(this, render_view_route_id, main_frame_route_id,
-                             main_frame_widget_route_id, *params,
-                             opened_by_user_activation, cloned_namespace.get());
+  // The non-owning pointer |new_window| is valid in this stack frame since
+  // nothing can delete it until this thread is freed up again.
+  RenderFrameHostDelegate* new_window = delegate_->CreateNewWindow(
+      this, *params, is_new_browsing_instance, opened_by_user_activation,
+      cloned_namespace.get());
 
-  if (main_frame_route_id == MSG_ROUTING_NONE) {
+  if (is_new_browsing_instance || !new_window) {
     // Opener suppressed or Javascript access disabled. Never tell the renderer
     // about the new window.
     std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
     return;
   }
 
-  bool succeeded =
-      RenderWidgetHost::FromID(render_process_id, main_frame_widget_route_id) !=
-      nullptr;
-  if (!succeeded) {
-    // If we did not create a WebContents to host the renderer-created
-    // RenderFrame/RenderView/RenderWidget objects, signal failure to the
-    // renderer.
-    DCHECK(!RenderFrameHost::FromID(render_process_id, main_frame_route_id));
-    DCHECK(!RenderViewHost::FromID(render_process_id, render_view_route_id));
-    std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
-    return;
-  }
-
-  // The view, widget, and frame should all be routable now.
-  DCHECK(RenderViewHost::FromID(render_process_id, render_view_route_id));
-  RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
-      GlobalFrameRoutingId(GetProcess()->GetID(), main_frame_route_id));
-  DCHECK(rfh);
+  RenderFrameHostImpl* main_frame = new_window->GetMainFrame();
 
   // When the popup is created, it hasn't committed any navigation yet - its
   // initial empty document should inherit the origin of its opener (the origin
@@ -4124,18 +4100,18 @@ void RenderFrameHostImpl::CreateNewWindow(
   // Checking sandbox flags of the new frame should be safe at this point,
   // because the flags should be already inherited by the CreateNewWindow call
   // above.
-  rfh->SetOriginOfNewFrame(GetLastCommittedOrigin());
+  main_frame->SetOriginOfNewFrame(GetLastCommittedOrigin());
 
-  if (rfh->waiting_for_init_) {
+  if (main_frame->waiting_for_init_) {
     // Need to check |waiting_for_init_| as some paths inside CreateNewWindow
     // call above (namely, if WebContentsDelegate::ShouldCreateWebContents
     // returns false) will resume requests by calling RenderFrameHostImpl::Init.
-    rfh->frame_->BlockRequests();
+    main_frame->frame_->BlockRequests();
   }
 
   service_manager::mojom::InterfaceProviderPtrInfo
       main_frame_interface_provider_info;
-  rfh->BindInterfaceProviderRequest(
+  main_frame->BindInterfaceProviderRequest(
       mojo::MakeRequest(&main_frame_interface_provider_info));
 
   mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
@@ -4143,23 +4119,26 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
       document_interface_broker_blink;
-  rfh->BindDocumentInterfaceBrokerReceiver(
+  main_frame->BindDocumentInterfaceBrokerReceiver(
       document_interface_broker_content.InitWithNewPipeAndPassReceiver(),
       document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
-  rfh->BindBrowserInterfaceBrokerReceiver(
+  main_frame->BindBrowserInterfaceBrokerReceiver(
       browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
-      render_view_route_id, main_frame_route_id, main_frame_widget_route_id,
+      main_frame->GetRenderViewHost()->GetRoutingID(),
+      main_frame->GetRoutingID(),
+      main_frame->GetRenderViewHost()->GetWidget()->GetRoutingID(),
       mojom::DocumentScopedInterfaceBundle::New(
           std::move(main_frame_interface_provider_info),
           std::move(document_interface_broker_content),
           std::move(document_interface_broker_blink),
           std::move(browser_interface_broker)),
-      cloned_namespace->id(), rfh->GetDevToolsFrameToken());
+      cloned_namespace->id(), main_frame->GetDevToolsFrameToken());
+
   std::move(callback).Run(mojom::CreateNewWindowStatus::kSuccess,
                           std::move(reply));
 }

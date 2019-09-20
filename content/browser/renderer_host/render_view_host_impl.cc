@@ -750,8 +750,8 @@ RenderFrameHost* RenderViewHostImpl::GetMainFrame() {
   // TODO(alexmos, creis): Migrate these code paths to use RenderFrameHost APIs
   // and remove this fallback.  See https://crbug.com/763548.
   if (is_active()) {
-    return RenderFrameHost::FromID(GetProcess()->GetID(),
-                                   main_frame_routing_id_);
+    return RenderFrameHostImpl::FromID(GetProcess()->GetID(),
+                                       main_frame_routing_id_);
   }
   return delegate_->GetPendingMainFrame();
 }

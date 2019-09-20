@@ -379,14 +379,14 @@ void TestWebContents::SetHttpResponseHeaders(
       ->set_response_headers_for_testing(response_headers);
 }
 
-void TestWebContents::CreateNewWindow(
+RenderFrameHostDelegate* TestWebContents::CreateNewWindow(
     RenderFrameHost* opener,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
     const mojom::CreateNewWindowParams& params,
+    bool is_new_browsing_instance,
     bool has_user_gesture,
-    SessionStorageNamespace* session_storage_namespace) {}
+    SessionStorageNamespace* session_storage_namespace) {
+  return nullptr;
+}
 
 void TestWebContents::CreateNewWidget(int32_t render_process_id,
                                       int32_t route_id,
