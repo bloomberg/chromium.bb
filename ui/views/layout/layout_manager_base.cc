@@ -73,6 +73,12 @@ void LayoutManagerBase::Layout(View* host) {
   ApplyLayout(GetProposedLayout(size));
 }
 
+std::vector<View*> LayoutManagerBase::GetChildViewsInPaintOrder(
+    const View* host) const {
+  DCHECK_EQ(host_view_, host);
+  return LayoutManager::GetChildViewsInPaintOrder(host);
+}
+
 LayoutManagerBase::ProposedLayout LayoutManagerBase::GetProposedLayout(
     const gfx::Size& host_size) const {
   if (cached_layout_size_ != host_size) {

@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/views/layout/animating_layout_manager.h"
 
+#include <algorithm>
+#include <map>
+#include <set>
 #include <utility>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "chrome/browser/ui/views/layout/interpolating_layout_manager.h"
@@ -19,6 +23,7 @@
 // classes are appropriately used.
 using views::internal::Denormalize;
 using views::internal::Normalize;
+using views::internal::NormalizedInsets;
 using views::internal::NormalizedRect;
 using views::internal::NormalizedSize;
 
@@ -39,7 +44,7 @@ struct AnimatingLayoutManager::LayoutFadeInfo {
   NormalizedRect reference_bounds;
   // The offset from the end of |prev_view| and the start of |next_view|. Insets
   // may be negative if the views overlap.
-  views::Inset1D offsets_;
+  views::Inset1D offsets;
 };
 
 // Manages the animation and various callbacks from the animation system that
@@ -330,6 +335,31 @@ void AnimatingLayoutManager::Layout(views::View* host) {
   }
 }
 
+std::vector<views::View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(
+    const views::View* host) const {
+  DCHECK_EQ(host_view(), host);
+
+  if (!is_animating())
+    return LayoutManagerBase::GetChildViewsInPaintOrder(host);
+
+  std::vector<views::View*> result;
+  std::set<views::View*> fading;
+
+  // Put all fading views to the front of the list (back of the Z-order).
+  for (const LayoutFadeInfo& fade_info : fade_infos_) {
+    result.push_back(fade_info.child_view);
+    fading.insert(fade_info.child_view);
+  }
+
+  // Add the result of the views.
+  for (views::View* child : host->children()) {
+    if (!base::Contains(fading, child))
+      result.push_back(child);
+  }
+
+  return result;
+}
+
 void AnimatingLayoutManager::QueueDelayedAction(DelayedAction delayed_action) {
   DCHECK(is_animating());
   delayed_actions_.emplace_back(std::move(delayed_action));
@@ -460,7 +490,7 @@ void AnimatingLayoutManager::UpdateCurrentLayout(double percent) {
   current_layout_ = InterpolatingLayoutManager::Interpolate(
       percent, starting_layout_, target_layout_);
 
-  if (default_fade_mode_ == FadeInOutMode::kHide)
+  if (default_fade_mode_ == FadeInOutMode::kHide || fade_infos_.empty())
     return;
 
   std::map<const views::View*, size_t> view_indices;
@@ -471,52 +501,57 @@ void AnimatingLayoutManager::UpdateCurrentLayout(double percent) {
     // This shouldn't happen but we should ensure that with a check.
     DCHECK_NE(-1, host_view()->GetIndexOf(fade_info.child_view));
 
-    const double scale_percent = fade_info.fading_in ? percent : 1.0 - percent;
-
-    int leading_reference_point = 0;
-    if (fade_info.prev_view) {
-      const auto& prev_bounds =
-          current_layout_.child_layouts[view_indices[fade_info.prev_view]]
-              .bounds;
-      leading_reference_point =
-          Normalize(orientation(), prev_bounds).max_main();
-    }
-    leading_reference_point += fade_info.offsets_.leading();
-
-    int trailing_reference_point;
-    if (fade_info.next_view) {
-      const auto& next_bounds =
-          current_layout_.child_layouts[view_indices[fade_info.next_view]]
-              .bounds;
-      trailing_reference_point =
-          Normalize(orientation(), next_bounds).origin_main();
-    } else {
-      trailing_reference_point =
-          Normalize(orientation(), current_layout_.host_size).main();
-    }
-    trailing_reference_point -= fade_info.offsets_.trailing();
-
-    const int new_size =
-        std::min(int{scale_percent * fade_info.reference_bounds.size_main()},
-                 trailing_reference_point - leading_reference_point);
-
     ChildLayout child_layout;
-    child_layout.child_view = fade_info.child_view;
-    if (new_size > 0 &&
-        (default_fade_mode_ == FadeInOutMode::kScaleFromZero ||
-         (default_fade_mode_ == FadeInOutMode::kScaleFromMinimum &&
-          new_size >=
-              Normalize(orientation(), fade_info.child_view->GetMinimumSize())
-                  .main()))) {
-      child_layout.visible = true;
-      NormalizedRect new_bounds = fade_info.reference_bounds;
+
+    if (percent == 1.0) {
+      // At the end of the animation snap to the final state of the child view.
+      child_layout.child_view = fade_info.child_view;
       if (fade_info.fading_in) {
-        new_bounds.set_origin_main(leading_reference_point);
+        child_layout.visible = true;
+        child_layout.bounds =
+            Denormalize(orientation(), fade_info.reference_bounds);
       } else {
-        new_bounds.set_origin_main(trailing_reference_point - new_size);
+        child_layout.visible = false;
       }
-      new_bounds.set_size_main(new_size);
-      child_layout.bounds = Denormalize(orientation(), new_bounds);
+
+    } else {
+      const double scale_percent =
+          fade_info.fading_in ? percent : 1.0 - percent;
+
+      const base::Optional<size_t> prev_index =
+          fade_info.prev_view
+              ? base::make_optional(view_indices[fade_info.prev_view])
+              : base::nullopt;
+      const base::Optional<size_t> next_index =
+          fade_info.next_view
+              ? base::make_optional(view_indices[fade_info.next_view])
+              : base::nullopt;
+
+      switch (default_fade_mode_) {
+        case FadeInOutMode::kHide:
+          NOTREACHED();
+          break;
+        case FadeInOutMode::kScaleFromMinimum:
+          child_layout = CalculateScaleFade(fade_info, prev_index, next_index,
+                                            scale_percent,
+                                            /* scale_from_zero */ false);
+          break;
+        case FadeInOutMode::kScaleFromZero:
+          child_layout = CalculateScaleFade(fade_info, prev_index, next_index,
+                                            scale_percent,
+                                            /* scale_from_zero */ true);
+          break;
+        case FadeInOutMode::kSlideFromLeadingEdge:
+          child_layout = CalculateSlideFade(fade_info, prev_index, next_index,
+                                            scale_percent,
+                                            /* scale_from_zero */ true);
+          break;
+        case FadeInOutMode::kSlideFromTrailingEdge:
+          child_layout = CalculateSlideFade(fade_info, prev_index, next_index,
+                                            scale_percent,
+                                            /* scale_from_zero */ false);
+          break;
+      }
     }
 
     auto it = view_indices.find(fade_info.child_view);
@@ -596,23 +631,23 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
           start_leading_edges.upper_bound(current.start_bounds.origin_main());
       if (next == start_leading_edges.end()) {
         fade_info.next_view = nullptr;
-        fade_info.offsets_.set_trailing(start_host_size.main() -
-                                        current.start_bounds.max_main());
+        fade_info.offsets.set_trailing(start_host_size.main() -
+                                       current.start_bounds.max_main());
       } else {
         fade_info.next_view = next->second;
-        fade_info.offsets_.set_trailing(next->first -
-                                        current.start_bounds.max_main());
+        fade_info.offsets.set_trailing(next->first -
+                                       current.start_bounds.max_main());
       }
       if (next == start_leading_edges.begin()) {
         fade_info.prev_view = nullptr;
-        fade_info.offsets_.set_leading(current.start_bounds.origin_main());
+        fade_info.offsets.set_leading(current.start_bounds.origin_main());
       } else {
         auto prev = next;
         --prev;
         const auto& prev_info = child_to_info[prev->second];
         fade_info.prev_view = prev->second;
-        fade_info.offsets_.set_leading(current.start_bounds.origin_main() -
-                                       prev_info.start_bounds.max_main());
+        fade_info.offsets.set_leading(current.start_bounds.origin_main() -
+                                      prev_info.start_bounds.max_main());
       }
       fade_infos_.push_back(fade_info);
     } else if (!current.start_visible && current.target_visible) {
@@ -624,25 +659,140 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
           target_leading_edges.upper_bound(current.target_bounds.origin_main());
       if (next == target_leading_edges.end()) {
         fade_info.next_view = nullptr;
-        fade_info.offsets_.set_trailing(target_host_size.main() -
-                                        current.target_bounds.max_main());
+        fade_info.offsets.set_trailing(target_host_size.main() -
+                                       current.target_bounds.max_main());
       } else {
         fade_info.next_view = next->second;
-        fade_info.offsets_.set_trailing(next->first -
-                                        current.target_bounds.max_main());
+        fade_info.offsets.set_trailing(next->first -
+                                       current.target_bounds.max_main());
       }
       if (next == target_leading_edges.begin()) {
         fade_info.prev_view = nullptr;
-        fade_info.offsets_.set_leading(current.target_bounds.origin_main());
+        fade_info.offsets.set_leading(current.target_bounds.origin_main());
       } else {
         auto prev = next;
         --prev;
         const auto& prev_info = child_to_info[prev->second];
         fade_info.prev_view = prev->second;
-        fade_info.offsets_.set_leading(current.target_bounds.origin_main() -
-                                       prev_info.target_bounds.max_main());
+        fade_info.offsets.set_leading(current.target_bounds.origin_main() -
+                                      prev_info.target_bounds.max_main());
       }
       fade_infos_.push_back(fade_info);
     }
   }
+}
+
+views::LayoutManagerBase::ChildLayout
+AnimatingLayoutManager::CalculateScaleFade(const LayoutFadeInfo& fade_info,
+                                           base::Optional<size_t> prev_index,
+                                           base::Optional<size_t> next_index,
+                                           double scale_percent,
+                                           bool scale_from_zero) const {
+  ChildLayout child_layout;
+
+  int leading_reference_point = 0;
+  if (prev_index) {
+    const auto& prev_bounds = current_layout_.child_layouts[*prev_index].bounds;
+    leading_reference_point = Normalize(orientation(), prev_bounds).max_main();
+  }
+  leading_reference_point += fade_info.offsets.leading();
+
+  int trailing_reference_point;
+  if (next_index) {
+    const auto& next_bounds = current_layout_.child_layouts[*next_index].bounds;
+    trailing_reference_point =
+        Normalize(orientation(), next_bounds).origin_main();
+  } else {
+    trailing_reference_point =
+        Normalize(orientation(), current_layout_.host_size).main();
+  }
+  trailing_reference_point -= fade_info.offsets.trailing();
+
+  const int new_size =
+      std::min(int{scale_percent * fade_info.reference_bounds.size_main()},
+               trailing_reference_point - leading_reference_point);
+
+  child_layout.child_view = fade_info.child_view;
+  if (new_size > 0 &&
+      (scale_from_zero ||
+       new_size >=
+           Normalize(orientation(), fade_info.child_view->GetMinimumSize())
+               .main())) {
+    child_layout.visible = true;
+    NormalizedRect new_bounds = fade_info.reference_bounds;
+    if (fade_info.fading_in) {
+      new_bounds.set_origin_main(leading_reference_point);
+    } else {
+      new_bounds.set_origin_main(trailing_reference_point - new_size);
+    }
+    new_bounds.set_size_main(new_size);
+    child_layout.bounds = Denormalize(orientation(), new_bounds);
+  }
+
+  return child_layout;
+}
+
+views::LayoutManagerBase::ChildLayout
+AnimatingLayoutManager::CalculateSlideFade(const LayoutFadeInfo& fade_info,
+                                           base::Optional<size_t> prev_index,
+                                           base::Optional<size_t> next_index,
+                                           double scale_percent,
+                                           bool slide_from_leading) const {
+  // Fall back to kScaleFromMinimum if there is no edge to slide out from.
+  if (!prev_index.has_value() && !next_index.has_value()) {
+    return CalculateScaleFade(fade_info, prev_index, next_index, scale_percent,
+                              false);
+  }
+
+  // Slide from the other direction if against the edge of the host view.
+  if (slide_from_leading && !prev_index.has_value())
+    slide_from_leading = false;
+  else if (!slide_from_leading && !next_index.has_value())
+    slide_from_leading = true;
+
+  NormalizedRect new_bounds = fade_info.reference_bounds;
+
+  if (slide_from_leading) {
+    // This is the right side of the leading control that will eclipse the
+    // sliding view at the start/end of the animation.
+    const int initial_trailing =
+        Normalize(orientation(),
+                  (fade_info.fading_in ? starting_layout_ : target_layout_)
+                      .child_layouts[*prev_index]
+                      .bounds)
+            .max_main();
+
+    // Interpolate between initial and final trailing edge.
+    const int new_trailing = gfx::Tween::IntValueBetween(
+        scale_percent, initial_trailing, new_bounds.max_main());
+
+    // Adjust the bounding rectangle of the view.
+    new_bounds.Offset(new_trailing - new_bounds.max_main(), 0);
+
+  } else {
+    // This is the left side of the trailing control that will eclipse the
+    // sliding view at the start/end of the animation.
+    const int initial_leading =
+        Normalize(orientation(),
+                  (fade_info.fading_in ? starting_layout_ : target_layout_)
+                      .child_layouts[*next_index]
+                      .bounds)
+            .origin_main();
+
+    // Interpolate between initial and final leading edge.
+    const int new_leading = gfx::Tween::IntValueBetween(
+        scale_percent, initial_leading, new_bounds.origin_main());
+
+    // Adjust the bounding rectangle of the view.
+    new_bounds.Offset(new_leading - new_bounds.origin_main(), 0);
+  }
+
+  // Actual bounds are a linear interpolation between starting and reference
+  // bounds.
+  ChildLayout child_layout;
+  child_layout.child_view = fade_info.child_view;
+  child_layout.visible = true;
+  child_layout.bounds = Denormalize(orientation(), new_bounds);
+
+  return child_layout;
 }

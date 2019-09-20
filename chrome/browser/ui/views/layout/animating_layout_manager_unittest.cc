@@ -393,7 +393,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
       0.25, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[1].child_view, child(1));
@@ -405,11 +405,12 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
           expected.child_layouts[0].bounds.right() - 10,
       initial_layout.child_layouts[1].bounds.height()};
   EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
                                                      final_layout);
   DCHECK_EQ(expected.child_layouts[1].child_view, child(1));
@@ -421,22 +422,25 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
           expected.child_layouts[0].bounds.right() - 10,
       initial_layout.child_layouts[1].bounds.height()};
   EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   expected = InterpolatingLayoutManager::Interpolate(0.75, initial_layout,
                                                      final_layout);
   // At this point the layout is still animating but the middle view is below
   // zero in size so it will disappear.
   EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
 
   // Advance to completion.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   EXPECT_FALSE(layout()->is_animating());
+  EXPECT_EQ(final_layout.host_size, view()->size());
   EnsureLayout(final_layout);
 }
 
@@ -471,7 +475,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
       0.25, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[1].child_view, child(1));
@@ -483,22 +487,25 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
           expected.child_layouts[0].bounds.right() - 10,
       initial_layout.child_layouts[1].bounds.height()};
   EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
                                                      final_layout);
   // At this point the layout is still animating but the middle view is below
   // its minimum size so it will disappear.
   EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
 
   // Advance to completion.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   EXPECT_FALSE(layout()->is_animating());
+  EXPECT_EQ(final_layout.host_size, view()->size());
   EnsureLayout(final_layout);
 }
 
@@ -533,7 +540,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
       0.25, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[0].child_view, child(0));
@@ -543,22 +550,25 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
       expected.child_layouts[1].bounds.x() - 10,
       initial_layout.child_layouts[0].bounds.height()};
   EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
                                                      final_layout);
   // At this point the layout is still animating but the middle view is below
   // its minimum size so it will disappear.
   EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
 
   // Advance to completion.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   EXPECT_FALSE(layout()->is_animating());
+  EXPECT_EQ(final_layout.host_size, view()->size());
   EnsureLayout(final_layout);
 }
 
@@ -594,17 +604,18 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
       0.5, initial_layout, final_layout);
   // At this point the layout is still animating but the middle view is below
   // its minimum size so it will not be visible.
   EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   expected = InterpolatingLayoutManager::Interpolate(0.75, initial_layout,
                                                      final_layout);
   DCHECK_EQ(expected.child_layouts[2].child_view, child(2));
@@ -616,12 +627,14 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
           10,
       final_layout.child_layouts[2].bounds.height()};
   EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
 
   // Advance to completion.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   EXPECT_FALSE(layout()->is_animating());
+  EXPECT_EQ(final_layout.host_size, view()->size());
   EnsureLayout(final_layout);
 }
 
@@ -656,7 +669,7 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
 
   // Advance the animation.
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
-  view()->Layout();
+  view()->SetSize(view()->GetPreferredSize());
   ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
       0.25, initial_layout, final_layout);
   DCHECK_EQ(expected.child_layouts[2].child_view, child(2));
@@ -667,6 +680,71 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
       expected.host_size.width() - expected.child_layouts[1].bounds.right() -
           10,
       initial_layout.child_layouts[2].bounds.height()};
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
+  EnsureLayout(expected);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->SetSize(view()->GetPreferredSize());
+  expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
+                                                     final_layout);
+  // At this point the layout is still animating but the middle view is below
+  // its minimum size so it will disappear.
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected.host_size, view()->size());
+  EnsureLayout(expected);
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->SetSize(view()->GetPreferredSize());
+  EXPECT_FALSE(layout()->is_animating());
+  EXPECT_EQ(final_layout.host_size, view()->size());
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_TrailingView_ScaleFromMinimum_Vertical) {
+  const ProposedLayout initial_layout{{20, 50},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {5, 20, 10, 10}},
+                                       {child(2), true, {5, 35, 10, 10}}}};
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromMinimum);
+  layout()->SetOrientation(LayoutOrientation::kVertical);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  const ProposedLayout final_layout{{20, 35},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), true, {5, 20, 10, 10}},
+                                     {child(2), false}}};
+
+  child(2)->SetMinimumSize({5, 5});
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  // No change to the layout yet.
+  EnsureLayout(initial_layout);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.25, initial_layout, final_layout);
+  DCHECK_EQ(expected.child_layouts[2].child_view, child(2));
+  expected.child_layouts[2].visible = true;
+  expected.child_layouts[2].bounds = {
+      initial_layout.child_layouts[2].bounds.x(),
+      expected.child_layouts[1].bounds.bottom() + 5,
+      initial_layout.child_layouts[2].bounds.width(),
+      expected.host_size.height() - expected.child_layouts[1].bounds.bottom() -
+          10};
   EXPECT_TRUE(layout()->is_animating());
   EnsureLayout(expected);
 
@@ -684,6 +762,252 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
   view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_SlideFromLeading_LastView) {
+  const ProposedLayout initial_layout{{35, 20},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {20, 5, 10, 10}},
+                                       {child(2), false}}};
+  const ProposedLayout final_layout{{50, 20},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), true, {20, 5, 10, 10}},
+                                     {child(2), true, {35, 5, 10, 10}}}};
+
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kSlideFromLeadingEdge);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  ProposedLayout expected_layout = initial_layout;
+  expected_layout.child_layouts[2] = {child(2), true, {20, 5, 10, 10}};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation 20%.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(200));
+  view()->Layout();
+  expected_layout.host_size = {38, 20};
+  expected_layout.child_layouts[2].bounds = {23, 5, 10, 10};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation 60%.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(600));
+  view()->Layout();
+  expected_layout.host_size = {47, 20};
+  expected_layout.child_layouts[2].bounds = {32, 5, 10, 10};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(200));
+  view()->Layout();
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_SlideFromLeading_Vertical) {
+  const ProposedLayout initial_layout{{20, 35},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {5, 20, 10, 10}},
+                                       {child(2), false}}};
+  const ProposedLayout final_layout{{20, 50},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), true, {5, 20, 10, 10}},
+                                     {child(2), true, {5, 35, 10, 10}}}};
+
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kSlideFromLeadingEdge);
+  layout()->SetOrientation(LayoutOrientation::kVertical);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  ProposedLayout expected_layout = initial_layout;
+  expected_layout.child_layouts[2] = {child(2), true, {5, 20, 10, 10}};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation 20%.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(200));
+  view()->Layout();
+  expected_layout.host_size = {20, 38};
+  expected_layout.child_layouts[2].bounds = {5, 23, 10, 10};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation 60%.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(600));
+  view()->Layout();
+  expected_layout.host_size = {20, 47};
+  expected_layout.child_layouts[2].bounds = {5, 32, 10, 10};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(200));
+  view()->Layout();
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_SlideFromLeading_MiddleView) {
+  const ProposedLayout initial_layout{{50, 20},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {20, 5, 5, 10}},
+                                       {child(2), true, {35, 5, 10, 10}}}};
+
+  const ProposedLayout final_layout{{35, 20},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), false},
+                                     {child(2), true, {20, 5, 10, 10}}}};
+
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kSlideFromLeadingEdge);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  ProposedLayout expected_layout = initial_layout;
+  EnsureLayout(expected_layout);
+
+  // Advance the animation 20%.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(200));
+  view()->Layout();
+  expected_layout.host_size = {47, 20};
+  expected_layout.child_layouts[1].bounds = {18, 5, 5, 10};
+  expected_layout.child_layouts[2].bounds = {32, 5, 10, 10};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation 60%.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(600));
+  view()->Layout();
+  expected_layout.host_size = {38, 20};
+  expected_layout.child_layouts[1].bounds = {12, 5, 5, 10};
+  expected_layout.child_layouts[2].bounds = {23, 5, 10, 10};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(200));
+  view()->Layout();
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_SlideFromLeading_LeadingView_SlidesFromTrailing) {
+  const ProposedLayout initial_layout{{50, 20},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {20, 5, 5, 10}},
+                                       {child(2), true, {35, 5, 10, 10}}}};
+
+  const ProposedLayout final_layout{{35, 20},
+                                    {{child(0), false},
+                                     {child(1), true, {5, 5, 5, 10}},
+                                     {child(2), true, {20, 5, 10, 10}}}};
+
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kSlideFromLeadingEdge);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  ProposedLayout expected_layout = initial_layout;
+  EnsureLayout(expected_layout);
+
+  // Advance the animation 20%.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(200));
+  view()->Layout();
+  expected_layout.host_size = {38, 20};
+  expected_layout.child_layouts[1].bounds = {17, 5, 5, 10};
+  expected_layout.child_layouts[2].bounds = {32, 5, 10, 10};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation 60%.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(600));
+  view()->Layout();
+  expected_layout.host_size = {47, 20};
+  expected_layout.child_layouts[1].bounds = {8, 5, 5, 10};
+  expected_layout.child_layouts[2].bounds = {23, 5, 10, 10};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(200));
+  view()->Layout();
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_SlideFromTrailing_MiddleView) {
+  const ProposedLayout initial_layout{{50, 20},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {20, 5, 5, 10}},
+                                       {child(2), true, {35, 5, 10, 10}}}};
+
+  const ProposedLayout final_layout{{35, 20},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), false},
+                                     {child(2), true, {20, 5, 10, 10}}}};
+
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kSlideFromTrailingEdge);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  ProposedLayout expected_layout = initial_layout;
+  EnsureLayout(expected_layout);
+
+  // Advance the animation 20%.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(200));
+  view()->Layout();
+  expected_layout.host_size = {47, 20};
+  expected_layout.child_layouts[1].bounds = {20, 5, 5, 10};
+  expected_layout.child_layouts[2].bounds = {32, 5, 10, 10};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation 60%.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(600));
+  view()->Layout();
+  expected_layout.host_size = {38, 20};
+  expected_layout.child_layouts[1].bounds = {20, 5, 5, 10};
+  expected_layout.child_layouts[2].bounds = {23, 5, 10, 10};
+  EnsureLayout(expected_layout);
+
+  // Advance the animation to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(200));
+  view()->Layout();
   EnsureLayout(final_layout);
 }
 
@@ -1562,6 +1886,116 @@ TEST_F(AnimatingLayoutManagerSteppingTest, RunOrQueueAction) {
   EXPECT_FALSE(layout()->is_animating());
   EXPECT_TRUE(action1_called);
   EXPECT_TRUE(action2_called);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, ZOrder_UnchangedWhenNotAnimating) {
+  EXPECT_EQ(view()->children(), view()->GetChildrenInZOrder());
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, ZOrder_UnchangedWhenNotFading) {
+  layout()->SetShouldAnimateBounds(true);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(layout1());
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  // Start the animation.
+  test_layout->SetLayout(layout2());
+  view()->InvalidateLayout();
+  view()->Layout();
+
+  // At this point animation should have started, but not proceeded.
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(view()->children(), view()->GetChildrenInZOrder());
+
+  // Advance partially.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_EQ(view()->children(), view()->GetChildrenInZOrder());
+
+  // Advance to end.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_EQ(view()->children(), view()->GetChildrenInZOrder());
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, ZOrder_FadingOutViewMovedToBack) {
+  const ProposedLayout starting_layout{{10, 10},
+                                       {{child(0), true, {1, 1, 2, 2}},
+                                        {child(1), true, {3, 3, 2, 2}},
+                                        {child(2), true, {7, 7, 2, 2}}}};
+
+  const ProposedLayout ending_layout{{8, 8},
+                                     {{child(0), true, {1, 1, 2, 2}},
+                                      {child(1), false},
+                                      {child(2), true, {5, 5, 2, 2}}}};
+
+  const std::vector<View*> expected_order{child(1), child(0), child(2)};
+
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(starting_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  // Start the animation.
+  test_layout->SetLayout(ending_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  EXPECT_EQ(expected_order, view()->GetChildrenInZOrder());
+
+  // Advance partially.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_EQ(expected_order, view()->GetChildrenInZOrder());
+
+  // Advance to end (restores Z order).
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_EQ(view()->children(), view()->GetChildrenInZOrder());
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, ZOrder_FadingInViewMovedToBack) {
+  const ProposedLayout starting_layout{{8, 8},
+                                       {{child(0), true, {1, 1, 2, 2}},
+                                        {child(1), false},
+                                        {child(2), true, {5, 5, 2, 2}}}};
+
+  const ProposedLayout ending_layout{{10, 10},
+                                     {{child(0), true, {1, 1, 2, 2}},
+                                      {child(1), true, {3, 3, 2, 2}},
+                                      {child(2), true, {7, 7, 2, 2}}}};
+
+  const std::vector<View*> expected_order{child(1), child(0), child(2)};
+
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(starting_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  // Start the animation.
+  test_layout->SetLayout(ending_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  EXPECT_EQ(expected_order, view()->GetChildrenInZOrder());
+
+  // Advance partially.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_EQ(expected_order, view()->GetChildrenInZOrder());
+
+  // Advance to end (restores Z order).
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_EQ(view()->children(), view()->GetChildrenInZOrder());
 }
 
 namespace {

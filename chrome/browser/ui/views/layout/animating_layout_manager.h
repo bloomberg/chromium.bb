@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -80,6 +81,12 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
     // A view fading in or out appears or disappears when it hits its minimum
     // size, and scales the rest of the way in or out.
     kScaleFromMinimum,
+    // A view fading in will slide out from under the view on its leading edge;
+    // if no view is present a suitable substitute fade is chosen.
+    kSlideFromLeadingEdge,
+    // A view fading in will slide out from under the view on its trailing edge;
+    // if no view is present a suitable substitute fade is chosen.
+    kSlideFromTrailingEdge,
   };
 
   // Call QueueDelayedAction() to queue up an action to be performed when the
@@ -143,6 +150,8 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   int GetPreferredHeightForWidth(const views::View* host,
                                  int width) const override;
   void Layout(views::View* host) override;
+  std::vector<views::View*> GetChildViewsInPaintOrder(
+      const views::View* host) const override;
 
   // Queues an action to take place after the current animation completes.
   // Must be called during an animation. If |delayed_action| needs access to
@@ -202,6 +211,22 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   // Updates information about which views are fading in or out during the
   // current animation.
   void CalculateFadeInfos();
+
+  // Calculates a kScaleFrom[Minimum|Zero] fade and returns the resulting child
+  // layout info.
+  ChildLayout CalculateScaleFade(const LayoutFadeInfo& fade_info,
+                                 base::Optional<size_t> prev_index,
+                                 base::Optional<size_t> next_index,
+                                 double scale_percent,
+                                 bool scale_from_zero) const;
+
+  // Calculates a kSlideFrom[Leading|Trailing]Edge fade and returns the
+  // resulting child layout info.
+  ChildLayout CalculateSlideFade(const LayoutFadeInfo& fade_info,
+                                 base::Optional<size_t> prev_index,
+                                 base::Optional<size_t> next_index,
+                                 double scale_percent,
+                                 bool slide_from_leading) const;
 
   // Whether or not to animate the bounds of the host view when the preferred
   // size of the layout changes. If false, the size will have to be set
