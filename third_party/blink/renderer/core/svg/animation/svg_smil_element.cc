@@ -811,22 +811,17 @@ SMILInterval SVGSMILElement::ResolveInterval(
         FindInstanceTime(kBegin, begin_after, equals_minimum_ok);
     if (temp_begin.IsUnresolved())
       break;
-    SMILTime temp_end;
-    if (end_times_.IsEmpty())
-      temp_end = ResolveActiveEnd(temp_begin, SMILTime::Indefinite());
-    else {
-      temp_end = FindInstanceTime(kEnd, temp_begin, true);
+    SMILTime temp_end = FindInstanceTime(kEnd, temp_begin, true);
+    if (!end_times_.IsEmpty()) {
       if ((first && temp_begin == temp_end &&
            temp_end == last_interval_temp_end) ||
           (!first && temp_end == interval_.end))
         temp_end = FindInstanceTime(kEnd, temp_begin, false);
-      if (temp_end.IsUnresolved()) {
-        if (!end_times_.IsEmpty() && !has_end_event_conditions_)
-          break;
-      }
-      temp_end = ResolveActiveEnd(temp_begin, temp_end);
+      if (temp_end.IsUnresolved() && !has_end_event_conditions_)
+        break;
     }
-    if (!first || (temp_end > SMILTime() || (!temp_begin && !temp_end)))
+    temp_end = ResolveActiveEnd(temp_begin, temp_end);
+    if (!first || temp_end > SMILTime() || (!temp_begin && !temp_end))
       return SMILInterval(temp_begin, temp_end);
 
     begin_after = temp_end;
