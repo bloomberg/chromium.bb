@@ -13,12 +13,10 @@ import com.google.android.gms.gcm.OneoffTask;
 import com.google.android.gms.gcm.Task;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 
 /**
  * The {@link BackgroundSyncLauncher} singleton is created and owned by the C++ browser. It
@@ -160,31 +158,6 @@ public class BackgroundSyncLauncher {
     protected BackgroundSyncLauncher() {
         mScheduler = GcmNetworkManager.getInstance(ContextUtils.getApplicationContext());
         launchBrowserIfStopped(false, 0);
-    }
-
-    /**
-     * Returns true if the Background Sync Manager should be automatically disabled on startup.
-     * This is currently only the case if Play Services is not up to date, since any sync attempts
-     * which fail cannot be reregistered. Better to wait until Play Services is updated before
-     * attempting them.
-     *
-     */
-    @CalledByNative
-    private static boolean shouldDisableBackgroundSync() {
-        // Check to see if Play Services is up to date, and disable GCM if not.
-        // This will not automatically set {@link sGCMEnabled} to true, in case it has been
-        // disabled in tests.
-        if (sGCMEnabled) {
-            boolean isAvailable = true;
-            if (!ExternalAuthUtils.canUseGooglePlayServices()) {
-                setGCMEnabled(false);
-                Log.i(TAG, "Disabling Background Sync because Play Services is not up to date.");
-                isAvailable = false;
-            }
-            RecordHistogram.recordBooleanHistogram(
-                    "BackgroundSync.LaunchTask.PlayServicesAvailable", isAvailable);
-        }
-        return !sGCMEnabled;
     }
 
     private static boolean scheduleLaunchTask(GcmNetworkManager scheduler, long minDelayMs) {

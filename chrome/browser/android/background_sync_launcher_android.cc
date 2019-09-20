@@ -13,6 +13,7 @@
 #include "chrome/android/chrome_jni_headers/BackgroundSyncBackgroundTaskScheduler_jni.h"
 #include "chrome/android/chrome_jni_headers/BackgroundSyncBackgroundTask_jni.h"
 #include "chrome/android/chrome_jni_headers/BackgroundSyncLauncher_jni.h"
+#include "chrome/android/chrome_jni_headers/GooglePlayServicesChecker_jni.h"
 #include "chrome/android/chrome_jni_headers/PeriodicBackgroundSyncChromeWakeUpTask_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -95,7 +96,7 @@ bool BackgroundSyncLauncherAndroid::ShouldDisableBackgroundSync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (disable_play_services_version_check_for_tests)
     return false;
-  return Java_BackgroundSyncLauncher_shouldDisableBackgroundSync(
+  return Java_GooglePlayServicesChecker_shouldDisableBackgroundSync(
       base::android::AttachCurrentThread());
 }
 
