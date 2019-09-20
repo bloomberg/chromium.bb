@@ -25,7 +25,11 @@ namespace platform {
 // asynchronous.
 class StreamSocket {
  public:
+  StreamSocket() = default;
+  StreamSocket(const StreamSocket& other) = delete;
   virtual ~StreamSocket() = default;
+
+  StreamSocket& operator=(const StreamSocket& other) = delete;
 
   // Used by passive/server sockets to accept connection requests
   // from a client.
@@ -47,7 +51,7 @@ class StreamSocket {
   virtual Error Listen(int max_backlog_size) = 0;
 
   // Returns the file descriptor (e.g. fd or HANDLE pointer) for this socket.
-  virtual SocketHandle socket_handle() const = 0;
+  virtual const SocketHandle& socket_handle() const = 0;
 
   // Returns the connected remote address, if socket is connected.
   virtual absl::optional<IPEndpoint> remote_address() const = 0;

@@ -40,7 +40,7 @@ class StreamSocketPosix : public StreamSocket {
   Error Listen(int max_backlog_size) override;
 
   // StreamSocket getter overrides.
-  SocketHandle socket_handle() const override;
+  const SocketHandle& socket_handle() const override { return handle_; }
   absl::optional<IPEndpoint> remote_address() const override;
   absl::optional<IPEndpoint> local_address() const override;
   SocketState state() const override;
@@ -56,7 +56,11 @@ class StreamSocketPosix : public StreamSocket {
   Error CloseOnError(Error::Code error_code);
   Error ReportSocketClosedError();
 
-  std::atomic_int file_descriptor_ = {-1};
+  constexpr static int kUnsetHandleFd = -1;
+
+  // This SocketHandle object is expected to persist for the lieftime of this
+  // object. The internal fd may change, but the object may not be destroyed.
+  SocketHandle handle_{kUnsetHandleFd};
 
   // last_error_code_ is an Error::Code instead of an Error so it meets
   // atomic's (trivially) copyable and moveable requirements.

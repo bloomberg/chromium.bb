@@ -27,7 +27,7 @@ StreamSocketPosix::StreamSocketPosix(const IPEndpoint& local_endpoint)
 
 StreamSocketPosix::StreamSocketPosix(SocketAddressPosix local_address,
                                      int file_descriptor)
-    : file_descriptor_(file_descriptor),
+    : handle_(file_descriptor),
       version_(local_address.version()),
       local_address_(local_address) {}
 
@@ -51,9 +51,8 @@ ErrorOr<std::unique_ptr<StreamSocket>> StreamSocketPosix::Accept() {
   SocketAddressPosix new_remote_address = local_address_.value();
   socklen_t remote_address_size = new_remote_address.size();
   const int new_file_descriptor =
-      accept(file_descriptor_.load(), new_remote_address.address(),
-             &remote_address_size);
-  if (new_file_descriptor == -1) {
+      accept(handle_.fd, new_remote_address.address(), &remote_address_size);
+  if (new_file_descriptor == kUnsetHandleFd) {
     return CloseOnError(Error::Code::kSocketAcceptFailure);
   }
 
@@ -75,7 +74,7 @@ Error StreamSocketPosix::Bind() {
     return CloseOnError(Error::Code::kSocketInvalidState);
   }
 
-  if (bind(file_descriptor_.load(), local_address_.value().address(),
+  if (bind(handle_.fd, local_address_.value().address(),
            local_address_.value().size()) != 0) {
     return CloseOnError(Error::Code::kSocketBindFailure);
   }
@@ -94,11 +93,12 @@ Error StreamSocketPosix::Close() {
     return Error::Code::kSocketInvalidState;
   }
 
-  const int file_descriptor_to_close = file_descriptor_.exchange(-1);
+  const int file_descriptor_to_close = handle_.fd;
   if (close(file_descriptor_to_close) != 0) {
     last_error_code_ = Error::Code::kSocketInvalidState;
     return Error::Code::kSocketInvalidState;
   }
+  handle_.fd = kUnsetHandleFd;
 
   return Error::None();
 }
@@ -113,8 +113,7 @@ Error StreamSocketPosix::Connect(const IPEndpoint& remote_endpoint) {
   }
 
   SocketAddressPosix address(remote_endpoint);
-  if (connect(file_descriptor_.load(), address.address(), address.size()) !=
-      0) {
+  if (connect(handle_.fd, address.address(), address.size()) != 0) {
     return CloseOnError(Error::Code::kSocketConnectFailure);
   }
 
@@ -125,7 +124,7 @@ Error StreamSocketPosix::Connect(const IPEndpoint& remote_endpoint) {
 
     struct sockaddr address;
     socklen_t size = sizeof(address);
-    if (getsockname(file_descriptor_.load(), &address, &size) != 0) {
+    if (getsockname(handle_.fd, &address, &size) != 0) {
       return CloseOnError(Error::Code::kSocketConnectFailure);
     }
 
@@ -147,15 +146,11 @@ Error StreamSocketPosix::Listen(int max_backlog_size) {
     return ReportSocketClosedError();
   }
 
-  if (listen(file_descriptor_.load(), max_backlog_size) != 0) {
+  if (listen(handle_.fd, max_backlog_size) != 0) {
     return CloseOnError(Error::Code::kSocketListenFailure);
   }
 
   return Error::None();
-}
-
-SocketHandle StreamSocketPosix::socket_handle() const {
-  return SocketHandle{file_descriptor_.load()};
 }
 
 absl::optional<IPEndpoint> StreamSocketPosix::remote_address() const {
@@ -203,19 +198,20 @@ Error StreamSocketPosix::Initialize() {
       break;
   }
 
-  file_descriptor_ = socket(domain, SOCK_STREAM, 0);
-  if (file_descriptor_ == -1) {
+  const int file_descriptor = socket(domain, SOCK_STREAM, 0);
+  if (file_descriptor == kUnsetHandleFd) {
     last_error_code_ = Error::Code::kSocketInvalidState;
     return Error::Code::kSocketInvalidState;
   }
 
-  const int current_flags = fcntl(file_descriptor_, F_GETFL, 0);
-  if (fcntl(file_descriptor_, F_SETFL, current_flags | O_NONBLOCK) == -1) {
-    close(file_descriptor_);
+  const int current_flags = fcntl(file_descriptor, F_GETFL, 0);
+  if (fcntl(file_descriptor, F_SETFL, current_flags | O_NONBLOCK) == -1) {
+    close(file_descriptor);
     last_error_code_ = Error::Code::kSocketInvalidState;
     return Error::Code::kSocketInvalidState;
   }
 
+  handle_.fd = file_descriptor;
   is_initialized_ = true;
   // last_error_code_ should still be Error::None().
   return Error::None();
