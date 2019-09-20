@@ -1111,6 +1111,8 @@ if (!is_android) {
       "../browser/sharing/click_to_call/click_to_call_browsertest.cc",
       "../browser/signin/consistency_cookie_browsertest.cc",
       "../browser/signin/e2e_tests/demo_signin_e2e_test.cc",
+      "../browser/signin/e2e_tests/live_test.cc",
+      "../browser/signin/e2e_tests/live_test.h",
       "../browser/site_isolation/chrome_site_per_process_browsertest.cc",
       "../browser/site_isolation/site_details_browsertest.cc",
       "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
