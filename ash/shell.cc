@@ -665,6 +665,10 @@ Shell::~Shell() {
   // dependency on the latter.
   assistant_controller_.reset();
 
+  // Because this function will call |TabletModeController::RemoveObserver|, do
+  // it before destroying |tablet_mode_controller_|.
+  accessibility_controller_->Shutdown();
+
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
   tablet_mode_controller_->Shutdown();

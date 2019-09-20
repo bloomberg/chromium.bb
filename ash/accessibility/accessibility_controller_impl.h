@@ -56,6 +56,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // See Shell::RegisterProfilePrefs().
   static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
+  void Shutdown();
+
   void AddObserver(AccessibilityObserver* observer);
   void RemoveObserver(AccessibilityObserver* observer);
 
