@@ -70,6 +70,11 @@ ScriptPromise PortalContents::Activate(ScriptState* script_state,
 void PortalContents::OnActivateResponse(bool was_adopted) {
   if (was_adopted)
     GetDocument().GetPage()->SetInsidePortal(true);
+
+  DocumentPortals& document_portals = DocumentPortals::From(GetDocument());
+  DCHECK_EQ(document_portals.GetActivatingPortalContents(), this);
+  document_portals.ClearActivatingPortalContents();
+
   activate_resolver_->Resolve();
   activate_resolver_ = nullptr;
   Destroy();
