@@ -330,7 +330,7 @@ class IDLParser(object):
     p[0] = p[1]
 
   def p_PartialInterfaceRest(self, p):
-    """PartialInterfaceRest : identifier '{' InterfaceMembers '}' ';'"""
+    """PartialInterfaceRest : identifier '{' PartialInterfaceMembers '}' ';'"""
     p[0] = self.BuildNamed('Interface', p, 1, p[3])
 
   def p_InterfaceMembers(self, p):
@@ -346,15 +346,32 @@ class IDLParser(object):
     p[0] = self.BuildError(p, 'InterfaceMembers')
 
   def p_InterfaceMember(self, p):
-    """InterfaceMember : Const
-                       | Operation
-                       | Stringifier
-                       | StaticMember
-                       | Iterable
-                       | ReadonlyMember
-                       | ReadWriteAttribute
-                       | ReadWriteMaplike
-                       | ReadWriteSetlike"""
+    """InterfaceMember : PartialInterfaceMember
+                       | Constructor"""
+    p[0] = p[1]
+
+  def p_PartialInterfaceMembers(self, p):
+    """PartialInterfaceMembers : ExtendedAttributeList PartialInterfaceMember PartialInterfaceMembers
+                               |"""
+    if len(p) > 1:
+      p[2].AddChildren(p[1])
+      p[0] = ListFromConcat(p[2], p[3])
+
+  # Error recovery for InterfaceMembers
+  def p_PartialInterfaceMembersError(self, p):
+    """PartialInterfaceMembers : error"""
+    p[0] = self.BuildError(p, 'PartialInterfaceMembers')
+
+  def p_PartialInterfaceMember(self, p):
+    """PartialInterfaceMember : Const
+                              | Operation
+                              | Stringifier
+                              | StaticMember
+                              | Iterable
+                              | ReadonlyMember
+                              | ReadWriteAttribute
+                              | ReadWriteMaplike
+                              | ReadWriteSetlike"""
     p[0] = p[1]
 
   def p_Inheritance(self, p):
@@ -602,6 +619,11 @@ class IDLParser(object):
       p[0].AddChildren(self.BuildNamed('PrimitiveType', p, 1))
     else:
       p[0] = p[1]
+
+  def p_Constructor(self, p):
+    """Constructor : CONSTRUCTOR '(' ArgumentList ')' ';'"""
+    arguments = self.BuildProduction('Arguments', p, 1, p[3])
+    p[0] = self.BuildProduction('Constructor', p, 1, arguments)
 
   def p_Stringifier(self, p):
     """Stringifier : STRINGIFIER StringifierRest"""

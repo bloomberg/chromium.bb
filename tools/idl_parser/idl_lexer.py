@@ -60,6 +60,7 @@ class IDLLexer(object):
     'ByteString' : 'BYTESTRING',
     'callback' : 'CALLBACK',
     'const' : 'CONST',
+    'constructor' : 'CONSTRUCTOR',
     'deleter' : 'DELETER',
     'dictionary' : 'DICTIONARY',
     'DOMString' : 'DOMSTRING',
