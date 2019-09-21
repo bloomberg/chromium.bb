@@ -599,7 +599,7 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
 void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
     RenderWidget* origin_widget) {
   RenderWidgetScreenMetricsEmulator* emulator =
-      origin_widget->screen_metrics_emulator_.get();
+      page_properties_->ScreenMetricsEmulator();
   if (!emulator)
     return;
   popup_origin_scale_for_emulation_ = emulator->scale();
@@ -614,14 +614,15 @@ void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
     ExternalPopupMenu* popup) {
-  if (screen_metrics_emulator_)
-    popup->SetOriginScaleForEmulation(screen_metrics_emulator_->scale());
+  if (page_properties_->ScreenMetricsEmulator())
+    popup->SetOriginScaleForEmulation(
+        page_properties_->ScreenMetricsEmulator()->scale());
 }
 #endif
 
 void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
-  if (screen_metrics_emulator_)
-    screen_metrics_emulator_->OnShowContextMenu(params);
+  if (page_properties_->ScreenMetricsEmulator())
+    page_properties_->ScreenMetricsEmulator()->OnShowContextMenu(params);
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
@@ -889,14 +890,14 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
   // some of |visual_properties| in sync resize mode instead of just
   // skipping the emulator.
   if (!ignore_resize_ipc) {
-    if (screen_metrics_emulator_) {
+    if (delegate_ && page_properties_->ScreenMetricsEmulator()) {
       // This will call our SynchronizeVisualProperties() method with a
       // different set of VisualProperties, holding emulated values. Though not
       // all VisualProperties are modified by the metrics emulator, so it's a
       // bit unclear to do this with the full structure. Anything it does not
       // modify can be consumed directly here instead of in
       // SynchronizeVisualProperties().
-      screen_metrics_emulator_->OnSynchronizeVisualProperties(
+      page_properties_->ScreenMetricsEmulator()->OnSynchronizeVisualProperties(
           visual_properties);
     } else {
       SynchronizeVisualProperties(visual_properties);
@@ -953,7 +954,13 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
 
 void RenderWidget::OnEnableDeviceEmulation(
     const blink::WebDeviceEmulationParams& params) {
-  if (!screen_metrics_emulator_) {
+  // Device emulation can only be applied to the local main frame render widget.
+  // TODO(https://crbug.com/1006052): We should fix the IPC to send to
+  // RenderView instead.
+  if (!delegate_)
+    return;
+
+  if (!page_properties_->ScreenMetricsEmulator()) {
     VisualProperties visual_properties;
     visual_properties.screen_info = page_properties_->GetScreenInfo();
     visual_properties.new_size = size_;
@@ -963,12 +970,13 @@ void RenderWidget::OnEnableDeviceEmulation(
     visual_properties.visible_viewport_size = visible_viewport_size_;
     visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
     visual_properties.display_mode = display_mode_;
-    screen_metrics_emulator_.reset(new RenderWidgetScreenMetricsEmulator(
-        this, params, visual_properties, widget_screen_rect_,
-        window_screen_rect_));
-    screen_metrics_emulator_->Apply();
+    page_properties_->SetScreenMetricsEmulator(
+        std::make_unique<RenderWidgetScreenMetricsEmulator>(
+            this, params, visual_properties, widget_screen_rect_,
+            window_screen_rect_));
+    page_properties_->ScreenMetricsEmulator()->Apply();
   } else {
-    screen_metrics_emulator_->ChangeEmulationParams(params);
+    page_properties_->ScreenMetricsEmulator()->ChangeEmulationParams(params);
   }
 }
 
@@ -1021,7 +1029,12 @@ void RenderWidget::SetZoomLevel(double zoom_level) {
 }
 
 void RenderWidget::OnDisableDeviceEmulation() {
-  screen_metrics_emulator_.reset();
+  // Device emulation can only be applied to the local main frame render widget.
+  // TODO(https://crbug.com/1006052): We should fix the IPC to send to
+  // RenderView instead.
+  if (!delegate_)
+    return;
+  page_properties_->SetScreenMetricsEmulator(nullptr);
 }
 
 void RenderWidget::OnWasHidden() {
@@ -1723,8 +1736,8 @@ void RenderWidget::SynchronizeVisualProperties(
     const VisualProperties& visual_properties) {
   // This method needs to handle changes to the screen_info, new_size, and
   // visible_viewport_size fields in |visual_properties|, as this method is
-  // called from the |screen_metrics_emulator_| and it changes those fields
-  // but not others.
+  // called from the RenderWidgetScreenMetricsEmulator and it changes those
+  // fields but not others.
 
   gfx::Rect new_compositor_viewport_pixel_rect =
       auto_resize_mode_
@@ -2030,7 +2043,11 @@ void RenderWidget::CloseWebWidget() {
   // explicit method call (instead of in the destructor) that occurs when
   // emulation is disabled, but does not need to occur during RenderWidget
   // closing. Then we would not have to destroy this so carefully.
-  screen_metrics_emulator_.reset();
+  //
+  // Screen metrics emulation can only be set by the local main frame render
+  // widget.
+  if (delegate_)
+    page_properties_->SetScreenMetricsEmulator(nullptr);
 
   // TODO(https://crbug.com/995981): This logic is very confusing and should be
   // fixed. When the RenderWidget is associated with a RenderView,
@@ -2364,9 +2381,9 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
 
 void RenderWidget::OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
                                        const gfx::Rect& window_screen_rect) {
-  if (screen_metrics_emulator_) {
-    screen_metrics_emulator_->OnUpdateScreenRects(widget_screen_rect,
-                                                  window_screen_rect);
+  if (delegate_ && page_properties_->ScreenMetricsEmulator()) {
+    page_properties_->ScreenMetricsEmulator()->OnUpdateScreenRects(
+        widget_screen_rect, window_screen_rect);
   } else {
     SetScreenRects(widget_screen_rect, window_screen_rect);
   }
@@ -3695,8 +3712,8 @@ void RenderWidget::OnWaitNextFrameForTests(
 }
 
 const ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {
-  return screen_metrics_emulator_
-             ? screen_metrics_emulator_->original_screen_info()
+  return page_properties_->ScreenMetricsEmulator()
+             ? page_properties_->ScreenMetricsEmulator()->original_screen_info()
              : page_properties_->GetScreenInfo();
 }
 

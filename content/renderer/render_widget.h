@@ -122,7 +122,6 @@ class RenderFrameImpl;
 class RenderFrameProxy;
 class RenderViewImpl;
 class RenderWidgetDelegate;
-class RenderWidgetScreenMetricsEmulator;
 class WidgetInputHandlerManager;
 struct ContextMenuParams;
 struct VisualProperties;
@@ -1092,8 +1091,6 @@ class CONTENT_EXPORT RenderWidget
 
   // True if the IME requests updated composition info.
   bool monitor_composition_info_ = false;
-
-  std::unique_ptr<RenderWidgetScreenMetricsEmulator> screen_metrics_emulator_;
 
   // Popups may be displaced when screen metrics emulation is enabled.
   // These values are used to properly adjust popup position.
