@@ -1088,13 +1088,6 @@ const blink::WebView* RenderViewImpl::webview() const {
 
 // RenderWidgetOwnerDelegate -----------------------------------------
 
-bool RenderViewImpl::RenderWidgetWillHandleMouseEventForWidget(
-    const blink::WebMouseEvent& event) {
-  // If the mouse is locked, only the current owner of the mouse lock can
-  // process mouse events.
-  return render_widget_->mouse_lock_dispatcher()->WillHandleMouseEvent(event);
-}
-
 void RenderViewImpl::SetActiveForWidget(bool active) {
   if (webview())
     webview()->SetIsActive(active);

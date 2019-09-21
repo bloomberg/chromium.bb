@@ -1685,10 +1685,7 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   possible_drag_event_info_.event_location =
       gfx::Point(event.PositionInScreen().x, event.PositionInScreen().y);
 
-  if (delegate())
-    return delegate()->RenderWidgetWillHandleMouseEventForWidget(event);
-
-  return false;
+  return mouse_lock_dispatcher()->WillHandleMouseEvent(event);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

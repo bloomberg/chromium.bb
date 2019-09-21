@@ -61,7 +61,6 @@
 #include "ui/surface/transport_dib.h"
 
 namespace blink {
-class WebMouseEvent;
 class WebURLRequest;
 struct WebPluginAction;
 struct WebWindowFeatures;
@@ -405,8 +404,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // RenderWidgetDelegate implementation ----------------------------------
 
-  bool RenderWidgetWillHandleMouseEventForWidget(
-      const blink::WebMouseEvent& event) override;
   void SetActiveForWidget(bool active) override;
   bool SupportsMultipleWindowsForWidget() override;
   bool ShouldAckSyntheticInputImmediately() override;
