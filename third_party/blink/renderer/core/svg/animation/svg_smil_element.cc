@@ -117,7 +117,8 @@ void ConditionEventListener::Invoke(ExecutionContext*, Event* event) {
     return;
   animation_->IntervalIsDirty();
   animation_->AddInstanceTime(condition_->GetBeginOrEnd(),
-                              animation_->Elapsed() + condition_->Offset());
+                              animation_->Elapsed() + condition_->Offset(),
+                              SMILTimeOrigin::kEvent);
 }
 
 SVGSMILElement::Condition::Condition(Type type,
@@ -487,7 +488,7 @@ void SVGSMILElement::ParseBeginOrEnd(const String& parse_string,
       ParseCondition(item, begin_or_end);
     } else if (!existing.Contains(value)) {
       time_list.push_back(
-          SMILTimeWithOrigin(value, SMILTimeWithOrigin::kParserOrigin));
+          SMILTimeWithOrigin(value, SMILTimeOrigin::kAttribute));
     }
   }
   std::sort(time_list.begin(), time_list.end());
@@ -712,7 +713,7 @@ static void InsertSortedAndUnique(Vector<SMILTimeWithOrigin>& list,
 
 void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
                                      SMILTime time,
-                                     SMILTimeWithOrigin::Origin origin) {
+                                     SMILTimeOrigin origin) {
   SMILTime current_presentation_time =
       time_container_ ? time_container_->CurrentDocumentTime() : SMILTime();
   DCHECK(!current_presentation_time.IsUnresolved());
@@ -1171,6 +1172,7 @@ void SVGSMILElement::CreateInstanceTimesFromSyncBase(
       // No nested time containers in SVG, no need for crazy time space
       // conversions. Phew!
       SMILTime time = SMILTime::Unresolved();
+      SMILTimeOrigin origin = SMILTimeOrigin::kSyncBase;
       if (condition->GetName() == "begin") {
         time = new_interval.begin + condition->Offset();
       } else if (condition->GetName() == "end") {
@@ -1184,11 +1186,12 @@ void SVGSMILElement::CreateInstanceTimesFromSyncBase(
                                    ? time_container_->CurrentDocumentTime()
                                    : SMILTime();
           time = base_time + condition->Offset();
+          origin = SMILTimeOrigin::kRepeat;
         }
       }
       if (!time.IsFinite())
         continue;
-      AddInstanceTime(condition->GetBeginOrEnd(), time);
+      AddInstanceTime(condition->GetBeginOrEnd(), time, origin);
     }
   }
 }
@@ -1204,7 +1207,7 @@ void SVGSMILElement::RemoveSyncBaseDependent(SVGSMILElement& animation) {
 }
 
 void SVGSMILElement::BeginByLinkActivation() {
-  AddInstanceTime(kBegin, Elapsed());
+  AddInstanceTime(kBegin, Elapsed(), SMILTimeOrigin::kLinkActivation);
 }
 
 void SVGSMILElement::EndedActiveInterval() {

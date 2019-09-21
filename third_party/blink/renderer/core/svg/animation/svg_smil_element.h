@@ -145,10 +145,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     interval_.end = SMILTime();
   }
 
-  void AddInstanceTime(
-      BeginOrEnd,
-      SMILTime,
-      SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::kParserOrigin);
+  void AddInstanceTime(BeginOrEnd, SMILTime, SMILTimeOrigin);
 
   void SetInactive() { active_state_ = kInactive; }
 
