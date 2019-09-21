@@ -760,7 +760,7 @@ scoped_refptr<cc::DisplayItemList> SynthesizedClip::PaintContentsToDisplayList(
     cc_list->push<cc::DrawRRectOp>(local_rrect_, flags);
   } else {
     cc_list->push<cc::SaveOp>();
-    cc_list->push<cc::TranslateOp>(-layer_origin_.x(), -layer_origin_.x());
+    cc_list->push<cc::TranslateOp>(-layer_origin_.x(), -layer_origin_.y());
     cc_list->push<cc::ClipPathOp>(path_->GetSkPath(), SkClipOp::kIntersect,
                                   true);
     SkRRect rrect = local_rrect_;

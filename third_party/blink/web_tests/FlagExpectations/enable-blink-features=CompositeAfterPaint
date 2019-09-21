@@ -220,6 +220,8 @@ Bug(none) external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
 Bug(none) external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
 
 # Text failures due to layerization differences
+Bug(none) compositing/overflow/ancestor-with-clip-path.html [ Failure ]
+Bug(none) compositing/overflow/descendant-with-clip-path.html [ Failure ]
 Bug(none) compositing/overflow/scroller-with-border-radius.html [ Failure ]
 Bug(none) css3/blending/mix-blend-mode-2nd-stacking-context-composited.html [ Failure ]
 Bug(none) css3/blending/mix-blend-mode-composited-layers.html [ Failure ]
@@ -363,6 +365,8 @@ Bug(none) paint/invalidation/reflection/scroll-fixed-layer-with-reflection.html 
 Bug(none) paint/invalidation/reflection/scroll-fixed-reflected-layer.html [ Failure ]
 Bug(none) paint/invalidation/selection/japanese-rl-selection-repaint.html [ Failure ]
 Bug(none) paint/float/float-under-inline-self-painting-change.html [ Failure ]
+Bug(none) paint/invalidation/clip/clip-path-constant-repaint.html [ Failure ]
+Bug(none) paint/invalidation/svg/mask-clip-target-transform.svg [ Failure ]
 
 # Extra raster invalidation on start/end of animation. Caused by animation
 # element id namespaces
@@ -461,16 +465,11 @@ crbug.com/979380 fast/frames/transparent-scrollbar.html [ Failure ]
 Bug(none) compositing/will-change/composited-layers.html [ Failure ]
 # Crash on non-contiguous effect on multiple columns
 Bug(none) fast/multicol/composited-layer-will-change.html [ Crash ]
+Bug(none) paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
 
 # Clip-path and mask.
-crbug.com/979369 compositing/geometry/child-layer-position-with-clip-path-overflow.html [ Failure ]
-crbug.com/979369 compositing/overflow/accelerated-scrolling-with-clip-path.html [ Failure ]
-crbug.com/979369 compositing/overflow/ancestor-with-clip-path.html [ Failure ]
-crbug.com/979369 compositing/overflow/descendant-with-clip-path.html [ Failure ]
 crbug.com/979369 external/wpt/css/css-masking/clip-path-svg-content/mask-nested-clip-path-002.svg [ Failure ]
 crbug.com/979369 external/wpt/css/css-masking/clip-path-svg-content/mask-nested-clip-path-panning-001.svg [ Failure ]
-crbug.com/979369 paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
-crbug.com/979369 paint/invalidation/svg/mask-clip-target-transform.svg [ Failure ]
 crbug.com/979369 svg/clip-path/deep-nested-clip-in-mask.svg [ Failure ]
 
 # CompositeAfterPaint incorrectly composites all scrollers, and these do not
