@@ -39,7 +39,7 @@ git_cache.Mirror.SetCachePath(None)
 # Shortcut since this function is used often
 join = gclient_scm.os.path.join
 
-TIMESTAMP_RE = re.compile('\[[0-9]{1,2}:[0-9]{2}:[0-9]{2}\] (.*)', re.DOTALL)
+TIMESTAMP_RE = re.compile(r'\[[0-9]{1,2}:[0-9]{2}:[0-9]{2}\] (.*)', re.DOTALL)
 def strip_timestamps(value):
   lines = value.splitlines(True)
   for i in range(len(lines)):
@@ -501,7 +501,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
       pass
     scm.update(options, (), [])
     self.assertRegexpMatches(sys.stdout.getvalue(),
-                             "breaking lock.*\.git/index\.lock")
+                             r'breaking lock.*\.git[/|\\]index\.lock')
     self.assertFalse(os.path.exists(file_path))
     sys.stdout.close()
 
