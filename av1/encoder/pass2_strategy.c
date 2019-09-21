@@ -154,26 +154,25 @@ static double calc_correction_factor(double err_per_mb, double err_divisor,
 #define FACTOR_PT_LOW 0.70
 #define FACTOR_PT_HIGH 0.90
 
-// Similar to find_qindex_by_rate() function in ratectrl.c, but includes
-// calculation of a correction_factor.
-static int find_qindex_by_rate_with_correction(
-    AV1_COMP *cpi, int desired_bits_per_mb, aom_bit_depth_t bit_depth,
-    FRAME_TYPE frame_type, double error_per_mb, double group_weight_factor,
-    int best_qindex, int worst_qindex) {
-  assert(best_qindex <= worst_qindex);
-  int low = best_qindex;
-  int high = worst_qindex;
-
-  TWO_PASS *twopass = &cpi->twopass;
-  double last_group_rate_err;
-
+static void twopass_update_bpm_factor(TWO_PASS *twopass) {
   // Based on recent history adjust expectations of bits per macroblock.
-  last_group_rate_err =
+  double last_group_rate_err =
       (double)twopass->rolling_arf_group_actual_bits /
       DOUBLE_DIVIDE_CHECK((double)twopass->rolling_arf_group_target_bits);
   last_group_rate_err = AOMMAX(0.25, AOMMIN(4.0, last_group_rate_err));
   twopass->bpm_factor *= (3.0 + last_group_rate_err) / 4.0;
   twopass->bpm_factor = AOMMAX(0.25, AOMMIN(4.0, twopass->bpm_factor));
+}
+
+// Similar to find_qindex_by_rate() function in ratectrl.c, but includes
+// calculation of a correction_factor.
+static int find_qindex_by_rate_with_correction(
+    int desired_bits_per_mb, aom_bit_depth_t bit_depth, FRAME_TYPE frame_type,
+    double error_per_mb, double group_weight_factor, int best_qindex,
+    int worst_qindex) {
+  assert(best_qindex <= worst_qindex);
+  int low = best_qindex;
+  int high = worst_qindex;
 
   while (low < high) {
     const int mid = (low + high) >> 1;
@@ -220,11 +219,12 @@ static int get_twopass_worst_quality(AV1_COMP *cpi, const double section_err,
         (int)((uint64_t)section_target_bandwidth << BPER_MB_NORMBITS) /
         active_mbs;
 
+    twopass_update_bpm_factor(&cpi->twopass);
     // Try and pick a max Q that will be high enough to encode the
     // content at the given rate.
     int q = find_qindex_by_rate_with_correction(
-        cpi, target_norm_bits_per_mb, cpi->common.seq_params.bit_depth,
-        INTER_FRAME, av_err_per_mb, group_weight_factor, rc->best_quality,
+        target_norm_bits_per_mb, cpi->common.seq_params.bit_depth, INTER_FRAME,
+        av_err_per_mb, group_weight_factor, rc->best_quality,
         rc->worst_quality);
 
     // Restriction on active max q for constrained quality mode.
