@@ -572,7 +572,7 @@ class Mirror(object):
       if not ignore_lock:
         lockfile.unlock()
 
-  def update_bootstrap(self, prune=False):
+  def update_bootstrap(self, prune=False, gc_aggressive=False):
     # The folder is <git number>
     gen_number = subprocess.check_output(
         [self.git_exe, 'number', 'master'], cwd=self.mirror_path).strip()
@@ -592,7 +592,10 @@ class Mirror(object):
       return
 
     # Run Garbage Collect to compress packfile.
-    self.RunGit(['gc', '--prune=all'])
+    gc_args = ['gc', '--prune=all']
+    if gc_aggressive:
+      gc_args.append('--aggressive')
+    self.RunGit(gc_args)
 
     gsutil.call('-m', 'cp', '-r', src_name, dest_prefix)
 
@@ -699,6 +702,8 @@ def CMDupdate_bootstrap(parser, args):
     print('Sorry, update bootstrap will not work on Windows.', file=sys.stderr)
     return 1
 
+  parser.add_option('--gc-aggressive', action='store_true',
+                    help='Run aggressive repacking of the repo.')
   parser.add_option('--prune', action='store_true',
                     help='Prune all other cached bundles of the same repo.')
 
@@ -710,7 +715,7 @@ def CMDupdate_bootstrap(parser, args):
   options, args = parser.parse_args(args)
   url = args[0]
   mirror = Mirror(url)
-  mirror.update_bootstrap(options.prune)
+  mirror.update_bootstrap(options.prune, options.gc_aggressive)
   return 0
 
 
