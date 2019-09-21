@@ -340,6 +340,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // code away from this class.
   friend class RenderFrameImpl;
 
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, EmulatingPopupRect);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, RenderFrameMessageAfterDetach);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, BeginNavigationForWebUI);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
@@ -506,6 +507,12 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Request the window to close from the renderer by sending the request to the
   // browser.
   void DoDeferredClose();
+
+  // Creates a Popup and also returns a reference to the RenderWidget, which is
+  // otherwise owned by the browser and un-referencable. |output_widget| is an
+  // output variable.
+  blink::WebPagePopup* CreatePopupAndGetWidget(blink::WebLocalFrame* creator,
+                                               RenderWidget** output_widget);
 
 #if defined(OS_ANDROID)
   // Make the video capture devices (e.g. webcam) stop/resume delivering video

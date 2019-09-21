@@ -723,8 +723,9 @@ class CONTENT_EXPORT RenderWidget
   friend class PopupRenderWidget;
   friend class QueueMessageSwapPromiseTest;
   friend class RenderWidgetTest;
-  friend class RenderViewImplTest;  // TODO(ajwong): Can this be removed?
+  friend class RenderViewImplTest;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetPopupUnittest, EmulatingPopupRect);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, EmulatingPopupRect);
 
   static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
 

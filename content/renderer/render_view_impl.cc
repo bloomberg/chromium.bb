@@ -1447,6 +1447,12 @@ WebView* RenderViewImpl::CreateView(
 
 blink::WebPagePopup* RenderViewImpl::CreatePopup(
     blink::WebLocalFrame* creator) {
+  return CreatePopupAndGetWidget(creator, nullptr);
+}
+
+blink::WebPagePopup* RenderViewImpl::CreatePopupAndGetWidget(
+    blink::WebLocalFrame* creator,
+    RenderWidget** output_widget) {
   mojo::PendingRemote<mojom::Widget> widget_channel;
   mojo::PendingReceiver<mojom::Widget> widget_channel_receiver =
       widget_channel.InitWithNewPipeAndPassReceiver();
@@ -1491,6 +1497,9 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // |view_render_widget|, should also apply to the new popup. This doesn't
   // happen automatically.
   popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(render_widget);
+
+  if (output_widget)
+    *output_widget = popup_widget;
 
   return popup_web_widget;
 }
