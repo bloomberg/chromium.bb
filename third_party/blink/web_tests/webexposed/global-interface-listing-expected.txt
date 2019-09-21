@@ -1161,7 +1161,7 @@ interface ContentIndex
     method add
     method constructor
     method delete
-    method getDescriptions
+    method getAll
 interface ConvolverNode : AudioNode
     attribute @@toStringTag
     getter buffer
