@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='masked'",
-      "bounds": [400, 200],
-      "backgroundColor": "#000000",
+      "name": "LayoutSVGRoot svg",
+      "position": [50, 0],
+      "bounds": [500, 400],
       "transform": 1
     }
   ],
@@ -20,7 +20,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [10, 10, 0, 1]
+        [8, 8, 0, 1]
       ]
     }
   ]
