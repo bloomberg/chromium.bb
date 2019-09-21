@@ -1609,16 +1609,21 @@ Polymer({
    * @private
    */
   startConnect_: function(guid) {
-    this.networkingPrivate.startConnect(guid, () => {
-      const error = this.getRuntimeError_();
-      if (!error || error == 'connected' || error == 'connect-canceled' ||
-          error == 'connecting') {
-        // Connect is in progress, completed or canceled, close the dialog.
+    this.networkConfig_.startConnect(guid).then(response => {
+      const result = response.result;
+      if (result == mojom.StartConnectResult.kSuccess ||
+          result == mojom.StartConnectResult.kInvalidGuid ||
+          result == mojom.StartConnectResult.kInvalidState ||
+          result == mojom.StartConnectResult.kCanceled) {
+        // Connect succeeded, or is in progress completed or canceled.
+        // Close the dialog.
         this.close_();
         return;
       }
-      this.setError_(error);
-      console.error('Error connecting to network: ' + error);
+      this.setError_(response.message);
+      console.error(
+          'Error connecting to network: ' + guid + ': ' + result.toString() +
+          ' Message: ' + response.message);
       this.propertiesSent_ = false;
     });
   },

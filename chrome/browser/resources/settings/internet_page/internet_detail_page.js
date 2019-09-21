@@ -1341,39 +1341,44 @@ Polymer({
     }
 
     /** @type {!Array<string>} */ const fields = [];
-    const type = this.managedProperties_.type;
-    if (type == mojom.NetworkType.kCellular) {
-      fields.push('cellular.activationState', 'cellular.servingOperator.name');
-      if (this.managedProperties_.restrictedConnectivity) {
-        fields.push('restrictedConnectivity');
-      }
-    } else if (type == mojom.NetworkType.kTether) {
-      fields.push(
-          'tether.batteryPercentage', 'tether.signalStrength',
-          'tether.carrier');
-    } else if (type == mojom.NetworkType.kVPN) {
-      const vpnType = this.managedProperties_.vpn.type;
-      switch (vpnType) {
-        case mojom.VpnType.kExtension:
-          fields.push('vpn.providerName');
-          break;
-        case mojom.VpnType.kArc:
-          fields.push('vpn.type');
-          fields.push('vpn.providerName');
-          break;
-        case mojom.VpnType.kOpenVPN:
-          fields.push(
-              'vpn.type', 'vpn.host', 'vpn.openVpn.username',
-              'vpn.openVpn.extraHosts');
-          break;
-        case mojom.VpnType.kL2TPIPsec:
-          fields.push('vpn.type', 'vpn.host', 'vpn.l2tp.username');
-          break;
-      }
-    } else if (type == mojom.NetworkType.kWiFi) {
-      if (this.managedProperties_.restrictedConnectivity) {
-        fields.push('restrictedConnectivity');
-      }
+    switch (this.managedProperties_.type) {
+      case mojom.NetworkType.kCellular:
+        fields.push(
+            'cellular.activationState', 'cellular.servingOperator.name');
+        if (this.managedProperties_.restrictedConnectivity) {
+          fields.push('restrictedConnectivity');
+        }
+        break;
+      case mojom.NetworkType.kTether:
+        fields.push(
+            'tether.batteryPercentage', 'tether.signalStrength',
+            'tether.carrier');
+        break;
+      case mojom.NetworkType.kVPN:
+        const vpnType = this.managedProperties_.vpn.type;
+        switch (vpnType) {
+          case mojom.VpnType.kExtension:
+            fields.push('vpn.providerName');
+            break;
+          case mojom.VpnType.kArc:
+            fields.push('vpn.type');
+            fields.push('vpn.providerName');
+            break;
+          case mojom.VpnType.kOpenVPN:
+            fields.push(
+                'vpn.type', 'vpn.host', 'vpn.openVpn.username',
+                'vpn.openVpn.extraHosts');
+            break;
+          case mojom.VpnType.kL2TPIPsec:
+            fields.push('vpn.type', 'vpn.host', 'vpn.l2tp.username');
+            break;
+        }
+        break;
+      case mojom.NetworkType.kWiFi:
+        if (this.managedProperties_.restrictedConnectivity) {
+          fields.push('restrictedConnectivity');
+        }
+        break;
     }
     return fields;
   },
@@ -1416,18 +1421,23 @@ Polymer({
 
     /** @type {!Array<string>} */ const fields = [];
     const type = this.managedProperties_.type;
+    // All networks except Tether show MAC address.
     if (type != mojom.NetworkType.kTether) {
       fields.push('macAddress');
     }
-    if (type == mojom.NetworkType.kCellular) {
-      fields.push(
-          'cellular.family', 'cellular.networkTechnology',
-          'cellular.servingOperator.code');
-    } else if (type == mojom.NetworkType.kWiFi) {
-      fields.push(
-          'wifi.ssid', 'wifi.bssid', 'wifi.signalStrength', 'wifi.security',
-          'wifi.eap.outer', 'wifi.eap.inner', 'wifi.eap.subjectMatch',
-          'wifi.eap.identity', 'wifi.eap.anonymousIdentity', 'wifi.frequency');
+    switch (type) {
+      case mojom.NetworkType.kCellular:
+        fields.push(
+            'cellular.family', 'cellular.networkTechnology',
+            'cellular.servingOperator.code');
+        break;
+      case mojom.NetworkType.kWiFi:
+        fields.push(
+            'wifi.ssid', 'wifi.bssid', 'wifi.signalStrength', 'wifi.security',
+            'wifi.eap.outer', 'wifi.eap.inner', 'wifi.eap.subjectMatch',
+            'wifi.eap.identity', 'wifi.eap.anonymousIdentity',
+            'wifi.frequency');
+        break;
     }
     return fields;
   },

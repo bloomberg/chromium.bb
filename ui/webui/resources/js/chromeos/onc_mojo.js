@@ -286,28 +286,6 @@ class OncMojo {
   }
 
   /**
-   * @param {string} value
-   * @return {!chromeos.networkConfig.mojom.OncSource} value
-   */
-  static getOncSourceFromString(value) {
-    const OncSource = chromeos.networkConfig.mojom.OncSource;
-    switch (value) {
-      case CrOnc.Source.NONE:
-        return OncSource.kNone;
-      case CrOnc.Source.DEVICE:
-        return OncSource.kDevice;
-      case CrOnc.Source.DEVICE_POLICY:
-        return OncSource.kDevicePolicy;
-      case CrOnc.Source.USER:
-        return OncSource.kUser;
-      case CrOnc.Source.USER_POLICY:
-        return OncSource.kUserPolicy;
-    }
-    assertNotReached('Unexpected value: ' + value);
-    return OncSource.kNone;
-  }
-
-  /**
    * @param {!chromeos.networkConfig.mojom.SecurityType} value
    * @return {string}
    */
@@ -619,14 +597,13 @@ class OncMojo {
         networkState.cellular.networkTechnology =
             properties.cellular.networkTechnology || '';
         networkState.cellular.roaming =
-            properties.cellular.roamingState == CrOnc.RoamingState.ROAMING;
+            properties.cellular.roamingState == 'Roaming';
         networkState.cellular.signalStrength =
             properties.cellular.signalStrength;
         break;
       case mojom.NetworkType.kEthernet:
         networkState.ethernet.authentication =
-            properties.ethernet.authentication ==
-                CrOnc.Authentication.WEP_8021X ?
+            properties.ethernet.authentication == '8021X' ?
             mojom.AuthenticationType.k8021x :
             mojom.AuthenticationType.kNone;
         break;
