@@ -1557,7 +1557,8 @@ void TabStrip::UpdateHoverCard(Tab* tab) {
   if (!base::FeatureList::IsEnabled(features::kTabHoverCards))
     return;
   // We don't want to show a hover card for a tab while it is animating.
-  if (tab && bounds_animator_.IsAnimating(tab)) {
+  if (tab &&
+      (bounds_animator_.IsAnimating(tab) || layout_helper_->IsAnimating())) {
     return;
   }
 
