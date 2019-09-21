@@ -940,7 +940,8 @@ class PixelTestPages(object):
         base_name + '_CanvasLowLatency2DSwapChain',
         test_rect=[0, 0, 100, 100],
         revision=1,
-        browser_args=browser_args + ['--enable-canvas2d-swap-chain']),
+        browser_args=browser_args +
+        ['--enable-features=LowLatencyCanvas2dSwapChain']),
 
       PixelTestPage(
         'pixel_canvas_low_latency_2d.html',
@@ -971,7 +972,8 @@ class PixelTestPages(object):
         base_name + '_CanvasLowLatencyWebGLSwapChain',
         test_rect=[0, 0, 200, 200],
         revision=0, # not used
-        browser_args=browser_args + ['--enable-webgl-swap-chain'],
+        browser_args=browser_args +
+        ['--enable-features=LowLatencyWebGLSwapChain'],
         tolerance=0,
         expected_colors=[
           SCALE_FACTOR_OVERRIDES,
@@ -988,7 +990,8 @@ class PixelTestPages(object):
         base_name + '_CanvasLowLatencyWebGLSwapChainAlphaFalse',
         test_rect=[0, 0, 200, 200],
         revision=0, # not used
-        browser_args=browser_args + ['--enable-webgl-swap-chain'],
+        browser_args=browser_args +
+        ['--enable-features=LowLatencyWebGLSwapChain'],
         tolerance=0,
         expected_colors=[
           SCALE_FACTOR_OVERRIDES,

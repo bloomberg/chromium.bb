@@ -28,6 +28,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/numerics/checked_math.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -115,6 +116,10 @@
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 
 namespace blink {
+namespace {
+const base::Feature kLowLatencyWebGLSwapChain{
+    "LowLatencyWebGLSwapChain", base::FEATURE_DISABLED_BY_DEFAULT};
+}  // namespace
 
 bool WebGLRenderingContextBase::webgl_context_limits_initialized_ = false;
 unsigned WebGLRenderingContextBase::max_active_webgl_contexts_ = 0;
@@ -1097,7 +1102,7 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
                                   : DrawingBuffer::kAllowChromiumImage;
 
   bool using_swap_chain =
-      RuntimeEnabledFeatures::WebGLSwapChainEnabled() &&
+      base::FeatureList::IsEnabled(kLowLatencyWebGLSwapChain) &&
       context_provider->GetCapabilities().shared_image_swap_chain &&
       CreationAttributes().desynchronized;
 
