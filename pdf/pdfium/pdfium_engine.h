@@ -124,6 +124,11 @@ class PDFiumEngine : public PDFEngine,
                    int* out_start_char_index,
                    int* out_char_count,
                    pp::FloatRect* out_bounds) override;
+  uint32_t GetImageCount(int page_index) override;
+  bool GetImageInfo(int page_index,
+                    uint32_t image_index,
+                    std::string* out_alt_text,
+                    pp::FloatRect* out_bounds) override;
   bool GetPrintScaling() override;
   int GetCopiesToPrint() override;
   int GetDuplexType() override;

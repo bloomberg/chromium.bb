@@ -114,6 +114,42 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   }
 }
 
+TEST_F(AccessibilityTest, GetAccessibilityImageInfo) {
+  static const pp::PDF::PrivateAccessibilityImageInfo kExpectedImageInfo[] = {
+      {"Image 1", 0, {{380, 78}, {67, 68}}},
+      {"Image 2", 0, {{380, 385}, {27, 28}}},
+      {"Image 3", 0, {{380, 678}, {1, 1}}}};
+
+  static const pp::Rect kExpectedPageRect = {{5, 3}, {816, 1056}};
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("image_alt_text.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PP_PrivateAccessibilityPageInfo page_info;
+  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<PP_PrivateAccessibilityCharInfo> chars;
+  std::vector<pp::PDF::PrivateAccessibilityLinkInfo> links;
+  std::vector<pp::PDF::PrivateAccessibilityImageInfo> images;
+  ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
+                                   &chars, &links, &images));
+  EXPECT_EQ(0u, page_info.page_index);
+  CompareRect(kExpectedPageRect, page_info.bounds);
+  EXPECT_EQ(text_runs.size(), page_info.text_run_count);
+  EXPECT_EQ(chars.size(), page_info.char_count);
+  EXPECT_EQ(links.size(), page_info.link_count);
+  EXPECT_EQ(images.size(), page_info.image_count);
+  ASSERT_EQ(images.size(), base::size(kExpectedImageInfo));
+
+  for (size_t i = 0; i < page_info.image_count; ++i) {
+    EXPECT_EQ(images[i].alt_text, kExpectedImageInfo[i].alt_text);
+    CompareRect(kExpectedImageInfo[i].bounds, images[i].bounds);
+    EXPECT_EQ(images[i].text_run_index, kExpectedImageInfo[i].text_run_index);
+  }
+}
+
 TEST_F(AccessibilityTest, GetUnderlyingTextRangeForRect) {
   TestClient client;
   std::unique_ptr<PDFiumEngine> engine =

@@ -62,6 +62,13 @@ class PDFiumPage {
                    int* out_start_char_index,
                    int* out_char_count,
                    pp::FloatRect* out_bounds);
+  // Gets the number of images in the page.
+  uint32_t GetImageCount();
+  // Given an image index, gets the alt text and bounding box. Returns false if
+  // the image index is invalid.
+  bool GetImageInfo(uint32_t image_index,
+                    std::string* out_alt_text,
+                    pp::FloatRect* out_bounds);
 
   enum Area {
     NONSELECTABLE_AREA,

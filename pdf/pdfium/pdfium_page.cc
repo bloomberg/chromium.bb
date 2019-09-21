@@ -461,6 +461,28 @@ bool PDFiumPage::GetLinkInfo(uint32_t link_index,
   return true;
 }
 
+uint32_t PDFiumPage::GetImageCount() {
+  if (!available_)
+    return 0;
+  CalculateImages();
+  return images_.size();
+}
+
+bool PDFiumPage::GetImageInfo(uint32_t image_index,
+                              std::string* out_alt_text,
+                              pp::FloatRect* out_bounds) {
+  uint32_t image_count = GetImageCount();
+  if (image_index >= image_count)
+    return false;
+
+  const Image& image_info = images_[image_index];
+  *out_alt_text = image_info.alt_text;
+  *out_bounds = pp::FloatRect(
+      image_info.bounding_rect.x(), image_info.bounding_rect.y(),
+      image_info.bounding_rect.width(), image_info.bounding_rect.height());
+  return true;
+}
+
 PDFiumPage::Area PDFiumPage::GetLinkTargetAtIndex(int link_index,
                                                   LinkTarget* target) {
   if (!available_ || link_index < 0)

@@ -2594,3 +2594,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, TextDirection) {
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, WebLinks) {
   RunPDFTest(FILE_PATH_LITERAL("weblinks.pdf"));
 }
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, Images) {
+  RunPDFTest(FILE_PATH_LITERAL("image_alt_text.pdf"));
+}

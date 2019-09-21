@@ -87,6 +87,23 @@ void GetAccessibilityLinkInfo(
             });
 }
 
+void GetAccessibilityImageInfo(
+    PDFEngine* engine,
+    int32_t page_index,
+    uint32_t text_run_count,
+    std::vector<pp::PDF::PrivateAccessibilityImageInfo>* images) {
+  uint32_t image_count = engine->GetImageCount(page_index);
+  for (uint32_t i = 0; i < image_count; ++i) {
+    pp::PDF::PrivateAccessibilityImageInfo image_info;
+    bool ret = engine->GetImageInfo(page_index, i, &image_info.alt_text,
+                                    &image_info.bounds);
+    DCHECK(ret);
+    // TODO(mohitb): Update text run index to nearest text run to image bounds.
+    image_info.text_run_index = text_run_count;
+    images->push_back(std::move(image_info));
+  }
+}
+
 }  // namespace
 
 bool GetAccessibilityInfo(
@@ -172,8 +189,8 @@ bool GetAccessibilityInfo(
   page_info->text_run_count = text_runs->size();
   GetAccessibilityLinkInfo(engine, page_index, *text_runs, links);
   page_info->link_count = links->size();
-
-  // TODO (crbug.com/981448): Populate image information for page.
+  GetAccessibilityImageInfo(engine, page_index, page_info->text_run_count,
+                            images);
   page_info->image_count = images->size();
   return true;
 }
