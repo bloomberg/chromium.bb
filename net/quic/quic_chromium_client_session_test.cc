@@ -226,7 +226,7 @@ class QuicChromiumClientSessionTest
     // These tests are only concerned with dynamic streams (that is, the number
     // of streams that they can create), so back out the static header stream.
     return quic::test::QuicSessionPeer::v99_streamid_manager(quic_session)
-        ->max_allowed_outgoing_bidirectional_streams();
+        ->max_outgoing_bidirectional_streams();
   }
 
   const quic::ParsedQuicVersion version_;
