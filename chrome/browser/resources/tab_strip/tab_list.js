@@ -215,9 +215,8 @@ class TabListElement extends CustomElement {
       return pathItem !== this.draggedItem_ && isTabElement(pathItem);
     });
 
-    if (!dragOverItem ||
+    if (!dragOverItem || !this.draggedItem_ ||
         dragOverItem.tab.pinned !== this.draggedItem_.tab.pinned) {
-      // TODO(johntlee): Support dragging between different pinned states.
       return;
     }
 
