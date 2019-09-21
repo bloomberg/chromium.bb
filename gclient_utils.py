@@ -438,7 +438,7 @@ def MakeFileAutoFlush(fileobj, delay=10):
 def MakeFileAnnotated(fileobj, include_zero=False):
   if getattr(fileobj, 'annotated', None):
     return fileobj
-  return Annotated(fileobj)
+  return Annotated(fileobj, include_zero)
 
 
 GCLIENT_CHILDREN = []
