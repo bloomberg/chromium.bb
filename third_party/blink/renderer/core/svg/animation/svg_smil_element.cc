@@ -841,7 +841,7 @@ bool SVGSMILElement::ResolveFirstInterval() {
   if (!first_interval.IsResolved() || first_interval == interval_)
     return false;
   interval_ = first_interval;
-  NotifyDependentsIntervalChanged(interval_);
+  NotifyDependentsOnNewInterval(interval_);
   return true;
 }
 
@@ -904,7 +904,7 @@ void SVGSMILElement::BeginListChanged(SMILTime event_time) {
       if (GetActiveState() != kActive)
         EndedActiveInterval();
     }
-    NotifyDependentsIntervalChanged(interval_);
+    NotifyDependentsOnNewInterval(interval_);
   }
 }
 
@@ -923,7 +923,7 @@ void SVGSMILElement::EndListChanged(SMILTime event_time) {
   new_end = ResolveActiveEnd(interval_.begin, new_end);
   if (new_end != interval_.end) {
     interval_.end = new_end;
-    NotifyDependentsIntervalChanged(interval_);
+    NotifyDependentsOnNewInterval(interval_);
   }
 }
 
@@ -1097,7 +1097,7 @@ void SVGSMILElement::UpdateSyncBases() {
   if (!interval_has_changed_)
     return;
   interval_has_changed_ = false;
-  NotifyDependentsIntervalChanged(interval_);
+  NotifyDependentsOnNewInterval(interval_);
 }
 
 void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
@@ -1120,7 +1120,7 @@ void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
     unsigned repeat = CalculateAnimationRepeat(elapsed);
     if (repeat && repeat != last_repeat_) {
       last_repeat_ = repeat;
-      NotifyDependentsIntervalChanged(interval_);
+      NotifyDependentsOnRepeat(repeat, elapsed);
       ScheduleRepeatEvents();
     }
 
@@ -1134,9 +1134,38 @@ void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
   }
 }
 
-void SVGSMILElement::NotifyDependentsIntervalChanged(
+struct SVGSMILElement::NotifyDependentsInfo {
+  explicit NotifyDependentsInfo(const SMILInterval& interval)
+      : origin(SMILTimeOrigin::kSyncBase),
+        repeat_nr(0),
+        begin(interval.begin),
+        end(interval.end) {}
+  NotifyDependentsInfo(unsigned repeat_nr, SMILTime repeat_time)
+      : origin(SMILTimeOrigin::kRepeat),
+        repeat_nr(repeat_nr),
+        begin(repeat_time),
+        end(SMILTime::Unresolved()) {}
+
+  SMILTimeOrigin origin;
+  unsigned repeat_nr;
+  SMILTime begin;  // repeat time if origin == kRepeat
+  SMILTime end;
+};
+
+void SVGSMILElement::NotifyDependentsOnNewInterval(
     const SMILInterval& interval) {
   DCHECK(interval.IsResolved());
+  NotifyDependents(NotifyDependentsInfo(interval));
+}
+
+void SVGSMILElement::NotifyDependentsOnRepeat(unsigned repeat_nr,
+                                              SMILTime repeat_time) {
+  DCHECK(repeat_nr);
+  DCHECK(repeat_time.IsFinite());
+  NotifyDependents(NotifyDependentsInfo(repeat_nr, repeat_time));
+}
+
+void SVGSMILElement::NotifyDependents(const NotifyDependentsInfo& info) {
   // |loopBreaker| is used to avoid infinite recursions which may be caused by:
   // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncBase| ->
   // |add{Begin,End}Time| -> |{begin,end}TimeChanged| ->
@@ -1151,55 +1180,52 @@ void SVGSMILElement::NotifyDependentsIntervalChanged(
     return;
 
   for (SVGSMILElement* element : sync_base_dependents_)
-    element->CreateInstanceTimesFromSyncBase(this, interval);
+    element->CreateInstanceTimesFromSyncBase(this, info);
 
   loop_breaker.erase(this);
 }
 
 void SVGSMILElement::CreateInstanceTimesFromSyncBase(
     SVGSMILElement* timed_element,
-    const SMILInterval& new_interval) {
+    const NotifyDependentsInfo& info) {
   // FIXME: To be really correct, this should handle updating exising interval
   // by changing the associated times instead of creating new ones.
   for (Condition* condition : conditions_) {
-    if (condition->IsSyncBaseFor(timed_element)) {
-      // TODO(edvardt): This is a lot of string compares, which is slow, it
-      // might be a good idea to change it for an enum and maybe make Condition
-      // into a union?
-      DCHECK(condition->GetName() == "begin" || condition->GetName() == "end" ||
-             condition->GetName() == "repeat");
+    if (!condition->IsSyncBaseFor(timed_element))
+      continue;
+    // TODO(edvardt): This is a lot of string compares, which is slow, it
+    // might be a good idea to change it for an enum and maybe make Condition
+    // into a union?
+    DCHECK(condition->GetName() == "begin" || condition->GetName() == "end" ||
+           condition->GetName() == "repeat");
 
-      // No nested time containers in SVG, no need for crazy time space
-      // conversions. Phew!
-      SMILTime time = SMILTime::Unresolved();
-      SMILTimeOrigin origin = SMILTimeOrigin::kSyncBase;
+    // No nested time containers in SVG, no need for crazy time space
+    // conversions. Phew!
+    SMILTime time = SMILTime::Unresolved();
+    if (info.origin == SMILTimeOrigin::kSyncBase) {
       if (condition->GetName() == "begin") {
-        time = new_interval.begin + condition->Offset();
+        time = info.begin + condition->Offset();
       } else if (condition->GetName() == "end") {
-        time = new_interval.end + condition->Offset();
-      } else if (condition->Repeat()) {
-        if (timed_element->last_repeat_ == condition->Repeat()) {
-          // If the STAPIT algorithm works, the current document
-          // time will be accurate. So this event should be sent
-          // correctly.
-          SMILTime base_time = time_container_
-                                   ? time_container_->CurrentDocumentTime()
-                                   : SMILTime();
-          time = base_time + condition->Offset();
-          origin = SMILTimeOrigin::kRepeat;
-        }
+        time = info.end + condition->Offset();
       }
-      if (!time.IsFinite())
+    } else {
+      DCHECK_EQ(info.origin, SMILTimeOrigin::kRepeat);
+      if (info.repeat_nr != condition->Repeat())
         continue;
-      AddInstanceTime(condition->GetBeginOrEnd(), time, origin);
+      time = info.begin + condition->Offset();
     }
+    if (!time.IsFinite())
+      continue;
+    AddInstanceTime(condition->GetBeginOrEnd(), time, info.origin);
   }
 }
 
 void SVGSMILElement::AddSyncBaseDependent(SVGSMILElement& animation) {
   sync_base_dependents_.insert(&animation);
-  if (interval_.IsResolved())
-    animation.CreateInstanceTimesFromSyncBase(this, interval_);
+  if (!interval_.IsResolved())
+    return;
+  animation.CreateInstanceTimesFromSyncBase(this,
+                                            NotifyDependentsInfo(interval_));
 }
 
 void SVGSMILElement::RemoveSyncBaseDependent(SVGSMILElement& animation) {
