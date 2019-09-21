@@ -58,6 +58,8 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void ConfigureNetwork(mojom::ConfigPropertiesPtr properties,
                         bool shared,
                         ConfigureNetworkCallback callback) override;
+  void ForgetNetwork(const std::string& guid,
+                     ForgetNetworkCallback callback) override;
   void SetNetworkTypeEnabledState(
       mojom::NetworkType type,
       bool enabled,
@@ -109,6 +111,11 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       int callback_id,
       const std::string& error_name,
       std::unique_ptr<base::DictionaryValue> error_data);
+  void ForgetNetworkSuccess(int callback_id);
+  void ForgetNetworkFailure(const std::string& guid,
+                            int callback_id,
+                            const std::string& error_name,
+                            std::unique_ptr<base::DictionaryValue> error_data);
   void SetCellularSimStateSuccess(int callback_id);
   void SetCellularSimStateFailure(
       int callback_id,
@@ -155,6 +162,7 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       get_managed_properties_callbacks_;
   base::flat_map<int, SetPropertiesCallback> set_properties_callbacks_;
   base::flat_map<int, ConfigureNetworkCallback> configure_network_callbacks_;
+  base::flat_map<int, ForgetNetworkCallback> forget_network_callbacks_;
   base::flat_map<int, SetCellularSimStateCallback>
       set_cellular_sim_state_callbacks_;
   base::flat_map<int, SelectCellularMobileNetworkCallback>

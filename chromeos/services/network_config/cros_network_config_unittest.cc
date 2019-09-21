@@ -277,6 +277,21 @@ class CrosNetworkConfigTest : public testing::Test {
     return guid;
   }
 
+  bool ForgetNetwork(const std::string& guid) {
+    bool success = false;
+    base::RunLoop run_loop;
+    cros_network_config()->ForgetNetwork(
+        guid,
+        base::BindOnce(
+            [](bool* successp, base::OnceClosure quit_closure, bool success) {
+              *successp = success;
+              std::move(quit_closure).Run();
+            },
+            &success, run_loop.QuitClosure()));
+    run_loop.Run();
+    return success;
+  }
+
   bool SetCellularSimState(const std::string& current_pin_or_puk,
                            base::Optional<std::string> new_pin,
                            bool require_pin) {
@@ -707,6 +722,22 @@ TEST_F(CrosNetworkConfigTest, ConfigureNetwork) {
   EXPECT_EQ(mojom::OncSource::kDevice, network->source);
   ASSERT_TRUE(network->wifi);
   EXPECT_EQ(ssid, network->wifi->ssid);
+}
+
+TEST_F(CrosNetworkConfigTest, ForgetNetwork) {
+  // Use a non visible configured network.
+  const std::string kGUID = "wifi3_guid";
+
+  // Verify the configuration exists.
+  mojom::ManagedPropertiesPtr properties = GetManagedProperties(kGUID);
+  ASSERT_TRUE(properties);
+  ASSERT_EQ(kGUID, properties->guid);
+
+  // Forget the network and verify the configuration no longer exists.
+  bool result = ForgetNetwork(kGUID);
+  EXPECT_TRUE(result);
+  properties = GetManagedProperties(kGUID);
+  ASSERT_FALSE(properties);
 }
 
 TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {

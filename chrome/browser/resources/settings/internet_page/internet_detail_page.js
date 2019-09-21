@@ -104,12 +104,6 @@ Polymer({
     },
 
     /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: Object,
-
-    /**
      * The network AutoConnect state as a fake preference object.
      * @private {!chrome.settingsPrivate.PrefObject|undefined}
      */
@@ -205,12 +199,7 @@ Polymer({
   /** @private  {settings.InternetPageBrowserProxy} */
   browserProxy_: null,
 
-  /**
-   * This UI will use both the networkingPrivate extension API and the
-   * networkConfig mojo API until we provide all of the required functionality
-   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
-   */
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
   /** @override */
@@ -1076,7 +1065,11 @@ Polymer({
 
   /** @private */
   onForgetTap_: function() {
-    this.networkingPrivate.forgetNetwork(this.guid);
+    this.networkConfig_.forgetNetwork(this.guid).then(response => {
+      if (!response.success) {
+        console.error('Froget network failed for: ' + this.guid);
+      }
+    });
     // A forgotten network no longer has a valid GUID, close the subpage.
     this.close();
   },

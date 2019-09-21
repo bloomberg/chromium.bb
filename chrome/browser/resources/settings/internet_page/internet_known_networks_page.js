@@ -26,12 +26,6 @@ Polymer({
     },
 
     /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: Object,
-
-    /**
      * List of all network state data for the network type.
      * @private {!Array<!OncMojo.NetworkStateProperties>}
      */
@@ -60,12 +54,7 @@ Polymer({
   /** @private {string} */
   selectedGuid_: '',
 
-  /**
-   * This UI will use both the networkingPrivate extension API and the
-   * networkConfig mojo API until we provide all of the required functionality
-   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
-   */
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
   /** @override */
@@ -215,7 +204,11 @@ Polymer({
 
   /** @private */
   onForgetTap_: function() {
-    this.networkingPrivate.forgetNetwork(this.selectedGuid_);
+    this.networkConfig_.forgetNetwork(this.selectedGuid_).then(response => {
+      if (!response.success) {
+        console.error('Froget network failed for: ' + this.selectedGuid_);
+      }
+    });
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 

@@ -2008,6 +2008,76 @@ void CrosNetworkConfig::ConfigureNetworkFailure(
   configure_network_callbacks_.erase(iter);
 }
 
+void CrosNetworkConfig::ForgetNetwork(const std::string& guid,
+                                      ForgetNetworkCallback callback) {
+  if (!network_configuration_handler_) {
+    NET_LOG(ERROR) << "ForgetNetwork called with no handler";
+    std::move(callback).Run(false);
+    return;
+  }
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(guid);
+  if (!network || network->profile_path().empty()) {
+    NET_LOG(ERROR) << "ForgetNetwork called with unconfigured network: "
+                   << guid;
+    std::move(callback).Run(false);
+    return;
+  }
+
+  bool allow_forget_shared_config = true;
+  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_UNKNOWN;
+  std::string user_id_hash = LoginState::Get()->primary_user_hash();
+  if (network_configuration_handler_->FindPolicyByGUID(user_id_hash, guid,
+                                                       &onc_source)) {
+    if (onc_source == ::onc::ONC_SOURCE_USER_POLICY) {
+      // Prevent a policy controlled configuration removal.
+      std::move(callback).Run(false);
+      return;
+    }
+    if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY)
+      allow_forget_shared_config = false;
+  }
+
+  int callback_id = callback_id_++;
+  forget_network_callbacks_[callback_id] = std::move(callback);
+
+  if (allow_forget_shared_config) {
+    network_configuration_handler_->RemoveConfiguration(
+        network->path(),
+        base::Bind(&CrosNetworkConfig::ForgetNetworkSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::ForgetNetworkFailure,
+                   weak_factory_.GetWeakPtr(), guid, callback_id));
+  } else {
+    network_configuration_handler_->RemoveConfigurationFromCurrentProfile(
+        network->path(),
+        base::Bind(&CrosNetworkConfig::ForgetNetworkSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::ForgetNetworkFailure,
+                   weak_factory_.GetWeakPtr(), guid, callback_id));
+  }
+}
+
+void CrosNetworkConfig::ForgetNetworkSuccess(int callback_id) {
+  auto iter = forget_network_callbacks_.find(callback_id);
+  DCHECK(iter != forget_network_callbacks_.end());
+  std::move(iter->second).Run(/*success=*/true);
+  forget_network_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::ForgetNetworkFailure(
+    const std::string& guid,
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = forget_network_callbacks_.find(callback_id);
+  DCHECK(iter != forget_network_callbacks_.end());
+  NET_LOG(ERROR) << "Failed to forget network: " << guid
+                 << " Error: " << error_name;
+  std::move(iter->second).Run(/*success=*/false);
+  forget_network_callbacks_.erase(iter);
+}
+
 void CrosNetworkConfig::SetNetworkTypeEnabledState(
     mojom::NetworkType type,
     bool enabled,

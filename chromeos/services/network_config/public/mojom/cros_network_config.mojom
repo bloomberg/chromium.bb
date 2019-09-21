@@ -846,6 +846,11 @@ interface CrosNetworkConfig {
   ConfigureNetwork(ConfigProperties properties, bool shared) =>
     (string? guid, string error_message);
 
+  // Forgets an existing network configuration matching |guid| by clearing all
+  // configured properties. Returns true if the network exists and is
+  // successfully removed.
+  ForgetNetwork(string guid) => (bool success);
+
   // Sets a single network type (e.g. WiFi) to enabled or disabled. Types
   // describing multiple technologies (e.g. kWireless) are not supported.
   // Returns false if the type is invalid, unavailable, or can not be disabled.
