@@ -28,15 +28,6 @@
 
 namespace views {
 
-using layout::NormalizedInsets;
-using layout::NormalizedPoint;
-using layout::NormalizedRect;
-using layout::NormalizedSize;
-using layout::NormalizedSizeBounds;
-
-using layout::Denormalize;
-using layout::Normalize;
-
 namespace {
 
 // Layout information for a specific child view in a proposed layout.
@@ -334,7 +325,7 @@ FlexLayout& FlexLayout::SetBetweenChildSpacing(int between_child_spacing) {
   return *this;
 }
 
-LayoutManagerBase::ProposedLayout FlexLayout::CalculateProposedLayout(
+ProposedLayout FlexLayout::CalculateProposedLayout(
     const SizeBounds& size_bounds) const {
   FlexLayoutData data;
 
@@ -386,7 +377,7 @@ LayoutManagerBase::ProposedLayout FlexLayout::CalculateProposedLayout(
 }
 
 void FlexLayout::InitializeChildData(
-    const layout::NormalizedSizeBounds& bounds,
+    const NormalizedSizeBounds& bounds,
     FlexLayoutData* data,
     FlexOrderToViewIndexMap* flex_order_to_index) const {
   // Step through the children, creating placeholder layout view elements
