@@ -1,16 +1,16 @@
 #!/bin/sh
 
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 NAME=org.chromium.chromoting
-HOST_BUNDLE_NAME=@@HOST_LEGACY_BUNDLE_NAME@@
+SCRIPT_DIR="$(dirname "${0}")"
 CONFIG_DIR=/Library/PrivilegedHelperTools
-ENABLED_FILE=$CONFIG_DIR/$NAME.me2me_enabled
-CONFIG_FILE=$CONFIG_DIR/$NAME.json
-HOST_EXE=$CONFIG_DIR/$HOST_BUNDLE_NAME/Contents/MacOS/remoting_me2me_host
-PLIST_FILE=$CONFIG_DIR/$HOST_BUNDLE_NAME/Contents/Info.plist
+ENABLED_FILE="$CONFIG_DIR/$NAME.me2me_enabled"
+CONFIG_FILE="$CONFIG_DIR/$NAME.json"
+HOST_EXE="$SCRIPT_DIR/remoting_me2me_host"
+PLIST_FILE="$SCRIPT_DIR/../Info.plist"
 
 # The exit code returned by 'wait' when a process is terminated by SIGTERM.
 SIGTERM_EXIT_CODE=143
