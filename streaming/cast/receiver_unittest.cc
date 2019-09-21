@@ -87,10 +87,10 @@ struct SimulatedFrame : public EncodedFrame {
   SimulatedFrame(Clock::time_point first_frame_reference_time, int which) {
     frame_id = FrameId::first() + which;
     if (which == 0) {
-      dependency = EncodedFrame::KEY;
+      dependency = EncodedFrame::KEY_FRAME;
       referenced_frame_id = frame_id;
     } else {
-      dependency = EncodedFrame::DEPENDENT;
+      dependency = EncodedFrame::DEPENDS_ON_ANOTHER;
       referenced_frame_id = frame_id - 1;
     }
     rtp_timestamp =
@@ -576,7 +576,7 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
       .Times(1);
   EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(0);
   SimulatedFrame frame(start_time, 4);
-  frame.dependency = EncodedFrame::KEY;
+  frame.dependency = EncodedFrame::KEY_FRAME;
   frame.referenced_frame_id = frame.frame_id;
   sender()->SetFrameBeingSent(frame);
   sender()->SendRtpPackets(sender()->GetAllPacketIds(0));

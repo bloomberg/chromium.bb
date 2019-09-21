@@ -90,7 +90,8 @@ absl::Span<uint8_t> RtpPacketizer::GeneratePacket(const EncryptedFrame& frame,
 
   // Cast Header.
   AppendField<uint8_t>(
-      ((frame.dependency == EncodedFrame::KEY) ? kRtpKeyFrameBitMask : 0) |
+      ((frame.dependency == EncodedFrame::KEY_FRAME) ? kRtpKeyFrameBitMask
+                                                     : 0) |
           kRtpHasReferenceFrameIdBitMask |
           (include_adaptive_latency_change ? 1 : 0),
       &buffer);

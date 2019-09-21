@@ -187,7 +187,7 @@ void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
 
   // Whenever a key frame has been received, the decoder has what it needs to
   // recover. In this case, clear the PLI condition.
-  if (encrypted_frame.dependency == EncryptedFrame::KEY) {
+  if (encrypted_frame.dependency == EncryptedFrame::KEY_FRAME) {
     rtcp_builder_.SetPictureLossIndicator(false);
   }
 

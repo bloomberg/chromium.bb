@@ -37,8 +37,8 @@ class RtpPacketizerTest : public testing::Test {
                              std::chrono::milliseconds new_playout_delay,
                              int payload_size) const {
     EncodedFrame frame;
-    frame.dependency =
-        is_key_frame ? EncodedFrame::KEY : EncodedFrame::DEPENDENT;
+    frame.dependency = is_key_frame ? EncodedFrame::KEY_FRAME
+                                    : EncodedFrame::DEPENDS_ON_ANOTHER;
     frame.frame_id = frame_id;
     frame.referenced_frame_id = is_key_frame ? frame_id : (frame_id - 1);
     frame.rtp_timestamp = RtpTimeTicks() + RtpTimeDelta::FromTicks(987);
@@ -81,7 +81,8 @@ class RtpPacketizerTest : public testing::Test {
     // Check that RTP header fields match expected values.
     EXPECT_EQ(kPayloadType, result->payload_type);
     EXPECT_EQ(frame.rtp_timestamp, result->rtp_timestamp);
-    EXPECT_EQ(frame.dependency == EncodedFrame::KEY, result->is_key_frame);
+    EXPECT_EQ(frame.dependency == EncodedFrame::KEY_FRAME,
+              result->is_key_frame);
     EXPECT_EQ(frame.frame_id, result->frame_id);
     EXPECT_EQ(packet_id, result->packet_id);
     EXPECT_EQ(static_cast<FramePacketId>(num_packets - 1),

@@ -28,16 +28,14 @@ struct EncodedFrame {
 
     // Not decodable without the reference frame indicated by
     // |referenced_frame_id|.
-    DEPENDENT,
+    DEPENDS_ON_ANOTHER,
 
     // Independently decodable.
-    INDEPENDENT,
+    INDEPENDENTLY_DECODABLE,
 
     // Independently decodable, and no future frames will depend on any frames
     // before this one.
-    KEY,
-
-    DEPENDENCY_LAST = KEY
+    KEY_FRAME,
   };
 
   EncodedFrame();

@@ -75,10 +75,10 @@ TEST(FrameCollectorTest, CollectsFrameWithOnlyOnePart) {
     // what was put into the collector via the packet above.
     const auto& frame = collector.PeekAtAssembledFrame();
     if (i == 0) {
-      EXPECT_EQ(EncodedFrame::KEY, frame.dependency);
+      EXPECT_EQ(EncodedFrame::KEY_FRAME, frame.dependency);
       EXPECT_EQ(std::chrono::milliseconds(), frame.new_playout_delay);
     } else {
-      EXPECT_EQ(EncodedFrame::DEPENDENT, frame.dependency);
+      EXPECT_EQ(EncodedFrame::DEPENDS_ON_ANOTHER, frame.dependency);
       EXPECT_EQ(std::chrono::milliseconds(800), frame.new_playout_delay);
     }
     EXPECT_EQ(part.frame_id, frame.frame_id);
@@ -150,7 +150,7 @@ TEST(FrameCollectorTest, CollectsFrameWithMultiplePartsArrivingOutOfOrder) {
   // what was put into the collector via the packets above, and that the payload
   // bytes are in-order.
   const auto& frame = collector.PeekAtAssembledFrame();
-  EXPECT_EQ(EncodedFrame::KEY, frame.dependency);
+  EXPECT_EQ(EncodedFrame::KEY_FRAME, frame.dependency);
   EXPECT_EQ(kSomeFrameId, frame.frame_id);
   EXPECT_EQ(kSomeFrameId, frame.referenced_frame_id);
   EXPECT_EQ(kSomeRtpTimestamp, frame.rtp_timestamp);
