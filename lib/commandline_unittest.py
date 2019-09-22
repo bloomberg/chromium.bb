@@ -31,7 +31,7 @@ class TestShutDownException(cros_test_lib.TestCase):
     ex = commandline._ShutDownException(signal.SIGTERM, 'Received SIGTERM')
     ex2 = pickle.loads(pickle.dumps(ex))
     self.assertEqual(ex.signal, ex2.signal)
-    self.assertEqual(ex.message, ex2.message)
+    self.assertEqual(str(ex), str(ex2))
 
 
 class GSPathTest(cros_test_lib.OutputTestCase):

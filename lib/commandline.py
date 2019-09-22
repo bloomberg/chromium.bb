@@ -849,8 +849,12 @@ class _ShutDownException(SystemExit):
     self.signal = sig_num
     # Setup a usage message primarily for any code that may intercept it
     # while this exception is crashing back up the stack to us.
-    SystemExit.__init__(self, message)
+    SystemExit.__init__(self, 128 + sig_num)
     self.args = (sig_num, message)
+
+  def __str__(self):
+    """Stringify this exception."""
+    return self.args[1]
 
 
 def _DefaultHandler(signum, _frame):
