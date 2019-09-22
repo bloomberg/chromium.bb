@@ -90,19 +90,19 @@ class InOrder(Comparator):
     super(InOrder, self).__init__()
     self.items = items
 
-  def Match(self, args):
+  def Match(self, arg):
     """Checks if args' item matches all expected items in sequence.
 
     Args:
-      args: parameter list.
+      arg: parameter list.
 
     Returns:
       True if all expected items are matched.
     """
     items = list(self.items)
     to_match = items.pop(0)
-    for arg in args:
-      if to_match == arg:
+    for a in arg:
+      if to_match == a:
         if len(items) < 1:
           return True
         to_match = items.pop(0)

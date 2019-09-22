@@ -180,14 +180,13 @@ class FileCopyTest(CopyTest):
 class SloppyFileCopyTest(FileCopyTest):
   """Test file copies with sloppy=True"""
 
-  def _CopyAndVerify(self, path, src_struct, dest_struct, **kwargs):
-    if not kwargs.get('sloppy'):
-      kwargs['sloppy'] = True
-
-    if kwargs.get('error') is chrome_util.MissingPathError:
-      kwargs['error'] = None
+  def _CopyAndVerify(self, path, src_struct, dest_struct, error=None,
+                     sloppy=True):
+    if error is chrome_util.MissingPathError:
+      error = None
     # pylint: disable=protected-access
-    CopyTest._CopyAndVerify(self, path, src_struct, dest_struct, **kwargs)
+    CopyTest._CopyAndVerify(self, path, src_struct, dest_struct, error=error,
+                            sloppy=sloppy)
 
 
 class DirCopyTest(FileCopyTest):

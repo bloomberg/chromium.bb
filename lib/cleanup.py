@@ -116,7 +116,7 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
       self._lock.unlock()
       self._lock.close()
 
-  def _exit(self, _exc, _exc_type, _tb):
+  def _exit(self, exc_type, exc, exc_tb):
     if self._is_child:
       # All cleanup code that would've run, has ran.
       # Hard exit to bypass any further code execution.

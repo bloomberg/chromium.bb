@@ -1171,9 +1171,9 @@ class TestCreateDisjointTransactions(_Base):
     self.patch_mock = self.StartPatcher(MockPatchSeries())
     self._patch_factory = patch_unittest.MockPatchFactory(self.patch_mock)
 
-  def GetPatches(self, how_many, **kwargs):
+  def GetPatches(self, *args, **kwargs):
     return super(TestCreateDisjointTransactions, self).GetPatches(
-        how_many, always_use_list=True, **kwargs)
+        *args, always_use_list=True, **kwargs)
 
   def verifyTransactions(self, txns, max_txn_length=None, circular=False):
     """Verify the specified list of transactions are processed correctly.

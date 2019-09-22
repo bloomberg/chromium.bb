@@ -464,7 +464,9 @@ class _Popen(subprocess.Popen):
   has knowingly been waitpid'd already.
   """
 
-  def send_signal(self, signum):
+  # Pylint seems to be buggy with the send_signal signature detection.
+  # pylint: disable=arguments-differ
+  def send_signal(self, sig):
     if self.returncode is not None:
       # The original implementation in Popen would allow signaling whatever
       # process now occupies this pid, even if the Popen object had waitpid'd.
@@ -474,13 +476,13 @@ class _Popen(subprocess.Popen):
       return
 
     try:
-      os.kill(self.pid, signum)
+      os.kill(self.pid, sig)
     except EnvironmentError as e:
       if e.errno == errno.EPERM:
         # Kill returns either 0 (signal delivered), or 1 (signal wasn't
         # delivered).  This isn't particularly informative, but we still
         # need that info to decide what to do, thus the check=False.
-        ret = sudo_run(['kill', '-%i' % signum, str(self.pid)],
+        ret = sudo_run(['kill', '-%i' % sig, str(self.pid)],
                        print_cmd=False, redirect_stdout=True,
                        redirect_stderr=True, check=False)
         if ret.returncode == 1:

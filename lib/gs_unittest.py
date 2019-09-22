@@ -617,8 +617,8 @@ class CopyIntoTest(CopyTest):
   GIVEN_REMOTE = 'gs://test/path/file'
   EXPECTED_REMOTE = '%s/%s' % (GIVEN_REMOTE, FILE)
 
-  def _Copy(self, ctx, *args, **kwargs):
-    return ctx.CopyInto(*args, filename=self.FILE, **kwargs)
+  def _Copy(self, ctx, src, dst, **kwargs):
+    return ctx.CopyInto(src, dst, filename=self.FILE, **kwargs)
 
 
 class RemoveTest(AbstractGSContextTest):

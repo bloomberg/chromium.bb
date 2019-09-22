@@ -1942,8 +1942,8 @@ class ObjectJSONEncoder(json.JSONEncoder):
   """Json Encoder that encodes objects as their dictionaries."""
 
   # pylint: disable=method-hidden
-  def default(self, obj):
-    return self.encode(obj.__dict__)
+  def default(self, o):
+    return self.encode(o.__dict__)
 
 
 def PrettyJsonDict(dictionary):

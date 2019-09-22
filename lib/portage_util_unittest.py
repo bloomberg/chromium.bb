@@ -412,13 +412,13 @@ class StubEBuild(portage_util.EBuild):
   def _ReadEBuild(self, path):
     pass
 
-  def GetCommitId(self, srcpath):
+  def GetCommitId(self, srcdir):
     id_map = {
         'p1_path1': 'my_id1',
         'p1_path2': 'my_id2'
     }
-    if srcpath in id_map:
-      return id_map[srcpath]
+    if srcdir in id_map:
+      return id_map[srcdir]
     else:
       return 'you_lose'
 

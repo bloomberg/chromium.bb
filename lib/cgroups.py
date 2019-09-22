@@ -743,7 +743,7 @@ class ContainChildren(cros_build_lib.MasterPidContextManager):
           % self.child.namespace)
     self.run_kill = True
 
-  def _exit(self, *_args, **_kwargs):
+  def _exit(self, exc_type, exc, exc_tb):
     with signals.DeferSignals():
       self.node.TransferCurrentProcess()
       if self.run_kill:

@@ -275,7 +275,7 @@ class KernelArgList(collections.MutableMapping, collections.MutableSequence):
         raise KeyError(key)
     self._data.insert(index, obj)
 
-  def update(self, other=None, **kwargs):
+  def update(self, other=None, **kwargs):  # pylint: disable=arguments-differ
     """Update the list.
 
     Set elements of the list.  Depending on the type of |other|, one of the

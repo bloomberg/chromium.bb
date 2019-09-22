@@ -472,11 +472,7 @@ class FilteringOption(Option):
     parser.AddParsedArg(self, opt, [str(v) for v in value])
 
 
-# TODO: logging.Formatter is not a subclass of object in python
-# 2.6. Make ColoredFormatter explicitly inherit from object so that
-# functions such as super() will not fail. This should be removed
-# after python is upgraded to 2.7 on master2 (crbug.com/409273).
-class ColoredFormatter(logging.Formatter, object):
+class ColoredFormatter(logging.Formatter):
   """A logging formatter that can color the messages."""
 
   _COLOR_MAPPING = {
@@ -496,9 +492,9 @@ class ColoredFormatter(logging.Formatter, object):
     self.color = terminal.Color(enabled=kwargs.pop('enable_color', None))
     super(ColoredFormatter, self).__init__(*args, **kwargs)
 
-  def format(self, record, **kwargs):
+  def format(self, record):
     """Formats |record| with color."""
-    msg = super(ColoredFormatter, self).format(record, **kwargs)
+    msg = super(ColoredFormatter, self).format(record)
     color = self._COLOR_MAPPING.get(record.levelname)
     return msg if not color else self.color.Color(color, msg)
 

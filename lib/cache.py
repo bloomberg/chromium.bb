@@ -261,7 +261,7 @@ class RemoteCache(DiskCache):
       retry_util.RunCurl(['--fail', url, '-o', local_path],
                          debug_level=logging.DEBUG, capture_output=True)
 
-  def _Insert(self, key, url):
+  def _Insert(self, key, url):  # pylint: disable=arguments-differ
     """Insert a remote file into the cache."""
     o = urllib.parse.urlparse(url)
     if o.scheme in ('file', ''):
@@ -283,7 +283,7 @@ def Untar(path, cwd, sudo=False):
 class TarballCache(RemoteCache):
   """Supports caching of extracted tarball contents."""
 
-  def _Insert(self, key, tarball_path):
+  def _Insert(self, key, tarball_path):  # pylint: disable=arguments-differ
     """Insert a tarball and its extracted contents into the cache.
 
     Download the tarball first if a URL is provided as tarball_path.

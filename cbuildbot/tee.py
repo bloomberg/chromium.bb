@@ -230,7 +230,7 @@ class Tee(cros_build_lib.MasterPidContextManager):
   def _enter(self):
     self.start()
 
-  def _exit(self, exc_type, exc, _exc_traceback):
+  def _exit(self, exc_type, exc, exc_tb):
     try:
       self.stop()
     finally:

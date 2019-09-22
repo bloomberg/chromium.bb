@@ -124,12 +124,12 @@ def _DownloadCIPD(instance_sha256):
 
 class CipdCache(cache.RemoteCache):
   """Supports caching of the CIPD download."""
-  def _Fetch(self, key, path):
-    instance_sha256 = urllib.parse.urlparse(key).netloc
+  def _Fetch(self, url, local_path):
+    instance_sha256 = urllib.parse.urlparse(url).netloc
     binary = _DownloadCIPD(instance_sha256)
     log.info('Fetched CIPD package %s:%s', CIPD_CLIENT_PACKAGE, instance_sha256)
-    osutils.WriteFile(path, binary)
-    os.chmod(path, 0o755)
+    osutils.WriteFile(local_path, binary)
+    os.chmod(local_path, 0o755)
 
 
 def GetCIPDFromCache():

@@ -132,6 +132,7 @@ class SymbolServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.send_response(self.RESP_CODE, self.RESP_MSG)
     self.end_headers()
 
+  # pylint: disable=arguments-differ
   def log_message(self, *args, **kwargs):
     """Stub the logger as it writes to stderr"""
     pass
