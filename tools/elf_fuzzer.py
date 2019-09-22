@@ -141,7 +141,7 @@ def main(argv):
     elif opt == '-D':
       dest_fatal_dir = val
     elif opt == '-f':
-      if available_fuzzers.has_key(val):
+      if val in available_fuzzers:
         fuzzer = val
       else:
         print('No fuzzer:', val, file=sys.stderr)
