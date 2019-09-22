@@ -441,10 +441,10 @@ class _Popen(subprocess.Popen):
       if e.errno == errno.EPERM:
         # Kill returns either 0 (signal delivered), or 1 (signal wasn't
         # delivered).  This isn't particularly informative, but we still
-        # need that info to decide what to do, thus the error_code_ok=True.
+        # need that info to decide what to do, thus the check=False.
         ret = sudo_run(['kill', '-%i' % signum, str(self.pid)],
                        print_cmd=False, redirect_stdout=True,
-                       redirect_stderr=True, error_code_ok=True)
+                       redirect_stderr=True, check=False)
         if ret.returncode == 1:
           # The kill binary doesn't distinguish between permission denied,
           # and the pid is missing.  Denied can only occur under weird
@@ -466,9 +466,9 @@ def run(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
         shell=False, env=None, extra_env=None, ignore_sigint=False,
         combine_stdout_stderr=False, log_stdout_to_file=None,
         append_to_file=False, chroot_args=None, debug_level=logging.INFO,
-        error_code_ok=False, int_timeout=1, kill_timeout=1,
+        check=True, int_timeout=1, kill_timeout=1,
         log_output=False, stdout_to_pipe=False, capture_output=False,
-        quiet=False, mute_output=None):
+        quiet=False, mute_output=None, **kwargs):
   """Runs a command.
 
   Args:
@@ -506,9 +506,9 @@ def run(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       stdout_to_file.
     chroot_args: An array of arguments for the chroot environment wrapper.
     debug_level: The debug level of run's output.
-    error_code_ok: Does not raise an exception when command returns a non-zero
-      exit code. Instead, returns the CommandResult object containing the exit
-      code. Note: will still raise an exception if the cmd file does not exist.
+    check: Whether to raise an exception when command returns a non-zero exit
+      code, or return the CommandResult object containing the exit code.
+      Note: will still raise an exception if the cmd file does not exist.
     int_timeout: If we're interrupted, how long (in seconds) should we give the
       invoked process to clean up before we send a SIGTERM.
     kill_timeout: If we're interrupted, how long (in seconds) should we give the
@@ -533,6 +533,12 @@ def run(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   if quiet:
     debug_level = logging.DEBUG
     stdout_to_pipe, combine_stdout_stderr = True, True
+
+  if 'error_code_ok' in kwargs:
+    # TODO(vapier): Enable this warning once chromite & users migrate.
+    #logging.warning('run: error_code_ok= is renamed/inverted to check=')
+    check = not kwargs.pop('error_code_ok')
+  assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
 
   # Set default for variables.
   stdout = None
@@ -688,7 +694,7 @@ def run(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       if cmd_result.stderr:
         logging.log(debug_level, '(stderr):\n%s', cmd_result.stderr)
 
-    if not error_code_ok and proc.returncode:
+    if check and proc.returncode:
       msg = 'cmd=%s' % cmd
       if cwd:
         msg += ', cwd=%s' % cwd
@@ -1020,8 +1026,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
   # If tar fails with status 1, retry twice. Once after timeout seconds and
   # again 2*timeout seconds after that.
   for try_count in range(3):
-    result = rc_func(cmd, cwd=cwd,
-                     **dict(kwargs, error_code_ok=True, input=rc_input))
+    result = rc_func(cmd, cwd=cwd, **dict(kwargs, check=False, input=rc_input))
     if result.returncode == 0:
       return result
     if result.returncode != 1 or try_count > 1:
