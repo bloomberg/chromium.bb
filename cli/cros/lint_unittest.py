@@ -195,6 +195,17 @@ class DocStringCheckerTest(CheckerTestCase):
         First line is two spaces which is ok.
           Then we indent some more!
       """,
+      """Arguments with same names as sections.
+
+      Args:
+        result: Valid arg, invalid section.
+        return: Valid arg, invalid section.
+        returns: Valid arg, valid section.
+        arg: Valid arg, invalid section.
+        args: Valid arg, valid section.
+        attribute: Valid arg, invalid section.
+        attributes: Valid arg, valid section.
+      """,
   )
 
   BAD_FUNC_DOCSTRINGS = (
@@ -307,6 +318,17 @@ class DocStringCheckerTest(CheckerTestCase):
           some: has four spaces but should be two
       """,
       """"Extra leading quotes.""",
+      """Class-only sections aren't allowed.
+
+      Attributes:
+        foo: bar.
+      """,
+      """No lines between section headers & keys.
+
+      Args:
+
+        arg: No blank line above!
+      """,
   )
 
   # The current linter isn't good enough yet to detect these.
@@ -317,6 +339,69 @@ class DocStringCheckerTest(CheckerTestCase):
         bloop: de
 
       returns something
+      """,
+      """Too many spaces after header.
+
+      Args:
+        arg:  too many spaces
+      """,
+  )
+
+  # We don't need to test most scenarios as the func & class checkers share
+  # code.  Only test the differences.
+  GOOD_CLASS_DOCSTRINGS = (
+      """Basic class.""",
+      """Class with attributes.
+
+      Attributes:
+        foo: bar
+      """,
+      """Class with examples.
+
+      Examples:
+        Do stuff.
+      """,
+      """Class with examples & attributes.
+
+      Examples:
+        Do stuff.
+
+      Attributes:
+        foo: bar
+      """,
+      """Attributes with same names as sections.
+
+      Attributes:
+        result: Valid arg, invalid section.
+        return: Valid arg, invalid section.
+        returns: Valid arg, valid section.
+        arg: Valid arg, invalid section.
+        args: Valid arg, valid section.
+        attribute: Valid arg, invalid section.
+        attributes: Valid arg, valid section.
+      """,
+  )
+
+  BAD_CLASS_DOCSTRINGS = (
+      """Class with wrong attributes name.
+
+      Members:
+        foo: bar
+      """,
+      """Class with func-specific section.
+
+      These sections aren't valid for classes.
+
+      Args:
+        foo: bar
+      """,
+      """Class with examples & attributes out of order.
+
+      Attributes:
+        foo: bar
+
+      Examples:
+        Do stuff.
       """,
   )
 
@@ -344,6 +429,22 @@ class DocStringCheckerTest(CheckerTestCase):
     self.assertLintPassed()
     self.checker.visit_module(TestNode(doc='', path='/foo/__init__.py'))
     self.assertLintPassed()
+
+  def testGood_visit_class(self):
+    """Allow known good docstrings"""
+    for dc in self.GOOD_CLASS_DOCSTRINGS:
+      self.results = []
+      node = TestNode(doc=dc, display_type=None, col_offset=4)
+      self.checker.visit_class(node)
+      self.assertLintPassed(msg='docstring was not accepted:\n"""%s"""' % dc)
+
+  def testBad_visit_class(self):
+    """Reject known bad docstrings"""
+    for dc in self.BAD_CLASS_DOCSTRINGS:
+      self.results = []
+      node = TestNode(doc=dc, display_type=None, col_offset=4)
+      self.checker.visit_class(node)
+      self.assertLintFailed(msg='docstring was not rejected:\n"""%s"""' % dc)
 
   def testSmoke_visit_class(self):
     """Smoke test for classes"""

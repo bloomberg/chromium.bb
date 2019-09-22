@@ -25,6 +25,8 @@ import os
 import re
 import sys
 
+from chromite.utils import memoize
+
 from pylint.checkers import BaseChecker
 from pylint.config import ConfigurationMixIn
 from pylint.interfaces import IAstroidChecker
@@ -150,7 +152,9 @@ class DocStringChecker(BaseChecker):
   # pylint: enable=class-missing-docstring,multiple-statements
 
   # All the sections we recognize (and in this order).
-  VALID_SECTIONS = ('Examples', 'Args', 'Returns', 'Yields', 'Raises')
+  VALID_FUNC_SECTIONS = ('Examples', 'Args', 'Returns', 'Yields', 'Raises')
+  VALID_CLASS_SECTIONS = ('Examples', 'Attributes')
+  ALL_VALID_SECTIONS = set(VALID_FUNC_SECTIONS + VALID_CLASS_SECTIONS)
 
   # This is the section name in the pylintrc file.
   name = 'doc_string_checker'
@@ -173,11 +177,9 @@ class DocStringChecker(BaseChecker):
       'C9006': ('Section names should be preceded by one blank line'
                 ': ' + MSG_ARGS,
                 ('docstring-section-newline'), _MessageCP006),
-      'C9007': ('Section names should be one of "%s": %s' %
-                (', '.join(VALID_SECTIONS), MSG_ARGS),
+      'C9007': ('Section names should be "%(section)s": ' + MSG_ARGS,
                 ('docstring-section-name'), _MessageCP007),
-      'C9008': ('Sections should be in the order: %s' %
-                (' '.join(VALID_SECTIONS),),
+      'C9008': ('Sections should be in the order: %(sections)s',
                 ('docstring-section-order'), _MessageCP008),
       'C9009': ('First line should be a short summary',
                 ('docstring-first-line'), _MessageCP009),
@@ -223,7 +225,7 @@ class DocStringChecker(BaseChecker):
       lines = node.doc.split('\n')
       self._check_common(node, lines)
       sections = self._parse_docstring_sections(node, lines)
-      self._check_section_lines(node, lines, sections)
+      self._check_section_lines(node, lines, sections, self.VALID_FUNC_SECTIONS)
       self._check_all_args_in_doc(node, lines, sections)
       self._check_func_signature(node)
     else:
@@ -243,7 +245,11 @@ class DocStringChecker(BaseChecker):
   def visit_class(self, node):
     """Verify class docstrings"""
     if node.doc:
-      self._check_common(node)
+      lines = node.doc.split('\n')
+      self._check_common(node, lines)
+      sections = self._parse_docstring_sections(node, lines)
+      self._check_section_lines(node, lines, sections,
+                                self.VALID_CLASS_SECTIONS)
     else:
       self.add_message('C9002', node=node, line=node.fromlineno)
 
@@ -335,6 +341,30 @@ class DocStringChecker(BaseChecker):
         margs = {'offset': len(lines) - 2, 'line': lines[-2]}
         self.add_message('C9003', node=node, line=node.fromlineno, args=margs)
 
+  @memoize.MemoizedSingleCall
+  def _invalid_sections_map(self):
+    """Get a mapping from common invalid section names to the valid name."""
+    invalid_sections_sets = {
+        # Handle common misnamings.
+        'Examples': {'example', 'exaple', 'exaples', 'usage', 'example usage'},
+        'Attributes': {
+            'attr', 'attrs', 'attribute',
+            'prop', 'props', 'properties',
+            'member', 'members',
+        },
+        'Args': {'arg', 'argument', 'arguments'},
+        'Returns': {
+            'ret', 'rets', 'return', 'retrun', 'retruns', 'result', 'results',
+        },
+        'Yields': {'yield', 'yeild', 'yeilds'},
+        'Raises': {'raise', 'riase', 'riases', 'throw', 'throws'},
+    }
+
+    invalid_sections_map = {}
+    for key, value in invalid_sections_sets.items():
+      invalid_sections_map.update((v, key) for v in value)
+    return invalid_sections_map
+
   def _parse_docstring_sections(self, node, lines):
     """Find all the sections and return them
 
@@ -348,14 +378,7 @@ class DocStringChecker(BaseChecker):
       {'Args': [start_line_number, end_line_number], ...}
     """
     sections = collections.OrderedDict()
-    invalid_sections = (
-        # Handle common misnamings.
-        'example', 'usage', 'example usage',
-        'arg', 'argument', 'arguments',
-        'ret', 'rets', 'return', 'retrun', 'retruns', 'result', 'results',
-        'yield', 'yeild', 'yeilds',
-        'raise', 'riase', 'riases', 'throw', 'throws',
-    )
+    invalid_sections_map = self._invalid_sections_map()
     indent_len = self._docstring_indent(node)
 
     in_args_section = False
@@ -369,7 +392,11 @@ class DocStringChecker(BaseChecker):
       l = line.strip()
 
       # Catch semi-common javadoc style.
-      if l.startswith('@param') or l.startswith('@return'):
+      if l.startswith('@param'):
+        margs['section'] = 'Args'
+        self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
+      if l.startswith('@return'):
+        margs['section'] = 'Returns'
         self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
 
       # See if we can detect incorrect behavior.
@@ -385,9 +412,10 @@ class DocStringChecker(BaseChecker):
         # We only parse known invalid & valid sections here.  This avoids
         # picking up things that look like sections but aren't (e.g. "Note:"
         # lines), and avoids running checks on sections we don't yet support.
-        if section.lower() in invalid_sections:
+        if section.lower() in invalid_sections_map:
+          margs['section'] = invalid_sections_map[section.lower()]
           self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
-        elif section in self.VALID_SECTIONS:
+        elif section in self.ALL_VALID_SECTIONS:
           if section in sections:
             # We got the same section more than once?
             margs_copy = margs.copy()
@@ -404,7 +432,7 @@ class DocStringChecker(BaseChecker):
 
         # Detect whether we're in the Args section once we've processed the Args
         # section itself.
-        in_args_section = (section == 'Args')
+        in_args_section = (section in ('Args', 'Attributes'))
 
       if l == '' and last_section:
         last_section.lines = lines[last_section.lineno:lineno - 1]
@@ -412,14 +440,15 @@ class DocStringChecker(BaseChecker):
 
     return sections
 
-  def _check_section_lines(self, node, lines, sections):
-    """Verify each section (Args/Returns/Yields/Raises) is sane"""
+  def _check_section_lines(self, node, lines, sections, valid_sections):
+    """Verify each section (e.g. Args/Returns/etc...) is sane"""
     indent_len = self._docstring_indent(node)
 
     # Make sure the sections are in the right order.
-    found_sections = [x for x in self.VALID_SECTIONS if x in sections]
+    found_sections = [x for x in valid_sections if x in sections]
     if found_sections != sections.keys():
-      self.add_message('C9008', node=node, line=node.fromlineno)
+      margs = {'sections': ', '.join(valid_sections)}
+      self.add_message('C9008', node=node, line=node.fromlineno, args=margs)
 
     for section in sections.values():
       # We're going to check the section line itself.
@@ -440,6 +469,7 @@ class DocStringChecker(BaseChecker):
 
       # Make sure it has a single trailing colon.
       if line.strip() != '%s:' % section.name:
+        margs['section'] = section.name
         self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
 
       # Verify blank line before it.  We use -2 because lineno counts from one,
