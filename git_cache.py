@@ -595,8 +595,7 @@ class Mirror(object):
     # It appears core.deltaBaseCacheLimit restricts the file size of the pack
     # files produced, while we want 1 big pack file for efficiency.
     try:
-      self.RunGit(['config', '--unset-all', 'core.deltaBaseCacheLimit'],
-                  cwd=cwd)
+      self.RunGit(['config', '--unset-all', 'core.deltaBaseCacheLimit'])
     except subprocess.CalledProcessError:
       pass  # Nothing to unset is fine.
     gc_args = ['gc', '--prune=all']
