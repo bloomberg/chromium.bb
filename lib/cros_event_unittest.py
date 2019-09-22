@@ -34,7 +34,7 @@ class FailTest(cros_test_lib.TestCase):
     f2_msg = 'This is the message for the failure'
     f2 = cros_event.Failure(f2_msg)
     self.assertEqual(f2.status, cros_event.EVENT_STATUS_FAIL)
-    self.assertEqual(f2.message, f2_msg)
+    self.assertEqual(f2.msg, f2_msg)
 
 
 class EventTest(cros_test_lib.TestCase):

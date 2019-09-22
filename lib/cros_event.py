@@ -52,22 +52,22 @@ class Failure(Exception):
 
   def __init__(self, message=None, status=EVENT_STATUS_FAIL):
     """Create event with an optional message, status can be overridden"""
-    super(Failure, self).__init__()
-    self.message = message
+    super(Failure, self).__init__(message, status)
+    self.msg = message
     self.status = status
 
   def __dict__(self):
     """Return dictionary"""
     d = {EVENT_STATUS: self.status}
 
-    if self.message:
-      d[EVENT_FAIL_MSG] = self.message
+    if self.msg:
+      d[EVENT_FAIL_MSG] = self.msg
 
     return d
 
   def __repr__(self):
     """Return failure message"""
-    return self.message if self.message else self.status
+    return self.msg if self.msg else self.status
 
 
 class Event(dict):
