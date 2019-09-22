@@ -183,18 +183,56 @@ def CmdToStr(cmd):
 
 
 class CommandResult(object):
-  """An object to store various attributes of a child process."""
+  """An object to store various attributes of a child process.
 
-  def __init__(self, cmd=None, error=None, output=None, returncode=None):
-    self.cmd = cmd
-    self.error = error
-    self.output = output
+  This is akin to subprocess.CompletedProcess.
+  """
+
+  # TODO(crbug.com/1006587): Drop redundant arguments & backwards compat APIs.
+  def __init__(self, cmd=None, error=None, output=None, returncode=None,
+               args=None, stdout=None, stderr=None):
+    if args is None:
+      args = cmd
+    elif cmd is not None:
+      raise TypeError('Only specify |args|, not |cmd|')
+    if stdout is None:
+      stdout = output
+    elif output is not None:
+      raise TypeError('Only specify |stdout|, not |output|')
+    if stderr is None:
+      stderr = error
+    elif error is not None:
+      raise TypeError('Only specify |stderr|, not |error|')
+
+    self.args = args
+    self.stdout = stdout
+    self.stderr = stderr
     self.returncode = returncode
+
+  @property
+  def cmd(self):
+    """Backwards compat API."""
+    return self.args
+
+  @property
+  def output(self):
+    """Backwards compat API."""
+    return self.stdout
+
+  @property
+  def error(self):
+    """Backwards compat API."""
+    return self.stderr
 
   @property
   def cmdstr(self):
     """Return self.cmd as a space-separated string, useful for log messages."""
-    return CmdToStr(self.cmd or '')
+    return CmdToStr(self.args or '')
+
+  def check_returncode(self):
+    """Raise RunCommandError if the exit code is non-zero."""
+    if self.returncode:
+      raise RunCommandError('check_returncode failed', result=self)
 
 
 class RunCommandError(Exception):
@@ -223,10 +261,10 @@ class RunCommandError(Exception):
         'return code: %s; command: %s' % (
             self.result.returncode, self.result.cmdstr),
     ]
-    if error and self.result.error:
-      items.append(self.result.error)
-    if output and self.result.output:
-      items.append(self.result.output)
+    if error and self.result.stderr:
+      items.append(self.result.stderr)
+    if output and self.result.stdout:
+      items.append(self.result.stdout)
     if self.msg:
       items.append(self.msg)
     return '\n'.join(items)
@@ -289,7 +327,7 @@ def SudoRunCommand(cmd, user='root', preserve_env=False, **kwargs):
       raise RunCommandError(
           'We were invoked in a strict sudo non - interactive context, but no '
           'sudo keep alive daemon is running.  This is a bug in the code.',
-          CommandResult(cmd=cmd, returncode=126))
+          CommandResult(args=cmd, returncode=126))
     sudo_cmd += ['-n']
 
   if user != 'root':
@@ -366,7 +404,7 @@ def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
 
   if not signals.RelaySignal(original_handler, signum, frame):
     # Mock up our own, matching exit code for signaling.
-    cmd_result = CommandResult(cmd=cmd, returncode=signum << 8)
+    cmd_result = CommandResult(args=cmd, returncode=signum << 8)
     raise TerminateRunCommandError('Received signal %i' % signum, cmd_result)
 
 
@@ -594,7 +632,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     else:
       logging.log(debug_level, 'RunCommand: %s', CmdToStr(cmd))
 
-  cmd_result.cmd = cmd
+  cmd_result.args = cmd
 
   proc = None
   # Verify that the signals modules is actually usable, and won't segfault
@@ -621,7 +659,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                                       kill_timeout, cmd, old_sigterm))
 
     try:
-      (cmd_result.output, cmd_result.error) = proc.communicate(input)
+      (cmd_result.stdout, cmd_result.stderr) = proc.communicate(input)
     finally:
       if use_signals:
         signal.signal(signal.SIGINT, old_sigint)
@@ -629,21 +667,21 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
 
       if stdout and not log_stdout_to_file and not stdout_to_pipe:
         stdout.seek(0)
-        cmd_result.output = stdout.read()
+        cmd_result.stdout = stdout.read()
         stdout.close()
 
       if stderr and stderr != subprocess.STDOUT:
         stderr.seek(0)
-        cmd_result.error = stderr.read()
+        cmd_result.stderr = stderr.read()
         stderr.close()
 
     cmd_result.returncode = proc.returncode
 
     if log_output:
-      if cmd_result.output:
-        logging.log(debug_level, '(stdout):\n%s', cmd_result.output)
-      if cmd_result.error:
-        logging.log(debug_level, '(stderr):\n%s', cmd_result.error)
+      if cmd_result.stdout:
+        logging.log(debug_level, '(stdout):\n%s', cmd_result.stdout)
+      if cmd_result.stderr:
+        logging.log(debug_level, '(stderr):\n%s', cmd_result.stderr)
 
     if not error_code_ok and proc.returncode:
       msg = 'cmd=%s' % cmd
@@ -658,7 +696,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     estr = str(e)
     if e.errno == errno.EACCES:
       estr += '; does the program need `chmod a+x`?'
-    raise RunCommandError(estr, CommandResult(cmd=cmd), exception=e)
+    raise RunCommandError(estr, CommandResult(args=cmd), exception=e)
   finally:
     if proc is not None:
       # Ensure the process is dead.

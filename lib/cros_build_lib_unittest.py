@@ -309,9 +309,9 @@ class TestRunCommand(cros_test_lib.MockTestCase):
       expected: a CommandResult object, expected result.
       actual: a CommandResult object, actual result.
     """
-    self.assertEqual(expected.cmd, actual.cmd)
-    self.assertEqual(expected.error, actual.error)
-    self.assertEqual(expected.output, actual.output)
+    self.assertEqual(expected.args, actual.args)
+    self.assertEqual(expected.stderr, actual.stderr)
+    self.assertEqual(expected.stdout, actual.stdout)
     self.assertEqual(expected.returncode, actual.returncode)
 
   @_ForceLoggingLevel
@@ -331,11 +331,9 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     if rc_kv is None:
       rc_kv = {}
 
-    expected_result = cros_build_lib.CommandResult()
-    expected_result.cmd = real_cmd
-    expected_result.error = self.error
-    expected_result.output = self.output
-    expected_result.returncode = self.proc_mock.returncode
+    expected_result = cros_build_lib.CommandResult(
+        args=real_cmd, stdout=self.output, stderr=self.error,
+        returncode=self.proc_mock.returncode)
 
     arg_dict = dict()
     for attr in ('close_fds', 'cwd', 'env', 'stdin', 'stdout', 'stderr',
