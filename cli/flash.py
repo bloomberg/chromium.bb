@@ -44,8 +44,8 @@ class UsbImagerOperation(operation.ProgressBarOperation):
   def _GetDDPid(self):
     """Get the Pid of dd."""
     try:
-      pids = cros_build_lib.RunCommand(['pgrep', 'dd'], capture_output=True,
-                                       print_cmd=False).output
+      pids = cros_build_lib.run(['pgrep', 'dd'], capture_output=True,
+                                print_cmd=False).output
       for pid in pids.splitlines():
         if osutils.IsChildProcess(int(pid), name='dd'):
           return int(pid)
@@ -58,7 +58,7 @@ class UsbImagerOperation(operation.ProgressBarOperation):
     """Send USR1 signal to dd to get status update."""
     try:
       cmd = ['kill', '-USR1', str(dd_pid)]
-      cros_build_lib.SudoRunCommand(cmd, print_cmd=False)
+      cros_build_lib.sudo_run(cmd, print_cmd=False)
     except cros_build_lib.RunCommandError:
       # Here we assume that dd finished in the background.
       return
@@ -212,11 +212,11 @@ class USBImager(object):
         '--dst=%s' % device,
         '--skip_postinstall',
     ]
-    cros_build_lib.SudoRunCommand(cmd,
-                                  print_cmd=True,
-                                  debug_level=logging.NOTICE,
-                                  combine_stdout_stderr=True,
-                                  log_output=True)
+    cros_build_lib.sudo_run(cmd,
+                            print_cmd=True,
+                            debug_level=logging.NOTICE,
+                            combine_stdout_stderr=True,
+                            log_output=True)
 
   def CopyImageToDevice(self, image, device):
     """Copies |image| to the removable |device|.
@@ -229,10 +229,10 @@ class USBImager(object):
            'oflag=direct', 'conv=fdatasync']
     if logging.getLogger().getEffectiveLevel() <= logging.NOTICE:
       op = UsbImagerOperation(image)
-      op.Run(cros_build_lib.SudoRunCommand, cmd, debug_level=logging.NOTICE,
+      op.Run(cros_build_lib.sudo_run, cmd, debug_level=logging.NOTICE,
              update_period=0.5)
     else:
-      cros_build_lib.SudoRunCommand(
+      cros_build_lib.sudo_run(
           cmd, debug_level=logging.NOTICE,
           print_cmd=logging.getLogger().getEffectiveLevel() < logging.NOTICE)
 
@@ -240,14 +240,14 @@ class USBImager(object):
     # up for us with a 'write' command, so we have a standards-conforming GPT.
     # Ignore errors because sfdisk (util-linux < v2.32) isn't always happy to
     # fix GPT sanity issues.
-    cros_build_lib.SudoRunCommand(['sfdisk', device], input='write\n',
-                                  error_code_ok=True,
-                                  debug_level=self.debug_level)
+    cros_build_lib.sudo_run(['sfdisk', device], input='write\n',
+                            error_code_ok=True,
+                            debug_level=self.debug_level)
 
-    cros_build_lib.SudoRunCommand(['partx', '-u', device],
-                                  debug_level=self.debug_level)
-    cros_build_lib.SudoRunCommand(['sync', '-d', device],
-                                  debug_level=self.debug_level)
+    cros_build_lib.sudo_run(['partx', '-u', device],
+                            debug_level=self.debug_level)
+    cros_build_lib.sudo_run(['sync', '-d', device],
+                            debug_level=self.debug_level)
 
   def _GetImagePath(self):
     """Returns the image path to use."""

@@ -103,13 +103,13 @@ To debug a process by its pid:
     """Start a new process on the target device and attach gdb to it."""
     logging.info(
         'Ready to start and debug %s on device %s', self.exe, self.ssh_hostname)
-    cros_build_lib.RunCommand(self.gdb_cmd + ['--remote_file', self.exe])
+    cros_build_lib.run(self.gdb_cmd + ['--remote_file', self.exe])
 
   def _DebugRunningProcess(self, pid):
     """Start gdb and attach it to the remote running process with |pid|."""
     logging.info(
         'Ready to debug process %d on device %s', pid, self.ssh_hostname)
-    cros_build_lib.RunCommand(self.gdb_cmd + ['--remote_pid', str(pid)])
+    cros_build_lib.run(self.gdb_cmd + ['--remote_pid', str(pid)])
 
   def _ReadOptions(self):
     """Process options and set variables."""

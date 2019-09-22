@@ -320,21 +320,21 @@ def CopyTestcaseToSysroot(src_testcase_path):
   return dest_testcase_path
 
 
-def SudoRunCommand(*args, **kwargs):
-  """Wrapper around cros_build_lib.SudoRunCommand.
+def sudo_run(*args, **kwargs):
+  """Wrapper around cros_build_lib.sudo_run.
 
-  Wrapper that calls cros_build_lib.SudoRunCommand but sets debug_level by
+  Wrapper that calls cros_build_lib.sudo_run but sets debug_level by
   default.
 
   Args:
-    *args: Positional arguments to pass to cros_build_lib.SudoRunCommand.
-    *kwargs: Keyword arguments to pass to cros_build_lib.SudoRunCommand.
+    *args: Positional arguments to pass to cros_build_lib.sudo_run.
+    *kwargs: Keyword arguments to pass to cros_build_lib.sudo_run.
 
   Returns:
-    The value returned by calling cros_build_lib.SudoRunCommand.
+    The value returned by calling cros_build_lib.sudo_run.
   """
   kwargs.setdefault('debug_level', logging.DEBUG)
-  return cros_build_lib.SudoRunCommand(*args, **kwargs)
+  return cros_build_lib.sudo_run(*args, **kwargs)
 
 
 def GetLibFuzzerOption(option_name, option_value):
@@ -501,8 +501,7 @@ def GenerateCoverageReport(fuzzer, shared_libraries):
   ]
 
   # TODO(metzman): Investigate error messages printed by this command.
-  cros_build_lib.RunCommand(
-      command, redirect_stderr=True, debug_level=logging.DEBUG)
+  cros_build_lib.run(command, redirect_stderr=True, debug_level=logging.DEBUG)
   return coverage_directory
 
 
@@ -586,13 +585,13 @@ def RunSysrootCommand(command, **kwargs):
 
   Args:
     command: A command to run in the sysroot.
-    kwargs: Extra arguments to pass to cros_build_lib.SudoRunCommand.
+    kwargs: Extra arguments to pass to cros_build_lib.sudo_run.
 
   Returns:
-    The result of a call to cros_build_lib.SudoRunCommand.
+    The result of a call to cros_build_lib.sudo_run.
   """
   command = ['chroot', SysrootPath.path_to_sysroot] + command
-  return SudoRunCommand(command, **kwargs)
+  return sudo_run(command, **kwargs)
 
 
 def GetBuildExtraEnv(build_type):
@@ -662,7 +661,7 @@ def BuildPackage(package, board, build_type):
   # Print the output of the build command. Do this because it is familiar to
   # devs and we don't want to leave them not knowing about the build's progress
   # for a long time.
-  cros_build_lib.RunCommand(command, extra_env=extra_env)
+  cros_build_lib.run(command, extra_env=extra_env)
 
 
 def DownloadFuzzerCorpus(fuzzer, dest_directory=None):
@@ -801,8 +800,7 @@ class ToolManager(object):
   def Install(self):
     """Installs tools to the sysroot."""
     # Install asan_symbolize.py.
-    SudoRunCommand(
-        ['cp', self.ASAN_SYMBOLIZE_PATH, self.asan_symbolize_sysroot_path])
+    sudo_run(['cp', self.ASAN_SYMBOLIZE_PATH, self.asan_symbolize_sysroot_path])
     # Install the LLVM binaries.
     # TODO(metzman): Build these tools so that we don't mess up when board is
     # for a different ISA.
@@ -873,7 +871,7 @@ class LlvmBinary(object):
         self.install_dir,
         binary_chroot_path,
     ]
-    SudoRunCommand(cmd)
+    sudo_run(cmd)
 
     # Create a symlink to the copy of the binary (we can't do lddtree in
     # self.binary_dir_path). Note that symlink should be relative so that it
@@ -925,14 +923,14 @@ class DeviceManager(object):
       device_path = self._GetDevicePath(device)
       if os.path.exists(device_path):
         # Use -r since dev/null is sometimes a directory.
-        SudoRunCommand(['rm', '-r', device_path])
+        sudo_run(['rm', '-r', device_path])
 
   def _MakeCharDevice(self, path, mode, minor):
     """Make a character device."""
     mode = str(mode)
     minor = str(minor)
     command = ['mknod', '-m', mode, path, 'c', self.MKNOD_MAJOR, minor]
-    SudoRunCommand(command)
+    sudo_run(command)
 
 
 class ProcManager(object):
@@ -1098,8 +1096,7 @@ def ExecuteReproduceCommand(options):
   # Check presence of "-fsanitize=memory" in CFLAGS.
   if options.build_type == BuildType.MSAN:
     cmd = ['portageq-%s' % options.board, 'envvar', 'CFLAGS']
-    cflags = cros_build_lib.RunCommand(
-        cmd, capture_output=True).output.splitlines()
+    cflags = cros_build_lib.run(cmd, capture_output=True).output.splitlines()
     check_string = '-fsanitize=memory'
     if not any(check_string in s for s in cflags):
       logging.error(

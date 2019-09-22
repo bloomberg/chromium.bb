@@ -138,7 +138,7 @@ def FatalTimeout(max_run_time, display_message=None):
     # that uses blanket except statements which could suppress this.
     # As such, keep scheduling alarms until our exit handler runs.
     # Note that there is a potential conflict via this code, and
-    # RunCommand's kill_timeout; thus we set the alarming interval
+    # run's kill_timeout; thus we set the alarming interval
     # fairly high.
     _ScheduleTimer(60)
 

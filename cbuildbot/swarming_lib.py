@@ -120,12 +120,12 @@ def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
           with timeout_util.Timeout(SILENCE_INTERVAL_MIN * 60):
             logging.info('Re-run swarming_cmd to avoid buildbot salency check.')
             if is_skylab:
-              result = cros_build_lib.RunCommand(
+              result = cros_build_lib.run(
                   swarming_cmd + ['--passed_mins',
                                   str(iteration * SILENCE_INTERVAL_MIN)],
                   *args, **kwargs)
             else:
-              result = cros_build_lib.RunCommand(swarming_cmd, *args, **kwargs)
+              result = cros_build_lib.run(swarming_cmd, *args, **kwargs)
             break
         except timeout_util.TimeoutError:
           pass

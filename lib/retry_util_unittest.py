@@ -218,7 +218,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     _SetupCounters(0, 0)
     command = ['python2', path]
     kwargs = {'redirect_stdout': True, 'print_cmd': False}
-    self.assertEqual(cros_build_lib.RunCommand(command, **kwargs).output, '0\n')
+    self.assertEqual(cros_build_lib.run(command, **kwargs).output, '0\n')
     _AssertCounters(0, 0)
 
     func = retry_util.RunCommandWithRetries

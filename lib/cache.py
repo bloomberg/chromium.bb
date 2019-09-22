@@ -276,7 +276,7 @@ class RemoteCache(DiskCache):
 
 def Untar(path, cwd, sudo=False):
   """Untar a tarball."""
-  functor = cros_build_lib.SudoRunCommand if sudo else cros_build_lib.RunCommand
+  functor = cros_build_lib.sudo_run if sudo else cros_build_lib.run
   functor(['tar', '-xpf', path], cwd=cwd, debug_level=logging.DEBUG)
 
 
@@ -308,7 +308,7 @@ class TarballCache(RemoteCache):
     """Specialized DiskCache._KeyExits that ignores empty directories.
 
     The normal _KeyExists just checks to see if the key path exists in the cache
-    directory. Many tests mock out RunCommand then fetch a tarball. The mock
+    directory. Many tests mock out run then fetch a tarball. The mock
     blocks untarring into it. This leaves behind an empty dir which blocks
     future untarring in non-test scripts.
 

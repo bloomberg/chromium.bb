@@ -828,7 +828,7 @@ class ChromeSDKCommand(command.CliCommand):
       version: The SDK version.
       chroot: The path to the chroot, if set.
     """
-    current_ps1 = cros_build_lib.RunCommand(
+    current_ps1 = cros_build_lib.run(
         ['bash', '-l', '-c', 'echo "$PS1"'], print_cmd=False,
         capture_output=True).output.splitlines()
     if current_ps1:
@@ -876,7 +876,7 @@ class ChromeSDKCommand(command.CliCommand):
       return
 
     logging.warning('Running gn gen')
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         ['gn', 'gen', 'out_%s/Release' % board,
          '--args=%s' % gn_helpers.ToGNString(gn_args)],
         print_cmd=logging.getLogger().isEnabledFor(logging.DEBUG),
@@ -1255,7 +1255,7 @@ class ChromeSDKCommand(command.CliCommand):
 
   def _GomaPort(self, goma_dir):
     """Returns current active Goma port."""
-    port = cros_build_lib.RunCommand(
+    port = cros_build_lib.run(
         self.GOMACC_PORT_CMD, cwd=goma_dir, debug_level=logging.DEBUG,
         error_code_ok=True, capture_output=True).output.strip()
     return port
@@ -1292,13 +1292,13 @@ class ChromeSDKCommand(command.CliCommand):
                 raise GomaError('Failed to fetch Goma')
             except retry_util.DownloadError:
               raise GomaError('Failed to fetch Goma')
-            result = cros_build_lib.DebugRunCommand(
+            result = cros_build_lib.dbg_run(
                 ['tar', 'xf', self._GOMA_TGZ,
                  '--strip=1', '-C', goma_dir])
             if result.returncode:
               raise GomaError('Failed to extract Goma')
             # TODO(crbug.com/1007384): Stop forcing Python 2.
-            result = cros_build_lib.DebugRunCommand(
+            result = cros_build_lib.dbg_run(
                 ['python2', os.path.join(goma_dir, 'goma_ctl.py'), 'update'],
                 extra_env={'PLATFORM': 'goobuntu'})
             if result.returncode:
@@ -1310,7 +1310,7 @@ class ChromeSDKCommand(command.CliCommand):
     if self.options.start_goma:
       Log('Starting Goma.', silent=self.silent)
       # TODO(crbug.com/1007384): Stop forcing Python 2.
-      cros_build_lib.DebugRunCommand(
+      cros_build_lib.dbg_run(
           ['python2', os.path.join(goma_dir, 'goma_ctl.py'), 'ensure_start'])
       port = self._GomaPort(goma_dir)
       Log('Goma is started on port %s', port, silent=self.silent)
@@ -1399,7 +1399,7 @@ class ChromeSDKCommand(command.CliCommand):
         os.environ.pop('SSH_CONNECTION', None)
         os.environ.pop('SSH_TTY', None)
 
-        cmd_result = cros_build_lib.RunCommand(
+        cmd_result = cros_build_lib.run(
             bash_cmd, print_cmd=False, debug_level=logging.CRITICAL,
             error_code_ok=True, extra_env=extra_env, cwd=self.options.cwd)
         if self.options.cmd:

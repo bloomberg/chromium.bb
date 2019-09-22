@@ -82,7 +82,7 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
          'count=%s' % (_STATEFUL_SIZE // _BLOCK_SIZE)],
         ['sync'])
     for cmd in commands:
-      cros_build_lib.RunCommand(cmd, quiet=True)
+      cros_build_lib.run(cmd, quiet=True)
 
     # Run the preparation script on the image.
     cros_oobe_autoconfig.main([self.image] + list(_TEST_CLI_PARAMETERS)[1:])

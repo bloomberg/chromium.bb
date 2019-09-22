@@ -264,7 +264,7 @@ class Router(object):
           cmd.append('--validate-only')
 
         try:
-          result = cros_build_lib.RunCommand(
+          result = cros_build_lib.run(
               cmd,
               enter_chroot=True,
               chroot_args=chroot.get_enter_args(),

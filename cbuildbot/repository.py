@@ -113,7 +113,7 @@ def ClearBuildRoot(buildroot, preserve_paths=()):
     cmd.extend(ignores)
 
     cmd += ['-exec', 'rm', '-rf', '{}', '+']
-    cros_build_lib.SudoRunCommand(cmd)
+    cros_build_lib.sudo_run(cmd)
 
   osutils.SafeMakedirs(buildroot)
 
@@ -193,7 +193,7 @@ class RepoRepository(object):
     cmd = [self.repo_cmd, 'selfupdate']
     failed_to_selfupdate = False
     try:
-      cmd_result = cros_build_lib.RunCommand(
+      cmd_result = cros_build_lib.run(
           cmd, cwd=self.directory, capture_output=True, log_output=True)
 
       if (cmd_result.error is not None and
@@ -220,19 +220,19 @@ class RepoRepository(object):
     """
     paths = [os.path.join(directory, '.repo', x) for x in
              ('manifest.xml', 'manifests.git', 'manifests', 'repo')]
-    cros_build_lib.SudoRunCommand(['rm', '-rf'] + paths)
+    cros_build_lib.sudo_run(['rm', '-rf'] + paths)
 
   def _RepoInit(self, *args, **kwargs):
     """Run 'repo init' and clean up repo manifest on init failures.
 
     Args:
-      args: args to pass to cros_build_lib.RunCommand.
-      kwargs: kwargs to pass to cros_build_lib.RunCommand.
+      args: args to pass to cros_build_lib.run.
+      kwargs: kwargs to pass to cros_build_lib.run.
     """
     try:
       kwargs.setdefault('cwd', self.directory)
       kwargs.setdefault('input', '\n\ny\n')
-      cros_build_lib.RunCommand(*args, **kwargs)
+      cros_build_lib.run(*args, **kwargs)
     except cros_build_lib.RunCommandError as e:
       logging.warning('Wiping %r due to `repo init` failures.', self.directory)
       self._CleanUpRepoManifest(self.directory)
@@ -405,7 +405,7 @@ class RepoRepository(object):
     if os.path.exists(os.path.join(self.directory, '.repo', 'manifest.xml')):
       cmd = [self.repo_cmd, 'manifest']
       try:
-        cros_build_lib.RunCommand(cmd, cwd=self.directory, capture_output=True)
+        cros_build_lib.run(cmd, cwd=self.directory, capture_output=True)
       except cros_build_lib.RunCommandError:
         metrics.Counter(constants.MON_REPO_MANIFEST_FAILURE_COUNT).increment()
         logging.warning('Wiping %r due to `repo manifest` failure',
@@ -524,7 +524,7 @@ class RepoRepository(object):
     metrics.Counter(constants.MON_REPO_SYNC_RETRY_COUNT).increment(
         fields=fields)
 
-    cros_build_lib.RunCommand(*args, **kwargs)
+    cros_build_lib.run(*args, **kwargs)
 
   def Sync(self, local_manifest=None, jobs=None, all_branches=True,
            network_only=False, detach=False):
@@ -568,7 +568,7 @@ class RepoRepository(object):
           metrics.Counter(constants.MON_REPO_SYNC_COUNT).increment(
               fields=fields)
 
-        cros_build_lib.RunCommand(cmd + ['-n'], cwd=self.directory)
+        cros_build_lib.run(cmd + ['-n'], cwd=self.directory)
       except cros_build_lib.RunCommandError:
         if constants.SYNC_RETRIES > 0:
           # Retry on clean up and repo sync commands,
@@ -599,7 +599,7 @@ class RepoRepository(object):
       # primarily involving git submodules.  Thus we intercept, and do
       # a forced wipe, then a retry.
       try:
-        cros_build_lib.RunCommand(cmd + ['-l'], cwd=self.directory)
+        cros_build_lib.run(cmd + ['-l'], cwd=self.directory)
       except cros_build_lib.RunCommandError:
         manifest = git.ManifestCheckout.Cached(self.directory)
         targets = set(project['path'].split('/', 1)[0]
@@ -608,11 +608,11 @@ class RepoRepository(object):
           # No directories to wipe, thus nothing we can fix.
           raise
 
-        cros_build_lib.SudoRunCommand(['rm', '-rf'] + sorted(targets),
-                                      cwd=self.directory)
+        cros_build_lib.sudo_run(['rm', '-rf'] + sorted(targets),
+                                cwd=self.directory)
 
         # Retry the sync now; if it fails, let the exception propagate.
-        cros_build_lib.RunCommand(cmd + ['-l'], cwd=self.directory)
+        cros_build_lib.run(cmd + ['-l'], cwd=self.directory)
 
       # We do a second run to fix any new repositories created by repo to
       # use relative object pathways.  Note that cros_sdk also triggers the
@@ -635,7 +635,7 @@ class RepoRepository(object):
     if detach:
       cmd.append('--detach')
 
-    cros_build_lib.RunCommand(cmd, cwd=self.directory, error_code_ok=True)
+    cros_build_lib.run(cmd, cwd=self.directory, error_code_ok=True)
 
   def GetRelativePath(self, path):
     """Returns full path including source directory of path in repo."""
@@ -658,7 +658,7 @@ class RepoRepository(object):
     cmd = [self.repo_cmd, 'manifest', '-o', '-']
     if revisions:
       cmd += ['-r']
-    output = cros_build_lib.RunCommand(
+    output = cros_build_lib.run(
         cmd, cwd=self.directory, print_cmd=False, capture_output=True,
         extra_env={'PAGER': 'cat'}).output
 

@@ -265,8 +265,7 @@ def GconvStrip(opts):
   symbols = ','.join(GCONV_SYMBOLS)
   cmd = ['scanelf', '--mount', '--quiet', '--recursive', '--format', '#s%F',
          '--symbol', symbols, opts.root]
-  result = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
-                                     print_cmd=False)
+  result = cros_build_lib.run(cmd, redirect_stdout=True, print_cmd=False)
   files = set(result.output.splitlines())
   logging.debug('Symbols %s found on %d files.', symbols, len(files))
 

@@ -40,7 +40,7 @@ def GenerateStatefulPayload(image_path, output_directory):
 
     try:
       logging.info('Tarring up /usr/local and /var!')
-      cros_build_lib.SudoRunCommand([
+      cros_build_lib.sudo_run([
           'tar',
           '-czf',
           output_gz,

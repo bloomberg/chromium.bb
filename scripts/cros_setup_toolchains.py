@@ -227,7 +227,7 @@ class Crossdev(object):
             cmd.extend(LLVM_PKGS_TABLE[pkg])
         cmd.extend(['-t', target])
         # Catch output of crossdev.
-        out = cros_build_lib.RunCommand(
+        out = cros_build_lib.run(
             cmd, print_cmd=False, redirect_stdout=True).output.splitlines()
         # List of tuples split at the first '=', converted into dict.
         conf = dict((k, cros_build_lib.ShellUnquote(v))
@@ -302,9 +302,9 @@ class Crossdev(object):
       if config_only:
         # In this case we want to just quietly reinit
         cmd.append('--init-target')
-        cros_build_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True)
+        cros_build_lib.run(cmd, print_cmd=False, redirect_stdout=True)
       else:
-        cros_build_lib.RunCommand(cmd)
+        cros_build_lib.run(cmd)
 
       configured_targets.append(target)
 
@@ -502,7 +502,7 @@ def RebuildLibtool(root='/'):
     if root != '/':
       cmd.extend(['--sysroot=%s' % root, '--root=%s' % root])
     cmd.append('sys-devel/libtool')
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.run(cmd)
   else:
     logging.debug('Libtool is up-to-date; no need to rebuild')
 
@@ -552,7 +552,7 @@ def UpdateTargets(targets, usepkg, root='/'):
     cmd.extend(['--sysroot=%s' % root, '--root=%s' % root])
 
   cmd.extend(packages)
-  cros_build_lib.RunCommand(cmd)
+  cros_build_lib.run(cmd)
   return True
 
 
@@ -597,7 +597,7 @@ def CleanTargets(targets, root='/'):
     if root != '/':
       cmd.extend(['--sysroot=%s' % root, '--root=%s' % root])
     cmd.extend(packages)
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.run(cmd)
   else:
     logging.info('Nothing to clean!')
 
@@ -641,7 +641,7 @@ def SelectActiveToolchains(targets, suffixes, root='/'):
       if root != '/':
         extra_env['ROOT'] = root
       cmd = ['%s-config' % package, '-c', target]
-      result = cros_build_lib.RunCommand(
+      result = cros_build_lib.run(
           cmd, print_cmd=False, redirect_stdout=True, extra_env=extra_env)
       current = result.output.splitlines()[0]
 
@@ -649,7 +649,7 @@ def SelectActiveToolchains(targets, suffixes, root='/'):
       extra_env = {'ROOT': root} if root != '/' else None
       if current != desired and current != '9999':
         cmd = [package + '-config', desired]
-        cros_build_lib.RunCommand(cmd, print_cmd=False, extra_env=extra_env)
+        cros_build_lib.run(cmd, print_cmd=False, extra_env=extra_env)
 
 
 def ExpandTargets(targets_wanted):

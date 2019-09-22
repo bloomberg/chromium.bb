@@ -1091,13 +1091,13 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
 """
 
     # Verify ToT can take our pickle.
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         ['python2', '-c', code % '_CheckTestData(sys.stdin.read())'],
         cwd=self.tempdir, print_cmd=False, capture_output=True,
         input=self._GetTestData())
 
     # Verify we can handle ToT's pickle.
-    ret = cros_build_lib.RunCommand(
+    ret = cros_build_lib.run(
         ['python2', '-c', code % '_GetTestData()'],
         cwd=self.tempdir, print_cmd=False, capture_output=True)
 

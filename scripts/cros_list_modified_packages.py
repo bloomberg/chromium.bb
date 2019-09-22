@@ -66,8 +66,8 @@ class ModificationTimeMonitor(object):
   def _LastModificationTime(self, path):
     """Returns the latest modification time for anything under |path|."""
     cmd = 'find . -name .git -prune -o -printf "%T@\n" | sort -nr | head -n1'
-    ret = cros_build_lib.RunCommand(cmd, cwd=path, shell=True, print_cmd=False,
-                                    capture_output=True)
+    ret = cros_build_lib.run(cmd, cwd=path, shell=True, print_cmd=False,
+                             capture_output=True)
     return float(ret.output) if ret.output else 0
 
   def GetModificationTimes(self):

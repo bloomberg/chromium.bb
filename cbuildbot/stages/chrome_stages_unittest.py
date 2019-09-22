@@ -87,7 +87,7 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
     env_file = os.path.join(chrome_env_dir, 'environment')
     osutils.Touch(env_file, makedirs=True)
 
-    cros_build_lib.RunCommand(['bzip2', env_file])
+    cros_build_lib.run(['bzip2', env_file])
 
     # Run the code.
     stage._ArchiveChromeEbuildEnv()

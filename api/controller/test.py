@@ -104,7 +104,7 @@ def BuildTargetUnitTest(input_proto, output_proto, _config):
 def ChromiteUnitTest(_input_proto, _output_proto, _config):
   """Run the chromite unit tests."""
   cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts', 'run_tests')]
-  result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+  result = cros_build_lib.run(cmd, error_code_ok=True)
   if result.returncode == 0:
     return controller.RETURN_CODE_SUCCESS
   else:
@@ -142,7 +142,7 @@ def VmTest(input_proto, _output_proto, _config):
 
   with osutils.TempDir(prefix='vm-test-results.') as results_dir:
     cmd.extend(['--results-dir', results_dir])
-    cros_build_lib.RunCommand(cmd, kill_timeout=10 * 60)
+    cros_build_lib.run(cmd, kill_timeout=10 * 60)
 
 
 @faux.all_empty
@@ -189,6 +189,6 @@ def CrosSigningTest(_input_proto, _output_proto, _config):
   """Run the cros-signing unit tests."""
   test_runner = os.path.join(constants.SOURCE_ROOT, 'cros-signing', 'signer',
                              'run_tests.py')
-  result = cros_build_lib.RunCommand([test_runner], error_code_ok=True)
+  result = cros_build_lib.run([test_runner], error_code_ok=True)
 
   return result.returncode

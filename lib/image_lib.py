@@ -77,20 +77,20 @@ class LoopbackPartitions(object):
 
     try:
       cmd = ['losetup', '--show', '-f', self.path]
-      ret = cros_build_lib.SudoRunCommand(
+      ret = cros_build_lib.sudo_run(
           cmd, debug_level=logging.DEBUG, capture_output=True)
       self.dev = ret.output.strip()
       cmd = ['partx', '-d', self.dev]
-      cros_build_lib.SudoRunCommand(cmd, quiet=True, error_code_ok=True)
+      cros_build_lib.sudo_run(cmd, quiet=True, error_code_ok=True)
       cmd = ['partx', '-a', self.dev]
-      ret = cros_build_lib.SudoRunCommand(
+      ret = cros_build_lib.sudo_run(
           cmd, debug_level=logging.DEBUG, error_code_ok=True)
       if ret.returncode:
         logging.warning('Adding partitions failed; dumping log & retrying')
-        cros_build_lib.RunCommand(['sync'])
-        cros_build_lib.RunCommand(['dmesg'])
+        cros_build_lib.run(['sync'])
+        cros_build_lib.run(['dmesg'])
         cmd = ['partx', '-u', self.dev]
-        cros_build_lib.SudoRunCommand(cmd)
+        cros_build_lib.sudo_run(cmd)
 
       self.parts = {}
       part_devs = glob.glob(self.dev + 'p*')
@@ -178,7 +178,7 @@ class LoopbackPartitions(object):
     # We shouldn't need the sync here, but we sometimes see flakes with some
     # kernels where it looks like the metadata written isn't seen when we try
     # to mount later on.  Adding a sync for 1 byte shouldn't be too bad.
-    ret = cros_build_lib.SudoRunCommand(
+    ret = cros_build_lib.sudo_run(
         ['dd', 'if=%s' % dev, 'skip=%d' % magic_ofs,
          'conv=notrunc,fsync', 'count=2', 'bs=1'],
         debug_level=logging.DEBUG, capture_output=True, error_code_ok=True)
@@ -198,7 +198,7 @@ class LoopbackPartitions(object):
     # We shouldn't need the sync here, but we sometimes see flakes with some
     # kernels where it looks like the metadata written isn't seen when we try
     # to mount later on.  Adding a sync for 1 byte shouldn't be too bad.
-    cros_build_lib.SudoRunCommand(
+    cros_build_lib.sudo_run(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
          'conv=notrunc,fsync', 'count=1', 'bs=1'],
         input=b'\0', debug_level=logging.DEBUG, redirect_stderr=True)
@@ -215,7 +215,7 @@ class LoopbackPartitions(object):
     # We shouldn't need the sync here, but we sometimes see flakes with some
     # kernels where it looks like the metadata written isn't seen when we try
     # to mount later on.  Adding a sync for 1 byte shouldn't be too bad.
-    cros_build_lib.SudoRunCommand(
+    cros_build_lib.sudo_run(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
          'conv=notrunc,fsync', 'count=1', 'bs=1'],
         input=b'\xff', debug_level=logging.DEBUG, redirect_stderr=True)
@@ -261,8 +261,8 @@ class LoopbackPartitions(object):
                                   osutils.RmDir, path, sudo=True, sleep=1)
       self._to_be_rmdir = set()
       cmd = ['partx', '-d', self.dev]
-      cros_build_lib.SudoRunCommand(cmd, quiet=True, error_code_ok=True)
-      cros_build_lib.SudoRunCommand(['losetup', '--detach', self.dev])
+      cros_build_lib.sudo_run(cmd, quiet=True, error_code_ok=True)
+      cros_build_lib.sudo_run(['losetup', '--detach', self.dev])
       self.dev = None
       self.parts = {}
       self._gpt_table = None
@@ -303,7 +303,7 @@ def WriteLsbRelease(sysroot, fields):
     content = osutils.ReadFile(path) + content
 
   osutils.WriteFile(path, content, mode='w', makedirs=True, sudo=True)
-  cros_build_lib.SudoRunCommand([
+  cros_build_lib.sudo_run([
       'setfattr', '-n', 'security.selinux', '-v',
       'u:object_r:cros_conf_file:s0', path])
 
@@ -368,8 +368,7 @@ def SecurityTest(board=None, image=None, baselines=None, vboot_hash=None):
       cmd += ['--baselines', baselines]
     if vboot_hash:
       cmd += ['--vboot-hash', vboot_hash]
-    result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
-                                       error_code_ok=True)
+    result = cros_build_lib.run(cmd, enter_chroot=True, error_code_ok=True)
     return not result.returncode
   else:
     try:
@@ -519,8 +518,8 @@ class SecurityTestConfig(object):
         raise VbootCheckoutError('Failed cloning repo from %s: %s' %
                                  (self._VBOOT_SRC, e.message))
       try:
-        cros_build_lib.RunCommand(['git', 'checkout', '-q', self.vboot_hash],
-                                  cwd=self._repo_dir)
+        cros_build_lib.run(['git', 'checkout', '-q', self.vboot_hash],
+                           cwd=self._repo_dir)
       except cros_build_lib.RunCommandError as e:
         raise VbootCheckoutError('Failed checking out %s from %s: %s' %
                                  (self.vboot_hash, self._VBOOT_SRC, e.message))
@@ -531,7 +530,7 @@ class SecurityTestConfig(object):
     extra_env = {'PATH': '%s:%s' % (signing.CROS_SIGNING_BIN_DIR,
                                     os.environ['PATH'])}
     kwargs['extra_env'] = extra_env.update(kwargs.get('extra_env', {}))
-    return cros_build_lib.RunCommand(cmd, *args, **kwargs)
+    return cros_build_lib.run(cmd, *args, **kwargs)
 
 
 PartitionInfo = collections.namedtuple(
@@ -634,7 +633,7 @@ def GetImageDiskPartitionInfo(image_path):
 
   # The 'I' input tells parted to ignore its supposed concern about overlapping
   # partitions. Cgpt simply ignores the input.
-  lines = cros_build_lib.RunCommand(
+  lines = cros_build_lib.run(
       cmd,
       extra_env={'PATH': '/sbin:%s' % os.environ['PATH'], 'LC_ALL': 'C'},
       capture_output=True,

@@ -146,7 +146,7 @@ class CleanCommand(command.CliCommand):
       if self.options.dry_run:
         logging.notice('would have cleaned: %s', chroot_dir)
       else:
-        cros_build_lib.RunCommand(['cros_sdk', '--delete'])
+        cros_build_lib.run(['cros_sdk', '--delete'])
 
     if self.options.board:
       for b in self.options.board:

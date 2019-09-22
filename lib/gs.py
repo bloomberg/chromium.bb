@@ -171,7 +171,7 @@ class GSContextException(Exception):
   """Base exception for all exceptions thrown by GSContext."""
 
 
-# Since the underlying code uses RunCommand, some callers might be trying to
+# Since the underlying code uses run, some callers might be trying to
 # catch cros_build_lib.RunCommandError themselves.  Extend that class so that
 # code continues to work.
 class GSCommandError(GSContextException, cros_build_lib.RunCommandError):
@@ -460,8 +460,7 @@ class GSContext(object):
       # non-root, just flag it and return.
       if e.errno == errno.EACCES:
         logging.debug('Skipping gsutil crcmod compile due to permissions')
-        cros_build_lib.SudoRunCommand(['touch', flag],
-                                      debug_level=logging.DEBUG)
+        cros_build_lib.sudo_run(['touch', flag], debug_level=logging.DEBUG)
         return False
       else:
         raise
@@ -482,7 +481,7 @@ class GSContext(object):
 
     logging.debug('Attempting to compile local crcmod for gsutil')
     with osutils.TempDir(prefix='chromite.gsutil.crcmod') as tempdir:
-      result = cros_build_lib.RunCommand(
+      result = cros_build_lib.run(
           ['python', './setup.py', 'build', '--build-base', tempdir,
            '--build-platlib', tempdir],
           cwd=src_root, capture_output=True, error_code_ok=True,
@@ -911,7 +910,7 @@ class GSContext(object):
       try:
         return retry_stats.RetryWithStats(retry_stats.GSUTIL,
                                           self._RetryFilter,
-                                          retries, cros_build_lib.RunCommand,
+                                          retries, cros_build_lib.run,
                                           cmd, sleep=self._sleep_time,
                                           extra_env=extra_env, **kwargs)
       except cros_build_lib.RunCommandError as e:
@@ -1037,7 +1036,7 @@ class GSContext(object):
       kwargs.pop('retries', None)
       kwargs.pop('headers', None)
       kwargs['capture_output'] = True
-      result = cros_build_lib.RunCommand(['ls', path], **kwargs)
+      result = cros_build_lib.run(['ls', path], **kwargs)
       return result.output.splitlines()
     else:
       return [x.url for x in self.List(path, **kwargs)]

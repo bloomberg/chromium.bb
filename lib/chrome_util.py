@@ -158,7 +158,7 @@ class Copier(object):
     if path.exe and self.strip_bin and path.strip and os.path.getsize(src) > 0:
       strip_flags = (['--strip-unneeded'] if self.strip_flags is None else
                      self.strip_flags)
-      cros_build_lib.DebugRunCommand(
+      cros_build_lib.dbg_run(
           [self.strip_bin] + strip_flags + ['-o', dest, src])
       shutil.copystat(src, dest)
     else:
@@ -399,8 +399,8 @@ _COPY_PATHS_MAP = {
 
 def _FixPermissions(dest_base):
   """Last minute permission fixes."""
-  cros_build_lib.DebugRunCommand(['chmod', '-R', 'a+r', dest_base])
-  cros_build_lib.DebugRunCommand(
+  cros_build_lib.dbg_run(['chmod', '-R', 'a+r', dest_base])
+  cros_build_lib.dbg_run(
       ['find', dest_base, '-perm', '/110', '-exec', 'chmod', 'a+x', '{}', '+'])
 
 
@@ -483,9 +483,9 @@ def GetChromeRuntimeDeps(build_dir, build_target):
     runtime_deps = osutils.ReadFile(generated_runtime_deps_file).splitlines()
 
   if not runtime_deps:
-    result = cros_build_lib.RunCommand(['gn', 'desc', build_dir,
-                                        gn_label, 'runtime_deps'],
-                                       capture_output=True)
+    result = cros_build_lib.run(['gn', 'desc', build_dir, gn_label,
+                                 'runtime_deps'],
+                                capture_output=True)
     if result.returncode != 0:
       raise GetRuntimeDepsError('Failed to get runtime deps for: %s' %
                                 build_target)

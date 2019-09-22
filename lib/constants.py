@@ -1058,7 +1058,7 @@ CQ = 'cq'
 PRE_CQ = 'pre-cq'
 
 # Environment variables that should be exposed to all children processes
-# invoked via cros_build_lib.RunCommand.
+# invoked via cros_build_lib.run.
 ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR,
                 PARALLEL_EMERGE_STATUS_FILE_ENVVAR)
 

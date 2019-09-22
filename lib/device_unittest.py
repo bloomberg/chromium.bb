@@ -46,7 +46,7 @@ class DeviceTester(cros_test_lib.RunCommandTestCase):
     self.assertCommandContains(
         ['ssh', '-p', '22', 'root@190.0.2.130', '--', 'true'])
 
-  @mock.patch('chromite.lib.cros_build_lib.RunCommand',
+  @mock.patch('chromite.lib.cros_build_lib.run',
               side_effect=remote_access.SSHConnectionError())
   def testWaitForBootTimeOut(self, boot_mock):
     """Verify an exception is raised when the device takes to long to boot."""

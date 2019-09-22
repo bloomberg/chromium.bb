@@ -305,7 +305,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
 
     # Because of --update, this updates our generated files.
     cmd = ['cros_sdk', '--', test_path, '--update']
-    cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
+    cros_build_lib.run(cmd, cwd=os.path.dirname(self.chromite_dir))
 
   def _CreateConfigPatch(self):
     """Create and return a diff patch file for config changes."""
@@ -395,7 +395,7 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
         os.path.join(constants.CHROMITE_DIR, 'config',
                      'chromeos_config_unittest'))
     cmd = ['cros_sdk', '--', test_path]
-    cros_build_lib.RunCommand(cmd, cwd=constants.CHROMITE_DIR)
+    cros_build_lib.run(cmd, cwd=constants.CHROMITE_DIR)
 
   def _MakeWorkDir(self, name):
     """Makes and returns the path to a temporary directory.

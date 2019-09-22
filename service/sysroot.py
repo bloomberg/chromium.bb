@@ -228,7 +228,7 @@ def Create(target, run_configs, accept_licenses):
                      '--toolchain_boards', target.name]
     update_chroot += run_configs.GetUpdateChrootArgs()
     try:
-      cros_build_lib.RunCommand(update_chroot)
+      cros_build_lib.run(update_chroot)
     except cros_build_lib.RunCommandError:
       raise UpdateChrootError('Error occurred while updating the chroot.'
                               'See the logs for more information.')
@@ -317,7 +317,7 @@ def BuildPackages(target, sysroot, run_configs):
       # REVIEW: discuss which dimensions to flatten into the metric
       # name other than target.name...
       with metrics.timer('service.sysroot.BuildPackages.RunCommand'):
-        cros_build_lib.RunCommand(cmd, extra_env=extra_env)
+        cros_build_lib.run(cmd, extra_env=extra_env)
     except cros_build_lib.RunCommandError as e:
       failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
       raise sysroot_lib.PackageInstallError(
@@ -412,7 +412,7 @@ def _RefreshWorkonSymlinks(target, sysroot):
 def _ChooseProfile(target, sysroot):
   """Helper function to execute cros_choose_profile.
 
-  TODO(saklein) Refactor cros_choose_profile to avoid needing the RunCommand
+  TODO(saklein) Refactor cros_choose_profile to avoid needing the run
   call here, and by extension this method all together.
 
   Args:
@@ -427,7 +427,7 @@ def _ChooseProfile(target, sysroot):
     # Chooses base by default, only override when we have a passed param.
     choose_profile += ['--profile', target.profile]
   try:
-    cros_build_lib.RunCommand(choose_profile, print_cmd=False)
+    cros_build_lib.run(choose_profile, print_cmd=False)
   except cros_build_lib.RunCommandError as e:
     logging.error('Selecting profile failed, removing incomplete board '
                   'directory!')

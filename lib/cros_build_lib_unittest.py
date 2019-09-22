@@ -33,8 +33,7 @@ class RunCommandErrorStrTest(cros_test_lib.TestCase):
 
   def testNonUTF8Characters(self):
     """Test that non-UTF8 characters do not kill __str__"""
-    result = cros_build_lib.RunCommand(['ls', '/does/not/exist'],
-                                       error_code_ok=True)
+    result = cros_build_lib.run(['ls', '/does/not/exist'], error_code_ok=True)
     rce = cros_build_lib.RunCommandError('\x81', result)
     str(rce)
 
@@ -133,43 +132,42 @@ class CmdToStrTest(cros_test_lib.TestCase):
 
 
 class TestRunCommandNoMock(cros_test_lib.TestCase):
-  """Class that tests RunCommand by not mocking subprocess.Popen"""
+  """Class that tests run by not mocking subprocess.Popen"""
 
   def testErrorCodeNotRaisesError(self):
     """Don't raise exception when command returns non-zero exit code."""
-    result = cros_build_lib.RunCommand(['ls', '/does/not/exist'],
-                                       error_code_ok=True)
+    result = cros_build_lib.run(['ls', '/does/not/exist'], error_code_ok=True)
     self.assertTrue(result.returncode != 0)
 
   def testMissingCommandRaisesError(self):
     """Raise error when command is not found."""
-    self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.RunCommand,
+    self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.run,
                       ['/does/not/exist'], error_code_ok=False)
-    self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.RunCommand,
+    self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.run,
                       ['/does/not/exist'], error_code_ok=True)
 
   def testInputString(self):
     """Verify input argument when it is a string."""
     for data in ('', 'foo', 'bar\nhigh'):
-      result = cros_build_lib.RunCommand(['cat'], input=data)
+      result = cros_build_lib.run(['cat'], input=data)
       self.assertEqual(result.output, data)
 
   def testInputFileObject(self):
     """Verify input argument when it is a file object."""
-    result = cros_build_lib.RunCommand(['cat'], input=open('/dev/null'))
+    result = cros_build_lib.run(['cat'], input=open('/dev/null'))
     self.assertEqual(result.output, '')
 
-    result = cros_build_lib.RunCommand(['cat'], input=open(__file__))
+    result = cros_build_lib.run(['cat'], input=open(__file__))
     self.assertEqual(result.output, osutils.ReadFile(__file__))
 
   def testInputFileDescriptor(self):
     """Verify input argument when it is a file descriptor."""
     with open('/dev/null') as f:
-      result = cros_build_lib.RunCommand(['cat'], input=f.fileno())
+      result = cros_build_lib.run(['cat'], input=f.fileno())
       self.assertEqual(result.output, '')
 
     with open(__file__) as f:
-      result = cros_build_lib.RunCommand(['cat'], input=f.fileno())
+      result = cros_build_lib.run(['cat'], input=f.fileno())
       self.assertEqual(result.output, osutils.ReadFile(__file__))
 
 
@@ -186,10 +184,10 @@ def _ForceLoggingLevel(functor):
 
 
 class TestRunCommand(cros_test_lib.MockTestCase):
-  """Tests of RunCommand functionality."""
+  """Tests of run functionality."""
 
   def setUp(self):
-    # These ENV variables affect RunCommand behavior, hide them.
+    # These ENV variables affect run behavior, hide them.
     self._old_envs = {e: os.environ.pop(e) for e in constants.ENV_PASSTHRU
                       if e in os.environ}
 
@@ -313,15 +311,15 @@ class TestRunCommand(cros_test_lib.MockTestCase):
 
   @_ForceLoggingLevel
   def _TestCmd(self, cmd, real_cmd, sp_kv=None, rc_kv=None, sudo=False):
-    """Factor out common setup logic for testing RunCommand().
+    """Factor out common setup logic for testing run().
 
     Args:
-      cmd: a string or an array of strings that will be passed to RunCommand.
-      real_cmd: the real command we expect RunCommand to call (might be
+      cmd: a string or an array of strings that will be passed to run.
+      real_cmd: the real command we expect run to call (might be
           modified to have enter_chroot).
       sp_kv: key-value pairs passed to subprocess.Popen().
-      rc_kv: key-value pairs passed to RunCommand().
-      sudo: use SudoRunCommand() rather than RunCommand().
+      rc_kv: key-value pairs passed to run().
+      sudo: use sudo_run() rather than run().
     """
     if sp_kv is None:
       sp_kv = {}
@@ -346,9 +344,9 @@ class TestRunCommand(cros_test_lib.MockTestCase):
           arg_dict[attr] = None
 
     if sudo:
-      runcmd = cros_build_lib.SudoRunCommand
+      runcmd = cros_build_lib.sudo_run
     else:
-      runcmd = cros_build_lib.RunCommand
+      runcmd = cros_build_lib.run
     with self._MockChecker(real_cmd, ignore_sigint=rc_kv.get('ignore_sigint'),
                            **sp_kv):
       actual_result = runcmd(cmd, **rc_kv)
@@ -359,10 +357,10 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     """--enter_chroot=False and --cmd is an array of strings.
 
     Parameterized so this can also be used by some other tests w/ alternate
-    params to RunCommand().
+    params to run().
 
     Args:
-      ignore_sigint: If True, we'll tell RunCommand to ignore sigint.
+      ignore_sigint: If True, we'll tell run to ignore sigint.
     """
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
@@ -370,7 +368,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
                   rc_kv=dict(ignore_sigint=ignore_sigint))
 
   def testSignalRestoreNormalCase(self):
-    """Test RunCommand() properly sets/restores sigint.  Normal case."""
+    """Test run() properly sets/restores sigint.  Normal case."""
     self.testReturnCodeZeroWithArrayCmd(ignore_sigint=True)
 
   def testReturnCodeZeroWithArrayCmdEnterChroot(self):
@@ -387,17 +385,17 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     """Verify error raised by communicate() is caught.
 
     Parameterized so this can also be used by some other tests w/ alternate
-    params to RunCommand().
+    params to run().
 
     Args:
-      ignore_sigint: If True, we'll tell RunCommand to ignore sigint.
+      ignore_sigint: If True, we'll tell run to ignore sigint.
     """
     cmd = 'test cmd'
     self.proc_mock.returncode = 1
     with self._MockChecker(['/bin/bash', '-c', cmd],
                            ignore_sigint=ignore_sigint):
       self.assertRaises(cros_build_lib.RunCommandError,
-                        cros_build_lib.RunCommand, cmd, shell=True,
+                        cros_build_lib.run, cmd, shell=True,
                         ignore_sigint=ignore_sigint, error_code_ok=False)
 
   @_ForceLoggingLevel
@@ -405,23 +403,23 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     """Verify error raised by communicate() is caught.
 
     Parameterized so this can also be used by some other tests w/ alternate
-    params to RunCommand().
+    params to run().
 
     Args:
-      ignore_sigint: If True, we'll tell RunCommand to ignore sigint.
+      ignore_sigint: If True, we'll tell run to ignore sigint.
     """
     cmd = ['test', 'cmd']
     self.proc_mock.communicate = mock.MagicMock(side_effect=ValueError)
     with self._MockChecker(cmd, ignore_sigint=ignore_sigint):
-      self.assertRaises(ValueError, cros_build_lib.RunCommand, cmd,
+      self.assertRaises(ValueError, cros_build_lib.run, cmd,
                         ignore_sigint=ignore_sigint)
 
   def testSignalRestoreExceptionCase(self):
-    """Test RunCommand() properly sets/restores sigint.  Exception case."""
+    """Test run() properly sets/restores sigint.  Exception case."""
     self.testSubprocessCommunicateExceptionRaisesError(ignore_sigint=True)
 
   def testEnvWorks(self):
-    """Test RunCommand(..., env=xyz) works."""
+    """Test run(..., env=xyz) works."""
     # We'll put this bogus environment together, just to make sure
     # subprocess.Popen gets passed it.
     rc_env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
@@ -432,20 +430,20 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     cmd_list = ['foo', 'bar', 'roger']
 
     # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
-    # to rc (RunCommand).
+    # to rc (run).
     self._TestCmd(cmd_list, cmd_list,
                   sp_kv=dict(env=sp_env),
                   rc_kv=dict(env=rc_env))
 
   def testExtraEnvOnlyWorks(self):
-    """Test RunCommand(..., extra_env=xyz) works."""
+    """Test run(..., extra_env=xyz) works."""
     # We'll put this bogus environment together, just to make sure
     # subprocess.Popen gets passed it.
     extra_env = {'Pinky' : 'Brain'}
     ## This is a little bit circular, since the same logic is used to compute
     ## the value inside, but at least it checks that this happens.
     total_env = os.environ.copy()
-    # The core RunCommand code forces this too.
+    # The core run code forces this too.
     total_env['LC_MESSAGES'] = 'C'
     total_env.update(extra_env)
 
@@ -454,13 +452,13 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     cmd_list = ['foo', 'bar', 'roger']
 
     # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
-    # to rc (RunCommand).
+    # to rc (run).
     self._TestCmd(cmd_list, cmd_list,
                   sp_kv=dict(env=total_env),
                   rc_kv=dict(extra_env=extra_env))
 
   def testExtraEnvTooWorks(self):
-    """Test RunCommand(..., env=xy, extra_env=z) works."""
+    """Test run(..., env=xy, extra_env=z) works."""
     # We'll put this bogus environment together, just to make sure
     # subprocess.Popen gets passed it.
     env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
@@ -477,14 +475,14 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     cmd_list = ['foo', 'bar', 'roger']
 
     # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
-    # to rc (RunCommand).
+    # to rc (run).
     self._TestCmd(cmd_list, cmd_list,
                   sp_kv=dict(env=total_env),
                   rc_kv=dict(env=env, extra_env=extra_env))
 
   @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
   def testChrootExtraEnvWorks(self, _inchroot_mock):
-    """Test RunCommand(..., enter_chroot=True, env=xy, extra_env=z) works."""
+    """Test run(..., enter_chroot=True, env=xy, extra_env=z) works."""
     # We'll put this bogus environment together, just to make sure
     # subprocess.Popen gets passed it.
     env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
@@ -501,7 +499,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     cmd_list = ['foo', 'bar', 'roger']
 
     # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
-    # to rc (RunCommand).
+    # to rc (run).
     self._TestCmd(cmd_list, ['cros_sdk', 'Pinky=Brain', '--'] + cmd_list,
                   sp_kv=dict(env=total_env),
                   rc_kv=dict(env=env, extra_env=extra_env, enter_chroot=True))
@@ -524,14 +522,14 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     self.assertNotEqual(e1, e_diff_code)
 
   def testSudoRunCommand(self):
-    """Test SudoRunCommand(...) works."""
+    """Test sudo_run(...) works."""
     cmd_list = ['foo', 'bar', 'roger']
     sudo_list = ['sudo', '--'] + cmd_list
     self.proc_mock.returncode = 0
     self._TestCmd(cmd_list, sudo_list, sudo=True)
 
   def testSudoRunCommandShell(self):
-    """Test SudoRunCommand(..., shell=True) works."""
+    """Test sudo_run(..., shell=True) works."""
     cmd = 'foo bar roger'
     sudo_list = ['sudo', '--', '/bin/bash', '-c', cmd]
     self.proc_mock.returncode = 0
@@ -539,7 +537,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
                   rc_kv=dict(shell=True))
 
   def testSudoRunCommandEnv(self):
-    """Test SudoRunCommand(..., extra_env=z) works."""
+    """Test sudo_run(..., extra_env=z) works."""
     cmd_list = ['foo', 'bar', 'roger']
     sudo_list = ['sudo', 'shucky=ducky', '--'] + cmd_list
     extra_env = {'shucky' : 'ducky'}
@@ -548,7 +546,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
                   rc_kv=dict(extra_env=extra_env))
 
   def testSudoRunCommandUser(self):
-    """Test SudoRunCommand(..., user='...') works."""
+    """Test sudo_run(..., user='...') works."""
     cmd_list = ['foo', 'bar', 'roger']
     sudo_list = ['sudo', '-u', 'MMMMMonster', '--'] + cmd_list
     self.proc_mock.returncode = 0
@@ -556,7 +554,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
                   rc_kv=dict(user='MMMMMonster'))
 
   def testSudoRunCommandUserShell(self):
-    """Test SudoRunCommand(..., user='...', shell=True) works."""
+    """Test sudo_run(..., user='...', shell=True) works."""
     cmd = 'foo bar roger'
     sudo_list = ['sudo', '-u', 'MMMMMonster', '--', '/bin/bash', '-c', cmd]
     self.proc_mock.returncode = 0
@@ -566,19 +564,18 @@ class TestRunCommand(cros_test_lib.MockTestCase):
 
 class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
                            cros_test_lib.OutputTestCase):
-  """Tests of RunCommand output options."""
+  """Tests of run output options."""
 
   @_ForceLoggingLevel
   def testLogStdoutToFile(self):
     log = os.path.join(self.tempdir, 'output')
-    ret = cros_build_lib.RunCommand(
-        ['echo', 'monkeys'], log_stdout_to_file=log)
+    ret = cros_build_lib.run(['echo', 'monkeys'], log_stdout_to_file=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
 
     os.unlink(log)
-    ret = cros_build_lib.RunCommand(
+    ret = cros_build_lib.run(
         ['sh', '-c', 'echo monkeys3 >&2'],
         log_stdout_to_file=log, redirect_stderr=True)
     self.assertEqual(ret.error, 'monkeys3\n')
@@ -586,7 +583,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     self.assertEqual(os.path.getsize(log), 0)
 
     os.unlink(log)
-    ret = cros_build_lib.RunCommand(
+    ret = cros_build_lib.run(
         ['sh', '-c', 'echo monkeys4; echo monkeys5 >&2'],
         log_stdout_to_file=log, combine_stdout_stderr=True)
     self.assertIs(ret.output, None)
@@ -597,21 +594,19 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
   @_ForceLoggingLevel
   def testLogStdoutToFileWithOrWithoutAppend(self):
     log = os.path.join(self.tempdir, 'output')
-    ret = cros_build_lib.RunCommand(
-        ['echo', 'monkeys'], log_stdout_to_file=log)
+    ret = cros_build_lib.run(['echo', 'monkeys'], log_stdout_to_file=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
 
     # Without append
-    ret = cros_build_lib.RunCommand(
-        ['echo', 'monkeys2'], log_stdout_to_file=log)
+    ret = cros_build_lib.run(['echo', 'monkeys2'], log_stdout_to_file=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys2\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
 
     # With append
-    ret = cros_build_lib.RunCommand(
+    ret = cros_build_lib.run(
         ['echo', 'monkeys3'], append_to_file=True, log_stdout_to_file=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys2\nmonkeys3\n')
     self.assertIs(ret.output, None)
@@ -619,24 +614,23 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
 
 
   def _CaptureRunCommand(self, command, mute_output):
-    """Capture a RunCommand() output with the specified |mute_output|.
+    """Capture a run() output with the specified |mute_output|.
 
     Args:
-      command: command to send to RunCommand().
-      mute_output: RunCommand() |mute_output| parameter.
+      command: command to send to run().
+      mute_output: run() |mute_output| parameter.
 
     Returns:
       A (stdout, stderr) pair of captured output.
     """
     with self.OutputCapturer() as output:
-      cros_build_lib.RunCommand(command,
-                                debug_level=logging.DEBUG,
-                                mute_output=mute_output)
+      cros_build_lib.run(command, debug_level=logging.DEBUG,
+                         mute_output=mute_output)
     return (output.GetStdout(), output.GetStderr())
 
   @_ForceLoggingLevel
   def testSubprocessMuteOutput(self):
-    """Test RunCommand |mute_output| parameter."""
+    """Test run |mute_output| parameter."""
     command = ['sh', '-c', 'echo foo; echo bar >&2']
     # Always mute: we shouldn't get any output.
     self.assertEqual(self._CaptureRunCommand(command, mute_output=True),
@@ -649,28 +643,28 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
                      ('foo\n', 'bar\n'))
 
   def testRunCommandAtNoticeLevel(self):
-    """Ensure that RunCommand prints output when mute_output is False."""
+    """Ensure that run prints output when mute_output is False."""
     # Needed by cros_sdk and brillo/cros chroot.
     with self.OutputCapturer():
-      cros_build_lib.RunCommand(['echo', 'foo'], mute_output=False,
-                                error_code_ok=True, print_cmd=False,
-                                debug_level=logging.NOTICE)
+      cros_build_lib.run(['echo', 'foo'], mute_output=False,
+                         error_code_ok=True, print_cmd=False,
+                         debug_level=logging.NOTICE)
     self.AssertOutputContainsLine('foo')
 
   def testRunCommandRedirectStdoutStderrOnCommandError(self):
-    """Tests that stderr is captured when RunCommand raises."""
+    """Tests that stderr is captured when run raises."""
     with self.assertRaises(cros_build_lib.RunCommandError) as cm:
-      cros_build_lib.RunCommand(['cat', '/'], redirect_stderr=True)
+      cros_build_lib.run(['cat', '/'], redirect_stderr=True)
     self.assertIsNotNone(cm.exception.result.error)
     self.assertNotEqual('', cm.exception.result.error)
 
   def _CaptureLogOutput(self, cmd, **kwargs):
-    """Capture logging output of RunCommand."""
+    """Capture logging output of run."""
     log = os.path.join(self.tempdir, 'output')
     fh = logging.FileHandler(log)
     fh.setLevel(logging.DEBUG)
     logging.getLogger().addHandler(fh)
-    cros_build_lib.RunCommand(cmd, **kwargs)
+    cros_build_lib.run(cmd, **kwargs)
     logging.getLogger().removeHandler(fh)
     return osutils.ReadFile(log)
 
@@ -678,7 +672,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
   def testLogOutput(self):
     """Normal log_output, stdout followed by stderr."""
     cmd = 'echo Greece; echo Italy >&2; echo Spain'
-    log_output = ('RunCommand: /bin/bash -c '
+    log_output = ('run: /bin/bash -c '
                   "'echo Greece; echo Italy >&2; echo Spain'\n"
                   '(stdout):\nGreece\nSpain\n\n(stderr):\nItaly\n\n')
     self.assertEqual(self._CaptureLogOutput(cmd, shell=True, log_output=True),
@@ -1029,16 +1023,16 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
   """Tests special case error handling for CreateTarBall."""
 
   def setUp(self):
-    """Mock RunCommand mock."""
+    """Mock run mock."""
     # Each test can change this value as needed.  Each element is the return
-    # code in the CommandResult for subsequent calls to RunCommand().
+    # code in the CommandResult for subsequent calls to run().
     self.tarResults = []
 
     def Result(*_args, **_kwargs):
       """Creates CommandResult objects for each tarResults value in turn."""
       return cros_build_lib.CommandResult(returncode=self.tarResults.pop(0))
 
-    self.mockRun = self.PatchObject(cros_build_lib, 'RunCommand',
+    self.mockRun = self.PatchObject(cros_build_lib, 'run',
                                     autospec=True,
                                     side_effect=Result)
 

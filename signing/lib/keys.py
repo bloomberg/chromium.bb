@@ -161,8 +161,8 @@ class KeyPair(object):
       SignerKeyError: If error getting sha1sum from public key
       RunCommandError: if vbutil_key fails
     """
-    res = cros_build_lib.RunCommand(['vbutil_key', '--unpack', self.public],
-                                    error_code_ok=True)
+    res = cros_build_lib.run(['vbutil_key', '--unpack', self.public],
+                             error_code_ok=True)
 
     # Match line that looks like: 'Key sha1sum: <sha1sum>'.
     match = re.search(r'Key sha1sum: +(\w+)', res.output)

@@ -205,15 +205,15 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
     # Verify the tests below actually are testing correct behaviour;
     # specifically that it doesn't always just return 0.
     self.assertRaises(cros_build_lib.RunCommandError,
-                      cros_build_lib.RunCommand,
+                      cros_build_lib.run,
                       ['cbuildbot', '--monkeys'], cwd=constants.SOURCE_ROOT)
 
     # Validate depot_tools lookup.
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         ['cbuildbot', '--help'], cwd=constants.SOURCE_ROOT, capture_output=True)
 
     # Validate buildbot invocation pathway.
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         [path, '--help'], cwd=constants.SOURCE_ROOT, capture_output=True)
 
   def testBuildBotOption(self):

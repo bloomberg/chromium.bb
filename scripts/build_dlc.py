@@ -120,8 +120,8 @@ class DlcGenerator(object):
     Args:
       path: (str) path that contains all files to be processed.
     """
-    cros_build_lib.SudoRunCommand(['chown', '-R', '0:0', path])
-    cros_build_lib.SudoRunCommand(
+    cros_build_lib.sudo_run(['chown', '-R', '0:0', path])
+    cros_build_lib.sudo_run(
         ['find', path, '-exec', 'touch', '-h', '-t', '197001010000.00', '{}',
          '+'])
 
@@ -133,7 +133,7 @@ class DlcGenerator(object):
       with open(self.dest_image, 'w') as f:
         f.truncate(self._BLOCKS * self._BLOCK_SIZE)
       # Create an ext4 file system on the raw image.
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           ['/sbin/mkfs.ext4', '-b', str(self._BLOCK_SIZE), '-O',
            '^has_journal', self.dest_image], capture_output=True)
       # Create the mount_point directory.
@@ -147,9 +147,9 @@ class DlcGenerator(object):
         # Unmount the ext4 image.
         osutils.UmountDir(mount_point)
       # Shrink to minimum size.
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           ['/sbin/e2fsck', '-y', '-f', self.dest_image], capture_output=True)
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           ['/sbin/resize2fs', '-M', self.dest_image], capture_output=True)
 
   def CreateSquashfsImage(self):
@@ -158,9 +158,8 @@ class DlcGenerator(object):
       squashfs_root = os.path.join(temp_dir, 'squashfs-root')
       self.SetupDlcImageFiles(squashfs_root)
 
-      cros_build_lib.RunCommand(['mksquashfs', squashfs_root, self.dest_image,
-                                 '-4k-align', '-noappend'],
-                                capture_output=True)
+      cros_build_lib.run(['mksquashfs', squashfs_root, self.dest_image,
+                          '-4k-align', '-noappend'], capture_output=True)
 
       # We changed the ownership and permissions of the squashfs_root
       # directory. Now we need to remove it manually.
@@ -295,7 +294,7 @@ class DlcGenerator(object):
       # Get blocks in the image.
       blocks = math.ceil(
           os.path.getsize(self.dest_image) / self._BLOCK_SIZE)
-      result = cros_build_lib.RunCommand(
+      result = cros_build_lib.run(
           ['verity', 'mode=create', 'alg=sha256', 'payload=' + self.dest_image,
            'payload_blocks=' + str(blocks), 'hashtree=' + hash_tree,
            'salt=random'], capture_output=True)

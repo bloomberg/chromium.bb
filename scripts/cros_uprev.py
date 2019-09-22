@@ -113,10 +113,10 @@ def CleanStalePackages(boards, package_atoms, chroot):
   def _CleanStalePackages(board):
     if board:
       suffix = '-' + board
-      runcmd = cros_build_lib.RunCommand
+      runcmd = cros_build_lib.run
     else:
       suffix = ''
-      runcmd = cros_build_lib.SudoRunCommand
+      runcmd = cros_build_lib.sudo_run
 
     chroot_args = ['--chroot', chroot] if chroot else None
     emerge, eclean = 'emerge' + suffix, 'eclean' + suffix

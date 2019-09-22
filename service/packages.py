@@ -139,9 +139,9 @@ def uprev_android(tracking_branch, android_package, android_build_branch,
   if android_gts_build_branch:
     command.append('--android_gts_build_branch=%s' % android_gts_build_branch)
 
-  result = cros_build_lib.RunCommand(command, redirect_stdout=True,
-                                     enter_chroot=True,
-                                     chroot_args=chroot.get_enter_args())
+  result = cros_build_lib.run(command, redirect_stdout=True,
+                              enter_chroot=True,
+                              chroot_args=chroot.get_enter_args())
 
   android_atom = _parse_android_atom(result)
   if not android_atom:
@@ -154,8 +154,8 @@ def uprev_android(tracking_branch, android_package, android_build_branch,
     command = ['emerge-%s' % target.name, '-p', '--quiet',
                '=%s' % android_atom]
     try:
-      cros_build_lib.RunCommand(command, enter_chroot=True,
-                                chroot_args=chroot.get_enter_args())
+      cros_build_lib.run(command, enter_chroot=True,
+                         chroot_args=chroot.get_enter_args())
     except cros_build_lib.RunCommandError:
       logging.error(
           'Cannot emerge-%s =%s\nIs Android pinned to an older '
@@ -302,7 +302,7 @@ def uprev_kernel_afdo(*_args, **_kwargs):
 
     try:
       cmd = ['ebuild', chroot_ebuild_path, 'manifest', '--force']
-      cros_build_lib.RunCommand(cmd, enter_chroot=True)
+      cros_build_lib.run(cmd, enter_chroot=True)
     except cros_build_lib.RunCommandError as e:
       raise EbuildManifestError(
           'Error encountered when regenerating the manifest for ebuild: %s\n%s'
@@ -345,7 +345,7 @@ def uprev_chrome_afdo(*_args, **_kwargs):
 
   try:
     cmd = ['ebuild', chroot_ebuild_path, 'manifest', '--force']
-    cros_build_lib.RunCommand(cmd, enter_chroot=True)
+    cros_build_lib.run(cmd, enter_chroot=True)
   except cros_build_lib.RunCommandError as e:
     raise EbuildManifestError(
         'Error encountered when regenerating the manifest for ebuild: %s\n%s' %

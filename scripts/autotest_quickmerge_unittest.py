@@ -115,7 +115,7 @@ class RsyncCommandTest(cros_test_lib.RunCommandTestCase):
   """Test autotest_quickmerge.RsyncQuickmerge."""
 
   def testRsyncQuickmergeCommand(self):
-    """Test that RsyncQuickMerge makes correct call to SudoRunCommand"""
+    """Test that RsyncQuickMerge makes correct call to sudo_run"""
     include_file_name = 'an_include_file_name'
     source_path = 'a_source_path'
     sysroot_path = 'a_sysroot_path'

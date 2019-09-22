@@ -84,8 +84,8 @@ class ECSigner(signer.BaseSigner):
     """Returns True if the given ec.bin is RO signed"""
 
     # Check fmap for KEY_RO
-    fmap = cros_build_lib.RunCommand(['futility', 'dump_fmap', '-p', ec_image],
-                                     capture_output=True)
+    fmap = cros_build_lib.run(['futility', 'dump_fmap', '-p', ec_image],
+                              capture_output=True)
 
     return re.search('KEY_RO', fmap.output) is not None
 
@@ -115,23 +115,17 @@ class ECSigner(signer.BaseSigner):
       ec_rw_bin = os.path.join(temp_dir, 'EC_RW.bin')
       ec_rw_hash = os.path.join(temp_dir, 'EC_RW.hash')
       try:
-        cros_build_lib.RunCommand(['futility', 'sign',
-                                   '--type', 'rwsig',
-                                   '--prikey',
-                                   keyset.keys['key_ec_efs'].private,
-                                   ec_path],
-                                  cwd=temp_dir)
+        cros_build_lib.run(['futility', 'sign', '--type', 'rwsig', '--prikey',
+                            keyset.keys['key_ec_efs'].private, ec_path],
+                           cwd=temp_dir)
 
-        cros_build_lib.RunCommand(['openssl', 'dgst', '-sha256', '-binary',
-                                   ec_rw_bin],
-                                  log_stdout_to_file=ec_rw_hash,
-                                  cwd=temp_dir)
+        cros_build_lib.run(['openssl', 'dgst', '-sha256', '-binary', ec_rw_bin],
+                           log_stdout_to_file=ec_rw_hash, cwd=temp_dir)
 
-        cros_build_lib.RunCommand(['store_file_in_cbfs', bios_path,
-                                   ec_rw_bin, 'ecrw'])
+        cros_build_lib.run(['store_file_in_cbfs', bios_path, ec_rw_bin, 'ecrw'])
 
-        cros_build_lib.RunCommand(['store_file_in_cbfs', bios_path,
-                                   ec_rw_hash, 'ecrw.hash'])
+        cros_build_lib.run(['store_file_in_cbfs', bios_path, ec_rw_hash,
+                            'ecrw.hash'])
 
       except cros_build_lib.RunCommandError as err:
         logging.warning('Signing EC failed: %s', str(err))
@@ -339,7 +333,7 @@ class Shellball(object):
     """Execute shellball with given arguments."""
     cmd = [os.path.realpath(self.filename)]
     cmd += args
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.run(cmd)
 
 
 # TODO(vapier): Should switch this to image_lib.LoopbackPartitions or

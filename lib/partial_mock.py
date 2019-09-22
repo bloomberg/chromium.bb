@@ -616,14 +616,14 @@ class PartialCmdMock(PartialMock):
   @CheckAttr
   def assertCommandContains(self, args=(), expected=True, mock_attr=None,
                             **kwargs):
-    """Assert that RunCommand was called with the specified args.
+    """Assert that run was called with the specified args.
 
-    This verifies that at least one of the RunCommand calls contains the
+    This verifies that at least one of the run calls contains the
     specified arguments on the command line.
 
     Args:
       args: Set of expected command-line arguments.
-      expected: If False, instead verify that none of the RunCommand calls
+      expected: If False, instead verify that none of the run calls
           contained the specified arguments.
       **kwargs: Set of expected keyword arguments.
       mock_attr: Which attributes's mock is being referenced.
@@ -639,9 +639,9 @@ class PartialCmdMock(PartialMock):
 
   @CheckAttr
   def assertCommandCalled(self, args=(), mock_attr=None, **kwargs):
-    """Assert that RunCommand was called with the specified args.
+    """Assert that run was called with the specified args.
 
-    This verifies that at least one of the RunCommand calls exactly
+    This verifies that at least one of the run calls exactly
     matches the specified command line and misc-arguments.
 
     Args:

@@ -45,9 +45,8 @@ class Disk(object):
       RunCommandError: if error running cgpt command
       CgptError: if error parsing out output of cgpt command
     """
-    cmd_result = cros_build_lib.RunCommand(['cgpt', 'show', '-n',
-                                            image_file],
-                                           capture_output=True)
+    cmd_result = cros_build_lib.run(['cgpt', 'show', '-n', image_file],
+                                    capture_output=True)
 
     # Covert output to a file for processing via readline().
     cgpt_result = iter(cmd_result.output.splitlines())

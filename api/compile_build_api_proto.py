@@ -51,7 +51,7 @@ def _InstallProtoc():
 
     cmd.extend(['-ensure-file', ensure_file])
 
-    cros_build_lib.RunCommand(cmd, cwd=constants.CHROMITE_DIR, print_cmd=False)
+    cros_build_lib.run(cmd, cwd=constants.CHROMITE_DIR, print_cmd=False)
 
 
 def _CleanTargetDirectory(directory):
@@ -103,7 +103,7 @@ def _GenerateFiles(source, output):
           targets.append(os.path.join(dirpath, filename))
 
   cmd = [_PROTOC, '--python_out', output, '--proto_path', source] + targets
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, cwd=source, print_cmd=False, error_code_ok=True)
 
   if result.returncode:
@@ -153,7 +153,7 @@ def _PostprocessFiles(directory):
     pb2 = [os.path.join(dirpath, f) for f in filenames if f.endswith('_pb2.py')]
     if pb2:
       cmd = from_sed + pb2
-      cros_build_lib.RunCommand(cmd, print_cmd=False)
+      cros_build_lib.run(cmd, print_cmd=False)
 
 
 def CompileProto(output=None):

@@ -377,18 +377,18 @@ class Upgrader(object):
               combine_stdout_stderr=False):
     """Runs git |command| (a list of command tokens) in |cwd|.
 
-    This leverages the cros_build_lib.RunCommand function.  The
+    This leverages the cros_build_lib.run function.  The
     |redirect_stdout| and |combine_stdout_stderr| arguments are
     passed to that function.
 
-    Returns a Result object as documented by cros_build_lib.RunCommand.
+    Returns a Result object as documented by cros_build_lib.run.
     Most usefully, the result object has a .output attribute containing
     the output from the command (if |redirect_stdout| was True).
     """
     # This disables the vi-like output viewer for commands like 'git show'.
     extra_env = {'GIT_PAGER': 'cat'}
     cmdline = ['git'] + command
-    return cros_build_lib.RunCommand(
+    return cros_build_lib.run(
         cmdline, cwd=cwd, extra_env=extra_env, print_cmd=self._verbose,
         redirect_stdout=redirect_stdout,
         combine_stdout_stderr=combine_stdout_stderr)
@@ -451,7 +451,7 @@ class Upgrader(object):
 
     # Point equery to the upstream source to get latest version for keywords.
     equery = ['equery', 'which', pkg]
-    cmd_result = cros_build_lib.RunCommand(
+    cmd_result = cros_build_lib.run(
         equery, extra_env=envvars, print_cmd=self._verbose,
         error_code_ok=True, redirect_stdout=True, combine_stdout_stderr=True)
 
@@ -485,7 +485,7 @@ class Upgrader(object):
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
     emerge = self._GetBoardCmd(self.EMERGE_CMD)
     cmd = [emerge, '-p'] + ['=' + cpv for cpv in cpvlist]
-    result = cros_build_lib.RunCommand(
+    result = cros_build_lib.run(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True)
 
@@ -497,7 +497,7 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '-C', 'which', pkg]
-    cmd_result = cros_build_lib.RunCommand(
+    cmd_result = cros_build_lib.run(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True)
 
@@ -515,7 +515,7 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd('equery')
     cmd = [equery, '-qCN', 'list', '-F', '$mask|$cpv:$slot', '-op', cpv]
-    result = cros_build_lib.RunCommand(
+    result = cros_build_lib.run(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True)
 
@@ -557,7 +557,7 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '-C', 'which', '--include-masked', cpv]
-    result = cros_build_lib.RunCommand(
+    result = cros_build_lib.run(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True)
 
@@ -601,7 +601,7 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '-C', '--no-pipe', 'which', cpv]
-    result = cros_build_lib.RunCommand(
+    result = cros_build_lib.run(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True)
 
@@ -824,7 +824,7 @@ class Upgrader(object):
       shutil.copyfile(upstream_manifest, current_manifest)
 
     manifest_cmd = ['ebuild', os.path.join(pkgdir, ebuild), 'manifest']
-    manifest_result = cros_build_lib.RunCommand(
+    manifest_result = cros_build_lib.run(
         manifest_cmd, error_code_ok=True, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True)
 
@@ -1054,9 +1054,9 @@ class Upgrader(object):
       self._RunGit(self._stable_repo, ['rm', '--ignore-unmatch', '-q', '-f',
                                        cache_files])
       cmd = ['egencache', '--update', '--repo=portage-stable', pinfo.package]
-      egen_result = cros_build_lib.RunCommand(cmd, print_cmd=False,
-                                              redirect_stdout=True,
-                                              combine_stdout_stderr=True)
+      egen_result = cros_build_lib.run(cmd, print_cmd=False,
+                                       redirect_stdout=True,
+                                       combine_stdout_stderr=True)
       if egen_result.returncode != 0:
         raise RuntimeError('Failed to regenerate md5-cache for %r.\n'
                            'Output of %r:\n%s' %

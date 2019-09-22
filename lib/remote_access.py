@@ -153,7 +153,7 @@ def GetUnusedPort(ip=LOCALHOST, family=socket.AF_INET,
 
 
 def RunCommandFuncWrapper(func, msg, *args, **kwargs):
-  """Wraps a function that invokes cros_build_lib.RunCommand.
+  """Wraps a function that invokes cros_build_lib.run.
 
   If the command failed, logs warning |msg| if error_code_ok is set;
   logs error |msg| if error_code_ok is not set.
@@ -243,8 +243,7 @@ def RemoveKnownHost(host, known_hosts_path=KNOWN_HOSTS_PATH):
     except IOError:
       # If |known_hosts_path| doesn't exist neither does |host| so we're done.
       return
-    cros_build_lib.RunCommand(['ssh-keygen', '-R', host, '-f', temp_file],
-                              quiet=True)
+    cros_build_lib.run(['ssh-keygen', '-R', host, '-f', temp_file], quiet=True)
     shutil.copy2(temp_file, known_hosts_path)
 
 
@@ -265,7 +264,7 @@ class RemoteAccess(object):
       port: The ssh port of the test machine to connect to.
       username: The ssh login username (default: root).
       private_key: The identify file to pass to `ssh -i` (default: testing_rsa).
-      debug_level: Logging level to use for all RunCommand invocations.
+      debug_level: Logging level to use for all run invocations.
       interactive: If set to False, pass /dev/null into stdin for the sh cmd.
     """
     self.tempdir = tempdir
@@ -328,7 +327,7 @@ class RemoteAccess(object):
                     fails (return code 255).
       remote_sudo: If set, run the command in remote shell with sudo.
       remote_user: If set, run the command as the specified user.
-      **kwargs: See cros_build_lib.RunCommand documentation.
+      **kwargs: See cros_build_lib.run documentation.
 
     Returns:
       A CommandResult object.  The returncode is the returncode of the command,
@@ -368,7 +367,7 @@ class RemoteAccess(object):
         ssh_cmd += cmd
 
     try:
-      return cros_build_lib.RunCommand(ssh_cmd, **kwargs)
+      return cros_build_lib.run(ssh_cmd, **kwargs)
     except cros_build_lib.RunCommandError as e:
       if ((e.result.returncode == SSH_ERROR_CODE and ssh_error_ok) or
           (e.result.returncode and e.result.returncode != SSH_ERROR_CODE
@@ -488,7 +487,7 @@ class RemoteAccess(object):
       sudo: If set, invoke the command via sudo.
       remote_sudo: If set, run the command in remote shell with sudo.
       compress: If set, compress file data during the transfer.
-      **kwargs: See cros_build_lib.RunCommand documentation.
+      **kwargs: See cros_build_lib.run documentation.
     """
     kwargs.setdefault('debug_level', self.debug_level)
 
@@ -518,9 +517,9 @@ class RemoteAccess(object):
       rsync_cmd += ['--rsh', ssh_cmd, src,
                     '[%s]:%s' % (self.target_ssh_url, dest)]
 
-    rc_func = cros_build_lib.RunCommand
+    rc_func = cros_build_lib.run
     if sudo:
-      rc_func = cros_build_lib.SudoRunCommand
+      rc_func = cros_build_lib.sudo_run
     return rc_func(rsync_cmd, print_cmd=verbose, **kwargs)
 
   def RsyncToLocal(self, *args, **kwargs):
@@ -539,7 +538,7 @@ class RemoteAccess(object):
       verbose: If set, print more verbose output during scp file transfer.
       sudo: If set, invoke the command via sudo.
       remote_sudo: If set, run the command in remote shell with sudo.
-      **kwargs: See cros_build_lib.RunCommand documentation.
+      **kwargs: See cros_build_lib.run documentation.
 
     Returns:
       A CommandResult object containing the information and return code of
@@ -576,9 +575,9 @@ class RemoteAccess(object):
     else:
       scp_cmd += glob.glob(src) + ['%s:%s' % (target_ssh_url, dest)]
 
-    rc_func = cros_build_lib.RunCommand
+    rc_func = cros_build_lib.run
     if sudo:
-      rc_func = cros_build_lib.SudoRunCommand
+      rc_func = cros_build_lib.sudo_run
 
     return rc_func(scp_cmd, print_cmd=verbose, **kwargs)
 
@@ -594,8 +593,8 @@ class RemoteAccess(object):
       cmd: Command to run on the remote device.
       **kwargs: See RemoteSh for documentation.
     """
-    result = cros_build_lib.RunCommand(producer_cmd, stdout_to_pipe=True,
-                                       print_cmd=False, capture_output=True)
+    result = cros_build_lib.run(producer_cmd, stdout_to_pipe=True,
+                                print_cmd=False, capture_output=True)
     return self.RemoteSh(cmd, input=kwargs.pop('input', result.output),
                          **kwargs)
 
@@ -648,7 +647,7 @@ class RemoteDevice(object):
       port: The ssh port of the device.
       username: The ssh login username.
       base_dir: The base work directory to create on the device, or
-        None. Required in order to use RunCommand(), but
+        None. Required in order to use run(), but
         BaseRunCommand() will be available in either case.
       connect_settings: Default SSH connection settings.
       private_key: The identify file to pass to `ssh -i`.
@@ -704,7 +703,7 @@ class RemoteDevice(object):
     else:
       ping_command = 'ping'
 
-    result = cros_build_lib.RunCommand(
+    result = cros_build_lib.run(
         [ping_command, '-c', '1', '-w', str(timeout), self.hostname],
         error_code_ok=True,
         capture_output=True)
@@ -816,7 +815,7 @@ class RemoteDevice(object):
       chunk_path = os.path.join(tempdir, chunk_prefix)
       try:
         cmd = ['split', '-b', str(CHUNK_SIZE), src, chunk_path]
-        cros_build_lib.RunCommand(cmd)
+        cros_build_lib.run(cmd)
         input_list = [[chunk_file, dest, 'scp']
                       for chunk_file in glob.glob(chunk_path + '*')]
         parallel.RunTasksInProcessPool(self.CopyToDevice,

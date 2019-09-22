@@ -103,7 +103,7 @@ def Emerge(packages, sysroot, with_deps=True, rebuild_deps=True,
   if debug_output:
     cmd.append('--show-output')
 
-  cros_build_lib.SudoRunCommand(cmd + packages)
+  cros_build_lib.sudo_run(cmd + packages)
 
 
 def UpdateChroot(board=None, update_host_packages=True):
@@ -116,7 +116,7 @@ def UpdateChroot(board=None, update_host_packages=True):
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_setup_toolchains')]
   if board:
     cmd += ['--targets=boards', '--include-boards=%s' % board]
-  cros_build_lib.SudoRunCommand(cmd, debug_level=logging.DEBUG)
+  cros_build_lib.sudo_run(cmd, debug_level=logging.DEBUG)
 
   # Update the host before updating the board.
   if update_host_packages:
@@ -125,8 +125,8 @@ def UpdateChroot(board=None, update_host_packages=True):
   # Automatically discard all CONFIG_PROTECT'ed files. Those that are
   # protected should not be overwritten until the variable is changed.
   # Autodiscard is option "-9" followed by the "YES" confirmation.
-  cros_build_lib.SudoRunCommand(['etc-update'], input='-9\nYES\n',
-                                debug_level=logging.DEBUG)
+  cros_build_lib.sudo_run(['etc-update'], input='-9\nYES\n',
+                          debug_level=logging.DEBUG)
 
 
 def SetupBoard(board, update_chroot=True,
@@ -151,7 +151,7 @@ def SetupBoard(board, update_chroot=True,
   if not use_binary:
     cmd.append('--nousepkg')
 
-  cros_build_lib.RunCommand(cmd)
+  cros_build_lib.run(cmd)
 
 
 def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
@@ -190,7 +190,7 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
 
   command += list(packages)
 
-  cros_build_lib.SudoRunCommand(command, extra_env=env, mute_output=False)
+  cros_build_lib.sudo_run(command, extra_env=env, mute_output=False)
 
 
 @contextlib.contextmanager

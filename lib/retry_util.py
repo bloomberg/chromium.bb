@@ -284,10 +284,10 @@ def RetryException(exception, max_retry, functor, *args, **kwargs):
 
 
 def RetryCommand(functor, max_retry, *args, **kwargs):
-  """Wrapper for RunCommand that will retry a command
+  """Wrapper for run that will retry a command.
 
   Args:
-    functor: RunCommand function to run; retries will only occur on
+    functor: run function to run; retries will only occur on
       RunCommandError exceptions being thrown.
     max_retry: A positive integer representing how many times to retry
       the command before giving up.  Worst case, the command is invoked
@@ -301,8 +301,8 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
     error_check: Optional callback to check the error output.  Return None to
       fall back to |retry_on|, or True/False to set the retry directly.
     log_retries: Whether to log a warning when retriable errors occur.
-    args: Positional args passed to RunCommand; see RunCommand for specifics.
-    kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
+    args: Positional args passed to run; see run for specifics.
+    kwargs: Optional args passed to run; see run for specifics.
 
   Returns:
     A CommandResult object.
@@ -337,7 +337,7 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
 
 
 def ShouldRetryCommandCommon(exc):
-  """Returns whether any RunCommand should retry on a given exception."""
+  """Returns whether any run should retry on a given exception."""
   if not isinstance(exc, cros_build_lib.RunCommandError):
     return False
   if exc.result.returncode is None:
@@ -348,12 +348,12 @@ def ShouldRetryCommandCommon(exc):
 
 
 def RunCommandWithRetries(max_retry, *args, **kwargs):
-  """Wrapper for RunCommand that will retry a command
+  """Wrapper for run that will retry a command
 
   Args:
-    max_retry: See RetryCommand and RunCommand.
-    *args: See RetryCommand and RunCommand.
-    **kwargs: See RetryCommand and RunCommand.
+    max_retry: See RetryCommand and run.
+    *args: See RetryCommand and run.
+    **kwargs: See RetryCommand and run.
 
   Returns:
     A CommandResult object.
@@ -361,7 +361,7 @@ def RunCommandWithRetries(max_retry, *args, **kwargs):
   Raises:
     Exception:  Raises RunCommandError on error with optional error_message.
   """
-  return RetryCommand(cros_build_lib.RunCommand, max_retry, *args, **kwargs)
+  return RetryCommand(cros_build_lib.run, max_retry, *args, **kwargs)
 
 
 class DownloadError(Exception):
@@ -373,7 +373,7 @@ def RunCurl(curl_args, *args, **kwargs):
 
   Args:
     curl_args: Command line to pass to curl. Must be list of str.
-    *args, **kwargs: See RunCommandWithRetries and RunCommand.
+    *args, **kwargs: See RunCommandWithRetries and run.
       Note that retry_on, error_check, sleep, backoff_factor cannot be
       overwritten.
 

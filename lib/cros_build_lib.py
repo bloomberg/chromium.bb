@@ -236,7 +236,7 @@ class CommandResult(object):
 
 
 class RunCommandError(Exception):
-  """Error caught in RunCommand() method."""
+  """Error caught in run() method."""
 
   def __init__(self, msg, result, exception=None):
     self.msg, self.result, self.exception = msg, result, exception
@@ -290,37 +290,37 @@ class TerminateRunCommandError(RunCommandError):
   """
 
 
-def SudoRunCommand(cmd, user='root', preserve_env=False, **kwargs):
+def sudo_run(cmd, user='root', preserve_env=False, **kwargs):
   """Run a command via sudo.
 
-  Client code must use this rather than coming up with their own RunCommand
+  Client code must use this rather than coming up with their own run
   invocation that jams sudo in- this function is used to enforce certain
   rules in our code about sudo usage, and as a potential auditing point.
 
   Args:
-    cmd: The command to run.  See RunCommand for rules of this argument-
-         SudoRunCommand purely prefixes it with sudo.
+    cmd: The command to run.  See run for rules of this argument: sudo_run
+         purely prefixes it with sudo.
     user: The user to run the command as.
     preserve_env (bool): Whether to preserve the environment.
-    kwargs: See RunCommand options, it's a direct pass thru to it.
+    kwargs: See run() options, it's a direct pass thru to it.
           Note that this supports a 'strict' keyword that defaults to True.
           If set to False, it'll suppress strict sudo behavior.
 
   Returns:
-    See RunCommand documentation.
+    See run documentation.
 
   Raises:
     This function may immediately raise RunCommandError if we're operating
     in a strict sudo context and the API is being misused.
-    Barring that, see RunCommand's documentation- it can raise the same things
-    RunCommand does.
+    Barring that, see run's documentation: it can raise the same things run
+    does.
   """
   sudo_cmd = ['sudo']
 
   strict = kwargs.pop('strict', True)
 
   if user == 'root' and os.geteuid() == 0:
-    return RunCommand(cmd, **kwargs)
+    return run(cmd, **kwargs)
 
   if strict and STRICT_SUDO:
     if 'CROS_SUDO_KEEP_ALIVE' not in os.environ:
@@ -353,7 +353,7 @@ def SudoRunCommand(cmd, user='root', preserve_env=False, **kwargs):
   if isinstance(cmd, six.string_types):
     # We need to handle shell ourselves so the order is correct:
     #  $ sudo [sudo args] -- bash -c '[shell command]'
-    # If we let RunCommand take care of it, we'd end up with:
+    # If we let run take care of it, we'd end up with:
     #  $ bash -c 'sudo [sudo args] -- [shell command]'
     shell = kwargs.pop('shell', False)
     if not shell:
@@ -362,14 +362,19 @@ def SudoRunCommand(cmd, user='root', preserve_env=False, **kwargs):
   else:
     sudo_cmd.extend(cmd)
 
-  return RunCommand(sudo_cmd, **kwargs)
+  return run(sudo_cmd, **kwargs)
+
+
+def SudoRunCommand(cmd, **kwargs):
+  """Backwards compat API."""
+  return sudo_run(cmd, **kwargs)
 
 
 def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
                       signum, frame):
-  """Used as a signal handler by RunCommand.
+  """Used as a signal handler by run.
 
-  This is internal to Runcommand.  No other code should use this.
+  This is internal to run.  No other code should use this.
   """
   if signum:
     # If we've been invoked because of a signal, ignore delivery of that signal
@@ -437,9 +442,9 @@ class _Popen(subprocess.Popen):
         # Kill returns either 0 (signal delivered), or 1 (signal wasn't
         # delivered).  This isn't particularly informative, but we still
         # need that info to decide what to do, thus the error_code_ok=True.
-        ret = SudoRunCommand(['kill', '-%i' % signum, str(self.pid)],
-                             print_cmd=False, redirect_stdout=True,
-                             redirect_stderr=True, error_code_ok=True)
+        ret = sudo_run(['kill', '-%i' % signum, str(self.pid)],
+                       print_cmd=False, redirect_stdout=True,
+                       redirect_stderr=True, error_code_ok=True)
         if ret.returncode == 1:
           # The kill binary doesn't distinguish between permission denied,
           # and the pid is missing.  Denied can only occur under weird
@@ -456,14 +461,14 @@ class _Popen(subprocess.Popen):
 
 
 # pylint: disable=redefined-builtin
-def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
-               redirect_stderr=False, cwd=None, input=None, enter_chroot=False,
-               shell=False, env=None, extra_env=None, ignore_sigint=False,
-               combine_stdout_stderr=False, log_stdout_to_file=None,
-               append_to_file=False, chroot_args=None, debug_level=logging.INFO,
-               error_code_ok=False, int_timeout=1, kill_timeout=1,
-               log_output=False, stdout_to_pipe=False, capture_output=False,
-               quiet=False, mute_output=None):
+def run(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
+        redirect_stderr=False, cwd=None, input=None, enter_chroot=False,
+        shell=False, env=None, extra_env=None, ignore_sigint=False,
+        combine_stdout_stderr=False, log_stdout_to_file=None,
+        append_to_file=False, chroot_args=None, debug_level=logging.INFO,
+        error_code_ok=False, int_timeout=1, kill_timeout=1,
+        log_output=False, stdout_to_pipe=False, capture_output=False,
+        quiet=False, mute_output=None):
   """Runs a command.
 
   Args:
@@ -500,7 +505,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     append_to_file: If True, the stdout streams are appended to the end of log
       stdout_to_file.
     chroot_args: An array of arguments for the chroot environment wrapper.
-    debug_level: The debug level of RunCommand's output.
+    debug_level: The debug level of run's output.
     error_code_ok: Does not raise an exception when command returns a non-zero
       exit code. Instead, returns the CommandResult object containing the exit
       code. Note: will still raise an exception if the cmd file does not exist.
@@ -628,9 +633,9 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   # Print out the command before running.
   if print_cmd or log_output:
     if cwd:
-      logging.log(debug_level, 'RunCommand: %s in %s', CmdToStr(cmd), cwd)
+      logging.log(debug_level, 'run: %s in %s', CmdToStr(cmd), cwd)
     else:
-      logging.log(debug_level, 'RunCommand: %s', CmdToStr(cmd))
+      logging.log(debug_level, 'run: %s', CmdToStr(cmd))
 
   cmd_result.args = cmd
 
@@ -706,15 +711,20 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
 # pylint: enable=redefined-builtin
 
 
-# Convenience RunCommand methods.
+def RunCommand(cmd, **kwargs):
+  """Backwards compat API."""
+  return run(cmd, **kwargs)
+
+
+# Convenience run methods.
 #
 # We don't use functools.partial because it binds the methods at import time,
 # which doesn't work well with unit tests, since it bypasses the mock that may
-# be set up for RunCommand.
+# be set up for run.
 
-def DebugRunCommand(*args, **kwargs):
+def dbg_run(*args, **kwargs):
   kwargs.setdefault('debug_level', logging.DEBUG)
-  return RunCommand(*args, **kwargs)
+  return run(*args, **kwargs)
 
 
 class DieSystemExit(SystemExit):
@@ -929,10 +939,10 @@ def CompressFile(infile, outfile):
     # pixz does not accept '-c'; instead an explicit '-i' indicates input file
     # should not be deleted, and '-o' specifies output file.
     cmd = [comp, '-i', infile, '-o', outfile]
-    RunCommand(cmd)
+    run(cmd)
   else:
     cmd = [comp, '-c', infile]
-    RunCommand(cmd, log_stdout_to_file=outfile)
+    run(cmd, log_stdout_to_file=outfile)
 
 
 def UncompressFile(infile, outfile):
@@ -950,17 +960,17 @@ def UncompressFile(infile, outfile):
     # pixz does not accept '-c'; instead an explicit '-i' indicates input file
     # should not be deleted, and '-o' specifies output file.
     cmd = [comp, '-d', '-i', infile, '-o', outfile]
-    RunCommand(cmd)
+    run(cmd)
   else:
     cmd = [comp, '-dc', infile]
-    RunCommand(cmd, log_stdout_to_file=outfile)
+    run(cmd, log_stdout_to_file=outfile)
 
 
 class CreateTarballError(RunCommandError):
   """Error while running tar.
 
   We may run tar multiple times because of "soft" errors.  The result is from
-  the last RunCommand instance.
+  the last run instance.
   """
 
 
@@ -979,10 +989,10 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
       defaults to ".".
     timeout: The number of seconds to wait on soft failure.
     extra_args: A list of extra args to pass to "tar".
-    kwargs: Any RunCommand options/overrides to use.
+    kwargs: Any run options/overrides to use.
 
   Returns:
-    The cmd_result object returned by the RunCommand invocation.
+    The cmd_result object returned by the run invocation.
 
   Raises:
     CreateTarballError: if the tar command failed, possibly after retry.
@@ -1005,7 +1015,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
     cmd += list(inputs)
     rc_input = None
 
-  rc_func = SudoRunCommand if sudo else RunCommand
+  rc_func = sudo_run if sudo else run
 
   # If tar fails with status 1, retry twice. Once after timeout seconds and
   # again 2*timeout seconds after that.

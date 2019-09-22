@@ -27,28 +27,24 @@ class AuthTest(cros_test_lib.MockTestCase):
     """Test Login."""
     failure_result = cros_build_lib.CommandResult(
         error='error', output=None, returncode=1)
-    self.PatchObject(
-        cros_build_lib, 'RunCommand', return_value=failure_result)
+    self.PatchObject(cros_build_lib, 'run', return_value=failure_result)
     self.assertRaises(auth.AccessTokenError, auth.Login)
 
     success_result = cros_build_lib.CommandResult(
         output=None, returncode=0)
-    self.PatchObject(
-        cros_build_lib, 'RunCommand', return_value=success_result)
+    self.PatchObject(cros_build_lib, 'run', return_value=success_result)
     self.assertIsNone(auth.Login())
 
   def testToken(self):
     """Test Token."""
     failure_result = cros_build_lib.CommandResult(
         error='error', output=None, returncode=1)
-    self.PatchObject(
-        cros_build_lib, 'RunCommand', return_value=failure_result)
+    self.PatchObject(cros_build_lib, 'run', return_value=failure_result)
     self.assertRaises(auth.AccessTokenError, auth.Token)
 
     success_result = cros_build_lib.CommandResult(
         output='token', returncode=0)
-    self.PatchObject(
-        cros_build_lib, 'RunCommand', return_value=success_result)
+    self.PatchObject(cros_build_lib, 'run', return_value=success_result)
     self.assertEqual(auth.Token(), 'token')
 
   def testTokenAndLoginIfNeed(self):

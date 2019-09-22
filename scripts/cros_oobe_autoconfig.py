@@ -152,13 +152,13 @@ def PrepareImage(path, content, domain=None):
     # given data into it.
     config = os.path.join(oobe_autoconf, _CONFIG_PATH)
     osutils.WriteFile(config, content, sudo=True)
-    cros_build_lib.SudoRunCommand(['chown', 'chronos:chronos', config])
+    cros_build_lib.sudo_run(['chown', 'chronos:chronos', config])
 
     # If we have a plaintext domain name, write it.
     if domain:
       domain_path = os.path.join(oobe_autoconf, _DOMAIN_PATH)
       osutils.WriteFile(domain_path, SanitizeDomain(domain), sudo=True)
-      cros_build_lib.SudoRunCommand(['chown', 'chronos:chronos', domain_path])
+      cros_build_lib.sudo_run(['chown', 'chronos:chronos', domain_path])
 
 
 def ParseArguments(argv):

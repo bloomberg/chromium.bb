@@ -1034,8 +1034,8 @@ def UnpackPackage(pkg_state):
   cmd.append(path)
 
   with cros_event.newEvent(task_name='UnpackPackage', **pkg_state) as event:
-    result = cros_build_lib.RunCommand(cmd, cwd=root, stdout_to_pipe=True,
-                                       print_cmd=False, error_code_ok=True)
+    result = cros_build_lib.run(cmd, cwd=root, stdout_to_pipe=True,
+                                print_cmd=False, error_code_ok=True)
 
     # If we were not successful, return now and don't attempt untar.
     if result.returncode != 0:
@@ -1044,8 +1044,8 @@ def UnpackPackage(pkg_state):
 
     cmd = ['sudo', 'tar', '-xf', '-', '-C', root]
 
-    result = cros_build_lib.RunCommand(cmd, cwd=root, input=result.output,
-                                       print_cmd=False, error_code_ok=True)
+    result = cros_build_lib.run(cmd, cwd=root, input=result.output,
+                                print_cmd=False, error_code_ok=True)
     if result.returncode != 0:
       event.fail('error extracting:returned {}'.format(result.returncode))
 

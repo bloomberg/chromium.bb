@@ -52,7 +52,7 @@ class GerritHelper(object):
       host: Hostname (without protocol prefix) of the gerrit server.
       remote: The symbolic name of a known remote git host,
           taken from cbuildbot.contants.
-      print_cmd: Determines whether all RunCommand invocations will be echoed.
+      print_cmd: Determines whether all run invocations will be echoed.
           Set to False for quiet operation.
     """
     self.host = host

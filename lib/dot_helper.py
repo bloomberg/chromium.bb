@@ -102,8 +102,7 @@ class Graph(Subgraph):
 def GenerateImage(lines, filename, out_format='svg', save_dot_filename=None):
   """Generates the image by calling dot on the input lines."""
   data = '\n'.join(lines)
-  cros_build_lib.RunCommand(['dot', '-T%s' % out_format, '-o', filename],
-                            input=data)
+  cros_build_lib.run(['dot', '-T%s' % out_format, '-o', filename], input=data)
 
   if save_dot_filename:
     osutils.WriteFile(save_dot_filename, data)

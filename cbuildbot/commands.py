@@ -108,8 +108,8 @@ TAST_SSP_FILES = [
 def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
   """Run a build script, wrapping exceptions as needed.
 
-  This wraps RunCommand(cmd, cwd=buildroot, **kwargs), adding extra logic to
-  help determine the cause of command failures.
+  This wraps run(cmd, cwd=buildroot, **kwargs), adding extra logic to help
+  determine the cause of command failures.
     - If a package fails to build, a PackageBuildFailure exception is thrown,
       which lists exactly which packages failed to build.
     - If the command fails for a different reason, a BuildScriptFailure
@@ -124,8 +124,8 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
     cmd: The command to run.
     chromite_cmd: Whether the command should be evaluated relative to the
       chromite/bin subdir of the |buildroot|.
-    kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
-      In addition, if 'sudo' kwarg is True, SudoRunCommand will be used.
+    kwargs: Optional args passed to run; see cros_build_lib.run for specifics.
+      In addition, if 'sudo' kwarg is True, sudo_run will be used.
   """
   assert not kwargs.get('shell', False), 'Cannot execute shell commands'
   kwargs.setdefault('cwd', buildroot)
@@ -148,9 +148,9 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
       status_file = stack.Add(tempfile.NamedTemporaryFile, dir=chroot_tmp)
       kwargs['extra_env'][constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR] = \
           path_util.ToChrootPath(status_file.name)
-    runcmd = cros_build_lib.RunCommand
+    runcmd = cros_build_lib.run
     if sudo:
-      runcmd = cros_build_lib.SudoRunCommand
+      runcmd = cros_build_lib.sudo_run
     try:
       return runcmd(cmd, **kwargs)
     except cros_build_lib.RunCommandError as ex:
@@ -580,7 +580,7 @@ def RunCrosSigningTests(buildroot, network=False):
   cmd = [test_runner]
   if network:
     cmd.append('--network')
-  cros_build_lib.RunCommand(cmd, enter_chroot=True)
+  cros_build_lib.run(cmd, enter_chroot=True)
 
 
 def UpdateBinhostJson(buildroot):
@@ -689,11 +689,9 @@ def GetFirmwareVersionCmdResult(buildroot, board):
     return ''
   updater = path_util.ToChrootPath(updater)
 
-  return cros_build_lib.RunCommand([updater, '-V'],
-                                   enter_chroot=True,
-                                   capture_output=True,
-                                   log_output=True,
-                                   cwd=buildroot).output
+  return cros_build_lib.run([updater, '-V'], enter_chroot=True,
+                            capture_output=True, log_output=True,
+                            cwd=buildroot).output
 
 
 def FindFirmwareVersions(cmd_output):
@@ -807,7 +805,7 @@ def RunCrosConfigHost(buildroot, board, args, log_output=True):
   config_fname = os.path.join(
       cros_build_lib.GetSysroot(board), 'usr', 'share', 'chromeos-config',
       'yaml', 'config.yaml')
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       [tool, '-c', config_fname] + args,
       enter_chroot=True,
       capture_output=True,
@@ -1347,7 +1345,7 @@ def RunSkylabHWTest(build,
   args = _SkylabCreateTestArgs(build, pool, test_name, board, model,
                                timeout_mins, tags, keyvals, test_args)
   try:
-    result = cros_build_lib.RunCommand(
+    result = cros_build_lib.run(
         [skylab_path, 'create-test'] + args, redirect_stdout=True)
     return HWTestSuiteResult(None, None)
   except cros_build_lib.RunCommandError as e:
@@ -1431,7 +1429,7 @@ def RunSkylabHWTestSuite(
       quota_account=quota_account)
 
   try:
-    output = cros_build_lib.RunCommand(cmd, redirect_stdout=True)
+    output = cros_build_lib.run(cmd, redirect_stdout=True)
     report = json.loads(output.output)
     task_id = report['task_id']
     task_url = report['task_url']
@@ -1443,7 +1441,7 @@ def RunSkylabHWTestSuite(
 
     wait_cmd = [skylab_tool, 'wait-task'] + _GetSkylabWaitTaskArgs(
         task_id, timeout_mins=timeout_mins)
-    output = cros_build_lib.RunCommand(wait_cmd, redirect_stdout=True)
+    output = cros_build_lib.run(wait_cmd, redirect_stdout=True)
     try:
       report = json.loads(output.output)
     except:
@@ -1532,7 +1530,7 @@ def RunSkylabHWTestPlan(test_plan=None,
   skylab_path = _InstallSkylabTool()
 
   try:
-    result = cros_build_lib.RunCommand(
+    result = cros_build_lib.run(
         [skylab_path, 'create-testplan'] + args,
         redirect_stdout=True,
         input=test_plan)
@@ -1964,13 +1962,13 @@ def GenerateStackTraces(buildroot, board, test_results_dir, archive_dir,
         # Precess the minidump from within chroot.
         minidump = path_util.ToChrootPath(full_file_path)
         cwd = os.path.join(buildroot, 'src', 'scripts')
-        cros_build_lib.RunCommand(['minidump_stackwalk', minidump, symbol_dir],
-                                  cwd=cwd,
-                                  enter_chroot=True,
-                                  error_code_ok=True,
-                                  redirect_stderr=True,
-                                  debug_level=logging.DEBUG,
-                                  log_stdout_to_file=processed_file_path)
+        cros_build_lib.run(['minidump_stackwalk', minidump, symbol_dir],
+                           cwd=cwd,
+                           enter_chroot=True,
+                           error_code_ok=True,
+                           redirect_stderr=True,
+                           debug_level=logging.DEBUG,
+                           log_stdout_to_file=processed_file_path)
       # Process asan log.
       else:
         # Prepend '/chrome/$board' path to the stack trace in log.
@@ -1985,19 +1983,19 @@ def GenerateStackTraces(buildroot, board, test_results_dir, archive_dir,
               line = line[:frame_end] + board_path + line[frame_end:]
             log_content += line
         # Symbolize and demangle it.
-        raw = cros_build_lib.RunCommand(
+        raw = cros_build_lib.run(
             ['asan_symbolize.py'],
             input=log_content,
             enter_chroot=True,
             debug_level=logging.DEBUG,
             capture_output=True,
             extra_env={'LLVM_SYMBOLIZER_PATH': '/usr/bin/llvm-symbolizer'})
-        cros_build_lib.RunCommand(['c++filt'],
-                                  input=raw.output,
-                                  debug_level=logging.DEBUG,
-                                  cwd=buildroot,
-                                  redirect_stderr=True,
-                                  log_stdout_to_file=processed_file_path)
+        cros_build_lib.run(['c++filt'],
+                           input=raw.output,
+                           debug_level=logging.DEBUG,
+                           cwd=buildroot,
+                           redirect_stderr=True,
+                           log_stdout_to_file=processed_file_path)
         # Break the bot if asan_log found. This is because some asan
         # crashes may not fail any test so the bot stays green.
         # Ex: crbug.com/167497
@@ -2134,7 +2132,7 @@ def MarkChromeAsStable(buildroot,
   if chrome_version:
     command.append('--force_version=%s' % chrome_version)
 
-  portage_atom_string = cros_build_lib.RunCommand(
+  portage_atom_string = cros_build_lib.run(
       command + [chrome_rev],
       cwd=cwd,
       redirect_stdout=True,
@@ -2158,19 +2156,18 @@ def MarkChromeAsStable(buildroot,
       }, CHROME_UNMASK_FILE % {
           'board': board
       }):
-        cros_build_lib.SudoRunCommand(
+        cros_build_lib.sudo_run(
             ['mkdir', '-p', os.path.dirname(keywords_file)],
             enter_chroot=True,
             cwd=cwd)
-        cros_build_lib.SudoRunCommand(['tee', keywords_file],
-                                      input='=%s\n' % chrome_atom,
-                                      enter_chroot=True,
-                                      cwd=cwd)
+        cros_build_lib.sudo_run(['tee', keywords_file],
+                                input='=%s\n' % chrome_atom,
+                                enter_chroot=True, cwd=cwd)
 
     # Sanity check: We should always be able to merge the version of
     # Chrome we just unmasked.
     try:
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           ['emerge-%s' % board, '-p', '--quiet',
            '=%s' % chrome_atom],
           enter_chroot=True)
@@ -2189,7 +2186,7 @@ def CleanupChromeKeywordsFile(boards, buildroot):
     keywords_path_in_chroot = CHROME_KEYWORDS_FILE % {'board': board}
     keywords_file = '%s/chroot%s' % (buildroot, keywords_path_in_chroot)
     if os.path.exists(keywords_file):
-      cros_build_lib.SudoRunCommand(['rm', '-f', keywords_file])
+      cros_build_lib.sudo_run(['rm', '-f', keywords_file])
 
 
 def UprevPackages(buildroot, boards, overlay_type, workspace=None):
@@ -2507,7 +2504,7 @@ def GenerateDebugTarball(buildroot,
       extra_args=extra_args)
 
   # Fix permissions and ownership on debug tarball.
-  cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tarball])
+  cros_build_lib.sudo_run(['chown', str(os.getuid()), debug_tarball])
   os.chmod(debug_tarball, 0o644)
 
   return os.path.basename(debug_tarball)
@@ -2737,7 +2734,7 @@ def ExportToGCloud(build_root,
     cmd.extend(['--project_id', project_id])
 
   try:
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.run(cmd)
     success = True
   except cros_build_lib.RunCommandError as e:
     logging.warn('Unable to export to datastore: %s', e)
@@ -3267,9 +3264,8 @@ def BuildImageZip(archive_dir, image_dir):
   """
   filename = 'image.zip'
   zipfile = os.path.join(archive_dir, filename)
-  cros_build_lib.RunCommand(['zip', zipfile, '-r', '.'],
-                            cwd=image_dir,
-                            capture_output=True)
+  cros_build_lib.run(['zip', zipfile, '-r', '.'],
+                     cwd=image_dir, capture_output=True)
   return filename
 
 
@@ -3348,7 +3344,7 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
         compression=compress_type,
         extra_env=extra_env)
   elif archive == 'zip':
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         ['zip', os.path.join(archive_dir, filename), '-r'] + inputs,
         cwd=image_dir,
         capture_output=True)
@@ -3380,7 +3376,7 @@ def BuildStrippedPackagesTarball(buildroot, board, package_globs, archive_dir):
         pattern, board, buildroot=buildroot)
     for cpv in packages:
       cmd = ['strip_package', '--board', board, cpv.cpf]
-      cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=True)
+      cros_build_lib.run(cmd, cwd=buildroot, enter_chroot=True)
       # Find the stripped package.
       files = glob.glob(os.path.join(stripped_pkg_dir, cpv.cpf) + '.*')
       if not files:
@@ -3579,7 +3575,7 @@ def BuildFactoryZip(buildroot,
     osutils.WriteFile(version_file, version)
     cmd.extend(['--include', version_file])
 
-  cros_build_lib.RunCommand(cmd, cwd=temp_dir, capture_output=True)
+  cros_build_lib.run(cmd, cwd=temp_dir, capture_output=True)
   osutils.RmDir(temp_dir)
   return filename
 
@@ -3600,7 +3596,7 @@ def ArchiveHWQual(buildroot, hwqual_name, archive_dir, image_dir):
       '--image_dir', image_dir, '--ssh_private_key', ssh_private_key,
       '--output_tag', hwqual_name
   ]
-  cros_build_lib.RunCommand(cmd, capture_output=True)
+  cros_build_lib.run(cmd, capture_output=True)
   return '%s.tar.bz2' % hwqual_name
 
 
@@ -3746,7 +3742,7 @@ class ChromeSDK(object):
     Args:
       cmd: Command (list) to run inside 'cros chrome-sdk'.
       extra_args: Extra arguments for 'cros chorme-sdk'.
-      run_args: If set (dict), pass to RunCommand as kwargs.
+      run_args: If set (dict), pass to run as kwargs.
 
     Returns:
       A CommandResult object.
@@ -3764,14 +3760,14 @@ class ChromeSDK(object):
       self.extra_args += ['--toolchain-url', self.toolchain_url]
     cros_cmd += ['chrome-sdk', '--board', self.board] + self.extra_args
     cros_cmd += (extra_args or []) + ['--'] + cmd
-    return cros_build_lib.RunCommand(cros_cmd, cwd=self.cwd, **run_args)
+    return cros_build_lib.run(cros_cmd, cwd=self.cwd, **run_args)
 
   def Ninja(self, debug=False, run_args=None):
     """Run 'ninja' inside a chrome-sdk context.
 
     Args:
       debug: Whether to do a Debug build (defaults to Release).
-      run_args: If set (dict), pass to RunCommand as kwargs.
+      run_args: If set (dict), pass to run as kwargs.
 
     Returns:
       A CommandResult object.
@@ -3923,7 +3919,7 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
     May raise an ApiMismatchError if validate_version is set.
   """
   try:
-    api = cros_build_lib.RunCommand(
+    api = cros_build_lib.run(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
         cwd=buildroot, error_code_ok=True, capture_output=True)
   except cros_build_lib.RunCommandError:

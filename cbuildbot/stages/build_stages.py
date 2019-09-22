@@ -51,8 +51,8 @@ class CleanUpStage(generic_stages.BuilderStage):
     chroot_tmpdir = os.path.join(chroot_dir, 'tmp')
     if os.path.exists(chroot_tmpdir):
       osutils.RmDir(chroot_tmpdir, ignore_missing=True, sudo=True)
-      cros_build_lib.SudoRunCommand(['mkdir', '--mode', '1777', chroot_tmpdir],
-                                    print_cmd=False)
+      cros_build_lib.sudo_run(['mkdir', '--mode', '1777', chroot_tmpdir],
+                              print_cmd=False)
 
     # Clear out the incremental build cache between runs.
     cache_dir = 'var/cache/portage'

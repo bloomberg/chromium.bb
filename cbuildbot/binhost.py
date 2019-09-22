@@ -241,7 +241,7 @@ def GetChromeUseFlags(board, extra_useflags):
   assert os.path.exists('/build/%s' % board), 'Board %s not set up' % board
   extra_env = {'USE': ' '.join(extra_useflags)}
   cmd = ['equery-%s' % board, '-Cq', 'uses', constants.CHROME_CP]
-  chrome_useflags = cros_build_lib.RunCommand(
+  chrome_useflags = cros_build_lib.run(
       cmd, capture_output=True, print_cmd=False,
       extra_env=extra_env).output.rstrip().split()
   return tuple(x[1:] for x in chrome_useflags if x.startswith('+'))
@@ -265,7 +265,7 @@ def GenConfigsForBoard(board, regen, error_code_ok):
     cmd = ['%s/setup_board' % constants.CHROMITE_BIN_DIR,
            '--board=%s' % board, '--regen-configs', '--skip-toolchain-update',
            '--skip-chroot-upgrade', '--skip-board-pkg-init', '--quiet']
-    cros_build_lib.RunCommand(cmd, error_code_ok=error_code_ok)
+    cros_build_lib.run(cmd, error_code_ok=error_code_ok)
 
 
 _CompatId = collections.namedtuple('_CompatId', ['arch', 'useflags', 'cflags'])

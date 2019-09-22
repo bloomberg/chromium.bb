@@ -54,10 +54,10 @@ def CleanStalePackages(srcroot, boards, package_atoms):
   def _CleanStalePackages(board):
     if board:
       suffix = '-' + board
-      runcmd = cros_build_lib.RunCommand
+      runcmd = cros_build_lib.run
     else:
       suffix = ''
-      runcmd = cros_build_lib.SudoRunCommand
+      runcmd = cros_build_lib.sudo_run
 
     emerge, eclean = 'emerge' + suffix, 'eclean' + suffix
     if not osutils.FindMissingBinaries([emerge, eclean]):

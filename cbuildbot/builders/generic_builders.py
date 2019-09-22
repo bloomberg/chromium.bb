@@ -228,7 +228,7 @@ class Builder(object):
       # Finally, be generous and give the invoked cbuildbot 30s to shutdown
       # when something occurs.  It should exit quicker, but the sigterm may
       # hit while the system is particularly busy.
-      return_obj = cros_build_lib.RunCommand(
+      return_obj = cros_build_lib.run(
           args,
           cwd=self._run.options.buildroot,
           error_code_ok=True,

@@ -40,7 +40,7 @@ class PartitionLibTest(cros_test_lib.RunCommandTempDirTestCase):
     block_size = 4096
     block_count = 123
 
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      return_value=cros_build_lib.CommandResult(output="""
 Block size: %d
 Other thing: 123456798
@@ -84,7 +84,7 @@ Block count: %d
                              redirect_stdout=True)
 
     # Tests failure to identify.
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      side_effect=cros_build_lib.RunCommandError('error', 1))
     self.assertFalse(partition_lib.IsSquashfsImage(image))
 
@@ -101,7 +101,7 @@ Block count: %d
                              redirect_stdout=True)
 
     # Tests failure to identify.
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      side_effect=cros_build_lib.RunCommandError('error', 1))
     self.assertFalse(partition_lib.IsExt4Image(image))
 

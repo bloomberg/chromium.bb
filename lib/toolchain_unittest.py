@@ -274,7 +274,7 @@ class ToolchainInstallerTest(cros_test_lib.MockTempDirTestCase):
     # Test error thrown during toolchain installation.
     # We want a ToolchainInstallError with the glibc info set.
     error_result = cros_build_lib.CommandResult(returncode=1)
-    self.PatchObject(cros_build_lib, 'SudoRunCommand',
+    self.PatchObject(cros_build_lib, 'sudo_run',
                      side_effect=cros_build_lib.RunCommandError('Error',
                                                                 error_result))
 
@@ -291,7 +291,7 @@ class ToolchainInstallerTest(cros_test_lib.MockTempDirTestCase):
       self.fail('_InstallLibc should have thrown an error.')
 
     # Test error thrown during cross toolchain installation.
-    self.PatchObject(cros_build_lib, 'SudoRunCommand')
+    self.PatchObject(cros_build_lib, 'sudo_run')
     # This is the error we're testing for, but _InstallLibc catches and
     # modifies the error before re-raising it.
     self.PatchObject(self.updater, '_ExtractLibc',

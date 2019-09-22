@@ -72,10 +72,10 @@ def BuildTargetUnitTest(build_target, chroot, blacklist=None, was_built=True):
   with osutils.TempDir(base_dir=base_dir) as tempdir:
     extra_env[constants.CROS_METRICS_DIR_ENVVAR] = tempdir
 
-    result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
-                                       extra_env=extra_env,
-                                       chroot_args=chroot.get_enter_args(),
-                                       error_code_ok=True)
+    result = cros_build_lib.run(cmd, enter_chroot=True,
+                                extra_env=extra_env,
+                                chroot_args=chroot.get_enter_args(),
+                                error_code_ok=True)
 
     failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
 
@@ -113,7 +113,7 @@ def DebugInfoTest(sysroot_path):
     bool: True iff all tests passed, False otherwise.
   """
   cmd = ['debug_info_test', os.path.join(sysroot_path, 'usr/lib/debug')]
-  result = cros_build_lib.RunCommand(cmd, enter_chroot=True, error_code_ok=True)
+  result = cros_build_lib.run(cmd, enter_chroot=True, error_code_ok=True)
 
   return result.returncode == 0
 
@@ -184,7 +184,7 @@ def RunMoblabVmTest(chroot, vms, builder, image_cache_dir, results_dir):
         'clear_devserver_cache=False',
         'image_storage_server="%s"' % (image_cache_dir.rstrip('/') + '/'),
     ]
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         [
             'test_that',
             '--no-quickmerge',

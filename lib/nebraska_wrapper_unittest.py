@@ -30,8 +30,8 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTestCase):
     """Creates a RunCommand mock.
 
     Args:
-      return_code: Look at cros_build_lib.RunCommand.
-      output: Look at cros_build_lib.RunCommand.
+      return_code: Look at cros_build_lib.run.
+      output: Look at cros_build_lib.run.
       side_effect: Lookt at mock.side_effect.
     """
     return self.PatchObject(

@@ -29,21 +29,21 @@ class CrosSdkPrerequisitesTest(cros_test_lib.TempDirTestCase):
     """Check for commands from the lvm2 package."""
     with sudo.SudoKeepAlive():
       cmd = ['lvs', '--version']
-      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, error_code_ok=True)
       self.assertEqual(result.returncode, 0)
 
   def testThinProvisioningToolsPresent(self):
     """Check for commands from the thin-provisioning-tools package."""
     with sudo.SudoKeepAlive():
       cmd = ['thin_check', '-V']
-      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, error_code_ok=True)
       self.assertEqual(result.returncode, 0)
 
   def testLosetupCommandPresent(self):
     """Check for commands from the mount package."""
     with sudo.SudoKeepAlive():
       cmd = ['losetup', '--help']
-      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, error_code_ok=True)
       self.assertEqual(result.returncode, 0)
 
 
@@ -74,7 +74,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
     cmd.extend(args)
 
     try:
-      result = cros_build_lib.RunCommand(
+      result = cros_build_lib.run(
           cmd, print_cmd=False, capture_output=True, error_code_ok=True,
           combine_stdout_stderr=True)
     except cros_build_lib.RunCommandError as e:

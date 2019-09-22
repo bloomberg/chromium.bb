@@ -367,8 +367,7 @@ class EBuild(object):
   @classmethod
   def _RunCommand(cls, command, **kwargs):
     kwargs.setdefault('capture_output', True)
-    return cros_build_lib.RunCommand(
-        command, print_cmd=cls.VERBOSE, **kwargs).output
+    return cros_build_lib.run(command, print_cmd=cls.VERBOSE, **kwargs).output
 
   @classmethod
   def _RunGit(cls, cwd, command, **kwargs):
@@ -927,8 +926,8 @@ class EBuild(object):
 
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
-    result = cros_build_lib.RunCommand(['bash', '-x', vers_script] + srcdirs,
-                                       capture_output=True, error_code_ok=True)
+    result = cros_build_lib.run(['bash', '-x', vers_script] + srcdirs,
+                                capture_output=True, error_code_ok=True)
 
     output = result.output.strip()
     if result.returncode or not output:
@@ -1510,10 +1509,9 @@ def RegenCache(overlay, commit_changes=True, chroot=None):
     chroot_args = chroot.get_enter_args()
 
   # Regen for the whole repo.
-  cros_build_lib.RunCommand(['egencache', '--update', '--repo', repo_name,
-                             '--jobs', str(multiprocessing.cpu_count())],
-                            cwd=overlay, enter_chroot=True,
-                            chroot_args=chroot_args)
+  cros_build_lib.run(['egencache', '--update', '--repo', repo_name,
+                      '--jobs', str(multiprocessing.cpu_count())],
+                     cwd=overlay, enter_chroot=True, chroot_args=chroot_args)
   # If there was nothing new generated, then let's just bail.
   result = git.RunGit(overlay, ['status', '-s', 'metadata/'])
   if not result.output:
@@ -1535,7 +1533,7 @@ def ParseBashArray(value):
   sep = ','
   # Because %s may contain bash comments (#), put a clever newline in the way.
   cmd = 'ARR=%s\nIFS=%s; echo -n "${ARR[*]}"' % (value, sep)
-  return cros_build_lib.RunCommand(
+  return cros_build_lib.run(
       cmd, print_cmd=False, shell=True, capture_output=True).output.split(sep)
 
 
@@ -1793,7 +1791,7 @@ def FindPackageNameMatches(pkg_str, board=None,
     cmd = ['equery-%s' % board]
 
   cmd += ['list', pkg_str]
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, cwd=buildroot, enter_chroot=True, capture_output=True,
       error_code_ok=True)
 
@@ -1809,7 +1807,7 @@ def FindEbuildForBoardPackage(pkg_str, board,
   """Returns a path to an ebuild for a particular board."""
   equery = 'equery-%s' % board
   cmd = [equery, 'which', pkg_str]
-  return cros_build_lib.RunCommand(
+  return cros_build_lib.run(
       cmd, cwd=buildroot, enter_chroot=True,
       capture_output=True).output.strip()
 
@@ -1825,9 +1823,9 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
     include_masked: True iff we should include masked ebuilds in our query.
     extra_env: optional dictionary of extra string/string pairs to use as the
       environment of equery command.
-    error_code_ok: If true, do not raise an exception when RunCommand returns
+    error_code_ok: If true, do not raise an exception when run returns
       a non-zero exit code.
-      If any package does not exist causing the RunCommand to fail, we will
+      If any package does not exist causing the run to fail, we will
       return information for none of the packages, i.e: return an
       empty dictionary.
 
@@ -1839,9 +1837,8 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
     cmd += ['--include-masked']
   cmd += packages_list
 
-  result = cros_build_lib.RunCommand(cmd, extra_env=extra_env, print_cmd=False,
-                                     capture_output=True,
-                                     error_code_ok=error_code_ok)
+  result = cros_build_lib.run(cmd, extra_env=extra_env, print_cmd=False,
+                              capture_output=True, error_code_ok=error_code_ok)
 
   if result.returncode:
     return {}
@@ -1874,7 +1871,7 @@ def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
     include_masked: True iff we should include masked ebuilds in our query.
     extra_env: optional dictionary of extra string/string pairs to use as the
       environment of equery command.
-    error_code_ok: If true, do not raise an exception when RunCommand returns
+    error_code_ok: If true, do not raise an exception when run returns
       a non-zero exit code. Instead, return None.
 
   Returns:
@@ -1906,7 +1903,7 @@ def GetInstalledPackageUseFlags(pkg_str, board=None,
     cmd = ['qlist-%s' % board]
 
   cmd += ['-CqU', pkg_str]
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, enter_chroot=True, capture_output=True, error_code_ok=True,
       cwd=buildroot)
 
@@ -1957,7 +1954,7 @@ def GetPackageDependencies(board, package,
   emerge = 'emerge-%s' % board
   cmd = [emerge, '-p', '--cols', '--quiet', '--root', '/var/empty', '-e',
          package]
-  emerge_output = cros_build_lib.RunCommand(
+  emerge_output = cros_build_lib.run(
       cmd, cwd=buildroot, enter_chroot=True,
       capture_output=True).output.splitlines()
   packages = []
@@ -2023,14 +2020,14 @@ def GetRepositoryForEbuild(ebuild_path, sysroot):
   """
   cmd = (cros_build_lib.GetSysrootToolPath(sysroot, 'ebuild'),
          ebuild_path, 'info')
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, capture_output=True, print_cmd=False, error_code_ok=True)
   return GetRepositoryFromEbuildInfo(result.output)
 
 
 def CleanOutdatedBinaryPackages(sysroot):
   """Cleans outdated binary packages from |sysroot|."""
-  return cros_build_lib.RunCommand(
+  return cros_build_lib.run(
       [cros_build_lib.GetSysrootToolPath(sysroot, 'eclean'), '-d', 'packages'])
 
 
@@ -2106,7 +2103,7 @@ def HasPrebuilt(atom, board=None):
   # Emerge args: binpkg only, no deps, pretend, quiet. --binpkg-respect-use is
   # disabled by default when you use -K, so turn it back on.
   cmd = [emerge, '-gKOpq', '--binpkg-respect-use=y', '=%s' % best.cpf]
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, enter_chroot=True, error_code_ok=True, quiet=True)
   return not result.returncode
 
@@ -2121,7 +2118,7 @@ def _Portageq(command, board=None, **kwargs):
   Args:
     command: list - Portageq command to run excluding portageq.
     board: [str] - Specific board to query.
-    kwargs: Additional RunCommand arguments.
+    kwargs: Additional run arguments.
 
   Returns:
     cros_build_lib.CommandResult
@@ -2135,7 +2132,7 @@ def _Portageq(command, board=None, **kwargs):
   kwargs.setdefault('enter_chroot', True)
 
   portageq = 'portageq-%s' % board if board else 'portageq'
-  return cros_build_lib.RunCommand([portageq] + command, **kwargs)
+  return cros_build_lib.run([portageq] + command, **kwargs)
 
 
 def PortageqBestVisible(atom, board=None, pkg_type='ebuild', cwd=None):
@@ -2145,7 +2142,7 @@ def PortageqBestVisible(atom, board=None, pkg_type='ebuild', cwd=None):
     atom: Portage atom.
     board: Board to look at. By default, look in chroot.
     pkg_type: Package type (ebuild, binary, or installed).
-    cwd: Path to use for the working directory for RunCommand.
+    cwd: Path to use for the working directory for run.
 
   Returns:
     A CPV object.

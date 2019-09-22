@@ -78,11 +78,11 @@ class Device(object):
       raise DeviceError('WaitForBoot failed: %s.' % result.error)
 
   def RunCommand(self, cmd, **kwargs):
-    """Use SudoRunCommand or RunCommand as necessary.
+    """Use sudo_run or run as necessary.
 
     Args:
       cmd: command to run.
-      kwargs: optional args to RunCommand.
+      kwargs: optional args to run.
 
     Returns:
       cros_build_lib.CommandResult object.
@@ -90,9 +90,9 @@ class Device(object):
     if self.dry_run:
       return self._DryRunCommand(cmd)
     elif self.use_sudo:
-      return cros_build_lib.SudoRunCommand(cmd, **kwargs)
+      return cros_build_lib.sudo_run(cmd, **kwargs)
     else:
-      return cros_build_lib.RunCommand(cmd, **kwargs)
+      return cros_build_lib.run(cmd, **kwargs)
 
   def RemoteCommand(self, cmd, stream_output=False, **kwargs):
     """Run a remote command.

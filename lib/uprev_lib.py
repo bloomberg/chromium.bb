@@ -456,10 +456,10 @@ def clean_stale_packages(new_package_atoms, build_targets, chroot=None):
   def _do_clean_stale_packages(board):
     if board:
       suffix = '-' + board
-      runcmd = cros_build_lib.RunCommand
+      runcmd = cros_build_lib.run
     else:
       suffix = ''
-      runcmd = cros_build_lib.SudoRunCommand
+      runcmd = cros_build_lib.sudo_run
 
     if cros_build_lib.IsOutsideChroot():
       # Setup runcmd with the chroot arguments once.

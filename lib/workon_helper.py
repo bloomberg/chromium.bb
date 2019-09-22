@@ -517,7 +517,7 @@ class WorkonHelper(object):
         if not info.project:
           continue
         cmd = ['loman', 'add', '--workon', info.project]
-        cros_build_lib.RunCommand(cmd, print_cmd=False)
+        cros_build_lib.run(cmd, print_cmd=False)
         should_repo_sync = True
 
     if should_repo_sync:
@@ -703,8 +703,7 @@ class WorkonHelper(object):
       raise WorkonError('Error looking for atom %s' % atom)
 
     for info in portage_util.GetRepositoryForEbuild(ebuild_path, self._sysroot):
-      cros_build_lib.RunCommand(command, shell=True, cwd=info.srcdir,
-                                print_cmd=False)
+      cros_build_lib.run(command, shell=True, cwd=info.srcdir, print_cmd=False)
 
   def RunCommandInPackages(self, packages, command, use_all=False,
                            use_workon_only=False):

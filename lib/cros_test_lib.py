@@ -185,7 +185,7 @@ def VerifyTarball(tarball, dir_struct):
     AssertionError when there is any divergence between the tarball and the
     structure specified by 'dir_struct'.
   """
-  contents = cros_build_lib.RunCommand(
+  contents = cros_build_lib.run(
       ['tar', '-tf', tarball], capture_output=True).output.splitlines()
   normalized = set()
   for p in contents:
@@ -1071,7 +1071,7 @@ class LocalSqlServerTestCase(TempDirTestCase):
         '--basedir=/usr',
         '--ldata=%s' % self._mysqld_dir,
     ]
-    cros_build_lib.RunCommand(cmd, quiet=True)
+    cros_build_lib.run(cmd, quiet=True)
 
     self.mysqld_host = '127.0.0.1'
     self.mysqld_port = remote_access.GetUnusedPort()
@@ -1085,7 +1085,7 @@ class LocalSqlServerTestCase(TempDirTestCase):
         '--tmpdir', mysqld_tmp_dir,
     ]
     self._mysqld_runner = parallel.BackgroundTaskRunner(
-        cros_build_lib.RunCommand,
+        cros_build_lib.run,
         processes=1,
         halt_on_error=True)
     queue = self._mysqld_runner.__enter__()
@@ -1122,7 +1122,7 @@ class LocalSqlServerTestCase(TempDirTestCase):
           '-u', 'root',
           'shutdown',
       ]
-      cros_build_lib.RunCommand(cmd, quiet=True)
+      cros_build_lib.run(cmd, quiet=True)
     except cros_build_lib.RunCommandError as e:
       self._CleanupMysqld(
           failure='mysqladmin failed to shutdown mysqld: %s' % e)
@@ -1581,25 +1581,28 @@ class PopenMock(partial_mock.PartialCmdMock):
 
 
 class RunCommandMock(partial_mock.PartialCmdMock):
-  """Provides a context where all RunCommand invocations low-level mocked."""
+  """Provides a context where all run invocations low-level mocked."""
 
   TARGET = 'chromite.lib.cros_build_lib'
-  ATTRS = ('RunCommand',)
-  DEFAULT_ATTR = 'RunCommand'
+  ATTRS = ('run',)
+  DEFAULT_ATTR = 'run'
 
-  def RunCommand(self, cmd, *args, **kwargs):
-    result = self._results['RunCommand'].LookupResult(
+  def run(self, cmd, *args, **kwargs):
+    result = self._results['run'].LookupResult(
         (cmd,), kwargs=kwargs, hook_args=(cmd,) + args, hook_kwargs=kwargs)
 
     popen_mock = PopenMock()
     popen_mock.AddCmdResult(partial_mock.Ignore(), result.returncode,
                             result.output, result.error)
     with popen_mock:
-      return self.backup['RunCommand'](cmd, *args, **kwargs)
+      return self.backup['run'](cmd, *args, **kwargs)
+
+  # Backwards compat API.
+  RunCommand = run
 
 
 class RunCommandTestCase(MockTestCase):
-  """MockTestCase that mocks out RunCommand by default."""
+  """MockTestCase that mocks out run by default."""
 
   def setUp(self):
     self.rc = self.StartPatcher(RunCommandMock())
@@ -1607,7 +1610,7 @@ class RunCommandTestCase(MockTestCase):
     self.assertCommandCalled = self.rc.assertCommandCalled
     self.assertCommandContains = self.rc.assertCommandContains
 
-    # These ENV variables affect RunCommand behavior, hide them.
+    # These ENV variables affect run behavior, hide them.
     self._old_envs = {e: os.environ.pop(e) for e in constants.ENV_PASSTHRU
                       if e in os.environ}
 

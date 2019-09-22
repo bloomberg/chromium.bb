@@ -287,8 +287,8 @@ def ArchiveChromeEbuildEnv(sysroot, output_dir):
     # Convert from bzip2 to tar format.
     bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
     tempdir_tar_path = os.path.join(tempdir, constants.CHROME_ENV_FILE)
-    cros_build_lib.RunCommand([bzip2, '-d', env_bzip, '-c'],
-                              log_stdout_to_file=tempdir_tar_path)
+    cros_build_lib.run([bzip2, '-d', env_bzip, '-c'],
+                       log_stdout_to_file=tempdir_tar_path)
 
     cros_build_lib.CreateTarball(result_path, tempdir)
 
@@ -330,9 +330,8 @@ def BundleImageZip(output_dir, image_dir):
 
   filename = 'image.zip'
   zipfile = os.path.join(output_dir, filename)
-  cros_build_lib.RunCommand(['zip', zipfile, '-r', '.'],
-                            cwd=image_dir,
-                            capture_output=True)
+  cros_build_lib.run(['zip', zipfile, '-r', '.'],
+                     cwd=image_dir, capture_output=True)
   return filename
 
 
@@ -362,8 +361,8 @@ def CreateChromeRoot(chroot, build_target, output_dir):
            build_target.name, '--deps-only', '--package', constants.CHROME_CP]
 
     try:
-      cros_build_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env,
-                                chroot_args=chroot_args)
+      cros_build_lib.run(cmd, enter_chroot=True, extra_env=extra_env,
+                         chroot_args=chroot_args)
     except cros_build_lib.RunCommandError as e:
       raise CrosGenerateSysrootError(
           'Error encountered when running cros_generate_sysroot: %s' % e, e)
@@ -593,7 +592,7 @@ def GenerateCpeReport(chroot, sysroot, output_dir):
   ]
 
   logging.info('Beginning CPE Export.')
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd,
       capture_output=True,
       enter_chroot=True,

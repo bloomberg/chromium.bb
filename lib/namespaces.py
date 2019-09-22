@@ -15,7 +15,7 @@ import signal
 # Note: We avoid cros_build_lib here as that's a "large" module and we want
 # to keep this "light" and standalone.  The subprocess usage in here is also
 # simple by design -- if it gets more complicated, we should look at using
-# the RunCommand helper.
+# the cros_build_lib.run helper.
 import subprocess
 import sys
 

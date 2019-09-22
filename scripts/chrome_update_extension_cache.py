@@ -92,9 +92,9 @@ def CreateValidationFiles(validationdir, crxdir, identifier):
   validation_file = os.path.join(validationdir, '%s.validation' % identifier)
 
   osutils.SafeMakedirs(validationdir)
-  cros_build_lib.RunCommand(['sha256sum'] + verified_files,
-                            log_stdout_to_file=validation_file,
-                            cwd=crxdir, print_cmd=False)
+  cros_build_lib.run(['sha256sum'] + verified_files,
+                     log_stdout_to_file=validation_file,
+                     cwd=crxdir, print_cmd=False)
   logging.info('Hashes created.')
 
 

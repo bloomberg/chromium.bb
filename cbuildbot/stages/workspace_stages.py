@@ -66,8 +66,7 @@ def ChrootArgs(options):
     options: self._run.options
 
   Returns:
-    List of command line arguments, normally passed into RunCommand as
-    chroot_args.
+    List of command line arguments, normally passed into run as chroot_args.
   """
   chroot_args = ['--cache-dir', options.cache_dir]
   if options.chrome_root:
@@ -234,7 +233,7 @@ class SyncStage(WorkspaceStageBase):
         'Can\'t cherry-pick "%s" into an official version "%s."' %
         (patch_options, self.version))
 
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.run(cmd)
 
 
 class WorkspaceSyncStage(WorkspaceStageBase):

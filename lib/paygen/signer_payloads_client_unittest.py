@@ -257,7 +257,7 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest,
         tmp_dir = tempfile.mkdtemp()
 
         cmd = ['tar', '-xjf', archive_file.name]
-        cros_build_lib.RunCommand(
+        cros_build_lib.run(
             cmd, redirect_stdout=True, redirect_stderr=True, cwd=tmp_dir)
 
         # Check that the expected (and only the expected) contents are present

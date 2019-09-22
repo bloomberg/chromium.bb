@@ -42,8 +42,7 @@ def _PrepareAppFolder(options):
     for path in options.skip_paths:
       rsync_cmd.extend(['--exclude', path])
 
-    cros_build_lib.RunCommand(rsync_cmd + ['.', tempdir],
-                              cwd=options.project_path)
+    cros_build_lib.run(rsync_cmd + ['.', tempdir], cwd=options.project_path)
     yield tempdir
 
 
@@ -83,7 +82,7 @@ def _DeployEndpoint(tempdir, options):
   logging.info('Deploying Endpoint:')
   injected_keys = {'endpoints_service': options.endpoints_service}
   _GenerateOpenAPIYaml(tempdir, options.openapi_template, injected_keys)
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       ['gcloud', 'endpoints', 'services', 'deploy', _OPENAPI_YAML,
        '--project=%s' % options.project_id],
       cwd=tempdir,
@@ -104,7 +103,7 @@ def _GetNewestEndpoint(tempdir, endpoints_service):
   if not endpoints_service:
     return None
 
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       ['gcloud', 'endpoints', 'configs', 'list',
        '--service=%s' % endpoints_service, '--limit=1'], cwd=tempdir,
       capture_output=True)
@@ -122,8 +121,8 @@ def _GenerateRequirements(tempdir):
     tempdir: The tempdir where the project was copied to.
   """
   path = os.path.join(tempdir, 'requirements.txt')
-  cros_build_lib.RunCommand(['pipenv', 'lock', '-r'],
-                            log_stdout_to_file=path, cwd=tempdir)
+  cros_build_lib.run(['pipenv', 'lock', '-r'],
+                     log_stdout_to_file=path, cwd=tempdir)
 
 
 def _DeployApp(tempdir, config_id, options):
@@ -143,7 +142,7 @@ def _DeployApp(tempdir, config_id, options):
 
   _GenerateAppYaml(tempdir, options.app_template, injected_keys)
   _GenerateRequirements(tempdir)
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       ['gcloud', 'app', 'deploy', _APP_YAML,
        '--project=%s' % options.project_id],
       cwd=tempdir, mute_output=False)

@@ -172,7 +172,7 @@ class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
         '/mnt/host/source/src/path/to/chromeos-chrome-1.0.ebuild'
     mock_result = cros_build_lib.CommandResult(output=self.chrome_ebuild)
     self.mock_command = self.PatchObject(
-        cros_build_lib, 'RunCommand', return_value=mock_result)
+        cros_build_lib, 'run', return_value=mock_result)
 
   # pylint: disable=protected-access
   def testInvalidPackage(self):
@@ -196,7 +196,7 @@ class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
         '/mnt/host/source/src/path/to/chromeos-kernel-3_14-3.14-r1.ebuild'
     mock_result = cros_build_lib.CommandResult(output=ebuild_path)
     mock_command = self.PatchObject(
-        cros_build_lib, 'RunCommand', return_value=mock_result)
+        cros_build_lib, 'run', return_value=mock_result)
     ebuild_file = toolchain_util._FindEbuildPath(self.kernel_package)
     cmd = ['equery', 'w', self.kernel_package]
     mock_command.assert_called_with(
@@ -409,9 +409,9 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     cmd = ['llvm-nm', '-n', chrome_binary]
     output = os.path.join(self.working_dir, self.orderfile_name + '.nm')
     self.test_obj.tempdir = self.tempdir
-    self.PatchObject(cros_build_lib, 'RunCommand')
+    self.PatchObject(cros_build_lib, 'run')
     self.test_obj._GenerateChromeNM()
-    cros_build_lib.RunCommand.assert_called_with(
+    cros_build_lib.run.assert_called_with(
         cmd,
         log_stdout_to_file=output,
         enter_chroot=True,
@@ -425,13 +425,13 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
         '${BOARD}', self.board)
     output = os.path.join(self.working_dir_inchroot,
                           self.orderfile_name + '.orderfile')
-    self.PatchObject(cros_build_lib, 'RunCommand')
+    self.PatchObject(cros_build_lib, 'run')
     self.test_obj._PostProcessOrderfile(chrome_nm)
     cmd = [
         self.test_obj.PROCESS_SCRIPT, '--chrome', chrome_nm, '--input',
         input_orderfile, '--output', output
     ]
-    cros_build_lib.RunCommand.assert_called_with(
+    cros_build_lib.run.assert_called_with(
         cmd, enter_chroot=True, chroot_args=self.chroot_args)
 
   def testSuccessRun(self):
@@ -591,9 +591,9 @@ class UpdateEbuildWithAFDOArtifactsTest(cros_test_lib.MockTempDirTestCase):
     """Test _UpdateManifest() works properly."""
     ebuild_file = os.path.join(self.tempdir, self.package + '.ebuild')
     cmd = ['ebuild-%s' % self.board, ebuild_file, 'manifest', '--force']
-    self.PatchObject(cros_build_lib, 'RunCommand')
+    self.PatchObject(cros_build_lib, 'run')
     self.test_obj._UpdateManifest(ebuild_file)
-    cros_build_lib.RunCommand.assert_called_with(cmd, enter_chroot=True)
+    cros_build_lib.run.assert_called_with(cmd, enter_chroot=True)
 
 
 class CheckAFDOArtifactExistsTest(cros_test_lib.RunCommandTempDirTestCase):
@@ -912,7 +912,7 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
     afdo_name = 'chromeos-chrome-amd64-77.0.3849.0_rc-r1.afdo'
     self.PatchObject(
         toolchain_util, '_GetBenchmarkAFDOName', return_value=afdo_name)
-    mock_command = self.PatchObject(cros_build_lib, 'RunCommand')
+    mock_command = self.PatchObject(cros_build_lib, 'run')
     self.test_obj._CreateAFDOFromPerfData()
     afdo_cmd = [
         toolchain_util.GenerateBenchmarkAFDOProfile.AFDO_GENERATE_LLVM_PROF,
@@ -1202,7 +1202,7 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
         toolchain_util, '_CompressAFDOFiles', return_value=[self.output])
     self.upload = self.PatchObject(toolchain_util,
                                    '_UploadAFDOArtifactToGSBucket')
-    self.run_command = self.PatchObject(cros_build_lib, 'RunCommand')
+    self.run_command = self.PatchObject(cros_build_lib, 'run')
     self.gs_copy = self.PatchObject(gs.GSContext, 'Copy')
     self.PatchObject(osutils.TempDir, '__enter__', return_value=self.tempdir)
 

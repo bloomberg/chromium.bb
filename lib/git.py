@@ -76,7 +76,7 @@ def IsSubmoduleCheckoutRoot(path, remote, url):
     url: The exact URL the |remote| needs to be pointed at.
   """
   if os.path.isdir(path):
-    remote_url = cros_build_lib.RunCommand(
+    remote_url = cros_build_lib.run(
         ['git', '--git-dir', path, 'config', 'remote.%s.url' % remote],
         redirect_stdout=True, debug_level=logging.DEBUG,
         error_code_ok=True).output.strip()
@@ -764,7 +764,7 @@ class ManifestCheckout(Manifest):
 
 
 def RunGit(git_repo, cmd, **kwargs):
-  """RunCommand wrapper for git commands.
+  """Wrapper for git commands.
 
   This suppresses print_cmd, and suppresses output by default.  Git
   functionality w/in this module should use this unless otherwise
@@ -776,7 +776,7 @@ def RunGit(git_repo, cmd, **kwargs):
     cmd: A sequence of the git subcommand to run.  The 'git' prefix is
       added automatically.  If you wished to run 'git remote update',
       this would be ['remote', 'update'] for example.
-    kwargs: Any RunCommand or GenericRetry options/overrides to use.
+    kwargs: Any run or GenericRetry options/overrides to use.
 
   Returns:
     A CommandResult object.
@@ -784,7 +784,7 @@ def RunGit(git_repo, cmd, **kwargs):
   kwargs.setdefault('print_cmd', False)
   kwargs.setdefault('cwd', git_repo)
   kwargs.setdefault('capture_output', True)
-  return cros_build_lib.RunCommand(['git'] + cmd, **kwargs)
+  return cros_build_lib.run(['git'] + cmd, **kwargs)
 
 
 def Init(git_repo):

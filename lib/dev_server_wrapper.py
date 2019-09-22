@@ -242,7 +242,7 @@ def GetIPv4Address(dev=None, global_ip=True):
   cmd += ['scope', 'global' if global_ip else 'host']
   cmd += [] if dev is None else ['dev', dev]
 
-  result = cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
+  result = cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
   matches = re.findall(r'\binet (\d+\.\d+\.\d+\.\d+).*', result.output)
   if matches:
     return matches[0]
@@ -386,7 +386,7 @@ class DevServerWrapper(multiprocessing.Process):
     if static_dir:
       cmd.append('--static_dir=%s' % path_util.ToChrootPath(static_dir))
 
-    cros_build_lib.SudoRunCommand(
+    cros_build_lib.sudo_run(
         cmd, enter_chroot=True, print_cmd=False, combine_stdout_stderr=True,
         redirect_stdout=True, redirect_stderr=True, cwd=constants.SOURCE_ROOT)
 
@@ -539,4 +539,4 @@ class DevServerWrapper(multiprocessing.Process):
   def _RunCommand(self, *args, **kwargs):
     """Runs a shell commmand."""
     kwargs.setdefault('debug_level', logging.DEBUG)
-    return cros_build_lib.SudoRunCommand(*args, **kwargs)
+    return cros_build_lib.sudo_run(*args, **kwargs)

@@ -589,7 +589,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
       valid_version_lines[0] = 'clang version 8.0.1\n'
       return ''.join(valid_version_lines)
 
-    with patch(cros_build_lib, 'RunCommand') as run_command:
+    with patch(cros_build_lib, 'run') as run_command:
       run_command.side_effect = self._MetadataMultiDispatch(
           equery_uses_fn=equery_uses,
           clang_version_fn=clang_version)
@@ -605,7 +605,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     def clang_version():
       return self._VALID_CLANG_VERSION_STRING
 
-    with patch(cros_build_lib, 'RunCommand') as run_command:
+    with patch(cros_build_lib, 'run') as run_command:
       for uses in ['', ' - - llvm_pgo_generate :']:
         def equery_uses():
           # We're using a loop var on purpose; this function should die by the
@@ -631,7 +631,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     stage = self.ConstructStage()
 
-    run_command = self.PatchObject(cros_build_lib, 'RunCommand')
+    run_command = self.PatchObject(cros_build_lib, 'run')
     run_command.side_effect = self._MetadataMultiDispatch(equery_uses,
                                                           clang_version)
     write_file = self.PatchObject(osutils, 'WriteFile')

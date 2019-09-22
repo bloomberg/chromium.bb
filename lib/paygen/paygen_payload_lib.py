@@ -331,7 +331,7 @@ class PaygenPayload(object):
       raise Error('Invalid image type %s' % tgt_image_type)
 
   def _RunGeneratorCmd(self, cmd):
-    """Wrapper for RunCommand in chroot.
+    """Wrapper for run in chroot.
 
     Run the given command inside the chroot. It will automatically log the
     command output. Note that the command's stdout and stderr are combined into
@@ -346,7 +346,7 @@ class PaygenPayload(object):
 
     try:
       # Run the command.
-      result = cros_build_lib.RunCommand(
+      result = cros_build_lib.run(
           cmd,
           redirect_stdout=True,
           enter_chroot=True,
@@ -431,7 +431,7 @@ class PaygenPayload(object):
     # If we downloaded an archive, extract the image file from it.
     if extract_file:
       cmd = ['tar', '-xJf', download_file, extract_file]
-      cros_build_lib.RunCommand(cmd, cwd=self.work_dir)
+      cros_build_lib.run(cmd, cwd=self.work_dir)
 
       # Rename it into the desired image name.
       shutil.move(os.path.join(self.work_dir, extract_file), image_file)

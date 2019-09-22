@@ -141,7 +141,7 @@ class SchemaDumpTest(CIDBIntegrationTest):
         # '--skip-comments',  # Required to avoid dumping a timestamp.
         'cidb',
     ]
-    result = cros_build_lib.RunCommand(cmd, capture_output=True, quiet=True)
+    result = cros_build_lib.run(cmd, capture_output=True, quiet=True)
 
     # Strip out comment lines, to avoid dumping a problematic timestamp.
     lines = [l for l in result.output.splitlines() if not l.startswith('--')]

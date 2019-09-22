@@ -38,7 +38,7 @@ def _PathForVbootSigningScripts(path=None):
     path: path to vboot_reference/scripts/image_signing.
 
   Returns:
-    Dictionary to pass to RunCommand's extra_env so that it finds the scripts.
+    Dictionary to pass to run's extra_env so that it finds the scripts.
   """
   if not path:
     path = os.path.join(constants.SOURCE_ROOT,
@@ -59,7 +59,7 @@ def GetKernelConfig(loop_kern, error_code_ok=False):
   Returns:
     String containing the kernel arguments, or None.
   """
-  ret = cros_build_lib.SudoRunCommand(
+  ret = cros_build_lib.sudo_run(
       ['dump_kernel_config', loop_kern],
       print_cmd=False, capture_output=True,
       error_code_ok=error_code_ok)
@@ -110,7 +110,7 @@ def SignImage(image_type, input_file, output_file, kernel_part_id, keydir,
   """
   extra_env = _PathForVbootSigningScripts(vboot_path)
   logging.info('Preparing %s image...', image_type)
-  cros_build_lib.RunCommand(['cp', '--sparse=always', input_file, output_file])
+  cros_build_lib.run(['cp', '--sparse=always', input_file, output_file])
 
   keyset = keys.Keyset(keydir)
 
@@ -136,7 +136,7 @@ def SignImage(image_type, input_file, output_file, kernel_part_id, keydir,
       if (image_type != 'factory_install' and
           not kernA_cmd.GetKernelParameter('cros_legacy') and
           not kernA_cmd.GetKernelParameter('cros_efi')):
-        cros_build_lib.RunCommand(
+        cros_build_lib.run(
             ['strip_boot_from_image.sh', '--image', loop_rootfs],
             extra_env=extra_env)
       ClearResignFlag(image)
@@ -171,7 +171,7 @@ def SignAndroidImage(rootfs_dir, keyset, vboot_path=None):
   logging.info('Using %s', android_keydir)
 
   # TODO(lamontjones) migrate sign_android_image.sh.
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       ['sign_android_image.sh', rootfs_dir, android_keydir],
       extra_env=extra_env)
 
@@ -196,16 +196,16 @@ def SignUefiBinaries(image, rootfs_dir, keyset, vboot_path=None):
   # Sign the UEFI binaries on the EFI partition using
   # ${keyset.key_dir}/uefi keys.
   # TODO(lamontjones): convert install_gsetup_certs.sh to python.
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       ['install_gsetup_certs.sh', uefi_fsdir, uefi_keydir],
       extra_env=extra_env)
   # TODO(lamontjones): convert sign_uefi.sh to python.
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       ['sign_uefi.sh', uefi_fsdir, uefi_keydir],
       extra_env=extra_env)
 
   # TODO(lamontjones): convert sign_uefi.sh to python.
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       ['sign_uefi.sh', os.path.join(rootfs_dir, 'boot'), uefi_keydir],
       extra_env=extra_env)
 
@@ -268,7 +268,7 @@ class CalculateRootfsHash(object):
            'hashtree=%s' % self._file.name]
     if salt:
       cmd.append('salt=%s' % salt.value)
-    verity = cros_build_lib.SudoRunCommand(
+    verity = cros_build_lib.sudo_run(
         cmd, print_cmd=False, capture_output=True).output
     # verity is a templated DmLine string.
     slave = kernel_cmdline.DmLine(
@@ -324,7 +324,7 @@ def UpdateRootfsHash(image, loop_kern, keyset, keyA_prefix):
   loop_rootfs = image.GetPartitionDevName('ROOT-A')
   image.DisableRwMount('ROOT-A')
   rootfs_hash = CalculateRootfsHash(image, cmd_line)
-  fsinfo = cros_build_lib.SudoRunCommand(
+  fsinfo = cros_build_lib.sudo_run(
       ['tune2fs', '-l', image.GetPartitionDevName('ROOT-A')],
       capture_output=True).output
   rootfs_blocks = int(re.search(
@@ -332,7 +332,7 @@ def UpdateRootfsHash(image, loop_kern, keyset, keyA_prefix):
   rootfs_sectors = 8 * rootfs_blocks
 
   # Overwrite the appended hashes in the rootfs.
-  cros_build_lib.SudoRunCommand(
+  cros_build_lib.sudo_run(
       ['dd', 'if=%s' % rootfs_hash.hashtree_filename, 'of=%s' % loop_rootfs,
        'bs=512', 'seek=%d' % rootfs_sectors, 'conv=notrunc'],
       redirect_stderr=True)
@@ -365,7 +365,7 @@ def _UpdateKernelConfig(loop_kern, cmdline, key):
     temp.file.write(cmdline.Format())
     temp.file.flush()
 
-    cros_build_lib.SudoRunCommand(
+    cros_build_lib.sudo_run(
         ['vbutil_kernel', '--repack', loop_kern,
          '--keyblock', key.keyblock,
          '--signprivate', key.private,
@@ -394,12 +394,12 @@ def UpdateStatefulPartitionVblock(image, keyset):
       loop_kern = image.GetPartitionDevName(2)
 
     kernel_key = keyset.keys['kernel_data_key']
-    cros_build_lib.SudoRunCommand(['vbutil_kernel', '--repack', tmpfile.name,
-                                   '--keyblock', kernel_key.keyblock,
-                                   '--signprivate', kernel_key.private,
-                                   '--oldblob', loop_kern, '--vblockonly'])
+    cros_build_lib.sudo_run(['vbutil_kernel', '--repack', tmpfile.name,
+                             '--keyblock', kernel_key.keyblock,
+                             '--signprivate', kernel_key.private,
+                             '--oldblob', loop_kern, '--vblockonly'])
     state_dir = image.Mount(('STATE',), mount_opts=('rw',))[0]
-    cros_build_lib.SudoRunCommand(
+    cros_build_lib.sudo_run(
         ['cp', tmpfile.name, os.path.join(state_dir, 'vmlinuz_hd.vblock')])
     image.Unmount(('STATE',))
 
@@ -415,7 +415,7 @@ def UpdateRecoveryKernelHash(image, keyset):
 
   if old_kernB_hash:
     cmd = 'sha256sum' if len(old_kernB_hash.value) >= 64 else 'sha1sum'
-    new_kernB_hash = cros_build_lib.SudoRunCommand([
+    new_kernB_hash = cros_build_lib.sudo_run([
         cmd, loop_kernB], redirect_stdout=True).output.split()[0]
     kernA_cmd.SetKernelParameter('kern_b_hash', new_kernB_hash)
   logging.info('New cmdline for kernel A is %s', str(kernA_cmd))
@@ -457,7 +457,7 @@ def UpdateLegacyBootloader(image, loop_kern):
   if os.path.exists(grub_cfg):
     files.append(grub_cfg)
   if files:
-    ret = cros_build_lib.SudoRunCommand(
+    ret = cros_build_lib.sudo_run(
         ['sed', '-iE',
          r's/\broot_hexdigest=[a-z0-9]+/root_hexdigest=%s/g' % root_digest] +
         files, error_code_ok=True)

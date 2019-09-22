@@ -579,8 +579,8 @@ class CopyUpstreamTest(CpuTestBase):
 
       # Recreate the Manifests using the ebuild utility.
       cmd = ['ebuild', ebuild_path, 'manifest']
-      cros_build_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True,
-                                combine_stdout_stderr=True)
+      cros_build_lib.run(cmd, print_cmd=False, redirect_stdout=True,
+                         combine_stdout_stderr=True)
 
     # If requested, remove the eclass.
     if missing:
@@ -840,7 +840,7 @@ class CopyUpstreamTest(CpuTestBase):
       self.assertTrue(kwargs.get('redirect_stdout'))
       return cros_build_lib.CommandResult(returncode=0, output='')
 
-    self.PatchObject(cros_build_lib, 'RunCommand').side_effect = CheckRunCommand
+    self.PatchObject(cros_build_lib, 'run').side_effect = CheckRunCommand
 
     return (upstream_dir, current_dir)
 
@@ -2073,7 +2073,7 @@ class UpgradePackageTest(CpuTestBase):
 
     # Add test-specific mocks/stubs.
     run_result = cros_build_lib.CommandResult(returncode=0)
-    run_mock = self.PatchObject(cros_build_lib, 'RunCommand',
+    run_mock = self.PatchObject(cros_build_lib, 'run',
                                 return_value=run_result)
     run_calls = []
 
@@ -2291,7 +2291,7 @@ class VerifyPackageTest(CpuTestBase):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
 
-    run_mock = self.PatchObject(cros_build_lib, 'RunCommand')
+    run_mock = self.PatchObject(cros_build_lib, 'run')
 
     # Replay script.
     envvars = cpu.Upgrader._GenPortageEnvvars(mocked_upgrader,
@@ -2345,7 +2345,7 @@ class VerifyPackageTest(CpuTestBase):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
 
-    run_mock = self.PatchObject(cros_build_lib, 'RunCommand')
+    run_mock = self.PatchObject(cros_build_lib, 'run')
 
     # Replay script.
     mocked_upgrader._GenPortageEnvvars.return_value = 'envvars'

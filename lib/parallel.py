@@ -190,7 +190,7 @@ class _BackgroundTask(multiprocessing.Process):
 
   @classmethod
   def _DebugRunCommand(cls, cmd, **kwargs):
-    """Swallow any exception RunCommand raises.
+    """Swallow any exception run raises.
 
     Since these commands are for purely informational purposes, we don't
     random issues causing the bot to die.
@@ -201,7 +201,7 @@ class _BackgroundTask(multiprocessing.Process):
     log_level = kwargs['debug_level']
     try:
       with timeout_util.Timeout(cls.DEBUG_CMD_TIMEOUT):
-        return cros_build_lib.RunCommand(cmd, **kwargs).output
+        return cros_build_lib.run(cmd, **kwargs).output
     except (cros_build_lib.RunCommandError, timeout_util.TimeoutError) as e:
       logging.log(log_level, 'Running %s failed: %s', cmd[0], str(e))
       return ''

@@ -71,7 +71,7 @@ def Login(service_account_json=None):
   if service_account_json and os.path.isfile(service_account_json):
     cmd += ['-service-account-json=%s' % service_account_json]
 
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd,
       print_cmd=True,
       mute_output=False,
@@ -100,7 +100,7 @@ def Token(service_account_json=None):
   if service_account_json and os.path.isfile(service_account_json):
     cmd += ['-service-account-json=%s' % service_account_json]
 
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd,
       print_cmd=False,
       mute_output=True,

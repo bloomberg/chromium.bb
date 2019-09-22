@@ -264,5 +264,5 @@ def main(argv):
       full_cmd = [gdb_cmd] + gdb_args
 
     logging.info('Launching GDB...')
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         full_cmd, ignore_sigint=True, debug_level=logging.WARNING)

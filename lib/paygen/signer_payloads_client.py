@@ -195,7 +195,7 @@ class SignerPayloadsClientGoogleStorage(object):
         osutils.WriteFile(os.path.join(tmp_dir, hash_name), h, mode='wb')
 
       cmd = ['tar', '-cjf', archive_file] + hash_names
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           cmd, redirect_stdout=True, redirect_stderr=True, cwd=tmp_dir)
     finally:
       # Cleanup.
@@ -428,8 +428,7 @@ class UnofficialSignerPayloadsClient(SignerPayloadsClientGoogleStorage):
     """
     cmd = ['openssl', 'rsa', '-in', self._private_key, '-pubout', '-out',
            public_key]
-    cros_build_lib.RunCommand(cmd, redirect_stdout=True,
-                              combine_stdout_stderr=True)
+    cros_build_lib.run(cmd, redirect_stdout=True, combine_stdout_stderr=True)
 
   def GetHashSignatures(self, hashes, keysets=('update_signer',)):
     """See SignerPayloadsClientGoogleStorage._GetHashsignatures().
@@ -462,11 +461,11 @@ class UnofficialSignerPayloadsClient(SignerPayloadsClientGoogleStorage):
           'src/platform/vboot_reference/scripts/image_signing/',
           'sign_official_build.sh'))
 
-      cros_build_lib.RunCommand([sign_script, 'update_payload',
-                                 path_util.ToChrootPath(hash_file),
-                                 path_util.ToChrootPath(self._work_dir),
-                                 path_util.ToChrootPath(signature_file)],
-                                enter_chroot=True)
+      cros_build_lib.run([sign_script, 'update_payload',
+                          path_util.ToChrootPath(hash_file),
+                          path_util.ToChrootPath(self._work_dir),
+                          path_util.ToChrootPath(signature_file)],
+                         enter_chroot=True)
 
       signatures.append([osutils.ReadFile(signature_file)])
 

@@ -823,7 +823,7 @@ class BoardSpecificBuilderStageTest(AbstractStageTestCase):
 
 class RunCommandAbstractStageTestCase(
     AbstractStageTestCase, cros_test_lib.RunCommandTestCase):
-  """Base test class for testing a stage and mocking RunCommand."""
+  """Base test class for testing a stage and mocking run."""
 
   # pylint: disable=abstract-method
 

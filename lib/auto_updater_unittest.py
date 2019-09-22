@@ -255,7 +255,7 @@ class ChromiumOSErrorTest(cros_test_lib.MockTestCase):
     """Mock device's functions for update.
 
     Not mock the class ChromiumOSDevice, in order to raise the errors that
-    caused by a inner function of the device's base class, like 'RunCommand'.
+    caused by a inner function of the device's base class, like 'run'.
     """
     self.payload_dir = ''
     self.PatchObject(remote_access.RemoteDevice, 'Pingable', return_value=True)

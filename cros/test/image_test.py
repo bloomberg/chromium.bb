@@ -305,8 +305,8 @@ class FileSystemMetaDataTest(image_test_lib.ImageTestCase):
     # ...
     #
     # So we need to ignore the first line.
-    ret = cros_build_lib.SudoRunCommand(cmd, capture_output=True,
-                                        extra_env={'LC_ALL': 'C'})
+    ret = cros_build_lib.sudo_run(cmd, capture_output=True,
+                                  extra_env={'LC_ALL': 'C'})
     fs_stat = dict(line.split(':', 1) for line in ret.output.splitlines()
                    if ':' in line)
     free_inodes = int(fs_stat['Free inodes'])

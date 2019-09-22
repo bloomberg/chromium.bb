@@ -122,9 +122,8 @@ class DeployChrome(object):
     return int(result.output.split()[0])
 
   def _GetStagingDirSize(self):
-    result = cros_build_lib.DebugRunCommand(['du', '-ks', self.staging_dir],
-                                            redirect_stdout=True,
-                                            capture_output=True)
+    result = cros_build_lib.dbg_run(['du', '-ks', self.staging_dir],
+                                    redirect_stdout=True, capture_output=True)
     return int(result.output.split()[0])
 
   def _ChromeFileInUse(self):
@@ -662,14 +661,14 @@ def _PrepareStagingDir(options, tempdir, staging_dir, copy_paths=None,
     # Extract only the ./opt/google/chrome contents, directly into the staging
     # dir, collapsing the directory hierarchy.
     if pkg_path[-4:] == '.zip':
-      cros_build_lib.DebugRunCommand(
+      cros_build_lib.dbg_run(
           ['unzip', '-X', pkg_path, _ANDROID_DIR_EXTRACT_PATH, '-d',
            staging_dir])
       for filename in glob.glob(os.path.join(staging_dir, 'system/chrome/*')):
         shutil.move(filename, staging_dir)
       osutils.RmDir(os.path.join(staging_dir, 'system'), ignore_missing=True)
     else:
-      cros_build_lib.DebugRunCommand(
+      cros_build_lib.dbg_run(
           ['tar', '--strip-components', '4', '--extract',
            '--preserve-permissions', '--file', pkg_path, '.%s' % chrome_dir],
           cwd=staging_dir)

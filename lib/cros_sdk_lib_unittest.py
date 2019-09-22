@@ -638,7 +638,7 @@ class ChrootUpdaterTest(cros_test_lib.MockTempDirTestCase):
 
   def testApplyUpdates(self):
     """Test ApplyUpdates."""
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      return_value=cros_build_lib.CommandResult(returncode=0))
     for version in self.success_versions:
       self.chroot.SetVersion(version)

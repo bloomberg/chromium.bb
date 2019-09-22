@@ -222,7 +222,7 @@ def RunTest(test, interp, cmd, tmpfile, finished, total):
   logging.info('Starting %s %s', interp, test)
 
   with cros_build_lib.TimedSection() as timer:
-    ret = cros_build_lib.RunCommand(
+    ret = cros_build_lib.run(
         cmd, capture_output=True, error_code_ok=True,
         combine_stdout_stderr=True, debug_level=logging.DEBUG,
         int_timeout=SIGINT_TIMEOUT)
@@ -627,7 +627,7 @@ def main(argv):
   if (not os.path.exists(chroot) and
       ChrootAvailable() and
       not cros_build_lib.IsInsideChroot()):
-    cros_build_lib.RunCommand(['cros_sdk', '--create'])
+    cros_build_lib.run(['cros_sdk', '--create'])
 
   # This is a cheesy hack to make sure gsutil is populated in the cache before
   # we run tests. This is a partial workaround for crbug.com/468838.

@@ -825,7 +825,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
   def testChrootRevertFailsWhenCommandsRaiseExceptions(self):
     self.PatchObject(
         cros_build_lib,
-        'SudoRunCommand',
+        'sudo_run',
         side_effect=cros_build_lib.RunCommandError(
             'error', cros_build_lib.CommandResult(cmd='error', returncode=5)))
     self._Prepare(extra_config={

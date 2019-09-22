@@ -218,31 +218,31 @@ class UsbImagerOperationTest(cros_test_lib.RunCommandTestCase):
     usb_imager.CopyImageToDevice('foo', 'bar')
 
     # Check that flash.UsbImagerOperation.Run() is called correctly.
-    run_mock.assert_called_with(cros_build_lib.SudoRunCommand, expected_cmd,
+    run_mock.assert_called_with(cros_build_lib.sudo_run, expected_cmd,
                                 debug_level=logging.NOTICE, update_period=0.5)
 
   def testSudoRunCommandCalled(self):
-    """Test that SudoRunCommand is called when log level > NOTICE."""
+    """Test that sudo_run is called when log level > NOTICE."""
     expected_cmd = ['dd', 'if=foo', 'of=bar', 'bs=4M', 'iflag=fullblock',
                     'oflag=direct', 'conv=fdatasync']
     usb_imager = flash.USBImager('dummy_device', 'board', 'foo')
-    run_mock = self.PatchObject(cros_build_lib, 'SudoRunCommand')
+    run_mock = self.PatchObject(cros_build_lib, 'sudo_run')
     self.PatchObject(logging.Logger, 'getEffectiveLevel',
                      return_value=logging.WARNING)
     usb_imager.CopyImageToDevice('foo', 'bar')
 
-    # Check that SudoRunCommand() is called correctly.
+    # Check that sudo_run() is called correctly.
     run_mock.assert_any_call(expected_cmd, debug_level=logging.NOTICE,
                              print_cmd=False)
 
   def testPingDD(self):
     """Test that UsbImagerOperation._PingDD() sends the correct signal."""
     expected_cmd = ['kill', '-USR1', '5']
-    run_mock = self.PatchObject(cros_build_lib, 'SudoRunCommand')
+    run_mock = self.PatchObject(cros_build_lib, 'sudo_run')
     op = flash.UsbImagerOperation('foo')
     op._PingDD(5)
 
-    # Check that SudoRunCommand was called correctly.
+    # Check that sudo_run was called correctly.
     run_mock.assert_called_with(expected_cmd, print_cmd=False)
 
   def testGetDDPidFound(self):

@@ -231,4 +231,4 @@ def RunFutility(args):
   """Runs futility with the given args, returns True if success"""
   cmd = ['futility']
   cmd += args
-  return cros_build_lib.RunCommand(cmd, error_code_ok=True).returncode == 0
+  return cros_build_lib.run(cmd, error_code_ok=True).returncode == 0

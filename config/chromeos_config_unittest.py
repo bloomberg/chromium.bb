@@ -64,7 +64,7 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     # watefall_layout_dump.txt
     # We run this as a sep program to avoid the config cache.
     cmd = os.path.join(constants.CHROMITE_BIN_DIR, 'cros_show_waterfall_layout')
-    result = cros_build_lib.RunCommand([cmd], capture_output=True)
+    result = cros_build_lib.run([cmd], capture_output=True)
 
     new_dump = result.output
     old_dump = osutils.ReadFile(constants.WATERFALL_CONFIG_FILE)
@@ -80,7 +80,7 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     # luci-scheduler.cfg
     # We run this as a sep program to avoid the config cache.
     cmd = os.path.join(constants.CHROMITE_DIR, 'scripts', 'gen_luci_scheduler')
-    result = cros_build_lib.RunCommand([cmd], capture_output=True)
+    result = cros_build_lib.run([cmd], capture_output=True)
 
     new_dump = result.output
     old_dump = osutils.ReadFile(constants.LUCI_SCHEDULER_CONFIG_FILE)

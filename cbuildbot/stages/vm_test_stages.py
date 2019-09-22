@@ -518,8 +518,8 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
       results_dir: Path to a directory used for creating result files.
     """
     results_reldir = 'moblab_vm_test_results'
-    cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_dir],
-                                  print_cmd=False)
+    cros_build_lib.sudo_run(['chmod', '-R', 'a+rw', results_dir],
+                            print_cmd=False)
     archive_dir = os.path.join(self.archive_path, results_reldir)
     osutils.RmDir(archive_dir, ignore_missing=True)
 
@@ -715,8 +715,8 @@ def ArchiveTestResults(results_path, archive_dir):
     results_path: Path to test results.
     archive_dir: Local directory to archive to.
   """
-  cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
-                                print_cmd=False)
+  cros_build_lib.sudo_run(['chmod', '-R', 'a+rw', results_path],
+                          print_cmd=False)
   if os.path.exists(archive_dir):
     osutils.RmDir(archive_dir)
 
@@ -771,7 +771,7 @@ def RunDevModeTest(buildroot, board, image_dir):
   cmd = [
       os.path.join(crostestutils, test_script), '--verbose', board, image_path
   ]
-  cros_build_lib.RunCommand(cmd)
+  cros_build_lib.run(cmd)
 
 
 def RunTestSuite(buildroot,
@@ -824,7 +824,7 @@ def _RunTestSuiteUsingChromite(board,
     cmd.append('--private-key=%s' % path_util.ToChrootPath(ssh_private_key))
 
   # Give tests 10 minutes to clean up before shutting down.
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, error_code_ok=True, kill_timeout=10 * 60, enter_chroot=True)
   if result.returncode:
     results_dir_in_chroot = os.path.join(constants.SOURCE_ROOT,
@@ -883,7 +883,7 @@ def _RunTestSuiteUsingCtest(buildroot,
     cmd.append('--ssh_private_key=%s' % ssh_private_key)
 
   # Give tests 10 minutes to clean up before shutting down.
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, cwd=cwd, error_code_ok=True, kill_timeout=10 * 60)
   if result.returncode:
     if os.path.exists(results_dir_in_chroot):
@@ -924,7 +924,7 @@ def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir,
       'clear_devserver_cache=False',
       'image_storage_server="%s"' % local_image_cache,
   ]
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       [
           'test_that',
           '--no-quickmerge',

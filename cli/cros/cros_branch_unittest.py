@@ -1566,8 +1566,8 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
       left_dir: Path to the left dir.
       right_dir: Path to the right dir.
     """
-    result = cros_build_lib.RunCommand(['diff', '-rq', left_dir, right_dir],
-                                       capture_output=True)
+    result = cros_build_lib.run(['diff', '-rq', left_dir, right_dir],
+                                capture_output=True)
     self.assertFalse(result.output)
 
   def AssertNoRemoteDiff(self):
@@ -1578,13 +1578,12 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
   @unittest.skip('Flaking in CQ https://crbug.com/999930')
   def testCreate(self):
     """Test create runs without dying."""
-    cros_build_lib.RunCommand([
+    cros_build_lib.run([
         'cros', 'branch', '--push', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'create', '--file',
         self.full_manifest_path, '--custom', 'new-branch'
-    ],
-                              input='yes')
+    ], input='yes')
 
     self.AssertCrosBranches(['old-branch', 'new-branch'])
     self.AssertCrosBranchMatchesManifest('new-branch', self.full_manifest)
@@ -1594,25 +1593,23 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
   def testCreateDryRun(self):
     """Test create runs without --push."""
-    cros_build_lib.RunCommand([
+    cros_build_lib.run([
         'cros', 'branch', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'create', '--file',
         self.full_manifest_path, '--custom', 'new-branch'
-    ],
-                              input='yes')
+    ], input='yes')
 
     self.AssertNoRemoteDiff()
 
   def testCreateRelease(self):
     """Test creating release branch also bumps master Chrome branch."""
-    cros_build_lib.RunCommand([
+    cros_build_lib.run([
         'cros', 'branch', '--push', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'create', '--file',
         self.full_manifest_path, '--release'
-    ],
-                              input='yes')
+    ], input='yes')
 
     self.AssertCrosBranches(['old-branch', 'release-R12-3.B'])
     self.AssertCrosBranchMatchesManifest('release-R12-3.B', self.full_manifest)
@@ -1622,13 +1619,12 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
   def testCreateOverwrite(self):
     """Test create overwrites existing branches when --force is set."""
-    cros_build_lib.RunCommand([
+    cros_build_lib.run([
         'cros', 'branch', '--push', '--force', '--root', self.local_root,
         '--repo-url', self.repo_url, '--repo-branch', 'default',
         '--manifest-url', self.manifest_internal_root, 'create', '--file',
         self.full_manifest_path, '--custom', 'old-branch'
-    ],
-                              input='yes')
+    ], input='yes')
 
     self.AssertCrosBranches(['old-branch'])
     self.AssertCrosBranchMatchesManifest('old-branch', self.full_manifest)
@@ -1638,15 +1634,12 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
   def testCreateOverwriteMissingForce(self):
     """Test create dies when it tries to overwrite without --force."""
-    result = cros_build_lib.RunCommand([
+    result = cros_build_lib.run([
         'cros', 'branch', '--push', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'create', '--file',
         self.full_manifest_path, '--custom', 'old-branch'
-    ],
-                                       input='yes',
-                                       error_code_ok=True,
-                                       capture_output=True)
+    ], input='yes', error_code_ok=True, capture_output=True)
 
     self.assertIn('Branch old-branch exists', result.error)
     self.AssertNoRemoteDiff()
@@ -1656,22 +1649,19 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     git.CreateBranch(self.manifest_internal_root, 'release-R12-3.B')
     self.cros_internal_snapshot = self.Snapshot(self.cros_internal_root)
 
-    result = cros_build_lib.RunCommand([
+    result = cros_build_lib.run([
         'cros', 'branch', '--push', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'create', '--file',
         self.full_manifest_path, '--stabilize'
-    ],
-                                       input='yes',
-                                       error_code_ok=True,
-                                       capture_output=True)
+    ], input='yes', error_code_ok=True, capture_output=True)
 
     self.assertIn('Already branched 3.0.0.', result.error)
     self.AssertNoRemoteDiff()
 
   def testRename(self):
     """Test rename runs without dying."""
-    cros_build_lib.RunCommand([
+    cros_build_lib.run([
         'cros', 'branch', '--push', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'rename', 'old-branch', 'new-branch'
@@ -1685,7 +1675,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
   def testRenameDryRun(self):
     """Test rename runs without --push."""
-    cros_build_lib.RunCommand([
+    cros_build_lib.run([
         'cros', 'branch', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'rename', 'old-branch', 'new-branch'
@@ -1698,13 +1688,12 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     # Create a branch to rename. This may seem like we depend on the
     # correctness of the code under test, but in practice the branches
     # to be renamed will be created by `cros branch` anyway.
-    cros_build_lib.RunCommand([
+    cros_build_lib.run([
         'cros', 'branch', '--push', '--force', '--root', self.local_root,
         '--repo-url', self.repo_url, '--repo-branch', 'default',
         '--manifest-url', self.manifest_internal_root, 'create', '--file',
         self.full_manifest_path, '--custom', 'new-branch'
-    ],
-                              input='yes')
+    ], input='yes')
 
     # Assert everything is as we expect.
     self.AssertCrosBranches(['new-branch', 'old-branch'])
@@ -1714,7 +1703,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
     # Oops, you big dummy. Turns out old-branch was actually what you wanted.
     # Try force renaming it...
-    cros_build_lib.RunCommand([
+    cros_build_lib.run([
         'cros', 'branch', '--push', '--force', '--root', self.local_root,
         '--repo-url', self.repo_url, '--repo-branch', 'default',
         '--manifest-url', self.manifest_internal_root, 'rename', 'old-branch',
@@ -1729,20 +1718,18 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
   def testRenameOverwriteMissingForce(self):
     """Test rename dies when it tries to overwrite without --force."""
-    result = cros_build_lib.RunCommand([
+    result = cros_build_lib.run([
         'cros', 'branch', '--push', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'rename', 'master', 'old-branch'
-    ],
-                                       error_code_ok=True,
-                                       capture_output=True)
+    ], error_code_ok=True, capture_output=True)
 
     self.assertIn('Branch old-branch exists', result.error)
     self.AssertNoRemoteDiff()
 
   def testDelete(self):
     """Test delete runs without dying."""
-    cros_build_lib.RunCommand([
+    cros_build_lib.run([
         'cros', 'branch', '--push', '--force', '--root', self.local_root,
         '--repo-url', self.repo_url, '--repo-branch', 'default',
         '--manifest-url', self.manifest_internal_root, 'delete', 'old-branch'
@@ -1752,7 +1739,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
   def testDeleteDryRun(self):
     """Test delete does not modify remote repositories without --push."""
-    cros_build_lib.RunCommand([
+    cros_build_lib.run([
         'cros', 'branch', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'delete', 'old-branch'
@@ -1762,13 +1749,11 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
   def testDeleteMissingForce(self):
     """Test delete does not modify remote when --push set without --force."""
-    result = cros_build_lib.RunCommand([
+    result = cros_build_lib.run([
         'cros', 'branch', '--push', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'delete', 'old-branch'
-    ],
-                                       error_code_ok=True,
-                                       capture_output=True)
+    ], error_code_ok=True, capture_output=True)
 
     self.assertIn('Must set --force to delete remote branches.', result.error)
     self.AssertNoRemoteDiff()

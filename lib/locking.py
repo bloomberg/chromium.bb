@@ -236,9 +236,8 @@ class FileLock(_Lock):
           raise
       if create:
         osutils.SafeMakedirs(os.path.dirname(self.path), sudo=True)
-        cros_build_lib.SudoRunCommand(['touch', self.path], print_cmd=False)
-        cros_build_lib.SudoRunCommand(['chmod', '666', self.path],
-                                      print_cmd=False)
+        cros_build_lib.sudo_run(['touch', self.path], print_cmd=False)
+        cros_build_lib.sudo_run(['chmod', '666', self.path], print_cmd=False)
 
     # If we're on py3.4 and this attribute is exposed, use it to close
     # the threading race between open and fcntl setting; this is

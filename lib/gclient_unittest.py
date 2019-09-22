@@ -320,7 +320,7 @@ class GclientWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
   def testSyncWithRunArgs(self):
     """Test gclient.Sync() with run_args.
 
-    run_args is an optional argument for RunCommand kwargs.
+    run_args is an optional argument for run kwargs.
     """
     gclient.Sync(self.fake_gclient, self.cwd, run_args={'log_output': True})
     self.assertCommandCalled(

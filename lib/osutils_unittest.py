@@ -117,7 +117,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
       open(path, 'w').close()
       self.assertExists(path)
       if sudo:
-        cros_build_lib.SudoRunCommand(
+        cros_build_lib.sudo_run(
             ['chown', 'root:root', '-R', '--', dirname], print_cmd=False)
         self.assertRaises(EnvironmentError, os.unlink, path)
       self.assertTrue(osutils.SafeUnlink(path, sudo=sudo))
@@ -515,8 +515,8 @@ class MountTests(cros_test_lib.TestCase):
         self.assertNotExists(tempdir)
       finally:
         if not cleaned:
-          cros_build_lib.SudoRunCommand(['umount', '-lf', tempdir],
-                                        error_code_ok=True)
+          cros_build_lib.sudo_run(['umount', '-lf', tempdir],
+                                  error_code_ok=True)
 
   def testUnmountTree(self):
     with osutils.TempDir(prefix='chromite.test.osutils') as tempdir:

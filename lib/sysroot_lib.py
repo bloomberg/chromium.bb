@@ -191,8 +191,8 @@ def _CreateWrapper(wrapper_path, template, **kwargs):
   """
   osutils.WriteFile(wrapper_path, template.format(**kwargs), makedirs=True,
                     sudo=True)
-  cros_build_lib.SudoRunCommand(['chmod', '+x', wrapper_path], print_cmd=False,
-                                redirect_stderr=True)
+  cros_build_lib.sudo_run(['chmod', '+x', wrapper_path], print_cmd=False,
+                          redirect_stderr=True)
 
 
 def _NotEmpty(filepath):
@@ -549,7 +549,7 @@ class Sysroot(object):
         return ''
       # TODO(bsimonnet): Refactor cros_generate_local_binhosts into a function
       # here and remove the following call.
-      local_binhosts = cros_build_lib.RunCommand(
+      local_binhosts = cros_build_lib.run(
           [os.path.join(constants.CHROMITE_BIN_DIR,
                         'cros_generate_local_binhosts'), '--board=%s' % board],
           print_cmd=False, capture_output=True).output
@@ -738,8 +738,8 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
         extra_env = {constants.CROS_METRICS_DIR_ENVVAR: tempdir}
 
         try:
-          cros_build_lib.SudoRunCommand(emerge, preserve_env=True,
-                                        extra_env=extra_env)
+          cros_build_lib.sudo_run(emerge, preserve_env=True,
+                                  extra_env=extra_env)
         except cros_build_lib.RunCommandError as e:
           # Include failed packages from the status file in the error.
           failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
@@ -782,9 +782,9 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
       # synchronously copy the entire thing before we delete it.
       cwd = os.path.normpath(self._Path('..'))
       try:
-        result = cros_build_lib.SudoRunCommand(['mktemp', '-d', '-p', cwd],
-                                               print_cmd=False,
-                                               redirect_stdout=True, cwd=cwd)
+        result = cros_build_lib.sudo_run(['mktemp', '-d', '-p', cwd],
+                                         print_cmd=False,
+                                         redirect_stdout=True, cwd=cwd)
       except cros_build_lib.RunCommandError:
         # Fall back to a synchronous delete just in case.
         logging.notice('Error deleting sysroot asynchronously. Deleting '
@@ -792,11 +792,11 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
         return self.Delete(background=False)
 
       tempdir = result.output.strip()
-      cros_build_lib.SudoRunCommand(['mv', self.path, tempdir], quiet=True)
+      cros_build_lib.sudo_run(['mv', self.path, tempdir], quiet=True)
       if not os.fork():
         # Child process, just delete the sysroot root and _exit.
-        result = cros_build_lib.SudoRunCommand(rm + [tempdir], quiet=True,
-                                               error_code_ok=True)
+        result = cros_build_lib.sudo_run(rm + [tempdir], quiet=True,
+                                         error_code_ok=True)
         if result.returncode:
           # Log it so it can be handled manually.
           logging.warning('Unable to delete old sysroot now at %s: %s', tempdir,
@@ -804,4 +804,4 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
         # pylint: disable=protected-access
         os._exit(result.returncode)
     else:
-      cros_build_lib.SudoRunCommand(rm + [self.path], quiet=True)
+      cros_build_lib.sudo_run(rm + [self.path], quiet=True)

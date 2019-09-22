@@ -162,7 +162,7 @@ def GetInstanceID(cipd_path, package, version, service_account_json=None):
   if service_account_json:
     service_account_flag = ['-service-account-json', service_account_json]
 
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       [cipd_path, 'resolve', package, '-version', version] +
       service_account_flag, capture_output=True)
   # An example output of resolve is like:
@@ -195,7 +195,7 @@ def InstallPackage(cipd_path, package, instance_id, destination,
     f.write('%s %s' % (package, instance_id))
     f.flush()
 
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         [cipd_path, 'ensure', '-root', destination, '-list', f.name]
         + service_account_flag,
         capture_output=True)
@@ -227,7 +227,7 @@ def CreatePackage(cipd_path, package, in_dir, tags, refs,
   if cred_path:
     args.extend(['-service-account-json', cred_path])
 
-  cros_build_lib.RunCommand(args, capture_output=True)
+  cros_build_lib.run(args, capture_output=True)
 
 
 def BuildPackage(cipd_path, package, in_dir, outfile):
@@ -245,7 +245,7 @@ def BuildPackage(cipd_path, package, in_dir, outfile):
       '-in', in_dir,
       '-out', outfile,
   ]
-  cros_build_lib.RunCommand(args, capture_output=True)
+  cros_build_lib.run(args, capture_output=True)
 
 
 def RegisterPackage(cipd_path, package_file, tags, refs, cred_path=None):
@@ -265,4 +265,4 @@ def RegisterPackage(cipd_path, package_file, tags, refs, cred_path=None):
     args.extend(['-ref', ref])
   if cred_path:
     args.extend(['-service-account-json', cred_path])
-  cros_build_lib.RunCommand(args, capture_output=True)
+  cros_build_lib.run(args, capture_output=True)

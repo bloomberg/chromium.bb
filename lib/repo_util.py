@@ -117,7 +117,7 @@ class Repository(object):
     repo_dir = os.path.join(root, '.repo')
     warning_msg = 'Removing %r due to `repo init` failures.' % repo_dir
     with _RmDirOnError(repo_dir, msg=warning_msg):
-      cros_build_lib.RunCommand(cmd, cwd=root)
+      cros_build_lib.run(cmd, cwd=root)
     return cls(root)
 
   @classmethod
@@ -148,7 +148,7 @@ class Repository(object):
     return repo
 
   def _Run(self, repo_cmd, cwd=None, capture_output=False):
-    """RunCommand wrapper for `repo`.
+    """Wrapper for `repo`.
 
     Args:
       repo_cmd: List of arguments to pass to `repo`.
@@ -171,9 +171,8 @@ class Repository(object):
     elif git.FindRepoCheckoutRoot(cwd) != self.root:
       raise NotInRepoError('cannot run `repo` outside of Repository root '
                            '(cwd=%r root=%r)' % (cwd, self.root))
-    return cros_build_lib.RunCommand(cmd, cwd=cwd,
-                                     capture_output=capture_output,
-                                     debug_level=logging.DEBUG)
+    return cros_build_lib.run(cmd, cwd=cwd, capture_output=capture_output,
+                              debug_level=logging.DEBUG)
 
   def Sync(self, projects=None, local_only=False, current_branch=False,
            jobs=None, manifest_path=None, cwd=None):
@@ -298,7 +297,7 @@ class Repository(object):
       for project in self.List():
         objects_dir = PROJECT_OBJECTS_PATH_FORMAT % project.name
         try:
-          cros_build_lib.RunCommand(
+          cros_build_lib.run(
               ['cp', '--archive', '--link', '--parents', objects_dir,
                dest_path],
               debug_level=logging.DEBUG, capture_output=True,
@@ -311,7 +310,7 @@ class Repository(object):
 
       # Copy everything that wasn't created by the hard linking above.
       try:
-        cros_build_lib.RunCommand(
+        cros_build_lib.run(
             ['cp', '--archive', '--no-clobber', '.repo', dest_path],
             debug_level=logging.DEBUG, capture_output=True,
             extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)

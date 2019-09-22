@@ -26,12 +26,6 @@ from chromite.lib import portage_util
 from chromite.scripts import cros_mark_android_as_stable
 
 
-class _StubCommandResult(object):
-  """Helper for mocking RunCommand results."""
-  def __init__(self, msg):
-    self.output = msg
-
-
 class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
   """Tests for cros_mark_android_as_stable."""
 
@@ -621,7 +615,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
   def testMarkAndroidEBuildAsStable(self):
     """Test updating of ebuild."""
-    self.PatchObject(cros_build_lib, 'RunCommand')
+    self.PatchObject(cros_build_lib, 'run')
     self.PatchObject(portage_util.EBuild, 'GetCrosWorkonVars',
                      return_value=None)
     git_mock = self.PatchObject(git, 'RunGit')

@@ -278,7 +278,7 @@ def _FindEbuildPath(package, buildroot=None, board=None):
   else:
     equery_prog = 'equery'
   equery_cmd = [equery_prog, 'w', package]
-  ebuild_file = cros_build_lib.RunCommand(
+  ebuild_file = cros_build_lib.run(
       equery_cmd, enter_chroot=True, redirect_stdout=True).output.rstrip()
   if not buildroot:
     return ebuild_file
@@ -484,7 +484,7 @@ def _MergeAFDOProfiles(chroot_profile_list,
   if use_compbinary:
     merge_command.append('-compbinary')
 
-  cros_build_lib.RunCommand(merge_command, enter_chroot=True, print_cmd=True)
+  cros_build_lib.run(merge_command, enter_chroot=True, print_cmd=True)
 
 
 def _RedactAFDOProfile(input_path, output_path):
@@ -505,17 +505,16 @@ def _RedactAFDOProfile(input_path, output_path):
   convert_to_text_command = profdata_command_base + [
       '-text', input_path, '-output', input_to_text_temp
   ]
-  cros_build_lib.RunCommand(
-      convert_to_text_command, enter_chroot=True, print_cmd=True)
+  cros_build_lib.run(convert_to_text_command, enter_chroot=True, print_cmd=True)
 
   # Call the redaction script.
   redacted_temp = input_path + '.redacted.temp'
   with open(input_to_text_temp) as f:
-    cros_build_lib.RunCommand(['redact_textual_afdo_profile'],
-                              input=f,
-                              log_stdout_to_file=redacted_temp,
-                              enter_chroot=True,
-                              print_cmd=True)
+    cros_build_lib.run(['redact_textual_afdo_profile'],
+                       input=f,
+                       log_stdout_to_file=redacted_temp,
+                       enter_chroot=True,
+                       print_cmd=True)
 
   # Convert the profiles back to compbinary profiles.
   # Using `compbinary` profiles saves us hundreds of MB of RAM per
@@ -526,7 +525,7 @@ def _RedactAFDOProfile(input_path, output_path):
       '-output',
       output_path,
   ]
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       convert_to_combinary_command, enter_chroot=True, print_cmd=True)
 
 
@@ -600,7 +599,7 @@ class GenerateChromeOrderfile(object):
                                      self.orderfile_name + '.nm')
 
     try:
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           cmd,
           log_stdout_to_file=result_out_chroot,
           enter_chroot=True,
@@ -625,7 +624,7 @@ class GenerateChromeOrderfile(object):
     ]
 
     try:
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           cmd, enter_chroot=True, chroot_args=self.chroot_args)
     except cros_build_lib.RunCommandError:
       raise GenerateChromeOrderfileError(
@@ -719,7 +718,7 @@ class UpdateEbuildWithAFDOArtifacts(object):
     """
     ebuild_prog = 'ebuild-%s' % self.board
     cmd = [ebuild_prog, ebuild_file, 'manifest', '--force']
-    cros_build_lib.RunCommand(cmd, enter_chroot=True)
+    cros_build_lib.run(cmd, enter_chroot=True)
 
   def Perform(self):
     """Main function to update ebuild with the rules."""
@@ -1143,7 +1142,7 @@ class GenerateBenchmarkAFDOProfile(object):
         '--profile=%s' % perf_afdo_inchroot_path,
         '--out=%s' % afdo_inchroot_path,
     ]
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         afdo_cmd,
         enter_chroot=True,
         capture_output=True,

@@ -189,7 +189,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       """Create manifest.xml snapshot of the built code."""
       output_manifest = os.path.join(archive_path, 'manifest.xml')
       cmd = ['repo', 'manifest', '-r', '-o', output_manifest]
-      cros_build_lib.RunCommand(cmd, cwd=buildroot, capture_output=True)
+      cros_build_lib.run(cmd, cwd=buildroot, capture_output=True)
       self._upload_queue.put(['manifest.xml'])
 
     def BuildAndArchiveFactoryImages():
@@ -905,7 +905,7 @@ class GenerateSysrootStage(generic_stages.BoardSpecificBuilderStage,
         in_chroot_path, '--board', self._current_board, '--package',
         ' '.join(pkgs)
     ]
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         cmd, cwd=self._build_root, enter_chroot=True, extra_env=extra_env)
     self._upload_queue.put([sysroot_tarball])
 
@@ -965,7 +965,7 @@ class GenerateTidyWarningsStage(generic_stages.BoardSpecificBuilderStage,
         '--out-dir', in_chroot_path, '--board', self._current_board,
         '--logs-dir', logs_dir
     ]
-    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True)
+    cros_build_lib.run(cmd, cwd=self._build_root, enter_chroot=True)
     self._UploadTidyWarnings(out_chroot_path, clang_tidy_tarball)
     self._upload_queue.put([clang_tidy_tarball])
 
@@ -1020,8 +1020,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
 
   def _CollectLLVMMetadata(self):
     def check_chroot_output(command):
-      cmd = cros_build_lib.RunCommand(command, enter_chroot=True,
-                                      redirect_stdout=True)
+      cmd = cros_build_lib.run(command, enter_chroot=True, redirect_stdout=True)
       return cmd.output
 
     # The baked-in clang should be the one we're looking for. If not, yell.
@@ -1081,8 +1080,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
     self._merge_cmd = ['llvm-profdata', 'merge',
                        '-output', profdata_loc,
                        '-f', profraw_list]
-    cros_build_lib.RunCommand(self._merge_cmd, cwd=self._build_root,
-                              enter_chroot=True)
+    cros_build_lib.run(self._merge_cmd, cwd=self._build_root, enter_chroot=True)
 
     cros_build_lib.CreateTarball(self.PROFDATA_TAR, cwd=out_chroot_path,
                                  inputs=[out_profdata_loc])

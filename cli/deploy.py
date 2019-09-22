@@ -861,7 +861,7 @@ def _GetPackagesByCPV(cpvs, strip, sysroot):
   packages_dir = None
   if strip:
     try:
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           ['strip_package', '--sysroot', sysroot] +
           [cpv.cpf for cpv in cpvs])
       packages_dir = _STRIPPED_PACKAGES_DIR

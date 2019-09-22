@@ -562,7 +562,7 @@ def _MergeAFDOProfiles(chroot_profile_list,
   if use_compbinary:
     merge_command.append('-compbinary')
 
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       merge_command, enter_chroot=True, capture_output=True, print_cmd=True)
 
 
@@ -738,7 +738,7 @@ def UpdateManifest(ebuild_file, ebuild_prog='ebuild'):
     ebuild_prog: the ebuild command; can be board specific
   """
   gen_manifest_cmd = [ebuild_prog, ebuild_file, 'manifest', '--force']
-  cros_build_lib.RunCommand(gen_manifest_cmd, enter_chroot=True, print_cmd=True)
+  cros_build_lib.run(gen_manifest_cmd, enter_chroot=True, print_cmd=True)
 
 
 def CommitIfChanged(ebuild_dir, message):
@@ -781,7 +781,7 @@ def UpdateChromeEbuildAFDOFile(board, profiles):
     ebuild_prog += '-%s' % board
 
   equery_cmd = [equery_prog, 'w', 'chromeos-chrome']
-  ebuild_file = cros_build_lib.RunCommand(
+  ebuild_file = cros_build_lib.run(
       equery_cmd, enter_chroot=True, redirect_stdout=True).output.rstrip()
 
   # Patch the ebuild file with the names of the available afdo_files.
@@ -1006,7 +1006,7 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
       '--profile=%s' % perf_afdo_path,
       '--out=%s' % afdo_path
   ]
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       afdo_cmd, enter_chroot=True, capture_output=True, print_cmd=True)
 
   afdo_local_path = os.path.join(local_dir, afdo_file)

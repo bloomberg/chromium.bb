@@ -325,7 +325,7 @@ class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
 
   def testWriteLsbRelease(self):
     """Tests writing out the lsb_release file using WriteLsbRelease(..)."""
-    rc_mock = self.PatchObject(cros_build_lib, 'SudoRunCommand')
+    rc_mock = self.PatchObject(cros_build_lib, 'sudo_run')
     fields = {'x': '1', 'y': '2', 'foo': 'bar'}
     image_lib.WriteLsbRelease(self.tempdir, fields)
     lsb_release_file = os.path.join(self.tempdir, 'etc', 'lsb-release')
@@ -337,7 +337,7 @@ class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
         os.path.join(self.tempdir, 'etc/lsb-release')])
 
     # Test that WriteLsbRelease(..) correctly handles an existing file.
-    rc_mock = self.PatchObject(cros_build_lib, 'SudoRunCommand')
+    rc_mock = self.PatchObject(cros_build_lib, 'sudo_run')
     fields = {'newkey1': 'value1', 'newkey2': 'value2', 'a': '3', 'b': '4'}
     image_lib.WriteLsbRelease(self.tempdir, fields)
     expected_content = ('y=2\nx=1\nfoo=bar\nnewkey2=value2\na=3\n'

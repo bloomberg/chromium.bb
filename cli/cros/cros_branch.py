@@ -261,7 +261,7 @@ class CrosCheckout(object):
       cmd += ['--repo-url', self.repo_url]
     if self.manifest_url:
       cmd += ['--manifest-url', self.manifest_url]
-    cros_build_lib.RunCommand(cmd, print_cmd=True)
+    cros_build_lib.run(cmd, print_cmd=True)
     self.manifest = repo_util.Repository(self.root).Manifest()
 
   def SyncBranch(self, branch):
@@ -300,7 +300,7 @@ class CrosCheckout(object):
     # repo_sync_manifest sometimes corrupts .repo/manifest.xml when
     # syncing to a file. See crbug.com/973106.
     cmd = ['repo', 'sync', '--manifest-name', os.path.abspath(path)]
-    cros_build_lib.RunCommand(cmd, cwd=self.root, print_cmd=True)
+    cros_build_lib.run(cmd, cwd=self.root, print_cmd=True)
     self.manifest = repo_util.Repository(self.root).Manifest()
 
   def ReadVersion(self, **kwargs):

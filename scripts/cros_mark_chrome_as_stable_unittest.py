@@ -29,12 +29,6 @@ unstable_data = 'KEYWORDS=~x86 ~arm'
 stable_data = 'KEYWORDS=x86 arm'
 
 
-class _StubCommandResult(object):
-  """Helper for mocking RunCommand results."""
-  def __init__(self, msg):
-    self.output = msg
-
-
 class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
   """Tests for cros_mark_chrome_as_stable."""
 
@@ -236,7 +230,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
       new_ebuild_path: path to the to be created path
       commit_string_indicator: a string that the commit message must contain
     """
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      side_effect=Exception('should not be called'))
     self.PatchObject(portage_util.EBuild, 'GetCrosWorkonVars',
                      return_value=None)

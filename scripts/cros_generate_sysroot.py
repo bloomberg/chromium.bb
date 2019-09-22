@@ -70,7 +70,7 @@ class GenerateSysroot(object):
     cmd = [self.PARALLEL_EMERGE, '--board=%s' % self.options.board,
            '--usepkgonly', '--noreplace'] + list(args)
     kwargs.setdefault('extra_env', self.extra_env)
-    cros_build_lib.SudoRunCommand(cmd, **kwargs)
+    cros_build_lib.sudo_run(cmd, **kwargs)
 
   def _InstallToolchain(self):
     # Create the sysroot's config.
@@ -90,7 +90,7 @@ class GenerateSysroot(object):
     else:
       for pkg in self.options.package.split():
         cmd = ['qdepends', '-q', '-C', pkg]
-        output = cros_build_lib.RunCommand(
+        output = cros_build_lib.run(
             cmd, extra_env={'ROOT': raw_sysroot}, capture_output=True).output
 
         if output.count('\n') > 1:

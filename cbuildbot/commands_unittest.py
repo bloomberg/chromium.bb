@@ -122,7 +122,7 @@ class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):
 
 
 class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
-  """Basic tests for ChromeSDK commands with RunCommand mocked out."""
+  """Basic tests for ChromeSDK commands with run mocked out."""
   BOARD = 'daisy_foo'
   EXTRA_ARGS = ('--monkey', 'banana')
   EXTRA_ARGS2 = ('--donkey', 'kong')
@@ -139,7 +139,7 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains([self.BOARD] + self.CMD, cwd=self.CWD)
 
   def testRunCommandWithRunArgs(self):
-    """Test run_args optional argument for RunCommand kwargs."""
+    """Test run_args optional argument for run kwargs."""
     self.inst.Run(self.CMD, run_args={'log_output': True})
     self.assertCommandContains([self.BOARD] + self.CMD, cwd=self.CWD,
                                log_output=True)
@@ -160,7 +160,7 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
   def testNinjaWithRunArgs(self):
     """Test that running ninja with run_args.
 
-    run_args is an optional argument for RunCommand kwargs.
+    run_args is an optional argument for run kwargs.
     """
     self.MockGetDefaultTarget()
     self.inst.Ninja(run_args={'log_output': True})
@@ -1485,7 +1485,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
         os.path.join(pkg_dir, 'sys-kernel', 'kernel-2-r0.tbz2')]]
 
     tar_mock = self.PatchObject(commands, 'BuildTarball')
-    self.PatchObject(cros_build_lib, 'RunCommand')
+    self.PatchObject(cros_build_lib, 'run')
     commands.BuildStrippedPackagesTarball(self._buildroot,
                                           'test-board',
                                           package_globs,

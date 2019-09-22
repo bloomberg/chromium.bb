@@ -104,16 +104,15 @@ class CommandVMTest(object):
                                updatable=True)
     vm_cmd = ['./cros_vm', '--ssh-port=%d' % self.port, '--copy-on-write',
               '--image-path=%s' % vm_path, '--start']
-    cros_build_lib.RunCommand(vm_cmd, cwd=constants.CHROMITE_BIN_DIR)
+    cros_build_lib.run(vm_cmd, cwd=constants.CHROMITE_BIN_DIR)
 
   def TearDown(self):
     """Stops the VM instance after testing."""
     if not self.port:
       return
-    cros_build_lib.RunCommand(['./cros_vm', '--stop',
-                               '--ssh-port=%d' % self.port],
-                              cwd=constants.CHROMITE_BIN_DIR,
-                              error_code_ok=True)
+    cros_build_lib.run(['./cros_vm', '--stop', '--ssh-port=%d' % self.port],
+                       cwd=constants.CHROMITE_BIN_DIR,
+                       error_code_ok=True)
 
   @TestCommandDecorator('shell')
   def TestShell(self):
@@ -127,24 +126,24 @@ class CommandVMTest(object):
 
     logging.info('Test to use shell command to write a file to the VM device.')
     write_cmd = cmd + ['--', 'echo "%s" > %s' % (content, path)]
-    result = cros_build_lib.RunCommand(write_cmd, capture_output=True,
-                                       error_code_ok=True)
+    result = cros_build_lib.run(write_cmd, capture_output=True,
+                                error_code_ok=True)
     if result.returncode:
       logging.error('Failed to write the file to the VM device.')
       raise CommandError(result.error)
 
     logging.info('Test to use shell command to read a file on the VM device.')
     read_cmd = cmd + ['--', 'cat %s' % path]
-    result = cros_build_lib.RunCommand(read_cmd, capture_output=True,
-                                       error_code_ok=True)
+    result = cros_build_lib.run(read_cmd, capture_output=True,
+                                error_code_ok=True)
     if result.returncode or result.output.rstrip() != content:
       logging.error('Failed to read the file on the VM device.')
       raise CommandError(result.error)
 
     logging.info('Test to use shell command to remove a file on the VM device.')
     remove_cmd = cmd + ['--', 'rm %s' % path]
-    result = cros_build_lib.RunCommand(remove_cmd, capture_output=True,
-                                       error_code_ok=True)
+    result = cros_build_lib.run(remove_cmd, capture_output=True,
+                                error_code_ok=True)
     if result.returncode:
       logging.error('Failed to remove the file on the VM device.')
       raise CommandError(result.error)
@@ -156,8 +155,8 @@ class CommandVMTest(object):
     exe_path = '/bin/bash'
     start_cmd = self.BuildCommand('debug', device=self.device_addr,
                                   opt_args=['--exe', exe_path])
-    result = cros_build_lib.RunCommand(start_cmd, capture_output=True,
-                                       error_code_ok=True, input='\n')
+    result = cros_build_lib.run(start_cmd, capture_output=True,
+                                error_code_ok=True, input='\n')
     if result.returncode:
       logging.error('Failed to start and debug a new process on the VM device.')
       raise CommandError(result.error)
@@ -173,8 +172,8 @@ class CommandVMTest(object):
       pid = pids[0]
       attach_cmd = self.BuildCommand('debug', device=self.device_addr,
                                      opt_args=['--pid', str(pid)])
-      result = cros_build_lib.RunCommand(attach_cmd, capture_output=True,
-                                         error_code_ok=True, input='\n')
+      result = cros_build_lib.run(attach_cmd, capture_output=True,
+                                  error_code_ok=True, input='\n')
       if result.returncode:
         logging.error('Failed to attach a running process on the VM device.')
         raise CommandError(result.error)
@@ -190,8 +189,7 @@ class CommandVMTest(object):
                             opt_args=['--no-wipe', '--no-reboot'])
 
     logging.info('Test to flash the VM device with the latest image.')
-    result = cros_build_lib.RunCommand(cmd, capture_output=True,
-                                       error_code_ok=True)
+    result = cros_build_lib.run(cmd, capture_output=True, error_code_ok=True)
     if result.returncode:
       logging.error('Failed to flash the VM device.')
       raise CommandError(result.error)
@@ -208,8 +206,7 @@ class CommandVMTest(object):
 
     logging.info('Test to uninstall packages on the VM device.')
     with cros_build_lib.OutputCapturer() as output:
-      result = cros_build_lib.RunCommand(cmd + ['--unmerge'],
-                                         error_code_ok=True)
+      result = cros_build_lib.run(cmd + ['--unmerge'], error_code_ok=True)
 
     if result.returncode:
       logging.error('Failed to uninstall packages on the VM device.')
@@ -225,7 +222,7 @@ class CommandVMTest(object):
 
     logging.info('Test to install packages on the VM device.')
     with cros_build_lib.OutputCapturer() as output:
-      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, error_code_ok=True)
 
     if result.returncode:
       logging.error('Failed to install packages on the VM device.')

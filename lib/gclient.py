@@ -225,7 +225,7 @@ def WriteConfigFile(gclient, cwd, internal, rev, template=None,
   spec = _GetGclientSpec(internal, rev, template, use_cache, managed,
                          git_cache_dir=git_cache_dir)
   cmd = [gclient, 'config', '--spec', spec]
-  cros_build_lib.RunCommand(cmd, cwd=cwd)
+  cros_build_lib.run(cmd, cwd=cwd)
 
 
 def Revert(gclient, cwd):
@@ -235,7 +235,7 @@ def Revert(gclient, cwd):
     gclient: Path to gclient.
     cwd: Directory to revert.
   """
-  cros_build_lib.RunCommand([gclient, 'revert', '--nohooks'], cwd=cwd)
+  cros_build_lib.run([gclient, 'revert', '--nohooks'], cwd=cwd)
 
 
 def Sync(gclient, cwd, reset=False, nohooks=True, verbose=True,
@@ -248,7 +248,7 @@ def Sync(gclient, cwd, reset=False, nohooks=True, verbose=True,
     reset: Reset to pristine version of the source code.
     nohooks: If set, add '--nohooks' argument.
     verbose: If set, add '--verbose' argument.
-    run_args: If set (dict), pass to RunCommand as kwargs.
+    run_args: If set (dict), pass to run as kwargs.
     ignore_locks: If set, add '--ignore_locks' argument.
 
   Returns:
@@ -267,4 +267,4 @@ def Sync(gclient, cwd, reset=False, nohooks=True, verbose=True,
   if ignore_locks:
     cmd.append('--ignore_locks')
 
-  return cros_build_lib.RunCommand(cmd, cwd=cwd, **run_args)
+  return cros_build_lib.run(cmd, cwd=cwd, **run_args)

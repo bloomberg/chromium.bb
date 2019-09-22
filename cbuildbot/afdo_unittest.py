@@ -320,7 +320,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
 
     mock_gs = mock.Mock()
     mock_gs.List = MockList
-    run_command = self.PatchObject(cros_build_lib, 'RunCommand')
+    run_command = self.PatchObject(cros_build_lib, 'run')
     uncompress_file = self.PatchObject(cros_build_lib, 'UncompressFile')
     compress_file = self.PatchObject(cros_build_lib, 'CompressFile')
     upload = self.PatchObject(afdo, 'GSUploadIfNotPresent')

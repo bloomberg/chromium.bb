@@ -364,7 +364,7 @@ class BootstrapStage(PatchChangesStage):
         extra_params.extend(['--manifest-repo-url', manifest_dir])
 
     cmd += extra_params
-    result_obj = cros_build_lib.RunCommand(
+    result_obj = cros_build_lib.run(
         cmd, cwd=self.tempdir, kill_timeout=30, error_code_ok=True)
     self.returncode = result_obj.returncode
 
@@ -1465,7 +1465,7 @@ class PreCQLauncherStage(SyncStage):
     if self._run.options.debug:
       logging.debug('Would have launched tryjob with %s', cmd)
     else:
-      result = cros_build_lib.RunCommand(
+      result = cros_build_lib.run(
           cmd, cwd=self._build_root, capture_output=True)
       if result and result.output:
         logging.info('output: %s', result.output)

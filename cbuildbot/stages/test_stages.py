@@ -583,7 +583,7 @@ class ChromiteTestStage(generic_stages.BuilderStage):
     ]
     # TODO: Remove enter_chroot=True when we have virtualenv support.
     # Until then, we skip all chromite tests outside the chroot.
-    cros_build_lib.RunCommand(cmd, enter_chroot=True)
+    cros_build_lib.run(cmd, enter_chroot=True)
 
 
 class CidbIntegrationTestStage(generic_stages.BuilderStage):
@@ -601,7 +601,7 @@ class CidbIntegrationTestStage(generic_stages.BuilderStage):
         '-v',
         # '--network'  Doesn't work in a build, yet.
     ]
-    cros_build_lib.RunCommand(cmd, enter_chroot=True)
+    cros_build_lib.run(cmd, enter_chroot=True)
 
 
 class DebugInfoTestStage(generic_stages.BoardSpecificBuilderStage,
@@ -624,7 +624,7 @@ class DebugInfoTestStage(generic_stages.BoardSpecificBuilderStage,
             cros_build_lib.GetSysroot(board=self._current_board),
             'usr/lib/debug')
     ]
-    cros_build_lib.RunCommand(cmd, enter_chroot=True)
+    cros_build_lib.run(cmd, enter_chroot=True)
 
 
 class TestPlanStage(generic_stages.BoardSpecificBuilderStage):

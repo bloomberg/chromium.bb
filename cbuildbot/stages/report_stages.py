@@ -116,16 +116,14 @@ def WriteTagMetadata(builder_run):
 
   # Look up the git version.
   try:
-    cmd_result = cros_build_lib.RunCommand(['git', '--version'],
-                                           capture_output=True)
+    cmd_result = cros_build_lib.run(['git', '--version'], capture_output=True)
     tags['git_version'] = cmd_result.output.strip()
   except cros_build_lib.RunCommandError:
     pass  # If we fail, just don't include the tag.
 
   # Look up the repo version.
   try:
-    cmd_result = cros_build_lib.RunCommand(['repo', '--version'],
-                                           capture_output=True)
+    cmd_result = cros_build_lib.run(['repo', '--version'], capture_output=True)
 
     # Convert the following output into 'v1.12.17-cr3':
     #

@@ -191,7 +191,7 @@ def DowngradePackageVersion(portage_root, package_cp,
   if os.path.abspath(source_directory) == os.path.abspath(destination_path):
     return True
   command = ['mv', source_directory, destination_path]
-  code = cros_build_lib.SudoRunCommand(command, error_code_ok=True).returncode
+  code = cros_build_lib.sudo_run(command, error_code_ok=True).returncode
   return code == 0
 
 
@@ -292,7 +292,7 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
 
   command += [source_path, sysroot_autotest_path]
 
-  return cros_build_lib.SudoRunCommand(command, redirect_stdout=True)
+  return cros_build_lib.sudo_run(command, redirect_stdout=True)
 
 
 def ParseArguments(argv):
@@ -334,7 +334,7 @@ def main(argv):
 
   if os.geteuid() != 0:
     try:
-      cros_build_lib.SudoRunCommand([sys.executable] + sys.argv)
+      cros_build_lib.sudo_run([sys.executable] + sys.argv)
     except cros_build_lib.RunCommandError:
       return 1
     return 0
@@ -407,7 +407,7 @@ def main(argv):
 
     sentinel_filename = os.path.join(sysroot_autotest_path,
                                      '.quickmerge_sentinel')
-    cros_build_lib.RunCommand(['touch', sentinel_filename])
+    cros_build_lib.run(['touch', sentinel_filename])
 
   if args.pretend:
     logging.info('The following message is pretend only. No filesystem '

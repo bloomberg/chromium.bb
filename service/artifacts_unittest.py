@@ -115,7 +115,7 @@ class ArchiveChromeEbuildEnvTest(cros_test_lib.MockTempDirTestCase):
     # Create a environment.bz2 file to put into folders.
     env_file = os.path.join(self.tempdir, 'environment')
     osutils.Touch(env_file)
-    cros_build_lib.RunCommand(['bzip2', env_file])
+    cros_build_lib.run(['bzip2', env_file])
     self.env_bz2 = '%s.bz2' % env_file
 
   def _CreateChromeDir(self, path, populate=True):

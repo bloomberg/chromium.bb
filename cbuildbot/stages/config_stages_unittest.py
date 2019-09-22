@@ -104,7 +104,7 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.PatchObject(git, 'PushBranch')
     self.PatchObject(git, 'RunGit')
     self.PatchObject(repository, 'CloneWorkingRepo')
-    self.PatchObject(cros_build_lib, 'RunCommand')
+    self.PatchObject(cros_build_lib, 'run')
 
     self.project = 'chromite'
     self.chromite_dir = config_stages.GetProjectRepoDir('chromite',

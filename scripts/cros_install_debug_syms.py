@@ -96,8 +96,8 @@ class DebugSymbolsInstaller(object):
       self._gs_context.Copy(url, archive, debug_level=logging.DEBUG)
 
     with osutils.TempDir(sudo_rm=True) as tempdir:
-      cros_build_lib.SudoRunCommand(['tar', '-I', 'bzip2 -q', '-xf', archive,
-                                     '-C', tempdir], quiet=True)
+      cros_build_lib.sudo_run(['tar', '-I', 'bzip2 -q', '-xf', archive,
+                               '-C', tempdir], quiet=True)
 
       with open(self._vartree.getpath(cpv, filename='CONTENTS'),
                 'a') as content_file:
@@ -278,7 +278,7 @@ def main(argv):
     raise commandline.ChrootRequiredError(argv)
 
   if os.geteuid() != 0:
-    cros_build_lib.SudoRunCommand(sys.argv)
+    cros_build_lib.sudo_run(sys.argv)
     return
 
   # sysroot must have a trailing / as the tree dictionary produced by

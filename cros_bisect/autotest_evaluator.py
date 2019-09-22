@@ -161,7 +161,7 @@ class AutotestEvaluator(evaluator.Evaluator):
         '/tmp', 'test_that_latest', 'results-1-%s' % self.test_name))
     # Invoking "find" command is faster than using os.walkdir().
     try:
-      command_result = cros_build_lib.RunCommand(
+      command_result = cros_build_lib.run(
           ['find', '.', '-name', self.RESULT_FILENAME],
           cwd=results_dir, capture_output=True)
     except cros_build_lib.RunCommandError as e:
@@ -250,8 +250,8 @@ class AutotestEvaluator(evaluator.Evaluator):
     # background and stopped) when asking user input.
     chroot_args = ['--chrome_root', self.chromium_dir,
                    '--no-ns-pid']
-    return cros_build_lib.RunCommand(command, enter_chroot=True,
-                                     chroot_args=chroot_args, cwd=self.cros_dir)
+    return cros_build_lib.run(command, enter_chroot=True,
+                              chroot_args=chroot_args, cwd=self.cros_dir)
 
   def RunTestFromHost(self, remote, report_file_to_store):
     """Runs autotest from host.

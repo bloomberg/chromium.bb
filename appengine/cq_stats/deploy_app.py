@@ -77,7 +77,7 @@ def _DeployApp(basedir, options):
     basedir: The base directory where the app has already been prepped.
     options: The command-line options passed in.
   """
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       ['./ae_shell', 'cq_stats', '--',
        'python', 'cq_stats/manage.py', 'collectstatic', '--noinput'],
       cwd=basedir)
@@ -91,7 +91,7 @@ def _DeployApp(basedir, options):
   osutils.SafeUnlink(os.path.join(cidb_cred_path, 'client-cert.pem'))
   osutils.SafeUnlink(os.path.join(cidb_cred_path, 'client-key.pem'))
   osutils.SafeUnlink(os.path.join(cidb_cred_path, 'server-ca.pem'))
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       ['./ae_shell', 'cq_stats', '--',
        'appcfg.py', '--oauth2', '--noauth_local_webserver', 'update',
        'cq_stats'],
@@ -104,7 +104,7 @@ def _Hang(tempdir):
   Args:
     tempdir: The directory prepared for deploying the app.
   """
-  logging.info('All the real stuff\'s done. Tempdir: %s', tempdir)
+  logging.info("All the real stuff's done. Tempdir: %s", tempdir)
   while True:
     logging.info('Sleeping... Hit Ctrl-C to exit.')
     time.sleep(30)
@@ -118,7 +118,7 @@ def main(argv):
   with osutils.TempDir() as tempdir:
     # This is rsync in 'archive' mode, but symlinks are followed to copy actual
     # files/directories.
-    rsync_cmd = ['rsync', '-qrLgotD', '--exclude=\'*/*.pyc\'']
+    rsync_cmd = ['rsync', '-qrLgotD', "--exclude='*/*.pyc'"]
     chromite_dir = os.path.dirname(
         os.path.dirname(
             os.path.dirname(
@@ -128,7 +128,7 @@ def main(argv):
         'chromite/appengine/', tempdir,
         '--exclude=google_appengine_*',
     ]
-    cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(chromite_dir))
+    cros_build_lib.run(cmd, cwd=os.path.dirname(chromite_dir))
 
     cmd = rsync_cmd + [
         'chromite', os.path.join(tempdir, 'cq_stats'),
@@ -139,15 +139,15 @@ def main(argv):
         '--exclude=.git',
         '--exclude=venv',
     ]
-    cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(chromite_dir))
+    cros_build_lib.run(cmd, cwd=os.path.dirname(chromite_dir))
 
-    target_creds_dir =os.path.join(tempdir, 'cq_stats', CREDENTIALS_SUBDIR)
+    target_creds_dir = os.path.join(tempdir, 'cq_stats', CREDENTIALS_SUBDIR)
     osutils.SafeMakedirsNonRoot(target_creds_dir)
     cmd = rsync_cmd + [
         options.cidb_creds_dir + '/',
         target_creds_dir,
     ]
-    cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(chromite_dir))
+    cros_build_lib.run(cmd, cwd=os.path.dirname(chromite_dir))
 
     osutils.WriteFile(os.path.join(tempdir, 'cq_stats', 'cq_stats',
                                    'deploy_settings.py'),
@@ -163,7 +163,7 @@ def main(argv):
         '-e', regex % APP_INSTANCE_NAME[options.instance],
         app_yaml_path,
     ]
-    cros_build_lib.RunCommand(cmd, cwd=tempdir)
+    cros_build_lib.run(cmd, cwd=tempdir)
 
     _DeployApp(tempdir, options)
     # _Hang(tempdir)

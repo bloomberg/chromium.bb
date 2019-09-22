@@ -106,7 +106,7 @@ def CreateVMImage(image=None, board=None, updatable=True, dest_dir=None):
       # Create a temporary directory in chroot to store the VM
       # image. This is to avoid the case where dest_dir is not
       # reachable within chroot.
-      tempdir = cros_build_lib.RunCommand(
+      tempdir = cros_build_lib.run(
           ['mktemp', '-d'],
           capture_output=True,
           enter_chroot=True).output.strip()
@@ -114,8 +114,7 @@ def CreateVMImage(image=None, board=None, updatable=True, dest_dir=None):
 
     msg = 'Failed to create the VM image'
     try:
-      cros_build_lib.RunCommand(cmd, enter_chroot=True,
-                                cwd=constants.SOURCE_ROOT)
+      cros_build_lib.run(cmd, enter_chroot=True, cwd=constants.SOURCE_ROOT)
     except cros_build_lib.RunCommandError as e:
       logging.error('%s: %s', msg, e)
       if tempdir:

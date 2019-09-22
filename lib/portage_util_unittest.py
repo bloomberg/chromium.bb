@@ -33,18 +33,6 @@ class _Package(object):
     self.package = package
 
 
-class _DummyCommandResult(object):
-  """Create mock RunCommand results."""
-
-  def __init__(self, output):
-    # Members other than 'output' are expected to be unused, so
-    # we omit them here.
-    #
-    # All shell output will be newline terminated; we add the
-    # newline here for convenience.
-    self.output = output + '\n'
-
-
 class EBuildTest(cros_test_lib.MockTempDirTestCase):
   """Ebuild related tests."""
   _MULTILINE_WITH_TEST = """
@@ -160,7 +148,9 @@ inherit cros-workon superpower
     fake_ebuild = self._MakeFakeEbuild(fake_ebuild_path)
 
     # git rev-parse HEAD
-    self.PatchObject(git, 'RunGit', return_value=_DummyCommandResult(fake_hash))
+    self.PatchObject(
+        git, 'RunGit',
+        return_value=cros_build_lib.CommandResult(stdout=fake_hash + '\n'))
     test_hash = fake_ebuild.GetCommitId(self.tempdir)
     self.assertEqual(test_hash, fake_hash)
 
@@ -733,7 +723,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      return_value=cros_build_lib.CommandResult(
                          returncode=0, output='1122', error='STDERR'))
     self.assertEqual('1122', self.m_ebuild.GetVersion(None, None, '1234'))
@@ -746,7 +736,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    run = self.PatchObject(cros_build_lib, 'RunCommand')
+    run = self.PatchObject(cros_build_lib, 'run')
 
     # Reject no output.
     run.return_value = cros_build_lib.CommandResult(
@@ -780,7 +770,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      return_value=cros_build_lib.CommandResult(
                          returncode=0, output='999999', error='STDERR'))
     self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
@@ -793,7 +783,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      return_value=cros_build_lib.CommandResult(
                          returncode=0, output='abcd', error='STDERR'))
     self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')

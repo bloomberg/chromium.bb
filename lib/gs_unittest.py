@@ -817,10 +817,10 @@ class GSDoCommandTest(cros_test_lib.TestCase):
 
   This test class inherits from cros_test_lib.TestCase instead of from
   AbstractGSContextTest, because the latter unnecessarily mocks out
-  cros_build_lib.RunCommand, in a way that breaks _testDoCommand (changing
-  cros_build_lib.RunCommand to refer to a mock instance after the
+  cros_build_lib.run, in a way that breaks _testDoCommand (changing
+  cros_build_lib.run to refer to a mock instance after the
   GenericRetry mock has already been set up to expect a reference to the
-  original RunCommand).
+  original run).
   """
 
   def setUp(self):
@@ -847,7 +847,7 @@ class GSDoCommandTest(cros_test_lib.TestCase):
       retry_stats.RetryWithStats.assert_called_once_with(
           retry_stats.GSUTIL,
           ctx._RetryFilter, retries,
-          cros_build_lib.RunCommand,
+          cros_build_lib.run,
           cmd, sleep=sleep,
           redirect_stderr=True,
           capture_output=True,

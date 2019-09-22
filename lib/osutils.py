@@ -64,8 +64,7 @@ def IsChildProcess(pid, name=None):
     an incorrect match might be possible.
   """
   cmd = ['pstree', '-Ap', str(os.getpid())]
-  pstree = cros_build_lib.RunCommand(
-      cmd, capture_output=True, print_cmd=False).output
+  pstree = cros_build_lib.run(cmd, capture_output=True, print_cmd=False).output
   if name is None:
     match = '(%d)' % pid
   else:
@@ -132,12 +131,12 @@ def WriteFile(path, content, mode='w', atomic=False, makedirs=False,
 
     try:
       mv_target = path if not atomic else path + '.tmp'
-      cros_build_lib.SudoRunCommand(['mv', write_path, mv_target],
-                                    print_cmd=False, redirect_stderr=True)
+      cros_build_lib.sudo_run(['mv', write_path, mv_target],
+                              print_cmd=False, redirect_stderr=True)
       Chown(mv_target, user='root', group='root')
       if atomic:
-        cros_build_lib.SudoRunCommand(['mv', mv_target, path],
-                                      print_cmd=False, redirect_stderr=True)
+        cros_build_lib.sudo_run(['mv', mv_target, path],
+                                print_cmd=False, redirect_stderr=True)
 
     except cros_build_lib.RunCommandError:
       SafeUnlink(write_path)
@@ -202,8 +201,8 @@ def Chown(path, user=None, group=None):
 
   if user or group:
     owner = '%s:%s' % (user, group)
-    cros_build_lib.SudoRunCommand(['chown', owner, path], print_cmd=False,
-                                  redirect_stderr=True, redirect_stdout=True)
+    cros_build_lib.sudo_run(['chown', owner, path], print_cmd=False,
+                            redirect_stderr=True, redirect_stdout=True)
 
 
 def ReadFile(path, mode='r'):
@@ -224,8 +223,8 @@ def SafeSymlink(source, dest, sudo=False):
     sudo: If True, create the link as root.
   """
   if sudo and os.getuid() != 0:
-    cros_build_lib.SudoRunCommand(['ln', '-sfT', source, dest],
-                                  print_cmd=False, redirect_stderr=True)
+    cros_build_lib.sudo_run(['ln', '-sfT', source, dest],
+                            print_cmd=False, redirect_stderr=True)
   else:
     SafeUnlink(dest)
     os.symlink(source, dest)
@@ -239,7 +238,7 @@ def SafeUnlink(path, sudo=False):
   """
   if sudo:
     try:
-      cros_build_lib.SudoRunCommand(
+      cros_build_lib.sudo_run(
           ['rm', '--', path], print_cmd=False, redirect_stderr=True)
       return True
     except cros_build_lib.RunCommandError:
@@ -271,12 +270,12 @@ def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
 
   Raises:
     EnvironmentError: If the makedir failed.
-    RunCommandError: If using RunCommand and the command failed for any reason.
+    RunCommandError: If using run and the command failed for any reason.
   """
   if sudo and not (os.getuid() == 0 and user == 'root'):
     if os.path.isdir(path):
       return False
-    cros_build_lib.SudoRunCommand(
+    cros_build_lib.sudo_run(
         ['mkdir', '-p', '--mode', oct(mode), path], user=user, print_cmd=False,
         redirect_stderr=True, redirect_stdout=True)
     return True
@@ -396,7 +395,7 @@ def RmDir(path, ignore_missing=False, sudo=False):
   """
   if sudo:
     try:
-      cros_build_lib.SudoRunCommand(
+      cros_build_lib.sudo_run(
           ['rm', '-r%s' % ('f' if ignore_missing else '',), '--', path],
           debug_level=logging.DEBUG,
           redirect_stdout=True, redirect_stderr=True)
@@ -729,7 +728,7 @@ class TempDir(object):
 
           # Log all mounts at the time of the failure, since that's the most
           # common cause.
-          mount_results = cros_build_lib.RunCommand(
+          mount_results = cros_build_lib.run(
               ['mount'], redirect_stdout=True, combine_stdout_stderr=True,
               error_code_ok=True)
           logging.error('Mounts were:')
@@ -818,12 +817,12 @@ def MountDir(src_path, dst_path, fs_type=None, sudo=True, makedirs=True,
     makedirs: Create |dst_path| if it doesn't exist.
     mount_opts: List of options to pass to `mount`.
     skip_mtab: Whether to write new entries to /etc/mtab.
-    kwargs: Pass all other args to RunCommand.
+    kwargs: Pass all other args to run.
   """
   if sudo:
-    runcmd = cros_build_lib.SudoRunCommand
+    runcmd = cros_build_lib.sudo_run
   else:
-    runcmd = cros_build_lib.RunCommand
+    runcmd = cros_build_lib.run
 
   if makedirs:
     SafeMakedirs(dst_path, sudo=sudo)
@@ -864,9 +863,9 @@ def UmountDir(path, lazy=True, sudo=True, cleanup=True):
              Note: Does not work when |lazy| is set.
   """
   if sudo:
-    runcmd = cros_build_lib.SudoRunCommand
+    runcmd = cros_build_lib.sudo_run
   else:
-    runcmd = cros_build_lib.RunCommand
+    runcmd = cros_build_lib.run
 
   cmd = ['umount', '-d', path]
   if lazy:
@@ -952,9 +951,9 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None, multiline=False):
     env = {}
   elif env is True:
     env = None
-  output = cros_build_lib.RunCommand(['bash'], env=env, redirect_stdout=True,
-                                     redirect_stderr=True, print_cmd=False,
-                                     input='\n'.join(dump_script)).output
+  output = cros_build_lib.run(['bash'], env=env, redirect_stdout=True,
+                              redirect_stderr=True, print_cmd=False,
+                              input='\n'.join(dump_script)).output
   return key_value_store.LoadData(output, multiline=multiline)
 
 
@@ -980,7 +979,7 @@ def ListBlockDevices(device_path=None, in_bytes=False):
     cmd.append(device_path)
 
   cmd += ['--output', ','.join(keys)]
-  output = cros_build_lib.RunCommand(
+  output = cros_build_lib.run(
       cmd, debug_level=logging.DEBUG, capture_output=True).output.strip()
   devices = []
   for line in output.splitlines():

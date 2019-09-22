@@ -257,7 +257,7 @@ I am the first commit.
     # fluke of being invoked from w/in a git repo.
     if cwd is None:
       cwd = self.default_cwd
-    return cros_build_lib.RunCommand(
+    return cros_build_lib.run(
         cmd, cwd=cwd, print_cmd=False, capture_output=True).output.strip()
 
   def _GetSha1(self, cwd, refspec):

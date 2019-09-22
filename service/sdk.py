@@ -137,7 +137,7 @@ def Create(arguments):
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk')]
   cmd.extend(arguments.GetArgList())
 
-  cros_build_lib.RunCommand(cmd)
+  cros_build_lib.run(cmd)
 
   version = GetChrootVersion(arguments.chroot_path)
   if not version and not arguments.replace:
@@ -184,6 +184,6 @@ def Update(arguments):
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'update_chroot')]
   cmd.extend(arguments.GetArgList())
 
-  cros_build_lib.RunCommand(cmd)
+  cros_build_lib.run(cmd)
 
   return GetChrootVersion()
