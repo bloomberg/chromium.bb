@@ -78,7 +78,7 @@ class InternalCQError(cros_patch.PatchException):
     cros_patch.PatchException.__init__(self, patch, message=message)
 
   def ShortExplanation(self):
-    return 'failed to apply due to a CQ issue: %s' % (self.message,)
+    return 'failed to apply due to a CQ issue: %s' % (self.msg,)
 
 
 class InconsistentReloadException(Exception):
@@ -103,8 +103,8 @@ class PatchFailedToSubmit(cros_patch.PatchException):
 
   def ShortExplanation(self):
     error = 'could not be submitted by the CQ.'
-    if self.message:
-      error += ' The error message from Gerrit was: %s' % (self.message,)
+    if self.msg:
+      error += ' The error message from Gerrit was: %s' % (self.msg,)
     else:
       error += ' The Gerrit server might be having trouble.'
     return error

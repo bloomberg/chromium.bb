@@ -195,7 +195,7 @@ class PatchException(Exception):
           % (type(patch), patch))
     Exception.__init__(self)
     self.patch = patch
-    self.message = message
+    self.msg = message
     self.args = (patch,)
     if message is not None:
       self.args += (message,)
@@ -207,7 +207,7 @@ class PatchException(Exception):
     starting with the CL number. This is useful for writing nice error
     messages about dependency errors.
     """
-    return 'failed: %s' % (self.message,)
+    return 'failed: %s' % (self.msg,)
 
   def __str__(self):
     return '%s %s' % (self.patch.PatchLink(), self.ShortExplanation())
@@ -244,8 +244,8 @@ class ApplyPatchException(PatchException):
     if self.files:
       s += ('\n\nThe conflicting files are amongst:\n\n'
             '%s' % (self._StringifyFilenames(),))
-    if self.message:
-      s += '\n\n%s' % (self.message,)
+    if self.msg:
+      s += '\n\n%s' % (self.msg,)
     return s
 
 
@@ -363,13 +363,12 @@ class BrokenChangeID(PatchException):
   """Raised if a patch has an invalid or missing Change-ID."""
 
   def __init__(self, patch, message, missing=False):
-    PatchException.__init__(self, patch)
-    self.message = message
+    PatchException.__init__(self, patch, message=message)
     self.missing = missing
-    self.args = (patch, message, missing)
+    self.args += (missing,)
 
   def ShortExplanation(self):
-    return 'has a broken ChangeId: %s' % (self.message,)
+    return 'has a broken ChangeId: %s' % (self.msg,)
 
 
 class ChangeMatchesMultipleCheckouts(PatchException):
