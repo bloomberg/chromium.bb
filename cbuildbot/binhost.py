@@ -113,7 +113,7 @@ _PrebuiltMapping = collections.namedtuple(
 class PrebuiltMapping(_PrebuiltMapping):
   """A tuple of dicts describing our Chrome PFQs.
 
-  Members:
+  Attributes:
     by_compat_id: A dict mapping CompatIds to sets of BoardKey objects.
     by_arch_useflags: A dict mapping (arch, useflags) tuples to sets of
       BoardKey objects.

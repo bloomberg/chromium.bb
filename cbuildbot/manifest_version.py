@@ -217,16 +217,6 @@ class VersionInfo(object):
      which contains the version information.
   2) passing in a string with the 3 version components.
   3) using a source repo and calling from_repo().
-
-  Args:
-    version_string: Optional 3 component version string to parse.  Contains:
-        build_number: release build number.
-        branch_build_number: current build number on a branch.
-        patch_number: patch number.
-    chrome_branch: If version_string specified, specify chrome_branch i.e. 13.
-    incr_type: How we should increment this version -
-        chrome_branch|build|branch|patch
-    version_file: version file location.
   """
   # Pattern for matching build name format.  Includes chrome branch hack.
   VER_PATTERN = r'(\d+).(\d+).(\d+)(?:-R(\d+))*'
@@ -235,6 +225,18 @@ class VersionInfo(object):
 
   def __init__(self, version_string=None, chrome_branch=None,
                incr_type='build', version_file=None):
+    """Initialize.
+
+    Args:
+      version_string: Optional 3 component version string to parse.  Contains:
+          build_number: release build number.
+          branch_build_number: current build number on a branch.
+          patch_number: patch number.
+      chrome_branch: If version_string specified, specify chrome_branch i.e. 13.
+      incr_type: How we should increment this version -
+          chrome_branch|build|branch|patch
+      version_file: version file location.
+    """
     if version_file:
       self.version_file = version_file
       logging.debug('Using VERSION _FILE = %s', version_file)

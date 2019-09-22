@@ -25,7 +25,7 @@ from chromite.lib import cros_logging as logging
 class GitMock(partial_mock.PartialCmdMock):
   """Mocks git.RunGit.
 
-  Usage:
+  Examples:
     mock = GitMock('/path/to/git_repository')
     mock.AddRunGitResult(git_command, output=...)
     # call git.RunGit(...)

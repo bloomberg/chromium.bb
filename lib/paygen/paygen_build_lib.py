@@ -326,7 +326,7 @@ class PayloadTest(utils.RestrictedAttrDict):
   You must either use a delta payload, or specify both the src_channel and
   src_version.
 
-  Attrs:
+  Attributes:
     payload: A gspaths.Payload object describing the payload to be tested.
 
     src_channel: The channel of the image to test updating from. Required

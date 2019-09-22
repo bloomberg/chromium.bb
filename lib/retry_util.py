@@ -77,14 +77,13 @@ class _RetryDelayStrategy(object):
 class WithRetry(object):
   """Decorator to handle retry on exception.
 
-  Example:
+  Examples:
+    @WithRetry(max_retry=3)
+    def _run():
+      ... do something ...
+    _run()
 
-  @WithRetry(max_retry=3)
-  def _run():
-    ... do something ...
-  _run()
-
-  If _run() raises an exception, it retries at most three times.
+    If _run() raises an exception, it retries at most three times.
 
   Retrying strategy.
 
@@ -126,25 +125,6 @@ class WithRetry(object):
     as 'jitter'. (Often, this helps to avoid consecutive conflicting situation)
     |jitter| is specifies the duration of jitter delay, randomized up to
     50% in either direction.
-
-  Parameter details are as follows:
-
-  max_retry: A positive integer representing how many times to retry the
-    command before giving up.  Worst case, the command is invoked
-    (max_retry + 1) times before failing.
-  handler, exception: Please see above for details.
-  log_all_retries: when True, logs all retries.
-  sleep, backoff_factor, jitter: Please see above for details.
-  raise_first_exception_on_failure: determines which excecption is raised upon
-    failure after retries. If True, the first exception that was encountered.
-    Otherwise, the final one.
-  exception_to_raise: Optional exception type. If given, raises its instance,
-    instead of the one raised from the retry body.
-  status_callback: Optional callback invoked after each call of |functor|. It
-    takes two arguments: |attempt| which is the index of the last attempt
-    (0-based), and |success| representing whether the last attempt was
-    successfully done or not. If the callback raises an exception, no further
-    retry will be made, and the exception will be propagated to the caller.
   """
 
   def __init__(self,
@@ -152,6 +132,30 @@ class WithRetry(object):
                sleep=0, backoff_factor=1, jitter=0,
                raise_first_exception_on_failure=True, exception_to_raise=None,
                status_callback=None):
+    """Initialize.
+
+    Args:
+      max_retry: A positive integer representing how many times to retry the
+          command before giving up.  Worst case, the command is invoked
+          (max_retry + 1) times before failing.
+      handler: Please see above for details.
+      exception: Please see above for details.
+      log_all_retries: when True, logs all retries.
+      sleep: Please see above for details.
+      backoff_factor: Please see above for details.
+      jitter: Please see above for details.
+      raise_first_exception_on_failure: determines which excecption is raised
+          upon failure after retries. If True, the first exception that was
+          encountered. Otherwise, the final one.
+      exception_to_raise: Optional exception type. If given, raises its
+          instance, instead of the one raised from the retry body.
+      status_callback: Optional callback invoked after each call of |functor|.
+          It takes two arguments: |attempt| which is the index of the last
+          attempt (0-based), and |success| representing whether the last attempt
+          was successfully done or not. If the callback raises an exception, no
+          further retry will be made, and the exception will be propagated to
+          the caller.
+    """
     if max_retry < 0:
       raise ValueError('max_retry needs to be zero or more: %d' % max_retry)
     self._max_retry = max_retry

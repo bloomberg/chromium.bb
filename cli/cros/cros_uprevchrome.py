@@ -64,9 +64,8 @@ class UprevChromeCommand(command.CliCommand):
   CLs to Gerrit.
 
   Examples:
-
-  cros uprevchrome --pfq-build XXXX --bug='chromium:XXXXX'
-      [--dry-run] [--debug] [--nowipe] [--draft]
+    cros uprevchrome --pfq-build XXXX --bug='chromium:XXXXX'
+        [--dry-run] [--debug] [--nowipe] [--draft]
 
   After successfully executing this tool, review and submit CLs from Gerrit.
   https://chromium-review.googlesource.com

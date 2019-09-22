@@ -22,7 +22,7 @@ class Score(object):
 
   Scores can be assigned by constructor or Update().
 
-  Attr:
+  Attributes:
     values: A list of scores.
     mean: Mean of the scores.
     variance: Variance of the scores.
@@ -112,7 +112,7 @@ class Score(object):
 class CommitInfo(object):
   """Stores commit info.
 
-  Attr:
+  Attributes:
     sha1: Commit SHA1.
     title: Commit title.
     score: Evaluation score of the commit.

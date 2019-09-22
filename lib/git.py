@@ -324,7 +324,7 @@ class ProjectCheckout(dict):
 class Manifest(object):
   """SAX handler that parses the manifest document.
 
-  Properties:
+  Attributes:
     checkouts_by_name: A dictionary mapping the names for <project> tags to a
       list of ProjectCheckout objects.
     checkouts_by_path: A dictionary mapping paths for <project> tags to a single

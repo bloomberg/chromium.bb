@@ -49,7 +49,7 @@ class ModificationTimeMonitor(object):
   mtimes. Note that a key may be associated with multiple paths, in which case
   the latest mtime among them will be returned.
 
-  Members:
+  Attributes:
     _tasks: A list of (key, path) pairs to check.
     _result_queue: A queue populated with corresponding (key, mtime) pairs.
   """
@@ -85,7 +85,7 @@ class ModificationTimeMonitor(object):
 class WorkonPackageInfo(object):
   """Class for getting information about workon packages.
 
-  Members:
+  Attributes:
     cp: The package name (e.g. chromeos-base/power_manager).
     mtime: The modification time of the installed package.
     projects: The project(s) associated with the package.

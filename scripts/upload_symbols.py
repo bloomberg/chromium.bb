@@ -157,7 +157,7 @@ def IsTarball(path):
 class SymbolFile(object):
   """This class represents the state of a symbol file during processing.
 
-  Properties:
+  Attributes:
     display_path: Name of symbol file that should be consistent between builds.
     file_name: Transient path of the symbol file.
     header: ReadSymsHeader output. Dict with assorted meta-data.

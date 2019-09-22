@@ -399,7 +399,7 @@ class BuildConfig(AttrDict):
 class VMTestConfig(object):
   """Config object for virtual machine tests suites.
 
-  Members:
+  Attributes:
     test_type: Test type to be run.
     test_suite: Test suite to be run in VMTest.
     timeout: Number of seconds to wait before timing out waiting for
@@ -436,7 +436,7 @@ class VMTestConfig(object):
 class GCETestConfig(object):
   """Config object for GCE tests suites.
 
-  Members:
+  Attributes:
     test_type: Test type to be run.
     test_suite: Test suite to be run in GCETest.
     timeout: Number of seconds to wait before timing out waiting for
@@ -463,7 +463,7 @@ class GCETestConfig(object):
 class TastVMTestConfig(object):
   """Config object for a Tast virtual-machine-based test suite.
 
-  Members:
+  Attributes:
     name: String containing short human-readable name describing test suite.
     test_exprs: List of string expressions describing which tests to run; this
                 is passed directly to the 'tast run' command. See
@@ -490,7 +490,7 @@ class TastVMTestConfig(object):
 class MoblabVMTestConfig(object):
   """Config object for moblab tests suites.
 
-  Members:
+  Attributes:
     test_type: Test type to be run.
     timeout: Number of seconds to wait before timing out waiting for
              results.
@@ -509,7 +509,7 @@ class MoblabVMTestConfig(object):
 class ModelTestConfig(object):
   """Model specific config that controls which test suites are executed.
 
-  Members:
+  Attributes:
     name: The name of the model that will be tested (matches model label)
     lab_board_name: The name of the board in the lab (matches board label)
     test_suites: List of hardware test suites that will be executed.
@@ -530,7 +530,7 @@ class ModelTestConfig(object):
 class HWTestConfig(object):
   """Config object for hardware tests suites.
 
-  Members:
+  Attributes:
     suite: Name of the test suite to run.
     timeout: Number of seconds to wait before timing out waiting for
              results.

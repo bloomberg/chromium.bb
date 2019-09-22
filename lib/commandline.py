@@ -206,7 +206,7 @@ class DeviceParser(object):
   The last item above is an alias for ssh'ing into a virtual machine on a
   localhost.  It gets translated into 'localhost:9222'.
 
-  Usage:
+  Examples:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(

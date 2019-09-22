@@ -220,18 +220,19 @@ class CalculateRootfsHash(object):
   new hashtree for the image.  The temporary file is deleted along with the
   instance.
 
-  Attributes:
-    calculated_dm_config: Updated DmConfig for the kernel
-    calculated_kernel_cmdline: New kernel_cmdline.CommandLine
-    hashtree_filename: Name of the temporary file containing the new hashtree.
-
-  Example:  (See UpdateRootfsHash below)
+  Examples:
+    (See UpdateRootfsHash below)
     image = image_lib.LoopbackPartitions(image_path)
     rootfs_hash = CalculateRootfsHash(
         image, kernel_cmdline.CommandLine(image.GetPartitionDevName('KERN-A')))
     <copy or compare updated hashtree, dm_config, kernel_cmdline to the image>
     <do other things, confident that when rootfs_hash is garbage collected, the
     underlying new hashtree file will be deleted.>
+
+  Attributes:
+    calculated_dm_config: Updated DmConfig for the kernel
+    calculated_kernel_cmdline: New kernel_cmdline.CommandLine
+    hashtree_filename: Name of the temporary file containing the new hashtree.
   """
 
   def __init__(self, image, cmd_line):

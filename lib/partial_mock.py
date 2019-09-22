@@ -179,7 +179,7 @@ class HasString(str):
 
   It is used for mock.assert_called_with(). Note that it is not a Comparator.
 
-  Usage:
+  Examples:
     some_mock.assert_called_with(
         partial_mock.HasString('need_this_keyword'))
   """

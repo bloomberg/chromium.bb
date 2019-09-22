@@ -1116,19 +1116,21 @@ class MountOverlayContext(object):
 
   An overlay filesystem will be mounted at |mount_dir|, and will be unmounted
   when the context exits.
-
-  Args:
-    lower_dir: The lower directory (read-only).
-    upper_dir: The upper directory (read-write).
-    mount_dir: The mount point for the merged overlay.
-    cleanup: Whether to remove the mount point after unmounting. This uses an
-        internal retry logic for cases where unmount is successful but the
-        directory still appears busy, and is generally more resilient than
-        removing it independently.
   """
 
   OVERLAY_FS_MOUNT_ERRORS = (32,)
   def __init__(self, lower_dir, upper_dir, mount_dir, cleanup=False):
+    """Initialize.
+
+    Args:
+      lower_dir: The lower directory (read-only).
+      upper_dir: The upper directory (read-write).
+      mount_dir: The mount point for the merged overlay.
+      cleanup: Whether to remove the mount point after unmounting. This uses an
+          internal retry logic for cases where unmount is successful but the
+          directory still appears busy, and is generally more resilient than
+          removing it independently.
+    """
     self._lower_dir = lower_dir
     self._upper_dir = upper_dir
     self._mount_dir = mount_dir

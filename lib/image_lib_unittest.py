@@ -62,22 +62,23 @@ LOOP_PARTS_DICT = {
 LOOP_PARTS_LIST = LOOP_PARTS_DICT.values()
 
 class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
-  """Mocked loopback partition class to use in unit tests.
-
-  Args:
-    (shared with LoopbackPartitions)
-    path: Path to the image file.
-    destination: destination directory.
-    part_ids: Mount these partitions at context manager entry.
-    mount_opts: Use these mount_opts for mounting |part_ids|.
-    (unique to LoopbackPartitionsMock)
-    dev: Path for the base loopback device.
-    part_count: How many partition device files to make up.  Default: normal
-        partition table.
-  """
+  """Mocked loopback partition class to use in unit tests."""
   # pylint: disable=super-init-not-called
   def __init__(self, path, destination=None, part_ids=None, mount_opts=None,
                dev=LOOP_DEV, part_count=0):
+    """Initialize.
+
+    Args:
+      (shared with LoopbackPartitions)
+      path: Path to the image file.
+      destination: destination directory.
+      part_ids: Mount these partitions at context manager entry.
+      mount_opts: Use these mount_opts for mounting |part_ids|.
+      (unique to LoopbackPartitionsMock)
+      dev: Path for the base loopback device.
+      part_count: How many partition device files to make up.  Default: normal
+          partition table.
+    """
     self.path = path
     self.dev = dev
     self.part_ids = part_ids

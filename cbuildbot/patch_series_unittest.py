@@ -38,10 +38,11 @@ def FakeFetchChangesForRepo(fetched_changes, by_repo, repo):
 class FakePatch(partial_mock.PartialMock):
   """Mocks out dependency and fetch methods of GitRepoPatch.
 
-  Usage: set FakePatch.parents, .cq and .build_roots per patch, and set
-  FakePatch.assertEqual to your TestCase's assertEqual method.  The behavior of
-  `GerritDependencies`, `PaladinDependencies` and `Fetch` depends on the patch
-  id.
+  Examples:
+    set FakePatch.parents, .cq and .build_roots per patch, and set
+    FakePatch.assertEqual to your TestCase's assertEqual method.  The behavior
+    of GerritDependencies, PaladinDependencies and Fetch` depends on the patch
+    id.
   """
 
   TARGET = 'chromite.lib.patch.GitRepoPatch'

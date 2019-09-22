@@ -40,31 +40,29 @@ class PromoteCandidateException(Exception):
 
 
 class _LKGMCandidateInfo(manifest_version.VersionInfo):
-  """Class to encapsualte the chrome os lkgm candidate info
-
-  You can instantiate this class in two ways.
-  1)using a version file, specifically chromeos_version.sh,
-  which contains the version information.
-  2) just passing in the 4 version components (major, minor, sp, patch and
-    revision number),
-  Args:
-      You can instantiate this class in two ways.
-  1)using a version file, specifically chromeos_version.sh,
-  which contains the version information.
-  2) passing in a string with the 3 version components + revision e.g. 41.0.0-r1
-  Args:
-    version_string: Optional 3 component version string to parse.  Contains:
-        build_number: release build number.
-        branch_build_number: current build number on a branch.
-        patch_number: patch number.
-        revision_number: version revision
-    chrome_branch: If version_string specified, specify chrome_branch i.e. 13.
-    version_file: version file location.
-  """
+  """Class to encapsualte the Chrome OS LKGM candidate info."""
   LKGM_RE = r'(\d+\.\d+\.\d+)(?:-rc(\d+))?'
 
   def __init__(self, version_string=None, chrome_branch=None, incr_type=None,
                version_file=None):
+    """Initialize.
+
+    You can instantiate this in a few ways:
+    1) Using |version_file|, specifically chromeos_version.sh,
+       which contains the version information.
+    2) Just passing in |version_string| with 3 or 4 version components
+       e.g. 41.0.0-r1.
+
+    Args:
+      version_string: Optional 3 component version string to parse.  Contains:
+          build_number: release build number.
+          branch_build_number: current build number on a branch.
+          patch_number: patch number.
+          revision_number: version revision
+      chrome_branch: If version_string specified, specify chrome_branch i.e. 13.
+      incr_type: How we should increment this version - build|branch|patch.
+      version_file: version file location.
+    """
     self.revision_number = 1
     if version_string:
       match = re.search(self.LKGM_RE, version_string)

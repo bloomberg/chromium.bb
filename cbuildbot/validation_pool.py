@@ -140,8 +140,9 @@ class ValidationPool(object):
   This class can be used to acquire a set of commits that form a pool of
   commits ready to be validated and committed.
 
-  Usage:  Use ValidationPool.AcquirePool -- a static
-  method that grabs the commits that are ready for validation.
+  Examples:
+    Use ValidationPool.AcquirePool -- a static method that grabs the commits
+    that are ready for validation.
   """
 
   GLOBAL_DRYRUN = False
