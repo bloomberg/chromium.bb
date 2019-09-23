@@ -816,7 +816,7 @@ class Licensing(object):
 
   @property
   def sorted_licenses(self):
-    return sorted(self.licenses.keys(), key=str.lower)
+    return sorted(self.licenses.keys(), key=lambda x: x.lower)
 
   def _LoadLicenseDump(self, pkg):
     save_file = pkg.license_dump_path
@@ -1189,6 +1189,11 @@ def ReadUnknownEncodedFile(file_path, logging_text=None):
   # XML 1.0 acceptable character range:
   # Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | \
   #          [#x10000-#x10FFFF]
+
+  # Strip out common/OK values silently.
+  silent_chars_re = re.compile(u'[\x0c]')
+  file_txt = silent_chars_re.sub('', file_txt)
+
   illegal_chars_re = re.compile(
       u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
 
