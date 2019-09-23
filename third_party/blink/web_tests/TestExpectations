@@ -5912,9 +5912,6 @@ crbug.com/963141 [ Mac ] virtual/audio-service/media/video-aspect-ratio.html [ P
 crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
 crbug.com/963141 [ Linux ] virtual/audio-service/media/video-object-fit.html [ Pass Failure ]
 
-# Sheriff 2019-05-17
-crbug.com/964239 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
-
 # Workaround for bug; should be removed soon.
 crbug.com/959693 external/wpt/trusted-types/WorkerGlobalScope-importScripts.https.html [ Timeout ]
 
@@ -5923,7 +5920,6 @@ crbug.com/972476 std-switch/switch-appearance.html [ Failure ]
 crbug.com/972476 std-switch/switch-appearance-customization.html [ Failure ]
 
 # Sheriff 2019-05-20
-crbug.com/964239 external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] virtual/audio-service/media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 
