@@ -64,6 +64,7 @@ class DatarateTestSVC
       initialize_svc(number_temporal_layers_, number_spatial_layers_,
                      &svc_params_);
       encoder->Control(AV1E_SET_SVC_PARAMS, &svc_params_);
+      encoder->Control(AV1E_SET_ENABLE_ORDER_HINT, 0);
     }
     if (number_spatial_layers_ == 2) {
       spatial_layer_id = (layer_frame_cnt_ % 2 == 0) ? 0 : 1;
