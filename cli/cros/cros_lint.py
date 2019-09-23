@@ -165,7 +165,11 @@ def _PylintFile(path, output_format, debug):
   if output_format != 'default':
     cmd.append('--output-format=%s' % output_format)
   cmd.append(path)
-  extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath([path]))}
+  extra_env = {
+      # TODO(crbug.com/984182): Drop EPYTHON setting if they ever finish.
+      'EPYTHON': 'python2',
+      'PYTHONPATH': ':'.join(_GetPythonPath([path])),
+  }
   return _LinterRunCommand(cmd, debug, extra_env=extra_env)
 
 
