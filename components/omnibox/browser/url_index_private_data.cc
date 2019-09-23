@@ -654,8 +654,7 @@ HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
                     word_history_id_set.end());
     }
   }
-  HistoryIDSet history_id_set(buffer.begin(), buffer.end(),
-                              base::KEEP_FIRST_OF_DUPES);
+  HistoryIDSet history_id_set(buffer.begin(), buffer.end());
 
   // Record a new cache entry for this word if the term is longer than
   // a single character.
@@ -1145,8 +1144,7 @@ bool URLIndexPrivateData::RestoreCharWordMap(
       return false;
     base::char16 uni_char = static_cast<base::char16>(entry.char_16());
     const RepeatedField<int32_t>& word_ids = entry.word_id();
-    char_word_map_[uni_char] =
-        WordIDSet(word_ids.begin(), word_ids.end(), base::KEEP_FIRST_OF_DUPES);
+    char_word_map_[uni_char] = WordIDSet(word_ids.begin(), word_ids.end());
   }
   return true;
 }
@@ -1167,8 +1165,8 @@ bool URLIndexPrivateData::RestoreWordIDHistoryMap(
       return false;
     WordID word_id = entry.word_id();
     const RepeatedField<int64_t>& history_ids = entry.history_id();
-    word_id_history_map_[word_id] = HistoryIDSet(
-        history_ids.begin(), history_ids.end(), base::KEEP_FIRST_OF_DUPES);
+    word_id_history_map_[word_id] =
+        HistoryIDSet(history_ids.begin(), history_ids.end());
     for (HistoryID history_id : history_ids)
       history_id_word_map_[history_id].insert(word_id);
   }
