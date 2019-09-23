@@ -1827,11 +1827,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "enable-url-loader-lite-page-server-previews",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "enable-usbguard",
     "owners": [ "allenwebb", "mnissler", "jorgelo" ],
     "expiry_milestone": 80

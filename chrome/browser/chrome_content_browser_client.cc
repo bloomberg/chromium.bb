@@ -4902,7 +4902,7 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   // |network_loader_factory| and have interceptors create one themselves.
   // https://crbug.com/931786
   if (base::FeatureList::IsEnabled(
-          previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
+          previews::features::kLitePageServerPreviews)) {
     interceptors.push_back(
         std::make_unique<previews::PreviewsLitePageURLLoaderInterceptor>(
             network_loader_factory,

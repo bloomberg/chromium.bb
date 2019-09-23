@@ -703,13 +703,6 @@ const char kEnableLitePageServerPreviewsDescription[] =
     "to a Google-owned domain that serves a pre-rendered version of the "
     "original page. Also known as Lite Page Redirect Previews.";
 
-const char kEnableURLLoaderLitePageServerPreviewsName[] =
-    "Lite Page Server Previews using URL Loader";
-const char kEnableURLLoaderLitePageServerPreviewsDescription[] =
-    "Enable using a network service URL Loader for Lite Page Server Previews. "
-    "This requires enable-lite-page-server-previews to be enabled along with "
-    "network-service.";
-
 const char kEnablePreviewsCoinFlipName[] = "Enable Previews Coin Flip";
 const char kEnablePreviewsCoinFlipDescription[] =
     "Enable coin flip experimentation of Previews.";

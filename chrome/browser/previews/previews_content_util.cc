@@ -430,9 +430,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   // Check if a LITE_PAGE_REDIRECT preview was actually served.
   if (previews_state & content::LITE_PAGE_REDIRECT_ON) {
     if (IsLitePageRedirectPreviewURL(url)) {
-      if (navigation_handle &&
-          base::FeatureList::IsEnabled(
-              previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
+      if (navigation_handle) {
         previews_data->set_server_lite_page_info(
             CreateServerLitePageInfoFromNavigationHandle(navigation_handle));
       }

@@ -306,7 +306,6 @@ class BasePreviewsLitePageServerBrowserTest
 
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews,
-         previews::features::kHTTPSServerPreviewsUsingURLLoader,
          optimization_guide::features::kOptimizationHints,
          previews::features::kResourceLoadingHints,
          data_reduction_proxy::features::

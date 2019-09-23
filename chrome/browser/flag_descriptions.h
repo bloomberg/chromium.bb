@@ -425,9 +425,6 @@ extern const char kEnableImplicitRootScrollerDescription[];
 extern const char kEnableLitePageServerPreviewsName[];
 extern const char kEnableLitePageServerPreviewsDescription[];
 
-extern const char kEnableURLLoaderLitePageServerPreviewsName[];
-extern const char kEnableURLLoaderLitePageServerPreviewsDescription[];
-
 extern const char kBuiltInModuleAllName[];
 extern const char kBuiltInModuleAllDescription[];
 
