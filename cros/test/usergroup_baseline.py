@@ -180,7 +180,8 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='kerberosd', gid=20131, users={'kerberosd',
                                                     'kerberosd-exec'}),
     GroupEntry(group='hidraw', gid=403, users={'fwupdate-hidraw'}),
-    GroupEntry(group='cups-proxy', gid=20136, users={'crosvm', 'cups-proxy'}),
+    GroupEntry(group='cups-proxy', gid=20136, users={'crosvm', 'cups-proxy',
+                                                     'pluginvm'}),
 ))
 
 GROUP_BASELINE_LAKITU = dict((e.group, e) for e in (
