@@ -25,7 +25,7 @@ using input_method::InputMethodEngineBase;
 namespace {
 const char kInputImeApiErrorEngineNotAvailable[] = "Engine is not available";
 const char kInputImeApiErrorSetKeyEventsFail[] = "Could not send key events";
-}
+}  // namespace
 namespace ui {
 
 ImeObserver::ImeObserver(const std::string& extension_id, Profile* profile)
@@ -270,11 +270,9 @@ InputImeEventRouterFactory* InputImeEventRouterFactory::GetInstance() {
   return base::Singleton<InputImeEventRouterFactory>::get();
 }
 
-InputImeEventRouterFactory::InputImeEventRouterFactory() {
-}
+InputImeEventRouterFactory::InputImeEventRouterFactory() = default;
 
-InputImeEventRouterFactory::~InputImeEventRouterFactory() {
-}
+InputImeEventRouterFactory::~InputImeEventRouterFactory() = default;
 
 InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
   if (!profile)
@@ -407,7 +405,7 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
   std::vector<InputMethodEngineBase::KeyboardEvent> key_data_out;
 
   for (const auto& key_event : params.key_data) {
-    key_data_out.push_back(InputMethodEngineBase::KeyboardEvent());
+    key_data_out.emplace_back();
     InputMethodEngineBase::KeyboardEvent& event = key_data_out.back();
     event.type = input_ime::ToString(key_event.type);
     event.key = key_event.key;
