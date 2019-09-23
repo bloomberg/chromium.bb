@@ -5904,6 +5904,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Completed"/>
 </enum>
 
+<enum name="BooleanCompositorCSSPaint">
+  <int value="0" label="A CSS Paint is fall back on the main thread"/>
+  <int value="1" label="A CSS Paint is painted on the compositor thread"/>
+</enum>
+
 <enum name="BooleanConfirmed">
   <int value="0" label="Not Confirmed"/>
   <int value="1" label="Confirmed"/>
