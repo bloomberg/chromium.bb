@@ -1299,7 +1299,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
          REF_FRAMES * sizeof(*cm->remapped_ref_idx));
 
   cpi->td.mb.e_mbd.delta_qindex = 0;
-#if ENABLE_KF_TPL
+#if ENABLE_KF_TPL && !CONFIG_REALTIME_ONLY
   if (oxcf->lag_in_frames > 0 && oxcf->pass != 1 &&
       frame_params.frame_type == KEY_FRAME && frame_params.show_frame) {
     av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
@@ -1312,6 +1312,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cm->using_qmatrix = cpi->oxcf.using_qm;
     cm->min_qmlevel = cpi->oxcf.qm_minlevel;
     cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
+#if !CONFIG_REALTIME_ONLY
     if (oxcf->lag_in_frames > 0 && oxcf->pass != 1) {
       if (cpi->gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
         av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
@@ -1320,6 +1321,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
         assert(cpi->num_gf_group_show_frames == 1);
       }
     }
+#endif
   }
 
 #if TEMPORAL_FILTER_KEY_FRAME

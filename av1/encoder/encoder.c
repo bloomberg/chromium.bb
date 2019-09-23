@@ -3876,6 +3876,7 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
   cm->switchable_motion_mode = 1;
 }
 
+#if !CONFIG_REALTIME_ONLY
 static int get_gfu_boost_from_r0(double r0, int frames_to_key) {
   double factor = sqrt((double)frames_to_key);
   factor = AOMMIN(factor, 10.0);
@@ -3891,6 +3892,7 @@ static int get_kf_boost_from_r0(double r0, int frames_to_key) {
   const int boost = (int)rint((75.0 + 14.0 * factor) / r0);
   return boost;
 }
+#endif
 
 int combine_prior_with_tpl_boost(int prior_boost, int tpl_boost,
                                  int frames_to_key) {
@@ -3902,6 +3904,7 @@ int combine_prior_with_tpl_boost(int prior_boost, int tpl_boost,
   return boost;
 }
 
+#if !CONFIG_REALTIME_ONLY
 static void process_tpl_stats_frame(AV1_COMP *cpi) {
   const GF_GROUP *const gf_group = &cpi->gf_group;
   AV1_COMMON *const cm = &cpi->common;
@@ -3972,6 +3975,7 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
     }
   }
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 static int determine_frame_high_precision_mv(const AV1_COMP *cpi, int qindex) {
   (void)cpi;
@@ -3991,11 +3995,13 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   // Setup variables that depend on the dimensions of the frame.
   av1_set_speed_features_framesize_dependent(cpi, cpi->speed);
 
+#if !CONFIG_REALTIME_ONLY
   if (cpi->oxcf.enable_tpl_model && cpi->tpl_model_pass == 0 &&
       is_frame_tpl_eligible(cpi)) {
     process_tpl_stats_frame(cpi);
     av1_tpl_rdmult_setup(cpi);
   }
+#endif
 
   // Decide q and q bounds.
   *q = av1_rc_pick_q_and_bounds(cpi, &cpi->rc, cm->width, cm->height,
@@ -5138,12 +5144,14 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       loop = 1;
     }
 
+#if !CONFIG_REALTIME_ONLY
     if (cpi->tpl_model_pass == 1) {
       assert(cpi->oxcf.enable_tpl_model == 2);
       av1_tpl_setup_forward_stats(cpi);
       cpi->tpl_model_pass = 0;
       loop = 1;
     }
+#endif
 
     if (loop) {
       ++loop_count;

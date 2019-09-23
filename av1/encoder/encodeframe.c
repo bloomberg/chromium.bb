@@ -3637,7 +3637,6 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
 
   return rdmult;
 }
-#endif  // !CONFIG_REALTIME_ONLY
 
 // analysis_type 0: Use mc_dep_cost and intra_cost
 // analysis_type 1: Use count of best inter predictor chosen
@@ -3812,6 +3811,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
     }
   }
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 #define AVG_CDF_WEIGHT_LEFT 3
 #define AVG_CDF_WEIGHT_TOP_RIGHT 1
@@ -4160,11 +4160,12 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
 
     x->sb_energy_level = 0;
+#if !CONFIG_REALTIME_ONLY
     if (cm->delta_q_info.delta_q_present_flag) {
       setup_delta_q(cpi, td, x, tile_info, mi_row, mi_col, num_planes);
       av1_tpl_rdmult_setup_sb(cpi, x, sb_size, mi_row, mi_col);
     }
-
+#endif
     td->mb.cb_coef_buff = av1_get_cb_coeff_buffer(cpi, mi_row, mi_col);
 
     MB_MODE_INFO **mi = cm->mi_grid_base + get_mi_grid_idx(cm, mi_row, mi_col);
