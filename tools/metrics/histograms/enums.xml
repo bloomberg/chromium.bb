@@ -32667,6 +32667,19 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
 </enum>
 
+<enum name="IppAttribute">
+  <int value="0" label="confirmation-sheet-print"/>
+  <int value="1" label="finishings"/>
+  <int value="2" label="ipp-attribute-fidelity"/>
+  <int value="3" label="job-name"/>
+  <int value="4" label="job-priority"/>
+  <int value="5" label="job-sheets"/>
+  <int value="6" label="multiple-document-handling"/>
+  <int value="7" label="orientation-requested"/>
+  <int value="8" label="output-bin"/>
+  <int value="9" label="print-quality"/>
+</enum>
+
 <enum name="IPPermissionStatus">
   <int value="0" label="Unknown"/>
   <int value="1" label="Not requested"/>
