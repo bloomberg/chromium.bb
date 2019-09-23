@@ -807,6 +807,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "enable-accessibility-expose-display-none",
+    "owners": [ "adettenb@microsoft.com", "//third_party/blink/renderer/modules/accessibility/OWNERS", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-accessibility-image-descriptions",
     "owners": [ "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 77

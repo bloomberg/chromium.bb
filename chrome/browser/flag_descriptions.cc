@@ -22,6 +22,12 @@ const char kAcceleratedVideoEncodeName[] = "Hardware-accelerated video encode";
 const char kAcceleratedVideoEncodeDescription[] =
     "Hardware-accelerated video encode where available.";
 
+const char kAccessibilityExposeDisplayNoneName[] =
+    "Expose 'display: none' nodes for accessibility";
+const char kAccessibilityExposeDisplayNoneDescription[] =
+    "Expose 'display: none' nodes that have an HTML ID to the browser process "
+    "accessibility tree.";
+
 const char kAccessibilityInternalsPageImprovementsName[] =
     "Accessibility internals page improvements";
 const char kAccessibilityInternalsPageImprovementsDescription[] =

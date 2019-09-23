@@ -148,6 +148,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/forcedark/forcedark_switches.h"
 #include "third_party/leveldatabase/leveldb_features.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -3467,6 +3468,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAccessibilityImageDescriptionsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
+
+    {"enable-accessibility-expose-display-none",
+     flag_descriptions::kAccessibilityExposeDisplayNoneName,
+     flag_descriptions::kAccessibilityExposeDisplayNoneDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableAccessibilityExposeDisplayNone)},
 
     {"enable-accessibility-object-model",
      flag_descriptions::kEnableAccessibilityObjectModelName,

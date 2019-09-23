@@ -34834,6 +34834,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2020721975" label="smart-virtual-keyboard"/>
   <int value="-2020024440" label="scroll-end-effect"/>
   <int value="-2017953534" label="enable-hosted-app-shim-creation"/>
+  <int value="-2015293660" label="AccessibilityExposeDisplayNone:disabled"/>
   <int value="-2013551096" label="ViewsSimplifiedFullscreenUI:disabled"/>
   <int value="-2013124655" label="EnableEphemeralFlashPermission:disabled"/>
   <int value="-2012990889" label="SpannableInlineAutocomplete:enabled"/>
@@ -35565,6 +35566,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1118921985" label="ForceEnableSystemAec:enabled"/>
   <int value="-1114080030" label="ResourceLoadingHints:enabled"/>
   <int value="-1112782121" label="AndroidSigninPromos:disabled"/>
+  <int value="-1109826787" label="AccessibilityExposeDisplayNone:enabled"/>
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1107103335" label="FsNosymfollow:enabled"/>
   <int value="-1105637876" label="FilteringScrollPrediction:enabled"/>
