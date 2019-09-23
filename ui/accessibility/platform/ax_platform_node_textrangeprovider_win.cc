@@ -765,13 +765,10 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
 
   std::vector<gfx::NativeViewAccessible> descendants;
 
-  AXPositionInstance common_ancestor =
-      start_->LowestCommonAncestor(*end_.get());
-
-  AXPlatformNodeDelegate* delegate =
-      GetDelegate(common_ancestor.get())
-          ->GetFromNodeID(common_ancestor->anchor_id())
-          ->GetDelegate();
+  const AXNode* common_anchor = start_->LowestCommonAnchor(*end_);
+  const AXTreeID tree_id = common_anchor->tree()->GetAXTreeID();
+  const AXNode::AXID node_id = common_anchor->id();
+  AXPlatformNodeDelegate* delegate = GetDelegate(tree_id, node_id);
   DCHECK(delegate);
   while (ui::IsIgnored(delegate->GetData())) {
     auto* node = static_cast<AXPlatformNodeWin*>(
