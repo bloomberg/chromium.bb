@@ -313,6 +313,14 @@ class LoadFacebookPhotosMobileStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
 
+class LoadFacebookPhotosMobileStory2019(_LoadingStory):
+  """Load a page of rihanna's facebook with a photo."""
+  NAME = 'load:media:facebook_photos:2019'
+  URL = (
+      'https://m.facebook.com/rihanna/photos/a.207477806675/10156574885461676/?type=3&source=54&ref=page_internal')
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
 
 class LoadFacebookPhotosDesktopStory2018(_LoadingStory):
   """Load a page of rihanna's facebook with a photo."""

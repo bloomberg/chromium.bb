@@ -144,6 +144,9 @@
         "load:media:facebook_photos": {
             "DEFAULT": "system_health_mobile_040.wprgo"
         },
+        "load:media:facebook_photos:2019": {
+            "DEFAULT": "system_health_mobile_6fb624f9e6.wprgo"
+        },
         "load:media:flickr": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
