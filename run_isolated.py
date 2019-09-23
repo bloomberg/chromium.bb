@@ -483,8 +483,10 @@ def run_command(
       # This is not considered to be an internal error. The executable simply
       # does not exit.
       sys.stderr.write(
-          '<The executable does not exist or a dependent library is missing>\n'
-          '<Check for missing .so/.dll in the .isolate or GN file>\n'
+          '<The executable does not exist, a dependent library is missing or '
+          'the command line is too long>\n'
+          '<Check for missing .so/.dll in the .isolate or GN file or length of '
+          'command line args>\n'
           '<Command: %s>\n' % command)
       if os.environ.get('SWARMING_TASK_ID'):
         # Give an additional hint when running as a swarming task.
