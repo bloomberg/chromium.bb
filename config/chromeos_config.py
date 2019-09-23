@@ -2278,6 +2278,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'glados',
       'gnawty',
       'gonzo',
+      'grunt',
       'guado-accelerator',
       'hana',
       'hatch',
@@ -2382,7 +2383,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'fizz-moblab', # crbug.com/995170
       'gale', # http://b/140523449
-      'grunt', # crbug.com/984614
       'guado', # crbug.com/950812
       'lakitu', # https://crbug.com/1006799
       'lakitu-gpu', # https://crbug.com/1006799
