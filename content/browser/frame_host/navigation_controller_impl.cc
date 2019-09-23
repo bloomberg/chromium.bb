@@ -102,18 +102,6 @@ void NotifyPrunedEntries(NavigationControllerImpl* nav_controller,
   nav_controller->delegate()->NotifyNavigationListPruned(details);
 }
 
-// Ensure the given NavigationEntry has a valid state, so that WebKit does not
-// get confused if we navigate back to it.
-//
-// An empty state is treated as a new navigation by WebKit, which would mean
-// losing the navigation entries and generating a new navigation entry after
-// this one. We don't want that. To avoid this we create a valid state which
-// WebKit will not treat as a new navigation.
-void SetPageStateIfEmpty(NavigationEntryImpl* entry) {
-  if (!entry->GetPageState().IsValid())
-    entry->SetPageState(PageState::CreateFromURL(entry->GetURL()));
-}
-
 // Configure all the NavigationEntries in entries for restore. This resets
 // the transition type to reload and makes sure the content state isn't empty.
 void ConfigureEntriesForRestore(
@@ -124,8 +112,6 @@ void ConfigureEntriesForRestore(
     // the typed count.
     (*entries)[i]->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
     (*entries)[i]->set_restore_type(type);
-    // NOTE(darin): This code is only needed for backwards compat.
-    SetPageStateIfEmpty((*entries)[i].get());
   }
 }
 
