@@ -1146,7 +1146,7 @@ deps = {
   },
 
   'src/third_party/libvpx/source/libvpx':
-    Var('chromium_git') + '/webm/libvpx.git' + '@' +  'c094391e954aa274b9dcce3d6afcb5ba6bae7eff',
+    Var('chromium_git') + '/webm/libvpx.git' + '@' +  'b8d86733e9d9c58e17028720751f96dad2df7a09',
 
   'src/third_party/libwebm/source':
     Var('chromium_git') + '/webm/libwebm.git' + '@' + '51ca718c3adf0ddedacd7df25fe45f67dc5a9ce1',
