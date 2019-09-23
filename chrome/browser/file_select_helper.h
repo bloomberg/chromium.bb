@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/directory_lister.h"
@@ -241,7 +242,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   std::unique_ptr<ActiveDirectoryEnumeration> directory_enumeration_;
 
   ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
-      observer_;
+      observer_{this};
 
   // Temporary files only used on OSX. This class is responsible for deleting
   // these files when they are no longer needed.
