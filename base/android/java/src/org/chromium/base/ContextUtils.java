@@ -131,14 +131,10 @@ public class ContextUtils {
     /**
      * @return Whether the process is isolated.
      */
+    @SuppressWarnings("NewApi")
     public static boolean isIsolatedProcess() {
-        try {
-            return (Boolean) Process.class.getMethod("isIsolated").invoke(null);
-        } catch (Exception e) { // No multi-catch below API level 19 for reflection exceptions.
-            // If fallback logic is ever needed, refer to:
-            // https://chromium-review.googlesource.com/c/chromium/src/+/905563/1
-            throw new RuntimeException(e);
-        }
+        // Was not made visible until Android P, but the method has always been there.
+        return Process.isIsolated();
     }
 
     /** @return The name of the current process. E.g. "org.chromium.chrome:privileged_process0". */
