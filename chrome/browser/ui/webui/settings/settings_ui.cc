@@ -339,7 +339,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->SetDefaultResource(IDR_SETTINGS_SETTINGS_HTML);
 #endif
 
-  AddLocalizedStrings(html_source, profile);
+  AddLocalizedStrings(html_source, profile, web_ui->GetWebContents());
 
   ManagedUIHandler::Initialize(web_ui, html_source);
 
