@@ -30,6 +30,9 @@ class TlsConnectionPosix : public TlsConnection,
                      TaskRunner* task_runner);
   ~TlsConnectionPosix();
 
+  // Sends any available bytes from this connection's buffer_.
+  void SendAvailableBytes();
+
   // TlsConnection overrides.
   void Write(const void* data, size_t len) override;
   const IPEndpoint& local_address() const override;

@@ -18,6 +18,7 @@
 #include <memory>
 
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "platform/api/logging.h"
 #include "platform/base/error.h"
 #include "platform/impl/stream_socket.h"
@@ -73,6 +74,24 @@ void TlsConnectionPosix::NotifyWriteBufferFill(double fraction) {
     is_buffer_blocked_ = false;
   } else if (fraction >= 0.99 && is_buffer_blocked_) {
     OnError(Error::Code::kInsufficientBuffer);
+  }
+}
+
+void TlsConnectionPosix::SendAvailableBytes() {
+  absl::Span<const uint8_t> sendable_bytes = buffer_.GetReadableRegion();
+  if (sendable_bytes.empty()) {
+    return;
+  }
+
+  const int result =
+      SSL_write(ssl_.get(), sendable_bytes.data(), sendable_bytes.size());
+  if (result <= 0) {
+    const Error result_error = GetSSLError(ssl_.get(), result);
+    if (!result_error.ok() && (result_error.code() != Error::Code::kAgain)) {
+      OnError(result_error);
+    }
+  } else {
+    buffer_.Consume(static_cast<size_t>(result));
   }
 }
 

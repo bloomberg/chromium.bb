@@ -113,6 +113,9 @@ void TlsConnectionFactoryPosix::Initialize() {
   if (context == nullptr) {
     return;
   }
+
+  SSL_CTX_set_mode(context, SSL_MODE_ENABLE_PARTIAL_WRITE);
+
   ssl_context_.reset(context);
 }
 
