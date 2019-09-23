@@ -13,7 +13,6 @@ from distutils.version import LooseVersion
 from multiprocessing.pool import ThreadPool
 import base64
 import collections
-import contextlib
 import datetime
 import httplib
 import itertools
@@ -311,26 +310,6 @@ def _git_set_branch_config_value(key, value, branch=None, **kwargs):
   if value is not None:
     args.append(value)
   RunGit(args, **kwargs)
-
-
-def _get_committer_timestamp(commit):
-  """Returns Unix timestamp as integer of a committer in a commit.
-
-  Commit can be whatever git show would recognize, such as HEAD, sha1 or ref.
-  """
-  # Git also stores timezone offset, but it only affects visual display;
-  # actual point in time is defined by this timestamp only.
-  return int(RunGit(['show', '-s', '--format=%ct', commit]).strip())
-
-
-def _git_amend_head(message, committer_timestamp):
-  """Amends commit with new message and desired committer_timestamp.
-
-  Sets committer timezone to UTC.
-  """
-  env = os.environ.copy()
-  env['GIT_COMMITTER_DATE'] = '%d+0000' % committer_timestamp
-  return RunGit(['commit', '--amend', '-m', message], env=env)
 
 
 def _get_properties_from_options(options):
@@ -935,36 +914,6 @@ class Settings(object):
     return RunGit(['config', param], **kwargs).strip()
 
 
-@contextlib.contextmanager
-def _get_gerrit_project_config_file(remote_url):
-  """Context manager to fetch and store Gerrit's project.config from
-  refs/meta/config branch and store it in temp file.
-
-  Provides a temporary filename or None if there was error.
-  """
-  error, _ = RunGitWithCode([
-      'fetch', remote_url,
-      '+refs/meta/config:refs/git_cl/meta/config'])
-  if error:
-    # Ref doesn't exist or isn't accessible to current user.
-    print('WARNING: Failed to fetch project config for %s: %s' %
-          (remote_url, error))
-    yield None
-    return
-
-  error, project_config_data = RunGitWithCode(
-      ['show', 'refs/git_cl/meta/config:project.config'])
-  if error:
-    print('WARNING: project.config file not found')
-    yield None
-    return
-
-  with gclient_utils.temporary_directory() as tempdir:
-    project_config_file = os.path.join(tempdir, 'project.config')
-    gclient_utils.FileWrite(project_config_file, project_config_data)
-    yield project_config_file
-
-
 def ShortBranchName(branch):
   """Convert a name like 'refs/heads/foo' to just 'foo'."""
   return branch.replace('refs/heads/', '', 1)
@@ -1094,7 +1043,6 @@ class Changelist(object):
     self._remote = None
     self._cached_remote_url = (False, None)  # (is_cached, value)
 
-    self._change_id = None
     # Lazily cached values.
     self._gerrit_host = None    # e.g. chromium-review.googlesource.com
     self._gerrit_server = None  # e.g. https://chromium-review.googlesource.com
@@ -3354,14 +3302,6 @@ class _GitCookiesChecker(object):
       username = username[len('git-'):]
     return username, domain
 
-  def _get_usernames_of_domain(self, domain):
-    """Returns list of usernames referenced by .gitcookies in a given domain."""
-    identities_by_domain = {}
-    for _, identity, _ in self.get_hosts_with_creds():
-      username, domain = self._parse_identity(identity)
-      identities_by_domain.setdefault(domain, []).append(username)
-    return identities_by_domain.get(domain)
-
   def _canonical_git_googlesource_host(self, host):
     """Normalizes Gerrit hosts (with '-review') to Git host."""
     assert host.endswith(self._GOOGLESOURCE)
@@ -4539,11 +4479,6 @@ def CMDdcommit(parser, args):
              'git-svn. You probably want to use `git cl land` instead.')
   print(message)
   return 1
-
-
-# Two special branches used by git cl land.
-MERGE_BRANCH = 'git-cl-commit'
-CHERRY_PICK_BRANCH = 'git-cl-cherry-pick'
 
 
 @subcommand.usage('[upstream branch to apply against]')

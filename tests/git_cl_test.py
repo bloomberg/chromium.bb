@@ -91,15 +91,6 @@ class WatchlistsMock(object):
     return ['joe@example.com']
 
 
-class CodereviewSettingsFileMock(object):
-  def __init__(self):
-    pass
-  # pylint: disable=no-self-use
-  def read(self):
-    return ('CODE_REVIEW_SERVER: gerrit.chromium.org\n' +
-            'GERRIT_HOST: True\n')
-
-
 class AuthenticatorMock(object):
   def __init__(self, *_args):
     pass
