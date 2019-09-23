@@ -2162,9 +2162,9 @@ enum class EnterTabSwitcherSnapshotResult {
   BOOL showActivityIndicator = NO;
 
   if (@available(iOS 13, *)) {
-    // TODO(crbug.com/632772): Visited links don't clearing doesn't require
-    // disabling web usage with iOS 13. Stop disabling web usage once iOS 12
-    // is not supported.
+    // TODO(crbug.com/632772): Visited links clearing doesn't require disabling
+    // web usage with iOS 13. Stop disabling web usage once iOS 12 is not
+    // supported.
     showActivityIndicator = disableWebUsageDuringRemoval;
     disableWebUsageDuringRemoval = NO;
   }
