@@ -88,6 +88,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
  private:
   class GradientLayerDelegate;
+  class ScrollableShelfArrowView;
 
   enum ScrollStatus {
     // Indicates whether the gesture scrolling is across the main axis.

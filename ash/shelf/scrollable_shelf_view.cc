@@ -18,6 +18,7 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/focus/focus_search.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace ash {
 
@@ -41,6 +42,9 @@ constexpr int kArrowButtonGroupWidth =
 // The gesture fling event with the velocity smaller than the threshold will be
 // neglected.
 constexpr int kFlingVelocityThreshold = 1000;
+
+// Horizontal size of the tap areafor the overflow arrow button.
+constexpr int kArrowButtonTapAreaHorizontal = 32;
 
 // Sum of the shelf button size and the gap between shelf buttons.
 int GetUnit() {
@@ -155,6 +159,41 @@ class ScrollableShelfView::GradientLayerDelegate : public ui::LayerDelegate {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// ScrollableShelfArrowView
+
+class ScrollableShelfView::ScrollableShelfArrowView
+    : public ash::ScrollArrowView,
+      public views::ViewTargeterDelegate {
+ public:
+  explicit ScrollableShelfArrowView(ArrowType arrow_type,
+                                    bool is_horizontal_alignment,
+                                    Shelf* shelf,
+                                    ShelfButtonDelegate* shelf_button_delegate)
+      : ScrollArrowView(arrow_type,
+                        is_horizontal_alignment,
+                        shelf,
+                        shelf_button_delegate) {
+    SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
+  }
+  ~ScrollableShelfArrowView() override = default;
+
+  // views::ViewTargeterDelegate:
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override {
+    DCHECK_EQ(target, this);
+    gfx::Rect bounds = gfx::Rect(size());
+
+    // Calculate padding for the tap area. (Should be 32 x shelfButtonSize)
+    constexpr int horizontalPadding =
+        (kArrowButtonTapAreaHorizontal - kArrowButtonSize) / 2;
+    const int verticalPadding =
+        (ShelfConfig::Get()->button_size() - kArrowButtonSize) / 2;
+    bounds.Inset(gfx::Insets(-verticalPadding, -horizontalPadding));
+    return bounds.Intersects(rect);
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // ScrollableShelfFocusSearch
 
 class ScrollableShelfFocusSearch : public views::FocusSearch {
@@ -242,12 +281,12 @@ void ScrollableShelfView::Init() {
   layer()->SetFillsBoundsOpaquely(false);
 
   // Initialize the left arrow button.
-  left_arrow_ = AddChildView(std::make_unique<ScrollArrowView>(
+  left_arrow_ = AddChildView(std::make_unique<ScrollableShelfArrowView>(
       ScrollArrowView::kLeft, GetShelf()->IsHorizontalAlignment(), GetShelf(),
       this));
 
   // Initialize the right arrow button.
-  right_arrow_ = AddChildView(std::make_unique<ScrollArrowView>(
+  right_arrow_ = AddChildView(std::make_unique<ScrollableShelfArrowView>(
       ScrollArrowView::kRight, GetShelf()->IsHorizontalAlignment(), GetShelf(),
       this));
 
