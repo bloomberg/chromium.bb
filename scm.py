@@ -6,14 +6,10 @@
 
 import glob
 import io
-import logging
 import os
 import platform
 import re
 import sys
-import tempfile
-import time
-from xml.etree import ElementTree
 
 import gclient_utils
 import subprocess2

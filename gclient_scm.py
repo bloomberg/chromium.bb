@@ -24,7 +24,6 @@ try:
 except ImportError:  # For Py3 compatibility
   import urllib.parse as urlparse
 
-import download_from_google_storage
 import gclient_utils
 import git_cache
 import scm

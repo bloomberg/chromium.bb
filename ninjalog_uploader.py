@@ -23,7 +23,6 @@ import logging
 import multiprocessing
 import os
 import platform
-import socket
 import subprocess
 import sys
 import time

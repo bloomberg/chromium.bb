@@ -38,7 +38,6 @@ import collections
 import contextlib
 from datetime import datetime
 from datetime import timedelta
-from functools import partial
 import itertools
 import json
 import logging

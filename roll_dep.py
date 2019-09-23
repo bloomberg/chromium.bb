@@ -12,8 +12,6 @@ script will always roll to the tip of to origin/master.
 from __future__ import print_function
 
 import argparse
-import collections
-import gclient_eval
 import os
 import re
 import subprocess

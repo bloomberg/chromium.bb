@@ -22,7 +22,6 @@ import json
 import urlparse
 import os
 import sys
-import time
 
 from third_party import httplib2
 
