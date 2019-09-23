@@ -162,6 +162,9 @@ message StartArcVmRequest {
 
   // Parameters to pass to the ARCVM's init process.
   repeated string params = 5;
+
+  // Path to Android fstab.
+  string fstab = 6;
 }
 
 enum VmStatus {
