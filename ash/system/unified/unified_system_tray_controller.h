@@ -101,6 +101,10 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Close the bubble. Called from a detailed view controller.
   void CloseBubble();
 
+  // Inform UnifiedSystemTrayBubble that UnifiedSystemTrayView is requesting to
+  // relinquish focus.
+  bool FocusOut(bool reverse);
+
   // Ensure the main view is expanded. Called from the slider bubble controller.
   void EnsureExpanded();
 

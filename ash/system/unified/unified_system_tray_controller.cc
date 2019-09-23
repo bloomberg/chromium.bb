@@ -300,6 +300,10 @@ void UnifiedSystemTrayController::CloseBubble() {
     unified_view_->GetWidget()->CloseNow();
 }
 
+bool UnifiedSystemTrayController::FocusOut(bool reverse) {
+  return bubble_->FocusOut(reverse);
+}
+
 void UnifiedSystemTrayController::EnsureExpanded() {
   if (detailed_view_controller_) {
     detailed_view_controller_.reset();
