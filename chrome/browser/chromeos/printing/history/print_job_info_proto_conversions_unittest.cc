@@ -23,8 +23,8 @@ constexpr char kUri[] = "ipp://192.168.1.5";
 constexpr char kTitle[] = "title";
 constexpr char kId[] = "id";
 constexpr char kSourceId[] = "extension:123";
-constexpr int kJobCreationTime = 1000;
-constexpr int kJobDuration = 10 * 1000;
+constexpr int64_t kJobCreationTime = 1000;
+constexpr int64_t kJobDuration = 10 * 1000;
 constexpr int kPagesNumber = 3;
 
 }  // namespace
