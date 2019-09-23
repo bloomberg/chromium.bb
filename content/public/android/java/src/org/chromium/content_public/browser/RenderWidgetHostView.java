@@ -38,7 +38,11 @@ public interface RenderWidgetHostView {
             int width, int height, String path, Callback<String> callback);
 
     /**
-     * Notifies that the Visual Viewport inset has changed its bottom value.
+     * Insets the bottom of the Visual Viewport by the specified amount.
+     * When called multiple times the new value replaces the old value, so pass {@code 0} to reset
+     * all insetting.
+     * @param bottomAdjustPx The amount to move up the bottom of the Visual Viewport with respect to
+     *        the Layout Viewport, in pixels.
      */
-    void onViewportInsetBottomChanged();
+    void insetViewportBottom(int bottomAdjustPx);
 }

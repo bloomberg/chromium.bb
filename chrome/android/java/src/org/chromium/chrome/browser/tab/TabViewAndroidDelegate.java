@@ -8,20 +8,14 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.content_public.browser.RenderWidgetHostView;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.ViewAndroidDelegate;
 
 /**
  * Implementation of the abstract class {@link ViewAndroidDelegate} for Chrome.
  */
-public class TabViewAndroidDelegate extends ViewAndroidDelegate {
+class TabViewAndroidDelegate extends ViewAndroidDelegate {
     private final Tab mTab;
-
-    /**
-     * The inset for the bottom of the Visual Viewport in pixels, or 0 for no insetting.
-     * This is the source of truth for the application viewport inset for this embedder.
-     */
-    private int mApplicationViewportInsetBottomPx;
 
     TabViewAndroidDelegate(Tab tab, ViewGroup containerView) {
         super(containerView);
@@ -44,25 +38,16 @@ public class TabViewAndroidDelegate extends ViewAndroidDelegate {
     }
 
     @Override
-    public void performPrivateImeCommand(String action, Bundle data) {
-        AppHooks.get().performPrivateImeCommand(mTab.getWebContents(), action, data);
-    }
-
-    /**
-     * Sets the Visual Viewport bottom inset.
-     * @param viewportInsetBottomPx The bottom inset in pixels.  Use {@code 0} for no inset.
-     */
-    public void insetViewportBottom(int viewportInsetBottomPx) {
-        mApplicationViewportInsetBottomPx = viewportInsetBottomPx;
-
-        RenderWidgetHostView renderWidgetHostView = mTab.getWebContents().getRenderWidgetHostView();
-        if (renderWidgetHostView == null) return;
-
-        renderWidgetHostView.onViewportInsetBottomChanged();
+    public int getSystemWindowInsetBottom() {
+        ChromeActivity activity = mTab.getActivity();
+        if (activity != null && activity.getInsetObserverView() != null) {
+            return activity.getInsetObserverView().getSystemWindowInsetsBottom();
+        }
+        return 0;
     }
 
     @Override
-    protected int getViewportInsetBottom() {
-        return mApplicationViewportInsetBottomPx;
+    public void performPrivateImeCommand(String action, Bundle data) {
+        AppHooks.get().performPrivateImeCommand(mTab.getWebContents(), action, data);
     }
 }

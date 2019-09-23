@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
-import org.chromium.chrome.browser.tab.TabViewAndroidDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -404,10 +403,7 @@ class AssistantBottomBarCoordinator
         }
 
         mLastVisualViewportResizing = resizing;
-        TabViewAndroidDelegate chromeDelegate =
-                (TabViewAndroidDelegate) mWebContents.getViewAndroidDelegate();
-        assert chromeDelegate != null;
-        chromeDelegate.insetViewportBottom(resizing);
+        mWebContents.getRenderWidgetHostView().insetViewportBottom(resizing);
     }
 
     // Implementation of methods from AutofillAssistantSizeManager.
@@ -415,8 +411,9 @@ class AssistantBottomBarCoordinator
     @Override
     public int getHeight() {
         if (mViewportMode == AssistantViewportMode.RESIZE_LAYOUT_VIEWPORT
-                && mBottomSheetController.getBottomSheet().getCurrentSheetContent() == mContent)
+                && mBottomSheetController.getBottomSheet().getCurrentSheetContent() == mContent) {
             return mPeekHeightCoordinator.getPeekHeight();
+        }
 
         return 0;
     }

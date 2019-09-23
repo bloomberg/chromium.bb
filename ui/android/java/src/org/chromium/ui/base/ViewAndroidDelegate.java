@@ -347,10 +347,13 @@ public class ViewAndroidDelegate {
     public void onBottomControlsChanged(int bottomControlsOffsetY, int bottomContentOffsetY) {}
 
     /**
-     * @return The Visual Viewport bottom inset in pixels.
+     * Returns the bottom system window inset in pixels. The system window inset represents the area
+     * of a full-screen window that is partially or fully obscured by the status bar, navigation
+     * bar, IME or other system windows.
+     * @return The bottom system window inset.
      */
     @CalledByNative
-    protected int getViewportInsetBottom() {
+    public int getSystemWindowInsetBottom() {
         return 0;
     }
 
