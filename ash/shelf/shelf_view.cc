@@ -376,10 +376,14 @@ void ShelfView::Init() {
 
   // We'll layout when our bounds change.
 
-  // Add the main shelf view as ShelfTooltipDelegate when scrollable shelf
-  // is not enabled.
-  if (!is_overflow_mode() && !chromeos::switches::ShouldShowScrollableShelf())
+  if (chromeos::switches::ShouldShowScrollableShelf()) {
+    UpdateVisibleIndice();
+    overflow_button_->SetVisible(false);
+  } else if (!is_overflow_mode()) {
+    // Add the main shelf view as ShelfTooltipDelegate when scrollable shelf
+    // is not enabled.
     shelf_->tooltip()->set_shelf_tooltip_delegate(this);
+  }
 }
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
@@ -1185,10 +1189,8 @@ ShelfView::AppCenteringStrategy ShelfView::CalculateAppCenteringStrategy() {
   // When the scrollable shelf is enabled, overflow mode is disabled. Meanwhile,
   // centering padding is calculated in ScrollableShelfView, which means that
   // |center_on_screen| is always false.
-  if (chromeos::switches::ShouldShowScrollableShelf()) {
-    last_visible_index_ = view_model()->view_size() - 1;
+  if (chromeos::switches::ShouldShowScrollableShelf())
     return strategy;
-  }
 
   // There are two possibilities. Either all the apps fit when centered
   // on the whole screen width, in which case we do that. Or, when space
@@ -2124,6 +2126,11 @@ void ShelfView::ShelfItemAdded(int model_index) {
   view->layer()->SetOpacity(0);
   view_model_->Add(view, model_index);
 
+  // When the scrollable shelf is enabled, |last_visible_index_| is always the
+  // index to the last shelf item.
+  if (chromeos::switches::ShouldShowScrollableShelf())
+    UpdateVisibleIndice();
+
   // Give the button its ideal bounds. That way if we end up animating the
   // button before this animation completes it doesn't appear at some random
   // spot (because it was in the middle of animating from 0,0 0x0 to its
@@ -2151,6 +2158,11 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
 
   views::View* view = view_model_->view_at(model_index);
   view_model_->Remove(model_index);
+
+  // When the scrollable shelf is enabled, |last_visible_index_| is always the
+  // index to the last shelf item.
+  if (chromeos::switches::ShouldShowScrollableShelf())
+    UpdateVisibleIndice();
 
   {
     base::AutoReset<bool> cancelling_drag(&cancelling_drag_model_changed_,
@@ -2495,6 +2507,12 @@ base::string16 ShelfView::GetTitleForChildView(const views::View* view) const {
 
   const ShelfItem* item = ShelfItemForView(view);
   return item ? item->title : base::string16();
+}
+
+void ShelfView::UpdateVisibleIndice() {
+  DCHECK_EQ(true, chromeos::switches::ShouldShowScrollableShelf());
+  first_visible_index_ = view_model()->view_size() == 0 ? -1 : 0;
+  last_visible_index_ = model_->item_count() - 1;
 }
 
 }  // namespace ash
