@@ -683,7 +683,7 @@ bool OpenXrApiWrapper::GetStageParameters(XrExtent2Df* stage_bounds,
     return false;
 
   XrSpaceLocation location = {XR_TYPE_SPACE_LOCATION};
-  if (FAILED(xrLocateSpace(stage_space_, local_space_,
+  if (FAILED(xrLocateSpace(local_space_, stage_space_,
                            frame_state_.predictedDisplayTime, &location)) ||
       !(location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) ||
       !(location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT)) {
