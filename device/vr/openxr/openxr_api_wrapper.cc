@@ -33,6 +33,7 @@ constexpr uint32_t kNumViews = 2;
 XrResult CreateInstance(XrInstance* instance) {
   XrInstanceCreateInfo instance_create_info = {XR_TYPE_INSTANCE_CREATE_INFO};
   strcpy_s(instance_create_info.applicationInfo.applicationName, "Chromium");
+  instance_create_info.applicationInfo.apiVersion = XR_CURRENT_API_VERSION;
 
   // xrCreateInstance validates the list of extensions and returns
   // XR_ERROR_EXTENSION_NOT_PRESENT if an extension is not supported,
