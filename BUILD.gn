@@ -38,6 +38,7 @@ group("all") {
     ":system_api-vm_cicerone-protos",
     ":system_api-vm_concierge-goprotos",
     ":system_api-vm_concierge-protos",
+    ":system_api-vm_plugin_dispatcher-goprotos",
     ":system_api-vm_plugin_dispatcher-protos",
   ]
 }
@@ -348,6 +349,14 @@ proto_library("system_api-vm_plugin_dispatcher-protos") {
     "${proto_in_dir}/vm_plugin_dispatcher.proto",
   ]
   standalone = true
+}
+
+goproto_library("system_api-vm_plugin_dispatcher-goprotos") {
+  proto_in_dir = "dbus/vm_plugin_dispatcher"
+  proto_out_dir = "go/src/chromiumos/system_api/vm_plugin_dispatcher_proto"
+  sources = [
+    "${proto_in_dir}/vm_plugin_dispatcher.proto",
+  ]
 }
 
 proto_library("system_api-u2f-protos") {
