@@ -2171,6 +2171,22 @@
           "release_builder_test_pool": "bvt",
           "board_id": 333,
           "is_active": true
+        },
+        {
+          "board_name": "grunt",
+          "name": "treeya",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 333,
+          "is_active": true
+        },
+        {
+          "board_name": "grunt",
+          "name": "treeya360",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 333,
+          "is_active": true
         }
       ]
     },
