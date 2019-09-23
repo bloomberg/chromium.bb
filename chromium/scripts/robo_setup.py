@@ -77,9 +77,7 @@ def EnsureASANDirWorks(robo_configuration):
     opts = ("is_debug=false", "is_clang=true", "proprietary_codecs=true",
             "media_use_libvpx=true", "media_use_ffmpeg=true",
             'ffmpeg_branding="Chrome"',
-            "use_goma=true", "is_asan=true", "dcheck_always_on=true",
-            "enable_mse_mpeg2ts_stream_parser=true",
-            "enable_hevc_demuxing=true")
+            "use_goma=true", "is_asan=true", "dcheck_always_on=true")
     print opts
     with open(os.path.join(directory_name, "args.gn"), "w") as f:
       for opt in opts:
