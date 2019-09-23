@@ -887,6 +887,17 @@ bool NavigationControllerImpl::RemoveEntryAtIndex(int index) {
   return true;
 }
 
+void NavigationControllerImpl::PruneForwardEntries() {
+  DiscardNonCommittedEntries();
+  int remove_start_index = last_committed_entry_index_ + 1;
+  int num_removed = int(entries_.size()) - remove_start_index;
+  if (num_removed <= 0)
+    return;
+  entries_.erase(entries_.begin() + remove_start_index, entries_.end());
+  NotifyPrunedEntries(this, remove_start_index /* start index */,
+                      num_removed /* count */);
+}
+
 void NavigationControllerImpl::UpdateVirtualURLToURL(
     NavigationEntryImpl* entry, const GURL& new_url) {
   GURL new_virtual_url(new_url);
@@ -2431,10 +2442,8 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
 
   DiscardNonCommittedEntries();
 
-  int current_size = static_cast<int>(entries_.size());
-
   // When replacing, don't prune the forward history.
-  if (replace && current_size > 0) {
+  if (replace && entries_.size() > 0) {
     CopyReplacedNavigationEntryDataIfPreviouslyEmpty(
         entries_[last_committed_entry_index_].get(), entry.get());
     entries_[last_committed_entry_index_] = std::move(entry);
@@ -2444,20 +2453,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
   // We shouldn't see replace == true when there's no committed entries.
   DCHECK(!replace);
 
-  if (current_size > 0) {
-    // Prune any entries which are in front of the current entry.
-    int num_pruned = 0;
-    while (last_committed_entry_index_ < (current_size - 1)) {
-      num_pruned++;
-      entries_.pop_back();
-      current_size--;
-    }
-    if (num_pruned > 0) {  // Only notify if we did prune something.
-      NotifyPrunedEntries(this,
-                          last_committed_entry_index_ + 1 /* start index */,
-                          num_pruned /* count */);
-    }
-  }
+  PruneForwardEntries();
 
   PruneOldestSkippableEntryIfFull();
 
@@ -3364,6 +3360,9 @@ void NavigationControllerImpl::FinishRestore(int selected_index,
 }
 
 void NavigationControllerImpl::DiscardNonCommittedEntries() {
+  // Avoid sending a notification if there is nothing to discard.
+  if (!pending_entry_ && transient_entry_index_ == -1)
+    return;
   DiscardPendingEntry(false);
   DiscardTransientEntry();
   if (delegate_)
