@@ -4817,6 +4817,7 @@ crbug.com/832447 virtual/audio-service/media/controls/controls-page-zoom-in.html
 crbug.com/832447 virtual/audio-service/media/controls/controls-page-zoom-out.html [ Failure Pass ]
 crbug.com/849694 [ Mac ] http/tests/media/controls/toggle-class-with-state-source-buffer.html [ Failure Pass ]
 crbug.com/849694 [ Mac ] virtual/audio-service/http/tests/media/controls/toggle-class-with-state-source-buffer.html [ Failure Pass ]
+crbug.com/832447 virtual/audio-service/media/video-played-reset.html [ Failure Pass ]
 
 # ContentSecurityPolicy modifies the SchemeRegistry before some initialization.
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
