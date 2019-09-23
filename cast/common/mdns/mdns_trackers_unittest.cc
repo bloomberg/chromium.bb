@@ -54,6 +54,14 @@ class MockUdpSocket : public UdpSocket {
   MOCK_METHOD(void, SetDscp, (DscpMode), (override));
 };
 
+class MockRecordChangedCallback : public MdnsRecordChangedCallback {
+ public:
+  MOCK_METHOD(void,
+              OnRecordChanged,
+              (const MdnsRecord&, RecordChangedEvent event),
+              (override));
+};
+
 class MdnsTrackerTest : public ::testing::Test {
  public:
   MdnsTrackerTest()
@@ -384,6 +392,93 @@ TEST_F(MdnsTrackerTest, QuestionTrackerNoQueryAfterStop) {
 TEST_F(MdnsTrackerTest, QuestionTrackerNoQueryAfterDestruction) {
   std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
   TrackerNoQueryAfterDestruction(std::move(tracker), a_question_);
+}
+
+TEST_F(MdnsTrackerTest, QuestionTrackerCallbackOnRecordReceived) {
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  MockRecordChangedCallback callback1;
+  MockRecordChangedCallback callback2;
+
+  tracker->Start(a_question_);
+  tracker->AddCallback(&callback1);
+  tracker->AddCallback(&callback2);
+  // Advance fake clock for callback addition on task runner to happen
+  clock_.Advance(std::chrono::milliseconds(1));
+
+  // All added callbacks must be called
+  EXPECT_CALL(callback1, OnRecordChanged(_, _)).Times(1);
+  EXPECT_CALL(callback2, OnRecordChanged(_, _)).Times(1);
+  tracker->OnRecordReceived(a_record_);
+}
+
+TEST_F(MdnsTrackerTest, QuestionTrackerNoCallbackAfterRemoval) {
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  MockRecordChangedCallback callback1;
+  MockRecordChangedCallback callback2;
+
+  tracker->Start(a_question_);
+  tracker->AddCallback(&callback1);
+  tracker->AddCallback(&callback2);
+  // Advance fake clock for callback addition on task runner to happen
+  clock_.Advance(std::chrono::milliseconds(1));
+  tracker->RemoveCallback(&callback2);
+  // Advance fake clock for callback removal on task runner to happen
+  clock_.Advance(std::chrono::milliseconds(1));
+
+  // Removed callback must not be called
+  EXPECT_CALL(callback1, OnRecordChanged(_, _)).Times(1);
+  EXPECT_CALL(callback2, OnRecordChanged(_, _)).Times(0);
+  tracker->OnRecordReceived(a_record_);
+}
+
+TEST_F(MdnsTrackerTest, QuestionTrackerCallbackOnCreateUpdateGoodbye) {
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  MockRecordChangedCallback callback;
+
+  tracker->Start(a_question_);
+  tracker->AddCallback(&callback);
+  // Advance fake clock for callback addition on task runner to happen
+  clock_.Advance(std::chrono::milliseconds(1));
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .Times(1);
+  tracker->OnRecordReceived(a_record_);
+
+  MdnsRecord updated_record(a_record_.name(), a_record_.dns_type(),
+                            a_record_.dns_class(), a_record_.record_type(),
+                            a_record_.ttl(),
+                            ARecordRdata(IPAddress{192, 168, 0, 1}));
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kUpdated))
+      .Times(1);
+  tracker->OnRecordReceived(updated_record);
+
+  MdnsRecord goodbye_record(updated_record.name(), updated_record.dns_type(),
+                            updated_record.dns_class(),
+                            updated_record.record_type(),
+                            std::chrono::seconds{0}, updated_record.rdata());
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kDeleted))
+      .Times(1);
+  tracker->OnRecordReceived(goodbye_record);
+  // Expiration is scheduled on the task runner to happen 1 second later as per
+  // RFC 6762. Advance the fake clock to receive the callback.
+  clock_.Advance(std::chrono::seconds(10));
+}
+
+TEST_F(MdnsTrackerTest, QuestionTrackerNoCallbackOnNoUpdate) {
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  MockRecordChangedCallback callback;
+
+  tracker->Start(a_question_);
+  tracker->AddCallback(&callback);
+  // Advance fake clock for callback addition on task runner to happen
+  clock_.Advance(std::chrono::milliseconds(1));
+
+  // Callback must not be called again if the record has not changed
+  EXPECT_CALL(callback, OnRecordChanged(_, _)).Times(1);
+  tracker->OnRecordReceived(a_record_);
+  tracker->OnRecordReceived(a_record_);
 }
 
 }  // namespace mdns

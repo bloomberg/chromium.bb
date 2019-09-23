@@ -10,6 +10,7 @@
 
 #include "absl/hash/hash.h"
 #include "cast/common/mdns/mdns_random.h"
+#include "cast/common/mdns/mdns_record_changed_callback.h"
 #include "cast/common/mdns/mdns_sender.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
@@ -44,6 +45,7 @@ class MdnsTracker {
 
  protected:
   MdnsSender* const sender_;
+  TaskRunner* const task_runner_;
   const ClockNowFunctionPtr now_function_;
   Alarm send_alarm_;  // TODO(yakimakha): Use cancelable task when available
   MdnsRandom* const random_delay_;
@@ -102,10 +104,7 @@ class MdnsRecordTracker : public MdnsTracker {
 // continuous monitoring with exponential back-off as described in RFC 6762
 class MdnsQuestionTracker : public MdnsTracker {
  public:
-  MdnsQuestionTracker(MdnsSender* sender,
-                      TaskRunner* task_runner,
-                      ClockNowFunctionPtr now_function,
-                      MdnsRandom* random_delay);
+  using MdnsTracker::MdnsTracker;
 
   // Starts sending query messages for the provided question. Returns error with
   // code Error::Code::kOperationInvalid if called on an instance of
@@ -122,6 +121,13 @@ class MdnsQuestionTracker : public MdnsTracker {
   // automatically sending queries, false otherwise.
   bool IsStarted();
 
+  // Adds and removes callbacks that are called when a change to the status of a
+  // record happens. When a new callback is added, it's called for all known
+  // answers. Callbacks are added and removed by posting a task to the task
+  // runner to avoid locking the callbacks collection.
+  void AddCallback(MdnsRecordChangedCallback* callback);
+  void RemoveCallback(MdnsRecordChangedCallback* callback);
+
   // Called by the owner of the class
   void OnRecordReceived(const MdnsRecord& record);
 
@@ -135,18 +141,18 @@ class MdnsQuestionTracker : public MdnsTracker {
   // Sends a query message via MdnsSender and schedules the next resend.
   void SendQuery();
 
-  // MdnsQuestionTracker has to store task runner pointer explicitly to pass it
-  // to MdnsRecordTracker constructor.
-  TaskRunner* task_runner_;
-
   // Stores MdnsQuestion provided to Start method call.
   absl::optional<MdnsQuestion> question_;
 
   // A delay between the currently scheduled and the next queries.
   Clock::duration send_delay_;
 
+  // Callbacks collection should only be accessed from the task runner to avoid
+  // the need to have a guarding thread synchronization primitive.
+  std::vector<MdnsRecordChangedCallback*> callbacks_;
+
   // Active record trackers, uniquely identified by domain name, DNS record type
-  // and DNS record class
+  // and DNS record class.
   std::unordered_map<std::tuple<DomainName, DnsType, DnsClass>,
                      std::unique_ptr<MdnsRecordTracker>,
                      absl::Hash<std::tuple<DomainName, DnsType, DnsClass>>>

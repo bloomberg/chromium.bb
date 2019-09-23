@@ -48,6 +48,7 @@ MdnsTracker::MdnsTracker(MdnsSender* sender,
                          ClockNowFunctionPtr now_function,
                          MdnsRandom* random_delay)
     : sender_(sender),
+      task_runner_(task_runner),
       now_function_(now_function),
       send_alarm_(now_function, task_runner),
       random_delay_(random_delay) {
@@ -94,6 +95,8 @@ Error MdnsRecordTracker::Stop() {
 }
 
 Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   if (!record_.has_value()) {
     return Error::Code::kOperationInvalid;
   }
@@ -126,8 +129,6 @@ Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
     return error;
   }
 
-  // There's no need to run a callback on task runner as the entire method
-  // should be running on task runner.
   if (is_updated) {
     record_updated_callback_(record_.value());
   }
@@ -171,13 +172,6 @@ Clock::time_point MdnsRecordTracker::GetNextSendTime() {
   return start_time_ + delay;
 }
 
-MdnsQuestionTracker::MdnsQuestionTracker(MdnsSender* sender,
-                                         TaskRunner* task_runner,
-                                         ClockNowFunctionPtr now_function,
-                                         MdnsRandom* random_delay)
-    : MdnsTracker(sender, task_runner, now_function, random_delay),
-      task_runner_(task_runner) {}
-
 Error MdnsQuestionTracker::Start(MdnsQuestion question) {
   if (question_.has_value()) {
     return Error::Code::kOperationInvalid;
@@ -207,13 +201,38 @@ bool MdnsQuestionTracker::IsStarted() {
   return question_.has_value();
 };
 
+void MdnsQuestionTracker::AddCallback(MdnsRecordChangedCallback* callback) {
+  // Adding a callback to the collection does not have to be immediate as no
+  // answers will be missed. The callback is called for all known answers.
+  task_runner_->PostTask([this, callback] {
+    const auto find_result =
+        std::find(callbacks_.begin(), callbacks_.end(), callback);
+    if (find_result == callbacks_.end()) {
+      callbacks_.push_back(callback);
+      // TODO(yakimakha): Notify the new callback with all known answers
+    }
+  });
+}
+
+void MdnsQuestionTracker::RemoveCallback(MdnsRecordChangedCallback* callback) {
+  task_runner_->PostTask([this, callback] {
+    const auto find_result =
+        std::find(callbacks_.begin(), callbacks_.end(), callback);
+    if (find_result != callbacks_.end()) {
+      callbacks_.erase(find_result);
+    }
+  });
+}
+
 void MdnsQuestionTracker::OnRecordReceived(const MdnsRecord& record) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   if (!question_.has_value()) {
     return;
   }
 
-  const std::tuple<DomainName, DnsType, DnsClass> key =
-      std::make_tuple(record.name(), record.dns_type(), record.dns_class());
+  const std::tuple<DomainName, DnsType, DnsClass> key(
+      record.name(), record.dns_type(), record.dns_class());
 
   const auto find_result = record_trackers_.find(key);
   if (find_result != record_trackers_.end()) {
@@ -234,18 +253,30 @@ void MdnsQuestionTracker::OnRecordReceived(const MdnsRecord& record) {
 
   record_tracker->Start(record);
   record_trackers_.emplace(key, std::move(record_tracker));
-  // TODO(yakimakha): Notify all interested parties that a new record has been
-  // added
+
+  for (auto callback : callbacks_) {
+    callback->OnRecordChanged(record, RecordChangedEvent::kCreated);
+  }
 }
 
 void MdnsQuestionTracker::OnRecordExpired(const MdnsRecord& record) {
-  // TODO(yakimakha): Notify all interested parties that an existing record has
-  // been deleted
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
+  for (auto callback : callbacks_) {
+    callback->OnRecordChanged(record, RecordChangedEvent::kDeleted);
+  }
+
+  std::tuple<DomainName, DnsType, DnsClass> key(
+      record.name(), record.dns_type(), record.dns_class());
+  record_trackers_.erase(key);
 }
 
 void MdnsQuestionTracker::OnRecordUpdated(const MdnsRecord& record) {
-  // TODO(yakimakha): Notify all interested parties that an existing record has
-  // been updated
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
+  for (auto* callback : callbacks_) {
+    callback->OnRecordChanged(record, RecordChangedEvent::kUpdated);
+  }
 }
 
 void MdnsQuestionTracker::SendQuery() {

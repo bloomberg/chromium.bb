@@ -11,6 +11,7 @@ source_set("mdns") {
     "mdns/mdns_reader.h",
     "mdns/mdns_receiver.cc",
     "mdns/mdns_receiver.h",
+    "mdns/mdns_record_changed_callback.h",
     "mdns/mdns_records.cc",
     "mdns/mdns_records.h",
     "mdns/mdns_sender.cc",
