@@ -2734,6 +2734,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "omnibox-zero-suggestions-on-serp",
+    "owners": [ "tommycli", "pnoland" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "on-the-fly-mhtml-hash-computation",
     "owners": [ "mtlieuu", "offline-dev@chromium.org" ],
     "expiry_milestone": 76

@@ -35604,6 +35604,7 @@ from previous Chrome versions.
   <int value="-1074257709" label="ScalableAppList:enabled"/>
   <int value="-1074107607" label="data-reduction-proxy-experiment"/>
   <int value="-1073479583" label="ShowArcFilesApp:disabled"/>
+  <int value="-1069628248" label="OmniboxZeroSuggestionsOnSERP:enabled"/>
   <int value="-1069453905" label="CCTModuleUseIntentExtras:disabled"/>
   <int value="-1067635248" label="SpeculativeResourcePrefetching:disabled"/>
   <int value="-1064733740" label="ui-show-composited-layer-borders"/>
@@ -35822,6 +35823,7 @@ from previous Chrome versions.
   <int value="-787969387" label="HTTPSServerPreviewsUsingURLLoader:enabled"/>
   <int value="-787876637" label="HomeLauncherGestures:enabled"/>
   <int value="-787426248" label="ChromeHomeSurvey:disabled"/>
+  <int value="-787238455" label="OmniboxZeroSuggestionsOnSERP:disabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
   <int value="-777126951" label="FontSrcLocalMatching:enabled"/>

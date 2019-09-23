@@ -1475,6 +1475,12 @@ const char kOmniboxZeroSuggestionsOnNTPRealboxName[] =
 const char kOmniboxZeroSuggestionsOnNTPRealboxDescription[] =
     "Offer suggestions when the real search box on New Tab Page is focused.";
 
+const char kOmniboxZeroSuggestionsOnSERPName[] =
+    "Omnibox Zero Suggestions on SERP / On-Focus Query Refinement";
+const char kOmniboxZeroSuggestionsOnSERPDescription[] =
+    "Offer query refinement suggestions when the URL bar (omnibox) is focused "
+    "on the default search provider's search results page (SERP).";
+
 const char kOnlyNewPasswordFormParsingName[] =
     "Use only new password form parsing";
 const char kOnlyNewPasswordFormParsingDescription[] =

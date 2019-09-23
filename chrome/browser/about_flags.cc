@@ -2934,6 +2934,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxZeroSuggestionsOnNTPRealboxDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnNTPRealbox)},
 
+    {"omnibox-zero-suggestions-on-serp",
+     flag_descriptions::kOmniboxZeroSuggestionsOnSERPName,
+     flag_descriptions::kOmniboxZeroSuggestionsOnSERPDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnSERP)},
+
     {"omnibox-material-design-weather-icons",
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsName,
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsDescription,
