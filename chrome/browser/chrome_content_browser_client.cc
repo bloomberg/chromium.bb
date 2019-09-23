@@ -100,7 +100,6 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -3471,8 +3470,8 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
 
   // Handler to rewrite Preview's Server Lite Page, to show the original URL to
   // the user.
-  handler->AddHandlerPair(&HandlePreviewsLitePageURLRewrite,
-                          &HandlePreviewsLitePageURLRewriteReverse);
+  handler->AddHandlerPair(&previews::HandlePreviewsLitePageURLRewrite,
+                          &previews::HandlePreviewsLitePageURLRewriteReverse);
 }
 
 base::FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {

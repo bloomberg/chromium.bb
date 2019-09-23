@@ -3167,7 +3167,6 @@ test("unit_tests") {
     "../browser/previews/previews_content_util_unittest.cc",
     "../browser/previews/previews_lite_page_decider_unittest.cc",
     "../browser/previews/previews_lite_page_infobar_delegate_unittest.cc",
-    "../browser/previews/previews_lite_page_navigation_throttle_unittest.cc",
     "../browser/previews/previews_lite_page_predictor_unittest.cc",
     "../browser/previews/previews_lite_page_url_loader_interceptor_unittest.cc",
     "../browser/previews/previews_offline_helper_unittest.cc",
