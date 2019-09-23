@@ -91,6 +91,9 @@ gerrit_instances = [
     'short_url_protocol': 'https',
   },
   {
+    'url': 'dawn-review.googlesource.com',
+  },
+  {
     'url': 'pdfium-review.googlesource.com',
   },
   {
@@ -107,13 +110,14 @@ monorail_projects = {
     'shorturl': 'crbug.com',
     'short_url_protocol': 'https',
   },
+  'dawn': {},
   'google-breakpad': {},
   'gyp': {},
-  'skia': {},
   'pdfium': {
     'shorturl': 'crbug.com/pdfium',
     'short_url_protocol': 'https',
   },
+  'skia': {},
   'v8': {
     'shorturl': 'crbug.com/v8',
     'short_url_protocol': 'https',
