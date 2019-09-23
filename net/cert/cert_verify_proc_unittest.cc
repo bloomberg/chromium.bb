@@ -270,16 +270,6 @@ bool AreSHA1IntermediatesAllowed() {
 #endif
 }
 
-// Helper to make creating an X509Certificate chain less verbose.
-scoped_refptr<X509Certificate> CreateX509CertificateWithIntermediate(
-    bssl::UniquePtr<CRYPTO_BUFFER> cert_buffer,
-    bssl::UniquePtr<CRYPTO_BUFFER> intermediate_buffer) {
-  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(std::move(intermediate_buffer));
-  return X509Certificate::CreateFromBuffer(std::move(cert_buffer),
-                                           std::move(intermediates));
-}
-
 std::string MakeRandomHexString(size_t num_bytes) {
   std::vector<char> rand_bytes;
   rand_bytes.resize(num_bytes);
@@ -686,8 +676,7 @@ TEST_P(CertVerifyProcInternalTest, CertWithNullInCommonNameAndNoSAN) {
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   int flags = 0;
@@ -716,8 +705,7 @@ TEST_P(CertVerifyProcInternalTest, CertWithNullInCommonNameAndValidSAN) {
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   int flags = 0;
@@ -743,8 +731,7 @@ TEST_P(CertVerifyProcInternalTest, CertWithNullInSAN) {
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   int flags = 0;
@@ -3062,8 +3049,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, RevocationHardFailNoCrls) {
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with hard-fail revocation checking for local anchors.
@@ -3107,8 +3093,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with hard-fail revocation checking for local anchors.
@@ -3151,8 +3136,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with hard-fail revocation checking for local anchors.
@@ -3190,8 +3174,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with hard-fail revocation checking for local anchors.
@@ -3228,8 +3211,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with hard-fail revocation checking for local anchors.
@@ -3269,8 +3251,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with hard-fail revocation checking for local anchors.
@@ -3315,8 +3296,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with hard-fail revocation checking for local anchors.
@@ -3352,8 +3332,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, RevocationSoftFailNoCrls) {
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with soft-fail revocation checking.
@@ -3394,8 +3373,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with soft-fail revocation checking.
@@ -3436,8 +3414,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with soft-fail revocation checking.
@@ -3473,8 +3450,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with soft-fail revocation checking.
@@ -3517,8 +3493,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with soft-fail revocation checking.
@@ -3562,8 +3537,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with soft-fail revocation checking.
@@ -3607,8 +3581,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with soft-fail revocation checking.
@@ -3656,8 +3629,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with soft-fail revocation checking.
@@ -3697,8 +3669,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
-  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
-      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
   // Verify with soft-fail revocation checking.
