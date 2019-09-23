@@ -26,7 +26,6 @@ For all PRs:
 
 - Describe why the approach you are taking is a good approach and point out any shortcomings/tradeoffs
 - Describe whether your change is backwards compatible with existing code and how you validated that
-- Go through the [Code Review Checklist](/rplus-ui/bundles-ui/blob/master/CODE_REVIEW_CHECKLIST.md) and mention any deviations from those rules here
 - (If applicable) Describe how you measured the performance impact of this change
 - (If applicable) Provide links to UX wireframes, RFCs or design documents related to this change
 - (If applicable) Provide before/after screenshots demonstrating any visual changes
@@ -38,7 +37,7 @@ For all PRs:
 - Provide a detailed description of how you tested the changes
 - Include instructions for manual tests you performed
 - Include a list of test cases you added and unit tests you ran to validate this change
-- Provide links to FIDDLEs or sample projects that exercise the modified behavior or new capability
+- Provide links to jsfiddle.net or sample projects that exercise the modified behavior or new capability
 - For more details see the ([Testing](#testing) section)
 
 ### Dependencies and Release Plan
@@ -48,12 +47,11 @@ For all PRs:
 This whole section is optional and may be deleted if your change doesn't introduce new dependencies or have any special release concerns.
 
 - (If applicable) Describe any dependencies you are taking on *new* bundles or *new* APIs not yet fully released
-- (If applicable) Describe any switches/tunables/BREGs/FTAMs that will control the release of your change
+- (If applicable) Describe any switches that will control the release of your change
 - (If applicable) Describe any release concerns and risks, including dependencies that need to go out ahead of this change
 
 ### Tickets
 
 *--- Replace this line and the text below with content ---*
 
-- [ENG2BBKIT-1234](https://jira2.prod.bloomberg.com/browse/ENG2BBKIT-1234)
-- {DRQS 12345678<GO>}
+- DRQS ticket or Jira card
