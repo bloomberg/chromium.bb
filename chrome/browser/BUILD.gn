@@ -3986,8 +3986,6 @@ jumbo_split_static_library("browser") {
   if (is_win || is_mac) {
     # Sources (generally "desktop OS importers") used only on Mac & Windows.
     sources += [
-      "crash_upload_list/crash_upload_list_crashpad.cc",
-      "crash_upload_list/crash_upload_list_crashpad.h",
       "recovery/recovery_install_global_error.cc",
       "recovery/recovery_install_global_error.h",
       "recovery/recovery_install_global_error_factory.cc",
@@ -4134,6 +4132,8 @@ jumbo_split_static_library("browser") {
 
   if (is_win || is_mac || is_linux) {
     sources += [
+      "crash_upload_list/crash_upload_list_crashpad.cc",
+      "crash_upload_list/crash_upload_list_crashpad.h",
       "payments/chrome_payment_request_delegate.cc",
       "payments/chrome_payment_request_delegate.h",
       "payments/payment_request_display_manager_factory.cc",
