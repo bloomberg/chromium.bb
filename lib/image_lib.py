@@ -88,8 +88,11 @@ class LoopbackPartitions(object):
         logging.warning('Adding partitions failed; dumping log & retrying')
         cros_build_lib.RunCommand(['sync'])
         cros_build_lib.RunCommand(['dmesg'])
+        cros_build_lib.SudoRunCommand(['losetup', '-a'])
+        cros_build_lib.RunCommand(['cat', '/proc/partitions'])
         cmd = ['partx', '-u', self.dev]
         cros_build_lib.SudoRunCommand(cmd)
+        cros_build_lib.RunCommand(['cat', '/proc/partitions'])
 
       self.parts = {}
       part_devs = glob.glob(self.dev + 'p*')
