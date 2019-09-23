@@ -4901,7 +4901,9 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       if (ref_buf[frame]->y_crop_width == cpi->source->y_crop_width &&
           ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
           do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame) &&
-          !prune_ref_by_selective_ref_frame(cpi, ref_frame) &&
+          !prune_ref_by_selective_ref_frame(
+              cpi, ref_frame, cm->cur_frame->ref_display_order_hint,
+              cm->current_frame.display_order_hint) &&
           !(cpi->sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
         assert(ref_buf[frame] != NULL);
         if (num_frm_corners < 0) {
