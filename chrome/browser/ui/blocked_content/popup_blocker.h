@@ -10,7 +10,6 @@
 #include "url/gurl.h"
 
 namespace content {
-class RenderFrameHost;
 class WebContents;
 struct OpenURLParams;
 }  // namespace content
@@ -47,12 +46,5 @@ bool MaybeBlockPopup(content::WebContents* web_contents,
                      NavigateParams* params,
                      const content::OpenURLParams* open_url_params,
                      const blink::mojom::WindowFeatures& window_features);
-
-// Tries to get the opener from either the |params| or |open_url_params|,
-// otherwise uses the focused frame from |web_contents| as a proxy.
-content::RenderFrameHost* GetSourceFrameForPopup(
-    NavigateParams* params,
-    const content::OpenURLParams* open_url_params,
-    content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_BLOCKER_H_

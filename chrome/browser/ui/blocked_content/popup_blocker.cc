@@ -71,6 +71,28 @@ PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
   return PopupBlockType::kNotBlocked;
 }
 
+// Tries to get the opener from either the |params| or |open_url_params|,
+// otherwise uses the focused frame from |web_contents| as a proxy.
+content::RenderFrameHost* GetSourceFrameForPopup(
+    NavigateParams* params,
+    const content::OpenURLParams* open_url_params,
+    content::WebContents* web_contents) {
+  if (params->opener)
+    return params->opener;
+  // Make sure the source render frame host is alive before we attempt to
+  // retrieve it from |open_url_params|.
+  if (open_url_params) {
+    content::RenderFrameHost* source = content::RenderFrameHost::FromID(
+        open_url_params->source_render_frame_id,
+        open_url_params->source_render_process_id);
+    if (source)
+      return source;
+  }
+  // The focused frame is not always the frame initiating the popup navigation
+  // and is used as a fallback in case opener information is not available.
+  return web_contents->GetFocusedFrame();
+}
+
 }  // namespace
 
 bool ConsiderForPopupBlocking(WindowOpenDisposition disposition) {
@@ -104,24 +126,4 @@ bool MaybeBlockPopup(content::WebContents* web_contents,
     return true;
   }
   return false;
-}
-
-content::RenderFrameHost* GetSourceFrameForPopup(
-    NavigateParams* params,
-    const content::OpenURLParams* open_url_params,
-    content::WebContents* web_contents) {
-  if (params->opener)
-    return params->opener;
-  // Make sure the source render frame host is alive before we attempt to
-  // retrieve it from |open_url_params|.
-  if (open_url_params) {
-    content::RenderFrameHost* source = content::RenderFrameHost::FromID(
-        open_url_params->source_render_frame_id,
-        open_url_params->source_render_process_id);
-    if (source)
-      return source;
-  }
-  // The focused frame is not always the frame initiating the popup navigation
-  // and is used as a fallback in case opener information is not available.
-  return web_contents->GetFocusedFrame();
 }
