@@ -89,17 +89,6 @@ int CalculateOverflowPadding(int available_size) {
 
 class ScrollableShelfView::GradientLayerDelegate : public ui::LayerDelegate {
  public:
-  struct FadeZone {
-    // Bounds of the fade in/out zone.
-    gfx::Rect zone_rect;
-
-    // Specifies the type of FadeZone: fade in or fade out.
-    bool fade_in = false;
-
-    // Indicates the drawing direction.
-    bool is_horizontal = false;
-  };
-
   GradientLayerDelegate() : layer_(ui::LAYER_TEXTURED) {
     layer_.set_delegate(this);
     layer_.SetFillsBoundsOpaquely(false);
@@ -311,7 +300,8 @@ void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
     SetPaneFocusAndFocusDefault();
 
     // Clears the gradient shader when the focus ring shows.
-    GradientLayerDelegate::FadeZone fade_zone = {gfx::Rect(), false, false};
+    FadeZone fade_zone = {/*zone_rect=*/gfx::Rect(), /*fade_in=*/false,
+                          /*is_horizontal=*/false};
     gradient_layer_delegate_->set_fade_zone(fade_zone);
     gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
     SchedulePaint();
@@ -935,37 +925,77 @@ float ScrollableShelfView::CalculatePageScrollingOffset(bool forward) const {
 }
 
 void ScrollableShelfView::UpdateGradientZone() {
+  FadeZone fade_zone = {/*zone_rect=*/gfx::Rect(), /*fade_in=*/false,
+                        /*is_horizontal=*/false};
+
+  // Calculates the bounds of the gradient zone based on the arrow buttons'
+  // location.
+  if (right_arrow_->GetVisible())
+    fade_zone = CalculateEndGradientZone();
+  else if (left_arrow_->GetVisible())
+    fade_zone = CalculateStartGradientZone();
+
+  gradient_layer_delegate_->set_fade_zone(fade_zone);
+  SchedulePaint();
+}
+
+ScrollableShelfView::FadeZone ScrollableShelfView::CalculateStartGradientZone()
+    const {
   gfx::Rect zone_rect;
   bool fade_in;
   const int zone_length = GetFadeZoneLength();
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
+  const gfx::Rect left_arrow_bounds = left_arrow_->bounds();
 
-  // Calculates the bounds of the gradient zone based on the arrow buttons'
-  // location.
-  if (right_arrow_->GetVisible()) {
-    const gfx::Rect right_arrow_bounds = right_arrow_->bounds();
-    zone_rect = is_horizontal_alignment
-                    ? gfx::Rect(right_arrow_bounds.x() - zone_length, 0,
-                                zone_length, height())
-                    : gfx::Rect(0, right_arrow_bounds.y() - zone_length,
-                                width(), zone_length);
-    fade_in = false;
-  } else if (left_arrow_->GetVisible()) {
-    const gfx::Rect left_arrow_bounds = left_arrow_->bounds();
-    zone_rect =
-        is_horizontal_alignment
-            ? gfx::Rect(left_arrow_bounds.right(), 0, zone_length, height())
-            : gfx::Rect(0, left_arrow_bounds.bottom(), width(), zone_length);
-    fade_in = true;
+  if (is_horizontal_alignment) {
+    int x;
+
+    // Calculates the start location on x-axis of the gradient zone.
+    if (ShouldAdaptToRTL()) {
+      const gfx::Rect mirrored_left_arrow_bounds =
+          GetMirroredRect(left_arrow_bounds);
+      x = mirrored_left_arrow_bounds.x() - zone_length;
+    } else {
+      x = left_arrow_bounds.right();
+    }
+    zone_rect = gfx::Rect(x, 0, zone_length, height());
   } else {
-    zone_rect = gfx::Rect();
-    fade_in = false;
+    zone_rect = gfx::Rect(0, left_arrow_bounds.bottom(), width(), zone_length);
   }
 
-  GradientLayerDelegate::FadeZone fade_zone = {zone_rect, fade_in,
-                                               is_horizontal_alignment};
-  gradient_layer_delegate_->set_fade_zone(fade_zone);
-  SchedulePaint();
+  fade_in = !ShouldAdaptToRTL();
+
+  return {zone_rect, fade_in, is_horizontal_alignment};
+}
+
+ScrollableShelfView::FadeZone ScrollableShelfView::CalculateEndGradientZone()
+    const {
+  gfx::Rect zone_rect;
+  bool fade_in;
+  const int zone_length = GetFadeZoneLength();
+  const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
+  const gfx::Rect right_arrow_bounds = right_arrow_->bounds();
+
+  if (is_horizontal_alignment) {
+    int x;
+
+    // Calculates the start location on x-axis of the gradient zone.
+    if (ShouldAdaptToRTL()) {
+      const gfx::Rect mirrored_right_arrow_bounds =
+          GetMirroredRect(right_arrow_bounds);
+      x = mirrored_right_arrow_bounds.right();
+    } else {
+      x = right_arrow_bounds.x() - zone_length;
+    }
+    zone_rect = gfx::Rect(x, 0, zone_length, height());
+  } else {
+    zone_rect = gfx::Rect(0, right_arrow_bounds.y() - zone_length, width(),
+                          zone_length);
+  }
+
+  fade_in = ShouldAdaptToRTL();
+
+  return {zone_rect, fade_in, is_horizontal_alignment};
 }
 
 int ScrollableShelfView::GetActualScrollOffset() const {

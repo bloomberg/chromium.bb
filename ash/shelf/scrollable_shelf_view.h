@@ -90,6 +90,17 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   class GradientLayerDelegate;
   class ScrollableShelfArrowView;
 
+  struct FadeZone {
+    // Bounds of the fade in/out zone.
+    gfx::Rect zone_rect;
+
+    // Specifies the type of FadeZone: fade in or fade out.
+    bool fade_in = false;
+
+    // Indicates the drawing direction.
+    bool is_horizontal = false;
+  };
+
   enum ScrollStatus {
     // Indicates whether the gesture scrolling is across the main axis.
     // That is, whether it is scrolling vertically for bottom shelf, or
@@ -195,6 +206,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   // Updates the gradient zone.
   void UpdateGradientZone();
+
+  // Calculates the bounds of the gradient zone before/after the shelf
+  // container.
+  FadeZone CalculateStartGradientZone() const;
+  FadeZone CalculateEndGradientZone() const;
 
   // Returns the actual scroll offset on the view's main axis. When the left
   // arrow button shows, |shelf_view_| is translated due to the change in
