@@ -103,9 +103,13 @@ void ImeObserver::OnKeyEvent(
 
   input_ime::KeyboardEvent key_data_value;
   key_data_value.type = input_ime::ParseKeyboardEventType(event.type);
-  key_data_value.request_id = request_id;
-  if (!event.extension_id.empty())
-      key_data_value.extension_id.reset(new std::string(event.extension_id));
+  // For legacy reasons, we still put a |requestID| into the keyData, even
+  // though there is already a |requestID| argument in OnKeyEvent.
+  key_data_value.request_id = std::make_unique<std::string>(request_id);
+  if (!event.extension_id.empty()) {
+    key_data_value.extension_id =
+        std::make_unique<std::string>(event.extension_id);
+  }
   key_data_value.key = event.key;
   key_data_value.code = event.code;
   key_data_value.alt_key.reset(new bool(event.alt_key));
@@ -114,7 +118,7 @@ void ImeObserver::OnKeyEvent(
   key_data_value.caps_lock.reset(new bool(event.caps_lock));
 
   std::unique_ptr<base::ListValue> args(
-      input_ime::OnKeyEvent::Create(component_id, key_data_value));
+      input_ime::OnKeyEvent::Create(component_id, key_data_value, request_id));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_KEY_EVENT,
                            input_ime::OnKeyEvent::kEventName, std::move(args));
