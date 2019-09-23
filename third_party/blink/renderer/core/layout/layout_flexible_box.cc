@@ -1304,9 +1304,12 @@ LayoutUnit LayoutFlexibleBox::StaticCrossAxisPositionForPositionedChild(
 
 LayoutUnit LayoutFlexibleBox::StaticInlinePositionForPositionedChild(
     const LayoutBox& child) {
-  return StartOffsetForContent() +
-         (IsColumnFlow() ? StaticCrossAxisPositionForPositionedChild(child)
-                         : StaticMainAxisPositionForPositionedChild(child));
+  const LayoutUnit start_offset = StartOffsetForContent();
+  if (IsColumnFlow() && StyleRef().IsDeprecatedWebkitBox())
+    return start_offset;
+  return start_offset + (IsColumnFlow()
+                             ? StaticCrossAxisPositionForPositionedChild(child)
+                             : StaticMainAxisPositionForPositionedChild(child));
 }
 
 LayoutUnit LayoutFlexibleBox::StaticBlockPositionForPositionedChild(
