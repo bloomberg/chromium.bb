@@ -3014,12 +3014,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
                                      frame_name, disposition, features,
                                      user_gesture, opener_suppressed);
   NavigateParams nav_params = blocked_params.CreateNavigateParams(web_contents);
-  if (MaybeBlockPopup(web_contents, opener_top_level_frame_url, &nav_params,
-                      nullptr /*=open_url_params*/,
-                      blocked_params.features())) {
-    return false;
-  }
-  return true;
+  return !MaybeBlockPopup(web_contents, &opener_top_level_frame_url,
+                          &nav_params, nullptr /*=open_url_params*/,
+                          blocked_params.features());
 }
 
 content::SpeechRecognitionManagerDelegate*

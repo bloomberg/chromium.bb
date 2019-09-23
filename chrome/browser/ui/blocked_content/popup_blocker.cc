@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -16,6 +18,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/safe_browsing/triggers/ad_popup_trigger.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -23,7 +26,7 @@ namespace {
 // If the popup should be blocked, returns the reason why it was blocked.
 // Otherwise returns kNotBlocked.
 PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
-                                const base::Optional<GURL>& opener_url,
+                                const GURL* opener_url,
                                 bool user_gesture,
                                 const content::OpenURLParams* open_url_params) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -38,7 +41,7 @@ PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
   // the active entry is the page to be loaded as we navigate away from the
   // unloading page.
   const GURL& url =
-      opener_url ? opener_url.value() : web_contents->GetLastCommittedURL();
+      opener_url ? *opener_url : web_contents->GetLastCommittedURL();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (url.is_valid() &&
@@ -78,7 +81,7 @@ bool ConsiderForPopupBlocking(WindowOpenDisposition disposition) {
 }
 
 bool MaybeBlockPopup(content::WebContents* web_contents,
-                     const base::Optional<GURL>& opener_url,
+                     const GURL* opener_url,
                      NavigateParams* params,
                      const content::OpenURLParams* open_url_params,
                      const blink::mojom::WindowFeatures& window_features) {
