@@ -538,7 +538,7 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
   else:
     print('Warning: Some results might be missing because %s' %
           # Get the message on how to login.
-          (auth.LoginRequiredError(codereview_host).message,))
+          (auth.LoginRequiredError().message,))
     http = httplib2.Http()
 
   http.force_exception_to_status_code = True

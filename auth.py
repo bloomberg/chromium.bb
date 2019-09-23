@@ -6,26 +6,22 @@
 
 from __future__ import print_function
 
-import BaseHTTPServer
 import collections
 import datetime
 import functools
-import hashlib
 import json
 import logging
 import optparse
 import os
-import socket
 import sys
 import threading
-import time
 import urllib
 import urlparse
-import webbrowser
+
+import subprocess2
 
 from third_party import httplib2
 from third_party.oauth2client import client
-from third_party.oauth2client import multistore_file
 
 
 # depot_tools/.
@@ -105,11 +101,10 @@ class AuthenticationError(Exception):
 class LoginRequiredError(AuthenticationError):
   """Interaction with the user is required to authenticate."""
 
-  def __init__(self, token_cache_key):
-    # HACK(vadimsh): It is assumed here that the token cache key is a hostname.
+  def __init__(self, scopes=OAUTH_SCOPE_EMAIL):
     msg = (
         'You are not logged in. Please login first by running:\n'
-        '  depot-tools-auth login %s' % token_cache_key)
+        '  luci-auth login -scopes %s' % scopes)
     super(LoginRequiredError, self).__init__(msg)
 
 
@@ -454,15 +449,9 @@ class Authenticator(object):
     """
     with self._lock:
       self._access_token = None
-      storage = self._get_storage()
-      credentials = storage.get()
-      had_creds = bool(credentials)
-      if credentials and credentials.refresh_token and credentials.revoke_uri:
-        try:
-          credentials.revoke(httplib2.Http())
-        except client.TokenRevokeError as e:
-          logging.warning('Failed to revoke refresh token: %s', e)
-      storage.delete()
+      had_creds = bool(_get_luci_auth_credentials(self._scopes))
+      subprocess2.check_call(
+          ['luci-auth', 'logout', '-scopes', self._scopes])
     return had_creds
 
   def has_cached_credentials(self):
@@ -587,23 +576,9 @@ class Authenticator(object):
 
   ## Private methods.
 
-  def _get_storage(self):
-    """Returns oauth2client.Storage with cached tokens."""
-    # Do not mix cache keys for different externally provided tokens.
-    if self._external_token:
-      token_hash = hashlib.sha1(self._external_token.refresh_token).hexdigest()
-      cache_key = '%s:refresh_tok:%s' % (self._token_cache_key, token_hash)
-    else:
-      cache_key = self._token_cache_key
-    path = _get_token_cache_path()
-    logging.debug('Using token storage %r (cache key %r)', path, cache_key)
-    return multistore_file.get_credential_storage_custom_string_key(
-        path, cache_key)
-
   def _get_cached_credentials(self):
-    """Returns oauth2client.Credentials loaded from storage."""
-    storage = self._get_storage()
-    credentials = storage.get()
+    """Returns oauth2client.Credentials loaded from luci-auth."""
+    credentials = _get_luci_auth_credentials(self._scopes)
 
     if not credentials:
       logging.debug('No cached token')
@@ -636,8 +611,6 @@ class Authenticator(object):
           token_uri='https://accounts.google.com/o/oauth2/token',
           user_agent=None,
           revoke_uri=None)
-      credentials.set_store(storage)
-      storage.put(credentials)
       return credentials
 
     # Not using external refresh token -> return whatever is cached.
@@ -697,17 +670,14 @@ class Authenticator(object):
             'Token provided via --auth-refresh-token-json is no longer valid.')
       if not allow_user_interaction:
         logging.debug('Requesting user to login')
-        raise LoginRequiredError(self._token_cache_key)
+        raise LoginRequiredError(self._scopes)
       logging.debug('Launching OAuth browser flow')
-      credentials = _run_oauth_dance(self._config, self._scopes)
+      credentials = _run_oauth_dance(self._scopes)
       _log_credentials_info('new token', credentials)
 
     logging.info(
         'OAuth access_token refreshed. Expires in %s.',
         credentials.token_expiry - datetime.datetime.utcnow())
-    storage = self._get_storage()
-    credentials.set_store(storage)
-    storage.put(credentials)
     return AccessToken(str(credentials.access_token), credentials.token_expiry)
 
 
@@ -762,116 +732,29 @@ def _log_credentials_info(title, credentials):
     })
 
 
-def _run_oauth_dance(config, scopes):
+def _get_luci_auth_credentials(scopes):
+  try:
+    token_info = json.loads(subprocess2.check_output(
+        ['luci-auth', 'token', '-scopes', scopes, '-json-output', '-'],
+        stderr=subprocess2.VOID))
+  except subprocess2.CalledProcessError:
+    return None
+
+  return client.OAuth2Credentials(
+      access_token=token_info['token'],
+      client_id=OAUTH_CLIENT_ID,
+      client_secret=OAUTH_CLIENT_SECRET,
+      refresh_token=None,
+      token_expiry=datetime.datetime.utcfromtimestamp(token_info['expiry']),
+      token_uri=None,
+      user_agent=None,
+      revoke_uri=None)
+
+def _run_oauth_dance(scopes):
   """Perform full 3-legged OAuth2 flow with the browser.
 
   Returns:
     oauth2client.Credentials.
-
-  Raises:
-    AuthenticationError on errors.
   """
-  flow = client.OAuth2WebServerFlow(
-      OAUTH_CLIENT_ID,
-      OAUTH_CLIENT_SECRET,
-      scopes,
-      approval_prompt='force')
-
-  use_local_webserver = config.use_local_webserver
-  port = config.webserver_port
-  if config.use_local_webserver:
-    success = False
-    try:
-      httpd = _ClientRedirectServer(('localhost', port), _ClientRedirectHandler)
-    except socket.error:
-      pass
-    else:
-      success = True
-    use_local_webserver = success
-    if not success:
-      print(
-        'Failed to start a local webserver listening on port %d.\n'
-        'Please check your firewall settings and locally running programs that '
-        'may be blocking or using those ports.\n\n'
-        'Falling back to --auth-no-local-webserver and continuing with '
-        'authentication.\n' % port)
-
-  if use_local_webserver:
-    oauth_callback = 'http://localhost:%s/' % port
-  else:
-    oauth_callback = client.OOB_CALLBACK_URN
-  flow.redirect_uri = oauth_callback
-  authorize_url = flow.step1_get_authorize_url()
-
-  if use_local_webserver:
-    webbrowser.open(authorize_url, new=1, autoraise=True)
-    print(
-      'Your browser has been opened to visit:\n\n'
-      '    %s\n\n'
-      'If your browser is on a different machine then exit and re-run this '
-      'application with the command-line parameter\n\n'
-      '  --auth-no-local-webserver\n' % authorize_url)
-  else:
-    print(
-      'Go to the following link in your browser:\n\n'
-      '    %s\n' % authorize_url)
-
-  try:
-    code = None
-    if use_local_webserver:
-      httpd.handle_request()
-      if 'error' in httpd.query_params:
-        raise AuthenticationError(
-            'Authentication request was rejected: %s' %
-            httpd.query_params['error'])
-      if 'code' not in httpd.query_params:
-        raise AuthenticationError(
-            'Failed to find "code" in the query parameters of the redirect.\n'
-            'Try running with --auth-no-local-webserver.')
-      code = httpd.query_params['code']
-    else:
-      code = raw_input('Enter verification code: ').strip()
-  except KeyboardInterrupt:
-    raise AuthenticationError('Authentication was canceled.')
-
-  try:
-    return flow.step2_exchange(code)
-  except client.FlowExchangeError as e:
-    raise AuthenticationError('Authentication has failed: %s' % e)
-
-
-class _ClientRedirectServer(BaseHTTPServer.HTTPServer):
-  """A server to handle OAuth 2.0 redirects back to localhost.
-
-  Waits for a single request and parses the query parameters
-  into query_params and then stops serving.
-  """
-  query_params = {}
-
-
-class _ClientRedirectHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-  """A handler for OAuth 2.0 redirects back to localhost.
-
-  Waits for a single request and parses the query parameters
-  into the servers query_params and then stops serving.
-  """
-
-  def do_GET(self):
-    """Handle a GET request.
-
-    Parses the query parameters and prints a message
-    if the flow has completed. Note that we can't detect
-    if an error occurred.
-    """
-    self.send_response(200)
-    self.send_header('Content-type', 'text/html')
-    self.end_headers()
-    query = self.path.split('?', 1)[-1]
-    query = dict(urlparse.parse_qsl(query))
-    self.server.query_params = query
-    self.wfile.write('<html><head><title>Authentication Status</title></head>')
-    self.wfile.write('<body><p>The authentication flow has completed.</p>')
-    self.wfile.write('</body></html>')
-
-  def log_message(self, _format, *args):
-    """Do not log messages to stdout while running as command line program."""
+  subprocess2.check_call(['luci-auth', 'login', '-scopes', scopes])
+  return _get_luci_auth_credentials(scopes)
