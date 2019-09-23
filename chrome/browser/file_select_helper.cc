@@ -195,7 +195,7 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
-  NotifyRenderFrameHostAndEnd(files);
+  ConvertToFileChooserFileInfoList(files);
 #endif  // defined(OS_MACOSX)
 }
 
@@ -224,7 +224,7 @@ void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
-  NotifyRenderFrameHostAndEnd(files);
+  ConvertToFileChooserFileInfoList(files);
 #endif  // defined(OS_MACOSX)
 }
 
@@ -255,7 +255,7 @@ void FileSelectHelper::LaunchConfirmationDialog(
     std::vector<ui::SelectedFileInfo> selected_files) {
   ShowFolderUploadConfirmationDialog(
       path,
-      base::BindOnce(&FileSelectHelper::NotifyRenderFrameHostAndEnd, this),
+      base::BindOnce(&FileSelectHelper::ConvertToFileChooserFileInfoList, this),
       std::move(selected_files), web_contents_);
 }
 
@@ -295,12 +295,10 @@ void FileSelectHelper::OnListDone(int error) {
   }
 }
 
-void FileSelectHelper::NotifyRenderFrameHostAndEnd(
+void FileSelectHelper::ConvertToFileChooserFileInfoList(
     const std::vector<ui::SelectedFileInfo>& files) {
-  if (!render_frame_host_) {
-    RunFileChooserEnd();
+  if (AbortIfWebContentsDestroyed())
     return;
-  }
 
 #if defined(OS_CHROMEOS)
   if (!files.empty()) {
@@ -317,9 +315,8 @@ void FileSelectHelper::NotifyRenderFrameHostAndEnd(
             ->GetFileSystemContext();
     file_manager::util::ConvertSelectedFileInfoListToFileChooserFileInfoList(
         file_system_context, site_instance->GetSiteURL(), files,
-        base::BindOnce(
-            &FileSelectHelper::NotifyRenderFrameHostAndEndAfterConversion,
-            this));
+        base::BindOnce(&FileSelectHelper::PerformSafeBrowsingDeepScanIfNeeded,
+                       this));
     return;
   }
 #endif  // defined(OS_CHROMEOS)
@@ -332,11 +329,62 @@ void FileSelectHelper::NotifyRenderFrameHostAndEnd(
             base::FilePath(file.display_name).AsUTF16Unsafe())));
   }
 
-  NotifyRenderFrameHostAndEndAfterConversion(std::move(chooser_files));
+  PerformSafeBrowsingDeepScanIfNeeded(std::move(chooser_files));
 }
 
-void FileSelectHelper::NotifyRenderFrameHostAndEndAfterConversion(
+void FileSelectHelper::PerformSafeBrowsingDeepScanIfNeeded(
     std::vector<FileChooserFileInfoPtr> list) {
+  if (AbortIfWebContentsDestroyed())
+    return;
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  safe_browsing::DeepScanningDialogDelegate::Data data;
+  if (safe_browsing::DeepScanningDialogDelegate::IsEnabled(
+          profile_, render_frame_host_->GetLastCommittedURL(), &data)) {
+    data.paths.reserve(list.size());
+    for (const auto& file : list)
+      data.paths.push_back(file->get_native_file()->file_path);
+
+    safe_browsing::DeepScanningDialogDelegate::ShowForWebContents(
+        web_contents_, std::move(data),
+        base::BindOnce(&FileSelectHelper::DeepScanCompletionCallback, this,
+                       std::move(list)));
+  } else {
+    NotifyListenerAndEnd(std::move(list));
+  }
+#else
+  NotifyListenerAndEnd(std::move(list));
+#endif  // BUILDFLAG(FULL_SAFE_BROWSING)
+}
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+void FileSelectHelper::DeepScanCompletionCallback(
+    std::vector<blink::mojom::FileChooserFileInfoPtr> list,
+    const safe_browsing::DeepScanningDialogDelegate::Data& data,
+    const safe_browsing::DeepScanningDialogDelegate::Result& result) {
+  if (AbortIfWebContentsDestroyed())
+    return;
+
+  DCHECK_EQ(data.text.size(), result.text_results.size());
+  DCHECK_EQ(data.paths.size(), result.paths_results.size());
+  DCHECK_EQ(list.size(), result.paths_results.size());
+
+  // Remove any files that did not pass the deep scan.
+  size_t i = 0;
+  for (auto it = list.begin(); it != list.end(); ++i) {
+    if (!result.paths_results[i]) {
+      it = list.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  NotifyListenerAndEnd(std::move(list));
+}
+#endif  // BUILDFLAG(FULL_SAFE_BROWSING)
+
+void FileSelectHelper::NotifyListenerAndEnd(
+    std::vector<blink::mojom::FileChooserFileInfoPtr> list) {
   listener_->FileSelected(std::move(list), base_dir_, dialog_mode_);
   listener_.reset();
 
@@ -363,11 +411,24 @@ void FileSelectHelper::CleanUp() {
 }
 
 bool FileSelectHelper::AbortIfWebContentsDestroyed() {
-  if (render_frame_host_ && web_contents_)
-    return false;
+  if (abort_on_missing_web_contents_in_tests_ &&
+      (render_frame_host_ == nullptr || web_contents_ == nullptr)) {
+    RunFileChooserEnd();
+    return true;
+  }
 
-  RunFileChooserEnd();
-  return true;
+  return false;
+}
+
+void FileSelectHelper::SetFileSelectListenerForTesting(
+    std::unique_ptr<content::FileSelectListener> listener) {
+  DCHECK(listener);
+  DCHECK(!listener_);
+  listener_ = std::move(listener);
+}
+
+void FileSelectHelper::DontAbortOnMissingWebContentsForTesting() {
+  abort_on_missing_web_contents_in_tests_ = false;
 }
 
 std::unique_ptr<ui::SelectFileDialog::FileTypeInfo>
