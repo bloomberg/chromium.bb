@@ -291,7 +291,7 @@ bool URLIndexPrivateData::UpdateURL(
         row_to_update.set_title(row.title());
         RowWordStarts word_starts;
         AddRowWordsToIndex(row_to_update, &word_starts);
-        word_starts_map_[row_id] = word_starts;
+        word_starts_map_[row_id] = std::move(word_starts);
       }
       row_was_updated = true;
     }
@@ -801,12 +801,13 @@ bool URLIndexPrivateData::IndexRow(
   new_row.set_typed_count(row.typed_count());
   new_row.set_last_visit(row.last_visit());
   new_row.set_title(row.title());
-  history_info_map_[history_id].url_row = new_row;
 
   // Index the words contained in the URL and title of the row.
   RowWordStarts word_starts;
   AddRowWordsToIndex(new_row, &word_starts);
-  word_starts_map_[history_id] = word_starts;
+  word_starts_map_[history_id] = std::move(word_starts);
+
+  history_info_map_[history_id].url_row = std::move(new_row);
 
   // Update the recent visits information or schedule the update
   // as appropriate.
