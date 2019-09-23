@@ -364,7 +364,7 @@ bool CanPerformEarlyRestart() {
   if (controller->password_changed())
     return false;
 
-  if (controller->auth_mode() != LoginPerformer::AUTH_MODE_INTERNAL)
+  if (controller->auth_mode() != LoginPerformer::AuthorizationMode::kInternal)
     return false;
 
   // No early restart if Easy unlock key needs to be updated.
