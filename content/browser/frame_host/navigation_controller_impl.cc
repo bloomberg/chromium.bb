@@ -2617,10 +2617,7 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
             sandboxed_source_frame_tree_node_id, same_document_loads) &&
         DoesSandboxNavigationStayWithinSubtree(
             sandboxed_source_frame_tree_node_id, different_document_loads);
-    UMA_HISTOGRAM_BOOLEAN(
-        "Navigation.SandboxFrameBackForwardStaysWithinSubtree",
-        navigates_inside_tree);
-    // Also count the navigations as web use counters so we can determine
+    // Count the navigations as web use counters so we can determine
     // the number of pages that trigger this.
     FrameTreeNode* sandbox_source_frame_tree_node =
         FrameTreeNode::GloballyFindByID(sandboxed_source_frame_tree_node_id);
