@@ -92,16 +92,6 @@ int ToMessageID(int resource_id) {
   switch (resource_id) {
     case WebLocalizedString::kAXAMPMFieldText:
       return IDS_AX_AM_PM_FIELD_TEXT;
-    case WebLocalizedString::kAXCalendarShowDatePicker:
-      return IDS_AX_CALENDAR_SHOW_DATE_PICKER;
-    case WebLocalizedString::kAXCalendarShowMonthSelector:
-      return IDS_AX_CALENDAR_SHOW_MONTH_SELECTOR;
-    case WebLocalizedString::kAXCalendarShowNextMonth:
-      return IDS_AX_CALENDAR_SHOW_NEXT_MONTH;
-    case WebLocalizedString::kAXCalendarShowPreviousMonth:
-      return IDS_AX_CALENDAR_SHOW_PREVIOUS_MONTH;
-    case WebLocalizedString::kAXCalendarWeekDescription:
-      return IDS_AX_CALENDAR_WEEK_DESCRIPTION;
     case WebLocalizedString::kAXDayOfMonthFieldText:
       return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
     case WebLocalizedString::kAXHourFieldText:
