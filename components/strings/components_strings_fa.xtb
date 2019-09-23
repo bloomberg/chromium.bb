@@ -572,7 +572,7 @@
 <translation id="3963837677003247395">به‌صورت دستی ادامه می‌دهید؟</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{هیچ‌کدام}=1{از ۱ سایت }one{از # سایت }other{از # سایت }}</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
-<translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود است</translation>
+<translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود شده است</translation>
 <translation id="3981540111851280311">‏<ph name="ENROLLMENT_DOMAIN" /> «محافظت از خطرات تهدیدکننده Chrome Enterprise» را در مرورگرتان فعال کرده است. «محافظت از خطرات تهدیدکننده Chrome Enterprise» به برخی داده‌هایتان دسترسی دارد.</translation>
 <translation id="3987940399970879459">کمتر از ۱ مگابایت</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ ۱ صفحه وب در این نزدیکی است}one{ # صفحه وب در این نزدیکی است}other{ # صفحه وب در این نزدیکی است}}</translation>

@@ -173,6 +173,7 @@
 <translation id="1235458158152011030">已知網路</translation>
 <translation id="123578888592755962">磁碟空間已滿</translation>
 <translation id="1238191093934674082">Open VPN</translation>
+<translation id="1239594683407221485">在「檔案」應用程式中探索裝置內容。</translation>
 <translation id="124116460088058876">更多語言</translation>
 <translation id="1241753985463165747">叫用時讀取及變更你在目前網站上的所有資料</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> 要求重設您的設定。</translation>
@@ -312,6 +313,7 @@
 <translation id="146220085323579959">網際網路連線已中斷。請檢查你的網際網路連線，然後再試一次。</translation>
 <translation id="1463112138205428654">進階保護功能已封鎖 <ph name="FILE_NAME" />。</translation>
 <translation id="1464258312790801189">你的帳戶</translation>
+<translation id="1464781208867302907">如要開啟裝置偏好設定選項，請前往「設定」。</translation>
 <translation id="1465176863081977902">複製音訊位址(&amp;O)</translation>
 <translation id="1465827627707997754">披薩切片</translation>
 <translation id="1468571364034902819">無法使用這個設定檔</translation>
@@ -743,6 +745,7 @@
 <translation id="2099686503067610784">要刪除伺服器憑證「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="2100273922101894616">自動登入</translation>
 <translation id="2101225219012730419">版本：</translation>
+<translation id="2111670510994270194">在右側新增分頁</translation>
 <translation id="21133533946938348">固定分頁</translation>
 <translation id="2113479184312716848">開啟檔案(&amp;F)...</translation>
 <translation id="2113921862428609753">授權單位資訊存取</translation>
@@ -1877,7 +1880,7 @@
 <translation id="3748026146096797577">尚未連線</translation>
 <translation id="3752582316358263300">確定...</translation>
 <translation id="3752673729237782832">我的裝置</translation>
-<translation id="3753033997400164841">只要儲存一次，即可在所有裝置上使用</translation>
+<translation id="3753033997400164841">只要儲存一次，即可在所有裝置上使用。</translation>
 <translation id="3755411799582650620">你的 <ph name="PHONE_NAME" /> 現在也可以解鎖這台 <ph name="DEVICE_TYPE" />。</translation>
 <translation id="375636864092143889">網站正在使用你的麥克風</translation>
 <translation id="3757733214359997190">找不到任何網站</translation>
@@ -2323,6 +2326,7 @@
 <translation id="4416582610654027550">請輸入有效的網址</translation>
 <translation id="4419409365248380979">一律允許 <ph name="HOST" /> 設定 Coockie</translation>
 <translation id="4419610272958564173">不明的裝置 (製造商：<ph name="VENDOR_ID" />，產品：<ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">連線發生問題。請與「<ph name="CARRIER_NAME" />」聯絡以尋求協助。</translation>
 <translation id="4421932782753506458">毛毛</translation>
 <translation id="4423376891418188461">還原設定</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />，管理員要求你變更密碼。</translation>
@@ -3293,6 +3297,7 @@
 <translation id="5869948122057593679">關閉所有視窗</translation>
 <translation id="5870086504539785141">關閉無障礙選單</translation>
 <translation id="5870155679953074650">硬性錯誤數</translation>
+<translation id="5876851302954717356">在右側新增分頁</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5877584842898320529">選取的印表機無法使用或未正確安裝。<ph name="BR" />請檢查你的印表機，或改選其他印表機。</translation>
 <translation id="5882919346125742463">已知網路</translation>
@@ -4554,6 +4559,7 @@
 <translation id="7773726648746946405">工作階段儲存空間</translation>
 <translation id="7774365994322694683">鳥</translation>
 <translation id="7776701556330691704">找不到語音</translation>
+<translation id="7780252971640011240">連線發生問題。請與你的電信業者聯絡以尋求協助。</translation>
 <translation id="7781335840981796660">系統將移除所有使用者帳戶和本機資料。</translation>
 <translation id="7782102568078991263">沒有更多來自 Google 的建議</translation>
 <translation id="7782717250816686129">儲存登入畫面中的永久資料，並在工作階段中置入憑證。</translation>

@@ -1803,7 +1803,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4150201353443180367">Exibição</translation>
 <translation id="4157003184375321727">Informar a versão do sistema operacional e do firmware</translation>
 <translation id="4157594634940419685">Permitir acesso a impressoras CUPS nativas</translation>
-<translation id="4160962198980004898">Fonte de endereço MAC do dispositivo quando ancorado</translation>
+<translation id="4160962198980004898">Fonte de endereço MAC do dispositivo quando encaixado na base</translation>
 <translation id="4163705126749612234">Configura os nomes de domínio de cliente necessários que serão impostos aos clientes de acesso remoto e impede os usuários de alterá-los.
 
           Se esta configuração for ativada, apenas clientes de um dos domínios especificados poderão se conectar ao host.
