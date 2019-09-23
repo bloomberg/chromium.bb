@@ -110,11 +110,16 @@ BenchmarkProfileVersion = collections.namedtuple(
     ['major', 'minor', 'build', 'patch', 'revision', 'is_merged'])
 
 CWP_PROFILE_NAME_REGEX = r"""
-      ^R(\d+)-                    # Major
-       (\d+)\.                    # Build
-       (\d+)-                     # Patch
-       (\d+)                      # Clock; breaks ties sometimes.
-       \.afdo(?:\.xz)?$           # We don't care about the presence of xz
+      ^R(\d+)-                      # Major
+       (\d+)\.                      # Build
+       (\d+)-                       # Patch
+       (\d+)                        # Clock; breaks ties sometimes.
+       (?:\.afdo|\.gcov)?           # Optional: CWP for Chrome has `afdo`,
+                                    # and kernel has `gcov`. Also this regex
+                                    # is also used to match names in ebuild and
+                                    # sometimes names in ebuild don't have
+                                    # suffix.
+       (?:\.xz)?$                   # We don't care about the presence of xz
     """
 
 CWPProfileVersion = collections.namedtuple('CWPProfileVersion',
@@ -822,8 +827,7 @@ def _FindLatestAFDOArtifact(gs_url, ranking_function):
   # pattern. And filter out text files for legacy PFQ like
   # latest-chromeos-chrome-amd64-79.afdo
   all_files = [
-      x for x in gs_context.List(gs_url, details=True)
-      if 'latest-' not in x.url
+      x for x in gs_context.List(gs_url, details=True) if 'latest-' not in x.url
   ]
   chrome_branch = _FindCurrentChromeBranch()
   results = _FilterResultsBasedOnBranch(chrome_branch)
