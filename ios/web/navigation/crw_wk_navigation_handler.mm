@@ -556,6 +556,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
 
     self.webStateImpl->OnNavigationStarted(context);
+    self.webStateImpl->GetNavigationManagerImpl().OnNavigationStarted(
+        webViewURL);
     return;
   }
 
@@ -606,8 +608,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     return;
   }
 
-  self.webStateImpl->GetNavigationManagerImpl()
-      .OnRendererInitiatedNavigationStarted(webViewURL);
+  self.webStateImpl->GetNavigationManagerImpl().OnNavigationStarted(webViewURL);
 
   // When a client-side redirect occurs while an interstitial warning is
   // displayed, clear the warning and its navigation item, so that a new
