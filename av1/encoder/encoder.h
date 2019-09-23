@@ -182,6 +182,7 @@ typedef struct TplDepFrame {
   int height;
   int mi_rows;
   int mi_cols;
+  unsigned int frame_display_index;
 } TplDepFrame;
 
 typedef enum {
@@ -1401,6 +1402,23 @@ static const uint8_t av1_ref_frame_flag_list[REF_FRAMES] = { 0,
                                                              AOM_BWD_FLAG,
                                                              AOM_ALT2_FLAG,
                                                              AOM_ALT_FLAG };
+
+// When more than 'max_allowed_refs' are available, we reduce the number of
+// reference frames one at a time based on this order.
+static const MV_REFERENCE_FRAME disable_order[] = {
+  LAST3_FRAME,
+  LAST2_FRAME,
+  ALTREF2_FRAME,
+  GOLDEN_FRAME,
+};
+
+static INLINE int get_max_allowed_ref_frames(const AV1_COMP *cpi) {
+  const unsigned int max_allowed_refs_for_given_speed =
+      (cpi->sf.selective_ref_frame >= 3) ? INTER_REFS_PER_FRAME - 1
+                                         : INTER_REFS_PER_FRAME;
+  return AOMMIN(max_allowed_refs_for_given_speed,
+                cpi->oxcf.max_reference_frames);
+}
 
 // Returns a Sequence Header OBU stored in an aom_fixed_buf_t, or NULL upon
 // failure. When a non-NULL aom_fixed_buf_t pointer is returned by this

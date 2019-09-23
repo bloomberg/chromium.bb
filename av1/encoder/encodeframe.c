@@ -4488,14 +4488,6 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
   return 1;
 }
 
-static int get_max_allowed_ref_frames(const AV1_COMP *cpi) {
-  const unsigned int max_allowed_refs_for_given_speed =
-      (cpi->sf.selective_ref_frame >= 3) ? INTER_REFS_PER_FRAME - 1
-                                         : INTER_REFS_PER_FRAME;
-  return AOMMIN(max_allowed_refs_for_given_speed,
-                cpi->oxcf.max_reference_frames);
-}
-
 // Set the relative distance of a reference frame w.r.t. current frame
 static AOM_INLINE void set_rel_frame_dist(AV1_COMP *cpi) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -4538,15 +4530,6 @@ static AOM_INLINE void enforce_max_ref_frames(AV1_COMP *cpi) {
   }
 
   const int max_allowed_refs = get_max_allowed_ref_frames(cpi);
-
-  // When more than 'max_allowed_refs' are available, we reduce the number of
-  // reference frames one at a time based on this order.
-  const MV_REFERENCE_FRAME disable_order[] = {
-    LAST3_FRAME,
-    LAST2_FRAME,
-    ALTREF2_FRAME,
-    GOLDEN_FRAME,
-  };
 
   for (int i = 0; i < 4 && total_valid_refs > max_allowed_refs; ++i) {
     const MV_REFERENCE_FRAME ref_frame_to_disable = disable_order[i];
