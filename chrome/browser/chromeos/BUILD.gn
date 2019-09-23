@@ -54,6 +54,7 @@ source_set("chromeos") {
     ":print_job_info_proto",
     ":screen_brightness_event_proto",
     ":user_activity_event_proto",
+    "crostini:crostini_installer_types_mojom",
     "//apps",
     "//ash",
     "//ash/public/cpp",
