@@ -96,7 +96,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
       binding: i,
       visibility: GPUShaderStage.COMPUTE,
       type,
-      dynamic: true,
+      hasDynamicOffset: true,
     });
   }
 
@@ -107,7 +107,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
         binding: maxDynamicBufferBindings.length,
         visibility: GPUShaderStage.COMPUTE,
         type,
-        dynamic: false,
+        hasDynamicOffset: false,
       },
     ],
   };
@@ -117,7 +117,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
 
   // Dynamic buffers exceed maximum in a bind group layout.
   const badDescriptor = clone(goodDescriptor);
-  badDescriptor.bindings![maxDynamicBufferCount].dynamic = true;
+  badDescriptor.bindings![maxDynamicBufferCount].hasDynamicOffset = true;
 
   await t.expectValidationError(() => {
     t.device.createBindGroupLayout(badDescriptor);
@@ -136,7 +136,7 @@ g.test('dynamic set to true is allowed only for buffers', async t => {
         binding: 0,
         visibility: GPUShaderStage.FRAGMENT,
         type,
-        dynamic: true,
+        hasDynamicOffset: true,
       },
     ],
   };

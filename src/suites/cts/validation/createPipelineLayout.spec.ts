@@ -21,7 +21,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
       binding: i,
       visibility: GPUShaderStage.COMPUTE,
       type,
-      dynamic: true,
+      hasDynamicOffset: true,
     });
   }
 
@@ -35,7 +35,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
         binding: 0,
         visibility: GPUShaderStage.COMPUTE,
         type,
-        dynamic: false,
+        hasDynamicOffset: false,
       },
     ],
   };
@@ -52,7 +52,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
 
   // Check dynamic buffers exceed maximum in pipeline layout.
   const badDescriptor = clone(goodDescriptor);
-  badDescriptor.bindings![0].dynamic = true;
+  badDescriptor.bindings![0].hasDynamicOffset = true;
 
   const badPipelineLayoutDescriptor = {
     bindGroupLayouts: [

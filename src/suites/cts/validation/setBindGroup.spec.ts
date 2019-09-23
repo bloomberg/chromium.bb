@@ -99,13 +99,13 @@ g.test('dynamic offsets match expectations in pass encoder', async t => {
         binding: 0,
         visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
         type: 'uniform-buffer',
-        dynamic: true,
+        hasDynamicOffset: true,
       },
       {
         binding: 1,
         visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
         type: 'storage-buffer',
-        dynamic: true,
+        hasDynamicOffset: true,
       },
     ],
   });
