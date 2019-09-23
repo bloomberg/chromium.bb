@@ -880,6 +880,15 @@ void ShelfView::OnShelfConfigUpdated() {
     if (!button->IsIconSizeCurrent())
       ShelfItemChanged(i, model_->items()[i]);
   }
+
+  if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletModeEnabled() &&
+      !ShelfConfig::Get()->is_in_app()) {
+    SetBackground(views::CreateRoundedRectBackground(
+        ShelfConfig::Get()->shelf_control_permanent_highlight_background(),
+        ShelfConfig::Get()->button_size() / 2));
+  } else {
+    SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
+  }
 }
 
 bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
