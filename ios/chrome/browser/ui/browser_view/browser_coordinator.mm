@@ -273,7 +273,9 @@
       initWithBaseViewController:self.viewController
                     browserState:self.browserState
                     webStateList:self.tabModel.webStateList
-                injectionHandler:self.injectionHandler];
+                injectionHandler:self.injectionHandler
+                      dispatcher:static_cast<id<BrowserCoordinatorCommands>>(
+                                     self.dispatcher)];
   self.formInputAccessoryCoordinator.navigator = self;
   [self.formInputAccessoryCoordinator start];
 
