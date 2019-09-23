@@ -264,7 +264,7 @@ class XRSession final
 
   void OnCreateAnchorResult(ScriptPromiseResolver* resolver,
                             device::mojom::CreateAnchorResult result,
-                            int32_t id);
+                            uint32_t id);
 
   void EnsureEnvironmentErrorHandler();
   void OnEnvironmentProviderError();
@@ -288,7 +288,7 @@ class XRSession final
   XRSessionFeatureSet enabled_features_;
 
   bool is_tracked_anchors_null_ = true;
-  HeapHashMap<int32_t, Member<XRAnchor>> anchor_ids_to_anchors_;
+  HeapHashMap<uint32_t, Member<XRAnchor>> anchor_ids_to_anchors_;
 
   WTF::Vector<XRViewData> views_;
 

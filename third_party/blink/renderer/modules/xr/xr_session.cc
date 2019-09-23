@@ -615,7 +615,7 @@ void XRSession::OnHitTestResults(
 
 void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
                                      device::mojom::CreateAnchorResult result,
-                                     int32_t id) {
+                                     uint32_t id) {
   DCHECK(create_anchor_promises_.Contains(resolver));
   create_anchor_promises_.erase(resolver);
 
@@ -680,7 +680,7 @@ void XRSession::ProcessAnchorsData(
 
   is_tracked_anchors_null_ = false;
 
-  HeapHashMap<int32_t, Member<XRAnchor>> updated_anchors;
+  HeapHashMap<uint32_t, Member<XRAnchor>> updated_anchors;
 
   // First, process all planes that had their information updated (new planes
   // are also processed here).
