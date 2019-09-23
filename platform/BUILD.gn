@@ -55,8 +55,6 @@ source_set("platform") {
 
   if (!build_with_chromium) {
     sources += [
-      "impl/network_reader.cc",
-      "impl/network_reader.h",
       "impl/network_waiter.cc",
       "impl/network_waiter.h",
       "impl/socket_handle.h",
@@ -84,6 +82,8 @@ source_set("platform") {
 
     if (is_posix) {
       sources += [
+        "impl/network_reader_posix.cc",
+        "impl/network_reader_posix.h",
         "impl/network_waiter_posix.cc",
         "impl/network_waiter_posix.h",
         "impl/network_waiter_thread.cc",
@@ -173,13 +173,13 @@ source_set("unittests") {
       # TODO(jophba): move over to general sources when UDP socket create
       # is implemented in Chromium, as part of the NetworkRunner work.
       "api/socket_integration_unittest.cc",
-      "impl/network_reader_unittest.cc",
       "impl/task_runner_unittest.cc",
       "impl/time_unittest.cc",
     ]
 
     if (is_posix) {
       sources += [
+        "impl/network_reader_posix_unittest.cc",
         "impl/network_waiter_posix_unittest.cc",
         "impl/scoped_pipe_unittest.cc",
         "impl/socket_address_posix_unittest.cc",

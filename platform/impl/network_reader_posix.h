@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_IMPL_NETWORK_READER_H_
-#define PLATFORM_IMPL_NETWORK_READER_H_
+#ifndef PLATFORM_IMPL_NETWORK_READER_POSIX_H_
+#define PLATFORM_IMPL_NETWORK_READER_POSIX_H_
 
 #include <map>
 #include <mutex>  // NOLINT
@@ -18,20 +18,21 @@
 namespace openscreen {
 namespace platform {
 
+struct UdpSocketPosix;
+
 // This is the class responsible for watching sockets for readable data, then
 // calling the function associated with these sockets once that data is read.
 // NOTE: This class will only function as intended while its RunUntilStopped
 // method is running.
-// TODO(rwkeane): Rename this class NetworkReaderPosix.
-class NetworkReader : public UdpSocket::LifetimeObserver,
-                      NetworkWaiter::Subscriber {
+class NetworkReaderPosix : public UdpSocket::LifetimeObserver,
+                           public NetworkWaiter::Subscriber {
  public:
   using SocketHandleRef = NetworkWaiter::SocketHandleRef;
 
   // Creates a new instance of this object.
   // NOTE: The provided NetworkWaiter must outlive this object.
-  explicit NetworkReader(NetworkWaiter* waiter);
-  virtual ~NetworkReader();
+  explicit NetworkReaderPosix(NetworkWaiter* waiter);
+  virtual ~NetworkReaderPosix();
 
   // UdpSocket::LifetimeObserver overrides.
   // Waits for |socket| to be readable and then calls the socket's
@@ -53,18 +54,16 @@ class NetworkReader : public UdpSocket::LifetimeObserver,
   void ProcessReadyHandle(SocketHandleRef handle) override;
 
  protected:
-  bool IsMappedReadForTesting(UdpSocket* socket) const {
-    return std::find(sockets_.begin(), sockets_.end(), socket) !=
-           sockets_.end();
-  }
+  bool IsMappedReadForTesting(UdpSocketPosix* socket) const;
 
  private:
   // Helper method to allow for OnDestroy calls without blocking.
-  void OnDelete(UdpSocket* socket, bool disable_locking_for_testing = false);
+  void OnDelete(UdpSocketPosix* socket,
+                bool disable_locking_for_testing = false);
 
   // The set of all sockets that are being read from
   // TODO(rwkeane): Change to std::vector<UdpSocketPosix*>
-  std::vector<UdpSocket*> sockets_;
+  std::vector<UdpSocketPosix*> sockets_;
 
   // Mutex to protect against concurrent modification of socket info.
   std::mutex mutex_;
@@ -74,10 +73,10 @@ class NetworkReader : public UdpSocket::LifetimeObserver,
 
   friend class TestingNetworkReader;
 
-  OSP_DISALLOW_COPY_AND_ASSIGN(NetworkReader);
+  OSP_DISALLOW_COPY_AND_ASSIGN(NetworkReaderPosix);
 };
 
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_IMPL_NETWORK_READER_H_
+#endif  // PLATFORM_IMPL_NETWORK_READER_POSIX_H_

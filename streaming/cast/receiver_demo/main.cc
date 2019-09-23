@@ -7,7 +7,7 @@
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
-#include "platform/impl/network_reader.h"
+#include "platform/impl/network_reader_posix.h"
 #include "platform/impl/network_waiter_thread.h"
 #include "platform/impl/task_runner.h"
 #include "streaming/cast/constants.h"
@@ -79,7 +79,7 @@ int main(int argc, const char* argv[]) {
   const auto now_function = &openscreen::platform::Clock::now;
   openscreen::platform::TaskRunnerImpl task_runner(now_function);
   openscreen::platform::NetworkWaiterThread network_waiter_thread;
-  openscreen::platform::NetworkReader network_reader(
+  openscreen::platform::NetworkReaderPosix network_reader(
       network_waiter_thread.network_waiter());
   openscreen::platform::UdpSocket::SetLifetimeObserver(&network_reader);
 

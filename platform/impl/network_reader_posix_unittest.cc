@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/impl/network_reader.h"
+#include "platform/impl/network_reader_posix.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -80,13 +80,15 @@ class MockTaskRunner final : public TaskRunner {
 };
 
 // Class extending NetworkWaiter to allow for looking at protected data.
-class TestingNetworkReader final : public NetworkReader {
+class TestingNetworkReader final : public NetworkReaderPosix {
  public:
-  TestingNetworkReader(NetworkWaiter* waiter) : NetworkReader(waiter) {}
+  TestingNetworkReader(NetworkWaiter* waiter) : NetworkReaderPosix(waiter) {}
 
-  void OnDestroy(UdpSocket* socket) override { OnDelete(socket, true); }
+  void OnDestroy(UdpSocket* socket) override {
+    OnDelete(static_cast<UdpSocketPosix*>(socket), true);
+  }
 
-  bool IsMappedRead(UdpSocket* socket) const {
+  bool IsMappedRead(UdpSocketPosix* socket) const {
     return IsMappedReadForTesting(socket);
   }
 };
