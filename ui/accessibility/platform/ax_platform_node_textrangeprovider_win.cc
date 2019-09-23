@@ -177,8 +177,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     case TextUnit_Page: {
       // If the document doesn't support pagination, default to document units
       // per UIA spec
-      AXPositionInstance common_ancestor = start_->LowestCommonAncestor(*end_);
-      if (common_ancestor->GetAnchor()->tree()->HasPaginationSupport()) {
+      const AXNode* common_anchor = start_->LowestCommonAnchor(*end_);
+      if (common_anchor->tree()->HasPaginationSupport()) {
         start_ = start_->CreatePreviousPageStartPosition(
             ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
         end_ = start_->CreateNextPageEndPosition(
