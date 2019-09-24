@@ -54,7 +54,7 @@ static int mediatek_init(struct driver *drv)
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
 
-	drv_add_combination(drv, DRM_FORMAT_R8, &metadata, BO_USE_SW_MASK | BO_USE_LINEAR);
+	drv_add_combination(drv, DRM_FORMAT_R8, &LINEAR_METADATA, BO_USE_SW_MASK | BO_USE_LINEAR);
 	/*
 	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
 	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
