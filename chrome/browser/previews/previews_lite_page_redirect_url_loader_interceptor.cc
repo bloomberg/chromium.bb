@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 
 #include <stdint.h>
 #include <string>
@@ -19,7 +19,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
@@ -103,13 +103,14 @@ void LogLitePageRedirectIneligibleReason(
                             reason);
 }
 
-bool HandlePreviewsLitePageURLRewrite(
+bool HandlePreviewsLitePageRedirectURLRewrite(
     GURL* url,
     content::BrowserContext* browser_context) {
   // Don't change the |url|, just register our interest in reversing it before
-  // it is displayed to the user in |HandlePreviewsLitePageURLRewriteReverse|.
-  // Without returning true here, |HandlePreviewsLitePageURLRewriteReverse|
-  // would not be called.
+  // it is displayed to the user in
+  // |HandlePreviewsLitePageRedirectURLRewriteReverse|. Without returning true
+  // here, |HandlePreviewsLitePageRedirectURLRewriteReverse| would not be
+  // called.
 
   auto* data_reduction_proxy_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
@@ -122,7 +123,7 @@ bool HandlePreviewsLitePageURLRewrite(
          previews::params::IsLitePageServerPreviewsEnabled();
 }
 
-bool HandlePreviewsLitePageURLRewriteReverse(
+bool HandlePreviewsLitePageRedirectURLRewriteReverse(
     GURL* url,
     content::BrowserContext* browser_context) {
   std::string original_url;
@@ -168,22 +169,24 @@ GURL GetLitePageRedirectURLForURL(const GURL& original_url) {
   return previews_url;
 }
 
-PreviewsLitePageURLLoaderInterceptor::PreviewsLitePageURLLoaderInterceptor(
-    const scoped_refptr<network::SharedURLLoaderFactory>&
-        network_loader_factory,
-    uint64_t page_id,
-    int frame_tree_node_id)
+PreviewsLitePageRedirectURLLoaderInterceptor::
+    PreviewsLitePageRedirectURLLoaderInterceptor(
+        const scoped_refptr<network::SharedURLLoaderFactory>&
+            network_loader_factory,
+        uint64_t page_id,
+        int frame_tree_node_id)
     : network_loader_factory_(network_loader_factory),
       page_id_(page_id),
       frame_tree_node_id_(frame_tree_node_id) {}
 
-PreviewsLitePageURLLoaderInterceptor::~PreviewsLitePageURLLoaderInterceptor() {}
+PreviewsLitePageRedirectURLLoaderInterceptor::
+    ~PreviewsLitePageRedirectURLLoaderInterceptor() {}
 
 // static
 PreviewsUserData::ServerLitePageInfo*
-PreviewsLitePageURLLoaderInterceptor::GetOrCreateServerLitePageInfo(
+PreviewsLitePageRedirectURLLoaderInterceptor::GetOrCreateServerLitePageInfo(
     content::NavigationHandle* navigation_handle,
-    PreviewsLitePageDecider* decider) {
+    PreviewsLitePageRedirectDecider* decider) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
   if (!ui_tab_helper)
@@ -229,7 +232,7 @@ PreviewsLitePageURLLoaderInterceptor::GetOrCreateServerLitePageInfo(
   return info;
 }
 
-void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
+void PreviewsLitePageRedirectURLLoaderInterceptor::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
     content::BrowserContext* browser_context,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
@@ -272,7 +275,7 @@ void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
   std::move(callback).Run({});
 }
 
-void PreviewsLitePageURLLoaderInterceptor::CreateRedirectLoader(
+void PreviewsLitePageRedirectURLLoaderInterceptor::CreateRedirectLoader(
     const network::ResourceRequest& tentative_resource_request,
     content::BrowserContext* browser_context,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
@@ -283,7 +286,7 @@ void PreviewsLitePageURLLoaderInterceptor::CreateRedirectLoader(
   redirect_url_loader_ = std::make_unique<PreviewsLitePageRedirectURLLoader>(
       browser_context, tentative_resource_request,
       base::BindOnce(
-          &PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader,
+          &PreviewsLitePageRedirectURLLoaderInterceptor::HandleRedirectLoader,
           base::Unretained(this), std::move(callback)));
 
   // |redirect_url_loader_| can be null after this call.
@@ -292,23 +295,24 @@ void PreviewsLitePageURLLoaderInterceptor::CreateRedirectLoader(
       frame_tree_node_id_);
 }
 
-void PreviewsLitePageURLLoaderInterceptor::CreateOriginalURLLoader(
+void PreviewsLitePageRedirectURLLoaderInterceptor::CreateOriginalURLLoader(
     const network::ResourceRequest& tentative_resource_request,
     const GURL& original_url,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
   redirect_url_loader_ = std::make_unique<PreviewsLitePageRedirectURLLoader>(
       nullptr, tentative_resource_request,
       base::BindOnce(
-          &PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader,
+          &PreviewsLitePageRedirectURLLoaderInterceptor::HandleRedirectLoader,
           base::Unretained(this), std::move(callback)));
 
   // |redirect_url_loader_| can be null after this call.
   redirect_url_loader_->StartRedirectToOriginalURL(original_url);
 }
 
-void PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader(
+void PreviewsLitePageRedirectURLLoaderInterceptor::HandleRedirectLoader(
     content::URLLoaderRequestInterceptor::LoaderCallback callback,
-    std::unique_ptr<PreviewsLitePageServingURLLoader> serving_url_loader,
+    std::unique_ptr<PreviewsLitePageRedirectServingURLLoader>
+        serving_url_loader,
     RequestHandler handler) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Handle any failure by using default loader.

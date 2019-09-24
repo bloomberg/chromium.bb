@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/previews/previews_lite_page_predictor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_predictor.h"
 
 #include <string>
 
@@ -15,7 +15,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
-#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,14 +33,14 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
-PreviewsLitePagePredictor::~PreviewsLitePagePredictor() {
+PreviewsLitePageRedirectPredictor::~PreviewsLitePageRedirectPredictor() {
   if (g_browser_process->network_quality_tracker()) {
     g_browser_process->network_quality_tracker()
         ->RemoveEffectiveConnectionTypeObserver(this);
   }
 }
 
-PreviewsLitePagePredictor::PreviewsLitePagePredictor(
+PreviewsLitePageRedirectPredictor::PreviewsLitePageRedirectPredictor(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -63,12 +63,12 @@ PreviewsLitePagePredictor::PreviewsLitePagePredictor(
   }
 }
 
-bool PreviewsLitePagePredictor::DataSaverIsEnabled() const {
+bool PreviewsLitePageRedirectPredictor::DataSaverIsEnabled() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return drp_settings_ && drp_settings_->IsDataReductionProxyEnabled();
 }
 
-bool PreviewsLitePagePredictor::ECTIsSlow() const {
+bool PreviewsLitePageRedirectPredictor::ECTIsSlow() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!g_browser_process->network_quality_tracker())
@@ -88,7 +88,7 @@ bool PreviewsLitePagePredictor::ECTIsSlow() const {
   }
 }
 
-bool PreviewsLitePagePredictor::PageIsBlacklisted(
+bool PreviewsLitePageRedirectPredictor::PageIsBlacklisted(
     content::NavigationHandle* navigation_handle) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Assume that if this is called without a navigation handle, that the URL
@@ -107,12 +107,12 @@ bool PreviewsLitePagePredictor::PageIsBlacklisted(
       previews::PreviewsType::LITE_PAGE_REDIRECT);
 }
 
-bool PreviewsLitePagePredictor::IsVisible() const {
+bool PreviewsLitePageRedirectPredictor::IsVisible() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return web_contents()->GetVisibility() == content::Visibility::VISIBLE;
 }
 
-base::Optional<GURL> PreviewsLitePagePredictor::ShouldActOnPage(
+base::Optional<GURL> PreviewsLitePageRedirectPredictor::ShouldActOnPage(
     content::NavigationHandle* navigation_handle) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -160,7 +160,7 @@ base::Optional<GURL> PreviewsLitePagePredictor::ShouldActOnPage(
   return previews::GetLitePageRedirectURLForURL(url);
 }
 
-void PreviewsLitePagePredictor::MaybeToggleTimer(
+void PreviewsLitePageRedirectPredictor::MaybeToggleTimer(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -181,8 +181,9 @@ void PreviewsLitePagePredictor::MaybeToggleTimer(
     timer_->Start(
         FROM_HERE,
         previews::params::LitePageRedirectPreviewPreresolvePreconnectInterval(),
-        base::BindRepeating(&PreviewsLitePagePredictor::PreresolveOrPreconnect,
-                            base::Unretained(this)));
+        base::BindRepeating(
+            &PreviewsLitePageRedirectPredictor::PreresolveOrPreconnect,
+            base::Unretained(this)));
     PreresolveOrPreconnect();
   } else {
     // Resetting the unique_ptr will delete the timer itself, causing it to stop
@@ -191,7 +192,7 @@ void PreviewsLitePagePredictor::MaybeToggleTimer(
   }
 }
 
-void PreviewsLitePagePredictor::PreresolveOrPreconnect() const {
+void PreviewsLitePageRedirectPredictor::PreresolveOrPreconnect() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(timer_);
 
@@ -222,7 +223,7 @@ void PreviewsLitePagePredictor::PreresolveOrPreconnect() const {
   }
 }
 
-void PreviewsLitePagePredictor::DidStartNavigation(
+void PreviewsLitePageRedirectPredictor::DidStartNavigation(
     content::NavigationHandle* handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -231,7 +232,7 @@ void PreviewsLitePagePredictor::DidStartNavigation(
   MaybeToggleTimer(handle);
 }
 
-void PreviewsLitePagePredictor::DidFinishNavigation(
+void PreviewsLitePageRedirectPredictor::DidFinishNavigation(
     content::NavigationHandle* handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -240,16 +241,16 @@ void PreviewsLitePagePredictor::DidFinishNavigation(
   MaybeToggleTimer(handle);
 }
 
-void PreviewsLitePagePredictor::OnVisibilityChanged(
+void PreviewsLitePageRedirectPredictor::OnVisibilityChanged(
     content::Visibility visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   MaybeToggleTimer(/*navigation_handle=*/nullptr);
 }
 
-void PreviewsLitePagePredictor::OnEffectiveConnectionTypeChanged(
+void PreviewsLitePageRedirectPredictor::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType ect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   MaybeToggleTimer(/*navigation_handle=*/nullptr);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PreviewsLitePagePredictor)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PreviewsLitePageRedirectPredictor)

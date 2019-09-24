@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 
 #include <map>
 #include <memory>
@@ -18,7 +18,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -62,20 +62,21 @@ namespace {
 
 const GURL kTestUrl("https://google.com/path");
 
-class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
+class PreviewsLitePageRedirectURLLoaderInterceptorTest : public testing::Test {
  public:
-  PreviewsLitePageURLLoaderInterceptorTest()
+  PreviewsLitePageRedirectURLLoaderInterceptorTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         shared_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
-  ~PreviewsLitePageURLLoaderInterceptorTest() override {}
+  ~PreviewsLitePageRedirectURLLoaderInterceptorTest() override {}
 
   void TearDown() override {}
 
   void SetUp() override {
-    interceptor_ = std::make_unique<PreviewsLitePageURLLoaderInterceptor>(
-        shared_factory_, 1, 2);
+    interceptor_ =
+        std::make_unique<PreviewsLitePageRedirectURLLoaderInterceptor>(
+            shared_factory_, 1, 2);
 
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kLitePageServerPreviews, {{"should_probe_origin", "true"}});
@@ -105,7 +106,9 @@ class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
 
   base::Optional<bool> callback_was_empty() { return callback_was_empty_; }
 
-  PreviewsLitePageURLLoaderInterceptor& interceptor() { return *interceptor_; }
+  PreviewsLitePageRedirectURLLoaderInterceptor& interceptor() {
+    return *interceptor_;
+  }
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
@@ -116,11 +119,11 @@ class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
-  std::unique_ptr<PreviewsLitePageURLLoaderInterceptor> interceptor_;
+  std::unique_ptr<PreviewsLitePageRedirectURLLoaderInterceptor> interceptor_;
 };
 
 // Check that we don't trigger when previews are not allowed.
-TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
+TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
        InterceptRequestPreviewsState_PreviewsOff) {
   base::HistogramTester histogram_tester;
 
@@ -135,8 +138,9 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   request.previews_state = content::PREVIEWS_OFF;
   interceptor().MaybeCreateLoader(
       request, nullptr,
-      base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &PreviewsLitePageRedirectURLLoaderInterceptorTest::HandlerCallback,
+          base::Unretained(this)));
 
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", false, 1);
@@ -148,7 +152,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
 }
 
 // Check that we trigger when previews are allowed and the probe is successful.
-TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
+TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
        MAYBE_InterceptRequestPreviewsState_ProbeSuccess) {
   base::HistogramTester histogram_tester;
 
@@ -165,8 +169,9 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   interceptor().MaybeCreateLoader(
       request, nullptr,
-      base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &PreviewsLitePageRedirectURLLoaderInterceptorTest::HandlerCallback,
+          base::Unretained(this)));
 
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", true, 1);
@@ -178,7 +183,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   LOG(ERROR) << "test end";
 }
 
-TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
+TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
        InterceptRequestPreviewsState_ProbeFail) {
   base::HistogramTester histogram_tester;
 
@@ -195,8 +200,9 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   interceptor().MaybeCreateLoader(
       request, nullptr,
-      base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &PreviewsLitePageRedirectURLLoaderInterceptorTest::HandlerCallback,
+          base::Unretained(this)));
 
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", true, 1);
@@ -207,7 +213,8 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   EXPECT_TRUE(callback_was_empty().value());
 }
 
-TEST_F(PreviewsLitePageURLLoaderInterceptorTest, InterceptRequestRedirect) {
+TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
+       InterceptRequestRedirect) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.url = kTestUrl;
@@ -221,8 +228,9 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, InterceptRequestRedirect) {
 
   interceptor().MaybeCreateLoader(
       request, nullptr,
-      base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &PreviewsLitePageRedirectURLLoaderInterceptorTest::HandlerCallback,
+          base::Unretained(this)));
 
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", true, 1);
@@ -231,7 +239,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, InterceptRequestRedirect) {
   EXPECT_TRUE(callback_was_empty().value());
 }
 
-TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
+TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
        InterceptRequestServerOverloaded) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
@@ -247,8 +255,9 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
 
   interceptor().MaybeCreateLoader(
       request, nullptr,
-      base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &PreviewsLitePageRedirectURLLoaderInterceptorTest::HandlerCallback,
+          base::Unretained(this)));
 
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", true, 1);
@@ -258,7 +267,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   EXPECT_TRUE(callback_was_empty().value());
 }
 
-TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
+TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
        InterceptRequestServerNotHandling) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
@@ -273,8 +282,9 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
 
   interceptor().MaybeCreateLoader(
       request, nullptr,
-      base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &PreviewsLitePageRedirectURLLoaderInterceptorTest::HandlerCallback,
+          base::Unretained(this)));
 
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", true, 1);
@@ -284,7 +294,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   EXPECT_TRUE(callback_was_empty().value());
 }
 
-TEST_F(PreviewsLitePageURLLoaderInterceptorTest, NetStackError) {
+TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest, NetStackError) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.url = kTestUrl;
@@ -298,8 +308,9 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, NetStackError) {
 
   interceptor().MaybeCreateLoader(
       request, nullptr,
-      base::BindOnce(&PreviewsLitePageURLLoaderInterceptorTest::HandlerCallback,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &PreviewsLitePageRedirectURLLoaderInterceptorTest::HandlerCallback,
+          base::Unretained(this)));
 
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.URLLoader.Attempted", true, 1);

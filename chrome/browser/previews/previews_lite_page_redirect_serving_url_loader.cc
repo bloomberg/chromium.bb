@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/previews/previews_lite_page_serving_url_loader.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_serving_url_loader.h"
 
 #include <stdint.h>
 
@@ -20,8 +20,8 @@
 #include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/previews/previews_lite_page_decider.h"
-#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -54,7 +54,7 @@ void BlacklistBypassedHostOnUIThread(const std::string& host,
 
   PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-      ->previews_lite_page_decider()
+      ->previews_lite_page_redirect_decider()
       ->BlacklistBypassedHost(host, duration);
 }
 
@@ -77,7 +77,7 @@ void SetServerUnavailableForOnUIThread(base::TimeDelta duration,
 
   PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-      ->previews_lite_page_decider()
+      ->previews_lite_page_redirect_decider()
       ->SetServerUnavailableFor(duration);
 }
 
@@ -100,7 +100,7 @@ void ReportDataSavingsOnUIThread(int64_t network_bytes,
 
   PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-      ->previews_lite_page_decider()
+      ->previews_lite_page_redirect_decider()
       ->ReportDataSavings(network_bytes, original_bytes, host);
 }
 
@@ -115,9 +115,6 @@ void ReportDataSavings(int64_t network_bytes,
 }
 
 const base::TimeDelta kBlacklistDuration = base::TimeDelta::FromDays(30);
-
-// Used for mojo pipe size. Same constant as navigation code.
-constexpr size_t kServingDefaultAllocationSize = 512 * 1024;
 
 const net::NetworkTrafficAnnotationTag kPreviewsTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("https_server_previews_navigation", R"(
@@ -153,13 +150,13 @@ const net::NetworkTrafficAnnotationTag kPreviewsTrafficAnnotation =
 
 }  // namespace
 
-PreviewsLitePageServingURLLoader::PreviewsLitePageServingURLLoader(
-    ResultCallback result_callback)
+PreviewsLitePageRedirectServingURLLoader::
+    PreviewsLitePageRedirectServingURLLoader(ResultCallback result_callback)
     : url_loader_binding_(this),
       result_callback_(std::move(result_callback)),
       binding_(this) {}
 
-void PreviewsLitePageServingURLLoader::StartNetworkRequest(
+void PreviewsLitePageRedirectServingURLLoader::StartNetworkRequest(
     const network::ResourceRequest& request,
     const scoped_refptr<network::SharedURLLoaderFactory>&
         network_loader_factory,
@@ -170,9 +167,9 @@ void PreviewsLitePageServingURLLoader::StartNetworkRequest(
 
   url_loader_binding_.Bind(mojo::MakeRequest(&client),
                            base::ThreadTaskRunnerHandle::Get());
-  url_loader_binding_.set_connection_error_handler(
-      base::BindOnce(&PreviewsLitePageServingURLLoader::OnConnectionError,
-                     base::Unretained(this)));
+  url_loader_binding_.set_connection_error_handler(base::BindOnce(
+      &PreviewsLitePageRedirectServingURLLoader::OnConnectionError,
+      base::Unretained(this)));
 
   // Create a network service URL loader with passed in params.
   network_loader_factory->CreateLoaderAndStart(
@@ -182,13 +179,14 @@ void PreviewsLitePageServingURLLoader::StartNetworkRequest(
 
   timeout_timer_.Start(
       FROM_HERE, previews::params::LitePagePreviewsNavigationTimeoutDuration(),
-      base::BindOnce(&PreviewsLitePageServingURLLoader::Timeout,
+      base::BindOnce(&PreviewsLitePageRedirectServingURLLoader::Timeout,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-PreviewsLitePageServingURLLoader::~PreviewsLitePageServingURLLoader() = default;
+PreviewsLitePageRedirectServingURLLoader::
+    ~PreviewsLitePageRedirectServingURLLoader() = default;
 
-void PreviewsLitePageServingURLLoader::Timeout() {
+void PreviewsLitePageRedirectServingURLLoader::Timeout() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If the result is already determined, don't do anything.
   if (result_callback_.is_null())
@@ -200,29 +198,30 @@ void PreviewsLitePageServingURLLoader::Timeout() {
   Fallback();
 }
 
-void PreviewsLitePageServingURLLoader::Fallback() {
+void PreviewsLitePageRedirectServingURLLoader::Fallback() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::move(result_callback_)
       .Run(ServingLoaderResult::kFallback, base::nullopt, nullptr);
 }
 
-RequestHandler PreviewsLitePageServingURLLoader::ServingResponseHandler() {
+RequestHandler
+PreviewsLitePageRedirectServingURLLoader::ServingResponseHandler() {
   DCHECK(result_callback_.is_null());
   return base::BindOnce(
-      &PreviewsLitePageServingURLLoader::SetUpForwardingClient,
+      &PreviewsLitePageRedirectServingURLLoader::SetUpForwardingClient,
       weak_ptr_factory_.GetWeakPtr());
 }
 
-void PreviewsLitePageServingURLLoader::SetUpForwardingClient(
+void PreviewsLitePageRedirectServingURLLoader::SetUpForwardingClient(
     const network::ResourceRequest& /* resource_request */,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr forwarding_client) {
   // Bind to the content/ navigation code.
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(
-      base::BindOnce(&PreviewsLitePageServingURLLoader::OnConnectionError,
-                     weak_ptr_factory_.GetWeakPtr()));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &PreviewsLitePageRedirectServingURLLoader::OnConnectionError,
+      weak_ptr_factory_.GetWeakPtr()));
   forwarding_client_ = std::move(forwarding_client);
 
   // If there was an URLLoader error between handing off this handler and
@@ -234,21 +233,13 @@ void PreviewsLitePageServingURLLoader::SetUpForwardingClient(
     return;
   }
 
-  mojo::DataPipe pipe(kServingDefaultAllocationSize);
-  if (!pipe.consumer_handle.is_valid()) {
-    network_url_loader_.reset();
-    url_loader_binding_.Close();
-    delete this;
-    return;
-  }
-
   forwarding_client_->OnReceiveResponse(resource_response_->head);
 
   // Resume previously paused network service URLLoader.
   url_loader_binding_.ResumeIncomingMethodCallProcessing();
 }
 
-void PreviewsLitePageServingURLLoader::OnReceiveResponse(
+void PreviewsLitePageRedirectServingURLLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr head) {
   DCHECK(!forwarding_client_);
 
@@ -314,7 +305,7 @@ void PreviewsLitePageServingURLLoader::OnReceiveResponse(
       .Run(ServingLoaderResult::kSuccess, base::nullopt, nullptr);
 }
 
-void PreviewsLitePageServingURLLoader::OnReceiveRedirect(
+void PreviewsLitePageRedirectServingURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr head) {
   DCHECK(!forwarding_client_);
@@ -362,7 +353,7 @@ void PreviewsLitePageServingURLLoader::OnReceiveRedirect(
       .Run(ServingLoaderResult::kRedirect, redirect_info, resource_response_);
 }
 
-void PreviewsLitePageServingURLLoader::OnUploadProgress(
+void PreviewsLitePageRedirectServingURLLoader::OnUploadProgress(
     int64_t current_position,
     int64_t total_size,
     OnUploadProgressCallback callback) {
@@ -370,24 +361,24 @@ void PreviewsLitePageServingURLLoader::OnUploadProgress(
   NOTREACHED();
 }
 
-void PreviewsLitePageServingURLLoader::OnReceiveCachedMetadata(
+void PreviewsLitePageRedirectServingURLLoader::OnReceiveCachedMetadata(
     mojo_base::BigBuffer data) {
   // Do nothing. This is not supported for navigation loader.
 }
 
-void PreviewsLitePageServingURLLoader::OnTransferSizeUpdated(
+void PreviewsLitePageRedirectServingURLLoader::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {
   DCHECK(forwarding_client_);
   forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
-void PreviewsLitePageServingURLLoader::OnStartLoadingResponseBody(
+void PreviewsLitePageRedirectServingURLLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(forwarding_client_);
   forwarding_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
-void PreviewsLitePageServingURLLoader::OnComplete(
+void PreviewsLitePageRedirectServingURLLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   if (forwarding_client_) {
     base::UmaHistogramSparse(
@@ -411,7 +402,7 @@ void PreviewsLitePageServingURLLoader::OnComplete(
   Fallback();
 }
 
-void PreviewsLitePageServingURLLoader::FollowRedirect(
+void PreviewsLitePageRedirectServingURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
@@ -420,7 +411,7 @@ void PreviewsLitePageServingURLLoader::FollowRedirect(
   NOTREACHED();
 }
 
-void PreviewsLitePageServingURLLoader::SetPriority(
+void PreviewsLitePageRedirectServingURLLoader::SetPriority(
     net::RequestPriority priority,
     int32_t intra_priority_value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -428,18 +419,18 @@ void PreviewsLitePageServingURLLoader::SetPriority(
   network_url_loader_->SetPriority(priority, intra_priority_value);
 }
 
-void PreviewsLitePageServingURLLoader::PauseReadingBodyFromNet() {
+void PreviewsLitePageRedirectServingURLLoader::PauseReadingBodyFromNet() {
   // Pass through.
   network_url_loader_->PauseReadingBodyFromNet();
 }
 
-void PreviewsLitePageServingURLLoader::ResumeReadingBodyFromNet() {
+void PreviewsLitePageRedirectServingURLLoader::ResumeReadingBodyFromNet() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Pass through.
   network_url_loader_->ResumeReadingBodyFromNet();
 }
 
-void PreviewsLitePageServingURLLoader::OnConnectionError() {
+void PreviewsLitePageRedirectServingURLLoader::OnConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // When we are not yet bound to the navigation code, fallback, which will
   // destroy this object.

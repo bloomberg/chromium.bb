@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_SERVING_URL_LOADER_H_
-#define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_SERVING_URL_LOADER_H_
+#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_SERVING_URL_LOADER_H_
+#define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_SERVING_URL_LOADER_H_
 
 #include <vector>
 
@@ -44,14 +44,15 @@ using RequestHandler =
 // successful, calls a success callback. Otherwise, it calls fallback in the
 // case of a failure and redirect in the case of a redirect served from the lite
 // pages service.
-class PreviewsLitePageServingURLLoader
+class PreviewsLitePageRedirectServingURLLoader
     : public network::mojom::URLLoader,
       public network::mojom::URLLoaderClient {
  public:
   // Creates a network service URLLoader, binds to the URL Loader, and stores
   // the various callbacks.
-  explicit PreviewsLitePageServingURLLoader(ResultCallback result_callback);
-  ~PreviewsLitePageServingURLLoader() override;
+  explicit PreviewsLitePageRedirectServingURLLoader(
+      ResultCallback result_callback);
+  ~PreviewsLitePageRedirectServingURLLoader() override;
 
   // Begins the underlying network URLLoader to fetch the preview.
   // |network_loader_factory| creates the URLLoader using the other parameters
@@ -137,12 +138,12 @@ class PreviewsLitePageServingURLLoader
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<PreviewsLitePageServingURLLoader> weak_ptr_factory_{
-      this};
+  base::WeakPtrFactory<PreviewsLitePageRedirectServingURLLoader>
+      weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageServingURLLoader);
+  DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageRedirectServingURLLoader);
 };
 
 }  // namespace previews
 
-#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_SERVING_URL_LOADER_H_
+#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_SERVING_URL_LOADER_H_

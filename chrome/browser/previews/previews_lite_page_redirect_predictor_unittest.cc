@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/previews/previews_lite_page_predictor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_predictor.h"
 
 #include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/web_contents.h"
@@ -20,20 +20,21 @@ namespace {
 const char kTestUrl[] = "https://www.test.com/";
 }
 
-class TestPreviewsLitePagePredictor : public PreviewsLitePagePredictor {
+class TestPreviewsLitePageRedirectPredictor
+    : public PreviewsLitePageRedirectPredictor {
  public:
-  TestPreviewsLitePagePredictor(content::WebContents* web_contents,
-                                bool data_saver_enabled,
-                                bool ect_is_slow,
-                                bool page_is_blacklisted,
-                                bool is_visible)
-      : PreviewsLitePagePredictor(web_contents),
+  TestPreviewsLitePageRedirectPredictor(content::WebContents* web_contents,
+                                        bool data_saver_enabled,
+                                        bool ect_is_slow,
+                                        bool page_is_blacklisted,
+                                        bool is_visible)
+      : PreviewsLitePageRedirectPredictor(web_contents),
         data_saver_enabled_(data_saver_enabled),
         ect_is_slow_(ect_is_slow),
         page_is_blacklisted_(page_is_blacklisted),
         is_visible_(is_visible) {}
 
-  // PreviewsLitePagePredictor:
+  // PreviewsLitePageRedirectPredictor:
   bool DataSaverIsEnabled() const override { return data_saver_enabled_; }
   bool ECTIsSlow() const override { return ect_is_slow_; }
   bool PageIsBlacklisted(
@@ -53,7 +54,7 @@ class TestPreviewsLitePagePredictor : public PreviewsLitePagePredictor {
 };
 
 // True for preresolve testing, false for preconnect.
-class PreviewsLitePagePredictorUnitTest
+class PreviewsLitePageRedirectPredictorUnitTest
     : public ChromeRenderViewHostTestHarness,
       public testing::WithParamInterface<bool> {
  public:
@@ -74,7 +75,7 @@ class PreviewsLitePagePredictorUnitTest
       scoped_feature_list_.InitAndDisableFeature(
           previews::features::kLitePageServerPreviews);
     }
-    predictor_.reset(new TestPreviewsLitePagePredictor(
+    predictor_.reset(new TestPreviewsLitePageRedirectPredictor(
         web_contents(), data_saver_enabled, ect_is_slow, page_is_blacklisted,
         is_visible));
     test_handle_.reset(
@@ -109,15 +110,17 @@ class PreviewsLitePagePredictorUnitTest
     return "Previews.ServerLitePage.PreconnectedToPreviewServer";
   }
 
-  TestPreviewsLitePagePredictor* predictor() const { return predictor_.get(); }
+  TestPreviewsLitePageRedirectPredictor* predictor() const {
+    return predictor_.get();
+  }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<TestPreviewsLitePagePredictor> predictor_;
+  std::unique_ptr<TestPreviewsLitePageRedirectPredictor> predictor_;
   std::unique_ptr<content::MockNavigationHandle> test_handle_;
 };
 
-TEST_P(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Origin) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest, AllConditionsMet_Origin) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -134,7 +137,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Origin) {
   histogram_tester.ExpectTotalCount(GetOtherHistogramName(), 0);
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Preview) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest, AllConditionsMet_Preview) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -152,7 +155,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Preview) {
   histogram_tester.ExpectTotalCount(GetOtherHistogramName(), 0);
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, FeatureDisabled) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest, FeatureDisabled) {
   RunTest(false /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -163,7 +166,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, FeatureDisabled) {
   EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, DataSaverDisabled) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest, DataSaverDisabled) {
   RunTest(true /* feature_enabled */, false /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -174,7 +177,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, DataSaverDisabled) {
   EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, ECTNotSlow) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest, ECTNotSlow) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           false /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -185,7 +188,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, ECTNotSlow) {
   EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, ECTNotSlowOnPreview) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest, ECTNotSlowOnPreview) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           false /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -197,7 +200,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, ECTNotSlowOnPreview) {
   EXPECT_TRUE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, PageBlacklisted) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest, PageBlacklisted) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, true /* page_is_blacklisted */,
           true /* is_visible */);
@@ -208,7 +211,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, PageBlacklisted) {
   EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, NotVisible) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest, NotVisible) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           false /* is_visible */);
@@ -219,7 +222,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, NotVisible) {
   EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, InsecurePage) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest, InsecurePage) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -230,7 +233,8 @@ TEST_P(PreviewsLitePagePredictorUnitTest, InsecurePage) {
   EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Navigations) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest,
+       ToggleMultipleTimes_Navigations) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -253,7 +257,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Navigations) {
   histogram_tester.ExpectTotalCount(GetOtherHistogramName(), 0);
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_ECT) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest, ToggleMultipleTimes_ECT) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -278,7 +282,8 @@ TEST_P(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_ECT) {
   histogram_tester.ExpectTotalCount(GetOtherHistogramName(), 0);
 }
 
-TEST_P(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Visibility) {
+TEST_P(PreviewsLitePageRedirectPredictorUnitTest,
+       ToggleMultipleTimes_Visibility) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -303,5 +308,5 @@ TEST_P(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Visibility) {
 
 // True if preresolving, false for preconnecting.
 INSTANTIATE_TEST_SUITE_P(/* empty prefix */,
-                         PreviewsLitePagePredictorUnitTest,
+                         PreviewsLitePageRedirectPredictorUnitTest,
                          testing::Bool());

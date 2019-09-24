@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_URL_LOADER_INTERCEPTOR_H_
-#define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_URL_LOADER_INTERCEPTOR_H_
+#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_URL_LOADER_INTERCEPTOR_H_
+#define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_URL_LOADER_INTERCEPTOR_H_
 
 #include <stdint.h>
 
@@ -12,8 +12,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_serving_url_loader.h"
 #include "chrome/browser/previews/previews_lite_page_redirect_url_loader.h"
-#include "chrome/browser/previews/previews_lite_page_serving_url_loader.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "net/http/http_request_headers.h"
@@ -25,7 +25,7 @@ class BrowserContext;
 class NavigationHandle;
 }  // namespace content
 
-class PreviewsLitePageDecider;
+class PreviewsLitePageRedirectDecider;
 
 namespace previews {
 
@@ -110,17 +110,18 @@ void LogLitePageRedirectIneligibleReason(
 
 // If the given URL is a LitePage Preview URL, this returns true but does not
 // change the |url|. This will set |update_virtual_url_with_url| on
-// NavigationEntry so that |HandlePreviewsLitePageURLRewriteReverse| is called
-// when the navigation finishes.
-// Note: This means the virtual URL will not be set during the navigation load.
-// This is handled separately in UI on Android.
-bool HandlePreviewsLitePageURLRewrite(GURL* url,
-                                      content::BrowserContext* browser_context);
+// NavigationEntry so that |HandlePreviewsLitePageRedirectURLRewriteReverse| is
+// called when the navigation finishes. Note: This means the virtual URL will
+// not be set during the navigation load. This is handled separately in UI on
+// Android.
+bool HandlePreviewsLitePageRedirectURLRewrite(
+    GURL* url,
+    content::BrowserContext* browser_context);
 
 // Handles translating the given Lite Page URL to the original URL. Returns true
 // if the given |url| was a preview, otherwise returns false and does not change
 // |url|.
-bool HandlePreviewsLitePageURLRewriteReverse(
+bool HandlePreviewsLitePageRedirectURLRewriteReverse(
     GURL* url,
     content::BrowserContext* browser_context);
 
@@ -130,15 +131,15 @@ GURL GetLitePageRedirectURLForURL(const GURL& original_url);
 // A class that attempts to intercept requests and fetch the Lite Page version
 // of the request. Its lifetime matches that of the content/ navigation loader
 // code. Currently, not fully implemented.
-class PreviewsLitePageURLLoaderInterceptor
+class PreviewsLitePageRedirectURLLoaderInterceptor
     : public content::URLLoaderRequestInterceptor {
  public:
-  PreviewsLitePageURLLoaderInterceptor(
+  PreviewsLitePageRedirectURLLoaderInterceptor(
       const scoped_refptr<network::SharedURLLoaderFactory>&
           network_loader_factory,
       uint64_t page_id,
       int frame_tree_node_id);
-  ~PreviewsLitePageURLLoaderInterceptor() override;
+  ~PreviewsLitePageRedirectURLLoaderInterceptor() override;
 
   // Gets the ServerLitePageInfo struct from an existing attempted lite page
   // navigation, if there is one. If not, returns a new ServerLitePageInfo
@@ -146,7 +147,7 @@ class PreviewsLitePageURLLoaderInterceptor
   // by the PreviewsUserData associated with navigation_handle().
   static PreviewsUserData::ServerLitePageInfo* GetOrCreateServerLitePageInfo(
       content::NavigationHandle* navigation_handle,
-      PreviewsLitePageDecider* manager);
+      PreviewsLitePageRedirectDecider* manager);
 
   // content::URLLaoderRequestInterceptor:
   void MaybeCreateLoader(
@@ -171,7 +172,8 @@ class PreviewsLitePageURLLoaderInterceptor
   // Runs |callback| with |handler| and stores |serving_url_loader|.
   void HandleRedirectLoader(
       content::URLLoaderRequestInterceptor::LoaderCallback callback,
-      std::unique_ptr<PreviewsLitePageServingURLLoader> serving_url_loader,
+      std::unique_ptr<PreviewsLitePageRedirectServingURLLoader>
+          serving_url_loader,
       RequestHandler handler);
 
   // All URLs already seen in this navigation. This prevents redirect loops,
@@ -187,7 +189,7 @@ class PreviewsLitePageURLLoaderInterceptor
   // response), this object will exist until a redirect to the lite page URL has
   // been handed off to the navigation stack and the next request is being
   // handled.
-  std::unique_ptr<PreviewsLitePageServingURLLoader> serving_url_loader_;
+  std::unique_ptr<PreviewsLitePageRedirectServingURLLoader> serving_url_loader_;
 
   // Factory to create a network service URLLoader.
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
@@ -200,9 +202,9 @@ class PreviewsLitePageURLLoaderInterceptor
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageURLLoaderInterceptor);
+  DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageRedirectURLLoaderInterceptor);
 };
 
 }  // namespace previews
 
-#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_URL_LOADER_INTERCEPTOR_H_
+#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_URL_LOADER_INTERCEPTOR_H_

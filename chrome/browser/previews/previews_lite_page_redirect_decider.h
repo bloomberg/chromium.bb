@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_DECIDER_H_
-#define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_DECIDER_H_
+#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_DECIDER_H_
+#define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_DECIDER_H_
 
 #include <memory>
 #include <string>
@@ -35,13 +35,14 @@ class PrefRegistrySyncable;
 }
 
 // This class manages the triggering logic for Lite Page Redirect previews.
-class PreviewsLitePageDecider
+class PreviewsLitePageRedirectDecider
     : public AvailabilityProber::Delegate,
       public PreviewsHTTPSNotificationInfoBarDecider,
       public data_reduction_proxy::DataReductionProxySettingsObserver {
  public:
-  explicit PreviewsLitePageDecider(content::BrowserContext* browser_context);
-  virtual ~PreviewsLitePageDecider();
+  explicit PreviewsLitePageRedirectDecider(
+      content::BrowserContext* browser_context);
+  virtual ~PreviewsLitePageRedirectDecider();
 
   // Registers the prefs used in this class.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -170,7 +171,7 @@ class PreviewsLitePageDecider
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageDecider);
+  DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageRedirectDecider);
 };
 
-#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_DECIDER_H_
+#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_DECIDER_H_

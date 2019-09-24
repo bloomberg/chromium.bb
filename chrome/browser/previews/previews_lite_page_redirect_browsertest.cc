@@ -35,8 +35,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/previews/previews_lite_page_decider.h"
-#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -131,13 +131,13 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
 
 }  // namespace
 
-class BasePreviewsLitePageServerBrowserTest
+class BasePreviewsLitePageRedirectServerBrowserTest
     : public InProcessBrowserTest,
       public net::test_server::EmbeddedTestServerConnectionListener {
  public:
-  BasePreviewsLitePageServerBrowserTest() {}
+  BasePreviewsLitePageRedirectServerBrowserTest() {}
 
-  ~BasePreviewsLitePageServerBrowserTest() override {}
+  ~BasePreviewsLitePageRedirectServerBrowserTest() override {}
 
   virtual bool UseOptimizationGuideKeyedServiceImplementation() const = 0;
 
@@ -202,7 +202,7 @@ class BasePreviewsLitePageServerBrowserTest
         net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     https_server_->RegisterRequestHandler(base::BindRepeating(
-        &BasePreviewsLitePageServerBrowserTest::HandleOriginRequest,
+        &BasePreviewsLitePageRedirectServerBrowserTest::HandleOriginRequest,
         base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
 
@@ -235,7 +235,7 @@ class BasePreviewsLitePageServerBrowserTest
         net::EmbeddedTestServer::TYPE_HTTP);
     http_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     http_server_->RegisterRequestHandler(base::BindRepeating(
-        &BasePreviewsLitePageServerBrowserTest::HandleOriginRequest,
+        &BasePreviewsLitePageRedirectServerBrowserTest::HandleOriginRequest,
         base::Unretained(this)));
     ASSERT_TRUE(http_server_->Start());
 
@@ -267,7 +267,7 @@ class BasePreviewsLitePageServerBrowserTest
     previews_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
     previews_server_->RegisterRequestHandler(base::BindRepeating(
-        &BasePreviewsLitePageServerBrowserTest::HandleResourceRequest,
+        &BasePreviewsLitePageRedirectServerBrowserTest::HandleResourceRequest,
         base::Unretained(this)));
     previews_server_->SetConnectionListener(this);
     ASSERT_TRUE(previews_server_->Start());
@@ -278,9 +278,10 @@ class BasePreviewsLitePageServerBrowserTest
     // Set up the slow HTTP server with delayed resource handler.
     slow_http_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTP);
-    slow_http_server_->RegisterRequestHandler(base::BindRepeating(
-        &BasePreviewsLitePageServerBrowserTest::HandleSlowResourceRequest,
-        base::Unretained(this)));
+    slow_http_server_->RegisterRequestHandler(
+        base::BindRepeating(&BasePreviewsLitePageRedirectServerBrowserTest::
+                                HandleSlowResourceRequest,
+                            base::Unretained(this)));
     ASSERT_TRUE(slow_http_server_->Start());
 
     slow_http_url_ = slow_http_server_->GetURL(kOriginHost, "/");
@@ -334,8 +335,8 @@ class BasePreviewsLitePageServerBrowserTest
     // state on the decider so it isn't required.
     PreviewsService* previews_service =
         PreviewsServiceFactory::GetForProfile(browser()->profile());
-    PreviewsLitePageDecider* decider =
-        previews_service->previews_lite_page_decider();
+    PreviewsLitePageRedirectDecider* decider =
+        previews_service->previews_lite_page_redirect_decider();
     decider->SetUserHasSeenUINotification();
 
     decider->BlacklistBypassedHost(kBlacklistedHost,
@@ -355,8 +356,8 @@ class BasePreviewsLitePageServerBrowserTest
 
     PreviewsService* previews_service =
         PreviewsServiceFactory::GetForProfile(browser()->profile());
-    PreviewsLitePageDecider* decider =
-        previews_service->previews_lite_page_decider();
+    PreviewsLitePageRedirectDecider* decider =
+        previews_service->previews_lite_page_redirect_decider();
 
     // Wait for a completed probe to the litepages server if needed.
     while (drp_settings->IsDataReductionProxyEnabled()) {
@@ -574,8 +575,8 @@ class BasePreviewsLitePageServerBrowserTest
     PreviewsService* previews_service =
         PreviewsServiceFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(previews_service);
-    PreviewsLitePageDecider* decider =
-        previews_service->previews_lite_page_decider();
+    PreviewsLitePageRedirectDecider* decider =
+        previews_service->previews_lite_page_redirect_decider();
     ASSERT_TRUE(decider);
     decider->ClearStateForTesting();
   }
@@ -923,8 +924,8 @@ class BasePreviewsLitePageServerBrowserTest
 
 // Param is true if testing using the OptimizationGuideKeyedService
 // implementation.
-class PreviewsLitePageServerBrowserTest
-    : public BasePreviewsLitePageServerBrowserTest,
+class PreviewsLitePageRedirectServerBrowserTest
+    : public BasePreviewsLitePageRedirectServerBrowserTest,
       public testing::WithParamInterface<bool> {
  public:
   bool UseOptimizationGuideKeyedServiceImplementation() const override {
@@ -936,7 +937,7 @@ class PreviewsLitePageServerBrowserTest
 // implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     testing::Bool());
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.
@@ -949,7 +950,7 @@ INSTANTIATE_TEST_SUITE_P(
 #endif
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsTriggering)) {
   // TODO(crbug.com/874150): Use ExpectUniqueSample in these tests.
   // The histograms in these tests can only be checked by the expected bucket,
@@ -1136,7 +1137,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsOriginProbe_Success)) {
   set_origin_probe_success(true);
 
@@ -1146,7 +1147,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsOriginProbe_Fail)) {
   set_origin_probe_success(false);
 
@@ -1156,7 +1157,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsReloadSoftOptOut)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
@@ -1166,7 +1167,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsNoChromeProxyHeader)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
@@ -1175,8 +1176,8 @@ IN_PROC_BROWSER_TEST_P(
   net::HttpRequestHeaders empty;
   PreviewsService* previews_service =
       PreviewsServiceFactory::GetForProfile(browser()->profile());
-  PreviewsLitePageDecider* decider =
-      previews_service->previews_lite_page_decider();
+  PreviewsLitePageRedirectDecider* decider =
+      previews_service->previews_lite_page_redirect_decider();
   decider->OnProxyRequestHeadersChanged(empty);
 
   base::HistogramTester histogram_tester;
@@ -1191,7 +1192,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(CoinFlipHoldbackTriggering)) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
@@ -1202,7 +1203,7 @@ IN_PROC_BROWSER_TEST_P(
   VerifyPreviewNotLoaded();
 }
 
-IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(PredictorShownAndHidden)) {
   base::HistogramTester histogram_tester;
   GetWebContents()->WasHidden();
@@ -1221,7 +1222,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsLoadOriginal)) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1241,7 +1242,7 @@ IN_PROC_BROWSER_TEST_P(
   VerifyPreviewNotLoaded();
 }
 
-IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsRedirect)) {
   {
     // Verify the preview is triggered when an HTTP page redirects to HTTPS.
@@ -1287,7 +1288,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsResponse)) {
   {
     // Verify the preview is not triggered when the server responds with bypass
@@ -1352,13 +1353,13 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsLoadshed)) {
   PreviewsService* previews_service =
       PreviewsServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(previews_service);
-  PreviewsLitePageDecider* decider =
-      previews_service->previews_lite_page_decider();
+  PreviewsLitePageRedirectDecider* decider =
+      previews_service->previews_lite_page_redirect_decider();
   ASSERT_TRUE(decider);
 
   std::unique_ptr<base::SimpleTestTickClock> clock =
@@ -1398,7 +1399,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePageURLNotReportedToHistory)) {
   base::CancelableTaskTracker tracker_;
   history::HistoryService* history_service =
@@ -1456,7 +1457,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsReportSavings)) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
@@ -1479,7 +1480,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsClientRedirect)) {
   // Navigate to a non-preview first.
   ui_test_utils::NavigateToURL(browser(), https_media_url());
@@ -1494,7 +1495,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsNavigation)) {
   {
     SCOPED_TRACE("First preview load");
@@ -1533,7 +1534,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
+    PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePageSendsInterventionReport)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
@@ -1561,12 +1562,12 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(expected, ParsedInterventionReport());
 }
 
-class PreviewsLitePageServerTimeoutBrowserTest
-    : public PreviewsLitePageServerBrowserTest {
+class PreviewsLitePageRedirectServerTimeoutBrowserTest
+    : public PreviewsLitePageRedirectServerBrowserTest {
  public:
-  PreviewsLitePageServerTimeoutBrowserTest() = default;
+  PreviewsLitePageRedirectServerTimeoutBrowserTest() = default;
 
-  ~PreviewsLitePageServerTimeoutBrowserTest() override = default;
+  ~PreviewsLitePageRedirectServerTimeoutBrowserTest() override = default;
 
   void SetUp() override {
     SetUpLitePageTest(true /* use_timeout */, false /* is_control */);
@@ -1579,10 +1580,10 @@ class PreviewsLitePageServerTimeoutBrowserTest
 // implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    PreviewsLitePageServerTimeoutBrowserTest,
+    PreviewsLitePageRedirectServerTimeoutBrowserTest,
     testing::Bool());
 
-IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerTimeoutBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerTimeoutBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsTimeout)) {
   {
     // Ensure that a hung previews navigation doesn't wind up at the previews
@@ -1608,12 +1609,12 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerTimeoutBrowserTest,
   }
 }
 
-class PreviewsLitePageServerBadServerBrowserTest
-    : public PreviewsLitePageServerBrowserTest {
+class PreviewsLitePageRedirectServerBadServerBrowserTest
+    : public PreviewsLitePageRedirectServerBrowserTest {
  public:
-  PreviewsLitePageServerBadServerBrowserTest() = default;
+  PreviewsLitePageRedirectServerBadServerBrowserTest() = default;
 
-  ~PreviewsLitePageServerBadServerBrowserTest() override = default;
+  ~PreviewsLitePageRedirectServerBadServerBrowserTest() override = default;
 
   // Override the previews_server URL so that a bad value will be configured.
   GURL previews_server_url() const override {
@@ -1625,11 +1626,11 @@ class PreviewsLitePageServerBadServerBrowserTest
 // implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    PreviewsLitePageServerBadServerBrowserTest,
+    PreviewsLitePageRedirectServerBadServerBrowserTest,
     testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBadServerBrowserTest,
+    PreviewsLitePageRedirectServerBadServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsBadServer)) {
   // TODO(crbug.com/874150): Use ExpectUniqueSample in this tests.
   // The histograms in this tests can only be checked by the expected bucket,
@@ -1649,15 +1650,15 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
-class PreviewsLitePageServerDataSaverBrowserTest
-    : public PreviewsLitePageServerBrowserTest {
+class PreviewsLitePageRedirectServerDataSaverBrowserTest
+    : public PreviewsLitePageRedirectServerBrowserTest {
  public:
-  PreviewsLitePageServerDataSaverBrowserTest() = default;
+  PreviewsLitePageRedirectServerDataSaverBrowserTest() = default;
 
-  ~PreviewsLitePageServerDataSaverBrowserTest() override = default;
+  ~PreviewsLitePageRedirectServerDataSaverBrowserTest() override = default;
 
-  // Overrides the cmd line in PreviewsLitePageServerBrowserTest and leave out
-  // the flag to enable DataSaver.
+  // Overrides the cmd line in PreviewsLitePageRedirectServerBrowserTest and
+  // leave out the flag to enable DataSaver.
   void SetUpCommandLine(base::CommandLine* cmd) override {
     // Due to race conditions, it's possible that blacklist data is not loaded
     // at the time of first navigation. That may prevent Preview from
@@ -1673,11 +1674,11 @@ class PreviewsLitePageServerDataSaverBrowserTest
 // implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    PreviewsLitePageServerDataSaverBrowserTest,
+    PreviewsLitePageRedirectServerDataSaverBrowserTest,
     testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerDataSaverBrowserTest,
+    PreviewsLitePageRedirectServerDataSaverBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsDSTriggering)) {
   // Verify the preview is not triggered on HTTPS pageloads without DataSaver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1685,15 +1686,16 @@ IN_PROC_BROWSER_TEST_P(
   ClearDeciderState();
 }
 
-class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
-    : public PreviewsLitePageServerBrowserTest {
+class PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest
+    : public PreviewsLitePageRedirectServerBrowserTest {
  public:
-  PreviewsLitePageServerNoDataSaverHeaderBrowserTest() = default;
+  PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest() = default;
 
-  ~PreviewsLitePageServerNoDataSaverHeaderBrowserTest() override = default;
+  ~PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest() override =
+      default;
 
-  // Overrides the command line in PreviewsLitePageServerBrowserTest to leave
-  // out the flag that manually adds the chrome-proxy header.
+  // Overrides the command line in PreviewsLitePageRedirectServerBrowserTest to
+  // leave out the flag that manually adds the chrome-proxy header.
   void SetUpCommandLine(base::CommandLine* cmd) override {
     // Due to race conditions, it's possible that blacklist data is not loaded
     // at the time of first navigation. That may prevent Preview from
@@ -1710,11 +1712,11 @@ class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
 // implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
+    PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest,
     testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
+    PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsDSNoHeaderTriggering)) {
   // Verify the preview is not triggered on HTTPS pageloads without data saver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1722,12 +1724,13 @@ IN_PROC_BROWSER_TEST_P(
   ClearDeciderState();
 }
 
-class PreviewsLitePageNotificationDSEnabledBrowserTest
-    : public PreviewsLitePageServerBrowserTest {
+class PreviewsLitePageRedirectNotificationDSEnabledBrowserTest
+    : public PreviewsLitePageRedirectServerBrowserTest {
  public:
-  PreviewsLitePageNotificationDSEnabledBrowserTest() = default;
+  PreviewsLitePageRedirectNotificationDSEnabledBrowserTest() = default;
 
-  ~PreviewsLitePageNotificationDSEnabledBrowserTest() override = default;
+  ~PreviewsLitePageRedirectNotificationDSEnabledBrowserTest() override =
+      default;
 
   void SetUp() override {
     SetUpLitePageTest(false /* use_timeout */, false /* is_control */);
@@ -1751,11 +1754,11 @@ class PreviewsLitePageNotificationDSEnabledBrowserTest
 // implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    PreviewsLitePageNotificationDSEnabledBrowserTest,
+    PreviewsLitePageRedirectNotificationDSEnabledBrowserTest,
     testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageNotificationDSEnabledBrowserTest,
+    PreviewsLitePageRedirectNotificationDSEnabledBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsInfoBarDataSaverUser)) {
   // Ensure the preview is not shown the first time before the infobar is shown
   // for users who have DRP enabled.
@@ -1774,12 +1777,12 @@ IN_PROC_BROWSER_TEST_P(
       previews::LitePageRedirectIneligibleReason::kInfoBarNotSeen, 1);
 }
 
-class PreviewsLitePageDSDisabledBrowserTest
-    : public PreviewsLitePageServerBrowserTest {
+class PreviewsLitePageRedirectDSDisabledBrowserTest
+    : public PreviewsLitePageRedirectServerBrowserTest {
  public:
-  PreviewsLitePageDSDisabledBrowserTest() = default;
+  PreviewsLitePageRedirectDSDisabledBrowserTest() = default;
 
-  ~PreviewsLitePageDSDisabledBrowserTest() override = default;
+  ~PreviewsLitePageRedirectDSDisabledBrowserTest() override = default;
 
   void SetUp() override {
     SetUpLitePageTest(false /* use_timeout */, false /* is_control */);
@@ -1795,8 +1798,8 @@ class PreviewsLitePageDSDisabledBrowserTest
             net::EFFECTIVE_CONNECTION_TYPE_2G);
   }
 
-  // Overrides the cmd line in PreviewsLitePageServerBrowserTest and leave out
-  // the flag to enable DataSaver.
+  // Overrides the cmd line in PreviewsLitePageRedirectServerBrowserTest and
+  // leave out the flag to enable DataSaver.
   void SetUpCommandLine(base::CommandLine* cmd) override {
     // Due to race conditions, it's possible that blacklist data is not loaded
     // at the time of first navigation. That may prevent Preview from
@@ -1812,11 +1815,11 @@ class PreviewsLitePageDSDisabledBrowserTest
 // implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    PreviewsLitePageDSDisabledBrowserTest,
+    PreviewsLitePageRedirectDSDisabledBrowserTest,
     testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageDSDisabledBrowserTest,
+    PreviewsLitePageRedirectDSDisabledBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsInfoBarNonDataSaverUser)) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1827,12 +1830,12 @@ IN_PROC_BROWSER_TEST_P(
       "Previews.ServerLitePage.PreresolvedToPreviewServer", 0);
 }
 
-class PreviewsLitePageControlBrowserTest
-    : public PreviewsLitePageServerBrowserTest {
+class PreviewsLitePageRedirectControlBrowserTest
+    : public PreviewsLitePageRedirectServerBrowserTest {
  public:
-  PreviewsLitePageControlBrowserTest() = default;
+  PreviewsLitePageRedirectControlBrowserTest() = default;
 
-  ~PreviewsLitePageControlBrowserTest() override = default;
+  ~PreviewsLitePageRedirectControlBrowserTest() override = default;
 
   void SetUp() override {
     SetUpLitePageTest(false /* use_timeout */, true /* is_control */);
@@ -1845,11 +1848,11 @@ class PreviewsLitePageControlBrowserTest
 // implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    PreviewsLitePageControlBrowserTest,
+    PreviewsLitePageRedirectControlBrowserTest,
     testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageControlBrowserTest,
+    PreviewsLitePageRedirectControlBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsControlGroup)) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1863,12 +1866,12 @@ enum class NetworkIsolationKeyMode {
   kTopFrameAndFrameOrigins,
 };
 
-class PreviewsLitePageServerNetworkIsolationBrowserTest
-    : public BasePreviewsLitePageServerBrowserTest,
+class PreviewsLitePageRedirectServerNetworkIsolationBrowserTest
+    : public BasePreviewsLitePageRedirectServerBrowserTest,
       public testing::WithParamInterface<NetworkIsolationKeyMode> {
  public:
   void SetUp() override {
-    BasePreviewsLitePageServerBrowserTest::SetUp();
+    BasePreviewsLitePageRedirectServerBrowserTest::SetUp();
 
     switch (GetParam()) {
       case NetworkIsolationKeyMode::kNone:
@@ -1906,7 +1909,7 @@ class PreviewsLitePageServerNetworkIsolationBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerNetworkIsolationBrowserTest,
+    PreviewsLitePageRedirectServerNetworkIsolationBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(PreconnectToPreviewsServer)) {
   base::HistogramTester histogram_tester;
 
@@ -1936,17 +1939,17 @@ IN_PROC_BROWSER_TEST_P(
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    PreviewsLitePageServerNetworkIsolationBrowserTest,
+    PreviewsLitePageRedirectServerNetworkIsolationBrowserTest,
     ::testing::Values(NetworkIsolationKeyMode::kNone,
                       NetworkIsolationKeyMode::kTopFrameOrigin,
                       NetworkIsolationKeyMode::kTopFrameAndFrameOrigins));
 
-class PreviewsLitePageAndPageHintsBrowserTest
-    : public PreviewsLitePageServerBrowserTest {
+class PreviewsLitePageRedirectAndPageHintsBrowserTest
+    : public PreviewsLitePageRedirectServerBrowserTest {
  public:
-  PreviewsLitePageAndPageHintsBrowserTest() = default;
+  PreviewsLitePageRedirectAndPageHintsBrowserTest() = default;
 
-  ~PreviewsLitePageAndPageHintsBrowserTest() override = default;
+  ~PreviewsLitePageRedirectAndPageHintsBrowserTest() override = default;
 
   void SetResourceLoadingHints(const std::vector<std::string>& hints_sites) {
     std::vector<std::string> resource_patterns;
@@ -1961,7 +1964,7 @@ class PreviewsLitePageAndPageHintsBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    PreviewsLitePageServerBrowserTest::SetUpCommandLine(cmd);
+    PreviewsLitePageRedirectServerBrowserTest::SetUpCommandLine(cmd);
     cmd->AppendSwitch("optimization-guide-disable-installer");
     cmd->AppendSwitch("purge_hint_cache_store");
   }
@@ -1980,12 +1983,12 @@ class PreviewsLitePageAndPageHintsBrowserTest
 // implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    PreviewsLitePageAndPageHintsBrowserTest,
+    PreviewsLitePageRedirectAndPageHintsBrowserTest,
     testing::Bool());
 
 // Regression test for crbug.com/954554.
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageAndPageHintsBrowserTest,
+    PreviewsLitePageRedirectAndPageHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(PreviewsServerIsInBloomFilter)) {
   optimization_guide::BloomFilter blacklist_bloom_filter(7, 511);
   blacklist_bloom_filter.Add(previews_server_url().host());
@@ -2020,7 +2023,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageAndPageHintsBrowserTest,
+    PreviewsLitePageRedirectAndPageHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsDoesNotOverridePageHints)) {
   base::HistogramTester histogram_tester;
 
@@ -2047,19 +2050,19 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 class CoinFlipHoldbackExperimentBrowserTest
-    : public PreviewsLitePageAndPageHintsBrowserTest {
+    : public PreviewsLitePageRedirectAndPageHintsBrowserTest {
  public:
   CoinFlipHoldbackExperimentBrowserTest() = default;
 
   ~CoinFlipHoldbackExperimentBrowserTest() override = default;
 
   void SetUp() override {
-    PreviewsLitePageAndPageHintsBrowserTest::SetUp();
+    PreviewsLitePageRedirectAndPageHintsBrowserTest::SetUp();
     ukm_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    PreviewsLitePageAndPageHintsBrowserTest::SetUpCommandLine(cmd);
+    PreviewsLitePageRedirectAndPageHintsBrowserTest::SetUpCommandLine(cmd);
     cmd->AppendSwitch("litepage_redirect_overrides_page_hints");
   }
 

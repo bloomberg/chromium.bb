@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 
 #include <vector>
 
@@ -136,7 +136,7 @@ class UserNotificationWebContentsObserver
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(UserNotificationWebContentsObserver)
 
-PreviewsLitePageDecider::PreviewsLitePageDecider(
+PreviewsLitePageRedirectDecider::PreviewsLitePageRedirectDecider(
     content::BrowserContext* browser_context)
     : clock_(base::DefaultTickClock::GetInstance()),
       page_id_(base::RandUint64()),
@@ -224,32 +224,34 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
       true /* send_only_in_foreground */);
 }
 
-PreviewsLitePageDecider::~PreviewsLitePageDecider() = default;
+PreviewsLitePageRedirectDecider::~PreviewsLitePageRedirectDecider() = default;
 
 // static
-void PreviewsLitePageDecider::RegisterProfilePrefs(
+void PreviewsLitePageRedirectDecider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kUserNeedsNotification, true);
   registry->RegisterDictionaryPref(kHostBlacklist);
 }
 
 // static
-uint64_t PreviewsLitePageDecider::GeneratePageIdForWebContents(
+uint64_t PreviewsLitePageRedirectDecider::GeneratePageIdForWebContents(
     content::WebContents* web_contents) {
-  return PreviewsLitePageDecider::GeneratePageIdForProfile(
+  return PreviewsLitePageRedirectDecider::GeneratePageIdForProfile(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
 }
 
 // static
-uint64_t PreviewsLitePageDecider::GeneratePageIdForProfile(Profile* profile) {
+uint64_t PreviewsLitePageRedirectDecider::GeneratePageIdForProfile(
+    Profile* profile) {
   PreviewsService* previews_service =
       PreviewsServiceFactory::GetForProfile(profile);
   return previews_service
-             ? previews_service->previews_lite_page_decider()->GeneratePageID()
+             ? previews_service->previews_lite_page_redirect_decider()
+                   ->GeneratePageID()
              : 0;
 }
 
-void PreviewsLitePageDecider::OnProxyRequestHeadersChanged(
+void PreviewsLitePageRedirectDecider::OnProxyRequestHeadersChanged(
     const net::HttpRequestHeaders& headers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -266,7 +268,7 @@ void PreviewsLitePageDecider::OnProxyRequestHeadersChanged(
   page_id_ = base::RandUint64();
 }
 
-void PreviewsLitePageDecider::OnSettingsInitialized() {
+void PreviewsLitePageRedirectDecider::OnSettingsInitialized() {
   // The notification only needs to be shown if the user has never seen it
   // before, and is an existing Data Saver user.
   if (!pref_service_->GetBoolean(kUserNeedsNotification)) {
@@ -279,41 +281,42 @@ void PreviewsLitePageDecider::OnSettingsInitialized() {
   }
 }
 
-void PreviewsLitePageDecider::Shutdown() {
+void PreviewsLitePageRedirectDecider::Shutdown() {
   if (drp_settings_)
     drp_settings_->RemoveDataReductionProxySettingsObserver(this);
 }
 
-void PreviewsLitePageDecider::SetClockForTesting(const base::TickClock* clock) {
+void PreviewsLitePageRedirectDecider::SetClockForTesting(
+    const base::TickClock* clock) {
   clock_ = clock;
 }
 
-void PreviewsLitePageDecider::SetDRPSettingsForTesting(
+void PreviewsLitePageRedirectDecider::SetDRPSettingsForTesting(
     data_reduction_proxy::DataReductionProxySettings* drp_settings) {
   drp_settings_ = drp_settings;
   drp_settings_->AddDataReductionProxySettingsObserver(this);
 }
 
-void PreviewsLitePageDecider::ClearBlacklist() {
+void PreviewsLitePageRedirectDecider::ClearBlacklist() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_bypass_blacklist_->Clear();
   if (pref_service_)
     pref_service_->Set(kHostBlacklist, *host_bypass_blacklist_);
 }
 
-void PreviewsLitePageDecider::ClearStateForTesting() {
+void PreviewsLitePageRedirectDecider::ClearStateForTesting() {
   single_bypass_.clear();
   host_bypass_blacklist_->Clear();
 }
 
-void PreviewsLitePageDecider::SetUserHasSeenUINotification() {
+void PreviewsLitePageRedirectDecider::SetUserHasSeenUINotification() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(pref_service_);
   need_to_show_notification_ = false;
   pref_service_->SetBoolean(kUserNeedsNotification, false);
 }
 
-void PreviewsLitePageDecider::SetServerUnavailableFor(
+void PreviewsLitePageRedirectDecider::SetServerUnavailableFor(
     base::TimeDelta retry_after) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::TimeTicks retry_at = clock_->NowTicks() + retry_after;
@@ -321,7 +324,7 @@ void PreviewsLitePageDecider::SetServerUnavailableFor(
     retry_at_ = retry_at;
 }
 
-bool PreviewsLitePageDecider::IsServerUnavailable() {
+bool PreviewsLitePageRedirectDecider::IsServerUnavailable() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!retry_at_.has_value())
     return false;
@@ -331,7 +334,7 @@ bool PreviewsLitePageDecider::IsServerUnavailable() {
   return server_loadshedding;
 }
 
-void PreviewsLitePageDecider::AddSingleBypass(std::string url) {
+void PreviewsLitePageRedirectDecider::AddSingleBypass(std::string url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Garbage collect any old entries while looking for the one for |url|.
   auto entry = single_bypass_.end();
@@ -356,7 +359,7 @@ void PreviewsLitePageDecider::AddSingleBypass(std::string url) {
   entry->second = ttl;
 }
 
-bool PreviewsLitePageDecider::CheckSingleBypass(std::string url) {
+bool PreviewsLitePageRedirectDecider::CheckSingleBypass(std::string url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto entry = single_bypass_.find(url);
   if (entry == single_bypass_.end())
@@ -364,14 +367,15 @@ bool PreviewsLitePageDecider::CheckSingleBypass(std::string url) {
   return entry->second >= clock_->NowTicks();
 }
 
-uint64_t PreviewsLitePageDecider::GeneratePageID() {
+uint64_t PreviewsLitePageRedirectDecider::GeneratePageID() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ++page_id_;
 }
 
-void PreviewsLitePageDecider::ReportDataSavings(int64_t network_bytes,
-                                                int64_t original_bytes,
-                                                const std::string& host) {
+void PreviewsLitePageRedirectDecider::ReportDataSavings(
+    int64_t network_bytes,
+    int64_t original_bytes,
+    const std::string& host) {
   if (!drp_settings_ || !drp_settings_->data_reduction_proxy_service())
     return;
 
@@ -391,7 +395,7 @@ void PreviewsLitePageDecider::ReportDataSavings(int64_t network_bytes,
       0);
 }
 
-bool PreviewsLitePageDecider::NeedsToNotifyUser() {
+bool PreviewsLitePageRedirectDecider::NeedsToNotifyUser() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           previews::switches::kDoNotRequireLitePageRedirectInfoBar)) {
@@ -400,7 +404,8 @@ bool PreviewsLitePageDecider::NeedsToNotifyUser() {
   return need_to_show_notification_;
 }
 
-void PreviewsLitePageDecider::NotifyUser(content::WebContents* web_contents) {
+void PreviewsLitePageRedirectDecider::NotifyUser(
+    content::WebContents* web_contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(need_to_show_notification_);
   DCHECK(!UserNotificationWebContentsObserver::FromWebContents(web_contents));
@@ -410,13 +415,14 @@ void PreviewsLitePageDecider::NotifyUser(content::WebContents* web_contents) {
       UserNotificationWebContentsObserver::FromWebContents(web_contents);
 
   // base::Unretained is safe here because |this| outlives |web_contents|.
-  observer->SetUIShownCallback(
-      base::BindOnce(&PreviewsLitePageDecider::SetUserHasSeenUINotification,
-                     base::Unretained(this)));
+  observer->SetUIShownCallback(base::BindOnce(
+      &PreviewsLitePageRedirectDecider::SetUserHasSeenUINotification,
+      base::Unretained(this)));
 }
 
-void PreviewsLitePageDecider::BlacklistBypassedHost(const std::string& host,
-                                                    base::TimeDelta duration) {
+void PreviewsLitePageRedirectDecider::BlacklistBypassedHost(
+    const std::string& host,
+    base::TimeDelta duration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If there is an existing entry, intentionally update it.
   host_bypass_blacklist_->SetKey(
@@ -427,7 +433,7 @@ void PreviewsLitePageDecider::BlacklistBypassedHost(const std::string& host,
     pref_service_->Set(kHostBlacklist, *host_bypass_blacklist_);
 }
 
-bool PreviewsLitePageDecider::HostBlacklistedFromBypass(
+bool PreviewsLitePageRedirectDecider::HostBlacklistedFromBypass(
     const std::string& host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Value* value = host_bypass_blacklist_->FindKey(host);
@@ -439,7 +445,7 @@ bool PreviewsLitePageDecider::HostBlacklistedFromBypass(
   return expiry > base::Time::Now();
 }
 
-bool PreviewsLitePageDecider::ShouldSendNextProbe() {
+bool PreviewsLitePageRedirectDecider::ShouldSendNextProbe() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return data_reduction_proxy::DataReductionProxySettings::
              IsDataSaverEnabledByUser(pref_service_) &&
@@ -449,7 +455,7 @@ bool PreviewsLitePageDecider::ShouldSendNextProbe() {
          previews::params::LitePageRedirectOnlyTriggerOnSuccessfulProbe();
 }
 
-bool PreviewsLitePageDecider::IsResponseSuccess(
+bool PreviewsLitePageRedirectDecider::IsResponseSuccess(
     net::Error net_error,
     const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
@@ -458,12 +464,12 @@ bool PreviewsLitePageDecider::IsResponseSuccess(
   return net_error == net::OK && head && head->headers;
 }
 
-bool PreviewsLitePageDecider::IsServerProbeResultAvailable() {
+bool PreviewsLitePageRedirectDecider::IsServerProbeResultAvailable() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return litepages_service_prober_->LastProbeWasSuccessful().has_value();
 }
 
-bool PreviewsLitePageDecider::IsServerReachableByProbe() {
+bool PreviewsLitePageRedirectDecider::IsServerReachableByProbe() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Optional<bool> probe =
       litepages_service_prober_->LastProbeWasSuccessful();

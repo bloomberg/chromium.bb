@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_PREDICTOR_H_
-#define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_PREDICTOR_H_
+#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_PREDICTOR_H_
+#define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_PREDICTOR_H_
 
 #include <memory>
 
@@ -52,12 +52,12 @@ class PreviewsOptimizationGuide;
 // * The current page isn't a litepage preview already.
 // * Chrome is in the foreground.
 // * This' |web_contents| is in the foreground.
-class PreviewsLitePagePredictor
+class PreviewsLitePageRedirectPredictor
     : public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
       public content::WebContentsObserver,
-      public content::WebContentsUserData<PreviewsLitePagePredictor> {
+      public content::WebContentsUserData<PreviewsLitePageRedirectPredictor> {
  public:
-  ~PreviewsLitePagePredictor() override;
+  ~PreviewsLitePageRedirectPredictor() override;
 
   // content::WebContentsObserver:
   void DidFinishNavigation(content::NavigationHandle* handle) override;
@@ -69,7 +69,8 @@ class PreviewsLitePagePredictor
       net::EffectiveConnectionType ect) override;
 
  protected:
-  explicit PreviewsLitePagePredictor(content::WebContents* web_contents);
+  explicit PreviewsLitePageRedirectPredictor(
+      content::WebContents* web_contents);
 
   // Virtual for testing.
   virtual bool DataSaverIsEnabled() const;
@@ -82,26 +83,32 @@ class PreviewsLitePagePredictor
   virtual bool IsVisible() const;
 
  private:
-  friend class content::WebContentsUserData<PreviewsLitePagePredictor>;
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+  friend class content::WebContentsUserData<PreviewsLitePageRedirectPredictor>;
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
                            AllConditionsMet_Origin);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
                            AllConditionsMet_Preview);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, FeatureDisabled);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
+                           FeatureDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
                            DataSaverDisabled);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, NoNavigation);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, ECTNotSlow);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
+                           NoNavigation);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
+                           ECTNotSlow);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
                            ECTNotSlowOnPreview);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, PageBlacklisted);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, NotVisible);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, InsecurePage);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
+                           PageBlacklisted);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
+                           NotVisible);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
+                           InsecurePage);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
                            ToggleMultipleTimes_Navigations);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
                            ToggleMultipleTimes_ECT);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageRedirectPredictorUnitTest,
                            ToggleMultipleTimes_Visibility);
 
   // Returns the GURL that should be preresolved, if any.
@@ -132,7 +139,7 @@ class PreviewsLitePagePredictor
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsLitePagePredictor);
+  DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageRedirectPredictor);
 };
 
-#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_PREDICTOR_H_
+#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_PREDICTOR_H_
