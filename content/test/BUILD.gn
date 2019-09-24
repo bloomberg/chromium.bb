@@ -414,6 +414,7 @@ jumbo_static_library("test_support") {
     "//storage/common",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/blink/public/strings:strings_grit",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
     "//third_party/webrtc/api:media_stream_interface",
     "//third_party/webrtc/api:rtc_stats_api",

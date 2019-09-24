@@ -160,10 +160,6 @@ int ToMessageID(int resource_id) {
       return IDS_AX_MEDIA_TOUCHLESS_SEEK_ACTION;
     case WebLocalizedString::kAXMediaTouchLessVolumeAction:
       return IDS_AX_MEDIA_TOUCHLESS_VOLUME_ACTION;
-    case WebLocalizedString::kCalendarClear:
-      return IDS_FORM_CALENDAR_CLEAR;
-    case WebLocalizedString::kCalendarToday:
-      return IDS_FORM_CALENDAR_TODAY;
     case WebLocalizedString::kDetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
     case WebLocalizedString::kFileButtonNoFileSelectedLabel:

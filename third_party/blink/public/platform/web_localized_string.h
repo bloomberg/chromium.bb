@@ -72,8 +72,6 @@ struct WebLocalizedString {
     kAXMediaTouchLessSeekAction,
     kAXMediaTouchLessVolumeAction,
     kBlockedPluginText,
-    kCalendarClear,
-    kCalendarToday,
     kDetailsLabel,
     kFileButtonNoFileSelectedLabel,
     kInputElementAltText,
