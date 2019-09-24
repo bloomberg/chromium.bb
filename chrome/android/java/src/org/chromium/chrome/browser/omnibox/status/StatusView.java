@@ -74,9 +74,6 @@ public class StatusView extends LinearLayout {
         super.onFinishInflate();
 
         mIconView = findViewById(R.id.location_bar_status_icon);
-        mIconView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight,
-                                                    oldBottom) -> updateTouchDelegate());
-
         mVerboseStatusTextView = findViewById(R.id.location_bar_verbose_status);
         mSeparatorView = findViewById(R.id.location_bar_verbose_status_separator);
         mStatusExtraSpace = findViewById(R.id.location_bar_verbose_status_extra_space);
@@ -90,6 +87,8 @@ public class StatusView extends LinearLayout {
      */
     public void setCompositeTouchDelegate(CompositeTouchDelegate compositeTouchDelegate) {
         mCompositeTouchDelegate = compositeTouchDelegate;
+        mIconView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight,
+                                                    oldBottom) -> updateTouchDelegate());
     }
 
     /**
@@ -171,8 +170,11 @@ public class StatusView extends LinearLayout {
                         // Update incognito badge padding after the animation to avoid a glitch on
                         // focusing location bar.
                         updateIncognitoBadgeEndPadding();
+                        updateTouchDelegate();
                     })
                     .start();
+        } else {
+            updateTouchDelegate();
         }
 
         // Action 3: Specify icon content. Use TransitionDrawable whenever object is visible.
@@ -372,7 +374,7 @@ public class StatusView extends LinearLayout {
      * no work will be done.
      */
     private void updateTouchDelegate() {
-        if (mIconView.getVisibility() == GONE) {
+        if (!isIconVisible()) {
             // Tear down the existing delegate if it exists.
             if (mTouchDelegate != null) {
                 mCompositeTouchDelegate.removeDelegateForDescendantView(mTouchDelegate);
@@ -432,5 +434,15 @@ public class StatusView extends LinearLayout {
         ViewGroup.MarginLayoutParams lp =
                 (ViewGroup.MarginLayoutParams) mIconView.getLayoutParams();
         return lp.getMarginStart() + mIconView.getMeasuredWidth() + lp.getMarginEnd();
+    }
+
+    /** @return True if the status icon is currently visible. */
+    private boolean isIconVisible() {
+        return (mIconRes != 0 || mIconBitmap != null) && mIconView.getVisibility() != GONE
+                && mIconView.getAlpha() != 0;
+    }
+
+    TouchDelegate getTouchDelegateForTesting() {
+        return mTouchDelegate;
     }
 }
