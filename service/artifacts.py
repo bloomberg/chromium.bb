@@ -37,11 +37,9 @@ ARCHIVE_TEST_SUITES = 'test_suites'
 CPE_WARNINGS_FILE_TEMPLATE = 'cpe-warnings-chromeos-%s.txt'
 CPE_RESULT_FILE_TEMPLATE = 'cpe-chromeos-%s.txt'
 
+# The individual image archives for ArchiveImages.
 IMAGE_TARS = {
-    constants.BASE_IMAGE_BIN: constants.BASE_IMAGE_TAR,
-    constants.VM_IMAGE_BIN: constants.VM_IMAGE_TAR,
     constants.TEST_IMAGE_BIN: constants.TEST_IMAGE_TAR,
-    constants.RECOVERY_IMAGE_BIN: constants.RECOVERY_IMAGE_TAR,
 }
 
 TAST_BUNDLE_NAME = 'tast_bundles.tar.bz2'
