@@ -1,14 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Changes to this file should be reflected in android_apps_page_test.js
-
-// TODO(crbug.com/1006152): Delete this file once the split-settings flag is
-// removed.
-
-/** @type {?SettingsAndroidAppsPageElement} */
-let androidAppsPage = null;
+/** @type {?OsSettingsAppsPageElement} */
+let appsPage = null;
 
 /** @type {?TestAndroidAppsBrowserProxy} */
 let androidAppsBrowserProxy = null;
@@ -18,57 +13,114 @@ const setAndroidAppsState = function(playStoreEnabled, settingsAppAvailable) {
     playStoreEnabled: playStoreEnabled,
     settingsAppAvailable: settingsAppAvailable,
   };
-  androidAppsPage.androidAppsInfo = appsInfo;
+  appsPage.androidAppsInfo = appsInfo;
+  appsPage.showAndroidApps = true;
   Polymer.dom.flush();
 };
 
-suite('AndroidAppsPageTests', function() {
+suite('AppsPageTests', function() {
   setup(function() {
-    androidAppsBrowserProxy = new TestAndroidAppsBrowserProxy();
-    settings.AndroidAppsBrowserProxyImpl.instance_ = androidAppsBrowserProxy;
     PolymerTest.clearBody();
-    androidAppsPage = document.createElement('settings-android-apps-page');
-    document.body.appendChild(androidAppsPage);
+    appsPage = document.createElement('os-settings-apps-page');
+    document.body.appendChild(appsPage);
     testing.Test.disableAnimationsAndTransitions();
   });
 
   teardown(function() {
-    androidAppsPage.remove();
+    appsPage.remove();
+  });
+
+  suite('Page Combinations', function() {
+    setup(function() {
+      appsPage.havePlayStoreApp = true;
+      appsPage.prefs = {arc: {enabled: {value: false}}};
+    });
+
+    const AndroidAppsShown = () => !!appsPage.$$('#android-apps');
+    const AppManagementShown = () => !!appsPage.$$('#appManagement');
+
+    test('Nothing Shown', function() {
+      appsPage.showAppManagement = false;
+      appsPage.showAndroidApps = false;
+      Polymer.dom.flush();
+
+      assertFalse(AppManagementShown());
+      assertFalse(AndroidAppsShown());
+    });
+
+    test('Only Android Apps Shown', function() {
+      appsPage.showAppManagement = false;
+      appsPage.showAndroidApps = true;
+      Polymer.dom.flush();
+
+      assertFalse(AppManagementShown());
+      assertTrue(AndroidAppsShown());
+    });
+
+    test('Only App Management Shown', function() {
+      appsPage.showAppManagement = true;
+      appsPage.showAndroidApps = false;
+      Polymer.dom.flush();
+
+      assertTrue(AppManagementShown());
+      assertFalse(AndroidAppsShown());
+    });
+
+    test('Android Apps and App Management Shown', function() {
+      appsPage.showAppManagement = true;
+      appsPage.showAndroidApps = true;
+      Polymer.dom.flush();
+
+      assertTrue(AppManagementShown());
+      assertTrue(AndroidAppsShown());
+    });
+  });
+});
+
+// Changes to this suite should be reflected in android_apps_page_test.js
+suite('AndroidAppsDetailPageTests', function() {
+  setup(function() {
+    androidAppsBrowserProxy = new TestAndroidAppsBrowserProxy();
+    settings.AndroidAppsBrowserProxyImpl.instance_ = androidAppsBrowserProxy;
+    PolymerTest.clearBody();
+    appsPage = document.createElement('os-settings-apps-page');
+    document.body.appendChild(appsPage);
+    testing.Test.disableAnimationsAndTransitions();
   });
 
   teardown(function() {
-    androidAppsPage.remove();
+    appsPage.remove();
   });
 
   suite('Main Page', function() {
     setup(function() {
-      androidAppsPage.havePlayStoreApp = true;
-      androidAppsPage.prefs = {arc: {enabled: {value: false}}};
+      appsPage.havePlayStoreApp = true;
+      appsPage.prefs = {arc: {enabled: {value: false}}};
       setAndroidAppsState(false, false);
     });
 
     test('Enable', function() {
-      const button = androidAppsPage.$$('#enable');
+      const button = appsPage.$$('#enable');
       assertTrue(!!button);
-      assertFalse(!!androidAppsPage.$$('.subpage-arrow'));
+      assertFalse(!!appsPage.$$('.subpage-arrow'));
 
       button.click();
       Polymer.dom.flush();
-      assertTrue(androidAppsPage.prefs.arc.enabled.value);
+      assertTrue(appsPage.prefs.arc.enabled.value);
 
       setAndroidAppsState(true, false);
-      assertTrue(!!androidAppsPage.$$('.subpage-arrow'));
+      assertTrue(!!appsPage.$$('.subpage-arrow'));
     });
   });
 
   // TODO(crbug.com/1006662): Fix test suite.
-  suite('SubPage', function() {
+  suite.skip('SubPage', function() {
     let subpage;
 
     function flushAsync() {
       Polymer.dom.flush();
       return new Promise(resolve => {
-        androidAppsPage.async(resolve);
+        appsPage.async(resolve);
       });
     }
 
@@ -86,13 +138,13 @@ suite('AndroidAppsPageTests', function() {
     }
 
     setup(function() {
-      androidAppsPage.havePlayStoreApp = true;
-      androidAppsPage.prefs = {arc: {enabled: {value: true}}};
+      appsPage.havePlayStoreApp = true;
+      appsPage.prefs = {arc: {enabled: {value: true}}};
       setAndroidAppsState(true, false);
       settings.navigateTo(settings.routes.ANDROID_APPS);
-      androidAppsPage.$$('#android-apps').click();
+      appsPage.$$('#android-apps').click();
       return flushAsync().then(() => {
-        subpage = androidAppsPage.$$('settings-android-apps-subpage');
+        subpage = appsPage.$$('settings-android-apps-subpage');
         assertTrue(!!subpage);
       });
     });
@@ -146,12 +198,12 @@ suite('AndroidAppsPageTests', function() {
   });
 
   // TODO(crbug.com/1006662): Fix test suite.
-  suite('Enforced', function() {
+  suite.skip('Enforced', function() {
     let subpage;
 
     setup(function() {
-      androidAppsPage.havePlayStoreApp = true;
-      androidAppsPage.prefs = {
+      appsPage.havePlayStoreApp = true;
+      appsPage.prefs = {
         arc: {
           enabled: {
             value: true,
@@ -160,13 +212,14 @@ suite('AndroidAppsPageTests', function() {
         }
       };
       setAndroidAppsState(true, true);
-      androidAppsPage.$$('#android-apps').click();
+      assertTrue(!!settings.routes.ANDROID_APPS_DETAILS);
+      appsPage.$$('#android-apps').click();
       Polymer.dom.flush();
-      subpage = androidAppsPage.$$('settings-android-apps-subpage');
+      subpage = appsPage.$$('settings-android-apps-subpage');
       assertTrue(!!subpage);
     });
 
-    test('Sanity', function() {
+    test('Sanity', function(done) {
       Polymer.dom.flush();
       assertFalse(!!subpage.$$('#remove'));
       assertTrue(!!subpage.$$('#manageApps'));
@@ -175,17 +228,17 @@ suite('AndroidAppsPageTests', function() {
 
   suite('NoPlayStore', function() {
     setup(function() {
-      androidAppsPage.havePlayStoreApp = false;
-      androidAppsPage.prefs = {arc: {enabled: {value: true}}};
+      appsPage.havePlayStoreApp = false;
+      appsPage.prefs = {arc: {enabled: {value: true}}};
       setAndroidAppsState(true, true);
     });
 
     test('Sanity', function() {
-      assertTrue(!!androidAppsPage.$$('#manageApps'));
+      assertTrue(!!appsPage.$$('#manageApps'));
     });
 
     test('ManageAppsOpenRequest', function() {
-      const button = androidAppsPage.$$('#manageApps');
+      const button = appsPage.$$('#manageApps');
       assertTrue(!!button);
       const promise =
           androidAppsBrowserProxy.whenCalled('showAndroidAppsSettings');
