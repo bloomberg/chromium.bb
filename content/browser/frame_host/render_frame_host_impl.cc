@@ -4338,10 +4338,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 
-  registry_->AddInterface(base::Bind(
-      base::IgnoreResult(&RenderFrameHostImpl::CreateWebBluetoothService),
-      base::Unretained(this)));
-
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(this)));
 
@@ -6181,7 +6177,7 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
   dst->focused_tree_id = focused_frame->GetAXTreeID();
 }
 
-WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
+void RenderFrameHostImpl::CreateWebBluetoothService(
     mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver) {
   // RFHI owns |web_bluetooth_services_| and |web_bluetooth_service| owns the
   // |receiver_| which may run the error handler. |receiver_| can't run the
@@ -6193,6 +6189,11 @@ WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
       base::BindOnce(&RenderFrameHostImpl::DeleteWebBluetoothService,
                      base::Unretained(this), web_bluetooth_service.get()));
   web_bluetooth_services_.push_back(std::move(web_bluetooth_service));
+}
+
+WebBluetoothServiceImpl*
+RenderFrameHostImpl::GetWebBluetoothServiceForTesting() {
+  DCHECK(web_bluetooth_services_.back());
   return web_bluetooth_services_.back().get();
 }
 

@@ -1073,6 +1073,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetFileChooser(
       mojo::PendingReceiver<blink::mojom::FileChooser> receiver);
 
+  void CreateWebBluetoothService(
+      mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
+
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
       const {
@@ -1531,10 +1534,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FrameTreeNode* FindAndVerifyChild(int32_t child_frame_routing_id,
                                     bad_message::BadMessageReason reason);
 
-  // Creates Web Bluetooth Service owned by the frame. Returns a raw pointer
-  // to it.
-  WebBluetoothServiceImpl* CreateWebBluetoothService(
-      mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
+  // Returns a raw pointer to the Web Bluetooth Service owned by the frame. Used
+  // for testing purposes only (see |TestRenderFrameHost|).
+  WebBluetoothServiceImpl* GetWebBluetoothServiceForTesting();
 
   // Deletes the Web Bluetooth Service owned by the frame.
   void DeleteWebBluetoothService(

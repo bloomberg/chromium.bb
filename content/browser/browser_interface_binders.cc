@@ -18,6 +18,7 @@
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
@@ -72,6 +73,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<media::mojom::ImageCapture>(
       base::BindRepeating(&ImageCaptureImpl::Create));
+
+  map->Add<blink::mojom::WebBluetoothService>(base::BindRepeating(
+      &RenderFrameHostImpl::CreateWebBluetoothService, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(

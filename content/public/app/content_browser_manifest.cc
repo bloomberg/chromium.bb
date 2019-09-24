@@ -244,7 +244,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.TextSuggestionHost",
                   "blink.mojom.UnhandledTapNotifier",
                   "blink.mojom.WakeLockService",
-                  "blink.mojom.WebBluetoothService",
                   "blink.mojom.WebUsbService",
                   "content.mojom.BrowserTarget",
                   "content.mojom.InputInjector",
