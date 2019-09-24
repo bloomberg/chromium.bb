@@ -63,6 +63,9 @@
         "browse:news:reddit": {
             "DEFAULT": "system_health_mobile_027.wprgo"
         },
+        "browse:news:reddit:2019": {
+            "DEFAULT": "system_health_mobile_1a5563286a.wprgo"
+        },
         "browse:news:toi": {
             "DEFAULT": "system_health_mobile_064.wprgo"
         },

@@ -238,6 +238,30 @@ class RedditMobileStory(_ArticleBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.YEAR_2016]
 
+class RedditMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:news:reddit:2019'
+  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR = '.PostHeader__post-title-line'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2019]
+
+  def _DidLoadDocument(self, action_runner):
+    # We encountered ads disguised as articles on the Reddit one so far. The
+    # following code skips that ad.
+    # If we encounter it more often it will make sense to have a more generic
+    # approach, e.g an OFFSET to start iterating from, or an index to skip.
+
+    # Add one to the items to visit since we are going to skip the ad and we
+    # want to still visit the same amount of articles.
+    for i in xrange(self.ITEMS_TO_VISIT + 1):
+      # Skip the ad disguised as an article.
+      if i == 1:
+           continue
+      self._NavigateToItem(action_runner, i)
+      self._ReadNextArticle(action_runner)
+      self._NavigateBack(action_runner)
+      self._ScrollMainPage(action_runner)
 
 class TwitterMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:social:twitter'
