@@ -1305,7 +1305,6 @@ TEST_F(ModelTypeWorkerTest, CommitOnly) {
   const SyncEntity entity =
       server()->GetNthCommitMessage(0).commit().entries(0);
 
-  EXPECT_EQ(0, entity.attachment_id_size());
   EXPECT_FALSE(entity.has_ctime());
   EXPECT_FALSE(entity.has_deleted());
   EXPECT_FALSE(entity.has_folder());
