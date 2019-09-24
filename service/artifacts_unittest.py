@@ -469,14 +469,14 @@ class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
             board=self.build_target.name,
             output_dir=call_tempdir,
             chroot_path=self.chroot.path,
-            chroot_args=self.chroot.GetEnterArgs()
+            chroot_args=self.chroot.get_enter_args()
         )
       else:
         mock_afdo_generate.assert_called_once_with(
             board=self.build_target.name,
             output_dir=call_tempdir,
             chroot_path=self.chroot.path,
-            chroot_args=self.chroot.GetEnterArgs(),
+            chroot_args=self.chroot.get_enter_args(),
         )
 
       # Make sure we get all the expected files

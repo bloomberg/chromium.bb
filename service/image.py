@@ -165,7 +165,7 @@ def CreateVm(board, is_test=False, chroot=None):
 
   chroot_args = None
   if chroot and cros_build_lib.IsOutsideChroot():
-    chroot_args = chroot.GetEnterArgs()
+    chroot_args = chroot.get_enter_args()
 
   result = cros_build_lib.RunCommand(cmd, error_code_ok=True,
                                      enter_chroot=True, chroot_args=chroot_args)

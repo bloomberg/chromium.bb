@@ -74,7 +74,7 @@ def BuildTargetUnitTest(build_target, chroot, blacklist=None, was_built=True):
 
     result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
                                        extra_env=extra_env,
-                                       chroot_args=chroot.GetEnterArgs(),
+                                       chroot_args=chroot.get_enter_args(),
                                        error_code_ok=True)
 
     failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)

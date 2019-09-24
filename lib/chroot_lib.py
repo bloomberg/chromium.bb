@@ -67,10 +67,6 @@ class Chroot(object):
     """Check if a chroot-relative path exists inside the chroot."""
     return os.path.exists(self.full_path(*args))
 
-  def GetEnterArgs(self):
-    """Build the arguments to enter this chroot."""
-    return self.get_enter_args()
-
   def get_enter_args(self):
     """Build the arguments to enter this chroot."""
     args = []

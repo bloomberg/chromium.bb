@@ -354,7 +354,7 @@ def CreateChromeRoot(chroot, build_target, output_dir):
     CrosGenerateSysrootError: When cros_generate_sysroot does not complete
       successfully.
   """
-  chroot_args = chroot.GetEnterArgs()
+  chroot_args = chroot.get_enter_args()
 
   extra_env = {'USE': 'chrome_internal'}
   base_dir = os.path.join(chroot.path, 'tmp')
@@ -487,7 +487,7 @@ def BundleAFDOGenerationArtifacts(is_orderfile, chroot,
   Returns:
     list[str]: The list of tarballs of artifacts.
   """
-  chroot_args = chroot.GetEnterArgs()
+  chroot_args = chroot.get_enter_args()
   with chroot.tempdir() as tempdir:
     if is_orderfile:
       generate_orderfile = toolchain_util.GenerateChromeOrderfile(
