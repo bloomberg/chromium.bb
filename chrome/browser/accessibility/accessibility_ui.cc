@@ -79,7 +79,7 @@ static const char kLabelImages[] = "labelImages";
 static const char kNative[] = "native";
 static const char kPage[] = "page";
 static const char kScreenReader[] = "screenreader";
-static const char kShowTree[] = "showTree";
+static const char kShowOrRefreshTree[] = "showOrRefreshTree";
 static const char kText[] = "text";
 static const char kWeb[] = "web";
 
@@ -430,16 +430,17 @@ void AccessibilityUIMessageHandler::ToggleAccessibility(
     base::DictionaryValue request_data;
     request_data.SetIntPath(kProcessIdField, process_id);
     request_data.SetIntPath(kRouteIdField, route_id);
-    request_data.SetStringPath(kRequestTypeField, kShowTree);
+    request_data.SetStringPath(kRequestTypeField, kShowOrRefreshTree);
     base::ListValue request_args;
     request_args.Append(std::move(request_data));
     RequestWebContentsTree(&request_args);
   } else {
-    // Call accessibility.showTree without a 'tree' field so the row's
+    // Call accessibility.showOrRefreshTree without a 'tree' field so the row's
     // accessibility mode buttons are updated.
     AllowJavascript();
     std::unique_ptr<base::DictionaryValue> new_mode(BuildTargetDescriptor(rvh));
-    CallJavascriptFunction("accessibility.showTree", *(new_mode.get()));
+    CallJavascriptFunction("accessibility.showOrRefreshTree",
+                           *(new_mode.get()));
   }
 }
 
@@ -509,7 +510,7 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   int route_id = *data->FindIntPath(kRouteIdField);
 
   std::string request_type = Validate(data->FindStringPath(kRequestTypeField));
-  CHECK(request_type == kShowTree || request_type == kCopyTree);
+  CHECK(request_type == kShowOrRefreshTree || request_type == kCopyTree);
   request_type = "accessibility." + request_type;
 
   std::string allow = Validate(data->FindStringPath("filters.allow"));
@@ -565,7 +566,7 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
 
   int session_id = *data->FindIntPath(kSessionIdField);
   std::string request_type = Validate(data->FindStringPath(kRequestTypeField));
-  CHECK(request_type == kShowTree || request_type == kCopyTree);
+  CHECK(request_type == kShowOrRefreshTree || request_type == kCopyTree);
   request_type = "accessibility." + request_type;
 
   std::string allow = Validate(data->FindStringPath("filters.allow"));
