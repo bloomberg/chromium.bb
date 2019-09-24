@@ -27,8 +27,8 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace content {
@@ -111,8 +111,8 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   // Removes the pointer from |media_route_providers_|.
   void OnProviderConnectionError(MediaRouteProviderId provider_id);
 
-  // Creates a binding between |this| and |request|.
-  void BindToMojoRequest(mojo::InterfaceRequest<mojom::MediaRouter> request);
+  // Creates a binding between |this| and |receiver|.
+  void BindToMojoReceiver(mojo::PendingReceiver<mojom::MediaRouter> receiver);
 
   // Methods for obtaining a pointer to the provider associated with the given
   // object. They return a nullopt when such a provider is not found.
@@ -416,8 +416,8 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   // The last reported sink availability from the media route providers.
   ProviderSinkAvailability sink_availability_;
 
-  // Bindings for Mojo pointers to |this| held by media route providers.
-  mojo::BindingSet<mojom::MediaRouter> bindings_;
+  // Receivers for Mojo remotes to |this| held by media route providers.
+  mojo::ReceiverSet<mojom::MediaRouter> receivers_;
 
   content::BrowserContext* const context_;
 

@@ -16,6 +16,8 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace cast_channel {
 class CastMessageHandler;
@@ -42,7 +44,7 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
  public:
   CastMediaRouteProvider(
       mojom::MediaRouteProviderRequest request,
-      mojom::MediaRouterPtrInfo media_router,
+      mojo::PendingRemote<mojom::MediaRouter> media_router,
       MediaSinkServiceBase* media_sink_service,
       CastAppDiscoveryService* app_discovery_service,
       cast_channel::CastMessageHandler* message_handler,
@@ -105,7 +107,7 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
 
  private:
   void Init(mojom::MediaRouteProviderRequest request,
-            mojom::MediaRouterPtrInfo media_router,
+            mojo::PendingRemote<mojom::MediaRouter> media_router,
             CastSessionTracker* session_tracker,
             std::unique_ptr<DataDecoder> data_decoder,
             const std::string& hash_token);
@@ -121,8 +123,8 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   // Binds |this| to the Mojo request passed into the ctor.
   mojo::Binding<mojom::MediaRouteProvider> binding_;
 
-  // Mojo pointer to the Media Router.
-  mojom::MediaRouterPtr media_router_;
+  // Mojo remote to the Media Router.
+  mojo::Remote<mojom::MediaRouter> media_router_;
 
   // Non-owned pointer to the Cast MediaSinkServiceBase instance.
   MediaSinkServiceBase* const media_sink_service_;

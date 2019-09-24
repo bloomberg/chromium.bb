@@ -38,7 +38,7 @@ static constexpr int kMaxPendingDialLaunches = 10;
 
 DialMediaRouteProvider::DialMediaRouteProvider(
     mojom::MediaRouteProviderRequest request,
-    mojom::MediaRouterPtrInfo media_router,
+    mojo::PendingRemote<mojom::MediaRouter> media_router,
     DialMediaSinkServiceImpl* media_sink_service,
     service_manager::Connector* connector,
     const std::string& hash_token,
@@ -56,8 +56,9 @@ DialMediaRouteProvider::DialMediaRouteProvider(
                      std::move(request), std::move(media_router)));
 }
 
-void DialMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
-                                  mojom::MediaRouterPtrInfo media_router) {
+void DialMediaRouteProvider::Init(
+    mojom::MediaRouteProviderRequest request,
+    mojo::PendingRemote<mojom::MediaRouter> media_router) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   binding_.Bind(std::move(request));

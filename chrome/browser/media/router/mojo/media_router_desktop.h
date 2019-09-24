@@ -12,6 +12,7 @@
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "chrome/browser/media/router/providers/dial/dial_media_route_provider.h"
 #include "chrome/browser/media/router/providers/extension/extension_media_route_provider_proxy.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
 class RenderFrameHost;
@@ -45,11 +46,11 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // |extension|: The component extension, used for querying
   //     suspension state.
   // |context|: The BrowserContext which owns the extension process.
-  // |request|: The Mojo connection request used for binding.
-  static void BindToRequest(const extensions::Extension* extension,
-                            content::BrowserContext* context,
-                            mojom::MediaRouterRequest request,
-                            content::RenderFrameHost* source);
+  // |receiver|: The Mojo pending receiver used for binding.
+  static void BindToReceiver(const extensions::Extension* extension,
+                             content::BrowserContext* context,
+                             mojo::PendingReceiver<mojom::MediaRouter> receiver,
+                             content::RenderFrameHost* source);
 
   // MediaRouter implementation.
   void OnUserGesture() override;
@@ -94,11 +95,11 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   void RegisterExtensionMediaRouteProvider(
       mojom::MediaRouteProviderPtr extension_provider_ptr);
 
-  // Binds |this| to a Mojo interface request, so that clients can acquire a
+  // Binds |this| to a Mojo pending receiver, so that clients can acquire a
   // handle to a MediaRouter instance via the Mojo service connector.
   // Passes the extension's ID to the event page request manager.
-  void BindToMojoRequest(mojo::InterfaceRequest<mojom::MediaRouter> request,
-                         const extensions::Extension& extension);
+  void BindToMojoReceiver(mojo::PendingReceiver<mojom::MediaRouter> receiver,
+                          const extensions::Extension& extension);
 
   // Provides the current list of sinks from |media_sink_service_| to the
   // extension. Also registers with |media_sink_service_| to listen for updates.

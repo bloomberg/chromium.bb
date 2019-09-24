@@ -20,6 +20,8 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 
@@ -41,9 +43,10 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
 
   static std::string GetRouteDescription(const std::string& media_source);
 
-  WiredDisplayMediaRouteProvider(mojom::MediaRouteProviderRequest request,
-                                 mojom::MediaRouterPtr media_router,
-                                 Profile* profile);
+  WiredDisplayMediaRouteProvider(
+      mojom::MediaRouteProviderRequest request,
+      mojo::PendingRemote<mojom::MediaRouter> media_router,
+      Profile* profile);
   ~WiredDisplayMediaRouteProvider() override;
 
   // mojom::MediaRouteProvider:
@@ -192,7 +195,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   mojo::Binding<mojom::MediaRouteProvider> binding_;
 
   // Mojo pointer to the Media Router.
-  mojom::MediaRouterPtr media_router_;
+  mojo::Remote<mojom::MediaRouter> media_router_;
 
   // Presentation profiles are created based on this original profile. This
   // profile is not owned by |this|.

@@ -86,7 +86,7 @@ std::string WiredDisplayMediaRouteProvider::GetRouteDescription(
 
 WiredDisplayMediaRouteProvider::WiredDisplayMediaRouteProvider(
     mojom::MediaRouteProviderRequest request,
-    mojom::MediaRouterPtr media_router,
+    mojo::PendingRemote<mojom::MediaRouter> media_router,
     Profile* profile)
     : binding_(this, std::move(request)),
       media_router_(std::move(media_router)),

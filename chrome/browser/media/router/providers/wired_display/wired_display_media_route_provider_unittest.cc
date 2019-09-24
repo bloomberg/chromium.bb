@@ -13,6 +13,8 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,9 +117,10 @@ const MediaRouteProviderId kProviderId = MediaRouteProviderId::WIRED_DISPLAY;
 class TestWiredDisplayMediaRouteProvider
     : public WiredDisplayMediaRouteProvider {
  public:
-  TestWiredDisplayMediaRouteProvider(mojom::MediaRouteProviderRequest request,
-                                     mojom::MediaRouterPtr media_router,
-                                     Profile* profile)
+  TestWiredDisplayMediaRouteProvider(
+      mojom::MediaRouteProviderRequest request,
+      mojo::PendingRemote<mojom::MediaRouter> media_router,
+      Profile* profile)
       : WiredDisplayMediaRouteProvider(std::move(request),
                                        std::move(media_router),
                                        profile) {}
@@ -168,9 +171,9 @@ class WiredDisplayMediaRouteProviderTest : public testing::Test {
   void SetUp() override {
     display::Screen::SetScreenInstance(&test_screen_);
 
-    mojom::MediaRouterPtr router_pointer;
-    router_binding_ = std::make_unique<mojo::Binding<mojom::MediaRouter>>(
-        &router_, mojo::MakeRequest(&router_pointer));
+    mojo::PendingRemote<mojom::MediaRouter> router_pointer;
+    router_receiver_ = std::make_unique<mojo::Receiver<mojom::MediaRouter>>(
+        &router_, router_pointer.InitWithNewPipeAndPassReceiver());
     provider_ = std::make_unique<TestWiredDisplayMediaRouteProvider>(
         mojo::MakeRequest(&provider_pointer_), std::move(router_pointer),
         &profile_);
@@ -192,7 +195,7 @@ class WiredDisplayMediaRouteProviderTest : public testing::Test {
   mojom::MediaRouteProviderPtr provider_pointer_;
   std::unique_ptr<TestWiredDisplayMediaRouteProvider> provider_;
   MockMojoMediaRouter router_;
-  std::unique_ptr<mojo::Binding<mojom::MediaRouter>> router_binding_;
+  std::unique_ptr<mojo::Receiver<mojom::MediaRouter>> router_receiver_;
 
   gfx::Rect primary_display_bounds_;
   gfx::Rect secondary_display1_bounds_;

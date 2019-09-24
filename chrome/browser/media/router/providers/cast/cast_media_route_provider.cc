@@ -39,7 +39,7 @@ std::vector<url::Origin> GetOrigins(const MediaSource::Id& source_id) {
 
 CastMediaRouteProvider::CastMediaRouteProvider(
     mojom::MediaRouteProviderRequest request,
-    mojom::MediaRouterPtrInfo media_router,
+    mojo::PendingRemote<mojom::MediaRouter> media_router,
     MediaSinkServiceBase* media_sink_service,
     CastAppDiscoveryService* app_discovery_service,
     cast_channel::CastMessageHandler* message_handler,
@@ -63,11 +63,12 @@ CastMediaRouteProvider::CastMediaRouteProvider(
                      std::make_unique<DataDecoder>(connector), hash_token));
 }
 
-void CastMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
-                                  mojom::MediaRouterPtrInfo media_router,
-                                  CastSessionTracker* session_tracker,
-                                  std::unique_ptr<DataDecoder> data_decoder,
-                                  const std::string& hash_token) {
+void CastMediaRouteProvider::Init(
+    mojom::MediaRouteProviderRequest request,
+    mojo::PendingRemote<mojom::MediaRouter> media_router,
+    CastSessionTracker* session_tracker,
+    std::unique_ptr<DataDecoder> data_decoder,
+    const std::string& hash_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   binding_.Bind(std::move(request));

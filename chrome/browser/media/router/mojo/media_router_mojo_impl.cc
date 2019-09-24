@@ -968,9 +968,9 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForOffscreenTab(
   }
 }
 
-void MediaRouterMojoImpl::BindToMojoRequest(
-    mojo::InterfaceRequest<mojom::MediaRouter> request) {
-  bindings_.AddBinding(this, std::move(request));
+void MediaRouterMojoImpl::BindToMojoReceiver(
+    mojo::PendingReceiver<mojom::MediaRouter> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 base::Optional<MediaRouteProviderId> MediaRouterMojoImpl::GetProviderIdForRoute(
