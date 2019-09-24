@@ -65,7 +65,6 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
-#include "content/browser/image_capture/image_capture_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
@@ -4401,7 +4400,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::BindRepeating(
       &KeyboardLockServiceImpl::CreateMojoService, base::Unretained(this)));
 
-  registry_->AddInterface(base::Bind(&ImageCaptureImpl::Create));
 
   sensor_provider_proxy_.reset(
       new SensorProviderProxyImpl(permission_controller, this));

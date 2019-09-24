@@ -6,6 +6,7 @@
 
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/image_capture/image_capture_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/screen_enumeration/screen_enumeration_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -13,6 +14,7 @@
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
+#include "media/capture/mojom/image_capture.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
@@ -51,8 +53,12 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
+
   map->Add<blink::mojom::FileChooser>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileChooser, base::Unretained(host)));
+
+  map->Add<media::mojom::ImageCapture>(
+      base::BindRepeating(&ImageCaptureImpl::Create));
 }
 
 void PopulateBinderMapWithContext(
