@@ -80,8 +80,12 @@ cr.define('accessibility', function() {
       const delay = $('native_ui_delay').value;
       setTimeout(() => {
         chrome.send(
-            'requestNativeUITree',
-            [{'sessionId': data.sessionId, 'requestType': requestType}]);
+            'requestNativeUITree', [{
+              'sessionId': data.sessionId,
+              'requestType': requestType,
+              'filters':
+                  {'allow': allow, 'allowEmpty': allowEmpty, 'deny': deny}
+            }]);
       }, delay);
     } else {
       chrome.send(

@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -253,17 +254,53 @@ void HandleAccessibilityRequestCallback(
   callback.Run(base::RefCountedString::TakeString(&json_string));
 }
 
-std::string RecursiveDumpAXPlatformNodeAsString(ui::AXPlatformNode* node,
-                                                int indent) {
+bool MatchesPropertyFilters(
+    const std::vector<content::AccessibilityTreeFormatter::PropertyFilter>&
+        property_filters,
+    const base::string16& text) {
+  bool allow = false;
+  for (const auto& filter : property_filters) {
+    if (base::MatchPattern(text, filter.match_str)) {
+      switch (filter.type) {
+        case content::AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY:
+          allow = true;
+          break;
+        case content::AccessibilityTreeFormatter::PropertyFilter::ALLOW:
+          allow = (!base::MatchPattern(text, base::UTF8ToUTF16("*=''")));
+          break;
+        case content::AccessibilityTreeFormatter::PropertyFilter::DENY:
+          allow = false;
+          break;
+      }
+    }
+  }
+  return allow;
+}
+
+std::string RecursiveDumpAXPlatformNodeAsString(
+    ui::AXPlatformNode* node,
+    int indent,
+    const std::vector<content::AccessibilityTreeFormatter::PropertyFilter>&
+        property_filters) {
   if (!node)
     return "";
   std::string str(2 * indent, '+');
-  str += node->GetDelegate()->GetData().ToString() + "\n";
+  std::string line = node->GetDelegate()->GetData().ToString();
+  std::vector<std::string> attributes = base::SplitString(
+      line, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (std::string attribute : attributes) {
+    if (MatchesPropertyFilters(property_filters,
+                               base::UTF8ToUTF16(attribute))) {
+      str += attribute + " ";
+    }
+  }
+  str += "\n";
   for (int i = 0; i < node->GetDelegate()->GetChildCount(); i++) {
     gfx::NativeViewAccessible child = node->GetDelegate()->ChildAtIndex(i);
     ui::AXPlatformNode* child_node =
         ui::AXPlatformNode::FromNativeViewAccessible(child);
-    str += RecursiveDumpAXPlatformNodeAsString(child_node, indent + 1);
+    str += RecursiveDumpAXPlatformNodeAsString(child_node, indent + 1,
+                                               property_filters);
   }
   return str;
 }
@@ -531,9 +568,25 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   CHECK(request_type == kShowTree || request_type == kCopyTree);
   request_type = "accessibility." + request_type;
 
+  std::string allow = Validate(data->FindStringPath("filters.allow"));
+  std::string allow_empty =
+      Validate(data->FindStringPath("filters.allowEmpty"));
+  std::string deny = Validate(data->FindStringPath("filters.deny"));
+
   AllowJavascript();
 
 #if !defined(OS_ANDROID)
+  std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
+      property_filters;
+  AddPropertyFilters(
+      property_filters, allow,
+      content::AccessibilityTreeFormatter::PropertyFilter::ALLOW);
+  AddPropertyFilters(
+      property_filters, allow_empty,
+      content::AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY);
+  AddPropertyFilters(property_filters, deny,
+                     content::AccessibilityTreeFormatter::PropertyFilter::DENY);
+
   for (Browser* browser : *BrowserList::GetInstance()) {
     if (browser->session_id().id() == session_id) {
       std::unique_ptr<base::DictionaryValue> result(
@@ -542,7 +595,9 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
       ui::AXPlatformNode* node =
           ui::AXPlatformNode::FromNativeWindow(native_window);
       result->SetKey(kTreeField,
-                     base::Value(RecursiveDumpAXPlatformNodeAsString(node, 0)));
+                     base::Value(RecursiveDumpAXPlatformNodeAsString(
+                         node, 0, property_filters)));
+      result->SetBoolean(kImprovementsEnabledField, improvements_enabled_);
       CallJavascriptFunction(request_type, *(result.get()));
       return;
     }
