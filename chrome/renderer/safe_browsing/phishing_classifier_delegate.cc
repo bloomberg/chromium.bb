@@ -21,6 +21,7 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -52,9 +53,9 @@ base::LazyInstance<std::unique_ptr<const safe_browsing::Scorer>>::
 
 // static
 void PhishingClassifierFilter::Create(
-    mojom::PhishingModelSetterRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<PhishingClassifierFilter>(),
-                          std::move(request));
+    mojo::PendingReceiver<mojom::PhishingModelSetter> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<PhishingClassifierFilter>(),
+                              std::move(receiver));
 }
 
 PhishingClassifierFilter::PhishingClassifierFilter() {}
