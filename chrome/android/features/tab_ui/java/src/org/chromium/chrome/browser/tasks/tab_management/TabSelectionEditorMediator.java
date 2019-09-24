@@ -103,6 +103,11 @@ class TabSelectionEditorMediator
                     hide();
                 }
             }
+
+            @Override
+            public void willCloseTab(Tab tab, boolean animate) {
+                if (isEditorVisible()) hide();
+            }
         };
     }
 
