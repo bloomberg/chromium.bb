@@ -112,18 +112,22 @@ bool MaybeBlockPopup(content::WebContents* web_contents,
          open_url_params->user_gesture == params->user_gesture);
   PopupBlockerTabHelper::LogAction(PopupBlockerTabHelper::Action::kInitiated);
 
+  // Check |popup_blocker| first since it is cheaper than ShouldBlockPopup().
+  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(web_contents);
+  if (!popup_blocker)
+    return false;
+
   PopupBlockType block_type = ShouldBlockPopup(
       web_contents, opener_url, params->user_gesture, open_url_params);
-  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(web_contents);
-  if (popup_blocker && block_type != PopupBlockType::kNotBlocked) {
-    popup_blocker->AddBlockedPopup(params, window_features, block_type);
-    if (safe_browsing::AdPopupTrigger::FromWebContents(web_contents)) {
-      content::RenderFrameHost* source_frame =
-          GetSourceFrameForPopup(params, open_url_params, web_contents);
-      safe_browsing::AdPopupTrigger::FromWebContents(web_contents)
-          ->PopupWasBlocked(source_frame);
-    }
-    return true;
+  if (block_type == PopupBlockType::kNotBlocked)
+    return false;
+
+  popup_blocker->AddBlockedPopup(params, window_features, block_type);
+  auto* trigger = safe_browsing::AdPopupTrigger::FromWebContents(web_contents);
+  if (trigger) {
+    content::RenderFrameHost* source_frame =
+        GetSourceFrameForPopup(params, open_url_params, web_contents);
+    trigger->PopupWasBlocked(source_frame);
   }
-  return false;
+  return true;
 }
