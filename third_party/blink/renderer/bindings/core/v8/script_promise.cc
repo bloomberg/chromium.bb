@@ -168,7 +168,7 @@ class PromiseAllHandler final : public GarbageCollected<PromiseAllHandler> {
 
 ScriptPromise::InternalResolver::InternalResolver(ScriptState* script_state)
     : script_state_(script_state),
-      resolver_(script_state,
+      resolver_(script_state->GetIsolate(),
                 v8::Promise::Resolver::New(script_state->GetContext())) {
   // |resolver| can be empty when the thread is being terminated. We ignore such
   // errors.

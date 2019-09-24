@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
@@ -94,11 +95,11 @@ class CORE_EXPORT ScriptValue final {
   }
 
   template <typename T>
-  ScriptValue(ScriptState* script_state, v8::MaybeLocal<T> value)
-      : isolate_(script_state->GetIsolate()),
+  ScriptValue(v8::Isolate* isolate, v8::MaybeLocal<T> value)
+      : isolate_(isolate),
         value_(value.IsEmpty()
                    ? WorldSafeV8Reference<v8::Value>()
-                   : WorldSafeV8Reference<v8::Value>(script_state->GetIsolate(),
+                   : WorldSafeV8Reference<v8::Value>(isolate,
                                                      value.ToLocalChecked())) {
     DCHECK(isolate_);
   }
