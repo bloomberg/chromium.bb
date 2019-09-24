@@ -387,10 +387,16 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
     // we use the originator_client_item_id instead, if it is a valid GUID.
     // Otherwise, we leave the field empty.
-    if (model_type == BOOKMARKS && !data->specifics.bookmark().has_guid() &&
-        base::IsValidGUID(update_entity.originator_client_item_id())) {
-      data->specifics.mutable_bookmark()->set_guid(
-          update_entity.originator_client_item_id());
+    if (model_type == BOOKMARKS) {
+      if (data->specifics.bookmark().has_guid()) {
+        LogGUIDSource(BookmarkGUIDSource::kSpecifics);
+      } else if (base::IsValidGUID(update_entity.originator_client_item_id())) {
+        data->specifics.mutable_bookmark()->set_guid(
+            update_entity.originator_client_item_id());
+        LogGUIDSource(BookmarkGUIDSource::kValidOCII);
+      } else {
+        LogGUIDSource(BookmarkGUIDSource::kLeftEmpty);
+      }
     }
     response_data->entity = std::move(data);
     response_data->encryption_key_name = specifics.encrypted().key_name();
