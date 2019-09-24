@@ -493,7 +493,7 @@ void av1_compute_stats_avx2(int wiener_win, const uint8_t *dgd,
   }
 }
 
-static INLINE __m256i pair_set_epi16(uint16_t a, uint16_t b) {
+static INLINE __m256i pair_set_epi16(int a, int b) {
   return _mm256_set1_epi32(
       (int32_t)(((uint16_t)(a)) | (((uint32_t)(b)) << 16)));
 }
