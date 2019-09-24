@@ -796,6 +796,13 @@ void SkiaOutputSurfaceImpl::SetNeedsSwapSizeNotifications(
   needs_swap_size_notifications_ = needs_swap_size_notifications;
 }
 
+base::ScopedClosureRunner SkiaOutputSurfaceImpl::GetCacheBackBufferCb() {
+  // TODO(weiliangc) : Add support for this once SkiaRenderer works with
+  // SurfaceControl.
+  CHECK(false);
+  return base::ScopedClosureRunner();
+}
+
 void SkiaOutputSurfaceImpl::AddContextLostObserver(
     ContextLostObserver* observer) {
   observers_.AddObserver(observer);
