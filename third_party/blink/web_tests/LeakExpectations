@@ -102,9 +102,6 @@ crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/settings/geolocati
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-network-a11y-test.js [ Leak Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/sources-editor-pane-a11y-test.js [ Leak Pass ]
 
-# Sheriff 2019-09-24
-crbug.com/1007304 [ Linux ] external/wpt/webxr/xrWebGLLayer_constructor.https.html [ Leak Pass ]
-
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
