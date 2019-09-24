@@ -1286,6 +1286,116 @@ class GoogleEarthStory(_BrowsingStory):
 
 
 ##############################################################################
+# Google sheets browsing story.
+##############################################################################
+
+
+class GoogleSheetsDesktopStory(system_health_story.SystemHealthStory):
+  NAME = 'browse:tools:sheets:2019'
+  URL = ('https://docs.google.com/spreadsheets/d/' +
+         '16jfsJs14QrWKhsbxpdJXgoYumxNpnDt08DTK82Puc2A/' +
+         'edit#gid=896027318&range=C:C')
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
+
+  # This map translates page-specific event names to event names needed for
+  # the reported_by_page:* metric.
+  EVENTS_REPORTED_BY_PAGE = '''
+    window.__telemetry_reported_page_events = {
+      'ccv':
+          'telemetry:reported_by_page:viewable',
+      'fcoe':
+          'telemetry:reported_by_page:interactive',
+      'first_meaningful_calc_begin':
+          'telemetry:reported_by_page:benchmark_begin',
+      'first_meaningful_calc_end':
+          'telemetry:reported_by_page:benchmark_end'
+    };
+  '''
+
+  # Patch performance.mark to get notified about page events.
+  PERFOMANCE_MARK = '''
+    window.__telemetry_observed_page_events = new Set();
+    (function () {
+      let reported = window.__telemetry_reported_page_events;
+      let observed = window.__telemetry_observed_page_events;
+      let performance_mark = window.performance.mark;
+      window.performance.mark = function (label) {
+        performance_mark.call(window.performance, label);
+        if (reported.hasOwnProperty(label)) {
+          performance_mark.call(
+              window.performance, reported[label]);
+          observed.add(reported[label]);
+        }
+      }
+    })();
+  '''
+
+  # Page event queries.
+  INTERACTIVE_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:interactive"))
+  '''
+  CALC_BEGIN_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_begin"))
+  '''
+  CALC_END_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_end"))
+  '''
+  CLEAR_EVENTS = 'window.__telemetry_observed_page_events.clear()'
+
+  # Start recalculation of the current column by invoking
+  # trixApp.module$contents$waffle$DesktopRitzApp_DesktopRitzApp$actionRegistry_
+  #   .f_actions__com_google_apps_docs_xplat_controller_ActionRegistryImpl_
+  #   ['trix-fill-right'].fireAction()
+  RECALCULATE_COLUMN = "trixApp.Cb.D['trix-fill-right'].Eb();"
+
+  # Patch the goog$Uri.prototype.setParameterValue to fix the
+  # session parameters that depend on Math.random and Date.now.
+  DETERMINISITIC_SESSION = '''
+    if (window.xk) {
+      window.xk.prototype.wc = function (a, b) {
+          if (a === "rand") { b = "1566829321650"; }
+          if (a === "zx") { b = "9azccr4i1bz5"; }
+          if (a === "ssfi") { b = "0"; }
+          this.C.set(a, b);
+          return this;
+      }
+    }
+  '''
+
+  def __init__(self, story_set, take_memory_measurement):
+    super(GoogleSheetsDesktopStory, self).__init__(story_set,
+        take_memory_measurement)
+    self.script_to_evaluate_on_commit = js_template.Render(
+        '''{{@events_reported_by_page}}
+        {{@performance_mark}}
+        document.addEventListener('readystatechange', event => {
+          if (event.target.readyState === 'interactive') {
+            {{@deterministic_session}}
+          }
+        });''',
+        events_reported_by_page=self.EVENTS_REPORTED_BY_PAGE,
+        performance_mark=self.PERFOMANCE_MARK,
+        deterministic_session=self.DETERMINISITIC_SESSION)
+
+  def _DidLoadDocument(self, action_runner):
+    # 1. Wait until the spreadsheet loads.
+    action_runner.WaitForJavaScriptCondition(self.INTERACTIVE_EVENT)
+    # 2. Idle for 5 seconds for Chrome's timeToInteractive metric.
+    action_runner.Wait(5)
+    # 3. Prepare for observing calcuation events.
+    action_runner.EvaluateJavaScript(self.CLEAR_EVENTS)
+    # 4. Recalculate the column.
+    action_runner.EvaluateJavaScript(self.RECALCULATE_COLUMN)
+    # 5. Wait for calculation completion.
+    action_runner.WaitForJavaScriptCondition(self.CALC_BEGIN_EVENT)
+    action_runner.WaitForJavaScriptCondition(self.CALC_END_EVENT)
+
+
+##############################################################################
 # Browsing stories with infinite scrolling
 ##############################################################################
 
