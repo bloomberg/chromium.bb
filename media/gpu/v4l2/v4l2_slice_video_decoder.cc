@@ -227,13 +227,10 @@ void V4L2SliceVideoDecoder::DestroyTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(2);
 
-  if (avd_) {
-    avd_->Reset();
-    avd_ = nullptr;
-  }
-
   // Call all pending decode callback.
   ClearPendingRequests(DecodeStatus::ABORTED);
+
+  avd_ = nullptr;
 
   // Stop and Destroy device.
   StopStreamV4L2Queue();
@@ -543,9 +540,6 @@ void V4L2SliceVideoDecoder::ResetTask(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  if (avd_)
-    avd_->Reset();
-
   // Call all pending decode callback.
   ClearPendingRequests(DecodeStatus::ABORTED);
 
@@ -567,6 +561,9 @@ void V4L2SliceVideoDecoder::ResetTask(base::OnceClosure closure) {
 void V4L2SliceVideoDecoder::ClearPendingRequests(DecodeStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
+
+  if (avd_)
+    avd_->Reset();
 
   // Clear output_request_queue_.
   while (!output_request_queue_.empty())
@@ -601,7 +598,12 @@ void V4L2SliceVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
 void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(state_ == State::kDecoding || state_ == State::kFlushing);
+  DCHECK_NE(state_, State::kUninitialized);
+
+  if (state_ == State::kError) {
+    std::move(request.decode_cb).Run(DecodeStatus::DECODE_ERROR);
+    return;
+  }
 
   if (!request.buffer->end_of_stream()) {
     bitstream_id_to_timestamp_.Put(request.bitstream_id,
@@ -615,11 +617,10 @@ void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
 
 void V4L2SliceVideoDecoder::PumpDecodeTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(state_ == State::kDecoding || state_ == State::kFlushing);
   DVLOGF(3) << "state_:" << static_cast<int>(state_)
             << " Number of Decode requests: " << decode_request_queue_.size();
 
-  if (state_ == State::kFlushing)
+  if (state_ != State::kDecoding)
     return;
 
   pause_reason_ = PauseReason::kNone;

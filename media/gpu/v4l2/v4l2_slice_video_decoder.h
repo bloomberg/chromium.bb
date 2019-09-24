@@ -173,8 +173,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   void DestroyTask();
   // Reset on decoder thread.
   void ResetTask(base::OnceClosure closure);
-  // Clear all pending requests, and call all pending decode callback with
-  // |status| argument.
+  // Reset |avd_|, clear all pending requests, and call all pending decode
+  // callback with |status| argument.
   void ClearPendingRequests(DecodeStatus status);
 
   // Enqueue |request| to the pending decode request queue, and try to decode
