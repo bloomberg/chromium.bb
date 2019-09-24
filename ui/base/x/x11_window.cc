@@ -1350,7 +1350,7 @@ void XWindow::OnConfigureEvent(XEvent* xev) {
     delegate_->OnXWindowMoved(bounds_in_pixels_.origin());
 
   if (size_changed)
-    delegate_->OnXWindowSizeChanged(bounds_in_pixels_.size());
+    DispatchResize();
 }
 
 void XWindow::SetWMSpecState(bool enabled, XAtom state1, XAtom state2) {
