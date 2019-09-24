@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_DELEGATE_BRIDGE_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_DELEGATE_BRIDGE_H_
+#ifndef IOS_WEB_PUBLIC_WEB_STATE_DELEGATE_BRIDGE_H_
+#define IOS_WEB_PUBLIC_WEB_STATE_DELEGATE_BRIDGE_H_
 
 #import <Foundation/Foundation.h>
 
-#import "ios/web/public/web_state/web_state_delegate.h"
+#import "ios/web/public/web_state_delegate.h"
 
 @class UIViewController;
 
 // Objective-C interface for web::WebStateDelegate.
-@protocol CRWWebStateDelegate<NSObject>
+@protocol CRWWebStateDelegate <NSObject>
 @optional
 
 // Called when |webState| wants to open a new window. |url| is the URL of
@@ -122,4 +122,4 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
 
 }  // web
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_DELEGATE_BRIDGE_H_
+#endif  // IOS_WEB_PUBLIC_WEB_STATE_DELEGATE_BRIDGE_H_
