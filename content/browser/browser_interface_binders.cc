@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_interface_binders.h"
 
+#include "build/build_config.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/image_capture/image_capture_impl.h"
@@ -24,6 +25,10 @@
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 
+#if !defined(OS_ANDROID)
+#include "third_party/blink/public/mojom/hid/hid.mojom.h"
+#endif
+
 namespace content {
 namespace internal {
 
@@ -38,6 +43,11 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileSystemManager, base::Unretained(host)));
+
+#if !defined(OS_ANDROID)
+  map->Add<blink::mojom::HidService>(base::BindRepeating(
+      &RenderFrameHostImpl::GetHidService, base::Unretained(host)));
+#endif
 
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetIdleManager, base::Unretained(host)));

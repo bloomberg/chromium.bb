@@ -108,6 +108,7 @@
 #if defined(OS_ANDROID)
 #include "services/device/public/mojom/nfc.mojom.h"
 #else
+#include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
 
@@ -1049,6 +1050,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void GetFileSystemManager(
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
+
+#if !defined(OS_ANDROID)
+  void GetHidService(mojo::PendingReceiver<blink::mojom::HidService> receiver);
+#endif
 
   void GetIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);

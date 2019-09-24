@@ -4413,8 +4413,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     registry_->AddInterface(
         base::BindRepeating(&RenderFrameHostImpl::BindSerialServiceReceiver,
                             base::Unretained(this)));
-    registry_->AddInterface(
-        base::BindRepeating(&HidService::Create, base::Unretained(this)));
   }
 #endif  // !defined(OS_ANDROID)
 
@@ -6341,6 +6339,11 @@ void RenderFrameHostImpl::BindAuthenticatorRequest(
     authenticator_impl_.reset(new AuthenticatorImpl(this));
 
   authenticator_impl_->Bind(std::move(receiver));
+}
+
+void RenderFrameHostImpl::GetHidService(
+    mojo::PendingReceiver<blink::mojom::HidService> receiver) {
+  HidService::Create(this, std::move(receiver));
 }
 #endif
 
