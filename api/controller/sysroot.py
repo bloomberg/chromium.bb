@@ -97,21 +97,21 @@ def InstallToolchain(input_proto, output_proto, _config):
 
 @faux.empty_success
 @faux.error(_MockFailedPackagesResponse)
-@validate.require('sysroot.path', 'sysroot.build_target.name')
+@validate.require('sysroot.build_target.name')
+@validate.exists('sysroot.path')
 @validate.validation_complete
 @metrics.collect_metrics
 def InstallPackages(input_proto, output_proto, _config):
   """Install packages into a sysroot, building as necessary and permitted."""
   compile_source = input_proto.flags.compile_source
   event_file = input_proto.flags.event_file
+  use_goma = input_proto.flags.use_goma
 
-  sysroot_path = input_proto.sysroot.path
-  build_target_name = input_proto.sysroot.build_target.name
+  target_sysroot = sysroot_lib.Sysroot(input_proto.sysroot.path)
+  build_target = controller_util.ParseBuildTarget(
+      input_proto.sysroot.build_target)
   packages = [controller_util.PackageInfoToString(x)
               for x in input_proto.packages]
-
-  build_target = build_target_util.BuildTarget(build_target_name)
-  target_sysroot = sysroot_lib.Sysroot(sysroot_path)
 
   if not target_sysroot.IsToolchainInstalled():
     cros_build_lib.Die('Toolchain must first be installed.')
@@ -120,8 +120,12 @@ def InstallPackages(input_proto, output_proto, _config):
 
   use_flags = [u.flag for u in input_proto.use_flags]
   build_packages_config = sysroot.BuildPackagesRunConfig(
-      event_file=event_file, usepkg=not compile_source,
-      install_debug_symbols=True, packages=packages, use_flags=use_flags)
+      event_file=event_file,
+      usepkg=not compile_source,
+      install_debug_symbols=True,
+      packages=packages,
+      use_flags=use_flags,
+      use_goma=use_goma)
 
   try:
     sysroot.BuildPackages(build_target, target_sysroot, build_packages_config)
@@ -138,7 +142,7 @@ def InstallPackages(input_proto, output_proto, _config):
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
 
   # Read metric events log and pipe them into output_proto.events.
-  deserialize_metrics_log(output_proto.events, prefix=build_target_name)
+  deserialize_metrics_log(output_proto.events, prefix=build_target.name)
 
 
 def _LogBinhost(board):

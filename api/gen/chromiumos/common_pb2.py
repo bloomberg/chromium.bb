@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromiumos',
   syntax='proto3',
   serialized_options=_b('Z4go.chromium.org/chromiumos/infra/proto/go/chromiumos'),
-  serialized_pb=_b('\n\x17\x63hromiumos/common.proto\x12\nchromiumos\"\x1b\n\x0b\x42uildTarget\x12\x0c\n\x04name\x18\x01 \x01(\t\"\xc4\x01\n\x06\x43hroot\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x11\n\tcache_dir\x18\x02 \x01(\t\x12)\n\x03\x65nv\x18\x03 \x01(\x0b\x32\x1c.chromiumos.Chroot.ChrootEnv\x12\x12\n\nchrome_dir\x18\x04 \x01(\t\x1aZ\n\tChrootEnv\x12&\n\tuse_flags\x18\x01 \x03(\x0b\x32\x13.chromiumos.UseFlag\x12%\n\x08\x66\x65\x61tures\x18\x02 \x03(\x0b\x32\x13.chromiumos.Feature\"\x1a\n\x07\x46\x65\x61ture\x12\x0f\n\x07\x66\x65\x61ture\x18\x01 \x01(\t\"F\n\x0bPackageInfo\x12\x14\n\x0cpackage_name\x18\x01 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\t\"w\n\x04Path\x12\x0c\n\x04path\x18\x01 \x01(\t\x12+\n\x08location\x18\x02 \x01(\x0e\x32\x19.chromiumos.Path.Location\"4\n\x08Location\x12\x0f\n\x0bNO_LOCATION\x10\x00\x12\n\n\x06INSIDE\x10\x01\x12\x0b\n\x07OUTSIDE\x10\x02\",\n\nResultPath\x12\x1e\n\x04path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\"\x17\n\x07UseFlag\x12\x0c\n\x04\x66lag\x18\x01 \x01(\t*\x85\x01\n\tImageType\x12\x18\n\x14IMAGE_TYPE_UNDEFINED\x10\x00\x12\x08\n\x04\x42\x41SE\x10\x01\x12\x07\n\x03\x44\x45V\x10\x02\x12\x08\n\x04TEST\x10\x03\x12\x0b\n\x07\x42\x41SE_VM\x10\x04\x12\x0b\n\x07TEST_VM\x10\x05\x12\x0c\n\x08RECOVERY\x10\x06\x12\x0b\n\x07\x46\x41\x43TORY\x10\x07\x12\x0c\n\x08\x46IRMWARE\x10\x08\x42\x36Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
+  serialized_pb=_b('\n\x17\x63hromiumos/common.proto\x12\nchromiumos\"\x1b\n\x0b\x42uildTarget\x12\x0c\n\x04name\x18\x01 \x01(\t\"\xea\x01\n\x06\x43hroot\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x11\n\tcache_dir\x18\x02 \x01(\t\x12)\n\x03\x65nv\x18\x03 \x01(\x0b\x32\x1c.chromiumos.Chroot.ChrootEnv\x12\x12\n\nchrome_dir\x18\x04 \x01(\t\x12$\n\x04goma\x18\x05 \x01(\x0b\x32\x16.chromiumos.GomaConfig\x1aZ\n\tChrootEnv\x12&\n\tuse_flags\x18\x01 \x03(\x0b\x32\x13.chromiumos.UseFlag\x12%\n\x08\x66\x65\x61tures\x18\x02 \x03(\x0b\x32\x13.chromiumos.Feature\"\x1a\n\x07\x46\x65\x61ture\x12\x0f\n\x07\x66\x65\x61ture\x18\x01 \x01(\t\"8\n\nGomaConfig\x12\x10\n\x08goma_dir\x18\x01 \x01(\t\x12\x18\n\x10goma_client_json\x18\x02 \x01(\t\"F\n\x0bPackageInfo\x12\x14\n\x0cpackage_name\x18\x01 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\t\"w\n\x04Path\x12\x0c\n\x04path\x18\x01 \x01(\t\x12+\n\x08location\x18\x02 \x01(\x0e\x32\x19.chromiumos.Path.Location\"4\n\x08Location\x12\x0f\n\x0bNO_LOCATION\x10\x00\x12\n\n\x06INSIDE\x10\x01\x12\x0b\n\x07OUTSIDE\x10\x02\",\n\nResultPath\x12\x1e\n\x04path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\"\x17\n\x07UseFlag\x12\x0c\n\x04\x66lag\x18\x01 \x01(\t\"&\n\nProtoBytes\x12\x18\n\x10serialized_proto\x18\x01 \x01(\x0c*\x85\x01\n\tImageType\x12\x18\n\x14IMAGE_TYPE_UNDEFINED\x10\x00\x12\x08\n\x04\x42\x41SE\x10\x01\x12\x07\n\x03\x44\x45V\x10\x02\x12\x08\n\x04TEST\x10\x03\x12\x0b\n\x07\x42\x41SE_VM\x10\x04\x12\x0b\n\x07TEST_VM\x10\x05\x12\x0c\n\x08RECOVERY\x10\x06\x12\x0b\n\x07\x46\x41\x43TORY\x10\x07\x12\x0c\n\x08\x46IRMWARE\x10\x08\x42\x36Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
 )
 
 _IMAGETYPE = _descriptor.EnumDescriptor(
@@ -68,8 +68,8 @@ _IMAGETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=560,
-  serialized_end=693,
+  serialized_start=696,
+  serialized_end=829,
 )
 _sym_db.RegisterEnumDescriptor(_IMAGETYPE)
 
@@ -106,8 +106,8 @@ _PATH_LOCATION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=434,
-  serialized_end=486,
+  serialized_start=530,
+  serialized_end=582,
 )
 _sym_db.RegisterEnumDescriptor(_PATH_LOCATION)
 
@@ -176,8 +176,8 @@ _CHROOT_CHROOTENV = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=175,
-  serialized_end=265,
+  serialized_start=213,
+  serialized_end=303,
 )
 
 _CHROOT = _descriptor.Descriptor(
@@ -215,6 +215,13 @@ _CHROOT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='goma', full_name='chromiumos.Chroot.goma', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -228,7 +235,7 @@ _CHROOT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=69,
-  serialized_end=265,
+  serialized_end=303,
 )
 
 
@@ -258,8 +265,46 @@ _FEATURE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=267,
-  serialized_end=293,
+  serialized_start=305,
+  serialized_end=331,
+)
+
+
+_GOMACONFIG = _descriptor.Descriptor(
+  name='GomaConfig',
+  full_name='chromiumos.GomaConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='goma_dir', full_name='chromiumos.GomaConfig.goma_dir', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='goma_client_json', full_name='chromiumos.GomaConfig.goma_client_json', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=333,
+  serialized_end=389,
 )
 
 
@@ -303,8 +348,8 @@ _PACKAGEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=295,
-  serialized_end=365,
+  serialized_start=391,
+  serialized_end=461,
 )
 
 
@@ -342,8 +387,8 @@ _PATH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=367,
-  serialized_end=486,
+  serialized_start=463,
+  serialized_end=582,
 )
 
 
@@ -373,8 +418,8 @@ _RESULTPATH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=488,
-  serialized_end=532,
+  serialized_start=584,
+  serialized_end=628,
 )
 
 
@@ -404,24 +449,58 @@ _USEFLAG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=534,
-  serialized_end=557,
+  serialized_start=630,
+  serialized_end=653,
+)
+
+
+_PROTOBYTES = _descriptor.Descriptor(
+  name='ProtoBytes',
+  full_name='chromiumos.ProtoBytes',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='serialized_proto', full_name='chromiumos.ProtoBytes.serialized_proto', index=0,
+      number=1, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=655,
+  serialized_end=693,
 )
 
 _CHROOT_CHROOTENV.fields_by_name['use_flags'].message_type = _USEFLAG
 _CHROOT_CHROOTENV.fields_by_name['features'].message_type = _FEATURE
 _CHROOT_CHROOTENV.containing_type = _CHROOT
 _CHROOT.fields_by_name['env'].message_type = _CHROOT_CHROOTENV
+_CHROOT.fields_by_name['goma'].message_type = _GOMACONFIG
 _PATH.fields_by_name['location'].enum_type = _PATH_LOCATION
 _PATH_LOCATION.containing_type = _PATH
 _RESULTPATH.fields_by_name['path'].message_type = _PATH
 DESCRIPTOR.message_types_by_name['BuildTarget'] = _BUILDTARGET
 DESCRIPTOR.message_types_by_name['Chroot'] = _CHROOT
 DESCRIPTOR.message_types_by_name['Feature'] = _FEATURE
+DESCRIPTOR.message_types_by_name['GomaConfig'] = _GOMACONFIG
 DESCRIPTOR.message_types_by_name['PackageInfo'] = _PACKAGEINFO
 DESCRIPTOR.message_types_by_name['Path'] = _PATH
 DESCRIPTOR.message_types_by_name['ResultPath'] = _RESULTPATH
 DESCRIPTOR.message_types_by_name['UseFlag'] = _USEFLAG
+DESCRIPTOR.message_types_by_name['ProtoBytes'] = _PROTOBYTES
 DESCRIPTOR.enum_types_by_name['ImageType'] = _IMAGETYPE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -454,6 +533,13 @@ Feature = _reflection.GeneratedProtocolMessageType('Feature', (_message.Message,
   ))
 _sym_db.RegisterMessage(Feature)
 
+GomaConfig = _reflection.GeneratedProtocolMessageType('GomaConfig', (_message.Message,), dict(
+  DESCRIPTOR = _GOMACONFIG,
+  __module__ = 'chromiumos.common_pb2'
+  # @@protoc_insertion_point(class_scope:chromiumos.GomaConfig)
+  ))
+_sym_db.RegisterMessage(GomaConfig)
+
 PackageInfo = _reflection.GeneratedProtocolMessageType('PackageInfo', (_message.Message,), dict(
   DESCRIPTOR = _PACKAGEINFO,
   __module__ = 'chromiumos.common_pb2'
@@ -481,6 +567,13 @@ UseFlag = _reflection.GeneratedProtocolMessageType('UseFlag', (_message.Message,
   # @@protoc_insertion_point(class_scope:chromiumos.UseFlag)
   ))
 _sym_db.RegisterMessage(UseFlag)
+
+ProtoBytes = _reflection.GeneratedProtocolMessageType('ProtoBytes', (_message.Message,), dict(
+  DESCRIPTOR = _PROTOBYTES,
+  __module__ = 'chromiumos.common_pb2'
+  # @@protoc_insertion_point(class_scope:chromiumos.ProtoBytes)
+  ))
+_sym_db.RegisterMessage(ProtoBytes)
 
 
 DESCRIPTOR._options = None

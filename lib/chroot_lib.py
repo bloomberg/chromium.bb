@@ -21,15 +21,26 @@ from chromite.lib import constants
 class Chroot(object):
   """Chroot class."""
 
-  def __init__(self, path=None, cache_dir=None, chrome_root=None, env=None):
+  def __init__(self,
+               path=None,
+               cache_dir=None,
+               chrome_root=None,
+               env=None,
+               goma=None):
     # Strip trailing / if present for consistency.
     self._path = (path or constants.DEFAULT_CHROOT_PATH).rstrip('/')
     self._is_default_path = not bool(path)
     self._env = env
+    self._goma = goma
     # String in proto are '' when not set, but testing and comparing is much
     # easier when the "unset" value is consistent, so do an explicit "or None".
     self.cache_dir = cache_dir or None
     self.chrome_root = chrome_root or None
+
+    if self._goma:
+      if not self._env:
+        self._env = {}
+      self._env.update(self._goma.GetExtraEnv())
 
   def __eq__(self, other):
     if self.__class__ is other.__class__:
@@ -79,6 +90,11 @@ class Chroot(object):
       args.extend(['--cache-dir', self.cache_dir])
     if self.chrome_root:
       args.extend(['--chrome-root', self.chrome_root])
+    if self._goma:
+      args.extend([
+          '--goma_dir', self._goma.linux_goma_dir,
+          '--goma_client_json', self._goma.goma_client_json,
+      ])
 
     return args
 
