@@ -5,4 +5,8 @@
 
 base_dir=$(dirname "$0")
 
-PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/fetch.py" "$@"
+# Ensure that "depot_tools" is somewhere in PATH so this tool can be used
+# standalone, but allow other PATH manipulations to take priority.
+PATH=$PATH:$base_dir
+
+PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/fetch.py" "$@"
