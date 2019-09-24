@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
-import org.chromium.chrome.browser.signin.ConfirmManagedSyncDataDialog;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SignOutDialogFragment;
@@ -62,8 +61,7 @@ import java.util.List;
  * Note: This can be triggered from a web page, e.g. a GAIA sign-in page.
  */
 public class AccountManagementFragment extends PreferenceFragmentCompat
-        implements SignOutDialogListener, SignInStateObserver,
-                   ConfirmManagedSyncDataDialog.Listener, ProfileDataCache.Observer {
+        implements SignOutDialogListener, SignInStateObserver, ProfileDataCache.Observer {
     private static final String TAG = "AcctManagementPref";
 
     public static final String SIGN_OUT_DIALOG_TAG = "sign_out_dialog_tag";
@@ -213,24 +211,13 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
                     SigninUtils.logEvent(
                             ProfileAccountManagementMetrics.TOGGLE_SIGNOUT, mGaiaServiceType);
 
-                    String managementDomain =
-                            IdentityServicesProvider.getSigninManager().getManagementDomain();
-                    if (managementDomain != null) {
-                        // Show the 'You are signing out of a managed account' dialog.
+                    SignOutDialogFragment signOutFragment = new SignOutDialogFragment();
+                    Bundle args = new Bundle();
+                    args.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
+                    signOutFragment.setArguments(args);
 
-                        ConfirmManagedSyncDataDialog.showSignOutFromManagedAccountDialog(
-                                AccountManagementFragment.this, getFragmentManager(),
-                                getResources(), managementDomain);
-                    } else {
-                        // Show the 'You are signing out' dialog.
-                        SignOutDialogFragment signOutFragment = new SignOutDialogFragment();
-                        Bundle args = new Bundle();
-                        args.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
-                        signOutFragment.setArguments(args);
-
-                        signOutFragment.setTargetFragment(AccountManagementFragment.this, 0);
-                        signOutFragment.show(getFragmentManager(), SIGN_OUT_DIALOG_TAG);
-                    }
+                    signOutFragment.setTargetFragment(AccountManagementFragment.this, 0);
+                    signOutFragment.show(getFragmentManager(), SIGN_OUT_DIALOG_TAG);
 
                     return true;
                 }
@@ -413,17 +400,6 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         if (!signOutClicked) {
             SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL, mGaiaServiceType);
         }
-    }
-
-    // ConfirmManagedSyncDataDialog.Listener implementation
-    @Override
-    public void onConfirm() {
-        onSignOutClicked(false);
-    }
-
-    @Override
-    public void onCancel() {
-        onSignOutDialogDismissed(false);
     }
 
     // SignInStateObserver implementation:
