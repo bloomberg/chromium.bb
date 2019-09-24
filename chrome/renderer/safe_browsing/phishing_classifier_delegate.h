@@ -14,7 +14,8 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread_observer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/page_transition_types.h"
@@ -86,7 +87,8 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver,
     CANCEL_CLASSIFICATION_MAX  // Always add new values before this one.
   };
 
-  void PhishingDetectorRequest(mojom::PhishingDetectorRequest request);
+  void PhishingDetectorReceiver(
+      mojo::PendingReceiver<mojom::PhishingDetector> receiver);
 
   // Cancels any pending classification and frees the page text.
   void CancelPendingClassification(CancelClassificationReason reason);
@@ -153,7 +155,7 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver,
   // The callback from the most recent call to StartPhishingDetection.
   StartPhishingDetectionCallback callback_;
 
-  mojo::BindingSet<mojom::PhishingDetector> phishing_detector_bindings_;
+  mojo::ReceiverSet<mojom::PhishingDetector> phishing_detector_receivers_;
 
   service_manager::BinderRegistry registry_;
 

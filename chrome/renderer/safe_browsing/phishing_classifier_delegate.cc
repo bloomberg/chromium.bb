@@ -105,7 +105,7 @@ PhishingClassifierDelegate::PhishingClassifierDelegate(
     SetPhishingScorer(g_phishing_scorer.Get().get());
 
   registry_.AddInterface(
-      base::BindRepeating(&PhishingClassifierDelegate::PhishingDetectorRequest,
+      base::BindRepeating(&PhishingClassifierDelegate::PhishingDetectorReceiver,
                           base::Unretained(this)));
 }
 
@@ -131,9 +131,9 @@ void PhishingClassifierDelegate::SetPhishingScorer(
   MaybeStartClassification();
 }
 
-void PhishingClassifierDelegate::PhishingDetectorRequest(
-    mojom::PhishingDetectorRequest request) {
-  phishing_detector_bindings_.AddBinding(this, std::move(request));
+void PhishingClassifierDelegate::PhishingDetectorReceiver(
+    mojo::PendingReceiver<mojom::PhishingDetector> receiver) {
+  phishing_detector_receivers_.Add(this, std::move(receiver));
 }
 
 void PhishingClassifierDelegate::OnInterfaceRequestForFrame(
