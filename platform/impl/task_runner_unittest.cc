@@ -50,7 +50,7 @@ class FakeTaskWaiter final : public TaskRunnerImpl::TaskWaiter {
 
   void WakeUpAndStop() {
     OnTaskPosted();
-    task_runner_->PostTask([this]() { task_runner_->RequestStopSoon(); });
+    task_runner_->RequestStopSoon();
   }
 
   bool IsWaiting() const { return waiting_.load(); }
@@ -85,23 +85,16 @@ std::unique_ptr<FakeTaskWaiter> TaskRunnerWithWaiterFactory::fake_waiter;
 
 }  // anonymous namespace
 
-TEST(TaskRunnerImplTest, TaskRunnerExecutesTask) {
+TEST(TaskRunnerImplTest, TaskRunnerExecutesTaskAndStops) {
   FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
-  auto runner = std::make_unique<TaskRunnerImpl>(&fake_clock.now);
-
-  std::thread t([&runner] { runner.get()->RunUntilStopped(); });
+  TaskRunnerImpl runner(&fake_clock.now);
 
   std::string ran_tasks = "";
-  const auto task = [&ran_tasks] { ran_tasks += "1"; };
-  EXPECT_EQ(ran_tasks, "");
+  runner.PostTask([&ran_tasks] { ran_tasks += "1"; });
+  runner.RequestStopSoon();
 
-  runner->PostTask(task);
-
-  WaitUntilCondition([&ran_tasks] { return ran_tasks == "1"; });
+  runner.RunUntilStopped();
   EXPECT_EQ(ran_tasks, "1");
-
-  runner.get()->RequestStopSoon();
-  t.join();
 }
 
 TEST(TaskRunnerImplTest, TaskRunnerRunsDelayedTasksInOrder) {
@@ -148,52 +141,43 @@ TEST(TaskRunnerImplTest, SingleThreadedTaskRunnerRunsSequentially) {
   runner.PostTask(task_three);
   runner.PostTask(task_four);
   runner.PostTask(task_five);
+  runner.RequestStopSoon();
   EXPECT_EQ(ran_tasks, "");
 
-  runner.RunUntilIdleForTesting();
+  runner.RunUntilStopped();
   EXPECT_EQ(ran_tasks, "12345");
 }
 
-TEST(TaskRunnerImplTest, TaskRunnerCanStopRunning) {
+TEST(TaskRunnerImplTest, RunsAllImmediateTasksBeforeStopping) {
   FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
   TaskRunnerImpl runner(&fake_clock.now);
 
-  std::string ran_tasks;
-  const auto task_one = [&ran_tasks] { ran_tasks += "1"; };
-  const auto task_two = [&ran_tasks] { ran_tasks += "2"; };
+  std::string result;
+  runner.PostTask([&] {
+    result += "Alice";
 
-  runner.PostTask(task_one);
-  EXPECT_EQ(ran_tasks, "");
+    // Post a task that runs just before the quit task.
+    runner.PostTask([&] {
+      result += " says goodbye";
 
-  std::thread start_thread([&runner] { runner.RunUntilStopped(); });
+      // These tasks will enter the queue after the quit task *and* after the
+      // main loop breaks. They will be executed by the flushing phase.
+      runner.PostTask([&] {
+        result += " and is not";
+        runner.PostTask([&] { result += " forgotten."; });
+      });
+    });
 
-  WaitUntilCondition([&ran_tasks] { return !ran_tasks.empty(); });
-  EXPECT_EQ(ran_tasks, "1");
+    // Post the quit task.
+    runner.RequestStopSoon();
+  });
 
-  // Since Stop is called first, and the single threaded task
-  // runner should honor the queue, we know the task runner is not running
-  // since task two doesn't get ran.
-  runner.RequestStopSoon();
-  runner.PostTask(task_two);
-  EXPECT_EQ(ran_tasks, "1");
-
-  start_thread.join();
-}
-
-TEST(TaskRunnerImplTest, StoppingDoesNotDeleteTasks) {
-  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
-  TaskRunnerImpl runner(&fake_clock.now);
-
-  std::string ran_tasks;
-  const auto task_one = [&ran_tasks] { ran_tasks += "1"; };
-
-  runner.PostTask(task_one);
-  runner.RequestStopSoon();
-
-  EXPECT_EQ(ran_tasks, "");
-  runner.RunUntilIdleForTesting();
-
-  EXPECT_EQ(ran_tasks, "1");
+  EXPECT_EQ(result, "");
+  runner.RunUntilStopped();
+  // All posted tasks will execute because RequestStopSoon() guarantees all
+  // immediately-runnable tasks will run before exiting, even if new
+  // immediately-runnable tasks are posted in the meantime.
+  EXPECT_EQ(result, "Alice says goodbye and is not forgotten.");
 }
 
 TEST(TaskRunnerImplTest, TaskRunnerIsStableWithLotsOfTasks) {
@@ -210,7 +194,8 @@ TEST(TaskRunnerImplTest, TaskRunnerIsStableWithLotsOfTasks) {
     runner.PostTask(task);
   }
 
-  runner.RunUntilIdleForTesting();
+  runner.RequestStopSoon();
+  runner.RunUntilStopped();
   EXPECT_EQ(ran_tasks, expected_ran_tasks);
 }
 
@@ -224,7 +209,8 @@ TEST(TaskRunnerImplTest, TaskRunnerDelayedTasksDontBlockImmediateTasks) {
   runner.PostTaskWithDelay(delayed_task, milliseconds(10000));
   runner.PostTask(task);
 
-  runner.RunUntilIdleForTesting();
+  runner.RequestStopSoon();
+  runner.RunUntilStopped();
   // The immediate task should have run, even though the delayed task
   // was added first.
 

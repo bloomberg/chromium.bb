@@ -5,7 +5,6 @@
 #ifndef PLATFORM_IMPL_TASK_RUNNER_H_
 #define PLATFORM_IMPL_TASK_RUNNER_H_
 
-#include <atomic>
 #include <condition_variable>  // NOLINT
 #include <map>
 #include <memory>
@@ -59,21 +58,18 @@ class TaskRunnerImpl final : public TaskRunner {
   void PostPackagedTaskWithDelay(Task task, Clock::duration delay) final;
   bool IsRunningOnTaskRunner() final;
 
-  // Tasks will only be executed if RunUntilStopped has been called, and
-  // RequestStopSoon has not. Important note: TaskRunner does NOT do any
-  // threading, so calling "RunUntilStopped()" will block whatever thread you
-  // are calling it on.
+  // Blocks the current thread, executing tasks from the queue with the desired
+  // timing; and does not return until some time after RequestStopSoon() is
+  // called.
   void RunUntilStopped();
 
-  // Thread-safe method for requesting the TaskRunner to stop running. This sets
-  // a flag that will get checked in the run loop, typically after completing
-  // the current task.
+  // Thread-safe method for requesting the TaskRunner to stop running after all
+  // non-delayed tasks in the queue have run. This behavior allows final
+  // clean-up tasks to be executed before the TaskRunner stops.
+  //
+  // If any non-delayed tasks post additional non-delayed tasks, those will be
+  // run as well before returning.
   void RequestStopSoon();
-
-  // Execute all tasks immediately, useful for testing only. Note: this method
-  // will schedule any delayed tasks that are ready to run, but does not block
-  // waiting for delayed tasks to become eligible.
-  void RunUntilIdleForTesting();
 
  private:
 #ifndef TRACE_FORCE_DISABLE
@@ -101,18 +97,12 @@ class TaskRunnerImpl final : public TaskRunner {
   using TaskWithMetadata = Task;
 #endif  // TRACE_FORCE_DISABLE
 
-  // Run all tasks already in the task queue. If the queue is empty, wait for
-  // either (1) a delayed task to become available, or (2) a task to be added
-  // to the queue.
-  void RunCurrentTasksBlocking();
+  // If necessary, wait for either (1) a delayed task to become available, or
+  // (2) a task to be added to the queue; and then run all runnable tasks.
+  void RunTasksAfterWaiting();
 
-  // Run tasks already in the queue, for testing. If the queue is empty, this
-  // method does not block but instead returns immediately.
-  void RunCurrentTasksForTesting();
-
-  // Loop method that runs tasks in the current thread, until the
-  // RequestStopSoon method is called.
-  void RunTasksUntilStopped();
+  // Helper that runs all tasks in |running_tasks_| and then clears it.
+  void RunRunnableTasks();
 
   // Look at all tasks in the delayed task queue, then schedule them if the
   // minimum delay time has elapsed.
@@ -129,8 +119,9 @@ class TaskRunnerImpl final : public TaskRunner {
 
   const platform::ClockNowFunctionPtr now_function_;
 
-  // Atomic so that we can perform atomic exchanges.
-  std::atomic_bool is_running_;
+  // Flag that indicates whether the task runner loop should continue. This is
+  // only meant to be read/written on the thread executing RunUntilStopped().
+  bool is_running_;
 
   // This mutex is used for |tasks_| and |delayed_tasks_|, and also for
   // notifying the run loop to wake up when it is waiting for a task to be added
