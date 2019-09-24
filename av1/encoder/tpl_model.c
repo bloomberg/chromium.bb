@@ -20,6 +20,7 @@
 #include "aom_ports/system_state.h"
 
 #include "av1/common/enums.h"
+#include "av1/common/idct.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/reconintra.h"
 
@@ -33,15 +34,15 @@
 static AOM_INLINE void get_quantize_error(MACROBLOCK *x, int plane,
                                           tran_low_t *coeff, tran_low_t *qcoeff,
                                           tran_low_t *dqcoeff, TX_SIZE tx_size,
-                                          int64_t *recon_error, int64_t *sse) {
+                                          uint16_t *eob, int64_t *recon_error,
+                                          int64_t *sse) {
   const struct macroblock_plane *const p = &x->plane[plane];
   const SCAN_ORDER *const scan_order = &av1_default_scan_orders[tx_size];
-  uint16_t eob;
   int pix_num = 1 << num_pels_log2_lookup[txsize_to_bsize[tx_size]];
   const int shift = tx_size == TX_32X32 ? 0 : 2;
 
   av1_quantize_fp(coeff, pix_num, p->zbin_QTX, p->round_fp_QTX, p->quant_fp_QTX,
-                  p->quant_shift_QTX, qcoeff, dqcoeff, p->dequant_QTX, &eob,
+                  p->quant_shift_QTX, qcoeff, dqcoeff, p->dequant_QTX, eob,
                   scan_order->scan, scan_order->iscan);
 
   *recon_error = av1_block_error(coeff, dqcoeff, pix_num, sse) >> shift;
@@ -256,11 +257,15 @@ static AOM_INLINE void mode_estimation(
     inter_cost_weighted = inter_cost + qstep_ref_noise;
 
     if (inter_cost_weighted < best_inter_cost_weighted) {
+      uint16_t eob;
       best_rf_idx = rf_idx;
       best_inter_cost_weighted = inter_cost_weighted;
       best_mv.as_int = x->best_mv.as_int;
-      get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, recon_error,
-                         sse);
+      get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &eob,
+                         recon_error, sse);
+
+      av1_inverse_transform_block(xd, dqcoeff, 0, DCT_DCT, tx_size, dst_buffer,
+                                  dst_buffer_stride, eob, 0);
     }
   }
   best_intra_cost = AOMMAX(best_intra_cost, 1);
