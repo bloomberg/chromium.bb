@@ -285,10 +285,6 @@
       status: "experimental",
     },
     {
-      name: "ClientHintsFeaturePolicy",
-      status: "experimental",
-    },
-    {
       name: "ClientPlaceholdersForServerLoFi",
     },
     {
