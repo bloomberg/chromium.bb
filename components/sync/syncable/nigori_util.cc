@@ -169,10 +169,14 @@ bool UpdateEntryWithEncryption(BaseTransaction* const trans,
     NOTREACHED() << "New specifics already has an encrypted blob.";
     return false;
   }
-  if ((!SpecificsNeedsEncryption(encrypted_types, new_specifics) &&
-       !was_encrypted) ||
-      !cryptographer || !cryptographer->is_initialized()) {
-    // No encryption required or we are unable to encrypt.
+  if (!SpecificsNeedsEncryption(encrypted_types, new_specifics) &&
+      !was_encrypted) {
+    // No encryption required.
+    generated_specifics.CopyFrom(new_specifics);
+  } else if (!cryptographer || !cryptographer->is_ready()) {
+    // We are currently unable to encrypt, so store unencrypted. The data will
+    // be reencrypted when the encryption key becomes available, via
+    // SyncEncryptionHandlerImpl::ReEncryptEverything().
     generated_specifics.CopyFrom(new_specifics);
   } else {
     // Encrypt new_specifics into generated_specifics.
