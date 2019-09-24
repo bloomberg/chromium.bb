@@ -73,7 +73,11 @@ See also the [example](example/) subdirectory.  But since that example is
 ### Using Bazel
 A Bazel-based project can use the headers without installing, as follows:
 
-1. Add a `local_repository` to your `WORKSPACE` file. For example:
+1. Add SPIRV-Headers as a submodule of your project, and add a
+`local_repository` to your `WORKSPACE` file. For example, if you place
+SPIRV-Headers under `external/spirv-headers`, then add the following to your
+`WORKSPACE` file:
+
 ```
 local_repository(
     name = "spirv_headers",
@@ -81,8 +85,8 @@ local_repository(
 )
 ```
 
-2. Add one of the following to the `deps` of your build target based on your
-needs:
+2. Add one of the following to the `deps` attribute of your build target based
+on your needs:
 ```
 @spirv_headers//:spirv_c_headers
 @spirv_headers//:spirv_cpp_headers
