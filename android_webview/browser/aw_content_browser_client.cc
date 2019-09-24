@@ -934,6 +934,17 @@ bool AwContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   return false;
 }
 
+bool AwContentBrowserClient::ShouldLockToOrigin(
+    content::BrowserContext* browser_context,
+    const GURL& effective_url) {
+  // TODO(lukasza): https://crbug.cmo/869494: Once Android WebView supports
+  // OOPIFs, we should remove this ShouldLockToOrigin overload.  Till then,
+  // returning false helps avoid accidentally applying citadel-style Site
+  // Isolation enforcement to Android WebView (and causing incorrect renderer
+  // kills).
+  return false;
+}
+
 bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
