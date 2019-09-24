@@ -703,7 +703,7 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   black_scrim_layer_.reset();
   default_snap_position_ = NONE;
   divider_position_ = -1;
-  divider_closest_ratio_ = 0.f;
+  divider_closest_ratio_ = std::numeric_limits<float>::quiet_NaN();
   snapping_window_transformed_bounds_map_.clear();
 
   UpdateSplitViewStateAndNotifyObservers();
@@ -1111,7 +1111,7 @@ void SplitViewController::OnDisplayMetricsChanged(
     const int divider_thickness =
         std::min(divider_size.width(), divider_size.height());
     // Set default |divider_closest_ratio_| to kFixedPositionRatios[1].
-    if (!divider_closest_ratio_)
+    if (std::isnan(divider_closest_ratio_))
       divider_closest_ratio_ = kFixedPositionRatios[1];
 
     // Reverse the position ratio if top/left window changes.

@@ -5,6 +5,7 @@
 #ifndef ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
 #define ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
 
+#include <limits>
 #include <memory>
 
 #include "ash/accessibility/accessibility_observer.h"
@@ -426,7 +427,7 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   // kOneThirdPositionRatio and kTwoThirdPositionRatio based on current
   // |divider_position_|. Used to update |divider_position_| on work area
   // changes.
-  float divider_closest_ratio_ = 0.f;
+  float divider_closest_ratio_ = std::numeric_limits<float>::quiet_NaN();
 
   // The location of the previous mouse/gesture event in screen coordinates.
   gfx::Point previous_event_location_;
