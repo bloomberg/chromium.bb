@@ -3730,6 +3730,12 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Spoken to inform the user that the node's name is empty" name="IDS_CHROMEVOX_EMPTY_NAME">
         No available text for this item
       </message>
+      <message desc="The description of the announceBatteryDescription key. Displayed in the ChromeVox menu." name="IDS_CHROMEVOX_ANNOUNCE_BATTERY_DESCRIPTION">
+        Announce current battery status
+      </message>
+      <message desc="The description of the announceRichTextDescription key. Displayed in the ChromeVox menu." name="IDS_CHROMEVOX_ANNOUNCE_RICH_TEXT_DESCRIPTION">
+        Announce formatting for current item
+      </message>
     </messages>
   </release>
 </grit>
