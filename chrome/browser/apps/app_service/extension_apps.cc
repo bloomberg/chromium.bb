@@ -46,7 +46,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/switches.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 // TODO(crbug.com/826982): life cycle events. Extensions can be installed and
 // uninstalled. ExtensionApps should implement extensions::InstallObserver and
@@ -146,8 +145,7 @@ class ExtensionAppsEnableFlow : public ExtensionEnableFlowDelegate {
 };
 
 ExtensionApps::ExtensionApps()
-    : binding_(this),
-      profile_(nullptr),
+    : profile_(nullptr),
       prefs_observer_(this),
       registry_observer_(this),
       app_type_(apps::mojom::AppType::kUnknown) {}
@@ -159,9 +157,8 @@ void ExtensionApps::Initialize(
     Profile* profile,
     apps::mojom::AppType type) {
   app_type_ = type;
-  apps::mojom::PublisherPtr publisher;
-  binding_.Bind(mojo::MakeRequest(&publisher));
-  app_service->RegisterPublisher(std::move(publisher), app_type_);
+  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
+                                 app_type_);
 
   profile_ = profile;
   DCHECK(profile_);
