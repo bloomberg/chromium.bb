@@ -186,7 +186,7 @@ class CORE_EXPORT ScriptValue final {
 
   bool ToString(String&) const;
 
-  static ScriptValue CreateNull(ScriptState*);
+  static ScriptValue CreateNull(v8::Isolate*);
 
   void Trace(Visitor* visitor) { visitor->Trace(value_); }
 

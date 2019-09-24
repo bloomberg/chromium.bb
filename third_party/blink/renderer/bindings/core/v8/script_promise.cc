@@ -219,7 +219,7 @@ ScriptPromise::ScriptPromise(ScriptState* script_state,
     return;
 
   if (!value->IsPromise()) {
-    promise_ = ScriptValue(script_state, v8::Local<v8::Value>());
+    promise_ = ScriptValue();
     V8ThrowException::ThrowTypeError(script_state->GetIsolate(),
                                      "the given value is not a Promise");
     return;

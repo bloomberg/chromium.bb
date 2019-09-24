@@ -63,10 +63,8 @@ bool ScriptValue::ToString(String& result) const {
   return true;
 }
 
-// TODO(rikaf): Replace with CreateNull(v8::Isolate*).
-ScriptValue ScriptValue::CreateNull(ScriptState* script_state) {
-  return ScriptValue(script_state->GetIsolate(),
-                     v8::Null(script_state->GetIsolate()));
+ScriptValue ScriptValue::CreateNull(v8::Isolate* isolate) {
+  return ScriptValue(isolate, v8::Null(isolate));
 }
 
 }  // namespace blink
