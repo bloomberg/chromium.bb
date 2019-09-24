@@ -65,7 +65,7 @@ ErrorEvent::ErrorEvent(ScriptState* script_state,
       initializer->hasLineno() ? initializer->lineno() : 0,
       initializer->hasColno() ? initializer->colno() : 0, nullptr);
   if (initializer->hasError()) {
-    error_.Set(script_state->GetIsolate(), initializer->error().V8Value());
+    error_ = initializer->error().ToWorldSafeV8Reference();
   }
 }
 
@@ -78,7 +78,7 @@ ErrorEvent::ErrorEvent(const String& message,
       location_(std::move(location)),
       world_(world) {
   if (!error.IsEmpty())
-    error_.Set(error.GetIsolate(), error.V8Value());
+    error_ = error.ToWorldSafeV8Reference();
 }
 
 void ErrorEvent::SetUnsanitizedMessage(const String& message) {
