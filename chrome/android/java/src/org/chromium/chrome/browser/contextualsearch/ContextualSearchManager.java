@@ -258,7 +258,7 @@ public class ContextualSearchManager
 
         mInProductHelp.setParentView(parentView);
 
-        mTabRedirectHandler = TabRedirectHandler.create(mActivity);
+        mTabRedirectHandler = TabRedirectHandler.create();
 
         mIsShowingPromo = false;
         mDidLogPromoOutcome = false;
