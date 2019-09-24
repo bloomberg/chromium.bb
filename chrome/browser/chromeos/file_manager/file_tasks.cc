@@ -78,6 +78,7 @@ const char kArcAppTaskType[] = "arc";
 const char kCrostiniAppTaskType[] = "crostini";
 const char kWebAppTaskType[] = "web";
 const char kImportCrostiniImageHandlerId[] = "import-crostini-image";
+const char kInstallLinuxPackageHandlerId[] = "install-linux-package";
 
 // Converts a TaskType to a string.
 std::string TaskTypeToString(TaskType task_type) {
@@ -473,7 +474,10 @@ bool ExecuteFileTask(Profile* profile,
 
 bool IsFileHandlerEnabled(Profile* profile,
                           const apps::FileHandlerInfo& file_handler_info) {
-  // Crostini backup files can be disabled by policy.
+  // Crostini deb files and backup files can be disabled by policy.
+  if (file_handler_info.id == kInstallLinuxPackageHandlerId) {
+    return crostini::IsCrostiniRootAccessAllowed(profile);
+  }
   if (file_handler_info.id == kImportCrostiniImageHandlerId) {
     return crostini::IsCrostiniExportImportUIAllowedForProfile(profile);
   }

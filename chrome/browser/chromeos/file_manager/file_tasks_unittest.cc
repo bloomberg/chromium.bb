@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -313,11 +314,12 @@ TEST(FileManagerFileTasksTest, IsFileHandlerEnabled) {
   TestingProfile test_profile;
   crostini::CrostiniTestHelper helper(&test_profile);
 
-  apps::FileHandlerInfo crostini_import_handler;
-  crostini_import_handler.id = "import-crostini-image";
   apps::FileHandlerInfo test_handler;
   test_handler.id = "test";
 
+  // Test import-crostini-image.
+  apps::FileHandlerInfo crostini_import_handler;
+  crostini_import_handler.id = "import-crostini-image";
   test_profile.GetPrefs()->SetBoolean(
       crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, true);
   EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, crostini_import_handler));
@@ -327,6 +329,40 @@ TEST(FileManagerFileTasksTest, IsFileHandlerEnabled) {
       crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, false);
   EXPECT_FALSE(IsFileHandlerEnabled(&test_profile, crostini_import_handler));
   EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+
+  // Test install-linux-package - feature on.
+  apps::FileHandlerInfo install_linux_handler;
+  install_linux_handler.id = "install-linux-package";
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures(
+        {features::kCrostiniAdvancedAccessControls}, {});
+    test_profile.GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, true);
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+
+    test_profile.GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, false);
+    EXPECT_FALSE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+  }
+
+  // Test install-linux-package - feature off.
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures(
+        {}, {features::kCrostiniAdvancedAccessControls});
+    test_profile.GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, true);
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+
+    test_profile.GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, false);
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+  }
 }
 
 // Test IsGoodMatchFileHandler which returns whether a file handle info matches
