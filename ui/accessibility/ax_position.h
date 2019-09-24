@@ -754,8 +754,11 @@ class AXPosition {
       // If the current text offset is valid, we don't touch it to potentially
       // allow converting from a text position to a tree position and back
       // without losing information.
-      if (copy->text_offset_ < 0 || copy->text_offset_ >= copy->MaxTextOffset())
+      if (copy->text_offset_ < 0 ||
+          (copy->text_offset_ > 0 &&
+           copy->text_offset_ >= copy->MaxTextOffset())) {
         copy->text_offset_ = 0;
+      }
     } else if (copy->child_index_ == copy->AnchorChildCount()) {
       copy->text_offset_ = copy->MaxTextOffset();
     } else {
@@ -765,15 +768,22 @@ class AXPosition {
       for (int i = 0; i <= child_index_; ++i) {
         AXPositionInstance child = copy->CreateChildPositionAt(i);
         DCHECK(child);
-        int child_length = child->MaxTextOffsetInParent();
+        // If the current text offset is valid, we don't touch it to
+        // potentially allow converting from a text position to a tree
+        // position and back without losing information. Otherwise, if the
+        // text_offset is invalid, equals to 0 or is smaller than
+        // |new_offset|, we reset it to the beginning of the current child
+        // node.
+        if (i == child_index_ && copy->text_offset_ <= new_offset) {
+          copy->text_offset_ = new_offset;
+          break;
+        }
 
-        // If the current text offset is valid, we don't touch it to potentially
-        // allow converting from a text position to a tree position and back
-        // without losing information. Otherwise, we reset it to the beginning
-        // of the current child node.
+        int child_length = child->MaxTextOffsetInParent();
+        // Same comment as above: we don't touch the text offset if it's
+        // already valid.
         if (i == child_index_ &&
-            (copy->text_offset_ < new_offset ||
-             copy->text_offset_ > (new_offset + child_length) ||
+            (copy->text_offset_ > (new_offset + child_length) ||
              // When the text offset is equal to the text's length but this is
              // not an "after text" position.
              (!copy->AtEndOfAnchor() &&
