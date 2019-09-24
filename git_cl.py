@@ -362,7 +362,7 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
   assert False, 'unreachable'
 
 
-def _call_buildbucket(http, buildbucket_host, method, request=None):
+def _call_buildbucket(http, buildbucket_host, method, request):
   """Calls a buildbucket v2 method and returns the parsed json response."""
   headers = {
     'Accept': 'application/json',
@@ -506,7 +506,7 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
 
   batch_request = {'requests': requests}
   batch_response = _call_buildbucket(
-      http, options.buildbucket_host, 'Batch', request=batch_request)
+      http, options.buildbucket_host, 'Batch', batch_request)
 
   errors = [
       '  ' + response['error']['message']

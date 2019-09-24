@@ -18,6 +18,7 @@ import urlparse
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from testing_support.auto_stub import TestCase
+from third_party import mock
 
 import metrics
 # We have to disable monitoring before importing git_cl.
@@ -32,6 +33,12 @@ import subprocess2
 
 def callError(code=1, cmd='', cwd='', stdout='', stderr=''):
   return subprocess2.CalledProcessError(code, cmd, cwd, stdout, stderr)
+
+
+def _constantFn(return_value):
+  def f(*args, **kwargs):
+    return return_value
+  return f
 
 
 CERR1 = callError(1)
@@ -89,6 +96,15 @@ class WatchlistsMock(object):
   @staticmethod
   def GetWatchersForPaths(_):
     return ['joe@example.com']
+
+
+class CodereviewSettingsFileMock(object):
+  def __init__(self):
+    pass
+  # pylint: disable=no-self-use
+  def read(self):
+    return ('CODE_REVIEW_SERVER: gerrit.chromium.org\n' +
+            'GERRIT_HOST: True\n')
 
 
 class AuthenticatorMock(object):
@@ -2349,196 +2365,6 @@ class TestGitCl(TestCase):
     ]
     self.assertEqual(0, git_cl.main(['issue', '--json', 'output.json']))
 
-  def test_git_cl_try_default_cq_dry_run_gerrit(self):
-    self.mock(git_cl.Changelist, 'GetChange',
-              lambda _, *a: (
-                self._mocked_call(['GetChange'] + list(a))))
-    self.mock(git_cl.presubmit_support, 'DoGetTryMasters',
-              lambda *_, **__: (
-                self._mocked_call(['DoGetTryMasters'])))
-    self.mock(git_cl.Changelist, 'SetCQState',
-              lambda _, s: self._mocked_call(['SetCQState', s]))
-
-    self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
-        ((['git', 'config', 'branch.feature.gerritserver'],),
-         'https://chromium-review.googlesource.com'),
-        ((['git', 'config', 'branch.feature.merge'],), 'feature'),
-        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
-        ((['git', 'config', 'remote.origin.url'],),
-         'https://chromium.googlesource.com/depot_tools'),
-        (('GetChangeDetail', 'chromium-review.googlesource.com',
-          'depot_tools~123456',
-         ['DETAILED_ACCOUNTS', 'ALL_REVISIONS', 'CURRENT_COMMIT']), {
-          'project': 'depot_tools',
-          'status': 'OPEN',
-          'owner': {'email': 'owner@e.mail'},
-          'revisions': {
-            'deadbeaf': {
-              '_number': 6,
-            },
-            'beeeeeef': {
-              '_number': 7,
-              'fetch': {'http': {
-                'url': 'https://chromium.googlesource.com/depot_tools',
-                'ref': 'refs/changes/56/123456/7'
-              }},
-            },
-          },
-        }),
-        ((['git', 'config', 'branch.feature.merge'],), 'feature'),
-        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
-        ((['get_or_create_merge_base', 'feature', 'feature'],),
-         'fake_ancestor_sha'),
-        ((['GetChange', 'fake_ancestor_sha', None], ),
-         git_cl.presubmit_support.GitChange(
-           '', '', '', '', '', '', '', '')),
-        ((['git', 'rev-parse', '--show-cdup'],), '../'),
-        ((['DoGetTryMasters'], ), None),
-        ((['SetCQState', git_cl._CQState.DRY_RUN], ), 0),
-    ]
-    out = StringIO.StringIO()
-    self.mock(git_cl.sys, 'stdout', out)
-    self.assertEqual(0, git_cl.main(['try']))
-    self.assertEqual(
-        out.getvalue(),
-        'Scheduling CQ dry run on: '
-        'https://chromium-review.googlesource.com/123456\n')
-
-  def test_parse_bucket(self):
-    self.assertEqual(git_cl._parse_bucket('chromium/try'), ('chromium', 'try'))
-    self.assertEqual(
-        git_cl._parse_bucket('luci.chromium.try'), ('chromium', 'try'))
-    self.assertEqual(git_cl._parse_bucket('not-a-bucket'), (None, None))
-    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
-    self.assertEqual(
-        git_cl._parse_bucket('skia.primary'),
-        ('skia', 'skia.primary'))
-    self.assertIn(
-        'WARNING Please specify buckets',
-        git_cl.sys.stdout.getvalue())
-
-  def test_git_cl_try_buildbucket_with_wrong_bucket(self):
-    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda _: 7)
-    self.mock(git_cl.uuid, 'uuid4', lambda: 'uuid4')
-
-    self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
-        ((['git', 'config', 'branch.feature.gerritserver'],),
-         'https://chromium-review.googlesource.com'),
-        ((['git', 'config', 'branch.feature.merge'],), 'feature'),
-        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
-        ((['git', 'config', 'remote.origin.url'],),
-         'https://chromium.googlesource.com/depot_tools'),
-        (('GetChangeDetail', 'chromium-review.googlesource.com',
-          'depot_tools~123456',
-         ['DETAILED_ACCOUNTS', 'ALL_REVISIONS', 'CURRENT_COMMIT']), {
-          'project': 'depot_tools',
-          'status': 'OPEN',
-          'owner': {'email': 'owner@e.mail'},
-          'revisions': {
-            'deadbeaf': {
-              '_number': 6,
-            },
-            'beeeeeef': {
-              '_number': 7,
-              'fetch': {'http': {
-                'url': 'https://chromium.googlesource.com/depot_tools',
-                'ref': 'refs/changes/56/123456/7'
-              }},
-            },
-          },
-        }),
-        ((['git', 'config', 'branch.feature.gerritpatchset'],), '7'),
-    ]
-
-    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
-    self.assertEqual(0, git_cl.main([
-        'try', '-B', 'not-a-bucket', '-b', 'win',
-        '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
-    self.assertIn(
-        'Could not parse bucket "not-a-bucket"',
-        git_cl.sys.stdout.getvalue())
-
-  def test_git_cl_try_buildbucket_with_properties_gerrit(self):
-    def _mock_call_buildbucket(_http, buildbucket_host, method, request=None):
-      bb_request = {
-          "requests": [{
-              "scheduleBuild": {
-                  "requestId": "uuid4",
-                  "builder": {
-                      "project": "chromium",
-                      "builder": "win",
-                      "bucket": "try",
-                  },
-                  "gerritChanges": [{
-                      "project": "depot_tools",
-                      "host": "chromium-review.googlesource.com",
-                      "patchset": 7,
-                      "change": 123456,
-                  }],
-                  "properties": {
-                      "category": "git_cl_try",
-                      "json": [{"a": 1}, None],
-                      "key": "val",
-                  },
-                  "tags": [
-                      {"value": "win", "key": "builder"},
-                      {"value": "git_cl_try", "key": "user_agent"},
-                  ],
-              },
-          }],
-      }
-      self.assertEqual(method, 'Batch')
-      self.assertEqual(buildbucket_host, 'cr-buildbucket.appspot.com')
-      self.assertEqual(request, bb_request)
-      return {}
-
-    self.mock(git_cl, '_call_buildbucket', _mock_call_buildbucket)
-    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda _: 7)
-    self.mock(git_cl.uuid, 'uuid4', lambda: 'uuid4')
-
-    self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
-        ((['git', 'config', 'branch.feature.gerritserver'],),
-         'https://chromium-review.googlesource.com'),
-        ((['git', 'config', 'branch.feature.merge'],), 'feature'),
-        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
-        ((['git', 'config', 'remote.origin.url'],),
-         'https://chromium.googlesource.com/depot_tools'),
-        (('GetChangeDetail', 'chromium-review.googlesource.com',
-          'depot_tools~123456',
-         ['DETAILED_ACCOUNTS', 'ALL_REVISIONS', 'CURRENT_COMMIT']), {
-          'project': 'depot_tools',
-          'status': 'OPEN',
-          'owner': {'email': 'owner@e.mail'},
-          'revisions': {
-            'deadbeaf': {
-              '_number': 6,
-            },
-            'beeeeeef': {
-              '_number': 7,
-              'fetch': {'http': {
-                'url': 'https://chromium.googlesource.com/depot_tools',
-                'ref': 'refs/changes/56/123456/7'
-              }},
-            },
-          },
-        }),
-        ((['git', 'config', 'branch.feature.gerritpatchset'],), '7'),
-    ]
-
-    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
-    self.assertEqual(0, git_cl.main([
-        'try', '-B', 'luci.chromium.try', '-b', 'win',
-        '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
-    self.assertIn(
-        'Scheduling jobs on:\nBucket: luci.chromium.try',
-        git_cl.sys.stdout.getvalue())
-
   def _common_GerritCommitMsgHookCheck(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl.os.path, 'abspath',
@@ -3297,6 +3123,170 @@ class TestGitCl(TestCase):
     ]
     cl = git_cl.Changelist(issue=123456)
     self.assertEqual(cl._GerritChangeIdentifier(), '123456')
+
+
+class CMDTryTestCase(unittest.TestCase):
+  def setUp(self):
+    super(CMDTryTestCase, self).setUp()
+    mock.patch('git_cl.sys.stdout', StringIO.StringIO()).start()
+    mock.patch('git_cl.uuid.uuid4', _constantFn('uuid4')).start()
+    mock.patch('git_cl.Changelist.GetIssue', _constantFn(123456)).start()
+    mock.patch('git_cl.Changelist.GetCodereviewServer',
+               _constantFn('https://chromium-review.googlesource.com')).start()
+    mock.patch('git_cl.Changelist.SetPatchset').start()
+    mock.patch('git_cl.Changelist.GetPatchset', _constantFn(7)).start()
+    mock.patch('git_cl.auth.get_authenticator_for_host', AuthenticatorMock())
+    self.addCleanup(mock.patch.stopall)
+
+  @mock.patch('git_cl.Changelist._GetChangeDetail')
+  @mock.patch('git_cl.Changelist.SetCQState')
+  @mock.patch('git_cl._get_bucket_map', _constantFn({}))
+  def testSetCQDryRunByDefault(self, mockSetCQState, mockGetChangeDetail):
+    mockSetCQState.return_value = 0
+    mockGetChangeDetail.return_value = {
+        'project': 'depot_tools',
+        'status': 'OPEN',
+        'owner': {'email': 'owner@e.mail'},
+        'current_revision': 'beeeeeef',
+        'revisions': {
+            'deadbeaf': {
+                '_number': 6,
+            },
+            'beeeeeef': {
+                '_number': 7,
+                'fetch': {'http': {
+                    'url': 'https://chromium.googlesource.com/depot_tools',
+                    'ref': 'refs/changes/56/123456/7'
+                }},
+            },
+        },
+    }
+
+    self.assertEqual(0, git_cl.main(['try']))
+    git_cl.Changelist.SetCQState.assert_called_with(git_cl._CQState.DRY_RUN)
+    self.assertEqual(
+        sys.stdout.getvalue(),
+        'Scheduling CQ dry run on: '
+        'https://chromium-review.googlesource.com/123456\n')
+
+  @mock.patch('git_cl.Changelist._GetChangeDetail')
+  @mock.patch('git_cl._call_buildbucket')
+  def testScheduleOnBuildbucket(self, mockCallBuildbucket, mockGetChangeDetail):
+    mockCallBuildbucket.return_value = {}
+    mockGetChangeDetail.return_value = {
+        'project': 'depot_tools',
+        'status': 'OPEN',
+        'owner': {'email': 'owner@e.mail'},
+        'current_revision': 'beeeeeef',
+        'revisions': {
+            'deadbeaf': {
+                '_number': 6,
+            },
+            'beeeeeef': {
+                '_number': 7,
+                'fetch': {'http': {
+                    'url': 'https://chromium.googlesource.com/depot_tools',
+                    'ref': 'refs/changes/56/123456/7'
+                }},
+            },
+        },
+    }
+
+    self.assertEqual(0, git_cl.main([
+        'try', '-B', 'luci.chromium.try', '-b', 'win',
+        '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
+    self.assertIn(
+        'Scheduling jobs on:\nBucket: luci.chromium.try',
+        git_cl.sys.stdout.getvalue())
+
+    expected_request = {
+        "requests": [{
+            "scheduleBuild": {
+                "requestId": "uuid4",
+                "builder": {
+                    "project": "chromium",
+                    "builder": "win",
+                    "bucket": "try",
+                },
+                "gerritChanges": [{
+                    "project": "depot_tools",
+                    "host": "chromium-review.googlesource.com",
+                    "patchset": 7,
+                    "change": 123456,
+                }],
+                "properties": {
+                    "category": "git_cl_try",
+                    "json": [{"a": 1}, None],
+                    "key": "val",
+                },
+                "tags": [
+                    {"value": "win", "key": "builder"},
+                    {"value": "git_cl_try", "key": "user_agent"},
+                ],
+            },
+        }],
+    }
+    mockCallBuildbucket.assert_called_with(
+        mock.ANY, 'cr-buildbucket.appspot.com', 'Batch', expected_request)
+
+
+  @mock.patch('git_cl.Changelist._GetChangeDetail')
+  def testScheduleOnBuildbucket_WrongBucket(self, mockGetChangeDetail):
+    mockGetChangeDetail.return_value = {
+        'project': 'depot_tools',
+        'status': 'OPEN',
+        'owner': {'email': 'owner@e.mail'},
+        'current_revision': 'beeeeeef',
+        'revisions': {
+            'deadbeaf': {
+                '_number': 6,
+            },
+            'beeeeeef': {
+                '_number': 7,
+                'fetch': {'http': {
+                    'url': 'https://chromium.googlesource.com/depot_tools',
+                    'ref': 'refs/changes/56/123456/7'
+                }},
+            },
+        },
+    }
+
+    self.assertEqual(0, git_cl.main([
+        'try', '-B', 'not-a-bucket', '-b', 'win',
+        '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
+    self.assertIn(
+        'WARNING Could not parse bucket "not-a-bucket". Skipping.',
+        git_cl.sys.stdout.getvalue())
+
+  def test_parse_bucket(self):
+    test_cases = [
+        {
+            'bucket': 'chromium/try',
+            'result': ('chromium', 'try'),
+        },
+        {
+            'bucket': 'luci.chromium.try',
+            'result': ('chromium', 'try'),
+            'has_warning': True,
+        },
+        {
+            'bucket': 'skia.primary',
+            'result': ('skia', 'skia.primary'),
+            'has_warning': True,
+        },
+        {
+            'bucket': 'not-a-bucket',
+            'result': (None, None),
+        },
+    ]
+
+    for test_case in test_cases:
+      git_cl.sys.stdout.truncate(0)
+      self.assertEqual(
+          test_case['result'], git_cl._parse_bucket(test_case['bucket']))
+      if test_case.get('has_warning'):
+        self.assertIn(
+            'WARNING Please specify buckets', git_cl.sys.stdout.getvalue())
 
 
 if __name__ == '__main__':
