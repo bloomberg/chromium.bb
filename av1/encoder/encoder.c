@@ -3058,6 +3058,14 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
         aom_calloc(cpi->tpl_stats_buffer[frame].width *
                        cpi->tpl_stats_buffer[frame].height,
                    sizeof(*cpi->tpl_stats_buffer[frame].tpl_stats_ptr)));
+
+    if (aom_alloc_frame_buffer(
+            &cpi->tpl_stats_buffer[frame].rec_picture_buf, cm->width,
+            cm->height, cm->seq_params.subsampling_x,
+            cm->seq_params.subsampling_y, cm->seq_params.use_highbitdepth,
+            cpi->oxcf.border_in_pixels, cm->byte_alignment))
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Failed to allocate frame buffer");
   }
   cpi->tpl_frame = &cpi->tpl_stats_buffer[REF_FRAMES + 1];
 
@@ -3403,6 +3411,9 @@ void av1_remove_compressor(AV1_COMP *cpi) {
   for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
     aom_free(cpi->tpl_stats_buffer[frame].tpl_stats_ptr);
     cpi->tpl_stats_buffer[frame].is_valid = 0;
+
+    aom_free_frame_buffer(&cpi->tpl_stats_buffer[frame].rec_picture_buf);
+    cpi->tpl_stats_buffer[frame].rec_picture = NULL;
   }
 
   for (t = cpi->num_workers - 1; t >= 0; --t) {
