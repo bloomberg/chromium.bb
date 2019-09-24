@@ -197,7 +197,7 @@ PreferredColorScheme MediaValues::CalculatePreferredColorScheme(
   DCHECK(frame->GetSettings());
   DCHECK(frame->GetDocument());
   DCHECK(frame->GetPage());
-  if (auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
+  if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
     MediaQueryExpValue value = overrides->GetOverride("prefers-color-scheme");
     if (value.IsValid())
       return CSSValueIDToPreferredColorScheme(value.id);
@@ -208,6 +208,11 @@ PreferredColorScheme MediaValues::CalculatePreferredColorScheme(
 bool MediaValues::CalculatePrefersReducedMotion(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
+  if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
+    MediaQueryExpValue value = overrides->GetOverride("prefers-reduced-motion");
+    if (value.IsValid())
+      return value.id == CSSValueID::kReduce;
+  }
   return frame->GetSettings()->GetPrefersReducedMotion();
 }
 
