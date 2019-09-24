@@ -244,8 +244,6 @@ class PLATFORM_EXPORT ResourceFetcher
   // counting.
   void PrepareForLeakDetection();
 
-  void SetStaleWhileRevalidateEnabled(bool enabled);
-
   using ResourceFetcherSet = HeapHashSet<WeakMember<ResourceFetcher>>;
   static const ResourceFetcherSet& MainThreadFetchers();
 

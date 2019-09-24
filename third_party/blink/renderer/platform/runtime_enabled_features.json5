@@ -1565,11 +1565,6 @@
       status: "experimental",
     },
     {
-      name: "StaleWhileRevalidate",
-      origin_trial_feature_name: "StaleWhileRevalidate",
-      status: "stable",
-    },
-    {
       // Enabled when blink::features::kStorageAccessAPI is enabled.
       name: "StorageAccessAPI",
       status: "test",
