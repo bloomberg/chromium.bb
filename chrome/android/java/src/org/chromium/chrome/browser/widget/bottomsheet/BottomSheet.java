@@ -9,7 +9,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.PorterDuff.Mode;
 import android.graphics.Rect;
 import android.os.Build;
 import android.support.annotation.IntDef;
@@ -22,7 +21,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
@@ -508,7 +506,7 @@ public class BottomSheet
 
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
-        setBackground(mToolbarHolder);
+        mToolbarHolder.setBackgroundResource(R.drawable.top_round);
 
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
 
@@ -519,7 +517,7 @@ public class BottomSheet
         mBottomSheetContentContainer =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setBottomSheet(this);
-        setBackground(mBottomSheetContentContainer);
+        mBottomSheetContentContainer.setBackgroundResource(R.drawable.top_round);
 
         // Listen to height changes on the root.
         root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
@@ -647,18 +645,6 @@ public class BottomSheet
 
         mSheetContainer = (ViewGroup) this.getParent();
         mSheetContainer.removeView(this);
-    }
-
-    /**
-     * Sets the background with round corner drawable, adjusts the color for dark mode.
-     * @param view View in BottomSheet to set the drawable to.
-     */
-    private static void setBackground(View view) {
-        view.setBackgroundResource(R.drawable.top_round);
-        view.getBackground().setColorFilter(
-                ApiCompatibilityUtils.getColor(
-                        view.getContext().getResources(), org.chromium.ui.R.color.sheet_bg_color),
-                Mode.MULTIPLY);
     }
 
     @Override
