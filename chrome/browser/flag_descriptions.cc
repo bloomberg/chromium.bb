@@ -47,6 +47,11 @@ const char kAllowSyncXHRInPageDismissalDescription[] =
     "Allows synchronous XHR requests during page dismissal when the page is "
     "being navigated away or closed by the user.";
 
+const char kEnableClipboardProviderTextSuggestionsName[] =
+    "Omnibox clipboard text search suggestions";
+const char kEnableClipboardProviderTextSuggestionsDescription[] =
+    "Enables search suggestions in omnibox";
+
 const char kEnableSignedExchangeSubresourcePrefetchName[] =
     "Enable Signed Exchange subresource prefetching";
 const char kEnableSignedExchangeSubresourcePrefetchDescription[] =
