@@ -23,7 +23,9 @@
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=chromite.cli.cros.lint
+load-plugins=
+    chromite.cli.cros.lint,
+    pylint.extensions.bad_builtin,
 
 # Configure quote preferences.
 string-quote = single-avoid-escape
