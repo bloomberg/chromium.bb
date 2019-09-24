@@ -978,11 +978,6 @@
     "args": ["--enable-features=FreezeUserAgent"]
   },
   {
-    "prefix": "native-file-system",
-    "base": "external/wpt/native-file-system",
-    "args": ["--enable-features=NativeFileSystemAPI"]
-  },
-  {
     "prefix": "file-handling",
     "base": "file-handling",
     "args": ["--enable-features=NativeFileSystemAPI,FileHandlingAPI"]
