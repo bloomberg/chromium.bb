@@ -1070,9 +1070,9 @@ Polymer({
       if (!response.success) {
         console.error('Froget network failed for: ' + this.guid);
       }
+      // A forgotten network no longer has a valid GUID, close the subpage.
+      this.close();
     });
-    // A forgotten network no longer has a valid GUID, close the subpage.
-    this.close();
   },
 
   /** @private */

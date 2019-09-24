@@ -64,6 +64,10 @@
         flex: auto;
       }
 
+      .section cr-button + cr-button {
+        margin-inline-start: 8px;
+      }
+
       .title {
         font-size: 107.69%;  /* 14px / 13px */
         font-weight: 500;
@@ -90,6 +94,10 @@
           [[getStateText_(managedProperties_)]]
         </div>
       </div>
+      <cr-button on-click="onForgetTap_"
+          hidden$="[[!showForget_(managedProperties_)]]">
+        $i18n{networkButtonForget}
+      </cr-button>
       <cr-button class="action-button" on-click="onConnectDisconnectClick_"
           hidden$="[[!showConnectDisconnect_(managedProperties_)]]"
           disabled="[[!enableConnectDisconnect_(managedProperties_)]]">
