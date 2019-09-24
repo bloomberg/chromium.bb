@@ -41,6 +41,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::AudioContextManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetAudioContextManager, base::Unretained(host)));
 
+  map->Add<blink::mojom::ContactsManager>(base::BindRepeating(
+      &RenderFrameHostImpl::GetContactsManager, base::Unretained(host)));
+
   map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileSystemManager, base::Unretained(host)));
 

@@ -219,7 +219,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.AnchorElementMetricsHost",
                   "blink.mojom.CacheStorage",
                   "blink.mojom.ColorChooserFactory",
-                  "blink.mojom.ContactsManager",
                   "blink.mojom.ContentIndexService",
                   "blink.mojom.DateTimeChooser",
                   "blink.mojom.DisplayCutoutHost",
