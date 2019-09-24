@@ -99,6 +99,9 @@
         "browse:social:instagram": {
             "DEFAULT": "system_health_mobile_060.wprgo"
         },
+        "browse:social:instagram:2019": {
+            "DEFAULT": "system_health_mobile_c38cfb84fc.wprgo"
+        },
         "browse:social:pinterest_infinite_scroll": {
             "DEFAULT": "system_health_mobile_063.wprgo"
         },

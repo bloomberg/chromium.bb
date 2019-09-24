@@ -161,6 +161,22 @@ class InstagramMobileStory(_ArticleBrowsingStory):
     action_runner.NavigateBack()
 
 
+class InstagramMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:social:instagram:2019'
+  URL = 'https://www.instagram.com/badgalriri/'
+  ITEM_SELECTOR = '[class="v1Nh3 kIKUG  _bz0w"] a'
+  ITEMS_TO_VISIT = 8
+
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  def _WaitForNavigation(self, action_runner):
+    action_runner.WaitForElement(selector='[title="badgalriri"]')
+
+  def _NavigateBack(self, action_runner):
+    action_runner.NavigateBack()
+
+
 class FlipboardDesktopStory2018(_ArticleBrowsingStory):
   NAME = 'browse:news:flipboard:2018'
   URL = 'https://flipboard.com/explore'
