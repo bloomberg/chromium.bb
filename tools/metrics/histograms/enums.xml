@@ -35221,6 +35221,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1529907580" label="ImeServiceConnectable:disabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
+  <int value="-1521160841" label="DismissNtpPromos:enabled"/>
   <int value="-1520952503" label="SearchReadyOmnibox:enabled"/>
   <int value="-1520855274" label="PWAFullCodeCache:disabled"/>
   <int value="-1517518406" label="force-update-menu-type"/>
@@ -35732,6 +35733,7 @@ from previous Chrome versions.
   <int value="-902125579" label="ImmersiveUiMode:disabled"/>
   <int value="-899393472" label="enable-new-app-menu-icon"/>
   <int value="-899334103" label="disable-fast-text-autosizing"/>
+  <int value="-899265865" label="DismissNtpPromos:disabled"/>
   <int value="-898594349" label="ash-enable-stable-overview-order"/>
   <int value="-898499262" label="ImprovedA2HS:enabled"/>
   <int value="-898005938" label="disable-pinch-virtual-viewport"/>
