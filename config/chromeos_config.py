@@ -2290,6 +2290,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kevin64',
       'kip',
       'kukui',
+      'lakitu',
+      'lakitu-gpu',
+      'lakitu-st',
       'lars',
       'lasilla-ground',
       'littlejoe',
@@ -2384,9 +2387,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz-moblab', # crbug.com/995170
       'gale', # http://b/140523449
       'guado', # crbug.com/950812
-      'lakitu', # https://crbug.com/1006799
-      'lakitu-gpu', # https://crbug.com/1006799
-      'lakitu-st', # https://crbug.com/1006799
       'mistral', # b/140536001
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'samus-kernelnext', # https://crbug.com/1004618
