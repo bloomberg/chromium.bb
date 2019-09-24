@@ -77,6 +77,7 @@ const char kFileHandlerTaskType[] = "app";
 const char kArcAppTaskType[] = "arc";
 const char kCrostiniAppTaskType[] = "crostini";
 const char kWebAppTaskType[] = "web";
+const char kImportCrostiniImageHandlerId[] = "import-crostini-image";
 
 // Converts a TaskType to a string.
 std::string TaskTypeToString(TaskType task_type) {
@@ -444,6 +445,15 @@ bool ExecuteFileTask(Profile* profile,
   return false;
 }
 
+bool IsFileHandlerEnabled(Profile* profile,
+                          const apps::FileHandlerInfo& file_handler_info) {
+  // Crostini backup files can be disabled by policy.
+  if (file_handler_info.id == kImportCrostiniImageHandlerId) {
+    return crostini::IsCrostiniExportImportUIAllowedForProfile(profile);
+  }
+  return true;
+}
+
 bool IsGoodMatchFileHandler(const apps::FileHandlerInfo& file_handler_info,
                             const std::vector<extensions::EntryInfo>& entries) {
   if (file_handler_info.extensions.count("*") > 0 ||
@@ -509,6 +519,9 @@ void FindFileHandlerTasks(Profile* profile,
     // show the first matching handler of the verb.
     for (const auto& handler_match : file_handlers) {
       const apps::FileHandlerInfo* handler = handler_match.handler;
+      if (!IsFileHandlerEnabled(profile, *handler)) {
+        continue;
+      }
       bool good_match = IsGoodMatchFileHandler(*handler, entries);
       auto it = handlers_for_entries.find(handler->verb);
       if (it == handlers_for_entries.end() ||

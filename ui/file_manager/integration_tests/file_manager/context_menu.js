@@ -356,6 +356,50 @@ testcase.checkInstallWithLinuxEnabledForDebianFile = async () => {
 };
 
 /**
+ * Tests that the "Replace your Linux apps and files" file context menu item is
+ * hidden for a *.tini file if Crostini backup is disabled.
+ */
+testcase.checkImportCrostiniImageDisabled = async () => {
+  const optionHidden = '#file-context-menu:not([hidden]) ' +
+      '[command="#default-task"][hidden]';
+
+  // Open FilesApp on Downloads with test.tini file.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tiniFile], []);
+
+  // Disable Crostini backup.
+  await sendTestMessage(
+      {name: 'setCrostiniExportImportAllowed', enabled: false});
+
+  // Select and right click the tini file to show its context menu.
+  await selectFile(appId, 'test.tini');
+  await rightClickSelectedFile(appId);
+
+  // Check: the context menu item should be hidden.
+  await remoteCall.waitForElement(appId, optionHidden);
+};
+
+/**
+ * Tests that the "Replace your Linux apps and files" file context menu item is
+ * shown for a *.tini file if Crostini backup is enabled.
+ */
+testcase.checkImportCrostiniImageEnabled = async () => {
+  const optionShown = '#file-context-menu:not([hidden]) ' +
+      '[command="#default-task"]:not([hidden])';
+
+  // Open FilesApp on Downloads with test.tini file.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tiniFile], []);
+
+  // Select and right click the tini file to show its context menu.
+  await selectFile(appId, 'test.tini');
+  await rightClickSelectedFile(appId);
+
+  // Check: the context menu item should be shown.
+  await remoteCall.waitForElement(appId, optionShown);
+};
+
+/**
  * Tests that text selection context menus are disabled in tablet mode.
  */
 testcase.checkContextMenusForInputElements = async () => {
