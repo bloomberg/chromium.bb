@@ -19,6 +19,7 @@
 #include "chrome/common/media_router/media_route_provider_helper.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 
@@ -93,7 +94,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
       const std::vector<media_router::MediaSinkInternal>& sinks) override;
   void CreateMediaRouteController(
       const std::string& route_id,
-      mojom::MediaControllerRequest media_controller,
+      mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojom::MediaStatusObserverPtr observer,
       CreateMediaRouteControllerCallback callback) override;
 
@@ -144,7 +145,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
     std::unique_ptr<WiredDisplayPresentationReceiver> receiver_;
     mojom::MediaStatusPtr status_;
 
-    // |media_controller_request| is retained but not used.
+    // |media_controller_receiver_| is retained but not used.
     mojo::PendingReceiver<mojom::MediaController> media_controller_receiver_;
 
     // |media_status_observer|, when set, gets notified whenever |status|

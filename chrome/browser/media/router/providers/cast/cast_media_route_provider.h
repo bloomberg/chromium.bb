@@ -15,6 +15,7 @@
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace cast_channel {
 class CastMessageHandler;
@@ -98,7 +99,7 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
       const std::vector<media_router::MediaSinkInternal>& sinks) override;
   void CreateMediaRouteController(
       const std::string& route_id,
-      mojom::MediaControllerRequest media_controller,
+      mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojom::MediaStatusObserverPtr observer,
       CreateMediaRouteControllerCallback callback) override;
 

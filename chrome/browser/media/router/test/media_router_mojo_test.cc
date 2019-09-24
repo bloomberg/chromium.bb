@@ -121,22 +121,23 @@ MockMediaStatusObserver::MockMediaStatusObserver(
 
 MockMediaStatusObserver::~MockMediaStatusObserver() {}
 
-MockMediaController::MockMediaController() : binding_(this) {}
+MockMediaController::MockMediaController() = default;
 
-MockMediaController::~MockMediaController() {}
+MockMediaController::~MockMediaController() = default;
 
-void MockMediaController::Bind(mojom::MediaControllerRequest request) {
-  binding_.Bind(std::move(request));
+void MockMediaController::Bind(
+    mojo::PendingReceiver<mojom::MediaController> receiver) {
+  receiver_.reset();
+  receiver_.Bind(std::move(receiver));
 }
 
-mojom::MediaControllerPtr MockMediaController::BindInterfacePtr() {
-  mojom::MediaControllerPtr controller;
-  binding_.Bind(mojo::MakeRequest(&controller));
-  return controller;
+mojo::PendingRemote<mojom::MediaController>
+MockMediaController::BindInterfaceRemote() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
-void MockMediaController::CloseBinding() {
-  binding_.Close();
+void MockMediaController::CloseReceiver() {
+  receiver_.reset();
 }
 
 MediaRouterMojoTest::MediaRouterMojoTest() {

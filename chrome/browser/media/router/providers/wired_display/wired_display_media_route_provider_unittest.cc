@@ -13,6 +13,7 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
@@ -374,12 +375,12 @@ TEST_F(WiredDisplayMediaRouteProviderTest, SendMediaStatusUpdate) {
       base::BindOnce(&MockCallback::CreateRoute, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
 
-  mojom::MediaControllerPtr media_controller_ptr;
+  mojo::Remote<mojom::MediaController> media_controller_remote;
   mojom::MediaStatusObserverPtr status_observer_ptr;
   MockMediaStatusObserver status_observer(
       mojo::MakeRequest(&status_observer_ptr));
   provider_pointer_->CreateMediaRouteController(
-      presentation_id, mojo::MakeRequest(&media_controller_ptr),
+      presentation_id, media_controller_remote.BindNewPipeAndPassReceiver(),
       std::move(status_observer_ptr), base::BindOnce([](bool success) {}));
 
   EXPECT_CALL(status_observer, OnMediaStatusUpdated(_))

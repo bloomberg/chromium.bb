@@ -41,6 +41,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/extension.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -988,15 +989,16 @@ TEST_F(MediaRouterMojoImplTest, GetMediaController) {
 
   EXPECT_CALL(mock_extension_provider_,
               CreateMediaRouteControllerInternal(kRouteId, _, _, _))
-      .WillOnce([&](const std::string& route_id,
-                    mojom::MediaControllerRequest& media_controller,
-                    mojom::MediaStatusObserverPtr& observer,
-                    MockMediaRouteProvider::CreateMediaRouteControllerCallback&
-                        callback) {
-        mock_controller.Bind(std::move(media_controller));
-        observer_ptr_held_by_controller = std::move(observer);
-        std::move(callback).Run(true);
-      });
+      .WillOnce(
+          [&](const std::string& route_id,
+              mojo::PendingReceiver<mojom::MediaController>& media_controller,
+              mojom::MediaStatusObserverPtr& observer,
+              MockMediaRouteProvider::CreateMediaRouteControllerCallback&
+                  callback) {
+            mock_controller.Bind(std::move(media_controller));
+            observer_ptr_held_by_controller = std::move(observer);
+            std::move(callback).Run(true);
+          });
   router()->GetMediaController(kRouteId,
                                controller_remote.BindNewPipeAndPassReceiver(),
                                std::move(observer_ptr));

@@ -483,7 +483,7 @@ interface MediaRouteProvider {
   // TODO(takumif): Consider returning an enum instead of a bool to distinguish
   // between error conditions for metrics/debugging.
   CreateMediaRouteController(string route_id,
-                             MediaController& media_controller,
+                             pending_receiver<MediaController> media_controller,
                              MediaStatusObserver observer) =>
                                  (bool success);
 };

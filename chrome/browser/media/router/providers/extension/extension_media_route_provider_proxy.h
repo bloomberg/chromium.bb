@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
 class BrowserContext;
@@ -87,7 +88,7 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
       const std::vector<media_router::MediaSinkInternal>& sinks) override;
   void CreateMediaRouteController(
       const std::string& route_id,
-      mojom::MediaControllerRequest media_controller,
+      mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojom::MediaStatusObserverPtr observer,
       CreateMediaRouteControllerCallback callback) override;
 
@@ -156,7 +157,7 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
       const std::vector<media_router::MediaSinkInternal>& sinks);
   void DoCreateMediaRouteController(
       const std::string& route_id,
-      mojom::MediaControllerRequest media_controller,
+      mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojom::MediaStatusObserverPtr observer,
       CreateMediaRouteControllerCallback callback);
 

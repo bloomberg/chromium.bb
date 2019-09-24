@@ -261,7 +261,7 @@ void CastMediaRouteProvider::ProvideSinks(
 
 void CastMediaRouteProvider::CreateMediaRouteController(
     const std::string& route_id,
-    mojom::MediaControllerRequest media_controller,
+    mojo::PendingReceiver<mojom::MediaController> media_controller,
     mojom::MediaStatusObserverPtr observer,
     CreateMediaRouteControllerCallback callback) {
   std::move(callback).Run(activity_manager_->CreateMediaController(

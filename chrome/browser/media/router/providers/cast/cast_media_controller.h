@@ -9,7 +9,8 @@
 #include "chrome/common/media_router/mojom/media_controller.mojom.h"
 #include "chrome/common/media_router/mojom/media_status.mojom.h"
 #include "components/cast_channel/cast_message_util.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace base {
 class Value;
@@ -47,7 +48,7 @@ enum SupportedMediaCommand {
 class CastMediaController : public mojom::MediaController {
  public:
   CastMediaController(ActivityRecord* activity,
-                      mojom::MediaControllerRequest request,
+                      mojo::PendingReceiver<mojom::MediaController> receiver,
                       mojom::MediaStatusObserverPtr observer);
   ~CastMediaController() override;
 
@@ -79,7 +80,7 @@ class CastMediaController : public mojom::MediaController {
   std::string session_id_;
   int media_session_id_;
 
-  mojo::Binding<mojom::MediaController> binding_;
+  mojo::Receiver<mojom::MediaController> receiver_;
   mojom::MediaStatusObserverPtr observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaController);

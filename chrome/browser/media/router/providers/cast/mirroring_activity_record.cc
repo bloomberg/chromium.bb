@@ -252,7 +252,7 @@ void MirroringActivityRecord::OnInternalMessage(
 }
 
 void MirroringActivityRecord::CreateMediaController(
-    mojom::MediaControllerRequest media_controller,
+    mojo::PendingReceiver<mojom::MediaController> media_controller,
     mojom::MediaStatusObserverPtr observer) {}
 
 void MirroringActivityRecord::StopMirroring() {

@@ -21,6 +21,7 @@
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "url/origin.h"
 
 namespace cast_channel {
@@ -105,9 +106,10 @@ class CastActivityManager : public CastActivityManagerBase,
       const MediaRoute::Id& route_id,
       mojom::MediaRouteProvider::TerminateRouteCallback callback);
 
-  bool CreateMediaController(const std::string& route_id,
-                             mojom::MediaControllerRequest media_controller,
-                             mojom::MediaStatusObserverPtr observer);
+  bool CreateMediaController(
+      const std::string& route_id,
+      mojo::PendingReceiver<mojom::MediaController> media_controller,
+      mojom::MediaStatusObserverPtr observer);
 
   const MediaRoute* GetRoute(const MediaRoute::Id& route_id) const;
   std::vector<MediaRoute> GetRoutes() const;

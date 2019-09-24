@@ -272,7 +272,7 @@ void WiredDisplayMediaRouteProvider::ProvideSinks(
 
 void WiredDisplayMediaRouteProvider::CreateMediaRouteController(
     const std::string& route_id,
-    mojom::MediaControllerRequest media_controller,
+    mojo::PendingReceiver<mojom::MediaController> media_controller,
     mojom::MediaStatusObserverPtr observer,
     CreateMediaRouteControllerCallback callback) {
   // Local screens do not support media controls.

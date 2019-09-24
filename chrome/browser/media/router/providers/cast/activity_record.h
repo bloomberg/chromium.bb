@@ -17,6 +17,7 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace cast_channel {
 class CastMessageHandler;
@@ -141,7 +142,7 @@ class ActivityRecord {
   virtual void TerminatePresentationConnections() = 0;
 
   virtual void CreateMediaController(
-      mojom::MediaControllerRequest media_controller,
+      mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojom::MediaStatusObserverPtr observer) = 0;
 
  protected:

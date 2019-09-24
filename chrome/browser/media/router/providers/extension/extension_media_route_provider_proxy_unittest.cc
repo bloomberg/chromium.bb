@@ -15,6 +15,7 @@
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -258,16 +259,15 @@ TEST_F(ExtensionMediaRouteProviderProxyTest, CreateMediaRouteController) {
           Invoke(&mock_provider_,
                  &MockMediaRouteProvider::CreateMediaRouteControllerSuccess)));
 
-  mojom::MediaControllerPtr controller_ptr;
-  mojom::MediaControllerRequest controller_request =
-      mojo::MakeRequest(&controller_ptr);
+  mojo::Remote<mojom::MediaController> controller_remote;
   mojom::MediaStatusObserverPtr observer_ptr;
   mojom::MediaStatusObserverRequest observer_request =
       mojo::MakeRequest(&observer_ptr);
 
   MockBoolCallback callback;
   provider_proxy_->CreateMediaRouteController(
-      kRouteId, std::move(controller_request), std::move(observer_ptr),
+      kRouteId, controller_remote.BindNewPipeAndPassReceiver(),
+      std::move(observer_ptr),
       base::BindOnce(&MockBoolCallback::Run, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
 }
