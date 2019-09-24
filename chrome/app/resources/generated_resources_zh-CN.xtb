@@ -173,6 +173,7 @@
 <translation id="1235458158152011030">已知网络</translation>
 <translation id="123578888592755962">磁盘已满</translation>
 <translation id="1238191093934674082">Open VPN</translation>
+<translation id="1239594683407221485">在“文件”应用中浏览此设备上的内容。</translation>
 <translation id="124116460088058876">更多语言</translation>
 <translation id="1241753985463165747">调用时可读取和更改您在当前网站上的所有数据</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />要重置您的设置。</translation>
@@ -312,6 +313,7 @@
 <translation id="146220085323579959">互联网连接已断开。请检查您的互联网连接并重试。</translation>
 <translation id="1463112138205428654"><ph name="FILE_NAME" /> 已被高级保护功能屏蔽。</translation>
 <translation id="1464258312790801189">您的帐号</translation>
+<translation id="1464781208867302907">若想指定设备偏好设置，请转到“设置”页面。</translation>
 <translation id="1465176863081977902">复制音频地址(&amp;O)</translation>
 <translation id="1465827627707997754">披萨片</translation>
 <translation id="1468571364034902819">无法使用这份个人资料</translation>
@@ -740,6 +742,7 @@
 <translation id="2099686503067610784">要删除服务器证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="2101225219012730419">版本：</translation>
+<translation id="2111670510994270194">在右侧新增标签页</translation>
 <translation id="21133533946938348">固定标签页</translation>
 <translation id="2113479184312716848">打开文件(&amp;F)...</translation>
 <translation id="2113921862428609753">授权中心信息访问权限</translation>
@@ -2320,6 +2323,7 @@
 <translation id="4416582610654027550">请输入一个有效网址</translation>
 <translation id="4419409365248380979">总是允许 <ph name="HOST" /> 设置 Cookie</translation>
 <translation id="4419610272958564173">未知设备（供应商：<ph name="VENDOR_ID" />，产品：<ph name="PRODUCT_ID" />）</translation>
+<translation id="4421167684395067330">连接时遇到问题。请与<ph name="CARRIER_NAME" />联系以获取帮助。</translation>
 <translation id="4421932782753506458">猫咪</translation>
 <translation id="4423376891418188461">还原设置</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />，您的管理员要求您更改密码。</translation>
@@ -3290,6 +3294,7 @@
 <translation id="5869948122057593679">关闭您的所有窗口</translation>
 <translation id="5870086504539785141">关闭辅助功能菜单</translation>
 <translation id="5870155679953074650">硬故障数</translation>
+<translation id="5876851302954717356">在右侧新增标签页</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5877584842898320529">所选打印机不可用或未正确安装。<ph name="BR" />请检查打印机，或尝试另选一台打印机。</translation>
 <translation id="5882919346125742463">已知网络</translation>
@@ -4551,6 +4556,7 @@
 <translation id="7773726648746946405">会话存储</translation>
 <translation id="7774365994322694683">鸟</translation>
 <translation id="7776701556330691704">未找到任何语音</translation>
+<translation id="7780252971640011240">连接时遇到问题。请与您的运营商联系以获取帮助。</translation>
 <translation id="7781335840981796660">所有用户帐号和本地数据都将会移除。</translation>
 <translation id="7782102568078991263">Google 无法提供其他任何建议</translation>
 <translation id="7782717250816686129">存储登录屏幕上的持久性数据，并将凭据插入到会话中。</translation>
