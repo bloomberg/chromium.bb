@@ -216,6 +216,9 @@
         "load:news:washingtonpost": {
             "DEFAULT": "system_health_mobile_013.wprgo"
         },
+        "load:news:washingtonpost:2019": {
+            "DEFAULT": "system_health_mobile_f2584469fe.wprgo"
+        },
         "load:news:wikipedia": {
             "DEFAULT": "system_health_mobile_002.wprgo"
         },
