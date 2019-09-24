@@ -128,7 +128,7 @@ vars = {
   'checkout_simplechrome': '(checkout_chromeos and host_os == "linux") and ("{cros_board}" != "")',
   # Surround the board var in quotes so gclient doesn't try parsing the string
   # as an expression.
-  'cros_download_vm': '("{cros_board}" == "amd64-generic") or ("{cros_board}" == "betty")',
+  'cros_download_vm': '(("{cros_board}" == "amd64-generic") or ("{cros_board}" == "betty")) or ("{cros_board}" == "betty-pi-arc")',
   # Should we build and test for public (ie: full) CrOS images, or private
   # (ie: release) images.
   'use_public_cros_config': 'not checkout_src_internal',
