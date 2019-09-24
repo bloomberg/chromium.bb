@@ -6403,6 +6403,21 @@
             ]
         }
     ],
+    "UseSkiaRenderer": [
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "UseSkiaRenderer",
+                    "enable_features": [
+                        "UseSkiaRenderer"
+                    ]
+                }
+            ]
+        }
+    ],
     "UserActivityEventLogging": [
         {
             "platforms": [
