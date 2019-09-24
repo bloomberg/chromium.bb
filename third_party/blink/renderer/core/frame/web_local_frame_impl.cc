@@ -910,10 +910,6 @@ void WebLocalFrameImpl::ReloadImage(const WebNode& web_node) {
     image_element->ForceReload();
 }
 
-void WebLocalFrameImpl::ReloadLoFiImages() {
-  GetFrame()->GetDocument()->Fetcher()->ReloadLoFiImages();
-}
-
 void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
   // TODO(clamy): Remove this function once RenderFrame calls CommitNavigation
   // for all requests.

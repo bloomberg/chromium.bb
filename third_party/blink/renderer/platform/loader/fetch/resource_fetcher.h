@@ -225,8 +225,6 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void UpdateAllImageResourcePriorities();
 
-  void ReloadLoFiImages();
-
   // Returns whether the given resource is contained as a preloaded resource.
   bool ContainsAsPreload(Resource*) const;
 

@@ -2032,18 +2032,6 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
   to_be_removed.clear();
 }
 
-void ResourceFetcher::ReloadLoFiImages() {
-  for (Resource* resource : image_resources_) {
-    resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadAlways);
-  }
-
-  // |Resource::ReloadIfLoFiOrPlaceholderImage| can make images pending again,
-  // so we set |not_loaded_image_resources_| to be all the images
-  // conservatively. This isn't expected to cause performance problems as
-  // |ReloadLoFiImages| is relatively rare.
-  not_loaded_image_resources_ = image_resources_;
-}
-
 String ResourceFetcher::GetCacheIdentifier() const {
   if (properties_->GetControllerServiceWorkerMode() !=
       mojom::ControllerServiceWorkerMode::kNoController)
