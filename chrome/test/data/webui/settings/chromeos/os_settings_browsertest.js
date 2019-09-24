@@ -253,11 +253,9 @@ var OSSettingsAppManagementPwaPermissionViewTest =
   }
 };
 
-TEST_F(
-    'OSSettingsAppManagementPwaPermissionViewTest', 'DISABLED_AllJsTests',
-    () => {
-      mocha.run();
-    });
+TEST_F('OSSettingsAppManagementPwaPermissionViewTest', 'AllJsTests', () => {
+  mocha.run();
+});
 
 // Test fixture for the app management arc permission view element.
 // eslint-disable-next-line no-var
@@ -276,11 +274,9 @@ var OSSettingsAppManagementArcPermissionViewTest =
   }
 };
 
-TEST_F(
-    'OSSettingsAppManagementArcPermissionViewTest', 'DISABLED_AllJsTests',
-    () => {
-      mocha.run();
-    });
+TEST_F('OSSettingsAppManagementArcPermissionViewTest', 'AllJsTests', () => {
+  mocha.run();
+});
 
 // Test fixture for the app management managed app view.
 // eslint-disable-next-line no-var
@@ -316,7 +312,7 @@ var OSSettingsAppManagementReducersTest =
   }
 };
 
-TEST_F('OSSettingsAppManagementReducersTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsAppManagementReducersTest', 'AllJsTests', () => {
   mocha.run();
 });
 
