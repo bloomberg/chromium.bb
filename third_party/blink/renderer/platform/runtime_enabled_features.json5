@@ -137,6 +137,13 @@
       status: "experimental",
     },
     {
+      // Use an aspect ratio from the HTML attributes even when we use sizing
+      // from CSS.
+      // https://github.com/WICG/intrinsicsize-attribute/issues/16
+      name: "AspectRatioFromWidthAndHeight",
+      status: "test",
+    },
+    {
       name: "AsyncClipboard",
       status: "stable",
     },
