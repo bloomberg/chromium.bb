@@ -4087,6 +4087,21 @@
             ]
         }
     ],
+    "OverlayNewLayout": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "OverlayNewLayout",
+                    "enable_features": [
+                        "OverlayNewLayout"
+                    ]
+                }
+            ]
+        }
+    ],
     "PDFClickToOpen": [
         {
             "platforms": [
