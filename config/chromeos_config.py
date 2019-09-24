@@ -2274,11 +2274,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'fizz-accelerator',
       'flapjack',
+      'gale',
       'gandof',
       'glados',
       'gnawty',
       'gonzo',
       'grunt',
+      'guado',
       'guado-accelerator',
       'hana',
       'hatch',
@@ -2385,8 +2387,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'fizz-moblab', # crbug.com/995170
-      'gale', # http://b/140523449
-      'guado', # crbug.com/950812
       'mistral', # b/140536001
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'samus-kernelnext', # https://crbug.com/1004618
@@ -2711,7 +2711,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           build_before_patching=True,
           compilecheck=True,
           unittests=False,
-          important=False, # crbug.com/984006
+          important=True,
       ),
   ])
 
