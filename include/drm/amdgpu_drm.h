@@ -128,6 +128,10 @@ extern "C" {
  * for the second page onward should be set to NC.
  */
 #define AMDGPU_GEM_CREATE_MQD_GFX9		(1 << 8)
+/* Flag that BO may contain sensitive data that must be wiped before
+ * releasing the memory
+ */
+#define AMDGPU_GEM_CREATE_VRAM_WIPE_ON_RELEASE	(1 << 9)
 
 struct drm_amdgpu_gem_create_in  {
 	/** the requested memory size */
@@ -204,9 +208,9 @@ union drm_amdgpu_bo_list {
 /* unknown cause */
 #define AMDGPU_CTX_UNKNOWN_RESET	3
 
-/* indicate gpu reset occurred after ctx created */
+/* indicate gpu reset occured after ctx created */
 #define AMDGPU_CTX_QUERY2_FLAGS_RESET    (1<<0)
-/* indicate vram lost occurred after ctx created */
+/* indicate vram lost occured after ctx created */
 #define AMDGPU_CTX_QUERY2_FLAGS_VRAMLOST (1<<1)
 /* indicate some job from this context once cause gpu hang */
 #define AMDGPU_CTX_QUERY2_FLAGS_GUILTY   (1<<2)
@@ -219,7 +223,10 @@ union drm_amdgpu_bo_list {
 #define AMDGPU_CTX_PRIORITY_VERY_LOW    -1023
 #define AMDGPU_CTX_PRIORITY_LOW         -512
 #define AMDGPU_CTX_PRIORITY_NORMAL      0
-/* Selecting a priority above NORMAL requires CAP_SYS_NICE or DRM_MASTER */
+/*
+ * When used in struct drm_amdgpu_ctx_in, a priority above NORMAL requires
+ * CAP_SYS_NICE or DRM_MASTER
+*/
 #define AMDGPU_CTX_PRIORITY_HIGH        512
 #define AMDGPU_CTX_PRIORITY_VERY_HIGH   1023
 
@@ -229,6 +236,7 @@ struct drm_amdgpu_ctx_in {
 	/** For future use, no flags defined so far */
 	__u32	flags;
 	__u32	ctx_id;
+	/** AMDGPU_CTX_PRIORITY_* */
 	__s32	priority;
 };
 
@@ -281,6 +289,7 @@ struct drm_amdgpu_sched_in {
 	/* AMDGPU_SCHED_OP_* */
 	__u32	op;
 	__u32	fd;
+	/** AMDGPU_CTX_PRIORITY_* */
 	__s32	priority;
 	__u32   ctx_id;
 };
@@ -611,11 +620,10 @@ struct drm_amdgpu_cs_chunk_sem {
 };
 
 struct drm_amdgpu_cs_chunk_syncobj {
-	__u32 handle;
-	__u32 flags;
-	__u64 point;
+       __u32 handle;
+       __u32 flags;
+       __u64 point;
 };
-
 
 #define AMDGPU_FENCE_TO_HANDLE_GET_SYNCOBJ	0
 #define AMDGPU_FENCE_TO_HANDLE_GET_SYNCOBJ_FD	1
@@ -995,6 +1003,8 @@ struct drm_amdgpu_info_device {
 	__u64 high_va_max;
 	/* gfx10 pa_sc_tile_steering_override */
 	__u32 pa_sc_tile_steering_override;
+	/* disabled TCCs */
+	__u64 tcc_disabled_mask;
 };
 
 struct drm_amdgpu_info_hw_ip {
