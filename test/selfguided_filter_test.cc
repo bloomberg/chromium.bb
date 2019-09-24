@@ -218,6 +218,7 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(av1_apply_selfguided_restoration_neon));
 #endif
 
+#if CONFIG_AV1_HIGHBITDEPTH
 // Test parameter list:
 //  <tst_fun_, bit_depth>
 typedef tuple<SgrFunc, int> HighbdFilterTestParam;
@@ -413,4 +414,5 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Combine(::testing::Values(av1_apply_selfguided_restoration_neon),
                        ::testing::ValuesIn(highbd_params_neon)));
 #endif
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 }  // namespace
