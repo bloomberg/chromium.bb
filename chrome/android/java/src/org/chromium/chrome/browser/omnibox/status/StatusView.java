@@ -12,7 +12,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
@@ -30,6 +29,7 @@ import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.ui.UiUtils;
@@ -79,6 +79,25 @@ public class StatusView extends LinearLayout {
         mStatusExtraSpace = findViewById(R.id.location_bar_verbose_status_extra_space);
 
         configureAccessibilityDescriptions();
+    }
+
+    /**
+     * @see {@link org.chromium.chrome.browser.omnibox.LocationBar#updateSearchEngineStatusIcon}.
+     */
+    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+            boolean isSearchEngineGoogle, String searchEngineUrl) {
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+            LinearLayout.LayoutParams layoutParams =
+                    new LinearLayout.LayoutParams(mIconView.getLayoutParams());
+            layoutParams.setMarginEnd(0);
+            layoutParams.width =
+                    getResources().getDimensionPixelSize(R.dimen.location_bar_status_icon_width);
+            mIconView.setLayoutParams(layoutParams);
+            // Setup the padding once we're loaded, the other padding changes will happen with post-
+            // layout positioning.
+            setPaddingRelative(getPaddingStart(), getPaddingTop(),
+                    getEndPaddingPixelSizeForState(false), getPaddingBottom());
+        }
     }
 
     /**
@@ -358,11 +377,24 @@ public class StatusView extends LinearLayout {
     private void updateIncognitoBadgeEndPadding() {
         if (mIncognitoBadge == null) return;
 
-        ViewCompat.setPaddingRelative(mIncognitoBadge, ViewCompat.getPaddingStart(mIncognitoBadge),
+        mIncognitoBadge.setPaddingRelative(mIncognitoBadge.getPaddingStart(),
                 mIncognitoBadge.getPaddingTop(),
                 mIconRes != 0 ? mIncognitoBadgeEndPaddingWithIcon
                               : mIncognitoBadgeEndPaddingWithoutIcon,
                 mIncognitoBadge.getPaddingBottom());
+    }
+
+    /**
+     * @returns The end padding for the given state.
+     */
+    public int getEndPaddingPixelSizeForState(boolean hasFocus) {
+        if (hasFocus) {
+            return getResources().getDimensionPixelOffset(
+                    R.dimen.sei_location_bar_icon_end_padding_focused);
+        } else {
+            return getResources().getDimensionPixelOffset(
+                    R.dimen.sei_location_bar_icon_end_padding);
+        }
     }
 
     /**
@@ -431,9 +463,8 @@ public class StatusView extends LinearLayout {
      * @return The width of the status icon including start/end margins.
      */
     int getStatusIconWidth() {
-        ViewGroup.MarginLayoutParams lp =
-                (ViewGroup.MarginLayoutParams) mIconView.getLayoutParams();
-        return lp.getMarginStart() + mIconView.getMeasuredWidth() + lp.getMarginEnd();
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) getLayoutParams();
+        return lp.getMarginStart() + getMeasuredWidth() + lp.getMarginEnd();
     }
 
     /** @return True if the status icon is currently visible. */
