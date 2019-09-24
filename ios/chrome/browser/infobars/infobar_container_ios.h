@@ -37,6 +37,7 @@ class InfoBarContainerIOS : public infobars::InfoBarContainer {
  private:
   __weak id<InfobarContainerConsumer> consumer_;
   __weak id<InfobarContainerConsumer> legacyConsumer_;
+  infobars::InfoBarManager* info_bar_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerIOS);
 };
