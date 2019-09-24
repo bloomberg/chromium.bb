@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 
 namespace web_app {
@@ -18,10 +17,10 @@ TestWebAppRegistryController::~TestWebAppRegistryController() = default;
 
 void TestWebAppRegistryController::SetUp(Profile* profile) {
   database_factory_ = std::make_unique<TestWebAppDatabaseFactory>();
-  registrar_ = std::make_unique<WebAppRegistrar>(profile);
+  mutable_registrar_ = std::make_unique<WebAppRegistrarMutable>(profile);
 
   sync_bridge_ = std::make_unique<WebAppSyncBridge>(
-      profile, database_factory_.get(), registrar_.get(),
+      profile, database_factory_.get(), mutable_registrar_.get(),
       mock_processor_.CreateForwardingProcessor());
 
   ON_CALL(processor(), IsTrackingMetadata())
@@ -35,7 +34,7 @@ void TestWebAppRegistryController::Init() {
 }
 
 void TestWebAppRegistryController::DestroySubsystems() {
-  registrar_.reset();
+  mutable_registrar_.reset();
   sync_bridge_.reset();
   database_factory_.reset();
 }

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -15,7 +16,6 @@ class Profile;
 namespace web_app {
 
 class TestWebAppDatabaseFactory;
-class WebAppRegistrar;
 class WebAppSyncBridge;
 
 class TestWebAppRegistryController {
@@ -32,13 +32,14 @@ class TestWebAppRegistryController {
   void DestroySubsystems();
 
   TestWebAppDatabaseFactory& database_factory() { return *database_factory_; }
-  WebAppRegistrar& registrar() { return *registrar_; }
+  WebAppRegistrar& registrar() { return *mutable_registrar_; }
+  WebAppRegistrarMutable& mutable_registrar() { return *mutable_registrar_; }
   syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
   WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
 
  private:
   std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
-  std::unique_ptr<WebAppRegistrar> registrar_;
+  std::unique_ptr<WebAppRegistrarMutable> mutable_registrar_;
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
   std::unique_ptr<WebAppSyncBridge> sync_bridge_;
 };

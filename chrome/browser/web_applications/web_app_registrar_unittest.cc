@@ -237,7 +237,7 @@ TEST_F(WebAppRegistrarTest, InitRegistrarAndDoForEachApp) {
 TEST_F(WebAppRegistrarTest, AllAppsMutable) {
   std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 10);
 
-  for (WebApp& web_app : registrar().AllAppsMutable()) {
+  for (WebApp& web_app : controller().mutable_registrar().AllAppsMutable()) {
     web_app.SetLaunchContainer(LaunchContainer::kWindow);
     const size_t num_removed = ids.erase(web_app.app_id());
     EXPECT_EQ(1U, num_removed);
@@ -274,11 +274,11 @@ TEST_F(WebAppRegistrarTest, WebAppSyncBridge) {
   sync_bridge().RegisterApp(std::move(web_app));
 
   EXPECT_EQ(101UL, database_factory().ReadAllAppIds().size());
-  EXPECT_EQ(101UL, registrar().registry_for_testing().size());
+  EXPECT_EQ(101UL, controller().mutable_registrar().registry().size());
 
   // Remove 1 app after Init.
   sync_bridge().UnregisterApp(app_id);
-  EXPECT_EQ(100UL, registrar().registry_for_testing().size());
+  EXPECT_EQ(100UL, controller().mutable_registrar().registry().size());
   EXPECT_EQ(100UL, database_factory().ReadAllAppIds().size());
 
   // Remove 100 apps after Init.
