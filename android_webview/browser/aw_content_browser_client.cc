@@ -27,7 +27,6 @@
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/cookie_manager.h"
-#include "android_webview/browser/js_java_interaction/js_api_handler_factory.h"
 #include "android_webview/browser/network_service/aw_proxy_config_monitor.h"
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
 #include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
@@ -37,7 +36,6 @@
 #include "android_webview/common/aw_content_client.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/grit/aw_resources.h"
@@ -710,13 +708,6 @@ bool AwContentBrowserClient::BindAssociatedReceiverFromFrame(
     content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(
         mojo::PendingAssociatedReceiver<
             content_capture::mojom::ContentCaptureReceiver>(std::move(*handle)),
-        render_frame_host);
-    return true;
-  }
-  if (interface_name == mojom::JsToJavaMessaging::Name_) {
-    JsApiHandlerFactory::BindJsToJavaMessaging(
-        mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging>(
-            std::move(*handle)),
         render_frame_host);
     return true;
   }
