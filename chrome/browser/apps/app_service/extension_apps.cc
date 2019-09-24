@@ -36,6 +36,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -99,19 +100,6 @@ ash::ShelfLaunchSource ConvertLaunchSource(
       return ash::LAUNCH_FROM_SHELF;
   }
 }
-
-apps::mojom::ConditionPtr MakeCondition(
-    apps::mojom::ConditionType condition_type,
-    const std::string& value,
-    apps::mojom::PatternMatchType pattern_match_type) {
-  auto condition = apps::mojom::Condition::New();
-  condition->condition_type = condition_type;
-  condition->value = value;
-  condition->match_type = pattern_match_type;
-
-  return condition;
-}
-
 }  // namespace
 
 namespace apps {
@@ -695,15 +683,29 @@ void ExtensionApps::PopulateIntentFilters(
     std::vector<mojom::IntentFilterPtr>* target) {
   if (app_scope) {
     auto intent_filter = apps::mojom::IntentFilter::New();
-    intent_filter->conditions.push_back(
-        MakeCondition(apps::mojom::ConditionType::kScheme, app_scope->scheme(),
-                      apps::mojom::PatternMatchType::kNone));
-    intent_filter->conditions.push_back(
-        MakeCondition(apps::mojom::ConditionType::kHost, app_scope->host(),
-                      apps::mojom::PatternMatchType::kNone));
-    intent_filter->conditions.push_back(
-        MakeCondition(apps::mojom::ConditionType::kPattern, app_scope->path(),
-                      apps::mojom::PatternMatchType::kPrefix));
+
+    std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
+    scheme_condition_values.push_back(apps_util::MakeConditionValue(
+        app_scope->scheme(), apps::mojom::PatternMatchType::kNone));
+    auto scheme_condition =
+        apps_util::MakeCondition(apps::mojom::ConditionType::kScheme,
+                                 std::move(scheme_condition_values));
+    intent_filter->conditions.push_back(std::move(scheme_condition));
+
+    std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
+    host_condition_values.push_back(apps_util::MakeConditionValue(
+        app_scope->host(), apps::mojom::PatternMatchType::kNone));
+    auto host_condition = apps_util::MakeCondition(
+        apps::mojom::ConditionType::kHost, std::move(host_condition_values));
+    intent_filter->conditions.push_back(std::move(host_condition));
+
+    std::vector<apps::mojom::ConditionValuePtr> path_condition_values;
+    path_condition_values.push_back(apps_util::MakeConditionValue(
+        app_scope->path(), apps::mojom::PatternMatchType::kPrefix));
+    auto path_condition = apps_util::MakeCondition(
+        apps::mojom::ConditionType::kPattern, std::move(path_condition_values));
+    intent_filter->conditions.push_back(std::move(path_condition));
+
     target->push_back(std::move(intent_filter));
   }
 }
