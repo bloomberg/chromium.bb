@@ -3638,6 +3638,59 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
   return rdmult;
 }
 
+static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
+                           int mi_col, int64_t *intra_cost_b,
+                           int64_t *inter_cost_b, int *stride) {
+  if (!cpi->oxcf.enable_tpl_model) return 0;
+  if (cpi->tpl_model_pass == 1) {
+    assert(cpi->oxcf.enable_tpl_model == 2);
+    return 0;
+  }
+
+  if (cpi->common.current_frame.frame_type == KEY_FRAME) return 0;
+  const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
+  if (update_type == INTNL_OVERLAY_UPDATE || update_type == OVERLAY_UPDATE)
+    return 0;
+  const int gf_group_index = cpi->gf_group.index;
+  if (gf_group_index <= 0 || cpi->gf_group.index >= cpi->gf_group.size)
+    return 0;
+
+  AV1_COMMON *const cm = &cpi->common;
+  TplDepFrame *tpl_frame = &cpi->tpl_frame[gf_group_index];
+  TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
+  int tpl_stride = tpl_frame->stride;
+  const int mi_wide = mi_size_wide[bsize];
+  const int mi_high = mi_size_high[bsize];
+
+  if (tpl_frame->is_valid == 0) return 0;
+
+  int mi_count = 0;
+  const int mi_col_sr =
+      av1_coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
+  const int mi_col_end_sr = av1_coded_to_superres_mi(
+      mi_col + mi_wide, cm->superres_scale_denominator);
+  const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
+
+  const BLOCK_SIZE tpl_bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
+  const int step = mi_size_wide[tpl_bsize];
+  assert(mi_size_wide[tpl_bsize] == mi_size_high[tpl_bsize]);
+
+  *stride = (mi_col_end_sr - mi_col_sr) / step;
+
+  for (int row = mi_row; row < mi_row + mi_high; row += step) {
+    for (int col = mi_col_sr; col < mi_col_end_sr; col += step) {
+      if (row >= cm->mi_rows || col >= mi_cols_sr) continue;
+      TplDepStats *this_stats =
+          &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
+      inter_cost_b[mi_count] = this_stats->inter_cost;
+      intra_cost_b[mi_count] = this_stats->intra_cost;
+      mi_count++;
+    }
+  }
+
+  return mi_count;
+}
+
 // analysis_type 0: Use mc_dep_cost and intra_cost
 // analysis_type 1: Use count of best inter predictor chosen
 // analysis_type 2: Use cost reduction from intra to inter for best inter
@@ -4220,6 +4273,12 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
         rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
                          &dummy_rate, &dummy_dist, 1, pc_root);
       } else {
+        x->valid_cost_b = 0;
+        // No stats for overlay frames. Exclude key frame.
+        x->valid_cost_b =
+            get_tpl_stats_b(cpi, cm->seq_params.sb_size, mi_row, mi_col,
+                            x->intra_cost_b, x->inter_cost_b, &x->cost_stride);
+
         reset_partition(pc_root, sb_size);
 
 #if CONFIG_COLLECT_COMPONENT_TIMING

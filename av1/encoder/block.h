@@ -32,6 +32,9 @@ extern "C" {
 
 // 1: use classic model 0: use count or saving stats
 #define USE_TPL_CLASSIC_MODEL 0
+#define MC_FLOW_BSIZE_1D 16
+#define MC_FLOW_NUM_PELS (MC_FLOW_BSIZE_1D * MC_FLOW_BSIZE_1D)
+#define MAX_MC_FLOW_BLK_IN_SB (MAX_SB_SIZE / MC_FLOW_BSIZE_1D)
 
 typedef struct {
   unsigned int sse;
@@ -451,6 +454,12 @@ struct macroblock {
   // (normal/winner mode)
   int tx_size_search_method;
   TX_MODE tx_mode;
+
+  // Copy out this SB's TPL block stats.
+  int valid_cost_b;
+  int64_t inter_cost_b[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB];
+  int64_t intra_cost_b[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB];
+  int cost_stride;
 };
 
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {

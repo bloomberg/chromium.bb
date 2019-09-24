@@ -26,22 +26,7 @@
 #include "av1/encoder/encode_strategy.h"
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/reconinter_enc.h"
-
-#define MC_FLOW_BSIZE_1D 16
-#define MC_FLOW_NUM_PELS (MC_FLOW_BSIZE_1D * MC_FLOW_BSIZE_1D)
-
-static BLOCK_SIZE convert_length_to_bsize(int length) {
-  switch (length) {
-    case 64: return BLOCK_64X64;
-    case 32: return BLOCK_32X32;
-    case 16: return BLOCK_16X16;
-    case 8: return BLOCK_8X8;
-    case 4: return BLOCK_4X4;
-    default:
-      assert(0 && "Invalid block size for tpl model");
-      return BLOCK_16X16;
-  }
-}
+#include "av1/encoder/tpl_model.h"
 
 static AOM_INLINE void get_quantize_error(MACROBLOCK *x, int plane,
                                           tran_low_t *coeff, tran_low_t *qcoeff,
