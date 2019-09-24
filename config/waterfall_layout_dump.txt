@@ -180,12 +180,10 @@
     auron_yuna-factory-auron-6459.B-factorybranch
     buddy-factory-auron-6459.B-factorybranch
     gandof-factory-auron-6459.B-factorybranch
-    jecht-factory-auron-6459.B-factorybranch
     lulu-factory-auron-6459.B-factorybranch
   factory-auron-6772.B-buildspec
     buddy-factory-auron-6772.B-factorybranch
     guado-factory-auron-6772.B-factorybranch
-    jecht-factory-auron-6772.B-factorybranch
     rikku-factory-auron-6772.B-factorybranch
     tidus-factory-auron-6772.B-factorybranch
   factory-coral-10122.B-buildspec
@@ -293,7 +291,6 @@
 
 == firmware ==
   firmware-atlas-11827.B-firmwarebranch
-  firmware-auron-6301.B-firmwarebranch
   firmware-banjo-5216.334.B-firmwarebranch
   firmware-buddy-6301.202.B-firmwarebranch
   firmware-candy-5216.310.B-firmwarebranch
@@ -1515,12 +1512,10 @@
     auron_yuna-factory-auron-6459.B-factorybranch-tryjob
     buddy-factory-auron-6459.B-factorybranch-tryjob
     gandof-factory-auron-6459.B-factorybranch-tryjob
-    jecht-factory-auron-6459.B-factorybranch-tryjob
     lulu-factory-auron-6459.B-factorybranch-tryjob
   factory-auron-6772.B-buildspec-tryjob
     buddy-factory-auron-6772.B-factorybranch-tryjob
     guado-factory-auron-6772.B-factorybranch-tryjob
-    jecht-factory-auron-6772.B-factorybranch-tryjob
     rikku-factory-auron-6772.B-factorybranch-tryjob
     tidus-factory-auron-6772.B-factorybranch-tryjob
   factory-coral-10122.B-buildspec-tryjob
@@ -1644,7 +1639,6 @@
   falco_li-tot-chromium-pfq-informational-tryjob
   falco_li-unittest-stress
   firmware-atlas-11827.B-firmwarebranch-tryjob
-  firmware-auron-6301.B-firmwarebranch-tryjob
   firmware-banjo-5216.334.B-firmwarebranch-tryjob
   firmware-buddy-6301.202.B-firmwarebranch-tryjob
   firmware-candy-5216.310.B-firmwarebranch-tryjob
@@ -2053,8 +2047,6 @@
   jecht-chrome-pfq-tryjob
   jecht-chromium-pfq-tryjob
   jecht-compile-only-pre-cq
-  jecht-factory-auron-6459.B-factorybranch-tryjob
-  jecht-factory-auron-6772.B-factorybranch-tryjob
   jecht-full-tryjob
   jecht-llvm-next-toolchain-tryjob
   jecht-llvm-toolchain-tryjob

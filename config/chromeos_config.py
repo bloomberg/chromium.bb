@@ -3405,7 +3405,6 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (INACTIVE, 'firmware-nyan-5771.B', ['nyan_big', 'nyan_blaze'], {}),
       (INACTIVE, 'firmware-kitty-5771.61.B', ['nyan_kitty'], {}),
       (INACTIVE, 'firmware-samus-6300.B', ['samus'], {}),
-      (INACTIVE, 'firmware-auron-6301.B', ['jecht'], {}),
       (INACTIVE, 'firmware-paine-6301.58.B', ['auron_paine'], {}),
       (INACTIVE, 'firmware-yuna-6301.59.B', ['auron_yuna'], {}),
       (INACTIVE, 'firmware-guado-6301.108.B', ['guado'], {}),
@@ -3490,14 +3489,14 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
           'ninja', 'sumo', 'orco', 'heli', 'gnawty']),
       (INACTIVE, 'factory-auron-6459.B', [
           'auron_paine', 'auron_yuna', 'lulu',
-          'jecht', 'gandof', 'buddy']),
+          'gandof', 'buddy']),
       (INACTIVE, 'factory-whirlwind-6509.B', ['whirlwind']),
       (INACTIVE, 'factory-veyron-6591.B', [
           'veyron_jerry', 'veyron_mighty',
           'veyron_speedy', 'veyron_jaq',
           'veyron_minnie', 'veyron_mickey']),
       (INACTIVE, 'factory-auron-6772.B', [
-          'jecht', 'guado', 'tidus', 'rikku', 'buddy']),
+          'guado', 'tidus', 'rikku', 'buddy']),
       (INACTIVE, 'factory-whirlwind-6812.41.B', ['whirlwind']),
       (INACTIVE, 'factory-strago-7458.B', [
           'cyan', 'celes', 'ultima', 'reks', 'terra', 'edgar',
