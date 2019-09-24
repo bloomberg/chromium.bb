@@ -484,7 +484,7 @@ interface MediaRouteProvider {
   // between error conditions for metrics/debugging.
   CreateMediaRouteController(string route_id,
                              pending_receiver<MediaController> media_controller,
-                             MediaStatusObserver observer) =>
+                             pending_remote<MediaStatusObserver> observer) =>
                                  (bool success);
 };
 

@@ -98,7 +98,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   void CreateMediaRouteController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
-      mojom::MediaStatusObserverPtr observer,
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer,
       CreateMediaRouteControllerCallback callback) override;
 
   // display::DisplayObserver:
@@ -127,7 +127,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
 
     void SetMojoConnections(
         mojo::PendingReceiver<mojom::MediaController> media_controller,
-        mojom::MediaStatusObserverPtr observer);
+        mojo::PendingRemote<mojom::MediaStatusObserver> observer);
 
     // Resets the Mojo connections to media controller and status observer.
     void ResetMojoConnections();
@@ -153,7 +153,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
 
     // |media_status_observer|, when set, gets notified whenever |status|
     // changes.
-    mojom::MediaStatusObserverPtr media_status_observer_;
+    mojo::Remote<mojom::MediaStatusObserver> media_status_observer_;
 
     DISALLOW_COPY_AND_ASSIGN(Presentation);
   };

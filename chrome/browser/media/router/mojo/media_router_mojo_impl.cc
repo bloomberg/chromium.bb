@@ -441,7 +441,7 @@ void MediaRouterMojoImpl::SearchSinks(
 void MediaRouterMojoImpl::GetMediaController(
     const MediaRoute::Id& route_id,
     mojo::PendingReceiver<mojom::MediaController> controller,
-    mojom::MediaStatusObserverPtr observer) {
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer) {
   auto* route = GetRoute(route_id);
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);

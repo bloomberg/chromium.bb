@@ -18,6 +18,7 @@
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
 #include "components/mirroring/mojom/session_observer.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -81,7 +82,7 @@ class MirroringActivityRecord : public ActivityRecord,
  protected:
   void CreateMediaController(
       mojo::PendingReceiver<mojom::MediaController> media_controller,
-      mojom::MediaStatusObserverPtr observer) override;
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer) override;
 
  private:
   enum class MirroringType {

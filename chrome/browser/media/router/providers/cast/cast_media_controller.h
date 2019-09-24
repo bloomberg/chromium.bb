@@ -10,7 +10,9 @@
 #include "chrome/common/media_router/mojom/media_status.mojom.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 class Value;
@@ -49,7 +51,7 @@ class CastMediaController : public mojom::MediaController {
  public:
   CastMediaController(ActivityRecord* activity,
                       mojo::PendingReceiver<mojom::MediaController> receiver,
-                      mojom::MediaStatusObserverPtr observer);
+                      mojo::PendingRemote<mojom::MediaStatusObserver> observer);
   ~CastMediaController() override;
 
   // mojom::MediaController overrides:
@@ -81,7 +83,7 @@ class CastMediaController : public mojom::MediaController {
   int media_session_id_;
 
   mojo::Receiver<mojom::MediaController> receiver_;
-  mojom::MediaStatusObserverPtr observer_;
+  mojo::Remote<mojom::MediaStatusObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaController);
 };

@@ -127,9 +127,9 @@ class CastMediaControllerTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    mojom::MediaStatusObserverPtr mojo_status_observer;
+    mojo::PendingRemote<mojom::MediaStatusObserver> mojo_status_observer;
     status_observer_ = std::make_unique<MockMediaStatusObserver>(
-        mojo::MakeRequest(&mojo_status_observer));
+        mojo_status_observer.InitWithNewPipeAndPassReceiver());
     controller_ = std::make_unique<CastMediaController>(
         &activity_, mojo_controller_.BindNewPipeAndPassReceiver(),
         std::move(mojo_status_observer));

@@ -18,6 +18,7 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace cast_channel {
 class CastMessageHandler;
@@ -143,7 +144,7 @@ class ActivityRecord {
 
   virtual void CreateMediaController(
       mojo::PendingReceiver<mojom::MediaController> media_controller,
-      mojom::MediaStatusObserverPtr observer) = 0;
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer) = 0;
 
  protected:
   CastSession* GetSession() const;

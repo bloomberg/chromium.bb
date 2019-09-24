@@ -22,6 +22,7 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "url/origin.h"
 
 namespace cast_channel {
@@ -109,7 +110,7 @@ class CastActivityManager : public CastActivityManagerBase,
   bool CreateMediaController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
-      mojom::MediaStatusObserverPtr observer);
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer);
 
   const MediaRoute* GetRoute(const MediaRoute::Id& route_id) const;
   std::vector<MediaRoute> GetRoutes() const;

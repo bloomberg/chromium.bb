@@ -116,8 +116,8 @@ void MockEventPageRequestManager::RunOrDefer(
 }
 
 MockMediaStatusObserver::MockMediaStatusObserver(
-    mojom::MediaStatusObserverRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::MediaStatusObserver> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 MockMediaStatusObserver::~MockMediaStatusObserver() {}
 

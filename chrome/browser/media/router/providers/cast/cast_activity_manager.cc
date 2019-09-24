@@ -391,7 +391,7 @@ void CastActivityManager::TerminateSession(
 bool CastActivityManager::CreateMediaController(
     const std::string& route_id,
     mojo::PendingReceiver<mojom::MediaController> media_controller,
-    mojom::MediaStatusObserverPtr observer) {
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer) {
   auto activity_it = activities_.find(route_id);
   if (activity_it == activities_.end())
     return false;

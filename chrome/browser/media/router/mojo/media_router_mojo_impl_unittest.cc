@@ -981,9 +981,10 @@ TEST_F(MediaRouterMojoImplTest, SearchSinks) {
 TEST_F(MediaRouterMojoImplTest, GetMediaController) {
   MockMediaController mock_controller;
   mojo::Remote<mojom::MediaController> controller_remote;
-  mojom::MediaStatusObserverPtr observer_ptr;
-  MockMediaStatusObserver mock_observer(mojo::MakeRequest(&observer_ptr));
-  mojom::MediaStatusObserverPtr observer_ptr_held_by_controller;
+  mojo::PendingRemote<mojom::MediaStatusObserver> observer_remote;
+  MockMediaStatusObserver mock_observer(
+      observer_remote.InitWithNewPipeAndPassReceiver());
+  mojo::Remote<mojom::MediaStatusObserver> observer_remote_held_by_controller;
   router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION,
                             {CreateMediaRoute()}, "", {});
 
@@ -992,22 +993,22 @@ TEST_F(MediaRouterMojoImplTest, GetMediaController) {
       .WillOnce(
           [&](const std::string& route_id,
               mojo::PendingReceiver<mojom::MediaController>& media_controller,
-              mojom::MediaStatusObserverPtr& observer,
+              mojo::PendingRemote<mojom::MediaStatusObserver>& observer,
               MockMediaRouteProvider::CreateMediaRouteControllerCallback&
                   callback) {
             mock_controller.Bind(std::move(media_controller));
-            observer_ptr_held_by_controller = std::move(observer);
+            observer_remote_held_by_controller.Bind(std::move(observer));
             std::move(callback).Run(true);
           });
   router()->GetMediaController(kRouteId,
                                controller_remote.BindNewPipeAndPassReceiver(),
-                               std::move(observer_ptr));
+                               std::move(observer_remote));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(mock_controller, Play());
   controller_remote->Play();
   EXPECT_CALL(mock_observer, OnMediaStatusUpdated(_));
-  observer_ptr_held_by_controller->OnMediaStatusUpdated(
+  observer_remote_held_by_controller->OnMediaStatusUpdated(
       mojom::MediaStatus::New());
   base::RunLoop().RunUntilIdle();
 }

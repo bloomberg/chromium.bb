@@ -379,12 +379,12 @@ TEST_F(WiredDisplayMediaRouteProviderTest, SendMediaStatusUpdate) {
   base::RunLoop().RunUntilIdle();
 
   mojo::Remote<mojom::MediaController> media_controller_remote;
-  mojom::MediaStatusObserverPtr status_observer_ptr;
+  mojo::PendingRemote<mojom::MediaStatusObserver> status_observer_remote;
   MockMediaStatusObserver status_observer(
-      mojo::MakeRequest(&status_observer_ptr));
+      status_observer_remote.InitWithNewPipeAndPassReceiver());
   provider_remote_->CreateMediaRouteController(
       presentation_id, media_controller_remote.BindNewPipeAndPassReceiver(),
-      std::move(status_observer_ptr), base::BindOnce([](bool success) {}));
+      std::move(status_observer_remote), base::BindOnce([](bool success) {}));
 
   EXPECT_CALL(status_observer, OnMediaStatusUpdated(_))
       .WillOnce(Invoke([&page_title](mojom::MediaStatusPtr status) {

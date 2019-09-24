@@ -115,7 +115,7 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider,
   void CreateMediaRouteController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
-      mojom::MediaStatusObserverPtr observer,
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer,
       CreateMediaRouteControllerCallback callback) override;
 
   void SetActivityManagerForTest(

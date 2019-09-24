@@ -21,7 +21,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/event_page_tracker.h"
 #include "extensions/common/extension.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -145,7 +144,7 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
   void CreateMediaRouteController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
-      mojom::MediaStatusObserverPtr observer,
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer,
       CreateMediaRouteControllerCallback callback) override {
     CreateMediaRouteControllerInternal(route_id, media_controller, observer,
                                        callback);
@@ -154,7 +153,7 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
       CreateMediaRouteControllerInternal,
       void(const std::string& route_id,
            mojo::PendingReceiver<mojom::MediaController>& media_controller,
-           mojom::MediaStatusObserverPtr& observer,
+           mojo::PendingRemote<mojom::MediaStatusObserver>& observer,
            CreateMediaRouteControllerCallback& callback));
 
   // These methods execute the callbacks with the success or timeout result
@@ -210,13 +209,14 @@ class MockEventPageRequestManager : public EventPageRequestManager {
 
 class MockMediaStatusObserver : public mojom::MediaStatusObserver {
  public:
-  explicit MockMediaStatusObserver(mojom::MediaStatusObserverRequest request);
+  explicit MockMediaStatusObserver(
+      mojo::PendingReceiver<mojom::MediaStatusObserver> receiver);
   ~MockMediaStatusObserver() override;
 
   MOCK_METHOD1(OnMediaStatusUpdated, void(mojom::MediaStatusPtr status));
 
  private:
-  mojo::Binding<mojom::MediaStatusObserver> binding_;
+  mojo::Receiver<mojom::MediaStatusObserver> receiver_;
 };
 
 class MockMediaController : public mojom::MediaController {

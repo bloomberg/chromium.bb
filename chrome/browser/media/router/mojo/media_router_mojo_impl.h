@@ -83,7 +83,7 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   void GetMediaController(
       const MediaRoute::Id& route_id,
       mojo::PendingReceiver<mojom::MediaController> controller,
-      mojom::MediaStatusObserverPtr observer) final;
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer) final;
   void RegisterMediaRouteProvider(
       MediaRouteProviderId provider_id,
       mojo::PendingRemote<mojom::MediaRouteProvider>

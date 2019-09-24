@@ -211,7 +211,7 @@ void ExtensionMediaRouteProviderProxy::ProvideSinks(
 void ExtensionMediaRouteProviderProxy::CreateMediaRouteController(
     const std::string& route_id,
     mojo::PendingReceiver<mojom::MediaController> media_controller,
-    mojom::MediaStatusObserverPtr observer,
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer,
     CreateMediaRouteControllerCallback callback) {
   request_manager_->RunOrDefer(
       base::BindOnce(
@@ -383,10 +383,10 @@ void ExtensionMediaRouteProviderProxy::DoProvideSinks(
 void ExtensionMediaRouteProviderProxy::DoCreateMediaRouteController(
     const std::string& route_id,
     mojo::PendingReceiver<mojom::MediaController> media_controller,
-    mojom::MediaStatusObserverPtr observer,
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer,
     CreateMediaRouteControllerCallback callback) {
   DVLOG(1) << "DoCreateMediaRouteController";
-  if (!media_controller.is_valid() || !observer.is_bound())
+  if (!media_controller.is_valid() || !observer.is_valid())
     return;
 
   media_route_provider_->CreateMediaRouteController(

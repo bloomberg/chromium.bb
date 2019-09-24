@@ -91,7 +91,7 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
   void CreateMediaRouteController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
-      mojom::MediaStatusObserverPtr observer,
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer,
       CreateMediaRouteControllerCallback callback) override;
 
   // Sets the MediaRouteProvider to forward calls to. Notifies
@@ -160,7 +160,7 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
   void DoCreateMediaRouteController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
-      mojom::MediaStatusObserverPtr observer,
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer,
       CreateMediaRouteControllerCallback callback);
 
   // Mojo remote to the MediaRouteProvider in the component extension.
