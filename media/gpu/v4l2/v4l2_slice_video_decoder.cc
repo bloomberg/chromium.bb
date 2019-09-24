@@ -818,7 +818,6 @@ scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
         base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_)));
     return nullptr;
   }
-  frame->set_timestamp(current_decode_request_->buffer->timestamp());
 
   // Request V4L2 input and output buffers.
   V4L2WritableBufferRef input_buf = input_queue_->GetFreeBuffer();
@@ -1100,6 +1099,11 @@ void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
                                         base::TimeDelta timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4) << "timestamp: " << timestamp;
+
+  // |frame| haven't been set timestamp before, we could set the timestamp
+  // directly without wrapping.
+  if (frame->timestamp().is_zero())
+    frame->set_timestamp(timestamp);
 
   // We need to update one or more attributes of the frame. Since we can't
   // modify the attributes of the frame directly, we wrap the frame into a new
