@@ -125,7 +125,6 @@ class MockServiceWorkerContextClient final
   MOCK_METHOD2(WorkerReadyForInspectionOnInitiatorThread,
                void(mojo::ScopedMessagePipeHandle,
                     mojo::ScopedMessagePipeHandle));
-  MOCK_METHOD0(WorkerContextFailedToStartOnInitiatorThread, void());
 
   void WorkerContextStarted(WebServiceWorkerContextProxy* proxy,
                             scoped_refptr<base::SequencedTaskRunner>) override {
