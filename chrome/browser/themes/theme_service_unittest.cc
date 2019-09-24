@@ -586,19 +586,12 @@ TEST_F(ThemeServiceTest, OmniboxContrast) {
            TP::COLOR_OMNIBOX_BACKGROUND},
           {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
            TP::COLOR_OMNIBOX_RESULTS_BG},
-          // TODO(thomasanderson): Because colors are computed relative to
-          // non-hovered backgrounds, some colors over hovered backgrounds do
-          // not have sufficient contrast in all configurations.  Computing the
-          // non-contrasty colors here relative to hovered backgrounds should
-          // fix this and not reduce contrast of non-hovered backgrounds.
-          // {TP::COLOR_OMNIBOX_TEXT_DIMMED,
-          //  TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
-          // {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
-          //  TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
-          // {TP::COLOR_OMNIBOX_RESULTS_URL,
-          //  TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
-          // {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
-          //  TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          {TP::COLOR_OMNIBOX_TEXT_DIMMED, TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_RESULTS_URL, TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
+           TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
       };
       auto check_sufficient_contrast = [&](int id1, int id2) {
         const float contrast = color_utils::GetContrastRatio(
