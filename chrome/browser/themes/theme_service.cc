@@ -1146,6 +1146,10 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
                 .color,
             custom};
   };
+  auto get_resulting_paint_color = [&](OmniboxColor fg, OmniboxColor bg) {
+    return OmniboxColor{GetResultingPaintColor(fg.value, bg.value),
+                        fg.custom || bg.custom};
+  };
 
   auto get_base_color = [&](int id) -> OmniboxColor {
     SkColor color;
@@ -1153,9 +1157,15 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
       return {color, true};
     return {GetDefaultColor(id, incognito), false};
   };
+  // Avoid infinite loop caused by GetColor() below.
+  if (id == TP::COLOR_TOOLBAR)
+    return base::nullopt;
   // These are the only base colors.
-  OmniboxColor fg = get_base_color(TP::COLOR_OMNIBOX_TEXT);
-  OmniboxColor bg = get_base_color(TP::COLOR_OMNIBOX_BACKGROUND);
+  OmniboxColor bg = get_resulting_paint_color(
+      get_base_color(TP::COLOR_OMNIBOX_BACKGROUND),
+      {GetColor(TP::COLOR_TOOLBAR, incognito, nullptr), false});
+  OmniboxColor fg =
+      get_resulting_paint_color(get_base_color(TP::COLOR_OMNIBOX_TEXT), bg);
   if (invert) {
     // Given a color with some contrast against the opposite endpoint, returns a
     // color with that same contrast against the nearby endpoint.
