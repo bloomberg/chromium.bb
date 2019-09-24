@@ -1283,7 +1283,7 @@ float WebAXObjectProxy::FontSize() {
 
 std::string WebAXObjectProxy::Autocomplete() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.AriaAutoComplete().Utf8();
+  return accessibility_object_.AutoComplete().Utf8();
 }
 
 std::string WebAXObjectProxy::Current() {
