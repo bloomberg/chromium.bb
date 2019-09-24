@@ -697,16 +697,7 @@ class AXPosition {
   // because positions can handle moving across multiple trees, while trees
   // cannot.
   AXPositionInstance LowestCommonAncestor(const AXPosition& second) const {
-    AXNodeType* common_anchor = LowestCommonAnchor(second);
-    if (!common_anchor)
-      return CreateNullPosition();
-
-    AXPositionInstance common_ancestor = Clone();
-    while (!common_ancestor->IsNullPosition() &&
-           common_ancestor->GetAnchor() != common_anchor) {
-      common_ancestor = common_ancestor->CreateParentPosition();
-    }
-    return common_ancestor;
+    return CreateAncestorPosition(LowestCommonAnchor(second));
   }
 
   AXPositionInstance AsTreePosition() const {
@@ -1212,12 +1203,15 @@ class AXPosition {
         // position might unambiguously be at the end of a line, its parent
         // position might be the same as the parent position of the position
         // representing the start of the next line.
+        const int max_text_offset = MaxTextOffset();
+        const int max_text_offset_in_parent =
+            IsEmbeddedObjectInParent() ? 1 : max_text_offset;
         int parent_offset = AnchorTextOffsetInParent();
         ax::mojom::TextAffinity parent_affinity = affinity_;
-        if (MaxTextOffset() == MaxTextOffsetInParent()) {
+        if (max_text_offset == max_text_offset_in_parent) {
           parent_offset += text_offset_;
         } else if (text_offset_ > 0) {
-          parent_offset += MaxTextOffsetInParent();
+          parent_offset += max_text_offset_in_parent;
           parent_affinity = ax::mojom::TextAffinity::kDownstream;
         }
 
@@ -1243,7 +1237,7 @@ class AXPosition {
         // checked if the child was at the end of the line, because our line end
         // testing logic takes into account line breaks, which don't apply in
         // this situation.
-        if (text_offset_ == MaxTextOffset() && parent_position->AtStartOfLine())
+        if (text_offset_ == max_text_offset && parent_position->AtStartOfLine())
           parent_position->affinity_ = ax::mojom::TextAffinity::kUpstream;
         return parent_position;
       }
@@ -2192,52 +2186,41 @@ class AXPosition {
     // common ancestor position when converted to tree positions?" The answer is
     // when they are both text positions and they either have the same anchor,
     // or one is the ancestor of the other.
-    std::unique_ptr<AXPosition> this_tree_position = this->AsTreePosition();
-    std::unique_ptr<AXPosition> other_tree_position = other.AsTreePosition();
-    std::unique_ptr<AXPosition> this_tree_position_ancestor =
-        this_tree_position->LowestCommonAncestor(*other_tree_position);
-    std::unique_ptr<AXPosition> other_tree_position_ancestor =
-        other_tree_position->LowestCommonAncestor(*this_tree_position);
-    DCHECK_EQ(this_tree_position_ancestor->GetAnchor(),
-              other_tree_position_ancestor->GetAnchor());
-    if (this_tree_position_ancestor->IsNullPosition())
+    const AXNodeType* common_anchor = this->LowestCommonAnchor(other);
+    if (!common_anchor)
       return base::Optional<int>(base::nullopt);
-    DCHECK(this_tree_position_ancestor->IsTreePosition() &&
-           other_tree_position_ancestor->IsTreePosition());
 
     // Attempt to avoid recomputing the lowest common ancestor because we may
     // already have its anchor in which case just find the text offset.
     if (this->IsTextPosition() && other.IsTextPosition()) {
       // This text position's anchor is the common ancestor of the other text
       // position's anchor.
-      if (this->GetAnchor() == other_tree_position_ancestor->GetAnchor()) {
-        std::unique_ptr<AXPosition> other_text_position = other.Clone();
-        while (other_text_position->GetAnchor() != this->GetAnchor())
-          other_text_position = other_text_position->CreateParentPosition();
+      if (this->GetAnchor() == common_anchor) {
+        AXPositionInstance other_text_position =
+            other.CreateAncestorPosition(common_anchor);
         return base::Optional<int>(this->text_offset_ -
                                    other_text_position->text_offset_);
       }
 
       // The other text position's anchor is the common ancestor of this text
       // position's anchor.
-      if (other.GetAnchor() == this_tree_position_ancestor->GetAnchor()) {
-        std::unique_ptr<AXPosition> this_text_position = this->Clone();
-        while (this_text_position->GetAnchor() != other.GetAnchor())
-          this_text_position = this_text_position->CreateParentPosition();
+      if (other.GetAnchor() == common_anchor) {
+        AXPositionInstance this_text_position =
+            this->CreateAncestorPosition(common_anchor);
         return base::Optional<int>(this_text_position->text_offset_ -
                                    other.text_offset_);
       }
 
       // All optimizations failed. Fall back to comparing text positions with
       // the common text position ancestor.
-      std::unique_ptr<AXPosition> this_text_position_ancestor =
-          this->LowestCommonAncestor(other);
-      std::unique_ptr<AXPosition> other_text_position_ancestor =
-          other.LowestCommonAncestor(*this);
+      AXPositionInstance this_text_position_ancestor =
+          this->CreateAncestorPosition(common_anchor);
+      AXPositionInstance other_text_position_ancestor =
+          other.CreateAncestorPosition(common_anchor);
       DCHECK(this_text_position_ancestor->IsTextPosition());
       DCHECK(other_text_position_ancestor->IsTextPosition());
-      DCHECK_EQ(this_text_position_ancestor->GetAnchor(),
-                other_text_position_ancestor->GetAnchor());
+      DCHECK_EQ(common_anchor, this_text_position_ancestor->GetAnchor());
+      DCHECK_EQ(common_anchor, other_text_position_ancestor->GetAnchor());
 
       // TODO - This does not take into account |affinity_|, so we may return
       // a false positive when comparing at the end of a line.
@@ -2263,6 +2246,17 @@ class AXPosition {
       return base::Optional<int>(this_text_position_ancestor->text_offset_ -
                                  other_text_position_ancestor->text_offset_);
     }
+
+    // All optimizations failed. Fall back to comparing child index with
+    // the common tree position ancestor.
+    AXPositionInstance this_tree_position_ancestor =
+        this->AsTreePosition()->CreateAncestorPosition(common_anchor);
+    AXPositionInstance other_tree_position_ancestor =
+        other.AsTreePosition()->CreateAncestorPosition(common_anchor);
+    DCHECK(this_tree_position_ancestor->IsTreePosition());
+    DCHECK(other_tree_position_ancestor->IsTreePosition());
+    DCHECK_EQ(common_anchor, this_tree_position_ancestor->GetAnchor());
+    DCHECK_EQ(common_anchor, other_tree_position_ancestor->GetAnchor());
 
     return base::Optional<int>(this_tree_position_ancestor->child_index() -
                                other_tree_position_ancestor->child_index());
@@ -2368,7 +2362,13 @@ class AXPosition {
   // Returns the length of text that this anchor node takes up in its parent.
   // On some platforms, embedded objects are represented in their parent with a
   // single embedded object character.
-  virtual int MaxTextOffsetInParent() const { return MaxTextOffset(); }
+  int MaxTextOffsetInParent() const {
+    return IsEmbeddedObjectInParent() ? 1 : MaxTextOffset();
+  }
+
+  // Returns whether or not this anchor is represented in their parent with a
+  // single embedded object character.
+  virtual bool IsEmbeddedObjectInParent() const { return false; }
 
   // Determines if the anchor containing this position produces a hard line
   // break in the text representation, e.g. a block level element or a <br>.
@@ -2722,6 +2722,19 @@ class AXPosition {
       iterator = iterator->CreateParentPosition();
     }
     return iterator;
+  }
+
+  AXPositionInstance CreateAncestorPosition(
+      const AXNodeType* ancestor_anchor) const {
+    if (!ancestor_anchor)
+      return CreateNullPosition();
+
+    AXPositionInstance ancestor_position = Clone();
+    while (!ancestor_position->IsNullPosition() &&
+           ancestor_position->GetAnchor() != ancestor_anchor) {
+      ancestor_position = ancestor_position->CreateParentPosition();
+    }
+    return ancestor_position;
   }
 
   AXPositionKind kind_;
