@@ -304,11 +304,17 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.paygenBuildMock = self.PatchObject(
         paygen_build_lib, 'PaygenBuild', return_value=instanceMock)
 
+    self.payload_config1 = mock.MagicMock()
+    self.payload_config1.payload_type = paygen_build_lib.PAYLOAD_TYPE_FSI
+    self.payload_config1.applicable_models = ['model1', 'model3']
+    self.payload_config2 = mock.MagicMock()
+    self.payload_config2.payload_type = paygen_build_lib.PAYLOAD_TYPE_OMAHA
+
     instanceMock.CreatePayloads.side_effect = iter([(
         'foo-suite-name',
         'foo-archive-board',
         'foo-archive-build',
-        [],
+        [self.payload_config1, self.payload_config2],
     )])
 
   # pylint: disable=arguments-differ
@@ -425,7 +431,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           'foo-archive-build',
           False,
           True,
-          [],
+          [self.payload_config1, self.payload_config2],
           constants.ENV_AUTOTEST,
           job_keyvals=mock.ANY)
 
@@ -466,7 +472,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           'foo-archive-build',
           False,
           True,
-          [],
+          [self.payload_config1, self.payload_config2],
           constants.ENV_SKYLAB,
           job_keyvals=mock.ANY)
 
@@ -526,7 +532,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           'foo-archive-build',
           False,
           True,
-          [],
+          [self.payload_config1, self.payload_config2],
           constants.ENV_AUTOTEST,
           job_keyvals=mock.ANY)
 
@@ -560,14 +566,19 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           'foo-archive-build',
           False,
           True,
-          [],
+          [self.payload_config1, self.payload_config2],
           constants.ENV_SKYLAB,
           job_keyvals=mock.ANY)
 
   def testRunPaygenInParallelWithUnifiedBuild(self):
+    # payload_config1 defines applicable_models as model1 and model3.
+    # model3 does not have au enabled but gets scheduled since it has type FSI.
+    # payload_config2 has type OMAHA so gets scheduled on model1 and model2
+    # (all models with au enabled). So we should get 4 parallel runs total.
     self._run.config.models = [
         config_lib.ModelTestConfig('model1', 'model1', ['au']),
-        config_lib.ModelTestConfig('model2', 'model1', ['au'])
+        config_lib.ModelTestConfig('model2', 'model1', ['au']),
+        config_lib.ModelTestConfig('model3', 'model1')
     ]
 
     # Have to patch and verify that the PaygenTestStage is created.
@@ -582,7 +593,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           False,
           False,
           skip_duts_check=False)
-      parallel_tests.assert_called_once_with([mock.ANY, mock.ANY])
+      parallel_tests.assert_called_once_with([mock.ANY, mock.ANY, mock.ANY,
+                                              mock.ANY])
 
   def testPayloadBuildSetCorrectly(self):
     """Test that payload build is passed correctly to PaygenBuild."""

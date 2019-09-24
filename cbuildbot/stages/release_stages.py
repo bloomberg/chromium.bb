@@ -478,7 +478,6 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         if not self.skip_testing:
           (suite_name, archive_board, archive_build,
            payload_test_configs) = testdata
-
           # For unified builds, only test against the specified models.
           if self._run.config.models:
             models = []
@@ -488,16 +487,16 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                 models.append(model)
 
             if len(models) > 1:
-              stages = [
-                  PaygenTestStage(
-                      self._run, self.buildstore, suite_name, archive_board,
-                      model.name, model.lab_board_name, self.channel,
-                      archive_build, self.skip_duts_check, self.debug,
-                      payload_test_configs,
-                      config_lib.GetHWTestEnv(self._run.config,
-                                              model_config=model))
-                  for model in models
-              ]
+              fsi_configs = set(p for p in payload_test_configs
+                                if p.payload_type ==
+                                paygen_build_lib.PAYLOAD_TYPE_FSI)
+              non_fsi_configs = set(p for p in payload_test_configs
+                                    if p not in fsi_configs)
+              stages = self._ScheduleForApplicableModels(
+                  archive_board, archive_build, fsi_configs, suite_name)
+              stages += self._ScheduleForModels(
+                  archive_board, archive_build, models, non_fsi_configs,
+                  suite_name)
               steps = [stage.Run for stage in stages]
               parallel.RunParallelSteps(steps)
             elif len(models) == 1:
@@ -526,6 +525,49 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         # processing the same build. (perhaps by a trybot generating payloads on
         # request).
         logging.info('PaygenBuild for %s skipped because: %s', self.channel, e)
+
+  def _ScheduleForModels(self, archive_board, archive_build, models,
+                         non_fsi_configs, suite_name):
+    """Schedule AU tests on models in the 'au' suite.
+
+    Args:
+      archive_board: The board we schedule against.
+      archive_build: The build of the payload config.
+      models: The models with 'au' enabled.
+      non_fsi_configs: The list of payload configs.
+      suite_name: The name of the suite we are scheduling.
+    """
+    return [
+        PaygenTestStage(
+            self._run, self.buildstore, suite_name, archive_board,
+            model.name, model.lab_board_name, self.channel,
+            archive_build, self.skip_duts_check, self.debug,
+            non_fsi_configs,
+            config_lib.GetHWTestEnv(self._run.config, model_config=model))
+        for model in models
+    ]
+
+  def _ScheduleForApplicableModels(self, archive_board, archive_build,
+                                   fsi_configs, suite_name):
+    """Schedule FSI AU tests on every applicable_model.
+
+    We schedule on every model even if it is not in the 'au' suite.
+    This ensures no FSI tests are missed from models being disabled in the lab.
+
+    Args:
+      archive_board: The board we schedule against.
+      archive_build: The build of the payload config.
+      fsi_configs: The list of payload configs of type FSI.
+      suite_name: The name of the suite we are scheduling.
+    """
+    stages = []
+    for payload_config in fsi_configs:
+      applicable_models = [m for m in self._run.config.models
+                           if m.name in payload_config.applicable_models]
+      stages += self._ScheduleForModels(archive_board, archive_build,
+                                        applicable_models, [payload_config],
+                                        suite_name)
+    return stages
 
 
 class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
