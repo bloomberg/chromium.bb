@@ -1894,6 +1894,7 @@ jumbo_split_static_library("ui") {
       "webui/version_handler_chromeos.h",
       "window_sizer/window_sizer_ash.cc",
     ]
+
     deps += [
       "//ash",
       "//ash/components/shortcut_viewer",
@@ -1901,6 +1902,7 @@ jumbo_split_static_library("ui") {
       "//ash/public/cpp",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",
+      "//build:branding_buildflags",
       "//chrome/browser/chromeos",
       "//chrome/browser/chromeos:backdrop_wallpaper_proto",
       "//chrome/browser/resources/chromeos:camera_resources",
