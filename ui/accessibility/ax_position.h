@@ -1439,10 +1439,9 @@ class AXPosition {
     // If the word boundary is in the same subtree, return a position rooted at
     // this position's anchor. This is necessary because we don't want to return
     // a position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
+    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
+    if (GetAnchor() == common_anchor) {
+      text_position = text_position->CreateAncestorPosition(common_anchor);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return CreatePositionAtEndOfAnchor();
     }
@@ -1521,10 +1520,9 @@ class AXPosition {
     // If the word boundary is in the same subtree, return a position rooted at
     // this position's anchor. This is necessary because we don't want to return
     // a position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
+    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
+    if (GetAnchor() == common_anchor) {
+      text_position = text_position->CreateAncestorPosition(common_anchor);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return CreatePositionAtStartOfAnchor();
     }
@@ -1609,10 +1607,9 @@ class AXPosition {
     // If the word boundary is in the same subtree, return a position rooted at
     // this position's anchor. This is necessary because we don't want to return
     // a position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
+    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
+    if (GetAnchor() == common_anchor) {
+      text_position = text_position->CreateAncestorPosition(common_anchor);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return CreatePositionAtEndOfAnchor();
     }
@@ -1697,10 +1694,9 @@ class AXPosition {
     // If the word boundary is in the same subtree, return a position rooted at
     // this position's anchor. This is necessary because we don't want to return
     // a position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
+    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
+    if (GetAnchor() == common_anchor) {
+      text_position = text_position->CreateAncestorPosition(common_anchor);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return CreatePositionAtStartOfAnchor();
     }
@@ -1798,10 +1794,9 @@ class AXPosition {
     // at the current position.
     // This is necessary because we don't want to return any position that might
     // be in the shadow DOM if the original position was not.
-    AXPositionInstance common_ancestor =
-        tree_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      tree_position = std::move(common_ancestor);
+    const AXNodeType* common_anchor = tree_position->LowestCommonAnchor(*this);
+    if (GetAnchor() == common_anchor) {
+      tree_position = tree_position->CreateAncestorPosition(common_anchor);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return CreatePositionAtStartOfAnchor();
     }
@@ -1865,10 +1860,9 @@ class AXPosition {
     // rooted at the current position.
     // This is necessary because we don't want to return any position that might
     // be in the shadow DOM if the original position was not.
-    AXPositionInstance common_ancestor =
-        tree_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      tree_position = std::move(common_ancestor);
+    const AXNodeType* common_anchor = tree_position->LowestCommonAnchor(*this);
+    if (GetAnchor() == common_anchor) {
+      tree_position = tree_position->CreateAncestorPosition(common_anchor);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return CreatePositionAtEndOfAnchor();
     }
@@ -2052,10 +2046,9 @@ class AXPosition {
     // If the boundary is in the same subtree, return a position rooted at this
     // position's anchor. This is necessary because we don't want to return a
     // position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
+    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
+    if (GetAnchor() == common_anchor) {
+      text_position = text_position->CreateAncestorPosition(common_anchor);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return (boundary_direction == AXTextBoundaryDirection::kForwards)
                  ? CreatePositionAtEndOfAnchor()
@@ -2129,10 +2122,9 @@ class AXPosition {
     // If the boundary is in the same subtree, return a position rooted at this
     // position's anchor. This is necessary because we don't want to return a
     // position that might be in the shadow DOM when this position is not.
-    AXPositionInstance common_ancestor =
-        text_position->LowestCommonAncestor(*this);
-    if (GetAnchor() == common_ancestor->GetAnchor()) {
-      text_position = std::move(common_ancestor);
+    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
+    if (GetAnchor() == common_anchor) {
+      text_position = text_position->CreateAncestorPosition(common_anchor);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return (boundary_direction == AXTextBoundaryDirection::kForwards)
                  ? CreatePositionAtEndOfAnchor()
