@@ -54,14 +54,16 @@ public class AppIndexingUtil {
     }
 
     AppIndexingUtil(@Nullable TabModelSelector mTabModelSelectorImpl) {
-        if (mTabModelSelectorImpl != null) {
+        if (mTabModelSelectorImpl != null && isEnabledForDevice()) {
             mObserver = new TabModelSelectorTabObserver(mTabModelSelectorImpl) {
                 @Override
                 public void onPageLoadFinished(final Tab tab, String url) {
                     extractCopylessPasteMetadata(tab);
-                    if (!SysUtils.isLowEndDevice()) {
-                        getAppIndexingReporter().reportWebPageView(url, tab.getTitle());
-                    }
+                }
+
+                @Override
+                public void didFirstVisuallyNonEmptyPaint(Tab tab) {
+                    reportPageView(tab);
                 }
             };
         }
@@ -78,17 +80,14 @@ public class AppIndexingUtil {
      */
     @VisibleForTesting
     void extractCopylessPasteMetadata(final Tab tab) {
-        final String url = tab.getUrl();
-        boolean isHttpOrHttps = UrlUtilities.isHttpOrHttps(url);
-        if (!isEnabledForDevice() || tab.isIncognito() || !isHttpOrHttps) {
-            return;
-        }
+        if (!isEnabledForTab(tab)) return;
 
         // There are three conditions that can occur with respect to the cache.
         // 1. Cache hit, and an entity was found previously.
         // 2. Cache hit, but no entity was found. Ignore.
         // 3. Cache miss, we need to parse the page.
         // Note that page view is reported unconditionally.
+        final String url = tab.getUrl();
         if (wasPageVisitedRecently(url)) {
             if (lastPageVisitContainedEntity(url)) {
                 // Condition 1
@@ -117,6 +116,12 @@ public class AppIndexingUtil {
                 getAppIndexingReporter().reportWebPage(webpage);
             });
         }
+    }
+
+    @VisibleForTesting
+    void reportPageView(Tab tab) {
+        if (!isEnabledForTab(tab)) return;
+        getAppIndexingReporter().reportWebPageView(tab.getUrl(), tab.getTitle());
     }
 
     @VisibleForTesting
@@ -177,8 +182,16 @@ public class AppIndexingUtil {
         return SystemClock.elapsedRealtime();
     }
 
+    @VisibleForTesting
     boolean isEnabledForDevice() {
         return !SysUtils.isLowEndDevice();
+    }
+
+    @VisibleForTesting
+    boolean isEnabledForTab(Tab tab) {
+        final String url = tab.getUrl();
+        boolean isHttpOrHttps = UrlUtilities.isHttpOrHttps(url);
+        return isEnabledForDevice() && !tab.isIncognito() && isHttpOrHttps;
     }
 
     private LruCache<String, CacheEntry> getPageCache() {
