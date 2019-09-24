@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
@@ -26,14 +26,11 @@
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
-OmniboxPageActionIconContainerView::Params::Params() = default;
-OmniboxPageActionIconContainerView::Params::~Params() = default;
+PageActionIconContainerView::Params::Params() = default;
+PageActionIconContainerView::Params::~Params() = default;
 
-OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
-    const Params& params)
+PageActionIconContainerView::PageActionIconContainerView(const Params& params)
     : zoom_observer_(this) {
-  DCHECK_GT(params.icon_size, 0);
-  DCHECK_NE(params.icon_color, gfx::kPlaceholderColor);
   DCHECK(params.page_action_icon_delegate);
 
   views::BoxLayout& layout =
@@ -141,9 +138,16 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
 
   for (PageActionIconView* icon : page_action_icons_) {
     icon->SetVisible(false);
-    icon->set_icon_size(params.icon_size);
-    icon->SetIconColor(params.icon_color);
-    icon->SetFontList(params.font_list ? *params.font_list : gfx::FontList());
+    if (params.icon_size)
+      icon->set_icon_size(*params.icon_size);
+    if (params.icon_color)
+      icon->SetIconColor(*params.icon_color);
+    if (params.font_list)
+      icon->SetFontList(*params.font_list);
+    if (params.button_observer)
+      icon->AddButtonObserver(params.button_observer);
+    if (params.view_observer)
+      icon->views::View::AddObserver(params.view_observer);
     AddChildView(icon);
   }
 
@@ -153,9 +157,9 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
   }
 }
 
-OmniboxPageActionIconContainerView::~OmniboxPageActionIconContainerView() {}
+PageActionIconContainerView::~PageActionIconContainerView() {}
 
-PageActionIconView* OmniboxPageActionIconContainerView::GetIconView(
+PageActionIconView* PageActionIconContainerView::GetIconView(
     PageActionIconType type) {
   switch (type) {
     case PageActionIconType::kBookmarkStar:
@@ -192,12 +196,18 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetIconView(
   return nullptr;
 }
 
-void OmniboxPageActionIconContainerView::UpdateAll() {
+void PageActionIconContainerView::UpdateAll() {
   for (PageActionIconView* icon : page_action_icons_)
     icon->Update();
 }
 
-bool OmniboxPageActionIconContainerView::
+bool PageActionIconContainerView::IsAnyIconVisible() const {
+  return std::any_of(
+      page_action_icons_.begin(), page_action_icons_.end(),
+      [](const PageActionIconView* icon) { return icon->GetVisible(); });
+}
+
+bool PageActionIconContainerView::
     ActivateFirstInactiveBubbleForAccessibility() {
   for (PageActionIconView* icon : page_action_icons_) {
     if (!icon->GetVisible() || !icon->GetBubble())
@@ -212,33 +222,31 @@ bool OmniboxPageActionIconContainerView::
   return false;
 }
 
-void OmniboxPageActionIconContainerView::SetIconColor(SkColor icon_color) {
+void PageActionIconContainerView::SetIconColor(SkColor icon_color) {
   for (PageActionIconView* icon : page_action_icons_)
     icon->SetIconColor(icon_color);
 }
 
-void OmniboxPageActionIconContainerView::SetFontList(
-    const gfx::FontList& font_list) {
+void PageActionIconContainerView::SetFontList(const gfx::FontList& font_list) {
   for (PageActionIconView* icon : page_action_icons_)
     icon->SetFontList(font_list);
 }
 
-void OmniboxPageActionIconContainerView::ZoomChangedForActiveTab(
+void PageActionIconContainerView::ZoomChangedForActiveTab(
     bool can_show_bubble) {
   if (zoom_icon_)
     zoom_icon_->ZoomChangedForActiveTab(can_show_bubble);
 }
 
-void OmniboxPageActionIconContainerView::ChildPreferredSizeChanged(
+void PageActionIconContainerView::ChildPreferredSizeChanged(
     views::View* child) {
   PreferredSizeChanged();
 }
 
-void OmniboxPageActionIconContainerView::ChildVisibilityChanged(
-    views::View* child) {
+void PageActionIconContainerView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void OmniboxPageActionIconContainerView::OnDefaultZoomLevelChanged() {
+void PageActionIconContainerView::OnDefaultZoomLevelChanged() {
   ZoomChangedForActiveTab(false);
 }
