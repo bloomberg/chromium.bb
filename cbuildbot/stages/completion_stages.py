@@ -6,6 +6,7 @@
 """Module containing the completion stages."""
 
 from __future__ import print_function
+from __future__ import division
 
 from infra_libs import ts_mon
 
@@ -735,6 +736,10 @@ class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
                                                   **kwargs)
 
   def PerformStage(self):
+    if not self._build_threshold_successful():
+      logging.info('Insufficient number of successful builders. '
+                   'Skipping LKGM update.')
+
     manager = self._run.attrs.manifest_manager
     cmd = ['chrome_chromeos_lkgm', '--lkgm=%s' % manager.current_version]
     # Always do a dryrun for now so that we can check the output and ensure it
@@ -742,6 +747,17 @@ class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
     if self._run.options.debug:
       cmd.append('--dryrun')
     commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True)
+
+  def _build_threshold_successful(self):
+    """Whether the percentage of successful child builders exceeds threshold"""
+    all_builds = self.GetScheduledSlaveBuildbucketIds()
+    len_all_builds = float(len(all_builds))
+    len_child_failures = float(
+        len(self.buildstore.GetBuildsFailures(all_builds)))
+
+    pctn_succeeded = 100.0 * (
+        (len_all_builds - len_child_failures) / len_all_builds)
+    return pctn_succeeded >= constants.LKGM_THRESHOLD
 
 
 class PublishUprevChangesStage(generic_stages.BuilderStage):

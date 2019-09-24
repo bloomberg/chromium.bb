@@ -1302,3 +1302,6 @@ TOPOLOGY_DICT = {
     '/swarming_proxy/host':
         'chromeos-proxy.appspot.com',
 }
+
+# Percentage of child builders that need to complete to update LKGM
+LKGM_THRESHOLD = 80

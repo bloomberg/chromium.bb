@@ -573,17 +573,21 @@ class DistributedBuilder(SimpleBuilder):
     finally:
       if self._run.config.master:
         self._RunStage(report_stages.SlaveFailureSummaryStage)
+
+      is_master_release = config_lib.IsCanaryMaster(self._run.config)
+      if is_master_release:
+        if build_finished:
+          self._RunStage(completion_stages.UpdateChromeosLKGMStage)
+        else:
+          logging.info(
+              'Skipping UpdateChromeosLKGMStage, '
+              'build_successful=%d completion_successful=%d '
+              'build_finished=%d', was_build_successful, completion_successful,
+              build_finished)
+
       if self._run.config.push_overlays:
         publish = (was_build_successful and completion_successful and
                    build_finished)
-        if is_master_chrome_pfq:
-          if publish:
-            self._RunStage(completion_stages.UpdateChromeosLKGMStage)
-          else:
-            logging.info('Skipping UpdateChromeosLKGMStage, '
-                         'build_successful=%d completion_successful=%d '
-                         'build_finished=%d', was_build_successful,
-                         completion_successful, build_finished)
         # If this build is master chrome pfq, completion_stage failed,
         # AFDOUpdateChromeEbuildStage passed, and the necessary build stages
         # passed, it means publish is False and we need to stage the
