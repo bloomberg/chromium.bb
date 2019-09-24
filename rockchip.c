@@ -141,7 +141,7 @@ static int rockchip_init(struct driver *drv)
 	 */
 	drv_add_combination(drv, DRM_FORMAT_R8, &metadata,
 			    BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SW_MASK |
-				BO_USE_LINEAR);
+				BO_USE_LINEAR | BO_USE_PROTECTED);
 
 	kms_items = drv_query_kms(drv);
 	if (!kms_items)
