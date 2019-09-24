@@ -270,6 +270,10 @@ void ContentsView::SetActiveStateInternal(int page_index, bool animate) {
   if (should_animate && pagination_model_.has_transition() &&
       pagination_model_.transition().target_page != page_index) {
     pagination_model_.FinishAnimation();
+    // If the pending animation was animating from the current target page, the
+    // target page might have got hidden as the animation was finished. Make
+    // sure the page is reshown in that case.
+    GetPageView(page_index)->SetVisible(true);
   }
   pagination_model_.SelectPage(page_index, should_animate);
   ActivePageChanged();
