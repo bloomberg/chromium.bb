@@ -19,11 +19,12 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
-class OptimizationGuidePredictionManagerBrowserTest
-    : public InProcessBrowserTest {
+namespace optimization_guide {
+
+class PredictionManagerBrowserTest : public InProcessBrowserTest {
  public:
-  OptimizationGuidePredictionManagerBrowserTest() = default;
-  ~OptimizationGuidePredictionManagerBrowserTest() override = default;
+  PredictionManagerBrowserTest() = default;
+  ~PredictionManagerBrowserTest() override = default;
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
@@ -68,10 +69,10 @@ class OptimizationGuidePredictionManagerBrowserTest
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(OptimizationGuidePredictionManagerBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(PredictionManagerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OptimizationGuidePredictionManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserTest,
                        FCPReachedSessionStatisticsUpdated) {
   OptimizationGuideKeyedService* keyed_service =
       OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
@@ -89,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuidePredictionManagerBrowserTest,
   EXPECT_EQ(1u, session_fcp->GetNumberOfSamples());
 }
 
-IN_PROC_BROWSER_TEST_F(OptimizationGuidePredictionManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserTest,
                        NoFCPSessionStatisticsUnchanged) {
   OptimizationGuideKeyedService* keyed_service =
       OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
@@ -113,3 +114,5 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuidePredictionManagerBrowserTest,
   EXPECT_EQ(1u, session_fcp->GetNumberOfSamples());
   EXPECT_EQ(current_mean, session_fcp->GetMean());
 }
+
+}  // namespace optimization_guide
