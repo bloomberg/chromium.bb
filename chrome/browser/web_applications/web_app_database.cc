@@ -25,16 +25,16 @@ WebAppDatabase::~WebAppDatabase() {
 }
 
 void WebAppDatabase::OpenDatabase(RegistryOpenedCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!store_);
 
   syncer::OnceModelTypeStoreFactory store_factory =
       database_factory_->GetStoreFactory();
 
-  // CreateStore then ReadRegistry.
-  CreateStore(
-      std::move(store_factory),
-      base::BindOnce(&WebAppDatabase::ReadRegistry,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  std::move(store_factory)
+      .Run(syncer::WEB_APPS,
+           base::BindOnce(&WebAppDatabase::OnDatabaseOpened,
+                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebAppDatabase::WriteWebApps(AppsToWrite apps,
@@ -201,27 +201,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
   return web_app;
 }
 
-void WebAppDatabase::ReadRegistry(RegistryOpenedCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(store_);
-  store_->ReadAllData(base::BindOnce(&WebAppDatabase::OnAllDataRead,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     std::move(callback)));
-}
-
-void WebAppDatabase::CreateStore(
-    syncer::OnceModelTypeStoreFactory store_factory,
-    base::OnceClosure closure) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::move(store_factory)
-      .Run(syncer::WEB_APPS,
-           base::BindOnce(&WebAppDatabase::OnStoreCreated,
-                          weak_ptr_factory_.GetWeakPtr(), std::move(closure)));
-}
-
-void WebAppDatabase::OnStoreCreated(
-    base::OnceClosure closure,
+void WebAppDatabase::OnDatabaseOpened(
+    RegistryOpenedCallback callback,
     const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore> store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -231,7 +212,9 @@ void WebAppDatabase::OnStoreCreated(
   }
 
   store_ = std::move(store);
-  std::move(closure).Run();
+  store_->ReadAllData(base::BindOnce(&WebAppDatabase::OnAllDataRead,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     std::move(callback)));
 }
 
 void WebAppDatabase::OnAllDataRead(
