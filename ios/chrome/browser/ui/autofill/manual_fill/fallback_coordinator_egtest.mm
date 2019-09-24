@@ -446,6 +446,11 @@ void DockKeyboard() {
 // Tests that the manual fallback view concedes preference to the system picker
 // for selection elements.
 - (void)testPickerDismissesManualFallback {
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/1007455): Enable this test.
+    EARL_GREY_TEST_DISABLED(@"The test is flaky on iOS 13");
+  }
+
   // Add the profile to be used.
   AddAutofillProfile(_personalDataManager);
 
