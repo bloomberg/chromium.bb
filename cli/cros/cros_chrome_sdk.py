@@ -1297,8 +1297,9 @@ class ChromeSDKCommand(command.CliCommand):
                  '--strip=1', '-C', goma_dir])
             if result.returncode:
               raise GomaError('Failed to extract Goma')
+            # TODO(crbug.com/1007384): Stop forcing Python 2.
             result = cros_build_lib.DebugRunCommand(
-                [os.path.join(goma_dir, 'goma_ctl.py'), 'update'],
+                ['python2', os.path.join(goma_dir, 'goma_ctl.py'), 'update'],
                 extra_env={'PLATFORM': 'goobuntu'})
             if result.returncode:
               raise GomaError('Failed to install Goma')
@@ -1308,8 +1309,9 @@ class ChromeSDKCommand(command.CliCommand):
     port = None
     if self.options.start_goma:
       Log('Starting Goma.', silent=self.silent)
+      # TODO(crbug.com/1007384): Stop forcing Python 2.
       cros_build_lib.DebugRunCommand(
-          [os.path.join(goma_dir, 'goma_ctl.py'), 'ensure_start'])
+          ['python2', os.path.join(goma_dir, 'goma_ctl.py'), 'ensure_start'])
       port = self._GomaPort(goma_dir)
       Log('Goma is started on port %s', port, silent=self.silent)
       if not port:
