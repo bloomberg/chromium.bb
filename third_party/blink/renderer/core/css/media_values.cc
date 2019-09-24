@@ -223,6 +223,12 @@ ForcedColors MediaValues::CalculateForcedColors(LocalFrame* frame) {
   return frame->GetDocument()->GetStyleEngine().GetForcedColors();
 }
 
+NavigationControls MediaValues::CalculateNavigationControls(LocalFrame* frame) {
+  DCHECK(frame);
+  DCHECK(frame->GetSettings());
+  return frame->GetSettings()->GetNavigationControls();
+}
+
 bool MediaValues::ComputeLengthImpl(double value,
                                     CSSPrimitiveValue::UnitType type,
                                     unsigned default_font_size,

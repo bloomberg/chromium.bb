@@ -962,6 +962,9 @@
       name: "MediaEngagementBypassAutoplayPolicies",
     },
     {
+      name: "MediaQueryNavigationControls",
+    },
+    {
       name: "MediaQueryPrefersColorScheme",
       status: "stable",
     },
