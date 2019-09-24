@@ -17,6 +17,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
@@ -101,7 +102,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
 
     EXPECT_CALL(mock_router_, OnSinkAvailabilityUpdated(_, _));
     provider_ = std::make_unique<DialMediaRouteProvider>(
-        mojo::MakeRequest(&provider_ptr_), std::move(router_remote),
+        provider_remote_.BindNewPipeAndPassReceiver(), std::move(router_remote),
         &mock_sink_service_, connector_factory_.GetDefaultConnector(),
         "hash-token", base::SequencedTaskRunnerHandle::Get());
 
@@ -384,7 +385,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
 
   network::TestURLLoaderFactory loader_factory_;
 
-  mojom::MediaRouteProviderPtr provider_ptr_;
+  mojo::Remote<mojom::MediaRouteProvider> provider_remote_;
   MockMojoMediaRouter mock_router_;
   std::unique_ptr<mojo::Receiver<mojom::MediaRouter>> router_receiver_;
 

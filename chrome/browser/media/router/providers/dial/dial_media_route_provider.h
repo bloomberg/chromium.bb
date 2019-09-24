@@ -20,9 +20,9 @@
 #include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace url {
@@ -51,14 +51,14 @@ class DataDecoder;
 class DialMediaRouteProvider : public mojom::MediaRouteProvider,
                                public MediaSinkServiceBase::Observer {
  public:
-  // |request|: Request to bind to |this|.
+  // |receiver|: Mojo receiver to bind to |this|.
   // |media_router|: Pending remote to MediaRouter.
   // |media_sink_service|: DIAL MediaSinkService providing information on sinks.
   // |connector|: Connector object for accessing data_decoder services.
   // |hash_token|: A per-profile value used to hash sink IDs.
   // |task_runner|: The task runner on which |this| runs.
   DialMediaRouteProvider(
-      mojom::MediaRouteProviderRequest request,
+      mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
       mojo::PendingRemote<mojom::MediaRouter> media_router,
       DialMediaSinkServiceImpl* media_sink_service,
       service_manager::Connector* connector,
@@ -145,8 +145,8 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider,
   // MediaSinkServiceBase::Observer:
   void OnSinksDiscovered(const std::vector<MediaSinkInternal>& sinks) override;
 
-  // Binds the message pipes |request| and |media_router| to |this|.
-  void Init(mojom::MediaRouteProviderRequest request,
+  // Binds the message pipes |receiver| and |media_router| to |this|.
+  void Init(mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
             mojo::PendingRemote<mojom::MediaRouter> media_router);
 
   void OnAvailableSinksUpdated(const std::string& app_name);
@@ -181,8 +181,8 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider,
   // all origins are valid.
   std::vector<url::Origin> GetOrigins(const std::string& app_name);
 
-  // Binds |this| to the Mojo request passed into the ctor.
-  mojo::Binding<mojom::MediaRouteProvider> binding_;
+  // Binds |this| to the Mojo receiver passed into the ctor.
+  mojo::Receiver<mojom::MediaRouteProvider> receiver_{this};
 
   // Mojo remote to the Media Router.
   mojo::Remote<mojom::MediaRouter> media_router_;

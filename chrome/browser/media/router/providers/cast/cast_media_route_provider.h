@@ -14,9 +14,9 @@
 #include "chrome/browser/media/router/providers/cast/cast_app_discovery_service.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace cast_channel {
@@ -43,7 +43,7 @@ class DataDecoder;
 class CastMediaRouteProvider : public mojom::MediaRouteProvider {
  public:
   CastMediaRouteProvider(
-      mojom::MediaRouteProviderRequest request,
+      mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
       mojo::PendingRemote<mojom::MediaRouter> media_router,
       MediaSinkServiceBase* media_sink_service,
       CastAppDiscoveryService* app_discovery_service,
@@ -106,7 +106,7 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
       CreateMediaRouteControllerCallback callback) override;
 
  private:
-  void Init(mojom::MediaRouteProviderRequest request,
+  void Init(mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
             mojo::PendingRemote<mojom::MediaRouter> media_router,
             CastSessionTracker* session_tracker,
             std::unique_ptr<DataDecoder> data_decoder,
@@ -120,8 +120,8 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   void BroadcastMessageToSinks(const std::vector<std::string>& app_ids,
                                const cast_channel::BroadcastRequest& request);
 
-  // Binds |this| to the Mojo request passed into the ctor.
-  mojo::Binding<mojom::MediaRouteProvider> binding_;
+  // Binds |this| to the Mojo receiver passed into the ctor.
+  mojo::Receiver<mojom::MediaRouteProvider> receiver_{this};
 
   // Mojo remote to the Media Router.
   mojo::Remote<mojom::MediaRouter> media_router_;

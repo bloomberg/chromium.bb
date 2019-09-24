@@ -138,14 +138,16 @@ MediaRouterMojoImpl::~MediaRouterMojoImpl() {
 
 void MediaRouterMojoImpl::RegisterMediaRouteProvider(
     MediaRouteProviderId provider_id,
-    mojom::MediaRouteProviderPtr media_route_provider_ptr,
+    mojo::PendingRemote<mojom::MediaRouteProvider> media_route_provider_remote,
     mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!base::Contains(media_route_providers_, provider_id));
-  media_route_provider_ptr.set_connection_error_handler(
+  mojo::Remote<mojom::MediaRouteProvider> bound_remote(
+      std::move(media_route_provider_remote));
+  bound_remote.set_disconnect_handler(
       base::BindOnce(&MediaRouterMojoImpl::OnProviderConnectionError,
                      weak_factory_.GetWeakPtr(), provider_id));
-  media_route_providers_[provider_id] = std::move(media_route_provider_ptr);
+  media_route_providers_[provider_id] = std::move(bound_remote);
   std::move(callback).Run(instance_id_, mojom::MediaRouteProviderConfig::New());
 }
 

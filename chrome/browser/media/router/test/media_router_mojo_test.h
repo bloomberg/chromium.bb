@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -297,7 +298,7 @@ class MediaRouterMojoTest : public ::testing::Test {
   scoped_refptr<const extensions::Extension> extension_;
   TestingProfile profile_;
   std::unique_ptr<MediaRouterMojoImpl> media_router_;
-  mojo::BindingSet<mojom::MediaRouteProvider> provider_bindings_;
+  mojo::ReceiverSet<mojom::MediaRouteProvider> provider_receivers_;
   std::unique_ptr<MediaRoutesObserver> routes_observer_;
   std::unique_ptr<MockMediaSinksObserver> sinks_observer_;
 

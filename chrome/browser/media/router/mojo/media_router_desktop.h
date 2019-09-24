@@ -13,6 +13,7 @@
 #include "chrome/browser/media/router/providers/dial/dial_media_route_provider.h"
 #include "chrome/browser/media/router/providers/extension/extension_media_route_provider_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
 class RenderFrameHost;
@@ -80,7 +81,8 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // mojom::MediaRouter implementation.
   void RegisterMediaRouteProvider(
       MediaRouteProviderId provider_id,
-      mojom::MediaRouteProviderPtr media_route_provider_ptr,
+      mojo::PendingRemote<mojom::MediaRouteProvider>
+          media_route_provider_remote,
       mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) override;
   void OnSinksReceived(MediaRouteProviderId provider_id,
                        const std::string& media_source,
@@ -89,11 +91,11 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   void GetMediaSinkServiceStatus(
       mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override;
 
-  // Registers a Mojo pointer to the extension MRP with
+  // Registers a Mojo remote to the extension MRP with
   // |extension_provider_proxy_| and does initializations specific to the
   // extension MRP.
   void RegisterExtensionMediaRouteProvider(
-      mojom::MediaRouteProviderPtr extension_provider_ptr);
+      mojo::PendingRemote<mojom::MediaRouteProvider> extension_provider_remote);
 
   // Binds |this| to a Mojo pending receiver, so that clients can acquire a
   // handle to a MediaRouter instance via the Mojo service connector.

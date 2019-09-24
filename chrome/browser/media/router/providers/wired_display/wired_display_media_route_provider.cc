@@ -85,10 +85,10 @@ std::string WiredDisplayMediaRouteProvider::GetRouteDescription(
 }
 
 WiredDisplayMediaRouteProvider::WiredDisplayMediaRouteProvider(
-    mojom::MediaRouteProviderRequest request,
+    mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
     mojo::PendingRemote<mojom::MediaRouter> media_router,
     Profile* profile)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       media_router_(std::move(media_router)),
       profile_(profile) {
   media_router_->OnSinkAvailabilityUpdated(

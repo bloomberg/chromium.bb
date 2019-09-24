@@ -395,8 +395,9 @@ void MediaRouterMojoTest::TestSearchSinks() {
 void MediaRouterMojoTest::RegisterMediaRouteProvider(
     mojom::MediaRouteProvider* provider,
     MediaRouteProviderId provider_id) {
-  mojom::MediaRouteProviderPtr mojo_provider;
-  provider_bindings_.AddBinding(provider, mojo::MakeRequest(&mojo_provider));
+  mojo::PendingRemote<mojom::MediaRouteProvider> mojo_provider;
+  provider_receivers_.Add(provider,
+                          mojo_provider.InitWithNewPipeAndPassReceiver());
   media_router_->RegisterMediaRouteProvider(
       provider_id, std::move(mojo_provider),
       base::BindOnce([](const std::string& instance_id,

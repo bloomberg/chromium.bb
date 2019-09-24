@@ -15,6 +15,8 @@
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,7 +71,7 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
 
     provider_proxy_ =
         std::make_unique<ExtensionMediaRouteProviderProxy>(&profile_);
-    provider_proxy_->Bind(mojo::MakeRequest(&provider_proxy_ptr_));
+    provider_proxy_->Bind(provider_proxy_remote_.BindNewPipeAndPassReceiver());
     RegisterMockMediaRouteProvider();
   }
 
@@ -81,19 +83,20 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
                                        false,
                                        false);
   std::unique_ptr<ExtensionMediaRouteProviderProxy> provider_proxy_;
-  mojom::MediaRouteProviderPtr provider_proxy_ptr_;
+  mojo::Remote<mojom::MediaRouteProvider> provider_proxy_remote_;
   StrictMock<MockMediaRouteProvider> mock_provider_;
   MockEventPageRequestManager* request_manager_ = nullptr;
-  std::unique_ptr<mojo::Binding<mojom::MediaRouteProvider>> binding_;
+  std::unique_ptr<mojo::Receiver<mojom::MediaRouteProvider>> receiver_;
 
  private:
   void RegisterMockMediaRouteProvider() {
     mock_provider_.SetRouteToReturn(route_);
 
-    mojom::MediaRouteProviderPtr mock_provider_ptr;
-    binding_ = std::make_unique<mojo::Binding<mojom::MediaRouteProvider>>(
-        &mock_provider_, mojo::MakeRequest(&mock_provider_ptr));
-    provider_proxy_->RegisterMediaRouteProvider(std::move(mock_provider_ptr));
+    mojo::PendingRemote<mojom::MediaRouteProvider> mock_provider_remote;
+    receiver_ = std::make_unique<mojo::Receiver<mojom::MediaRouteProvider>>(
+        &mock_provider_, mock_provider_remote.InitWithNewPipeAndPassReceiver());
+    provider_proxy_->RegisterMediaRouteProvider(
+        std::move(mock_provider_remote));
   }
 
   content::BrowserTaskEnvironment task_environment_;
@@ -273,10 +276,10 @@ TEST_F(ExtensionMediaRouteProviderProxyTest, CreateMediaRouteController) {
 }
 
 TEST_F(ExtensionMediaRouteProviderProxyTest, NotifyRequestManagerOnError) {
-  // Invalidating the Mojo pointer to the MRP held by the proxy should make it
+  // Invalidating the Mojo remote to the MRP held by the proxy should make it
   // notify request manager.
   EXPECT_CALL(*request_manager_, OnMojoConnectionError());
-  binding_.reset();
+  receiver_.reset();
   base::RunLoop().RunUntilIdle();
 }
 

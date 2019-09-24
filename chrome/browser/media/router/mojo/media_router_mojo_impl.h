@@ -28,7 +28,9 @@
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace content {
@@ -84,7 +86,8 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
       mojom::MediaStatusObserverPtr observer) final;
   void RegisterMediaRouteProvider(
       MediaRouteProviderId provider_id,
-      mojom::MediaRouteProviderPtr media_route_provider_ptr,
+      mojo::PendingRemote<mojom::MediaRouteProvider>
+          media_route_provider_remote,
       mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) override;
 
   // Issues 0+ calls to the provider given by |provider_id| to ensure its state
@@ -129,9 +132,9 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
                        const std::vector<MediaSinkInternal>& internal_sinks,
                        const std::vector<url::Origin>& origins) override;
 
-  // Mojo pointers to media route providers. Providers are added via
+  // Mojo remotes to media route providers. Providers are added via
   // RegisterMediaRouteProvider().
-  base::flat_map<MediaRouteProviderId, mojom::MediaRouteProviderPtr>
+  base::flat_map<MediaRouteProviderId, mojo::Remote<mojom::MediaRouteProvider>>
       media_route_providers_;
 
  private:

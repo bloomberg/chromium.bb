@@ -523,8 +523,8 @@ interface MediaRouter {
   // Returns a string that uniquely identifies the Media Router browser
   // process.
   RegisterMediaRouteProvider(MediaRouteProvider.Id provider_id,
-                             MediaRouteProvider media_router_provider) =>
-      (string instance_id, MediaRouteProviderConfig config);
+      pending_remote<MediaRouteProvider> media_router_provider) =>
+          (string instance_id, MediaRouteProviderConfig config);
 
   // Called when a MediaRouteProvider receives a new list of |sinks|
   // compatible with |media_source|. The result is only valid for |origins|. If

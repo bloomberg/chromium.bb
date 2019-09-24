@@ -18,9 +18,9 @@
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
 #include "chrome/common/media_router/media_route_provider_helper.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
@@ -44,7 +44,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   static std::string GetRouteDescription(const std::string& media_source);
 
   WiredDisplayMediaRouteProvider(
-      mojom::MediaRouteProviderRequest request,
+      mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
       mojo::PendingRemote<mojom::MediaRouter> media_router,
       Profile* profile);
   ~WiredDisplayMediaRouteProvider() override;
@@ -191,10 +191,10 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   // primary display.
   std::vector<display::Display> GetAvailableDisplays() const;
 
-  // Binds |this| to the Mojo request passed into the ctor.
-  mojo::Binding<mojom::MediaRouteProvider> binding_;
+  // Binds |this| to the Mojo receiver passed into the ctor.
+  mojo::Receiver<mojom::MediaRouteProvider> receiver_;
 
-  // Mojo pointer to the Media Router.
+  // Mojo remote to the Media Router.
   mojo::Remote<mojom::MediaRouter> media_router_;
 
   // Presentation profiles are created based on this original profile. This

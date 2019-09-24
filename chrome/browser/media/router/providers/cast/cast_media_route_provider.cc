@@ -38,7 +38,7 @@ std::vector<url::Origin> GetOrigins(const MediaSource::Id& source_id) {
 }  // namespace
 
 CastMediaRouteProvider::CastMediaRouteProvider(
-    mojom::MediaRouteProviderRequest request,
+    mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
     mojo::PendingRemote<mojom::MediaRouter> media_router,
     MediaSinkServiceBase* media_sink_service,
     CastAppDiscoveryService* app_discovery_service,
@@ -46,8 +46,7 @@ CastMediaRouteProvider::CastMediaRouteProvider(
     service_manager::Connector* connector,
     const std::string& hash_token,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : binding_(this),
-      media_sink_service_(media_sink_service),
+    : media_sink_service_(media_sink_service),
       app_discovery_service_(app_discovery_service),
       message_handler_(message_handler) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -58,20 +57,20 @@ CastMediaRouteProvider::CastMediaRouteProvider(
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&CastMediaRouteProvider::Init, base::Unretained(this),
-                     std::move(request), std::move(media_router),
+                     std::move(receiver), std::move(media_router),
                      CastSessionTracker::GetInstance(),
                      std::make_unique<DataDecoder>(connector), hash_token));
 }
 
 void CastMediaRouteProvider::Init(
-    mojom::MediaRouteProviderRequest request,
+    mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
     mojo::PendingRemote<mojom::MediaRouter> media_router,
     CastSessionTracker* session_tracker,
     std::unique_ptr<DataDecoder> data_decoder,
     const std::string& hash_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(receiver));
   media_router_.Bind(std::move(media_router));
 
   activity_manager_ = std::make_unique<CastActivityManager>(
