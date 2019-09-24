@@ -1261,7 +1261,7 @@ void SVGSMILElement::DispatchPendingEvent(const AtomicString& event_type) {
   DispatchEvent(*Event::Create(event_type));
 }
 
-bool SVGSMILElement::HasValidTarget() {
+bool SVGSMILElement::HasValidTarget() const {
   return targetElement() && targetElement()->InActiveDocument();
 }
 

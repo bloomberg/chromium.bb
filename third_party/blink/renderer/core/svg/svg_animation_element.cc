@@ -322,7 +322,7 @@ String SVGAnimationElement::FromValue() const {
   return FastGetAttribute(svg_names::kFromAttr);
 }
 
-bool SVGAnimationElement::IsAdditive() {
+bool SVGAnimationElement::IsAdditive() const {
   DEFINE_STATIC_LOCAL(const AtomicString, sum, ("sum"));
   const AtomicString& value = FastGetAttribute(svg_names::kAdditiveAttr);
   return value == sum || GetAnimationMode() == kByAnimation;
@@ -633,7 +633,7 @@ void SVGAnimationElement::UpdateAnimation(float percent,
   CalculateAnimatedValue(effective_percent, repeat_count, result_element);
 }
 
-bool SVGAnimationElement::OverwritesUnderlyingAnimationValue() {
+bool SVGAnimationElement::OverwritesUnderlyingAnimationValue() const {
   return !IsAdditive() && !IsAccumulated() &&
          GetAnimationMode() != kToAnimation &&
          GetAnimationMode() != kByAnimation &&
