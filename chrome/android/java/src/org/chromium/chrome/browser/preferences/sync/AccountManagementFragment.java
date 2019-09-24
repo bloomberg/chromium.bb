@@ -10,7 +10,6 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
@@ -231,7 +230,6 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         Preference parentAccounts = findPreference(PREF_PARENT_ACCOUNTS);
         Preference childContent = findPreference(PREF_CHILD_CONTENT);
         if (mProfile.isChild()) {
-            Resources res = getActivity().getResources();
             PrefServiceBridge prefService = PrefServiceBridge.getInstance();
 
             String firstParent = prefService.getSupervisedUserCustodianEmail();
@@ -239,13 +237,12 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
             String parentText;
 
             if (!secondParent.isEmpty()) {
-                parentText = res.getString(
+                parentText = getString(
                         R.string.account_management_two_parent_names, firstParent, secondParent);
             } else if (!firstParent.isEmpty()) {
-                parentText =
-                        res.getString(R.string.account_management_one_parent_name, firstParent);
+                parentText = getString(R.string.account_management_one_parent_name, firstParent);
             } else {
-                parentText = res.getString(R.string.account_management_no_parental_data);
+                parentText = getString(R.string.account_management_no_parental_data);
             }
             parentAccounts.setSummary(parentText);
 
