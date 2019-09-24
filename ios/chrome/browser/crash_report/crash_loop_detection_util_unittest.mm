@@ -4,7 +4,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/crash_loop_detection_util.h"
+#include "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
