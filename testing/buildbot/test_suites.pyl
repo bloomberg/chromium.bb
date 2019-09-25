@@ -4685,10 +4685,9 @@
     },
 
     'skia_renderer_fyi_gtests': {
-      'skia_renderer_browser_tests': {
-        'args': [
-          '--enable-features=UseSkiaRenderer',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.browser_tests.filter',
+      'non_skia_renderer_browser_tests': {
+      'args': [
+          '--disable-features=UseSkiaRenderer',
         ],
         'swarming': {
           'shards': 10,
