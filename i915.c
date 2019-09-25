@@ -256,7 +256,7 @@ static int i915_align_dimensions(struct bo *bo, uint32_t tiling, uint32_t *strid
 		break;
 	}
 
-	*aligned_height = ALIGN(bo->meta.height, vertical_alignment);
+	*aligned_height = ALIGN(*aligned_height, vertical_alignment);
 	if (i915->gen > 3) {
 		*stride = ALIGN(*stride, horizontal_alignment);
 	} else {
