@@ -423,7 +423,9 @@ public class BottomSheet
      */
     public boolean handleBackPress() {
         if (isSheetOpen()) {
-            setSheetState(SheetState.PEEK, true, StateChangeReason.BACK_PRESS);
+            int sheetState =
+                    mSheetContent.isPeekStateEnabled() ? SheetState.PEEK : SheetState.HIDDEN;
+            setSheetState(sheetState, true, StateChangeReason.BACK_PRESS);
             return true;
         }
 
