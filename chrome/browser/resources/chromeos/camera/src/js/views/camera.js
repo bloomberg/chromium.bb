@@ -16,7 +16,6 @@ cca.views = cca.views || {};
 
 /**
  * Creates the camera-view controller.
- * @param {cca.mojo.MojoConnector} mojoConnector
  * @param {cca.models.ResultSaver} resultSaver
  * @param {cca.device.DeviceInfoUpdater} infoUpdater
  * @param {cca.device.PhotoResolPreferrer} photoPreferrer
@@ -24,7 +23,7 @@ cca.views = cca.views || {};
  * @constructor
  */
 cca.views.Camera = function(
-    mojoConnector, resultSaver, infoUpdater, photoPreferrer, videoPreferrer) {
+    resultSaver, infoUpdater, photoPreferrer, videoPreferrer) {
   cca.views.View.call(this, '#camera');
 
   /**
@@ -32,12 +31,6 @@ cca.views.Camera = function(
    * @private
    */
   this.infoUpdater_ = infoUpdater;
-
-  /**
-   * @type {cca.mojo.MojoConnector}
-   * @private
-   */
-  this.mojoConnector_ = mojoConnector;
 
   /**
    * Layout handler for the camera view.
@@ -51,8 +44,7 @@ cca.views.Camera = function(
    * @type {cca.views.camera.Preview}
    * @private
    */
-  this.preview_ =
-      new cca.views.camera.Preview(mojoConnector, this.restart.bind(this));
+  this.preview_ = new cca.views.camera.Preview(this.restart.bind(this));
 
   /**
    * Options for the camera.
@@ -101,8 +93,8 @@ cca.views.Camera = function(
    * @private
    */
   this.modes_ = new cca.views.camera.Modes(
-      mojoConnector, photoPreferrer, videoPreferrer, this.restart.bind(this),
-      doSavePhoto, createVideoSaver, doSaveVideo);
+      photoPreferrer, videoPreferrer, this.restart.bind(this), doSavePhoto,
+      createVideoSaver, doSaveVideo);
 
   /**
    * @type {?string}
@@ -264,7 +256,6 @@ cca.views.Camera.prototype.restart = function() {
         // We should close all mojo connections since any communication to a
         // closed stream should be avoided.
         this.preview_.stop();
-        await this.mojoConnector_.reset();
         this.start_();
         return this.started_;
       });
@@ -278,7 +269,6 @@ cca.views.Camera.prototype.restart = function() {
  */
 cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
   let supportedModes = null;
-  const deviceOperator = await this.mojoConnector_.getDeviceOperator();
   for (const mode of this.modes_.getModeCandidates()) {
     try {
       if (!deviceId) {
@@ -304,6 +294,7 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
       }
       for (const constraints of previewCandidates) {
         try {
+          const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
           if (deviceOperator) {
             await deviceOperator.setFpsRange(deviceId, constraints);
             await deviceOperator.setCaptureIntent(

@@ -132,7 +132,6 @@ RESOURCES = \
 	src/js/models/video_saver.js \
 	src/js/mojo/device_operator.js \
 	src/js/mojo/image_capture.js \
-	src/js/mojo/mojo_connector.js \
 	src/js/nav.js \
 	src/js/resolution_event_broker.js \
 	src/js/scrollbar.js \
