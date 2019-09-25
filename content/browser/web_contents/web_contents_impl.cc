@@ -901,8 +901,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                         OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeThemeColor,
                         OnThemeColorChanged)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
-                        OnDocumentLoadedInFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
@@ -4819,9 +4817,9 @@ void WebContentsImpl::OnDidRunContentWithCertificateErrors(
       entry->GetURL().GetOrigin());
 }
 
-void WebContentsImpl::OnDocumentLoadedInFrame(RenderFrameHostImpl* source) {
+void WebContentsImpl::DOMContentLoaded(RenderFrameHost* render_frame_host) {
   for (auto& observer : observers_)
-    observer.DocumentLoadedInFrame(source);
+    observer.DocumentLoadedInFrame(render_frame_host);
 }
 
 void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,

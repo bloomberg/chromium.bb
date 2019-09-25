@@ -484,6 +484,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // call FrameTreeNode::IsLoading.
   bool is_loading() const { return is_loading_; }
 
+  // Returns true if this frame has fired DOMContentLoaded.
+  bool dom_content_loaded() const { return dom_content_loaded_; }
+
   // Returns true if this is a top-level frame, or if this frame's RenderFrame
   // is in a different process from its parent frame. Local roots are
   // distinguished by owning a RenderWidgetHost, which manages input events
@@ -1319,6 +1322,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSuddenTerminationDisablerChanged(
       bool present,
       blink::WebSuddenTerminationDisablerType disabler_type);
+  void OnDidFinishDocumentLoad();
   void OnDidStopLoading();
   void OnDidChangeLoadProgress(double load_progress);
   void OnSelectionChanged(const base::string16& text,
@@ -1995,6 +1999,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Indicates whether this RenderFrameHost is in the process of loading a
   // document or not.
   bool is_loading_;
+
+  // Indicates whether this RenderFrameHost has completed firing
+  // DOMContentLoaded or not.
+  bool dom_content_loaded_ = false;
 
   // The unique ID of the latest NavigationEntry that this RenderFrameHost is
   // showing. This may change even when this frame hasn't committed a page,
