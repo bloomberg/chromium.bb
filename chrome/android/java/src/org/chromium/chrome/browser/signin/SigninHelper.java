@@ -233,7 +233,7 @@ public class SigninHelper {
         // This is the correct account now.
         final Account account = AccountManagerFacade.createAccountFromName(newName);
 
-        mSigninManager.signIn(account, null, new SignInCallback() {
+        mSigninManager.signIn(account, new SignInCallback() {
             @Override
             public void onSignInComplete() {
                 validateAccountsInternal(true);
