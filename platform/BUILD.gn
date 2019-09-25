@@ -182,6 +182,7 @@ source_set("unittests") {
         "impl/network_waiter_posix_unittest.cc",
         "impl/scoped_pipe_unittest.cc",
         "impl/socket_address_posix_unittest.cc",
+        "impl/tls_data_router_posix_unittest.cc",
         "impl/udp_socket_reader_posix_unittest.cc",
       ]
     }

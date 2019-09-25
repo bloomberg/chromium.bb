@@ -12,11 +12,15 @@
 #include "platform/api/tls_connection.h"
 #include "platform/api/tls_connection_factory.h"
 #include "platform/base/socket_state.h"
+#include "platform/impl/tls_data_router_posix.h"
 
 namespace openscreen {
 namespace platform {
 
-class TlsConnectionFactoryPosix : public TlsConnectionFactory {
+class StreamSocket;
+
+class TlsConnectionFactoryPosix : public TlsConnectionFactory,
+                                  public TlsDataRouterPosix::SocketObserver {
  public:
   TlsConnectionFactoryPosix(Client* client, TaskRunner* task_runner);
   ~TlsConnectionFactoryPosix() override;
@@ -28,7 +32,17 @@ class TlsConnectionFactoryPosix : public TlsConnectionFactory {
               const TlsCredentials& credentials,
               const TlsListenOptions& options) override;
 
+  // TlsDataRouterPosix::SocketObserver overrides.
+  void OnConnectionPending(StreamSocketPosix* socket) override;
+
  private:
+  // Configures a new SSL connection when a StreamSocket connection is accepted.
+  void OnSocketAccepted(std::unique_ptr<StreamSocket> socket);
+
+  // Configures the SSL connection for the provided TlsConnectionPosix,
+  // returning true if the process is successful, false otherwise.
+  bool ConfigureSsl(TlsConnectionPosix* connection);
+
   // Ensures that SSL is initialized, then gets a new SSL connection.
   ErrorOr<bssl::UniquePtr<SSL>> GetSslConnection();
 

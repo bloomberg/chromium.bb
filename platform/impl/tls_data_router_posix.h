@@ -33,6 +33,7 @@ class TlsConnectionPosix;
 class TlsDataRouterPosix : public NetworkWaiter::Subscriber {
  public:
   class SocketObserver {
+   public:
     virtual ~SocketObserver() = default;
 
     // Socket creation shouldn't occur on the Networking thread, so pass the
@@ -43,7 +44,8 @@ class TlsDataRouterPosix : public NetworkWaiter::Subscriber {
 
   // The provided NetworkWaiter is expected to live for the duration of this
   // object's lifetime.
-  TlsDataRouterPosix(NetworkWaiter* waiter);
+  explicit TlsDataRouterPosix(NetworkWaiter* waiter);
+  ~TlsDataRouterPosix() override;
 
   // Register a TlsConnection that should be watched for readable and writable
   // data.
@@ -66,7 +68,7 @@ class TlsDataRouterPosix : public NetworkWaiter::Subscriber {
 
   // Method to be executed on StreamSocket destruction. This is expected to
   // block until the networking thread is not using the provided socket.
-  void OnSocketDestroyed(StreamSocketPosix* socket);
+  virtual void OnSocketDestroyed(StreamSocketPosix* socket);
 
   // Perform Read on all registered sockets.
   void ReadAll();
@@ -77,11 +79,31 @@ class TlsDataRouterPosix : public NetworkWaiter::Subscriber {
   // NetworkWaiter::Subscriber overrides.
   void ProcessReadyHandle(NetworkWaiter::SocketHandleRef handle) override;
 
+ protected:
+  // Determines if the provided socket is currently being watched by this
+  // instance.
+  bool IsSocketWatched(StreamSocketPosix* socket) const;
+
+  friend class TestingDataRouter;
+
  private:
+  void OnSocketDestroyed(StreamSocketPosix* socket,
+                         bool skip_locking_for_testing);
+
+  void RemoveWatchedSocket(StreamSocketPosix* socket);
+
   NetworkWaiter* waiter_;
 
   // Mutex guarding connections_ vector.
-  std::mutex connections_mutex_;
+  mutable std::mutex connections_mutex_;
+
+  // Mutex guarding socket_mappings_.
+  mutable std::mutex socket_mutex_;
+
+  // Mapping from all sockets to the observer that should be called when the
+  // socket recognizes an incoming connection.
+  std::unordered_map<StreamSocketPosix*, SocketObserver*> socket_mappings_
+      GUARDED_BY(socket_mutex_);
 
   // Set of all TlsConnectionPosix objects currently registered.
   std::vector<TlsConnectionPosix*> connections_ GUARDED_BY(connections_mutex_);

@@ -56,36 +56,74 @@ void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
     OnConnectionFailed(remote_address);
   }
 
+  if (ConfigureSsl(connection.get())) {
+    OnConnected(std::move(connection));
+  }
+}
+
+bool TlsConnectionFactoryPosix::ConfigureSsl(TlsConnectionPosix* connection) {
   ErrorOr<bssl::UniquePtr<SSL>> ssl_or_error = GetSslConnection();
   if (ssl_or_error.is_error()) {
     OnError(ssl_or_error.error());
     TRACE_SET_RESULT(ssl_or_error.error());
-    return;
+    return false;
   }
 
   bssl::UniquePtr<SSL> ssl = std::move(ssl_or_error.value());
   if (!SSL_set_fd(ssl.get(), connection->socket_->socket_handle().fd)) {
-    OnConnectionFailed(remote_address);
+    OnConnectionFailed(connection->remote_address());
     TRACE_SET_RESULT(Error(Error::Code::kSocketBindFailure));
-    return;
+    return false;
   }
 
   int connection_status = SSL_connect(ssl.get());
   if (connection_status != 1) {
-    OnConnectionFailed(remote_address);
+    OnConnectionFailed(connection->remote_address());
     TRACE_SET_RESULT(GetSSLError(ssl.get(), connection_status));
-    return;
+    return false;
   }
 
   connection->ssl_.swap(ssl);
-  OnConnected(std::move(connection));
+  return true;
 }
 
 void TlsConnectionFactoryPosix::Listen(const IPEndpoint& local_address,
                                        const TlsCredentials& credentials,
                                        const TlsListenOptions& options) {
-  // TODO(jophba, rwkeane): implement this method.
+  // TODO(jophba, rwkeane): Call TlsNetworkManagerPosix::RegisterListener on
+  // singleton instance.
   OSP_UNIMPLEMENTED();
+}
+
+void TlsConnectionFactoryPosix::OnConnectionPending(StreamSocketPosix* socket) {
+  task_runner_->PostTask([socket, this]() mutable {
+    // TODO(issues/71): |this|, |socket| may be invalid at this point.
+    ErrorOr<std::unique_ptr<StreamSocket>> accepted = socket->Accept();
+    if (accepted.is_error()) {
+      // Check for special error code. Because this call doesn't get executed
+      // until it gets through the task runner, OnConnectionPending may get
+      // called multiple times. This check ensures only the first such call will
+      // create a new SSL connection.
+      if (accepted.error().code() != Error::Code::kAgain) {
+        this->OnError(accepted.error());
+      }
+      return;
+    }
+
+    this->OnSocketAccepted(std::move(accepted.value()));
+  });
+}
+
+void TlsConnectionFactoryPosix::OnSocketAccepted(
+    std::unique_ptr<StreamSocket> socket) {
+  TRACE_SCOPED(TraceCategory::SSL,
+               "TlsConnectionFactoryPosix::OnSocketAccepted");
+  auto connection =
+      std::make_unique<TlsConnectionPosix>(std::move(socket), task_runner_);
+
+  if (ConfigureSsl(connection.get())) {
+    OnAccepted(std::move(connection));
+  }
 }
 
 ErrorOr<bssl::UniquePtr<SSL>> TlsConnectionFactoryPosix::GetSslConnection() {
@@ -101,15 +139,12 @@ ErrorOr<bssl::UniquePtr<SSL>> TlsConnectionFactoryPosix::GetSslConnection() {
     return Error::Code::kFatalSSLError;
   }
 
-  auto result = bssl::UniquePtr<SSL>(ssl);
-  SSL_CTX_up_ref(ssl_context_.get());
-  return result;
+  return bssl::UniquePtr<SSL>(ssl);
 }
 
 void TlsConnectionFactoryPosix::Initialize() {
   EnsureOpenSSLInit();
-  const SSL_METHOD* ssl_method = TLS_method();
-  SSL_CTX* context = SSL_CTX_new(ssl_method);
+  SSL_CTX* context = SSL_CTX_new(TLS_method());
   if (context == nullptr) {
     return;
   }

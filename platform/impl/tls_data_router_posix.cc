@@ -14,6 +14,10 @@ namespace platform {
 TlsDataRouterPosix::TlsDataRouterPosix(NetworkWaiter* waiter)
     : waiter_(waiter) {}
 
+TlsDataRouterPosix::~TlsDataRouterPosix() {
+  waiter_->UnsubscribeAll(this);
+}
+
 void TlsDataRouterPosix::RegisterConnection(TlsConnectionPosix* connection) {
   // TODO(jophba, rwkeane): implement this method.
   OSP_UNIMPLEMENTED();
@@ -26,8 +30,19 @@ void TlsDataRouterPosix::DeregisterConnection(TlsConnectionPosix* connection) {
 
 void TlsDataRouterPosix::RegisterSocketObserver(StreamSocketPosix* socket,
                                                 SocketObserver* observer) {
-  // TODO(jophba, rwkeane): implement this method.
-  OSP_UNIMPLEMENTED();
+  OSP_DCHECK(socket);
+  OSP_DCHECK(observer);
+  {
+    std::unique_lock<std::mutex> lock(socket_mutex_);
+    socket_mappings_[socket] = observer;
+  }
+
+  waiter_->Subscribe(this, socket->socket_handle());
+}
+
+void TlsDataRouterPosix::DeregisterSocketObserver(StreamSocketPosix* socket) {
+  RemoveWatchedSocket(socket);
+  waiter_->Unsubscribe(this, socket->socket_handle());
 }
 
 void TlsDataRouterPosix::OnConnectionDestroyed(TlsConnectionPosix* connection) {
@@ -36,8 +51,14 @@ void TlsDataRouterPosix::OnConnectionDestroyed(TlsConnectionPosix* connection) {
 }
 
 void TlsDataRouterPosix::OnSocketDestroyed(StreamSocketPosix* socket) {
-  // TODO(jophba, rwkeane): implement this method.
-  OSP_UNIMPLEMENTED();
+  OnSocketDestroyed(socket, false);
+}
+
+void TlsDataRouterPosix::OnSocketDestroyed(StreamSocketPosix* socket,
+                                           bool skip_locking_for_testing) {
+  RemoveWatchedSocket(socket);
+  waiter_->OnHandleDeletion(this, std::cref(socket->socket_handle()),
+                            skip_locking_for_testing);
 }
 
 void TlsDataRouterPosix::ReadAll() {
@@ -56,8 +77,26 @@ void TlsDataRouterPosix::WriteAll() {
 
 void TlsDataRouterPosix::ProcessReadyHandle(
     NetworkWaiter::SocketHandleRef handle) {
-  // TODO(jophba, rwkeane): implement this method.
-  OSP_UNIMPLEMENTED();
+  std::unique_lock<std::mutex> lock(socket_mutex_);
+  for (const auto& pair : socket_mappings_) {
+    if (pair.first->socket_handle() == handle) {
+      pair.second->OnConnectionPending(pair.first);
+      break;
+    }
+  }
+}
+
+void TlsDataRouterPosix::RemoveWatchedSocket(StreamSocketPosix* socket) {
+  std::unique_lock<std::mutex> lock(socket_mutex_);
+  const auto it = socket_mappings_.find(socket);
+  if (it != socket_mappings_.end()) {
+    socket_mappings_.erase(it);
+  }
+}
+
+bool TlsDataRouterPosix::IsSocketWatched(StreamSocketPosix* socket) const {
+  std::unique_lock<std::mutex> lock(socket_mutex_);
+  return socket_mappings_.find(socket) != socket_mappings_.end();
 }
 
 }  // namespace platform

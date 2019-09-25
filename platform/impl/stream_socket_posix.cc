@@ -16,6 +16,18 @@ namespace platform {
 
 namespace {
 constexpr int kDefaultMaxBacklogSize = 64;
+
+// Call Select with no timeout, so that it doesn't block. Then use the result
+// to determine if any connection is pending.
+bool IsConnectionPending(int fd) {
+  fd_set handle_set;
+  FD_ZERO(&handle_set);
+  FD_SET(fd, &handle_set);
+  struct timeval tv {
+    0
+  };
+  return select(fd + 1, &handle_set, nullptr, nullptr, &tv) > 0;
+}
 }  // namespace
 
 StreamSocketPosix::StreamSocketPosix(IPAddress::Version version)
@@ -44,6 +56,11 @@ ErrorOr<std::unique_ptr<StreamSocket>> StreamSocketPosix::Accept() {
 
   if (!is_bound_) {
     return CloseOnError(Error::Code::kSocketInvalidState);
+  }
+
+  // Check if any connection is pending, and return a special error code if not.
+  if (!IsConnectionPending(handle_.fd)) {
+    return Error::Code::kAgain;
   }
 
   // We copy our address to new_remote_address since it should be in the same
