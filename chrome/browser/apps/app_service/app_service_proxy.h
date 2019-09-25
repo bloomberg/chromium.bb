@@ -13,7 +13,8 @@
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 #if defined(OS_CHROMEOS)
@@ -144,7 +145,7 @@ class AppServiceProxy : public KeyedService,
 
   // apps::mojom::Subscriber overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
-  void Clone(apps::mojom::SubscriberRequest request) override;
+  void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
 
   // This proxy privately owns its instance of the App Service. This should not
   // be exposed except through the Mojo interface connected to |app_service_|.
@@ -153,7 +154,7 @@ class AppServiceProxy : public KeyedService,
   mojo::Remote<apps::mojom::AppService> app_service_;
   apps::AppRegistryCache cache_;
 
-  mojo::BindingSet<apps::mojom::Subscriber> bindings_;
+  mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
 
   // The LoadIconFromIconKey implementation sends a chained series of requests
   // through each icon loader, starting from the outer and working back to the

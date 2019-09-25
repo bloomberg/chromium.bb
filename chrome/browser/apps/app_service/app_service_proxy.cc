@@ -17,7 +17,6 @@
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/url_data_source.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace apps {
 
@@ -106,8 +105,8 @@ void AppServiceProxy::Initialize(Profile* profile) {
   if (app_service_.is_connected()) {
     // The AppServiceProxy is a subscriber: something that wants to be able to
     // list all known apps.
-    apps::mojom::SubscriberPtr subscriber;
-    bindings_.AddBinding(this, mojo::MakeRequest(&subscriber));
+    mojo::PendingRemote<apps::mojom::Subscriber> subscriber;
+    receivers_.Add(this, subscriber.InitWithNewPipeAndPassReceiver());
     app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
 
 #if defined(OS_CHROMEOS)
@@ -206,7 +205,7 @@ void AppServiceProxy::FlushMojoCallsForTesting() {
   extension_apps_->FlushMojoCallsForTesting();
   extension_web_apps_->FlushMojoCallsForTesting();
 #endif
-  bindings_.FlushForTesting();
+  receivers_.FlushForTesting();
 }
 
 apps::IconLoader* AppServiceProxy::OverrideInnerIconLoaderForTesting(
@@ -244,8 +243,9 @@ void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   cache_.OnApps(std::move(deltas));
 }
 
-void AppServiceProxy::Clone(apps::mojom::SubscriberRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void AppServiceProxy::Clone(
+    mojo::PendingReceiver<apps::mojom::Subscriber> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 }  // namespace apps

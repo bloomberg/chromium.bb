@@ -197,8 +197,9 @@ bool ExtensionApps::Accepts(const extensions::Extension* extension) {
   }
 }
 
-void ExtensionApps::Connect(apps::mojom::SubscriberPtr subscriber,
-                            apps::mojom::ConnectOptionsPtr opts) {
+void ExtensionApps::Connect(
+    mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
+    apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
   if (profile_) {
     extensions::ExtensionRegistry* registry =
@@ -214,8 +215,10 @@ void ExtensionApps::Connect(apps::mojom::SubscriberPtr subscriber,
     //
     // If making changes to which sets are consulted, also change ShouldShow.
   }
+  mojo::Remote<apps::mojom::Subscriber> subscriber(
+      std::move(subscriber_remote));
   subscriber->OnApps(std::move(apps));
-  subscribers_.AddPtr(std::move(subscriber));
+  subscribers_.Add(std::move(subscriber));
 }
 
 void ExtensionApps::LoadIcon(const std::string& app_id,
@@ -530,11 +533,11 @@ void ExtensionApps::OnExtensionUninstalled(
 }
 
 void ExtensionApps::Publish(apps::mojom::AppPtr app) {
-  subscribers_.ForAllPtrs([&app](apps::mojom::Subscriber* subscriber) {
+  for (auto& subscriber : subscribers_) {
     std::vector<apps::mojom::AppPtr> apps;
     apps.push_back(app.Clone());
     subscriber->OnApps(std::move(apps));
-  });
+  }
 }
 
 // static

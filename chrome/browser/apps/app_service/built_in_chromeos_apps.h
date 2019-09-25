@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -33,7 +34,7 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
   void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
 
   // apps::mojom::Publisher overrides.
-  void Connect(apps::mojom::SubscriberPtr subscriber,
+  void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,

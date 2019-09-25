@@ -16,9 +16,10 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 class Profile;
 
@@ -58,7 +59,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   bool Accepts(const extensions::Extension* extension);
 
   // apps::mojom::Publisher overrides.
-  void Connect(apps::mojom::SubscriberPtr subscriber,
+  void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
@@ -130,7 +131,7 @@ class ExtensionApps : public apps::mojom::Publisher,
                      std::vector<apps::mojom::AppPtr>* apps_out);
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
-  mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
+  mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* profile_;
 

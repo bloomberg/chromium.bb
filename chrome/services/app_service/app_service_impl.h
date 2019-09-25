@@ -9,11 +9,11 @@
 
 #include "base/macros.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace apps {
 
@@ -33,8 +33,9 @@ class AppServiceImpl : public apps::mojom::AppService {
   void RegisterPublisher(
       mojo::PendingRemote<apps::mojom::Publisher> publisher_remote,
       apps::mojom::AppType app_type) override;
-  void RegisterSubscriber(apps::mojom::SubscriberPtr subscriber,
-                          apps::mojom::ConnectOptionsPtr opts) override;
+  void RegisterSubscriber(
+      mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
+      apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(apps::mojom::AppType app_type,
                 const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
@@ -62,7 +63,7 @@ class AppServiceImpl : public apps::mojom::AppService {
   // be able to find *the* publisher for a given apps::mojom::AppType.
   std::map<apps::mojom::AppType, mojo::Remote<apps::mojom::Publisher>>
       publishers_;
-  mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
+  mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   // Must come after the publisher and subscriber maps to ensure it is
   // destroyed first, closing the connection to avoid dangling callbacks.

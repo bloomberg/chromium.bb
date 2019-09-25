@@ -79,8 +79,9 @@ void CrostiniApps::Initialize(
                                  apps::mojom::AppType::kCrostini);
 }
 
-void CrostiniApps::Connect(apps::mojom::SubscriberPtr subscriber,
-                           apps::mojom::ConnectOptionsPtr opts) {
+void CrostiniApps::Connect(
+    mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
+    apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
   for (const auto& pair : registry_->GetRegisteredApps()) {
     const std::string& app_id = pair.first;
@@ -88,8 +89,10 @@ void CrostiniApps::Connect(apps::mojom::SubscriberPtr subscriber,
         pair.second;
     apps.push_back(Convert(app_id, registration, true));
   }
+  mojo::Remote<apps::mojom::Subscriber> subscriber(
+      std::move(subscriber_remote));
   subscriber->OnApps(std::move(apps));
-  subscribers_.AddPtr(std::move(subscriber));
+  subscribers_.Add(std::move(subscriber));
 }
 
 void CrostiniApps::LoadIcon(const std::string& app_id,
@@ -313,11 +316,11 @@ void CrostiniApps::PublishAppID(const std::string& app_id,
 }
 
 void CrostiniApps::Publish(apps::mojom::AppPtr app) {
-  subscribers_.ForAllPtrs([&app](apps::mojom::Subscriber* subscriber) {
+  for (auto& subscriber : subscribers_) {
     std::vector<apps::mojom::AppPtr> apps;
     apps.push_back(app.Clone());
     subscriber->OnApps(std::move(apps));
-  });
+  }
 }
 
 }  // namespace apps
