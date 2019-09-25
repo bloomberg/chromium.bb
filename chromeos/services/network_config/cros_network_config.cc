@@ -1086,7 +1086,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
   // Typed properties (compatible with NetworkStateProperties):
   result->connection_state =
       GetConnectionState(network_state, /*technology_enabled=*/true);
-  result->source = mojom::OncSource(network_state->onc_source());
+  result->source = GetMojoOncSource(network_state);
   result->type = type;
 
   // Unmanaged properties
