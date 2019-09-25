@@ -19225,6 +19225,7 @@ Called by update_net_error_codes.py.-->
   <int value="440"
       label="ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT"/>
   <int value="441" label="LOGIN_STATE_ON_SESSION_STATE_CHANGED"/>
+  <int value="442" label="PRINTING_METRICS_ON_PRINT_JOB_FINISHED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -20675,6 +20676,7 @@ Called by update_net_error_codes.py.-->
   <int value="1383" label="AUTOTESTPRIVATE_TAKESCREENSHOTFORDISPLAY"/>
   <int value="1384" label="AUTOFILLPRIVATE_SETCREDITCARDFIDOAUTHENABLEDSTATE"/>
   <int value="1385" label="USERSPRIVATE_ISWHITELISTEDUSER"/>
+  <int value="1386" label="PRINTINGMETRICS_GETPRINTJOBS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -21218,6 +21220,7 @@ Called by update_net_error_codes.py.-->
   <int value="220" label="kLogin"/>
   <int value="221" label="kLoginScreenStorage"/>
   <int value="222" label="kLoginState"/>
+  <int value="223" label="kPrintingMetrics"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
