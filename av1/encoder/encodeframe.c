@@ -3646,16 +3646,16 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
     assert(cpi->oxcf.enable_tpl_model == 2);
     return 0;
   }
-
+  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return 0;
   if (cpi->common.current_frame.frame_type == KEY_FRAME) return 0;
   const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
   if (update_type == INTNL_OVERLAY_UPDATE || update_type == OVERLAY_UPDATE)
     return 0;
-  const int gf_group_index = cpi->gf_group.index;
-  if (gf_group_index <= 0 || cpi->gf_group.index >= cpi->gf_group.size)
-    return 0;
+  assert(IMPLIES(cpi->gf_group.size > 0,
+                 cpi->gf_group.index < cpi->gf_group.size));
 
   AV1_COMMON *const cm = &cpi->common;
+  const int gf_group_index = cpi->gf_group.index;
   TplDepFrame *tpl_frame = &cpi->tpl_frame[gf_group_index];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
@@ -3663,6 +3663,7 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   const int mi_high = mi_size_high[bsize];
 
   if (tpl_frame->is_valid == 0) return 0;
+  if (gf_group_index >= MAX_LAG_BUFFERS) return 0;
 
   int mi_count = 0;
   const int mi_col_sr =
@@ -3671,6 +3672,9 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
       mi_col + mi_wide, cm->superres_scale_denominator);
   const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
 
+  // TPL store unit size is not the same as the motion estimation unit size.
+  // Here always use motion estimation size to avoid getting repetitive inter/
+  // intra cost.
   const BLOCK_SIZE tpl_bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
   const int step = mi_size_wide[tpl_bsize];
   assert(mi_size_wide[tpl_bsize] == mi_size_high[tpl_bsize]);

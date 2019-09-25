@@ -59,6 +59,7 @@
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/reconinter_enc.h"
 #include "av1/encoder/tokenize.h"
+#include "av1/encoder/tpl_model.h"
 #include "av1/encoder/tx_prune_model_weights.h"
 
 // Set this macro as 1 to collect data about tx size selection.
@@ -12589,6 +12590,37 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                        INT64_MAX, INT64_MAX, INT64_MAX,
                                        INT64_MAX, INT64_MAX };
   const int skip_ctx = av1_get_skip_context(xd);
+
+  // Prepared stats used later to check if we could skip intra mode eval.
+  int64_t inter_cost = -1;
+  int64_t intra_cost = -1;
+  // Now only use this for <=480p. Will try other resolutions.
+  if (sf->skip_intra_in_interframe && AOMMIN(cm->width, cm->height) <= 480) {
+    // Only consider full SB.
+    int len = tpl_blocks_in_sb(cm->seq_params.sb_size);
+    if (len == x->valid_cost_b) {
+      const BLOCK_SIZE tpl_bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
+      const int tplw = mi_size_wide[tpl_bsize];
+      const int tplh = mi_size_high[tpl_bsize];
+      const int nw = mi_size_wide[bsize] / tplw;
+      const int nh = mi_size_high[bsize] / tplh;
+      if (nw >= 1 && nh >= 1) {
+        const int of_h = mi_row % mi_size_high[cm->seq_params.sb_size];
+        const int of_w = mi_col % mi_size_wide[cm->seq_params.sb_size];
+        const int start = of_h / tplh * x->cost_stride + of_w / tplw;
+
+        for (int k = 0; k < nh; k++) {
+          for (int l = 0; l < nw; l++) {
+            inter_cost += x->inter_cost_b[start + k * x->cost_stride + l];
+            intra_cost += x->intra_cost_b[start + k * x->cost_stride + l];
+          }
+        }
+        inter_cost /= nw * nh;
+        intra_cost /= nw * nh;
+      }
+    }
+  }
+
   for (int midx = 0; midx < MAX_MODES; ++midx) {
     // After we done with single reference modes, find the 2nd best RD
     // for a reference frame. Only search compound modes that have a reference
@@ -12897,9 +12929,34 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   // Gate intra mode evaluation if best of inter is skip except when source
   // variance is extremely low
-  if ((search_state.best_mbmode.skip) && (sf->skip_intra_in_interframe >= 2) &&
-      (x->source_variance > sf->src_var_thresh_intra_skip))
-    search_state.skip_intra_modes = 1;
+  if (sf->skip_intra_in_interframe &&
+      (x->source_variance > sf->src_var_thresh_intra_skip)) {
+    if (inter_cost >= 0 && intra_cost >= 0) {
+      aom_clear_system_state();
+      const NN_CONFIG *nn_config = &av1_intrap_nn_config;
+      float features[6];
+      float scores[2] = { 0.0f };
+      float probs[2] = { 0.0f };
+
+      features[0] = (float)search_state.best_mbmode.skip;
+      features[1] = (float)mi_size_wide_log2[bsize];
+      features[2] = (float)mi_size_high_log2[bsize];
+      features[3] = (float)intra_cost;
+      features[4] = (float)inter_cost;
+      const int ac_q = av1_ac_quant_QTX(x->qindex, 0, xd->bd);
+      const int ac_q_max = av1_ac_quant_QTX(255, 0, xd->bd);
+      features[5] = (float)(ac_q_max / ac_q);
+
+      av1_nn_predict(features, nn_config, 1, scores);
+      aom_clear_system_state();
+      av1_nn_softmax(scores, probs, 2);
+
+      if (probs[1] > 0.8) search_state.skip_intra_modes = 1;
+    } else if ((search_state.best_mbmode.skip) &&
+               (sf->skip_intra_in_interframe >= 2)) {
+      search_state.skip_intra_modes = 1;
+    }
+  }
 
   const int intra_ref_frame_cost = ref_costs_single[INTRA_FRAME];
   for (int j = 0; j < intra_mode_num; ++j) {
