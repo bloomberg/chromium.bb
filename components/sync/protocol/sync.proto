@@ -910,29 +910,6 @@ message GetUpdatesResponse {
   repeated DataTypeContext context_mutations = 7;
 };
 
-// The metadata response for GetUpdatesMessage.  This response is sent when
-// streaming is set to true in the request.  It is prefixed with a length
-// delimiter, which is encoded in varint.
-message GetUpdatesMetadataResponse {
-  // Approximate count of changes remaining.  Detailed comment is available in
-  // GetUpdatesResponse.
-  optional int64 changes_remaining = 1;
-
-  // Opaque, per-datatype timestamp-like tokens.  Detailed comment is available
-  // in GetUpdatesResponse.
-  repeated DataTypeProgressMarker new_progress_marker = 2;
-};
-
-// The streaming response message for GetUpdatesMessage.  This message is sent
-// when streaming is set to true in the request.  There may be multiple
-// GetUpdatesStreamingResponse messages in a response.  This type of messages
-// is preceded by GetUpdatesMetadataResponse.  It is prefixed with a length
-// delimiter, which is encoded in varint.
-message GetUpdatesStreamingResponse {
-  // New sync entries that the client should apply.
-  repeated SyncEntity entries = 1;
-};
-
 message ClientToServerResponse {
   optional CommitResponse commit = 1;
   optional GetUpdatesResponse get_updates = 2;
@@ -958,10 +935,10 @@ message ClientToServerResponse {
   optional ClientCommand client_command = 7;
   optional ProfilingData profiling_data = 8;
   reserved 9;
-  optional GetUpdatesMetadataResponse stream_metadata = 10;
-  // If GetUpdatesStreamingResponse is contained in the ClientToServerResponse,
-  // none of the other fields (error_code and etc) will be set.
-  optional GetUpdatesStreamingResponse stream_data = 11;
+  reserved 10;
+  reserved "stream_metadata";
+  reserved 11;
+  reserved "stream_data";
 
   // The data types whose storage has been migrated.  Present when the value of
   // error_code is MIGRATION_DONE.
