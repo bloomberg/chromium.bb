@@ -246,26 +246,14 @@ message SyncEntity {
   // Present only in GetUpdatesResponse.
   optional string server_defined_unique_tag = 10;
 
-  // If this group is present, it implies that this SyncEntity corresponds to
-  // a bookmark or a bookmark folder.
-  //
-  // This group is deprecated; clients should use the bookmark EntitySpecifics
-  // protocol buffer extension instead.
-  optional group BookmarkData = 11 [deprecated = true] {
-    // We use a required field to differentiate between a bookmark and a
-    // bookmark folder.
-    // Present in both GetUpdatesMessage and CommitMessage.
-    required bool bookmark_folder = 12;
-
-    // For bookmark objects, contains the bookmark's URL.
-    // Present in both GetUpdatesResponse and CommitMessage.
-    optional string bookmark_url = 13;
-
-    // For bookmark objects, contains the bookmark's favicon. The favicon is
-    // represented as a 16X16 PNG image.
-    // Present in both GetUpdatesResponse and CommitMessage.
-    optional bytes bookmark_favicon = 14;
-  }
+  reserved 11;
+  reserved "BookmarkData";
+  reserved 12;
+  reserved "bookmark_folder";
+  reserved 13;
+  reserved "bookmark_url";
+  reserved 14;
+  reserved "bookmark_favicon";
 
   // Supplies a numeric position for this item, relative to other items with the
   // same parent.  Deprecated in M26, though clients are still required to set
