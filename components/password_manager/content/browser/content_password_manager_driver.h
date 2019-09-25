@@ -105,8 +105,8 @@ class ContentPasswordManagerDriver
       const autofill::PasswordForm& password_form) override;
   void ShowManualFallbackForSaving(const autofill::PasswordForm& form) override;
   void HideManualFallbackForSaving() override;
-  void SameDocumentNavigation(
-      const autofill::PasswordForm& password_form) override;
+  void SameDocumentNavigation(autofill::mojom::SubmissionIndicatorEvent
+                                  submission_indication_event) override;
   void RecordSavePasswordProgress(const std::string& log) override;
   void UserModifiedPasswordField() override;
   void UserModifiedNonPasswordField(uint32_t renderer_id,

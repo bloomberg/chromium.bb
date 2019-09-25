@@ -269,13 +269,9 @@ void ContentPasswordManagerDriver::HideManualFallbackForSaving() {
 }
 
 void ContentPasswordManagerDriver::SameDocumentNavigation(
-    const autofill::PasswordForm& password_form) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, password_form,
-          BadMessageReason::CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION))
-    return;
-  GetPasswordManager()->OnPasswordFormSubmittedNoChecks(this, password_form);
-
+    autofill::mojom::SubmissionIndicatorEvent submission_indication_event) {
+  GetPasswordManager()->OnPasswordFormSubmittedNoChecks(
+      this, submission_indication_event);
   LogSiteIsolationMetricsForSubmittedForm(render_frame_host_);
 }
 

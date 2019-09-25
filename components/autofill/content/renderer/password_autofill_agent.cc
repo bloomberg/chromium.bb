@@ -1083,7 +1083,7 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
   }
 
   provisionally_saved_form_.SetSubmissionIndicatorEvent(event);
-  GetPasswordManagerDriver()->SameDocumentNavigation(password_form);
+  GetPasswordManagerDriver()->SameDocumentNavigation(event);
   provisionally_saved_form_.Reset();
 }
 
@@ -1274,7 +1274,7 @@ void PasswordAutofillAgent::OnFrameDetached() {
     provisionally_saved_form_.SetSubmissionIndicatorEvent(
         SubmissionIndicatorEvent::FRAME_DETACHED);
     GetPasswordManagerDriver()->SameDocumentNavigation(
-        provisionally_saved_form_.password_form());
+        SubmissionIndicatorEvent::FRAME_DETACHED);
   }
   CleanupOnDocumentShutdown();
 }

@@ -647,7 +647,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void ExpectFieldPropertiesMasks(
       PasswordFormSourceType expected_type,
       const std::map<base::string16, FieldPropertiesMask>&
-          expected_properties_masks) {
+          expected_properties_masks,
+      autofill::mojom::SubmissionIndicatorEvent expected_submission_event) {
     base::RunLoop().RunUntilIdle();
     autofill::PasswordForm form;
     if (expected_type == PasswordFormSubmitted) {
@@ -657,9 +658,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     } else {
       ASSERT_EQ(PasswordFormSameDocumentNavigation, expected_type);
       ASSERT_TRUE(fake_driver_.called_same_document_navigation());
-      ASSERT_TRUE(static_cast<bool>(
-          fake_driver_.password_form_same_document_navigation()));
-      form = *(fake_driver_.password_form_same_document_navigation());
+      ASSERT_TRUE(
+          static_cast<bool>(fake_driver_.password_form_maybe_submitted()));
+      form = *(fake_driver_.password_form_maybe_submitted());
+      EXPECT_EQ(expected_submission_event, form.submission_event);
+      EXPECT_EQ(expected_submission_event, form.form_data.submission_event);
     }
 
     size_t unchecked_masks = expected_properties_masks.size();
@@ -682,10 +685,10 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
       SubmissionIndicatorEvent event) {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(fake_driver_.called_same_document_navigation());
-    ASSERT_TRUE(static_cast<bool>(
-        fake_driver_.password_form_same_document_navigation()));
+    ASSERT_TRUE(
+        static_cast<bool>(fake_driver_.password_form_maybe_submitted()));
     const autofill::PasswordForm& form =
-        *(fake_driver_.password_form_same_document_navigation());
+        *(fake_driver_.password_form_maybe_submitted());
     EXPECT_EQ(ASCIIToUTF16(username_value), form.username_value);
     EXPECT_EQ(ASCIIToUTF16(password_value), form.password_value);
     EXPECT_EQ(ASCIIToUTF16(new_password_value), form.new_password_value);
@@ -2124,7 +2127,8 @@ TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnSubmit) {
   expected_properties_masks[ASCIIToUTF16("password")] =
       FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
 
-  ExpectFieldPropertiesMasks(PasswordFormSubmitted, expected_properties_masks);
+  ExpectFieldPropertiesMasks(PasswordFormSubmitted, expected_properties_masks,
+                             SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -2151,7 +2155,8 @@ TEST_F(PasswordAutofillAgentTest,
       FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
 
   ExpectFieldPropertiesMasks(PasswordFormSameDocumentNavigation,
-                             expected_properties_masks);
+                             expected_properties_masks,
+                             SubmissionIndicatorEvent::XHR_SUCCEEDED);
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -2180,7 +2185,8 @@ TEST_F(PasswordAutofillAgentTest,
       FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
 
   ExpectFieldPropertiesMasks(PasswordFormSameDocumentNavigation,
-                             expected_properties_masks);
+                             expected_properties_masks,
+                             SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 
 // The username/password is autofilled by password manager then just before
