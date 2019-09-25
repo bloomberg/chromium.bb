@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -243,10 +242,6 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     public void onDestroy() {
         super.onDestroy();
         mSyncSetupInProgressHandle.close();
-
-        if (mProfileSyncService.isSyncRequested()) {
-            InvalidationController.get().ensureStartedAndUpdateRegisteredTypes();
-        }
     }
 
     @Override
