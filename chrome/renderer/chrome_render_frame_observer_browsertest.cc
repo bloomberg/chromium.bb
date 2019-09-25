@@ -16,6 +16,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
@@ -35,7 +36,7 @@ class FakeContentTranslateDriver
   }
 
   // translate::mojom::ContentTranslateDriver implementation.
-  void RegisterPage(translate::mojom::PagePtr page,
+  void RegisterPage(mojo::PendingRemote<translate::mojom::Page> page,
                     const translate::LanguageDetectionDetails& details,
                     bool page_needs_translation) override {
     called_new_page_ = true;

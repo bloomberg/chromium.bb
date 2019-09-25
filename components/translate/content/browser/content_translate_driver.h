@@ -16,6 +16,8 @@
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -114,7 +116,7 @@ class ContentTranslateDriver : public TranslateDriver,
   // Adds a binding in |bindings_| for the passed |request|.
   void AddBinding(translate::mojom::ContentTranslateDriverRequest request);
   // Called when a page has been loaded and can be potentially translated.
-  void RegisterPage(translate::mojom::PagePtr page,
+  void RegisterPage(mojo::PendingRemote<translate::mojom::Page> page,
                     const translate::LanguageDetectionDetails& details,
                     bool page_needs_translation) override;
 
@@ -140,10 +142,10 @@ class ContentTranslateDriver : public TranslateDriver,
 
   // Records mojo connections with all current alive pages.
   int next_page_seq_no_;
-  // PagePtr is the connection between this driver and a TranslateHelper (which
-  // are per RenderFrame). Each TranslateHelper has a |binding_| member,
-  // representing the other end of this pipe.
-  std::map<int, mojom::PagePtr> pages_;
+  // mojo::Remote<Page> is the connection between this driver and a
+  // TranslateHelper (which are per RenderFrame). Each TranslateHelper has a
+  // |binding_| member, representing the other end of this pipe.
+  std::map<int, mojo::Remote<mojom::Page>> pages_;
 
   // Histogram to be notified about detected language of every page visited. Not
   // owned here.

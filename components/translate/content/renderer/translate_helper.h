@@ -16,7 +16,7 @@
 #include "components/translate/content/common/translate.mojom.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
@@ -176,7 +176,7 @@ class TranslateHelper : public content::RenderFrameObserver,
   // Mojo interface).
   mojom::ContentTranslateDriverPtr translate_handler_;
 
-  mojo::Binding<mojom::Page> binding_;
+  mojo::Receiver<mojom::Page> receiver_{this};
 
   // Method factory used to make calls to TranslatePageImpl.
   base::WeakPtrFactory<TranslateHelper> weak_method_factory_{this};
