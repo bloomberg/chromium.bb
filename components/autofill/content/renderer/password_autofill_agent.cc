@@ -72,6 +72,9 @@ using blink::WebView;
 
 namespace autofill {
 
+using form_util::IsFormControlVisible;
+using form_util::IsFormVisible;
+
 using mojom::FocusedFieldType;
 using mojom::SubmissionIndicatorEvent;
 using mojom::SubmissionSource;
@@ -115,11 +118,6 @@ bool DoesFormContainAmbiguousOrEmptyNames(
           (!FillDataContainsFillableUsername(fill_data) ||
            fill_data.username_field.name ==
                base::ASCIIToUTF16(kDummyUsernameField)));
-}
-
-bool IsUnownedPasswordFormVisible(const WebInputElement& input_element) {
-  return !input_element.IsNull() &&
-         form_util::IsWebElementVisible(input_element);
 }
 
 bool IsElementEditable(const WebInputElement& element) {
@@ -898,18 +896,22 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
   // Prompt to save only if the form is now gone, either invisible or
   // removed from the DOM.
   WebLocalFrame* frame = render_frame()->GetWebFrame();
-  const auto& password_form = provisionally_saved_form_.password_form();
   // TODO(crbug.com/720347): This method could be called often and checking form
-  // visibility could be expesive. Add performance metrics for this.
+  // visibility could be expensive. Add performance metrics for this.
   if (event != SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR) {
-    if (form_util::IsFormVisible(frame,
-                                 provisionally_saved_form_.form_element(),
-                                 password_form.action, password_form.origin,
-                                 password_form.form_data) ||
-        (provisionally_saved_form_.form_element().IsNull() &&
-         IsUnownedPasswordFormVisible(
-             provisionally_saved_form_.input_element()))) {
-      return;
+    bool is_last_updated_field_in_form =
+        last_updated_form_renderer_id_ != FormData::kNotSetFormRendererId;
+    // Check whether the form which is the candidate for submission disappeared.
+    // If yes this form is considered to be successfully submitted.
+    if (is_last_updated_field_in_form) {
+      // A form is inside <form> tag. Check the visibility of the whole form.
+      if (IsFormVisible(frame, last_updated_form_renderer_id_))
+        return;
+    } else {
+      // A form is without <form> tag. Check the visibility of the last updated
+      // field.
+      if (IsFormControlVisible(frame, last_updated_field_renderer_id_))
+        return;
     }
   }
 
@@ -1401,6 +1403,8 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   username_detector_cache_.clear();
   forms_structure_cache_.clear();
   autofilled_elements_cache_.clear();
+  last_updated_field_renderer_id_ = FormData::kNotSetFormRendererId;
+  last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   page_passwords_analyser_.Reset();
 #endif
@@ -1425,6 +1429,7 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     ProvisionallySaveRestriction restriction) {
   DCHECK(!form.IsNull() || !element.IsNull());
 
+  SetLastUpdatedFormAndField(form, element);
   std::unique_ptr<PasswordForm> password_form;
   if (form.IsNull()) {
     password_form = GetPasswordFormFromUnownedInputElements();
@@ -1825,6 +1830,19 @@ void PasswordAutofillAgent::AutofillField(const base::string16& value,
       field, value, FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
   autofilled_elements_cache_.emplace(field.UniqueRendererFormControlId(),
                                      WebString::FromUTF16(value));
+}
+
+void SetLastUpdatedFormAndField(const blink::WebFormElement& Form,
+                                const blink::WebFormControlElement& input);
+void PasswordAutofillAgent::SetLastUpdatedFormAndField(
+    const WebFormElement& form,
+    const WebFormControlElement& input) {
+  last_updated_form_renderer_id_ = form.IsNull()
+                                       ? FormData::kNotSetFormRendererId
+                                       : form.UniqueRendererFormId();
+  last_updated_field_renderer_id_ = input.IsNull()
+                                        ? FormData::kNotSetFormRendererId
+                                        : input.UniqueRendererFormControlId();
 }
 
 }  // namespace autofill

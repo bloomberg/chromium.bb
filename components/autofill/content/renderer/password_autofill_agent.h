@@ -453,6 +453,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // non-null.
   void AutofillField(const base::string16& value, blink::WebInputElement field);
 
+  void SetLastUpdatedFormAndField(const blink::WebFormElement& form,
+                                  const blink::WebFormControlElement& input);
+
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;
   // A (sort-of) reverse map to |web_input_to_password_info_|.
@@ -536,6 +539,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // UMA metrics are recorded per page load. This is reset on
   // DidCommitProvisionalLoad() but only for non-same-document-navigations.
   bool recorded_first_filling_result_ = false;
+
+  // Contains renderer id of last updated input element.
+  uint32_t last_updated_field_renderer_id_ = FormData::kNotSetFormRendererId;
+  // Contains renderer id of the form of the last updated input element.
+  uint32_t last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };
