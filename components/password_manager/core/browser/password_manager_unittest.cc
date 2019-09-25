@@ -190,8 +190,6 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   MOCK_METHOD1(FormEligibleForGenerationFound,
                void(const autofill::PasswordFormGenerationData&));
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
-  MOCK_METHOD1(AutofillDataReceived,
-               void(const autofill::FormsPredictionsMap&));
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
   MOCK_CONST_METHOD0(GetLastCommittedURL, const GURL&());
