@@ -460,12 +460,11 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
   }
 
   void ConnectToAuthenticator() {
-    auto* broker = static_cast<blink::mojom::DocumentInterfaceBroker*>(
-        static_cast<RenderFrameHostImpl*>(
-            shell()->web_contents()->GetMainFrame()));
+    auto* render_frame_host_impl = static_cast<RenderFrameHostImpl*>(
+        shell()->web_contents()->GetMainFrame());
     if (authenticator_remote_.is_bound())
       authenticator_remote_.reset();
-    broker->GetAuthenticator(
+    render_frame_host_impl->GetAuthenticator(
         authenticator_remote_.BindNewPipeAndPassReceiver());
   }
 

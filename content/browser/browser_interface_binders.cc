@@ -21,6 +21,7 @@
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
+#include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
@@ -28,6 +29,8 @@
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
@@ -85,6 +88,16 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::PushMessaging>(base::BindRepeating(
       &RenderFrameHostImpl::GetPushMessaging, base::Unretained(host)));
+
+  map->Add<blink::mojom::CredentialManager>(base::BindRepeating(
+      &RenderFrameHostImpl::GetCredentialManager, base::Unretained(host)));
+
+  map->Add<blink::mojom::Authenticator>(base::BindRepeating(
+      &RenderFrameHostImpl::GetAuthenticator, base::Unretained(host)));
+
+  map->Add<blink::test::mojom::VirtualAuthenticatorManager>(
+      base::BindRepeating(&RenderFrameHostImpl::GetVirtualAuthenticatorManager,
+                          base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(

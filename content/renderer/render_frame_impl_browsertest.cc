@@ -712,13 +712,6 @@ class TestSimpleDocumentInterfaceBrokerImpl
       override {
     binder_callback_.Run(std::move(receiver));
   }
-  void GetCredentialManager(
-      mojo::PendingReceiver<blink::mojom::CredentialManager>) override {}
-  void GetAuthenticator(
-      mojo::PendingReceiver<blink::mojom::Authenticator> receiver) override {}
-  void GetVirtualAuthenticatorManager(
-      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
-          receiver) override {}
 
   mojo::Receiver<blink::mojom::DocumentInterfaceBroker> receiver_{this};
   BinderCallback binder_callback_;
