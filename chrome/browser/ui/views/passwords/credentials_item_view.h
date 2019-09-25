@@ -51,7 +51,6 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   void UpdateAvatar(const gfx::ImageSkia& image) override;
 
   void SetLowerLabelColor(SkColor color);
-  void SetHoverColor(SkColor color);
 
   int GetPreferredHeight() const;
 

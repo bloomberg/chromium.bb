@@ -143,10 +143,6 @@ void CredentialsItemView::SetLowerLabelColor(SkColor color) {
     lower_label_->SetEnabledColor(color);
 }
 
-void CredentialsItemView::SetHoverColor(SkColor color) {
-  hover_color_ = color;
-}
-
 int CredentialsItemView::GetPreferredHeight() const {
   return GetPreferredSize().height();
 }
