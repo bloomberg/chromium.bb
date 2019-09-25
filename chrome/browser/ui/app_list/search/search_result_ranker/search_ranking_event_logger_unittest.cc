@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/logging/search_ranking_event_logger.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/search_ranking_event_logger.h"
 
 #include <map>
 #include <memory>
