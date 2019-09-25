@@ -77,6 +77,7 @@
     },
 
     'chromium.android.fyi': {
+      'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'Memory Infra Tester': 'android_release_thumb_bot',
       'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_resource_whitelisting',
       'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86',
@@ -653,6 +654,7 @@
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google',
+      'android-webview-pie-arm64-fyi-rel': 'android_release_trybot_arm64_webview_google',
       'android-pie-x86-fyi-rel': 'android_release_trybot_x86',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',

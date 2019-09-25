@@ -641,26 +641,15 @@
   {
     'name': 'chromium.android.fyi',
     'machines': {
-      'Android WebView O NetworkService (dbg)': {
+      'Android WebView P FYI (rel)': {
+        'mixins': [
+          'pie_fleet',
+          'walleye',
+        ],
         'test_suites': {
           'gtest_tests': 'webview_cts_tests_gtest',
         },
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_CTS_test.filter',
-          '--enable-features=NetworkService,NetworkServiceInProcess',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'OPR3.170623.008',
-              'device_os_flavor': 'google',
-              'device_type': 'marlin',
-              'os': 'Android',
-            },
-          ],
-        },
         'use_swarming': True,
-        'use_android_presentation': True,
         'os_type': 'android',
       },
       'Memory Infra Tester': {
