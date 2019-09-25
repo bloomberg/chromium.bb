@@ -401,6 +401,10 @@ static void set_good_speed_features_framesize_independent(
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->adaptive_txb_search_level = boosted ? 2 : 3;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
+    sf->enable_winner_mode_for_tx_size_srch = 1;
+    // TODO(any): Extend multi-winner mode processing support for inter frames
+    sf->enable_multiwinner_mode_process =
+        frame_is_intra_only(&cpi->common) ? 1 : 0;
     // TODO(any): Experiment with this speed feature set to 2 for higher quality
     // presets as well
     sf->skip_intra_in_interframe = 2;
@@ -876,6 +880,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->enable_winner_mode_for_coeff_opt = 0;
   sf->enable_winner_mode_for_tx_size_srch = 0;
   sf->enable_winner_mode_for_use_tx_domain_dist = 0;
+  sf->enable_multiwinner_mode_process = 0;
   sf->prune_comp_type_by_model_rd = 0;
   sf->disable_smooth_intra = 0;
   sf->perform_best_rd_based_gating_for_chroma = 0;

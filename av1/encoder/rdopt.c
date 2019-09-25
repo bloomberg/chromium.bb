@@ -4220,6 +4220,51 @@ static AOM_INLINE void optimize_palette_colors(uint16_t *color_cache,
   }
 }
 
+// Store best mode stats for winner mode processing
+static void store_winner_mode_stats(MACROBLOCK *x, MB_MODE_INFO *mbmi,
+                                    int enable_multiwinner_mode_process,
+                                    uint8_t *color_map, BLOCK_SIZE bsize,
+                                    int64_t this_rd) {
+  WinnerModeStats *winner_mode_stats = x->winner_mode_stats;
+  int mode_idx = 0;
+  // Mode stat is not required when multiwinner mode processing is disabled
+  if (!enable_multiwinner_mode_process) return;
+
+  assert(x->winner_mode_count >= 0 &&
+         x->winner_mode_count <= MAX_WINNER_MODE_COUNT);
+
+  if (x->winner_mode_count) {
+    // Find the mode which has higher rd cost than this_rd
+    for (mode_idx = 0; mode_idx < x->winner_mode_count; mode_idx++)
+      if (winner_mode_stats[mode_idx].rd > this_rd) break;
+
+    if (mode_idx == MAX_WINNER_MODE_COUNT) {
+      // No mode has higher rd cost than this_rd
+      return;
+    } else if (mode_idx < MAX_WINNER_MODE_COUNT - 1) {
+      // Create a slot for current mode and move others to the next slot
+      memmove(
+          &winner_mode_stats[mode_idx + 1], &winner_mode_stats[mode_idx],
+          (MAX_WINNER_MODE_COUNT - mode_idx - 1) * sizeof(*winner_mode_stats));
+    }
+  }
+  // Add a mode stat for winner mode processing
+  winner_mode_stats[mode_idx].mbmi = *mbmi;
+  winner_mode_stats[mode_idx].rd = this_rd;
+  if (color_map) {
+    // Store color_index_map for palette mode
+    const MACROBLOCKD *const xd = &x->e_mbd;
+    int block_width, block_height;
+    av1_get_block_dimensions(bsize, AOM_PLANE_Y, xd, &block_width,
+                             &block_height, NULL, NULL);
+    memcpy(winner_mode_stats[mode_idx].color_index_map, color_map,
+           block_width * block_height * sizeof(color_map[0]));
+  }
+
+  x->winner_mode_count =
+      AOMMIN(x->winner_mode_count + 1, MAX_WINNER_MODE_COUNT);
+}
+
 // Given the base colors as specified in centroids[], calculate the RD cost
 // of palette mode.
 static AOM_INLINE void palette_rd_y(
@@ -4269,6 +4314,9 @@ static AOM_INLINE void palette_rd_y(
   if (!xd->lossless[mbmi->segment_id] && block_signals_txsize(mbmi->sb_type)) {
     tokenonly_rd_stats.rate -= tx_size_cost(x, bsize, mbmi->tx_size);
   }
+  // Collect mode stats for multiwinner mode processing
+  store_winner_mode_stats(x, mbmi, cpi->sf.enable_multiwinner_mode_process,
+                          color_map, bsize, this_rd);
   if (this_rd < *best_rd) {
     *best_rd = this_rd;
     // Setting beat_best_rd flag because current mode rd is better than best_rd.
@@ -4449,6 +4497,9 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
         intra_mode_info_cost_y(cpi, x, mbmi, bsize, mode_cost);
     this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
 
+    // Collect mode stats for multiwinner mode processing
+    store_winner_mode_stats(x, mbmi, cpi->sf.enable_multiwinner_mode_process,
+                            NULL, bsize, this_rd);
     if (this_rd < *best_rd) {
       *best_rd = this_rd;
       best_tx_size = mbmi->tx_size;
@@ -4708,19 +4759,19 @@ static AOM_INLINE void angle_estimation(const uint8_t *src, int src_stride,
 }
 
 // Given selected prediction mode, search for the best tx type and size.
-static AOM_INLINE void intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                       BLOCK_SIZE bsize, const int *bmode_costs,
-                                       int64_t *best_rd, int *rate,
-                                       int *rate_tokenonly, int64_t *distortion,
-                                       int *skippable, MB_MODE_INFO *best_mbmi,
-                                       PICK_MODE_CONTEXT *ctx) {
+static AOM_INLINE int intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
+                                      BLOCK_SIZE bsize, const int *bmode_costs,
+                                      int64_t *best_rd, int *rate,
+                                      int *rate_tokenonly, int64_t *distortion,
+                                      int *skippable, MB_MODE_INFO *best_mbmi,
+                                      PICK_MODE_CONTEXT *ctx) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   RD_STATS rd_stats;
   // In order to improve txfm search avoid rd based breakouts during winner
   // mode evaluation. Hence passing ref_best_rd as a maximum value
   super_block_yrd(cpi, x, &rd_stats, bsize, INT64_MAX);
-  if (rd_stats.rate == INT_MAX) return;
+  if (rd_stats.rate == INT_MAX) return 0;
   int this_rate_tokenonly = rd_stats.rate;
   if (!xd->lossless[mbmi->segment_id] && block_signals_txsize(mbmi->sb_type)) {
     // super_block_yrd above includes the cost of the tx_size in the
@@ -4742,7 +4793,9 @@ static AOM_INLINE void intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
     *skippable = rd_stats.skip;
     memcpy(ctx->blk_skip, x->blk_skip,
            sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
+    return 1;
   }
+  return 0;
 }
 
 // This function is used only for intra_only frames
@@ -4791,6 +4844,10 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   set_mode_eval_params(cpi, x, MODE_EVAL);
 
   MB_MODE_INFO best_mbmi = *mbmi;
+  x->winner_mode_count = 0;
+  // Initialize best mode stats for winner mode processing
+  store_winner_mode_stats(x, mbmi, cpi->sf.enable_multiwinner_mode_process,
+                          NULL, bsize, best_rd);
   /* Y Search for intra prediction mode */
   for (int mode_idx = INTRA_MODE_START; mode_idx < INTRA_MODE_END; ++mode_idx) {
     RD_STATS this_rd_stats;
@@ -4838,6 +4895,9 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         this_rd_stats.rate +
         intra_mode_info_cost_y(cpi, x, mbmi, bsize, bmode_costs[mbmi->mode]);
     this_rd = RDCOST(x->rdmult, this_rate, this_distortion);
+    // Collect mode stats for multiwinner mode processing
+    store_winner_mode_stats(x, mbmi, cpi->sf.enable_multiwinner_mode_process,
+                            NULL, bsize, this_rd);
     if (this_rd < best_rd) {
       best_mbmi = *mbmi;
       best_rd = this_rd;
@@ -4871,17 +4931,59 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   // function. In such cases winner mode processing is not necessary and return
   // best_rd as INT64_MAX to indicate best mode is not identified
   if (!beat_best_rd) return INT64_MAX;
-  // If previous searches use only the default tx type/no R-D optimization of
-  // quantized coeffs, do an extra search for the best tx type/better R-D
-  // optimization of quantized coeffs
-  if (is_winner_mode_processing_enabled(cpi, mbmi, best_mbmi.mode)) {
-    // Set params for winner mode evaluation
-    set_mode_eval_params(cpi, x, WINNER_MODE_EVAL);
-    *mbmi = best_mbmi;
-    intra_block_yrd(cpi, x, bsize, bmode_costs, &best_rd, rate, rate_tokenonly,
-                    distortion, skippable, &best_mbmi, ctx);
-  }
 
+  // In multi-winner mode processing, perform tx search for few best modes
+  // identified during mode evaluation. Winner mode processing uses best tx
+  // configuration for tx search.
+  if (cpi->sf.enable_multiwinner_mode_process) {
+    int best_mode_idx = 0;
+    int block_width, block_height;
+    uint8_t *color_map_dst = xd->plane[PLANE_TYPE_Y].color_index_map;
+    av1_get_block_dimensions(bsize, AOM_PLANE_Y, xd, &block_width,
+                             &block_height, NULL, NULL);
+
+    for (int mode_idx = 0; mode_idx < x->winner_mode_count; mode_idx++) {
+      *mbmi = x->winner_mode_stats[mode_idx].mbmi;
+      if (is_winner_mode_processing_enabled(cpi, mbmi, mbmi->mode)) {
+        // Restore color_map of palette mode before winner mode processing
+        if (mbmi->palette_mode_info.palette_size[0] > 0) {
+          uint8_t *color_map_src =
+              x->winner_mode_stats[mode_idx].color_index_map;
+          memcpy(color_map_dst, color_map_src,
+                 block_width * block_height * sizeof(*color_map_src));
+        }
+        // Set params for winner mode evaluation
+        set_mode_eval_params(cpi, x, WINNER_MODE_EVAL);
+
+        // Winner mode processing
+        // If previous searches use only the default tx type/no R-D optimization
+        // of quantized coeffs, do an extra search for the best tx type/better
+        // R-D optimization of quantized coeffs
+        if (intra_block_yrd(cpi, x, bsize, bmode_costs, &best_rd, rate,
+                            rate_tokenonly, distortion, skippable, &best_mbmi,
+                            ctx))
+          best_mode_idx = mode_idx;
+      }
+    }
+    // Copy color_map of palette mode for final winner mode
+    if (best_mbmi.palette_mode_info.palette_size[0] > 0) {
+      uint8_t *color_map_src =
+          x->winner_mode_stats[best_mode_idx].color_index_map;
+      memcpy(color_map_dst, color_map_src,
+             block_width * block_height * sizeof(*color_map_src));
+    }
+  } else {
+    // If previous searches use only the default tx type/no R-D optimization of
+    // quantized coeffs, do an extra search for the best tx type/better R-D
+    // optimization of quantized coeffs
+    if (is_winner_mode_processing_enabled(cpi, mbmi, best_mbmi.mode)) {
+      // Set params for winner mode evaluation
+      set_mode_eval_params(cpi, x, WINNER_MODE_EVAL);
+      *mbmi = best_mbmi;
+      intra_block_yrd(cpi, x, bsize, bmode_costs, &best_rd, rate,
+                      rate_tokenonly, distortion, skippable, &best_mbmi, ctx);
+    }
+  }
   *mbmi = best_mbmi;
   return best_rd;
 }
