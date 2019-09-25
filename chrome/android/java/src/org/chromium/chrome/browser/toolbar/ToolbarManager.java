@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
@@ -1614,6 +1615,17 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     public void setToolbarVisibility(int visibility) {
         View toolbar = getToolbarView();
         if (toolbar != null) toolbar.setVisibility(visibility);
+    }
+
+    /**
+     * Sets the top margin for the control container.
+     * @param margin The margin in pixels.
+     */
+    public void setControlContainerTopMargin(int margin) {
+        final ViewGroup.MarginLayoutParams layoutParams =
+                ((ViewGroup.MarginLayoutParams) mControlContainer.getLayoutParams());
+        layoutParams.topMargin = margin;
+        mControlContainer.setLayoutParams(layoutParams);
     }
 
     /**
