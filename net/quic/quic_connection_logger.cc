@@ -289,11 +289,7 @@ QuicConnectionLogger::QuicConnectionLogger(
       num_blocked_frames_received_(0),
       num_blocked_frames_sent_(0),
       connection_description_(connection_description),
-      socket_performance_watcher_(std::move(socket_performance_watcher)),
-      net_log_is_capturing_(net_log_.IsCapturing()) {
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1), this,
-               &QuicConnectionLogger::UpdateIsCapturing);
-}
+      socket_performance_watcher_(std::move(socket_performance_watcher)) {}
 
 QuicConnectionLogger::~QuicConnectionLogger() {
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.OutOfOrderPacketsReceived",
@@ -389,7 +385,7 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
     default:
       DCHECK(false) << "Illegal frame type: " << frame.type;
   }
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   switch (frame.type) {
     case quic::PADDING_FRAME:
@@ -484,7 +480,7 @@ void QuicConnectionLogger::OnPacketSent(
     quic::QuicPacketNumber original_packet_number,
     quic::TransmissionType transmission_type,
     quic::QuicTime sent_time) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   if (!original_packet_number.IsInitialized()) {
     net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PACKET_SENT, [&] {
@@ -503,7 +499,7 @@ void QuicConnectionLogger::OnPacketLoss(
     quic::QuicPacketNumber lost_packet_number,
     quic::TransmissionType transmission_type,
     quic::QuicTime detection_time) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PACKET_LOST, [&] {
     return NetLogQuicPacketLostParams(lost_packet_number, transmission_type,
@@ -529,7 +525,7 @@ void QuicConnectionLogger::OnPacketReceived(
 
   previous_received_packet_size_ = last_received_packet_size_;
   last_received_packet_size_ = packet.length();
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PACKET_RECEIVED, [&] {
     return NetLogQuicPacketParams(self_address, peer_address, packet.length());
@@ -538,7 +534,7 @@ void QuicConnectionLogger::OnPacketReceived(
 
 void QuicConnectionLogger::OnUnauthenticatedHeader(
     const quic::QuicPacketHeader& header) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(
       NetLogEventType::QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED,
@@ -557,7 +553,7 @@ void QuicConnectionLogger::OnUndecryptablePacket() {
 void QuicConnectionLogger::OnDuplicatePacket(
     quic::QuicPacketNumber packet_number) {
   ++num_duplicate_packets_;
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(
       NetLogEventType::QUIC_SESSION_DUPLICATE_PACKET_RECEIVED,
@@ -617,13 +613,13 @@ void QuicConnectionLogger::OnPacketHeader(
     no_packet_received_after_ping_ = false;
   }
   last_received_packet_number_ = header.packet_number;
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PACKET_AUTHENTICATED);
 }
 
 void QuicConnectionLogger::OnStreamFrame(const quic::QuicStreamFrame& frame) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STREAM_FRAME_RECEIVED,
                     [&] { return NetLogQuicStreamFrameParams(frame); });
@@ -644,7 +640,7 @@ void QuicConnectionLogger::OnIncomingAck(
                    first_received_packet_number_] = true;
   }
 
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_ACK_FRAME_RECEIVED,
                     [&] { return NetLogQuicAckFrameParams(&frame); });
@@ -654,7 +650,7 @@ void QuicConnectionLogger::OnIncomingAck(
 
 void QuicConnectionLogger::OnStopWaitingFrame(
     const quic::QuicStopWaitingFrame& frame) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STOP_WAITING_FRAME_RECEIVED,
                     [&] { return NetLogQuicStopWaitingFrameParams(&frame); });
@@ -664,7 +660,7 @@ void QuicConnectionLogger::OnRstStreamFrame(
     const quic::QuicRstStreamFrame& frame) {
   base::UmaHistogramSparse("Net.QuicSession.RstStreamErrorCodeServer",
                            frame.error_code);
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_RST_STREAM_FRAME_RECEIVED,
                     [&] { return NetLogQuicRstStreamFrameParams(&frame); });
@@ -672,7 +668,7 @@ void QuicConnectionLogger::OnRstStreamFrame(
 
 void QuicConnectionLogger::OnConnectionCloseFrame(
     const quic::QuicConnectionCloseFrame& frame) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(
       NetLogEventType::QUIC_SESSION_CONNECTION_CLOSE_FRAME_RECEIVED,
@@ -682,7 +678,7 @@ void QuicConnectionLogger::OnConnectionCloseFrame(
 void QuicConnectionLogger::OnWindowUpdateFrame(
     const quic::QuicWindowUpdateFrame& frame,
     const quic::QuicTime& receive_time) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_WINDOW_UPDATE_FRAME_RECEIVED,
                     [&] { return NetLogQuicWindowUpdateFrameParams(&frame); });
@@ -690,7 +686,7 @@ void QuicConnectionLogger::OnWindowUpdateFrame(
 
 void QuicConnectionLogger::OnBlockedFrame(const quic::QuicBlockedFrame& frame) {
   ++num_blocked_frames_received_;
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_BLOCKED_FRAME_RECEIVED,
                     [&] { return NetLogQuicBlockedFrameParams(&frame); });
@@ -700,7 +696,7 @@ void QuicConnectionLogger::OnGoAwayFrame(const quic::QuicGoAwayFrame& frame) {
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.GoAwayReceivedForConnectionMigration",
                         frame.error_code == quic::QUIC_ERROR_MIGRATING_PORT);
 
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_GOAWAY_FRAME_RECEIVED,
                     [&] { return NetLogQuicGoAwayFrameParams(&frame); });
@@ -708,7 +704,7 @@ void QuicConnectionLogger::OnGoAwayFrame(const quic::QuicGoAwayFrame& frame) {
 
 void QuicConnectionLogger::OnPingFrame(const quic::QuicPingFrame& frame) {
   // PingFrame has no contents to log, so just record that it was received.
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PING_FRAME_RECEIVED);
 }
@@ -717,7 +713,7 @@ void QuicConnectionLogger::OnPublicResetPacket(
     const quic::QuicPublicResetPacket& packet) {
   UpdatePublicResetAddressMismatchHistogram(
       local_address_from_shlo_, ToIPEndPoint(packet.client_address));
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PUBLIC_RESET_PACKET_RECEIVED,
                     [&] {
@@ -728,7 +724,7 @@ void QuicConnectionLogger::OnPublicResetPacket(
 
 void QuicConnectionLogger::OnVersionNegotiationPacket(
     const quic::QuicVersionNegotiationPacket& packet) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(
       NetLogEventType::QUIC_SESSION_VERSION_NEGOTIATION_PACKET_RECEIVED,
@@ -760,7 +756,7 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
       }
     }
   }
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(
       NetLogEventType::QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_RECEIVED,
@@ -769,7 +765,7 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
 
 void QuicConnectionLogger::OnCryptoHandshakeMessageSent(
     const quic::CryptoHandshakeMessage& message) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(
       NetLogEventType::QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_SENT,
@@ -779,7 +775,7 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageSent(
 void QuicConnectionLogger::OnConnectionClosed(
     const quic::QuicConnectionCloseFrame& frame,
     quic::ConnectionCloseSource source) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CLOSED, [&] {
     return NetLogQuicOnConnectionClosedParams(frame.quic_error_code,
@@ -789,7 +785,7 @@ void QuicConnectionLogger::OnConnectionClosed(
 
 void QuicConnectionLogger::OnSuccessfulVersionNegotiation(
     const quic::ParsedQuicVersion& version) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   string quic_version = quic::ParsedQuicVersionToString(version);
   net_log_.AddEventWithStringParams(
@@ -810,7 +806,7 @@ void QuicConnectionLogger::UpdateReceivedFrameCounts(
 
 void QuicConnectionLogger::OnCertificateVerified(
     const CertVerifyResult& result) {
-  if (!net_log_is_capturing_)
+  if (!net_log_.IsCapturing())
     return;
   if (result.cert_status == CERT_STATUS_INVALID) {
     net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CERTIFICATE_VERIFY_FAILED);
@@ -870,10 +866,6 @@ void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(static_cast<base::HistogramBase::Sample>(
       ReceivedPacketLossRate() * 1000));
-}
-
-void QuicConnectionLogger::UpdateIsCapturing() {
-  net_log_is_capturing_ = net_log_.IsCapturing();
 }
 
 }  // namespace net

@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
@@ -111,8 +110,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // the overall packet loss rate, and record it into a histogram.
   void RecordAggregatePacketLossRate() const;
 
-  void UpdateIsCapturing();
-
   NetLogWithSource net_log_;
   quic::QuicSpdySession* session_;  // Unowned.
   // The last packet number received.
@@ -175,10 +172,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // Receives notifications regarding the performance of the underlying socket
   // for the QUIC connection. May be null.
   const std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher_;
-  // Lower the overhead of checking whether logging is active, by
-  // periodically polling and caching the result of net_log_.IsCapturing().
-  bool net_log_is_capturing_;
-  base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionLogger);
 };
