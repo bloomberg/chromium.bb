@@ -1920,6 +1920,14 @@ void RenderProcessHostImpl::CreateLockManager(
                                                            std::move(receiver));
 }
 
+void RenderProcessHostImpl::CreatePermissionService(
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  permission_service_context_->CreateServiceForWorker(origin,
+                                                      std::move(receiver));
+}
+
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {
   if (IsKeepAliveRefCountDisabled())
     return;

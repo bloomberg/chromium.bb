@@ -4328,13 +4328,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 #endif
 
-  if (!permission_service_context_)
-    permission_service_context_.reset(new PermissionServiceContext(this));
-
-  registry_->AddInterface(
-      base::BindRepeating(&PermissionServiceContext::CreateService,
-                          base::Unretained(permission_service_context_.get())));
-
   registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 
@@ -6460,6 +6453,14 @@ void RenderFrameHostImpl::CreateLockManager(
     mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
   GetProcess()->CreateLockManager(GetLastCommittedOrigin(),
                                   std::move(receiver));
+}
+
+void RenderFrameHostImpl::CreatePermissionService(
+    mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
+  if (!permission_service_context_)
+    permission_service_context_.reset(new PermissionServiceContext(this));
+
+  permission_service_context_->CreateService(std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetAuthenticator(
