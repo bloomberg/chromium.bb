@@ -62,6 +62,9 @@ class NigoriKeyBag {
                       const std::string& input,
                       sync_pb::EncryptedData* encrypted_output) const;
 
+  // Returns whether the key required to decrypt |encrypted_input| is known.
+  bool CanDecrypt(const sync_pb::EncryptedData& encrypted_input) const;
+
   // Decryption of strings (possibly binary). Returns true if success.
   // |decrypted_output| must not be null.
   bool Decrypt(const sync_pb::EncryptedData& encrypted_input,

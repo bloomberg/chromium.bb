@@ -155,6 +155,11 @@ bool NigoriKeyBag::EncryptWithKey(
   return true;
 }
 
+bool NigoriKeyBag::CanDecrypt(
+    const sync_pb::EncryptedData& encrypted_input) const {
+  return HasKey(encrypted_input.key_name());
+}
+
 bool NigoriKeyBag::Decrypt(const sync_pb::EncryptedData& encrypted_input,
                            std::string* decrypted_output) const {
   DCHECK(decrypted_output);
