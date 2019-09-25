@@ -1083,13 +1083,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
 
   // Navigate to a page that would normally be cacheable.
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
   RenderFrameDeletedObserver delete_observer_rfh_a(current_frame_host());
 
   // Navigate away.
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
 
   // The page should be deleted (not cached).
   delete_observer_rfh_a.WaitUntilDeleted();
