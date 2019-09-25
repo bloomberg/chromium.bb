@@ -140,6 +140,12 @@ bool BrowserAccessibility::CanFireEvents() const {
   return !PlatformIsChildOfLeafIncludingIgnored();
 }
 
+ui::AXPlatformNode* BrowserAccessibility::GetAXPlatformNode() const {
+  // Not all BrowserAccessibility subclasses can return an AXPlatformNode yet.
+  // So, here we just return nullptr.
+  return nullptr;
+}
+
 uint32_t BrowserAccessibility::PlatformChildCount() const {
   if (HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
     if (PlatformGetRootOfChildTree())
@@ -1599,9 +1605,26 @@ gfx::NativeViewAccessible BrowserAccessibility::GetFocus() {
 }
 
 ui::AXPlatformNode* BrowserAccessibility::GetFromNodeID(int32_t id) {
-  // Not all BrowserAccessibility subclasses can return an AXPlatformNode yet.
-  // So, here we just return nullptr.
-  return nullptr;
+  BrowserAccessibility* node = manager_->GetFromID(id);
+  if (!node)
+    return nullptr;
+
+  return node->GetAXPlatformNode();
+}
+
+ui::AXPlatformNode* BrowserAccessibility::GetFromTreeIDAndNodeID(
+    const ui::AXTreeID& ax_tree_id,
+    int32_t id) {
+  BrowserAccessibilityManager* manager =
+      BrowserAccessibilityManager::FromID(ax_tree_id);
+  if (!manager)
+    return nullptr;
+
+  BrowserAccessibility* node = manager->GetFromID(id);
+  if (!node)
+    return nullptr;
+
+  return node->GetAXPlatformNode();
 }
 
 int BrowserAccessibility::GetIndexInParent() {

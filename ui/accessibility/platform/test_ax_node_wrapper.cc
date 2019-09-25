@@ -285,6 +285,15 @@ AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
   return nullptr;
 }
 
+AXPlatformNode* TestAXNodeWrapper::GetFromTreeIDAndNodeID(
+    const ui::AXTreeID& ax_tree_id,
+    int32_t id) {
+  // TestAXNodeWrapper only supports one accessibility tree.
+  // Additional work would need to be done to support multiple trees.
+  CHECK_EQ(GetTreeData().tree_id, ax_tree_id);
+  return GetFromNodeID(id);
+}
+
 int TestAXNodeWrapper::GetIndexInParent() {
   return node_ ? int{node_->index_in_parent()} : -1;
 }
