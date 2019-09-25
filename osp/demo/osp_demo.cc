@@ -30,7 +30,7 @@
 #include "platform/api/network_interface.h"
 #include "platform/api/time.h"
 #include "platform/api/trace_logging.h"
-#include "platform/impl/network_waiter_thread.h"
+#include "platform/impl/socket_handle_waiter_thread.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/task_runner_thread.h"
 #include "platform/impl/text_trace_logging_platform.h"
@@ -425,8 +425,9 @@ void ListenerDemo() {
   SignalThings();
 
   platform::TaskRunnerThread task_runner_thread(platform::Clock::now);
-  platform::NetworkWaiterThread network_waiter_thread;
-  platform::UdpSocketReaderPosix reader(network_waiter_thread.network_waiter());
+  platform::SocketHandleWaiterThread socket_handle_waiter_thread;
+  platform::UdpSocketReaderPosix reader(
+      socket_handle_waiter_thread.socket_handle_waiter());
   platform::UdpSocket::SetLifetimeObserver(&reader);
 
   ListenerObserver listener_observer;
@@ -516,8 +517,9 @@ void PublisherDemo(absl::string_view friendly_name) {
   constexpr uint16_t server_port = 6667;
 
   platform::TaskRunnerThread task_runner_thread(platform::Clock::now);
-  platform::NetworkWaiterThread network_waiter_thread;
-  platform::UdpSocketReaderPosix reader(network_waiter_thread.network_waiter());
+  platform::SocketHandleWaiterThread socket_handle_waiter_thread;
+  platform::UdpSocketReaderPosix reader(
+      socket_handle_waiter_thread.socket_handle_waiter());
   platform::UdpSocket::SetLifetimeObserver(&reader);
 
   PublisherObserver publisher_observer;

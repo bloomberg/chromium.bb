@@ -14,7 +14,7 @@
 namespace openscreen {
 namespace platform {
 
-UdpSocketReaderPosix::UdpSocketReaderPosix(NetworkWaiter* waiter)
+UdpSocketReaderPosix::UdpSocketReaderPosix(SocketHandleWaiter* waiter)
     : waiter_(waiter) {}
 
 UdpSocketReaderPosix::~UdpSocketReaderPosix() {

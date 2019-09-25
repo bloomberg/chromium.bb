@@ -55,9 +55,9 @@ source_set("platform") {
 
   if (!build_with_chromium) {
     sources += [
-      "impl/network_waiter.cc",
-      "impl/network_waiter.h",
       "impl/socket_handle.h",
+      "impl/socket_handle_waiter.cc",
+      "impl/socket_handle_waiter.h",
       "impl/task_runner.cc",
       "impl/task_runner.h",
       "impl/task_runner_thread.cc",
@@ -82,10 +82,6 @@ source_set("platform") {
 
     if (is_posix) {
       sources += [
-        "impl/network_waiter_posix.cc",
-        "impl/network_waiter_posix.h",
-        "impl/network_waiter_thread.cc",
-        "impl/network_waiter_thread.h",
         "impl/scoped_pipe.h",
         "impl/scoped_wake_lock_posix.cc",
         "impl/scoped_wake_lock_posix.h",
@@ -93,6 +89,10 @@ source_set("platform") {
         "impl/socket_address_posix.h",
         "impl/socket_handle_posix.cc",
         "impl/socket_handle_posix.h",
+        "impl/socket_handle_waiter_posix.cc",
+        "impl/socket_handle_waiter_posix.h",
+        "impl/socket_handle_waiter_thread.cc",
+        "impl/socket_handle_waiter_thread.h",
         "impl/stream_socket.h",
         "impl/stream_socket_posix.cc",
         "impl/stream_socket_posix.h",
@@ -179,9 +179,9 @@ source_set("unittests") {
 
     if (is_posix) {
       sources += [
-        "impl/network_waiter_posix_unittest.cc",
         "impl/scoped_pipe_unittest.cc",
         "impl/socket_address_posix_unittest.cc",
+        "impl/socket_handle_waiter_posix_unittest.cc",
         "impl/tls_data_router_posix_unittest.cc",
         "impl/udp_socket_reader_posix_unittest.cc",
       ]

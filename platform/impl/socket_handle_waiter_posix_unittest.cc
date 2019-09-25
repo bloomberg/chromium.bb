@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/impl/network_waiter_posix.h"
+#include "platform/impl/socket_handle_waiter_posix.h"
 
 #include <sys/socket.h>
 
@@ -21,16 +21,16 @@ namespace {
 using namespace ::testing;
 using ::testing::_;
 
-class MockSubscriber : public NetworkWaiter::Subscriber {
+class MockSubscriber : public SocketHandleWaiter::Subscriber {
  public:
-  using SocketHandleRef = NetworkWaiter::SocketHandleRef;
+  using SocketHandleRef = SocketHandleWaiter::SocketHandleRef;
   MOCK_METHOD1(ProcessReadyHandle, void(SocketHandleRef));
 };
 
-class TestingNetworkWaiter : public NetworkWaiter {
+class TestingSocketHandleWaiter : public SocketHandleWaiter {
  public:
-  using SocketHandleRef = NetworkWaiter::SocketHandleRef;
-  using NetworkWaiter::ProcessHandles;
+  using SocketHandleRef = SocketHandleWaiter::SocketHandleRef;
+  using SocketHandleWaiter::ProcessHandles;
 
   MOCK_METHOD2(
       AwaitSocketsReadable,
@@ -40,9 +40,9 @@ class TestingNetworkWaiter : public NetworkWaiter {
 
 }  // namespace
 
-TEST(NetworkWaiterTest, BubblesUpAwaitSocketsReadableErrors) {
+TEST(SocketHandleWaiterTest, BubblesUpAwaitSocketsReadableErrors) {
   MockSubscriber subscriber;
-  TestingNetworkWaiter waiter;
+  TestingSocketHandleWaiter waiter;
   SocketHandle handle0{0};
   SocketHandle handle1{1};
   SocketHandle handle2{2};
@@ -60,10 +60,10 @@ TEST(NetworkWaiterTest, BubblesUpAwaitSocketsReadableErrors) {
   waiter.ProcessHandles(Clock::duration{0});
 }
 
-TEST(NetworkWaiterTest, WatchedSocketsReturnedToCorrectSubscribers) {
+TEST(SocketHandleWaiterTest, WatchedSocketsReturnedToCorrectSubscribers) {
   MockSubscriber subscriber;
   MockSubscriber subscriber2;
-  TestingNetworkWaiter waiter;
+  TestingSocketHandleWaiter waiter;
   SocketHandle handle0{0};
   SocketHandle handle1{1};
   SocketHandle handle2{2};
@@ -82,35 +82,35 @@ TEST(NetworkWaiterTest, WatchedSocketsReturnedToCorrectSubscribers) {
   EXPECT_CALL(subscriber2, ProcessReadyHandle(std::cref(handle1_ref))).Times(1);
   EXPECT_CALL(subscriber2, ProcessReadyHandle(std::cref(handle3_ref))).Times(1);
   EXPECT_CALL(waiter, AwaitSocketsReadable(_, _))
-      .WillOnce(Return(ByMove(std::vector<NetworkWaiter::SocketHandleRef>{
+      .WillOnce(Return(ByMove(std::vector<SocketHandleWaiter::SocketHandleRef>{
           std::cref(handle0_ref), std::cref(handle1_ref),
           std::cref(handle2_ref), std::cref(handle3_ref)})));
   waiter.ProcessHandles(Clock::duration{0});
 }
 
-TEST(NetworkWaiterPosixTest, ValidateTimevalConversion) {
+TEST(SocketHandleWaiterTest, ValidateTimevalConversion) {
   auto timespan = Clock::duration::zero();
-  auto timeval = NetworkWaiterPosix::ToTimeval(timespan);
+  auto timeval = SocketHandleWaiterPosix::ToTimeval(timespan);
   EXPECT_EQ(timeval.tv_sec, 0);
   EXPECT_EQ(timeval.tv_usec, 0);
 
   timespan = Clock::duration(1000000);
-  timeval = NetworkWaiterPosix::ToTimeval(timespan);
+  timeval = SocketHandleWaiterPosix::ToTimeval(timespan);
   EXPECT_EQ(timeval.tv_sec, 1);
   EXPECT_EQ(timeval.tv_usec, 0);
 
   timespan = Clock::duration(1000000 - 1);
-  timeval = NetworkWaiterPosix::ToTimeval(timespan);
+  timeval = SocketHandleWaiterPosix::ToTimeval(timespan);
   EXPECT_EQ(timeval.tv_sec, 0);
   EXPECT_EQ(timeval.tv_usec, 1000000 - 1);
 
   timespan = Clock::duration(1);
-  timeval = NetworkWaiterPosix::ToTimeval(timespan);
+  timeval = SocketHandleWaiterPosix::ToTimeval(timespan);
   EXPECT_EQ(timeval.tv_sec, 0);
   EXPECT_EQ(timeval.tv_usec, 1);
 
   timespan = Clock::duration(100000010);
-  timeval = NetworkWaiterPosix::ToTimeval(timespan);
+  timeval = SocketHandleWaiterPosix::ToTimeval(timespan);
   EXPECT_EQ(timeval.tv_sec, 100);
   EXPECT_EQ(timeval.tv_usec, 10);
 }

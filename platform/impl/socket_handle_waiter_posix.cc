@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/impl/network_waiter_posix.h"
+#include "platform/impl/socket_handle_waiter_posix.h"
 
 #include <time.h>
 
@@ -17,12 +17,12 @@
 namespace openscreen {
 namespace platform {
 
-NetworkWaiterPosix::NetworkWaiterPosix() = default;
+SocketHandleWaiterPosix::SocketHandleWaiterPosix() = default;
 
-NetworkWaiterPosix::~NetworkWaiterPosix() = default;
+SocketHandleWaiterPosix::~SocketHandleWaiterPosix() = default;
 
-ErrorOr<std::vector<NetworkWaiterPosix::SocketHandleRef>>
-NetworkWaiterPosix::AwaitSocketsReadable(
+ErrorOr<std::vector<SocketHandleWaiterPosix::SocketHandleRef>>
+SocketHandleWaiterPosix::AwaitSocketsReadable(
     const std::vector<SocketHandleRef>& socket_handles,
     const Clock::duration& timeout) {
   int max_fd = -1;
@@ -60,12 +60,13 @@ NetworkWaiterPosix::AwaitSocketsReadable(
 }
 
 // static
-std::unique_ptr<NetworkWaiter> NetworkWaiter::Create() {
-  return std::unique_ptr<NetworkWaiter>(new NetworkWaiterPosix());
+std::unique_ptr<SocketHandleWaiter> SocketHandleWaiter::Create() {
+  return std::unique_ptr<SocketHandleWaiter>(new SocketHandleWaiterPosix());
 }
 
 // static
-struct timeval NetworkWaiterPosix::ToTimeval(const Clock::duration& timeout) {
+struct timeval SocketHandleWaiterPosix::ToTimeval(
+    const Clock::duration& timeout) {
   struct timeval tv;
   const auto whole_seconds =
       std::chrono::duration_cast<std::chrono::seconds>(timeout);
@@ -77,7 +78,7 @@ struct timeval NetworkWaiterPosix::ToTimeval(const Clock::duration& timeout) {
   return tv;
 }
 
-void NetworkWaiterPosix::RunUntilStopped() {
+void SocketHandleWaiterPosix::RunUntilStopped() {
   const bool was_running = is_running_.exchange(true);
   OSP_CHECK(!was_running);
 
@@ -87,7 +88,7 @@ void NetworkWaiterPosix::RunUntilStopped() {
   }
 }
 
-void NetworkWaiterPosix::RequestStopSoon() {
+void SocketHandleWaiterPosix::RequestStopSoon() {
   is_running_.store(false);
 }
 

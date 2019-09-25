@@ -14,7 +14,7 @@ namespace platform {
 
 class TestingDataRouter : public TlsDataRouterPosix {
  public:
-  TestingDataRouter(NetworkWaiter* waiter) : TlsDataRouterPosix(waiter) {}
+  TestingDataRouter(SocketHandleWaiter* waiter) : TlsDataRouterPosix(waiter) {}
 
   using TlsDataRouterPosix::IsSocketWatched;
 
@@ -27,7 +27,7 @@ class MockObserver : public TestingDataRouter::SocketObserver {
   MOCK_METHOD1(OnConnectionPending, void(StreamSocketPosix*));
 };
 
-class MockNetworkWaiter final : public NetworkWaiter {
+class MockNetworkWaiter final : public SocketHandleWaiter {
  public:
   MOCK_METHOD2(
       AwaitSocketsReadable,

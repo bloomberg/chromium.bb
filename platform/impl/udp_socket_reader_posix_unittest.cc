@@ -47,7 +47,7 @@ class MockUdpSocketPosix : public UdpSocketPosix {
 };
 
 // Mock event waiter
-class MockNetworkWaiter final : public NetworkWaiter {
+class MockNetworkWaiter final : public SocketHandleWaiter {
  public:
   MOCK_METHOD2(
       AwaitSocketsReadable,
@@ -82,7 +82,7 @@ class MockTaskRunner final : public TaskRunner {
 // Class extending NetworkWaiter to allow for looking at protected data.
 class TestingUdpSocketReader final : public UdpSocketReaderPosix {
  public:
-  explicit TestingUdpSocketReader(NetworkWaiter* waiter)
+  explicit TestingUdpSocketReader(SocketHandleWaiter* waiter)
       : UdpSocketReaderPosix(waiter) {}
 
   void OnDestroy(UdpSocket* socket) override {
@@ -95,8 +95,8 @@ class TestingUdpSocketReader final : public UdpSocketReaderPosix {
 };
 
 TEST(UdpSocketReaderTest, WatchReadableSucceeds) {
-  std::unique_ptr<NetworkWaiter> mock_waiter =
-      std::unique_ptr<NetworkWaiter>(new MockNetworkWaiter());
+  std::unique_ptr<SocketHandleWaiter> mock_waiter =
+      std::unique_ptr<SocketHandleWaiter>(new MockNetworkWaiter());
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(new MockTaskRunner());
   FakeUdpSocket::MockClient client;
@@ -106,8 +106,8 @@ TEST(UdpSocketReaderTest, WatchReadableSucceeds) {
 }
 
 TEST(UdpSocketReaderTest, UnwatchReadableSucceeds) {
-  std::unique_ptr<NetworkWaiter> mock_waiter =
-      std::unique_ptr<NetworkWaiter>(new MockNetworkWaiter());
+  std::unique_ptr<SocketHandleWaiter> mock_waiter =
+      std::unique_ptr<SocketHandleWaiter>(new MockNetworkWaiter());
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(new MockTaskRunner());
   FakeUdpSocket::MockClient client;

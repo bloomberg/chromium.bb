@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_IMPL_NETWORK_WAITER_POSIX_H_
-#define PLATFORM_IMPL_NETWORK_WAITER_POSIX_H_
+#ifndef PLATFORM_IMPL_SOCKET_HANDLE_WAITER_POSIX_H_
+#define PLATFORM_IMPL_SOCKET_HANDLE_WAITER_POSIX_H_
 
 #include <sys/select.h>
 #include <unistd.h>
@@ -11,17 +11,17 @@
 #include <atomic>
 #include <mutex>  // NOLINT
 
-#include "platform/impl/network_waiter.h"
+#include "platform/impl/socket_handle_waiter.h"
 
 namespace openscreen {
 namespace platform {
 
-class NetworkWaiterPosix : public NetworkWaiter {
+class SocketHandleWaiterPosix : public SocketHandleWaiter {
  public:
-  using SocketHandleRef = NetworkWaiter::SocketHandleRef;
+  using SocketHandleRef = SocketHandleWaiter::SocketHandleRef;
 
-  NetworkWaiterPosix();
-  ~NetworkWaiterPosix() override;
+  SocketHandleWaiterPosix();
+  ~SocketHandleWaiterPosix() override;
 
   // TODO(rwkeane): Move this to a platform-specific util library.
   static struct timeval ToTimeval(const Clock::duration& timeout);
@@ -48,4 +48,4 @@ class NetworkWaiterPosix : public NetworkWaiter {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_IMPL_NETWORK_WAITER_POSIX_H_
+#endif  // PLATFORM_IMPL_SOCKET_HANDLE_WAITER_POSIX_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/impl/network_waiter.h"
+#include "platform/impl/socket_handle_waiter.h"
 
 #include <algorithm>
 #include <atomic>
@@ -13,15 +13,16 @@
 namespace openscreen {
 namespace platform {
 
-void NetworkWaiter::Subscribe(Subscriber* subscriber, SocketHandleRef handle) {
+void SocketHandleWaiter::Subscribe(Subscriber* subscriber,
+                                   SocketHandleRef handle) {
   std::lock_guard<std::mutex> lock(mutex_);
   if (handle_mappings_.find(handle) == handle_mappings_.end()) {
     handle_mappings_.emplace(handle, subscriber);
   }
 }
 
-void NetworkWaiter::Unsubscribe(Subscriber* subscriber,
-                                SocketHandleRef handle) {
+void SocketHandleWaiter::Unsubscribe(Subscriber* subscriber,
+                                     SocketHandleRef handle) {
   std::lock_guard<std::mutex> lock(mutex_);
   auto iterator = handle_mappings_.find(handle);
   if (handle_mappings_.find(handle) != handle_mappings_.end()) {
@@ -29,7 +30,7 @@ void NetworkWaiter::Unsubscribe(Subscriber* subscriber,
   }
 }
 
-void NetworkWaiter::UnsubscribeAll(Subscriber* subscriber) {
+void SocketHandleWaiter::UnsubscribeAll(Subscriber* subscriber) {
   std::lock_guard<std::mutex> lock(mutex_);
   for (auto it = handle_mappings_.begin(); it != handle_mappings_.end();) {
     if (it->second == subscriber) {
@@ -40,9 +41,9 @@ void NetworkWaiter::UnsubscribeAll(Subscriber* subscriber) {
   }
 }
 
-void NetworkWaiter::OnHandleDeletion(Subscriber* subscriber,
-                                     SocketHandleRef handle,
-                                     bool disable_locking_for_testing) {
+void SocketHandleWaiter::OnHandleDeletion(Subscriber* subscriber,
+                                          SocketHandleRef handle,
+                                          bool disable_locking_for_testing) {
   std::unique_lock<std::mutex> lock(mutex_);
   auto it = handle_mappings_.find(handle);
   if (it != handle_mappings_.end()) {
@@ -57,7 +58,7 @@ void NetworkWaiter::OnHandleDeletion(Subscriber* subscriber,
   }
 }
 
-void NetworkWaiter::ProcessReadyHandles(
+void SocketHandleWaiter::ProcessReadyHandles(
     const std::vector<SocketHandleRef>& handles) {
   std::lock_guard<std::mutex> lock(mutex_);
   for (const SocketHandleRef& handle : handles) {
@@ -71,7 +72,7 @@ void NetworkWaiter::ProcessReadyHandles(
   }
 }
 
-Error NetworkWaiter::ProcessHandles(const Clock::duration& timeout) {
+Error SocketHandleWaiter::ProcessHandles(const Clock::duration& timeout) {
   std::vector<SocketHandleRef> handles;
   {
     std::lock_guard<std::mutex> lock(mutex_);

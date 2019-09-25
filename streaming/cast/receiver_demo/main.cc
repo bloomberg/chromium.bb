@@ -7,7 +7,7 @@
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
-#include "platform/impl/network_waiter_thread.h"
+#include "platform/impl/socket_handle_waiter_thread.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/udp_socket_reader_posix.h"
 #include "streaming/cast/constants.h"
@@ -78,9 +78,9 @@ int main(int argc, const char* argv[]) {
   openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kInfo);
   const auto now_function = &openscreen::platform::Clock::now;
   openscreen::platform::TaskRunnerImpl task_runner(now_function);
-  openscreen::platform::NetworkWaiterThread network_waiter_thread;
+  openscreen::platform::SocketHandleWaiterThread socket_handle_waiter_thread;
   openscreen::platform::UdpSocketReaderPosix udp_socket_reader(
-      network_waiter_thread.network_waiter());
+      socket_handle_waiter_thread.socket_handle_waiter());
   openscreen::platform::UdpSocket::SetLifetimeObserver(&udp_socket_reader);
 
   // Create the Environment that holds the required injected dependencies

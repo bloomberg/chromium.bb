@@ -10,7 +10,7 @@
 
 #include "absl/base/thread_annotations.h"
 #include "platform/api/logging.h"
-#include "platform/impl/network_waiter.h"
+#include "platform/impl/socket_handle_waiter.h"
 
 namespace openscreen {
 namespace platform {
@@ -30,7 +30,7 @@ class TlsConnectionPosix;
 // of them should block. Additionally, this class must ensure that deletions of
 // the above types do not occur while a socket/connection is currently being
 // accessed from the networking thread.
-class TlsDataRouterPosix : public NetworkWaiter::Subscriber {
+class TlsDataRouterPosix : public SocketHandleWaiter::Subscriber {
  public:
   class SocketObserver {
    public:
@@ -42,9 +42,9 @@ class TlsDataRouterPosix : public NetworkWaiter::Subscriber {
     virtual void OnConnectionPending(StreamSocketPosix* socket) = 0;
   };
 
-  // The provided NetworkWaiter is expected to live for the duration of this
-  // object's lifetime.
-  explicit TlsDataRouterPosix(NetworkWaiter* waiter);
+  // The provided SocketHandleWaiter is expected to live for the duration of
+  // this object's lifetime.
+  explicit TlsDataRouterPosix(SocketHandleWaiter* waiter);
   ~TlsDataRouterPosix() override;
 
   // Register a TlsConnection that should be watched for readable and writable
@@ -55,7 +55,7 @@ class TlsDataRouterPosix : public NetworkWaiter::Subscriber {
   void DeregisterConnection(TlsConnectionPosix* connection);
 
   // Register a StreamSocket that should be watched for incoming Tcp Connections
-  // with the NetworkWaiter.
+  // with the SocketHandleWaiter.
   void RegisterSocketObserver(StreamSocketPosix* socket,
                               SocketObserver* observer);
 
@@ -76,8 +76,8 @@ class TlsDataRouterPosix : public NetworkWaiter::Subscriber {
   // Perform write on all registered sockets.
   void WriteAll();
 
-  // NetworkWaiter::Subscriber overrides.
-  void ProcessReadyHandle(NetworkWaiter::SocketHandleRef handle) override;
+  // SocketHandleWaiter::Subscriber overrides.
+  void ProcessReadyHandle(SocketHandleWaiter::SocketHandleRef handle) override;
 
  protected:
   // Determines if the provided socket is currently being watched by this
@@ -92,7 +92,7 @@ class TlsDataRouterPosix : public NetworkWaiter::Subscriber {
 
   void RemoveWatchedSocket(StreamSocketPosix* socket);
 
-  NetworkWaiter* waiter_;
+  SocketHandleWaiter* waiter_;
 
   // Mutex guarding connections_ vector.
   mutable std::mutex connections_mutex_;

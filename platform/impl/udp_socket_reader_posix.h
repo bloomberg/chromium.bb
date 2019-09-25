@@ -12,8 +12,8 @@
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
-#include "platform/impl/network_waiter.h"
 #include "platform/impl/socket_handle.h"
+#include "platform/impl/socket_handle_waiter.h"
 
 namespace openscreen {
 namespace platform {
@@ -25,13 +25,13 @@ struct UdpSocketPosix;
 // NOTE: This class will only function as intended while its RunUntilStopped
 // method is running.
 class UdpSocketReaderPosix : public UdpSocket::LifetimeObserver,
-                             public NetworkWaiter::Subscriber {
+                             public SocketHandleWaiter::Subscriber {
  public:
-  using SocketHandleRef = NetworkWaiter::SocketHandleRef;
+  using SocketHandleRef = SocketHandleWaiter::SocketHandleRef;
 
   // Creates a new instance of this object.
   // NOTE: The provided NetworkWaiter must outlive this object.
-  explicit UdpSocketReaderPosix(NetworkWaiter* waiter);
+  explicit UdpSocketReaderPosix(SocketHandleWaiter* waiter);
   virtual ~UdpSocketReaderPosix();
 
   // UdpSocket::LifetimeObserver overrides.
@@ -50,7 +50,7 @@ class UdpSocketReaderPosix : public UdpSocket::LifetimeObserver,
   // not be watched until after this wait call ends.
   void OnDestroy(UdpSocket* socket) override;
 
-  // NetworkWaiter::Subscriber overrides.
+  // SocketHandleWaiter::Subscriber overrides.
   void ProcessReadyHandle(SocketHandleRef handle) override;
 
  protected:
@@ -69,7 +69,7 @@ class UdpSocketReaderPosix : public UdpSocket::LifetimeObserver,
   std::mutex mutex_;
 
   // NetworkWaiter watching this NetworkReader.
-  NetworkWaiter* const waiter_;
+  SocketHandleWaiter* const waiter_;
 
   friend class TestingUdpSocketReader;
 

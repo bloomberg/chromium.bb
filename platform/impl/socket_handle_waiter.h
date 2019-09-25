@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_IMPL_NETWORK_WAITER_H_
-#define PLATFORM_IMPL_NETWORK_WAITER_H_
+#ifndef PLATFORM_IMPL_SOCKET_HANDLE_WAITER_H_
+#define PLATFORM_IMPL_SOCKET_HANDLE_WAITER_H_
 
 #include <condition_variable>
 #include <functional>
@@ -23,7 +23,7 @@ namespace platform {
 // The class responsible for calling platform-level method to watch UDP sockets
 // for available read data. Reading from these sockets is handled at a higher
 // layer.
-class NetworkWaiter {
+class SocketHandleWaiter {
  public:
   using SocketHandleRef = std::reference_wrapper<const SocketHandle>;
 
@@ -36,10 +36,11 @@ class NetworkWaiter {
     virtual void ProcessReadyHandle(SocketHandleRef handle) = 0;
   };
 
-  // Creates a new NetworkWaiter instance.
-  static std::unique_ptr<NetworkWaiter> Create();
+  // Creates a new SocketHandleWaiter instance.
+  static std::unique_ptr<SocketHandleWaiter> Create();
 
-  virtual ~NetworkWaiter() = default;
+  SocketHandleWaiter() = default;
+  virtual ~SocketHandleWaiter() = default;
 
   // Start notifying |subscriber| whenever |handle| has an event. May be called
   // multiple times, to be notified for multiple handles, but should not be
@@ -86,9 +87,11 @@ class NetworkWaiter {
   // that is watching them.
   std::unordered_map<SocketHandleRef, Subscriber*, SocketHandleHash>
       handle_mappings_;
+
+  OSP_DISALLOW_COPY_AND_ASSIGN(SocketHandleWaiter);
 };
 
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_IMPL_NETWORK_WAITER_H_
+#endif  // PLATFORM_IMPL_SOCKET_HANDLE_WAITER_H_

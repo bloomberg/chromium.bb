@@ -11,7 +11,7 @@
 namespace openscreen {
 namespace platform {
 
-TlsDataRouterPosix::TlsDataRouterPosix(NetworkWaiter* waiter)
+TlsDataRouterPosix::TlsDataRouterPosix(SocketHandleWaiter* waiter)
     : waiter_(waiter) {}
 
 TlsDataRouterPosix::~TlsDataRouterPosix() {
@@ -76,7 +76,7 @@ void TlsDataRouterPosix::WriteAll() {
 }
 
 void TlsDataRouterPosix::ProcessReadyHandle(
-    NetworkWaiter::SocketHandleRef handle) {
+    SocketHandleWaiter::SocketHandleRef handle) {
   std::unique_lock<std::mutex> lock(socket_mutex_);
   for (const auto& pair : socket_mappings_) {
     if (pair.first->socket_handle() == handle) {
