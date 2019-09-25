@@ -6136,6 +6136,7 @@ const KURL Document::SiteForCookies() const {
 
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {
   const bool has_access =
+      TopFrameOrigin() &&
       GetSecurityOrigin()->IsSameSchemeHostPort(TopFrameOrigin().get());
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
