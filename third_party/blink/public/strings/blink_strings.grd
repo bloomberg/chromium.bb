@@ -509,6 +509,10 @@ below:
           search text field
         </message>
       </if>
+      <!-- https://w3c.github.io/html-aam/#el-section -->
+      <message name="IDS_AX_ROLE_SECTION" desc="Accessibility role description for a section of a document, like the main body text, the table of contents, a header, or a footer">
+        section
+      </message>
       <message name="IDS_AX_ROLE_STATUS" desc="Accessibility role description for status">
         status
       </message>

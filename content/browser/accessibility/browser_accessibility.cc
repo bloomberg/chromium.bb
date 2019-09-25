@@ -1862,6 +1862,7 @@ base::string16 BrowserAccessibility::GetLocalizedStringForLandmarkType() const {
       return content_client->GetLocalizedString(IDS_AX_ROLE_CONTENT_INFO);
 
     case ax::mojom::Role::kRegion:
+    case ax::mojom::Role::kSection:
       if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
         return content_client->GetLocalizedString(IDS_AX_ROLE_REGION);
       FALLTHROUGH;
@@ -1928,6 +1929,13 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
 
     case ax::mojom::Role::kSearchBox:
       return content_client->GetLocalizedString(IDS_AX_ROLE_SEARCH_BOX);
+
+    case ax::mojom::Role::kSection: {
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
+        return content_client->GetLocalizedString(IDS_AX_ROLE_SECTION);
+
+      return {};
+    }
 
     case ax::mojom::Role::kStatus:
       return content_client->GetLocalizedString(IDS_AX_ROLE_OUTPUT);

@@ -680,8 +680,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedLandmarkType(3, ax::mojom::Role::kForm, "form");
   TestLocalizedLandmarkType(4, ax::mojom::Role::kMain, "main");
   TestLocalizedLandmarkType(5, ax::mojom::Role::kNavigation, "nav");
-  TestLocalizedLandmarkType(6, ax::mojom::Role::kRegion, "");
-  TestLocalizedLandmarkType(7, ax::mojom::Role::kRegion, "section",
+  TestLocalizedLandmarkType(6, ax::mojom::Role::kSection, "");
+  TestLocalizedLandmarkType(7, ax::mojom::Role::kSection, "section",
                             base::ASCIIToUTF16("region"));
 
   TestLocalizedLandmarkType(8, ax::mojom::Role::kBanner, "banner",
@@ -723,6 +723,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<mark></mark>"
       "<meter></meter>"
       "<output></output>"
+      "<section></section>"
+      "<section aria-label='section'></section>"
       "<time></time>"
       "<div role='contentinfo' aria-label='contentinfo'></div>");
 
@@ -731,7 +733,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   BrowserAccessibility* root = GetManager()->GetRoot();
   ASSERT_NE(nullptr, root);
-  ASSERT_EQ(19u, root->PlatformChildCount());
+  ASSERT_EQ(21u, root->PlatformChildCount());
 
   auto TestLocalizedRoleDescription =
       [root](int child_index,
@@ -762,8 +764,10 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedRoleDescription(14, base::ASCIIToUTF16("highlight"));
   TestLocalizedRoleDescription(15, base::ASCIIToUTF16("meter"));
   TestLocalizedRoleDescription(16, base::ASCIIToUTF16("output"));
-  TestLocalizedRoleDescription(17, base::ASCIIToUTF16("time"));
-  TestLocalizedRoleDescription(18, base::ASCIIToUTF16("content information"));
+  TestLocalizedRoleDescription(17, base::ASCIIToUTF16(""));
+  TestLocalizedRoleDescription(18, base::ASCIIToUTF16("section"));
+  TestLocalizedRoleDescription(19, base::ASCIIToUTF16("time"));
+  TestLocalizedRoleDescription(20, base::ASCIIToUTF16("content information"));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,

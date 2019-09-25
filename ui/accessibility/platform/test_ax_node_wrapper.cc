@@ -592,6 +592,7 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
       return base::ASCIIToUTF16("content information");
 
     case ax::mojom::Role::kRegion:
+    case ax::mojom::Role::kSection:
       if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
         return base::ASCIIToUTF16("region");
       FALLTHROUGH;
@@ -655,6 +656,13 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
 
     case ax::mojom::Role::kSearchBox:
       return base::ASCIIToUTF16("search box");
+
+    case ax::mojom::Role::kSection: {
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
+        return base::ASCIIToUTF16("section");
+
+      return {};
+    }
 
     case ax::mojom::Role::kStatus:
       return base::ASCIIToUTF16("output");

@@ -1008,6 +1008,10 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kRubyAnnotation:
       // No role description.
       break;
+    case ax::mojom::Role::kSection:
+      // A <section> element uses the 'region' ARIA role mapping.
+      message_id = IDS_AX_ROLE_REGION;
+      break;
     case ax::mojom::Role::kSvgRoot:
       message_id = IDS_AX_ROLE_GRAPHIC;
       break;

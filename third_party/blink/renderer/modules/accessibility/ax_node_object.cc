@@ -670,7 +670,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kPre;
 
   if (GetNode()->HasTagName(kSectionTag))
-    return ax::mojom::Role::kRegion;
+    return ax::mojom::Role::kSection;
 
   if (GetNode()->HasTagName(kAddressTag))
     return ax::mojom::Role::kGenericContainer;
