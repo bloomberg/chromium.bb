@@ -140,7 +140,8 @@ ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     network::mojom::NetworkContext* network_context,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
-    const url::Origin& request_initiator) {
+    const url::Origin& request_initiator,
+    const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
   return network::mojom::URLLoaderFactoryPtrInfo();
 }
 

@@ -356,7 +356,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       network::mojom::NetworkContext* network_context,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
-      const url::Origin& request_initiator);
+      const url::Origin& request_initiator,
+      const base::Optional<net::NetworkIsolationKey>& network_isolation_key);
 
   // Returns a list additional WebUI schemes, if any.  These additional schemes
   // act as aliases to the chrome: scheme.  The additional schemes may or may

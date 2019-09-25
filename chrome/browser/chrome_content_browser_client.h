@@ -157,7 +157,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::NetworkContext* network_context,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
-      const url::Origin& request_initiator) override;
+      const url::Origin& request_initiator,
+      const base::Optional<net::NetworkIsolationKey>& network_isolation_key)
+      override;
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
   void GetAdditionalViewSourceSchemes(
