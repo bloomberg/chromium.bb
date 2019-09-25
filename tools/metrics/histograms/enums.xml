@@ -18124,6 +18124,7 @@ Called by update_net_error_codes.py.-->
   <int value="607" label="DeviceLoginScreenVirtualKeyboardEnabled"/>
   <int value="608" label="CloudExtensionRequestEnabled"/>
   <int value="609" label="DeviceLoginScreenSystemInfoEnforced"/>
+  <int value="610" label="SharedClipboardEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
