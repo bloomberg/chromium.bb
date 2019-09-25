@@ -1158,9 +1158,9 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     // If the text is from multiple items, split the ShapeResult to
     // corresponding items.
     DCHECK_GT(num_text_items, 0u);
-    std::unique_ptr<ShapeResult::ShapeRange[]> text_item_ranges =
-        std::make_unique<ShapeResult::ShapeRange[]>(num_text_items);
-    unsigned range_index = 0;
+    // "32" is heuristic, most major sites are up to 8 or so, wikipedia is 21.
+    Vector<ShapeResult::ShapeRange, 32> text_item_ranges;
+    text_item_ranges.ReserveInitialCapacity(num_text_items);
     for (; index < end_index; index++) {
       NGInlineItem& item = (*items)[index];
       if (item.Type() != NGInlineItem::kText || !item.Length())
@@ -1174,12 +1174,12 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
       // item that has its first code unit keeps the glyph.
       scoped_refptr<ShapeResult> item_result =
           ShapeResult::CreateEmpty(*shape_result.get());
-      item.shape_result_ = item_result;
-      text_item_ranges[range_index++] = {item.StartOffset(), item.EndOffset(),
-                                         item_result.get()};
+      text_item_ranges.emplace_back(item.StartOffset(), item.EndOffset(),
+                                    item_result.get());
+      item.shape_result_ = std::move(item_result);
     }
-    DCHECK_EQ(range_index, num_text_items);
-    shape_result->CopyRanges(&text_item_ranges[0], num_text_items);
+    DCHECK_EQ(text_item_ranges.size(), num_text_items);
+    shape_result->CopyRanges(text_item_ranges.data(), text_item_ranges.size());
   }
 
 #if DCHECK_IS_ON()
