@@ -3218,6 +3218,15 @@ class CMDTryTestCase(unittest.TestCase):
                     "category": "git_cl_try",
                     "json": [{"a": 1}, None],
                     "key": "val",
+                    'patch_issue': 123456,
+                    'patch_set': 7,
+                    'patch_project': 'depot_tools',
+                    'patch_storage': 'gerrit',
+                    'patch_ref': 'refs/changes/56/123456/7',
+                    'patch_repository_url':
+                        'https://chromium.googlesource.com/depot_tools',
+                    'patch_gerrit_url':
+                        'https://chromium-review.googlesource.com',
                 },
                 "tags": [
                     {"value": "win", "key": "builder"},
