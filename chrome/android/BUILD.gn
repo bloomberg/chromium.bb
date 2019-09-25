@@ -1381,8 +1381,8 @@ if (current_toolchain == default_toolchain) {
       }
       if (!dfmify_dev_ui) {
         additional_extra_paks +=
-            [ "$root_gen_dir/chrome/bluetooth_internals_resources.pak" ]
-        deps += [ "//chrome/browser/resources/bluetooth_internals:resources" ]
+            [ "$root_gen_dir/chrome/dev_ui_page_resources.pak" ]
+        deps += [ "//chrome/browser/resources:dev_ui_paks" ]
       }
 
       if (enable_resource_whitelist_generation) {
