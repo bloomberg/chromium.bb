@@ -1055,6 +1055,8 @@ def literal_cpp_value(idl_type, idl_literal):
     literal_value = str(idl_literal)
     if idl_type.base_type in ('octet', 'unsigned short', 'unsigned long'):
         return literal_value + 'u'
+    if idl_type.is_dictionary and literal_value == '{}':
+        return 'MakeGarbageCollected<{}>()'.format(idl_type.base_type)
     return literal_value
 
 

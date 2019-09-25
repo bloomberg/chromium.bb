@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_for_each_iterator_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_2.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_empty.h"
@@ -1632,6 +1633,23 @@ static void VoidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
   }
 
   impl->voidMethodTestEnumArg(test_enum_arg);
+}
+
+static void VoidOptionalDictArgWithEmptyDefaultMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "voidOptionalDictArgWithEmptyDefault");
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  TestDictionary* test_dict;
+  if (!info[0]->IsNullOrUndefined() && !info[0]->IsObject()) {
+    exception_state.ThrowTypeError("parameter 1 ('testDict') is not an object.");
+    return;
+  }
+  test_dict = NativeValueTraits<TestDictionary>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  if (exception_state.HadException())
+    return;
+
+  impl->voidOptionalDictArgWithEmptyDefault(test_dict);
 }
 
 static void VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3307,6 +3325,12 @@ void V8TestInterface::VoidMethodTestEnumArgMethodCallback(const v8::FunctionCall
   test_interface_implementation_v8_internal::VoidMethodTestEnumArgMethod(info);
 }
 
+void V8TestInterface::VoidOptionalDictArgWithEmptyDefaultMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidOptionalDictArgWithEmptyDefault");
+
+  test_interface_implementation_v8_internal::VoidOptionalDictArgWithEmptyDefaultMethod(info);
+}
+
 void V8TestInterface::VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidMethod");
 
@@ -3726,6 +3750,7 @@ static constexpr V8DOMConfiguration::MethodConfiguration kV8TestInterfaceMethods
     {"voidMethodNullableAndOptionalObjectArgs", V8TestInterface::VoidMethodNullableAndOptionalObjectArgsMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", V8TestInterface::VoidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodTestEnumArg", V8TestInterface::VoidMethodTestEnumArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidOptionalDictArgWithEmptyDefault", V8TestInterface::VoidOptionalDictArgWithEmptyDefaultMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethod", V8TestInterface::VoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kMainWorld},
     {"voidMethod", V8TestInterface::VoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kNonMainWorlds},
     {"alwaysExposedMethod", V8TestInterface::AlwaysExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
