@@ -323,11 +323,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillRichMetadataQueries)},
     {"fullscreen-viewport-adjustment-experiment",
-     flag_descriptions::kFullscreenViewportAdjustmentExperimentName,
-     flag_descriptions::kFullscreenViewportAdjustmentExperimentDescription,
-     flags_ui::kOsIos,
-     MULTI_VALUE_TYPE(
-         fullscreen::features::kViewportAdjustmentExperimentChoices)},
+     flag_descriptions::kFullscreenSmoothScrollingName,
+     flag_descriptions::kFullscreenSmoothScrollingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(fullscreen::features::kSmoothScrollingDefault)},
     {"autofill-enforce-min-required-fields-for-heuristics",
      flag_descriptions::kAutofillEnforceMinRequiredFieldsForHeuristicsName,
      flag_descriptions::

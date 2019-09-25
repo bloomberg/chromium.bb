@@ -204,11 +204,10 @@ const char kFindInPageiFrameName[] = "Find in Page in iFrames.";
 const char kFindInPageiFrameDescription[] =
     "When enabled, Find In Page will search in iFrames.";
 
-const char kFullscreenViewportAdjustmentExperimentName[] =
-    "Fullscreen Viewport Adjustment Mode";
-const char kFullscreenViewportAdjustmentExperimentDescription[] =
-    "The different ways in which the web view's viewport is updated for scroll "
-    "events.  The default option updates the web view's frame.";
+const char kFullscreenSmoothScrollingName[] = "Fullscreen Smooth Scrolling";
+const char kFullscreenSmoothScrollingDescription[] =
+    "When enabled, the web view's insets are updated for scoll events. If "
+    "disabled, the the web view's frame are updated.";
 
 const char kIgnoresViewportScaleLimitsName[] = "Ignore Viewport Scale Limits";
 const char kIgnoresViewportScaleLimitsDescription[] =

@@ -169,8 +169,8 @@ extern const char kFindInPageiFrameDescription[];
 
 // Title and description for the command line switch used to determine the
 // active fullscreen viewport adjustment mode.
-extern const char kFullscreenViewportAdjustmentExperimentName[];
-extern const char kFullscreenViewportAdjustmentExperimentDescription[];
+extern const char kFullscreenSmoothScrollingName[];
+extern const char kFullscreenSmoothScrollingDescription[];
 
 // Title and description for the flag to ignore viewport scale limits.
 extern const char kIgnoresViewportScaleLimitsName[];
