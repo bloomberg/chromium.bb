@@ -28,6 +28,12 @@ class FakeNetworkConfig {
     /** @type {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
     this.globalPolicy_ = undefined;
 
+    /** @type {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>} */
+    this.serverCas_ = [];
+
+    /** @type {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>} */
+    this.userCerts_ = [];
+
     /**
      * @type {!Array<!chromeos.networkConfig.mojom.CrosNetworkConfigObserver>
      */
@@ -181,6 +187,16 @@ class FakeNetworkConfig {
     this.onVpnProvidersChanged();
   }
 
+  /**
+   * @param {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>} serverCas
+   * @param {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>} userCerts
+   */
+  setCertificatesForTest(serverCas, userCerts) {
+    this.serverCas_ = serverCas;
+    this.userCerts_ = userCerts;
+    this.onNetworkCertificatesChanged();
+  }
+
   // networkConfig observers
 
   onActiveNetworksChanged() {
@@ -208,6 +224,10 @@ class FakeNetworkConfig {
 
   onVpnProvidersChanged() {
     this.observers_.forEach(o => o.onVpnProvidersChanged());
+  }
+
+  onNetworkCertificatesChanged() {
+    this.observers_.forEach(o => o.onNetworkCertificatesChanged());
   }
 
   // networkConfig methods
@@ -348,7 +368,7 @@ class FakeNetworkConfig {
   getNetworkCertificates() {
     return new Promise(resolve => {
       this.methodCalled('getNetworkCertificates');
-      resolve({serverCas: [], userCerts: []});
+      resolve({serverCas: this.serverCas_, userCerts: this.userCerts_});
     });
   }
 }

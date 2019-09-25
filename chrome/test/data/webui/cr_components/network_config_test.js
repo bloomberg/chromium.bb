@@ -5,14 +5,10 @@
 suite('network-config', function() {
   var networkConfig;
 
-  /** @type {NetworkingPrivate} */
-  var api_;
-
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_ = null;
 
   suiteSetup(function() {
-    api_ = new chrome.FakeNetworkingPrivate();  // For certificates
     mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
     CrOncTest.overrideCrOncStrings();
@@ -23,7 +19,6 @@ suite('network-config', function() {
     mojoApi_.setManagedPropertiesForTest(properties);
     PolymerTest.clearBody();
     networkConfig = document.createElement('network-config');
-    networkConfig.networkingPrivate = api_;
     networkConfig.guid = properties.guid;
     networkConfig.managedProperties = properties;
   }
@@ -31,7 +26,6 @@ suite('network-config', function() {
   function setNetworkType(type, security) {
     PolymerTest.clearBody();
     networkConfig = document.createElement('network-config');
-    networkConfig.networkingPrivate = api_;
     networkConfig.type = OncMojo.getNetworkTypeString(type);
     if (security !== undefined) {
       networkConfig.securityType = security;
@@ -131,8 +125,7 @@ suite('network-config', function() {
       const kHash1 = 'TESTHASH1', kHash2 = 'TESTHASH2';
       var clientCert = {hash: kHash1, hardwareBacked: true, deviceWide: false};
       var caCert = {hash: kHash2, hardwareBacked: true, deviceWide: true};
-      api_.setCertificatesForTest(
-          {serverCaCertificates: [caCert], userCertificates: [clientCert]});
+      mojoApi_.setCertificatesForTest([caCert], [clientCert]);
       this.selectedUserCertHash_ = kHash1;
       this.selectedServerCaHash_ = kHash2;
     }
@@ -255,32 +248,34 @@ suite('network-config', function() {
       setCertificatesForTest();
       setAuthenticated();
       initNetworkConfig();
-      return flushAsync().then(() => {
-        let outer = networkConfig.$$('#outer');
-        assertEquals('EAP-TLS', outer.value);
+      return mojoApi_.whenCalled('getNetworkCertificates').then(() => {
+        return flushAsync().then(() => {
+          let outer = networkConfig.$$('#outer');
+          assertEquals('EAP-TLS', outer.value);
 
-        // check that a valid client user certificate is selected
-        let clientCert = networkConfig.$$('#userCert').$$('select').value;
-        assertTrue(!!clientCert);
-        let caCert = networkConfig.$$('#serverCa').$$('select').value;
-        assertTrue(!!caCert);
+          // check that a valid client user certificate is selected
+          let clientCert = networkConfig.$$('#userCert').$$('select').value;
+          assertTrue(!!clientCert);
+          let caCert = networkConfig.$$('#serverCa').$$('select').value;
+          assertTrue(!!caCert);
 
-        let share = networkConfig.$$('#share');
-        assertTrue(!!share);
-        // share the EAP TLS network
-        share.checked = true;
-        // trigger the onShareChanged_ event
-        var event = new Event('change');
-        share.dispatchEvent(event);
-        // check that share is enabled
-        assertTrue(share.checked);
+          let share = networkConfig.$$('#share');
+          assertTrue(!!share);
+          // share the EAP TLS network
+          share.checked = true;
+          // trigger the onShareChanged_ event
+          var event = new Event('change');
+          share.dispatchEvent(event);
+          // check that share is enabled
+          assertTrue(share.checked);
 
-        // check that client certificate selection is empty
-        clientCert = networkConfig.$$('#userCert').$$('select').value;
-        assertFalse(!!clientCert);
-        // check that ca device-wide cert is still selected
-        caCert = networkConfig.$$('#serverCa').$$('select').value;
-        assertTrue(!!caCert);
+          // check that client certificate selection is empty
+          clientCert = networkConfig.$$('#userCert').$$('select').value;
+          assertFalse(!!clientCert);
+          // check that ca device-wide cert is still selected
+          caCert = networkConfig.$$('#serverCa').$$('select').value;
+          assertTrue(!!caCert);
+        });
       });
     });
   });
