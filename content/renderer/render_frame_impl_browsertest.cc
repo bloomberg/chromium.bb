@@ -788,8 +788,6 @@ class TestSimpleDocumentInterfaceBrokerImpl
       mojo::PendingReceiver<blink::mojom::CredentialManager>) override {}
   void GetAuthenticator(
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver) override {}
-  void GetPushMessaging(
-      mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override {}
   void GetVirtualAuthenticatorManager(
       mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
           receiver) override {}

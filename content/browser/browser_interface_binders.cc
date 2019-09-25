@@ -82,6 +82,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::WebBluetoothService>(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebBluetoothService, base::Unretained(host)));
+
+  map->Add<blink::mojom::PushMessaging>(base::BindRepeating(
+      &RenderFrameHostImpl::GetPushMessaging, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(
