@@ -26,11 +26,11 @@ class SocketHandleWaiterThread {
 
   SocketHandleWaiter* socket_handle_waiter() { return &waiter_; }
 
+  OSP_DISALLOW_COPY_AND_ASSIGN(SocketHandleWaiterThread);
+
  private:
   SocketHandleWaiterPosix waiter_;
   std::thread thread_;
-
-  OSP_DISALLOW_COPY_AND_ASSIGN(SocketHandleWaiterThread);
 };
 
 }  // namespace platform

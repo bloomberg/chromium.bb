@@ -25,11 +25,11 @@ class TaskRunnerThread {
 
   TaskRunner* task_runner() { return &task_runner_; }
 
+  OSP_DISALLOW_COPY_AND_ASSIGN(TaskRunnerThread);
+
  private:
   TaskRunnerImpl task_runner_;
   std::thread thread_;
-
-  OSP_DISALLOW_COPY_AND_ASSIGN(TaskRunnerThread);
 };
 
 }  // namespace platform

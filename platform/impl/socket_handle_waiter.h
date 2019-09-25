@@ -61,6 +61,8 @@ class SocketHandleWaiter {
                         SocketHandleRef handle,
                         bool disable_locking_for_testing = false);
 
+  OSP_DISALLOW_COPY_AND_ASSIGN(SocketHandleWaiter);
+
  protected:
   // Gets all socket handles to process, checks them for readable data, and
   // handles any changes that have occured.
@@ -87,8 +89,6 @@ class SocketHandleWaiter {
   // that is watching them.
   std::unordered_map<SocketHandleRef, Subscriber*, SocketHandleHash>
       handle_mappings_;
-
-  OSP_DISALLOW_COPY_AND_ASSIGN(SocketHandleWaiter);
 };
 
 }  // namespace platform

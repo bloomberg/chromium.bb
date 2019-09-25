@@ -79,6 +79,8 @@ class TlsDataRouterPosix : public SocketHandleWaiter::Subscriber {
   // SocketHandleWaiter::Subscriber overrides.
   void ProcessReadyHandle(SocketHandleWaiter::SocketHandleRef handle) override;
 
+  OSP_DISALLOW_COPY_AND_ASSIGN(TlsDataRouterPosix);
+
  protected:
   // Determines if the provided socket is currently being watched by this
   // instance.
@@ -107,8 +109,6 @@ class TlsDataRouterPosix : public SocketHandleWaiter::Subscriber {
 
   // Set of all TlsConnectionPosix objects currently registered.
   std::vector<TlsConnectionPosix*> connections_ GUARDED_BY(connections_mutex_);
-
-  OSP_DISALLOW_COPY_AND_ASSIGN(TlsDataRouterPosix);
 };
 
 }  // namespace platform

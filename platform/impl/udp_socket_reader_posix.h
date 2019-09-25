@@ -53,6 +53,8 @@ class UdpSocketReaderPosix : public UdpSocket::LifetimeObserver,
   // SocketHandleWaiter::Subscriber overrides.
   void ProcessReadyHandle(SocketHandleRef handle) override;
 
+  OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocketReaderPosix);
+
  protected:
   bool IsMappedReadForTesting(UdpSocketPosix* socket) const;
 
@@ -72,8 +74,6 @@ class UdpSocketReaderPosix : public UdpSocket::LifetimeObserver,
   SocketHandleWaiter* const waiter_;
 
   friend class TestingUdpSocketReader;
-
-  OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocketReaderPosix);
 };
 
 }  // namespace platform
