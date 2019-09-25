@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/wayland/test/mock_zwp_linux_buffer_params.h"
+#include "ui/ozone/platform/wayland/test/test_zwp_linux_buffer_params.h"
 
 #include "ui/ozone/platform/wayland/test/mock_buffer.h"
 #include "ui/ozone/platform/wayland/test/mock_zwp_linux_dmabuf.h"
@@ -19,14 +19,14 @@ void Add(wl_client* client,
          uint32_t stride,
          uint32_t modifier_hi,
          uint32_t modifier_lo) {
-  auto* buffer_params = GetUserDataAs<MockZwpLinuxBufferParamsV1>(resource);
+  auto* buffer_params = GetUserDataAs<TestZwpLinuxBufferParamsV1>(resource);
 
   buffer_params->fds_.emplace_back(fd);
-  buffer_params->Add(client, resource, fd, plane_idx, offset, stride,
-                     modifier_hi, modifier_lo);
+  buffer_params->modifier_lo_ = modifier_lo;
+  buffer_params->modifier_hi_ = modifier_hi;
 }
 
-void CreateCommon(MockZwpLinuxBufferParamsV1* buffer_params,
+void CreateCommon(TestZwpLinuxBufferParamsV1* buffer_params,
                   wl_client* client,
                   int32_t width,
                   int32_t height,
@@ -47,10 +47,8 @@ void Create(wl_client* client,
             uint32_t format,
             uint32_t flags) {
   auto* buffer_params =
-      GetUserDataAs<MockZwpLinuxBufferParamsV1>(buffer_params_resource);
+      GetUserDataAs<TestZwpLinuxBufferParamsV1>(buffer_params_resource);
   CreateCommon(buffer_params, client, width, height, format, flags);
-  buffer_params->Create(client, buffer_params_resource, width, height, format,
-                        flags);
 }
 
 void CreateImmed(wl_client* client,
@@ -61,33 +59,31 @@ void CreateImmed(wl_client* client,
                  uint32_t format,
                  uint32_t flags) {
   auto* buffer_params =
-      GetUserDataAs<MockZwpLinuxBufferParamsV1>(buffer_params_resource);
+      GetUserDataAs<TestZwpLinuxBufferParamsV1>(buffer_params_resource);
   CreateCommon(buffer_params, client, width, height, format, flags);
-  buffer_params->CreateImmed(client, buffer_params_resource, buffer_id, width,
-                             height, format, flags);
 }
 
 }  // namespace
 
 const struct zwp_linux_buffer_params_v1_interface
-    kMockZwpLinuxBufferParamsV1Impl = {&DestroyResource, &Add, &Create,
+    kTestZwpLinuxBufferParamsV1Impl = {&DestroyResource, &Add, &Create,
                                        &CreateImmed};
 
-MockZwpLinuxBufferParamsV1::MockZwpLinuxBufferParamsV1(wl_resource* resource)
+TestZwpLinuxBufferParamsV1::TestZwpLinuxBufferParamsV1(wl_resource* resource)
     : ServerObject(resource) {}
 
-MockZwpLinuxBufferParamsV1::~MockZwpLinuxBufferParamsV1() {
+TestZwpLinuxBufferParamsV1::~TestZwpLinuxBufferParamsV1() {
   DCHECK(linux_dmabuf_);
   linux_dmabuf_->OnBufferParamsDestroyed(this);
 }
 
-void MockZwpLinuxBufferParamsV1::SetZwpLinuxDmabuf(
+void TestZwpLinuxBufferParamsV1::SetZwpLinuxDmabuf(
     MockZwpLinuxDmabufV1* linux_dmabuf) {
   DCHECK(!linux_dmabuf_);
   linux_dmabuf_ = linux_dmabuf;
 }
 
-void MockZwpLinuxBufferParamsV1::SetBufferResource(wl_resource* resource) {
+void TestZwpLinuxBufferParamsV1::SetBufferResource(wl_resource* resource) {
   DCHECK(!buffer_resource_);
   buffer_resource_ = resource;
 }
