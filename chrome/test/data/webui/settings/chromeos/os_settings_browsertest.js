@@ -89,6 +89,8 @@ var OSSettingsAddUsersTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      'fake_users_private.js',
       'add_users_tests.js',
     ]);
   }
