@@ -68,7 +68,7 @@
 #include "content/shell/android/shell_descriptors.h"
 #endif
 
-#if !defined(OS_FUCHSIA)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
 #include "components/crash/content/app/crashpad.h"  // nogncheck
 #endif
 
@@ -86,6 +86,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#include "components/crash/content/app/breakpad_linux.h"
 #include "v8/include/v8-wasm-trap-handler-posix.h"
 #endif
 
@@ -169,7 +170,9 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
   v8_crashpad_support::SetUp();
 #endif
-
+#if defined(OS_LINUX)
+  breakpad::SetFirstChanceExceptionHandler(v8::TryHandleWebAssemblyTrapPosix);
+#endif
 #if defined(OS_MACOSX)
   // Needs to happen before InitializeResourceBundle() and before
   // BlinkTestPlatformInitialize() are called.
@@ -326,14 +329,13 @@ void ShellMainDelegate::PreSandboxStartup() {
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kProcessType);
     crash_reporter::SetCrashReporterClient(g_shell_crash_client.Pointer());
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
+    crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
+#elif defined(OS_LINUX)
     // Reporting for sub-processes will be initialized in ZygoteForked.
-    if (process_type != service_manager::switches::kZygoteProcess) {
-      crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
-#if defined(OS_LINUX)
-      crash_reporter::SetFirstChanceExceptionHandler(
-          v8::TryHandleWebAssemblyTrapPosix);
-#endif
-    }
+    if (process_type != service_manager::switches::kZygoteProcess)
+      breakpad::InitCrashReporter(process_type);
+#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
   }
 #endif  // !defined(OS_FUCHSIA)
 
@@ -394,9 +396,7 @@ void ShellMainDelegate::ZygoteForked() {
     std::string process_type =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kProcessType);
-    crash_reporter::InitializeCrashpad(false, process_type);
-    crash_reporter::SetFirstChanceExceptionHandler(
-        v8::TryHandleWebAssemblyTrapPosix);
+    breakpad::InitCrashReporter(process_type);
   }
 }
 #endif  // defined(OS_LINUX)

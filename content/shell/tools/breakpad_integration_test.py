@@ -148,12 +148,12 @@ def run_test(options, crash_dir, symbols_dir, platform,
 
   print '# Retrieve crash dump.'
   if platform == 'android':
-    minidump = get_android_dump(crash_dir)
+    dmp_file = get_android_dump(crash_dir)
   else:
     dmp_dir = crash_dir
     # TODO(crbug.com/782923): This test should not reach directly into the
     # Crashpad database, but instead should use crashpad_database_util.
-    if platform == 'darwin' or platform == 'linux2':
+    if platform == 'darwin':
       dmp_dir = os.path.join(dmp_dir, 'pending')
     elif platform == 'win32':
       dmp_dir = os.path.join(dmp_dir, 'reports')
@@ -162,13 +162,24 @@ def run_test(options, crash_dir, symbols_dir, platform,
     failure = 'Expected 1 crash dump, found %d.' % len(dmp_files)
     if len(dmp_files) != 1:
       raise Exception(failure)
-    minidump = dmp_files[0]
+    dmp_file = dmp_files[0]
+
+  if platform not in ('darwin', 'win32', 'android'):
+    minidump = os.path.join(crash_dir, 'minidump')
+    dmp_to_minidump = os.path.join(BREAKPAD_TOOLS_DIR, 'dmp2minidump.py')
+    cmd = [dmp_to_minidump, dmp_file, minidump]
+    if options.verbose:
+      print ' '.join(cmd)
+    failure = 'Failed to run dmp_to_minidump.'
+    subprocess.check_call(cmd)
+  else:
+    minidump = dmp_file
 
   print '# Symbolize crash dump.'
   if platform == 'win32':
     cdb_exe = os.path.join(options.build_dir, 'cdb', 'cdb.exe')
     cmd = [cdb_exe, '-y', options.build_dir, '-c', '.lines;.excr;k30;q',
-           '-z', minidump]
+           '-z', dmp_file]
     if options.verbose:
       print ' '.join(cmd)
     failure = 'Failed to run cdb.exe.'
@@ -188,7 +199,7 @@ def run_test(options, crash_dir, symbols_dir, platform,
   # Check whether the stack contains a CrashIntentionally symbol.
   found_symbol = 'CrashIntentionally' in stack
 
-  os.remove(minidump)
+  os.remove(dmp_file)
 
   if options.no_symbols:
     if found_symbol:
