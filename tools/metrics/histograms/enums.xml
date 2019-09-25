@@ -35122,6 +35122,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1692384483" label="disambiguate-autofill-server-name-types"/>
   <int value="-1691892152" label="SafeSearchUrlReporting:disabled"/>
   <int value="-1691668194" label="enable-new-bookmark-apps"/>
+  <int value="-1691602043" label="DisableOfficeEditingComponentApp:enabled"/>
   <int value="-1691281364" label="enable-notification-action-icons"/>
   <int value="-1687406612" label="UseSkiaRenderer:disabled"/>
   <int value="-1686782572" label="ChromeHomeInactivitySheetExpansion:disabled"/>
@@ -35930,6 +35931,7 @@ from previous Chrome versions.
   <int value="-684223908" label="enable-android-wallpapers-app"/>
   <int value="-683370370" label="EnableAppDataSearch:enabled"/>
   <int value="-683306022" label="OverscrollHistoryNavigation:enabled"/>
+  <int value="-682580680" label="DisableOfficeEditingComponentApp:disabled"/>
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
   <int value="-680589442" label="MacRTL:disabled"/>
   <int value="-674804217" label="SoleIntegration:enabled"/>

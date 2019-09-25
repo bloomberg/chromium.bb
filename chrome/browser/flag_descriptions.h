@@ -1944,6 +1944,9 @@ extern const char kDisableCancelAllTouchesDescription[];
 extern const char kDisableExplicitDmaFencesName[];
 extern const char kDisableExplicitDmaFencesDescription[];
 
+extern const char kDisableOfficeEditingComponentAppName[];
+extern const char kDisableOfficeEditingComponentAppDescription[];
+
 extern const char kDisableTabletAutohideTitlebarsName[];
 extern const char kDisableTabletAutohideTitlebarsDescription[];
 

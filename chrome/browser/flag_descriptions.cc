@@ -3266,6 +3266,13 @@ const char kDisableExplicitDmaFencesDescription[] =
     "Always rely on implicit syncrhonization between GPU and display "
     "controller instead of using dma-fences explcitily when available.";
 
+const char kDisableOfficeEditingComponentAppName[] =
+    "Disable Office Editing for Docs, Sheets & Slides";
+const char kDisableOfficeEditingComponentAppDescription[] =
+    "Disables Office Editing for Docs, Sheets & Slides component app so "
+    "handlers won't be registered, making it possible to install another "
+    "version for testing.";
+
 const char kDisableTabletAutohideTitlebarsName[] =
     "Disable autohide titlebars in tablet mode";
 const char kDisableTabletAutohideTitlebarsDescription[] =
