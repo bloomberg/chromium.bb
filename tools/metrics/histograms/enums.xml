@@ -4923,7 +4923,7 @@ Unknown properties are collapsed to zero. -->
   <int value="92" label="OBSOLETE_WC_RENDERER_DID_NAVIGATE_BAD_SECURITY_INFO"/>
   <int value="93" label="OBSOLETE_BDH_DUPLICATE_REQUEST_DEVICE_ID"/>
   <int value="94" label="CSDH_INVALID_ORIGIN"/>
-  <int value="95" label="RDH_ILLEGAL_ORIGIN"/>
+  <int value="95" label="OBSOLETE_RDH_ILLEGAL_ORIGIN"/>
   <int value="96" label="OBSOLETE_RDH_UNAUTHORIZED_HEADER_REQUEST"/>
   <int value="97" label="RDH_INVALID_URL"/>
   <int value="98" label="OBSOLETE_BDH_CHARACTERISTIC_ALREADY_SUBSCRIBED"/>
