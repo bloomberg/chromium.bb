@@ -95,7 +95,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   virtual void BuildMenu() = 0;
 
   // API to build the profile menu.
-  void SetIdentityInfo(const gfx::Image& image,
+  void SetIdentityInfo(const gfx::ImageSkia& image,
                        const gfx::ImageSkia& badge,
                        const base::string16& title,
                        const base::string16& subtitle = base::string16());
@@ -109,7 +109,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                                const base::string16& text,
                                base::RepeatingClosure action);
   void SetProfileHeading(const base::string16& heading);
-  void AddSelectableProfile(const gfx::Image& image,
+  void AddSelectableProfile(const gfx::ImageSkia& image,
                             const base::string16& name,
                             base::RepeatingClosure action);
   void AddProfileShortcutFeatureButton(const gfx::ImageSkia& icon,

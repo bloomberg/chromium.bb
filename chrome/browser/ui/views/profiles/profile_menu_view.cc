@@ -412,22 +412,22 @@ void ProfileMenuView::BuildIdentity() {
           account);
 
   if (account_info.has_value()) {
-    SetIdentityInfo(account_info.value().account_image, GetIdentityBadge(),
+    SetIdentityInfo(account_info.value().account_image.AsImageSkia(),
+                    GetIdentityBadge(),
                     base::UTF8ToUTF16(account_info.value().full_name),
                     base::UTF8ToUTF16(account_info.value().email));
   } else {
     ProfileAttributesEntry* profile_attributes =
         GetProfileAttributesEntry(profile);
     SetIdentityInfo(
-        profile_attributes->GetAvatarIcon(), GetIdentityBadge(),
+        profile_attributes->GetAvatarIcon().AsImageSkia(), GetIdentityBadge(),
         profile_attributes->GetName(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
   }
 }
 
 void ProfileMenuView::BuildGuestIdentity() {
-  SetIdentityInfo(gfx::Image(ImageForMenu(kUserAccountAvatarIcon)),
-                  GetIdentityBadge(),
+  SetIdentityInfo(ImageForMenu(kUserAccountAvatarIcon), GetIdentityBadge(),
                   l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
 }
 
@@ -436,7 +436,7 @@ void ProfileMenuView::BuildIncognitoIdentity() {
       BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile());
 
   SetIdentityInfo(
-      gfx::Image(ImageForMenu(kIncognitoProfileIcon)), GetIdentityBadge(),
+      ImageForMenu(kIncognitoProfileIcon), GetIdentityBadge(),
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
       incognito_window_count > 1
           ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
@@ -575,7 +575,7 @@ void ProfileMenuView::BuildSelectableProfiles() {
       continue;
 
     AddSelectableProfile(
-        profile_entry->GetAvatarIcon(), profile_entry->GetName(),
+        profile_entry->GetAvatarIcon().AsImageSkia(), profile_entry->GetName(),
         base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
                             base::Unretained(this), profile_entry->GetPath()));
   }

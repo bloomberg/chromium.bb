@@ -80,7 +80,7 @@ gfx::ImageSkia ColorImage(const gfx::ImageSkia& image, SkColor color) {
   return gfx::ImageSkiaOperations::CreateColorMask(image, color);
 }
 
-gfx::ImageSkia CreateCircle(int size, SkColor color) {
+gfx::ImageSkia CreateCircle(int size, SkColor color = SK_ColorWHITE) {
   float radius = size / 2.0f;
   gfx::Canvas canvas(gfx::Size(size, size), /*image_scale=*/1.0f,
                      /*is_opaque=*/false);
@@ -91,6 +91,12 @@ gfx::ImageSkia CreateCircle(int size, SkColor color) {
   canvas.DrawCircle(gfx::PointF(radius, radius), radius, flags);
 
   return gfx::ImageSkia::CreateFrom1xBitmap(canvas.GetBitmap());
+}
+
+gfx::ImageSkia CropCircle(const gfx::ImageSkia& image) {
+  DCHECK_EQ(image.width(), image.height());
+  return gfx::ImageSkiaOperations::CreateMaskedImage(
+      image, CreateCircle(image.width()));
 }
 
 gfx::ImageSkia AddCircularBackground(const gfx::ImageSkia& image,
@@ -254,7 +260,7 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
   DCHECK(menu_item_groups_.empty());
 }
 
-void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
+void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
                                           const gfx::ImageSkia& badge,
                                           const base::string16& title,
                                           const base::string16& subtitle) {
@@ -275,13 +281,10 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
   // Fall back on |kUserAccountAvatarIcon| if |image| is empty. This can happen
   // in tests and when the account image hasn't been fetched yet.
   gfx::ImageSkia sized_image =
-      image.IsEmpty()
+      image.isNull()
           ? gfx::CreateVectorIcon(kUserAccountAvatarIcon, kIdentityImageSize,
                                   kIdentityImageSize)
-          : profiles::GetSizedAvatarIcon(image, /*is_rectangle=*/true,
-                                         kIdentityImageSize, kIdentityImageSize,
-                                         profiles::SHAPE_CIRCLE)
-                .AsImageSkia();
+          : CropCircle(SizeImage(image, kIdentityImageSize));
   gfx::ImageSkia sized_badge =
       AddCircularBackground(SizeImage(badge, kBadgeSize), SK_ColorWHITE,
                             kBadgeSize + 2 * kBadgePadding);
@@ -395,7 +398,7 @@ void ProfileMenuViewBase::SetProfileHeading(const base::string16& heading) {
   label->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kMenuEdgeMargin)));
 }
 
-void ProfileMenuViewBase::AddSelectableProfile(const gfx::Image& image,
+void ProfileMenuViewBase::AddSelectableProfile(const gfx::ImageSkia& image,
                                                const base::string16& name,
                                                base::RepeatingClosure action) {
   constexpr int kTopMargin = 8;
@@ -409,11 +412,9 @@ void ProfileMenuViewBase::AddSelectableProfile(const gfx::Image& image,
             gfx::Insets(kTopMargin, 0, 0, 0)));
   }
 
-  gfx::Image sized_image =
-      profiles::GetSizedAvatarIcon(image, /*is_rectangle=*/true, kImageSize,
-                                   kImageSize, profiles::SHAPE_CIRCLE);
+  gfx::ImageSkia sized_image = CropCircle(SizeImage(image, kImageSize));
   views::Button* button = selectable_profiles_container_->AddChildView(
-      std::make_unique<HoverButton>(this, sized_image.AsImageSkia(), name));
+      std::make_unique<HoverButton>(this, sized_image, name));
 
   RegisterClickAction(button, std::move(action));
 }
