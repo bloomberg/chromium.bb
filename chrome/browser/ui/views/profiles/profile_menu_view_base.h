@@ -96,6 +96,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   // API to build the profile menu.
   void SetIdentityInfo(const gfx::Image& image,
+                       const gfx::ImageSkia& badge,
                        const base::string16& title,
                        const base::string16& subtitle = base::string16());
   void SetSyncInfo(const base::string16& description,
@@ -122,6 +123,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // returned image, with the rest being padding around it.
   gfx::ImageSkia ImageForMenu(const gfx::VectorIcon& icon,
                               float icon_to_image_ratio = 1.0f);
+  gfx::ImageSkia ColoredImageForMenu(const gfx::VectorIcon& icon,
+                                     SkColor color);
 
   // Initializes a new group of menu items. A separator is added before them if
   // |add_separator| is true.

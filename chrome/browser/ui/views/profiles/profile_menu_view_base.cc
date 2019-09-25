@@ -80,6 +80,29 @@ gfx::ImageSkia ColorImage(const gfx::ImageSkia& image, SkColor color) {
   return gfx::ImageSkiaOperations::CreateColorMask(image, color);
 }
 
+gfx::ImageSkia CreateCircle(int size, SkColor color) {
+  float radius = size / 2.0f;
+  gfx::Canvas canvas(gfx::Size(size, size), /*image_scale=*/1.0f,
+                     /*is_opaque=*/false);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setColor(color);
+  canvas.DrawCircle(gfx::PointF(radius, radius), radius, flags);
+
+  return gfx::ImageSkia::CreateFrom1xBitmap(canvas.GetBitmap());
+}
+
+gfx::ImageSkia AddCircularBackground(const gfx::ImageSkia& image,
+                                     SkColor bg_color,
+                                     int size) {
+  if (image.isNull())
+    return gfx::ImageSkia();
+
+  return gfx::ImageSkiaOperations::CreateSuperimposedImage(
+      CreateCircle(size, bg_color), image);
+}
+
 std::unique_ptr<views::BoxLayout> CreateBoxLayout(
     views::BoxLayout::Orientation orientation,
     views::BoxLayout::CrossAxisAlignment cross_axis_alignment,
@@ -232,11 +255,14 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
 }
 
 void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
+                                          const gfx::ImageSkia& badge,
                                           const base::string16& title,
                                           const base::string16& subtitle) {
   constexpr int kTopMargin = 16;
   constexpr int kBottomMargin = 8;
   constexpr int kImageToLabelSpacing = 4;
+  constexpr int kBadgeSize = 16;
+  constexpr int kBadgePadding = 1;
 
   identity_info_container_->RemoveAllChildViews(/*delete_children=*/true);
   identity_info_container_->SetLayoutManager(
@@ -248,14 +274,20 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
       std::make_unique<views::ImageView>());
   // Fall back on |kUserAccountAvatarIcon| if |image| is empty. This can happen
   // in tests and when the account image hasn't been fetched yet.
-  image_view->SetImage(
+  gfx::ImageSkia sized_image =
       image.IsEmpty()
           ? gfx::CreateVectorIcon(kUserAccountAvatarIcon, kIdentityImageSize,
                                   kIdentityImageSize)
           : profiles::GetSizedAvatarIcon(image, /*is_rectangle=*/true,
                                          kIdentityImageSize, kIdentityImageSize,
                                          profiles::SHAPE_CIRCLE)
-                .AsImageSkia());
+                .AsImageSkia();
+  gfx::ImageSkia sized_badge =
+      AddCircularBackground(SizeImage(badge, kBadgeSize), SK_ColorWHITE,
+                            kBadgeSize + 2 * kBadgePadding);
+  gfx::ImageSkia badged_image =
+      gfx::ImageSkiaOperations::CreateIconWithBadge(sized_image, sized_badge);
+  image_view->SetImage(badged_image);
 
   views::View* title_label =
       identity_info_container_->AddChildView(std::make_unique<views::Label>(
@@ -431,6 +463,12 @@ gfx::ImageSkia ProfileMenuViewBase::ImageForMenu(const gfx::VectorIcon& icon,
   auto sized_icon = gfx::CreateVectorIcon(icon, kMaxImageSize - 2 * padding,
                                           GetDefaultIconColor());
   return gfx::CanvasImageSource::CreatePadded(sized_icon, gfx::Insets(padding));
+}
+
+gfx::ImageSkia ProfileMenuViewBase::ColoredImageForMenu(
+    const gfx::VectorIcon& icon,
+    SkColor color) {
+  return gfx::CreateVectorIcon(icon, kMaxImageSize, color);
 }
 
 ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {
