@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
@@ -44,7 +45,8 @@ class ClientConnectionParametersImpl : public ClientConnectionParameters {
       mojom::ConnectionAttemptFailureReason reason) override;
   void PerformSetConnectionSucceeded(
       mojo::PendingRemote<mojom::Channel> channel,
-      mojom::MessageReceiverRequest message_receiver_request) override;
+      mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver)
+      override;
 
   void OnConnectionDelegatePtrDisconnected();
 

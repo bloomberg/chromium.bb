@@ -67,9 +67,9 @@ void ClientConnectionParametersImpl::PerformSetConnectionAttemptFailed(
 
 void ClientConnectionParametersImpl::PerformSetConnectionSucceeded(
     mojo::PendingRemote<mojom::Channel> channel,
-    mojom::MessageReceiverRequest message_receiver_request) {
+    mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver) {
   connection_delegate_ptr_->OnConnection(std::move(channel),
-                                         std::move(message_receiver_request));
+                                         std::move(message_receiver_receiver));
 }
 
 void ClientConnectionParametersImpl::OnConnectionDelegatePtrDisconnected() {

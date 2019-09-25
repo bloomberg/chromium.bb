@@ -33,16 +33,16 @@ ClientChannelImpl::Factory::~Factory() = default;
 
 std::unique_ptr<ClientChannel> ClientChannelImpl::Factory::BuildInstance(
     mojo::PendingRemote<mojom::Channel> channel,
-    mojom::MessageReceiverRequest message_receiver_request) {
+    mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver) {
   return base::WrapUnique(new ClientChannelImpl(
-      std::move(channel), std::move(message_receiver_request)));
+      std::move(channel), std::move(message_receiver_receiver)));
 }
 
 ClientChannelImpl::ClientChannelImpl(
     mojo::PendingRemote<mojom::Channel> channel,
-    mojom::MessageReceiverRequest message_receiver_request)
+    mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver)
     : channel_(std::move(channel)),
-      binding_(this, std::move(message_receiver_request)) {
+      receiver_(this, std::move(message_receiver_receiver)) {
   channel_.set_disconnect_with_reason_handler(
       base::BindOnce(&ClientChannelImpl::OnChannelDisconnected,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -81,7 +81,7 @@ void ClientChannelImpl::OnChannelDisconnected(
   }
 
   channel_.reset();
-  binding_.Close();
+  receiver_.reset();
   NotifyDisconnected();
 }
 

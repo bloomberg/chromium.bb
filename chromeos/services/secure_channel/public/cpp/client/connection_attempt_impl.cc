@@ -55,9 +55,9 @@ void ConnectionAttemptImpl::OnConnectionAttemptFailure(
 
 void ConnectionAttemptImpl::OnConnection(
     mojo::PendingRemote<mojom::Channel> channel,
-    mojom::MessageReceiverRequest message_receiver_request) {
+    mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver) {
   NotifyConnection(ClientChannelImpl::Factory::Get()->BuildInstance(
-      std::move(channel), std::move(message_receiver_request)));
+      std::move(channel), std::move(message_receiver_receiver)));
 }
 
 }  // namespace secure_channel

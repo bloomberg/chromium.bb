@@ -55,12 +55,12 @@ class SecureChannelClientConnectionParametersImplTest : public testing::Test {
 
   void CallOnConnection(
       mojo::PendingRemote<mojom::Channel> channel,
-      mojom::MessageReceiverRequest message_receiver_request) {
+      mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver) {
     base::RunLoop run_loop;
     fake_connection_delegate_->set_closure_for_next_delegate_callback(
         run_loop.QuitClosure());
     client_connection_parameters_->SetConnectionSucceeded(
-        std::move(channel), std::move(message_receiver_request));
+        std::move(channel), std::move(message_receiver_receiver));
     run_loop.Run();
   }
 
@@ -107,15 +107,15 @@ TEST_F(SecureChannelClientConnectionParametersImplTest,
 
 TEST_F(SecureChannelClientConnectionParametersImplTest, OnConnection) {
   auto fake_channel = std::make_unique<FakeChannel>();
-  mojom::MessageReceiverPtr message_receiver_ptr;
+  mojo::PendingRemote<mojom::MessageReceiver> message_receiver_remote;
 
   CallOnConnection(fake_channel->GenerateRemote(),
-                   mojo::MakeRequest(&message_receiver_ptr));
+                   message_receiver_remote.InitWithNewPipeAndPassReceiver());
   VerifyStatus(false /* expected_to_be_waiting_for_response */,
                false /* expected_to_be_canceled */);
 
   EXPECT_TRUE(fake_connection_delegate()->channel());
-  EXPECT_TRUE(fake_connection_delegate()->message_receiver_request());
+  EXPECT_TRUE(fake_connection_delegate()->message_receiver_receiver());
 }
 
 TEST_F(SecureChannelClientConnectionParametersImplTest, OnConnectionFailed) {

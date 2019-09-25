@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
@@ -49,12 +50,12 @@ class ClientConnectionParameters {
   void SetConnectionAttemptFailed(mojom::ConnectionAttemptFailureReason reason);
 
   // Alerts the client that the connection has succeeded, providing the client
-  // with a Channel and a request to bind a MessageReceiver. This function can
+  // with a Channel and a receiver to bind a MessageReceiver. This function can
   // only be called if IsActive() is true and SetConnectionAttemptFailed() has
   // not been invoked.
   void SetConnectionSucceeded(
       mojo::PendingRemote<mojom::Channel> channel,
-      mojom::MessageReceiverRequest message_receiver_request);
+      mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver);
 
   bool operator==(const ClientConnectionParameters& other) const;
   bool operator<(const ClientConnectionParameters& other) const;
@@ -65,7 +66,8 @@ class ClientConnectionParameters {
       mojom::ConnectionAttemptFailureReason reason) = 0;
   virtual void PerformSetConnectionSucceeded(
       mojo::PendingRemote<mojom::Channel> channel,
-      mojom::MessageReceiverRequest message_receiver_request) = 0;
+      mojo::PendingReceiver<mojom::MessageReceiver>
+          message_receiver_receiver) = 0;
 
   void NotifyConnectionRequestCanceled();
 

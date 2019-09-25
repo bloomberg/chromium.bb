@@ -135,7 +135,7 @@ interface ConnectionDelegate {
   // connection. Note that clients are expected to hold the reference to
   // |channel| until they are done using the connection.
   OnConnection(pending_remote<Channel> channel,
-               MessageReceiver& message_receiver);
+               pending_receiver<MessageReceiver> message_receiver_receiver);
 };
 
 // Brokers connections between the current Chromebook and remote devices,
