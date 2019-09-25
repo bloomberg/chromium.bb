@@ -1,6 +1,7 @@
 # tags: [ android chromeos highsierra linux mac mojave win ]
 # tags: [ android-chromium android-webview-instrumentation debug ]
 # tags: [ skia-renderer no-skia-renderer ]
+# tags: [ use-gl no-use-gl ]
 # tags: [ use-vulkan no-use-vulkan ]
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e intel-0x5912
 #         intel-0xd26 nvidia qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
@@ -132,11 +133,11 @@ crbug.com/948141 Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
 
 # Fails on Nexus 5, 6 and 6P
 crbug.com/883500 [ android no-skia-renderer qualcomm-adreno-(tm)-330 ] Pixel_BackgroundImage [ Skip ]
-crbug.com/883500 [ android no-use-vulkan qualcomm-adreno-(tm)-420 ] Pixel_BackgroundImage [ Skip ]
-crbug.com/883500 [ android no-use-vulkan qualcomm-adreno-(tm)-430 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/883500 [ android no-use-gl no-use-vulkan qualcomm-adreno-(tm)-420 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/883500 [ android no-use-gl no-use-vulkan qualcomm-adreno-(tm)-430 ] Pixel_BackgroundImage [ Skip ]
 
 # Flakes on Nexus 5X.
-crbug.com/883500 [ android-chromium no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_BackgroundImage [ RetryOnFailure ]
+crbug.com/883500 [ android-chromium no-use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_BackgroundImage [ RetryOnFailure ]
 
 # We do not have software H.264 decoding on Android, so it can't survive a
 # context loss which results in hardware decoder loss.
@@ -221,6 +222,19 @@ crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors
 crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
 crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
 crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_VP9 [ Skip ]
+
+# Fails when the browser features SkiaRenderer & GL are enabled on Android.
+# The more specific matching criteria is to prevent collisions with other expectations.
+crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_BackgroundImage [ Skip ]
+crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-gl no-use-vulkan ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-gl no-use-vulkan ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
+crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4 [ Skip ]
+crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
+crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
+crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
+crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_VP9 [ Skip ]
 
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
 crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
