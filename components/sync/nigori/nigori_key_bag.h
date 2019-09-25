@@ -48,6 +48,10 @@ class NigoriKeyBag {
   // string in case of failure.
   std::string AddKey(std::unique_ptr<Nigori> nigori);
 
+  // Similar to AddKey(), but reads the key material from a proto. The |name|
+  // field is ignored since it's redundant.
+  std::string AddKeyFromProto(const sync_pb::NigoriKey& key);
+
   // Merges all keys from another keybag, which means adding all keys that we
   // don't know about.
   void AddAllUnknownKeysFrom(const NigoriKeyBag& other);
