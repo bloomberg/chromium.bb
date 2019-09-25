@@ -85,12 +85,6 @@ class ChromeContentBrowserClientExtensionsPart
       base::Optional<url::Origin>* initiator_origin);
   static std::vector<url::Origin> GetOriginsRequiringDedicatedProcess();
 
-  // Similiar to ChromeContentBrowserClient::ShouldAllowOpenURL(), but the
-  // return value indicates whether to use |result| or not.
-  static bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
-                                 const GURL& to_url,
-                                 bool* result);
-
   // Helper function to call InfoMap::SetSigninProcess().
   static void SetSigninProcess(content::SiteInstance* site_instance);
 
