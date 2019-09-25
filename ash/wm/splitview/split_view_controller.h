@@ -10,7 +10,6 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
-#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shell_observer.h"
@@ -230,6 +229,11 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   class TabDraggedWindowObserver;
   class DividerSnapAnimation;
 
+  // These functions return |left_window_| and |right_window_|, swapped in
+  // nonprimary screen orientations. Note that they may return null.
+  aura::Window* GetPhysicalLeftOrTopWindow();
+  aura::Window* GetPhysicalRightOrBottomWindow();
+
   // Start observing |window|.
   void StartObserving(aura::Window* window);
   // Stop observing the window at associated with |snap_position|. Also updates
@@ -444,8 +448,8 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   // versa.
   SnapPosition default_snap_position_ = NONE;
 
-  // The previous orientation of the screen.
-  OrientationLockType previous_screen_orientation_ = OrientationLockType::kAny;
+  // Whether the previous screen orientation is a primary orientation.
+  bool is_previous_screen_orientation_primary_ = true;
 
   // True when the divider is being dragged (not during its snap animation).
   bool is_resizing_ = false;

@@ -8,6 +8,7 @@
 #include <functional>
 #include <utility>
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
