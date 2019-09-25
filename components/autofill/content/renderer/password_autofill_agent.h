@@ -209,15 +209,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // JavaScript.
   void UserGestureObserved();
 
-  // Given password form data |form_data| returns a set of WebInputElements in
-  // |elements|, which must be non-null, that the password manager has values
-  // for filling. Also takes an optional logger |logger| for logging password
-  // autofill behavior.
-  void GetFillableElementFromFormData(
-      const PasswordFormFillData& form_data,
-      RendererSavePasswordProgressLogger* logger,
-      std::vector<blink::WebInputElement>* elements);
-
   // Called when the focused node has changed. This is not called if the focus
   // moves outside the frame.
   void FocusedNodeHasChanged(const blink::WebNode& node);
