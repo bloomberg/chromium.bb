@@ -399,6 +399,10 @@ TEST_F('OSSettingsDevicePageTest', 'KeyboardTest', () => {
   mocha.grep(assert(device_page_tests.TestNames.Keyboard)).run();
 });
 
+TEST_F('OSSettingsDevicePageTest', 'NightLightTest', () => {
+  mocha.grep(assert(device_page_tests.TestNames.NightLight)).run();
+});
+
 TEST_F('OSSettingsDevicePageTest', 'PointersTest', () => {
   mocha.grep(assert(device_page_tests.TestNames.Pointers)).run();
 });
