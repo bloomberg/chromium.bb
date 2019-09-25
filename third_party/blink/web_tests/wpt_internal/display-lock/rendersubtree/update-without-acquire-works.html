@@ -4,7 +4,7 @@
 <title>Display Locking: update without acquire</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="update-without-acquire-fails-ref.html">
+<link rel="match" href="pass-container-with-child-ref.html">
 <script src="/common/reftest-wait.js"></script>
 
 <style>
@@ -21,6 +21,7 @@
 </style>
 
 <div id="log"></div>
+<div id="container"><div id="child"></div></div>
 
 <script>
 function finishTest(status_string) {
@@ -30,12 +31,9 @@ function finishTest(status_string) {
 }
 
 function runTest() {
-  const container = document.createElement("div");
-  container.id = "container";
-  container.displayLock.update().then(
-      () => { finishTest("FAIL"); },
-      (e) => { finishTest("PASS " + e.message); });
-  document.body.appendChild(container);
+  container.updateRendering().then(
+      () => { finishTest("PASS"); },
+      (e) => { finishTest("FAIL " + e.message); });
 }
 
 window.onload = runTest;
