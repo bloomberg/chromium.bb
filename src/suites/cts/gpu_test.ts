@@ -5,7 +5,7 @@ type glslang = typeof import('@webgpu/glslang/dist/web-devel/glslang');
 type Glslang = import('@webgpu/glslang/dist/web-devel/glslang').Glslang;
 type ShaderStage = import('@webgpu/glslang/dist/web-devel/glslang').ShaderStage;
 
-let glslangInstance: Glslang = undefined!;
+let glslangInstance: Glslang | undefined;
 
 // TODO: Should this gain some functionality currently only in UnitTest?
 export class GPUTest extends Fixture {
@@ -54,14 +54,10 @@ export class GPUTest extends Fixture {
 
   makeShaderModule(stage: ShaderStage, source: string): GPUShaderModule {
     if (!glslangInstance) {
-      throw new Error('GLSL is not instanciated. Run `await initGLSL()` first');
+      throw new Error('GLSL is not instantiated. Run `await t.initGLSL()` first');
     }
-    return this.device.createShaderModule({ code: this.compile(stage, source) });
-  }
-
-  private compile(stage: ShaderStage, source: string): Uint32Array {
-    const data = glslangInstance.compileGLSL(source, stage, false);
-    return data;
+    const code = glslangInstance.compileGLSL(source, stage, false);
+    return this.device.createShaderModule({ code });
   }
 
   // TODO: add an expectContents for textures, which logs data: uris on failure
