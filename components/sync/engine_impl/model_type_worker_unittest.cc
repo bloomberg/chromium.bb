@@ -1327,7 +1327,7 @@ TEST_F(ModelTypeWorkerTest, CommitOnly) {
 }
 
 TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
-  InitializeCommitOnly();
+  NormalInitialize();
   sync_pb::SyncEntity entity;
 
   entity.set_id_string("SomeID");
@@ -1386,8 +1386,37 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkTombstone) {
 }
 
 TEST_F(ModelTypeWorkerTest,
+       PopulateUpdateResponseDataForBookmarkWithUniquePosition) {
+  NormalInitialize();
+  sync_pb::SyncEntity entity;
+
+  *entity.mutable_unique_position() =
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
+  entity.set_client_defined_unique_tag("CLIENT_TAG");
+  entity.set_server_defined_unique_tag("SERVER_TAG");
+  *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
+
+  UpdateResponseData response_data;
+  DirectoryCryptographer cryptographer;
+  base::HistogramTester histogram_tester;
+
+  EXPECT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(
+                &cryptographer, BOOKMARKS, entity, &response_data));
+  const EntityData& data = *response_data.entity;
+  EXPECT_TRUE(
+      syncer::UniquePosition::FromProto(data.unique_position).IsValid());
+
+  histogram_tester.ExpectUniqueSample(
+      "Sync.Entities.PositioningScheme",
+      /*sample=*/
+      ExpectedSyncPositioningScheme::UNIQUE_POSITION,
+      /*count=*/1);
+}
+
+TEST_F(ModelTypeWorkerTest,
        PopulateUpdateResponseDataForBookmarkWithPositionInParent) {
-  InitializeCommitOnly();
+  NormalInitialize();
   sync_pb::SyncEntity entity;
 
   entity.set_position_in_parent(5);
@@ -1415,7 +1444,7 @@ TEST_F(ModelTypeWorkerTest,
 
 TEST_F(ModelTypeWorkerTest,
        PopulateUpdateResponseDataForBookmarkWithInsertAfterItemId) {
-  InitializeCommitOnly();
+  NormalInitialize();
   sync_pb::SyncEntity entity;
 
   entity.set_insert_after_item_id("ITEM_ID");
@@ -1442,7 +1471,7 @@ TEST_F(ModelTypeWorkerTest,
 
 TEST_F(ModelTypeWorkerTest,
        PopulateUpdateResponseDataForBookmarkWithMissingPosition) {
-  InitializeCommitOnly();
+  NormalInitialize();
   sync_pb::SyncEntity entity;
 
   entity.set_client_defined_unique_tag("CLIENT_TAG");
@@ -1470,7 +1499,7 @@ TEST_F(ModelTypeWorkerTest,
 
 TEST_F(ModelTypeWorkerTest,
        PopulateUpdateResponseDataForNonBookmarkWithNoPosition) {
-  InitializeCommitOnly();
+  NormalInitialize();
   sync_pb::SyncEntity entity;
 
   EntitySpecifics specifics;
