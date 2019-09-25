@@ -268,8 +268,6 @@ public class ExternalNavigationHandler {
         return false;
     }
 
-    // http://crbug.com/169549 : If you type in a URL that then redirects in server side to a link
-    // that cannot be rendered by the browser, we want to show the intent picker.
     private boolean isTypedRedirectToExternalProtocol(
             ExternalNavigationParams params, int pageTransitionCore, boolean isExternalProtocol) {
         boolean isTyped = (pageTransitionCore == PageTransition.TYPED)
@@ -307,6 +305,45 @@ public class ExternalNavigationHandler {
         return false;
     }
 
+    private boolean preferToShowIntentPicker(ExternalNavigationParams params,
+            int pageTransitionCore, boolean isExternalProtocol, boolean isFormSubmit,
+            boolean linkNotFromIntent, boolean incomingIntentRedirect) {
+        // http://crbug.com/169549 : If you type in a URL that then redirects in server side to a
+        // link that cannot be rendered by the browser, we want to show the intent picker.
+        if (isTypedRedirectToExternalProtocol(params, pageTransitionCore, isExternalProtocol)) {
+            return true;
+        }
+        // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
+        // following a form submit.
+        boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
+
+        if (!linkNotFromIntent && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Incoming intent (not a redirect)");
+            return false;
+        }
+        // http://crbug.com/839751: Require user gestures for form submits to external
+        //                          protocols.
+        // TODO(tedchoc): Remove the ChromeFeatureList check once we verify this change does
+        //                not break the world.
+        if (isRedirectFromFormSubmit && !incomingIntentRedirect && !params.hasUserGesture()
+                && ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE)) {
+            if (DEBUG) {
+                Log.i(TAG,
+                        "NO_OVERRIDE: Incoming form intent attempting to redirect without "
+                                + "user gesture");
+            }
+            return false;
+        }
+        // http://crbug/331571 : Do not override a navigation started from user typing.
+        if (params.getRedirectHandler() != null
+                && params.getRedirectHandler().isNavigationFromUserTyping()) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation from user typing");
+            return false;
+        }
+        return true;
+    }
+
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent intent, boolean hasBrowserFallbackUrl,
             String browserFallbackUrl) {
@@ -331,15 +368,6 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
         }
 
-        // We do not want to show the intent picker for core types typed, bookmarks, auto toplevel,
-        // generated, keyword, keyword generated. See below for exception to typed URL and
-        // redirects:
-        // - http://crbug.com/143118 : URL intercepting should not be invoked on navigations
-        //   initiated by the user in the omnibox / NTP.
-        // - http://crbug.com/159153 : Don't override http or https URLs from the NTP or bookmarks.
-        // - http://crbug.com/162106: Intent picker should not be presented on returning to a page.
-        //   This should be covered by not showing the picker if the core type is reload.
-
         // http://crbug.com/149218: We want to show the intent picker for ordinary links, providing
         // the link is not an incoming intent from another application, unless it's a redirect (see
         // below).
@@ -360,40 +388,14 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        if (!isTypedRedirectToExternalProtocol(params, pageTransitionCore, isExternalProtocol)) {
-            // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
-            // following a form submit.
-            boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
-
-            if (!linkNotFromIntent && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
-                if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Incoming intent (not a redirect)");
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
-            // http://crbug.com/839751: Require user gestures for form submits to external
-            //                          protocols.
-            // TODO(tedchoc): Remove the ChromeFeatureList check once we verify this change does
-            //                not break the world.
-            if (isRedirectFromFormSubmit && !incomingIntentRedirect && !params.hasUserGesture()
-                    && ChromeFeatureList.isEnabled(
-                            ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE)) {
-                if (DEBUG) {
-                    Log.i(TAG,
-                            "NO_OVERRIDE: Incoming form intent attempting to redirect without "
-                                    + "user gesture");
-                }
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
-            // http://crbug/331571 : Do not override a navigation started from user typing.
-            if (params.getRedirectHandler() != null
-                    && params.getRedirectHandler().isNavigationFromUserTyping()) {
-                if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation from user typing");
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
+        if (!preferToShowIntentPicker(params, pageTransitionCore, isExternalProtocol, isFormSubmit,
+                    linkNotFromIntent, incomingIntentRedirect)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        // Don't override navigation from a chrome:* url to http or https. For example,
-        // when clicking a link in bookmarks or most visited. When navigating from such a
-        // page, there is clear intent to complete the navigation in Chrome.
+        // http://crbug.com/159153: Don't override navigation from a chrome:* url to http or https.
+        // For example when clicking a link in bookmarks or most visited. When navigating from such
+        // a page, there is clear intent to complete the navigation in Chrome.
         if (params.getReferrerUrl() != null
                 && params.getReferrerUrl().startsWith(UrlConstants.CHROME_URL_PREFIX)
                 && (params.getUrl().startsWith(UrlConstants.HTTP_URL_PREFIX)
