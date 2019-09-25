@@ -5,43 +5,54 @@
 package org.chromium.weblayer;
 
 import android.os.RemoteException;
+import android.support.v4.app.Fragment;
 import android.view.View;
 import android.webkit.ValueCallback;
 
 import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IBrowserController;
+import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 /**
- * Provides an API similar to that of Fragment. To avoid depending upon a particular Fragment
- * implementation, this class does not actually extend Fragment. It is expected that consumers of
- * this provide an implementation of Fragment that calls through to the similarly named methods in
- * this class.
- *
- * BrowserFragmentImpl is created from Profile.
+ * Represents a browser fragment. Created from Profile.
  */
-public final class BrowserFragmentImpl {
-    private BrowserController mBrowserController;
+public final class BrowserFragmentController {
+    private final IBrowserFragmentController mImpl;
+    private final RemoteFragmentClient mFragment;
+    private BrowserController mController;
 
-    BrowserFragmentImpl(IBrowserController iBrowserController) {
-        mBrowserController = new BrowserController(iBrowserController);
+    BrowserFragmentController(IBrowserFragmentController impl, RemoteFragmentClient fragment) {
+        mImpl = impl;
+        mFragment = fragment;
     }
 
     public void destroy() {
-        mBrowserController.destroy();
-    }
-
-    public void setTopView(View view) {
         try {
-            getIBrowserController().setTopView(ObjectWrapper.wrap(view));
+            mImpl.destroy();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
     }
 
-    public View onCreateView() {
+    // TODO(pshmakov): rename this to BrowserTabController.
+    public BrowserController getBrowserController() {
+        if (mController == null) {
+            try {
+                mController = new BrowserController(mImpl.getBrowserController());
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
+        }
+        return mController;
+    }
+
+    public Fragment getFragment() {
+        return mFragment;
+    }
+
+    public void setTopView(View view) {
         try {
-            return ObjectWrapper.unwrap(getIBrowserController().onCreateView(), View.class);
+            mImpl.setTopView(ObjectWrapper.wrap(view));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -59,7 +70,7 @@ public final class BrowserFragmentImpl {
     public ListenableResult<Boolean> setSupportsEmbedding(boolean enable) {
         try {
             final ListenableResult<Boolean> listenableResult = new ListenableResult<Boolean>();
-            getIBrowserController().setSupportsEmbedding(
+            mImpl.setSupportsEmbedding(
                     enable, ObjectWrapper.wrap(new ValueCallback<Boolean>() {
                         @Override
                         public void onReceiveValue(Boolean result) {
@@ -70,13 +81,5 @@ public final class BrowserFragmentImpl {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
-    }
-
-    public BrowserController getBrowserController() {
-        return mBrowserController;
-    }
-
-    private IBrowserController getIBrowserController() {
-        return mBrowserController.getIBrowserController();
     }
 }
