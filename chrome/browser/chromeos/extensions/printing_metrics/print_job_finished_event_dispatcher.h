@@ -39,8 +39,6 @@ class PrintJobFinishedEventDispatcher
   void OnPrintJobFinished(
       const chromeos::printing::proto::PrintJobInfo& print_job_info) override;
 
-  void SetEventRouterForTesting(EventRouter* event_router);
-
  private:
   // Needed for BrowserContextKeyedAPI implementation.
   friend class BrowserContextKeyedAPIFactory<PrintJobFinishedEventDispatcher>;

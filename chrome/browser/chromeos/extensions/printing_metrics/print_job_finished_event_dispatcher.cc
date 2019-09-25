@@ -44,9 +44,4 @@ void PrintJobFinishedEventDispatcher::OnPrintJobFinished(
   event_router_->BroadcastEvent(std::move(event));
 }
 
-void PrintJobFinishedEventDispatcher::SetEventRouterForTesting(
-    EventRouter* event_router) {
-  event_router_ = event_router;
-}
-
 }  // namespace extensions
