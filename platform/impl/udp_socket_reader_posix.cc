@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/impl/network_reader_posix.h"
+#include "platform/impl/udp_socket_reader_posix.h"
 
 #include <chrono>
 #include <functional>
@@ -14,14 +14,14 @@
 namespace openscreen {
 namespace platform {
 
-NetworkReaderPosix::NetworkReaderPosix(NetworkWaiter* waiter)
+UdpSocketReaderPosix::UdpSocketReaderPosix(NetworkWaiter* waiter)
     : waiter_(waiter) {}
 
-NetworkReaderPosix::~NetworkReaderPosix() {
+UdpSocketReaderPosix::~UdpSocketReaderPosix() {
   waiter_->UnsubscribeAll(this);
 }
 
-void NetworkReaderPosix::ProcessReadyHandle(SocketHandleRef handle) {
+void UdpSocketReaderPosix::ProcessReadyHandle(SocketHandleRef handle) {
   std::lock_guard<std::mutex> lock(mutex_);
   // NOTE: Because sockets_ is expected to remain small, the performance here
   // is better than using an unordered_set.
@@ -33,20 +33,20 @@ void NetworkReaderPosix::ProcessReadyHandle(SocketHandleRef handle) {
   }
 }
 
-void NetworkReaderPosix::OnCreate(UdpSocket* socket) {
+void UdpSocketReaderPosix::OnCreate(UdpSocket* socket) {
   std::lock_guard<std::mutex> lock(mutex_);
   UdpSocketPosix* read_socket = static_cast<UdpSocketPosix*>(socket);
   sockets_.push_back(read_socket);
   waiter_->Subscribe(this, std::cref(read_socket->GetHandle()));
 }
 
-void NetworkReaderPosix::OnDestroy(UdpSocket* socket) {
+void UdpSocketReaderPosix::OnDestroy(UdpSocket* socket) {
   UdpSocketPosix* destroyed_socket = static_cast<UdpSocketPosix*>(socket);
   OnDelete(destroyed_socket);
 }
 
-void NetworkReaderPosix::OnDelete(UdpSocketPosix* socket,
-                                  bool disable_locking_for_testing) {
+void UdpSocketReaderPosix::OnDelete(UdpSocketPosix* socket,
+                                    bool disable_locking_for_testing) {
   {
     std::unique_lock<std::mutex> lock(mutex_);
     auto it = std::find(sockets_.begin(), sockets_.end(), socket);
@@ -59,7 +59,8 @@ void NetworkReaderPosix::OnDelete(UdpSocketPosix* socket,
                             disable_locking_for_testing);
 }
 
-bool NetworkReaderPosix::IsMappedReadForTesting(UdpSocketPosix* socket) const {
+bool UdpSocketReaderPosix::IsMappedReadForTesting(
+    UdpSocketPosix* socket) const {
   return std::find(sockets_.begin(), sockets_.end(), socket) != sockets_.end();
 }
 

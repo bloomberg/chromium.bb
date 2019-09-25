@@ -30,11 +30,11 @@
 #include "platform/api/network_interface.h"
 #include "platform/api/time.h"
 #include "platform/api/trace_logging.h"
-#include "platform/impl/network_reader_posix.h"
 #include "platform/impl/network_waiter_thread.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/task_runner_thread.h"
 #include "platform/impl/text_trace_logging_platform.h"
+#include "platform/impl/udp_socket_reader_posix.h"
 #include "third_party/tinycbor/src/src/cbor.h"
 
 namespace openscreen {
@@ -426,7 +426,7 @@ void ListenerDemo() {
 
   platform::TaskRunnerThread task_runner_thread(platform::Clock::now);
   platform::NetworkWaiterThread network_waiter_thread;
-  platform::NetworkReaderPosix reader(network_waiter_thread.network_waiter());
+  platform::UdpSocketReaderPosix reader(network_waiter_thread.network_waiter());
   platform::UdpSocket::SetLifetimeObserver(&reader);
 
   ListenerObserver listener_observer;
@@ -517,7 +517,7 @@ void PublisherDemo(absl::string_view friendly_name) {
 
   platform::TaskRunnerThread task_runner_thread(platform::Clock::now);
   platform::NetworkWaiterThread network_waiter_thread;
-  platform::NetworkReaderPosix reader(network_waiter_thread.network_waiter());
+  platform::UdpSocketReaderPosix reader(network_waiter_thread.network_waiter());
   platform::UdpSocket::SetLifetimeObserver(&reader);
 
   PublisherObserver publisher_observer;

@@ -15,10 +15,10 @@
 #include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
-#include "platform/impl/network_reader_posix.h"
 #include "platform/impl/network_waiter_thread.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/task_runner_thread.h"
+#include "platform/impl/udp_socket_reader_posix.h"
 
 // This file contains a demo of our mDNSResponder wrapper code.  It can both
 // listen for mDNS services and advertise an mDNS service.  The command-line
@@ -362,7 +362,7 @@ int main(int argc, char** argv) {
   openscreen::platform::TaskRunnerThread task_runner_thread(
       openscreen::platform::Clock::now);
   openscreen::platform::NetworkWaiterThread network_waiter_thread;
-  openscreen::platform::NetworkReaderPosix reader(
+  openscreen::platform::UdpSocketReaderPosix reader(
       network_waiter_thread.network_waiter());
   openscreen::platform::UdpSocket::SetLifetimeObserver(&reader);
 

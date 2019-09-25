@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/impl/network_reader_posix.h"
+#include "platform/impl/udp_socket_reader_posix.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -80,9 +80,10 @@ class MockTaskRunner final : public TaskRunner {
 };
 
 // Class extending NetworkWaiter to allow for looking at protected data.
-class TestingNetworkReader final : public NetworkReaderPosix {
+class TestingUdpSocketReader final : public UdpSocketReaderPosix {
  public:
-  TestingNetworkReader(NetworkWaiter* waiter) : NetworkReaderPosix(waiter) {}
+  explicit TestingUdpSocketReader(NetworkWaiter* waiter)
+      : UdpSocketReaderPosix(waiter) {}
 
   void OnDestroy(UdpSocket* socket) override {
     OnDelete(static_cast<UdpSocketPosix*>(socket), true);
@@ -93,7 +94,7 @@ class TestingNetworkReader final : public NetworkReaderPosix {
   }
 };
 
-TEST(NetworkReaderTest, WatchReadableSucceeds) {
+TEST(UdpSocketReaderTest, WatchReadableSucceeds) {
   std::unique_ptr<NetworkWaiter> mock_waiter =
       std::unique_ptr<NetworkWaiter>(new MockNetworkWaiter());
   std::unique_ptr<TaskRunner> task_runner =
@@ -104,7 +105,7 @@ TEST(NetworkReaderTest, WatchReadableSucceeds) {
                                            UdpSocket::Version::kV4);
 }
 
-TEST(NetworkReaderTest, UnwatchReadableSucceeds) {
+TEST(UdpSocketReaderTest, UnwatchReadableSucceeds) {
   std::unique_ptr<NetworkWaiter> mock_waiter =
       std::unique_ptr<NetworkWaiter>(new MockNetworkWaiter());
   std::unique_ptr<TaskRunner> task_runner =
@@ -113,7 +114,7 @@ TEST(NetworkReaderTest, UnwatchReadableSucceeds) {
   std::unique_ptr<MockUdpSocketPosix> socket =
       std::make_unique<MockUdpSocketPosix>(task_runner.get(), &client, 17,
                                            UdpSocket::Version::kV4);
-  TestingNetworkReader network_waiter(mock_waiter.get());
+  TestingUdpSocketReader network_waiter(mock_waiter.get());
 
   EXPECT_FALSE(network_waiter.IsMappedRead(socket.get()));
   network_waiter.OnDestroy(socket.get());

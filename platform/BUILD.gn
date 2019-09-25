@@ -82,8 +82,6 @@ source_set("platform") {
 
     if (is_posix) {
       sources += [
-        "impl/network_reader_posix.cc",
-        "impl/network_reader_posix.h",
         "impl/network_waiter_posix.cc",
         "impl/network_waiter_posix.h",
         "impl/network_waiter_thread.cc",
@@ -106,6 +104,8 @@ source_set("platform") {
         "impl/tls_data_router_posix.h",
         "impl/udp_socket_posix.cc",
         "impl/udp_socket_posix.h",
+        "impl/udp_socket_reader_posix.cc",
+        "impl/udp_socket_reader_posix.h",
       ]
     }
 
@@ -179,10 +179,10 @@ source_set("unittests") {
 
     if (is_posix) {
       sources += [
-        "impl/network_reader_posix_unittest.cc",
         "impl/network_waiter_posix_unittest.cc",
         "impl/scoped_pipe_unittest.cc",
         "impl/socket_address_posix_unittest.cc",
+        "impl/udp_socket_reader_posix_unittest.cc",
       ]
     }
   }

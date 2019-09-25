@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_IMPL_NETWORK_READER_POSIX_H_
-#define PLATFORM_IMPL_NETWORK_READER_POSIX_H_
+#ifndef PLATFORM_IMPL_UDP_SOCKET_READER_POSIX_H_
+#define PLATFORM_IMPL_UDP_SOCKET_READER_POSIX_H_
 
 #include <map>
 #include <mutex>  // NOLINT
@@ -24,15 +24,15 @@ struct UdpSocketPosix;
 // calling the function associated with these sockets once that data is read.
 // NOTE: This class will only function as intended while its RunUntilStopped
 // method is running.
-class NetworkReaderPosix : public UdpSocket::LifetimeObserver,
-                           public NetworkWaiter::Subscriber {
+class UdpSocketReaderPosix : public UdpSocket::LifetimeObserver,
+                             public NetworkWaiter::Subscriber {
  public:
   using SocketHandleRef = NetworkWaiter::SocketHandleRef;
 
   // Creates a new instance of this object.
   // NOTE: The provided NetworkWaiter must outlive this object.
-  explicit NetworkReaderPosix(NetworkWaiter* waiter);
-  virtual ~NetworkReaderPosix();
+  explicit UdpSocketReaderPosix(NetworkWaiter* waiter);
+  virtual ~UdpSocketReaderPosix();
 
   // UdpSocket::LifetimeObserver overrides.
   // Waits for |socket| to be readable and then calls the socket's
@@ -71,12 +71,12 @@ class NetworkReaderPosix : public UdpSocket::LifetimeObserver,
   // NetworkWaiter watching this NetworkReader.
   NetworkWaiter* const waiter_;
 
-  friend class TestingNetworkReader;
+  friend class TestingUdpSocketReader;
 
-  OSP_DISALLOW_COPY_AND_ASSIGN(NetworkReaderPosix);
+  OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocketReaderPosix);
 };
 
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_IMPL_NETWORK_READER_POSIX_H_
+#endif  // PLATFORM_IMPL_UDP_SOCKET_READER_POSIX_H_
