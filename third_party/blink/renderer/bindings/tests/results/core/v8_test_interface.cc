@@ -688,7 +688,7 @@ static void LenientThisAttributeAttributeSetter(
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(ScriptState::Current(info.GetIsolate()), v8_value);
+  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
 
   impl->setLenientThisAttribute(cpp_value);
 }
@@ -1553,16 +1553,16 @@ static void VoidMethodNullableAndOptionalObjectArgsMethod(const v8::FunctionCall
     --num_args_passed;
   }
   if (info[0]->IsObject()) {
-    object_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+    object_arg = ScriptValue(info.GetIsolate(), info[0]);
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 1 ('objectArg') is not an object."));
     return;
   }
 
   if (info[1]->IsObject()) {
-    nullable_object_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+    nullable_object_arg = ScriptValue(info.GetIsolate(), info[1]);
   } else if (info[1]->IsNullOrUndefined()) {
-    nullable_object_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Null(info.GetIsolate()));
+    nullable_object_arg = ScriptValue(info.GetIsolate(), v8::Null(info.GetIsolate()));
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 2 ('nullableObjectArg') is not an object."));
     return;
@@ -1573,9 +1573,9 @@ static void VoidMethodNullableAndOptionalObjectArgsMethod(const v8::FunctionCall
     return;
   }
   if (info[2]->IsObject()) {
-    optional_object_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[2]);
+    optional_object_arg = ScriptValue(info.GetIsolate(), info[2]);
   } else if (info[2]->IsUndefined()) {
-    optional_object_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Undefined(info.GetIsolate()));
+    optional_object_arg = ScriptValue(info.GetIsolate(), v8::Undefined(info.GetIsolate()));
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 3 ('optionalObjectArg') is not an object."));
     return;
@@ -2119,7 +2119,7 @@ static void PartialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
 
   ScriptValue partial_callback_type_arg;
   if (info[0]->IsFunction()) {
-    partial_callback_type_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+    partial_callback_type_arg = ScriptValue(info.GetIsolate(), info[0]);
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("partialVoidMethodPartialCallbackTypeArg", "TestInterface", "The callback provided as parameter 1 is not a function."));
     return;
@@ -2349,9 +2349,9 @@ static void ForEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  this_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+  this_arg = ScriptValue(info.GetIsolate(), info[1]);
 
-  impl->forEachForBinding(script_state, ScriptValue(script_state, info.Holder()), callback, this_arg, exception_state);
+  impl->forEachForBinding(script_state, ScriptValue(info.GetIsolate(), info.Holder()), callback, this_arg, exception_state);
   if (exception_state.HadException()) {
     return;
   }
