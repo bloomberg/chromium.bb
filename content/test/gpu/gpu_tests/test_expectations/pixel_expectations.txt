@@ -99,7 +99,7 @@ crbug.com/648369 [ linux debug intel ] * [ RetryOnFailure ]
 crbug.com/660461 [ mac ] Pixel_ScissorTestWithPreserveDrawingBuffer [ RetryOnFailure ]
 
 # Failing on Nexus 5; haven't investigated why yet.
-crbug.com/773293 [ android qualcomm-adreno-(tm)-330 ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
+crbug.com/773293 [ android no-use-gl qualcomm-adreno-(tm)-330 ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
 crbug.com/773293 [ android qualcomm-adreno-(tm)-330 ] Pixel_WebGL2_ClearBufferfv_Result_Displayed [ Skip ]
 
 crbug.com/774809 [ highsierra intel-0xa2e ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
@@ -234,7 +234,9 @@ crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_
 crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
 crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
 crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
+crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_Rounded_Corner [ Skip ]
 crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_VP9 [ Skip ]
+crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
 
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
 crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
