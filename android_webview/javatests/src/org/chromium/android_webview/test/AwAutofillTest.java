@@ -47,6 +47,7 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -1276,7 +1277,10 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testSelectControlChangeNotification() throws Throwable {
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.P,
+            message = "This test is disabled on Android O because of https://crbug.com/997362")
+    public void
+    testSelectControlChangeNotification() throws Throwable {
         int cnt = 0;
         TestWebServer webServer = TestWebServer.start();
         final String data = "<!DOCTYPE html>"
@@ -1316,7 +1320,10 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testSelectControlChangeStartAutofillSession() throws Throwable {
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.P,
+            message = "This test is disabled on Android O because of https://crbug.com/997362")
+    public void
+    testSelectControlChangeStartAutofillSession() throws Throwable {
         int cnt = 0;
         TestWebServer webServer = TestWebServer.start();
         final String data = "<!DOCTYPE html>"
