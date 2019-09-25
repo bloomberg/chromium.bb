@@ -38,7 +38,8 @@ GSUTIL_DEFAULT_PATH = os.path.join(
 PLATFORM_MAPPING = {
     'cygwin': 'win',
     'darwin': 'mac',
-    'linux2': 'linux',
+    'linux': 'linux',  # Python 3.3+.
+    'linux2': 'linux',  # Python < 3.3 uses "linux2" / "linux3".
     'win32': 'win',
     'aix6': 'aix',
     'aix7': 'aix',
