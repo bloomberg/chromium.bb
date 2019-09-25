@@ -398,7 +398,10 @@ inline bool ShouldBreakShapingAfterBox(const NGInlineItem& item,
 }
 
 inline bool NeedsShaping(const NGInlineItem& item) {
-  return item.Type() == NGInlineItem::kText && !item.TextShapeResult();
+  return item.Type() == NGInlineItem::kText && !item.TextShapeResult() &&
+         // Text item with length==0 exists to maintain LayoutObject states such
+         // as ClearNeedsLayout, but not needed to shape.
+         item.Length();
 }
 
 // Determine if reshape is needed for ::first-line style.
