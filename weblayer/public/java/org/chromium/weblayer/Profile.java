@@ -46,12 +46,12 @@ public final class Profile {
 
     public BrowserFragmentController createBrowserFragmentController(Context context) {
         try {
-            RemoteFragmentClient fragmentClient = new RemoteFragmentClient();
-            IBrowserFragmentController browserFragmentImpl = mImpl.createBrowserFragmentController(
-                    fragmentClient.asIRemoteFragmentClient(),
-                    ObjectWrapper.wrap(WebLayer.createRemoteContext(context)));
-            fragmentClient.setRemoteFragment(browserFragmentImpl.getRemoteFragment());
-            return new BrowserFragmentController(browserFragmentImpl, fragmentClient);
+            BrowserFragment fragment = new BrowserFragment();
+            IBrowserFragmentController browserFragmentImpl =
+                    mImpl.createBrowserFragmentController(fragment.asIRemoteFragmentClient(),
+                            ObjectWrapper.wrap(WebLayer.createRemoteContext(context)));
+            fragment.setRemoteFragment(browserFragmentImpl.getRemoteFragment());
+            return new BrowserFragmentController(browserFragmentImpl, fragment);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

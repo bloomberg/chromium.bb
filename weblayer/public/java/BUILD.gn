@@ -21,8 +21,8 @@ android_resources("client_resources") {
 
 android_library("java") {
   java_files = [
-    "org/chromium/weblayer/RemoteFragmentClient.java",
     "org/chromium/weblayer/BrowserController.java",
+    "org/chromium/weblayer/BrowserFragment.java",
     "org/chromium/weblayer/BrowserFragmentController.java",
     "org/chromium/weblayer/BrowserObserver.java",
     "org/chromium/weblayer/Callback.java",

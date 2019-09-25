@@ -18,10 +18,10 @@ import org.chromium.weblayer_private.aidl.ObjectWrapper;
  */
 public final class BrowserFragmentController {
     private final IBrowserFragmentController mImpl;
-    private final RemoteFragmentClient mFragment;
+    private final BrowserFragment mFragment;
     private BrowserController mController;
 
-    BrowserFragmentController(IBrowserFragmentController impl, RemoteFragmentClient fragment) {
+    BrowserFragmentController(IBrowserFragmentController impl, BrowserFragment fragment) {
         mImpl = impl;
         mFragment = fragment;
     }

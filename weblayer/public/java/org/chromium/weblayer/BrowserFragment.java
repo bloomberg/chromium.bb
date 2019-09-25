@@ -19,74 +19,68 @@ import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 /**
- * Hosts a "remote fragment" (represented by {@link IRemoteFragment}) that lives in another
- * ClassLoader. The remote fragment has all the actual logic (e.g. handling lifecycle events), while
- * this class actually extends {@link Fragment}, forwarding the calls to and from the remote
- * fragment. Thus it is "hosting" the fragment implemented elsewhere.
+ * WebLayer's fragment implementation.
  */
-public final class RemoteFragmentClient extends Fragment {
+public final class BrowserFragment extends Fragment {
     private final IRemoteFragmentClient mClientImpl = new IRemoteFragmentClient.Stub() {
         @Override
         public void superOnCreate(IObjectWrapper savedInstanceState) {
-            RemoteFragmentClient.super.onCreate(ObjectWrapper.unwrap(savedInstanceState,
-                    Bundle.class));
+            BrowserFragment.super.onCreate(ObjectWrapper.unwrap(savedInstanceState, Bundle.class));
         }
 
         @Override
         public void superOnAttach(IObjectWrapper context) {
-            RemoteFragmentClient.super.onAttach(ObjectWrapper.unwrap(context, Context.class));
+            BrowserFragment.super.onAttach(ObjectWrapper.unwrap(context, Context.class));
         }
 
         @Override
         public void superOnActivityCreated(IObjectWrapper savedInstanceState) {
-            RemoteFragmentClient.super.onCreate(ObjectWrapper.unwrap(savedInstanceState,
-                    Bundle.class));
+            BrowserFragment.super.onCreate(ObjectWrapper.unwrap(savedInstanceState, Bundle.class));
         }
 
         @Override
         public void superOnStart() {
-            RemoteFragmentClient.super.onStart();
+            BrowserFragment.super.onStart();
         }
 
         @Override
         public void superOnResume() {
-            RemoteFragmentClient.super.onResume();
+            BrowserFragment.super.onResume();
         }
 
         @Override
         public void superOnPause() {
-            RemoteFragmentClient.super.onPause();
+            BrowserFragment.super.onPause();
         }
 
         @Override
         public void superOnStop() {
-            RemoteFragmentClient.super.onStop();
+            BrowserFragment.super.onStop();
         }
 
         @Override
         public void superOnDestroyView() {
-            RemoteFragmentClient.super.onDestroyView();
+            BrowserFragment.super.onDestroyView();
         }
 
         @Override
         public void superOnDetach() {
-            RemoteFragmentClient.super.onDetach();
+            BrowserFragment.super.onDetach();
         }
 
         @Override
         public void superOnDestroy() {
-            RemoteFragmentClient.super.onDestroy();
+            BrowserFragment.super.onDestroy();
         }
 
         @Override
         public void superOnSaveInstanceState(IObjectWrapper outState) {
-            RemoteFragmentClient.super.onSaveInstanceState(ObjectWrapper.unwrap(outState,
-                    Bundle.class));
+            BrowserFragment.super.onSaveInstanceState(ObjectWrapper.unwrap(outState, Bundle.class));
         }
 
         @Override
         public IObjectWrapper getActivity() {
-            return ObjectWrapper.wrap(RemoteFragmentClient.this.getActivity());
+            return ObjectWrapper.wrap(BrowserFragment.this.getActivity());
         }
     };
 
@@ -102,8 +96,8 @@ public final class RemoteFragmentClient extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         try {
             return ObjectWrapper.unwrap(mRemoteFragment.handleOnCreateView(), View.class);
         } catch (RemoteException e) {
