@@ -232,7 +232,8 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
+// Disabled due to flakiness: https://crbug.com/1007616
+TEST_F(WebEmbeddedWorkerImplTest, DISABLED_TerminateSoonAfterStart) {
   worker_->StartWorkerContext(
       CreateStartData(),
       /*installed_scripts_manager_params=*/nullptr,
@@ -245,7 +246,8 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
   worker_->WaitForShutdownForTesting();
 }
 
-TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
+// Disabled due to flakiness: https://crbug.com/1007616
+TEST_F(WebEmbeddedWorkerImplTest, DISABLED_TerminateWhileWaitingForDebugger) {
   std::unique_ptr<WebEmbeddedWorkerStartData> start_data = CreateStartData();
   start_data->wait_for_debugger_mode =
       WebEmbeddedWorkerStartData::kWaitForDebugger;
@@ -260,7 +262,8 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
   worker_->WaitForShutdownForTesting();
 }
 
-TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
+// Disabled due to flakiness: https://crbug.com/1007616
+TEST_F(WebEmbeddedWorkerImplTest, DISABLED_TerminateWhileLoadingScript) {
   // Load the shadow page.
   worker_->StartWorkerContext(
       CreateStartData(),
@@ -275,7 +278,8 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
   worker_->WaitForShutdownForTesting();
 }
 
-TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
+// Disabled due to flakiness: https://crbug.com/1007616
+TEST_F(WebEmbeddedWorkerImplTest, DISABLED_ScriptNotFound) {
   // Load the shadow page.
   WebURL script_url = url_test_helpers::ToKURL(kNotFoundScriptURL);
   WebURLResponse response;
