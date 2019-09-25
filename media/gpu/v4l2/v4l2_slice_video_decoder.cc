@@ -1121,7 +1121,6 @@ void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
 
     frame = std::move(wrapped_frame);
   }
-  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
 
   // Although the document of VideoDecoder says "should run |output_cb| as soon
   // as possible (without thread trampolining)", MojoVideoDecoderService still
