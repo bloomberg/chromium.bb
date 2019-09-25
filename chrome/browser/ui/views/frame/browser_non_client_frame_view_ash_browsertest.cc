@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
   // The window has a reasonable size.
   gfx::Rect actual_bounds = settings_browser->window()->GetBounds();
-  EXPECT_LE(200, actual_bounds.width());
+  EXPECT_LE(300, actual_bounds.width());
   EXPECT_LE(100, actual_bounds.height());
 }
 

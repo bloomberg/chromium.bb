@@ -64,7 +64,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
         app_list::kInternalAppIdSettings};
   }
   // Large enough to see the heading text "Settings" in the top-left.
-  infos[SystemAppType::SETTINGS].minimum_window_size = {200, 100};
+  infos[SystemAppType::SETTINGS].minimum_window_size = {300, 100};
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
     constexpr char kChromeTerminalPWAURL[] = "chrome://terminal/html/pwa.html";
