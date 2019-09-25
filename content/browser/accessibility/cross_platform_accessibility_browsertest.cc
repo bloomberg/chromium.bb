@@ -720,6 +720,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<input type='tel'>"
       "<input type='url'>"
       "<input type='week'>"
+      "<mark></mark>"
       "<meter></meter>"
       "<output></output>"
       "<time></time>"
@@ -730,7 +731,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   BrowserAccessibility* root = GetManager()->GetRoot();
   ASSERT_NE(nullptr, root);
-  ASSERT_EQ(18u, root->PlatformChildCount());
+  ASSERT_EQ(19u, root->PlatformChildCount());
 
   auto TestLocalizedRoleDescription =
       [root](int child_index,
@@ -758,10 +759,11 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedRoleDescription(11, base::ASCIIToUTF16("telephone"));
   TestLocalizedRoleDescription(12, base::ASCIIToUTF16("url"));
   TestLocalizedRoleDescription(13, base::ASCIIToUTF16("week picker"));
-  TestLocalizedRoleDescription(14, base::ASCIIToUTF16("meter"));
-  TestLocalizedRoleDescription(15, base::ASCIIToUTF16("output"));
-  TestLocalizedRoleDescription(16, base::ASCIIToUTF16("time"));
-  TestLocalizedRoleDescription(17, base::ASCIIToUTF16("content information"));
+  TestLocalizedRoleDescription(14, base::ASCIIToUTF16("highlight"));
+  TestLocalizedRoleDescription(15, base::ASCIIToUTF16("meter"));
+  TestLocalizedRoleDescription(16, base::ASCIIToUTF16("output"));
+  TestLocalizedRoleDescription(17, base::ASCIIToUTF16("time"));
+  TestLocalizedRoleDescription(18, base::ASCIIToUTF16("content information"));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
@@ -803,17 +805,16 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                                              ax::mojom::Role::kStaticText);
 
   BrowserAccessibility* mark_node = para_node->PlatformGetChild(1);
-  TestGetStyleNameAttributeAsLocalizedString(
-      mark_node, ax::mojom::Role::kMark,
-      base::ASCIIToUTF16("highlighted content"));
+  TestGetStyleNameAttributeAsLocalizedString(mark_node, ax::mojom::Role::kMark,
+                                             base::ASCIIToUTF16("highlight"));
 
   // Android doesn't always have a child in this case.
   if (mark_node->PlatformChildCount() > 0u) {
     BrowserAccessibility* mark_text_node = mark_node->PlatformGetChild(0);
     ASSERT_EQ(0u, mark_text_node->PlatformChildCount());
-    TestGetStyleNameAttributeAsLocalizedString(
-        mark_text_node, ax::mojom::Role::kStaticText,
-        base::ASCIIToUTF16("highlighted content"));
+    TestGetStyleNameAttributeAsLocalizedString(mark_text_node,
+                                               ax::mojom::Role::kStaticText,
+                                               base::ASCIIToUTF16("highlight"));
   }
 }
 

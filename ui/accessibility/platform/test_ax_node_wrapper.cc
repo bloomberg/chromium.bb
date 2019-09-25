@@ -638,6 +638,9 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
     case ax::mojom::Role::kHeaderAsNonLandmark:
       return base::ASCIIToUTF16("header");
 
+    case ax::mojom::Role::kMark:
+      return base::ASCIIToUTF16("highlight");
+
     case ax::mojom::Role::kMeter:
       return base::ASCIIToUTF16("meter");
 

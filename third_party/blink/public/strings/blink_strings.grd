@@ -477,8 +477,9 @@ below:
       <message name="IDS_AX_ROLE_MAIN_CONTENT" desc="Accessibility role description for main content of the document.">
         main
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-mark -->
       <message name="IDS_AX_ROLE_MARK" desc="Accessibility role description for highlighted content.">
-        highlighted content
+        highlight
       </message>
       <message name="IDS_AX_ROLE_MATH" desc="Accessibility role description for math">
         math

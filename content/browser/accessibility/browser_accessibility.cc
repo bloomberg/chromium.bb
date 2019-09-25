@@ -1897,6 +1897,9 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
     case ax::mojom::Role::kHeaderAsNonLandmark:
       return content_client->GetLocalizedString(IDS_AX_ROLE_HEADER);
 
+    case ax::mojom::Role::kMark:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_MARK);
+
     case ax::mojom::Role::kMeter:
       return content_client->GetLocalizedString(IDS_AX_ROLE_METER);
 
