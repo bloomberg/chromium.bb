@@ -577,7 +577,7 @@ def RunCrosSigningTests(buildroot, network=False):
   test_runner = path_util.ToChrootPath(
       os.path.join(buildroot, 'src', 'platform', 'signing',
                    'signer-production', 'signer', 'run_tests.py'))
-  if not os.exists(test_runner):
+  if not os.path.exists(test_runner):
     test_runner = path_util.ToChrootPath(
         os.path.join(buildroot, 'cros-signing', 'signer', 'run_tests.py'))
   cmd = [test_runner]
