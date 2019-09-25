@@ -1213,8 +1213,8 @@ public class BottomSheet
      * @return The height of the sheet at the provided state.
      */
     private float getSheetHeightForState(@SheetState int state) {
-        if (mSheetContent != null && mSheetContent.wrapContentEnabled()
-                && state == SheetState.FULL) {
+        if (mSheetContent != null && mSheetContent.wrapContentEnabled() && state == SheetState.FULL
+                && mSheetContent.getCustomFullRatio() == INVALID_HEIGHT_RATIO) {
             ensureContentDesiredHeightIsComputed();
             return mContentDesiredHeight + mToolbarShadowHeight;
         }
