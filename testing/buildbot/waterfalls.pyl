@@ -53,12 +53,30 @@
           ],
         },
       },
+      'chromeos-eve-google-rel': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'eve',
+              'pool': 'luci.chrome.cros-dut',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
       'chromeos-kevin-google-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_device_kevin_tests',
+          'gtest_tests': 'chromeos_device_tests',
         },
         'swarming': {
           'dimension_sets': [
@@ -758,7 +776,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromeos_device_kevin_tests',
+          'gtest_tests': 'chromeos_device_tests',
           'isolated_scripts': 'chromeos_remote_device_isolated_tests',
         },
         'os_type': 'chromeos',

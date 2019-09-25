@@ -457,7 +457,7 @@
       },
     },
 
-    'chromeos_device_kevin_tests': {
+    'chromeos_device_tests': {
       'base_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter',
