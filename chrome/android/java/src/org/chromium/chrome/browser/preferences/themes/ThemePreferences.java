@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.ui.UiUtils;
@@ -48,8 +49,7 @@ public class ThemePreferences extends PreferenceFragmentCompat {
 
         RadioButtonGroupThemePreference radioButtonGroupThemePreference =
                 (RadioButtonGroupThemePreference) findPreference(PREF_UI_THEME_PREF);
-        radioButtonGroupThemePreference.initialize(
-                ChromePreferenceManager.getInstance().readInt(UI_THEME_SETTING_KEY));
+        radioButtonGroupThemePreference.initialize(NightModeUtils.getThemeSetting());
         radioButtonGroupThemePreference.setOnPreferenceChangeListener((preference, newValue) -> {
             int theme = (int) newValue;
             ChromePreferenceManager.getInstance().writeInt(UI_THEME_SETTING_KEY, theme);

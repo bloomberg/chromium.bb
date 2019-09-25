@@ -1275,6 +1275,12 @@ const FeatureEntry::Choice kNotificationSchedulerChoices[] = {
 };
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kAndroidNightModeDefaultToLightConstant[] = {
+    {"default_light_theme", "true"}};
+const FeatureEntry::FeatureVariation kAndroidNightModeFeatureVariations[] = {
+    {"(default to light theme)", kAndroidNightModeDefaultToLightConstant,
+     base::size(kAndroidNightModeDefaultToLightConstant), nullptr}};
+
 const FeatureEntry::FeatureParam
     kOmniboxSearchEngineLogoRoundedEdgesVariationConstant[] = {
         {"rounded_edges", "true"}};
@@ -2401,7 +2407,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
     {"enable-android-night-mode", flag_descriptions::kAndroidNightModeName,
      flag_descriptions::kAndroidNightModeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidNightMode)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kAndroidNightMode,
+                                    kAndroidNightModeFeatureVariations,
+                                    "AndroidNightMode")},
 #endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 #endif  // OS_ANDROID
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
