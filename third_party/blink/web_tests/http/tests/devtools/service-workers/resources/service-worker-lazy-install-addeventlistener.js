@@ -1,3 +1,3 @@
 setTimeout(() => {
     addEventListener('install', () => {});
-  }, 0);
+}, 0);
