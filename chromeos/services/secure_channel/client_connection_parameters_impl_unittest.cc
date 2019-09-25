@@ -54,7 +54,7 @@ class SecureChannelClientConnectionParametersImplTest : public testing::Test {
   }
 
   void CallOnConnection(
-      mojom::ChannelPtr channel,
+      mojo::PendingRemote<mojom::Channel> channel,
       mojom::MessageReceiverRequest message_receiver_request) {
     base::RunLoop run_loop;
     fake_connection_delegate_->set_closure_for_next_delegate_callback(
@@ -109,7 +109,7 @@ TEST_F(SecureChannelClientConnectionParametersImplTest, OnConnection) {
   auto fake_channel = std::make_unique<FakeChannel>();
   mojom::MessageReceiverPtr message_receiver_ptr;
 
-  CallOnConnection(fake_channel->GenerateInterfacePtr(),
+  CallOnConnection(fake_channel->GenerateRemote(),
                    mojo::MakeRequest(&message_receiver_ptr));
   VerifyStatus(false /* expected_to_be_waiting_for_response */,
                false /* expected_to_be_canceled */);

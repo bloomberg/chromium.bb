@@ -39,7 +39,7 @@ void ClientConnectionParameters::SetConnectionAttemptFailed(
 }
 
 void ClientConnectionParameters::SetConnectionSucceeded(
-    mojom::ChannelPtr channel,
+    mojo::PendingRemote<mojom::Channel> channel,
     mojom::MessageReceiverRequest message_receiver_request) {
   static const std::string kFunctionName = "SetConnectionSucceeded";
   VerifyDelegateWaitingForResponse(kFunctionName);

@@ -10,6 +10,8 @@
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 
@@ -24,7 +26,7 @@ class ClientChannelImpl : public ClientChannel, public mojom::MessageReceiver {
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<ClientChannel> BuildInstance(
-        mojom::ChannelPtr channel,
+        mojo::PendingRemote<mojom::Channel> channel,
         mojom::MessageReceiverRequest message_receiver_request);
 
    private:
@@ -36,7 +38,7 @@ class ClientChannelImpl : public ClientChannel, public mojom::MessageReceiver {
  private:
   friend class SecureChannelClientChannelImplTest;
 
-  ClientChannelImpl(mojom::ChannelPtr channel,
+  ClientChannelImpl(mojo::PendingRemote<mojom::Channel> channel,
                     mojom::MessageReceiverRequest message_receiver_request);
 
   // ClientChannel:
@@ -57,7 +59,7 @@ class ClientChannelImpl : public ClientChannel, public mojom::MessageReceiver {
 
   void FlushForTesting();
 
-  mojom::ChannelPtr channel_;
+  mojo::Remote<mojom::Channel> channel_;
   mojo::Binding<mojom::MessageReceiver> binding_;
 
   base::WeakPtrFactory<ClientChannelImpl> weak_ptr_factory_{this};

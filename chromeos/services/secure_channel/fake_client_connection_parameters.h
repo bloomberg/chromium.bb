@@ -11,6 +11,8 @@
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 
@@ -32,7 +34,7 @@ class FakeClientConnectionParameters : public ClientConnectionParameters {
     return failure_reason_;
   }
 
-  base::Optional<mojom::ChannelPtr>& channel() { return channel_; }
+  mojo::Remote<mojom::Channel>& channel() { return channel_; }
 
   void set_message_receiver(
       std::unique_ptr<mojom::MessageReceiver> message_receiver) {
@@ -50,7 +52,7 @@ class FakeClientConnectionParameters : public ClientConnectionParameters {
   void PerformSetConnectionAttemptFailed(
       mojom::ConnectionAttemptFailureReason reason) override;
   void PerformSetConnectionSucceeded(
-      mojom::ChannelPtr channel,
+      mojo::PendingRemote<mojom::Channel> channel,
       mojom::MessageReceiverRequest message_receiver_request) override;
 
   void OnChannelDisconnected(uint32_t disconnection_reason,
@@ -64,7 +66,7 @@ class FakeClientConnectionParameters : public ClientConnectionParameters {
 
   base::Optional<mojom::ConnectionAttemptFailureReason> failure_reason_;
 
-  base::Optional<mojom::ChannelPtr> channel_;
+  mojo::Remote<mojom::Channel> channel_;
   uint32_t disconnection_reason_ = 0u;
 
   base::OnceCallback<void(const base::UnguessableToken&)> destructor_callback_;

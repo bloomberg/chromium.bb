@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 
@@ -31,7 +33,7 @@ class FakeConnectionDelegate : public mojom::ConnectionDelegate {
     closure_for_next_delegate_callback_ = std::move(closure);
   }
 
-  const base::Optional<mojom::ChannelPtr>& channel() const { return channel_; }
+  const mojo::Remote<mojom::Channel>& channel() const { return channel_; }
 
   const base::Optional<mojom::MessageReceiverRequest>&
   message_receiver_request() const {
@@ -43,7 +45,7 @@ class FakeConnectionDelegate : public mojom::ConnectionDelegate {
   void OnConnectionAttemptFailure(
       mojom::ConnectionAttemptFailureReason reason) override;
   void OnConnection(
-      mojom::ChannelPtr channel,
+      mojo::PendingRemote<mojom::Channel> channel,
       mojom::MessageReceiverRequest message_receiver_request) override;
 
   void OnChannelDisconnected(uint32_t disconnection_reason,
@@ -54,7 +56,7 @@ class FakeConnectionDelegate : public mojom::ConnectionDelegate {
 
   base::Optional<mojom::ConnectionAttemptFailureReason>
       connection_attempt_failure_reason_;
-  base::Optional<mojom::ChannelPtr> channel_;
+  mojo::Remote<mojom::Channel> channel_;
   base::Optional<mojom::MessageReceiverRequest> message_receiver_request_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionDelegate);

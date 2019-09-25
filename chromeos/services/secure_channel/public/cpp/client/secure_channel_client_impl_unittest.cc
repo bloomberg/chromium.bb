@@ -74,7 +74,7 @@ class FakeClientChannelImplFactory : public ClientChannelImpl::Factory {
 
   // ClientChannelImpl::Factory:
   std::unique_ptr<ClientChannel> BuildInstance(
-      mojom::ChannelPtr channel,
+      mojo::PendingRemote<mojom::Channel> channel,
       mojom::MessageReceiverRequest message_receiver_request) override {
     auto client_channel = std::make_unique<FakeClientChannel>();
     last_client_channel_created_ = client_channel.get();
@@ -236,8 +236,7 @@ TEST_F(SecureChannelClientImplTest, TestInitiateConnectionToDevice) {
   mojom::MessageReceiverPtr message_receiver_ptr;
 
   fake_secure_channel_->delegate_from_last_initiate_call()->OnConnection(
-      fake_channel->GenerateInterfacePtr(),
-      mojo::MakeRequest(&message_receiver_ptr));
+      fake_channel->GenerateRemote(), mojo::MakeRequest(&message_receiver_ptr));
 
   run_loop.Run();
 
@@ -279,8 +278,7 @@ TEST_F(SecureChannelClientImplTest, TestListenForConnectionFromDevice) {
   mojom::MessageReceiverPtr message_receiver_ptr;
 
   fake_secure_channel_->delegate_from_last_listen_call()->OnConnection(
-      fake_channel->GenerateInterfacePtr(),
-      mojo::MakeRequest(&message_receiver_ptr));
+      fake_channel->GenerateRemote(), mojo::MakeRequest(&message_receiver_ptr));
 
   run_loop.Run();
 
@@ -319,7 +317,7 @@ TEST_F(SecureChannelClientImplTest, TestMultipleConnections) {
   auto fake_channel_1 = std::make_unique<FakeChannel>();
   mojom::MessageReceiverPtr message_receiver_ptr_1;
   fake_secure_channel_->delegate_from_last_initiate_call()->OnConnection(
-      fake_channel_1->GenerateInterfacePtr(),
+      fake_channel_1->GenerateRemote(),
       mojo::MakeRequest(&message_receiver_ptr_1));
   run_loop_1.Run();
 
@@ -337,7 +335,7 @@ TEST_F(SecureChannelClientImplTest, TestMultipleConnections) {
   auto fake_channel_2 = std::make_unique<FakeChannel>();
   mojom::MessageReceiverPtr message_receiver_ptr_2;
   fake_secure_channel_->delegate_from_last_listen_call()->OnConnection(
-      fake_channel_2->GenerateInterfacePtr(),
+      fake_channel_2->GenerateRemote(),
       mojo::MakeRequest(&message_receiver_ptr_2));
   run_loop_2.Run();
 

@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
 
@@ -52,7 +53,7 @@ class ClientConnectionParameters {
   // only be called if IsActive() is true and SetConnectionAttemptFailed() has
   // not been invoked.
   void SetConnectionSucceeded(
-      mojom::ChannelPtr channel,
+      mojo::PendingRemote<mojom::Channel> channel,
       mojom::MessageReceiverRequest message_receiver_request);
 
   bool operator==(const ClientConnectionParameters& other) const;
@@ -63,7 +64,7 @@ class ClientConnectionParameters {
   virtual void PerformSetConnectionAttemptFailed(
       mojom::ConnectionAttemptFailureReason reason) = 0;
   virtual void PerformSetConnectionSucceeded(
-      mojom::ChannelPtr channel,
+      mojo::PendingRemote<mojom::Channel> channel,
       mojom::MessageReceiverRequest message_receiver_request) = 0;
 
   void NotifyConnectionRequestCanceled();

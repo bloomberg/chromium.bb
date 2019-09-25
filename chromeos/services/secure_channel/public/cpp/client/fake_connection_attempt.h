@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt_impl.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
 
@@ -27,7 +27,7 @@ class FakeConnectionAttempt : public ConnectionAttemptImpl {
   void OnConnectionAttemptFailure(
       mojom::ConnectionAttemptFailureReason reason) override;
   void OnConnection(
-      mojom::ChannelPtr channel,
+      mojo::PendingRemote<mojom::Channel> channel,
       mojom::MessageReceiverRequest message_receiver_request) override;
 
   void set_on_connection_attempt_failure_callback(base::OnceClosure callback) {

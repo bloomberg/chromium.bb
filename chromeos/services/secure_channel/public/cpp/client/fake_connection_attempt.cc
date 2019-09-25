@@ -19,7 +19,7 @@ void FakeConnectionAttempt::OnConnectionAttemptFailure(
 }
 
 void FakeConnectionAttempt::OnConnection(
-    mojom::ChannelPtr channel,
+    mojo::PendingRemote<mojom::Channel> channel,
     mojom::MessageReceiverRequest message_receiver_request) {
   ConnectionAttemptImpl::OnConnection(std::move(channel),
                                       std::move(message_receiver_request));

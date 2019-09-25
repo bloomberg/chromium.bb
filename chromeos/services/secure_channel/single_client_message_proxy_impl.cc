@@ -48,8 +48,7 @@ SingleClientMessageProxyImpl::SingleClientMessageProxyImpl(
       channel_(std::make_unique<ChannelImpl>(this /* delegate */)) {
   DCHECK(client_connection_parameters_);
   client_connection_parameters_->SetConnectionSucceeded(
-      channel_->GenerateInterfacePtr(),
-      mojo::MakeRequest(&message_receiver_ptr_));
+      channel_->GenerateRemote(), mojo::MakeRequest(&message_receiver_ptr_));
 }
 
 SingleClientMessageProxyImpl::~SingleClientMessageProxyImpl() = default;

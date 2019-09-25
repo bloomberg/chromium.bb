@@ -40,7 +40,7 @@ class SecureChannelClientChannelImplTest : public testing::Test {
     fake_channel_ = std::make_unique<FakeChannel>();
 
     client_channel_ = ClientChannelImpl::Factory::Get()->BuildInstance(
-        fake_channel_->GenerateInterfacePtr(),
+        fake_channel_->GenerateRemote(),
         mojo::MakeRequest(&message_receiver_ptr_));
 
     fake_observer_ = std::make_unique<FakeClientChannelObserver>();
@@ -167,7 +167,7 @@ TEST_F(SecureChannelClientChannelImplTest, TestReceiveMessage) {
 }
 
 TEST_F(SecureChannelClientChannelImplTest, TestDisconnectRemotely) {
-  fake_channel_->DisconnectGeneratedPtr();
+  fake_channel_->DisconnectGeneratedRemote();
 
   SendPendingMojoMessages();
 

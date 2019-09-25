@@ -34,9 +34,9 @@ void FakeConnectionDelegate::OnConnectionAttemptFailure(
 }
 
 void FakeConnectionDelegate::OnConnection(
-    mojom::ChannelPtr channel,
+    mojo::PendingRemote<mojom::Channel> channel,
     mojom::MessageReceiverRequest message_receiver_request) {
-  channel_ = std::move(channel);
+  channel_.Bind(std::move(channel));
   message_receiver_request_ = std::move(message_receiver_request);
 
   if (closure_for_next_delegate_callback_)

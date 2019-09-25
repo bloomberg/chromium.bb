@@ -32,18 +32,18 @@ void ClientChannelImpl::Factory::SetFactoryForTesting(Factory* test_factory) {
 ClientChannelImpl::Factory::~Factory() = default;
 
 std::unique_ptr<ClientChannel> ClientChannelImpl::Factory::BuildInstance(
-    mojom::ChannelPtr channel,
+    mojo::PendingRemote<mojom::Channel> channel,
     mojom::MessageReceiverRequest message_receiver_request) {
   return base::WrapUnique(new ClientChannelImpl(
       std::move(channel), std::move(message_receiver_request)));
 }
 
 ClientChannelImpl::ClientChannelImpl(
-    mojom::ChannelPtr channel,
+    mojo::PendingRemote<mojom::Channel> channel,
     mojom::MessageReceiverRequest message_receiver_request)
     : channel_(std::move(channel)),
       binding_(this, std::move(message_receiver_request)) {
-  channel_.set_connection_error_with_reason_handler(
+  channel_.set_disconnect_with_reason_handler(
       base::BindOnce(&ClientChannelImpl::OnChannelDisconnected,
                      weak_ptr_factory_.GetWeakPtr()));
 }

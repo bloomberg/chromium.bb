@@ -36,13 +36,13 @@ void FakeClientConnectionParameters::PerformSetConnectionAttemptFailed(
 }
 
 void FakeClientConnectionParameters::PerformSetConnectionSucceeded(
-    mojom::ChannelPtr channel,
+    mojo::PendingRemote<mojom::Channel> channel,
     mojom::MessageReceiverRequest message_receiver_request) {
   DCHECK(message_receiver_);
   DCHECK(!message_receiver_binding_);
 
-  channel_ = std::move(channel);
-  channel_->set_connection_error_with_reason_handler(
+  channel_.Bind(std::move(channel));
+  channel_.set_disconnect_with_reason_handler(
       base::BindOnce(&FakeClientConnectionParameters::OnChannelDisconnected,
                      weak_ptr_factory_.GetWeakPtr()));
 

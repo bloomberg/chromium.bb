@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
 
@@ -40,7 +41,7 @@ class ConnectionAttemptImpl : public ConnectionAttempt,
   void OnConnectionAttemptFailure(
       mojom::ConnectionAttemptFailureReason reason) override;
   void OnConnection(
-      mojom::ChannelPtr channel,
+      mojo::PendingRemote<mojom::Channel> channel,
       mojom::MessageReceiverRequest message_receiver_request) override;
 
  private:
