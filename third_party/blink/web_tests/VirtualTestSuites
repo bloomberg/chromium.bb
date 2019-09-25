@@ -306,11 +306,6 @@
     "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
-    "prefix": "paint-non-fast-scrollable-regions",
-    "base": "scrollingcoordinator",
-    "args": ["--enable-blink-features=PaintNonFastScrollableRegions"]
-  },
-  {
     "prefix": "highdpi-threaded",
     "base": "external/wpt/css/css-paint-api/hidpi",
     "args": ["--force-device-scale-factor=2","--enable-use-zoom-for-dsf=false",
