@@ -1333,8 +1333,6 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   entity.set_id_string("SomeID");
   entity.set_parent_id_string("ParentID");
   entity.set_folder(false);
-  *entity.mutable_unique_position() =
-      UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
   entity.set_version(1);
   entity.set_client_defined_unique_tag("CLIENT_TAG");
   entity.set_server_defined_unique_tag("SERVER_TAG");
@@ -1352,19 +1350,11 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   EXPECT_FALSE(data.id.empty());
   EXPECT_FALSE(data.parent_id.empty());
   EXPECT_FALSE(data.is_folder);
-  EXPECT_TRUE(
-      syncer::UniquePosition::FromProto(data.unique_position).IsValid());
   EXPECT_EQ("CLIENT_TAG", data.client_tag_hash);
   EXPECT_EQ("SERVER_TAG", data.server_defined_unique_tag);
   EXPECT_FALSE(data.is_deleted());
   EXPECT_EQ(kTag1, data.specifics.preference().name());
   EXPECT_EQ(kValue1, data.specifics.preference().value());
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Entities.PositioningScheme",
-      /*sample=*/
-      ExpectedSyncPositioningScheme::UNIQUE_POSITION,
-      /*count=*/1);
 }
 
 TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkTombstone) {
@@ -1395,7 +1385,8 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkTombstone) {
   EXPECT_TRUE(data.is_deleted());
 }
 
-TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
+TEST_F(ModelTypeWorkerTest,
+       PopulateUpdateResponseDataForBookmarkWithPositionInParent) {
   InitializeCommitOnly();
   sync_pb::SyncEntity entity;
 
@@ -1410,7 +1401,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, PREFERENCES, entity, &response_data));
+                &cryptographer, BOOKMARKS, entity, &response_data));
   const EntityData& data = *response_data.entity;
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
@@ -1422,7 +1413,8 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
       /*count=*/1);
 }
 
-TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
+TEST_F(ModelTypeWorkerTest,
+       PopulateUpdateResponseDataForBookmarkWithInsertAfterItemId) {
   InitializeCommitOnly();
   sync_pb::SyncEntity entity;
 
@@ -1437,7 +1429,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, PREFERENCES, entity, &response_data));
+                &cryptographer, BOOKMARKS, entity, &response_data));
   const EntityData& data = *response_data.entity;
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
@@ -1449,7 +1441,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
 }
 
 TEST_F(ModelTypeWorkerTest,
-       PopulateUpdateResponseDataWithBookmarkMissingPosition) {
+       PopulateUpdateResponseDataForBookmarkWithMissingPosition) {
   InitializeCommitOnly();
   sync_pb::SyncEntity entity;
 
@@ -1466,7 +1458,7 @@ TEST_F(ModelTypeWorkerTest,
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, PREFERENCES, entity, &response_data));
+                &cryptographer, BOOKMARKS, entity, &response_data));
   const EntityData& data = *response_data.entity;
   EXPECT_FALSE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
@@ -1477,7 +1469,7 @@ TEST_F(ModelTypeWorkerTest,
 }
 
 TEST_F(ModelTypeWorkerTest,
-       PopulateUpdateResponseDataWithNonBookmarkHasNoPosition) {
+       PopulateUpdateResponseDataForNonBookmarkWithNoPosition) {
   InitializeCommitOnly();
   sync_pb::SyncEntity entity;
 
@@ -1498,7 +1490,7 @@ TEST_F(ModelTypeWorkerTest,
                                     /*count=*/0);
 }
 
-TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithBookmarkGUID) {
+TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkWithGUID) {
   const std::string kGuid1 = base::GenerateGUID();
   const std::string kGuid2 = base::GenerateGUID();
 
@@ -1524,7 +1516,8 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithBookmarkGUID) {
   EXPECT_EQ(kGuid2, data.originator_client_item_id);
 }
 
-TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithMissingBookmarkGUID) {
+TEST_F(ModelTypeWorkerTest,
+       PopulateUpdateResponseDataForBookmarkWithMissingGUID) {
   const std::string kGuid1 = base::GenerateGUID();
 
   NormalInitialize();
@@ -1549,7 +1542,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithMissingBookmarkGUID) {
 }
 
 TEST_F(ModelTypeWorkerTest,
-       PopulateUpdateResponseDataWithMissingBookmarkGUIDAndInvalidOCII) {
+       PopulateUpdateResponseDataForBookmarkWithMissingGUIDAndInvalidOCII) {
   const std::string kInvalidOCII = "INVALID OCII";
 
   NormalInitialize();
