@@ -21,8 +21,12 @@
 
 namespace apps {
 
-CrostiniApps::CrostiniApps()
-    : profile_(nullptr), registry_(nullptr), crostini_enabled_(false) {}
+CrostiniApps::CrostiniApps(
+    const mojo::Remote<apps::mojom::AppService>& app_service,
+    Profile* profile)
+    : profile_(profile), registry_(nullptr), crostini_enabled_(false) {
+  Initialize(app_service);
+}
 
 CrostiniApps::~CrostiniApps() {
   if (registry_) {
@@ -30,34 +34,9 @@ CrostiniApps::~CrostiniApps() {
   }
 }
 
-void CrostiniApps::Initialize(
-    const mojo::Remote<apps::mojom::AppService>& app_service,
-    Profile* profile) {
-  profile_ = nullptr;
-  registry_ = nullptr;
-  crostini_enabled_ = false;
-
-  if (!crostini::IsCrostiniUIAllowedForProfile(profile)) {
-    return;
-  }
-  registry_ = crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
-  if (!registry_) {
-    return;
-  }
-  profile_ = profile;
-  crostini_enabled_ = crostini::IsCrostiniEnabled(profile);
-
-  registry_->AddObserver(this);
-
-  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(profile->GetPrefs());
-  pref_change_registrar_->Add(
-      crostini::prefs::kCrostiniEnabled,
-      base::BindRepeating(&CrostiniApps::OnCrostiniEnabledChanged,
-                          base::Unretained(this)));
-
-  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
-                                 apps::mojom::AppType::kCrostini);
+void CrostiniApps::FlushMojoCallsForTesting() {
+  if (receiver_.is_bound())
+    receiver_.FlushForTesting();
 }
 
 void CrostiniApps::ReInitializeForTesting(
@@ -67,7 +46,37 @@ void CrostiniApps::ReInitializeForTesting(
   // like the App Service) before it creates the fake user that lets
   // IsCrostiniUIAllowedForProfile return true. To work around that, we issue a
   // second Initialize call.
-  Initialize(app_service, profile);
+  receiver_.reset();
+  profile_ = profile;
+  registry_ = nullptr;
+  crostini_enabled_ = false;
+
+  Initialize(app_service);
+}
+
+void CrostiniApps::Initialize(
+    const mojo::Remote<apps::mojom::AppService>& app_service) {
+  DCHECK(profile_);
+  if (!crostini::IsCrostiniUIAllowedForProfile(profile_)) {
+    return;
+  }
+  registry_ = crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
+  if (!registry_) {
+    return;
+  }
+  crostini_enabled_ = crostini::IsCrostiniEnabled(profile_);
+
+  registry_->AddObserver(this);
+
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(profile_->GetPrefs());
+  pref_change_registrar_->Add(
+      crostini::prefs::kCrostiniEnabled,
+      base::BindRepeating(&CrostiniApps::OnCrostiniEnabledChanged,
+                          base::Unretained(this)));
+
+  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
+                                 apps::mojom::AppType::kCrostini);
 }
 
 void CrostiniApps::Connect(apps::mojom::SubscriberPtr subscriber,

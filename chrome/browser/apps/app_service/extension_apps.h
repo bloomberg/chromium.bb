@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -40,15 +41,18 @@ class ExtensionApps : public apps::mojom::Publisher,
                       public extensions::ExtensionRegistryObserver,
                       public content_settings::Observer {
  public:
-  ExtensionApps();
+  ExtensionApps(const mojo::Remote<apps::mojom::AppService>& app_service,
+                Profile* profile,
+                apps::mojom::AppType app_type);
   ~ExtensionApps() override;
 
-  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service,
-                  Profile* profile,
-                  apps::mojom::AppType type);
+  void FlushMojoCallsForTesting();
+
   void Shutdown();
 
  private:
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
+
   // Determines whether the given extension should be treated as type app_type_,
   // and should therefore by handled by this publisher.
   bool Accepts(const extensions::Extension* extension);
@@ -135,6 +139,8 @@ class ExtensionApps : public apps::mojom::Publisher,
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       registry_observer_;
+  ScopedObserver<HostContentSettingsMap, content_settings::Observer>
+      content_settings_observer_;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 

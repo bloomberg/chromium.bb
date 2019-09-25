@@ -67,17 +67,17 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
 
 namespace apps {
 
-BuiltInChromeOsApps::BuiltInChromeOsApps() : profile_(nullptr) {}
+BuiltInChromeOsApps::BuiltInChromeOsApps(
+    const mojo::Remote<apps::mojom::AppService>& app_service,
+    Profile* profile)
+    : profile_(profile) {
+  Initialize(app_service);
+}
 
 BuiltInChromeOsApps::~BuiltInChromeOsApps() = default;
 
-void BuiltInChromeOsApps::Initialize(
-    const mojo::Remote<apps::mojom::AppService>& app_service,
-    Profile* profile) {
-  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
-                                 apps::mojom::AppType::kBuiltIn);
-
-  profile_ = profile;
+void BuiltInChromeOsApps::FlushMojoCallsForTesting() {
+  receiver_.FlushForTesting();
 }
 
 bool BuiltInChromeOsApps::hide_settings_app_for_testing_ = false;
@@ -87,6 +87,12 @@ bool BuiltInChromeOsApps::SetHideSettingsAppForTesting(bool hide) {
   bool old_value = hide_settings_app_for_testing_;
   hide_settings_app_for_testing_ = hide;
   return old_value;
+}
+
+void BuiltInChromeOsApps::Initialize(
+    const mojo::Remote<apps::mojom::AppService>& app_service) {
+  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
+                                 apps::mojom::AppType::kBuiltIn);
 }
 
 void BuiltInChromeOsApps::Connect(apps::mojom::SubscriberPtr subscriber,

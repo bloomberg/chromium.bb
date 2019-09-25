@@ -31,11 +31,11 @@ class CrostiniApps : public KeyedService,
                      public apps::mojom::Publisher,
                      public crostini::CrostiniRegistryService::Observer {
  public:
-  CrostiniApps();
+  CrostiniApps(const mojo::Remote<apps::mojom::AppService>& app_service,
+               Profile* profile);
   ~CrostiniApps() override;
 
-  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service,
-                  Profile* profile);
+  void FlushMojoCallsForTesting();
 
   void ReInitializeForTesting(
       const mojo::Remote<apps::mojom::AppService>& app_service,
@@ -47,6 +47,8 @@ class CrostiniApps : public KeyedService,
     kUninstall,
     kUpdate,
   };
+
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
 
   // apps::mojom::Publisher overrides.
   void Connect(apps::mojom::SubscriberPtr subscriber,

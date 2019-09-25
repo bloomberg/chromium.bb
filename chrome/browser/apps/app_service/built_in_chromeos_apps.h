@@ -21,15 +21,17 @@ namespace apps {
 // See chrome/services/app_service/README.md.
 class BuiltInChromeOsApps : public apps::mojom::Publisher {
  public:
-  BuiltInChromeOsApps();
+  BuiltInChromeOsApps(const mojo::Remote<apps::mojom::AppService>& app_service,
+                      Profile* profile);
   ~BuiltInChromeOsApps() override;
 
-  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service,
-                  Profile* profile);
+  void FlushMojoCallsForTesting();
 
   static bool SetHideSettingsAppForTesting(bool hide);
 
  private:
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
+
   // apps::mojom::Publisher overrides.
   void Connect(apps::mojom::SubscriberPtr subscriber,
                apps::mojom::ConnectOptionsPtr opts) override;

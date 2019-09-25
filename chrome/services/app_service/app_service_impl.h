@@ -17,9 +17,7 @@
 
 namespace apps {
 
-// The implementation of the apps::mojom::AppService Mojo interface. For the
-// service (in the service_manager::Service sense) aspect of the App Service,
-// see the AppService class.
+// The implementation of the apps::mojom::AppService Mojo interface.
 //
 // See chrome/services/app_service/README.md.
 class AppServiceImpl : public apps::mojom::AppService {
@@ -28,6 +26,8 @@ class AppServiceImpl : public apps::mojom::AppService {
   ~AppServiceImpl() override;
 
   void BindReceiver(mojo::PendingReceiver<apps::mojom::AppService> receiver);
+
+  void FlushMojoCallsForTesting();
 
   // apps::mojom::AppService overrides.
   void RegisterPublisher(

@@ -33,6 +33,11 @@ void AppServiceImpl::BindReceiver(
   receivers_.Add(this, std::move(receiver));
 }
 
+void AppServiceImpl::FlushMojoCallsForTesting() {
+  subscribers_.FlushForTesting();
+  receivers_.FlushForTesting();
+}
+
 void AppServiceImpl::RegisterPublisher(
     mojo::PendingRemote<apps::mojom::Publisher> publisher_remote,
     apps::mojom::AppType app_type) {

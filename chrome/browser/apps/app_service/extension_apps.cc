@@ -144,34 +144,41 @@ class ExtensionAppsEnableFlow : public ExtensionEnableFlowDelegate {
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppsEnableFlow);
 };
 
-ExtensionApps::ExtensionApps()
-    : profile_(nullptr),
+ExtensionApps::ExtensionApps(
+    const mojo::Remote<apps::mojom::AppService>& app_service,
+    Profile* profile,
+    apps::mojom::AppType app_type)
+    : profile_(profile),
       prefs_observer_(this),
       registry_observer_(this),
-      app_type_(apps::mojom::AppType::kUnknown) {}
+      content_settings_observer_(this),
+      app_type_(app_type) {
+  Initialize(app_service);
+}
 
 ExtensionApps::~ExtensionApps() = default;
 
-void ExtensionApps::Initialize(
-    const mojo::Remote<apps::mojom::AppService>& app_service,
-    Profile* profile,
-    apps::mojom::AppType type) {
-  app_type_ = type;
-  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
-                                 app_type_);
-
-  profile_ = profile;
-  DCHECK(profile_);
-  prefs_observer_.Add(extensions::ExtensionPrefs::Get(profile_));
-  registry_observer_.Add(extensions::ExtensionRegistry::Get(profile_));
-  HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
+void ExtensionApps::FlushMojoCallsForTesting() {
+  receiver_.FlushForTesting();
 }
 
 void ExtensionApps::Shutdown() {
   if (profile_) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)->RemoveObserver(
-        this);
+    content_settings_observer_.RemoveAll();
   }
+}
+
+void ExtensionApps::Initialize(
+    const mojo::Remote<apps::mojom::AppService>& app_service) {
+  DCHECK(profile_);
+  DCHECK_NE(apps::mojom::AppType::kUnknown, app_type_);
+  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
+                                 app_type_);
+
+  prefs_observer_.Add(extensions::ExtensionPrefs::Get(profile_));
+  registry_observer_.Add(extensions::ExtensionRegistry::Get(profile_));
+  content_settings_observer_.Add(
+      HostContentSettingsMapFactory::GetForProfile(profile_));
 }
 
 bool ExtensionApps::Accepts(const extensions::Extension* extension) {
@@ -384,6 +391,10 @@ void ExtensionApps::OnContentSettingChanged(
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile_);
 
+  if (!registry) {
+    return;
+  }
+
   std::unique_ptr<extensions::ExtensionSet> extensions =
       registry->GenerateInstalledExtensionsSet(
           extensions::ExtensionRegistry::ENABLED |
@@ -391,7 +402,7 @@ void ExtensionApps::OnContentSettingChanged(
           extensions::ExtensionRegistry::TERMINATED);
 
   for (const auto& extension : *extensions) {
-    const GURL url =
+    const GURL& url =
         extensions::AppLaunchInfo::GetFullLaunchURL(extension.get());
 
     if (extension->from_bookmark() && primary_pattern.Matches(url) &&
