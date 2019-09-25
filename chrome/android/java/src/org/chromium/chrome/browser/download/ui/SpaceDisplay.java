@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -72,12 +71,12 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
             if (downloadDirectory.exists()) {
                 StatFs statFs = new StatFs(downloadDirectory.getPath());
                 if (mFetchTotalSize) {
-                    blocks = ApiCompatibilityUtils.getBlockCount(statFs);
+                    blocks = statFs.getBlockCountLong();
                 } else {
-                    blocks = ApiCompatibilityUtils.getAvailableBlocks(statFs);
+                    blocks = statFs.getAvailableBlocksLong();
                 }
 
-                return blocks * ApiCompatibilityUtils.getBlockSize(statFs);
+                return blocks * statFs.getBlockSizeLong();
             } else {
                 Log.e(TAG, "Download directory doesn't exist.");
                 return 0L;
