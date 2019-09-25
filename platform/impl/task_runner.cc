@@ -56,21 +56,22 @@ void TaskRunnerImpl::RunUntilStopped() {
   // "quit task" posted by RequestStopSoon().
   while (is_running_) {
     ScheduleDelayedTasks();
-    RunTasksAfterWaiting();
+    if (GrabMoreRunnableTasks()) {
+      RunRunnableTasks();
+    }
   }
 
   // Flushing phase: Ensure all immediately-runnable tasks are run before
   // returning. Since running some tasks might cause more immediately-runnable
   // tasks to be posted, loop until there is no more work.
-  {
-    std::unique_lock<std::mutex> lock(task_mutex_);
-    while (!tasks_.empty()) {
-      OSP_DCHECK(running_tasks_.empty());
-      running_tasks_.swap(tasks_);
-      lock.unlock();
-      RunRunnableTasks();
-      lock.lock();
-    }
+  //
+  // If there is bad code that posts tasks indefinitely, this loop will never
+  // break. However, that also means there is a code path spinning a CPU core at
+  // 100% all the time. Rather than mitigate this problem scenario, purposely
+  // let it manifest here in the hopes that unit testing will reveal it (e.g., a
+  // unit test that never finishes running).
+  while (GrabMoreRunnableTasks()) {
+    RunRunnableTasks();
   }
 
   task_runner_thread_id_ = std::thread::id();
@@ -78,22 +79,6 @@ void TaskRunnerImpl::RunUntilStopped() {
 
 void TaskRunnerImpl::RequestStopSoon() {
   PostTask([this]() { is_running_ = false; });
-}
-
-void TaskRunnerImpl::RunTasksAfterWaiting() {
-  {
-    // Wait for the lock. If there are no current tasks, we will wait until
-    // a delayed task is ready or a task gets added to the queue.
-    auto lock = WaitForWorkAndAcquireLock();
-    if (!lock) {
-      return;
-    }
-
-    OSP_DCHECK(running_tasks_.empty());
-    running_tasks_.swap(tasks_);
-  }
-
-  RunRunnableTasks();
 }
 
 void TaskRunnerImpl::RunRunnableTasks() {
@@ -132,11 +117,17 @@ bool TaskRunnerImpl::ShouldWakeUpRunLoop() {
          (delayed_tasks_.begin()->first <= now_function_());
 }
 
-std::unique_lock<std::mutex> TaskRunnerImpl::WaitForWorkAndAcquireLock() {
+bool TaskRunnerImpl::GrabMoreRunnableTasks() {
+  OSP_DCHECK(running_tasks_.empty());
+
   std::unique_lock<std::mutex> lock(task_mutex_);
   if (!tasks_.empty()) {
-    OSP_DVLOG << "TaskRunnerImpl lock acquired.";
-    return lock;
+    running_tasks_.swap(tasks_);
+    return true;
+  }
+
+  if (!is_running_) {
+    return false;  // Stop was requested. Don't wait for more tasks.
   }
 
   if (task_waiter_) {
@@ -170,8 +161,8 @@ std::unique_lock<std::mutex> TaskRunnerImpl::WaitForWorkAndAcquireLock() {
     }
   }
 
-  OSP_DVLOG << "TaskRunnerImpl lock acquired.";
-  return lock;
+  return false;
 }
+
 }  // namespace platform
 }  // namespace openscreen

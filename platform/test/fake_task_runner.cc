@@ -19,20 +19,32 @@ FakeTaskRunner::~FakeTaskRunner() {
 }
 
 void FakeTaskRunner::RunTasksUntilIdle() {
-  const auto current_time = FakeClock::now();
-  const auto end_of_range = delayed_tasks_.upper_bound(current_time);
-  for (auto it = delayed_tasks_.begin(); it != end_of_range; ++it) {
-    ready_to_run_tasks_.push_back(std::move(it->second));
-  }
-  delayed_tasks_.erase(delayed_tasks_.begin(), end_of_range);
+  // If there is bad code that posts tasks indefinitely, this loop will never
+  // break. However, that also means there is a code path spinning a CPU core at
+  // 100% all the time. Rather than mitigate this problem scenario, purposely
+  // let it manifest here in the hopes that unit testing will reveal it (e.g., a
+  // unit test that never finishes running).
+  for (;;) {
+    const auto current_time = FakeClock::now();
+    const auto end_of_range = delayed_tasks_.upper_bound(current_time);
+    for (auto it = delayed_tasks_.begin(); it != end_of_range; ++it) {
+      ready_to_run_tasks_.push_back(std::move(it->second));
+    }
+    delayed_tasks_.erase(delayed_tasks_.begin(), end_of_range);
 
-  std::vector<Task> running_tasks;
-  running_tasks.swap(ready_to_run_tasks_);
-  for (Task& running_task : running_tasks) {
-    // Move the task out of the vector and onto the stack so that it destroys
-    // just after being run. This helps catch "dangling reference/pointer" bugs.
-    Task task = std::move(running_task);
-    task();
+    if (ready_to_run_tasks_.empty()) {
+      break;
+    }
+
+    std::vector<Task> running_tasks;
+    running_tasks.swap(ready_to_run_tasks_);
+    for (Task& running_task : running_tasks) {
+      // Move the task out of the vector and onto the stack so that it destroys
+      // just after being run. This helps catch "dangling reference/pointer"
+      // bugs.
+      Task task = std::move(running_task);
+      task();
+    }
   }
 }
 

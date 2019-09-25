@@ -97,10 +97,6 @@ class TaskRunnerImpl final : public TaskRunner {
   using TaskWithMetadata = Task;
 #endif  // TRACE_FORCE_DISABLE
 
-  // If necessary, wait for either (1) a delayed task to become available, or
-  // (2) a task to be added to the queue; and then run all runnable tasks.
-  void RunTasksAfterWaiting();
-
   // Helper that runs all tasks in |running_tasks_| and then clears it.
   void RunRunnableTasks();
 
@@ -112,10 +108,11 @@ class TaskRunnerImpl final : public TaskRunner {
   // should be woken up
   bool ShouldWakeUpRunLoop();
 
-  // Takes the task_mutex_ lock, returning immediately if work is available. If
-  // no work is available, this places the task running thread into a waiting
-  // state until we stop running or work is available.
-  std::unique_lock<std::mutex> WaitForWorkAndAcquireLock();
+  // Transfers all ready-to-run tasks from |tasks_| to |running_tasks_|. If
+  // there are no ready-to-run tasks, and |is_running_| is true, this method
+  // will block waiting for new tasks. Returns true if any tasks were
+  // transferred.
+  bool GrabMoreRunnableTasks();
 
   const platform::ClockNowFunctionPtr now_function_;
 
