@@ -20,6 +20,10 @@ extern const char kViewportAdjustmentExperimentCommandLineSwitch[];
 extern const flags_ui::FeatureEntry::Choice
     kViewportAdjustmentExperimentChoices[6];
 
+// Feature used by finch config to enable smooth scrolling when the default
+// viewport adjustment experiment is selected via command line switches.
+extern const base::Feature kSmoothScrollingDefault;
+
 // Enum type describing viewport adjustment experiments.
 enum class ViewportAdjustmentExperiment : short {
   FRAME = 0,      // Adjust the viewport by resizing the entire WKWebView.
@@ -34,12 +38,13 @@ enum class ViewportAdjustmentExperiment : short {
 };
 
 // Convenience method for retrieving the active viewport adjustment experiment
-// from the command line.
+// from the command line. TODO(crbug.com/914042): Remove once the internal
+// references are moved to ShouldUseSmoothScrolling().
 ViewportAdjustmentExperiment GetActiveViewportExperiment();
 
-// Used to control whether the bottom toolbar should be locked into the extended
-// position (i.e. fullscreen progress == 1.0).
-extern const base::Feature kLockBottomToolbar;
+// Convenience method for determining when to adjust the viewport by resizing
+// WKWebView or using smooth scrolling.
+bool ShouldUseSmoothScrolling();
 
 }  // namespace features
 }  // namespace fullscreen

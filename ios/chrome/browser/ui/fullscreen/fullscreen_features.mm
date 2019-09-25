@@ -19,11 +19,6 @@ const char kContentInsetChoiceValue[] = "content-inset";
 const char kSafeAreaChoiceValue[] = "safe-area";
 const char kHybridChoiceValue[] = "hybrid";
 const char kSmoothScrollingChoiceValue[] = "smooth";
-
-// Feature used by finch config to enable smooth scrolling when the default
-// viewport adjustment experiment is selected via command line switches.
-const base::Feature kSmoothScrollingDefault{"FullscreenSmoothScrollingDefault",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 }
 
 namespace fullscreen {
@@ -43,6 +38,9 @@ const flags_ui::FeatureEntry::Choice kViewportAdjustmentExperimentChoices[] = {
     {"Use Smooth Scrolling", kViewportAdjustmentExperimentCommandLineSwitch,
      "smooth"},
     {"Update Frame", kViewportAdjustmentExperimentCommandLineSwitch, "frame"}};
+
+const base::Feature kSmoothScrollingDefault{"FullscreenSmoothScrollingDefault",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 ViewportAdjustmentExperiment GetActiveViewportExperiment() {
   const base::CommandLine* command_line =
@@ -66,8 +64,9 @@ ViewportAdjustmentExperiment GetActiveViewportExperiment() {
              : ViewportAdjustmentExperiment::FRAME;
 }
 
-const base::Feature kLockBottomToolbar{"LockBottomToolbar",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+bool ShouldUseSmoothScrolling() {
+  return base::FeatureList::IsEnabled(kSmoothScrollingDefault);
+}
 
 }  // namespace features
 }  // namespace fullscreen
