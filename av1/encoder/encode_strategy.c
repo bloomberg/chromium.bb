@@ -211,80 +211,41 @@ static void set_ext_overrides(AV1_COMP *const cpi,
 }
 
 static int get_ref_frame_flags(const AV1_COMP *const cpi) {
+  static const MV_REFERENCE_FRAME
+      ref_frame_priority_order[INTER_REFS_PER_FRAME] = {
+        LAST_FRAME,   ALTREF_FRAME, LAST2_FRAME,   LAST3_FRAME,
+        GOLDEN_FRAME, BWDREF_FRAME, ALTREF2_FRAME,
+      };
   const AV1_COMMON *const cm = &cpi->common;
-
-  const RefCntBuffer *last_buf = get_ref_frame_buf(cm, LAST_FRAME);
-  const RefCntBuffer *last2_buf = get_ref_frame_buf(cm, LAST2_FRAME);
-  const RefCntBuffer *last3_buf = get_ref_frame_buf(cm, LAST3_FRAME);
-  const RefCntBuffer *golden_buf = get_ref_frame_buf(cm, GOLDEN_FRAME);
-  const RefCntBuffer *bwd_buf = get_ref_frame_buf(cm, BWDREF_FRAME);
-  const RefCntBuffer *alt2_buf = get_ref_frame_buf(cm, ALTREF2_FRAME);
-  const RefCntBuffer *alt_buf = get_ref_frame_buf(cm, ALTREF_FRAME);
-
-  // No.1 Priority: LAST_FRAME
-  const int last2_is_last = (last2_buf == last_buf);
-  const int last3_is_last = (last3_buf == last_buf);
-  const int gld_is_last = (golden_buf == last_buf);
-  const int bwd_is_last = (bwd_buf == last_buf);
-  const int alt2_is_last = (alt2_buf == last_buf);
-  const int alt_is_last = (alt_buf == last_buf);
-
-  // No.2 Priority: ALTREF_FRAME
-  const int last2_is_alt = (last2_buf == alt_buf);
-  const int last3_is_alt = (last3_buf == alt_buf);
-  const int gld_is_alt = (golden_buf == alt_buf);
-  const int bwd_is_alt = (bwd_buf == alt_buf);
-  const int alt2_is_alt = (alt2_buf == alt_buf);
-
-  // No.3 Priority: LAST2_FRAME
-  const int last3_is_last2 = (last3_buf == last2_buf);
-  const int gld_is_last2 = (golden_buf == last2_buf);
-  const int bwd_is_last2 = (bwd_buf == last2_buf);
-  const int alt2_is_last2 = (alt2_buf == last2_buf);
-
-  // No.4 Priority: LAST3_FRAME
-  const int gld_is_last3 = (golden_buf == last3_buf);
-  const int bwd_is_last3 = (bwd_buf == last3_buf);
-  const int alt2_is_last3 = (alt2_buf == last3_buf);
-
-  // No.5 Priority: GOLDEN_FRAME
-  const int bwd_is_gld = (bwd_buf == golden_buf);
-  const int alt2_is_gld = (alt2_buf == golden_buf);
-
-  // No.6 Priority: BWDREF_FRAME
-  const int alt2_is_bwd = (alt2_buf == bwd_buf);
-
-  // No.7 Priority: ALTREF2_FRAME
+  const RefCntBuffer *ref_frames[INTER_REFS_PER_FRAME];
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+    ref_frames[i] = get_ref_frame_buf(cm, ref_frame_priority_order[i]);
+  }
 
   // cpi->ext_ref_frame_flags allows certain reference types to be disabled
   // by the external interface.  These are set by av1_apply_encoding_flags().
   // Start with what the external interface allows, then suppress any reference
   // types which we have found to be duplicates.
-
   int flags = cpi->ext_ref_frame_flags;
 
-  if (cpi->rc.frames_till_gf_update_due == INT_MAX) flags &= ~AOM_GOLD_FLAG;
-
-  if (alt_is_last) flags &= ~AOM_ALT_FLAG;
-
-  if (last2_is_last || last2_is_alt) flags &= ~AOM_LAST2_FLAG;
-
-  if (last3_is_last || last3_is_alt || last3_is_last2) flags &= ~AOM_LAST3_FLAG;
-
-  if (gld_is_last ||
-      (!cpi->sf.use_fast_nonrd_pick_mode && (gld_is_last2 || gld_is_last3)))
-    flags &= ~AOM_GOLD_FLAG;
-
-  if (!cpi->sf.use_fast_nonrd_pick_mode && gld_is_alt) {
-    flags &= ~AOM_GOLD_FLAG;
+  for (int i = 1; i < INTER_REFS_PER_FRAME; ++i) {
+    const RefCntBuffer *const this_ref = ref_frames[i];
+    // If this_ref has appeared before, mark the corresponding ref frame as
+    // invalid.
+    for (int j = 0; j < i; ++j) {
+      if (this_ref == ref_frames[j]) {
+        flags &= ~(1 << (ref_frame_priority_order[i] - 1));
+        break;
+      }
+    }
   }
 
-  if ((bwd_is_last || bwd_is_alt || bwd_is_last2 || bwd_is_last3 || bwd_is_gld))
-    flags &= ~AOM_BWD_FLAG;
-
-  if ((alt2_is_last || alt2_is_alt || alt2_is_last2 || alt2_is_last3 ||
-       alt2_is_gld || alt2_is_bwd))
-    flags &= ~AOM_ALT2_FLAG;
+  // For non-RD mode, only disable GOLDEN_FRAME if it's the same as LAST_FRAME.
+  if (cpi->sf.use_fast_nonrd_pick_mode) {
+    const RefCntBuffer *last_buf = get_ref_frame_buf(cm, LAST_FRAME);
+    const RefCntBuffer *golden_buf = get_ref_frame_buf(cm, GOLDEN_FRAME);
+    if (golden_buf != last_buf) flags |= (1 << GOLDEN_FRAME);
+  }
 
   return flags;
 }
