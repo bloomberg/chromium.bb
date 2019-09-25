@@ -3906,6 +3906,12 @@ def ApplyCustomOverrides(site_config):
           'useflags': [],
       },
 
+      # The board does not exist in the lab. See crbug.com/1003981
+      'beaglebone_servo-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
       # No hw tests for any betty builders.  See crbug/998427.
       'betty-release': {
           'hw_tests': [],
