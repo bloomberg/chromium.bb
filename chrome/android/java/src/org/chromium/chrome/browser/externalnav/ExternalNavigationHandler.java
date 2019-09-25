@@ -411,6 +411,15 @@ public class ExternalNavigationHandler {
         return false;
     }
 
+    private boolean externalIntentRequestsDisabled() {
+        // TODO(changwan): check if we need to handle URL even when external intent is off.
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_EXTERNAL_INTENT_REQUESTS)) {
+            Log.w(TAG, "External intent handling is disabled by a command-line flag.");
+            return true;
+        }
+        return false;
+    }
+
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent intent, boolean hasBrowserFallbackUrl,
             String browserFallbackUrl) {
@@ -419,10 +428,6 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
-        boolean isLink = pageTransitionCore == PageTransition.LINK;
-        boolean isFormSubmit = pageTransitionCore == PageTransition.FORM_SUBMIT;
-        boolean isFromIntent = (params.getPageTransition() & PageTransition.FROM_API) != 0;
         boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(params.getUrl());
 
         if (isInternalPdfDownload(isExternalProtocol, params)) {
@@ -435,18 +440,28 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
         }
 
+        // This should come after file intents, but before any returns of
+        // OVERRIDE_WITH_EXTERNAL_INTENT.
+        if (externalIntentRequestsDisabled()) return OverrideUrlLoadingResult.NO_OVERRIDE;
+
+        int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
+        boolean isLink = pageTransitionCore == PageTransition.LINK;
+        boolean isFormSubmit = pageTransitionCore == PageTransition.FORM_SUBMIT;
+        boolean isFromIntent = (params.getPageTransition() & PageTransition.FROM_API) != 0;
+
         // http://crbug.com/149218: We want to show the intent picker for ordinary links, providing
         // the link is not an incoming intent from another application, unless it's a redirect (see
         // below).
         boolean linkNotFromIntent = isLink && !isFromIntent;
 
-        boolean isOnEffectiveIntentRedirect = params.getRedirectHandler() == null ? false
+        boolean isOnEffectiveIntentRedirect = params.getRedirectHandler() == null
+                ? false
                 : params.getRedirectHandler().isOnEffectiveIntentRedirectChain();
 
         // http://crbug.com/170925: We need to show the intent picker when we receive an intent from
         // another app that 30x redirects to a YouTube/Google Maps/Play Store/Google+ URL etc.
-        boolean incomingIntentRedirect = (isLink && isFromIntent && params.isRedirect())
-                || isOnEffectiveIntentRedirect;
+        boolean incomingIntentRedirect =
+                (isLink && isFromIntent && params.isRedirect()) || isOnEffectiveIntentRedirect;
 
         // Don't stay in Chrome for Custom Tabs redirecting to Instant Apps.
         if (handleCCTRedirectsToInstantApps(params, isExternalProtocol, incomingIntentRedirect)) {
@@ -473,13 +488,6 @@ public class ExternalNavigationHandler {
         if (hasContentScheme(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
         if (isYoutubePairingCode(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
-
-        // TODO(changwan): check if we need to handle URL even when external intent is off.
-        if (CommandLine.getInstance().hasSwitch(
-                ChromeSwitches.DISABLE_EXTERNAL_INTENT_REQUESTS)) {
-            Log.w(TAG, "External intent handling is disabled by a command-line flag.");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
 
         // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
         @WebappScopePolicy.NavigationDirective
