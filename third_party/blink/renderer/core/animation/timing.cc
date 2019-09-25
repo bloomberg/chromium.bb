@@ -160,7 +160,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
 
   const Timing::Phase current_phase =
       CalculatePhase(active_duration, local_time, animation_direction, *this);
-  const base::Optional<double> active_time =
+  const base::Optional<AnimationTimeDelta> active_time =
       CalculateActiveTime(active_duration, ResolvedFillMode(is_keyframe_effect),
                           local_time, current_phase, *this);
 
@@ -204,7 +204,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
       DCHECK(active_time);
       time_to_next_iteration =
           iteration_duration - iteration_time->InSecondsF();
-      if (active_duration - active_time.value() < time_to_next_iteration)
+      if (active_duration - active_time->InSecondsF() < time_to_next_iteration)
         time_to_next_iteration = std::numeric_limits<double>::infinity();
     }
   }
