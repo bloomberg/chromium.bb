@@ -41,6 +41,10 @@ docstring-quote = double
 # multiple times.
 # cros-logging-import: logging is deprecated. Use "from chromite.lib import
 #   cros_logging as logging" to import chromite/lib/cros_logging.
+# eq-without-hash: We omit this as we don't require all objects be hashable.
+#   We'll wait for unittest coverage to detect missing __hash__ on objects.
+# no-absolute-import: We don't seem to rely on this behavior, so don't enforce
+#   using this future import everywhere.
 # round-builtin: We omit this as all our usage of round() is OK with either
 #   Python 2 or 3 behavior (and probably leans towards 3 anyways).
 enable=
@@ -78,6 +82,7 @@ enable=
     intern-builtin,
     invalid-str-codec,
     long-builtin,
+    long-suffix,
     map-builtin-not-iterating,
     metaclass-assignment,
     next-method-called,
@@ -85,6 +90,8 @@ enable=
     nonzero-method,
     oct-method,
     old-division,
+    old-ne-operator,
+    old-octal-literal,
     old-raise-syntax,
     parameter-unpacking,
     print-statement,

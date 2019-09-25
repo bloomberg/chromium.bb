@@ -138,7 +138,7 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
         'milestone_version': '74',
         'full_version': 'R74-11721.0.0-b3457724',
         'important': 1,
-        'buildbucket_id': 1234L,
+        'buildbucket_id': 1234,
         'summary': None,
         'master_build_id': 4321,
         'bot_hostname': 'swarm-cros-34',

@@ -28,6 +28,10 @@ from chromite.lib import parallel
 from chromite.lib import patch_unittest
 
 
+# Hopefully cidb will be deleted soon (before Python 3 finalizes), so we don't
+# have to fully port this module.
+# pylint: disable=long-suffix
+
 # pylint: disable=protected-access
 
 # Used to ensure that all build_number values we use are unique.
