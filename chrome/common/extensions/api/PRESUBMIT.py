@@ -35,6 +35,7 @@ def _CheckExterns(input_api, output_api):
     'file_system_provider.idl': 'file_system_provider.js',
     'language_settings_private.idl': 'language_settings_private.js',
     'passwords_private.idl': 'passwords_private.js',
+    'resources_private.idl': 'resources_private.js',
     'safe_browsing_private.idl': 'safe_browsing_private.js',
     'system_private.json': 'system_private.js',
     'users_private.idl': 'users_private.js',
