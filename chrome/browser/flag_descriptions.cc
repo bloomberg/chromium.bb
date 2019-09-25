@@ -1390,6 +1390,11 @@ const char kOmniboxOnFocusSuggestionsDescription[] =
     "Configures Omnibox on-focus suggestions - suggestions displayed on-focus "
     "before the user has typed any input";
 
+const char kOmniboxRemoveSuggestionsFromClipboardName[] =
+    "Omnibox remove suggestions from clipboard";
+const char kOmniboxRemoveSuggestionsFromClipboardDescription[] =
+    "Allow users to remove suggestions from clipboard.";
+
 const char kOmniboxRichEntitySuggestionsName[] =
     "Omnibox rich entity suggestions";
 const char kOmniboxRichEntitySuggestionsDescription[] =

@@ -4591,14 +4591,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidSetupSearchEngineName,
      flag_descriptions::kAndroidSetupSearchEngineDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidSetupSearchEngine)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
     {"enable-clipboard-provider-text-suggestions",
      flag_descriptions::kEnableClipboardProviderTextSuggestionsName,
      flag_descriptions::kEnableClipboardProviderTextSuggestionsDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kEnableClipboardProviderTextSuggestions)},
+    {"omnibox-remove-suggestions-from-clipboard",
+     flag_descriptions::kOmniboxRemoveSuggestionsFromClipboardName,
+     flag_descriptions::kOmniboxRemoveSuggestionsFromClipboardDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxRemoveSuggestionsFromClipboard)},
 #endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

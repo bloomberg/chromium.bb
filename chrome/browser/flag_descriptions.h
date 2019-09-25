@@ -843,6 +843,9 @@ extern const char kOmniboxMaterialDesignWeatherIconsDescription[];
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
 
+extern const char kOmniboxRemoveSuggestionsFromClipboardName[];
+extern const char kOmniboxRemoveSuggestionsFromClipboardDescription[];
+
 extern const char kOmniboxRichEntitySuggestionsName[];
 extern const char kOmniboxRichEntitySuggestionsDescription[];
 

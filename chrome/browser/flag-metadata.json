@@ -2639,6 +2639,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "omnibox-remove-suggestions-from-clipboard",
+    "owners": [ "gangwu" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "omnibox-reverse-answers",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
