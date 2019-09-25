@@ -70,72 +70,30 @@ class BundleTestCase(cros_test_lib.MockTempDirTestCase,
     self.output_dir = os.path.join(self.tempdir, 'artifacts')
     osutils.SafeMakedirs(self.output_dir)
     self.sysroot_path = '/build/target'
+    self.sysroot = sysroot_lib.Sysroot(self.sysroot_path)
     self.chroot_path = os.path.join(self.tempdir, 'chroot')
     full_sysroot_path = os.path.join(self.chroot_path,
                                      self.sysroot_path.lstrip(os.sep))
     osutils.SafeMakedirs(full_sysroot_path)
 
-    # Legacy call.
-    self.input_proto = artifacts_pb2.BundleRequest()
-    self.input_proto.build_target.name = 'target'
-    self.input_proto.output_dir = self.output_dir
-    self.output_proto = artifacts_pb2.BundleResponse()
-
-    # New call format.
-    self.request = artifacts_pb2.BundleRequest()
-    self.request.chroot.path = self.chroot_path
-    self.request.sysroot.path = self.sysroot_path
-    self.request.output_dir = self.output_dir
+    # All requests use same response type.
     self.response = artifacts_pb2.BundleResponse()
+
+    # Build target request.
+    self.target_request = self.BuildTargetRequest(
+        build_target='target',
+        output_dir=self.output_dir,
+        chroot=self.chroot_path)
+
+    # Sysroot request.
+    self.sysroot_request = self.SysrootRequest(
+        sysroot=self.sysroot_path,
+        build_target='target',
+        output_dir=self.output_dir,
+        chroot=self.chroot_path)
 
     self.source_root = self.tempdir
     self.PatchObject(constants, 'SOURCE_ROOT', new=self.tempdir)
-
-
-class BundleTempDirTestCase(cros_test_lib.MockTempDirTestCase,
-                            api_config.ApiConfigMixin):
-  """Basic setup for artifacts unittests that need a tempdir."""
-
-  def _GetRequest(self, chroot=None, sysroot=None, build_target=None,
-                  output_dir=None):
-    """Helper to create a request message instance.
-
-    Args:
-      chroot (str): The chroot path.
-      sysroot (str): The sysroot path.
-      build_target (str): The build target name.
-      output_dir (str): The output directory.
-    """
-    return artifacts_pb2.BundleRequest(
-        sysroot={'path': sysroot, 'build_target': {'name': build_target}},
-        chroot={'path': chroot}, output_dir=output_dir)
-
-  def setUp(self):
-    self.output_dir = os.path.join(self.tempdir, 'artifacts')
-    osutils.SafeMakedirs(self.output_dir)
-
-    # Old style proto.
-    self.input_proto = artifacts_pb2.BundleRequest()
-    self.input_proto.build_target.name = 'target'
-    self.input_proto.output_dir = self.output_dir
-    self.output_proto = artifacts_pb2.BundleResponse()
-
-    self.chroot_path = os.path.join(self.tempdir, 'chroot')
-    self.PatchObject(constants, 'DEFAULT_CHROOT_PATH', new=self.chroot_path)
-
-    # New style paths.
-    self.sysroot_path = '/build/target'
-    self.sysroot = sysroot_lib.Sysroot(self.sysroot_path)
-    full_sysroot_path = os.path.join(self.chroot_path,
-                                     self.sysroot_path.lstrip(os.sep))
-    osutils.SafeMakedirs(full_sysroot_path)
-
-    # New style proto.
-    self.request = artifacts_pb2.BundleRequest()
-    self.request.output_dir = self.output_dir
-    self.request.chroot.path = self.chroot_path
-    self.request.sysroot.path = self.sysroot_path
-    self.response = artifacts_pb2.BundleResponse()
 
 
 class BundleImageArchivesTest(BundleTestCase):
@@ -144,7 +102,7 @@ class BundleImageArchivesTest(BundleTestCase):
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
     patch = self.PatchObject(artifacts_svc, 'ArchiveImages')
-    artifacts.BundleImageArchives(self.input_proto, self.output_proto,
+    artifacts.BundleImageArchives(self.target_request, self.response,
                                   self.validate_only_config)
     patch.assert_not_called()
 
@@ -152,20 +110,20 @@ class BundleImageArchivesTest(BundleTestCase):
     """Test that no build target fails."""
     request = self.BuildTargetRequest(output_dir=self.tempdir)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleImageArchives(request, self.output_proto, self.api_config)
+      artifacts.BundleImageArchives(request, self.response, self.api_config)
 
   def testNoOutputDir(self):
     """Test no output dir fails."""
     request = self.BuildTargetRequest(build_target='board')
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleImageArchives(request, self.output_proto, self.api_config)
+      artifacts.BundleImageArchives(request, self.response, self.api_config)
 
   def testInvalidOutputDir(self):
     """Test invalid output dir fails."""
     request = self.BuildTargetRequest(
         build_target='board', output_dir=os.path.join(self.tempdir, 'DNE'))
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleImageArchives(request, self.output_proto, self.api_config)
+      artifacts.BundleImageArchives(request, self.response, self.api_config)
 
   def testOutputHandling(self):
     """Test the artifact output handling."""
@@ -173,11 +131,10 @@ class BundleImageArchivesTest(BundleTestCase):
     self.PatchObject(artifacts_svc, 'ArchiveImages', return_value=expected)
     self.PatchObject(os.path, 'exists', return_value=True)
 
-    artifacts.BundleImageArchives(self.input_proto, self.output_proto,
+    artifacts.BundleImageArchives(self.target_request, self.response,
                                   self.api_config)
 
-    self.assertItemsEqual(expected,
-                          [a.path for a in self.output_proto.artifacts])
+    self.assertItemsEqual(expected, [a.path for a in self.response.artifacts])
 
 
 class BundleImageZipTest(BundleTestCase):
@@ -186,7 +143,7 @@ class BundleImageZipTest(BundleTestCase):
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
     patch = self.PatchObject(commands, 'BuildImageZip')
-    artifacts.BundleImageZip(self.input_proto, self.output_proto,
+    artifacts.BundleImageZip(self.target_request, self.response,
                              self.validate_only_config)
     patch.assert_not_called()
 
@@ -195,10 +152,10 @@ class BundleImageZipTest(BundleTestCase):
     bundle_image_zip = self.PatchObject(
         artifacts_svc, 'BundleImageZip', return_value='image.zip')
     self.PatchObject(os.path, 'exists', return_value=True)
-    artifacts.BundleImageZip(self.input_proto, self.output_proto,
+    artifacts.BundleImageZip(self.target_request, self.response,
                              self.api_config)
     self.assertEqual(
-        [artifact.path for artifact in self.output_proto.artifacts],
+        [artifact.path for artifact in self.response.artifacts],
         [os.path.join(self.output_dir, 'image.zip')])
 
     latest = os.path.join(self.source_root, 'src/build/images/target/latest')
@@ -210,17 +167,17 @@ class BundleImageZipTest(BundleTestCase):
     """BundleImageZip dies when image dir does not exist."""
     self.PatchObject(os.path, 'exists', return_value=False)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleImageZip(self.input_proto, self.output_proto,
+      artifacts.BundleImageZip(self.target_request, self.response,
                                self.api_config)
 
 
-class BundleAutotestFilesTest(BundleTempDirTestCase):
+class BundleAutotestFilesTest(BundleTestCase):
   """Unittests for BundleAutotestFiles."""
 
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
     patch = self.PatchObject(artifacts_svc, 'BundleAutotestFiles')
-    artifacts.BundleAutotestFiles(self.input_proto, self.output_proto,
+    artifacts.BundleAutotestFiles(self.target_request, self.response,
                                   self.validate_only_config)
     patch.assert_not_called()
 
@@ -233,20 +190,15 @@ class BundleAutotestFilesTest(BundleTempDirTestCase):
     patch = self.PatchObject(artifacts_svc, 'BundleAutotestFiles',
                              return_value=files)
 
-    sysroot_patch = self.PatchObject(sysroot_lib, 'Sysroot',
-                                     return_value=self.sysroot)
-    artifacts.BundleAutotestFiles(self.input_proto, self.output_proto,
+    artifacts.BundleAutotestFiles(self.target_request, self.response,
                                   self.api_config)
-
-    # Verify the sysroot is being built out correctly.
-    sysroot_patch.assert_called_with(self.sysroot_path)
 
     # Verify the arguments are being passed through.
     patch.assert_called_with(mock.ANY, self.sysroot, self.output_dir)
 
     # Verify the output proto is being populated correctly.
-    self.assertTrue(self.output_proto.artifacts)
-    paths = [artifact.path for artifact in self.output_proto.artifacts]
+    self.assertTrue(self.response.artifacts)
+    paths = [artifact.path for artifact in self.response.artifacts]
     self.assertItemsEqual(files.values(), paths)
 
   def testBundleAutotestFiles(self):
@@ -258,12 +210,8 @@ class BundleAutotestFilesTest(BundleTempDirTestCase):
     patch = self.PatchObject(artifacts_svc, 'BundleAutotestFiles',
                              return_value=files)
 
-    sysroot_patch = self.PatchObject(sysroot_lib, 'Sysroot',
-                                     return_value=self.sysroot)
-    artifacts.BundleAutotestFiles(self.request, self.response, self.api_config)
-
-    # Verify the sysroot is being built out correctly.
-    sysroot_patch.assert_called_with(self.sysroot_path)
+    artifacts.BundleAutotestFiles(self.sysroot_request, self.response,
+                                  self.api_config)
 
     # Verify the arguments are being passed through.
     patch.assert_called_with(mock.ANY, self.sysroot, self.output_dir)
@@ -275,25 +223,25 @@ class BundleAutotestFilesTest(BundleTempDirTestCase):
 
   def testInvalidOutputDir(self):
     """Test invalid output directory argument."""
-    request = self._GetRequest(chroot=self.chroot_path,
-                               sysroot=self.sysroot_path)
+    request = self.SysrootRequest(chroot=self.chroot_path,
+                                  sysroot=self.sysroot_path)
 
     with self.assertRaises(cros_build_lib.DieSystemExit):
       artifacts.BundleAutotestFiles(request, self.response, self.api_config)
 
   def testInvalidSysroot(self):
     """Test no sysroot directory."""
-    request = self._GetRequest(chroot=self.chroot_path,
-                               output_dir=self.output_dir)
+    request = self.SysrootRequest(chroot=self.chroot_path,
+                                  output_dir=self.output_dir)
 
     with self.assertRaises(cros_build_lib.DieSystemExit):
       artifacts.BundleAutotestFiles(request, self.response, self.api_config)
 
   def testSysrootDoesNotExist(self):
     """Test dies when no sysroot does not exist."""
-    request = self._GetRequest(chroot=self.chroot_path,
-                               sysroot='/does/not/exist',
-                               output_dir=self.output_dir)
+    request = self.SysrootRequest(chroot=self.chroot_path,
+                                  sysroot='/does/not/exist',
+                                  output_dir=self.output_dir)
 
     with self.assertRaises(cros_build_lib.DieSystemExit):
       artifacts.BundleAutotestFiles(request, self.response, self.api_config)
@@ -305,7 +253,7 @@ class BundleTastFilesTest(BundleTestCase):
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
     patch = self.PatchObject(artifacts_svc, 'BundleTastFiles')
-    artifacts.BundleTastFiles(self.input_proto, self.output_proto,
+    artifacts.BundleTastFiles(self.target_request, self.response,
                               self.validate_only_config)
     patch.assert_not_called()
 
@@ -314,7 +262,7 @@ class BundleTastFilesTest(BundleTestCase):
     self.PatchObject(commands, 'BuildTastBundleTarball',
                      return_value=None)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleTastFiles(self.input_proto, self.output_proto,
+      artifacts.BundleTastFiles(self.target_request, self.response,
                                 self.api_config)
 
   def testBundleTastFilesLegacy(self):
@@ -337,41 +285,31 @@ class BundleTastFilesTest(BundleTestCase):
 
     request = artifacts_pb2.BundleRequest(build_target={'name': 'board'},
                                           output_dir=output_dir)
-    artifacts.BundleTastFiles(request, self.output_proto, self.api_config)
+    artifacts.BundleTastFiles(request, self.response, self.api_config)
     self.assertEqual(
-        [artifact.path for artifact in self.output_proto.artifacts],
+        [artifact.path for artifact in self.response.artifacts],
         [expected_archive])
     bundle_patch.assert_called_once_with(chroot, sysroot, output_dir)
 
   def testBundleTastFiles(self):
     """BundleTastFiles calls service correctly."""
-    # Setup.
-    sysroot_path = os.path.join(self.tempdir, 'sysroot')
-    output_dir = os.path.join(self.tempdir, 'results')
-    osutils.SafeMakedirs(sysroot_path)
-    osutils.SafeMakedirs(output_dir)
+    chroot = chroot_lib.Chroot(self.chroot_path,
+                               env={'FEATURES': 'separatedebug'})
 
-    chroot = chroot_lib.Chroot(self.tempdir, env={'FEATURES': 'separatedebug'})
-    sysroot = sysroot_lib.Sysroot('/sysroot')
-
-    expected_archive = os.path.join(output_dir, artifacts_svc.TAST_BUNDLE_NAME)
+    expected_archive = os.path.join(self.output_dir,
+                                    artifacts_svc.TAST_BUNDLE_NAME)
     # Patch the service being called.
     bundle_patch = self.PatchObject(artifacts_svc, 'BundleTastFiles',
                                     return_value=expected_archive)
 
-    # Request and response building.
-    request = artifacts_pb2.BundleRequest(chroot={'path': self.tempdir},
-                                          sysroot={'path': '/sysroot'},
-                                          output_dir=output_dir)
-    response = artifacts_pb2.BundleResponse()
-
-    artifacts.BundleTastFiles(request, response, self.api_config)
+    artifacts.BundleTastFiles(self.sysroot_request, self.response,
+                              self.api_config)
 
     # Make sure the artifact got recorded successfully.
-    self.assertTrue(response.artifacts)
-    self.assertEqual(expected_archive, response.artifacts[0].path)
+    self.assertTrue(self.response.artifacts)
+    self.assertEqual(expected_archive, self.response.artifacts[0].path)
     # Make sure the service got called correctly.
-    bundle_patch.assert_called_once_with(chroot, sysroot, output_dir)
+    bundle_patch.assert_called_once_with(chroot, self.sysroot, self.output_dir)
 
 
 class BundlePinnedGuestImagesTest(BundleTestCase):
@@ -380,7 +318,7 @@ class BundlePinnedGuestImagesTest(BundleTestCase):
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
     patch = self.PatchObject(commands, 'BuildPinnedGuestImagesTarball')
-    artifacts.BundlePinnedGuestImages(self.input_proto, self.output_proto,
+    artifacts.BundlePinnedGuestImages(self.target_request, self.response,
                                       self.validate_only_config)
     patch.assert_not_called()
 
@@ -390,10 +328,10 @@ class BundlePinnedGuestImagesTest(BundleTestCase):
         commands,
         'BuildPinnedGuestImagesTarball',
         return_value='pinned-guest-images.tar.gz')
-    artifacts.BundlePinnedGuestImages(self.input_proto, self.output_proto,
+    artifacts.BundlePinnedGuestImages(self.target_request, self.response,
                                       self.api_config)
     self.assertEqual(
-        [artifact.path for artifact in self.output_proto.artifacts],
+        [artifact.path for artifact in self.response.artifacts],
         [os.path.join(self.output_dir, 'pinned-guest-images.tar.gz')])
     self.assertEqual(build_pinned_guest_images_tarball.call_args_list,
                      [mock.call(self.source_root, 'target', self.output_dir)])
@@ -402,9 +340,9 @@ class BundlePinnedGuestImagesTest(BundleTestCase):
     """BundlePinnedGuestImages does not die when no pinned images found."""
     self.PatchObject(commands, 'BuildPinnedGuestImagesTarball',
                      return_value=None)
-    artifacts.BundlePinnedGuestImages(self.input_proto, self.output_proto,
+    artifacts.BundlePinnedGuestImages(self.target_request, self.response,
                                       self.api_config)
-    self.assertFalse(self.output_proto.artifacts)
+    self.assertFalse(self.response.artifacts)
 
 
 class BundleFirmwareTest(BundleTestCase):
@@ -413,7 +351,7 @@ class BundleFirmwareTest(BundleTestCase):
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
     patch = self.PatchObject(artifacts_svc, 'BundleTastFiles')
-    artifacts.BundleFirmware(self.request, self.response,
+    artifacts.BundleFirmware(self.sysroot_request, self.response,
                              self.validate_only_config)
     patch.assert_not_called()
 
@@ -424,7 +362,8 @@ class BundleFirmwareTest(BundleTestCase):
         'BuildFirmwareArchive',
         return_value=os.path.join(self.output_dir, 'firmware.tar.gz'))
 
-    artifacts.BundleFirmware(self.request, self.response, self.api_config)
+    artifacts.BundleFirmware(self.sysroot_request, self.response,
+                             self.api_config)
     self.assertEqual(
         [artifact.path for artifact in self.response.artifacts],
         [os.path.join(self.output_dir, 'firmware.tar.gz')])
@@ -433,7 +372,7 @@ class BundleFirmwareTest(BundleTestCase):
     """BundleFirmware dies when no firmware found."""
     self.PatchObject(commands, 'BuildFirmwareArchive', return_value=None)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleFirmware(self.input_proto, self.output_proto,
+      artifacts.BundleFirmware(self.sysroot_request, self.response,
                                self.api_config)
 
 
@@ -443,7 +382,7 @@ class BundleEbuildLogsTest(BundleTestCase):
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
     patch = self.PatchObject(commands, 'BuildEbuildLogsTarball')
-    artifacts.BundleEbuildLogs(self.input_proto, self.output_proto,
+    artifacts.BundleEbuildLogs(self.target_request, self.response,
                                self.validate_only_config)
     patch.assert_not_called()
 
@@ -452,33 +391,33 @@ class BundleEbuildLogsTest(BundleTestCase):
     bundle_ebuild_logs_tarball = self.PatchObject(
         artifacts_svc, 'BundleEBuildLogsTarball',
         return_value='ebuild-logs.tar.gz')
-    artifacts.BundleEbuildLogs(self.request, self.response, self.api_config)
+    artifacts.BundleEbuildLogs(self.sysroot_request, self.response,
+                               self.api_config)
     self.assertEqual(
         [artifact.path for artifact in self.response.artifacts],
-        [os.path.join(self.request.output_dir, 'ebuild-logs.tar.gz')])
-    sysroot = sysroot_lib.Sysroot(self.sysroot_path)
+        [os.path.join(self.output_dir, 'ebuild-logs.tar.gz')])
     self.assertEqual(
         bundle_ebuild_logs_tarball.call_args_list,
-        [mock.call(mock.ANY, sysroot, self.output_dir)])
+        [mock.call(mock.ANY, self.sysroot, self.output_dir)])
 
   def testBundleEBuildLogsOldProto(self):
     bundle_ebuild_logs_tarball = self.PatchObject(
         artifacts_svc, 'BundleEBuildLogsTarball',
         return_value='ebuild-logs.tar.gz')
 
-    artifacts.BundleEbuildLogs(self.input_proto, self.output_proto,
+    artifacts.BundleEbuildLogs(self.target_request, self.response,
                                self.api_config)
 
-    sysroot = sysroot_lib.Sysroot(self.sysroot_path)
     self.assertEqual(
         bundle_ebuild_logs_tarball.call_args_list,
-        [mock.call(mock.ANY, sysroot, self.output_dir)])
+        [mock.call(mock.ANY, self.sysroot, self.output_dir)])
 
   def testBundleEbuildLogsNoLogs(self):
     """BundleEbuildLogs dies when no logs found."""
     self.PatchObject(commands, 'BuildEbuildLogsTarball', return_value=None)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleEbuildLogs(self.request, self.response, self.api_config)
+      artifacts.BundleEbuildLogs(self.sysroot_request, self.response,
+                                 self.api_config)
 
 
 class BundleChromeOSConfigTest(BundleTestCase):
@@ -487,7 +426,7 @@ class BundleChromeOSConfigTest(BundleTestCase):
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
     patch = self.PatchObject(artifacts_svc, 'BundleChromeOSConfig')
-    artifacts.BundleChromeOSConfig(self.input_proto, self.output_proto,
+    artifacts.BundleChromeOSConfig(self.target_request, self.response,
                                    self.validate_only_config)
     patch.assert_not_called()
 
@@ -495,37 +434,35 @@ class BundleChromeOSConfigTest(BundleTestCase):
     """Call with a request that sets sysroot."""
     bundle_chromeos_config = self.PatchObject(
         artifacts_svc, 'BundleChromeOSConfig', return_value='config.yaml')
-    artifacts.BundleChromeOSConfig(self.request, self.output_proto,
+    artifacts.BundleChromeOSConfig(self.sysroot_request, self.response,
                                    self.api_config)
     self.assertEqual(
-        [artifact.path for artifact in self.output_proto.artifacts],
+        [artifact.path for artifact in self.response.artifacts],
         [os.path.join(self.output_dir, 'config.yaml')])
 
-    sysroot = sysroot_lib.Sysroot(self.sysroot_path)
     self.assertEqual(bundle_chromeos_config.call_args_list,
-                     [mock.call(mock.ANY, sysroot, self.output_dir)])
+                     [mock.call(mock.ANY, self.sysroot, self.output_dir)])
 
   def testBundleChromeOSConfigCallWithBuildTarget(self):
     """Call with a request that sets build_target."""
     bundle_chromeos_config = self.PatchObject(
         artifacts_svc, 'BundleChromeOSConfig', return_value='config.yaml')
-    artifacts.BundleChromeOSConfig(self.input_proto, self.output_proto,
+    artifacts.BundleChromeOSConfig(self.target_request, self.response,
                                    self.api_config)
 
     self.assertEqual(
-        [artifact.path for artifact in self.output_proto.artifacts],
+        [artifact.path for artifact in self.response.artifacts],
         [os.path.join(self.output_dir, 'config.yaml')])
 
-    sysroot = sysroot_lib.Sysroot(self.sysroot_path)
     self.assertEqual(bundle_chromeos_config.call_args_list,
-                     [mock.call(mock.ANY, sysroot, self.output_dir)])
+                     [mock.call(mock.ANY, self.sysroot, self.output_dir)])
 
   def testBundleChromeOSConfigNoConfigFound(self):
     """An error is raised if the config payload isn't found."""
     self.PatchObject(artifacts_svc, 'BundleChromeOSConfig', return_value=None)
 
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleChromeOSConfig(self.request, self.output_proto,
+      artifacts.BundleChromeOSConfig(self.sysroot_request, self.response,
                                      self.api_config)
 
 
