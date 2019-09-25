@@ -213,8 +213,8 @@ static void set_ext_overrides(AV1_COMP *const cpi,
 static int get_ref_frame_flags(const AV1_COMP *const cpi) {
   static const MV_REFERENCE_FRAME
       ref_frame_priority_order[INTER_REFS_PER_FRAME] = {
-        LAST_FRAME,   ALTREF_FRAME, LAST2_FRAME,   LAST3_FRAME,
-        GOLDEN_FRAME, BWDREF_FRAME, ALTREF2_FRAME,
+        LAST_FRAME,    ALTREF_FRAME, BWDREF_FRAME, GOLDEN_FRAME,
+        ALTREF2_FRAME, LAST2_FRAME,  LAST3_FRAME,
       };
   const AV1_COMMON *const cm = &cpi->common;
   const RefCntBuffer *ref_frames[INTER_REFS_PER_FRAME];
