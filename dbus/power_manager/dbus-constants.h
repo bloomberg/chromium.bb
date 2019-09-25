@@ -48,6 +48,7 @@ const char kGetInactivityDelaysMethod[] = "GetInactivityDelays";
 const char kCreateArcTimersMethod[] = "CreateArcTimers";
 const char kStartArcTimerMethod[] = "StartArcTimer";
 const char kDeleteArcTimersMethod[] = "DeleteArcTimers";
+const char kHasAmbientColorDeviceMethod[] = "HasAmbientColorDevice";
 
 // Signals emitted by powerd.
 const char kScreenBrightnessChangedSignal[] = "ScreenBrightnessChanged";
