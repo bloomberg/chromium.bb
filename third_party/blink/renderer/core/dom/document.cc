@@ -727,7 +727,11 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
 
       // We should inherit the navigation initiator CSP if the document is
       // loaded using a local-scheme url.
-      if (last_origin_document_csp &&
+      //
+      // Note: about:srcdoc inherits CSP from its parent, not from its
+      // initiator. In this case, the initializer.GetContentSecurityPolicy() is
+      // used.
+      if (last_origin_document_csp && !url.IsAboutSrcdocURL() &&
           (url.IsEmpty() || url.ProtocolIsAbout() || url.ProtocolIsData() ||
            url.ProtocolIs("blob") || url.ProtocolIs("filesystem"))) {
         csp_->CopyStateFrom(last_origin_document_csp);
