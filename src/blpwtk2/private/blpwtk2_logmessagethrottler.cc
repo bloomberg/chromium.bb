@@ -234,7 +234,7 @@ bool WarningLogMessageThrottler::writeLog(int severity,
   auto throttle_msg_func = [=]() {
     (*logHandler_)(
         ToolkitCreateParams::kSeverityError, __FILE__, __LINE__,
-        (std::to_string(num_log_throttled_) + " messages have been throttled")
+        ("(" + std::to_string(num_log_throttled_) + ") messages have been throttled")
             .c_str());
   };
   return leakyBucket(severity, std::move(msg_func), std::move(throttle_msg_func),
@@ -257,8 +257,8 @@ bool WarningLogMessageThrottler::writeConsole(int severity,
   auto throttle_msg_func = [=]() {
     (*consoleHander_)(ToolkitCreateParams::kSeverityError, StringRef(__FILE__),
                       __LINE__, 0,
-                      StringRef(std::to_string(num_console_throttled_) +
-                                " messages have been throttled"),
+                      StringRef("(" + std::to_string(num_console_throttled_) +
+                                ") messages have been throttled"),
                       StringRef());
   };
   return leakyBucket(severity, std::move(msg_func), std::move(throttle_msg_func),
