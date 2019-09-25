@@ -57,7 +57,7 @@ TEST_F(ArcSystemStatCollectorTest, Parse) {
 
   int64_t cpu_temp;
   EXPECT_TRUE(ParseStatFile(OpenTestStatFile("temp1_input").get(),
-                            ArcSystemStatCollector::kCpuTempInfoColumns,
+                            ArcSystemStatCollector::kOneValueColumns,
                             &cpu_temp));
   EXPECT_EQ(52000, cpu_temp);
 }

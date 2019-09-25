@@ -42,6 +42,8 @@ const base::FilePath::CharType kGemInfoPath[] =
 const base::FilePath::CharType kGemInfoPath[] =
     FILE_PATH_LITERAL("/run/debugfs_gpu/i915_gem_objects");
 #endif
+const base::FilePath::CharType kCpuFrequencyPath[] =
+    FILE_PATH_LITERAL("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq");
 
 bool IsWhitespace(char c) {
   return c == ' ' || c == '\t' || c == '\n';
@@ -108,7 +110,14 @@ const base::FilePath& GetCpuTemperaturePathOnFileThread() {
   return instance->path();
 }
 
-enum SystemReader { kZram = 0, kMemoryInfo, kGemInfo, kCpuTemperature, kTotal };
+enum SystemReader {
+  kZram = 0,
+  kMemoryInfo,
+  kGemInfo,
+  kCpuTemperature,
+  kCpuFrequency,
+  kTotal
+};
 
 }  // namespace
 
@@ -122,6 +131,7 @@ struct ArcSystemStatCollector::Sample {
   int gem_objects = 0;
   int gem_size_kb = 0;
   int cpu_temperature = std::numeric_limits<int>::min();
+  int cpu_frequency = 0;
 };
 
 struct ArcSystemStatCollector::SystemReadersContext {
@@ -156,6 +166,12 @@ struct ArcSystemStatCollector::SystemReadersContext {
       LOG(ERROR) << "Failed to open cpu temperature file: " << cpu_temp_path.value();
     }
 
+    context->system_readers[SystemReader::kCpuFrequency].reset(
+        open(kCpuFrequencyPath, O_RDONLY));
+    if (!context->system_readers[SystemReader::kCpuFrequency].is_valid()) {
+      LOG(ERROR) << "Failed to open cpu frequency file: " << kCpuFrequencyPath;
+    }
+
     return context;
   }
 
@@ -180,7 +196,7 @@ constexpr int ArcSystemStatCollector::kMemInfoColumns[];
 constexpr int ArcSystemStatCollector::kGemInfoColumns[];
 
 // static
-constexpr int ArcSystemStatCollector::kCpuTempInfoColumns[];
+constexpr int ArcSystemStatCollector::kOneValueColumns[];
 
 ArcSystemStatCollector::ArcSystemStatCollector() {}
 
@@ -235,7 +251,9 @@ void ArcSystemStatCollector::Flush(const base::TimeTicks& min_timestamp,
   ArcValueEventTrimmer swap_wait(&system_model->memory_events(),
                                  ArcValueEvent::Type::kSwapWait);
   ArcValueEventTrimmer cpu_temperature(&system_model->memory_events(),
-                                       ArcValueEvent::Type::kCpuTemp);
+                                       ArcValueEvent::Type::kCpuTemperature);
+  ArcValueEventTrimmer cpu_frequency(&system_model->memory_events(),
+                                     ArcValueEvent::Type::kCpuFrequency);
   while (sample_index < write_index_) {
     const Sample& sample = samples_[sample_index % samples_.size()];
     ++sample_index;
@@ -254,6 +272,8 @@ void ArcSystemStatCollector::Flush(const base::TimeTicks& min_timestamp,
     swap_wait.MaybeAdd(timestamp, sample.swap_waiting_time_ms);
     if (sample.cpu_temperature > std::numeric_limits<int>::min())
       cpu_temperature.MaybeAdd(timestamp, sample.cpu_temperature);
+    if (sample.cpu_frequency > 0)
+      cpu_frequency.MaybeAdd(timestamp, sample.cpu_frequency);
   }
   // Trimmer may break time sequence for events of different types. However
   // time sequence of events of the same type should be preserved.
@@ -335,7 +355,7 @@ ArcSystemStatCollector::ReadSystemStatOnBackgroundThread(
            sizeof(context->current_frame.gem_info));
     static bool error_reported = false;
     if (!error_reported) {
-      LOG(ERROR) << "Failed to read gem info file: " << kGemInfoColumns;
+      LOG(ERROR) << "Failed to read gem info file: " << kGemInfoPath;
       error_reported = true;
     }
   }
@@ -343,12 +363,23 @@ ArcSystemStatCollector::ReadSystemStatOnBackgroundThread(
   if (!context->system_readers[SystemReader::kCpuTemperature].is_valid() ||
       !ParseStatFile(
           context->system_readers[SystemReader::kCpuTemperature].get(),
-          kCpuTempInfoColumns, &context->current_frame.cpu_temperature)) {
+          kOneValueColumns, &context->current_frame.cpu_temperature)) {
     context->current_frame.cpu_temperature = std::numeric_limits<int>::min();
     static bool error_reported = false;
     if (!error_reported) {
       LOG(ERROR) << "Failed to read cpu temperature : "
                  << GetCpuTemperaturePathOnFileThread();
+      error_reported = true;
+    }
+  }
+
+  if (!context->system_readers[SystemReader::kCpuFrequency].is_valid() ||
+      !ParseStatFile(context->system_readers[SystemReader::kCpuFrequency].get(),
+                     kOneValueColumns, &context->current_frame.cpu_frequency)) {
+    context->current_frame.cpu_frequency = 0;
+    static bool error_reported = false;
+    if (!error_reported) {
+      LOG(ERROR) << "Failed to read cpu frequency : " << kCpuFrequencyPath;
       error_reported = true;
     }
   }
@@ -379,6 +410,7 @@ void ArcSystemStatCollector::UpdateSystemStatOnUiThread(
         context->current_frame.zram_stat[2] - previous_frame_.zram_stat[2];
   }
   current_sample.cpu_temperature = context->current_frame.cpu_temperature;
+  current_sample.cpu_frequency = context->current_frame.cpu_frequency;
   DCHECK_GE(current_sample.swap_sectors_read, 0);
   DCHECK_GE(current_sample.swap_sectors_write, 0);
   DCHECK_GE(current_sample.swap_waiting_time_ms, 0);
