@@ -80,11 +80,6 @@ class PasswordManagerDriver
   virtual void PreviewSuggestion(const base::string16& username,
                                  const base::string16& password) = 0;
 
-  // Tells the driver to show an initial set of accounts to suggest for the
-  // form.
-  virtual void ShowInitialPasswordAccountSuggestions(
-      const autofill::PasswordFormFillData& form_data) = 0;
-
   // Tells the driver to clear previewed password and username fields.
   virtual void ClearPreviewedForm() = 0;
 

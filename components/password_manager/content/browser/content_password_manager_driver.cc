@@ -152,12 +152,6 @@ void ContentPasswordManagerDriver::PreviewSuggestion(
   GetAutofillAgent()->PreviewPasswordSuggestion(username, password);
 }
 
-void ContentPasswordManagerDriver::ShowInitialPasswordAccountSuggestions(
-    const autofill::PasswordFormFillData& form_data) {
-  password_autofill_manager_.OnAddPasswordFillData(form_data);
-  GetAutofillAgent()->ShowInitialPasswordAccountSuggestions(form_data);
-}
-
 void ContentPasswordManagerDriver::ClearPreviewedForm() {
   GetAutofillAgent()->ClearPreviewedForm();
 }

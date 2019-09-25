@@ -47223,6 +47223,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Touch To Fill">
     User is browsing with the Touch To Fill feature enabled.
   </int>
+  <int value="6" label="Fill On Select">
+    User is browsing with the Fill On Select feature enabled.
+  </int>
 </enum>
 
 <enum name="PasswordManagerHttpCredentialType">
