@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_ON_DEVICE_HEAD_SUGGEST_COMPONENT_INSTALLER_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_ON_DEVICE_HEAD_SUGGEST_COMPONENT_INSTALLER_H_
+#ifndef COMPONENTS_COMPONENT_UPDATER_INSTALLER_POLICIES_ON_DEVICE_HEAD_SUGGEST_COMPONENT_INSTALLER_H_
+#define COMPONENTS_COMPONENT_UPDATER_INSTALLER_POLICIES_ON_DEVICE_HEAD_SUGGEST_COMPONENT_INSTALLER_H_
 
 #include <vector>
 
@@ -22,7 +22,7 @@ class ComponentUpdateService;
 // OnDeviceHeadProvider.
 class OnDeviceHeadSuggestInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  OnDeviceHeadSuggestInstallerPolicy();
+  OnDeviceHeadSuggestInstallerPolicy(const std::string& locale);
   ~OnDeviceHeadSuggestInstallerPolicy() override;
 
  private:
@@ -51,8 +51,9 @@ class OnDeviceHeadSuggestInstallerPolicy : public ComponentInstallerPolicy {
   DISALLOW_COPY_AND_ASSIGN(OnDeviceHeadSuggestInstallerPolicy);
 };
 
-// Registers a OnDeviceHeadSuggest component with |cus|.
-void RegisterOnDeviceHeadSuggestComponent(ComponentUpdateService* cus);
+// Registers an OnDeviceHeadSuggest component with |cus|.
+void RegisterOnDeviceHeadSuggestComponent(ComponentUpdateService* cus,
+                                          const std::string& locale);
 
 }  // namespace component_updater
 
