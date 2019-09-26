@@ -166,18 +166,6 @@ int ToMessageID(int resource_id) {
       return IDS_PLUGIN_INITIALIZATION_ERROR;
     case WebLocalizedString::kAXMediaPlaybackError:
       return IDS_MEDIA_PLAYBACK_ERROR;
-    case WebLocalizedString::kMediaRemotingCastText:
-      return IDS_MEDIA_REMOTING_CAST_TEXT;
-    case WebLocalizedString::kMediaRemotingCastToUnknownDeviceText:
-      return IDS_MEDIA_REMOTING_CAST_TO_UNKNOWN_DEVICE_TEXT;
-    case WebLocalizedString::kMediaRemotingStopByErrorText:
-      return IDS_MEDIA_REMOTING_STOP_BY_ERROR_TEXT;
-    case WebLocalizedString::kMediaRemotingStopByPlaybackQualityText:
-      return IDS_MEDIA_REMOTING_STOP_BY_PLAYBACK_QUALITY_TEXT;
-    case WebLocalizedString::kMediaRemotingStopNoText:
-      return -1;  // This string name is used only to indicate an empty string.
-    case WebLocalizedString::kMediaRemotingStopText:
-      return IDS_MEDIA_REMOTING_STOP_TEXT;
     case WebLocalizedString::kMediaScrubbingMessageText:
       return IDS_MEDIA_SCRUBBING_MESSAGE_TEXT;
     case WebLocalizedString::kMultipleFileUploadText:
