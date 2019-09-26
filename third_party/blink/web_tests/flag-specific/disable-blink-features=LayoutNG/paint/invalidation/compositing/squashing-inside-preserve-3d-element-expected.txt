@@ -22,19 +22,19 @@
       "drawsContent": false
     },
     {
-      "name": "LayoutNGBlockFlow DIV",
+      "name": "LayoutBlockFlow DIV",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#D3D3D3",
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='target')",
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='target')",
       "position": [28, 28],
       "bounds": [100, 100],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 100, 100],
           "reason": "background"
         }
