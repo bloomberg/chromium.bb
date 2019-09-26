@@ -98,7 +98,7 @@ MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
 MultiDeviceSetupInitializer::~MultiDeviceSetupInitializer() = default;
 
 void MultiDeviceSetupInitializer::SetAccountStatusChangeDelegate(
-    mojom::AccountStatusChangeDelegatePtr delegate) {
+    mojo::PendingRemote<mojom::AccountStatusChangeDelegate> delegate) {
   if (multidevice_setup_impl_) {
     multidevice_setup_impl_->SetAccountStatusChangeDelegate(
         std::move(delegate));

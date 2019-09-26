@@ -12,7 +12,7 @@
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 class PrefService;
 
@@ -88,7 +88,8 @@ class MultiDeviceSetupInitializer
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
-      mojom::AccountStatusChangeDelegatePtr delegate) override;
+      mojo::PendingRemote<mojom::AccountStatusChangeDelegate> delegate)
+      override;
   void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
   void AddFeatureStateObserver(
       mojom::FeatureStateObserverPtr observer) override;
@@ -132,7 +133,7 @@ class MultiDeviceSetupInitializer
   // If API functions are called before initialization is complete, their
   // parameters are cached here. Once asynchronous initialization is complete,
   // the parameters are passed to |multidevice_setup_impl_|.
-  mojom::AccountStatusChangeDelegatePtr pending_delegate_;
+  mojo::PendingRemote<mojom::AccountStatusChangeDelegate> pending_delegate_;
   std::vector<mojom::HostStatusObserverPtr> pending_host_status_observers_;
   std::vector<mojom::FeatureStateObserverPtr> pending_feature_state_observers_;
   std::vector<GetEligibleHostDevicesCallback> pending_get_eligible_hosts_args_;

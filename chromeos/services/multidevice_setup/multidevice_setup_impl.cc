@@ -157,8 +157,8 @@ MultiDeviceSetupImpl::~MultiDeviceSetupImpl() {
 }
 
 void MultiDeviceSetupImpl::SetAccountStatusChangeDelegate(
-    mojom::AccountStatusChangeDelegatePtr delegate) {
-  delegate_notifier_->SetAccountStatusChangeDelegatePtr(std::move(delegate));
+    mojo::PendingRemote<mojom::AccountStatusChangeDelegate> delegate) {
+  delegate_notifier_->SetAccountStatusChangeDelegateRemote(std::move(delegate));
 }
 
 void MultiDeviceSetupImpl::AddHostStatusObserver(
@@ -276,7 +276,7 @@ void MultiDeviceSetupImpl::RetrySetHostNow(RetrySetHostNowCallback callback) {
 void MultiDeviceSetupImpl::TriggerEventForDebugging(
     mojom::EventTypeForDebugging type,
     TriggerEventForDebuggingCallback callback) {
-  if (!delegate_notifier_->delegate_ptr_) {
+  if (!delegate_notifier_->delegate_remote_) {
     PA_LOG(ERROR) << "MultiDeviceSetupImpl::TriggerEventForDebugging(): No "
                   << "delgate has been set; cannot proceed.";
     std::move(callback).Run(false /* success */);
@@ -286,7 +286,7 @@ void MultiDeviceSetupImpl::TriggerEventForDebugging(
   PA_LOG(VERBOSE) << "MultiDeviceSetupImpl::TriggerEventForDebugging(" << type
                   << ") called.";
   mojom::AccountStatusChangeDelegate* delegate =
-      delegate_notifier_->delegate_ptr_.get();
+      delegate_notifier_->delegate_remote_.get();
 
   switch (type) {
     case mojom::EventTypeForDebugging::kNewUserPotentialHostExists:

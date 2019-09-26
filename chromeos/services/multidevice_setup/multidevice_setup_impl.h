@@ -14,6 +14,7 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -80,7 +81,8 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
-      mojom::AccountStatusChangeDelegatePtr delegate) override;
+      mojo::PendingRemote<mojom::AccountStatusChangeDelegate> delegate)
+      override;
   void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
   void AddFeatureStateObserver(
       mojom::FeatureStateObserverPtr observer) override;

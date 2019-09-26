@@ -243,7 +243,7 @@ TEST_F(MultiDeviceSetupServiceTest, CallFunctionsBeforeInitialization) {
   auto fake_account_status_change_delegate =
       std::make_unique<FakeAccountStatusChangeDelegate>();
   multidevice_setup_ptr()->SetAccountStatusChangeDelegate(
-      fake_account_status_change_delegate->GenerateInterfacePtr());
+      fake_account_status_change_delegate->GenerateRemote());
   multidevice_setup_ptr().FlushForTesting();
 
   // AddHostStatusObserver().
@@ -388,7 +388,7 @@ TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
   auto fake_account_status_change_delegate =
       std::make_unique<FakeAccountStatusChangeDelegate>();
   multidevice_setup_ptr()->SetAccountStatusChangeDelegate(
-      fake_account_status_change_delegate->GenerateInterfacePtr());
+      fake_account_status_change_delegate->GenerateRemote());
   multidevice_setup_ptr().FlushForTesting();
   EXPECT_TRUE(fake_multidevice_setup()->delegate());
 

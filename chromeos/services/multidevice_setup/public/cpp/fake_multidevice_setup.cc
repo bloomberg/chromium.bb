@@ -98,8 +98,8 @@ void FakeMultiDeviceSetup::NotifyFeatureStateChanged(
 }
 
 void FakeMultiDeviceSetup::SetAccountStatusChangeDelegate(
-    mojom::AccountStatusChangeDelegatePtr delegate) {
-  delegate_ = std::move(delegate);
+    mojo::PendingRemote<mojom::AccountStatusChangeDelegate> delegate) {
+  delegate_.Bind(std::move(delegate));
 }
 
 void FakeMultiDeviceSetup::AddHostStatusObserver(
