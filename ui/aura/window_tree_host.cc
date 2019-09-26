@@ -336,6 +336,12 @@ void WindowTreeHost::SetNativeWindowOcclusionState(
   }
 }
 
+std::unique_ptr<ScopedEnableUnadjustedMouseEvents>
+WindowTreeHost::RequestUnadjustedMovement() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 
