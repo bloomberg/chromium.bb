@@ -206,10 +206,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
   String source_code;
   std::unique_ptr<Vector<uint8_t>> cached_meta_data;
 
-  bool is_script_installed =
-      installed_scripts_manager && installed_scripts_manager->IsScriptInstalled(
-                                       worker_start_data->script_url);
-
   // We don't have to set ContentSecurityPolicy and ReferrerPolicy. They're
   // served by the worker script loader or the installed scripts manager on the
   // worker thread.
@@ -256,58 +252,38 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
                         WorkerBackingThreadStartupData::CreateDefault(),
                         std::move(devtools_params));
 
-  // If this is an installed service worker, the installed script will be read
-  // from the service worker script storage on the worker thread.
-  if (is_script_installed) {
-    switch (worker_start_data->script_type) {
-      case mojom::ScriptType::kClassic:
-        worker_thread_->RunInstalledClassicScript(
-            worker_start_data->script_url, v8_inspector::V8StackTraceId());
-        break;
-      case mojom::ScriptType::kModule:
-        worker_thread_->RunInstalledModuleScript(
-            worker_start_data->script_url,
-            CreateFetchClientSettingsObjectData(
-                worker_start_data->script_url, starter_origin.get(),
-                starter_https_state, worker_start_data->address_space),
-            network::mojom::CredentialsMode::kOmit);
-        break;
-    }
-  } else {
-    std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
-        fetch_client_setting_object_data = CreateFetchClientSettingsObjectData(
-            worker_start_data->script_url, starter_origin.get(),
-            starter_https_state, worker_start_data->address_space);
+  std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+      fetch_client_setting_object_data = CreateFetchClientSettingsObjectData(
+          worker_start_data->script_url, starter_origin.get(),
+          starter_https_state, worker_start_data->address_space);
 
-    // If this is a new (not installed) service worker, we are in the Update
-    // algorithm here:
-    // > Switching on job's worker type, run these substeps with the following
-    // > options:
-    // https://w3c.github.io/ServiceWorker/#update-algorithm
-    switch (worker_start_data->script_type) {
-      // > "classic": Fetch a classic worker script given job's serialized
-      // > script url, job's client, "serviceworker", and the to-be-created
-      // > environment settings object for this service worker.
-      case mojom::ScriptType::kClassic:
-        worker_thread_->FetchAndRunClassicScript(
-            worker_start_data->script_url,
-            std::move(fetch_client_setting_object_data),
-            nullptr /* outside_resource_timing_notifier */,
-            v8_inspector::V8StackTraceId());
-        break;
+  // > Switching on job's worker type, run these substeps with the following
+  // > options:
+  // https://w3c.github.io/ServiceWorker/#update-algorithm
+  switch (worker_start_data->script_type) {
+    // > "classic": Fetch a classic worker script given job's serialized script
+    // > url, job's client, "serviceworker", and the to-be-created environment
+    // > settings object for this service worker.
+    case mojom::ScriptType::kClassic:
+      worker_thread_->FetchAndRunClassicScript(
+          worker_start_data->script_url,
+          std::move(fetch_client_setting_object_data),
+          nullptr /* outside_resource_timing_notifier */,
+          v8_inspector::V8StackTraceId());
+      break;
 
-      // > "module": Fetch a module worker script graph given job’s serialized
-      // > script url, job’s client, "serviceworker", "omit", and the
-      // > to-be-created environment settings object for this service worker.
-      case mojom::ScriptType::kModule:
-        worker_thread_->FetchAndRunModuleScript(
-            worker_start_data->script_url,
-            std::move(fetch_client_setting_object_data),
-            nullptr /* outside_resource_timing_notifier */,
-            network::mojom::CredentialsMode::kOmit);
-        break;
-    }
+    // > "module": Fetch a module worker script graph given job’s serialized
+    // > script url, job’s client, "serviceworker", "omit", and the
+    // > to-be-created environment settings object for this service worker.
+    case mojom::ScriptType::kModule:
+      worker_thread_->FetchAndRunModuleScript(
+          worker_start_data->script_url,
+          std::move(fetch_client_setting_object_data),
+          nullptr /* outside_resource_timing_notifier */,
+          network::mojom::CredentialsMode::kOmit);
+      break;
   }
+
   // We are now ready to inspect worker thread.
   worker_context_client_->WorkerReadyForInspectionOnInitiatorThread(
       devtools_agent_remote.PassPipe(),
