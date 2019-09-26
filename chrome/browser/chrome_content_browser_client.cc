@@ -337,7 +337,6 @@
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
-#include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "ui/base/buildflags.h"
@@ -4457,8 +4456,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 #endif
 
 #if defined(OS_ANDROID)
-  frame_interfaces_parameterized_->AddInterface(base::Bind(
-      &ForwardToJavaWebContentsRegistry<blink::mojom::ShareService>));
 #if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
   frame_interfaces_parameterized_->AddInterface(base::Bind(
       &ForwardToJavaWebContentsRegistry<blink::mojom::SpatialNavigationHost>));
