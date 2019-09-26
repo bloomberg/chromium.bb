@@ -107,6 +107,8 @@ uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
       return VA_FOURCC_BGRA;
     case gfx::BufferFormat::RGBX_8888:
       return VA_FOURCC_RGBX;
+    case gfx::BufferFormat::RGBA_8888:
+      return VA_FOURCC_RGBA;
     case gfx::BufferFormat::YVU_420:
       return VA_FOURCC_YV12;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -1264,17 +1266,21 @@ bool VaapiWrapper::IsVppResolutionAllowed(const gfx::Size& size) {
 }
 
 // static
-bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
-    unsigned int rt_format,
-    uint32_t fourcc) {
-  if (!IsDecodingSupportedForInternalFormat(VAProfileJPEGBaseline, rt_format))
-    return false;
-
+bool VaapiWrapper::IsVppFormatSupported(uint32_t va_fourcc) {
   VASupportedProfiles::ProfileInfo profile_info;
   if (!VASupportedProfiles::Get().IsProfileSupported(
           kVideoProcess, VAProfileNone, &profile_info)) {
     return false;
   }
+  return base::Contains(profile_info.pixel_formats, va_fourcc);
+}
+
+// static
+bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
+    unsigned int rt_format,
+    uint32_t fourcc) {
+  if (!IsDecodingSupportedForInternalFormat(VAProfileJPEGBaseline, rt_format))
+    return false;
 
   // Workaround: for Mesa VAAPI driver, VPP only supports internal surface
   // format for 4:2:0 JPEG image.
@@ -1285,7 +1291,7 @@ bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
     return false;
   }
 
-  return base::Contains(profile_info.pixel_formats, fourcc);
+  return IsVppFormatSupported(fourcc);
 }
 
 // static
@@ -1311,6 +1317,7 @@ uint32_t VaapiWrapper::BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::RGBA_8888:
       return VA_RT_FORMAT_RGB32;
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:

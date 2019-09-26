@@ -168,6 +168,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // supported, false otherwise.
   static bool IsVppResolutionAllowed(const gfx::Size& size);
 
+  // Returns true if the VPP supports converting from/to |fourcc|.
+  static bool IsVppFormatSupported(uint32_t fourcc);
+
   // Returns true if VPP supports the format conversion from a JPEG decoded
   // internal surface to a FOURCC. |rt_format| corresponds to the JPEG's
   // subsampling format. |fourcc| is the output surface's FOURCC.
