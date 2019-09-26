@@ -99,9 +99,10 @@ void DebugInfoEventListener::OnEncryptionComplete() {
 }
 
 void DebugInfoEventListener::OnCryptographerStateChanged(
-    Cryptographer* cryptographer) {
+    Cryptographer* cryptographer,
+    bool has_pending_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  cryptographer_has_pending_keys_ = cryptographer->has_pending_keys();
+  cryptographer_has_pending_keys_ = has_pending_keys;
   cryptographer_ready_ = cryptographer->CanEncrypt();
 }
 
