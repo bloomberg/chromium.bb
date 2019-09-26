@@ -2431,16 +2431,18 @@
             ]
         }
     ],
-    "ExploreSites InitialCountries": [
+    "ExploreSitesDense": [
         {
             "platforms": [
                 "android"
             ],
             "experiments": [
                 {
-                    "name": "WithGrouped_20190620",
+                    "name": "WithDenseBottom",
                     "params": {
-                        "mostLikelyVariation": "groupedIcon",
+                        "denseVariation": "titleBottom",
+                        "exp": "games-top",
+                        "mostLikelyvariation": "groupedIcon",
                         "variation": "mostLikelyTile"
                     },
                     "enable_features": [
