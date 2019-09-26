@@ -272,6 +272,7 @@ static_library("test_support") {
       "//chrome/app/chrome_crash_reporter_client.cc",
       "//chrome/app/chrome_crash_reporter_client_mac.mm",
     ]
+    deps += [ "//build:branding_buildflags" ]
     public_deps += [
       "//components/crash/content/app",
       "//third_party/breakpad",
