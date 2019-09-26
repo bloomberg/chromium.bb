@@ -76,17 +76,6 @@ struct WebLocalizedString {
     kValidationStepMismatchCloseToLimit,
     kValidationTooShort,
     kValidationTooShortPlural,
-    kValidationTypeMismatch,
-    kValidationTypeMismatchForEmail,
-    kValidationTypeMismatchForEmailEmpty,
-    kValidationTypeMismatchForEmailEmptyDomain,
-    kValidationTypeMismatchForEmailEmptyLocal,
-    kValidationTypeMismatchForEmailInvalidDomain,
-    kValidationTypeMismatchForEmailInvalidDots,
-    kValidationTypeMismatchForEmailInvalidLocal,
-    kValidationTypeMismatchForEmailNoAtSign,
-    kValidationTypeMismatchForMultipleEmail,
-    kValidationTypeMismatchForURL,
     kWeekNumberLabel,
   };
 };

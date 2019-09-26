@@ -138,28 +138,6 @@ int ToMessageID(int resource_id) {
       return IDS_FORM_VALIDATION_TOO_SHORT;
     case WebLocalizedString::kValidationTooShortPlural:
       return IDS_FORM_VALIDATION_TOO_SHORT_PLURAL;
-    case WebLocalizedString::kValidationTypeMismatch:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH;
-    case WebLocalizedString::kValidationTypeMismatchForEmail:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL;
-    case WebLocalizedString::kValidationTypeMismatchForEmailEmpty:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_EMPTY;
-    case WebLocalizedString::kValidationTypeMismatchForEmailEmptyDomain:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_EMPTY_DOMAIN;
-    case WebLocalizedString::kValidationTypeMismatchForEmailEmptyLocal:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_EMPTY_LOCAL;
-    case WebLocalizedString::kValidationTypeMismatchForEmailInvalidDomain:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_INVALID_DOMAIN;
-    case WebLocalizedString::kValidationTypeMismatchForEmailInvalidDots:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_INVALID_DOTS;
-    case WebLocalizedString::kValidationTypeMismatchForEmailInvalidLocal:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_INVALID_LOCAL;
-    case WebLocalizedString::kValidationTypeMismatchForEmailNoAtSign:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_NO_AT_SIGN;
-    case WebLocalizedString::kValidationTypeMismatchForMultipleEmail:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_MULTIPLE_EMAIL;
-    case WebLocalizedString::kValidationTypeMismatchForURL:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_URL;
     case WebLocalizedString::kWeekNumberLabel:
       return IDS_FORM_WEEK_NUMBER_LABEL;
     case WebLocalizedString::kTextTracksNoLabel:
