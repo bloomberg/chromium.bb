@@ -162,8 +162,8 @@ void MultiDeviceSetupImpl::SetAccountStatusChangeDelegate(
 }
 
 void MultiDeviceSetupImpl::AddHostStatusObserver(
-    mojom::HostStatusObserverPtr observer) {
-  host_status_observers_.AddPtr(std::move(observer));
+    mojo::PendingRemote<mojom::HostStatusObserver> observer) {
+  host_status_observers_.Add(std::move(observer));
 }
 
 void MultiDeviceSetupImpl::AddFeatureStateObserver(
@@ -325,11 +325,8 @@ void MultiDeviceSetupImpl::OnHostStatusChange(
         host_status_with_device.host_device()->GetRemoteDevice();
   }
 
-  host_status_observers_.ForAllPtrs(
-      [&status_for_callback,
-       &device_for_callback](mojom::HostStatusObserver* observer) {
-        observer->OnHostStatusChanged(status_for_callback, device_for_callback);
-      });
+  for (auto& observer : host_status_observers_)
+    observer->OnHostStatusChanged(status_for_callback, device_for_callback);
 }
 
 void MultiDeviceSetupImpl::OnFeatureStatesChange(

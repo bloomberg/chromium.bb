@@ -249,7 +249,7 @@ TEST_F(MultiDeviceSetupServiceTest, CallFunctionsBeforeInitialization) {
   // AddHostStatusObserver().
   auto fake_host_status_observer = std::make_unique<FakeHostStatusObserver>();
   multidevice_setup_ptr()->AddHostStatusObserver(
-      fake_host_status_observer->GenerateInterfacePtr());
+      fake_host_status_observer->GenerateRemote());
   multidevice_setup_ptr().FlushForTesting();
 
   // AddFeatureStateObserver().
@@ -395,7 +395,7 @@ TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
   // AddHostStatusObserver().
   auto fake_host_status_observer = std::make_unique<FakeHostStatusObserver>();
   multidevice_setup_ptr()->AddHostStatusObserver(
-      fake_host_status_observer->GenerateInterfacePtr());
+      fake_host_status_observer->GenerateRemote());
   multidevice_setup_ptr().FlushForTesting();
   EXPECT_TRUE(fake_multidevice_setup()->HasAtLeastOneHostStatusObserver());
 

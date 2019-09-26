@@ -90,7 +90,8 @@ class MultiDeviceSetupInitializer
   void SetAccountStatusChangeDelegate(
       mojo::PendingRemote<mojom::AccountStatusChangeDelegate> delegate)
       override;
-  void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
+  void AddHostStatusObserver(
+      mojo::PendingRemote<mojom::HostStatusObserver> observer) override;
   void AddFeatureStateObserver(
       mojom::FeatureStateObserverPtr observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
@@ -134,7 +135,8 @@ class MultiDeviceSetupInitializer
   // parameters are cached here. Once asynchronous initialization is complete,
   // the parameters are passed to |multidevice_setup_impl_|.
   mojo::PendingRemote<mojom::AccountStatusChangeDelegate> pending_delegate_;
-  std::vector<mojom::HostStatusObserverPtr> pending_host_status_observers_;
+  std::vector<mojo::PendingRemote<mojom::HostStatusObserver>>
+      pending_host_status_observers_;
   std::vector<mojom::FeatureStateObserverPtr> pending_feature_state_observers_;
   std::vector<GetEligibleHostDevicesCallback> pending_get_eligible_hosts_args_;
   std::vector<GetHostStatusCallback> pending_get_host_args_;

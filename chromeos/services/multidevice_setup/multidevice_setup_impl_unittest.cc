@@ -1111,7 +1111,7 @@ TEST_F(MultiDeviceSetupImplTest, ComprehensiveHostTest) {
 
   // Add a status observer.
   auto observer = std::make_unique<FakeHostStatusObserver>();
-  multidevice_setup()->AddHostStatusObserver(observer->GenerateInterfacePtr());
+  multidevice_setup()->AddHostStatusObserver(observer->GenerateRemote());
 
   // Simulate a sync occurring; now, all of the test devices are eligible hosts.
   fake_eligible_host_devices_provider()->set_eligible_host_devices(
@@ -1202,7 +1202,7 @@ TEST_F(MultiDeviceSetupImplTest, TestSetHostDevice_InvalidAuthToken) {
 TEST_F(MultiDeviceSetupImplTest, TestSetHostDeviceWithoutAuthToken) {
   // Add a status observer.
   auto observer = std::make_unique<FakeHostStatusObserver>();
-  multidevice_setup()->AddHostStatusObserver(observer->GenerateInterfacePtr());
+  multidevice_setup()->AddHostStatusObserver(observer->GenerateRemote());
 
   // Start valid eligible host devices.
   fake_eligible_host_devices_provider()->set_eligible_host_devices(

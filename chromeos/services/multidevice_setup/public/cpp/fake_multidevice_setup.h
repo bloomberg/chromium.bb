@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace chromeos {
 
@@ -90,7 +91,8 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
   void SetAccountStatusChangeDelegate(
       mojo::PendingRemote<mojom::AccountStatusChangeDelegate> delegate)
       override;
-  void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
+  void AddHostStatusObserver(
+      mojo::PendingRemote<mojom::HostStatusObserver> observer) override;
   void AddFeatureStateObserver(
       mojom::FeatureStateObserverPtr observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
@@ -116,7 +118,7 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
       override;
 
   mojo::Remote<mojom::AccountStatusChangeDelegate> delegate_;
-  mojo::InterfacePtrSet<mojom::HostStatusObserver> host_status_observers_;
+  mojo::RemoteSet<mojom::HostStatusObserver> host_status_observers_;
   mojo::InterfacePtrSet<mojom::FeatureStateObserver> feature_state_observers_;
 
   std::vector<GetEligibleHostDevicesCallback> get_eligible_hosts_args_;
