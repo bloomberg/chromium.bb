@@ -40,9 +40,8 @@ template("chrome_common_shared_library") {
 
   # Create a partitioned libraries if the build config supports it, and the
   # invoker wants partitions.
-  _allow_partitions =
-      defined(invoker.allow_partitions) && invoker.allow_partitions
-  _generate_partitions = _allow_partitions && use_native_modules
+  _generate_partitions = defined(invoker.allow_partitions) &&
+                         invoker.allow_partitions && use_native_modules
   if (_generate_partitions) {
     assert(defined(invoker.module_descs))
   } else {
@@ -56,7 +55,6 @@ template("chrome_common_shared_library") {
     linker_script = _linker_script
     export_java_symbols = _export_java_symbols
     if (_generate_partitions) {
-      export_feature_registrations = true
       export_symbol_whitelist_files = []
       foreach(_module_desc, invoker.module_descs) {
         if (defined(_module_desc.native_entrypoints)) {
@@ -107,7 +105,7 @@ template("chrome_common_shared_library") {
       }
     }
 
-    if (_allow_partitions) {
+    if (_generate_partitions) {
       partitions = []
       foreach(_module_desc, invoker.module_descs) {
         if (defined(_module_desc.native_deps)) {

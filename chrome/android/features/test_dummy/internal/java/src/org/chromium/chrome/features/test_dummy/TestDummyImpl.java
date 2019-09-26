@@ -11,7 +11,6 @@ import android.support.v7.app.AlertDialog;
 import androidx.annotation.IntDef;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.NativeMethods;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,11 +49,6 @@ public class TestDummyImpl implements TestDummy {
         }
     }
 
-    @NativeMethods
-    interface Natives {
-        int execute();
-    }
-
     private void showDoneDialog(Activity activity, @TestCase int testCase, boolean pass) {
         String message = "Test Case %d: " + (pass ? "pass" : "fail");
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -69,9 +63,8 @@ public class TestDummyImpl implements TestDummy {
     }
 
     private void executeNative(Activity activity) {
-        int value = TestDummyImplJni.get().execute();
-        boolean pass = (value == 123);
-        showDoneDialog(activity, TestCase.EXECUTE_NATIVE, pass);
+        boolean result = TestDummySupport.openAndVerifyNativeLibrary();
+        showDoneDialog(activity, TestCase.EXECUTE_NATIVE, result);
     }
 
     private void loadJavaResource(Activity activity) {
