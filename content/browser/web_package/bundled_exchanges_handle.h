@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -42,16 +43,23 @@ class BundledExchangesHandle {
   // Checks if a valid BundledExchanges is attached, opened, and ready for use.
   bool IsReadyForLoading();
 
+  // The base URL which will be set for the document to support relative path
+  // subresource loading in unsigned bundled exchanges file.
+  const GURL& base_url_override() const { return base_url_override_; }
+
  private:
   BundledExchangesHandle();
 
   void SetInterceptor(std::unique_ptr<NavigationLoaderInterceptor> interceptor);
 
+  // Called when succeeded to load the bundled exchanges file.
   void OnBundledExchangesFileLoaded(
+      const GURL& base_url_override,
       std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory);
 
   std::unique_ptr<NavigationLoaderInterceptor> interceptor_;
 
+  GURL base_url_override_;
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
 
   base::WeakPtrFactory<BundledExchangesHandle> weak_factory_{this};

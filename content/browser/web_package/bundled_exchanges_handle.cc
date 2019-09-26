@@ -124,6 +124,7 @@ class PrimaryURLRedirectLoader final : public network::mojom::URLLoader {
 class InterceptorForFile final : public NavigationLoaderInterceptor {
  public:
   using DoneCallback = base::OnceCallback<void(
+      const GURL& base_url_override,
       std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory)>;
 
   explicit InterceptorForFile(DoneCallback done_callback)
@@ -213,7 +214,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
         std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
         new_resource_request, std::move(client),
         net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
-    std::move(done_callback_).Run(std::move(url_loader_factory_));
+    std::move(done_callback_).Run(primary_url_, std::move(url_loader_factory_));
   }
 
   DoneCallback done_callback_;
@@ -249,6 +250,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
 class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
  public:
   using DoneCallback = base::OnceCallback<void(
+      const GURL& base_url_override,
       std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory)>;
 
   InterceptorForTrustableFile(std::unique_ptr<BundledExchangesSource> source,
@@ -304,7 +306,9 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
           std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
           resource_request, std::move(client),
           net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
-      std::move(done_callback_).Run(std::move(url_loader_factory_));
+      std::move(done_callback_)
+          .Run(
+              /*base_url_override=*/GURL(), std::move(url_loader_factory_));
       return;
     }
 
@@ -410,7 +414,9 @@ void BundledExchangesHandle::SetInterceptor(
 }
 
 void BundledExchangesHandle::OnBundledExchangesFileLoaded(
+    const GURL& base_url_override,
     std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory) {
+  base_url_override_ = base_url_override;
   url_loader_factory_ = std::move(url_loader_factory);
 }
 

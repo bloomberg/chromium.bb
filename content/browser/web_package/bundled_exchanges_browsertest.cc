@@ -325,24 +325,11 @@ class BundledExchangesFileBrowserTest
 IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest, BasicNavigation) {
   const GURL test_data_url =
       GetTestUrlForFile(GetTestDataPath("bundled_exchanges_browsertest.wbn"));
-
+  base::string16 expected_title = base::ASCIIToUTF16("Ready");
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   EXPECT_TRUE(
       NavigateToURL(shell()->web_contents(), test_data_url,
                     GURL(test_data_url.spec() + "?https://test.example.org/")));
-
-  // Currently BundledHTTPExchanges feature doesn't support relative path
-  // subresource loading. So need to load testutils.js using the absolute URL.
-  // TODO(crbug.com/995177): Support relative path subresource loading.
-  const std::string load_script_script = R"(
-    (() => {
-      const script = document.createElement('script');
-      script.src = 'https://test.example.org/testutils.js';
-      document.body.appendChild(script);
-    })();
-  )";
-  base::string16 expected_title = base::ASCIIToUTF16("Ready");
-  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), load_script_script));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 

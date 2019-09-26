@@ -5205,6 +5205,10 @@ void RenderFrameHostImpl::CommitNavigation(
       bundled_exchanges_handle_->CreateURLLoaderFactory(
           pending_default_factory.InitWithNewPipeAndPassReceiver(),
           std::move(fallback_factory));
+      if (bundled_exchanges_handle_->base_url_override().is_valid()) {
+        commit_params->base_url_override_for_bundled_exchanges =
+            bundled_exchanges_handle_->base_url_override();
+      }
     }
 
     DCHECK(pending_default_factory);

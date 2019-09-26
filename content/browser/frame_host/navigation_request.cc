@@ -732,7 +732,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           std::string(),  // data_url_as_string
 #endif
           false,  // is_browser_initiated
-          network::mojom::IPAddressSpace::kUnknown);
+          network::mojom::IPAddressSpace::kUnknown,
+          GURL() /* base_url_override_for_bundled_exchanges */
+      );
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
       std::move(commit_params),
@@ -803,7 +805,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           std::string(), /* data_url_as_string */
 #endif
           false,  // is_browser_initiated
-          network::mojom::IPAddressSpace::kUnknown);
+          network::mojom::IPAddressSpace::kUnknown,
+          GURL() /* base_url_override_for_bundled_exchanges */
+      );
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
