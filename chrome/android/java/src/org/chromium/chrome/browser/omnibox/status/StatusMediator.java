@@ -384,8 +384,6 @@ class StatusMediator {
         // (doesUrlMatchDefaultSearchEngine) can be removed once this is fixed.
         // TODO(crbug.com/991017): Remove doesUrlMatchDefaultSearchEngine when "Query in the
         //                         omnibox" properly reacts to dse changes.
-        boolean showUnfocusedNewTabPage = !mUrlHasFocus && mToolbarCommonPropertiesModel != null
-                && mToolbarCommonPropertiesModel.getNewTabPageForCurrentTab() != null;
         boolean showUnfocusedSearchResultsPage = !mUrlHasFocus
                 && mToolbarCommonPropertiesModel != null
                 && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
@@ -394,7 +392,7 @@ class StatusMediator {
         boolean isIncognito = mToolbarCommonPropertiesModel != null
                 && mToolbarCommonPropertiesModel.isIncognito();
         if (mDelegate.shouldShowSearchEngineLogo(isIncognito) && mIsSearchEngineStateSetup
-                && (showFocused || showUnfocusedNewTabPage || showUnfocusedSearchResultsPage)) {
+                && (showFocused || showUnfocusedSearchResultsPage)) {
             mShouldCancelCustomFavicon = false;
             // If the current url text is a valid url, then swap the dse icon for a globe.
             if (mUrlBarTextIsValidUrl) {
