@@ -166,7 +166,7 @@ class HideAnimationObserver : public ui::ImplicitAnimationObserver {
 class HotseatEventHandler : public ui::EventHandler,
                             public ShelfLayoutManagerObserver {
  public:
-  HotseatEventHandler(ShelfLayoutManager* shelf_layout_manager)
+  explicit HotseatEventHandler(ShelfLayoutManager* shelf_layout_manager)
       : shelf_layout_manager_(shelf_layout_manager) {
     shelf_layout_manager_->AddObserver(this);
     Shell::Get()->AddPreTargetHandler(this);
@@ -1829,9 +1829,12 @@ bool ShelfLayoutManager::StartGestureDrag(
     drag_status_ = kDragAppListInProgress;
     HomeLauncherGestureHandler* home_launcher_handler =
         Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
-    if (home_launcher_handler->OnPressEvent(
-            HomeLauncherGestureHandler::Mode::kSlideUpToShow,
-            gesture_in_screen.location())) {
+    HomeLauncherGestureHandler::Mode slide_mode =
+        features::IsDragFromShelfToHomeOrOverviewEnabled()
+            ? HomeLauncherGestureHandler::Mode::kDragWindowToHomeOrOverview
+            : HomeLauncherGestureHandler::Mode::kSlideUpToShow;
+    if (home_launcher_handler->OnPressEvent(slide_mode,
+                                            gesture_in_screen.location())) {
       return true;
     }
     drag_status_ = previous_drag_status;
@@ -1889,7 +1892,7 @@ void ShelfLayoutManager::UpdateMouseDrag(
   if (drag_status_ == kDragAttempt) {
     // Do not start drag for the small offset.
     if (abs(mouse_in_screen.location().y() - last_mouse_drag_position_.y()) <
-      kMouseDragThreshold) {
+        kMouseDragThreshold) {
       return;
     }
 
