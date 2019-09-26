@@ -15,11 +15,13 @@
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 #include "util/alarm.h"
+#include "util/serial_delete_ptr.h"
 
 namespace cast {
 namespace mdns {
 
 using openscreen::Alarm;
+using openscreen::SerialDeletePtr;
 using openscreen::platform::Clock;
 using openscreen::platform::ClockNowFunctionPtr;
 using openscreen::platform::TaskRunner;
@@ -104,7 +106,11 @@ class MdnsRecordTracker : public MdnsTracker {
 // continuous monitoring with exponential back-off as described in RFC 6762
 class MdnsQuestionTracker : public MdnsTracker {
  public:
-  using MdnsTracker::MdnsTracker;
+  static SerialDeletePtr<MdnsQuestionTracker> Create(
+      MdnsSender* sender,
+      TaskRunner* task_runner,
+      ClockNowFunctionPtr now_function,
+      MdnsRandom* random_delay);
 
   // Starts sending query messages for the provided question. Returns error with
   // code Error::Code::kOperationInvalid if called on an instance of
@@ -132,6 +138,11 @@ class MdnsQuestionTracker : public MdnsTracker {
   void OnRecordReceived(const MdnsRecord& record);
 
  private:
+  MdnsQuestionTracker(MdnsSender* sender,
+                      TaskRunner* task_runner,
+                      ClockNowFunctionPtr now_function,
+                      MdnsRandom* random_delay);
+
   // Called by owned MdnsRecordTrackers when a tracked record is expired
   void OnRecordExpired(const MdnsRecord& record);
 

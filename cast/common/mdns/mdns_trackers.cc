@@ -172,6 +172,25 @@ Clock::time_point MdnsRecordTracker::GetNextSendTime() {
   return start_time_ + delay;
 }
 
+MdnsQuestionTracker::MdnsQuestionTracker(MdnsSender* sender,
+                                         TaskRunner* task_runner,
+                                         ClockNowFunctionPtr now_function,
+                                         MdnsRandom* random_delay)
+    : MdnsTracker(sender, task_runner, now_function, random_delay) {}
+
+// static
+SerialDeletePtr<MdnsQuestionTracker> MdnsQuestionTracker::Create(
+    MdnsSender* sender,
+    TaskRunner* task_runner,
+    ClockNowFunctionPtr now_function,
+    MdnsRandom* random_delay) {
+  // explicit new to access the private constructor that is unavailable to
+  // SerialDeletePtr
+  return SerialDeletePtr<MdnsQuestionTracker>(
+      task_runner,
+      new MdnsQuestionTracker(sender, task_runner, now_function, random_delay));
+}
+
 Error MdnsQuestionTracker::Start(MdnsQuestion question) {
   if (question_.has_value()) {
     return Error::Code::kOperationInvalid;
