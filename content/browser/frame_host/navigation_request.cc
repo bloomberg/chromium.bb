@@ -49,6 +49,8 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/web_package/bundled_exchanges_source.h"
+#include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_constants_internal.h"
@@ -1972,23 +1974,19 @@ void NavigationRequest::OnStartChecksComplete(
   }
 
   // Initialize the BundledExchangesHandle.
-  if (GetContentClient()->browser()->CanAcceptUntrustedExchangesIfNeeded() &&
-      (common_params_->url.SchemeIsFile() ||
-       common_params_->url.SchemeIs(url::kContentScheme)) &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTrustableBundledExchangesFileUrl)) {
-    // Fast path for testing navigation to a trustable BundledExchanges source.
-    const std::string specified_trustable_wbn_url =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kTrustableBundledExchangesFileUrl);
-    if (specified_trustable_wbn_url == common_params_->url.spec()) {
-      bundled_exchanges_handle_ = std::make_unique<BundledExchangesHandle>(
-          BundledExchangesSource::CreateFromTrustedFileUrl(
-              GURL(specified_trustable_wbn_url)));
+  if (bundled_exchanges_utils::CanLoadAsTrustableBundledExchangesFile(
+          common_params_->url)) {
+    auto source = BundledExchangesSource::MaybeCreateFromTrustedFileUrl(
+        common_params_->url);
+    // MaybeCreateFromTrustedFileUrl() returns null when the url contains an
+    // invalid character.
+    if (source) {
+      bundled_exchanges_handle_ =
+          BundledExchangesHandle::CreateForTrustableFile(std::move(source));
     }
-  } else if (base::FeatureList::IsEnabled(features::kBundledHTTPExchanges)) {
-    // Production path behind the feature flag.
-    bundled_exchanges_handle_ = std::make_unique<BundledExchangesHandle>();
+  } else if (bundled_exchanges_utils::CanLoadAsBundledExchangesFile(
+                 common_params_->url)) {
+    bundled_exchanges_handle_ = BundledExchangesHandle::CreateForFile();
   }
 
   // Mark the fetch_start (Navigation Timing API).
@@ -2036,7 +2034,7 @@ void NavigationRequest::OnStartChecksComplete(
   // ResourceRequest directly here.
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptor;
   if (bundled_exchanges_handle_)
-    interceptor.push_back(bundled_exchanges_handle_->CreateInterceptor());
+    interceptor.push_back(bundled_exchanges_handle_->TakeInterceptor());
   loader_ = NavigationURLLoader::Create(
       browser_context, partition,
       std::make_unique<NavigationRequestInfo>(
