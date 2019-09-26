@@ -154,8 +154,6 @@ jumbo_source_set("browser") {
     "//services/device/public/cpp/geolocation",
     "//services/device/public/mojom",
     "//services/device/public/mojom:generic_sensor",
-    "//services/file:lib",
-    "//services/file/public/mojom",
     "//services/media_session:lib",
     "//services/media_session/public/cpp",
     "//services/media_session/public/cpp:manifest",
