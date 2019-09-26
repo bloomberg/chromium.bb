@@ -283,7 +283,7 @@ void NGLineBreaker::ComputeBaseDirection() {
 
 // Initialize internal states for the next line.
 void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
-  // NGLineInfo is not supposed to be re-used becase it's not much gain and to
+  // NGLineInfo is not supposed to be re-used because it's not much gain and to
   // avoid rare code path.
   const NGInlineItemResults& item_results = line_info->Results();
   DCHECK(item_results.IsEmpty());
