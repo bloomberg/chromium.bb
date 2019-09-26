@@ -199,10 +199,10 @@ void ServiceWorkerContextClient::WorkerReadyForInspectionOnInitiatorThread(
                                        std::move(receiver));
 }
 
-void ServiceWorkerContextClient::FailedToLoadClassicScript() {
+void ServiceWorkerContextClient::FailedToFetchClassicScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "LOAD_SCRIPT", this,
-                                  "Status", "FailedToLoadClassicScript");
+                                  "Status", "FailedToFetchClassicScript");
   // The caller is responsible for terminating the thread which
   // eventually destroys |this|.
 }

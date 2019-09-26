@@ -304,7 +304,7 @@ void ServiceWorkerGlobalScope::RunInstalledClassicScript(
   std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
       installed_scripts_manager_->GetScriptData(script_url);
   if (!script_data) {
-    ReportingProxy().DidFailToLoadClassicScript();
+    ReportingProxy().DidFailToFetchClassicScript();
     // This will eventually initiate worker thread termination. See
     // ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() for details.
     close();

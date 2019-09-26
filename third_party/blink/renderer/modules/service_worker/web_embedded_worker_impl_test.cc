@@ -160,10 +160,7 @@ class MockServiceWorkerContextClient final
         registration_object_host_receiver.PassHandle());
   }
 
-  void FailedToLoadClassicScript() override {
-    // off-main-script fetch:
-    // In production code, calling FailedToLoadClassicScript results in
-    // terminating the worker.
+  void FailedToFetchClassicScript() override {
     classic_script_load_failure_event_.Signal();
   }
 
