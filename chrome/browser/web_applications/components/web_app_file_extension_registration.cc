@@ -4,12 +4,14 @@
 
 #include "chrome/browser/web_applications/components/web_app_file_extension_registration.h"
 
-#include "chrome/browser/profiles/profile.h"
+#include "base/logging.h"
+#include "build/build_config.h"
 
 namespace web_app {
 
+#if !defined(OS_WIN)
 bool OsSupportsWebAppFileHandling() {
-  return true;
+  return false;
 }
 
 void RegisterFileHandlersForWebApp(
@@ -17,13 +19,15 @@ void RegisterFileHandlersForWebApp(
     const std::string& app_name,
     const Profile& profile,
     const std::set<std::string>& file_extensions) {
-  // TODO(davidbienvenu): Setup shim app and windows registry for this |app_id|.
+  DCHECK(OsSupportsWebAppFileHandling());
+  // Stub function for OS's that don't support Web App file handling yet.
 }
 
 void UnregisterFileHandlersForWebApp(const AppId& app_id,
                                      const Profile& profile) {
-  // TODO(davidbienvenu): Cleanup windows registry entries for this
-  // |app_id|.
+  DCHECK(OsSupportsWebAppFileHandling());
+  // Stub function for OS's that don't support Web App file handling yet.
 }
+#endif
 
 }  // namespace web_app
