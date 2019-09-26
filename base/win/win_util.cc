@@ -195,8 +195,6 @@ NativeLibrary PinUser32Internal(NativeLibraryLoadError* error) {
 
 }  // namespace
 
-const char kApplicationVerifierDllName[] = "verifier.dll";
-
 // Uses the Windows 10 WRL API's to query the current system state. The API's
 // we are using in the function below are supported in Win32 apps as per msdn.
 // It looks like the API implementation is buggy at least on Surface 4 causing

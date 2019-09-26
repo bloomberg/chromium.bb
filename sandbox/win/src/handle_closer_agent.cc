@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/win/win_util.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/win_utils.h"
 
@@ -174,7 +173,7 @@ bool HandleCloserAgent::CloseHandles() {
 
   // Skip closing these handles when Application Verifier is in use in order to
   // avoid invalid-handle exceptions.
-  if (GetModuleHandleA(base::win::kApplicationVerifierDllName))
+  if (GetModuleHandleW(L"vrfcore.dll"))
     return true;
 
   // Set up buffers for the type info and the name.
