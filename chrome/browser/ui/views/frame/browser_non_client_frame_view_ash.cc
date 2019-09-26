@@ -80,26 +80,6 @@ bool IsV1AppBackButtonEnabled() {
       ash::switches::kAshEnableV1AppBackButton);
 }
 
-// Returns true if |window| is currently snapped in split view mode.
-bool IsSnappedInSplitView(const aura::Window* window) {
-  ash::SplitViewState state = ash::SplitViewNotifier::Get()->GetCurrentState();
-  ash::WindowStateType type = window->GetProperty(ash::kWindowStateTypeKey);
-  switch (state) {
-    case ash::SplitViewState::kNoSnap:
-      return false;
-    case ash::SplitViewState::kLeftSnapped:
-      return type == ash::WindowStateType::kLeftSnapped;
-    case ash::SplitViewState::kRightSnapped:
-      return type == ash::WindowStateType::kRightSnapped;
-    case ash::SplitViewState::kBothSnapped:
-      return type == ash::WindowStateType::kLeftSnapped ||
-             type == ash::WindowStateType::kRightSnapped;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 // Returns true if the header should be painted so that it looks the same as
 // the header used for packaged apps.
 bool UsePackagedAppHeaderStyle(const Browser* browser) {
@@ -656,7 +636,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
     return false;
   }
 
-  return !IsInOverviewMode() || IsSnappedInSplitView(GetFrameWindow());
+  return !IsInOverviewMode();
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {

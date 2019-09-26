@@ -174,7 +174,6 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   void OnResizeLoopEnded(aura::Window* window) override;
 
   // SplitViewNotifier:
-  SplitViewState GetCurrentState() const override;
   void AddObserver(SplitViewObserver* observer) override;
   void RemoveObserver(SplitViewObserver* observer) override;
 
