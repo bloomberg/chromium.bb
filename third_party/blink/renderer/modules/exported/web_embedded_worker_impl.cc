@@ -72,33 +72,13 @@ namespace blink {
 
 // static
 std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
-    WebServiceWorkerContextClient* client,
-    mojo::ScopedMessagePipeHandle cache_storage,
-    mojo::ScopedMessagePipeHandle interface_provider,
-    mojo::ScopedMessagePipeHandle browser_interface_broker) {
-  return std::make_unique<WebEmbeddedWorkerImpl>(
-      std::move(client),
-      mojo::PendingRemote<mojom::blink::CacheStorage>(
-          std::move(cache_storage), mojom::blink::CacheStorage::Version_),
-      service_manager::mojom::blink::InterfaceProviderPtrInfo(
-          std::move(interface_provider),
-          service_manager::mojom::blink::InterfaceProvider::Version_),
-      mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>(
-          std::move(browser_interface_broker),
-          mojom::blink::BrowserInterfaceBroker::Version_));
+    WebServiceWorkerContextClient* client) {
+  return std::make_unique<WebEmbeddedWorkerImpl>(std::move(client));
 }
 
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
-    WebServiceWorkerContextClient* client,
-    mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
-    service_manager::mojom::blink::InterfaceProviderPtrInfo
-        interface_provider_info,
-    mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
-        browser_interface_broker)
-    : worker_context_client_(client),
-      cache_storage_remote_(std::move(cache_storage_remote)),
-      interface_provider_info_(std::move(interface_provider_info)),
-      browser_interface_broker_(std::move(browser_interface_broker)) {}
+    WebServiceWorkerContextClient* client)
+    : worker_context_client_(client) {}
 
 WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
   // TerminateWorkerContext() must be called before the destructor.
@@ -110,6 +90,9 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
     std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
         installed_scripts_manager_params,
     mojo::ScopedMessagePipeHandle content_settings_handle,
+    mojo::ScopedMessagePipeHandle cache_storage,
+    mojo::ScopedMessagePipeHandle interface_provider,
+    mojo::ScopedMessagePipeHandle browser_interface_broker,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   DCHECK(!asked_to_terminate_);
 
@@ -144,6 +127,14 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
           // TODO(falken): Is that comment about versioning correct?
           mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
               std::move(content_settings_handle), 0u)),
+      mojo::PendingRemote<mojom::blink::CacheStorage>(
+          std::move(cache_storage), mojom::blink::CacheStorage::Version_),
+      service_manager::mojom::blink::InterfaceProviderPtrInfo(
+          std::move(interface_provider),
+          service_manager::mojom::blink::InterfaceProvider::Version_),
+      mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>(
+          std::move(browser_interface_broker),
+          mojom::blink::BrowserInterfaceBroker::Version_),
       std::move(initiator_thread_task_runner));
 }
 
@@ -166,6 +157,11 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
     std::unique_ptr<ServiceWorkerInstalledScriptsManager>
         installed_scripts_manager,
     std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_proxy,
+    mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
+    service_manager::mojom::blink::InterfaceProviderPtrInfo
+        interface_provider_info,
+    mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
+        browser_interface_broker,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   DCHECK(!asked_to_terminate_);
 
@@ -221,7 +217,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
       std::move(worker_settings),
       static_cast<V8CacheOptions>(worker_start_data->v8_cache_options),
       nullptr /* worklet_module_respones_map */,
-      std::move(interface_provider_info_), std::move(browser_interface_broker_),
+      std::move(interface_provider_info), std::move(browser_interface_broker),
       BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
       base::UnguessableToken() /* agent_cluster_id */);
 
@@ -232,7 +228,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       std::make_unique<ServiceWorkerGlobalScopeProxy>(
           *this, *worker_context_client_, initiator_thread_task_runner),
-      std::move(installed_scripts_manager), std::move(cache_storage_remote_),
+      std::move(installed_scripts_manager), std::move(cache_storage_remote),
       initiator_thread_task_runner);
 
   auto devtools_params = std::make_unique<WorkerDevToolsParams>();
