@@ -881,3 +881,17 @@ fuzzer_test("color_transform_fuzzer") {
 
   libfuzzer_options = [ "max_len=4194304" ]
 }
+
+fuzzer_test("render_text_fuzzer") {
+  sources = [
+    "render_text_fuzzer.cc",
+  ]
+
+  deps = [
+    ":gfx",
+    "//base",
+    "//base/test:test_support",
+  ]
+
+  dict = "test/data/render_text/unicode_text_fuzzer.dict"
+}
