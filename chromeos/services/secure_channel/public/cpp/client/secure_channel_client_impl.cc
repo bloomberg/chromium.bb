@@ -45,7 +45,7 @@ SecureChannelClientImpl::Factory::BuildInstance(
 SecureChannelClientImpl::SecureChannelClientImpl(
     mojo::PendingRemote<mojom::SecureChannel> channel,
     scoped_refptr<base::TaskRunner> task_runner)
-    : secure_channel_ptr_(std::move(channel)), task_runner_(task_runner) {}
+    : secure_channel_remote_(std::move(channel)), task_runner_(task_runner) {}
 
 SecureChannelClientImpl::~SecureChannelClientImpl() = default;
 
@@ -98,7 +98,7 @@ void SecureChannelClientImpl::PerformInitiateConnectionToDevice(
     const std::string& feature,
     ConnectionPriority connection_priority,
     mojo::PendingRemote<mojom::ConnectionDelegate> connection_delegate_remote) {
-  secure_channel_ptr_->InitiateConnectionToDevice(
+  secure_channel_remote_->InitiateConnectionToDevice(
       device_to_connect.GetRemoteDevice(), local_device.GetRemoteDevice(),
       feature, connection_priority, std::move(connection_delegate_remote));
 }
@@ -109,13 +109,13 @@ void SecureChannelClientImpl::PerformListenForConnectionFromDevice(
     const std::string& feature,
     ConnectionPriority connection_priority,
     mojo::PendingRemote<mojom::ConnectionDelegate> connection_delegate_remote) {
-  secure_channel_ptr_->ListenForConnectionFromDevice(
+  secure_channel_remote_->ListenForConnectionFromDevice(
       device_to_connect.GetRemoteDevice(), local_device.GetRemoteDevice(),
       feature, connection_priority, std::move(connection_delegate_remote));
 }
 
 void SecureChannelClientImpl::FlushForTesting() {
-  secure_channel_ptr_.FlushForTesting();
+  secure_channel_remote_.FlushForTesting();
 }
 
 }  // namespace secure_channel
