@@ -272,12 +272,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillCreditCardUploadName,
      flag_descriptions::kAutofillCreditCardUploadDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillUpstream)},
-    {"enable-autofill-credit-card-downstream-google-pay-branding",
-     flag_descriptions::kAutofillDownstreamUseGooglePayBrandingOniOSName,
-     flag_descriptions::kAutofillDownstreamUseGooglePayBrandingOniOSDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillDownstreamUseGooglePayBrandingOniOS)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, flags_ui::kOsIos,
      SINGLE_VALUE_TYPE_AND_VALUE(

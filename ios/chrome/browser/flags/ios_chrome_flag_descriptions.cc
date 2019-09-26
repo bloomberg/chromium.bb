@@ -29,12 +29,6 @@ const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
 
-const char kAutofillDownstreamUseGooglePayBrandingOniOSName[] =
-    "Enable Google Pay branding when offering credit card downstream";
-const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[] =
-    "When enabled, shows the Google Pay logo animation when showing payments"
-    "credit card suggestions in downstream keyboard accessory";
-
 const char kAutofillEnableCompanyNameName[] =
     "Enable Autofill Company Name field";
 const char kAutofillEnableCompanyNameDescription[] =
