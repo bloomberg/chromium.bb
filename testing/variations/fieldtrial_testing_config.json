@@ -4394,7 +4394,8 @@
                 "linux",
                 "mac",
                 "windows",
-                "android"
+                "android",
+                "android_webview"
             ],
             "experiments": [
                 {
