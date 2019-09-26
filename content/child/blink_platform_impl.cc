@@ -94,78 +94,12 @@ int ToMessageID(int resource_id) {
       return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
     case WebLocalizedString::kAXHourFieldText:
       return IDS_AX_HOUR_FIELD_TEXT;
-    case WebLocalizedString::kAXMediaDefault:
-      return IDS_AX_MEDIA_DEFAULT;
-    case WebLocalizedString::kAXMediaAudioElement:
-      return IDS_AX_MEDIA_AUDIO_ELEMENT;
-    case WebLocalizedString::kAXMediaVideoElement:
-      return IDS_AX_MEDIA_VIDEO_ELEMENT;
-    case WebLocalizedString::kAXMediaMuteButton:
-      return IDS_AX_MEDIA_MUTE_BUTTON;
-    case WebLocalizedString::kAXMediaUnMuteButton:
-      return IDS_AX_MEDIA_UNMUTE_BUTTON;
-    case WebLocalizedString::kAXMediaPlayButton:
-      return IDS_AX_MEDIA_PLAY_BUTTON;
-    case WebLocalizedString::kAXMediaPauseButton:
-      return IDS_AX_MEDIA_PAUSE_BUTTON;
-    case WebLocalizedString::kAXMediaCurrentTimeDisplay:
-      return IDS_AX_MEDIA_CURRENT_TIME_DISPLAY;
-    case WebLocalizedString::kAXMediaTimeRemainingDisplay:
-      return IDS_AX_MEDIA_TIME_REMAINING_DISPLAY;
-    case WebLocalizedString::kAXMediaEnterFullscreenButton:
-      return IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON;
-    case WebLocalizedString::kAXMediaExitFullscreenButton:
-      return IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON;
-    case WebLocalizedString::kAXMediaDisplayCutoutFullscreenButton:
-      return IDS_AX_MEDIA_DISPLAY_CUT_OUT_FULL_SCREEN_BUTTON;
-    case WebLocalizedString::kAXMediaEnterPictureInPictureButton:
-      return IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON;
-    case WebLocalizedString::kAXMediaExitPictureInPictureButton:
-      return IDS_AX_MEDIA_EXIT_PICTURE_IN_PICTURE_BUTTON;
-    case WebLocalizedString::kAXMediaShowClosedCaptionsMenuButton:
-      return IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_MENU_BUTTON;
-    case WebLocalizedString::kAXMediaHideClosedCaptionsMenuButton:
-      return IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_MENU_BUTTON;
-    case WebLocalizedString::kAXMediaLoadingPanel:
-      return IDS_AX_MEDIA_LOADING_PANEL;
-    case WebLocalizedString::kAXMediaCastOffButton:
-      return IDS_AX_MEDIA_CAST_OFF_BUTTON;
-    case WebLocalizedString::kAXMediaCastOnButton:
-      return IDS_AX_MEDIA_CAST_ON_BUTTON;
-    case WebLocalizedString::kAXMediaDownloadButton:
-      return IDS_AX_MEDIA_DOWNLOAD_BUTTON;
-    case WebLocalizedString::kAXMediaOverflowButton:
-      return IDS_AX_MEDIA_OVERFLOW_BUTTON;
-    case WebLocalizedString::kAXMediaAudioElementHelp:
-      return IDS_AX_MEDIA_AUDIO_ELEMENT_HELP;
-    case WebLocalizedString::kAXMediaVideoElementHelp:
-      return IDS_AX_MEDIA_VIDEO_ELEMENT_HELP;
-    case WebLocalizedString::kAXMediaAudioSliderHelp:
-      return IDS_AX_MEDIA_AUDIO_SLIDER_HELP;
-    case WebLocalizedString::kAXMediaVideoSliderHelp:
-      return IDS_AX_MEDIA_VIDEO_SLIDER_HELP;
-    case WebLocalizedString::kAXMediaVolumeSliderHelp:
-      return IDS_AX_MEDIA_VOLUME_SLIDER_HELP;
-    case WebLocalizedString::kAXMediaCurrentTimeDisplayHelp:
-      return IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP;
-    case WebLocalizedString::kAXMediaTimeRemainingDisplayHelp:
-      return IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP;
-    case WebLocalizedString::kAXMediaOverflowButtonHelp:
-      return IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP;
-    case WebLocalizedString::kAXMediaTouchLessPlayPauseAction:
-      return IDS_AX_MEDIA_TOUCHLESS_PLAY_PAUSE_ACTION;
-    case WebLocalizedString::kAXMediaTouchLessSeekAction:
-      return IDS_AX_MEDIA_TOUCHLESS_SEEK_ACTION;
-    case WebLocalizedString::kAXMediaTouchLessVolumeAction:
-      return IDS_AX_MEDIA_TOUCHLESS_VOLUME_ACTION;
     case WebLocalizedString::kDetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
     case WebLocalizedString::kInputElementAltText:
       return IDS_FORM_INPUT_ALT;
     case WebLocalizedString::kMissingPluginText:
       return IDS_PLUGIN_INITIALIZATION_ERROR;
-    case WebLocalizedString::kAXMediaPlaybackError:
-      return IDS_MEDIA_PLAYBACK_ERROR;
     case WebLocalizedString::kMediaScrubbingMessageText:
       return IDS_MEDIA_SCRUBBING_MESSAGE_TEXT;
     case WebLocalizedString::kMultipleFileUploadText:
