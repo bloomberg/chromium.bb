@@ -1642,6 +1642,7 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
         // must not be at the end.
         LayoutUnit item_available_width =
             std::min(-width_to_rewind, item_result->inline_size - 1);
+        auto was_current_style = current_style_;
         SetCurrentStyle(*item.Style());
         BreakResult break_result =
             BreakText(item_result, item, *item.TextShapeResult(),
@@ -1672,6 +1673,8 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
           }
           state_ = LineBreakState::kTrailing;
           return;
+        } else {
+          SetCurrentStyle(*was_current_style);
         }
         position_maybe_changed = true;
       }
