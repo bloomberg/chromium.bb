@@ -400,14 +400,16 @@ include_rules = [
   "+third_party/zlib",
 
   # No inclusion of WebKit from the browser, other than the ones in
-  # WebKit/public/{mojom,common}, or the ones that are strictly enum/POD,
-  # header-only types, and some selected common code.
+  # WebKit/public/{mojom,common}.
+  # TODO(crbug.com/1008303) clarify dependency and remove or move these individual headers
+  # into public/common.
   "-third_party/blink",
   "+third_party/blink/public/common",
   "+third_party/blink/public/mojom",
   "+third_party/blink/public/platform/web_cache.h",
-  "+third_party/blink/public/platform/web_loading_behavior_flag.h",
+  "+third_party/blink/public/platform/web_float_point.h",
   "+third_party/blink/public/platform/web_gesture_event.h",
+  "+third_party/blink/public/platform/web_loading_behavior_flag.h",
   "+third_party/blink/public/platform/web_input_event.h",
   "+third_party/blink/public/platform/web_mouse_event.h",
   "+third_party/blink/public/platform/web_mouse_wheel_event.h",
