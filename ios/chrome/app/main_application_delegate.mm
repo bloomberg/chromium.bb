@@ -124,6 +124,10 @@
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application {
+  if (!IsMultiwindowSupported()) {
+    self.sceneState.activationLevel = SceneActivationLevelForegroundActive;
+  }
+
   startup_loggers::RegisterAppDidBecomeActiveTime();
   if ([_appState isInSafeMode])
     return;
@@ -133,6 +137,10 @@
 }
 
 - (void)applicationWillResignActive:(UIApplication*)application {
+  if (!IsMultiwindowSupported()) {
+    self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
+  }
+
   if ([_appState isInSafeMode])
     return;
 
@@ -142,6 +150,10 @@
 // Called when going into the background. iOS already broadcasts, so
 // stakeholders can register for it directly.
 - (void)applicationDidEnterBackground:(UIApplication*)application {
+  if (!IsMultiwindowSupported()) {
+    self.sceneState.activationLevel = SceneActivationLevelBackground;
+  }
+
   [_appState
       applicationDidEnterBackground:application
                        memoryHelper:_memoryHelper
@@ -150,6 +162,10 @@
 
 // Called when returning to the foreground.
 - (void)applicationWillEnterForeground:(UIApplication*)application {
+  if (!IsMultiwindowSupported()) {
+    self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
+  }
+
   [_appState applicationWillEnterForeground:application
                             metricsMediator:_metricsMediator
                                memoryHelper:_memoryHelper
