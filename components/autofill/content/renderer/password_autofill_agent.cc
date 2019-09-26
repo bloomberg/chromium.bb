@@ -1320,11 +1320,6 @@ void PasswordAutofillAgent::SetLoggingState(bool active) {
   logging_state_active_ = active;
 }
 
-void PasswordAutofillAgent::AutofillUsernameAndPasswordDataReceived(
-    const FormsPredictionsMap& predictions) {
-  form_predictions_.insert(predictions.begin(), predictions.end());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillAgent, private:
 
