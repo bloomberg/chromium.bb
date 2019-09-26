@@ -454,10 +454,11 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
       .Run(false, source_lang_, target_lang_, error);
 }
 
-const mojom::ContentTranslateDriverPtr& TranslateHelper::GetTranslateHandler() {
+const mojo::Remote<mojom::ContentTranslateDriver>&
+TranslateHelper::GetTranslateHandler() {
   if (!translate_handler_) {
     render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&translate_handler_));
+        translate_handler_.BindNewPipeAndPassReceiver());
   }
 
   return translate_handler_;

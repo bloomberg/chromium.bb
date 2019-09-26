@@ -290,9 +290,9 @@ void ContentTranslateDriver::OnPageAway(int page_seq_no) {
   pages_.erase(page_seq_no);
 }
 
-void ContentTranslateDriver::AddBinding(
-    translate::mojom::ContentTranslateDriverRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void ContentTranslateDriver::AddReceiver(
+    mojo::PendingReceiver<translate::mojom::ContentTranslateDriver> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void ContentTranslateDriver::RegisterPage(
