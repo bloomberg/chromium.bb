@@ -410,9 +410,43 @@ static double calc_frame_boost(const RATE_CONTROL *rc,
   return AOMMIN(frame_boost, max_boost * boost_q_correction);
 }
 
+static double calc_kf_frame_boost(const RATE_CONTROL *rc,
+                                  const FRAME_INFO *frame_info,
+                                  const FIRSTPASS_STATS *this_frame,
+                                  double *sr_accumulator, double max_boost) {
+  double frame_boost;
+  const double lq = av1_convert_qindex_to_q(rc->avg_frame_qindex[INTER_FRAME],
+                                            frame_info->bit_depth);
+  const double boost_q_correction = AOMMIN((0.50 + (lq * 0.015)), 2.00);
+  const double active_area = calculate_active_area(frame_info, this_frame);
+  int num_mbs = frame_info->num_mbs;
+
+  // Correct for any inactive region in the image
+  num_mbs = (int)AOMMAX(1, num_mbs * active_area);
+
+  // Underlying boost factor is based on inter error ratio.
+  frame_boost = AOMMAX(baseline_err_per_mb(frame_info) * num_mbs,
+                       this_frame->intra_error * active_area) /
+                DOUBLE_DIVIDE_CHECK(
+                    (this_frame->coded_error + *sr_accumulator) * active_area);
+
+  // Update the accumulator for second ref error difference.
+  // This is intended to give an indication of how much the coded error is
+  // increasing over time.
+  *sr_accumulator += (this_frame->sr_coded_error - this_frame->coded_error);
+  *sr_accumulator = AOMMAX(0.0, *sr_accumulator);
+
+  // Q correction and scaling
+  // The 40.0 value here is an experimentally derived baseline minimum.
+  // This value is in line with the minimum per frame boost in the alt_ref
+  // boost calculation.
+  frame_boost = ((frame_boost + 40.0) * boost_q_correction);
+
+  return AOMMIN(frame_boost, max_boost * boost_q_correction);
+}
+
 #define GF_MAX_BOOST 90.0
 #define MIN_DECAY_FACTOR 0.01
-
 int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
                        FRAME_INFO *frame_info, int offset, int f_frames,
                        int b_frames) {
@@ -1400,9 +1434,11 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   double decay_accumulator = 1.0;
   double zero_motion_accumulator = 1.0;
   double boost_score = 0.0;
+  double kf_raw_err = 0.0;
   double kf_mod_err = 0.0;
   double kf_group_err = 0.0;
   double recent_loop_decay[FRAMES_TO_CHECK_DECAY];
+  double sr_accumulator = 0.0;
 
   // Is this a forced key frame by interval.
   rc->this_key_frame_forced = rc->next_key_frame_forced;
@@ -1410,6 +1446,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   twopass->kf_group_bits = 0;        // Total bits available to kf group
   twopass->kf_group_error_left = 0;  // Group modified error score.
 
+  kf_raw_err = this_frame->intra_error;
   kf_mod_err = calculate_modified_err(frame_info, twopass, oxcf, this_frame);
 
   // Initialize the decay rates for the recent frames to check
@@ -1528,7 +1565,6 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
   // Scan through the kf group collating various stats used to determine
   // how many bits to spend on it.
-  decay_accumulator = 1.0;
   boost_score = 0.0;
   const double kf_max_boost =
       cpi->oxcf.rc_mode == AOM_Q
@@ -1549,19 +1585,18 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     }
 
     // Not all frames in the group are necessarily used in calculating boost.
-    if ((i <= rc->max_gf_interval) ||
-        ((i <= (rc->max_gf_interval * 4)) && (decay_accumulator > 0.5))) {
-      const double frame_boost =
-          calc_frame_boost(rc, frame_info, &next_frame, 0, kf_max_boost);
+    if ((sr_accumulator < (kf_raw_err * 1.50)) &&
+        (i <= (rc->max_gf_interval * 4))) {
+      double frame_boost;
+      double zm_factor;
 
-      // How fast is prediction quality decaying.
-      if (!detect_flash(twopass, 0)) {
-        const double loop_decay_rate =
-            get_prediction_decay_rate(frame_info, &next_frame);
-        decay_accumulator *= loop_decay_rate;
-        decay_accumulator = AOMMAX(decay_accumulator, MIN_DECAY_FACTOR);
-      }
-      boost_score += (decay_accumulator * frame_boost);
+      // Factor 0.75-1.25 based on how much of frame is static.
+      zm_factor = (0.75 + (zero_motion_accumulator / 2.0));
+
+      if (i < 2) sr_accumulator = 0.0;
+      frame_boost = calc_kf_frame_boost(rc, frame_info, &next_frame,
+                                        &sr_accumulator, kf_max_boost);
+      boost_score += frame_boost * zm_factor;
     }
   }
 
