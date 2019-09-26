@@ -151,6 +151,7 @@
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
     "structures": [13880],
+    "includes": [13900],
   },
   "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
     "includes": [13910],
