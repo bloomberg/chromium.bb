@@ -183,7 +183,7 @@ sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
                                      specifics.mutable_encryption_keybag()));
 
   std::string serialized_keystore_decryptor =
-      cryptographer->ExportDefaultKeyWithoutName().SerializeAsString();
+      cryptographer->ExportDefaultKey().SerializeAsString();
 
   std::unique_ptr<CryptographerImpl> keystore_cryptographer =
       CryptographerImpl::FromSingleKeyForTesting(

@@ -78,8 +78,7 @@ bool EncryptKeystoreDecryptorToken(
     sync_pb::EncryptedData* keystore_decryptor_token) {
   DCHECK(keystore_decryptor_token);
 
-  const sync_pb::NigoriKey default_key =
-      cryptographer.ExportDefaultKeyWithoutName();
+  const sync_pb::NigoriKey default_key = cryptographer.ExportDefaultKey();
 
   return cryptographer.EncryptString(default_key.SerializeAsString(),
                                      keystore_decryptor_token);
@@ -440,7 +439,7 @@ std::string PackExplicitPassphraseKey(const Encryptor& encryptor,
 
   // Explicit passphrase key should always be default one.
   std::string serialized_key =
-      cryptographer.ExportDefaultKeyWithoutName().SerializeAsString();
+      cryptographer.ExportDefaultKey().SerializeAsString();
 
   if (serialized_key.empty()) {
     DLOG(ERROR) << "Failed to serialize explicit passphrase key.";

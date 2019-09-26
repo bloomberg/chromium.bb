@@ -321,9 +321,7 @@ std::string DirectoryCryptographer::GetDefaultEncryptionKeyName() const {
 std::string DirectoryCryptographer::GetDefaultNigoriKeyData() const {
   if (!is_initialized())
     return std::string();
-  sync_pb::NigoriKey key = key_bag_.ExportKey(default_nigori_name_);
-  key.clear_name();
-  return key.SerializeAsString();
+  return key_bag_.ExportKey(default_nigori_name_).SerializeAsString();
 }
 
 bool DirectoryCryptographer::ImportNigoriKey(
@@ -336,7 +334,7 @@ bool DirectoryCryptographer::ImportNigoriKey(
     return false;
 
   std::unique_ptr<Nigori> nigori = Nigori::CreateByImport(
-      key.user_key(), key.encryption_key(), key.mac_key());
+      key.deprecated_user_key(), key.encryption_key(), key.mac_key());
 
   if (!nigori) {
     DLOG(ERROR) << "Ignoring invalid Nigori when importing";
