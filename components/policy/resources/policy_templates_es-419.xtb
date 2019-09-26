@@ -806,7 +806,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si se habilita la política, cuando el usuario abandona las páginas, estas podrán enviar solicitudes XHR síncronas.
 
-      Si se inhabilita o no se establece, cuando el usuario abandona las páginas, estas no podrán enviar estas solicitudes.
+      Si se inhabilita o no se establece, cuando el usuario abandona las páginas, estas no podrán enviar solicitudes XHR síncronas.
 
       Se quitará esta política en Chrome 82.
 
