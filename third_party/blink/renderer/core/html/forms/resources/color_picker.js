@@ -46,14 +46,13 @@ const Direction = {
  * @enum {number}
  */
 const ColorChannel = {
-  UNDEFINED: 0,
-  HEX: 1,
-  R: 2,
-  G: 3,
-  B: 4,
-  H: 5,
-  S: 6,
-  L: 7,
+  HEX: 0,
+  R: 1,
+  G: 2,
+  B: 3,
+  H: 4,
+  S: 5,
+  L: 6,
 };
 
 /**
@@ -61,10 +60,9 @@ const ColorChannel = {
  * @enum {number}
  */
 const ColorFormat = {
-  UNDEFINED: 0,
-  HEX: 1,
-  RGB: 2,
-  HSL: 3,
+  HEX: 0,
+  RGB: 1,
+  HSL: 2,
 };
 
 /**
@@ -1662,7 +1660,32 @@ class FormatToggler extends HTMLElement {
     this.append(...this.colorFormatLabels_, this.upDownIcon_);
 
     this.addEventListener('click', this.onClick_);
+    this.addEventListener('keydown', this.onKeyDown_);
     this.addEventListener('mousedown', (event) => event.preventDefault());
+  }
+
+  /**
+   * @param {bool} choosePreviousFormat if true, choose previous format
+   *                                    instead of next
+   */
+  updateColorFormat_(choosePreviousFormat) {
+    const numFormats = Object.keys(ColorFormat).length;
+    const newValue = choosePreviousFormat
+        ? this.currentColorFormat_ - 1
+        : this.currentColorFormat_ + 1;
+    const newColorFormatKey = Object.keys(ColorFormat).filter((key) => {
+      return ColorFormat[key] ===
+          (((newValue % numFormats) + numFormats) % numFormats);
+    });
+    this.currentColorFormat_ = ColorFormat[newColorFormatKey];
+
+    this.adjustFormatLabelVisibility_();
+
+    this.dispatchEvent(new CustomEvent('format-change', {
+      detail: {
+        colorFormat: this.currentColorFormat_
+      }
+    }));
   }
 
   adjustFormatLabelVisibility_() {
@@ -1676,20 +1699,23 @@ class FormatToggler extends HTMLElement {
   }
 
   onClick_ = () => {
-    if (this.currentColorFormat_ == ColorFormat.HEX) {
-      this.currentColorFormat_ = ColorFormat.RGB;
-    } else if (this.currentColorFormat_ == ColorFormat.RGB) {
-      this.currentColorFormat_ = ColorFormat.HSL;
-    } else if (this.currentColorFormat_ == ColorFormat.HSL) {
-      this.currentColorFormat_ = ColorFormat.HEX;
-    }
-    this.adjustFormatLabelVisibility_();
+    this.focus();
+    this.updateColorFormat_(false);
+  }
 
-    this.dispatchEvent(new CustomEvent('format-change', {
-      detail: {
-        colorFormat: this.currentColorFormat_
-      }
-    }));
+  /**
+   * @param {!Event} event
+   */
+  onKeyDown_ = (event) => {
+    switch(event.key) {
+      case 'ArrowUp':
+        this.updateColorFormat_(true);
+        break;
+      case 'ArrowDown':
+      case ' ':
+        this.updateColorFormat_(false);
+        break;
+    }
   }
 }
 window.customElements.define('format-toggler', FormatToggler);
