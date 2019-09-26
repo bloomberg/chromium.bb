@@ -384,6 +384,11 @@ void V4L2SliceVideoDecodeAccelerator::Destroy() {
         //    executes after all the tasks potentially posted by the IP.
         base::BindOnce(
             [](V4L2SliceVideoDecodeAccelerator* vda) {
+              vda->gl_image_device_ = nullptr;
+              // The image processor's thread was the user of the image
+              // processor device, so let it keep the last reference and destroy
+              // it in its own thread.
+              vda->image_processor_device_ = nullptr;
               vda->image_processor_ = nullptr;
               vda->surfaces_at_ip_ = {};
               vda->decoder_thread_task_runner_->PostTask(
@@ -427,6 +432,10 @@ void V4L2SliceVideoDecodeAccelerator::DestroyTask() {
 
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
+
+  // Clear the V4L2 devices in the decoder thread so the V4L2Device's
+  // destructor is called from the thread that used it.
+  device_ = nullptr;
 
   DCHECK(surfaces_at_device_.empty());
   DCHECK(surfaces_at_display_.empty());
