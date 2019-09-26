@@ -306,6 +306,10 @@ vars = {
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
   'ios_webkit_revision': '59e9de61b7b36507836fa8b098e8839d7d995b13',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling libexpat
+  # and whatever else without interference from each other.
+  'libexpat_revision': '4f23e05a33a66c5962589a32c87df4fe68144fce',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -1115,6 +1119,9 @@ deps = {
       'url': Var('chromium_git') + '/chromiumos/platform/libevdev.git' + '@' + '9f7a1961eb4726211e18abd147d5a11a4ea86744',
       'condition': 'checkout_linux',
   },
+
+  'src/third_party/expat/src':
+    Var('chromium_git') + '/external/github.com/libexpat/libexpat.git' + '@' + Var('libexpat_revision'),
 
   # The library for IPP protocol (Chrome OS).
   'src/third_party/libipp/libipp': {
