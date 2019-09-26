@@ -1331,6 +1331,7 @@ uint32_t VaapiWrapper::BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
 bool VaapiWrapper::CreateContextAndSurfaces(
     unsigned int va_format,
     const gfx::Size& size,
+    SurfaceUsageHint surface_usage_hint,
     size_t num_surfaces,
     std::vector<VASurfaceID>* va_surfaces) {
   DVLOG(2) << "Creating " << num_surfaces << " surfaces";
@@ -1342,8 +1343,10 @@ bool VaapiWrapper::CreateContextAndSurfaces(
     return false;
   }
 
-  if (!CreateSurfaces(va_format, size, num_surfaces, va_surfaces))
+  if (!CreateSurfaces(va_format, size, surface_usage_hint, num_surfaces,
+                      va_surfaces)) {
     return false;
+  }
 
   const bool success = CreateContext(size);
   if (!success)
@@ -2076,6 +2079,7 @@ void VaapiWrapper::DestroyContext() {
 
 bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
                                   const gfx::Size& size,
+                                  SurfaceUsageHint usage_hint,
                                   size_t num_surfaces,
                                   std::vector<VASurfaceID>* va_surfaces) {
   DVLOG(2) << "Creating " << num_surfaces << " " << size.ToString()
@@ -2084,13 +2088,29 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
   DCHECK(va_surfaces->empty());
 
   va_surfaces->resize(num_surfaces);
+  VASurfaceAttrib attribute{};
+  attribute.type = VASurfaceAttribUsageHint;
+  attribute.flags = VA_SURFACE_ATTRIB_SETTABLE;
+  attribute.value.type = VAGenericValueTypeInteger;
+  switch (usage_hint) {
+    case SurfaceUsageHint::kVideoDecoder:
+      attribute.value.value.i = VA_SURFACE_ATTRIB_USAGE_HINT_DECODER;
+      break;
+    case SurfaceUsageHint::kVideoEncoder:
+      attribute.value.value.i = VA_SURFACE_ATTRIB_USAGE_HINT_ENCODER;
+      break;
+    case SurfaceUsageHint::kGeneric:
+      attribute.value.value.i = VA_SURFACE_ATTRIB_USAGE_HINT_GENERIC;
+      break;
+  }
+
   VAStatus va_res;
   {
     base::AutoLock auto_lock(*va_lock_);
-    va_res = vaCreateSurfaces(va_display_, va_format,
-                              base::checked_cast<unsigned int>(size.width()),
-                              base::checked_cast<unsigned int>(size.height()),
-                              va_surfaces->data(), num_surfaces, NULL, 0);
+    va_res = vaCreateSurfaces(
+        va_display_, va_format, base::checked_cast<unsigned int>(size.width()),
+        base::checked_cast<unsigned int>(size.height()), va_surfaces->data(),
+        num_surfaces, &attribute, 1u);
   }
   VA_LOG_ON_ERROR(va_res, "vaCreateSurfaces failed");
   return va_res == VA_STATUS_SUCCESS;

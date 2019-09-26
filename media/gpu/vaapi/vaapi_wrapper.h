@@ -94,6 +94,13 @@ class MEDIA_GPU_EXPORT VaapiWrapper
     kCodecModeMax,
   };
 
+  // This is enum associated with VASurfaceAttribUsageHint.
+  enum class SurfaceUsageHint : uint8_t {
+    kVideoDecoder,
+    kVideoEncoder,
+    kGeneric,
+  };
+
   using InternalFormats = struct {
     bool yuv420 : 1;
     bool yuv422 : 1;
@@ -189,13 +196,15 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   static uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt);
 
-  // Creates |num_surfaces| VASurfaceIDs of |va_format| and |size| and, if
-  // successful, creates a |va_context_id_| of the same size. Returns true if
-  // successful, with the created IDs in |va_surfaces|. The client is
-  // responsible for destroying |va_surfaces| via DestroyContextAndSurfaces() to
-  // free the allocated surfaces.
+  // Creates |num_surfaces| VASurfaceIDs of |va_format|, |size| and
+  // |surface_usage_hint| and, if successful, creates a |va_context_id_| of the
+  // same size. |surface_usage_hint| may affect an alignment and tiling of the
+  // created surface. Returns true if successful, with the created IDs in
+  // |va_surfaces|. The client is responsible for destroying |va_surfaces| via
+  // DestroyContextAndSurfaces() to free the allocated surfaces.
   virtual bool CreateContextAndSurfaces(unsigned int va_format,
                                         const gfx::Size& size,
+                                        SurfaceUsageHint surface_usage_hint,
                                         size_t num_surfaces,
                                         std::vector<VASurfaceID>* va_surfaces);
 
@@ -393,6 +402,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Fills |va_surfaces| and returns true if successful, or returns false.
   bool CreateSurfaces(unsigned int va_format,
                       const gfx::Size& size,
+                      SurfaceUsageHint usage_hint,
                       size_t num_surfaces,
                       std::vector<VASurfaceID>* va_surfaces);
 
