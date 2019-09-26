@@ -441,6 +441,8 @@ class ColorPicker extends HTMLElement {
         .addEventListener('manual-color-change', this.onManualColorChange_);
 
     this.addEventListener('visual-color-change', this.onVisualColorChange_);
+
+    document.documentElement.addEventListener('keydown', this.onKeyDown_);
   }
 
   get selectedColor() {
@@ -494,11 +496,29 @@ class ColorPicker extends HTMLElement {
     }
   }
 
+  /**
+   * @param {!Event} event
+   */
+  onKeyDown_ = (event) => {
+    switch(event.key) {
+      case 'Enter':
+        this.submissionControls_.submitButton.click();
+        break;
+      case 'Escape':
+        this.submissionControls_.cancelButton.click();
+        break;
+    }
+  }
+
+  static get COMMIT_DELAY_MS() {
+    return 100;
+  }
+
   onSubmitButtonClick_ = () => {
     const selectedValue = this.selectedColor_.asHex();
     window.setTimeout(function() {
       window.pagePopupController.setValueAndClosePopup(0, selectedValue);
-    }, 100);
+    }, ColorPicker.COMMIT_DELAY_MS);
   }
 
   onCancelButtonClick_ = () => {
@@ -1824,6 +1844,14 @@ class SubmissionControls extends HTMLElement {
         'fill="WindowText"/></svg>'
     );
     this.append(this.submitButton_, this.cancelButton_);
+  }
+
+  get submitButton() {
+    return this.submitButton_;
+  }
+
+  get cancelButton() {
+    return this.cancelButton_;
   }
 }
 window.customElements.define('submission-controls', SubmissionControls);
