@@ -52,6 +52,8 @@ typedef extensions::ExtensionDownloaderDelegate::PingResult PingResult;
 
 namespace {
 
+bool g_should_immediately_update = false;
+
 // For sanity checking on update frequency - enforced in release mode only.
 #if defined(NDEBUG)
 const int kMinUpdateFrequencySeconds = 30;
@@ -184,7 +186,10 @@ void ExtensionUpdater::Start() {
   alive_ = true;
   // Check soon, and set up the first delayed check.
   if (!g_skip_scheduled_checks_for_tests) {
-    CheckSoon();
+    if (g_should_immediately_update)
+      CheckNow({});
+    else
+      CheckSoon();
     ScheduleNextCheck();
   }
 }
@@ -248,6 +253,11 @@ void ExtensionUpdater::SetExtensionCacheForTesting(
 void ExtensionUpdater::SetExtensionDownloaderForTesting(
     std::unique_ptr<ExtensionDownloader> downloader) {
   downloader_.swap(downloader);
+}
+
+// static
+void ExtensionUpdater::UpdateImmediatelyForFirstRun() {
+  g_should_immediately_update = true;
 }
 
 void ExtensionUpdater::DoCheckSoon() {
@@ -391,14 +401,6 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
   } else if (empty_downloader) {
     NotifyIfFinished(request_id);
   }
-}
-
-void ExtensionUpdater::CheckExtensionSoon(const std::string& extension_id,
-                                          FinishedCallback callback) {
-  CheckParams params;
-  params.ids = {extension_id};
-  params.callback = std::move(callback);
-  CheckNow(std::move(params));
 }
 
 void ExtensionUpdater::OnExtensionDownloadStageChanged(const std::string& id,
