@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "content/common/content_export.h"
 #include "content/common/visual_properties.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 
@@ -15,7 +16,6 @@ class Rect;
 }
 
 namespace content {
-
 class RenderWidgetScreenMetricsEmulatorDelegate;
 struct ContextMenuParams;
 
@@ -27,11 +27,10 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
  public:
   RenderWidgetScreenMetricsEmulator(
       RenderWidgetScreenMetricsEmulatorDelegate* delegate,
-      const blink::WebDeviceEmulationParams& params,
       const VisualProperties& visual_properties,
       const gfx::Rect& view_screen_rect,
       const gfx::Rect& window_screen_rect);
-  virtual ~RenderWidgetScreenMetricsEmulator();
+  ~RenderWidgetScreenMetricsEmulator();
 
   // Scale and offset used to convert between host coordinates
   // and webwidget coordinates.
@@ -48,6 +47,11 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
     return original_view_screen_rect_;
   }
 
+  // Disables emulation and applies non-emulated values to the RenderWidget.
+  // Call this before destroying the RenderWidgetScreenMetricsEmulator.
+  void DisableAndApply();
+
+  // Sets new parameters and applies them to the RenderWidget.
   void ChangeEmulationParams(const blink::WebDeviceEmulationParams& params);
 
   // The following methods alter handlers' behavior for messages related to
@@ -57,17 +61,17 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
                            const gfx::Rect& window_screen_rect);
   void OnShowContextMenu(ContextMenuParams* params);
 
-  // Apply parameters to the render widget.
-  void Apply();
-
  private:
   RenderWidgetScreenMetricsEmulatorDelegate* const delegate_;
+
+  // Applies emulated values to the RenderWidget.
+  void Apply();
 
   // Parameters as passed by RenderWidget::EnableScreenMetricsEmulation.
   blink::WebDeviceEmulationParams emulation_params_;
 
   // The computed scale and offset used to fit widget into browser window.
-  float scale_;
+  float scale_ = 1;
 
   // Widget rect as passed to webwidget.
   gfx::Rect applied_widget_rect_;

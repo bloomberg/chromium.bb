@@ -390,11 +390,12 @@ class CONTENT_EXPORT RenderWidget
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
   // RenderWidgetScreenMetricsEmulatorDelegate
-  void SynchronizeVisualProperties(
-      const VisualProperties& visual_properties) override;
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
+  void SetScreenInfoAndSize(const ScreenInfo& screen_info,
+                            const gfx::Size& widget_size,
+                            const gfx::Size& visible_viewport_size) override;
   void SetScreenRects(const gfx::Rect& widget_screen_rect,
                       const gfx::Rect& window_screen_rect) override;
 
@@ -689,6 +690,9 @@ class CONTENT_EXPORT RenderWidget
   // [routing IPC from browser].
   virtual void SynchronizeVisualPropertiesFromRenderView(
       const VisualProperties& visual_properties);
+  // TODO(danakj): A sub-step of SynchronizeVisualPropertiesFromRenderView that
+  // should be merged together.
+  void SynchronizeVisualProperties(const VisualProperties& visual_properties);
 
   bool in_synchronous_composite_for_testing() const {
     return in_synchronous_composite_for_testing_;
@@ -748,7 +752,8 @@ class CONTENT_EXPORT RenderWidget
   // browser.
   static void DoDeferredClose(int widget_routing_id);
 
-  gfx::Size GetSizeForWebWidget() const;
+  // Must be called to pass updated values to blink when the widget size, the
+  // visual viewport size, or the device scale factor change.
   void ResizeWebWidget();
 
   // Enable or disable auto-resize. This is part of
