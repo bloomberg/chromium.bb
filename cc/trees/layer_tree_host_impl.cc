@@ -2598,6 +2598,15 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
   SetRequiresHighResToDraw();
 }
 
+void LayerTreeHostImpl::RegisterCompositorPresentationTimeCallback(
+    uint32_t frame_token,
+    LayerTreeHost::PresentationTimeCallback callback) {
+  std::vector<LayerTreeHost::PresentationTimeCallback> as_vector;
+  as_vector.emplace_back(std::move(callback));
+  presentation_time_callbacks_.RegisterCompositorPresentationCallbacks(
+      frame_token, std::move(as_vector));
+}
+
 bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   impl_thread_phase_ = ImplThreadPhase::INSIDE_IMPL_FRAME;
   current_begin_frame_tracker_.Start(args);

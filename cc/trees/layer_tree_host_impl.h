@@ -548,6 +548,14 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   uint32_t next_frame_token() const { return *next_frame_token_; }
 
+  // Buffers |callback| until a relevant frame swap ocurrs, at which point the
+  // callback will be run on the compositor thread. A frame swap is considered
+  // relevant if the swapped frame's token is greater than or equal to
+  // |frame_token|.
+  void RegisterCompositorPresentationTimeCallback(
+      uint32_t frame_token,
+      LayerTreeHost::PresentationTimeCallback callback);
+
   virtual bool WillBeginImplFrame(const viz::BeginFrameArgs& args);
   virtual void DidFinishImplFrame();
   void DidNotProduceFrame(const viz::BeginFrameAck& ack);
